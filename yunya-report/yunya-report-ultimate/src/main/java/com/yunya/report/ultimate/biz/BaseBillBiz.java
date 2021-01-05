@@ -5,14 +5,19 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBill;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
+import com.yunya.report.ultimate.mapper.CurrentMonthBillStatisticsMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -25,6 +30,9 @@ import java.util.List;
  */
 @Service
 public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
+
+  /** 当前月账单统计 */
+  @Autowired private CurrentMonthBillStatisticsMapper currentMonthBillStatisticsMapper;
 
   /**
    * 根据条件查询开单列表
@@ -66,7 +74,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     if (StringHelper.isEmpty(query.getPrivilegeTypes())) {
-      query.setPrivilegeTypes(new Byte[]{1, 2});
+      query.setPrivilegeTypes(new Byte[] {1, 2});
     }
     List<BillOfDiscountDetailVO> resultList = mapper.selectBillDiscountDetailList(query);
     return new PageInfo<>(resultList);
@@ -81,7 +89,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   public void exportDiscountDetailList(
       HttpServletResponse response, BillOfDiscountDetailQuery query) throws IOException {
     if (StringHelper.isEmpty(query.getPrivilegeTypes())) {
-      query.setPrivilegeTypes(new Byte[]{1, 2});
+      query.setPrivilegeTypes(new Byte[] {1, 2});
     }
     List<BillOfDiscountDetailVO> resultList = mapper.selectBillDiscountDetailList(query);
     ExcelUtil<BillOfDiscountDetailVO> excelUtil = new ExcelUtil<>(BillOfDiscountDetailVO.class);
@@ -228,30 +236,53 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    */
   public StatementBillIncomeStatisticVO findStatementStatistic(StatementStatisticQuery query) {
     StatementBillIncomeStatisticVO resultData = mapper.selectStatementStatistic(query);
-
     return resultData;
   }
 
   /**
    * 根据账单ID查询账单优惠明细
-   * @param billId 账单ID
-   * @return 返回结果信息
-   */
-  /**
-   * 根据账单ID查询账单优惠明细
+   *
    * @param billId 账单ID
    * @param pageNum 页码 默认1
    * @param pageSize 分页大小 默认10
    * @param whetherPage 是否开启分页 默认开启
    * @return 返回结果信息
    */
-  public PageInfo<BillDiscountDetailInifoVO> billDiscountDetailInfo(Integer billId, Integer pageNum, Integer pageSize, Boolean whetherPage) {
+  public PageInfo<BillDiscountDetailInifoVO> billDiscountDetailInfo(
+      Integer billId, Integer pageNum, Integer pageSize, Boolean whetherPage) {
     if (null == whetherPage || whetherPage) {
       pageNum = pageNum == null || pageNum < 1 ? 1 : pageNum;
       pageSize = pageSize == null || pageSize <= 0 ? 10 : pageSize;
-      PageHelper.startPage(pageNum,pageSize);
+      PageHelper.startPage(pageNum, pageSize);
     }
-    List<BillDiscountDetailInifoVO> resultList =  mapper.selectBillDiscountDetailInfo(billId);
+    List<BillDiscountDetailInifoVO> resultList = mapper.selectBillDiscountDetailInfo(billId);
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件查询本月对账单账单统计信息
+   *
+   * @param query 查询条件
+   * @return CurrentMonthStatementStatisticVO
+   */
+  public CurrentMonthBillStatisticVO findCurrentMonthStatementStatistic(
+      StatementStatisticQuery query) {
+    String queryDate = query.getQueryDate();
+    Integer orgId = query.getOrgId();
+    CurrentMonthBillStatisticVO resultData = new CurrentMonthBillStatisticVO();
+    resultData.setCurrentMonth(queryDate);
+    resultData.setOrgId(orgId);
+    resultData.setCurrentMonthTotalActualAmount(new BigDecimal("0"));
+    resultData.setCurrentMonthTotalDiscountAmount(new BigDecimal("0"));
+    resultData.setCurrentMonthTotalReceivedAmount(new BigDecimal("0"));
+    resultData.setCurrentMonthTotalDebtAmount(new BigDecimal("0"));
+    String currentDate = DateUtil.parseDateToStr("yyyy-MM", new Date());
+    CurrentMonthBillStatisticVO statisticVO;
+    if (currentDate.equals(queryDate)) {
+      statisticVO = mapper.selectRealBillStatistic(query);
+    } else {
+      statisticVO = currentMonthBillStatisticsMapper.selectCurrentMonthBillStatistics(query);
+    }
+    return null == statisticVO ? resultData : statisticVO;
   }
 }
