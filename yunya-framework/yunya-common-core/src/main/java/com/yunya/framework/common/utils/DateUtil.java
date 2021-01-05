@@ -353,6 +353,21 @@ public class DateUtil {
     return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateStr + " " + timeStr);
   }
 
+  public static Date timeToDate(Date date, String time) throws ParseException {
+    String dateStr = DateFormatUtils.format(date, "yyyy-MM-dd");
+    String timeStr = time;
+    int count = StringHelper.countChild(":",time);
+    if (count == 1) {
+      timeStr = time + ":00";
+    } else if (count == 0) {
+      timeStr = "00:00:00";
+    }
+    if (dateStr == null || timeStr == null) {
+      return null;
+    }
+    return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateStr + " " + timeStr);
+  }
+
   /**
    * 计算两个日期之间的天数，包含两个日期
    *

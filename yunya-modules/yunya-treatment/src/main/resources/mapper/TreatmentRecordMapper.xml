@@ -308,4 +308,9 @@
             </if>
         </where>
     </select>
+
+    <select id="countByPatientId" resultType="java.lang.Integer">
+        select count(tr.id)
+        from treatment_record tr where tr.patient_id=#{patientId}
+    </select>
 </mapper>
