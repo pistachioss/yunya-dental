@@ -57,7 +57,7 @@
         <where>
             AND sbt.belong_type = 0
             <if test="dateType == 0">
-                AND sbt.business_month = #{date}
+                AND sbt.business_date = #{date}
             </if>
             <if test="dateType == 1">
                 AND sbt.business_year = #{date}
