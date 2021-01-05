@@ -196,7 +196,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       throws IOException {
     List<CategoryInfoIncomeVO> list = mapper.selectCategoryIncomeList(query);
     ExcelUtil<CategoryInfoIncomeVO> excelUtil = new ExcelUtil<>(CategoryInfoIncomeVO.class);
-    excelUtil.exportExcel(response, list, "员工工作量统计");
+    excelUtil.exportExcel(response, list, "员工工作量统计","门诊分类收入汇总");
   }
 
   /**

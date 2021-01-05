@@ -1167,6 +1167,7 @@ public class TollBiz {
       BigDecimal actualReceivableAmount = billRecordResult.getActualReceivableAmount();
       BigDecimal receivedAmount = billRecordResult.getReceivedAmount();
       patientId = billRecordResult.getPatientId();
+      boolean usePrivilege = false;
       if (receivedAmount.compareTo(BigDecimal.valueOf(0)) > 0 || billRecordResult.getPrivilegeType()!= discountType) {
         // 计算并校验收欠费入账总额
         totalCharge =
@@ -1175,6 +1176,7 @@ public class TollBiz {
         checkTotalChargeAndDebtAmount(totalCharge, debtAmount, outstandingAmount);
         debtAmount = debtAmount.subtract(totalCharge);
       } else {
+        usePrivilege = true;
         // 计算并校验收欠费入账总额
         totalCharge =
                 calculateAndCheckReceivedAmount(prepaymentAccounts, memberAccounts, paymentModels, (byte) 2);
@@ -1213,7 +1215,11 @@ public class TollBiz {
       savePrivilegeDetail(
           discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
       // 更新订单明细收费记录
-      updateOrderDetailPayRecord(orderRecordId, totalCharge);
+      if (usePrivilege) {
+        updateOrderDetailPayRecordWithPrivilege(orderRecordId, totalCharge);
+      } else {
+        updateOrderDetailPayRecordUnPrivilege(orderRecordId, totalCharge);
+      }
     } else {
       // 计算并校验收欠费入账总额
       totalCharge =
@@ -1339,13 +1345,48 @@ public class TollBiz {
     return orderRecordResult;
   }
 
+  private void updateOrderDetailPayRecordUnPrivilege(Integer orderRecordId, BigDecimal totalCharge) {
+    OrderDetailPayRecord orderDetailPayRecord = new OrderDetailPayRecord();
+    orderDetailPayRecord.setOrderRecordId(orderRecordId);
+    orderDetailPayRecord.setInservice(true);
+    List<OrderDetailPayRecord> detailPayRecords =
+            orderDetailPayRecordBiz.selectList(orderDetailPayRecord);
+    log.info(
+            "↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单明细列表[detailPayRecords]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+    detailPayRecords.forEach(
+            orderDetailPayRecord1 -> {
+              log.info("==> {}", orderDetailPayRecord1);
+            });
+    log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
+    // 没有使用优惠情况
+    for (OrderDetailPayRecord detailPayRecord : detailPayRecords) {
+      BigDecimal actualReceivable = detailPayRecord.getActualReceivable();
+      BigDecimal receivedAmount = detailPayRecord.getReceivedAmount();
+      if (actualReceivable.compareTo(receivedAmount) > 0) {
+        // 本项目剩余应收
+        BigDecimal restReceivedAmount = actualReceivable.subtract(receivedAmount);
+        // 已收大于等于该项目剩余应收（实收=实际应收）；已收小于剩余应收，（实收=该项目已收+总的收款）
+        if (totalCharge.compareTo(restReceivedAmount) >= 0) {
+          detailPayRecord.setReceivedAmount(actualReceivable);
+          totalCharge = totalCharge.subtract(restReceivedAmount);
+        } else {
+          detailPayRecord.setReceivedAmount(receivedAmount.add(totalCharge));
+          totalCharge = BigDecimal.valueOf(0);
+        }
+        detailPayRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+        detailPayRecord.setUpdName(BaseContextHandler.getName());
+        orderDetailPayRecordBiz.updateSelectiveById(detailPayRecord);
+      }
+    }
+  }
+
   /**
    * 更新订单明细收费记录
    *
    * @param orderRecordId 开单记录ID
    * @param totalCharge 总入账金额
    */
-  private void updateOrderDetailPayRecord(Integer orderRecordId, BigDecimal totalCharge) {
+  private void updateOrderDetailPayRecordWithPrivilege(Integer orderRecordId, BigDecimal totalCharge) {
     OrderDetailPayRecord orderDetailPayRecord = new OrderDetailPayRecord();
     orderDetailPayRecord.setOrderRecordId(orderRecordId);
     orderDetailPayRecord.setInservice(true);
@@ -1368,68 +1409,44 @@ public class TollBiz {
           log.info("==> {}", orderDetailPayRecord1);
         });
     log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
-
-    if (StringHelper.isNotEmpty(orderBenefitD)) {
-      for (OrderDetailPayRecord detail : detailPayRecords) {
-        BigDecimal receivableAmount = detail.getReceivableAmount();
-        BigDecimal privilegeAmount = BigDecimal.valueOf(0);
-        BigDecimal actualAmount = receivableAmount;
-        for (OrderBenefitDetailVo vo : orderBenefitD) {
-          Integer orderDetailId = vo.getOrderDetailId();
-          if (detail.getOrderDetailId().equals(orderDetailId)) {
-            privilegeAmount = vo.getItemBenefitAmount();
-            actualAmount = receivableAmount.subtract(privilegeAmount);
-            // TODO 补入工作量
-            detail.setCouponWorkload(BigDecimal.valueOf(0));
-          }
-        }
-        detail.setPrivilegeAmount(privilegeAmount);
-        detail.setActualReceivable(actualAmount);
-        // 设置已收
-        if (totalCharge.compareTo(actualAmount) >= 0) {
-          detail.setReceivedAmount(actualAmount);
-          totalCharge = totalCharge.subtract(actualAmount);
-        } else {
-          detail.setReceivedAmount(totalCharge);
-          totalCharge = BigDecimal.valueOf(0);
-        }
-
-        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-        String name = BaseContextHandler.getName();
-        detail.setUpdId(userId);
-        detail.setUpdName(name);
-
-        log.info(
-            "↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单明细列表[detailPayRecords]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-        detailPayRecords.forEach(
-            orderDetailPayRecord1 -> {
-              log.info("==> {}", orderDetailPayRecord1);
-            });
-        log.info(
-            "↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
-        orderDetailPayRecordBiz.updateSelectiveById(detail);
-      }
-    } else {
-      // 没有使用优惠情况
-      for (OrderDetailPayRecord detailPayRecord : detailPayRecords) {
-        BigDecimal actualReceivable = detailPayRecord.getActualReceivable();
-        BigDecimal receivedAmount = detailPayRecord.getReceivedAmount();
-        if (actualReceivable.compareTo(receivedAmount) > 0) {
-          // 本项目剩余应收
-          BigDecimal restReceivedAmount = actualReceivable.subtract(receivedAmount);
-          // 已收大于等于该项目剩余应收（实收=实际应收）；已收小于剩余应收，（实收=该项目已收+总的收款）
-          if (totalCharge.compareTo(restReceivedAmount) >= 0) {
-            detailPayRecord.setReceivedAmount(actualReceivable);
-            totalCharge = totalCharge.subtract(restReceivedAmount);
-          } else {
-            detailPayRecord.setReceivedAmount(receivedAmount.add(totalCharge));
-            totalCharge = BigDecimal.valueOf(0);
-          }
-          detailPayRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-          detailPayRecord.setUpdName(BaseContextHandler.getName());
-          orderDetailPayRecordBiz.updateSelectiveById(detailPayRecord);
+    for (OrderDetailPayRecord detail : detailPayRecords) {
+      BigDecimal receivableAmount = detail.getReceivableAmount();
+      BigDecimal privilegeAmount = BigDecimal.valueOf(0);
+      BigDecimal actualAmount = receivableAmount;
+      for (OrderBenefitDetailVo vo : orderBenefitD) {
+        Integer orderDetailId = vo.getOrderDetailId();
+        if (detail.getOrderDetailId().equals(orderDetailId)) {
+          privilegeAmount = vo.getItemBenefitAmount();
+          actualAmount = receivableAmount.subtract(privilegeAmount);
+          // TODO 补入工作量
+          detail.setCouponWorkload(BigDecimal.valueOf(0));
         }
       }
+      detail.setPrivilegeAmount(privilegeAmount);
+      detail.setActualReceivable(actualAmount);
+      // 设置已收
+      if (totalCharge.compareTo(actualAmount) >= 0) {
+        detail.setReceivedAmount(actualAmount);
+        totalCharge = totalCharge.subtract(actualAmount);
+      } else {
+        detail.setReceivedAmount(totalCharge);
+        totalCharge = BigDecimal.valueOf(0);
+      }
+
+      Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+      String name = BaseContextHandler.getName();
+      detail.setUpdId(userId);
+      detail.setUpdName(name);
+
+      log.info(
+          "↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单明细列表[detailPayRecords]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+      detailPayRecords.forEach(
+          orderDetailPayRecord1 -> {
+            log.info("==> {}", orderDetailPayRecord1);
+          });
+      log.info(
+          "↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
+      orderDetailPayRecordBiz.updateSelectiveById(detail);
     }
   }
 
