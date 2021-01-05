@@ -106,4 +106,14 @@ public class CompanyReportTest {
         financeController.inboundAndOutboundStatement(query);
     System.out.println(result);
   }
+
+  @Test
+  public void find3() {
+    StatementStatisticQuery query = new StatementStatisticQuery();
+    query.setOrgId(35);
+    query.setQueryDate("2021-01");
+    ResponseResult<CurrentMonthBillStatisticVO> result =
+        financeController.currentMonthStatementStatistic(query);
+    System.out.println(result);
+  }
 }

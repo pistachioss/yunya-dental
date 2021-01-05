@@ -687,4 +687,28 @@
                 LEFT JOIN base_coupon bcpon on bcpon.coupon_id = bb.coupon_id
                 LEFT JOIN base_employee be on be.user_id = a.executor_id
     </select>
+
+    <!-- 根据条件查询账单实时统计 -->
+    <select id="selectRealBillStatistic"
+            resultType="com.yunya.feign.report.domain.vo.CurrentMonthBillStatisticVO">
+        select
+            #{query.queryDate} as currentMonth,
+            #{query.orgId} as orgId,
+            IFNULL(SUM( bb.actual_amount ), 0) as currentMonthTotalActualAmount,
+            IFNULL(SUM( bb.privilege_amount ), 0) as currentMonthTotalDiscountAmount,
+            IFNULL(SUM( bb.received_amount ), 0) as currentMonthTotalReceivedAmount,
+            IFNULL(SUM( bb.debt_amount ), 0) as currentMonthTotalDebtAmount
+        from
+            base_bill bb
+        <where>
+            AND bb.bill_date IS NOT NULL
+            AND bb.bill_num IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.queryDate != null and query.queryDate != ''">
+                AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) = #{query.queryDate}
+            </if>
+        </where>
+    </select>
 </mapper>
