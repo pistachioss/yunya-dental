@@ -123,10 +123,6 @@
             <artifactId>easyexcel</artifactId>
             <version>1.1.2-beta5</version>
         </dependency>
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy</artifactId>
-        </dependency>
 
 
 
