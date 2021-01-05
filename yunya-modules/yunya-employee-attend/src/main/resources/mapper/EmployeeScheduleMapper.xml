@@ -80,7 +80,7 @@
     </foreach>
     </delete>
 
-  <insert id="batchInsert" parameterType="java.util.List">
+  <insert id="batchInsert"  parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id" >
     insert into employee_schedule (id, clinic_id, employee_id, schedule_id, work_date, crt_id, crt_name,
     crt_time, upd_id, upd_name, upd_time, inservice) VALUES
     <foreach collection="list" item="item" index="index" separator=",">
