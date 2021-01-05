@@ -163,7 +163,7 @@
             br.debt_amount,
             od.billing_item_id,
             od.type,
-            (select quantity from order_detail where  treatment_record_id = od.treatment_record_id and billing_item_id = od.billing_item_id) as quantity
+            (select quantity from order_detail where  treatment_record_id = od.treatment_record_id and billing_item_id = od.billing_item_id and inservice = br.inservice) as quantity
         from bill_record br
                  left join order_detail od on od.treatment_record_id = br.treatment_record_id
         where br.treatment_record_id = #{treatmentId} and br.inservice = true
