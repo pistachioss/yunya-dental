@@ -510,7 +510,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		smsModel.setMobile(form.getSoldPhoneNumber());
 		smsModel.setSendObject(form.getSoldTarget());
 		smsModel.setTemplateParam(templateParam);
-		remoteSmsServiceFeign.batchSendModels(smsTemplateSetVO.getId(),Arrays.asList(smsModel));
+		remoteSmsServiceFeign.batchSendModels(smsTemplateSetVO.getId(), Collections.singletonList(smsModel));
 	}
 
 	/**

@@ -70,7 +70,7 @@ public class ExcelUtil<T> {
   /** 实体对象 */
   public Class<T> clazz;
 
-  /** 合并表格 */
+  /** 单元格合并区域 */
   private List<CellRangeAddress> regions;
 
   /** 统计列表 */
@@ -279,7 +279,7 @@ public class ExcelUtil<T> {
   }
 
   public String getFileName(String sDate, String eDate, String mid, String tail) {
-    return getFileName(null,sDate,eDate,mid,tail);
+    return getFileName(null, sDate, eDate, mid, tail);
   }
   /**
    * 获取文件名
@@ -296,11 +296,11 @@ public class ExcelUtil<T> {
     }
     if (StringHelper.isNotEmpty(sDate)) {
       String[] str = sDate.split("-");
-      if (str.length == 1) {//年
+      if (str.length == 1) { // 年
         res.append(sDate).append("年");
-      } else if (str.length == 2) {//月
+      } else if (str.length == 2) { // 月
         res.append(str[0]).append("年").append(str[1]).append("月");
-      } else if (str.length == 3) {//日
+      } else if (str.length == 3) { // 日
         for (int i = 0; i < str.length; i++) {
           if (i > 0 && res.length() > 0) {
             res.append(".");
@@ -362,7 +362,7 @@ public class ExcelUtil<T> {
           Excel excel = (Excel) os[1];
           this.createCell(excel, row, column++);
         }
-        if (Excel.Type.EXPORT.equals(type)) {
+        if (Type.EXPORT.equals(type)) {
           fillExcelData(index);
           addStatisticsRow();
         }
@@ -423,7 +423,7 @@ public class ExcelUtil<T> {
    */
   private Map<String, CellStyle> createStyles(Workbook wb) {
     // 写入各条记录,每条记录对应excel表中的一行
-    Map<String, CellStyle> styles = new HashMap<String, CellStyle>();
+    Map<String, CellStyle> styles = new HashMap<>(16);
     CellStyle style = wb.createCellStyle();
     style.setAlignment(HorizontalAlignment.CENTER);
     style.setVerticalAlignment(VerticalAlignment.CENTER);
@@ -436,7 +436,7 @@ public class ExcelUtil<T> {
     style.setBorderBottom(BorderStyle.THIN);
     style.setBottomBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
     Font dataFont = wb.createFont();
-    dataFont.setFontName("Arial");
+    dataFont.setFontName("宋体");
     dataFont.setFontHeightInPoints((short) 12);
     style.setFont(dataFont);
     style.setWrapText(true);
@@ -449,7 +449,7 @@ public class ExcelUtil<T> {
     style.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.getIndex());
     style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
     Font headerFont = wb.createFont();
-    headerFont.setFontName("Arial");
+    headerFont.setFontName("宋体");
     headerFont.setFontHeightInPoints((short) 12);
     headerFont.setBold(true);
     style.setWrapText(true);
@@ -461,7 +461,7 @@ public class ExcelUtil<T> {
     style.setAlignment(HorizontalAlignment.CENTER);
     style.setVerticalAlignment(VerticalAlignment.CENTER);
     Font totalFont = wb.createFont();
-    totalFont.setFontName("Arial");
+    totalFont.setFontName("宋体");
     totalFont.setFontHeightInPoints((short) 12);
     style.setFont(totalFont);
     styles.put("total", style);
@@ -588,6 +588,11 @@ public class ExcelUtil<T> {
           // 设置列类型
           setCellVo(value, attr, cell);
         }
+        // 根据Excel注解设置的情况决定是否需要合并，默认false，不合并
+        /*boolean attrMerge = attr.isMerge();
+        if (attrMerge) {
+          mergeCell(i, i + 1, column, column);
+        }*/
         addStatisticsData(column, Convert.toStr(value), attr);
       }
     } catch (Exception e) {
@@ -743,6 +748,20 @@ public class ExcelUtil<T> {
       }
       statistics.clear();
     }
+  }
+
+  /**
+   * 合并单元格对象
+   *
+   * @param firstRow 合并起始行
+   * @param lastRow 合并结束行
+   * @param firstCol 合并开始列
+   * @param lastCol 合并结束列
+   */
+  private void mergeCell(int firstRow, int lastRow, int firstCol, int lastCol) {
+    this.regions = new ArrayList<>();
+    CellRangeAddress cellRangeAddress = new CellRangeAddress(firstRow, lastRow, firstCol, lastCol);
+    regions.add(cellRangeAddress);
   }
 
   /**
@@ -905,9 +924,9 @@ public class ExcelUtil<T> {
   }
 
   /**
-   * 设置合并单元格
+   * 设置合并单元格区域
    *
-   * @param region
+   * @param region 单元格区域列表¬
    */
   public void setMergeRegion(List<CellRangeAddress> region) {
     this.regions = region;

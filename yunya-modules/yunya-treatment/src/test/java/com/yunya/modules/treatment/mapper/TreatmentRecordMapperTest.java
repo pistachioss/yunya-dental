@@ -69,4 +69,9 @@ public class TreatmentRecordMapperTest {
             assistantMatchingRecordMapper.select(assistantMatchRecord);
     System.out.println(JSONObject.toJSONString(matchingRecords));
   }
+
+  @Test
+  public void count() {
+    System.out.println(treatmentRecordMapper.countByPatientId(3414));
+  }
 }

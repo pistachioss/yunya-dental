@@ -77,6 +77,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   @Autowired private BaseTariffBiz baseTariffBiz;
   /** 就诊 */
   @Autowired private TreatmentRecordMapper treatmentRecordMapper;
+  /* 账单 */
+  @Autowired private OrderRecordMapper orderRecordMapper;
 
   /**
    * 生成账单编号
@@ -123,12 +125,19 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     }
     resultData.setBillPayRecords(billPayRecords);
     // 账单异常记录
-    BillRecord entity = new BillRecord();
+    /*BillRecord entity = new BillRecord();
     entity.setOrderRecordId(orderRecordId);
     entity.setInservice(true);
-    BillRecord billRecord = mapper.selectOne(entity);
-    if (null != billRecord) {
-      Integer treatmentRecordId = billRecord.getTreatmentRecordId();
+    BillRecord billRecord = mapper.selectOne(entity);*/
+    OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
+    if (orderRecord == null) {
+      throw new ClientServiceException("开单记录不存在",PARAMETERS_IS_ILLEGAL);
+    }
+    Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
+    BillRecord entity = new BillRecord();
+    entity.setTreatmentRecordId(treatmentRecordId);
+    int count = mapper.selectCount(entity);
+    if (count > 0) {
       List<BillHandleRecordVO> billHandleRecords =
           billExceptionHandleRecordMapper.selectBillExceptionHandleRecord(treatmentRecordId);
       if (StringHelper.isNotEmpty(billHandleRecords)) {

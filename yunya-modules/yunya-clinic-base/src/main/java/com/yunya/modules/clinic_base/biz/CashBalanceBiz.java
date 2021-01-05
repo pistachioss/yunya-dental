@@ -100,7 +100,7 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
       beginningBalanceCash = balance.getEndingBalanceCash();
       periodCollection = getPeriodCollectionCash(orgId, balanceSettlementDate, settlementDate);
     } else {
-      beginningBalanceCash = BigDecimal.ZERO;
+      beginningBalanceCash = BigDecimal.valueOf(0);
       periodCollection = getPeriodCollectionCash(orgId, null, settlementDate);
     }
     CashBalance entity = new CashBalance();
@@ -113,6 +113,9 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
     entity.setDepositedCash(depositedCash);
     // 期末现金结余 = 期初现金结余 + 现金收款 - 现金退费 -现金存款 + 调整差额
     BigDecimal adjustment = model.getBalanceAdjustment();
+    if (null == adjustment) {
+      adjustment = BigDecimal.valueOf(0);
+    }
     BigDecimal endingBalanceCash =
         beginningBalanceCash.add(periodCollection).add(adjustment).subtract(depositedCash);
     entity.setEndingBalanceCash(endingBalanceCash);
@@ -124,8 +127,8 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
       entity.setUri(joiner.join(model.getCertificates()));
     }
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-    entity.setCrtId(userId);
     String name = BaseContextHandler.getName();
+    entity.setCrtId(userId);
     entity.setCrtName(name);
     entity.setUpdId(userId);
     entity.setUpdName(name);

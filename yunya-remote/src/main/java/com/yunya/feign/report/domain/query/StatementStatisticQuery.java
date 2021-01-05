@@ -26,7 +26,7 @@ public class StatementStatisticQuery implements Serializable {
   @NotNull(message = "组织ID不能为空！")
   private Integer orgId;
   /** 查询月份 */
-  @ApiModelProperty(value = "查询月份", required = true)
+  @ApiModelProperty(value = "查询月份", required = true, example = "yyyy-MM")
   @NotBlank(message = "查询月份不能为空！")
   private String queryDate;
 }

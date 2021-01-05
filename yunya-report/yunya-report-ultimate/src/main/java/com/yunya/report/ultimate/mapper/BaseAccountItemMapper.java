@@ -20,21 +20,30 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
   List<BaseAccountItemVO> selectAllPaymentList();
 
   /**
-   * 根据条件查询门诊账单收费的入账方式分组信息
+   * 根据条件查询门诊本月账单收费的入账方式分组信息
    *
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<StatementPaymentVO> selectBillChargePaymentInfo(
+  List<StatementPaymentVO> selectBillChargePaymentInfoThisMonth(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
-   * 根据条件查询门诊收欠费的入账方式分组信息
+   * 根据条件查询门诊本月账单收欠费的入账方式分组信息
    *
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<StatementPaymentVO> selectCollectArrearsPaymentInfo(
+  List<StatementPaymentVO> selectCollectArrearsPaymentInfoThisMonth(
+      @Param("query") InboundAndOutboundStatementQuery query);
+
+  /**
+   * 根据条件查询门诊非本月账单收欠费的入账方式分组信息
+   *
+   * @param query 查询条件
+   * @return List<ClinicInboundAndOutboundVO>
+   */
+  List<StatementPaymentVO> selectCollectArrearsPaymentInfoNotThisMonth(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
@@ -65,21 +74,39 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
-   * 根据条件查询门诊代收的入账方式分组信息
+   * 根据条件查询门诊本月代收的入账方式分组信息
    *
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<StatementPaymentVO> selectClinicCollectionPaymentInfo(
+  List<StatementPaymentVO> selectClinicCollectionPaymentInfoThisMonth(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
-   * 根据条件查询门诊退费的入账方式分组信息
+   * 根据条件查询门诊本月代收的入账方式分组信息
    *
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<StatementPaymentVO> selectBillRefundPaymentInfo(
+  List<StatementPaymentVO> selectClinicCollectionPaymentInfoNotThisMonth(
+      @Param("query") InboundAndOutboundStatementQuery query);
+
+  /**
+   * 根据条件查询门诊本月账单退费的入账方式分组信息
+   *
+   * @param query 查询条件
+   * @return List<ClinicInboundAndOutboundVO>
+   */
+  List<StatementPaymentVO> selectBillRefundPaymentInfoThisMonth(
+      @Param("query") InboundAndOutboundStatementQuery query);
+
+  /**
+   * 根据条件查询门诊非本月退费的入账方式分组信息
+   *
+   * @param query 查询条件
+   * @return List<ClinicInboundAndOutboundVO>
+   */
+  List<StatementPaymentVO> selectBillRefundPaymentInfoNotThisMonth(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
@@ -101,12 +128,21 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
-   * 根据条件查询门诊被代收的入账方式分组信息
+   * 根据条件查询门诊本月被代收的入账方式分组信息
    *
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<StatementPaymentVO> selectClinicIsAcceptedPaymentInfo(
+  List<StatementPaymentVO> selectClinicIsAcceptedPaymentInfoThisMonth(
+      @Param("query") InboundAndOutboundStatementQuery query);
+
+  /**
+   * 根据条件查询门诊非本月被代收的入账方式分组信息
+   *
+   * @param query 查询条件
+   * @return List<ClinicInboundAndOutboundVO>
+   */
+  List<StatementPaymentVO> selectClinicIsAcceptedPaymentInfoNotThisMonth(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**

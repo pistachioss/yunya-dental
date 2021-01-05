@@ -29,6 +29,7 @@ import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -45,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -575,6 +577,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             String patientName = visitingRecordVo.getPatientName();
             String mobile = visitingRecordVo.getMobile();
             String medicalNumber = visitingRecordVo.getMedicalNumber();
+            String distentName = visitingRecordVo.getDentistName();
             boolean result = false;
             if (!StringHelper.isEmpty(searchStr)) {
                 if (searchStr.matches(patientNameReg) && !StringHelper.isEmpty(patientName)) {
@@ -583,10 +586,10 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                     result = mobile.contains(searchStr);
                 }
             }
+
             if (!StringHelper.isEmpty(medicalNumber) && !StringHelper.isEmpty(medicalNumberStr)){
                 result = result | medicalNumber.contains(medicalNumberStr);
             }
-            String distentName = visitingRecordVo.getDentistName();
             if (!StringHelper.isEmpty(distentName) && !StringHelper.isEmpty(distentNameStr)) {
                 result = result | distentName.equals(distentNameStr);
             }
@@ -602,18 +605,41 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      */
     private List<VisitingRecordVo> sort(List<VisitingRecordVo> visitingRecordVos) {
         // 按随访时间排序
-        return visitingRecordVos.stream().sorted(
-                Comparator.comparing(VisitingRecordVo::getVisitingTime,(obj1,obj2)->{
-                    if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
-                        return -1;
-                    }
-                    String[] objSplit1 = obj1.trim().split(":");
-                    Integer objMinute1 = Integer.parseInt(objSplit1[0]) * 60 + Integer.parseInt(objSplit1[1]);
-                    String[] objSplit2 = obj2.trim().split(":");
-                    Integer objMinute2 = Integer.parseInt(objSplit2[0]) * 60 + Integer.parseInt(objSplit2[1]);
-                    return objMinute1.compareTo(objMinute2);
-                })).collect(Collectors.toList());
+        return visitingRecordVos.stream().sorted((obj1, obj2)->{
+           if (obj1==null || obj2==null) {
+               return 0;
+           }
+           Date date1 = null;
+           Date date2 = null;
+           try {
+              date1 = DateUtil.timeToDate(obj1.getVisitingDate(), obj1.getVisitingTime());
+              date2 = DateUtil.timeToDate(obj2.getVisitingDate(), obj2.getVisitingTime());
+           } catch (ParseException e) {
+              throw new ClientServiceException("日期转换错误",OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+           }
+           return date2.compareTo(date1);
+        }).collect(Collectors.toList());
     }
+
+    /**
+     * 按时间对随访列表进行降序排序
+     * @param visitingRecordVos 随访列表
+     * @return 排序之后的列表
+     */
+//    private List<VisitingRecordVo> sort(List<VisitingRecordVo> visitingRecordVos) {
+//        // 按随访时间排序
+//        return visitingRecordVos.stream().sorted(
+//                Comparator.comparing(VisitingRecordVo::getVisitingTime,(obj1,obj2)->{
+//                    if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
+//                        return -1;
+//                    }
+//                    String[] objSplit1 = obj1.trim().split(":");
+//                    Integer objMinute1 = Integer.parseInt(objSplit1[0]) * 60 + Integer.parseInt(objSplit1[1]);
+//                    String[] objSplit2 = obj2.trim().split(":");
+//                    Integer objMinute2 = Integer.parseInt(objSplit2[0]) * 60 + Integer.parseInt(objSplit2[1]);
+//                    return objMinute1.compareTo(objMinute2);
+//                })).collect(Collectors.toList());
+//    }
 
     /**
      * 根据时间段，医生ID查询这个时间段内每一天每个医生预约的患者数量

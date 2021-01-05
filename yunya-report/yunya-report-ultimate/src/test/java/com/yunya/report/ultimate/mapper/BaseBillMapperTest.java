@@ -1,9 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.report.domain.query.DataStatisticsQuery;
-import com.yunya.feign.report.domain.query.DentistArrearsCallForQuery;
-import com.yunya.feign.report.domain.query.DentistArrearsDetailQuery;
-import com.yunya.feign.report.domain.query.PatientArrearsCallForQuery;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,5 +65,14 @@ public class BaseBillMapperTest {
   public void find4() {
     List<PatientArrearsDetailVO> vos = billMapper.selectPatientArrearsDetailList(495);
     System.out.println(vos);
+  }
+
+  @Test
+  public void find5() {
+    StatementStatisticQuery query = new StatementStatisticQuery();
+    query.setOrgId(35);
+    query.setQueryDate("2020-12");
+    CurrentMonthBillStatisticVO vo = billMapper.selectRealBillStatistic(query);
+    System.out.println(vo);
   }
 }

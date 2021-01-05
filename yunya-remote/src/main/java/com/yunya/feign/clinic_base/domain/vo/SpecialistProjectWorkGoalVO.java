@@ -1,6 +1,8 @@
 package com.yunya.feign.clinic_base.domain.vo;
 
 import com.yunya.feign.treatment.domain.vo.SpecialistProjectTariffCompletedInfoVO;
+import com.yunya.framework.common.annation.Excel;
+import com.yunya.framework.common.annation.Excels;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -20,21 +22,28 @@ import java.io.Serializable;
 @Data
 @ToString
 public class SpecialistProjectWorkGoalVO implements Serializable {
-  /** 日期 */
-  @ApiModelProperty("日期")
-  private String businessDate;
   /** 专科项目ID */
   @ApiModelProperty("专科项目ID")
   private Integer specialistProjectId;
   /** 专科项目名称 */
+  @Excel(name = "专科项目", isMerge = true)
   @ApiModelProperty("专科项目名称")
   private String specialistProjectName;
+  /** 日期 */
+  @Excel(name = "日期")
+  @ApiModelProperty("日期")
+  private String businessDate;
   /** 专科目标数量 */
+  @Excel(name = "目标数量")
   @ApiModelProperty("专科目标数量")
   private Integer specialistProjectGoal;
   /** 专科完成信息VO */
+  @Excels({
+    @Excel(name = "完成数量", targetAttr = "specialistProjectCompleted", type = Excel.Type.EXPORT)
+  })
   private SpecialistProjectTariffCompletedInfoVO specialistProjectCompletedInfo;
   /** 专科完成百分比 */
+  @Excel(name = "完成百分比", suffix = "%")
   @ApiModelProperty("专科完成百分比")
   private Float percentageOfSpecialistProjectCompleted;
 }

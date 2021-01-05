@@ -16,6 +16,7 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.clinic_base.SpecialistBusinessTarget;
 import com.yunya.models.clinic_base.SpecialistProject;
 import com.yunya.modules.clinic_base.mapper.SpecialistBusinessTargetMapper;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -254,9 +256,19 @@ public class SpecialistProjectTargetBiz
     return new PageInfo<>(specialistProjectWorkGoals);
   }
 
+  /**
+   * 根据条件导出门诊专科数量工作目标列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @throws IOException
+   */
   public void exportSpecialistProjectWorkGoalList(
-      HttpServletResponse response, SpecialistProjectWorkGoalQuery query) {
+      HttpServletResponse response, SpecialistProjectWorkGoalQuery query) throws IOException {
     PageInfo<SpecialistProjectWorkGoalVO> pageInfo = findSpecialistProjectWorkGoalList(query);
     List<SpecialistProjectWorkGoalVO> infoList = pageInfo.getList();
+    ExcelUtil<SpecialistProjectWorkGoalVO> excelUtil =
+        new ExcelUtil<>(SpecialistProjectWorkGoalVO.class);
+    excelUtil.exportExcel(response, infoList, "门诊专科数量目标列表");
   }
 }

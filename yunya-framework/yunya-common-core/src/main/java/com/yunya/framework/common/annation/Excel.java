@@ -35,9 +35,6 @@ public @interface Excel {
   /** BigDecimal 舍入规则 默认:BigDecimal.ROUND_HALF_EVEN */
   int roundingMode() default BigDecimal.ROUND_HALF_EVEN;
 
-  /** 导出类型（0数字 1字符串） */
-  ColumnType cellType() default ColumnType.STRING;
-
   /** 导出时在excel中每个列的高度 单位为字符 */
   double height() default 14;
 
@@ -71,6 +68,25 @@ public @interface Excel {
   /** 是否自动统计数据,在最后追加一行统计数据总和 */
   boolean isStatistics() default false;
 
+  /** 导出类型（0数字 1字符串） */
+  ColumnType cellType() default ColumnType.STRING;
+
+  /** 导出数据类型枚举 */
+  enum ColumnType {
+    NUMERIC(0),
+    STRING(1),
+    IMAGE(2);
+    private final int value;
+
+    ColumnType(int value) {
+      this.value = value;
+    }
+
+    public int value() {
+      return this.value;
+    }
+  }
+
   /** 字段类型（0：导出导入；1：仅导出；2：仅导入） */
   Type type() default Type.ALL;
 
@@ -82,22 +98,6 @@ public @interface Excel {
     private final int value;
 
     Type(int value) {
-      this.value = value;
-    }
-
-    public int value() {
-      return this.value;
-    }
-  }
-
-  /** 导出数据类型枚举 */
-  enum ColumnType {
-    NUMERIC(0),
-    STRING(1),
-    IMAGE(2);
-    private final int value;
-
-    ColumnType(int value) {
       this.value = value;
     }
 
