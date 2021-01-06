@@ -5,3 +5,11 @@ spring:
                 server-addr: 192.168.31.215:8848
             config:
                 server-addr: 192.168.31.215:8848
+
+aliyun:
+    oss:
+        endpoint: http://oss-cn-hangzhou.aliyuncs.com
+        access-key-id: LTAI4GL3SpbVMBDnzGRYz6GZ
+        access-key-secret: nQKA5iLUfMCPHH6Yy2UrBageveHmeh
+        bucket: yunya-backend
+        prefixPath: #统一根目录，可不填
