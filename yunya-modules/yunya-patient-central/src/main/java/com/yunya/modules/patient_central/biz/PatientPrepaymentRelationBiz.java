@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.RemoteDiscountFeign;
@@ -13,11 +14,16 @@ import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
+import com.yunya.feign.sms.RemoteSmsServiceFeign;
+import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
+import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.SmsAutosendEventEnum;
+import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -31,11 +37,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
+import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_NOT_ALLOW;
 
 /**
  * 简单介绍:</br> 患者预付款
@@ -79,8 +88,13 @@ public class PatientPrepaymentRelationBiz
 
   /** 注入服务 */
   @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
+
   /** 注入会员卡消费记录Mapper */
   @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
+
+  /** 短信服务 */
+  @Autowired private RemoteSmsServiceFeign remoteSmsServiceFeign;
+
 
   /**
    * 患者预付款基本信息查询
@@ -266,9 +280,107 @@ public class PatientPrepaymentRelationBiz
       }
       // 发送消息 预付款充值
       sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 1);
+      // 预付款充值 短信发送
+      memberSendMessages(prepaidRechargeRecord,0);
     }
     return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到预付款记录", "");
   }
+
+  /**
+   * 预付款充值/消费 短信发送
+   *
+   * @param object 泛型类
+   * @param type type:0充值 1消费
+   */
+  public void memberSendMessages(Object object, Integer type) {
+    SmsTemplateSetVO smsTemplateSetVO = null;
+    PatientBaseInfo patientBaseInfo = null;
+    PrepaidRechargeRecord prepaidRechargeRecord = null;
+    PrepaidExpendRecord prepaidExpendRecord = null;
+    if (type == 0) {
+      prepaidRechargeRecord = (PrepaidRechargeRecord) object;
+      smsTemplateSetVO = remoteSmsServiceFeign.findSmsTemplateByEventCode(SmsAutosendEventEnum.PREPAY_CHARGE.getCode());
+      PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
+      patientPrepaymentsInfo.setPrepaymentNumber(prepaidRechargeRecord.getPrepaidId());
+      PatientPrepaymentsInfo patientPrepaymentsInfoVo = patientPrepaymentsInfoMapper.selectOne(patientPrepaymentsInfo);
+      patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(patientPrepaymentsInfoVo.getPatientId());
+    } else {
+      prepaidExpendRecord = (PrepaidExpendRecord) object;
+      smsTemplateSetVO = remoteSmsServiceFeign.findSmsTemplateByEventCode(SmsAutosendEventEnum.MEMBER_CONSUME.getCode());
+      PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
+      patientPrepaymentsInfo.setPrepaymentNumber(prepaidExpendRecord.getPrepaidId());
+      PatientPrepaymentsInfo patientPrepaymentsInfoVo = patientPrepaymentsInfoMapper.selectOne(patientPrepaymentsInfo);
+      patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(patientPrepaymentsInfoVo.getPatientId());
+    }
+    if (smsTemplateSetVO == null) {
+      throw new ClientServiceException("短信模板不存在", DATA_NOT_EXIST);
+    }
+
+    if (patientBaseInfo != null) {
+      String templateItem = smsTemplateSetVO.getTemplateItem();
+      JSONObject templateParam = new JSONObject();
+      if (StringHelper.isNotEmpty(templateItem)) {
+        String[] items = templateItem.split(",");
+        Map<String, Integer> repeat = new HashMap<>();
+        for (String item : items) {
+          Integer reNum = repeat.get(item);
+          String key = SmsTemplateItemEnum.getAction(item);
+          if (reNum == null) {
+            reNum = 0;
+          } else {
+            key = "re" + reNum + key;
+          }
+          repeat.put(item, ++reNum);
+          Integer code = Integer.parseInt(item);
+          // 充值
+          if (type == 0) {
+            // 患者姓名
+            if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {
+              templateParam.put(key, patientBaseInfo.getName());
+              // 预付款卡号
+            } else if (SmsTemplateItemEnum.MEMBER_CARD_NUMBER.getCode().equals(code)) {
+              templateParam.put(key, prepaidRechargeRecord.getPrepaidId());
+              // 预付款充值金额
+            } else if (SmsTemplateItemEnum.MEMBER_RECHARGE_AMOUNT.getCode().equals(code)) {
+              templateParam.put(key, prepaidRechargeRecord.getRechargePrincipal());
+              // 预付款剩余金额
+            } else if (SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getCode().equals(code)) {
+              templateParam.put(key, prepaidRechargeRecord.getCurrentRechargePrincipal().add(prepaidRechargeRecord.getCurrentRechargeBonus()));
+              // 其他
+            } else {
+              throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
+            }
+            // 消费
+          } else {
+            // 患者姓名
+            if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {
+              templateParam.put(key, patientBaseInfo.getName());
+              // 会员卡号
+            } else if (SmsTemplateItemEnum.MEMBER_CARD_NUMBER.getCode().equals(code)) {
+              templateParam.put(key, prepaidExpendRecord.getPrepaidId());
+              // 会员消费金额
+            } else if (SmsTemplateItemEnum.MEMBER_SPENDING_AMOUNT.getCode().equals(code)) {
+              templateParam.put(key, prepaidExpendRecord.getExpendPrincipal().add(prepaidExpendRecord.getExpendGift()));
+              // 会员剩余金额
+            } else if (SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getCode().equals(code)) {
+              templateParam.put(
+                  key,
+                      prepaidExpendRecord.getExpendPrincipal().add(prepaidExpendRecord.getExpendGift()));
+              // 其他
+            } else {
+              throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
+            }
+          }
+        }
+      }
+      SmsCommonSendRecordModel smsModel = new SmsCommonSendRecordModel();
+      smsModel.setMobile(patientBaseInfo.getMobile());
+      smsModel.setSendObject(patientBaseInfo.getName());
+      smsModel.setTemplateParam(templateParam);
+      remoteSmsServiceFeign.batchSendModels(smsTemplateSetVO.getId(), Arrays.asList(smsModel));
+    }
+    }
+
 
   /**
    * 充值记录
@@ -496,6 +608,8 @@ public class PatientPrepaymentRelationBiz
     prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
     // 发送消息 预付款消费
     sendPrepaidLogMessages(prepaidExpendRecord.getId(), 0, 1, 2);
+    // 预付款消费 短信发送
+    memberSendMessages(prepaidExpendRecord,1);
   }
 
   /**

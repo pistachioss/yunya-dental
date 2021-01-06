@@ -18,7 +18,7 @@
   </resultMap>
 
     <select id="selectByOrgId" resultType="com.yunya.models.report.BaseEmployee">
-      select be.* from base_employee be join base_user_post bup on be.user_id =  bup.user_id
+      select distinct be.* from base_employee be join base_user_post bup on be.user_id =  bup.user_id
       where bup.org_id = #{orgId}
     </select>
 </mapper>
