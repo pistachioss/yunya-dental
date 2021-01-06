@@ -6,21 +6,25 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.query.BillAdjustRecordQuery;
 import com.yunya.feign.treatment.domain.query.BillPayRecordAdjustQuery;
 import com.yunya.feign.treatment.domain.query.BillTollRevokeRecordQuery;
+import com.yunya.feign.treatment.domain.query.CurrentMonthBillAdjustQuery;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.BillExceptionHandleRecord;
 import com.yunya.modules.treatment.mapper.BillExceptionHandleRecordMapper;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -247,11 +251,6 @@ public class BillExceptionHandleRecordBiz
             if (null != dentist) {
               vo.setRegDentistName(dentist.getName());
             }
-            Integer revokeOperatorId = vo.getAdjustOperatorId();
-            SysEmployee sysEmployee = systemServiceFeign.findSysEmployeeById(revokeOperatorId);
-            if (null != sysEmployee) {
-              vo.setAdjustOperatorName(sysEmployee.getName());
-            }
           });
       String keyWord = query.getKeyWord();
       if (StringHelper.isNotBlank(keyWord)) {
@@ -283,5 +282,37 @@ public class BillExceptionHandleRecordBiz
     List<BillOfPayRecordAdjustVO> resultList = findBillPayAdjustRecordList(query);
     ExcelUtil<BillOfPayRecordAdjustVO> excelUtil = new ExcelUtil<>(BillOfPayRecordAdjustVO.class);
     excelUtil.exportExcel(response, resultList, "调整入账方式记录表");
+  }
+
+  /**
+   * 根据条件导出门诊当月调整账单列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportCurrentMonthAdjustBill(
+      HttpServletResponse response, CurrentMonthBillAdjustQuery query) throws IOException {
+    ExcelUtil<CurrentMonthAdjustBillVO> excelUtil = new ExcelUtil<>(CurrentMonthAdjustBillVO.class);
+    List<CurrentMonthAdjustBillVO> resultList = mapper.selectCurrentMonthAdjustBill(query);
+    if (StringHelper.isNotEmpty(resultList)) {
+      for (CurrentMonthAdjustBillVO vo : resultList) {
+        Integer patientId = vo.getPatientId();
+        PatientBaseInfo patientInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
+        if (null != patientInfo) {
+          vo.setPatientName(patientInfo.getName());
+          vo.setPatientMobile(patientInfo.getMobile());
+        }
+        Integer regDentistId = vo.getRegDentistId();
+        SysEmployee dentist = systemServiceFeign.findSysEmployeeById(regDentistId);
+        if (null != dentist) {
+          vo.setRegDentistName(dentist.getName());
+        }
+        String currentMonth =
+            DateUtil.parseDateToStr("yyyy-MM", new Date(System.currentTimeMillis()));
+        String billDate = new DateTime(vo.getBillDate()).toString("yyyy-MM");
+        vo.setCurrentBill(currentMonth.equals(billDate) ? "当前月" : "非当前月");
+      }
+    }
+    excelUtil.exportExcel(response, resultList, "门诊当月调整账单记录");
   }
 }

@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.query.BillAdjustRecordQuery;
 import com.yunya.feign.treatment.domain.query.BillPayRecordAdjustQuery;
 import com.yunya.feign.treatment.domain.query.BillTollRevokeRecordQuery;
+import com.yunya.feign.treatment.domain.query.CurrentMonthBillAdjustQuery;
 import com.yunya.feign.treatment.domain.vo.BillOfAdjustRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillOfPayRecordAdjustVO;
 import com.yunya.feign.treatment.domain.vo.BillOfTollRevokeRecordVO;
@@ -37,7 +38,8 @@ public class BillExceptionHandleRecordController {
   /** 账单异常处理 */
   private final BillExceptionHandleRecordBiz billExceptionHandleRecordBiz;
 
-  public BillExceptionHandleRecordController(BillExceptionHandleRecordBiz billExceptionHandleRecordBiz) {
+  public BillExceptionHandleRecordController(
+      BillExceptionHandleRecordBiz billExceptionHandleRecordBiz) {
     this.billExceptionHandleRecordBiz = billExceptionHandleRecordBiz;
   }
 
@@ -185,6 +187,22 @@ public class BillExceptionHandleRecordController {
       HttpServletResponse response, @RequestBody @Validated BillPayRecordAdjustQuery query)
       throws IOException {
     billExceptionHandleRecordBiz.exportBillPayAdjustRecord(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件导出门诊当月调整账单列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-本月调整账单-导出")
+  @PostMapping(value = "/current/bill/adjust/export", name = "baseBillBiz")
+  public ResponseResult<T> exportCurrentMonthAdjustBill(
+      HttpServletResponse response, @RequestBody @Validated CurrentMonthBillAdjustQuery query)
+      throws IOException {
+    billExceptionHandleRecordBiz.exportCurrentMonthAdjustBill(response, query);
     return ResponseUtil.success(null);
   }
 }

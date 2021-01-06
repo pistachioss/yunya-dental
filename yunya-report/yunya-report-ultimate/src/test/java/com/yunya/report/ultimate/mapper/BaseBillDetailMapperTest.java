@@ -95,4 +95,13 @@ public class BaseBillDetailMapperTest {
     WorkloadStatisticsVO vo = baseBillDetailMapper.selectClinicWorkloadStatistic(query);
     System.out.println(vo);
   }
+
+  @Test
+  public void find1() {
+    CurrentMonthBillInfoQuery query = new CurrentMonthBillInfoQuery();
+    query.setOrgId(35);
+    query.setCurrentMonth("2021-01");
+    List<CurrentMonthBillDetailVO> vos = baseBillDetailMapper.selectCurrentMonthBillDetail(query);
+    System.out.println(vos);
+  }
 }

@@ -323,4 +323,21 @@ public class CompanyReportOfFinanceController {
     CurrentMonthBillStatisticVO resultData = baseBillBiz.findCurrentMonthStatementStatistic(query);
     return ResponseUtil.success(resultData);
   }
+
+  /**
+   * 根据条件导出门诊当月账单明细
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-本月账单明细-导出")
+  @PostMapping(value = "/bill/detail/export", name = "公司端报表-财务报表-对账单-本月账单明细")
+  public ResponseResult<T> exportCurrentMonthBillDetail(
+      HttpServletResponse response, @RequestBody @Validated CurrentMonthBillInfoQuery query)
+      throws IOException {
+    billDetailBiz.exportCurrentMonthBillDetail(response, query);
+    return ResponseUtil.success(null);
+  }
+
 }
