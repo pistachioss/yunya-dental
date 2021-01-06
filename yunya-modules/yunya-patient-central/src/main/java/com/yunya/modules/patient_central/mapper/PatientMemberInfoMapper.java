@@ -47,11 +47,11 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
 
 
     /**
-     * 通过会员卡号和患者id查询会员卡信息
+     * 通过会员卡号查询会员卡信息
      * @param memberId  会员卡号
      * @return PatientMemberInfo
      */
-    PatientMemberInfo selectCardNumber(@Param("memberId") String memberId);
+    PatientMemberInfo selectCardNumber(@Param("memberCard") String memberId);
 
     /**
      * 通过患者id查询会员卡全部信息
