@@ -127,8 +127,7 @@ public class PatientPrepaymentRelationBiz
     patientPrepaymentRelationyi.setCrtName(BaseContextHandler.getName());
     patientPrepaymentRelationMapper.insertSelective(patientPrepaymentRelationyi);
     // 发送预付款关联消息
-    remoteRabbitMqServiceFeign.sendMessage(
-        patientPrepaymentRelationyi.getId(), 1, 0, MsgCategoryEnum.BasePatientMemberRelation);
+    //remoteRabbitMqServiceFeign.sendMessage(patientPrepaymentRelationyi.getId(), 1, 0, MsgCategoryEnum.BasePatientMemberRelation);
     PatientPrepaymentRelation patientPrepaymentRelationer = new PatientPrepaymentRelation();
     patientPrepaymentRelationer.setMasterCardId(model.getSecondaryCardId());
     patientPrepaymentRelationer.setSecondaryCardId(model.getMasterCardId());
@@ -270,20 +269,24 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
       prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
-      if (patientPrepaymentsInfo.getPatientId() != null && model.getCardId() != null){
-        OwnCardActiveForm ownCardActiveForm = new OwnCardActiveForm();
-        ownCardActiveForm.setCardId(model.getCardId());
-        ResponseResult result = remoteDiscountFeign.ownActiveCard(patientPrepaymentsInfo.getPatientId(), ownCardActiveForm);
-        if (!result.getStatus().equals(ZERO)) {
-          return result;
+      if (model.getRechargeType() == 1){
+        if (patientPrepaymentsInfo.getPatientId() != null && model.getCardId() != null){
+          OwnCardActiveForm ownCardActiveForm = new OwnCardActiveForm();
+          ownCardActiveForm.setCardId(model.getCardId());
+          ResponseResult result = remoteDiscountFeign.ownActiveCard(patientPrepaymentsInfo.getPatientId(), ownCardActiveForm);
+          if (!result.getStatus().equals(ZERO)) {
+            return result;
+          }
         }
       }
       // 发送消息 预付款充值
       sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 1);
       // 预付款充值 短信发送
       memberSendMessages(prepaidRechargeRecord,0);
+    }else {
+      return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到预付款记录", "");
     }
-    return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到预付款记录", "");
+    return ResponseUtil.success();
   }
 
   /**
@@ -306,7 +309,7 @@ public class PatientPrepaymentRelationBiz
       patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(patientPrepaymentsInfoVo.getPatientId());
     } else {
       prepaidExpendRecord = (PrepaidExpendRecord) object;
-      smsTemplateSetVO = remoteSmsServiceFeign.findSmsTemplateByEventCode(SmsAutosendEventEnum.MEMBER_CONSUME.getCode());
+      smsTemplateSetVO = remoteSmsServiceFeign.findSmsTemplateByEventCode(SmsAutosendEventEnum.PREPAY_CONSUME.getCode());
       PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
       patientPrepaymentsInfo.setPrepaymentNumber(prepaidExpendRecord.getPrepaidId());
       PatientPrepaymentsInfo patientPrepaymentsInfoVo = patientPrepaymentsInfoMapper.selectOne(patientPrepaymentsInfo);
@@ -338,13 +341,13 @@ public class PatientPrepaymentRelationBiz
             if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {
               templateParam.put(key, patientBaseInfo.getName());
               // 预付款卡号
-            } else if (SmsTemplateItemEnum.MEMBER_CARD_NUMBER.getCode().equals(code)) {
+            } else if (SmsTemplateItemEnum.PREPAID_ACCOUNT.getCode().equals(code)) {
               templateParam.put(key, prepaidRechargeRecord.getPrepaidId());
               // 预付款充值金额
-            } else if (SmsTemplateItemEnum.MEMBER_RECHARGE_AMOUNT.getCode().equals(code)) {
+            } else if (SmsTemplateItemEnum.PREPAID_RECHARGE_AMOUNT.getCode().equals(code)) {
               templateParam.put(key, prepaidRechargeRecord.getRechargePrincipal());
               // 预付款剩余金额
-            } else if (SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getCode().equals(code)) {
+            } else if (SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getCode().equals(code)) {
               templateParam.put(key, prepaidRechargeRecord.getCurrentRechargePrincipal().add(prepaidRechargeRecord.getCurrentRechargeBonus()));
               // 其他
             } else {
@@ -356,13 +359,13 @@ public class PatientPrepaymentRelationBiz
             if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {
               templateParam.put(key, patientBaseInfo.getName());
               // 会员卡号
-            } else if (SmsTemplateItemEnum.MEMBER_CARD_NUMBER.getCode().equals(code)) {
+            } else if (SmsTemplateItemEnum.PREPAID_ACCOUNT.getCode().equals(code)) {
               templateParam.put(key, prepaidExpendRecord.getPrepaidId());
               // 会员消费金额
-            } else if (SmsTemplateItemEnum.MEMBER_SPENDING_AMOUNT.getCode().equals(code)) {
+            } else if (SmsTemplateItemEnum.PREPAID_CONSUMPTION_AMOUNT.getCode().equals(code)) {
               templateParam.put(key, prepaidExpendRecord.getExpendPrincipal().add(prepaidExpendRecord.getExpendGift()));
               // 会员剩余金额
-            } else if (SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getCode().equals(code)) {
+            } else if (SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getCode().equals(code)) {
               templateParam.put(
                   key,
                       prepaidExpendRecord.getExpendPrincipal().add(prepaidExpendRecord.getExpendGift()));
