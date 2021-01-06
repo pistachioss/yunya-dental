@@ -16,3 +16,8 @@ spring:
         host: 192.168.31.90
         port: 6379
         password: foobared
+
+wiki:
+    host: yunya.test.utools.club
+    notifyUrl: http://${wiki.host}/smsChargeOrder/notifyUrl
+    redirectUrl: http://${wiki.host}/smsChargeOrder/redirectUrl

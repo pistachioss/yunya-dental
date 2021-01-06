@@ -72,7 +72,8 @@ wiki:
     app: A55905710000004
     operatorId: 8fe21621f6e999a05c8f34226ff24791
     key: dc38b14f74888b3a88b51ace677cc3b8
-    notifyUrl: http://yunya.test.utools.club/smsChargeOrder/notifyUrl
-    redirectUrl: http://yunya.test.utools.club/smsChargeOrder/redirectUrl
+    host: yunya.test.utools.club
+    notifyUrl: http://${wiki.host}/smsChargeOrder/notifyUrl
+    redirectUrl: http://${wiki.host}/smsChargeOrder/redirectUrl
 
 
