@@ -19,6 +19,7 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -110,8 +111,8 @@ public class SysUserController {
   @ApiOperation("用户修改")
   @PutMapping("/edit/{userId}")
   public ResponseResult<T> edit(
-      @PathVariable(value = "userId") Integer userId, @RequestBody @Validated SysUserForm form) {
-    sysUserBiz.edit(userId, form);
+          @PathVariable(value = "userId") Integer userId, @RequestBody @Validated SysUserForm form, HttpServletRequest request) {
+    sysUserBiz.edit(userId, form, request);
     return ResponseUtil.success(null);
   }
 

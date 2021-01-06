@@ -19,8 +19,8 @@ import java.io.Serializable;
 public class RedisConstants implements Serializable {
 
   /** ---------------------------用户信息缓存通用key------------------------------- */
-  /** 当前用户ID */
-  public static final String REDIS_KEY_USER_ID = "current_userId_";
+  /** 当前用户ID current_userId_{当前登录设备名称}_{用户ID} */
+  public static final String REDIS_KEY_USER_ID = "current_userId_{}_{}";
   /** 当前用户登陆名 */
   public static final String REDIS_KEY_USERNAME = "current_userName_";
   /** 用户真实姓名 */

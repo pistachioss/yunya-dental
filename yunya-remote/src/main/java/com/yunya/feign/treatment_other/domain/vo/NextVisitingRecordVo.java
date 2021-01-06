@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 
 /**
@@ -15,7 +16,12 @@ import java.io.Serializable;
  **/
 @Data
 @ApiModel(value = "NextVisitingRecordVo", description = "后续随访视图模型")
-public class NextVisitingRecordVo extends VisitingRecord implements Serializable {
+public class NextVisitingRecordVo implements Serializable {
     @ApiModelProperty("后续随访数量")
     private Integer count;
+    /**
+     * 患者ID
+     */
+    @ApiModelProperty("患者ID")
+    private Integer patientId;
 }

@@ -12,10 +12,7 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.framework.common.utils.HanyuPinyinHelper;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.*;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.SysEmployee;
@@ -35,6 +32,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -217,7 +215,9 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    * @param userId 用户ID
    * @param form 修改参数封装
    */
-  public void edit(Integer userId, SysUserForm form) {
+  public void edit(Integer userId, SysUserForm form, HttpServletRequest request) {
+    // 获取当前用户登录设备信息
+    String deviceName = ServletUtils.getCurrentDevice().getName();
     SysUser sysUser = checkUserExist(userId);
     String currentUsername = sysUser.getUsername();
     // 不允许修改管理员登陆账号
@@ -247,12 +247,14 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     // 用户名被修改或就职状态改为离职,将当前用户从缓存中移除
     if (!currentUsername.equals(form.getMobilePhone())
         || USER_RESIGNATION_STATUS.equals(form.getWorkStatus())) {
+      // 设置redis key
+      String redisKeyUserId = setKey(REDIS_KEY_USER_ID, deviceName, String.valueOf(userId));
       // 获取被修改用户的token
-      String token = redisUtils.get(REDIS_KEY_USER_ID + userId);
+      String token =  redisUtils.get(redisKeyUserId);
       if (StringUtils.isNotBlank(token)) {
         // 移除缓存中被修改用户的信息
         redisUtils.delete(REDIS_KEY_USER_TOKEN + token);
-        redisUtils.delete(REDIS_KEY_USER_ID + userId);
+        redisUtils.delete(redisKeyUserId);
       }
     }
   }

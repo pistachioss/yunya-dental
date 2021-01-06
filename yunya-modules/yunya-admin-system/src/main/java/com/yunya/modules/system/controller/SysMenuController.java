@@ -19,6 +19,7 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -50,8 +51,8 @@ public class SysMenuController {
   @ApiOperation("查询用户菜单权限树(选择用户可登陆组织)")
   @PostMapping("/user/list")
   public ResponseResult<List<SysMenu>> getUserMenuResourceList(
-      @RequestBody @Validated UserResourceForm resourceForm) {
-    List<SysMenu> resultList = sysMenuBiz.getUserMenuResourceList(resourceForm);
+          @RequestBody @Validated UserResourceForm resourceForm, HttpServletRequest request) {
+    List<SysMenu> resultList = sysMenuBiz.getUserMenuResourceList(resourceForm, request);
     return ResponseUtil.success(resultList);
   }
 

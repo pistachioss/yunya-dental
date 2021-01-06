@@ -5,6 +5,7 @@ import com.yunya.auth.service.UserAuthService;
 import com.yunya.feign.system.form.JwtRequestFrom;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.ServletUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -89,7 +90,8 @@ public class UserAuthController {
   @PostMapping("/logout")
   public ResponseResult logout(HttpServletRequest request) {
     String token = request.getHeader(tokenHeader);
-    userAuthService.logout(token);
+    String deviceName = ServletUtils.getCurrentDevice().getName();
+    userAuthService.logout(token,deviceName);
     return ResponseUtil.success();
   }
 }

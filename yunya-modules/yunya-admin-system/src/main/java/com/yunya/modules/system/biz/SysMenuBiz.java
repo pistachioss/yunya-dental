@@ -10,6 +10,7 @@ import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.ServletUtils;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.SysElement;
@@ -31,10 +32,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -222,16 +225,20 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
    * @param resourceForm 参数封装
    * @return
    */
-  public List<SysMenu> getUserMenuResourceList(UserResourceForm resourceForm) {
+  public List<SysMenu> getUserMenuResourceList(UserResourceForm resourceForm, HttpServletRequest request) {
+    // 获取request 设备信息
+    String deviceName = ServletUtils.getCurrentDevice().getName();
+
     Integer orgId = resourceForm.getOrgId();
     Integer userId = resourceForm.getUserId();
     // 将用户登陆的组织ID设置到用户信息，并存入到redis中
-    String token = redisUtils.get(RedisConstants.REDIS_KEY_USER_ID + userId);
+    String token = redisUtils.get(RedisConstants.setKey(RedisConstants.REDIS_KEY_USER_ID,deviceName,String.valueOf(userId)));
     if (StringUtils.isNotBlank(token)) {
       UserInfo userInfo =
           redisUtils.get(RedisConstants.REDIS_KEY_USER_TOKEN + token, UserInfo.class);
       userInfo.setCurrentOrgId(orgId);
-      redisUtils.set(RedisConstants.REDIS_KEY_USER_TOKEN + token, userInfo, 14400);
+      redisUtils.delete(RedisConstants.REDIS_KEY_USER_TOKEN + token);
+      redisUtils.set(RedisConstants.REDIS_KEY_USER_TOKEN + token, userInfo, 14400, TimeUnit.SECONDS);
     }
     // 查询用户在该组织下的所有岗位列表
     List<PostVO> posts = sysUserPostBiz.findUserPostList(orgId, userId);

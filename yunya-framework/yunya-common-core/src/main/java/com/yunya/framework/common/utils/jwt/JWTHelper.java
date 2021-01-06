@@ -32,7 +32,7 @@ public class JWTHelper {
    */
   public static String generateToken(IJWTInfo jwtInfo, String priKeyPath, int expire)
       throws Exception {
-    DateTime now = new DateTime(System.currentTimeMillis() + 28800000L);
+    DateTime now = new DateTime(System.currentTimeMillis());
     String compactJws =
         Jwts.builder()
             .setSubject(jwtInfo.getUniqueName())
@@ -57,7 +57,7 @@ public class JWTHelper {
    * @throws Exception
    */
   public static String generateToken(IJWTInfo jwtInfo, byte[] priKey) throws Exception {
-    DateTime now = new DateTime(System.currentTimeMillis() + 28800000L);
+    DateTime now = new DateTime(System.currentTimeMillis());
     String compactJws =
         Jwts.builder()
             // 主体（所有人）
@@ -85,7 +85,7 @@ public class JWTHelper {
    * @throws Exception
    */
   public static String generateToken(IJWTInfo jwtInfo, byte[] priKey, int expire) throws Exception {
-    DateTime now = new DateTime(System.currentTimeMillis() + 28800000L);
+    DateTime now = new DateTime(System.currentTimeMillis());
     String compactJws =
         Jwts.builder()
             // 主体（所有人）
