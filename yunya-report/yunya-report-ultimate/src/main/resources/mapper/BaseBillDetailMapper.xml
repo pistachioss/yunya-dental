@@ -930,7 +930,7 @@
         FROM
         base_bill_detail bbd
         LEFT JOIN base_tariff_info bti ON bbd.item_id = bti.item_id
-        LEFT JOIN base_benefit bb on bb.order_id=bbd.bill_id
+        LEFT JOIN base_benefit bb on (bb.order_id=bbd.bill_id and bb.item_id=bti.item_id)
         <where>
             bbd.item_type=0
             and bb.coupon_type in (0,1,2,3)
