@@ -29,7 +29,9 @@
         FROM
             base_tariff_info
         GROUP BY
-            category_id
+            category_id,
+            item_type,
+            category_name
         ORDER BY
             item_type
     </select>
