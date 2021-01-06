@@ -58,7 +58,8 @@
 
     <!-- 查询父级患者来源 -->
     <select id="originalType" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientOriginVo">
-        select po.id,po.name,po.origin_type originType from patient_origin po where po.parent_id = 0 and po.inservice = 1 group by  originType asc
+        select po.id,po.name,po.origin_type as 'originType'
+        from patient_origin po where po.parent_id = 0 and po.inservice = 1 group by po.origin_type asc
     </select>
 
     <!-- 查询患者来源类型 -->

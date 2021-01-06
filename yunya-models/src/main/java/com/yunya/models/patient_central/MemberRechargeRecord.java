@@ -189,9 +189,9 @@ public class MemberRechargeRecord {
     }
 
     /**
-     * 获取会员卡ID
+     * 获取会员卡号
      *
-     * @return member_id - 会员卡ID
+     * @return member_id - 会员卡号
      */
     public String getMemberId() {
         return memberId;
