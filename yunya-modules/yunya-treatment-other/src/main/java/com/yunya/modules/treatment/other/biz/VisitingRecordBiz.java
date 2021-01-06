@@ -523,6 +523,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             VisitingRecordQuery query = new VisitingRecordQuery();
             query.setPatientId(visitingRecord.getPatientId());
             query.setVisitingDate(visitingRecord.getVisitingDate());
+            query.setWhetherPage(false);
             List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
             if (!StringHelper.isEmpty(visitingRecordVos)){
                 final String visitingContentStr = visitingRecord.getVisitingContent();
@@ -537,6 +538,9 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                     build.setUptId(Integer.valueOf(userID));
                     build.setUpdTime(date);
                     build.setStatus(true);
+                    build.setExecutorId(Integer.valueOf(userID));
+                    build.setExecutorName(name);
+                    build.setExecuteDate(date);
                     mapper.updateByPrimaryKeySelective(build);
                 });
             }

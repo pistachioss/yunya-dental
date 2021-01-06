@@ -169,8 +169,8 @@
   <!-- 根据患者ID集合查询患者后续随访信息列表 -->
   <select id="countNextVisitingListByIds" resultType="com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo">
     select
-           count(id) as `count`,
-           <include refid="FieldAlias"></include>
+           count(patient_id) as `count`,
+           patient_id as patientId
     from visiting_record
     where
         patient_id in

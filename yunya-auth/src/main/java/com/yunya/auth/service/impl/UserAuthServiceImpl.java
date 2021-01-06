@@ -8,15 +8,11 @@ import com.yunya.feign.system.form.JwtRequestFrom;
 import com.yunya.feign.system.vo.FrontUserInfoVO;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.exception.auth.UserAuthException;
+import com.yunya.framework.common.utils.ServletUtils;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.jwt.IJWTInfo;
-import com.yunya.framework.common.utils.jwt.JWTHelper;
 import com.yunya.framework.common.utils.jwt.JWTInfo;
 import com.yunya.framework.redis.util.RedisUtils;
-import eu.bitwalker.useragentutils.DeviceType;
-import eu.bitwalker.useragentutils.OperatingSystem;
-import eu.bitwalker.useragentutils.UserAgent;
-import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,8 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
-
-import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ADMIN_ACCOUNT;
@@ -68,19 +62,15 @@ public class UserAuthServiceImpl implements UserAuthService {
     checkUserInfo(userInfo);
     String userId = userInfo.getId();
     if (!StringUtils.isEmpty(userId)) {
-      String userAgentStr = request.getHeader("User-Agent");
-      UserAgent userAgent = UserAgent.parseUserAgentString(userAgentStr);
-      OperatingSystem operatingSystem = userAgent.getOperatingSystem();
-      DeviceType deviceType = operatingSystem.getDeviceType();
-      String tokenStr = redisUtils.get(USER_ID + userId);
+      String deviceName = ServletUtils.getCurrentDevice().getName();
+      String tokenStr = redisUtils.get(RedisConstants.setKey(USER_ID,deviceName,userId));
       if (StringHelper.isBlank(tokenStr)) {
-        String token = this.setTokenInfoInCache(userInfo,userId,deviceType);
+        String token = this.setTokenInfoInCache(userInfo,userId,deviceName);
         return new UserAuthResponse(token, userInfo);
       } else {
-        String deviceName = deviceType.getName();
         IJWTInfo infoFromToken = jwtTokenUtil.getInfoFromToken(tokenStr);
         if (deviceName.equals(infoFromToken.getDeviceType())) {
-          String token = this.setTokenInfoInCache(userInfo,userId,deviceType);
+          String token = this.setTokenInfoInCache(userInfo,userId,deviceName);
           return new UserAuthResponse(token, userInfo);
         } else {
           return new UserAuthResponse(tokenStr,userInfo);
@@ -120,10 +110,12 @@ public class UserAuthServiceImpl implements UserAuthService {
     }
     // 解析token获取JWT声明信息，重生成token
     String refreshToken = jwtTokenUtil.refreshToken(oldToken);
+    IJWTInfo infoFromToken = jwtTokenUtil.getInfoFromToken(refreshToken);
+    String deviceType = infoFromToken.getDeviceType();
     // 获取token过期时间
     long expireTime = jwtTokenUtil.getExpireTime(refreshToken);
     redisUtils.set(USER_TOKEN + refreshToken, userInfo, expireTime, TimeUnit.MILLISECONDS);
-    redisUtils.set(USER_ID + userInfo.getId(), refreshToken, expireTime, TimeUnit.MILLISECONDS);
+    redisUtils.set(RedisConstants.setKey(USER_ID,deviceType,userInfo.getId()), refreshToken, expireTime, TimeUnit.MILLISECONDS);
     return new UserAuthResponse(refreshToken, userInfo);
   }
 
@@ -144,13 +136,13 @@ public class UserAuthServiceImpl implements UserAuthService {
    * @param token token
    */
   @Override
-  public void logout(String token) {
+  public void logout(String token,String deviceName) {
     // 从缓存中获取用户
     FrontUserInfoVO userInfo = redisUtils.get(USER_TOKEN + token, FrontUserInfoVO.class);
     if (null != userInfo) {
       // todo 记录登出信息
       // 从缓存中移除用户的token、用户信息
-      redisUtils.delete(USER_ID + userInfo.getId());
+      redisUtils.delete(RedisConstants.setKey(USER_ID,deviceName,userInfo.getId()));
       redisUtils.delete(USER_TOKEN + token);
     }
   }
@@ -159,20 +151,20 @@ public class UserAuthServiceImpl implements UserAuthService {
    * 将token信息设置到redis缓冲中
    * @param userInfo  用户信息
    * @param userId    用户ID
-   * @param deviceType 当前访问设备类型 Computer(电脑) Mobile(移动设备) Tablet(平板) Game console(游戏机) Digital media receiver(数字媒体设备) Wearable computer(嵌入式设备) Unknown(未知)
+   * @param deviceName 当前访问设备类型 Computer(电脑) Mobile(移动设备) Tablet(平板) Game console(游戏机) Digital media receiver(数字媒体设备) Wearable computer(嵌入式设备) Unknown(未知)
    * @throws Exception 异常
    * @return 返回生成的token
    */
-  public String setTokenInfoInCache(FrontUserInfoVO userInfo,String userId, DeviceType deviceType) throws Exception {
+  public String setTokenInfoInCache(FrontUserInfoVO userInfo,String userId, String deviceName) throws Exception {
     // todo 记录登陆信息
     String token =
             jwtTokenUtil.generateToken(
-                    new JWTInfo(userInfo.getUsername(), userId, userInfo.getName(),deviceType.getName()));
+                    new JWTInfo(userInfo.getUsername(), userId, userInfo.getName(),deviceName));
     // 获取token的过期时间
     long expireTime = jwtTokenUtil.getExpireTime(token);
     // 缓存用户信息、用户token
     redisUtils.set(USER_TOKEN + token, userInfo, expireTime, TimeUnit.MILLISECONDS);
-    redisUtils.set(USER_ID + userId, token, expireTime, TimeUnit.MILLISECONDS);
+    redisUtils.set(RedisConstants.setKey(USER_ID,deviceName,userId), token, expireTime, TimeUnit.MILLISECONDS);
     return token;
   }
 }

@@ -1,6 +1,9 @@
 package com.yunya.framework.common.utils;
 
 import com.yunya.framework.common.utils.text.Convert;
+import eu.bitwalker.useragentutils.DeviceType;
+import eu.bitwalker.useragentutils.OperatingSystem;
+import eu.bitwalker.useragentutils.UserAgent;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -132,5 +135,12 @@ public class ServletUtils {
 
     String ajax = request.getParameter("__ajax");
     return StringHelper.inStringIgnoreCase(ajax, "json", "xml");
+  }
+
+  public static DeviceType getCurrentDevice() {
+    String userAgentStr = getRequestAttributes().getRequest().getHeader("User-Agent");
+    UserAgent userAgent = UserAgent.parseUserAgentString(userAgentStr);
+    OperatingSystem operatingSystem = userAgent.getOperatingSystem();
+    return operatingSystem.getDeviceType();
   }
 }

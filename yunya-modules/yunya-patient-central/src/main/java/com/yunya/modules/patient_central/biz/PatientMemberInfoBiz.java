@@ -87,12 +87,14 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    */
   public MemberBaseInfoVo findMemberBaseInfo(Integer id) {
     MemberBaseInfoVo memberBaseInfoVO = this.patientMemberInfoMapper.findMemberBaseInfo(id);
-    if (memberBaseInfoVO.getId() != null) {
-      // 获取会员卡名称
-      MemberType memberType =
-          this.remoteSystemServiceFeign.findMemberTypeById(memberBaseInfoVO.getMemberTypeId());
-      if (memberType != null && memberType.getName() != null) {
-        memberBaseInfoVO.setMemberCardName(memberType.getName());
+    if (memberBaseInfoVO != null){
+      if (memberBaseInfoVO.getId() != null) {
+        // 获取会员卡名称
+        MemberType memberType =
+                this.remoteSystemServiceFeign.findMemberTypeById(memberBaseInfoVO.getMemberTypeId());
+        if (memberType != null && memberType.getName() != null) {
+          memberBaseInfoVO.setMemberCardName(memberType.getName());
+        }
       }
     }
     return memberBaseInfoVO;
@@ -392,6 +394,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberRechargeRecord.setRemarks(model.getAccountedWayModel().getRemarks());
       memberRechargeRecord.setType(0);
       memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
+      // 发送会员充值消息
       sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 1);
       // 添加会员卡充值收费记录
       AccountedWayModel accountedWayModel = model.getAccountedWayModel();
@@ -427,7 +430,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(patientMemberInfo.getPatientId());
     }else {
       memberExpendRecord = (MemberExpendRecord) object;
-      smsTemplateSetVO = remoteSmsServiceFeign.findSmsTemplateByEventCode(SmsAutosendEventEnum.PREPAY_CONSUME.getCode());
+      smsTemplateSetVO = remoteSmsServiceFeign.findSmsTemplateByEventCode(SmsAutosendEventEnum.MEMBER_CONSUME.getCode());
       PatientMemberInfo patientMemberInfo = mapper.selectCardNumber(memberExpendRecord.getMemberId());
       patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(patientMemberInfo.getPatientId());
     }
@@ -461,7 +464,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
               templateParam.put(key, memberRechargeRecord.getMemberId());
               // 会员充值金额
             } else if (SmsTemplateItemEnum.MEMBER_RECHARGE_AMOUNT.getCode().equals(code)) {
-              templateParam.put(key, memberRechargeRecord.getRechargePrincipal());
+              templateParam.put(key, memberRechargeRecord.getRechargePrincipal().add(memberRechargeRecord.getCurrentRechargeBonus()));
               // 会员剩余金额
             } else if (SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getCode().equals(code)) {
               templateParam.put(key, memberRechargeRecord.getCurrentRechargePrincipal().add(memberRechargeRecord.getCurrentRechargeBonus()));

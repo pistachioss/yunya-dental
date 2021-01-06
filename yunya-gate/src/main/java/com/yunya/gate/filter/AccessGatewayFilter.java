@@ -121,7 +121,8 @@ public class AccessGatewayFilter implements GlobalFilter {
     }
 
     // 获取该用户在redis中存储的的token
-    String redisToken = valueOperations.get(RedisConstants.REDIS_KEY_USER_ID + jwtInfo.getId());
+    String currentUserIdKey = RedisConstants.setKey(RedisConstants.REDIS_KEY_USER_ID, jwtInfo.getDeviceType(), jwtInfo.getId());
+    String redisToken = valueOperations.get(currentUserIdKey);
     if (StringUtils.isBlank(redisToken) || !authToken.equals(redisToken)) {
       return setUnauthorizedResponse(serverWebExchange, "Account Has Been Logged In Other Place!");
     }

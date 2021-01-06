@@ -44,5 +44,5 @@ public interface UserAuthService {
    *
    * @param token token
    */
-  void logout(String token);
+  void logout(String token,String deviceName);
 }
