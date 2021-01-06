@@ -132,7 +132,7 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
             if (!BigDecimal.valueOf(0, 2).equals(actualReceivedAmountGoal)
                 && null != actualReceivedAmountCompleted) {
               BigDecimal percentageOfActualReceivedCompletedAmount =
-                  actualReceivedAmountCompleted.divide(
+                  actualReceivedAmountCompleted.multiply(new BigDecimal(100)).divide(
                       actualReceivedAmountGoal, 2, BigDecimal.ROUND_HALF_UP);
               vo.setPercentageOfActualReceivedCompletedAmount(
                   Float.valueOf(percentageOfActualReceivedCompletedAmount.toString()));
@@ -144,7 +144,7 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
             if (!BigDecimal.valueOf(0, 2).equals(workloadAmountGoal)
                 && null != workloadAmountCompleted) {
               BigDecimal percentageOfWorkloadAmountCompleted =
-                  workloadAmountCompleted.divide(workloadAmountGoal, 2, BigDecimal.ROUND_HALF_UP);
+                  workloadAmountCompleted.multiply(new BigDecimal(100)).divide(workloadAmountGoal, 2, BigDecimal.ROUND_HALF_UP);
               vo.setPercentageOfWorkloadAmountCompleted(
                   Float.valueOf(percentageOfWorkloadAmountCompleted.toString()));
             }
@@ -156,7 +156,7 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
               float percentageOfFirstTreatPerNumCompleted =
                   (float) firstTreatPerNumCompleted / firstTreatPerNumGoal;
               vo.setPercentageOfFirstTreatPerNumCompleted(
-                  BigDecimal.valueOf(percentageOfFirstTreatPerNumCompleted)
+                  BigDecimal.valueOf(percentageOfFirstTreatPerNumCompleted).multiply(new BigDecimal(100))
                       .setScale(2, BigDecimal.ROUND_HALF_UP)
                       .floatValue());
             }
@@ -168,7 +168,7 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
               float percentageOfTreatPerTimesCompleted =
                   (float) treatPerTimesCompleted / treatPerTimesGoal;
               vo.setPercentageOfTreatPerTimesCompleted(
-                  BigDecimal.valueOf(percentageOfTreatPerTimesCompleted)
+                  BigDecimal.valueOf(percentageOfTreatPerTimesCompleted).multiply(new BigDecimal(100))
                       .setScale(2, BigDecimal.ROUND_HALF_UP)
                       .floatValue());
             }

@@ -445,7 +445,7 @@
             AND bc.charge_status = 1
             AND bc.sold_date IS NOT NULL
             <if test="query.orgId != null">
-                AND bc.active_org_id = #{query.orgId}
+                AND bc.allocate_org_id = #{query.orgId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">

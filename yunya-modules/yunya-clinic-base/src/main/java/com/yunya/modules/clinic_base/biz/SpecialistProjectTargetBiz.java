@@ -231,7 +231,7 @@ public class SpecialistProjectTargetBiz
             float percentageOfSpecialistProjectCompleted =
                 (float) specialistProjectCompleted / specialistProjectGoal;
             specialistProjectWorkGoal.setPercentageOfSpecialistProjectCompleted(
-                BigDecimal.valueOf(percentageOfSpecialistProjectCompleted)
+                BigDecimal.valueOf(percentageOfSpecialistProjectCompleted).multiply(new BigDecimal(100))
                     .setScale(2, BigDecimal.ROUND_HALF_UP)
                     .floatValue());
           }

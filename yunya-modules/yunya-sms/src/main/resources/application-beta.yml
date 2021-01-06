@@ -16,3 +16,8 @@ spring:
         host: 172.16.17.177
         port: 6379
         password: foobared
+
+wiki:
+    host: 172.16.17.177
+    notifyUrl: http://${wiki.host}/api/sms/smsChargeOrder/notifyUrl
+    redirectUrl: http://${wiki.host}/api/sms/smsChargeOrder/redirectUrl

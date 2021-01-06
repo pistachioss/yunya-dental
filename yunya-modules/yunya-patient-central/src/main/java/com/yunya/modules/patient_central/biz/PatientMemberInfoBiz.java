@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
@@ -10,11 +11,16 @@ import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
+import com.yunya.feign.sms.RemoteSmsServiceFeign;
+import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
+import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.SmsAutosendEventEnum;
+import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -23,6 +29,7 @@ import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.*;
+import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +37,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
+import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_NOT_ALLOW;
 
 /**
  * 简单介绍:</br> 患者会员卡信息 业务层
@@ -67,6 +74,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
   /** 注入服务 */
   @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
+  /** 短信服务 */
+  @Autowired private RemoteSmsServiceFeign remoteSmsServiceFeign;
+  /** 患者服务 */
+  @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
 
   /**
    * 根据患者id查询会员基本信息
@@ -76,12 +87,14 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    */
   public MemberBaseInfoVo findMemberBaseInfo(Integer id) {
     MemberBaseInfoVo memberBaseInfoVO = this.patientMemberInfoMapper.findMemberBaseInfo(id);
-    if (memberBaseInfoVO.getId() != null) {
-      // 获取会员卡名称
-      MemberType memberType =
-          this.remoteSystemServiceFeign.findMemberTypeById(memberBaseInfoVO.getMemberTypeId());
-      if (memberType != null && memberType.getName() != null) {
-        memberBaseInfoVO.setMemberCardName(memberType.getName());
+    if (memberBaseInfoVO != null){
+      if (memberBaseInfoVO.getId() != null) {
+        // 获取会员卡名称
+        MemberType memberType =
+                this.remoteSystemServiceFeign.findMemberTypeById(memberBaseInfoVO.getMemberTypeId());
+        if (memberType != null && memberType.getName() != null) {
+          memberBaseInfoVO.setMemberCardName(memberType.getName());
+        }
       }
     }
     return memberBaseInfoVO;
@@ -381,6 +394,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberRechargeRecord.setRemarks(model.getAccountedWayModel().getRemarks());
       memberRechargeRecord.setType(0);
       memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
+      // 发送会员充值消息
       sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 1);
       // 添加会员卡充值收费记录
       AccountedWayModel accountedWayModel = model.getAccountedWayModel();
@@ -393,7 +407,100 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
           memberRechargeTollRecord.setCrtName(BaseContextHandler.getName());
           memberRechargeTollRecordMapper.insertSelective(memberRechargeTollRecord);
         }
+      // 会员卡充值发送短信 type:0充值 1消费
+      memberSendMessages(memberRechargeRecord,0);
     }
+  }
+
+
+  /**
+   * 会员卡充值/消费 短信发送
+   * @param object 泛型类
+   * @param type type:0充值 1消费
+   */
+  public void memberSendMessages(Object object, Integer type){
+    SmsTemplateSetVO smsTemplateSetVO = null;
+    PatientBaseInfo patientBaseInfo = null;
+    MemberRechargeRecord memberRechargeRecord = null;
+    MemberExpendRecord memberExpendRecord = null;
+    if (type == 0){
+      memberRechargeRecord = (MemberRechargeRecord) object;
+      smsTemplateSetVO = remoteSmsServiceFeign.findSmsTemplateByEventCode(SmsAutosendEventEnum.MEMBER_CHARGE.getCode());
+      PatientMemberInfo patientMemberInfo = mapper.selectCardNumber(memberRechargeRecord.getMemberId());
+      patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(patientMemberInfo.getPatientId());
+    }else {
+      memberExpendRecord = (MemberExpendRecord) object;
+      smsTemplateSetVO = remoteSmsServiceFeign.findSmsTemplateByEventCode(SmsAutosendEventEnum.MEMBER_CONSUME.getCode());
+      PatientMemberInfo patientMemberInfo = mapper.selectCardNumber(memberExpendRecord.getMemberId());
+      patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(patientMemberInfo.getPatientId());
+    }
+    if (smsTemplateSetVO == null) {
+      throw new ClientServiceException("短信模板不存在", DATA_NOT_EXIST);
+    }
+
+    if (patientBaseInfo != null){
+      String templateItem = smsTemplateSetVO.getTemplateItem();
+      JSONObject templateParam = new JSONObject();
+      if (StringHelper.isNotEmpty(templateItem)) {
+        String[] items = templateItem.split(",");
+        Map<String, Integer> repeat = new HashMap<>();
+        for (String item : items) {
+          Integer reNum = repeat.get(item);
+          String key = SmsTemplateItemEnum.getAction(item);
+          if (reNum == null) {
+            reNum = 0;
+          } else {
+            key = "re" + reNum + key;
+          }
+          repeat.put(item, ++reNum);
+          Integer code = Integer.parseInt(item);
+          // 充值
+          if (type == 0){
+            // 患者姓名
+            if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {
+              templateParam.put(key, patientBaseInfo.getName());
+              // 会员卡号
+            } else if (SmsTemplateItemEnum.MEMBER_CARD_NUMBER.getCode().equals(code)) {
+              templateParam.put(key, memberRechargeRecord.getMemberId());
+              // 会员充值金额
+            } else if (SmsTemplateItemEnum.MEMBER_RECHARGE_AMOUNT.getCode().equals(code)) {
+              templateParam.put(key, memberRechargeRecord.getRechargePrincipal().add(memberRechargeRecord.getCurrentRechargeBonus()));
+              // 会员剩余金额
+            } else if (SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getCode().equals(code)) {
+              templateParam.put(key, memberRechargeRecord.getCurrentRechargePrincipal().add(memberRechargeRecord.getCurrentRechargeBonus()));
+              // 其他
+            } else {
+              throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
+            }
+          // 消费
+          }else {
+            // 患者姓名
+            if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {
+              templateParam.put(key, patientBaseInfo.getName());
+              // 会员卡号
+            } else if (SmsTemplateItemEnum.MEMBER_CARD_NUMBER.getCode().equals(code)) {
+              templateParam.put(key, memberExpendRecord.getMemberId());
+              // 会员消费金额
+            } else if (SmsTemplateItemEnum.MEMBER_SPENDING_AMOUNT.getCode().equals(code)) {
+              templateParam.put(key, memberExpendRecord.getExpendPrincipal().add(memberExpendRecord.getExpendGift()));
+              // 会员剩余金额
+            } else if (SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getCode().equals(code)) {
+              templateParam.put(key, memberExpendRecord.getExpendPrincipal().add(memberExpendRecord.getExpendGift()));
+              // 其他
+            } else {
+              throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
+            }
+          }
+
+        }
+      }
+      SmsCommonSendRecordModel smsModel = new SmsCommonSendRecordModel();
+      smsModel.setMobile(patientBaseInfo.getMobile());
+      smsModel.setSendObject(patientBaseInfo.getName());
+      smsModel.setTemplateParam(templateParam);
+      remoteSmsServiceFeign.batchSendModels(smsTemplateSetVO.getId(), Arrays.asList(smsModel));
+    }
+
   }
 
   /**
@@ -483,6 +590,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到会员卡", patientMemberInfo);
   }
 
+
+
   /**
    * 退费记录列表
    *
@@ -506,6 +615,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     }
     return new PageInfo<>(resultList);
   }
+
+
 
   /**
    * 消费 同步操作
@@ -596,7 +707,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     memberExpendRecordMapper.insertSelective(memberExpendRecord);
     // 发送预付款消费消息
     sendMemberLogMessages(memberExpendRecord.getId(), 0, 0, 2);
+    // 会员卡充值发送短信 type:0充值 1消费
+    memberSendMessages(memberExpendRecord,1);
   }
+
 
   /**
    * 消费记录
