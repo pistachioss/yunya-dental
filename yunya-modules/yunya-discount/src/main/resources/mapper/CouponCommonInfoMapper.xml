@@ -23,15 +23,14 @@
 
     <select id="listBatchAllocateByParam" resultType="com.yunya.feign.discount.domain.bo.GenerateAllocatePageBo">
         select
-            `cci`.`id`                 as `couponId`,
-            `ca`.`id`                  as `couponAllocateId`,
-            `ca`.`crt_id`              as `submitUserId`,
-            `ca`.`crt_time`            as `submitDate`,
-            `cci`.`name`               as `couponName`,
-            `cci`.`type`               as `couponType`,
-            sum(`ca`.`allocate_num`)   as `allocateNum`,
-            `ca`.`allocate_user_id`    as `allocateUserId`,
-            `ca`.`allocate_date`       as `allocateDate`
+            `cci`.`id`                      as `couponId`,
+            max(`ca`.`crt_id`)              as `submitUserId`,
+            `ca`.`crt_time`                 as `submitDate`,
+            `cci`.`name`                    as `couponName`,
+            `cci`.`type`                    as `couponType`,
+            sum(`ca`.`allocate_num`)        as `allocateNum`,
+            max(`ca`.`allocate_user_id`)    as `allocateUserId`,
+            max(`ca`.`allocate_date`)       as `allocateDate`
         from `coupon_common_info` `cci`
             inner join `coupon_allocate` `ca` on `ca`.`coupon_id` = `cci`.`id`
         where
@@ -45,7 +44,7 @@
                     #{item}
                 </foreach>
             </if>
-        group by `ca`.`coupon_id`, DATE_FORMAT(`ca`.`crt_time`, '%Y-%m-%d %H:%i:%s')
-        order by `ca`.`allocate_user_id` asc, `ca`.`crt_time` desc
+        group by `ca`.`coupon_id`, `ca`.`crt_time`
+        order by `ca`.`crt_time` desc
     </select>
 </mapper>
