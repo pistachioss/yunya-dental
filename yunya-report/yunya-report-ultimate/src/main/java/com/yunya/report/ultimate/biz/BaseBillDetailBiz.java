@@ -472,4 +472,18 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     ExcelUtil<CurrentMonthBillDetailVO> excelUtil = new ExcelUtil<>(CurrentMonthBillDetailVO.class);
     excelUtil.exportExcel(response, resultList, "账单明细记录");
   }
+
+  /**
+   * 根据条件导出门诊当月账单当月收费记录
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportCurrentMonthBillPayRecord(
+      HttpServletResponse response, CurrentMonthBillInfoQuery query) throws IOException {
+    List<CurrentMonthBillPayRecordVO> resultList = mapper.selectCurrentMonthBillPayRecord(query);
+    ExcelUtil<CurrentMonthBillPayRecordVO> excelUtil =
+        new ExcelUtil<>(CurrentMonthBillPayRecordVO.class);
+    excelUtil.exportExcel(response, resultList, "门诊当月账单当月收费记录");
+  }
 }

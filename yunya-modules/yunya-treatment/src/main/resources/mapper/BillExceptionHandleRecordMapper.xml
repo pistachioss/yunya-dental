@@ -133,7 +133,8 @@
         bar.billNum,
         bar.patientId,
         bar.regDentistId,
-        bar.revokeOperatorId
+        bar.revokeOperatorId,
+        bar.revokeOperatorName
         FROM
         (
         SELECT
@@ -147,9 +148,10 @@
         bpr.billNum,
         bpr.patientId patientId,
         tr.dentist_id AS regDentistId,
-        behr.crt_id AS revokeOperatorId
+        behr.crt_id AS revokeOperatorId,
+        behr.crt_name AS revokeOperatorName
         FROM
-        ( SELECT id, treatment_record_id, handled_record_id, crt_id, crt_time FROM bill_exception_handle_record WHERE
+        ( SELECT id, treatment_record_id, handled_record_id, crt_id, crt_name, crt_time FROM bill_exception_handle_record WHERE
         operate_type = 1 ) behr
         LEFT JOIN (
         SELECT
@@ -280,7 +282,7 @@
 
     <!-- 根据条件查询门诊当月账单调整记录 -->
     <select id="selectCurrentMonthAdjustBill"
-            resultType="com.yunya.feign.treatment.domain.vo.CurrentMonthAdjustBillVO">
+            resultType="com.yunya.feign.treatment.domain.vo.BillAdjustRecordVO">
         SELECT
         behr.id,
         behdr.orgId,
@@ -317,5 +319,66 @@
             </if>
         </where>
         ORDER BY behr.id
+    </select>
+
+    <!-- 根据条件查询当前月账单撤销收费记录 -->
+    <select id="selectCurrentMonthBillRevokePayRecord"
+            resultType="com.yunya.feign.treatment.domain.vo.BillRevokePayRecordVO">
+        SELECT
+        bar.billExceptionHandleRecordId,
+        bar.revokeDate,
+        bar.billId,
+        bar.billDate,
+        bar.actualAmount,
+        bar.receivedAmount,
+        bar.chargeDate,
+        bar.billNum,
+        bar.patientId,
+        bar.regDentistId,
+        bar.revokeOperatorId,
+        bar.revokeOperatorName
+    FROM
+        (
+        SELECT
+            behr.id AS billExceptionHandleRecordId,
+            bpr.orgId,
+            DATE_FORMAT( behr.crt_time, '%Y-%m-%d' ) revokeDate,
+            bpr.billId,
+            bpr.billDate,
+            bpr.actualAmount,
+            bpr.receivedAmount,
+            bpr.chargeDate,
+            bpr.billNum,
+            bpr.patientId patientId,
+            tr.dentist_id AS regDentistId,
+            behr.crt_id AS revokeOperatorId,
+            behr.crt_name AS revokeOperatorName
+        FROM
+            ( SELECT id, treatment_record_id, handled_record_id, crt_id, crt_name, crt_time FROM bill_exception_handle_record WHERE operate_type = 1 ) behr
+            LEFT JOIN (
+            SELECT
+                bpr.id,
+                bpr.org_id AS orgId,
+                bpr.patient_id AS patientId,
+                bpr.received_amount AS receivedAmount,
+                br.id AS billId,
+                br.actual_receivable_amount AS actualAmount,
+                br.bill_number AS billNum,
+                DATE_FORMAT( bpr.crt_time, '%Y-%m-%d' ) AS chargeDate,
+                DATE_FORMAT( br.crt_time, '%Y-%m-%d' ) AS billDate
+            FROM
+                bill_pay_record bpr
+                LEFT JOIN bill_record br ON bpr.bill_record_id = br.id
+            ) bpr ON behr.handled_record_id = bpr.id
+        LEFT JOIN treatment_record tr ON behr.treatment_record_id = tr.id
+        ) bar
+        <where>
+            <if test="query.orgId != null">
+                and bar.orgId = #{query.orgId}
+            </if>
+            <if test="query.currentMonth != null and query.currentMonth != ''">
+                and DATE_FORMAT(bar.revokeDate, '%Y-%m') = #{query.currentMonth}
+            </if>
+        </where>
     </select>
 </mapper>

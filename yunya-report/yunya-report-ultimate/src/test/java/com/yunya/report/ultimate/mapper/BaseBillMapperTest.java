@@ -75,4 +75,14 @@ public class BaseBillMapperTest {
     CurrentMonthBillStatisticVO vo = billMapper.selectRealBillStatistic(query);
     System.out.println(vo);
   }
+
+  @Test
+  public void find6() {
+    CurrentMonthBillInfoQuery query = new CurrentMonthBillInfoQuery();
+    query.setOrgId(35);
+    query.setCurrentMonth("2020-12");
+    List<CurrentMonthBillCollectionDebtVO> vos =
+        billMapper.selectCurrentMonthBillCollectionDebtList(query);
+    System.out.println(vos);
+  }
 }

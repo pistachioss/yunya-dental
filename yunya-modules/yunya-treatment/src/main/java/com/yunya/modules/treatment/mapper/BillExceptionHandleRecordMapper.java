@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
 import com.yunya.feign.treatment.domain.query.BillAdjustRecordQuery;
 import com.yunya.feign.treatment.domain.query.BillPayRecordAdjustQuery;
 import com.yunya.feign.treatment.domain.query.BillTollRevokeRecordQuery;
@@ -64,6 +65,15 @@ public interface BillExceptionHandleRecordMapper extends Mapper<BillExceptionHan
    * @param query 查询条件
    * @return List<CurrentMonthAdjustBillVO>
    */
-  List<CurrentMonthAdjustBillVO> selectCurrentMonthAdjustBill(
+  List<BillAdjustRecordVO> selectCurrentMonthAdjustBill(
       @Param("query") CurrentMonthBillAdjustQuery query);
+
+  /**
+   * 根据条件查询当前月账单撤销收费记录
+   *
+   * @param query 查询条件
+   * @return List<BillRevokePayRecordVO>
+   */
+  List<BillRevokePayRecordVO> selectCurrentMonthBillRevokePayRecord(
+      @Param("query") CurrentMonthBillInfoQuery query);
 }

@@ -286,4 +286,26 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     return null == statisticVO ? resultData : statisticVO;
   }
 
+  /**
+   * 根据条件导出门诊当月账单收欠费（使用优惠列表）
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportBillCollectionDebt(
+      HttpServletResponse response, CurrentMonthBillInfoQuery query) throws IOException {
+    List<CurrentMonthBillCollectionDebtVO> resultList =
+        mapper.selectCurrentMonthBillCollectionDebtList(query);
+    if (StringHelper.isNotEmpty(resultList)) {
+      String currentMonth =
+          DateUtil.parseDateToStr("yyyy-MM", new Date(System.currentTimeMillis()));
+      for (CurrentMonthBillCollectionDebtVO vo : resultList) {
+        String billDate = vo.getBillDate();
+        vo.setCurrentMonthBill(currentMonth.equals(billDate) ? "当月账单" : "非当月账单");
+      }
+    }
+    ExcelUtil<CurrentMonthBillCollectionDebtVO> excelUtil =
+        new ExcelUtil<>(CurrentMonthBillCollectionDebtVO.class);
+    excelUtil.exportExcel(response, resultList, "门诊当月收欠费（使用优惠）账单记录");
+  }
 }

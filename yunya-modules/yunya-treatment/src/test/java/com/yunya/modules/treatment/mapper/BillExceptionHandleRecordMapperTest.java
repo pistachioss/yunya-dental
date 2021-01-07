@@ -1,7 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.treatment.domain.query.CurrentMonthBillAdjustQuery;
-import com.yunya.feign.treatment.domain.vo.CurrentMonthAdjustBillVO;
+import com.yunya.feign.treatment.domain.vo.BillAdjustRecordVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ public class BillExceptionHandleRecordMapperTest {
     CurrentMonthBillAdjustQuery query = new CurrentMonthBillAdjustQuery();
     query.setOrgId(35);
     query.setCurrentMonth("2021-01");
-    List<CurrentMonthAdjustBillVO> vos =
+    List<BillAdjustRecordVO> vos =
         billExceptionHandleRecordMapper.selectCurrentMonthAdjustBill(query);
     System.out.println(vos);
   }

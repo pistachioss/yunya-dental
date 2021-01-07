@@ -143,4 +143,13 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<CurrentMonthBillDetailVO> selectCurrentMonthBillDetail(
       @Param("query") CurrentMonthBillInfoQuery query);
+
+  /**
+   * 根据条件查询门诊当月账单当月收费记录列表
+   *
+   * @param query 查询条件
+   * @return List<CurrentMonthBillDetailVO>
+   */
+  List<CurrentMonthBillPayRecordVO> selectCurrentMonthBillPayRecord(
+      @Param("query") CurrentMonthBillInfoQuery query);
 }

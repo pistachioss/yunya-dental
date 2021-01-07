@@ -711,4 +711,57 @@
             </if>
         </where>
     </select>
+
+    <!-- 根据条件查询收欠费（使用优惠）账单列表 -->
+    <select id="selectCurrentMonthBillCollectionDebtList"
+            resultType="com.yunya.feign.report.domain.vo.CurrentMonthBillCollectionDebtVO">
+        SELECT
+            bb.bill_id AS billId,
+            DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) AS collectDebtDate,
+            bb.bill_date AS billDate,
+            bb.bill_num AS billNum,
+            bb.patient_id AS patientId,
+            bp.`name` AS patientName,
+            bp.mobile AS patientMobile,
+            btp.regDentistId AS regDentistId,
+            btp.regDentistName AS regDentistName,
+            bbp.payeeId,
+            bbp.payeeName
+        FROM
+            base_bill bb
+            LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+            LEFT JOIN (
+            SELECT
+                btp.treatment_id,
+                btp.registered_dentist_id AS regDentistId,
+                be.employee_name AS regDentistName
+            FROM
+                base_treatment_process btp
+                LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+            WHERE
+                btp.registered_id IS NOT NULL
+                AND btp.treat_end_time IS NOT NULL
+            ) btp ON bb.treatment_id = btp.treatment_id
+            LEFT JOIN (
+            SELECT
+                bbp.bill_id,
+                bbp.payee_date,
+                bbp.payee_user_id AS payeeId,
+                be.employee_name AS payeeName
+            FROM
+                base_bill_pay bbp
+                LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
+            ) bbp ON bb.bill_id = bbp.bill_id
+            AND DATE_FORMAT( bb.privilege_date, '%Y-%m-%d %H:%i' ) = DATE_FORMAT( bbp.payee_date, '%Y-%m-%d %H:%i' )
+        <where>
+            AND bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.currentMonth != null and query.currentMonth != ''">
+                AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) = #{query.currentMonth}
+            </if>
+        </where>
+    </select>
 </mapper>

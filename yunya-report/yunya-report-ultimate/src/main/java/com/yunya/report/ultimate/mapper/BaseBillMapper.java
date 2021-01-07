@@ -124,4 +124,13 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    */
   CurrentMonthBillStatisticVO selectRealBillStatistic(
       @Param("query") StatementStatisticQuery query);
+
+  /**
+   * 根据条件查询收欠费（使用优惠）账单列表
+   *
+   * @param query 查询条件
+   * @return List<CurrentMonthBillCollectionDebtVO>
+   */
+  List<CurrentMonthBillCollectionDebtVO> selectCurrentMonthBillCollectionDebtList(
+      @Param("query") CurrentMonthBillInfoQuery query);
 }

@@ -1,4 +1,4 @@
-package com.yunya.feign.treatment.domain.vo;
+package com.yunya.feign.report.domain.vo;
 
 import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
@@ -9,24 +9,24 @@ import lombok.ToString;
 import java.io.Serializable;
 
 /**
- * 简介: 门诊当月调整账单VO
+ * 简介: 当月收欠费（使用优惠）账单信息VO
  *
  * @author: chow
- * @date: 2021/1/6 14:21
+ * @date: 2021/1/7 11:09
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("门诊当月调整账单VO")
+@ApiModel("当月收欠费（使用优惠）账单信息VO")
 @Data
 @ToString
-public class CurrentMonthAdjustBillVO implements Serializable {
-  /** 调整日期 */
-  @Excel(name = "调整日期")
-  @ApiModelProperty("调整日期")
-  private String adjustDate;
+public class CurrentMonthBillCollectionDebtVO implements Serializable {
   /** 账单ID */
   @ApiModelProperty("账单ID")
   private Integer billId;
+  /** 收欠费日期（使用优惠） */
+  @Excel(name = "收欠费日期（使用优惠）")
+  @ApiModelProperty("收欠费日期（使用优惠）")
+  private String collectDebtDate;
   /** 账单日期 */
   @Excel(name = "账单日期")
   @ApiModelProperty("账单日期")
@@ -38,7 +38,7 @@ public class CurrentMonthAdjustBillVO implements Serializable {
   /** 当月/非当月账单 */
   @Excel(name = "当月/非当月账单")
   @ApiModelProperty("当月/非当月账单")
-  private String currentBill;
+  private String currentMonthBill;
   /** 患者ID */
   @ApiModelProperty("患者ID")
   private Integer patientId;
@@ -47,7 +47,7 @@ public class CurrentMonthAdjustBillVO implements Serializable {
   @ApiModelProperty("患者姓名")
   private String patientName;
   /** 患者手机号 */
-  @Excel(name = "患者手机号")
+  @Excel(name = "手机号")
   @ApiModelProperty("患者手机号")
   private String patientMobile;
   /** 挂号医生ID */
@@ -57,11 +57,11 @@ public class CurrentMonthAdjustBillVO implements Serializable {
   @Excel(name = "挂号医生")
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
-  /** 调整人ID */
-  @ApiModelProperty("调整人ID")
-  private Integer operatorId;
-  /** 调整人姓名 */
-  @Excel(name = "调整人")
-  @ApiModelProperty("调整人姓名")
-  private String operatorName;
+  /** 收费人ID */
+  @ApiModelProperty("收费人ID")
+  private Integer payeeId;
+  /** 收费人姓名 */
+  @Excel(name = "收费人")
+  @ApiModelProperty("收费人姓名")
+  private String payeeName;
 }

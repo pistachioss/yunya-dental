@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
 import com.yunya.feign.treatment.domain.query.BillAdjustRecordQuery;
 import com.yunya.feign.treatment.domain.query.BillPayRecordAdjustQuery;
 import com.yunya.feign.treatment.domain.query.BillTollRevokeRecordQuery;
@@ -203,6 +204,23 @@ public class BillExceptionHandleRecordController {
       HttpServletResponse response, @RequestBody @Validated CurrentMonthBillAdjustQuery query)
       throws IOException {
     billExceptionHandleRecordBiz.exportCurrentMonthAdjustBill(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询门诊当月撤销收费记录
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   * @throws IOException
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-本月撤销收费-导出")
+  @PostMapping(value = "/current/bill/revoke/export", name = "公司端报表-财务报表-对账单-本月撤销收费")
+  public ResponseResult<T> billRevokeRecordExport(
+      HttpServletResponse response, @RequestBody @Validated CurrentMonthBillInfoQuery query)
+      throws IOException {
+    billExceptionHandleRecordBiz.exportCurrentMonthBillRevokePayRecord(response, query);
     return ResponseUtil.success(null);
   }
 }

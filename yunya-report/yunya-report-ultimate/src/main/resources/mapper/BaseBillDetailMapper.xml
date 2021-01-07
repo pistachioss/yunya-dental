@@ -1491,4 +1491,77 @@
         GROUP BY
         bbd.bill_detail_id
     </select>
+
+    <!-- 根据条件查询门诊当月账单当月收费记录列表 -->
+    <select id="selectCurrentMonthBillPayRecord"
+            resultType="com.yunya.feign.report.domain.vo.CurrentMonthBillPayRecordVO">
+        SELECT
+        bbp.bill_pay_id AS billPayId,
+        DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) AS payeeDate,
+        DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) AS billDate,
+        bb.bill_num AS billNum,
+        bb.patient_id AS patientId,
+        bb.`name` AS patientName,
+        bb.mobile AS patientMobile,
+        btp.regDentistId,
+        btp.regDentistName AS regDentistName,
+        bb.order_amount AS orderAmount,
+        bb.privilege_amount AS privilegeAmount,
+        bb.actual_amount AS actualAmount,
+        bbp.received_amount AS receivedAmount,
+        bbp.still_owe_amount AS stillOweAmount,
+        bb.debt_amount AS billDebtAmount,
+        bbp.payee_user_id AS payeeId,
+        be.employee_name AS payeeName
+        FROM
+        base_bill_pay bbp
+        LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
+        LEFT JOIN (
+        SELECT
+        btp.treatment_id,
+        btp.registered_dentist_id AS regDentistId,
+        be.employee_name AS regDentistName
+        FROM
+        base_treatment_process btp
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+        GROUP BY
+        btp.treatment_id,
+        btp.registered_dentist_id,
+        be.employee_name
+        ) btp ON bbp.treatment_id = btp.treatment_id
+        LEFT JOIN (
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_num,
+        bb.bill_date,
+        bb.patient_id,
+        bb.debt_amount,
+        bp.`name`,
+        bp.mobile,
+        bb.order_amount,
+        bb.privilege_amount,
+        bb.actual_amount
+        FROM
+        base_bill bb
+        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+        <where>
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.currentMonth != null and query.currentMonth != ''">
+                and DATE_FORMAT(bb.bill_date, '%Y-%m') = #{query.currentMonth}
+            </if>
+        </where>
+        ) bb ON bbp.bill_id = bb.bill_id
+        AND bbp.org_id = bb.org_id
+        <where>
+            <if test="query.orgId != null">
+                and bbp.org_id = #{query.orgId}
+            </if>
+            <if test="query.currentMonth != null and query.currentMonth != ''">
+                and DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.currentMonth}
+            </if>
+        </where>
+    </select>
 </mapper>
