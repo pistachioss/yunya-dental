@@ -224,7 +224,11 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             String content = smsTemplateSetVO.getTemplateContent();
             int count = StringHelper.countChild("@", content);
             String[] contents = content.split("@");
-            String[] items = smsTemplateSetVO.getTemplateItem().split(",");
+            String templateItem = smsTemplateSetVO.getTemplateItem();
+            String[] items = null;
+            if (StringHelper.isNotEmpty(templateItem)) {
+                items = templateItem.split(",");
+            }
             JSONArray mobiles = new JSONArray();
             JSONArray signNames = new JSONArray();
             JSONArray templateParamJson = new JSONArray();
@@ -271,7 +275,10 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      */
     public StringBuilder parseSmsContent(String[] items, String[] contents, String signName, JSONObject param) {
         StringBuilder builder = new StringBuilder();
-        builder.append("【").append(signName).append("】").append(contents[0]);
+        builder.append("【").append(signName).append("】");
+        if (StringHelper.isNotEmpty(contents)) {
+            builder.append(contents[0]);
+        }
         Map<String, Integer> repeat = new HashMap<>();
         if (items != null) {
             for (int i = 0; i < items.length; i++) {
@@ -456,7 +463,10 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         for (int i = 0; i < mobiles.length; i++) {
             StringBuilder builder = new StringBuilder();
             builder.append("【").append(smsTemplateSetVO.getSignName())
-                    .append("】").append(contents[0]);
+                    .append("】");
+            if (StringHelper.isNotEmpty(contents)) {
+                builder.append(contents[0]);
+            }
             builders.add(builder);
         }
         String templateItem = smsTemplateSetVO.getTemplateItem();

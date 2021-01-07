@@ -26,10 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
@@ -147,8 +144,10 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         int size = StringHelper.countChild("@",templateContent);
         int length = signName.length() + 2;//【短信签名】
         String[] contents = templateContent.split("@");
-        String firstTmp = contents[0];
-        template.append(firstTmp);
+        if (StringHelper.isNotEmpty(contents)) {
+            template.append(contents[0]);
+            length += contents[0].length();
+        }
         if (size>0 && StringHelper.isNotEmpty(templateItem)) {
             if (templateContent.indexOf("@") == -1) {
                 throw new ClientServiceException("模板格式不正确！", PARAMETERS_IS_ILLEGAL);
@@ -157,7 +156,6 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
             if (size != items.length) {
                 throw new ClientServiceException("模板格式不正确！", PARAMETERS_IS_ILLEGAL);
             }
-            length += firstTmp.length();
             Map<String, Integer> repeat = new HashMap<>(items.length);
             for (int i = 0; i < items.length; i++) {
                 String code = items[i];
@@ -343,7 +341,9 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         StringBuilder preview = new StringBuilder("【");
         preview.append(signName).append("】");
         String[] contents = templateContent.split("@");
-        preview.append(contents[0]);
+        if (StringHelper.isNotEmpty(contents)) {
+            preview.append(contents[0]);
+        }
         if (StringHelper.isNotEmpty(templateItem)) {
             String[] items = templateItem.split(",");
             for (int i = 0; i < items.length; i++) {
