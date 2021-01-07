@@ -10,6 +10,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBill;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
+import com.yunya.report.ultimate.mapper.BaseBillPayMapper;
 import com.yunya.report.ultimate.mapper.CurrentMonthBillStatisticsMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
 
   /** 当前月账单统计 */
   @Autowired private CurrentMonthBillStatisticsMapper currentMonthBillStatisticsMapper;
+  /** 账单收费记录 */
+  @Autowired private BaseBillPayMapper billPayMapper;
 
   /**
    * 根据条件查询开单列表
@@ -280,6 +283,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     CurrentMonthBillStatisticVO statisticVO;
     if (currentDate.equals(queryDate)) {
       statisticVO = mapper.selectRealBillStatistic(query);
+      BigDecimal currentMonthTotalReceivedAmount =
+          billPayMapper.selectCurrentMonthTotalReceivedAmount(query);
+      statisticVO.setCurrentMonthTotalReceivedAmount(currentMonthTotalReceivedAmount);
     } else {
       statisticVO = currentMonthBillStatisticsMapper.selectCurrentMonthBillStatistics(query);
     }
