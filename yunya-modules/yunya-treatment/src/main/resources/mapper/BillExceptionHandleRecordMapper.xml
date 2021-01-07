@@ -211,12 +211,13 @@
         bar.billNum,
         bar.patientId,
         bar.regDentistId,
-        bar.adjustOperatorId
+        bar.adjustOperatorId,
+        bar.adjustOperatorName
         FROM
         (
         SELECT
         behr.id AS billExceptionHandleRecordId,
-        bpr.orgId,
+        behr.org_id AS orgId,
         DATE_FORMAT( behr.crt_time, '%Y-%m-%d' ) adjustDate,
         bpr.orderDate AS orderDate,
         bpr.actualAmount,
@@ -225,14 +226,15 @@
         bpr.billNum,
         bpr.patientId patientId,
         tr.dentist_id AS regDentistId,
-        behr.crt_id AS adjustOperatorId
+        behr.crt_id AS adjustOperatorId,
+        behr.crt_name AS adjustOperatorName
         FROM
-        ( SELECT id, treatment_record_id, handled_record_id, crt_id, crt_time FROM bill_exception_handle_record WHERE
+        ( SELECT id, org_id, treatment_record_id, handled_record_id, crt_id, crt_name, crt_time FROM
+        bill_exception_handle_record WHERE
         operate_type = 0 ) behr
         LEFT JOIN (
         SELECT
         bpr.id,
-        bpr.org_id AS orgId,
         bpr.patient_id AS patientId,
         bpr.received_amount AS receivedAmount,
         br.actual_receivable_amount AS actualAmount,
@@ -274,5 +276,46 @@
         </where>
         ORDER BY
         bar.adjustDate DESC
+    </select>
+
+    <!-- 根据条件查询门诊当月账单调整记录 -->
+    <select id="selectCurrentMonthAdjustBill"
+            resultType="com.yunya.feign.treatment.domain.vo.CurrentMonthAdjustBillVO">
+        SELECT
+        behr.id,
+        behdr.orgId,
+        DATE_FORMAT( behr.crt_time, '%Y-%m-%d' ) AS adjustDate,
+        behdr.id AS billId,
+        behdr.billDate,
+        behdr.billNumber AS billNum,
+        behdr.patientId patientId,
+        tr.dentist_id AS regDentistId,
+        behr.crt_id AS operatorId,
+        behr.crt_name AS operatorName
+        FROM
+        ( SELECT id, org_id, treatment_record_id, crt_id, crt_name, crt_time FROM bill_exception_handle_record WHERE
+        operate_type = 2 ) behr
+        LEFT JOIN (
+        SELECT
+        behdr.bill_handle_record_id,
+        br.id,
+        br.patient_id AS patientId,
+        br.org_id AS orgId,
+        br.bill_number AS billNumber,
+        DATE_FORMAT( br.crt_time, '%Y-%m-%d' ) AS billDate
+        FROM
+        bill_exception_handle_detail_record behdr
+        LEFT JOIN bill_record br ON behdr.associate_record_id = br.order_record_id
+        ) behdr ON behr.id = behdr.bill_handle_record_id
+        LEFT JOIN treatment_record tr ON behr.treatment_record_id = tr.id
+        <where>
+            <if test="query.orgId != null">
+                AND behr.org_id = #{query.orgId}
+            </if>
+            <if test="query.currentMonth != null and query.currentMonth != ''">
+                AND DATE_FORMAT(BEHR.crt_time, '%Y-%m') = #{query.currentMonth}
+            </if>
+        </where>
+        ORDER BY behr.id
     </select>
 </mapper>

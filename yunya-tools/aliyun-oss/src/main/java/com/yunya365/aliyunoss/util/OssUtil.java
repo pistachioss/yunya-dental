@@ -5,37 +5,40 @@ import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.common.utils.BinaryUtil;
 import com.aliyun.oss.model.*;
+import com.yunya365.aliyunoss.property.AliyunOssProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public class OssUtil {
-
-    private static final String ENDPOINT = "aliyun.oss.endpoint";
-    private static final String ACCESS_KEY_ID = "aliyun.oss.access-key-id";
-    private static final String ACCESS_KEY_SECRET = "aliyun.oss.access-key-secret";
-    private static final String BUCKET = "aliyun.oss.bucket";
 
     private static String endpoint;
     private static String accessKeyId;
     private static String accessKeySecret;
-    private static OSS ossClient;
     private static String bucket;
+    private static String prefixPath;
+
+    private static OSS ossClient;
+
+    @Autowired
+    private static AliyunOssProperties aliyunOssProperties;
 
     private static void initOSSClient() {
         try {
-            InputStream ins = OssUtil.class.getClassLoader().getResource("oss.properties").openStream();
-            Properties prop = new Properties();
-            prop.load(ins);
-            endpoint = prop.getProperty(ENDPOINT);
-            accessKeyId = prop.getProperty(ACCESS_KEY_ID);
-            accessKeySecret = prop.getProperty(ACCESS_KEY_SECRET);
-            bucket = prop.getProperty(BUCKET);
+            if(endpoint == null || endpoint.isEmpty()){
+                endpoint = aliyunOssProperties.getEndpoint();
+                accessKeyId = aliyunOssProperties.getAccessKeyId();
+                accessKeySecret = aliyunOssProperties.getAccessKeySecret();
+                bucket = aliyunOssProperties.getBucket();
+                prefixPath = aliyunOssProperties.getPrefixPath();
+                if(!prefixPath.endsWith("/")){
+                    prefixPath = prefixPath + "/";
+                }
+            }
             ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
             boolean exists = ossClient.doesBucketExist(bucket);
             if (!exists) {
@@ -43,7 +46,7 @@ public class OssUtil {
                 ossClient.createBucket(createBucketRequest);
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -52,6 +55,7 @@ public class OssUtil {
         if (ossClient == null) {
             initOSSClient();
         }
+        fullPathName = prefixPath + fullPathName;
 
         ObjectMetadata metadata = new ObjectMetadata();
         // 指定上传文件操作时是否覆盖同名Object。
@@ -72,6 +76,8 @@ public class OssUtil {
         if (ossClient == null) {
             initOSSClient();
         }
+        fullPathName = prefixPath + fullPathName;
+
         GeneratePresignedUrlRequest req = new GeneratePresignedUrlRequest(bucket, fullPathName, HttpMethod.GET);
         Date expiration = new Date(new Date().getTime() + 3600 * 1000);
         req.setExpiration(expiration);
@@ -89,6 +95,8 @@ public class OssUtil {
         if (ossClient == null) {
             initOSSClient();
         }
+        srcFullPathName = prefixPath + srcFullPathName;
+        dest_FullPathName = prefixPath + dest_FullPathName;
 
         ObjectMetadata metadata = new ObjectMetadata();
         // 指定上传文件操作时是否覆盖同名Object。
@@ -109,6 +117,8 @@ public class OssUtil {
         if (ossClient == null) {
             initOSSClient();
         }
+        subFolder = prefixPath + subFolder;
+
         String endpoint_tmp = endpoint;
         if (endpoint.indexOf("://") >= 0) {
             endpoint_tmp = endpoint.substring(endpoint.indexOf("://") + 3);

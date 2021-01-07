@@ -75,8 +75,7 @@
             <foreach collection="couponAllocateIds" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
-        group by `coupon_allocate_id`
-        order by `card_number` asc;
+        group by `coupon_allocate_id`,`org_id`
     </select>
 
     <select id="listExportVosByParam" resultMap="BaseResultMap">

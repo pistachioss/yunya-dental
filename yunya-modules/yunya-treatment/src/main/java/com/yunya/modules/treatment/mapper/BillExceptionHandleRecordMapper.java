@@ -3,10 +3,8 @@ package com.yunya.modules.treatment.mapper;
 import com.yunya.feign.treatment.domain.query.BillAdjustRecordQuery;
 import com.yunya.feign.treatment.domain.query.BillPayRecordAdjustQuery;
 import com.yunya.feign.treatment.domain.query.BillTollRevokeRecordQuery;
-import com.yunya.feign.treatment.domain.vo.BillHandleRecordVO;
-import com.yunya.feign.treatment.domain.vo.BillOfAdjustRecordVO;
-import com.yunya.feign.treatment.domain.vo.BillOfPayRecordAdjustVO;
-import com.yunya.feign.treatment.domain.vo.BillOfTollRevokeRecordVO;
+import com.yunya.feign.treatment.domain.query.CurrentMonthBillAdjustQuery;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.models.treatment.BillExceptionHandleRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -59,4 +57,13 @@ public interface BillExceptionHandleRecordMapper extends Mapper<BillExceptionHan
    */
   List<BillOfPayRecordAdjustVO> selectBillPayAdjustRecordList(
       @Param("query") BillPayRecordAdjustQuery query);
+
+  /**
+   * 根据条件查询门诊当月账单调整记录
+   *
+   * @param query 查询条件
+   * @return List<CurrentMonthAdjustBillVO>
+   */
+  List<CurrentMonthAdjustBillVO> selectCurrentMonthAdjustBill(
+      @Param("query") CurrentMonthBillAdjustQuery query);
 }
