@@ -2816,7 +2816,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	}
 
 	public ResponseResult<Boolean> manualLock(List<Integer> ids, String lockPrefix) {
-		log.info("【手动加锁】锁信息：[{}]，需要加锁的keys：{}", lockPrefix, ids);
+		log.info("【手动加锁】锁信息：{}，需要加锁的keys：{}", lockPrefix, ids);
 		if (CollectionUtils.isNotEmpty(ids)) {
 			Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
 			RestErrorBo errorBo = needLockKeys(ids, loginUserId, lockPrefix, DiscountError.CARD_IS_ON_SALE);

@@ -76,6 +76,12 @@ public class BaseBill {
     private BigDecimal privilegeAmount;
 
     /**
+     * 优惠日期
+     */
+    @Column(name = "privilege_date")
+    private Date privilegeDate;
+
+    /**
      * 账单编号
      */
     @Column(name = "bill_num")
@@ -274,6 +280,24 @@ public class BaseBill {
      */
     public BigDecimal getPrivilegeAmount() {
         return privilegeAmount;
+    }
+
+    /**
+     * 获取账单优惠日期
+     *
+     * @return privilegeDate
+     */
+    public Date getPrivilegeDate() {
+        return privilegeDate;
+    }
+
+    /**
+     * 设置账单优惠日期
+     *
+     * @param privilegeDate 优惠日期
+     */
+    public void setPrivilegeDate(Date privilegeDate) {
+        this.privilegeDate = privilegeDate;
     }
 
     /**
