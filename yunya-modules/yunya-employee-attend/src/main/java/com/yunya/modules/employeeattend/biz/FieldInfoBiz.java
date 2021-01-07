@@ -317,9 +317,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         //获取用户信息
         SysUserEmployeeModel model = new SysUserEmployeeModel();
         model.setWhetherPage(false);
-        List<Integer> orgIds = new ArrayList<>();
-        model.setOrgIds(orgIds);
-        Byte[] userStatus = {0, 1, 3};
+        Byte[] userStatus = {0, 1,2 ,3};
         model.setWorkStatus(userStatus);
         List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
         if (approvalAllListForm.getUserName() != null && approvalAllListForm.getUserName() != "") {
