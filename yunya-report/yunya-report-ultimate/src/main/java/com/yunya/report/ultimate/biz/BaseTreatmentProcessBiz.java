@@ -84,7 +84,8 @@ public class BaseTreatmentProcessBiz
       throws IOException {
     List<TreatmentRecordReportVO> list = mapper.selectTreatmentRecordReportVOList(query);
     ExcelUtil<TreatmentRecordReportVO> excelUtil = new ExcelUtil<>(TreatmentRecordReportVO.class);
-    excelUtil.exportExcel(response, list, "患者就诊记录");
+    String fileName = excelUtil.getFileName(null,null,getAbbreviationById(query.getOrgId()),"就诊记录明细");
+    excelUtil.exportExcel(response, list, "患者就诊记录",fileName);
   }
 
   /**

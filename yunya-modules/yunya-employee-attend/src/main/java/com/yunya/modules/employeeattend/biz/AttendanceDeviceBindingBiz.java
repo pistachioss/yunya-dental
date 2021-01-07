@@ -279,15 +279,10 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         }
         String  messageCode = this.messageCodeGenerator();
         // 发送短信验证码
-        String key = RedisConstants.ATTENDANCE_DEVICE_BINDING_AUTHORIZATION + mobile;
-        if (redisUtils.hasKey(key)) {
-            return ResponseUtil.fail(OBJECT_EDIT_FAIL,"短信验证码已发送，请稍后再试",null);
-        }
-        redisUtils.set(key, messageCode, DEVICE_BINDING_AUTH_EXPIRE);
         SmsVerifyCodeModel smsVerifyCodeModel = new SmsVerifyCodeModel();
         smsVerifyCodeModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
         smsVerifyCodeModel.setName(BaseContextHandler.getName());
-        smsVerifyCodeModel.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+//        smsVerifyCodeModel.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         smsVerifyCodeModel.setMobile(mobile);
         smsVerifyCodeModel.setVerifyCode(messageCode);
         smsVerifyCodeModel.setEventCode(SmsAutosendEventEnum.ATTENDANCE_DEVICE_BINDING.getCode());
@@ -298,6 +293,11 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         if (responseResult.getStatus() != 0) {
             return ResponseUtil.fail(OPERATION_FAIL, responseResult.getMsg(),null);
         }
+        String key = RedisConstants.ATTENDANCE_DEVICE_BINDING_AUTHORIZATION + mobile;
+        if (redisUtils.hasKey(key)) {
+            return ResponseUtil.fail(OBJECT_EDIT_FAIL,"短信验证码已发送，请稍后再试",null);
+        }
+        redisUtils.set(key, messageCode, DEVICE_BINDING_AUTH_EXPIRE);
         return ResponseUtil.success("短信验证码已发送", messageCode);
     }
 

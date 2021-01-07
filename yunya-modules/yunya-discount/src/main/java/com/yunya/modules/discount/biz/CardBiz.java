@@ -471,7 +471,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param cardSecrets
 	 */
 	private void sendMessage(CardSoldForm form, StringBuilder cardNos, StringBuilder cardSecrets) {
-		if ("0".equals(form.getSendText())) {
+		if (form.getSendText() == 0) {
 			return;
 		}
 		SmsTemplateSetVO smsTemplateSetVO = remoteSmsServiceFeign.findSmsTemplateByEventCode(SmsAutosendEventEnum.COUPON_SOLD.getCode());

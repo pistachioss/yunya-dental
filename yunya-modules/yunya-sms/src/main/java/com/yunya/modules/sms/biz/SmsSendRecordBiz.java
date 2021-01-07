@@ -25,10 +25,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.sms.SmsSendBatch;
 import com.yunya.models.sms.SmsSendRecord;
-import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
-import com.yunya.modules.sms.enums.SmsSendStatusEnum;
-import com.yunya.modules.sms.enums.SmsSenseEnum;
-import com.yunya.modules.sms.enums.SmsTypeEnum;
+import com.yunya.modules.sms.enums.*;
 import com.yunya.modules.sms.mapper.SmsSendRecordMapper;
 import com.yunya.modules.sms.utl.AliyunSmsUtl;
 import com.yunya.modules.sms.vo.SmsSendReportVO;
@@ -119,12 +116,15 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      * @param templateId
      * @return
      */
-    public SmsTemplateSetVO checkTemplateSetInfo(String eventCode, Integer templateId) {
+    public SmsTemplateSetVO checkTemplateSetInfo(String eventCode, Integer templateId, Integer orgId) {
         SmsTemplateSetVO smsTemplateSetVO = null;
         if (StringHelper.isNotEmpty(eventCode)) {
-            smsTemplateSetVO = smsTemplateSetBiz.findSmsTemplateByEventCode(eventCode);
+            smsTemplateSetVO = smsTemplateSetBiz.findSmsTemplateByEventCode(eventCode, orgId);
             if (smsTemplateSetVO == null) {
                 throw new ClientServiceException("事件未关联模板", DATA_NOT_EXIST);
+            }
+            if (smsTemplateSetVO.getSendEnable().equals(SmsEnableEnum.DISABLE.getCode())) {
+                return null;//没有开启自动发送事件
             }
         } else {
             smsTemplateSetVO = smsTemplateSetBiz.findSmsTemplateSetById(templateId);
@@ -149,7 +149,10 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      */
     public ResponseResult<T> sendVerifyCode(SmsVerifyCodeModel smsVerifyCodeModel) {
         Integer orgId = smsVerifyCodeModel.getOrgId();
-        SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(smsVerifyCodeModel.getEventCode(), null);
+        SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(smsVerifyCodeModel.getEventCode(), null, null);
+        if (smsTemplateSetVO == null) {
+            return ResponseUtil.success();
+        }
         if (SmsSenseEnum.DEVICE_BINDING_VERIFYCODE.getCode().equals(smsTemplateSetVO.getSense())
             || SmsSenseEnum.RETRIEVE_PWD_VERIFYCODE.getCode().equals(smsTemplateSetVO.getSense())) {
             orgId = BusinessConstants.COMPANY_ORGID;
@@ -207,7 +210,10 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      */
     public ResponseResult<T> batchSend(Integer templateId, List<? extends SmsCommonSendRecordModel> models) {
         Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, templateId);
+        SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, templateId, orgId);
+        if (smsTemplateSetVO == null) {
+            return ResponseUtil.success();
+        }
         try {
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS,String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
@@ -218,7 +224,11 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             String content = smsTemplateSetVO.getTemplateContent();
             int count = StringHelper.countChild("@", content);
             String[] contents = content.split("@");
-            String[] items = smsTemplateSetVO.getTemplateItem().split(",");
+            String templateItem = smsTemplateSetVO.getTemplateItem();
+            String[] items = null;
+            if (StringHelper.isNotEmpty(templateItem)) {
+                items = templateItem.split(",");
+            }
             JSONArray mobiles = new JSONArray();
             JSONArray signNames = new JSONArray();
             JSONArray templateParamJson = new JSONArray();
@@ -265,7 +275,10 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      */
     public StringBuilder parseSmsContent(String[] items, String[] contents, String signName, JSONObject param) {
         StringBuilder builder = new StringBuilder();
-        builder.append("【").append(signName).append("】").append(contents[0]);
+        builder.append("【").append(signName).append("】");
+        if (StringHelper.isNotEmpty(contents)) {
+            builder.append(contents[0]);
+        }
         Map<String, Integer> repeat = new HashMap<>();
         if (items != null) {
             for (int i = 0; i < items.length; i++) {
@@ -297,7 +310,10 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      */
     public ResponseResult<T> batchSend(SmsBatchSendRecordModel model) {
         Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, model.getTemplateId());
+        SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, model.getTemplateId(), orgId);
+        if (smsTemplateSetVO == null) {
+            return ResponseUtil.success();
+        }
         try {
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
@@ -356,7 +372,10 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      */
     public ResponseResult<T> sendRecord(SmsSendRecordModel model) {
         Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, model.getTemplateId());
+        SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, model.getTemplateId(), orgId);
+        if (smsTemplateSetVO == null) {
+            return ResponseUtil.success();
+        }
         try {
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
@@ -444,7 +463,10 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         for (int i = 0; i < mobiles.length; i++) {
             StringBuilder builder = new StringBuilder();
             builder.append("【").append(smsTemplateSetVO.getSignName())
-                    .append("】").append(contents[0]);
+                    .append("】");
+            if (StringHelper.isNotEmpty(contents)) {
+                builder.append(contents[0]);
+            }
             builders.add(builder);
         }
         String templateItem = smsTemplateSetVO.getTemplateItem();

@@ -33,7 +33,8 @@ public interface SmsTemplateSetMapper extends Mapper<SmsTemplateSet> {
      * 根据事件code查询模板信息
      *
      * @param eventCode 事件模板
+     * @param orgId
      * @return list
      */
-    SmsTemplateSetVO findSmsTemplateByEventCode(@Param("eventCode") String eventCode);
+    SmsTemplateSetVO findSmsTemplateByEventCode(@Param("eventCode") String eventCode, @Param("orgId") Integer orgId);
 }
