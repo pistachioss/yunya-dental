@@ -310,7 +310,7 @@ public class BillExceptionHandleRecordBiz
         String currentMonth =
             DateUtil.parseDateToStr("yyyy-MM", new Date(System.currentTimeMillis()));
         String billDate = new DateTime(vo.getBillDate()).toString("yyyy-MM");
-        vo.setCurrentBill(currentMonth.equals(billDate) ? "当前月" : "非当前月");
+        vo.setCurrentBill(currentMonth.equals(billDate) ? "当月账单" : "非当月账单");
       }
     }
     excelUtil.exportExcel(response, resultList, "门诊当月调整账单记录");

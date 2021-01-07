@@ -198,7 +198,7 @@ public class BillExceptionHandleRecordController {
    * @return
    */
   @ApiOperation("公司端报表-财务报表-对账单-本月调整账单-导出")
-  @PostMapping(value = "/current/bill/adjust/export", name = "baseBillBiz")
+  @PostMapping(value = "/current/bill/adjust/export", name = "根据条件导出门诊当月调整账单列表")
   public ResponseResult<T> exportCurrentMonthAdjustBill(
       HttpServletResponse response, @RequestBody @Validated CurrentMonthBillAdjustQuery query)
       throws IOException {
