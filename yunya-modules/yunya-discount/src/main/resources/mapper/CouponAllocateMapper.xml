@@ -49,11 +49,11 @@
 
     <select id="findVOList" resultType="com.yunya.modules.discount.vo.CouponAllocateVO">
         SELECT
-        id,
-	sum(allocate_num) allocateNum,
-	allocate_date allocateDate,
-	allocate_user_id allocateUserId,
-	crt_id crtId,
+        any_value(id),
+	any_value(sum(allocate_num)) allocateNum,
+	any_value(allocate_date) allocateDate,
+	any_value(allocate_user_id) allocateUserId,
+	any_value(crt_id) crtId,
 	crt_time crtTime
     FROM
 	coupon_allocate

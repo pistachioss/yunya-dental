@@ -49,7 +49,7 @@ public class CouponAllocateBiz extends BaseBiz<CouponAllocateMapper, CouponAlloc
         model.setWhetherPage(false);
         List<Integer> orgIds = new ArrayList<>();
         model.setOrgIds(orgIds);
-        Byte[]userStatus = {0,1,3};
+        Byte[]userStatus = {0,1,2,3};
         //离职状态
         model.setWorkStatus(userStatus);
         List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
