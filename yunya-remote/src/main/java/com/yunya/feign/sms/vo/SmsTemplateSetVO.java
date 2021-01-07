@@ -115,4 +115,10 @@ public class SmsTemplateSetVO implements Serializable {
      */
     @ApiModelProperty("适用场景：0-预约提醒，1-会员充值提醒，2-会员消费提醒，3-预付款充值提醒，4-预付款消费提醒，5-卡券售出提醒，6-考勤设备绑定验证码，7-找回密码验证码")
     private Byte sense;
+
+    /**
+     * 是否开启自动发送：1-是，0-否
+     */
+    @ApiModelProperty("是否开启自动发送：1-是，0-否")
+    private Byte sendEnable;
 }

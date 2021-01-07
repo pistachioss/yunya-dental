@@ -373,8 +373,8 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
      * @param eventCode 事件模板
      * @return
      */
-    public SmsTemplateSetVO findSmsTemplateByEventCode(String eventCode) {
-        return mapper.findSmsTemplateByEventCode(eventCode);
+    public SmsTemplateSetVO findSmsTemplateByEventCode(String eventCode, Integer orgId) {
+        return mapper.findSmsTemplateByEventCode(eventCode, orgId);
     }
 
     /**

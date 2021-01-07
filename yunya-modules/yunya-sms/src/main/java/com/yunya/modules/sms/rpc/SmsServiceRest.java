@@ -6,6 +6,7 @@ import com.yunya.feign.sms.model.SmsSendRecordModel;
 import com.yunya.feign.sms.model.SmsVerifyCodeModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.sms.biz.SmsAutosendEventBiz;
 import com.yunya.modules.sms.biz.SmsSendRecordBiz;
@@ -98,10 +99,12 @@ public class SmsServiceRest {
      * @param eventCode 事件模板
      * @return
      */
+    @CurrentUser
     @ApiOperation(value = "根据事件code查询模板信息")
     @RequestMapping(value = "/sms/findSmsTemplateByEventCode/{eventCode}", method = RequestMethod.GET)
     public SmsTemplateSetVO findSmsTemplateByEventCode(@PathVariable(value = "eventCode") String eventCode) {
-        return smsTemplateSetBiz.findSmsTemplateByEventCode(eventCode);
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        return smsTemplateSetBiz.findSmsTemplateByEventCode(eventCode, orgId);
     }
 
 

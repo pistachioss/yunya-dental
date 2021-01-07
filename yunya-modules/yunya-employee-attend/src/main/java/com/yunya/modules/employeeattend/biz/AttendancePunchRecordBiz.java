@@ -3635,6 +3635,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         recordQueryForm.setAndDate(andDate);
         recordQueryForm.setIsPunch(AttendanceIsPunchEnum.UNPUNCH.getCode());
         recordQueryForm.setSource((byte) 0);
+        recordQueryForm.setPunchType(AttendanceTypeEnum.ONDUTY.getCode());
         List<AttendancePunchRecordVO> masterRecordVOS = findAttendancePunchRecordListGroupByDate(recordQueryForm);
         List<Integer> notInIds = new ArrayList<>(masterRecordVOS.size());
         masterRecordVOS.forEach(masterRecordVO->notInIds.add(masterRecordVO.getId()));
@@ -3710,6 +3711,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         recordQueryForm.setAndDate(andDate);
         recordQueryForm.setIsPunch(AttendanceIsPunchEnum.PUNCHED.getCode());
         recordQueryForm.setPunchStatus(AttendanceStatusEnum.INVALID_PUNCH.getCode());
+        recordQueryForm.setPunchType(AttendanceTypeEnum.ONDUTY.getCode());
         List<AttendancePunchRecordVO> masterRecordVOS = findAttendancePunchRecordListGroupByDate(recordQueryForm);
         List<Integer> notInIds = new ArrayList<>(masterRecordVOS.size());
         masterRecordVOS.forEach(masterRecordVO->notInIds.add(masterRecordVO.getId()));
