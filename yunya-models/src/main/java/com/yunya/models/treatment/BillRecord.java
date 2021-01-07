@@ -65,6 +65,12 @@ public class BillRecord {
     private BigDecimal privilegeAmount;
 
     /**
+     * 本单优惠日期
+     * */
+    @Column(name = "privilege_date")
+    private Date privilegeDate;
+
+    /**
      * 实际应收金额
      */
     @Column(name = "actual_receivable_amount")
@@ -294,6 +300,24 @@ public class BillRecord {
      */
     public void setPrivilegeAmount(BigDecimal privilegeAmount) {
         this.privilegeAmount = privilegeAmount;
+    }
+
+    /**
+     * 获取优惠日期
+     *
+     * @return privilege_date 优惠日期
+     */
+    public Date getPrivilegeDate() {
+        return privilegeDate;
+    }
+
+    /**
+     * 设置本单优惠日期
+     *
+     * @param privilegeDate privilege_date 优惠日期
+     */
+    public void setPrivilegeDate(Date privilegeDate) {
+        this.privilegeDate = privilegeDate;
     }
 
     /**

@@ -14,6 +14,7 @@
         <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL"/>
         <result column="privilege_type" property="privilegeType" jdbcType="TINYINT"/>
         <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL"/>
+        <result column="privilege_date" property="privilegeDate" jdbcType="TIMESTAMP"/>
         <result column="actual_receivable_amount" property="actualReceivableAmount" jdbcType="DECIMAL"/>
         <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
         <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL"/>
@@ -50,7 +51,9 @@
         IFNULL( MAX( SUBSTR( br.bill_number, 13, 4 )), '0000' ) AS maxNum
       FROM
         bill_record br
-      WHERE br.org_id = #{orgId} AND DATE_FORMAT(br.crt_time,'%Y-%m-%d') = DATE_FORMAT(#{date},'%Y-%m-%d')
+      WHERE
+        br.org_id = #{orgId}
+        AND DATE_FORMAT(br.crt_time,'%Y-%m-%d') = DATE_FORMAT(#{date}, '%Y-%m-%d')
     </select>
 
     <!-- 根据开单记录ID查询订单支付记录列表信息 -->
