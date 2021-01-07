@@ -353,7 +353,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
             model.setWhetherPage(false);
             List<Integer> orgIds = new ArrayList<>();
             model.setOrgIds(orgIds);
-            Byte[] userStatus = {0, 1, 3};
+            Byte[] userStatus = {0, 1,2, 3};
             model.setWorkStatus(userStatus);
             List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
             Map<String, SysUserInfoDetail> emMap = new HashMap(16);
