@@ -10,6 +10,7 @@ import com.yunya.framework.common.exception.BaseException;
 import com.yunya.modules.discount.form.CouponCommonInfoQueryForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
+import com.yunya.modules.discount.mapper.CouponFileInfoMapper;
 import com.yunya.modules.discount.mapper.VoucheCouponMapper;
 import com.yunya.modules.discount.vo.CouponCommonInfoVO;
 import com.yunya.modules.discount.form.VoucheCouponForm;
@@ -19,9 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCoupon;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
@@ -48,6 +47,8 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
     private CouponCommonInfoMapper couponCommonInfoMapper;
     @Resource
     private RemoteRabbitMqServiceFeign mqServiceFeign;
+    @Autowired
+    private CouponFileInfoMapper couponFileInfoMapper;
     /**
      * 新增
      *
@@ -213,7 +214,19 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
             calendar.set(Calendar.SECOND, 59);
             couponCommonInfoQueryForm.setEndTime(calendar.getTime());
         }
-        return mapper.findList(couponCommonInfoQueryForm);
+        List<CouponCommonInfoVO>list = mapper.findList(couponCommonInfoQueryForm);
+        List<CouponFileInfo>fileList = couponFileInfoMapper.selectAll();
+        Map<String, CouponFileInfo> BaseMap = new HashMap();
+        fileList.forEach(z -> BaseMap.put(z.getCouponId() + "", z));
+
+        for(CouponCommonInfoVO couponCommonInfoVO:list){
+            CouponFileInfo copy = BaseMap.get(couponCommonInfoVO.getId().toString());
+            if(null!=copy){
+                couponCommonInfoVO.setPath(copy.getPath());
+            }
+        }
+        return list;
+
     }
 
     /**

@@ -31,9 +31,9 @@
   <!--</resultMap>-->
 
   <select id="findList" resultType="com.yunya.modules.discount.vo.CouponCommonInfoVO">
-   select ci.id,ci.name,ci.crt_time crtTime,pt.name pName,cf.path from coupon_common_info ci
+   select ci.id,ci.name,ci.crt_time crtTime,pt.name pName from coupon_common_info ci
     left join product_type pt on ci.product_type_id = pt.id
-    left join (select MAX(crt_time),path,coupon_id from coupon_file_info group by coupon_id, path, crt_time) cf on cf.coupon_id = ci.id
+--     left join (select MAX(crt_time),path,coupon_id from coupon_file_info group by coupon_id) cf on cf.coupon_id = ci.id
     where  ci.type = #{type}
       <if test="productTypeId != null and productTypeId != ''">
           and ci.product_type_id = #{productTypeId}
