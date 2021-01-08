@@ -125,6 +125,7 @@
                 </foreach>
             </if>
         group by `ca`.`coupon_id`, `ca`.`org_id`
+        order by `ca`.`crt_time` desc
     </select>
 
     <select id="listCardInfosByParam" resultMap="BaseResultMap">
