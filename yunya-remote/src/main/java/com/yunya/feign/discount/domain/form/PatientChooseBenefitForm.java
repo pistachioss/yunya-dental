@@ -26,7 +26,7 @@ public class PatientChooseBenefitForm implements Serializable {
     private Integer orgId;
     @ApiModelProperty(value = "会员卡id")
     private Integer memberCardId;
-    @ApiModelProperty(value = "折扣券id集合")
+    @ApiModelProperty(value = "折扣券id")
     private Integer discountId;
     @ApiModelProperty(value = "兑换券id集合")
     private List<Integer> exchangeIds;

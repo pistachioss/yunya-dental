@@ -233,6 +233,7 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
 		return authBenefits.stream().map(obj -> {
 			BaseBenefit benefit = BeanCopierUtils.generalCopyBean(obj, BaseBenefit.class, getBenefitConvert());
 			benefit.setChoiceBenefitType(AUTH_BENEFIT.getCode());
+			benefit.setOperateUserId(obj.getCrtId());
 			return benefit;
 		}).collect(toList());
 	}
