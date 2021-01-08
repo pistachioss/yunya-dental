@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -156,8 +157,9 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
    */
   private void compareSettlementDate(Date settlementDate, Date lastSettlementDate) {
     if (settlementDate.compareTo(lastSettlementDate) <= 0) {
+      SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
       throw new ClientServiceException(
-          "新增失败，当前结存日期不能早于或等于系统最近的结存日期：" + lastSettlementDate, PARAMETERS_IS_ILLEGAL);
+          "新增失败，当前结存日期不能早于或等于系统最近的结存日期：" + format.format(lastSettlementDate), PARAMETERS_IS_ILLEGAL);
     }
   }
 
