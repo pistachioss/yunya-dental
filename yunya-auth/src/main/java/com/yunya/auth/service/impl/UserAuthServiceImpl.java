@@ -68,13 +68,10 @@ public class UserAuthServiceImpl implements UserAuthService {
         String token = this.setTokenInfoInCache(userInfo,userId,deviceName);
         return new UserAuthResponse(token, userInfo);
       } else {
-        IJWTInfo infoFromToken = jwtTokenUtil.getInfoFromToken(tokenStr);
-        if (deviceName.equals(infoFromToken.getDeviceType())) {
-          String token = this.setTokenInfoInCache(userInfo,userId,deviceName);
-          return new UserAuthResponse(token, userInfo);
-        } else {
-          return new UserAuthResponse(tokenStr,userInfo);
-        }
+        redisUtils.delete(USER_TOKEN + tokenStr);
+        redisUtils.delete(RedisConstants.setKey(USER_ID,deviceName,userId));
+        String token = this.setTokenInfoInCache(userInfo,userId,deviceName);
+        return new UserAuthResponse(token, userInfo);
       }
     }
     throw new UserAuthException("用户不存在或账户密码错误!");
