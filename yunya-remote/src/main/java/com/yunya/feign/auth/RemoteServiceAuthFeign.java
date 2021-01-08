@@ -28,4 +28,14 @@ public interface RemoteServiceAuthFeign {
   @RequestMapping(value = "/rpc/userPubKey", method = RequestMethod.GET)
   byte[] getUserPublicKey(
       @RequestParam("clientId") String clientId, @RequestParam("secret") String secret);
+
+  /**
+   * 刷新token
+   *
+   * @param oldToken 旧的token
+   * @return
+   * @throws Exception
+   */
+  @RequestMapping(value = "/rpc/token/time/refresh", method = RequestMethod.GET)
+  void refresh(@RequestParam("oldToken") String oldToken);
 }

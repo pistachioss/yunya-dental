@@ -20,4 +20,8 @@ public class RemoteServiceAuthFallBackFactory implements RemoteServiceAuthFeign 
   public byte[] getUserPublicKey(String clientId, String secret) {
     return null;
   }
+
+  @Override
+  public void refresh(String oldToken) {
+  }
 }

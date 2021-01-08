@@ -1,6 +1,7 @@
 package com.yunya.gate.filter;
 
 import com.alibaba.fastjson.JSON;
+import com.yunya.feign.auth.RemoteServiceAuthFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.LogInfo;
 import com.yunya.feign.system.vo.PermissionInfo;
@@ -59,6 +60,8 @@ public class AccessGatewayFilter implements GlobalFilter {
   @Autowired private UserAuthUtil userAuthUtil;
 
   @Autowired private UserAuthConfig userAuthConfig;
+
+  @Autowired private RemoteServiceAuthFeign authFeign;
 
   @Resource(name = "stringRedisTemplate")
   private ValueOperations<String, String> valueOperations;
@@ -136,6 +139,10 @@ public class AccessGatewayFilter implements GlobalFilter {
     // 将token设置到请求头和线程局部变量RouteLocatorBuilder
     mutate.header(userAuthConfig.getTokenHeader(), redisToken);
     BaseContextHandler.setToken(redisToken);
+
+    // 更新token时间
+    this.authFeign.refresh(authToken);
+
 
     // 获取请求方法
     /*    final String method = Objects.requireNonNull(request.getMethod()).toString();
