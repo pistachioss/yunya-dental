@@ -7,6 +7,7 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.form.BillPayDetailForm;
 import com.yunya.feign.treatment.domain.model.PaymentModel;
+import com.yunya.feign.treatment.domain.query.CreditCashReceiptQuery;
 import com.yunya.feign.treatment.domain.query.PaymentRecordQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;
@@ -351,5 +352,15 @@ public class BillPayDetailRecordBiz
           });
     }
     return paymentRecords;
+  }
+
+  /**
+   * 根据支付方式统计账单的入账金额
+   *
+   * @param query
+   * @return
+   */
+  public BigDecimal sumBillPayAmount(CreditCashReceiptQuery query) {
+    return mapper.sumBillPayAmount(query);
   }
 }

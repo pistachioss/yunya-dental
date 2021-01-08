@@ -1,11 +1,12 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.treatment.domain.query.CreditCashReceiptQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
-import com.yunya.feign.treatment.domain.vo.PaymentRecordVO;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
@@ -29,4 +30,12 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
    */
   BillPayDetailRecordVO selectPreBillPayDetailRecord(
       @Param("id") Integer id, @Param("inservice") Boolean inservice);
+
+  /**
+   * 根据支付方式统计账单的入账金额
+   *
+   * @param query
+   * @return
+   */
+  BigDecimal sumBillPayAmount(@Param("query") CreditCashReceiptQuery query);
 }

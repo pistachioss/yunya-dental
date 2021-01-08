@@ -2,13 +2,13 @@ package com.yunya.feign.treatment;
 
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
-import com.yunya.feign.treatment.domain.vo.SpecialistProjectTariffCompletedInfoVO;
-import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
-import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
-import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
+import com.yunya.feign.treatment.domain.query.CreditCashReceiptQuery;
+import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.BusinessCompletedWorkGoalVO;
+import com.yunya.feign.treatment.domain.vo.RegisteredVO;
+import com.yunya.feign.treatment.domain.vo.SpecialistProjectTariffCompletedInfoVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFeignFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
@@ -22,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotEmpty;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -301,4 +302,13 @@ public interface RemoteTreatmentServiceFeign {
    */
   @RequestMapping(value = "/rpc/tariff/specialist/percentage", method = RequestMethod.POST)
   List<SpecialistProjectReportVO> findTariffSpecialistPercentage(@RequestBody @Validated SpecialistProjectReportModel specialistProjectReportModel);
+
+  /**
+   * 根据支付方式统计账单的入账金额
+   *
+   * @param cashReceiptQuery
+   * @return
+   */
+  @RequestMapping(value = "/rpc/bill/sumBillPayAmount", method = RequestMethod.POST)
+  BigDecimal sumBillPayAmount(@RequestBody CreditCashReceiptQuery cashReceiptQuery);
 }

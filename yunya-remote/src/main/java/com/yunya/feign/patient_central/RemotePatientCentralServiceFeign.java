@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
+import com.yunya.feign.patient_central.domain.query.RechargeCashReceiptQuery;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
@@ -21,6 +22,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -224,4 +226,12 @@ public interface RemotePatientCentralServiceFeign {
     @RequestMapping(value = "/api/member/count/{memberTypeId}",method = RequestMethod.GET)
     boolean memberInfoCount(@PathVariable(value = "memberTypeId") Integer memberTypeId);
 
+    /**
+     * 根据支付方式统计会员充值和预付款充值的金额
+     *
+     * @param query
+     * @return
+     */
+    @PostMapping(value = "/api/member/sumMemberAndPrepayRechargeCash")
+    BigDecimal sumMemberAndPrepayRechargeCash(@RequestBody RechargeCashReceiptQuery query);
 }

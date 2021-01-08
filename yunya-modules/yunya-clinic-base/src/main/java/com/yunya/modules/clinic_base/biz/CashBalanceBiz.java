@@ -11,14 +11,19 @@ import com.yunya.feign.clinic_base.domain.vo.CashBalanceDetailVO;
 import com.yunya.feign.clinic_base.domain.vo.CashBalanceVO;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.CertificatesForm;
+import com.yunya.feign.discount.domain.query.CardSaleCashReceiptQuery;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.RechargeCashReceiptQuery;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.query.CreditCashReceiptQuery;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.clinic_base.CashBalance;
+import com.yunya.models.system.AccountItem;
 import com.yunya.modules.clinic_base.mapper.CashBalanceMapper;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +37,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_CASH;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
 /**
@@ -52,6 +58,9 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
   @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
   /** 就诊收费服务调用 */
   @Autowired private RemoteTreatmentServiceFeign treatmentServiceFeign;
+  private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
+  @Autowired
+  private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
   /**
    * 获取门诊新增期初现金结余金额
@@ -145,8 +154,42 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
    * @return BigDecimal
    */
   private BigDecimal getPeriodCollectionCash(Integer orgId, Date startDate, Date endDate) {
-
-    return BigDecimal.valueOf(0);
+    BigDecimal total = new BigDecimal(0);
+    AccountItem entity = new AccountItem();
+    entity.setName(ACCOUNT_ITEM_OF_CASH);
+    AccountItem accountItem = remoteSystemServiceFeign.findAccountItem(entity);
+    Integer payId = accountItem.getId();
+    //账单的现金收款
+    CreditCashReceiptQuery cashReceiptQuery = new CreditCashReceiptQuery();
+    cashReceiptQuery.setPayId(payId);
+    cashReceiptQuery.setOrgId(orgId);
+    cashReceiptQuery.setStartDate(startDate);
+    cashReceiptQuery.setEndDate(endDate);
+    BigDecimal billCash = remoteTreatmentServiceFeign.sumBillPayAmount(cashReceiptQuery);
+    if (billCash != null) {
+      total = total.add(billCash);
+    }
+    //产品售卖的现金收款
+    CardSaleCashReceiptQuery saleCashReceiptQuery = new CardSaleCashReceiptQuery();
+    saleCashReceiptQuery.setPayId(payId);
+    saleCashReceiptQuery.setOrgId(orgId);
+    saleCashReceiptQuery.setStartDate(startDate);
+    saleCashReceiptQuery.setEndDate(endDate);
+    BigDecimal soldCash = discountFeign.sumCardSoldAmount(saleCashReceiptQuery);
+    if (soldCash != null) {
+      total = total.add(soldCash);
+    }
+    //会员充值的现金收款+预付款充值的现金收款
+    RechargeCashReceiptQuery rechargeCashReceiptQuery = new RechargeCashReceiptQuery();
+    rechargeCashReceiptQuery.setPayId(payId);
+    rechargeCashReceiptQuery.setOrgId(orgId);
+    rechargeCashReceiptQuery.setStartDate(startDate);
+    rechargeCashReceiptQuery.setEndDate(endDate);
+    BigDecimal rechargeCash = patientCentralServiceFeign.sumMemberAndPrepayRechargeCash(rechargeCashReceiptQuery);
+    if (rechargeCash != null) {
+      total = total.add(rechargeCash);
+    }
+    return total;
   }
 
   /**

@@ -1,4 +1,4 @@
-package com.yunya.feign.discount.domain.query;
+package com.yunya.feign.patient_central.domain.query;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -10,17 +10,17 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 简介: 卡券售卖现金收款查询
+ * 简介: 充值现金收款查询
  *
  * @author: chow
  * @date: 2020/12/19 13:42
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("卡券售卖现金收款查询参数模型")
+@ApiModel("充值现金收款查询")
 @Data
 @ToString
-public class CardSaleCashReceiptQuery implements Serializable {
+public class RechargeCashReceiptQuery implements Serializable {
 
   /** 支付账户id */
   @ApiModelProperty(value = "支付账户id", required = true)

@@ -29,7 +29,6 @@ import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.*;
-import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -910,6 +909,13 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     return memberExpendRecordMapper.selectOne(memberExpendRecord);
   }
 
-
-
+  /**
+   * 根据支付方式统计会员充值和预付款充值的金额
+   *
+   * @param query
+   * @return
+   */
+  public BigDecimal sumMemberAndPrepayRechargeCash(RechargeCashReceiptQuery query) {
+    return mapper.sumMemberAndPrepayRechargeCash(query);
+  }
 }
