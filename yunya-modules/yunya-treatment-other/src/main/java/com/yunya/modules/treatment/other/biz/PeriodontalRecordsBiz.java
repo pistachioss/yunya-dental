@@ -48,7 +48,7 @@ public class PeriodontalRecordsBiz extends BaseBiz<PeriodontalRecordsMapper, Per
             SysUserEmployeeModel model = new SysUserEmployeeModel();
             //查询总数不分页
             model.setWhetherPage(false);
-            Byte[] userStatus = {0, 1, 3};
+            Byte[] userStatus = {0, 1,2, 3};
             //离职状态
             model.setWorkStatus(userStatus);
             //当前门诊下全部员工
