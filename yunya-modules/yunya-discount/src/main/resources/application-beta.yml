@@ -16,3 +16,6 @@ spring:
         host: 172.16.17.177
         port: 6379
         password: foobared
+
+codeUrl:
+    url: http://172.16.17.177:8080
