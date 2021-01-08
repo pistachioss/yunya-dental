@@ -76,7 +76,7 @@
                 DATE_FORMAT( btp.registered_time, '%H:%i' ) AS regTime,
                 DATE_FORMAT( btp.treat_start_time, '%H:%i' ) AS treatStartTime,
                 DATE_FORMAT( btp.treat_end_time, '%H:%i' ) AS treatEndTime,
-                TIMESTAMPDIFF( MINUTE, btp.registered_time, DATE_FORMAT( btp.treat_start_time, '%H:%i' ) ) AS treatWaitingTime,
+                TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_start_time,'%H:%i'),DATE_FORMAT(btp.registered_time,'%H:%i')))/60 AS treatWaitingTime,
                 TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ) AS treatExpendTime
             FROM
                 base_treatment_process btp

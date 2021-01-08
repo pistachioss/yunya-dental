@@ -83,4 +83,44 @@
       </if>
     </where>
   </select>
+
+  <select id="sumSmsSendSituation" resultType="com.yunya.feign.sms.vo.SmsSendSituationVO">
+    select
+        count(t.id) total,
+        IFNULL(sum(case when t.status=1 then 1 else 0 end),0) AS success,
+      IFNULL(sum(case when t.status=2 then 1 else 0 end),0) AS failure
+    from sms_send_record t
+    <where>
+      <if test="queryForm.orgId != null">
+        and t.org_id = #{queryForm.orgId}
+      </if>
+      <if test="queryForm.status != null">
+        and t.status = #{queryForm.status}
+      </if>
+      <if test="queryForm.receiverId != null">
+        and t.receiver_id = #{queryForm.receiverId}
+      </if>
+      <if test="queryForm.batchId != null">
+        and t.batch_id = #{queryForm.batchId}
+      </if>
+      <if test="queryForm.id != null">
+        and t.id = #{queryForm.id}
+      </if>
+      <if test="queryForm.sendDate != null">
+        and DATE_FORMAT(t.crt_time,'%Y-%m-%d') = DATE_FORMAT(#{queryForm.sendDate},'%Y-%m-%d')
+      </if>
+      <if test="queryForm.batchIds!=null and queryForm.batchIds.size()>0">
+        and t.batch_id in
+          <foreach item="item" index="index" collection="queryForm.batchIds" open="(" separator="," close=")">
+              #{item}
+          </foreach>
+      </if>
+      <if test="queryForm.bizIds!=null and queryForm.bizIds.size()>0">
+        and t.biz_id in
+        <foreach item="item" index="index" collection="queryForm.bizIds" open="(" separator="," close=")">
+            #{item}
+      </foreach>
+      </if>
+    </where>
+  </select>
 </mapper>

@@ -26,6 +26,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,7 +89,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
      * 生成今天待打卡记录模板数据.定时任务每天01：00：00执行 00 00 01 * * ?
      */
     @Async("customizeExecutor")
-//    @Scheduled(cron = "00 00 01 * * ?")
+    @Scheduled(cron = "00 00 01 * * ?")
     public void produceAttendancePunchTemplateData(){
         logger.info("开始生成考勤打卡模板数据");
         try {
