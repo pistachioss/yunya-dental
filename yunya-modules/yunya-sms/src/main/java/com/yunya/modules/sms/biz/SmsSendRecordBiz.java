@@ -10,6 +10,7 @@ import com.yunya.feign.sms.model.SmsSendRecordModel;
 import com.yunya.feign.sms.model.SmsVerifyCodeModel;
 import com.yunya.feign.sms.query.SmsSendRecordQueryForm;
 import com.yunya.feign.sms.vo.SmsSendRecordVO;
+import com.yunya.feign.sms.vo.SmsSendSituationVO;
 import com.yunya.feign.sms.vo.SmsSendVO;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -84,22 +85,16 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      * @return
      */
     public SmsSendVO findSmsSendRecordPageList(SmsSendRecordQueryForm queryForm) {
+        SmsSendSituationVO smsSendSituationVO = mapper.sumSmsSendSituation(queryForm);
         List<SmsSendRecordVO> smsSendRecordList = findSmsSendRecordList(queryForm);
         PageInfo<SmsSendRecordVO> result = new PageInfo<>(smsSendRecordList);
         int total = 0;
         int success = 0;
         int failure = 0;
-        if (smsSendRecordList!=null && !smsSendRecordList.isEmpty()) {
-            total = smsSendRecordList.size();
-            for (SmsSendRecordVO smsSendRecordVO : smsSendRecordList) {
-                Byte status = smsSendRecordVO.getStatus();
-                if (SmsSendStatusEnum.SEND_SUCC.getCode().equals(status)) {
-                    success++;
-                }
-                if (SmsSendStatusEnum.SEND_FAIL.getCode().equals(status)) {
-                    failure++;
-                }
-            }
+        if (smsSendSituationVO != null) {
+            total = smsSendSituationVO.getTotal();
+            success = smsSendSituationVO.getSuccess();
+            failure = smsSendSituationVO.getFailure();
         }
         SmsSendVO smsSendVO = new SmsSendVO();
         smsSendVO.setSendTotal(total);

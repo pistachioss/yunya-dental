@@ -1180,6 +1180,7 @@ public class TollBiz {
         debtAmount = billRecordResult.getDebtAmount();
         checkTotalChargeAndDebtAmount(totalCharge, debtAmount, outstandingAmount);
         debtAmount = debtAmount.subtract(totalCharge);
+        discountType = billRecordResult.getPrivilegeType();//避免原来的优惠被覆盖
       } else {
         usePrivilege = true;
         // 计算并校验收欠费入账总额
@@ -1199,7 +1200,7 @@ public class TollBiz {
         debtAmount = actualReceivableAmount.subtract(totalCharge);
       }
       billRecordResult.setPrivilegeType(discountType);
-      if (0 != discountType) {
+      if (0 != discountType && billRecordResult.getPrivilegeDate()!=null) {
         billRecordResult.setPrivilegeDate(new Date(System.currentTimeMillis()));
       }
       // 设置优惠总额
@@ -1220,11 +1221,11 @@ public class TollBiz {
       // 保存收费记录
       billRecordId = billRecordResult.getId();
       orderRecordId = billRecordResult.getOrderRecordId();
-      // 保存优惠明细
-      savePrivilegeDetail(
-          discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
       // 更新订单明细收费记录
       if (usePrivilege) {
+        // 保存优惠明细
+        savePrivilegeDetail(
+                discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
         updateOrderDetailPayRecordWithPrivilege(orderRecordId, totalCharge);
       } else {
         updateOrderDetailPayRecordUnPrivilege(orderRecordId, totalCharge);

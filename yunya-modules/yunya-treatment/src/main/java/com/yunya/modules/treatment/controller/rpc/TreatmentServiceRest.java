@@ -1,10 +1,10 @@
 package com.yunya.modules.treatment.controller.rpc;
 
-import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
+import com.yunya.feign.treatment.domain.query.CreditCashReceiptQuery;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.BusinessCompletedWorkGoalVO;
 import com.yunya.feign.treatment.domain.vo.RegisteredVO;
@@ -23,6 +23,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotEmpty;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -66,6 +67,8 @@ public class TreatmentServiceRest {
   @Autowired private OrderDetailBiz orderDetailBiz;
   /** 账单记录 */
   @Autowired private BillRecordBiz billRecordBiz;
+  /** 账单收费详情 */
+  @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
 
   /**
    * 根据商品分类ID查询商品分类信息
@@ -401,6 +404,17 @@ public class TreatmentServiceRest {
   @RequestMapping(value = "/tariff/specialist/percentage", method = RequestMethod.POST)
   public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(@RequestBody SpecialistProjectReportModel specialistProjectReportModel) {
     return orderDetailBiz.findTariffSpecialistPercentage(specialistProjectReportModel);
+  }
+
+  /**
+   * 根据支付方式统计账单的入账金额
+   *
+   * @param
+   * @return
+   */
+  @PostMapping(value = "/bill/sumBillPayAmount")
+  public BigDecimal sumBillPayAmount(@RequestBody @Validated CreditCashReceiptQuery query) {
+    return billPayDetailRecordBiz.sumBillPayAmount(query);
   }
 
 }

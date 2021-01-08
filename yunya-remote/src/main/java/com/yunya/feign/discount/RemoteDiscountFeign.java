@@ -4,6 +4,7 @@ import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
+import com.yunya.feign.discount.domain.query.CardSaleCashReceiptQuery;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.discount.factory.RemoteDiscountFallBackFactory;
@@ -11,13 +12,10 @@ import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.util.List;
 
 @FeignClient(
@@ -48,4 +46,13 @@ public interface RemoteDiscountFeign {
     @ApiOperation(value = "撤销优惠")
     @GetMapping("/benefit/revoke/{orderId}")
     public ResponseResult revokeBenefit(@PathVariable(value = "orderId") Integer orderId);
+
+    /**
+     * 根据支付方式统计卡券的售出金额
+     *
+     * @param saleCashReceiptQuery
+     * @return
+     */
+    @PostMapping("/card/sumCardSoldAmount")
+    BigDecimal sumCardSoldAmount(@RequestBody CardSaleCashReceiptQuery saleCashReceiptQuery);
 }

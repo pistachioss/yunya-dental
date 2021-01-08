@@ -234,7 +234,7 @@
             <if test="queryForm.orgId != null" >
                 and t.org_id = #{queryForm.orgId}
             </if>
-            <if test="queryForm.punchType">
+            <if test="queryForm.punchType != null">
                 and t.punch_type = #{queryForm.punchType}
             </if>
             <if test="queryForm.punchDate != null" >
