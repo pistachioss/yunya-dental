@@ -37,7 +37,7 @@
   <select id="selectNotSeenList" resultType="com.yunya.feign.report.domain.vo.BasePatientNotSeenVo">
 
     select
-      date_format(treatStartTime,'%y-%m-%d') lastVisitDate,
+      date_format(treatStartTime,"%Y-%m-%d") lastVisitDate,
       name name,
       mobile mobile,
       treatType treatType,
@@ -59,11 +59,11 @@
           from (
                 select t1.*,bp.name, bp.mobile ,bp.pinyin_name,be.employee_name
                 from (
-                select patient_id,org_id,MAX(treat_start_time) treatStartTime,treat_type,registered_dentist_id
-                from base_treatment_process
-                where
-                treat_start_time is not null
-                group by org_id,patient_id
+                  select t1.patient_id, t1.org_id, t1.treat_start_time treatStartTime, t1.treat_type, t1.registered_dentist_id
+                  from base_treatment_process t1 join (select t2.patient_id ,max(t2.treat_start_time) treatStartTime from base_treatment_process t2 group by t2.patient_id ) s1
+                  on t1.patient_id = s1.patient_id
+                  and t1.treat_start_time IS NOT NULL
+                  and t1.treat_start_time = s1.treatStartTime
                ) t1
                 left join base_patient bp on t1.patient_id = bp.patient_id
                 left join base_employee be on t1.registered_dentist_id = be.user_id
