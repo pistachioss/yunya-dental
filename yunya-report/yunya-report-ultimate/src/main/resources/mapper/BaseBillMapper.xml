@@ -275,12 +275,12 @@
         SELECT
         bb.bill_id AS billId,
         bb.org_id as orgId,
-        bb.order_date AS orderDate,
+        bb.bill_date AS orderDate,
         bb.bill_num AS billNum,
         bb.patient_id AS patientId,
         btp.`name` AS patientName,
         btp.pinyin_name as pinyinName,
-        btp.mobile,
+        btp.mobile AS mobile,
         btp.registered_dentist_id AS regDentistId,
         btp.employee_name AS regDentistName,
         bb.order_amount AS totalOriginalAmount,
@@ -313,7 +313,7 @@
                 and brr.orgId = #{query.orgId}
             </if>
             <if test="query.orderDate != null and query.orderDate != ''">
-                and brr.orderDate = #{query.orderDate}
+                AND date_format(brr.orderDate, '%Y-%m-%d') = #{query.orderDate}
             </if>
             <if test="query.keyword != null and query.keyword != ''">
                 and concat(IFNULL(brr.patientName, ''), IFNULL(brr.pinyinName, ''), IFNULL(brr.mobile, '')) like
