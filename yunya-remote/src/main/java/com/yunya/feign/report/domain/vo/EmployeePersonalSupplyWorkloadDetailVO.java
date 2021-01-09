@@ -28,9 +28,9 @@ public class EmployeePersonalSupplyWorkloadDetailVO implements Serializable {
   @Excel(name = "账单编号")
   @ApiModelProperty("账单编号")
   private String billNum;
-  /** 开单日期 */
-  @Excel(name = "开单日期")
-  @ApiModelProperty("开单日期")
+  /** 账单日期 */
+  @Excel(name = "账单日期")
+  @ApiModelProperty("账单日期")
   private String orderDate;
   /** 患者ID */
   @ApiModelProperty("患者ID")

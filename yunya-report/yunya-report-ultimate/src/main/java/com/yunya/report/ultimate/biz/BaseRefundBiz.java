@@ -10,10 +10,13 @@ import com.yunya.feign.report.domain.vo.AssistantRefundDetailVO;
 import com.yunya.feign.report.domain.vo.BillOfRefundRecordVO;
 import com.yunya.feign.report.domain.vo.EmployeePersonalRefundWorkloadDetailVO;
 import com.yunya.feign.report.domain.vo.EmployeeRefundDetailWorkloadVO;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseRefund;
 import com.yunya.report.ultimate.mapper.BaseRefundMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
@@ -30,6 +33,9 @@ import java.util.List;
  */
 @Service
 public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
+
+  @Autowired
+  private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
   /**
    * 根据条件查询账单退费记录列表
@@ -86,7 +92,14 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
     List<EmployeePersonalRefundWorkloadDetailVO> list = pageInfo.getList();
     ExcelUtil<EmployeePersonalRefundWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalRefundWorkloadDetailVO.class);
-    excelUtil.exportExcel(response, list, "员工账单退费明细表");
+    String fileName = excelUtil.getFileName(query.getOrderDate(),null,
+            getAbbreviationById(query.getOrgId()),"退费工作量统计明细表");
+    excelUtil.exportExcel(response, list, "员工账单退费明细表", fileName);
+  }
+
+  private String getAbbreviationById(Integer orgId) {
+    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+    return organizationInfo.getAbbreviation();
   }
 
   /**
