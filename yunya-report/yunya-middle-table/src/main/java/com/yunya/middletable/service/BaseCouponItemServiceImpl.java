@@ -35,8 +35,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
+import static com.yunya.middletable.constant.SynConstant.*;
 import static com.yunya.middletable.enums.CouponTypeEnum.*;
 import static java.util.stream.Collectors.*;
 
@@ -56,6 +58,8 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 	private SpecialPackageCouponItemMapper specialPackageCouponItemMapper;
 	@Resource
 	private VoucherDiscountItemMapper voucherDiscountItemMapper;
+	@Resource(name = "customizeThreadPool")
+	private ExecutorService cardThreadPool;
 
 	private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -104,8 +108,13 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 	 */
 	private void batchInsert(List<BaseCouponItem> list) {
 		if (CollectionUtils.isNotEmpty(list)) {
-			//对象转换
-			mapper.insertList(list);
+			List<List<BaseCouponItem>> partition = Lists.partition(list, CUT_SLICE_100);
+			for (List<BaseCouponItem> baseItemList : partition) {
+				//多线程异步插入
+				cardThreadPool.execute(() -> {
+					mapper.insertList(baseItemList);
+				});
+			}
 		}
 	}
 
