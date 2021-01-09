@@ -77,7 +77,7 @@
                 DATE_FORMAT( btp.treat_start_time, '%H:%i' ) AS treatStartTime,
                 DATE_FORMAT( btp.treat_end_time, '%H:%i' ) AS treatEndTime,
                 TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_start_time,'%H:%i'),DATE_FORMAT(btp.registered_time,'%H:%i')))/60 AS treatWaitingTime,
-                TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ) AS treatExpendTime
+                TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_end_time, '%H:%i'), DATE_FORMAT( btp.treat_start_time, '%H:%i' )))/60  AS treatExpendTime
             FROM
                 base_treatment_process btp
                 LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
