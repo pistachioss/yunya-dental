@@ -1,11 +1,9 @@
-package com.yunya.report.ultimate.controller.member;
+package com.yunya.report.ultimate.controller;
 
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.report.domain.vo.PatientDataVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.report.BasePatient;
-import com.yunya.report.ultimate.service.PatientBaseInfoBiz;
+import com.yunya.report.ultimate.biz.PatientBaseInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

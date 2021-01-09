@@ -1,4 +1,4 @@
-package com.yunya.report.ultimate.service;
+package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;

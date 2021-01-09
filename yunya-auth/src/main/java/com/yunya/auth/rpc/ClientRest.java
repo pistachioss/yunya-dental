@@ -1,7 +1,6 @@
 package com.yunya.auth.rpc;
 
 import com.yunya.auth.configuration.KeyConfiguration;
-import com.yunya.auth.domain.UserAuthResponse;
 import com.yunya.auth.service.AuthClientService;
 import com.yunya.auth.utils.JwtTokenUtil;
 import com.yunya.feign.system.vo.FrontUserInfoVO;

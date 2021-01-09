@@ -233,12 +233,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeePersonalActualWorkloadDetailVO> resultList = pageInfo.getList();
     ExcelUtil<EmployeePersonalActualWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalActualWorkloadDetailVO.class);
-    String fileName =
-        excelUtil.getFileName(
-            query.getQueryDate(),
-            query.getQueryDate(),
-            getAbbreviationById(query.getOrgId()),
-            "实收工作量统计明细表");
+    String fileName = excelUtil.getFileName(query.getOrderDate(),null,
+            getAbbreviationById(query.getOrgId()),"实收工作量统计明细表");
     excelUtil.exportExcel(response, resultList, "员工个人实收工作量明细列表", fileName);
   }
 
@@ -341,7 +337,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeePersonalSupplyWorkloadDetailVO> resultList = pageInfo.getList();
     ExcelUtil<EmployeePersonalSupplyWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalSupplyWorkloadDetailVO.class);
-    excelUtil.exportExcel(response, resultList, "员工个人补入工作量明细列表");
+    String fileName = excelUtil.getFileName(query.getOrderDate(),null,
+            getAbbreviationById(query.getOrgId()),"补入工作量统计明细表");
+    excelUtil.exportExcel(response, resultList, "员工个人补入工作量明细列表", fileName);
   }
 
   /**

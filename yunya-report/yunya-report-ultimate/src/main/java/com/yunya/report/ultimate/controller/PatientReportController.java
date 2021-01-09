@@ -1,4 +1,4 @@
-package com.yunya.report.ultimate.controller.member;
+package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.ArrearsQueryForm;
@@ -6,18 +6,16 @@ import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
 import com.yunya.feign.report.domain.vo.AnalysisVo;
 import com.yunya.feign.report.domain.vo.ArrearsStatisticsVo;
-import com.yunya.feign.report.domain.vo.ArrearsVo;
 import com.yunya.feign.report.domain.vo.BasePatientNotSeenVo;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseEmployee;
-import com.yunya.report.ultimate.service.PatientReportBiz;
+import com.yunya.report.ultimate.biz.PatientReportBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
-import org.aspectj.weaver.ast.Var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +24,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 简介:患者报表控制层

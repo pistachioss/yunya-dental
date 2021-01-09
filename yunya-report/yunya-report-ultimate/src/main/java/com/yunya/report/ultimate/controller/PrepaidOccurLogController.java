@@ -1,4 +1,4 @@
-package com.yunya.report.ultimate.controller.member;
+package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.PrepaidQueryForm;
@@ -10,7 +10,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseOrganization;
-import com.yunya.report.ultimate.service.MemberOccurLogBiz;
+import com.yunya.report.ultimate.biz.MemberOccurLogBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
@@ -40,7 +40,8 @@ import java.util.List;
 public class PrepaidOccurLogController {
 
     /** 注入服务 */
-    @Autowired MemberOccurLogBiz memberOccurLogBiz;
+    @Autowired
+    MemberOccurLogBiz memberOccurLogBiz;
 
     /**
      * 查询门诊列表

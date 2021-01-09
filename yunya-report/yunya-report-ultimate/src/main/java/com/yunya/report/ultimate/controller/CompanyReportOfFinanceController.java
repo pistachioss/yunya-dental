@@ -9,7 +9,8 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseAccountItemBiz;
 import com.yunya.report.ultimate.biz.BaseBillBiz;
 import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
-import com.yunya.report.ultimate.service.DiscountBiz;
+import com.yunya.report.ultimate.biz.DiscountBiz;
+import com.yunya.report.ultimate.biz.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -46,6 +47,10 @@ public class CompanyReportOfFinanceController {
   @Autowired private DiscountBiz discountBiz;
   /** 支付方式 */
   @Autowired private BaseAccountItemBiz accountItemBiz;
+  /** 支付记录 */
+  @Autowired private BaseBillPayBiz billPayBiz;
+  /** 患者储值卡（会员卡或预付卡）充值记录 */
+  @Autowired private MemberOccurLogBiz patientMemberOccurLogBiz;
 
   @ApiOperation(value = "公司端报表-财务报表-产品售出统计-产品维度")
   @PostMapping("/coupon/sold/statistics")
@@ -195,31 +200,13 @@ public class CompanyReportOfFinanceController {
   @ApiOperation("公司端报表-财务报表-账单优惠明细-查看明细")
   @GetMapping("/bill/privilege/info/{billId}")
   @ApiImplicitParams({
-    @ApiImplicitParam(name = "billId", value = "账单ID", dataTypeClass = Integer.class),
-    @ApiImplicitParam(
-        name = "pageSize",
-        value = "页大小",
-        dataTypeClass = Integer.class,
-        defaultValue = "10"),
-    @ApiImplicitParam(
-        name = "pageNum",
-        value = "页码",
-        dataTypeClass = Integer.class,
-        defaultValue = "1"),
-    @ApiImplicitParam(
-        name = "whetherPage",
-        value = "是否分页",
-        dataTypeClass = Boolean.class,
-        defaultValue = "true"),
+    @ApiImplicitParam(name = "billId", value = "账单ID", dataTypeClass = Integer.class)
   })
-  public ResponseResult<PageInfo<BillDiscountDetailInifoVO>> billDiscountDetailInfo(
-      @PathVariable("billId") @NotNull(message = "账单ID不能为空") Integer billId,
-      @RequestParam("pageNum") Integer pageNum,
-      @RequestParam("pageSize") Integer pageSize,
-      @RequestParam("whetherPage") Boolean whetherPage) {
-    PageInfo<BillDiscountDetailInifoVO> resultPageInfo =
-        baseBillBiz.billDiscountDetailInfo(billId, pageNum, pageSize, whetherPage);
-    return ResponseUtil.success(resultPageInfo);
+  public ResponseResult<BillDiscountVO> billDiscountDetailInfo(
+      @PathVariable("billId") @NotNull(message = "账单ID不能为空") Integer billId) {
+    BillDiscountVO result =
+        baseBillBiz.billDiscountDetailInfo(billId);
+    return ResponseUtil.success(result);
   }
 
   /**
@@ -296,6 +283,113 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
+   * 根据条件查询门诊账单收费明细（首次收费）
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-账单收费明细（本月）-查询明细")
+  @PostMapping(value = "/bill/charge/detail/list", name = "根据条件查询门诊账单收费明细（首次收费）")
+  public ResponseResult<PageInfo<StatementBillChargeDetailVO>> billChargeDetailInfoList(
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
+    PageInfo<StatementBillChargeDetailVO> pageInfo =
+        billPayBiz.selectBillChargeDetailInfoList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询导出本月账单收费明细 todo：导出未完成
+   *
+   * @param response
+   * @param query
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-账单收费明细（本月）-账单收费明细列表-导出")
+  @PostMapping(value = "/bill/charge/detail/export", name = "根据条件查询门诊账单收费明细（首次收费）")
+  public ResponseResult<T> exportBillChargeDetailInfoList(
+      HttpServletResponse response,
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
+
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询门诊账单收欠费明细（本月账单）todo：完善收费记录的支付方式列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-账单收欠费(本月)-查询明细")
+  @PostMapping(value = "/bill/current/debt/detail/list", name = "公司端报表-财务报表-对账单-账单收欠费")
+  public ResponseResult<PageInfo<StatementBillChargeDetailVO>> billCurrentCollectDebtDetailList(
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
+    PageInfo<StatementBillChargeDetailVO> pageInfo =
+        billPayBiz.findBillCurrentCollectDebtDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询导出账单收欠费明细（本月账单本月收欠费） todo：导出未完成
+   *
+   * @param response
+   * @param query
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-账单收欠费明细（本月）-账单收欠（本月）费明细列表-导出")
+  @PostMapping(value = "/bill/current/debt/detail/export", name = "根据条件查询门诊账单收费明细（非首次收费）")
+  public ResponseResult<T> exportBillCollectDebtDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
+
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询门诊账单收欠费明细（本月账单）todo：完善收费记录的支付方式列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-账单收欠费(非本月)-查询明细")
+  @PostMapping(value = "/bill/other/debt/detail/list", name = "公司端报表-财务报表-对账单-账单收欠费")
+  public ResponseResult<PageInfo<StatementBillChargeDetailVO>> billOtherCollectDebtDetailList(
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
+    PageInfo<StatementBillChargeDetailVO> pageInfo =
+        billPayBiz.findOtherCollectDebtDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询导出账单收欠费明细（非本月账单本月收欠费） todo：导出未完成
+   *
+   * @param response
+   * @param query
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-账单收欠费明细（非本月）-账单收欠费（非本月）明细列表-导出")
+  @PostMapping(value = "/bill/other/debt/detail/export", name = "根据条件查询门诊账单收费明细（非首次收费）")
+  public ResponseResult<T> exportBillOtherCollectDebtDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
+
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询门诊会员卡充值明细列表 todo：完善收费记录的支付方式列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-会员卡充值-查询明细")
+  @PostMapping(value = "/member/recharge/detail/list", name = "根据条件查询门诊会员卡充值明细列表")
+  public ResponseResult<PageInfo<StatementPatientCardRechargeDetailVO>> memberRechargeDetailList(
+      @RequestBody @Validated StatementPatientCardRechargeDetailInfoQuery query) {
+
+    return ResponseUtil.success();
+  }
+
+  /**
    * 根据条件查询本月对账单账单收支统计信息
    *
    * @param query 查询条件
@@ -366,8 +460,8 @@ public class CompanyReportOfFinanceController {
    * @return
    * @throws IOException
    */
-  @ApiOperation("公司端报表-财务报表-对账单-本月收费明细")
-  @PostMapping(value = "/bill/pay/export", name = "公司端报表-财务报表-对账单-本月账单收费明细")
+  @ApiOperation("公司端报表-财务报表-对账单-本月收费明细-导出")
+  @PostMapping(value = "/bill/pay/export", name = "公司端报表-财务报表-对账单-本月账单收费明细-导出")
   public ResponseResult<T> billPayRecordExport(
       HttpServletResponse response, @RequestBody @Validated CurrentMonthBillInfoQuery query)
       throws IOException {

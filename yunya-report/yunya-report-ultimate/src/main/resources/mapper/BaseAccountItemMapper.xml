@@ -81,20 +81,14 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         WHERE
         bbp.org_id = bb.org_id
         AND bbp.bill_id = bb.bill_id
         AND bbp.payee_date = bb.bill_date -- 收费日期与账单日期相同则是首次收费
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         WHERE
         bbpd.bill_pay_id = bbp.bill_pay_id
-        GROUP BY
-        bbpd.bill_pay_detail_record_id
         ) bbpd ON bai.account_item_id = bbpd.account_item_id
         GROUP BY
         bai.account_type_id,
@@ -160,8 +154,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.org_id = bb.org_id
@@ -192,13 +184,9 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         WHERE
         bbpd.bill_pay_id = bbp.bill_pay_id
-        GROUP BY
-        bbpd.bill_pay_detail_record_id
         ) bbpd ON bai.account_item_id = bbpd.account_item_id
         GROUP BY
         bai.account_type_id,
@@ -264,8 +252,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.org_id = bb.org_id
@@ -296,13 +282,9 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         WHERE
         bbpd.bill_pay_id = bbp.bill_pay_id
-        GROUP BY
-        bbpd.bill_pay_detail_record_id
         ) bbpd ON bai.account_item_id = bbpd.account_item_id
         GROUP BY
         bai.account_type_id,
@@ -539,8 +521,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.bill_id = bb.bill_id
@@ -572,13 +552,9 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         WHERE
         bbpd.bill_pay_id = bbp.bill_pay_id
-        GROUP BY
-        bbpd.bill_pay_detail_record_id
         ) bbpd ON bai.account_item_id = bbpd.account_item_id
         GROUP BY
         bai.account_type_id,
@@ -633,8 +609,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.bill_id = bb.bill_id
@@ -666,13 +640,9 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         WHERE
         bbpd.bill_pay_id = bbp.bill_pay_id
-        GROUP BY
-        bbpd.bill_pay_detail_record_id
         ) bbpd ON bai.account_item_id = bbpd.account_item_id
         GROUP BY
         bai.account_type_id,
@@ -737,8 +707,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-            bb.bill_id
         ) bb
         <where>
             AND br.bill_id = bb.bill_id
@@ -826,8 +794,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND br.bill_id = bb.bill_id
@@ -1034,8 +1000,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.bill_id = bb.bill_id
@@ -1065,13 +1029,9 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         WHERE
         bbpd.bill_pay_id = bbp.bill_pay_id
-        GROUP BY
-        bbpd.bill_pay_detail_record_id
         ) bbpd ON bai.account_item_id = bbpd.account_item_id
         GROUP BY
         bai.account_type_id,
@@ -1127,8 +1087,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.bill_id = bb.bill_id
@@ -1158,13 +1116,9 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         WHERE
         bbpd.bill_pay_id = bbp.bill_pay_id
-        GROUP BY
-        bbpd.bill_pay_detail_record_id
         ) bbpd ON bai.account_item_id = bbpd.account_item_id
         GROUP BY
         bai.account_type_id,
@@ -1196,8 +1150,6 @@
                 and bb.org_id = #{query.orgId}
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.org_id = bb.org_id
@@ -1228,8 +1180,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         <where>
             AND bbpd.bill_pay_id = bbp.bill_pay_id
@@ -1261,8 +1211,6 @@
                 AND bb.org_id = #{query.orgId}
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.org_id = bb.org_id
@@ -1293,8 +1241,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         <where>
             AND bbpd.bill_pay_id = bbp.bill_pay_id
@@ -1326,8 +1272,6 @@
                 and bb.org_id = #{query.orgId}
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.org_id = bb.org_id
@@ -1358,8 +1302,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         <where>
             AND bbpd.bill_pay_id = bbp.bill_pay_id
@@ -1391,8 +1333,6 @@
                 and bb.org_id = #{query.orgId}
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.org_id = bb.org_id
@@ -1423,8 +1363,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         <where>
             AND bbpd.bill_pay_id = bbp.bill_pay_id
@@ -1456,8 +1394,6 @@
                 AND bb.org_id != #{query.orgId} -- 不是本门诊账单
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.bill_id = bb.bill_id
@@ -1489,8 +1425,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         <where>
             AND bbpd.bill_pay_id = bbp.bill_pay_id
@@ -1522,8 +1456,6 @@
                 AND bb.org_id != #{query.orgId} -- 不是本门诊账单
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.bill_id = bb.bill_id
@@ -1555,8 +1487,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         <where>
             AND bbpd.bill_pay_id = bbp.bill_pay_id
@@ -1685,8 +1615,6 @@
                 AND bb.org_id = #{query.orgId}
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.bill_id = bb.bill_id
@@ -1717,8 +1645,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         <where>
             AND bbpd.bill_pay_id = bbp.bill_pay_id
@@ -1751,8 +1677,6 @@
                 AND bb.org_id = #{query.orgId}
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
         ) bb
         <where>
             AND bbp.bill_id = bb.bill_id
@@ -1783,8 +1707,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         <where>
             AND bbpd.bill_pay_id = bbp.bill_pay_id

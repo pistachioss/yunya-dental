@@ -2,7 +2,7 @@ package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillStatisticVO;
-import com.yunya.report.ultimate.model.CurrentMonthBillStatistics;
+import com.yunya.models.report.CurrentMonthBillStatistics;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 

@@ -1,6 +1,5 @@
 package com.yunya.modules.patient_central.biz;
 
-import cn.hutool.core.lang.Assert;
 import com.yunya.feign.patient_central.domain.form.PatientOriginForm;
 import com.yunya.feign.patient_central.domain.model.PatientOriginModel;
 import com.yunya.feign.patient_central.domain.query.OriginTypeQueryForm;
@@ -27,11 +26,9 @@ import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -160,30 +157,34 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
    * @return ResponseResult
    */
   public ResponseResult update(PatientOriginForm patientOriginForm) {
-    PatientOrigin patientOrigin = new PatientOrigin();
-    BeanUtils.copyProperties(patientOriginForm, patientOrigin);
-    PatientOrigin patientOriginv = mapper.selectByPrimaryKey(patientOrigin.getId());
-    if (patientOriginv != null) {
-      if (patientOriginv.getAllowOperate() == false) {
+    PatientOrigin patientOrigin = mapper.selectByPrimaryKey(patientOriginForm.getId());
+    if (patientOrigin != null) {
+      if (patientOrigin.getAllowOperate() == false) {
         return ResponseUtil.fail(
-            OperationCodeConstants.OBJECT_EDIT_FAIL, "该患者来源不可编辑", patientOriginv);
+            OperationCodeConstants.OBJECT_EDIT_FAIL, "该患者来源不可编辑", patientOrigin);
       }
-      if (patientOriginForm.getInservice() == false){
+      patientOrigin.setInservice(patientOriginForm.getInservice());
+      if (patientOriginForm.getTimeLimit() == null){
         patientOrigin.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientOrigin.setUpdName(BaseContextHandler.getName());
         patientOrigin.setUpdTime(new Date());
         mapper.updateByPrimaryKeySelective(patientOrigin);
         return ResponseUtil.success();
       }
-      if (patientOrigin.getTimeLimit() != null && patientOrigin.getTimeLimit() == 1) {
-        patientOrigin.setLimitEndDate(getEndTimeOfDate(patientOrigin.getLimitEndDate()));
+      patientOrigin.setTimeLimit(patientOriginForm.getTimeLimit());
+      patientOrigin.setName(patientOriginForm.getName());
+      patientOrigin.setLimitStartDate(patientOriginForm.getLimitStartDate());
+      if (patientOriginForm.getTimeLimit() != null && patientOriginForm.getTimeLimit() == 1) {
+        patientOrigin.setLimitEndDate(getEndTimeOfDate(patientOriginForm.getLimitEndDate()));
+      } else {
+        patientOrigin.setLimitEndDate(patientOrigin.getLimitEndDate());
       }
       patientOrigin.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientOrigin.setUpdName(BaseContextHandler.getName());
       patientOrigin.setUpdTime(new Date());
-      mapper.updateByPrimaryKeySelective(patientOrigin);
+      mapper.updateByPrimaryKey(patientOrigin);
     } else {
-      return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST, "未找到患者来源", patientOriginv);
+      return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST, "未找到患者来源", patientOrigin);
     }
     return ResponseUtil.success();
   }

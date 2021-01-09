@@ -7,6 +7,7 @@ import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
+import com.yunya.feign.patient_central.domain.query.RechargeCashReceiptQuery;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
@@ -18,6 +19,7 @@ import com.yunya.models.patient_central.PrepaidExpendRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -144,6 +146,11 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     @Override
     public boolean memberInfoCount(Integer memberTypeId) {
         return true;
+    }
+
+    @Override
+    public BigDecimal sumMemberAndPrepayRechargeCash(RechargeCashReceiptQuery query) {
+        return null;
     }
 
     @Override

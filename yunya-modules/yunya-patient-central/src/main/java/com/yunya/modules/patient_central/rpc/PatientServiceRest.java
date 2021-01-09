@@ -5,6 +5,7 @@ import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
+import com.yunya.feign.patient_central.domain.query.RechargeCashReceiptQuery;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
@@ -23,8 +24,10 @@ import com.yunya.modules.patient_central.biz.PatientPrepaymentRelationBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +47,8 @@ public class PatientServiceRest {
     @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;
 
     /** 会员卡信息 */
-    @Autowired private PatientMemberInfoBiz patientMemberInfoBiz;
+    @Autowired
+    private PatientMemberInfoBiz patientMemberInfoBiz;
 
     /** 预付款关联 */
     @Autowired private PatientPrepaymentRelationBiz patientPrepaymentBiz;
@@ -234,6 +238,15 @@ public class PatientServiceRest {
         return aLong > 0;
     }
 
-
+    /**
+     * 根据支付方式统计会员充值和预付款充值的金额
+     *
+     * @param query
+     * @return
+     */
+    @PostMapping(value = "/member/sumMemberAndPrepayRechargeCash")
+    public BigDecimal sumMemberAndPrepayRechargeCash(@RequestBody @Validated RechargeCashReceiptQuery query) {
+        return patientMemberInfoBiz.sumMemberAndPrepayRechargeCash(query);
+    }
 
 }

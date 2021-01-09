@@ -1,4 +1,4 @@
-package com.yunya.report.ultimate.service;
+package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -13,7 +13,7 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BasePatientMember;
 import com.yunya.report.ultimate.mapper.BasePatientMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMemberMapper;
-import com.yunya.report.ultimate.utils.DateConversion;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,7 +51,8 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
      */
     public PageInfo<BasePatientMemberOverviewVo> patientOverviewList(MemberOverviewQueryForm form) throws ParseException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BasePatientMemberOverviewVo> basePatientMemberOverviewVoList = new ArrayList<>();
         List<Integer> patientIds = null;
@@ -74,7 +75,8 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
      */
     public void exportPatientOverviewList(HttpServletResponse response, MemberOverviewQueryForm form) throws ParseException, IOException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BasePatientMemberOverviewVo> resultList = new ArrayList<>();
         List<Integer> patientIds = null;

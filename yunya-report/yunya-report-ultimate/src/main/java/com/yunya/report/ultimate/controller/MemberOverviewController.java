@@ -1,4 +1,4 @@
-package com.yunya.report.ultimate.controller.member;
+package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.MemberOverviewQueryForm;
@@ -8,8 +8,8 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseOrganization;
-import com.yunya.report.ultimate.service.MemberOccurLogBiz;
-import com.yunya.report.ultimate.service.MemberOverviewBiz;
+import com.yunya.report.ultimate.biz.MemberOccurLogBiz;
+import com.yunya.report.ultimate.biz.MemberOverviewBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
@@ -39,10 +39,12 @@ import java.util.Map;
 @RequestMapping("overview")
 public class MemberOverviewController {
     /** 服务注入 */
-    @Autowired MemberOverviewBiz memberOverviewBiz;
+    @Autowired
+    MemberOverviewBiz memberOverviewBiz;
 
     /** 会员卡操作Biz */
-    @Autowired MemberOccurLogBiz memberOccurLogBiz;
+    @Autowired
+    MemberOccurLogBiz memberOccurLogBiz;
 
     /**
      * 查询门诊列表
