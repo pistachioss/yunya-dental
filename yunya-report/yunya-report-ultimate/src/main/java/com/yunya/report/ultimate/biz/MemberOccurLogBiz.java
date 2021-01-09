@@ -15,7 +15,7 @@ import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMemberMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMemberOccurLogMapper;
-import com.yunya.report.ultimate.utils.DateConversion;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,12 +52,13 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
 
     /**
      * 会员卡充值查询
-     * @param memberQueryForm 会员卡充值查询Form
+     * @param form 会员卡充值查询Form
      * @return List<MemberRechargeLogBizVo>
      */
     public PageInfo<BaseMemberRechargeLogVo> memberRechargeList(MemberQueryForm form) throws ParseException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BaseMemberRechargeLogVo> memberRechargeLogBizVos = new ArrayList<>();
         List<Integer> patientIds = null;
@@ -78,9 +79,10 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @param response
      * @param form
      */
-    public void exportMemberRechargeList(HttpServletResponse response, MemberQueryForm form) throws ParseException, IOException {
+    public void exportMemberRechargeList(HttpServletResponse response, MemberQueryForm form) throws IOException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BaseMemberRechargeLogVo> memberRechargeLogBizVos = new ArrayList<>();
         List<Integer> patientIds = null;
@@ -107,12 +109,13 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
 
     /**
      * 会员卡消费查询
-     * @param memberQueryForm 会员卡消费查询Form
+     * @param form 会员卡消费查询Form
      * @return
      */
     public PageInfo<BaseMemberExpendLogVo> memberExpendList(MemberQueryForm form) throws ParseException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BaseMemberExpendLogVo> baseMemberExpendLogVos = new ArrayList<>();
         List<Integer> patientIds = null;
@@ -135,7 +138,8 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      */
     public void exportMemberExpendList(HttpServletResponse response, MemberQueryForm form) throws ParseException, IOException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BaseMemberExpendLogVo> baseMemberExpendLogVos = new ArrayList<>();
         List<Integer> patientIds = null;
@@ -162,12 +166,13 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
 
     /**
      * 会员卡退费查询
-     * @param memberQueryForm 会员卡退费查询Form
+     * @param form 会员卡退费查询Form
      * @return List<MemberReturnLogBizVo>
      */
     public PageInfo<BaseMemberReturnLogVo> memberReturnList(MemberQueryForm form) throws ParseException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BaseMemberReturnLogVo> baseMemberReturnLogVos = new ArrayList<>();
         List<Integer> patientIds = null;
@@ -190,7 +195,8 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      */
     public void exportMemberReturnList(HttpServletResponse response, MemberQueryForm form) throws ParseException, IOException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BaseMemberReturnLogVo> baseMemberReturnLogVos = new ArrayList<>();
         List<Integer> patientIds = null;
@@ -223,7 +229,8 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      */
     public PageInfo<BasePrepaidRechargeLogVo> prepaidRechargeList(PrepaidQueryForm form) throws ParseException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList = new ArrayList<>();
         List<Integer> patientIds = null;
@@ -246,7 +253,8 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      */
     public void exportPrepaidRechargeList(HttpServletResponse response, PrepaidQueryForm form) throws ParseException, IOException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList = new ArrayList<>();
         List<Integer> patientIds = null;
@@ -273,12 +281,13 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
 
     /**
      * 预付款消费查询
-     * @param memberQueryForm 预付款消费form
+     * @param form 预付款消费form
      * @return List<PrepaidExpendLogBizVo>
      */
     public PageInfo<BasePrepaidExpendLogVo> prepaidExpendList(PrepaidQueryForm form) throws ParseException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BasePrepaidExpendLogVo> basePrepaidExpendLogVoList = new ArrayList<>();
         List<Integer> patientIds = null;
@@ -301,7 +310,8 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      */
     public void exportPrepaidExpendList(HttpServletResponse response, PrepaidQueryForm form) throws ParseException, IOException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BasePrepaidExpendLogVo> basePrepaidExpendLogVoList = new ArrayList<>();
         List<Integer> patientIds = null;
@@ -329,12 +339,13 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
 
     /**
      * 预付款退款查询
-     * @param memberQueryForm 预付款退款form
+     * @param form 预付款退款form
      * @return List<PrepaidReturnLogBizVo>
      */
     public PageInfo<BasePrepaidReturnLogVo> prepaidReturnList(PrepaidQueryForm form) throws ParseException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BasePrepaidReturnLogVo> basePrepaidReturnLogVoList = new ArrayList<>();
         List<Integer> patientIds = null;
@@ -357,7 +368,8 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      */
     public void exportPrepaidReturnList(HttpServletResponse response, PrepaidQueryForm form) throws ParseException, IOException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<BasePrepaidReturnLogVo> basePrepaidReturnLogVoList = new ArrayList<>();
         List<Integer> patientIds = null;
@@ -394,12 +406,13 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
 
     /**
      * 查询会员余额结存表
-     * @param memberQueryForm 会员余额结存条件
+     * @param form 会员余额结存条件
      * @return List<BaseMemberBalanceInfoVo>
      */
     public PageInfo<BaseMemberBalanceInfoVo> memberBalanceList(MemberQueryForm form) throws ParseException {
         if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<Integer> patientIds = null;
         List<BaseMemberBalanceInfoVo> basePrepaidReturnLogVoList = new ArrayList<>();
@@ -422,13 +435,14 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
     /**
      * 导出会员余/预付款余额结存信息记录列表
      * @param response
-     * @param memberQueryForm
+     * @param form
      * @return PageInfo<BaseMemberBalanceInfoVo>
      */
     public void exportMemberBalanceList(HttpServletResponse response, MemberQueryForm form) throws ParseException, IOException {
         String endDate = form.getEndDate();
-        if (StringHelper.isNotEmpty(form.getEndDate())){
-            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+        if (StringHelper.isNotEmpty(endDate)){
+             endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
         }
         List<Integer> patientIds = null;
         List<BaseMemberBalanceInfoVo> resultList = new ArrayList<>();
