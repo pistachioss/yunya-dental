@@ -1,4 +1,4 @@
-package com.yunya.report.ultimate.model;
+package com.yunya.models.report;
 
 import javax.persistence.Column;
 import javax.persistence.Id;

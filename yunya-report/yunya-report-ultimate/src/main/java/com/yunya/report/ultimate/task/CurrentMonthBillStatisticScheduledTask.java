@@ -7,7 +7,7 @@ import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
 import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import com.yunya.report.ultimate.mapper.CurrentMonthBillStatisticsMapper;
-import com.yunya.report.ultimate.model.CurrentMonthBillStatistics;
+import com.yunya.models.report.CurrentMonthBillStatistics;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
