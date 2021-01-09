@@ -9,7 +9,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseAccountItemBiz;
 import com.yunya.report.ultimate.biz.BaseBillBiz;
 import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
-import com.yunya.report.ultimate.service.DiscountBiz;
+import com.yunya.report.ultimate.biz.DiscountBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
