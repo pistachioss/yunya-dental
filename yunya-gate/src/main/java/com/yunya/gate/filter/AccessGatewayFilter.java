@@ -110,7 +110,8 @@ public class AccessGatewayFilter implements GlobalFilter {
     // 获取请求上头携带的token
     String authToken = getToken(request);
     if (StringUtils.isBlank(authToken)) {
-      return setUnauthorizedResponse(serverWebExchange, "Token Can't Null Or Empty String!");
+      log.info("token不能为空");
+      return setUnauthorizedResponse(serverWebExchange, "token不能为空");
     }
 
     // 对用户token合法性进行鉴权
@@ -120,20 +121,25 @@ public class AccessGatewayFilter implements GlobalFilter {
       jwtInfo = userAuthUtil.getInfoFromToken(authToken);
     } catch (Exception e) {
       log.error("用户Token过期异常", e);
-      return setUnauthorizedResponse(serverWebExchange, "User Token Forbidden or Expired!");
+      return setUnauthorizedResponse(serverWebExchange, "登录失效，请重新登录");
     }
 
     // 获取该用户在redis中存储的的token
     String currentUserIdKey = RedisConstants.setKey(RedisConstants.REDIS_KEY_USER_ID, jwtInfo.getDeviceType(), jwtInfo.getId());
     String redisToken = valueOperations.get(currentUserIdKey);
-    if (StringUtils.isBlank(redisToken) || !authToken.equals(redisToken)) {
-      return setUnauthorizedResponse(serverWebExchange, "Account Has Been Logged In Other Place!");
+    if (StringUtils.isBlank(redisToken)) {
+      log.info("登录失效，请重新登录系统后重试");
+      return setUnauthorizedResponse(serverWebExchange, "登录失效，请重新登录系统后重试");
+    } else if (!authToken.equals(redisToken)) {
+      log.info("账号已经在其他设备上登录");
+      return setUnauthorizedResponse(serverWebExchange, "账号已经在其他设备上登录");
     }
 
     // 获取redis中存储的用户信息
     String userInfoStr = valueOperations.get(RedisConstants.REDIS_KEY_USER_TOKEN + redisToken);
     if (StringUtils.isBlank(userInfoStr)) {
-      return setUnauthorizedResponse(serverWebExchange, "User Token Verify Failed!");
+      log.info("token校验失败");
+      return setUnauthorizedResponse(serverWebExchange, "token校验失败");
     }
 
     // 将token设置到请求头和线程局部变量RouteLocatorBuilder

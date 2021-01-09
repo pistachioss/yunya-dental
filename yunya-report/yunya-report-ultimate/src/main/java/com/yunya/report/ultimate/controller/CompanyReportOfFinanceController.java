@@ -195,31 +195,13 @@ public class CompanyReportOfFinanceController {
   @ApiOperation("公司端报表-财务报表-账单优惠明细-查看明细")
   @GetMapping("/bill/privilege/info/{billId}")
   @ApiImplicitParams({
-    @ApiImplicitParam(name = "billId", value = "账单ID", dataTypeClass = Integer.class),
-    @ApiImplicitParam(
-        name = "pageSize",
-        value = "页大小",
-        dataTypeClass = Integer.class,
-        defaultValue = "10"),
-    @ApiImplicitParam(
-        name = "pageNum",
-        value = "页码",
-        dataTypeClass = Integer.class,
-        defaultValue = "1"),
-    @ApiImplicitParam(
-        name = "whetherPage",
-        value = "是否分页",
-        dataTypeClass = Boolean.class,
-        defaultValue = "true"),
+    @ApiImplicitParam(name = "billId", value = "账单ID", dataTypeClass = Integer.class)
   })
-  public ResponseResult<PageInfo<BillDiscountDetailInifoVO>> billDiscountDetailInfo(
-      @PathVariable("billId") @NotNull(message = "账单ID不能为空") Integer billId,
-      @RequestParam("pageNum") Integer pageNum,
-      @RequestParam("pageSize") Integer pageSize,
-      @RequestParam("whetherPage") Boolean whetherPage) {
-    PageInfo<BillDiscountDetailInifoVO> resultPageInfo =
-        baseBillBiz.billDiscountDetailInfo(billId, pageNum, pageSize, whetherPage);
-    return ResponseUtil.success(resultPageInfo);
+  public ResponseResult<BillDiscountVO> billDiscountDetailInfo(
+      @PathVariable("billId") @NotNull(message = "账单ID不能为空") Integer billId) {
+    BillDiscountVO result =
+        baseBillBiz.billDiscountDetailInfo(billId);
+    return ResponseUtil.success(result);
   }
 
   /**
