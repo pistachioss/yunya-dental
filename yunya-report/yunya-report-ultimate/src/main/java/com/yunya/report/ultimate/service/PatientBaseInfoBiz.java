@@ -2,9 +2,12 @@ package com.yunya.report.ultimate.service;
 
 import com.yunya.feign.report.domain.vo.PatientDataVo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BasePatient;
 import com.yunya.report.ultimate.mapper.BasePatientMapper;
 import com.yunya.report.ultimate.mapper.BaseTreatmentProcessMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,12 +34,15 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
      * @param id 患者id
      * @return PatientDataVo
      */
-    public PatientDataVo PatientDataVo(Integer id) {
-        PatientDataVo patientDataVo = mapper.findPatientDataVo(id);
+    public PatientDataVo patientDataVo(Integer id) {
+        PatientDataVo patientDataFirstVisitVo = baseTreatmentProcessMapper.selectFirstVisitInfo(id);
+        PatientDataVo patientDataVo = baseTreatmentProcessMapper.selectLastVisitInfo(id);
+        BeanUtils.copyProperties(patientDataFirstVisitVo,patientDataVo);
         if (patientDataVo != null){
             patientDataVo.setTotalReservation(baseTreatmentProcessMapper.selectPatientReservation(id));
             patientDataVo.setTotalPerformance(baseTreatmentProcessMapper.selectPatientPerformance(id));
             patientDataVo.setTotalMissedAppointment(baseTreatmentProcessMapper.selectMissedAppointment(id));
+            patientDataVo.setNumberOfVisits(baseTreatmentProcessMapper.selectNumberOfVisits(id));
         }
         return patientDataVo;
     }
