@@ -114,7 +114,7 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @param billId 账单ID
    * @return 返回实体列表
    */
-  List<BillDiscountDetailInifoVO> selectBillDiscountDetailInfo(@Param("billId") Integer billId);
+  BillDiscountVO selectBillDiscountDetailInfo(@Param("billId") Integer billId);
 
   /**
    * 根据条件查询账单实时统计

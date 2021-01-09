@@ -22,6 +22,25 @@
         <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL"/>
     </resultMap>
 
+    <resultMap id="BillDiscountDetail" type="com.yunya.feign.report.domain.vo.BillDiscountVO">
+        <result property="operateUserName" column="operateUserName" jdbcType="VARCHAR"/>
+        <collection property="billDiscountDetail" ofType="com.yunya.feign.report.domain.vo.BillDiscountDetailInifoVO">
+            <result property="itemId" column="itemId" jdbcType="INTEGER"/>
+            <result property="billId" column="billId" jdbcType="INTEGER"/>
+            <result property="itemName" column="itemName" jdbcType="VARCHAR"/>
+            <result property="unit" column="unit" jdbcType="VARCHAR"/>
+            <result property="price" column="price" jdbcType="DECIMAL"/>
+            <result property="quantity" column="quantity" jdbcType="INTEGER"/>
+            <result property="originPrice" column="originPrice" jdbcType="DECIMAL"/>
+            <result property="couponName" column="couponName" jdbcType="VARCHAR"/>
+            <result property="cardNumber" column="cardNumber" jdbcType="VARCHAR"/>
+            <result property="saleChannelName" column="saleChannelName" jdbcType="VARCHAR"/>
+            <result property="benefitAmount" column="benefitAmount" jdbcType="DECIMAL"/>
+            <result property="employeeName" column="employeeName" jdbcType="VARCHAR"/>
+            <result property="abbreviation" column="abbreviation" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
     <!-- 欠费查询 -->
     <select id="arrears" resultType="com.yunya.feign.report.domain.vo.ArrearsVo">
         select
@@ -256,12 +275,12 @@
         SELECT
         bb.bill_id AS billId,
         bb.org_id as orgId,
-        bb.order_date AS orderDate,
+        bb.bill_date AS orderDate,
         bb.bill_num AS billNum,
         bb.patient_id AS patientId,
         btp.`name` AS patientName,
         btp.pinyin_name as pinyinName,
-        btp.mobile,
+        btp.mobile AS mobile,
         btp.registered_dentist_id AS regDentistId,
         btp.employee_name AS regDentistName,
         bb.order_amount AS totalOriginalAmount,
@@ -294,7 +313,7 @@
                 and brr.orgId = #{query.orgId}
             </if>
             <if test="query.orderDate != null and query.orderDate != ''">
-                and brr.orderDate = #{query.orderDate}
+                AND date_format(brr.orderDate, '%Y-%m-%d') = #{query.orderDate}
             </if>
             <if test="query.keyword != null and query.keyword != ''">
                 and concat(IFNULL(brr.patientName, ''), IFNULL(brr.pinyinName, ''), IFNULL(brr.mobile, '')) like
@@ -651,29 +670,34 @@
     </select>
 
     <!-- 根据账单ID查询账单优惠明细 -->
-    <select id="selectBillDiscountDetailInfo" resultType="com.yunya.feign.report.domain.vo.BillDiscountDetailInifoVO">
+    <select id="selectBillDiscountDetailInfo" resultMap="BillDiscountDetail">
         SELECT
-            DISTINCT a.item_id as itemId,
-                     a.bill_id as billId,
-                     a.item_name as itemName,
-                     a.unit,
-                     a.price,
-                     a.quantity,
-                     (a.price * a.quantity) as originPrice,
-                     bcpon.coupon_name as couponName,
-                     IF(bb.coupon_type=99,'',bc.card_number) as cardNumber,
-                     bc.sale_channel_name as saleChannelName,
-                     bb.benefit_amount as benefitAmount,
-                     be.employee_name as employeeName
+             any_value(a.item_id) as itemId,
+                     any_value(a.bill_id) as billId,
+                     any_value(a.item_name) as itemName,
+                     any_value(a.unit) as unit,
+                     any_value(a.price) as price,
+                     any_value(a.quantity) as quantity,
+                     (any_value(a.price) * any_value(a.quantity)) as originPrice,
+                     IF(any_value(bb.coupon_type)=99,any_value(bpm.member_level_name),any_value(bcpon.coupon_name)) as couponName,
+                     IF(any_value(bb.coupon_type)=99,'',any_value(bc.card_number)) as cardNumber,
+                     any_value(bc.sale_channel_name) as saleChannelName,
+                     any_value(bc.card_number) as cardNumber,
+                     any_value(bo.abbreviation) as abbreviation,
+                     any_value(bc.sale_channel_name) as saleChannelName,
+                     any_value(bcpon.coupon_name) as couponName,
+                     (any_value(bb.benefit_amount) * any_value(a.quantity)) as benefitAmount,
+                     be2.employee_name as operateUserName,
+                     any_value(be.employee_name) as employeeName
         FROM
-
             (
                 SELECT
+                    bbd.org_id,
                     bbd.bill_id,
                     bbd.executor_id,
                     bbd.item_id,
                     bbd.item_type,
-                    bbd.quantity,
+                    (select count(*) from base_benefit where order_id=bbd.bill_id) quantity,
                     bbd.price,
                     bti.unit,
                     bti.item_name,
@@ -683,11 +707,34 @@
                         LEFT JOIN base_tariff_info bti ON bti.item_id = bbd.item_id
                         AND bti.item_type = bbd.item_type
                 WHERE
-                    bbd.bill_id = #{billId}) a
+                    bbd.bill_id = #{billId}
+            ) a
                 LEFT JOIN base_benefit bb on (bb.order_id=a.bill_id and bb.item_id = a.item_id and a.item_type = bb.item_type)
                 LEFT JOIN base_card bc on bc.card_id = bb.card_id
                 LEFT JOIN base_coupon bcpon on bcpon.coupon_id = bc.coupon_id
                 LEFT JOIN base_employee be on be.user_id = a.executor_id
+                LEFT JOIN base_patient_member bpm on bpm.member_level_id=bb.card_id
+                LEFT JOIN base_organization bo on bo.org_id = a.org_id
+                LEFT JOIN base_employee be2 on be2.user_id = bb.operate_user_id
+        group by
+            a.item_id,
+            a.bill_id,
+            a.item_name,
+            a.unit,
+            a.price,
+            a.quantity,
+            bb.coupon_type,
+            bpm.member_level_name,
+            bcpon.coupon_name,
+            bc.card_number,
+            bc.sale_channel_name,
+            bc.card_number,
+            bo.abbreviation,
+            bc.sale_channel_name,
+            bcpon.coupon_name,
+            bb.benefit_amount,
+            be.employee_name,
+            be2.employee_name
     </select>
 
     <!-- 根据条件查询账单实时统计 -->

@@ -7,6 +7,7 @@ import com.yunya.framework.common.utils.jwt.IJWTInfo;
 import com.yunya.framework.common.utils.jwt.JWTHelper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,7 @@ import java.util.Date;
  * @author chow
  */
 @Component
+@Data
 public class JwtTokenUtil {
 
   /** 注入对象 */

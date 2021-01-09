@@ -1371,10 +1371,7 @@
             </if>
         </where>
         GROUP BY
-        bbd.org_id,
-        bbd.totalAmount,
-        bbd.discount_amount,
-        bbd.received_amount
+        bbd.org_id
         ) bbd ON bo.org_id = bbd.org_id
         LEFT JOIN (
         SELECT
@@ -1419,14 +1416,10 @@
             </if>
         </where>
         GROUP BY
-        bbd.org_id,
-        bbd.received_amount
+        bbd.org_id
         ) bbd1 ON bo.org_id = bbd1.org_id
         GROUP BY
-        bo.org_id,
-        bbd.totalClinicActualReceiveWorkload,
-        bbd.totalClinicReceivedWorkload,
-        bbd1.totalClinicReceivedNotWorkload
+        bo.org_id
         ) bbd
         <where>
             and bbd.org_id in

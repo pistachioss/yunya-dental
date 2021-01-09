@@ -9,12 +9,12 @@ import java.math.BigDecimal;
 
 /**
  * @program: yunya-dental
- * @description: 查看优惠明细视图VO
+ * @description: 查看优惠明细列表数据VO
  * @author: LHB
  * @create: 2020-12-29 10:51
  **/
 @Data
-@ApiModel(value = "BillDiscountDetailInifoVO",description = "查看优惠明细视图VO")
+@ApiModel(value = "BillDiscountDetailInifoVO",description = "查看优惠明细列表数据VO")
 public class BillDiscountDetailInifoVO implements Serializable {
     @ApiModelProperty("项目ID")
     private Integer itemId;
@@ -40,6 +40,8 @@ public class BillDiscountDetailInifoVO implements Serializable {
     private BigDecimal benefitAmount;
     @ApiModelProperty("执行人")
     private String employeeName;
+    @ApiModelProperty("公司简称")
+    private String abbreviation;
 
 
 }

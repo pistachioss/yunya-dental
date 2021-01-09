@@ -2,6 +2,7 @@ package com.yunya.modules.sms.mapper;
 
 import com.yunya.feign.sms.query.SmsSendRecordQueryForm;
 import com.yunya.feign.sms.vo.SmsSendRecordVO;
+import com.yunya.feign.sms.vo.SmsSendSituationVO;
 import com.yunya.models.sms.SmsSendRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -20,4 +21,12 @@ public interface SmsSendRecordMapper extends Mapper<SmsSendRecord> {
 
     @Override
     int insert(SmsSendRecord smsSendRecord);
+
+    /**
+     * 统计短信发送情况
+     *
+     * @param queryForm
+     * @return
+     */
+    SmsSendSituationVO sumSmsSendSituation(@Param("queryForm") SmsSendRecordQueryForm queryForm);
 }

@@ -5,14 +5,8 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
-import com.yunya.feign.report.domain.query.AssistantMatchingDetailQuery;
-import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
-import com.yunya.feign.report.domain.query.TreatmentMatchingRecordQuery;
-import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
-import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
-import com.yunya.feign.report.domain.vo.EmployeeTreatMatchingDetailVO;
-import com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO;
-import com.yunya.feign.report.domain.vo.TreatmentRecordReportVO;
+import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -23,6 +17,8 @@ import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.appointment.Appointment;
@@ -31,6 +27,8 @@ import com.yunya.report.ultimate.mapper.BaseTreatmentProcessMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -144,6 +142,17 @@ public class BaseTreatmentProcessBiz
     List<EmployeeTreatMatchingDetailVO> resultList =
         mapper.selectAssistantMatchingDetailList(query);
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 患者档案-预约信息-履约次数/失约次数/改约次数/取消预约次数
+   * @param patientId 患者ID
+   * @param query 扩展参数
+   * @return
+   */
+  public ResponseResult<AppointmentCountVO> appointmentCount(Integer patientId, AppointmentCountQuery query) {
+    AppointmentCountVO result = mapper.appointmentCount(patientId,query);
+    return ResponseUtil.success(result);
   }
 
   /**

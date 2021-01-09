@@ -2,6 +2,7 @@ package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
+import com.yunya.feign.patient_central.domain.query.RechargeCashReceiptQuery;
 import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.MemberBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientMemberRelationVo;
@@ -10,6 +11,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -73,4 +75,7 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
      * @return MemberBaseInfoVo
      */
     List<MemberBaseInfoVo> selectMemberRelationByMasterPatientId(Integer id);
+
+
+    BigDecimal sumMemberAndPrepayRechargeCash(@Param("query") RechargeCashReceiptQuery query);
 }

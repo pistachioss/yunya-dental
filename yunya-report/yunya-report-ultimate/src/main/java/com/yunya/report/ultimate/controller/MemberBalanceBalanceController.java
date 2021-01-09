@@ -81,7 +81,4 @@ public class MemberBalanceBalanceController {
         memberOccurLogBiz.exportMemberBalanceList(response,memberQueryForm);
         return ResponseUtil.success(null);
     }
-
-
-
 }

@@ -1,12 +1,11 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.AppointmentCountQuery;
 import com.yunya.feign.report.domain.query.AssistantMatchingDetailQuery;
 import com.yunya.feign.report.domain.query.TreatmentMatchingRecordQuery;
 import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
-import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
-import com.yunya.feign.report.domain.vo.EmployeeTreatMatchingDetailVO;
-import com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO;
-import com.yunya.feign.report.domain.vo.TreatmentRecordReportVO;
+import com.yunya.feign.report.domain.vo.*;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.report.BaseTreatmentProcess;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -74,4 +73,13 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
   List<BaseTreatmentProcessVO> treatmentList4App(@Param("orgId") Integer orgId,
                                                  @Param("dentistId") Integer dentistId,
                                                  @Param("currentDate") String currentDate);
+
+  /**
+   * 患者档案-预约信息-履约次数/失约次数/改约次数/取消预约次数
+   * @param patientId 患者ID
+   * @param query 扩展参数
+   * @return
+   */
+  AppointmentCountVO appointmentCount(@Param("patientId") Integer patientId, @Param("query") AppointmentCountQuery query);
+
 }

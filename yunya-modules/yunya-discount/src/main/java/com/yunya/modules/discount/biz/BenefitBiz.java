@@ -272,12 +272,12 @@ public class BenefitBiz {
 	public List<OrderBenefitDetailVo> getOrderBenefit(Integer orderId) {
 		List<OrderBenefitDetailVo> resultList = Lists.newArrayList();
 		//查询订单优惠汇总信息
-		OrderBenefit summary = getOrderBenefitSummary(orderId);
+		OrderBenefit summary = getOrderBenefitSummary(orderId, null);
 		if (summary == null) {
 			return resultList;
 		}
 		if (CARD_BENEFIT.equals(summary.getBenefitType())) {
-			List<CardBenefit> cardBenefits = getOrderBenefitDetail(orderId, CardBenefit.class, cardBenefitMapper);
+			List<CardBenefit> cardBenefits = getOrderBenefitDetail(orderId, CardBenefit.class, cardBenefitMapper, null);
 			if (CollectionUtils.isNotEmpty(cardBenefits)) {
 				Map<Integer, List<CardBenefit>> listMap = cardBenefits.stream().collect(groupingBy(CardBenefit::getOrderDetailId));
 				listMap.forEach((k, v) -> {
@@ -309,7 +309,7 @@ public class BenefitBiz {
 			}
 		}
 		if (AUTH_BENEFIT.equals(summary.getBenefitType())) {
-			List<AuthDiscountBenefit> authBenefit = getOrderBenefitDetail(orderId, AuthDiscountBenefit.class, authDiscountBenefitMapper);
+			List<AuthDiscountBenefit> authBenefit = getOrderBenefitDetail(orderId, AuthDiscountBenefit.class, authDiscountBenefitMapper, null);
 			if (CollectionUtils.isNotEmpty(authBenefit)) {
 				Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream().collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
 				listMap.forEach((k, v) -> {
@@ -340,14 +340,14 @@ public class BenefitBiz {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
 		//查询订单优惠汇总信息
-		OrderBenefit summary = getOrderBenefitSummary(orderId);
+		OrderBenefit summary = getOrderBenefitSummary(orderId, ZERO);
 		if (summary == null) {
 			errorBo.setError(DiscountError.ORDER_NO_BENEFIT);
 			return errorBo;
 		}
 		//更新优惠券
 		if (CARD_BENEFIT.equals(summary.getBenefitType())) {
-			List<CardBenefit> revokeCards = getOrderBenefitDetail(orderId, CardBenefit.class, cardBenefitMapper);
+			List<CardBenefit> revokeCards = getOrderBenefitDetail(orderId, CardBenefit.class, cardBenefitMapper, ZERO);
 			CardBenefit cardBenefit = new CardBenefit();
 			cardBenefit.setDeleted(TRUE.getCode());
 			cardBenefit.setOperateType(MODIFY_BILL.getCode());
@@ -481,10 +481,14 @@ public class BenefitBiz {
 	 * @param orderId orderId
 	 * @return order
 	 */
-	private OrderBenefit getOrderBenefitSummary(Integer orderId) {
+	private OrderBenefit getOrderBenefitSummary(Integer orderId, Integer deleteStatus) {
 		Example example = new Example(OrderBenefit.class);
-		example.createCriteria().andEqualTo("deleted", ZERO)
-				.andEqualTo("orderId", orderId);
+		if (deleteStatus != null) {
+			example.createCriteria().andEqualTo("deleted", deleteStatus)
+					.andEqualTo("orderId", orderId);
+		} else {
+			example.createCriteria().andEqualTo("orderId", orderId);
+		}
 		return orderBenefitMapper.selectOneByExample(example);
 	}
 
@@ -495,10 +499,14 @@ public class BenefitBiz {
 	 * @param clazz   clazz
 	 * @param mapper  mapper
 	 */
-	private List getOrderBenefitDetail(Integer orderId, Class<?> clazz, Mapper mapper) {
+	private <T> List<T> getOrderBenefitDetail(Integer orderId, Class<?> clazz, Mapper<T> mapper, Integer deleteStatus) {
 		Example example = new Example(clazz);
-		example.createCriteria().andEqualTo("deleted", ZERO)
-				.andEqualTo("orderId", orderId);
+		if (deleteStatus != null) {
+			example.createCriteria().andEqualTo("deleted", deleteStatus)
+					.andEqualTo("orderId", orderId);
+		} else {
+			example.createCriteria().andEqualTo("orderId", orderId);
+		}
 		return mapper.selectByExample(example);
 	}
 
