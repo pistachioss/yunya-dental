@@ -8,6 +8,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 简介: 对账单账单收费明细VO
@@ -26,7 +27,7 @@ public class StatementBillChargeDetailVO implements Serializable {
   private Integer billPayId;
   /** 收费日期 */
   @Excel(name = "收费日期")
-  @ApiModelProperty("收费日期")
+  @ApiModelProperty("收费（收欠费）日期")
   private String payeeDate;
   /** 账单ID */
   @ApiModelProperty("账单ID")
@@ -49,7 +50,7 @@ public class StatementBillChargeDetailVO implements Serializable {
   /** 手机号 */
   @Excel(name = "手机号")
   @ApiModelProperty("手机号")
-  private String mobile;
+  private String patientMobile;
   /** 挂号医生ID */
   @ApiModelProperty("挂号医生ID")
   private Integer regDentistId;
@@ -58,23 +59,32 @@ public class StatementBillChargeDetailVO implements Serializable {
   @ApiModelProperty("挂号医生")
   private String regDentistName;
   /** 原价合计 */
-  @Excel(name = "原价合计")
+  @Excel(name = "原价合计", scale = 2)
   @ApiModelProperty("原价合计")
   private BigDecimal originalAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额")
+  @Excel(name = "优惠金额", scale = 2)
   @ApiModelProperty("优惠金额")
   private BigDecimal privilegeAmount;
   /** 实收金额 */
-  @Excel(name = "实收金额")
+  @Excel(name = "实收金额", scale = 2)
   @ApiModelProperty("实收金额")
   private BigDecimal actualAmount;
   /** 已收金额 */
-  @Excel(name = "已收金额")
+  @Excel(name = "已收金额", scale = 2)
   @ApiModelProperty("已收金额")
-  private BigDecimal receivedAmount;
+  private BigDecimal totalReceivedAmount;
   /** 本次收费金额 */
-  @Excel(name = "本次收费金额")
+  @Excel(name = "本次收费金额", scale = 2)
   @ApiModelProperty("本次收费金额")
-  private BigDecimal currentReceivedAmount;
+  private BigDecimal receivedAmount;
+  /** 收费人ID */
+  @ApiModelProperty("收费人ID")
+  private Integer payeeId;
+  /** 收费人姓名 */
+  @Excel(name = "收费人")
+  @ApiModelProperty("收费人姓名")
+  private String payeeName;
+  /**支付方式列表*/
+  private List<StatementPaymentVO> statementPayments;
 }

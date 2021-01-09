@@ -47,7 +47,7 @@
             <result column="ele_name" property="name" javaType="String"/>
             <result column="ele_uri" property="uri" javaType="String"/>
             <result column="ele_menu_id" property="menuId" javaType="Integer"/>
-            <result column="ele_parent_id" property="parentId" javaType="Integer"/>
+            <result column="ele_parent_id" property="parentId" javaType="String"/>
             <result column="ele_parent_name" property="parentName" javaType="String"/>
             <result column="ele_path" property="path" javaType="String"/>
             <result column="ele_method" property="method" javaType="String"/>

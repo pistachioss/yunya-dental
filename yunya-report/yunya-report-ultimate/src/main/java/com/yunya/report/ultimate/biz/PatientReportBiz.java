@@ -1,4 +1,4 @@
-package com.yunya.report.ultimate.service;
+package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -7,7 +7,6 @@ import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseEmployee;
@@ -17,7 +16,7 @@ import com.yunya.report.ultimate.mapper.BaseBillMapper;
 import com.yunya.report.ultimate.mapper.BaseEmployeeMapper;
 import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMapper;
-import com.yunya.report.ultimate.utils.DateConversion;
+import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,9 +70,10 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
    */
   public PageInfo<BasePatientNotSeenVo> notSeenList(PatientReportQueryForm form)
       throws ParseException {
-    if (StringHelper.isNotEmpty(form.getEndDate())) {
-      form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
-    }
+    if (StringHelper.isNotEmpty(form.getEndDate())){
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
+        }
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
@@ -89,9 +89,10 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
    */
   public void exportNotSeenList(HttpServletResponse response, PatientReportQueryForm form)
       throws ParseException, IOException {
-    if (StringHelper.isNotEmpty(form.getEndDate())) {
-      form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
-    }
+    if (StringHelper.isNotEmpty(form.getEndDate())){
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
+        }
     List<BasePatientNotSeenVo> basePatientNotSeenVoList = mapper.selectNotSeenList(form);
     ExcelUtil<BasePatientNotSeenVo> excelUtil = new ExcelUtil<>(BasePatientNotSeenVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
@@ -137,9 +138,10 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
    */
   public PageInfo<ArrearsVo> arrears(ArrearsQueryForm form) throws ParseException {
 
-    if (StringHelper.isNotEmpty(form.getEndDate())) {
-      form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
-    }
+    if (StringHelper.isNotEmpty(form.getEndDate())){
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
+        }
     List<Integer> patientIds = null;
     if (StringHelper.isNotEmpty(form.getCombination())) {
       patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
@@ -161,9 +163,10 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     Map map = new HashMap();
     List<ArrearsVo> arrearsVoListvo1 = null;
     List<ArrearsVo> arrearsVoListvo2 = null;
-    if (StringHelper.isNotEmpty(form.getEndDate())) {
-      form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
-    }
+    if (StringHelper.isNotEmpty(form.getEndDate())){
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
+        }
     List<Integer> patientIds = null;
     if (StringHelper.isNotEmpty(form.getCombination())) {
       patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
@@ -201,9 +204,10 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
    */
   public void exportArrearsList(HttpServletResponse response, ArrearsQueryForm form)
       throws ParseException, IOException {
-    if (StringHelper.isNotEmpty(form.getEndDate())) {
-      form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
-    }
+    if (StringHelper.isNotEmpty(form.getEndDate())){
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
+        }
     List<Integer> patientIds = null;
     if (StringHelper.isNotEmpty(form.getCombination())) {
       patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
@@ -211,10 +215,8 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     List<ArrearsVo> arrearsVoList = baseBillMapper.arrears(form, patientIds);
     ExcelUtil<ArrearsVo> excelUtil = new ExcelUtil<>(ArrearsVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
-      BaseOrganization baseOrganization = new BaseOrganization();
-      baseOrganization.setOrgId(form.getOrgId());
-      BaseOrganization baseOrganizationv = baseOrganizationMapper.selectOne(baseOrganization);
-      if (baseOrganization != null) {
+      BaseOrganization baseOrganizationv = baseOrganizationMapper.selectByPrimaryKey(form.getOrgId());
+      if (baseOrganizationv != null) {
         excelUtil.exportExcel(
             response, arrearsVoList, "账单欠费统计表", baseOrganizationv.getAbbreviation() + "账单欠费统计表");
       }
@@ -230,9 +232,10 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
    * @return
    */
   public AnalysisVo analysis(PatientAnalysisQueryForm form) throws ParseException {
-    if (StringHelper.isNotEmpty(form.getEndDate())) {
-      form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
-    }
+    if (StringHelper.isNotEmpty(form.getEndDate())){
+            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+            form.setEndDate(endDate);
+        }
     AnalysisVo analysisVo = new AnalysisVo();
     // 来源类型比例
     Integer countOriginType = mapper.selectCountOriginType(form);

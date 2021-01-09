@@ -1,4 +1,4 @@
-package com.yunya.report.ultimate.service;
+package com.yunya.report.ultimate.biz;
 
 import com.yunya.feign.report.domain.vo.PatientDataVo;
 import com.yunya.framework.common.biz.BaseBiz;

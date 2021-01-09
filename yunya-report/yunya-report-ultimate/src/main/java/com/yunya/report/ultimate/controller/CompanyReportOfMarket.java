@@ -7,7 +7,7 @@ import com.yunya.feign.report.domain.vo.CardStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.report.ultimate.service.DiscountBiz;
+import com.yunya.report.ultimate.biz.DiscountBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
