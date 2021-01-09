@@ -54,6 +54,19 @@ public class ClinicDeviceItemBiz extends BaseBiz<ClinicDeviceItemMapper, ClinicD
         return deviceItemVo;
     }
 
+    /**
+     * 根据设备ids查询设备信息
+     * @param ids
+     * @return
+     */
+    public List<DeviceItemVo> selectDeviceItemByIds(List<Integer> ids){
+        if (ids != null && !ids.isEmpty()) {
+            List<DeviceItemVo> deviceItemVos = mapper.selectDeviceItemByIds(ids);
+            return deviceItemVos;
+        }
+        return new ArrayList<>();
+    }
+
 
     /**
      * 新增门诊端可用设备

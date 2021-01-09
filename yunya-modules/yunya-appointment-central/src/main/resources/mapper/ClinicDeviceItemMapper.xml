@@ -64,4 +64,26 @@
     where cdi.id = #{id}
   </select>
 
+  <!-- 根据设备ids查询设备 -->
+  <select id="selectDeviceItemByIds" resultType="com.yunya.feign.appointment.vo.DeviceItemVo">
+    SELECT
+      cdi.id,
+      cdi.number,
+      cdi.device_id as deviceId,
+      cdi.org_id as orgId,
+      cdt.name,
+      cdi.remarks,
+      cdi.inservice
+    from clinic_device_item cdi LEFT JOIN clinic_device_type cdt
+                                          on cdi.device_id = cdt.id
+    <where>
+      <if test="ids != null and ids.size > 0">
+        cdi.id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+          #{id}
+        </foreach>
+      </if>
+    </where>
+  </select>
+
 </mapper>
