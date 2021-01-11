@@ -6,11 +6,15 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseRefundDetailMapper;
 import com.yunya.middletable.dao.report.BaseRefundMapper;
+import com.yunya.middletable.dao.report.BaseRefundPayDetailMapper;
 import com.yunya.middletable.dao.treatment.BillRefundOrderDetailMapper;
+import com.yunya.middletable.dao.treatment.BillRefundPayDetailRecordMapper;
 import com.yunya.middletable.dao.treatment.BillRefundRecordMapper;
 import com.yunya.models.report.BaseRefund;
 import com.yunya.models.report.BaseRefundDetail;
+import com.yunya.models.report.BaseRefundPayDetail;
 import com.yunya.models.treatment.BillRefundOrderDetail;
+import com.yunya.models.treatment.BillRefundPayDetailRecord;
 import com.yunya.models.treatment.BillRefundRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,8 +42,12 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
   /** 退费开单详情 */
   @Autowired private BillRefundOrderDetailMapper refundOrderDetailMapper;
 
+  @Autowired private BillRefundPayDetailRecordMapper refundPayDetailRecordMapper;
+
   /** 退费明细 */
   @Autowired private BaseRefundDetailMapper refundDetailMapper;
+
+  @Autowired private BaseRefundPayDetailMapper refundPayDetailMapper;
 
   /**
    * 根据消息更新中间表退费信息
@@ -78,6 +86,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
         if (null == refund) {
           mapper.deleteByPrimaryKey(dataId);
           refundDetailMapper.deleteByRefundId(dataId);
+          deleteByRefundId(dataId);
         } else {
           mapper.insertSelective(refund);
           saveBaseRefundDetail(dataId);
@@ -86,6 +95,12 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
       default:
         break;
     }
+  }
+
+  private void deleteByRefundId(Integer refundId) {
+    BaseRefundPayDetail entity = new BaseRefundPayDetail();
+    entity.setRefundId(refundId);
+    refundPayDetailMapper.delete(entity);
   }
 
   /**
@@ -142,6 +157,29 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
             refundDetailMapper.insertSelective(refundDetail);
           });
     }
+
+    saveBaseRefundPayDetail(refundId);
+  }
+
+  private void saveBaseRefundPayDetail(Integer refundId) {
+    BillRefundPayDetailRecord billRefundPayDetailRecord = new BillRefundPayDetailRecord();
+    billRefundPayDetailRecord.setBillRefundRecordId(refundId);
+    List<BillRefundPayDetailRecord> refundPayDetails =
+            refundPayDetailRecordMapper.select(billRefundPayDetailRecord);
+    if (StringHelper.isNotEmpty(refundPayDetails)) {
+      deleteByRefundId(refundId);
+      BaseRefundPayDetail refundPayDetail = new BaseRefundPayDetail();
+      refundPayDetails.forEach(
+              detail -> {
+                Integer refundDetailId = detail.getId();
+                refundPayDetail.setBillRefundPayDetailRecordId(refundDetailId);
+                refundPayDetail.setRefundId(refundId);
+                refundPayDetail.setAccountItemId(detail.getAccountItemId());
+                refundPayDetail.setBonusAmount(detail.getGiftAmount());
+                refundPayDetail.setPrincipalAmount(detail.getPrincipalAmount());
+                refundPayDetailMapper.insertSelective(refundPayDetail);
+              });
+    }
   }
 
   /**
@@ -176,6 +214,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
         }
       }
     }
+    saveBaseRefundPayDetail(refundId);
   }
 
   /**
