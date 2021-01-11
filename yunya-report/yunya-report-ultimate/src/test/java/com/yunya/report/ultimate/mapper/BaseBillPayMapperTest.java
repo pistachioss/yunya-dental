@@ -41,12 +41,12 @@ public class BaseBillPayMapperTest {
     StatementBillChargeDetailInfoQuery query = new StatementBillChargeDetailInfoQuery();
     query.setOrgId(35);
     query.setDateType((byte)1);
-    query.setStartDate("2020-12");
-    query.setEndDate("2020-12");
+    query.setStartDate("2021-01");
+    query.setEndDate("2021-01");
     //query.setPatientKeyword("wang");
     //query.setBillNum("ZD00352012020009");
-    query.setChargeStartDate("2020-12-01");
-    query.setChargeEndDate("2020-12-31");
+    //query.setChargeStartDate("2020-12-01");
+    //query.setChargeEndDate("2020-12-31");
     List<StatementBillChargeDetailVO> vos = billPayMapper.selectBillChargeDetailInfoList(query);
     System.out.println(vos);
   }

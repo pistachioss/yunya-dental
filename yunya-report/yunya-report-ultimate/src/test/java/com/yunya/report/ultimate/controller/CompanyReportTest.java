@@ -123,8 +123,27 @@ public class CompanyReportTest {
     InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
     query.setStartDate("2021-01-11");
     query.setEndDate("2021-01-11");
-    query.setDateType((byte)0);
+    query.setDateType((byte) 0);
     query.setOrgId(42);
-    System.out.println(JSONObject.toJSONString(financeController.inboundAndOutboundStatement(query)));
+    System.out.println(
+        JSONObject.toJSONString(financeController.inboundAndOutboundStatement(query)));
+  }
+
+  @Test
+  public void find5() {
+    StatementProductSoldDetailQuery query = new StatementProductSoldDetailQuery();
+    query.setOrgId(35);
+    query.setDateType((byte) 0);
+    query.setStartDate("2020-10-01");
+    query.setEndDate("2020-12-31");
+    // query.setSoldTargetName("");
+    // query.setSoldTargetMobile("");
+    // query.setCardNum("");
+    // query.setProductName("");
+    // query.setSoldStartDate("");
+    // query.setSoldEndDate("");
+    ResponseResult<PageInfo<StatementProductSoldDetailVO>> result =
+        financeController.productSoldDetailList(query);
+    System.out.println(result);
   }
 }

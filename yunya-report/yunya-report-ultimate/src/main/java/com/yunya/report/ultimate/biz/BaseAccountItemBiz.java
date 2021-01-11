@@ -467,6 +467,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
       StatementPaymentVO boundPayment) {
     switch (type) {
       case 0://本月账单
+        query.setIsCurMonth((byte) 1);
         BigDecimal billChargeMemberPrincipalAmount =
             mapper.selectBillChargePrincipal(accountItem[0], query);
         boundPayment.setTotalAmount(billChargeMemberPrincipalAmount);
@@ -538,30 +539,59 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
       Integer[] accountItem,
       StatementPaymentVO boundPayment) {
     switch (type) {
-      case 0:
+      case 0:// 本月账单收费
+        query.setIsCurMonth((byte) 1);
         BigDecimal billChargeMemberBonusAmount =
             mapper.selectBillChargeBonus(accountItem[0], query);
         boundPayment.setTotalAmount(billChargeMemberBonusAmount);
         break;
-      case 1:
+      case 1:// 本月收欠费
+        query.setIsCurMonth((byte) 1);
         BigDecimal collectArrearsMemberBonusAmount =
             mapper.selectCollectArrearsBonus(accountItem[0], query);
         boundPayment.setTotalAmount(collectArrearsMemberBonusAmount);
         break;
-      case 5:
+      case 2:// 非本月收欠费
+        query.setIsCurMonth((byte) 0);
+        BigDecimal notCurMonthcollectArrearsMemberBonusAmount =
+                mapper.selectCollectArrearsBonus(accountItem[0], query);
+        boundPayment.setTotalAmount(notCurMonthcollectArrearsMemberBonusAmount);
+        break;
+      case 6:// 本月门诊代收
+        query.setIsCurMonth((byte) 1);
         BigDecimal clinicCollectionMemberBonusAmount =
             mapper.selectClinicCollectionBonus(accountItem[0], query);
         boundPayment.setTotalAmount(clinicCollectionMemberBonusAmount);
         break;
-      case 6:
+      case 7:// 非本月门诊代收
+        query.setIsCurMonth((byte) 0);
+        BigDecimal notCurMonthclinicCollectionMemberBonusAmount =
+                mapper.selectClinicCollectionBonus(accountItem[0], query);
+        boundPayment.setTotalAmount(notCurMonthclinicCollectionMemberBonusAmount);
+        break;
+      case 8:// 本月账单退费
+        query.setIsCurMonth((byte) 1);
         BigDecimal billRefundMemberBonusAmount =
             mapper.selectBillRefundBonus(accountItem[0], query);
         boundPayment.setTotalAmount(billRefundMemberBonusAmount);
         break;
-      case 9:
+      case 9:// 非本月账单退费
+        query.setIsCurMonth((byte) 0);
+        BigDecimal notCurMonthbillRefundMemberBonusAmount =
+                mapper.selectBillRefundBonus(accountItem[0], query);
+        boundPayment.setTotalAmount(notCurMonthbillRefundMemberBonusAmount);
+        break;
+      case 12:
+        query.setIsCurMonth((byte) 1);
         BigDecimal clinicIsAcceptedMemberBonusAmount =
             mapper.selectClinicIsAcceptedBonus(accountItem[0], query);
         boundPayment.setTotalAmount(clinicIsAcceptedMemberBonusAmount);
+        break;
+      case 13:
+        query.setIsCurMonth((byte) 0);
+        BigDecimal notCurMonthclinicIsAcceptedMemberBonusAmount =
+                mapper.selectClinicIsAcceptedBonus(accountItem[0], query);
+        boundPayment.setTotalAmount(notCurMonthclinicIsAcceptedMemberBonusAmount);
         break;
       default:
         break;
