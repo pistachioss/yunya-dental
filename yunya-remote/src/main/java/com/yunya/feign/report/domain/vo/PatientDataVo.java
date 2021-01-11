@@ -30,7 +30,7 @@ public class PatientDataVo implements Serializable {
      * 初诊日期
      */
     @ApiModelProperty("初诊日期")
-    private Date firstVisitDate;
+    private String firstVisitDate;
 
     /**
      * 初诊医生
@@ -54,7 +54,7 @@ public class PatientDataVo implements Serializable {
      * 末诊日期
      */
     @ApiModelProperty("末诊日期")
-    private Date lastVisitDate;
+    private String lastVisitDate;
 
     /**
      * 末诊医生

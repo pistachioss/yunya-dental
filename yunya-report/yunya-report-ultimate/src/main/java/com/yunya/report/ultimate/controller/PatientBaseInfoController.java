@@ -38,7 +38,7 @@ public class PatientBaseInfoController {
     @ApiOperation("查询患者资料预约信息")
     @GetMapping("/patientInfo/{id}")
     public ResponseResult<PatientDataVo> patientInfo(@PathVariable("id") Integer id) {
-        PatientDataVo patientDataVo = patientBaseInfoBiz.PatientDataVo(id);
+        PatientDataVo patientDataVo = patientBaseInfoBiz.patientDataVo(id);
         return ResponseUtil.success(patientDataVo);
     }
 
