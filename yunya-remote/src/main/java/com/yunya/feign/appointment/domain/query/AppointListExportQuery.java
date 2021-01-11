@@ -59,6 +59,7 @@ public class AppointListExportQuery implements Serializable {
 
     /** 门诊ID */
     @ApiModelProperty(value = "门诊ID")
+    @NotNull(message = "门诊ID不能为空")
     private Integer orgId;
 
 

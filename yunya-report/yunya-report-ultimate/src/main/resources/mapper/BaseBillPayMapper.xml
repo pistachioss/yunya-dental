@@ -887,7 +887,7 @@
         ) bbp
         <where>
             <if test="query.patientKeyword != null and query.patientKeyword != ''">
-                AND concat(IFNULL(bbp.patientName, ''),IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) like
+                AND concat(IFNULL(bbp.patientName, ''), IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) LIKE
                 concat('%', #{query.patientKeyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">

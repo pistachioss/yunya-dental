@@ -1551,7 +1551,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         List<AppointmentListItemVo> appointmentListItemVoList = pageInfo.getList();
         // 预约列表为空抛出异常
         if (StringHelper.isNotEmpty(appointmentListItemVoList)) {
-
             // 预约列表信息
             List<AppointListExportVo> appointListExportVos = new ArrayList<>();
             if (appointmentListItemVoList != null && !appointmentListItemVoList.isEmpty()) {
@@ -1565,7 +1564,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 appointListExportVos = appointListExportVoList.stream().sorted(Comparator.comparingInt(AppointListExportVo::getDentistId)).collect(Collectors.toList());
             }
 
-            Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+            Integer orgId = exportQuery.getOrgId();
 
             SimpleDateFormat exportAppointDateFormat = new SimpleDateFormat("yyyy-MM-dd");
             String exportAppointDate = exportAppointDateFormat.format(new Date(System.currentTimeMillis()));
