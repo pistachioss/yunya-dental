@@ -47,11 +47,11 @@ public class BusinessConstants {
   /** 预付款支付方式名称 */
   public static final String ACCOUNT_ITEM_OF_PREPARE = "预付款";
   /** 支付宝支付方式名称 */
-  private static final String ACCOUNT_ITEM_OF_ALIPAY = "支付宝";
+  public static final String ACCOUNT_ITEM_OF_ALIPAY = "支付宝";
   /** 微信支付方式名称 */
-  private static final String ACCOUNT_ITEM_OF_WECHAT = "微信";
+  public static final String ACCOUNT_ITEM_OF_WECHAT = "微信";
   /** 银行账户支付方式名称 */
-  private static final String ACCOUNT_ITEM_OF_BANK = "银行账户";
+  public static final String ACCOUNT_ITEM_OF_BANK = "银行账户";
 
   /** -------------------------用户、员工信息相关常量--------------------------- */
 
