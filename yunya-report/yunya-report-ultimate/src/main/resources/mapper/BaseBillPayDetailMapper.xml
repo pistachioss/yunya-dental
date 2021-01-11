@@ -16,6 +16,27 @@
 
     <!-- 根据收费记录ID查询收费明细并按照全部支付方式分组 -->
     <select id="selectBillPayDetailList" resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
-
+        SELECT
+            bai.account_item_id AS accountItemId,
+            bai.account_item_name AS accountItemName,
+            IFNULL( bbpd.principal_amount, 0 ) AS totalAmount
+        FROM
+            base_account_item bai
+            LEFT JOIN (
+            SELECT
+            bbpd.account_item_id,
+            bbpd.principal_amount
+            FROM
+            base_bill_pay_detail bbpd
+            WHERE
+            bbpd.bill_pay_id = #{billPayId}
+            ) bbpd ON bai.account_item_id = bbpd.account_item_id
+        GROUP BY
+            bai.account_type_id,
+            bai.account_item_name,
+            bbpd.principal_amount
+        ORDER BY
+            bai.account_type_id,
+            bai.account_item_id
     </select>
 </mapper>

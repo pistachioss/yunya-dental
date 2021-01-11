@@ -12,18 +12,18 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * 简介: 对账单患者卡（会员卡、预付款卡）充值明细信息查询参数模型
+ * 简介: 门诊产品售出记录明细查询参数模型
  *
  * @author: chow
- * @date: 2021/1/9 13:54
+ * @date: 2021/1/11 14:47
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("对账单患者卡（会员卡、预付款卡）充值明细信息查询参数模型")
+@ApiModel("门诊产品售出记录明细查询参数模型")
 @Data
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class StatementPatientCardRechargeDetailInfoQuery extends PageQuery implements Serializable {
+public class StatementProductSoldDetailQuery extends PageQuery implements Serializable {
   /** 组织ID */
   @ApiModelProperty(value = "组织ID", required = true)
   @NotNull(message = "组织ID")
@@ -40,20 +40,22 @@ public class StatementPatientCardRechargeDetailInfoQuery extends PageQuery imple
   @ApiModelProperty(value = "结束时间", required = true)
   @NotBlank(message = "查询结束时间不能为空！")
   private String endDate;
-  /** 卡类型:0-会员卡；1-预付款 */
-  @ApiModelProperty(value = "卡类型:0-会员卡；1-预付款", required = true)
-  @NotNull(message = "储值卡类型不能为空！")
-  private Byte cardType;
-  /** 患者关键字 */
-  @ApiModelProperty("患者关键字")
-  private String patientKeyword;
-  /** 会员卡号、预付款卡号 */
-  @ApiModelProperty("会员卡号、预付款卡号")
+  /** 售出对象 */
+  @ApiModelProperty("售出对象")
+  private String soldTargetName;
+  /** 售出对象手机号 */
+  @ApiModelProperty("售出对象手机号")
+  private String soldTargetMobile;
+  /** 卡号 */
+  @ApiModelProperty("卡号")
   private String cardNum;
-  /** 充值查询开始时间 */
-  @ApiModelProperty("充值查询开始时间")
-  private String rechargeStartDate;
-  /** 充值查询结束时间 */
-  @ApiModelProperty("充值查询结束时间")
-  private String rechargeEndDate;
+  /** 产品名称 */
+  @ApiModelProperty("产品名称")
+  private String productName;
+  /** 售出开始时间 */
+  @ApiModelProperty("售出开始时间")
+  private String soldStartDate;
+  /** 售出结束时间 */
+  @ApiModelProperty("售出结束时间")
+  private String soldEndDate;
 }
