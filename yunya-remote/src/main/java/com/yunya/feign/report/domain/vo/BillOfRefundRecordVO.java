@@ -77,4 +77,7 @@ public class BillOfRefundRecordVO implements Serializable {
   @Excel(name = "退费原因")
   @ApiModelProperty("退费原因")
   private String refundReason;
+  /** 就诊ID */
+  @ApiModelProperty("就诊ID")
+  private Integer treatmentId;
 }

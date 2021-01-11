@@ -609,41 +609,18 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      */
     private List<VisitingRecordVo> sort(List<VisitingRecordVo> visitingRecordVos) {
         // 按随访时间排序
-        return visitingRecordVos.stream().sorted((obj1, obj2)->{
-           if (obj1==null || obj2==null) {
-               return 0;
-           }
-           Date date1 = null;
-           Date date2 = null;
-           try {
-              date1 = DateUtil.timeToDate(obj1.getVisitingDate(), obj1.getVisitingTime());
-              date2 = DateUtil.timeToDate(obj2.getVisitingDate(), obj2.getVisitingTime());
-           } catch (ParseException e) {
-              throw new ClientServiceException("日期转换错误",OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
-           }
-           return date2.compareTo(date1);
-        }).collect(Collectors.toList());
+        return visitingRecordVos.stream().sorted(
+                Comparator.comparing(VisitingRecordVo::getVisitingTime,(obj1,obj2)->{
+                    if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
+                        return -1;
+                    }
+                    String[] objSplit1 = obj1.trim().split(":");
+                    Integer objMinute1 = Integer.parseInt(objSplit1[0]) * 60 + Integer.parseInt(objSplit1[1]);
+                    String[] objSplit2 = obj2.trim().split(":");
+                    Integer objMinute2 = Integer.parseInt(objSplit2[0]) * 60 + Integer.parseInt(objSplit2[1]);
+                    return objMinute1.compareTo(objMinute2);
+                })).collect(Collectors.toList());
     }
-
-    /**
-     * 按时间对随访列表进行降序排序
-     * @param visitingRecordVos 随访列表
-     * @return 排序之后的列表
-     */
-//    private List<VisitingRecordVo> sort(List<VisitingRecordVo> visitingRecordVos) {
-//        // 按随访时间排序
-//        return visitingRecordVos.stream().sorted(
-//                Comparator.comparing(VisitingRecordVo::getVisitingTime,(obj1,obj2)->{
-//                    if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
-//                        return -1;
-//                    }
-//                    String[] objSplit1 = obj1.trim().split(":");
-//                    Integer objMinute1 = Integer.parseInt(objSplit1[0]) * 60 + Integer.parseInt(objSplit1[1]);
-//                    String[] objSplit2 = obj2.trim().split(":");
-//                    Integer objMinute2 = Integer.parseInt(objSplit2[0]) * 60 + Integer.parseInt(objSplit2[1]);
-//                    return objMinute1.compareTo(objMinute2);
-//                })).collect(Collectors.toList());
-//    }
 
     /**
      * 根据时间段，医生ID查询这个时间段内每一天每个医生预约的患者数量
