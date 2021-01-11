@@ -37,7 +37,7 @@ public class BusinessConstants {
   public static final Byte MEDICAL_TYPE = 2;
   /** 其他类型 */
   public static final Byte OTHER_TYPE = 3;
-  /** 公司端的组织id*/
+  /** 公司端的组织id */
   public static final Integer COMPANY_ORGID = 21;
   /*************************** 默认支付方式 ****************************/
   /** 现金支付方式名称 */
@@ -46,6 +46,12 @@ public class BusinessConstants {
   public static final String ACCOUNT_ITEM_OF_MEMBER = "会员卡";
   /** 预付款支付方式名称 */
   public static final String ACCOUNT_ITEM_OF_PREPARE = "预付款";
+  /** 支付宝支付方式名称 */
+  private static final String ACCOUNT_ITEM_OF_ALIPAY = "支付宝";
+  /** 微信支付方式名称 */
+  private static final String ACCOUNT_ITEM_OF_WECHAT = "微信";
+  /** 银行账户支付方式名称 */
+  private static final String ACCOUNT_ITEM_OF_BANK = "银行账户";
 
   /** -------------------------用户、员工信息相关常量--------------------------- */
 
@@ -64,6 +70,7 @@ public class BusinessConstants {
   public static Integer MEDICAL_AUDIT_PENDING_STATUS = 1;
   /** 电子待主治医生提交状态 */
   public static Integer NORMAL_MEDICAL_STATUS = 0;
+
   public static Integer ZERO = 0;
   public static Integer ONE = 1;
 
@@ -95,12 +102,14 @@ public class BusinessConstants {
 
   /********************************report********************************/
   public static final Integer ADD = 0;
+
   public static final Integer UPDATE = 1;
   public static final Integer DELETE = 2;
 
   /********************************预约中心正则*****************************/
   /** 手机号正则表达式 */
-  public static final String MOBILE_REGEXP = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|16[0|1|2|3|5|6|7|8|9]|17[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
+  public static final String MOBILE_REGEXP =
+      "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|16[0|1|2|3|5|6|7|8|9]|17[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
   /** 名字正则表达式 */
   public static final String NAME_REGEXP = "^[\\u4e00-\\u9fa5]{0,}$";
   /** 拼音名字正则表达式 */
