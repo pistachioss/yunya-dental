@@ -1042,4 +1042,26 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
     return null;
   }
+
+  /**
+   * 根据条件查询患者全部信息
+   *
+   * @param queryForm
+   * @return
+   */
+  public List<PatientTotalInfoVo> findPatientTotalInfo(PatientBaseInfoQueryForm queryForm) {
+    List<PatientTotalInfoVo> patientTotalInfoVos = mapper.findPatientTotalInfo(queryForm);
+    if (StringHelper.isNotEmpty(patientTotalInfoVos)) {
+      patientTotalInfoVos.forEach(patientTotalInfoVo -> {
+        Integer patientKind = patientTotalInfoVo.getPatientKind();
+        if (patientKind != null) {
+          DictionaryItem dictionaryItemById = remoteSystemServiceFeign.findDictionaryItemById(patientKind);
+          patientTotalInfoVo.setPatientKindName(dictionaryItemById.getName());
+        }
+        // 设置患者扩展信息
+        this.setPatientExtInfo(patientTotalInfoVo.getId(),patientTotalInfoVo);
+      });
+    }
+    return patientTotalInfoVos;
+  }
 }

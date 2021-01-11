@@ -363,12 +363,12 @@ public class PatientPrepaymentRelationBiz
               templateParam.put(key, prepaidExpendRecord.getPrepaidId());
               // 会员消费金额
             } else if (SmsTemplateItemEnum.PREPAID_CONSUMPTION_AMOUNT.getCode().equals(code)) {
-              templateParam.put(key, prepaidExpendRecord.getExpendPrincipal().add(prepaidExpendRecord.getExpendGift()));
+              templateParam.put(key, prepaidExpendRecord.getExpendPrincipal().add(prepaidExpendRecord.getExpendGift()==null?BigDecimal.valueOf(0):prepaidExpendRecord.getExpendGift()));
               // 会员剩余金额
             } else if (SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getCode().equals(code)) {
               templateParam.put(
                   key,
-                      prepaidExpendRecord.getExpendPrincipal().add(prepaidExpendRecord.getExpendGift()));
+                      prepaidExpendRecord.getExpendPrincipal().add(prepaidExpendRecord.getExpendGift()==null?BigDecimal.valueOf(0):prepaidExpendRecord.getExpendGift()));
               // 其他
             } else {
               throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);

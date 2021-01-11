@@ -49,4 +49,15 @@ public class PatientBaseInfoQueryForm implements Serializable {
     @ApiModelProperty(value = "患者手机号", required = true)
     private String mobile;
 
+    /**
+     * 模糊匹配患者姓名 或 手机号码
+     */
+    @ApiModelProperty(value = "模糊匹配患者姓名 或 手机号码")
+    private String search;
+
+    /**
+     * 模糊匹配病例号
+     */
+    @ApiModelProperty(value = "模糊匹配病例号")
+    private String likeMedicalNumber;
 }

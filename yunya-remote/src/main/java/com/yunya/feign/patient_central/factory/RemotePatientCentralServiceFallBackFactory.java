@@ -4,10 +4,7 @@ package com.yunya.feign.patient_central.factory;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
-import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
-import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
-import com.yunya.feign.patient_central.domain.query.RechargeCashReceiptQuery;
+import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
@@ -150,6 +147,11 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
 
     @Override
     public BigDecimal sumMemberAndPrepayRechargeCash(RechargeCashReceiptQuery query) {
+        return null;
+    }
+
+    @Override
+    public List<PatientTotalInfoVo> findPatientTotalInfo(PatientBaseInfoQueryForm queryForm) {
         return null;
     }
 

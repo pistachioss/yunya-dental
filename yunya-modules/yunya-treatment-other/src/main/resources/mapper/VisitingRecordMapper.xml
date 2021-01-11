@@ -91,12 +91,27 @@
       <if test="query.status != null">
         and vr.status = #{query.status}
       </if>
+      <if test="query.dentistIds!=null and query.dentistIds.size()>0">
+        and vr.dentist_id in
+        <foreach collection="query.dentistIds" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+      <if test="query.patientIds!=null and query.patientIds.size()>0">
+        and vr.patient_id in
+        <foreach collection="query.patientIds" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
     </where>
     <if test="query.searchId == 1">
       order by vr.crt_time asc
     </if>
     <if test="query.searchId == 2">
       order by vr.visiting_date asc
+    </if>
+    <if test="query.searchId == 3">
+      order by vr.visiting_date desc, TIME(vr.visiting_time) desc
     </if>
   </select>
 
