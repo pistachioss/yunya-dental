@@ -79,5 +79,5 @@ public class BillOfRefundRecordVO implements Serializable {
   private String refundReason;
   /** 就诊ID */
   @ApiModelProperty("就诊ID")
-  private Integer treatmentId;
+  private Integer treatmentRecordId;
 }

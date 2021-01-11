@@ -2438,6 +2438,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         // 查询患者预约信息
         List<AppointPatientRecordVo> appointPatientRecord = mapper.findAppointPatientRecord(query);
+        if(StringHelper.isEmpty(appointPatientRecord)) {
+            return ResponseUtil.success(new PageInfo<>(appointPatientRecord));
+        }
         // 获取医生ID、助手ID
         List<Integer> dentistAndAssistentIds = new ArrayList<>();
         // 获取门诊ID

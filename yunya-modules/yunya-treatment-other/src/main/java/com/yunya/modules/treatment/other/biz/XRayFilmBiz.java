@@ -13,9 +13,13 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment_other.XRayFilm;
 import com.yunya.modules.treatment.other.mapper.XRayFilmMapper;
 import com.yunya.modules.treatment.other.utils.TreatmentOtherUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,37 +51,44 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
      * @param patientId 患者ID
      * @param models 参数模型
      */
-    public void addBatch(Integer patientId, List<XRayFilmInfoModel> models){
+    public ResponseResult<T> addBatch(Integer patientId, List<XRayFilmInfoModel> models){
         List<XRayFilm> xRayFilms = new ArrayList<>();
-        Integer userID = Integer.valueOf(BaseContextHandler.getUserID());
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         String username = BaseContextHandler.getName();
-        models.forEach(xRayFilmModel -> {
-            Byte type = xRayFilmModel.getType();
-            Integer toothNo = xRayFilmModel.getToothNo();
-            if (type == 1 && toothNo == null) {
-                throw new ClientServiceException("根尖片牙位编号不能位空",OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
-            }
-            XRayFilm xRayFilm = new XRayFilm();
-            xRayFilm.setCrtId(userID);
-            xRayFilm.setCrtName(username);
-            xRayFilm.setPatientId(patientId);
-            xRayFilm.setPhotoName(xRayFilmModel.getPhotoName());
-            xRayFilm.setToothNo(xRayFilmModel.getToothNo());
-            xRayFilm.setType(xRayFilmModel.getType());
-            xRayFilm.setUrl(xRayFilmModel.getUrl());
-            if (null != xRayFilmModel.getUploadTime()) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date parse = null;
-                try {
-                    parse = dateFormat.parse(xRayFilmModel.getUploadTime());
-                } catch (ParseException e) {
-                    e.printStackTrace();
+        if (StringHelper.isNotEmpty(models)) {
+            models.forEach(xRayFilmModel -> {
+                Byte type = xRayFilmModel.getType();
+                Integer toothNo = xRayFilmModel.getToothNo();
+                if (type == 1 && toothNo == null) {
+                    throw new ClientServiceException("根尖片牙位编号不能位空", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
                 }
-                xRayFilm.setUploadTime(parse);
+                XRayFilm xRayFilm = new XRayFilm();
+                xRayFilm.setCrtId(userId);
+                xRayFilm.setCrtName(username);
+                xRayFilm.setPatientId(patientId);
+                xRayFilm.setPhotoName(xRayFilmModel.getPhotoName());
+                xRayFilm.setToothNo(xRayFilmModel.getToothNo());
+                xRayFilm.setType(xRayFilmModel.getType());
+                xRayFilm.setUrl(xRayFilmModel.getUrl());
+                if (null != xRayFilmModel.getUploadTime()) {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    Date parse = null;
+                    try {
+                        parse = dateFormat.parse(xRayFilmModel.getUploadTime());
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    xRayFilm.setUploadTime(parse);
+                }
+                xRayFilms.add(xRayFilm);
+            });
+            Integer integer = mapper.addBatch(xRayFilms);
+            if (integer > 0) {
+                return ResponseUtil.success();
             }
-            xRayFilms.add(xRayFilm);
-        });
-        mapper.addBatch(xRayFilms);
+            return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"上传图片失败",null);
+        }
+        return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL,"上传图片列表不能为空",null);
     }
 
     /**
