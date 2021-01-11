@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
@@ -115,5 +116,15 @@ public class CompanyReportTest {
     ResponseResult<CurrentMonthBillStatisticVO> result =
         financeController.currentMonthStatementStatistic(query);
     System.out.println(result);
+  }
+
+  @Test
+  public void find4() {
+    InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
+    query.setStartDate("2021-01-11");
+    query.setEndDate("2021-01-11");
+    query.setDateType((byte)0);
+    query.setOrgId(42);
+    System.out.println(JSONObject.toJSONString(financeController.inboundAndOutboundStatement(query)));
   }
 }

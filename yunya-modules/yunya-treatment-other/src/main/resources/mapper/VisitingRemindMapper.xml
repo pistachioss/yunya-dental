@@ -28,10 +28,10 @@
     vrd.id,vrd.org_id,vrd.patient_id,vrd.dentist_id,vrd.treatment_id,vrd.remind_date,vrd.remind_time,vrd.remind_content,vrd.remarks,vrd.status ,vrd.inservice,vrd.crt_id,vrd.crt_name,vrd.crt_time,
     vrd.upt_id,vrd.upd_name,vrd.upd_time
   </sql>
-  
+
   <!-- 根据患者id、提醒日期，提醒时间查询随访提醒 -->
   <select id="findVisitingRemindByPatientIdAndDateTime" parameterType="java.util.Map" resultMap="BaseResultMap">
-     select 
+     select
      <include refid="baseColumns"></include>
      from visiting_remind vrd
      <where>
@@ -49,38 +49,41 @@
 
   <!-- 根据条件查询随访提醒记录 -->
   <select id="findVisitingRemindByCondition" parameterType="com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery" resultMap="BaseResultMap">
-      select 
-      <include refid="baseColumns"></include>
-      from visiting_remind vrd
-      <where>
-        <if test="query.patientId != null">
-          vrd.patient_id = #{query.patientId}
-        </if>
-        <if test="query.orgId != null">
-          and vrd.org_id = #{query.orgId}
-        </if>
-        <if test="query.remindDate != null and query.searchId == 1">
-          and date_format(vrd.crt_time,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
-        </if>
-        <if test="query.remindDate != null and query.searchId == 2">
-          and date_format(vrd.remind_date,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
-        </if>
-        <if test="query.searchBeginTime != null and query.searchEndTime != null">
-          and date_format(vrd.remind_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d') and date_format(#{query.searchEndTime},'%Y-%m-%d')
-        </if>
-        <if test="query.inservice != null">
-          and vrd.inservice = #{query.inservice}
-        </if>
-        <if test="query.status != null">
-          and vrd.status = #{query.status}
-        </if>
-        <if test="query.crtId != null">
-          and vrd.crt_id = #{query.crtId}
-        </if>
-        <if test="query.dentistId != null">
-          and vrd.dentist_id = #{query.dentistId}
-        </if>
-      </where>
+    select
+    <include refid="baseColumns"></include>
+    from visiting_remind vrd
+    <where>
+      <if test="query.patientId != null">
+        vrd.patient_id = #{query.patientId}
+      </if>
+      <if test="query.orgId != null">
+        and vrd.org_id = #{query.orgId}
+      </if>
+      <if test="query.remindDate != null and query.searchId == 1">
+        and date_format(vrd.crt_time,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
+      </if>
+      <if test="query.remindDate != null and query.searchId == 2">
+        and date_format(vrd.remind_date,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
+      </if>
+      <if test="query.searchBeginTime != null and query.searchEndTime != null">
+        and date_format(vrd.remind_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d') and date_format(#{query.searchEndTime},'%Y-%m-%d')
+      </if>
+      <if test="query.inservice != null">
+        and vrd.inservice = #{query.inservice}
+      </if>
+      <if test="query.status != null">
+        and vrd.status = #{query.status}
+      </if>
+      <if test="query.dentistId != null">
+      and vrd.crt_id = #{query.dentistId}
+      <if test="query.crtId != null">
+        and vrd.crt_id = #{query.crtId}
+      </if>
+      <if test="query.dentistId == null">
+      <if test="query.dentistId != null">
+        and vrd.dentist_id = #{query.dentistId}
+      </if>
+    </where>
   </select>
 
 </mapper>

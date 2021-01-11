@@ -261,6 +261,7 @@
         billId,
         orgId,
         DATE_FORMAT(orderDate, '%Y-%m-%d') orderDate,
+        DATE_FORMAT(billDate, '%Y-%m-%d') billDate,
         billNum,
         patientId,
         patientName,
@@ -275,7 +276,8 @@
         SELECT
         bb.bill_id AS billId,
         bb.org_id as orgId,
-        bb.bill_date AS orderDate,
+        bb.bill_date AS billDate,
+        bb.order_date AS orderDate,
         bb.bill_num AS billNum,
         bb.patient_id AS patientId,
         btp.`name` AS patientName,
@@ -285,19 +287,19 @@
         btp.employee_name AS regDentistName,
         bb.order_amount AS totalOriginalAmount,
         bb.actual_amount AS totalActualAmount,
-        bb.received_amount AS billReceivableAmount
+        bb.debt_amount AS billReceivableAmount
         FROM
         base_bill bb
         LEFT JOIN (
         SELECT
-        btp.treatment_id,
-        btp.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.gender,
-        bp.pinyin_name,
-        btp.registered_dentist_id,
-        be.employee_name
+        btp.treatment_id as treatment_id,
+        any_value(btp.patient_id) as patient_id,
+        any_value(bp.`name`) as name,
+        any_value(bp.mobile) as mobile,
+        any_value(bp.gender) as gender,
+        any_value(bp.pinyin_name) as pinyin_name,
+        any_value(btp.registered_dentist_id) as registered_dentist_id,
+        any_value(be.employee_name) as employee_name
         FROM
         base_treatment_process btp
         LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
@@ -311,6 +313,9 @@
         <where>
             <if test="query.orgId != null">
                 and brr.orgId = #{query.orgId}
+            </if>
+            <if test="query.billDate != null and query.billDate != ''">
+                AND date_format(brr.billDate, '%Y-%m-%d') = #{query.billDate}
             </if>
             <if test="query.orderDate != null and query.orderDate != ''">
                 AND date_format(brr.orderDate, '%Y-%m-%d') = #{query.orderDate}

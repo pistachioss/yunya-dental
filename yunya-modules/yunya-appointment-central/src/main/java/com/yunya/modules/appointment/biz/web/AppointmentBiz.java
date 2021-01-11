@@ -28,6 +28,7 @@ import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
@@ -2437,13 +2438,57 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         // 查询患者预约信息
         List<AppointPatientRecordVo> appointPatientRecord = mapper.findAppointPatientRecord(query);
+        if(StringHelper.isEmpty(appointPatientRecord)) {
+            return ResponseUtil.success(new PageInfo<>(appointPatientRecord));
+        }
+        // 获取医生ID、助手ID
+        List<Integer> dentistAndAssistentIds = new ArrayList<>();
+        // 获取门诊ID
+        List<Integer> orgIds = new ArrayList<>();
+        // 获取科室ID
+        List<Integer> departmentRoomIds = new ArrayList<>();
+        // 获取设备ID
+        List<Integer> deviceItemIds = new ArrayList<>();
+        appointPatientRecord.forEach(item -> {
+            Integer dentistId = item.getDentistId();
+            if (!dentistAndAssistentIds.contains(dentistId) && dentistId != null) {
+                dentistAndAssistentIds.add(dentistId);
+            }
+            Integer assistantId = item.getAssistantId();
+            if (!dentistAndAssistentIds.contains(assistantId) && assistantId != null) {
+                dentistAndAssistentIds.add(assistantId);
+            }
+            Integer orgId = item.getOrgId();
+            if (!orgIds.contains(orgId) && orgId != null) {
+                orgIds.add(orgId);
+            }
+            Integer deptRoomId = item.getDeptRoomId();
+            if (!departmentRoomIds.contains(deptRoomId) && deptRoomId != null) {
+                departmentRoomIds.add(deptRoomId);
+            }
+            Integer clinicDeviceItemId = item.getClinicDeviceItemId();
+            if (!deviceItemIds.contains(clinicDeviceItemId) && clinicDeviceItemId != null) {
+                deviceItemIds.add(clinicDeviceItemId);
+            }
+        });
+
+        // 查询医生和助手个人信息
+        List<SysUserInfoDetail> dentistAndAssistantInfos = this.remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistAndAssistentIds);
+        // 查询门诊信息
+        List<OrganizationInfoDetail> orgInfoInIds = this.remoteSystemServiceFeign.findOrgInfoInIds(orgIds);
+        // 查询科室信息
+        List<DepartmentRoom> departmentRoomByIds = this.remoteSystemServiceFeign.findDepartmentRoomByIds(departmentRoomIds);
+        // 查询设备项目信息
+        List<DeviceItemVo> deviceItemVos = this.clinicDeviceItemBiz.selectDeviceItemByIds(deviceItemIds);
+
         appointPatientRecord.forEach(appointPatientRecordVo -> {
             // 设置医生名字
             Integer dentistId = appointPatientRecordVo.getDentistId();
-            if (null != dentistId) {
-                SysEmployee dentistInfo = this.remoteSystemServiceFeign.findSysEmployeeById(dentistId);
-                if (null != dentistInfo) {
-                    appointPatientRecordVo.setDentistName(dentistInfo.getName());
+            if (null != dentistId && StringHelper.isNotEmpty(dentistAndAssistantInfos)) {
+                List<SysUserInfoDetail> collect = dentistAndAssistantInfos.stream().filter(item -> item.getUserId().equals(dentistId)).collect(Collectors.toList());
+                if (StringHelper.isNotEmpty(collect)) {
+                    SysUserInfoDetail userInfoDetail = collect.get(0);
+                    appointPatientRecordVo.setDentistName(userInfoDetail.getName());
                 } else {
                     appointPatientRecordVo.setDentistName("--");
                 }
@@ -2452,10 +2497,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
             // 设置助手名字
             Integer assistantId = appointPatientRecordVo.getAssistantId();
-            if (null != assistantId) {
-                SysEmployee assistantInfo = this.remoteSystemServiceFeign.findSysEmployeeById(assistantId);
-                if (null != assistantInfo) {
-                    appointPatientRecordVo.setAssistantName(assistantInfo.getName());
+            if (null != assistantId && StringHelper.isNotEmpty(dentistAndAssistantInfos)) {
+                List<SysUserInfoDetail> collect = dentistAndAssistantInfos.stream().filter(item -> item.getUserId().equals(assistantId)).collect(Collectors.toList());
+                if (StringHelper.isNotEmpty(collect)) {
+                    SysUserInfoDetail userInfoDetail = collect.get(0);
+                    appointPatientRecordVo.setAssistantName(userInfoDetail.getName());
                 } else {
                     appointPatientRecordVo.setAssistantName("--");
                 }
@@ -2464,10 +2510,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
             // 设置门诊名称
             Integer orgId = appointPatientRecordVo.getOrgId();
-            if (null != orgId) {
-                OrganizationInfo orgInfo = this.remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-                if (null != orgInfo) {
-                    appointPatientRecordVo.setOrgName(orgInfo.getName());
+            if (null != orgId && StringHelper.isNotEmpty(orgInfoInIds)) {
+                List<OrganizationInfoDetail> collect = orgInfoInIds.stream().filter(item -> item.getId().equals(orgId)).collect(Collectors.toList());
+                if (StringHelper.isNotEmpty(collect)) {
+                    OrganizationInfoDetail organizationInfoDetail = collect.get(0);
+                    appointPatientRecordVo.setOrgName(organizationInfoDetail.getName());
                 } else {
                     appointPatientRecordVo.setOrgName("--");
                 }
@@ -2476,10 +2523,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
             // 设置科室名称
             Integer deptRoomId = appointPatientRecordVo.getDeptRoomId();
-            if (null != deptRoomId) {
-                DepartmentRoom departmentRoomInfo = this.remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
-                if (null != departmentRoomInfo) {
-                    appointPatientRecordVo.setDeptRoomName(departmentRoomInfo.getName());
+            if (null != deptRoomId && StringHelper.isNotEmpty(departmentRoomByIds)) {
+                List<DepartmentRoom> collect = departmentRoomByIds.stream().filter(item -> item.getId().equals(deptRoomId)).collect(Collectors.toList());
+                if (StringHelper.isNotEmpty(collect)) {
+                    DepartmentRoom departmentRoom = collect.get(0);
+                    appointPatientRecordVo.setDeptRoomName(departmentRoom.getName());
                 } else {
                     appointPatientRecordVo.setDeptRoomName("--");
                 }
@@ -2488,9 +2536,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
             // 设置设备编号
             Integer clinicDeviceItemId = appointPatientRecordVo.getClinicDeviceItemId();
-            if (null != clinicDeviceItemId) {
-                DeviceItemVo deviceItemVo = this.clinicDeviceItemBiz.selectDeviceItemById(clinicDeviceItemId);
-                if (null != deviceItemVo) {
+            if (null != clinicDeviceItemId && StringHelper.isNotEmpty(deviceItemVos)) {
+                List<DeviceItemVo> collect = deviceItemVos.stream().filter(item -> item.getId().equals(clinicDeviceItemId)).collect(Collectors.toList());
+                if (StringHelper.isNotEmpty(collect)) {
+                    DeviceItemVo deviceItemVo = collect.get(0);
                     appointPatientRecordVo.setClinicDeviceItemNumber(deviceItemVo.getNumber());
                 } else {
                     appointPatientRecordVo.setClinicDeviceItemNumber("--");

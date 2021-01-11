@@ -1154,7 +1154,7 @@
         <where>
             AND bbp.org_id = bb.org_id
             AND bbp.bill_id = bb.bill_id
-            AND bbp.payee_date != bb.bill_date
+            AND bbp.payee_date = bb.bill_date
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
@@ -1270,6 +1270,58 @@
             and bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.isCurMonth!=null and query.isCurMonth==1">
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+            </if>
+            <if test="query.isCurMonth!=null and query.isCurMonth==0">
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt; #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt; #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt; #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt; #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt; #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y' ) &gt; #{query.endDate}
+                    </if>
+                </if>
             </if>
         </where>
         ) bb
@@ -1393,12 +1445,47 @@
             <if test="query.orgId != null">
                 AND bb.org_id != #{query.orgId} -- 不是本门诊账单
             </if>
+            <if test="query.isCurMonth!=null and query.isCurMonth==1">
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+            </if>
+            <if test="query.isCurMonth!=null and query.isCurMonth==0">
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt; #{query.startDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt; #{query.startDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt; #{query.startDate}
+                    </if>
+                </if>
+            </if>
         </where>
         ) bb
         <where>
             AND bbp.bill_id = bb.bill_id
             <if test="query.orgId != null">
-                AND bbp.org_id != #{query.orgId}
+                AND bbp.org_id = #{query.orgId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -1506,9 +1593,53 @@
         br.refund_id
         FROM
         base_refund br
+        LEFT JOIN base_bill bb on bb.bill_id=br.bill_id
         <where>
             <if test="query.orgId != null">
                 AND br.org_id = #{query.orgId}
+            </if>
+            <if test="query.isCurMonth!=null and query.isCurMonth==1">
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+            </if>
+            <if test="query.isCurMonth!=null and query.isCurMonth==0">
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt; #{query.startDate} -- 非本月账单
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt; #{query.startDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt;= #{query.startDate}
+                    </if>
+                </if>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -1611,8 +1742,51 @@
         <where>
             AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
-            <if test="query.orgId">
+            <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.isCurMonth!=null and query.isCurMonth==1">
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y' ) &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt;= #{query.endDate}
+                    </if>
+                </if>
+            </if>
+            <if test="query.isCurMonth!=null and query.isCurMonth==0">
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt; #{query.startDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt; #{query.startDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt; #{query.startDate}
+                    </if>
+                </if>
             </if>
         </where>
         ) bb
@@ -1673,7 +1847,7 @@
         <where>
             AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
-            <if test="query.orgId">
+            <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
         </where>

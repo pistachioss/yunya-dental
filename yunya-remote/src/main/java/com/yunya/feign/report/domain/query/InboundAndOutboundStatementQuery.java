@@ -37,4 +37,9 @@ public class InboundAndOutboundStatementQuery implements Serializable {
   @ApiModelProperty(value = "结束时间", required = true)
   @NotBlank(message = "查询结束时间不能为空！")
   private String endDate;
+
+  /**
+   * 是否本月
+   */
+  private Byte isCurMonth;
 }
