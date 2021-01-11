@@ -4,7 +4,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -43,13 +42,6 @@ public class MemberReturnRecordModel implements Serializable {
      */
     @ApiModelProperty(value = "退还赠金",required = false)
     private BigDecimal returnGiftAmount;
-
-
-    /**
-     * 实际退还本金
-     */
-    @ApiModelProperty(name = "actual_return_amount",required = true)
-    private BigDecimal actualReturnAmount;
 
     /**
      * 退费方式ID
