@@ -59,5 +59,5 @@ public class PatientBaseInfoQueryForm implements Serializable {
      * 模糊匹配病例号
      */
     @ApiModelProperty(value = "模糊匹配病例号")
-    private String likeMedicalNumber;
+    private String medicalNumber;
 }

@@ -1452,6 +1452,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                 desktopMiniProgramVO.setPatientName(patientBaseInfoVo.getName());
                 desktopMiniProgramVO.setMedicalNumber(patientBaseInfoVo.getMedicalNumber());
                 desktopMiniProgramVO.setBirthday(patientBaseInfoVo.getBirthday());
+                desktopMiniProgramVO.setMobile(patientBaseInfoVo.getMobile());
               }
               // 设置是否上传图片
               List<XRayFilm> xRayFilms =

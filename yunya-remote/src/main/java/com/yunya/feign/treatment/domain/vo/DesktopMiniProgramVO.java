@@ -39,5 +39,7 @@ public class DesktopMiniProgramVO implements Serializable {
     private Integer firstVisit;
     @ApiModelProperty("是否有上传图片")
     private Boolean hasImg;
+    @ApiModelProperty("患者手机号")
+    private String mobile;
 
 }
