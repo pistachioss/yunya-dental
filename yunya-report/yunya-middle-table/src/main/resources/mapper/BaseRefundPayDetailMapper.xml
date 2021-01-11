@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.middletable.dao.report.BaseRefundPayDetailMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseRefundPayDetail" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="bill_refund_pay_detail_record_id" property="billRefundPayDetailRecordId" jdbcType="INTEGER" />
+    <result column="refund_id" property="refundId" jdbcType="INTEGER" />
+    <result column="account_item_id" property="accountItemId" jdbcType="INTEGER" />
+    <result column="principal_amount" property="principalAmount" jdbcType="DECIMAL" />
+    <result column="bonus_amount" property="bonusAmount" jdbcType="DECIMAL" />
+  </resultMap>
+</mapper>

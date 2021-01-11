@@ -237,9 +237,10 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @param model 退费参数
    */
   public void refund(BillRefundModel model) {
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer treatmentRecordId = model.getTreatmentRecordId();
     // 检查就诊是否收费
-    BillRecord billRecord = checkBillRecord(treatmentRecordId);
+    BillRecord billRecord = checkBillRecord(treatmentRecordId, orgId);
     List<RefundOrderDetailModel> refundOrderDetailModels = model.getRefundOrderDetailModels();
     MemberRefundModel memberRefundModel = model.getMemberRefundModel();
     PrepaymentRefundModel prepaymentRefundModel = model.getPrepaymentRefundModel();
@@ -257,7 +258,6 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     if (refundOrderDetailAmount.compareTo(refundTotalAmount) != 0) {
       throw new ClientServiceException("账单退费失败，退费总额与退费项目金额总和不相等！", PARAMETERS_IS_ILLEGAL);
     }
-    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     String name = BaseContextHandler.getName();
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     // 保存退费记录
@@ -346,6 +346,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
         giftAmount = new BigDecimal(0);
       }
       refundPayDetailRecord.setRefundPayAmount(principalAmount.add(giftAmount));
+      refundPayDetailRecord.setPrincipalAmount(principalAmount);
+      refundPayDetailRecord.setGiftAmount(giftAmount);
       billRefundPayDetailRecordMapper.insertSelective(refundPayDetailRecord);
       // 会员卡退费金额返还
       MemberBillRechargeModel memberModel = new MemberBillRechargeModel();
@@ -369,6 +371,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
         giftAmount = new BigDecimal(0);
       }
       refundPayDetailRecord.setRefundPayAmount(principalAmount.add(giftAmount));
+      refundPayDetailRecord.setPrincipalAmount(principalAmount);
+      refundPayDetailRecord.setGiftAmount(giftAmount);
       billRefundPayDetailRecordMapper.insertSelective(refundPayDetailRecord);
       // 预付款退费金额返还
       PrepaidBillRechargeModel prepaidModel = new PrepaidBillRechargeModel();
@@ -386,6 +390,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
             refundPayDetailRecord.setRemark(paymentModel.getAccountItemId().toString());
             BigDecimal amount = paymentModel.getAmount();
             refundPayDetailRecord.setRefundPayAmount(amount);
+            refundPayDetailRecord.setPrincipalAmount(amount);
+            refundPayDetailRecord.setGiftAmount(null);
             billRefundPayDetailRecordMapper.insertSelective(refundPayDetailRecord);
           });
     }
@@ -395,15 +401,19 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * 根据就诊是否是否
    *
    * @param treatmentRecordId 就诊记录ID
+   * @param orgId
    * @return
    */
-  private BillRecord checkBillRecord(Integer treatmentRecordId) {
+  private BillRecord checkBillRecord(Integer treatmentRecordId, Integer orgId) {
     BillRecord entity = new BillRecord();
     entity.setTreatmentRecordId(treatmentRecordId);
     entity.setInservice(true);
     BillRecord billRecord = mapper.selectOne(entity);
     if (null == billRecord) {
       throw new ClientServiceException("账单退费失败，当前就诊账单已修改或未收费！", DATA_NOT_EXIST);
+    }
+    if (!billRecord.getOrgId().equals(orgId)) {
+      throw new ClientServiceException("账单退费失败，只能对本门诊账单退费！", DATA_NOT_EXIST);
     }
     return billRecord;
   }
