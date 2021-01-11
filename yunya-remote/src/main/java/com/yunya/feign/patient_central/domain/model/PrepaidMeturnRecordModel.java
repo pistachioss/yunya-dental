@@ -44,12 +44,6 @@ public class PrepaidMeturnRecordModel implements Serializable {
     private BigDecimal returnGiftAmount;
 
     /**
-     * 实际退还本金
-     */
-    @ApiModelProperty(name = "actual_return_amount",required = true)
-    private BigDecimal actualReturnAmount;
-
-    /**
      * 退费方式ID
      */
     @ApiModelProperty(value = "退费方式ID",required = false)
