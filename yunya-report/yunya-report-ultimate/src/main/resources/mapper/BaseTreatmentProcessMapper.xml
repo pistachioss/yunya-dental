@@ -38,52 +38,54 @@
     <select id="selectTreatmentRecordReportVOList"
             resultType="com.yunya.feign.report.domain.vo.TreatmentRecordReportVO">
         SELECT
-            tr.orgId,
-            tr.orgName,
-            tr.treatDate,
-            tr.patientId,
-            tr.patientName,
-            tr.mobile,
-            tr.gender,
-            tr.treatType,
-            tr.regDentistId,
-            tr.regDentistName,
-            tr.appointTime,
-            tr.appointDuration,
-            tr.appointContent,
-            tr.regTime,
-            tr.treatStartTime,
-            tr.treatEndTime,
-            tr.treatWaitingTime,
-            tr.treatExpendTime
+        tr.orgId,
+        tr.orgName,
+        tr.treatDate,
+        tr.patientId,
+        tr.patientName,
+        tr.mobile,
+        tr.gender,
+        tr.treatType,
+        tr.regDentistId,
+        tr.regDentistName,
+        tr.appointTime,
+        tr.appointDuration,
+        tr.appointContent,
+        tr.regTime,
+        tr.treatStartTime,
+        tr.treatEndTime,
+        tr.treatWaitingTime,
+        tr.treatExpendTime
         FROM
-            (
-            SELECT
-                btp.org_id AS orgId,
-                bo.abbreviation AS orgName,
-                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS treatDate,
-                btp.patient_id AS patientId,
-                bp.`name` AS patientName,
-                bp.pinyin_name AS pinyinName,
-                bp.mobile AS mobile,
-                bp.gender AS gender,
-                btp.treat_type AS treatType,
-                btp.registered_dentist_id AS regDentistId,
-                be.employee_name AS regDentistName,
-                DATE_FORMAT( btp.appoint_start_time, '%H:%i' ) AS appointTime,
-                btp.appoint_duration AS appointDuration,
-                btp.appoint_content AS appointContent,
-                DATE_FORMAT( btp.registered_time, '%H:%i' ) AS regTime,
-                DATE_FORMAT( btp.treat_start_time, '%H:%i' ) AS treatStartTime,
-                DATE_FORMAT( btp.treat_end_time, '%H:%i' ) AS treatEndTime,
-                TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_start_time,'%H:%i'),DATE_FORMAT(btp.registered_time,'%H:%i')))/60 AS treatWaitingTime,
-                TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_end_time, '%H:%i'), DATE_FORMAT( btp.treat_start_time, '%H:%i' )))/60  AS treatExpendTime
-            FROM
-                base_treatment_process btp
-                LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
-                LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
-            LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-            ) tr
+        (
+        SELECT
+        btp.org_id AS orgId,
+        bo.abbreviation AS orgName,
+        DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS treatDate,
+        btp.patient_id AS patientId,
+        bp.`name` AS patientName,
+        bp.pinyin_name AS pinyinName,
+        bp.mobile AS mobile,
+        bp.gender AS gender,
+        btp.treat_type AS treatType,
+        btp.registered_dentist_id AS regDentistId,
+        be.employee_name AS regDentistName,
+        DATE_FORMAT( btp.appoint_start_time, '%H:%i' ) AS appointTime,
+        btp.appoint_duration AS appointDuration,
+        btp.appoint_content AS appointContent,
+        DATE_FORMAT( btp.registered_time, '%H:%i' ) AS regTime,
+        DATE_FORMAT( btp.treat_start_time, '%H:%i' ) AS treatStartTime,
+        DATE_FORMAT( btp.treat_end_time, '%H:%i' ) AS treatEndTime,
+        TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_start_time,'%H:%i'),DATE_FORMAT(btp.registered_time,'%H:%i')))/60 AS
+        treatWaitingTime,
+        TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_end_time, '%H:%i'), DATE_FORMAT( btp.treat_start_time, '%H:%i' )))/60
+        AS treatExpendTime
+        FROM
+        base_treatment_process btp
+        LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+        ) tr
         <where>
             <if test="query.orgId != null">
                 and tr.orgId = #{query.orgId}
@@ -341,40 +343,6 @@
         order by btp.appoint_start_time , btp.registered_date desc
     </select>
 
-    <!-- 查询患者初诊信息 -->
-    <select id="selectFirstVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientDataVo">
-        SELECT
-            btp.patient_id patientId,
-            DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ),
-            be.employee_name firstVisitDoctors,
-            bo.abbreviation firstVisitOutpatient,
-            (SELECT sum(received_amount) FROM base_bill where patient_id = #{patientId})  cumulativeConsumption
-        FROM
-            base_treatment_process btp
-            LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-            LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
-        WHERE
-            patient_id = #{patientId}
-            AND treat_type = 0
-  </select>
-    <!-- 查询患者末诊信息 -->
-    <select id="selectLastVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientDataVo">
-        SELECT
-            btp.patient_id patientId,
-            DATE_FORMAT(btp.treat_start_time,'%Y-%m-%d') firstVisitDate,
-            be.employee_name firstVisitDoctors,
-            bo.abbreviation firstVisitOutpatient,
-            (SELECT sum(debt_amount) FROM `base_bill` where patient_id = #{patientId}) totalArrears
-        FROM
-            base_treatment_process btp
-            LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-            LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
-        WHERE
-            btp.patient_id = #{patientId}
-            AND btp.treat_type = 1
-          AND btp.treat_end_time = (select max(treat_end_time) from base_treatment_process where patient_id = #{patientId} AND treat_type = 1)
-    </select>
-
     <!-- 患者档案-预约信息-履约次数/失约次数/改约次数/取消预约次数 -->
     <select id="appointmentCount" resultType="com.yunya.feign.report.domain.vo.AppointmentCountVO">
         select ifnull(sum(btp1.appointment_id), 0) as keepAppointmentCount,
@@ -398,9 +366,53 @@
                 and btp.dentist_id = #{query.patientId}
             </if>
             <if test="query.startDate != null and query.startDate != '' and query.endDate != null and query.endDate != ''">
-                and (date_format(btp.appoint_start_time,'%Y-%m-%d') between date_format(${query.startDate},'%Y-%m-%d') and date_format(${query.endDate},'%Y-%m-%d'))
+                and (date_format(btp.appoint_start_time,'%Y-%m-%d') between date_format(${query.startDate},'%Y-%m-%d')
+                and date_format(${query.endDate},'%Y-%m-%d'))
             </if>
         </where>
+    </select>
+
+    <!-- 查询患者初诊信息 -->
+    <select id="selectFirstVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientDataFirstVisitVo">
+        SELECT
+            btp.patient_id patientId,
+            DATE_FORMAT(btp.treat_start_time, '%Y-%m-%d' ) firstVisitDate,
+            be.employee_name firstVisitDoctors,
+            bo.abbreviation firstVisitOutpatient,
+            (SELECT sum(received_amount) FROM base_bill where patient_id = 186)  cumulativeConsumption
+        FROM
+            base_treatment_process btp
+            LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+            LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+        WHERE
+            btp.patient_id = 186
+            AND btp.treat_type = 0
+			group by btp.patient_id
+  </select>
+
+    <!-- 查询患者末诊信息 -->
+    <select id="selectLastVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientDataVo">
+        SELECT
+            date_format(t1.lastVisitDate,'%Y-%m-%d') lastVisitDate,
+            t1.lastVisitDoctors,
+            t1.lastVisitOutpatient,
+            t1.totalArrears
+            from (
+                SELECT
+                    btp.patient_id patientId,
+                    btp.treat_start_time lastVisitDate,
+                    be.employee_name lastVisitDoctors,
+                    bo.abbreviation lastVisitOutpatient,
+                    ( SELECT sum( debt_amount ) FROM `base_bill` WHERE patient_id = #{patientId} ) totalArrears
+                FROM
+                    base_treatment_process btp
+                    LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+                    LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+                WHERE
+                    btp.patient_id = #{patientId}
+                AND btp.treat_type = 1
+                AND btp.treat_end_time = ( SELECT max( treat_end_time ) FROM base_treatment_process WHERE patient_id = #{patientId} AND treat_type = 1 )
+                ) t1
     </select>
 
 </mapper>

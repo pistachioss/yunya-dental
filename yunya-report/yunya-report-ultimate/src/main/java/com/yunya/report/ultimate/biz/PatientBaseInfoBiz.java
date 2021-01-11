@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.biz;
 
+import com.yunya.feign.report.domain.vo.PatientDataFirstVisitVo;
 import com.yunya.feign.report.domain.vo.PatientDataVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -35,7 +36,7 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
      * @return PatientDataVo
      */
     public PatientDataVo patientDataVo(Integer id) {
-        PatientDataVo patientDataFirstVisitVo = baseTreatmentProcessMapper.selectFirstVisitInfo(id);
+        PatientDataFirstVisitVo patientDataFirstVisitVo = baseTreatmentProcessMapper.selectFirstVisitInfo(id);
         PatientDataVo patientDataVo = baseTreatmentProcessMapper.selectLastVisitInfo(id);
         BeanUtils.copyProperties(patientDataFirstVisitVo,patientDataVo);
         if (patientDataVo != null){
