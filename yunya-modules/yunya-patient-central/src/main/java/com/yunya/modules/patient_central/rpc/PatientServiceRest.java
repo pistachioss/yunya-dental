@@ -2,10 +2,7 @@ package com.yunya.modules.patient_central.rpc;
 
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
-import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
-import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
-import com.yunya.feign.patient_central.domain.query.RechargeCashReceiptQuery;
+import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
@@ -249,4 +246,15 @@ public class PatientServiceRest {
         return patientMemberInfoBiz.sumMemberAndPrepayRechargeCash(query);
     }
 
+    /**
+     * 根据条件查询患者全部信息
+     *
+     * @param queryForm
+     * @return
+     */
+    @ApiOperation("根据条件查询患者全部信息")
+    @RequestMapping (value = "/total/findPatientTotalInfo", method = RequestMethod.POST)
+    public List<PatientTotalInfoVo> findPatientTotalInfo(@RequestBody PatientBaseInfoQueryForm queryForm) {
+        return patientBaseInfoBiz.findPatientTotalInfo(queryForm);
+    }
 }

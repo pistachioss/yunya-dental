@@ -481,10 +481,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
               templateParam.put(key, memberExpendRecord.getMemberId());
               // 会员消费金额
             } else if (SmsTemplateItemEnum.MEMBER_SPENDING_AMOUNT.getCode().equals(code)) {
-              templateParam.put(key, memberExpendRecord.getExpendPrincipal().add(memberExpendRecord.getExpendGift()));
+              templateParam.put(key, memberExpendRecord.getExpendPrincipal().add(memberExpendRecord.getExpendGift()==null?BigDecimal.valueOf(0):memberExpendRecord.getExpendGift()));
               // 会员剩余金额
             } else if (SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getCode().equals(code)) {
-              templateParam.put(key, memberExpendRecord.getExpendPrincipal().add(memberExpendRecord.getExpendGift()));
+              templateParam.put(key, memberExpendRecord.getExpendPrincipal().add(memberExpendRecord.getExpendGift()==null?BigDecimal.valueOf(0):memberExpendRecord.getExpendGift()));
               // 其他
             } else {
               throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);

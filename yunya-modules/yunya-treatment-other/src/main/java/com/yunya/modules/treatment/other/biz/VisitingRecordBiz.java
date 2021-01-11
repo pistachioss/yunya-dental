@@ -4,10 +4,12 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
@@ -273,66 +275,116 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         if (query.getWhetherPage()){
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
-        List<VisitingRecordVo> searchVisitingRecordVo = null;
-        // 随访记录结果列表
-        List<VisitingRecordVo> visitingRecordVoList = new ArrayList<>();
-        // 按患者姓名、手机号、病历号、医生名字检索，并将检索之后的结果排序
-        String search = query.getSearch();
-        String medicalNumber = query.getMedicalNumber();
-        String distentName = query.getDistentName();
-        List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
-        PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
-        if (visitingRecordVos != null && !visitingRecordVos.isEmpty()){
-            // 组合随访记录信息
-            for(VisitingRecordVo visitingRecordVo : visitingRecordVos){
-                VisitingRecordVo recordVo = this.comboVisitingRecord(visitingRecordVo);
-                visitingRecordVoList.add(recordVo);
+        Map<Integer, PatientTotalInfoVo> patientTotalInfoVoMap = new HashMap<>(16);
+        if (StringHelper.isNotEmpty(query.getSearch()) || StringHelper.isNotEmpty(query.getMedicalNumber())) {//模糊匹配患者姓名和手机号，模糊匹配病历号
+            PatientBaseInfoQueryForm queryForm = new PatientBaseInfoQueryForm();
+            queryForm.setSearch(query.getSearch());
+            queryForm.setLikeMedicalNumber(query.getMedicalNumber());
+            List<PatientTotalInfoVo> patientInfos = remotePatientCentralServiceFeign.findPatientTotalInfo(queryForm);
+            if (StringHelper.isNotEmpty(patientInfos)) {
+                patientInfos.forEach(patientInfo->patientTotalInfoVoMap.put(patientInfo.getId(),patientInfo));
+                query.setPatientIds(patientTotalInfoVoMap.keySet());
             }
-            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName)) {
-                // 排序
-                searchVisitingRecordVo = this.sort(visitingRecordVoList);
-                visitingRecordVoPageInfo.setList(searchVisitingRecordVo);
-            } else {
-                // 按患者姓名、手机号、病历号、医生名字检索
-                searchVisitingRecordVo = this.searchAndOrder(visitingRecordVoList, search, medicalNumber, distentName);
-                // 将检索结果列表排序
-                searchVisitingRecordVo = this.sort(searchVisitingRecordVo);
-                visitingRecordVoPageInfo.setList(searchVisitingRecordVo);
-            }
-
-            // 设置分页参数
-            int size = searchVisitingRecordVo.size();
-            if (size == 0) {
-                visitingRecordVoPageInfo.setTotal(size);
-            }
-            long total = visitingRecordVoPageInfo.getTotal();
-            Integer pageSize = query.getPageSize();
-            int pages = (int) (total % pageSize == 0 ? total / pageSize : (total / pageSize) + 1);
-            visitingRecordVoPageInfo.setPages(pages);
-            if (pages >= 1) {
-                int[] navPagesNum = new int[pages];
-                for (int i = 0;i < pages;i++) {
-                    navPagesNum[i] = i+1;
-                }
-                visitingRecordVoPageInfo.setNavigatepageNums(navPagesNum);
-            } else {
-                visitingRecordVoPageInfo.setNavigatepageNums(new int[0]);
-            }
-
         }
+        Map<Integer, SysUserInfoDetail> sysUserInfoDetailMap = new HashMap<>(16);
+        if (StringHelper.isNotEmpty(query.getDistentName())) {//精确匹配医生姓名
+            SysUserEmployeeModel model = new SysUserEmployeeModel();
+            model.setWhetherPage(false);
+            model.setUserName(query.getDistentName());
+            List<SysUserInfoDetail> sysUserInfoDetails = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+            if (StringHelper.isNotEmpty(sysUserInfoDetails)) {
+                sysUserInfoDetails.forEach(sysUserInfo->sysUserInfoDetailMap.put(sysUserInfo.getUserId(),sysUserInfo));
+                query.setDentistIds(sysUserInfoDetailMap.keySet());
+            }
+        }
+        query.setSearchId(3);
+        List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
+        if (visitingRecordVos != null && !visitingRecordVos.isEmpty()){
+            visitingRecordVos.forEach(visitingRecordVo->comboVisitingRecord(visitingRecordVo,patientTotalInfoVoMap,sysUserInfoDetailMap));
+        }
+        PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
         return ResponseUtil.success(visitingRecordVoPageInfo);
     }
+
+//    public ResponseResult<PageInfo<VisitingRecordVo>> findVisitingRecordByCondition(VisitingRecordQuery query){
+//        // 设置分页
+//        if (query.getWhetherPage()){
+//            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+//        }
+//        List<VisitingRecordVo> searchVisitingRecordVo = null;
+//        // 随访记录结果列表
+//        List<VisitingRecordVo> visitingRecordVoList = new ArrayList<>();
+//        // 按患者姓名、手机号、病历号、医生名字检索，并将检索之后的结果排序
+//        String search = query.getSearch();
+//        String medicalNumber = query.getMedicalNumber();
+//        String distentName = query.getDistentName();
+//        List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
+//        PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
+//        if (visitingRecordVos != null && !visitingRecordVos.isEmpty()){
+//            // 组合随访记录信息
+//            for(VisitingRecordVo visitingRecordVo : visitingRecordVos){
+//                VisitingRecordVo recordVo = this.comboVisitingRecord(visitingRecordVo);
+//                visitingRecordVoList.add(recordVo);
+//            }
+//            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName)) {
+//                // 排序
+//                searchVisitingRecordVo = this.sort(visitingRecordVoList);
+//                visitingRecordVoPageInfo.setList(searchVisitingRecordVo);
+//            } else {
+//                // 按患者姓名、手机号、病历号、医生名字检索
+//                searchVisitingRecordVo = this.searchAndOrder(visitingRecordVoList, search, medicalNumber, distentName);
+//                // 将检索结果列表排序
+//                searchVisitingRecordVo = this.sort(searchVisitingRecordVo);
+//                visitingRecordVoPageInfo.setList(searchVisitingRecordVo);
+//            }
+//
+//            // 设置分页参数
+//            int size = searchVisitingRecordVo.size();
+//            if (size == 0) {
+//                visitingRecordVoPageInfo.setTotal(size);
+//            }
+//            long total = visitingRecordVoPageInfo.getTotal();
+//            Integer pageSize = query.getPageSize();
+//            int pages = (int) (total % pageSize == 0 ? total / pageSize : (total / pageSize) + 1);
+//            visitingRecordVoPageInfo.setPages(pages);
+//            if (pages >= 1) {
+//                int[] navPagesNum = new int[pages];
+//                for (int i = 0;i < pages;i++) {
+//                    navPagesNum[i] = i+1;
+//                }
+//                visitingRecordVoPageInfo.setNavigatepageNums(navPagesNum);
+//            } else {
+//                visitingRecordVoPageInfo.setNavigatepageNums(new int[0]);
+//            }
+//
+//        }
+//        return ResponseUtil.success(visitingRecordVoPageInfo);
+//    }
 
     /**
      * 组合随访记录信息中的患者信息、会员图标信息、医生姓名、就诊信息
      * @param visitingRecordVo 随访记录
      * @return 返回组合之后的随访记录信息
      */
-    public VisitingRecordVo comboVisitingRecord(VisitingRecordVo visitingRecordVo){
+    public VisitingRecordVo comboVisitingRecord(VisitingRecordVo visitingRecordVo) {
+        return comboVisitingRecord(visitingRecordVo,null,null);
+    }
+
+    public static void main(String[] args) {
+        Map<String, String> map = new HashMap<>();
+        System.out.println(map.get(null));
+    }
+
+    public VisitingRecordVo comboVisitingRecord(VisitingRecordVo visitingRecordVo, Map<Integer, PatientTotalInfoVo> patientMap, Map<Integer, SysUserInfoDetail> denstistNames){
         // 组合患者信息
         Integer patientId = visitingRecordVo.getPatientId();
         if (patientId != null) {
-            PatientTotalInfoVo patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
+            PatientTotalInfoVo patientTotalInfo = null;
+            if (StringHelper.isNotEmpty(patientMap)) {
+                patientTotalInfo = patientMap.get(patientId);
+            } else {
+                patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
+            }
             if (patientTotalInfo != null){
                 visitingRecordVo.setPatientName(patientTotalInfo.getName());
                 visitingRecordVo.setMobile(patientTotalInfo.getMobile());
@@ -365,7 +417,12 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         // 设置医生姓名
         Integer dentistId = visitingRecordVo.getDentistId();
         if (dentistId != null){
-            SysUserInfoDetail dentistInfo = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
+            SysUserInfoDetail dentistInfo = null;
+            if (StringHelper.isNotEmpty(denstistNames)) {
+                dentistInfo = denstistNames.get(dentistId);
+            } else {
+                dentistInfo = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
+            }
             if (dentistInfo != null){
                 visitingRecordVo.setDentistName(dentistInfo.getName());
             }

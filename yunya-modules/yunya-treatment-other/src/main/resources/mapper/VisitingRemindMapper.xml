@@ -80,7 +80,22 @@
         <if test="query.dentistId != null">
           and vrd.dentist_id = #{query.dentistId}
         </if>
+        <if test="query.dentistIds!=null and query.dentistIds.size()>0">
+          and vrd.dentist_id in
+          <foreach collection="query.dentistIds" item="item" open="(" separator="," close=")">
+            #{item}
+          </foreach>
+        </if>
+        <if test="query.patientIds!=null and query.patientIds.size()>0">
+          and vrd.patient_id in
+          <foreach collection="query.patientIds" item="item" open="(" separator="," close=")">
+            #{item}
+          </foreach>
+        </if>
       </where>
+      <if test="query.searchId == 2">
+        order by vrd.remind_date desc, TIME(vrd.remind_time) desc
+      </if>
   </select>
 
 </mapper>

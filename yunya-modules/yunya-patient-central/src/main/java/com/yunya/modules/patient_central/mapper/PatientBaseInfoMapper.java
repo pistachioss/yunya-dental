@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.mapper;
 
+import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationChartQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationQueryForm;
@@ -7,8 +8,6 @@ import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
-import com.yunya.models.patient_central.PatientImg;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.common.Mapper;
@@ -199,4 +198,11 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    */
   List<PatientBaseInfo> findPatientBaseInfoByOriginId(@Param("originId") Integer originId);
 
+  /**
+   * 根据条件查询患者全部信息
+   *
+   * @param queryForm
+   * @return
+   */
+  List<PatientTotalInfoVo> findPatientTotalInfo(@Param("queryForm") PatientBaseInfoQueryForm queryForm);
 }
