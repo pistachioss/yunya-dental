@@ -1154,7 +1154,7 @@
         <where>
             AND bbp.org_id = bb.org_id
             AND bbp.bill_id = bb.bill_id
-            AND bbp.payee_date != bb.bill_date
+            AND bbp.payee_date = bb.bill_date
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
