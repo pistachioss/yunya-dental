@@ -101,7 +101,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
             baseBillPayDetail.setAccountItemId(payDetailRecord.getAccountItemId());
             switch (type) {
                 // 会员卡
-              case 0:
+              case 1:
                 String memberNum = payDetailRecord.getRemark();
                 if (StringHelper.isNotBlank(memberNum)) {
                   MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
@@ -120,7 +120,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                 }
                 break;
                 // 预付款
-              case 1:
+              case 0:
                 String prepaidNum = payDetailRecord.getRemark();
                 if (StringHelper.isNotBlank(prepaidNum)) {
                   PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord();

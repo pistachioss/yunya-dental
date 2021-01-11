@@ -40,6 +40,10 @@ public class StatementPatientCardRechargeDetailInfoQuery extends PageQuery imple
   @ApiModelProperty(value = "结束时间", required = true)
   @NotBlank(message = "查询结束时间不能为空！")
   private String endDate;
+  /** 卡类型:0-会员卡；1-预付款 */
+  @ApiModelProperty(value = "卡类型:0-会员卡；1-预付款", required = true)
+  @NotNull(message = "储值卡类型不能为空！")
+  private Byte cardType;
   /** 患者关键字 */
   @ApiModelProperty("患者关键字")
   private String patientKeyword;

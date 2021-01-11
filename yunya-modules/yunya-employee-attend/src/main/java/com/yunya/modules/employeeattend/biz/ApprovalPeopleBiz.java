@@ -54,7 +54,13 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
         //获取员工信息
         SysUserEmployeeModel model = new SysUserEmployeeModel();
         model.setWhetherPage(false);
-        Byte[] userStatus = {0, 1,2,3};
+        Byte[] userStatus = {0,1,3};
+        if(approvalPeopleQuery.getIsPc() == 1){
+            List<Integer> list=new ArrayList(Arrays.asList(userStatus));
+            list.add(2);
+            userStatus=new Byte[list.size()];
+            list.toArray(userStatus);
+        }
         //离职状态
         model.setWorkStatus(userStatus);
         //当前门诊下全部员工

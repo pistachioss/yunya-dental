@@ -253,7 +253,7 @@
         from
             treatment_record tr left join registered r on tr.registered_id = r.id
         where
-                date_format(tr.treat_start_time,'%Y-%d-%m') = date_format(#{currentDate},'%Y-%m-%d')
+                date_format(tr.treat_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d')
           and tr.inservice = 1
           and tr.org_id = #{orgId}
           and tr.patient_id in

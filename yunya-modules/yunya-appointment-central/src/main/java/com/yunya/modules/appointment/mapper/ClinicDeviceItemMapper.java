@@ -22,4 +22,11 @@ public interface ClinicDeviceItemMapper extends Mapper<ClinicDeviceItem> {
      * @return
      */
     DeviceItemVo selectDeviceItemById(@Param("id") Integer id);
+
+    /**
+     * 根据设备ids查询设备
+     * @param ids  设备id
+     * @return
+     */
+    List<DeviceItemVo> selectDeviceItemByIds(@Param("ids") List<Integer> ids);
 }

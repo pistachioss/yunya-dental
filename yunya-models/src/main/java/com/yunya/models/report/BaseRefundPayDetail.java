@@ -5,7 +5,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 
-@Table(name = "base_bill_refund_pay_detail")
+@Table(name = "base_refund_pay_detail")
 public class BaseRefundPayDetail {
     /**
      * 账单退费支付明细ID

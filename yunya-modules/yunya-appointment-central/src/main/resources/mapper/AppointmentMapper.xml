@@ -433,7 +433,7 @@
                 and a.patient_id = #{patientId}
             </if>
             <if test="startDate != null and endDate != null">
-                and DATE_FORMAT(a.appoint_date,'%y-%M-%d') BETWEEN DATE_FORMAT(#{startDate},'%y-%M-%d') and DATE_FORMAT(#{endDate},'%y-%M-%d')
+                and DATE_FORMAT(a.appoint_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
             </if>
         </where>
         order by a.appoint_date desc

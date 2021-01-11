@@ -7,10 +7,10 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Set;
 
 /**
  * @program: yunya-dental
@@ -79,4 +79,10 @@ public class VisitingRecordQuery implements Serializable {
     @ApiModelProperty(value = "实际随访执行人ID",hidden = true)
     private Integer executorId;
 
+    /** 患者id列表 */
+    @ApiModelProperty(value = "患者id列表(患者档案中查询需要传入)")
+    private Collection<Integer> patientIds;
+    /** 医生id列表 */
+    @ApiModelProperty(value = "医生id列表(用户岗位只有医生的时候必传，其他情况不传)")
+    private Collection<Integer> dentistIds;
 }

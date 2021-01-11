@@ -22,6 +22,9 @@ public class ApprovalPeopleQuery {
     @NotNull(message = "审批人级别设置表id不能为空")
     private Integer approvalLevelId;
 
+    @ApiModelProperty("访问来源是否为PC端")
+    private Integer isPc = 0;
+
     @ApiModelProperty("页数")
     private Integer page = 1;
 

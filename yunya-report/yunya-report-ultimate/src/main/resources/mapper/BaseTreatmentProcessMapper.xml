@@ -345,18 +345,18 @@
 
     <!-- 患者档案-预约信息-履约次数/失约次数/改约次数/取消预约次数 -->
     <select id="appointmentCount" resultType="com.yunya.feign.report.domain.vo.AppointmentCountVO">
-        select ifnull(sum(btp1.appointment_id), 0) as keepAppointmentCount,
-        ifnull(sum(btp2.appointment_id), 0) as missAppointmentCount,
-        ifnull(sum(btp3.appointment_id), 0) as changeAppointmentCount,
-        ifnull(sum(btp4.appointment_id), 0) as cancelAppointmentCount
+        select ifnull(count(btp1.appointment_id), 0) as keepAppointmentCount,
+        ifnull(count(btp2.appointment_id), 0) as missAppointmentCount,
+        ifnull(sum(btp3.appoint_modify_time), 0) as changeAppointmentCount,
+        ifnull(count(btp4.appointment_id), 0) as cancelAppointmentCount
         from base_treatment_process btp
-        left join base_treatment_process btp1 on btp1.appointment_id = btp.appointment_id and btp1.appoint_status = 1
+        left join base_treatment_process btp1 on btp1.appointment_id = btp.appointment_id and btp1.treat_status >=0
         left join base_treatment_process btp2
-        on btp2.appointment_id = btp.appointment_id and btp2.appoint_status &lt;= 1 and
-        date_format(btp2.treat_start_time, '%Y-%m-%d') &lt; date_format(now(), '%Y-%m-%d')
+        on btp2.appointment_id = btp.appointment_id and btp2.registered_id is null and
+        date_format(btp2.appoint_start_time, '%Y-%m-%d') &lt; date_format(now(), '%Y-%m-%d')
         left join base_treatment_process btp3
-        on btp3.appointment_id = btp.appointment_id and btp3.appoint_status in (2, 3)
-        left join base_treatment_process btp4 on btp4.appointment_id = btp.appointment_id and btp4.appoint_status = 4
+        on btp3.appointment_id = btp.appointment_id
+        left join base_treatment_process btp4 on btp4.appointment_id = btp.appointment_id and btp4.appoint_status = 2
         <where>
             btp.patient_id = #{patientId}
             <if test="query.orgId != null">

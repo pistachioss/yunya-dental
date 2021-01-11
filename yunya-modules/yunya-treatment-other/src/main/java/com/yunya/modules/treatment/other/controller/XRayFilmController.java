@@ -16,6 +16,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -50,10 +51,9 @@ public class XRayFilmController {
     @ApiOperation("添加图片影像批量上传")
     @PostMapping("/add/batch/{patientId}")
     @CurrentUser
-    public ResponseResult addBatch(@PathVariable(value = "patientId") Integer patientId,
-                                   @RequestBody XRayFilmModel models){
-        this.XRayFilmBiz.addBatch(patientId,models.getList());
-        return ResponseUtil.success();
+    public ResponseResult<T> addBatch(@PathVariable(value = "patientId") Integer patientId,
+                                      @RequestBody XRayFilmModel models){
+        return this.XRayFilmBiz.addBatch(patientId,models.getList());
     }
     /**
      * 修改图片uri路径（除了根尖片）

@@ -6,10 +6,6 @@ import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.report.ultimate.biz.BaseAccountItemBiz;
-import com.yunya.report.ultimate.biz.BaseBillBiz;
-import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
-import com.yunya.report.ultimate.biz.DiscountBiz;
 import com.yunya.report.ultimate.biz.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -43,7 +39,7 @@ public class CompanyReportOfFinanceController {
   @Autowired private BaseBillBiz baseBillBiz;
   /** 账单详情 */
   @Autowired private BaseBillDetailBiz billDetailBiz;
-  /** 卡券 */
+  /** 折扣 */
   @Autowired private DiscountBiz discountBiz;
   /** 支付方式 */
   @Autowired private BaseAccountItemBiz accountItemBiz;
@@ -51,7 +47,15 @@ public class CompanyReportOfFinanceController {
   @Autowired private BaseBillPayBiz billPayBiz;
   /** 患者储值卡（会员卡或预付卡）充值记录 */
   @Autowired private MemberOccurLogBiz patientMemberOccurLogBiz;
+  /** 卡券基础信息 */
+  @Autowired private BaseCardBiz baseCardBiz;
 
+  /**
+   * 公司端报表-财务报表-产品售出统计-产品维度
+   *
+   * @param query
+   * @return
+   */
   @ApiOperation(value = "公司端报表-财务报表-产品售出统计-产品维度")
   @PostMapping("/coupon/sold/statistics")
   public ResponseResult<PageInfo<CouponSoldStatisticsVo>> getCouponSold(
@@ -59,6 +63,12 @@ public class CompanyReportOfFinanceController {
     return ResponseUtil.success(discountBiz.getCouponSoldPage(query));
   }
 
+  /**
+   * 公司端报表-财务报表-产品售出统计-时间维度
+   *
+   * @param query
+   * @return
+   */
   @ApiOperation(value = "公司端报表-财务报表-产品售出统计-时间维度")
   @PostMapping("/card/sold/statistics")
   public ResponseResult<PageInfo<CardSoldStatisticsVo>> getCardSold(
@@ -66,6 +76,13 @@ public class CompanyReportOfFinanceController {
     return ResponseUtil.success(discountBiz.getCardSoldPage(query));
   }
 
+  /**
+   * 公司端报表-财务报表-产品记录-产品售出记录 - 导出
+   *
+   * @param response
+   * @param query
+   * @throws IOException
+   */
   @ApiOperation(value = "公司端报表-财务报表-产品记录-产品售出记录 - 导出")
   @PostMapping("/coupon/sold/record/export")
   public void exportCouponSold(
@@ -77,6 +94,12 @@ public class CompanyReportOfFinanceController {
         .doWrite(discountBiz.getCardSoldRecordList(query));
   }
 
+  /**
+   * 公司端报表-财务报表-产品使用统计-产品维度
+   *
+   * @param query
+   * @return
+   */
   @ApiOperation(value = "公司端报表-财务报表-产品使用统计-产品维度")
   @PostMapping("/coupon/used/statistics")
   public ResponseResult<PageInfo<CouponUsedVo>> getCouponUsed(
@@ -84,6 +107,12 @@ public class CompanyReportOfFinanceController {
     return ResponseUtil.success(discountBiz.getCouponUsedPage(query));
   }
 
+  /**
+   * 公司端报表-财务报表-产品使用统计-时间维度
+   *
+   * @param query
+   * @return
+   */
   @ApiOperation(value = "公司端报表-财务报表-产品使用统计-时间维度")
   @PostMapping("/card/used/statistics")
   public ResponseResult<PageInfo<CardUsedStatisticsVo>> getCouponUsed(
@@ -91,6 +120,13 @@ public class CompanyReportOfFinanceController {
     return ResponseUtil.success(discountBiz.getCardUsedPage(query));
   }
 
+  /**
+   * 公司端报表-财务报表-产品记录-产品使用记录 - 导出
+   *
+   * @param response
+   * @param query
+   * @throws IOException
+   */
   @ApiOperation(value = "公司端报表-财务报表-产品记录-产品使用记录 - 导出")
   @PostMapping("/coupon/used/record/export")
   public void exportCouponUsedRecord(
@@ -102,6 +138,12 @@ public class CompanyReportOfFinanceController {
         .doWrite(discountBiz.getCardUsedRecordList(query));
   }
 
+  /**
+   * 公司端报表-财务报表-充值卡充值统计
+   *
+   * @param query
+   * @return
+   */
   @ApiOperation(value = "公司端报表-财务报表-充值卡充值统计")
   @PostMapping("/recharge/statistics")
   public ResponseResult<PageInfo<RechargeVo>> getRechargePage(
@@ -109,6 +151,13 @@ public class CompanyReportOfFinanceController {
     return ResponseUtil.success(discountBiz.getRechargePage(query));
   }
 
+  /**
+   * 公司端报表-财务报表-充值卡充值统计-充值统计
+   *
+   * @param couponId
+   * @param query
+   * @return
+   */
   @ApiOperation(value = "公司端报表-财务报表-充值卡充值统计-充值统计")
   @PostMapping("/{couponId}/rechargeCard/statistics")
   public ResponseResult<PageInfo<RechargeDetailVo>> getRechargePage(
@@ -204,8 +253,7 @@ public class CompanyReportOfFinanceController {
   })
   public ResponseResult<BillDiscountVO> billDiscountDetailInfo(
       @PathVariable("billId") @NotNull(message = "账单ID不能为空") Integer billId) {
-    BillDiscountVO result =
-        baseBillBiz.billDiscountDetailInfo(billId);
+    BillDiscountVO result = baseBillBiz.billDiscountDetailInfo(billId);
     return ResponseUtil.success(result);
   }
 
@@ -376,7 +424,7 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询门诊会员卡充值明细列表 todo：完善收费记录的支付方式列表
+   * 根据条件查询门诊会员卡充值明细列表
    *
    * @param query 查询条件
    * @return
@@ -385,8 +433,56 @@ public class CompanyReportOfFinanceController {
   @PostMapping(value = "/member/recharge/detail/list", name = "根据条件查询门诊会员卡充值明细列表")
   public ResponseResult<PageInfo<StatementPatientCardRechargeDetailVO>> memberRechargeDetailList(
       @RequestBody @Validated StatementPatientCardRechargeDetailInfoQuery query) {
+    PageInfo<StatementPatientCardRechargeDetailVO> pageInfo =
+        patientMemberOccurLogBiz.findPatientCardRechargeDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
 
-    return ResponseUtil.success();
+  /**
+   * 根据条件导出会员充值记录明细
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-会员充值-会员充值记录明细列表-导出")
+  @PostMapping(value = "/member/recharge/detail/export", name = "根据条件查询导出会员充值记录明细")
+  public ResponseResult<T> exportMemberRechargeDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated StatementPatientCardRechargeDetailInfoQuery query)
+      throws IOException {
+    patientMemberOccurLogBiz.exportMemberRechargeDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询门诊产品售出明细列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-产品售出-查看明细")
+  @PostMapping(value = "/product/sold/detail/list", name = "公司端报表-财务报表-对账单-产品售出-查看明细")
+  public ResponseResult<PageInfo<StatementProductSoldDetailVO>> productSoldDetailList(
+      @RequestBody @Validated StatementProductSoldDetailQuery query) {
+    PageInfo<StatementProductSoldDetailVO> pageInfo = baseCardBiz.findProductSoldDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出产品售出记录明细
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-产品售出-导出")
+  @PostMapping(value = "/product/sold/detail/export", name = "根据条件导出产品售出记录明细")
+  public ResponseResult<T> exportProductSoldDetailList(
+      HttpServletResponse response, @RequestBody @Validated StatementProductSoldDetailQuery query)
+      throws IOException {
+    baseCardBiz.exportProductSoldDetailList(response, query);
+    return ResponseUtil.success(null);
   }
 
   /**

@@ -59,4 +59,7 @@ public class SysUserEmployeeModel implements Serializable {
   /** 员工姓名 */
   @ApiModelProperty("员工姓名")
   private String userName;
+  /** 精确匹配员工姓名 */
+  @ApiModelProperty("精确匹配员工姓名")
+  private String name;
 }
