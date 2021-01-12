@@ -59,7 +59,6 @@ public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
         }
       }
     }
-    token = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxODIyOTE0ODY1NCIsImlhdCI6MTYxMDQxOTQwNiwidXNlcklkIjoiMTYwMCIsIm5hbWUiOiLnvZfkuInngq4iLCJkZXZpY2VUeXBlIjoiTW9iaWxlIiwiYXBwbHlUb2tlblRpbWUiOjE2MTA0MTk0MDYwNTUsImV4cCI6MTYxMDQzMzgwNn0.b0c8-rhV1KbQfNDMOAxTWTx62Dc3Jb2Z__BDcLH11lMwVxlvOkDxVRZbWRFi8LPWA7TSALrsGJ-1bqivqTLpgpGrINcCWCsN_K2dgdb2wP2uuPARZWS9xziVZohxMkFyaTB3gOMjSKwgOvP36lcnvh2ZqB4V-hKbMCJeuFOAE6Y";
     UserInfo userInfo = redisUtils.get(RedisConstants.REDIS_KEY_USER_TOKEN + token, UserInfo.class);
     if (null == userInfo) {
       throw new UserAuthException("您还没有登陆，请先登陆！");
