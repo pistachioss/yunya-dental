@@ -36,6 +36,13 @@ public class StatementBillChargeDetailVO implements Serializable {
   @Excel(name = "账单编号")
   @ApiModelProperty("账单编号")
   private String billNum;
+  /** 开单门诊ID */
+  @ApiModelProperty("开单门诊ID")
+  private Integer billOrgId;
+  /** 开单门诊名称 */
+  @Excel(name = "开单门诊名称")
+  @ApiModelProperty("开单门诊名称")
+  private String billOrgName;
   /** 账单日期 */
   @Excel(name = "账单日期")
   @ApiModelProperty("账单日期")
