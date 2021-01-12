@@ -41,7 +41,7 @@ public class TreatmentMatchingRecordVO implements Serializable {
   @ApiModelProperty("助手2ID")
   private Integer assistant3Id;
   /** 助手3姓名 */
-  @Excel(name = "助手3")
+  @Excel(name = "巡回")
   @ApiModelProperty("助手3姓名")
   private String assistant3Name;
   /** 配诊医生ID */
