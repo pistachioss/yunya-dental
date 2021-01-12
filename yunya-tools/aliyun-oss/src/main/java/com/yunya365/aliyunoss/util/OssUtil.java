@@ -35,7 +35,7 @@ public class OssUtil {
                 accessKeySecret = aliyunOssProperties.getAccessKeySecret();
                 bucket = aliyunOssProperties.getBucket();
                 prefixPath = aliyunOssProperties.getPrefixPath();
-                if(!prefixPath.endsWith("/")){
+                if(!prefixPath.isEmpty() && !prefixPath.endsWith("/")){
                     prefixPath = prefixPath + "/";
                 }
             }
