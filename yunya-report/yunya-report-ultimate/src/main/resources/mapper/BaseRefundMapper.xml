@@ -617,26 +617,26 @@
                 </if>
                 <if test="query.dateType == 0">
                     <if test="query.startDate != null and query.startDate != ''">
-                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &lt= #{query.startDate}
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &lt; #{query.startDate}
                     </if>
                     <if test="query.endDate != null and query.endDate != ''">
-                        OR DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &gt= #{query.endDate}
+                        OR DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &gt; #{query.endDate}
                     </if>
                 </if>
                 <if test="query.dateType == 1">
                     <if test="query.startDate != null and query.startDate != ''">
-                        AND DATE_FORMAT( bb.bill_date, '%Y-%m') &lt= #{query.startDate}
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m') &lt; #{query.startDate}
                     </if>
                     <if test="query.endDate != null and query.endDate != ''">
-                        OR DATE_FORMAT( bb.bill_date, '%Y-%m') &gt;= #{query.endDate}
+                        OR DATE_FORMAT( bb.bill_date, '%Y-%m') &gt; #{query.endDate}
                     </if>
                 </if>
                 <if test="query.dateType == 2">
                     <if test="query.startDate != null and query.startDate != ''">
-                        AND DATE_FORMAT( bb.bill_date, '%Y') &lt;= #{query.startDate}
+                        AND DATE_FORMAT( bb.bill_date, '%Y') &lt; #{query.startDate}
                     </if>
                     <if test="query.endDate != null and query.endDate != ''">
-                        OR DATE_FORMAT( bb.bill_date, '%Y') &gt;= #{query.endDate}
+                        OR DATE_FORMAT( bb.bill_date, '%Y') &gt; #{query.endDate}
                     </if>
                 </if>
             </where>
