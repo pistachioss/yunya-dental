@@ -379,13 +379,13 @@
             DATE_FORMAT(btp.treat_start_time, '%Y-%m-%d' ) firstVisitDate,
             be.employee_name firstVisitDoctors,
             bo.abbreviation firstVisitOutpatient,
-            (SELECT sum(received_amount) FROM base_bill where patient_id = 186)  cumulativeConsumption
+            (SELECT sum(received_amount) FROM base_bill where patient_id = #{patientId})  cumulativeConsumption
         FROM
             base_treatment_process btp
             LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
             LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
         WHERE
-            btp.patient_id = 186
+            btp.patient_id = #{patientId}
             AND btp.treat_type = 0
 			group by btp.patient_id
   </select>
@@ -410,8 +410,7 @@
                     LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
                 WHERE
                     btp.patient_id = #{patientId}
-                AND btp.treat_type = 1
-                AND btp.treat_end_time = ( SELECT max( treat_end_time ) FROM base_treatment_process WHERE patient_id = #{patientId} AND treat_type = 1 )
+                    AND btp.treat_end_time = ( SELECT max( treat_end_time ) FROM base_treatment_process WHERE patient_id = #{patientId} )
                 ) t1
     </select>
 

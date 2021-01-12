@@ -36,9 +36,16 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
      * @return PatientDataVo
      */
     public PatientDataVo patientDataVo(Integer id) {
+        PatientDataVo patientDataVo = null;
         PatientDataFirstVisitVo patientDataFirstVisitVo = baseTreatmentProcessMapper.selectFirstVisitInfo(id);
-        PatientDataVo patientDataVo = baseTreatmentProcessMapper.selectLastVisitInfo(id);
-        BeanUtils.copyProperties(patientDataFirstVisitVo,patientDataVo);
+        if (patientDataFirstVisitVo != null){
+            patientDataVo = baseTreatmentProcessMapper.selectLastVisitInfo(id);
+            if (patientDataVo != null){
+                BeanUtils.copyProperties(patientDataFirstVisitVo,patientDataVo);
+            }
+        }else {
+            patientDataVo = baseTreatmentProcessMapper.selectLastVisitInfo(id);
+        }
         if (patientDataVo != null){
             patientDataVo.setTotalReservation(baseTreatmentProcessMapper.selectPatientReservation(id));
             patientDataVo.setTotalPerformance(baseTreatmentProcessMapper.selectPatientPerformance(id));
