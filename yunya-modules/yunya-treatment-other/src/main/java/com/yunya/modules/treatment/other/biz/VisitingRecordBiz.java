@@ -626,7 +626,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @return 返回实体列表
      */
     public List<VisitingForMonthVo> findVisitingForMonth(VisitingForMonthInfo forMonthInfo) {
-        Integer orgId = forMonthInfo.getOrgId();
+        Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
         List<VisitingForMonthVo> visitingForMonth = mapper.findVisitingForMonth(forMonthInfo.getDentistId(),
                 forMonthInfo.getStartDate(),
                 forMonthInfo.getEndDate(),

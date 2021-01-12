@@ -90,7 +90,7 @@ public class UserAuthController {
   @PostMapping("/logout")
   public ResponseResult logout(HttpServletRequest request) {
     String token = request.getHeader(tokenHeader);
-    String deviceName = ServletUtils.getCurrentDevice().getName();
+    String deviceName = ServletUtils.getCurrentDevice(request).getName();
     userAuthService.logout(token,deviceName);
     return ResponseUtil.success();
   }

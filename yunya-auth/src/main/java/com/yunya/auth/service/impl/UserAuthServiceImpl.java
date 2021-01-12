@@ -62,7 +62,7 @@ public class UserAuthServiceImpl implements UserAuthService {
     checkUserInfo(userInfo);
     String userId = userInfo.getId();
     if (!StringUtils.isEmpty(userId)) {
-      String deviceName = ServletUtils.getCurrentDevice().getName();
+      String deviceName = ServletUtils.getCurrentDevice(request).getName();
       String tokenStr = redisUtils.get(RedisConstants.setKey(USER_ID,deviceName,userId));
       if (StringHelper.isBlank(tokenStr)) {
         String token = this.setTokenInfoInCache(userInfo,userId,deviceName);
