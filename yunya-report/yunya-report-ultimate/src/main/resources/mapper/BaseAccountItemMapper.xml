@@ -1820,6 +1820,7 @@
         br.refund_id
         FROM
         base_refund br
+        LEFT JOIN base_bill bb on bb.bill_id=br.bill_id
         <where>
             <if test="query.orgId != null">
                 AND br.org_id = #{query.orgId}

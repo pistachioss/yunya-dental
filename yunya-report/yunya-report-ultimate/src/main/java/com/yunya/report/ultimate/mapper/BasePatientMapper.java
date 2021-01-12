@@ -92,4 +92,5 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
      * @return PatientDataVo
      */
     PatientDataVo findPatientDataVo(@Param("patientId") Integer patientId);
+
 }

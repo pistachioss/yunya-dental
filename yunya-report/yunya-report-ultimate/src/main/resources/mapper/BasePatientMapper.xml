@@ -59,12 +59,12 @@
           from (
                 select t1.*,bp.name, bp.mobile ,bp.pinyin_name,be.employee_name
                 from (
-                  select t1.patient_id, t1.org_id, t1.treat_start_time treatStartTime, t1.treat_type, t1.registered_dentist_id
-                  from base_treatment_process t1 join (select t2.patient_id ,max(t2.treat_start_time) treatStartTime from base_treatment_process t2 group by t2.patient_id ) s1
-                  on t1.patient_id = s1.patient_id
-                  and t1.treat_start_time IS NOT NULL
-                  and t1.treat_start_time = s1.treatStartTime
-               ) t1
+                      select a1.patient_id, a1.org_id, a1.treat_start_time treatStartTime, a1.treat_type, a1.registered_dentist_id
+                      from base_treatment_process a1 join (select a2.patient_id ,max(a2.treat_start_time) treatStartTime from base_treatment_process a2 group by a2.patient_id ) s1
+                      on a1.patient_id = s1.patient_id
+                      and a1.treat_start_time IS NOT NULL
+                      and a1.treat_start_time = s1.treatStartTime
+                ) t1
                 left join base_patient bp on t1.patient_id = bp.patient_id
                 left join base_employee be on t1.registered_dentist_id = be.user_id
                 <where>
@@ -310,5 +310,7 @@
     WHERE
         patient_id = #{patientId}
   </select>
+
+
 
 </mapper>

@@ -1,10 +1,14 @@
 package com.yunya.report.ultimate.biz;
 
+import com.yunya.feign.report.domain.vo.PatientDataFirstVisitVo;
 import com.yunya.feign.report.domain.vo.PatientDataVo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BasePatient;
 import com.yunya.report.ultimate.mapper.BasePatientMapper;
 import com.yunya.report.ultimate.mapper.BaseTreatmentProcessMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,12 +35,22 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
      * @param id 患者id
      * @return PatientDataVo
      */
-    public PatientDataVo PatientDataVo(Integer id) {
-        PatientDataVo patientDataVo = mapper.findPatientDataVo(id);
+    public PatientDataVo patientDataVo(Integer id) {
+        PatientDataVo patientDataVo = null;
+        PatientDataFirstVisitVo patientDataFirstVisitVo = baseTreatmentProcessMapper.selectFirstVisitInfo(id);
+        if (patientDataFirstVisitVo != null){
+            patientDataVo = baseTreatmentProcessMapper.selectLastVisitInfo(id);
+            if (patientDataVo != null){
+                BeanUtils.copyProperties(patientDataFirstVisitVo,patientDataVo);
+            }
+        }else {
+            patientDataVo = baseTreatmentProcessMapper.selectLastVisitInfo(id);
+        }
         if (patientDataVo != null){
             patientDataVo.setTotalReservation(baseTreatmentProcessMapper.selectPatientReservation(id));
             patientDataVo.setTotalPerformance(baseTreatmentProcessMapper.selectPatientPerformance(id));
             patientDataVo.setTotalMissedAppointment(baseTreatmentProcessMapper.selectMissedAppointment(id));
+            patientDataVo.setNumberOfVisits(baseTreatmentProcessMapper.selectNumberOfVisits(id));
         }
         return patientDataVo;
     }

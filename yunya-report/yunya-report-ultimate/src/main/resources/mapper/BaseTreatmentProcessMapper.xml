@@ -38,58 +38,61 @@
     <select id="selectTreatmentRecordReportVOList"
             resultType="com.yunya.feign.report.domain.vo.TreatmentRecordReportVO">
         SELECT
-            tr.orgId,
-            tr.orgName,
-            tr.treatDate,
-            tr.patientId,
-            tr.patientName,
-            tr.mobile,
-            tr.gender,
-            tr.treatType,
-            tr.regDentistId,
-            tr.regDentistName,
-            tr.appointTime,
-            tr.appointDuration,
-            tr.appointContent,
-            tr.regTime,
-            tr.treatStartTime,
-            tr.treatEndTime,
-            tr.treatWaitingTime,
-            tr.treatExpendTime
+        tr.orgId,
+        tr.orgName,
+        tr.treatDate,
+        tr.patientId,
+        tr.patientName,
+        tr.mobile,
+        tr.gender,
+        tr.treatType,
+        tr.regDentistId,
+        tr.regDentistName,
+        tr.appointTime,
+        tr.appointDuration,
+        tr.appointContent,
+        tr.regTime,
+        tr.treatStartTime,
+        tr.treatEndTime,
+        tr.treatWaitingTime,
+        tr.treatExpendTime
         FROM
-            (
-            SELECT
-                btp.org_id AS orgId,
-                bo.abbreviation AS orgName,
-                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS treatDate,
-                btp.patient_id AS patientId,
-                bp.`name` AS patientName,
-                bp.pinyin_name AS pinyinName,
-                bp.mobile AS mobile,
-                bp.gender AS gender,
-                btp.treat_type AS treatType,
-                btp.registered_dentist_id AS regDentistId,
-                be.employee_name AS regDentistName,
-                DATE_FORMAT( btp.appoint_start_time, '%H:%i' ) AS appointTime,
-                btp.appoint_duration AS appointDuration,
-                btp.appoint_content AS appointContent,
-                DATE_FORMAT( btp.registered_time, '%H:%i' ) AS regTime,
-                DATE_FORMAT( btp.treat_start_time, '%H:%i' ) AS treatStartTime,
-                DATE_FORMAT( btp.treat_end_time, '%H:%i' ) AS treatEndTime,
-                TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_start_time,'%H:%i'),DATE_FORMAT(btp.registered_time,'%H:%i')))/60 AS treatWaitingTime,
-                TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_end_time, '%H:%i'), DATE_FORMAT( btp.treat_start_time, '%H:%i' )))/60  AS treatExpendTime
-            FROM
-                base_treatment_process btp
-                LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
-                LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
-            LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-            ) tr
+        (
+        SELECT
+        btp.org_id AS orgId,
+        bo.abbreviation AS orgName,
+        DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS treatDate,
+        btp.patient_id AS patientId,
+        bp.`name` AS patientName,
+        bp.pinyin_name AS pinyinName,
+        bp.mobile AS mobile,
+        bp.gender AS gender,
+        btp.treat_type AS treatType,
+        btp.registered_dentist_id AS regDentistId,
+        be.employee_name AS regDentistName,
+        DATE_FORMAT( btp.appoint_start_time, '%H:%i' ) AS appointTime,
+        btp.appoint_duration AS appointDuration,
+        btp.appoint_content AS appointContent,
+        DATE_FORMAT( btp.registered_time, '%H:%i' ) AS regTime,
+        DATE_FORMAT( btp.treat_start_time, '%H:%i' ) AS treatStartTime,
+        DATE_FORMAT( btp.treat_end_time, '%H:%i' ) AS treatEndTime,
+        TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_start_time,'%H:%i'),DATE_FORMAT(btp.registered_time,'%H:%i')))/60 AS
+        treatWaitingTime,
+        TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_end_time, '%H:%i'), DATE_FORMAT( btp.treat_start_time, '%H:%i' )))/60
+        AS treatExpendTime
+        FROM
+        base_treatment_process btp
+        LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+        ) tr
         <where>
             <if test="query.orgId != null">
                 and tr.orgId = #{query.orgId}
             </if>
             <if test="query.keyWord != null and query.keyWord != ''">
-                and concat(ifnull(tr.patientName, ''), ifnull(tr.pinyinName, ''), ifnull(tr.mobile, '')) like concat('%', #{query.keyWord}, '%')
+                and concat(ifnull(tr.patientName, ''), ifnull(tr.pinyinName, ''), ifnull(tr.mobile, '')) like
+                concat('%', #{query.keyWord}, '%')
             </if>
             <if test="query.treatStartDate != null and query.treatStartDate != ''">
                 and tr.treatDate &gt;= #{query.treatStartDate}
@@ -110,60 +113,61 @@
     <select id="selectTreatmentMatchingRecord"
             resultType="com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO">
         SELECT
-            tmr.treatmentId,
-            tmr.assistant1Id,
-            tmr.assistant1Name,
-            tmr.assistant2Id,
-            tmr.assistant2Name,
-            tmr.assistant3Id,
-            tmr.assistant3Name,
-            tmr.matchingDentistId,
-            tmr.matchingDentistName,
-            tmr.patientId,
-            tmr.patientName,
-            tmr.mobile,
-            tmr.matchingDate,
-            tmr.treatStartTime,
-            tmr.treatEndTime,
-            tmr.matchingDuration
+        tmr.treatmentId,
+        tmr.assistant1Id,
+        tmr.assistant1Name,
+        tmr.assistant2Id,
+        tmr.assistant2Name,
+        tmr.assistant3Id,
+        tmr.assistant3Name,
+        tmr.matchingDentistId,
+        tmr.matchingDentistName,
+        tmr.patientId,
+        tmr.patientName,
+        tmr.mobile,
+        tmr.matchingDate,
+        tmr.treatStartTime,
+        tmr.treatEndTime,
+        tmr.matchingDuration
         FROM
-            (
-            SELECT
-                btp.org_id as orgId,
-                btp.treatment_id AS treatmentId,
-                btp.assistant_1 AS assistant1Id,
-                be1.employee_name AS assistant1Name,
-                btp.assistant_2 AS assistant2Id,
-                be2.employee_name AS assistant2Name,
-                btp.assistant_3 AS assistant3Id,
-                be3.employee_name AS assistant3Name,
-                btp.registered_dentist_id AS matchingDentistId,
-                be.employee_name AS matchingDentistName,
-                btp.patient_id AS patientId,
-                bp.`name` AS patientName,
-                bp.pinyin_name AS pinyinName,
-                bp.mobile AS mobile,
-                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS matchingDate,
-                DATE_FORMAT( btp.treat_start_time, '%H:%i' ) AS treatStartTime,
-                DATE_FORMAT( btp.treat_end_time, '%H:%i' ) AS treatEndTime,
-                TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ) AS matchingDuration
-            FROM
-                base_treatment_process btp
-                LEFT JOIN base_employee be1 ON btp.assistant_1 = be1.user_id
-                LEFT JOIN base_employee be2 ON btp.assistant_2 = be2.user_id
-                LEFT JOIN base_employee be3 ON btp.assistant_3 = be3.user_id
-                LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-                LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
-            WHERE
-                btp.treatment_id IS NOT NULL
-                AND ( btp.assistant_1 IS NOT NULL OR btp.assistant_2 IS NOT NULL OR btp.assistant_3 IS NOT NULL )
-            ) tmr
+        (
+        SELECT
+        btp.org_id as orgId,
+        btp.treatment_id AS treatmentId,
+        btp.assistant_1 AS assistant1Id,
+        be1.employee_name AS assistant1Name,
+        btp.assistant_2 AS assistant2Id,
+        be2.employee_name AS assistant2Name,
+        btp.assistant_3 AS assistant3Id,
+        be3.employee_name AS assistant3Name,
+        btp.registered_dentist_id AS matchingDentistId,
+        be.employee_name AS matchingDentistName,
+        btp.patient_id AS patientId,
+        bp.`name` AS patientName,
+        bp.pinyin_name AS pinyinName,
+        bp.mobile AS mobile,
+        DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS matchingDate,
+        DATE_FORMAT( btp.treat_start_time, '%H:%i' ) AS treatStartTime,
+        DATE_FORMAT( btp.treat_end_time, '%H:%i' ) AS treatEndTime,
+        TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ) AS matchingDuration
+        FROM
+        base_treatment_process btp
+        LEFT JOIN base_employee be1 ON btp.assistant_1 = be1.user_id
+        LEFT JOIN base_employee be2 ON btp.assistant_2 = be2.user_id
+        LEFT JOIN base_employee be3 ON btp.assistant_3 = be3.user_id
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+        WHERE
+        btp.treatment_id IS NOT NULL
+        AND ( btp.assistant_1 IS NOT NULL OR btp.assistant_2 IS NOT NULL OR btp.assistant_3 IS NOT NULL )
+        ) tmr
         <where>
             <if test="query.orgId != null">
                 and tmr.orgId = #{query.orgId}
             </if>
             <if test="query.keyWord != null and query.keyWord != ''">
-                and concat(ifnull(tmr.patientName, ''), ifnull(tmr.pinyinName, ''), ifnull(tmr.mobile, '')) like concat('%', #{query.keyWord}, '%')
+                and concat(ifnull(tmr.patientName, ''), ifnull(tmr.pinyinName, ''), ifnull(tmr.mobile, '')) like
+                concat('%', #{query.keyWord}, '%')
             </if>
             <if test="query.matchingStartDate != null and query.matchingStartDate != ''">
                 and tmr.matchingDate &gt;= #{query.matchingStartDate}
@@ -173,13 +177,14 @@
             </if>
             <if test="query.matchingDentistIds != null and query.matchingDentistIds.length > 0">
                 and tmr.matchingDentistId in
-                <foreach collection="query.matchingDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                <foreach collection="query.matchingDentistIds" item="item" index="index" open="(" close=")"
+                         separator=",">
                     #{item}
                 </foreach>
             </if>
         </where>
         ORDER BY
-            tmr.matchingDate DESC
+        tmr.matchingDate DESC
     </select>
 
     <!-- 根据条件查询助手配诊明细列表 -->
@@ -265,7 +270,8 @@
         ) btp
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(IFNULL(btp.patientName, ''), IFNULL(btp.pinyinName, ''), IFNULL(btp.mobile, '')) like concat('%', #{query.keyword}, '%')
+                and concat(IFNULL(btp.patientName, ''), IFNULL(btp.pinyinName, ''), IFNULL(btp.mobile, '')) like
+                concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.treatStartDate != null and query.treatStartDate != ''">
                 and DATE_FORMAT(btp.treatStartTime,'%Y-%m-%d') &gt;= DATE_FORMAT(#{query.treatStartDate},'%Y-%m-%d')
@@ -296,21 +302,32 @@
         and appoint_status != 2
     </select>
 
+    <!-- 根据患者id查询患者就诊次数 -->
+    <select id="selectNumberOfVisits" resultType="java.lang.Integer">
+        select count(*) from base_treatment_process
+        where patient_id = #{patientId}
+        and treat_start_time is not null
+    </select>
+
     <select id="treatmentList4App" resultType="com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO">
         select
-        btp.appointment_id as appointmentId,btp.registered_id as registeredId,btp.treatment_id as treatmentId,btp.org_id as orgId,btp.patient_id as patientId,
-        btp.treat_status as treatStatus,btp.treat_type as treatType,btp.appoint_status as appointStatus, btp.appoint_dentist_id as appointDentistId,btp.appoint_start_time as appointStartTime,
-        btp.appoint_duration as appointSuration,btp.appoint_modify_time as appointModifyTime,btp.appoint_content as appointContent,btp.registered_dentist_id as registeredDentistId,
-        btp.registered_time as registeredTime,btp.treat_start_time as treatStartTime,btp.treat_end_time as treatEndTime,btp.assistant_1 as assistant1,btp.assistant_2 as assistant2,
+        btp.appointment_id as appointmentId,btp.registered_id as registeredId,btp.treatment_id as treatmentId,btp.org_id
+        as orgId,btp.patient_id as patientId,
+        btp.treat_status as treatStatus,btp.treat_type as treatType,btp.appoint_status as appointStatus,
+        btp.appoint_dentist_id as appointDentistId,btp.appoint_start_time as appointStartTime,
+        btp.appoint_duration as appointSuration,btp.appoint_modify_time as appointModifyTime,btp.appoint_content as
+        appointContent,btp.registered_dentist_id as registeredDentistId,
+        btp.registered_time as registeredTime,btp.treat_start_time as treatStartTime,btp.treat_end_time as
+        treatEndTime,btp.assistant_1 as assistant1,btp.assistant_2 as assistant2,
         btp.assistant_3 as assistant3,
         bp.name as patientName,
         bp.gender,
         appointDentistNameBe.employee_name as appointDentistName,
         regDentistNameBe.employee_name as regDentistName
         from base_treatment_process btp
-            left join base_patient bp on bp.patient_id = btp.patient_id
-            left join base_employee appointDentistNameBe on appointDentistNameBe.user_id = btp.appoint_dentist_id
-            left join base_employee regDentistNameBe on regDentistNameBe.user_id = btp.registered_dentist_id
+        left join base_patient bp on bp.patient_id = btp.patient_id
+        left join base_employee appointDentistNameBe on appointDentistNameBe.user_id = btp.appoint_dentist_id
+        left join base_employee regDentistNameBe on regDentistNameBe.user_id = btp.registered_dentist_id
         <where>
             <if test="dentistId != null">
                 and #{dentistId} in (btp.appoint_dentist_id,btp.registered_dentist_id)
@@ -319,7 +336,8 @@
                 and btp.org_id = #{orgId}
             </if>
             <if test="currentDate != null and currentDate != ''">
-                and date_format(#{currentDate}, '%Y-%m-%d' ) in (date_format( btp.registered_date, '%Y-%m-%d' ),date_format( btp.appoint_start_time, '%Y-%m-%d' ))
+                and date_format(#{currentDate}, '%Y-%m-%d' ) in (date_format( btp.registered_date, '%Y-%m-%d'
+                ),date_format( btp.appoint_start_time, '%Y-%m-%d' ))
             </if>
         </where>
         order by btp.appoint_start_time , btp.registered_date desc
@@ -348,9 +366,52 @@
                 and btp.dentist_id = #{query.patientId}
             </if>
             <if test="query.startDate != null and query.startDate != '' and query.endDate != null and query.endDate != ''">
-                and (date_format(btp.appoint_start_time,'%Y-%m-%d') between date_format(${query.startDate},'%Y-%m-%d') and date_format(${query.endDate},'%Y-%m-%d'))
+                and (date_format(btp.appoint_start_time,'%Y-%m-%d') between date_format(${query.startDate},'%Y-%m-%d')
+                and date_format(${query.endDate},'%Y-%m-%d'))
             </if>
         </where>
+    </select>
+
+    <!-- 查询患者初诊信息 -->
+    <select id="selectFirstVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientDataFirstVisitVo">
+        SELECT
+            btp.patient_id patientId,
+            DATE_FORMAT(btp.treat_start_time, '%Y-%m-%d' ) firstVisitDate,
+            be.employee_name firstVisitDoctors,
+            bo.abbreviation firstVisitOutpatient,
+            (SELECT sum(received_amount) FROM base_bill where patient_id = #{patientId})  cumulativeConsumption
+        FROM
+            base_treatment_process btp
+            LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+            LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+        WHERE
+            btp.patient_id = #{patientId}
+            AND btp.treat_type = 0
+			group by btp.patient_id
+  </select>
+
+    <!-- 查询患者末诊信息 -->
+    <select id="selectLastVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientDataVo">
+        SELECT
+            date_format(t1.lastVisitDate,'%Y-%m-%d') lastVisitDate,
+            t1.lastVisitDoctors,
+            t1.lastVisitOutpatient,
+            t1.totalArrears
+            from (
+                SELECT
+                    btp.patient_id patientId,
+                    btp.treat_start_time lastVisitDate,
+                    be.employee_name lastVisitDoctors,
+                    bo.abbreviation lastVisitOutpatient,
+                    ( SELECT sum( debt_amount ) FROM `base_bill` WHERE patient_id = #{patientId} ) totalArrears
+                FROM
+                    base_treatment_process btp
+                    LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+                    LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+                WHERE
+                    btp.patient_id = #{patientId}
+                    AND btp.treat_end_time = ( SELECT max( treat_end_time ) FROM base_treatment_process WHERE patient_id = #{patientId} )
+                ) t1
     </select>
 
 </mapper>
