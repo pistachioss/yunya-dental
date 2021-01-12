@@ -20,6 +20,7 @@
         <result column="appoint_content" property="appointContent" jdbcType="VARCHAR"/>
         <result column="registered_dentist_id" property="registeredDentistId" jdbcType="INTEGER"/>
         <result column="registered_time" property="registeredTime" jdbcType="TIME"/>
+        <result column="registered_date" property="registeredDate" jdbcType="TIME"/>
         <result column="treat_start_time" property="treatStartTime" jdbcType="TIMESTAMP"/>
         <result column="treat_end_time" property="treatEndTime" jdbcType="TIMESTAMP"/>
         <result column="assistant_1" property="assistant1" jdbcType="INTEGER" />
@@ -44,6 +45,7 @@
         appoint_content,
         registered_dentist_id,
         registered_time,
+        registered_date,
         treat_start_time,
         treat_end_time,
         assistant_1,
@@ -56,7 +58,7 @@
             #{item.orgId}, #{item.patientId}, #{item.treatStatus},
             #{item.treatType}, #{item.appointStatus}, #{item.appointDentistId},
             #{item.appointStartTime}, #{item.appointDuration}, #{item.appointModifyTime},
-            #{item.appointContent}, #{item.registeredDentistId}, #{item.registeredTime},
+            #{item.appointContent}, #{item.registeredDentistId}, #{item.registeredTime},#{item.registeredDate},
             #{item.treatStartTime}, #{item.treatEndTime}, #{item.assistant1},
             #{item.assistant2}, #{item.assistant3})
         </foreach>
@@ -68,6 +70,17 @@
             assistant_2 = #{treatmentProcess.assistant2},
             assistant_3 = #{treatmentProcess.assistant3}
         where treatment_id=#{treatmentProcess.treatmentId}
+    </update>
+
+    <update id="updateRegisteredValueByAppointmentId">
+        update base_treatment_process
+        set registered_id = null,
+            treat_status = null,
+            treat_type = null,
+            registered_dentist_id = null,
+            registered_time = null,
+            registered_date = null
+        where appointment_id=#{appointmentId}
     </update>
 
     <!-- 根据预约ID更新就诊流程 -->
@@ -119,6 +132,9 @@
             <if test="treatmentProcess.registeredTime != null">
                 registered_time = #{treatmentProcess.registeredTime},
             </if>
+            <if test="treatmentProcess.registeredDate != null">
+                registered_date = #{treatmentProcess.registeredDate},
+            </if>
             <if test="treatmentProcess.treatStartTime != null">
                 treat_start_time = #{treatmentProcess.treatStartTime},
             </if>
@@ -164,6 +180,9 @@
             </if>
             <if test="treatmentProcess.registeredTime != null">
                 registered_time = #{treatmentProcess.registeredTime},
+            </if>
+            <if test="treatmentProcess.registeredDate != null">
+                registered_date = #{treatmentProcess.registeredDate},
             </if>
             <if test="treatmentProcess.treatStartTime != null">
                 treat_start_time = #{treatmentProcess.treatStartTime},
