@@ -27,6 +27,9 @@ public class StatementPaymentVO implements Serializable {
   @ApiModelProperty("支付方式名称")
   private String accountItemName;
   /** 入账金额 */
-  @ApiModelProperty("totalAmount")
+  @ApiModelProperty("入账金额（本金）")
   private BigDecimal totalAmount;
+  /** 赠金 */
+  @ApiModelProperty("赠金（支付方式为会员卡时有值）")
+  private BigDecimal bonusAmount;
 }

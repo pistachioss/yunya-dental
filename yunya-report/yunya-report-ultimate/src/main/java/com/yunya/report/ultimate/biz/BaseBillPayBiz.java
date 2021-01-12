@@ -10,8 +10,10 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBillPay;
+import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.BaseBillPayDetailMapper;
 import com.yunya.report.ultimate.mapper.BaseBillPayMapper;
+import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +35,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
 
   /** 收费记录明细 */
   @Autowired private BaseBillPayDetailMapper billPayDetailMapper;
+  /** 组织 */
+  @Autowired private BaseOrganizationMapper organizationMapper;
 
   /**
    * 根据条件查询账单支付记录列表
@@ -146,15 +150,25 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    * @param query 查询条件
    */
   public void exportCurrentBillCollectionDetailList(
-      HttpServletResponse response, StatementBillChargeDetailInfoQuery query) {
-
+      HttpServletResponse response, StatementBillChargeDetailInfoQuery query) throws IOException {
+    PageInfo<StatementBillChargeDetailVO> pageInfo = findCurrentBillCollectionDetailList(query);
+    List<StatementBillChargeDetailVO> list = pageInfo.getList();
+    ExcelUtil<StatementBillChargeDetailVO> excelUtil =
+        new ExcelUtil<>(StatementBillChargeDetailVO.class);
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    String fileName = "诊所代收(本月)记录明细";
+    if (null != organization) {
+      String abbreviation = organization.getAbbreviation();
+      fileName = abbreviation + fileName;
+    }
+    excelUtil.exportExcel(response, list, "诊所代收(本月)记录明细列表", fileName);
   }
 
   /**
    * 根据条件查询门诊账单代（非本月）收详情信息列表 todo:补充会员卡本金、会员卡赠金；预付款本金，预付款赠金支付方式
    *
    * @param query 查询条件
-   * @return
+   * @return PageInfo<StatementBillChargeDetailVO>
    */
   public PageInfo<StatementBillChargeDetailVO> findOtherBillCollectionDetailList(
       StatementBillChargeDetailInfoQuery query) {
@@ -174,9 +188,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    * @param query 查询条件
    */
   public void exportOtherBillCollectionDetailList(
-      HttpServletResponse response, StatementBillChargeDetailInfoQuery query) {
-
-  }
+      HttpServletResponse response, StatementBillChargeDetailInfoQuery query) {}
 
   /**
    * 构建账单收费记录的支付方式明细信息
