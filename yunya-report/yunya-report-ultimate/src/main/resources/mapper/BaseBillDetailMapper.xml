@@ -244,7 +244,7 @@
         brd.org_id,
         brd.executor_id
         ) brd ON bup.user_id = brd.executor_id
-        AND bup.org_id = bup.org_id
+        AND bup.org_id = brd.org_id
         LEFT JOIN (
         SELECT
         ewc.org_id,
