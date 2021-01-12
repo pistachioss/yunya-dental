@@ -75,7 +75,7 @@
         and vrd.status = #{query.status}
       </if>
       <choose>
-        <when test="query.dentistId != null">
+        <when test="query.dentistId == null">
           and vrd.crt_id = #{query.dentistId}
         </when>
         <otherwise>
