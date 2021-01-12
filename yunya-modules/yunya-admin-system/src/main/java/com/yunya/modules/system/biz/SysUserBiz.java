@@ -217,7 +217,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    */
   public void edit(Integer userId, SysUserForm form, HttpServletRequest request) {
     // 获取当前用户登录设备信息
-    String deviceName = ServletUtils.getCurrentDevice().getName();
+    String deviceName = ServletUtils.getCurrentDevice(request).getName();
     SysUser sysUser = checkUserExist(userId);
     String currentUsername = sysUser.getUsername();
     // 不允许修改管理员登陆账号

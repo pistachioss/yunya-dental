@@ -27,10 +27,10 @@
             IFNULL(SUM( bo.appointMissedPerTimes ), 0) AS appointMissedPerTimes,
             IFNULL(CONVERT (
             SUM( bo.totalActualAmount ) / SUM( bo.treatPerTimes ),
-            DECIMAL ( 19, 4 )), 0) AS averageConsumption,
+            DECIMAL ( 19, 2 )), 0) AS averageConsumption,
             IFNULL(CONVERT (
             SUM( bo.totalActualAmount ) / SUM( bo.treatPerNum ),
-            DECIMAL ( 19, 4 )), 0) AS perCapitaConsumption
+            DECIMAL ( 19, 2 )), 0) AS perCapitaConsumption
         FROM
             (
             SELECT

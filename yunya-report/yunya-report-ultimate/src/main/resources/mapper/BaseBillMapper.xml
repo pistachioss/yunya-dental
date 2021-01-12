@@ -252,6 +252,7 @@
                 </foreach>
             </if>
         </where>
+        order by bpr.orderDate desc
     </select>
 
     <!-- 根据条件查询应收账款余额表 -->

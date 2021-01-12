@@ -137,10 +137,21 @@ public class ServletUtils {
     return StringHelper.inStringIgnoreCase(ajax, "json", "xml");
   }
 
-  public static DeviceType getCurrentDevice() {
-    String userAgentStr = getRequestAttributes().getRequest().getHeader("User-Agent");
+  public static DeviceType getCurrentDevice(HttpServletRequest request) {
+    String userAgentStr = request.getHeader("User-Agent");
     UserAgent userAgent = UserAgent.parseUserAgentString(userAgentStr);
     OperatingSystem operatingSystem = userAgent.getOperatingSystem();
+    if (operatingSystem.getName().equalsIgnoreCase(OperatingSystem.UNKNOWN.getName())) {
+      if (userAgentStr.contains("iPhone")) {
+        return OperatingSystem.MAC_OS_X_IPHONE.getDeviceType();
+      } else if (userAgentStr.contains("iPad")) {
+        return OperatingSystem.MAC_OS_X_IPAD.getDeviceType();
+      } else if (userAgentStr.contains("Mac OS")) {
+        return OperatingSystem.MAC_OS.getDeviceType();
+      } else {
+        return OperatingSystem.UNKNOWN.getDeviceType();
+      }
+    }
     return operatingSystem.getDeviceType();
   }
 }
