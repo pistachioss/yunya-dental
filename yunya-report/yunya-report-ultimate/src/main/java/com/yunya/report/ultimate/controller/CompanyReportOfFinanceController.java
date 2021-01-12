@@ -486,6 +486,74 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
+   * 根据条件查询诊所代收明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<StatementBillChargeDetailVO>
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-诊所代收(本月)-查询明细")
+  @PostMapping(
+      value = "/current/bill/collection/detail/list",
+      name = "公司端报表-财务报表-对账单-诊所代收(本月)-查询明细")
+  public ResponseResult<PageInfo<StatementBillChargeDetailVO>> currentBillCollectionDetailList(
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
+    PageInfo<StatementBillChargeDetailVO> pageInfo =
+        billPayBiz.findCurrentBillCollectionDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出诊所代收(本月)记录明细
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-诊所代收-导出")
+  @PostMapping(value = "/current/bill/collection/detail/export", name = "根据条件导出产品售出记录明细")
+  public ResponseResult<T> exportCurrentBillCollectionDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query)
+      throws IOException {
+    billPayBiz.exportCurrentBillCollectionDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询诊所代非本月收明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<StatementBillChargeDetailVO>
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-诊所代收(非本月)-查询明细")
+  @PostMapping(
+          value = "/other/bill/collection/detail/list",
+          name = "公司端报表-财务报表-对账单-诊所代收(非本月)-查询明细")
+  public ResponseResult<PageInfo<StatementBillChargeDetailVO>> otherBillCollectionDetailList(
+          @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
+    PageInfo<StatementBillChargeDetailVO> pageInfo =
+            billPayBiz.findOtherBillCollectionDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出诊所代收(本月)记录明细
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-诊所代收(非本月)-导出")
+  @PostMapping(value = "/other/bill/collection/detail/export", name = "根据条件导出产品售出记录明细")
+  public ResponseResult<T> exportOtherBillCollectionDetailList(
+          HttpServletResponse response,
+          @RequestBody @Validated StatementBillChargeDetailInfoQuery query)
+          throws IOException {
+    billPayBiz.exportOtherBillCollectionDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
    * 根据条件查询本月对账单账单收支统计信息
    *
    * @param query 查询条件
