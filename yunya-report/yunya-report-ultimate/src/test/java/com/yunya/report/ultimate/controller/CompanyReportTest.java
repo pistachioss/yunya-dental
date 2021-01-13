@@ -163,4 +163,20 @@ public class CompanyReportTest {
         financeController.patientCardRefundDetailList(query);
     System.out.println(result);
   }
+
+  @Test
+  public void find7() {
+    StatementBillChargeDetailInfoQuery query = new StatementBillChargeDetailInfoQuery();
+    query.setOrgId(35);
+    query.setDateType((byte) 1);
+    query.setStartDate("2020-12");
+    query.setEndDate("2020-12");
+    //    query.setPatientKeyword();
+    //    query.setBillNum();
+    //    query.setChargeStartDate();
+    //    query.setChargeEndDate();
+    ResponseResult<PageInfo<StatementBillChargeDetailVO>> result =
+        financeController.billChargeDetailInfoList(query);
+    System.out.println(result);
+  }
 }

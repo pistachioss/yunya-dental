@@ -25,8 +25,8 @@ public class StatementPatientCardRefundDetailVO implements Serializable {
   @ApiModelProperty("退费记录ID")
   private Integer refundRecordId;
   /** 充值日期 */
-  @Excel(name = "充值日期")
-  @ApiModelProperty("充值日期")
+  @Excel(name = "退费日期")
+  @ApiModelProperty("退费日期")
   private String refundDate;
   /** 患者ID */
   @ApiModelProperty("患者ID")

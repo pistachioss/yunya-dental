@@ -759,10 +759,10 @@
                 AND bpmor.patientCardNumber like concat('%', #{query.cardNum}, '%')
             </if>
             <if test="query.refundStartDate != null and query.refundStartDate != ''">
-                AND bpmor.rechargeDate &gt;= #{query.refundStartDate}
+                AND bpmor.refundDate &gt;= #{query.refundStartDate}
             </if>
             <if test="query.refundEndDate != null and query.refundEndDate != ''">
-                AND bpmor.rechargeDate &lt;= #{query.refundEndDate}
+                AND bpmor.refundDate &lt;= #{query.refundEndDate}
             </if>
         </where>
     </select>

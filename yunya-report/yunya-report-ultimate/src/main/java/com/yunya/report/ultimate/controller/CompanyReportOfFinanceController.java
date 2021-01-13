@@ -343,7 +343,7 @@ public class CompanyReportOfFinanceController {
   public ResponseResult<PageInfo<StatementBillChargeDetailVO>> billChargeDetailInfoList(
       @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
     PageInfo<StatementBillChargeDetailVO> pageInfo =
-        billPayBiz.selectBillChargeDetailInfoList(query);
+        billPayBiz.findBillChargeDetailInfoList(query);
     return ResponseUtil.success(pageInfo);
   }
 
