@@ -2,7 +2,7 @@ server:
   port: 8211
 
 codeUrl:
-  url: http://192.168.31.95:8080
+  url: http://192.168.31.95:8080/mobile
 
 spring:
   application:
