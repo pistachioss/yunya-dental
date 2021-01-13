@@ -141,29 +141,28 @@ public class ServletUtils {
 
   public static DeviceType getCurrentDevice(HttpServletRequest request) {
     String userAgentStr = request.getHeader("User-Agent");
-    if (userAgentStr.contains("okhttp")) {
-      return OperatingSystem.ANDROID_MOBILE.getDeviceType();
-    }
     UserAgent userAgent = UserAgent.parseUserAgentString(userAgentStr);
     OperatingSystem operatingSystem = userAgent.getOperatingSystem();
-//    log.info("=============================登录获取当前设备========================");
-//    log.info("==> 【User-Agent】:{}", userAgentStr);
-//    log.info("==> 【系统】: {}", operatingSystem.getDeviceType());
-//    log.info("==> 【系统名称】: {}", operatingSystem.getName());
-//
-//    if (operatingSystem.getName().equalsIgnoreCase(OperatingSystem.UNKNOWN.getName())) {
-//      if (userAgentStr.contains("iPhone")) {
-//        return OperatingSystem.MAC_OS_X_IPHONE.getDeviceType();
-//      } else if (userAgentStr.contains("iPad")) {
-//        return OperatingSystem.MAC_OS_X_IPAD.getDeviceType();
-//      } else if (userAgentStr.contains("Mac OS")) {
-//        return OperatingSystem.MAC_OS.getDeviceType();
-//      } else if (userAgentStr.contains("Android")) {
-//        return OperatingSystem.ANDROID.getDeviceType();
-//      } else {
-//        return OperatingSystem.UNKNOWN.getDeviceType();
-//      }
-//    }
+    log.info("=============================登录获取当前设备========================");
+    log.info("==> 【User-Agent】:{}", userAgentStr);
+    log.info("==> 【系统】: {}", operatingSystem.getDeviceType());
+    log.info("==> 【系统名称】: {}", operatingSystem.getName());
+
+    if (operatingSystem.getName().equalsIgnoreCase(OperatingSystem.UNKNOWN.getName())) {
+      if (userAgentStr.contains("iPhone")) {
+        return OperatingSystem.MAC_OS_X_IPHONE.getDeviceType();
+      } else if (userAgentStr.contains("iPad")) {
+        return OperatingSystem.MAC_OS_X_IPAD.getDeviceType();
+      } else if (userAgentStr.contains("Mac OS")) {
+        return OperatingSystem.MAC_OS.getDeviceType();
+      } else if (userAgentStr.contains("Android")) {
+        return OperatingSystem.ANDROID.getDeviceType();
+      } else if (userAgentStr.contains("okhttp")) {
+        return OperatingSystem.ANDROID_MOBILE.getDeviceType();
+      } else {
+        return OperatingSystem.UNKNOWN.getDeviceType();
+      }
+    }
     return operatingSystem.getDeviceType();
   }
 }
