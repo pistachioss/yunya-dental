@@ -723,23 +723,6 @@
                 LEFT JOIN base_organization bo on bo.org_id = a.org_id
                 LEFT JOIN base_employee be2 on be2.user_id = bb.operate_user_id
         group by
-            a.item_id,
-            a.bill_id,
-            a.item_name,
-            a.unit,
-            a.price,
-            a.quantity,
-            bb.coupon_type,
-            bpm.member_level_name,
-            bcpon.coupon_name,
-            bc.card_number,
-            bc.sale_channel_name,
-            bc.card_number,
-            bo.abbreviation,
-            bc.sale_channel_name,
-            bcpon.coupon_name,
-            bb.benefit_amount,
-            be.employee_name,
             be2.employee_name
     </select>
 
