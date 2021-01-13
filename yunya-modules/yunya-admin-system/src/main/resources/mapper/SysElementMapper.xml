@@ -38,7 +38,7 @@
         se.inservice
       from
         sys_element se
-      left join sys_element se2 on se.id = se2.parent_id
+      left join sys_element se2 on se2.id = se.parent_id
       <where>
         <if test="queryForm.id != null">
             and se.id = #{queryForm.id}
