@@ -33,7 +33,7 @@ public class StatementBillChargeDetailVO implements Serializable {
   @ApiModelProperty("收费诊所ID")
   private Integer payeeOrgId;
   /** 收费诊所名称 */
-  @Excel(name = "代收门诊")
+  @Excel(name = "收费门诊")
   @ApiModelProperty("代收门诊")
   private String payeeOrgName;
   /** 账单ID */
