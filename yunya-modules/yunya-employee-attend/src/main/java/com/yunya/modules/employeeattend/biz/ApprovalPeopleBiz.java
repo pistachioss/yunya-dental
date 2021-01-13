@@ -56,10 +56,7 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
         model.setWhetherPage(false);
         Byte[] userStatus = {0,1,3};
         if(approvalPeopleQuery.getIsPc() == 1){
-            List<Integer> list=new ArrayList(Arrays.asList(userStatus));
-            list.add(2);
-            userStatus=new Byte[list.size()];
-            list.toArray(userStatus);
+            userStatus = new  Byte[]{0,1,2,3};
         }
         //离职状态
         model.setWorkStatus(userStatus);
