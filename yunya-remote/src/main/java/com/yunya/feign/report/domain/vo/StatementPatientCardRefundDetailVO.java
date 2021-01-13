@@ -10,24 +10,24 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 简介: 对账单患者卡（会员卡、预付款充值信息VO）
+ * 简介: 对账单患者储值卡（会员卡、预付款）退费明细VO
  *
  * @author: chow
- * @date: 2021/1/9 13:56
+ * @date: 2021/1/12 19:31
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("对账单患者卡（会员卡、预付款充值信息VO）")
+@ApiModel("对账单患者储值卡（会员卡、预付款）退费明细VO")
 @Data
 @ToString
-public class StatementPatientCardRechargeDetailVO implements Serializable {
-  /** 充值记录ID */
-  @ApiModelProperty("充值记录ID")
-  private Integer rechargeRecordId;
+public class StatementPatientCardRefundDetailVO implements Serializable {
+  /** 退费记录ID */
+  @ApiModelProperty("退费记录ID")
+  private Integer refundRecordId;
   /** 充值日期 */
   @Excel(name = "充值日期")
   @ApiModelProperty("充值日期")
-  private String rechargeDate;
+  private String refundDate;
   /** 患者ID */
   @ApiModelProperty("患者ID")
   private Integer patientId;
@@ -46,28 +46,22 @@ public class StatementPatientCardRechargeDetailVO implements Serializable {
   @Excel(name = "卡号")
   @ApiModelProperty("会员卡或预付卡卡号")
   private String patientCardNumber;
-  @Excel(name = "卡类型")
+  /** 卡类型名称 */
+  @Excel(name = "卡类型名称")
   @ApiModelProperty("卡类型名称")
   private String cardTypeName;
-  /** 充值本金金额 */
-  @Excel(name = "充值本金金额", scale = 2)
-  @ApiModelProperty("充值本金金额")
-  private BigDecimal rechargePrincipleAmount;
-  /** 充值赠金金额 */
-  @Excel(name = "充值赠送金额", scale = 2)
-  @ApiModelProperty("充值赠送金额")
-  private BigDecimal rechargeBonusAmount;
   /** 会员卡或预付卡余额（含赠金） */
   @Excel(name = "会员卡或预付卡余额（含赠金）", scale = 2)
   @ApiModelProperty("剩余余额（含赠金）")
   private BigDecimal restTotalAmount;
-  /** 充值人ID */
-  @ApiModelProperty("充值人ID")
-  private Integer rechargeOperatorId;
-  /** 充值人姓名 */
-  @Excel(name = "充值人")
-  @ApiModelProperty("充值人姓名")
-  private String rechargeOperatorName;
+  /** 充值本金金额 */
+  @Excel(name = "退本金金额", scale = 2)
+  @ApiModelProperty("退本金金额")
+  private BigDecimal refundPrincipleAmount;
+  /** 充值赠金金额 */
+  @Excel(name = "退赠送金额", scale = 2)
+  @ApiModelProperty("退赠送金额")
+  private BigDecimal refundBonusAmount;
   /** 现金 */
   @Excel(name = "现金", scale = 2)
   @ApiModelProperty("现金")
@@ -84,4 +78,11 @@ public class StatementPatientCardRechargeDetailVO implements Serializable {
   @Excel(name = "银行账户", scale = 2)
   @ApiModelProperty("银行账户")
   private BigDecimal bankAmount;
+  /** 充值人ID */
+  @ApiModelProperty("退费操作人ID")
+  private Integer refundOperatorId;
+  /** 充值人姓名 */
+  @Excel(name = "退费人")
+  @ApiModelProperty("退费人姓名")
+  private String refundOperatorName;
 }

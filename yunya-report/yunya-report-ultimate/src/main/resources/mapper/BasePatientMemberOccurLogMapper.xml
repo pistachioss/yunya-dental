@@ -575,6 +575,7 @@
         bpmor.patientMobile,
         bpmor.patientCardId,
         bpmor.patientCardNumber,
+        bpmor.cardTypeName,
         bpmor.rechargePrincipleAmount,
         bpmor.rechargeBonusAmount,
         IFNULL( bpmor.totalAmount, 0 ) AS restTotalAmount,
@@ -591,8 +592,9 @@
         bp.pinyin_name AS pinyinName,
         bpmor.card_id AS patientCardId,
         bpm.card_number AS patientCardNumber,
-        bpmor.principal_amount AS rechargePrincipleAmount,
-        bpmor.bonus_amount AS rechargeBonusAmount,
+        IFNULL(bpm.member_level_name, '预付款') AS cardTypeName,
+        IFNULL(bpmor.principal_amount, 0) AS rechargePrincipleAmount,
+        IFNULL(bpmor.bonus_amount, 0) AS rechargeBonusAmount,
         ( bpm.bonus_amount + bpm.principal_amount ) AS totalAmount,
         bpmor.operator_user_id AS rechargeOperatorId,
         be.employee_name AS rechargeOperatorName
@@ -657,7 +659,7 @@
     </select>
 
     <!-- 根据充值记录ID、卡类型查询 -->
-    <select id="selectStatementPaymentVOByRechargeRecordId"
+    <select id="selectStatementPaymentByOperateRecordId"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         select
             bpmor.payment_id as accountItemId,
@@ -666,9 +668,103 @@
         from
             base_patient_member_occur_log bpmor
         where
-            bpmor.occur_type = 1
+            bpmor.occur_type = #{occurType}
             and bpmor.occur_log_id = #{rechargeRecordId}
             and bpmor.type = #{cardType}
+    </select>
+
+    <!-- 根据条件查询患者储值卡（会员卡、预付款卡）退费记录详情 -->
+    <select id="selectPatientCardRefundDetailList"
+            resultType="com.yunya.feign.report.domain.vo.StatementPatientCardRefundDetailVO">
+        SELECT
+        bpmor.refundRecordId,
+        bpmor.refundDate,
+        bpmor.patientId,
+        bpmor.patientName,
+        bpmor.patientMobile,
+        bpmor.patientCardId,
+        bpmor.patientCardNumber,
+        bpmor.cardTypeName,
+        bpmor.refundPrincipleAmount,
+        bpmor.refundBonusAmount,
+        IFNULL( bpmor.totalAmount, 0 ) AS restTotalAmount,
+        bpmor.refundOperatorId,
+        bpmor.refundOperatorName
+        FROM
+        (
+        SELECT
+        bpmor.occur_log_id AS refundRecordId,
+        DATE_FORMAT( bpmor.occur_date, '%Y-%m-%d' ) refundDate,
+        bpmor.patient_id AS patientId,
+        bp.`name` AS patientName,
+        bp.mobile AS patientMobile,
+        bp.pinyin_name AS pinyinName,
+        bpmor.card_id AS patientCardId,
+        bpm.card_number AS patientCardNumber,
+        IFNULL(bpm.member_level_name, '预付款') AS cardTypeName,
+        IFNULL(bpmor.principal_amount, 0) AS refundPrincipleAmount,
+        IFNULL(bpmor.bonus_amount, 0) AS refundBonusAmount,
+        ( bpm.bonus_amount + bpm.principal_amount ) AS totalAmount,
+        bpmor.operator_user_id AS refundOperatorId,
+        be.employee_name AS refundOperatorName
+        FROM
+        base_patient_member_occur_log bpmor
+        LEFT JOIN base_patient bp ON bpmor.patient_id = bp.patient_id
+        LEFT JOIN base_patient_member bpm ON bpmor.card_id = bpm.card_id
+        AND bpmor.type = bpm.type
+        LEFT JOIN base_employee be ON bpmor.operator_user_id = be.user_id
+        <where>
+            AND bpmor.occur_type = 3 -- 表示退费
+            <if test="query.orgId != null">
+                AND bpmor.org_id = #{query.orgId}
+            </if>
+            <if test="query.cardType != null">-- 0:会员卡；1：预付款卡
+                AND bpmor.type = #{query.cardType}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(bpmor.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(bpmor.occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(bpmor.occur_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(bpmor.occur_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(bpmor.occur_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(bpmor.occur_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ORDER BY
+        bpmor.occur_date DESC
+        ) bpmor
+        <where>
+            <if test="query.patientKeyword != null and query.patientKeyword != ''">
+                AND concat(IFNULL(bpmor.patientName, ''), IFNULL(bpmor.pinyinName, ''), IFNULL(bpmor.patientMobile, ''))
+                like
+                concat('%', #{query.patientKeyword}, '%')
+            </if>
+            <if test="query.cardNum != null and query.cardNum != ''">
+                AND bpmor.patientCardNumber like concat('%', #{query.cardNum}, '%')
+            </if>
+            <if test="query.refundStartDate != null and query.refundStartDate != ''">
+                AND bpmor.rechargeDate &gt;= #{query.refundStartDate}
+            </if>
+            <if test="query.refundEndDate != null and query.refundEndDate != ''">
+                AND bpmor.rechargeDate &lt;= #{query.refundEndDate}
+            </if>
+        </where>
     </select>
 
 </mapper>

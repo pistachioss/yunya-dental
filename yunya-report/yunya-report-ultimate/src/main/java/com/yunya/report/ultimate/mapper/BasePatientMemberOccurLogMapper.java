@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.mapper;
 import com.yunya.feign.report.domain.query.MemberQueryForm;
 import com.yunya.feign.report.domain.query.PrepaidQueryForm;
 import com.yunya.feign.report.domain.query.StatementPatientCardRechargeDetailInfoQuery;
+import com.yunya.feign.report.domain.query.StatementPatientCardRefundDetailQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BasePatientMemberOccurLog;
 import org.apache.ibatis.annotations.Param;
@@ -106,13 +107,24 @@ public interface BasePatientMemberOccurLogMapper extends Mapper<BasePatientMembe
       @Param("query") StatementPatientCardRechargeDetailInfoQuery query);
 
   /**
-   * 根据充值记录ID、卡类型查询
+   * 根据操作记录ID、卡类型查询
    *
    * @param rechargeRecordId 充值记录ID
    * @param cardType 卡类型 0-会员卡；1-预付款
+   * @param occurType 操作类型 （1.充值 2.消费 3.退款 4.撤销收费 5.账单退费)
    * @return StatementPaymentVO
    */
-  StatementPaymentVO selectStatementPaymentVOByRechargeRecordId(
+  StatementPaymentVO selectStatementPaymentByOperateRecordId(
       @Param("rechargeRecordId") Integer rechargeRecordId,
-      @Param("cardType") Byte cardType);
+      @Param("cardType") Byte cardType,
+      @Param("occurType") Byte occurType);
+
+  /**
+   * 根据条件查询患者储值卡（会员卡、预付款卡）退费记录详情
+   *
+   * @param query 查询条件
+   * @return List<StatementPatientCardRefundDetailVO>
+   */
+  List<StatementPatientCardRefundDetailVO> selectPatientCardRefundDetailList(
+      @Param("query") StatementPatientCardRefundDetailQuery query);
 }

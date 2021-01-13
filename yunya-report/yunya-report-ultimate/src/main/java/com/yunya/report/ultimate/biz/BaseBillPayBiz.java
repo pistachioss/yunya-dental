@@ -191,6 +191,58 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       HttpServletResponse response, StatementBillChargeDetailInfoQuery query) {}
 
   /**
+   * 根据条件查询诊所被代收账（本月）明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<StatementBillChargeDetailVO>
+   */
+  public PageInfo<StatementBillChargeDetailVO> findCurrentBillIsAcceptedDetailList(
+      StatementBillChargeDetailInfoQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<StatementBillChargeDetailVO> resultList =
+        mapper.selectCurrentBillIsAcceptedDetailList(query);
+    generateBillChargeAccountItemDetail(resultList);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出诊所被代收帐(本月)记录明细
+   *
+   * @param response 响应
+   * @param query 查询条件
+   */
+  public void exportCurrentBillIsAcceptedDetailList(
+      HttpServletResponse response, StatementBillChargeDetailInfoQuery query) {}
+
+  /**
+   * 根据条件查询诊所被代收账（非本月）明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<StatementBillChargeDetailVO>
+   */
+  public PageInfo<StatementBillChargeDetailVO> findOtherBillIsAcceptedDetailList(
+      StatementBillChargeDetailInfoQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<StatementBillChargeDetailVO> resultList =
+        mapper.selectOtherBillIsAcceptedDetailList(query);
+    generateBillChargeAccountItemDetail(resultList);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出诊所被代收帐(非本月)记录明细
+   *
+   * @param response 响应
+   * @param query 查询条件
+   */
+  public void exportOtherBillIsAcceptedDetailList(
+      HttpServletResponse response, StatementBillChargeDetailInfoQuery query) {}
+
+  /**
    * 构建账单收费记录的支付方式明细信息
    *
    * @param resultList 账单收费记录列表
