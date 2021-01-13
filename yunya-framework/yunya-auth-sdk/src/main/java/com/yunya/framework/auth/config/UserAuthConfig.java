@@ -1,6 +1,8 @@
 package com.yunya.framework.auth.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -10,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author ace
  * @date 2017/9/15
  */
+@Component
 public class UserAuthConfig {
 
   @Value("${auth.user.token-header}")

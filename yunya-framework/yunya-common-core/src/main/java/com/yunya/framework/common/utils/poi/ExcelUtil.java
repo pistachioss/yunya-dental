@@ -374,6 +374,7 @@ public class ExcelUtil<T> {
       wb.write(outputStream);
     } catch (Exception e) {
       log.error("导出Excel异常{}", e.getMessage());
+      log.error("导出Excel异常{}", e);
     } finally {
       if (wb != null) {
         try {
@@ -867,11 +868,11 @@ public class ExcelUtil<T> {
    * @param index 序号
    */
   public void createSheet(double sheetNo, int index) {
+    String sname = sheetNo == 0 ? sheetName : sheetName + new DateTime().toString() + "_" + index;
     this.sheet = wb.createSheet();
     this.styles = createStyles(wb);
     // 设置工作表的名称.
-    wb.setSheetName(
-        index, sheetNo == 0 ? sheetName : sheetName + new DateTime().toString() + "_" + index);
+    wb.setSheetName(index, sname);
   }
 
   /**

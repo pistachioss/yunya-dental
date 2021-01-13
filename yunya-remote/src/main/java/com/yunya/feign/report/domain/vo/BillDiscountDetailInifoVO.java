@@ -18,8 +18,8 @@ import java.math.BigDecimal;
 public class BillDiscountDetailInifoVO implements Serializable {
     @ApiModelProperty("项目ID")
     private Integer itemId;
-    @ApiModelProperty("订单记录ID(order_record表ID)")
-    private Integer billId;
+//    @ApiModelProperty("订单记录ID(order_record表ID)")
+//    private Integer billId;
     @ApiModelProperty("开单项目名称")
     private String itemName;
     @ApiModelProperty("单位")

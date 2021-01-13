@@ -12,6 +12,7 @@
         <result column="account_item_id" property="accountItemId" jdbcType="INTEGER"/>
         <result column="principal_amount" property="principalAmount" jdbcType="DECIMAL"/>
         <result column="bonus_amount" property="bonusAmount" jdbcType="DECIMAL"/>
+        <result column="card_num" property="cardNum" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!-- 根据账单（开单记录）ID删除账单收费记录支付明细 -->

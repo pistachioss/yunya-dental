@@ -4,6 +4,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -36,6 +38,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Autowired private CurrentMonthBillStatisticsMapper currentMonthBillStatisticsMapper;
   /** 账单收费记录 */
   @Autowired private BaseBillPayMapper billPayMapper;
+  /** 系统服务调用 */
+  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
   /**
    * 根据条件查询开单列表
@@ -125,7 +129,14 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     List<BillRestReceivableAmountVO> resultList = mapper.selectBillReceivableAmountList(query);
     ExcelUtil<BillRestReceivableAmountVO> excelUtil =
         new ExcelUtil<>(BillRestReceivableAmountVO.class);
-    excelUtil.exportExcel(response, resultList, "应收账款余额表");
+    String fileName = excelUtil.getFileName(getAbbreviationById(query.getOrgId()),
+            query.getOrderDate(),null,null,"应收账款余额表");
+    excelUtil.exportExcel(response, resultList, "应收账款余额表", fileName);
+  }
+
+  public String getAbbreviationById(Integer orgId) {
+    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+    return organizationInfo.getAbbreviation();
   }
 
   /**

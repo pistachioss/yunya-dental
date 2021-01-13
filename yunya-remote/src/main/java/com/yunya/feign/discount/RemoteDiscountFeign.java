@@ -53,6 +53,6 @@ public interface RemoteDiscountFeign {
      * @param saleCashReceiptQuery
      * @return
      */
-    @PostMapping("/card/sumCardSoldAmount")
+    @RequestMapping(value = "/card/sumCardSoldAmount", method = RequestMethod.POST)
     BigDecimal sumCardSoldAmount(@RequestBody CardSaleCashReceiptQuery saleCashReceiptQuery);
 }
