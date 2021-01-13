@@ -630,7 +630,7 @@ public class MemberOccurLogBiz
         }
       }
     }
-    return null;
+    return new PageInfo<>(resultList);
   }
 
   /**
