@@ -50,6 +50,12 @@ public class BaseBillPayDetail {
     private BigDecimal bonusAmount;
 
     /**
+     * 卡号
+     */
+    @Column(name = "card_num")
+    private String cardNum;
+
+    /**
      * 获取账单支付明细记录ID
      *
      * @return bill_pay_detail_record_id - 账单支付明细记录ID
@@ -173,5 +179,13 @@ public class BaseBillPayDetail {
      */
     public void setBonusAmount(BigDecimal bonusAmount) {
         this.bonusAmount = bonusAmount;
+    }
+
+    public String getCardNum() {
+        return cardNum;
+    }
+
+    public void setCardNum(String cardNum) {
+        this.cardNum = cardNum;
     }
 }
