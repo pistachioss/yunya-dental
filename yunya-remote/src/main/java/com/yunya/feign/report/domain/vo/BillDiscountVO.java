@@ -16,5 +16,6 @@ import java.util.List;
 @Data
 public class BillDiscountVO implements Serializable {
     private String operateUserName;
+    private Integer billId;
     private List<BillDiscountDetailInifoVO> billDiscountDetail;
 }
