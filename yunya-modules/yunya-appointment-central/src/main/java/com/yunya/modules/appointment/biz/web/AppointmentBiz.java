@@ -1567,7 +1567,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             Integer orgId = exportQuery.getOrgId();
 
             SimpleDateFormat exportAppointDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String exportAppointDate = exportAppointDateFormat.format(new Date(System.currentTimeMillis()));
+            String exportAppointDate = exportAppointDateFormat.format(exportQuery.getAppointDate());
             // 合并行
             List<CellRangeAddress> mergeCells = new ArrayList<>();
             // 将列表中第一个医生的名字作为初始值
