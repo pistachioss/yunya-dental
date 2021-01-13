@@ -76,9 +76,8 @@ public class BenefitApiController {
 
   @ApiOperation("卡券售卖现金收款")
   @RequestMapping(value = "/card/sumCardSoldAmount", method = RequestMethod.POST)
-  public ResponseResult<BigDecimal> getCardSaleCashReceipt(
+  public BigDecimal getCardSaleCashReceipt(
       @RequestBody @Validated CardSaleCashReceiptQuery query) {
-    BigDecimal receivedAmount = cardBiz.findCardSaleCashReceipt(query);
-    return ResponseUtil.success(receivedAmount);
+    return cardBiz.findCardSaleCashReceipt(query);
   }
 }

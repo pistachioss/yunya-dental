@@ -31,7 +31,7 @@ public class BenefitApiControllerTest {
     public void test1() {
         CardSaleCashReceiptQuery query = new CardSaleCashReceiptQuery();
         query.setOrgId(35);
-        query.setPayId(57);
+        query.setPayId(100);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Date date = null;
         try {

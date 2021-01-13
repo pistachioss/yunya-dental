@@ -868,11 +868,11 @@ public class ExcelUtil<T> {
    * @param index 序号
    */
   public void createSheet(double sheetNo, int index) {
-    this.sheet = wb.createSheet();
+    String sname = sheetNo == 0 ? sheetName : sheetName + new DateTime().toString() + "_" + index;
+    this.sheet = wb.createSheet(sname);
     this.styles = createStyles(wb);
-    // 设置工作表的名称.
-    wb.setSheetName(
-        index, sheetNo == 0 ? sheetName : sheetName + new DateTime().toString() + "_" + index);
+//    // 设置工作表的名称.
+//    wb.setSheetName(index, sname);
   }
 
   /**
