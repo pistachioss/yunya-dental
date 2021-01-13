@@ -353,16 +353,309 @@
         ) bfr
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(IFNULL(bfr.patientName, ''), IFNULL(bfr.pinyinName, ''), IFNULL(bfr.mobile, '')) like concat('%', #{query.keyword}, '%')
+                and concat(IFNULL(bfr.patientName, ''), IFNULL(bfr.pinyinName, ''), IFNULL(bfr.mobile, '')) like
+                concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
                 and concat(bfr.`billNum`) like concat('%', #{query.billNum}, '%')
             </if>
             <if test="query.refundStartDate != null and query.refundStartDate != ''">
-                and refundDate &gt;= #{query.refundStartDate}
+                and bfr.refundDate &gt;= #{query.refundStartDate}
             </if>
             <if test="query.refundEndDate != null and query.refundEndDate != ''">
-                and refundDate &lt;= #{query.refundEndDate}
+                and bfr.refundDate &lt;= #{query.refundEndDate}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询门诊账单退费（当月）明细列表 -->
+    <select id="selectCurrentBillRefundDetailList"
+            resultType="com.yunya.feign.report.domain.vo.StatementBillRefundDetailVO">
+        SELECT
+        refundId,
+        refundDate,
+        billId,
+        billNum,
+        billDate,
+        patientId,
+        patientName,
+        patientMobile,
+        regDentistId,
+        regDentistName,
+        originalAmount,
+        privilegeAmount,
+        actualAmount,
+        totalReceivedAmount,
+        refundAmount,
+        refundOperatorId,
+        refundOperatorName
+        FROM
+        (
+        SELECT
+        br.refund_id AS refundId,
+        DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) AS refundDate,
+        br.bill_id AS billId,
+        bb.bill_num AS billNum,
+        DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) AS billDate,
+        br.patient_id AS patientId,
+        bp.`name` AS patientName,
+        bp.mobile AS patientMobile,
+        bp.pinyin_name AS pinyinName,
+        btp.regDentistId,
+        btp.regDentistName,
+        bb.order_amount AS originalAmount,
+        bb.privilege_amount AS privilegeAmount,
+        bb.actual_amount AS actualAmount,
+        bb.received_amount AS totalReceivedAmount,
+        br.refund_amount AS refundAmount,
+        br.refund_operator_id AS refundOperatorId,
+        be.employee_name AS refundOperatorName
+        FROM
+        base_refund br
+        LEFT JOIN base_bill bb ON br.bill_id = bb.bill_id
+        LEFT JOIN base_patient bp ON br.patient_id = bp.patient_id
+        LEFT JOIN (
+        SELECT
+        btp.treatment_id,
+        btp.registered_dentist_id AS regDentistId,
+        be.employee_name AS regDentistName
+        FROM
+        base_treatment_process btp
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+        WHERE
+        btp.treat_end_time IS NOT NULL
+        GROUP BY
+        btp.treatment_id,
+        btp.registered_dentist_id,
+        be.employee_name
+        ) btp ON br.treatment_id = btp.treatment_id
+        LEFT JOIN base_employee be ON br.refund_operator_id = be.user_id
+        <where>
+            <if test="query.orgId != null">
+                AND br.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+            AND br.bill_id IN (
+            SELECT
+            bill_id
+            FROM
+            base_bill bb
+            <where>
+                AND bb.bill_num IS NOT NULL
+                AND bb.bill_date IS NOT NULL
+                <if test="query.orgId != null">
+                    AND bb.org_id = #{query.orgId}
+                </if>
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y') &lt;= #{query.endDate}
+                    </if>
+                </if>
+            </where>
+            )
+        </where>
+        ) br
+        <where>
+            <if test="query.patientKeyword != null and query.patientKeyword != ''">
+                AND concat(IFNULL(br.patientName, ''), IFNULL(br.pinyinName, ''), IFNULL(br.patientMobile, '')) like
+                concat('%', #{query.patientKeyword}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                AND concat(br.`billNum`) like concat('%', #{query.billNum}, '%')
+            </if>
+            <if test="query.refundStartDate != null and query.refundStartDate != ''">
+                AND br.refundDate &gt;= #{query.refundStartDate}
+            </if>
+            <if test="query.refundEndDate != null and query.refundEndDate != ''">
+                AND br.refundDate &gt;= #{query.refundEndDate}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询门诊账单退费（非当月）明细列表 -->
+    <select id="selectOtherBillRefundDetailList"
+            resultType="com.yunya.feign.report.domain.vo.StatementBillRefundDetailVO">
+        SELECT
+        refundId,
+        refundDate,
+        billId,
+        billNum,
+        billDate,
+        patientId,
+        patientName,
+        patientMobile,
+        regDentistId,
+        regDentistName,
+        originalAmount,
+        privilegeAmount,
+        actualAmount,
+        totalReceivedAmount,
+        refundAmount,
+        refundOperatorId,
+        refundOperatorName
+        FROM
+        (
+        SELECT
+        br.refund_id AS refundId,
+        DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) AS refundDate,
+        br.bill_id AS billId,
+        bb.bill_num AS billNum,
+        DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) AS billDate,
+        br.patient_id AS patientId,
+        bp.`name` AS patientName,
+        bp.mobile AS patientMobile,
+        bp.pinyin_name AS pinyinName,
+        btp.regDentistId,
+        btp.regDentistName,
+        bb.order_amount AS originalAmount,
+        bb.privilege_amount AS privilegeAmount,
+        bb.actual_amount AS actualAmount,
+        bb.received_amount AS totalReceivedAmount,
+        br.refund_amount AS refundAmount,
+        br.refund_operator_id AS refundOperatorId,
+        be.employee_name AS refundOperatorName
+        FROM
+        base_refund br
+        LEFT JOIN base_bill bb ON br.bill_id = bb.bill_id
+        LEFT JOIN base_patient bp ON br.patient_id = bp.patient_id
+        LEFT JOIN (
+        SELECT
+        btp.treatment_id,
+        btp.registered_dentist_id AS regDentistId,
+        be.employee_name AS regDentistName
+        FROM
+        base_treatment_process btp
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+        WHERE
+        btp.treat_end_time IS NOT NULL
+        GROUP BY
+        btp.treatment_id,
+        btp.registered_dentist_id,
+        be.employee_name
+        ) btp ON br.treatment_id = btp.treatment_id
+        LEFT JOIN base_employee be ON br.refund_operator_id = be.user_id
+        <where>
+            <if test="query.orgId != null">
+                AND br.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+            AND br.bill_id IN (
+            SELECT
+            bill_id
+            FROM
+            base_bill bb
+            <where>
+                AND bb.bill_num IS NOT NULL
+                AND bb.bill_date IS NOT NULL
+                <if test="query.orgId != null">
+                    AND bb.org_id = #{query.orgId}
+                </if>
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &lt; #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        OR DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &gt; #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m') &lt; #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        OR DATE_FORMAT( bb.bill_date, '%Y-%m') &gt; #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND DATE_FORMAT( bb.bill_date, '%Y') &lt; #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        OR DATE_FORMAT( bb.bill_date, '%Y') &gt; #{query.endDate}
+                    </if>
+                </if>
+            </where>
+            )
+        </where>
+        ) br
+        <where>
+            <if test="query.patientKeyword != null and query.patientKeyword != ''">
+                AND concat(IFNULL(br.patientName, ''), IFNULL(br.pinyinName, ''), IFNULL(br.patientMobile, '')) like
+                concat('%', #{query.patientKeyword}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                AND concat(br.`billNum`) like concat('%', #{query.billNum}, '%')
+            </if>
+            <if test="query.refundStartDate != null and query.refundStartDate != ''">
+                AND br.refundDate &gt;= #{query.refundStartDate}
+            </if>
+            <if test="query.refundEndDate != null and query.refundEndDate != ''">
+                AND br.refundDate &gt;= #{query.refundEndDate}
             </if>
         </where>
     </select>

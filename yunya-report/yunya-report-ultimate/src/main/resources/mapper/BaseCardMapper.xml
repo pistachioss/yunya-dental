@@ -623,10 +623,10 @@
                 AND bc.productName LIKE concat('%', #{query.productName}, '%')
             </if>
             <if test="query.soldStartDate != null and query.soldStartDate != ''">
-                AND DATE_FORMAT(bc.sold_date, '%Y-%m-%d') &gt;= #{query.soldStartDate}
+                AND DATE_FORMAT(bc.soldDate, '%Y-%m-%d') &gt;= #{query.soldStartDate}
             </if>
             <if test="query.soldEndDate != null and query.soldEndDate != ''">
-                AND DATE_FORMAT(bc.sold_date, '%Y-%m-%d') &lt;= #{query.soldEndDate}
+                AND DATE_FORMAT(bc.soldDate, '%Y-%m-%d') &lt;= #{query.soldEndDate}
             </if>
         </where>
     </select>
