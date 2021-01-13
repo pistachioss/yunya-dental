@@ -561,6 +561,8 @@
         SELECT
         billPayId,
         payeeDate,
+        payeeOrgId,
+        payeeOrgName,
         billId,
         billNum,
         billDate,
@@ -582,6 +584,8 @@
         SELECT
         billPayId,
         DATE_FORMAT(payeeDate, '%Y-%m-%d') AS payeeDate,
+        payeeOrgId,
+        payeeOrgName,
         billId,
         billNum,
         billOrgId,
@@ -605,6 +609,8 @@
         SELECT
         bbp.bill_pay_id AS billPayId,
         bbp.payee_date AS payeeDate,
+        bbp.org_id AS payeeOrgId,
+        bo.abbreviation AS payeeOrgName,
         bbp.bill_id AS billId,
         bb.bill_num AS billNum,
         bb.bill_date AS billDate,
@@ -700,7 +706,7 @@
         bb.bill_date
         ) bb
         <where>
-            AND bbp.billOrgId = bb.org_id
+            AND bbp.payeeOrgId = bb.org_id
             AND bbp.payeeDate != bb.bill_date -- 收费时间跟账单时间不同则表示收欠费,并且收费日期在查询时间段内
             AND bbp.billId = bb.bill_id
             <if test="query.dateType == 0">
@@ -746,12 +752,14 @@
         </where>
     </select>
 
-    <!-- 根据条件查询账单收欠费费（非本月账单本月非首次收费）详情信息列表 -->
+    <!-- 根据条件查询账单收欠费（非本月账单本月非首次收费）详情信息列表 -->
     <select id="selectBillOtherChargeDebtDetailList"
             resultType="com.yunya.feign.report.domain.vo.StatementBillChargeDetailVO">
         SELECT
         billPayId,
         payeeDate,
+        payeeOrgId,
+        payeeOrgName,
         billId,
         billNum,
         billOrgId,
@@ -773,6 +781,8 @@
         SELECT
         billPayId,
         DATE_FORMAT(payeeDate, '%Y-%m-%d') AS payeeDate,
+        payeeOrgId,
+        payeeOrgName,
         billId,
         billNum,
         billOrgId,
@@ -794,10 +804,12 @@
         FROM
         (
         SELECT
-        bbp.org_id AS billOrgId,
+        bb.org_id AS billOrgId,
         bo.abbreviation AS billOrgName,
         bbp.bill_pay_id AS billPayId,
         bbp.payee_date AS payeeDate,
+        bbp.org_id AS payeeOrgId,
+        bo.abbreviation AS payeeOrgName,
         bbp.bill_id AS billId,
         bb.bill_num AS billNum,
         bb.bill_date AS billDate,
@@ -883,7 +895,7 @@
         ) bb
         -- 收费时间跟账单时间不同则表示收欠费,并且收费日期在查询时间段内
         <where>
-            AND bbp.billOrgId = bb.org_id
+            AND bbp.payeeOrgId = bb.org_id
             AND bbp.payeeDate != bb.bill_date
             AND bbp.billId = bb.bill_id
             <if test="query.dateType == 0">
