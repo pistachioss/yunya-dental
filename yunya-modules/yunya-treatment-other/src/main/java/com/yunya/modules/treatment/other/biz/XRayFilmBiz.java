@@ -111,7 +111,7 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
         entity.setUpdName(BaseContextHandler.getName());
         entity.setUpdTime(new Date(System.currentTimeMillis()));
         entity.setType(form.getType());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date parse = dateFormat.parse(form.getUploadTime());
         entity.setUploadTime(parse);
         return mapper.updateByPrimaryKeySelective(entity);

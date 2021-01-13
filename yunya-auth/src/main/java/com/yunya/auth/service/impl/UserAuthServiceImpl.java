@@ -57,12 +57,12 @@ public class UserAuthServiceImpl implements UserAuthService {
    */
   @Override
   public UserAuthResponse login(JwtRequestFrom paramForm, HttpServletRequest request) throws Exception {
+    String deviceName = ServletUtils.getCurrentDevice(request).getName();
     // 调用远程服务获取用户信息
     FrontUserInfoVO userInfo = systemServiceFeign.validate(paramForm);
     checkUserInfo(userInfo);
     String userId = userInfo.getId();
     if (!StringUtils.isEmpty(userId)) {
-      String deviceName = ServletUtils.getCurrentDevice(request).getName();
       String tokenStr = redisUtils.get(RedisConstants.setKey(USER_ID,deviceName,userId));
       if (StringHelper.isBlank(tokenStr)) {
         String token = this.setTokenInfoInCache(userInfo,userId,deviceName);

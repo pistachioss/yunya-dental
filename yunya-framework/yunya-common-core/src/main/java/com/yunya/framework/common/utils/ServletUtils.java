@@ -4,6 +4,7 @@ import com.yunya.framework.common.utils.text.Convert;
 import eu.bitwalker.useragentutils.DeviceType;
 import eu.bitwalker.useragentutils.OperatingSystem;
 import eu.bitwalker.useragentutils.UserAgent;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -18,6 +19,7 @@ import java.io.IOException;
  *
  * @author chow
  */
+@Slf4j
 public class ServletUtils {
 
   /**
@@ -141,6 +143,11 @@ public class ServletUtils {
     String userAgentStr = request.getHeader("User-Agent");
     UserAgent userAgent = UserAgent.parseUserAgentString(userAgentStr);
     OperatingSystem operatingSystem = userAgent.getOperatingSystem();
+    log.info("=============================登录获取当前设备========================");
+    log.info("==> 【User-Agent】:{}", userAgentStr);
+    log.info("==> 【系统】: {}", operatingSystem.getDeviceType());
+    log.info("==> 【系统名称】: {}", operatingSystem.getName());
+
     if (operatingSystem.getName().equalsIgnoreCase(OperatingSystem.UNKNOWN.getName())) {
       if (userAgentStr.contains("iPhone")) {
         return OperatingSystem.MAC_OS_X_IPHONE.getDeviceType();
@@ -148,6 +155,10 @@ public class ServletUtils {
         return OperatingSystem.MAC_OS_X_IPAD.getDeviceType();
       } else if (userAgentStr.contains("Mac OS")) {
         return OperatingSystem.MAC_OS.getDeviceType();
+      } else if (userAgentStr.contains("Android")) {
+        return OperatingSystem.ANDROID.getDeviceType();
+      } else if (userAgentStr.contains("okhttp")) {
+        return OperatingSystem.ANDROID_MOBILE.getDeviceType();
       } else {
         return OperatingSystem.UNKNOWN.getDeviceType();
       }
