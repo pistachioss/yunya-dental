@@ -374,6 +374,7 @@ public class ExcelUtil<T> {
       wb.write(outputStream);
     } catch (Exception e) {
       log.error("导出Excel异常{}", e.getMessage());
+      log.error("导出Excel异常{}", e);
     } finally {
       if (wb != null) {
         try {

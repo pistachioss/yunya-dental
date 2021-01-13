@@ -19,13 +19,15 @@
         SELECT
             bai.account_item_id AS accountItemId,
             bai.account_item_name AS accountItemName,
-            IFNULL( bbpd.principal_amount, 0 ) AS totalAmount
+            IFNULL( bbpd.principal_amount, 0 ) AS totalAmount,
+            IFNULL(bbpd.bonus_amount, 0) AS bonusAmount
         FROM
             base_account_item bai
             LEFT JOIN (
             SELECT
             bbpd.account_item_id,
-            bbpd.principal_amount
+            bbpd.principal_amount,
+            bbpd.bonus_amount
             FROM
             base_bill_pay_detail bbpd
             WHERE

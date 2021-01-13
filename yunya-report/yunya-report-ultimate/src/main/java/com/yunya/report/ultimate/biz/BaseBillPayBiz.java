@@ -5,7 +5,10 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillPayRecordQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.StatementBillChargeDetailInfoQuery;
-import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.report.domain.vo.BillOfPayRecordVO;
+import com.yunya.feign.report.domain.vo.StatementBillChargeDetailVO;
+import com.yunya.feign.report.domain.vo.StatementPaymentVO;
+import com.yunya.feign.report.domain.vo.TollDataStatisticsVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -19,8 +22,12 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
+import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
 
 /**
  * 简介: 账单收费记录业务层
@@ -82,7 +89,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    * @param query 查询条件
    * @return PageInfo<StatementBillChargeDetailVO>
    */
-  public PageInfo<StatementBillChargeDetailVO> selectBillChargeDetailInfoList(
+  public PageInfo<StatementBillChargeDetailVO> findBillChargeDetailInfoList(
       StatementBillChargeDetailInfoQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
@@ -191,20 +198,110 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       HttpServletResponse response, StatementBillChargeDetailInfoQuery query) {}
 
   /**
+   * 根据条件查询诊所被代收账（本月）明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<StatementBillChargeDetailVO>
+   */
+  public PageInfo<StatementBillChargeDetailVO> findCurrentBillIsAcceptedDetailList(
+      StatementBillChargeDetailInfoQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<StatementBillChargeDetailVO> resultList =
+        mapper.selectCurrentBillIsAcceptedDetailList(query);
+    generateBillChargeAccountItemDetail(resultList);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出诊所被代收帐(本月)记录明细
+   *
+   * @param response 响应
+   * @param query 查询条件
+   */
+  public void exportCurrentBillIsAcceptedDetailList(
+      HttpServletResponse response, StatementBillChargeDetailInfoQuery query) {}
+
+  /**
+   * 根据条件查询诊所被代收账（非本月）明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<StatementBillChargeDetailVO>
+   */
+  public PageInfo<StatementBillChargeDetailVO> findOtherBillIsAcceptedDetailList(
+      StatementBillChargeDetailInfoQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<StatementBillChargeDetailVO> resultList =
+        mapper.selectOtherBillIsAcceptedDetailList(query);
+    generateBillChargeAccountItemDetail(resultList);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出诊所被代收帐(非本月)记录明细
+   *
+   * @param response 响应
+   * @param query 查询条件
+   */
+  public void exportOtherBillIsAcceptedDetailList(
+      HttpServletResponse response, StatementBillChargeDetailInfoQuery query) {}
+
+  /**
    * 构建账单收费记录的支付方式明细信息
    *
    * @param resultList 账单收费记录列表
    */
   private void generateBillChargeAccountItemDetail(List<StatementBillChargeDetailVO> resultList) {
     if (StringHelper.isNotEmpty(resultList)) {
-      // todo 补充会员卡本金/赠金；预付款本金/赠金收费方式入账金额
       for (StatementBillChargeDetailVO vo : resultList) {
+        List<StatementPaymentVO> statementPaymentResult = new ArrayList<>();
         List<StatementPaymentVO> statementPayments =
             billPayDetailMapper.selectBillPayDetailList(vo.getBillPayId());
-        if (null == statementPayments) {
-          statementPayments = new ArrayList<>();
+        if (StringHelper.isNotEmpty(statementPayments)) {
+          for (StatementPaymentVO payment : statementPayments) {
+            String accountItemName = payment.getAccountItemName();
+            // 将支付方式名称为：会员卡或预付款的支付港式拆分为-会员卡本金/赠金；预付款本金/赠金
+            switch (accountItemName) {
+              case ACCOUNT_ITEM_OF_MEMBER:
+                Integer memberCardAccountItemId = payment.getAccountItemId();
+                BigDecimal memberCardTotalAmount = payment.getTotalAmount();
+                BigDecimal memberCardBonusAmount = payment.getBonusAmount();
+                StatementPaymentVO memberCardPrinciple = new StatementPaymentVO();
+                memberCardPrinciple.setAccountItemId(memberCardAccountItemId);
+                memberCardPrinciple.setAccountItemName("会员卡本金");
+                memberCardPrinciple.setTotalAmount(memberCardTotalAmount);
+                statementPaymentResult.add(0, memberCardPrinciple);
+                StatementPaymentVO memberCardBonus = new StatementPaymentVO();
+                memberCardBonus.setAccountItemId(memberCardAccountItemId);
+                memberCardBonus.setAccountItemName("会员卡赠金");
+                memberCardBonus.setTotalAmount(memberCardBonusAmount);
+                statementPaymentResult.add(1, memberCardBonus);
+                break;
+              case ACCOUNT_ITEM_OF_PREPARE:
+                Integer prePaidCardAccountItemId = payment.getAccountItemId();
+                BigDecimal prePaidCardTotalAmount = payment.getTotalAmount();
+                BigDecimal prePaidCardBonusAmount = payment.getBonusAmount();
+                StatementPaymentVO prePaidCardPrinciple = new StatementPaymentVO();
+                prePaidCardPrinciple.setAccountItemId(prePaidCardAccountItemId);
+                prePaidCardPrinciple.setAccountItemName("预付款本金");
+                prePaidCardPrinciple.setTotalAmount(prePaidCardTotalAmount);
+                statementPaymentResult.add(2, prePaidCardPrinciple);
+                StatementPaymentVO prepaidCardBonus = new StatementPaymentVO();
+                prepaidCardBonus.setAccountItemId(prePaidCardAccountItemId);
+                prepaidCardBonus.setAccountItemName("预付款赠金");
+                prepaidCardBonus.setTotalAmount(prePaidCardBonusAmount);
+                statementPaymentResult.add(3, prepaidCardBonus);
+                break;
+              default:
+                statementPaymentResult.add(payment);
+                break;
+            }
+          }
         }
-        vo.setStatementPayments(statementPayments);
+        vo.setStatementPayments(statementPaymentResult);
       }
     }
   }

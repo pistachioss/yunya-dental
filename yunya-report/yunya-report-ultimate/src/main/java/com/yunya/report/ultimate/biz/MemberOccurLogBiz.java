@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.MemberQueryForm;
 import com.yunya.feign.report.domain.query.PrepaidQueryForm;
 import com.yunya.feign.report.domain.query.StatementPatientCardRechargeDetailInfoQuery;
+import com.yunya.feign.report.domain.query.StatementPatientCardRefundDetailQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -540,8 +542,8 @@ public class MemberOccurLogBiz
       for (StatementPatientCardRechargeDetailVO vo : resultList) {
         Integer rechargeRecordId = vo.getRechargeRecordId();
         StatementPaymentVO statementPaymentVO =
-            mapper.selectStatementPaymentVOByRechargeRecordId(
-                rechargeRecordId, query.getCardType());
+            mapper.selectStatementPaymentByOperateRecordId(
+                rechargeRecordId, query.getCardType(), (byte) 1);
         // 设置充值记录支付方式金额
         if (null != statementPaymentVO) {
           setRechargeDetailAmountValue(statementPaymentVO, vo);
@@ -593,6 +595,93 @@ public class MemberOccurLogBiz
     List<StatementPatientCardRechargeDetailVO> list = pageInfo.getList();
     ExcelUtil<StatementPatientCardRechargeDetailVO> excelUtil =
         new ExcelUtil<>(StatementPatientCardRechargeDetailVO.class);
-    excelUtil.exportExcel(response, list, "门诊患者储值卡充值记录明细");
+    String fileName = "门诊患者储值卡充值记录明细列表";
+    BaseOrganization organization = baseOrganizationMapper.selectByPrimaryKey(query.getOrgId());
+    if (null != organization) {
+      fileName =
+          MessageFormat.format(
+              "{0}{1}-{2}{3}",
+              organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), fileName);
+    }
+    excelUtil.exportExcel(response, list, "门诊患者储值卡充值记录明细", fileName);
+  }
+
+  /**
+   * 根据条件查询患者储值卡（会员卡、预付款）退费明细记录列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<StatementPatientCardRefundDetailVO>
+   */
+  public PageInfo<StatementPatientCardRefundDetailVO> findPatientCardRefundDetailList(
+      StatementPatientCardRefundDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<StatementPatientCardRefundDetailVO> resultList =
+        mapper.selectPatientCardRefundDetailList(query);
+    if (StringHelper.isNotEmpty(resultList)) {
+      for (StatementPatientCardRefundDetailVO vo : resultList) {
+        Integer refundRecordId = vo.getRefundRecordId();
+        StatementPaymentVO statementPaymentVO =
+            mapper.selectStatementPaymentByOperateRecordId(
+                refundRecordId, query.getCardType(), (byte) 3);
+        if (null != statementPaymentVO) {
+          setRefundDetailAmountValue(statementPaymentVO, vo);
+        }
+      }
+    }
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 设置患者储值卡退费支付方式明细
+   *
+   * @param statementPaymentVO 退费支付方式
+   * @param vo 退费明细
+   */
+  private void setRefundDetailAmountValue(
+      StatementPaymentVO statementPaymentVO, StatementPatientCardRefundDetailVO vo) {
+    String accountItemName = statementPaymentVO.getAccountItemName();
+    BigDecimal totalAmount = statementPaymentVO.getTotalAmount();
+    switch (accountItemName) {
+      case ACCOUNT_ITEM_OF_CASH:
+        vo.setCashAmount(totalAmount);
+        break;
+      case ACCOUNT_ITEM_OF_WECHAT:
+        vo.setWeChatAmount(totalAmount);
+        break;
+      case ACCOUNT_ITEM_OF_ALIPAY:
+        vo.setAliPayAmount(totalAmount);
+        break;
+      case ACCOUNT_ITEM_OF_BANK:
+        vo.setBankAmount(totalAmount);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
+   * 根据条件导出门诊患者储值卡充值记录明细
+   *
+   * @param response 响应
+   * @param query 查询条件
+   */
+  public void exportPatientCardRefundDetailList(
+      HttpServletResponse response, StatementPatientCardRefundDetailQuery query)
+      throws IOException {
+    PageInfo<StatementPatientCardRefundDetailVO> pageInfo = findPatientCardRefundDetailList(query);
+    List<StatementPatientCardRefundDetailVO> list = pageInfo.getList();
+    ExcelUtil<StatementPatientCardRefundDetailVO> excelUtil =
+        new ExcelUtil<>(StatementPatientCardRefundDetailVO.class);
+    String fileName = "门诊患者储值卡退费记录明细列表";
+    BaseOrganization organization = baseOrganizationMapper.selectByPrimaryKey(query.getOrgId());
+    if (null != organization) {
+      fileName =
+          MessageFormat.format(
+              "{0}{1}-{2}{3}",
+              organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), fileName);
+    }
+    excelUtil.exportExcel(response, list, "患者储值卡退费记录明细", fileName);
   }
 }
