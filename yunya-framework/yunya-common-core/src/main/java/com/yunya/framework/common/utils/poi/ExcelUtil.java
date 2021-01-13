@@ -869,10 +869,10 @@ public class ExcelUtil<T> {
    */
   public void createSheet(double sheetNo, int index) {
     String sname = sheetNo == 0 ? sheetName : sheetName + new DateTime().toString() + "_" + index;
-    this.sheet = wb.createSheet(sname);
+    this.sheet = wb.createSheet();
     this.styles = createStyles(wb);
-//    // 设置工作表的名称.
-//    wb.setSheetName(index, sname);
+    // 设置工作表的名称.
+    wb.setSheetName(index, sname);
   }
 
   /**
