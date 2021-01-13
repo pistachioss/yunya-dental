@@ -113,7 +113,11 @@ public class ClinicScheduleBiz extends BaseBiz<ClinicScheduleMapper, ClinicSched
         List<ClinicScheduleBaseVO>relist = new ArrayList<>();
         if(list.size()>0){
             for(ClinicScheduleBaseVO clinicScheduleBaseVO:list){
-                clinicScheduleBaseVO.setClinicName(clinicMap.get(clinicScheduleBaseVO.getClinicId().toString()).getName());
+                String name = "";
+                if(clinicMap.get(clinicScheduleBaseVO.getClinicId().toString())!=null){
+                    name = clinicMap.get(clinicScheduleBaseVO.getClinicId().toString()).getName();
+                }
+                clinicScheduleBaseVO.setClinicName(name);
                 relist.add(clinicScheduleBaseVO);
             }
         }
