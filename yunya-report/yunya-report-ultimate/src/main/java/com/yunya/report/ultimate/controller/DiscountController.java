@@ -2,8 +2,38 @@ package com.yunya.report.ultimate.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.*;
-import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.report.domain.query.CardSoldRecordQuery;
+import com.yunya.feign.report.domain.query.CardSoldStatisticsQuery;
+import com.yunya.feign.report.domain.query.CardStatisticsQuery;
+import com.yunya.feign.report.domain.query.CardUsedRecordQuery;
+import com.yunya.feign.report.domain.query.CardUsedStatisticsQuery;
+import com.yunya.feign.report.domain.query.CouponActiveDetailQuery;
+import com.yunya.feign.report.domain.query.CouponSoldDetailQuery;
+import com.yunya.feign.report.domain.query.CouponSoldStatisticsQuery;
+import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
+import com.yunya.feign.report.domain.query.CouponUsedDetailQuery;
+import com.yunya.feign.report.domain.query.CouponUsedQuery;
+import com.yunya.feign.report.domain.query.MultiCardUseQuery;
+import com.yunya.feign.report.domain.query.OnceCardUseQuery;
+import com.yunya.feign.report.domain.query.RechargeCardStatisticsQuery;
+import com.yunya.feign.report.domain.query.RechargeDetailQuery;
+import com.yunya.feign.report.domain.query.RechargeQuery;
+import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
+import com.yunya.feign.report.domain.vo.CardStatisticsVo;
+import com.yunya.feign.report.domain.vo.CardUsedRecordVo;
+import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
+import com.yunya.feign.report.domain.vo.CouponActiveDetailVo;
+import com.yunya.feign.report.domain.vo.CouponSoldDetailVo;
+import com.yunya.feign.report.domain.vo.CouponSoldRecordVo;
+import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
+import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
+import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
+import com.yunya.feign.report.domain.vo.CouponUsedVo;
+import com.yunya.feign.report.domain.vo.MultiCardUseVo;
+import com.yunya.feign.report.domain.vo.OnceCardUseVo;
+import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
+import com.yunya.feign.report.domain.vo.RechargeDetailVo;
+import com.yunya.feign.report.domain.vo.RechargeVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.DiscountBiz;
@@ -128,8 +158,8 @@ public class DiscountController {
 		List<CouponSoldRecordVo> list = discountBiz.getCardSoldRecordList(query);
 		if(list != null && !list.isEmpty()){
 			discountBiz.buildResponse(response, discountBiz.getOrgName(query.getOrgId()) + "产品售出记录表");
-			EasyExcel.write(response.getOutputStream(), RechargeCardStatisticsVo.class)
-					.sheet("sheet").doWrite(discountBiz.getCardSoldRecordList(query));
+			EasyExcel.write(response.getOutputStream(), CouponSoldRecordVo.class)
+					.sheet("sheet").doWrite(list);
 		}
 		return ResponseUtil.success();
 	}
@@ -140,8 +170,8 @@ public class DiscountController {
 		List<CardUsedRecordVo> list = discountBiz.getCardUsedRecordList(query);
 		if(list != null && !list.isEmpty()){
 			discountBiz.buildResponse(response, discountBiz.getOrgName(query.getOrgId()) + "产品使用记录表");
-			EasyExcel.write(response.getOutputStream(), CardSoldStatisticsVo.class)
-					.sheet("sheet").doWrite(discountBiz.getCardUsedRecordList(query));
+			EasyExcel.write(response.getOutputStream(), CardUsedRecordVo.class)
+					.sheet("sheet").doWrite(list);
 		}
 		return ResponseUtil.success();
 	}
@@ -167,7 +197,7 @@ public class DiscountController {
 		if(list != null && !list.isEmpty()){
 			discountBiz.buildResponse(response, discountBiz.getCouponName(couponId) + "售出激活统计");
 			EasyExcel.write(response.getOutputStream(), RechargeCardStatisticsVo.class)
-					.sheet("sheet").doWrite(discountBiz.getRechargeCardStatisticsList(couponId, query));
+					.sheet("sheet").doWrite(list);
 		}
 		return ResponseUtil.success();
 	}
@@ -179,7 +209,7 @@ public class DiscountController {
 		if(list != null && !list.isEmpty()){
 			discountBiz.buildResponse(response, "自有平台卡券售出明细");
 			EasyExcel.write(response.getOutputStream(), CardSoldStatisticsVo.class)
-					.sheet("sheet").doWrite(discountBiz.getCardSoldList(query));
+					.sheet("sheet").doWrite(list);
 		}
 		return ResponseUtil.success();
 	}
@@ -192,7 +222,7 @@ public class DiscountController {
 		if(list != null && !list.isEmpty()){
 			discountBiz.buildResponse(response, discountBiz.getCouponName(couponId) + "自有平台卡券售出明细");
 			EasyExcel.write(response.getOutputStream(), CouponSoldDetailVo.class)
-					.sheet("sheet").doWrite(discountBiz.getCouponSoldDetailList(couponId, query));
+					.sheet("sheet").doWrite(list);
 		}
 		return ResponseUtil.success();
 	}
@@ -205,7 +235,7 @@ public class DiscountController {
 		if(list != null && !list.isEmpty()){
 			discountBiz.buildResponse(response, discountBiz.getCouponName(couponId) + "第三方平台卡券售出明细");
 			EasyExcel.write(response.getOutputStream(), CouponActiveDetailVo.class)
-					.sheet("sheet").doWrite(discountBiz.getCouponActiveList(couponId, query));
+					.sheet("sheet").doWrite(list);
 		}
 		return ResponseUtil.success();
 	}
@@ -217,7 +247,7 @@ public class DiscountController {
 		if(list != null && !list.isEmpty()){
 			discountBiz.buildResponse(response, "产品使用统计明细");
 			EasyExcel.write(response.getOutputStream(), CardUsedStatisticsVo.class)
-					.sheet("sheet").doWrite(discountBiz.getCardUsedList(query));
+					.sheet("sheet").doWrite(list);
 		}
 		return ResponseUtil.success();
 	}
@@ -230,7 +260,7 @@ public class DiscountController {
 		if(list != null && !list.isEmpty()){
 			discountBiz.buildResponse(response, discountBiz.getCouponName(couponId) + "产品使用统计明细");
 			EasyExcel.write(response.getOutputStream(), CouponUsedDetailVo.class)
-					.sheet("sheet").doWrite(discountBiz.getCouponDetailUsedList(couponId, query));
+					.sheet("sheet").doWrite(list);
 		}
 		return ResponseUtil.success();
 	}
