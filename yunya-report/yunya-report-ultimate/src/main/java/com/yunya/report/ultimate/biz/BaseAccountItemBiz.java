@@ -130,14 +130,16 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     // 预付款退费 -- 查询时间段内本门诊预付款充值退费
     prepaidRefund(query, resultList);
 
+    // 计算出入账合计
+    calculateInboundAndOutbound(resultList);
+
+
     // 诊所被代收（本月）-- 查询时间段内本门诊账单不在本门诊收费
     clinicIsAcceptedThisMonth(query, resultList);
 
     // 诊所被代收（非本月）-- 非查询时间段内本门诊账单不在门诊收费
     clinicIsAcceptedNotThisMonth(query, resultList);
 
-    // 计算出入账合计
-    calculateInboundAndOutbound(resultList);
     return resultList;
   }
 
@@ -177,10 +179,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     }
 
     ClinicInboundAndOutboundVO inboundAndOutboundVO = new ClinicInboundAndOutboundVO();
-    inboundAndOutboundVO.setType((byte) 14);
+    inboundAndOutboundVO.setType((byte) 12);
     inboundAndOutboundVO.setName("合计");
     inboundAndOutboundVO.setPaymentInfoList(inboundPaymentResult);
-    resultList.add(14, inboundAndOutboundVO);
+    resultList.add(12, inboundAndOutboundVO);
   }
 
   /**
@@ -227,12 +229,12 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
     List<StatementPaymentVO> clinicIsAcceptedNotThisMonth =
         findClinicIsAcceptedPaymentInfoNotThisMonth(query);
-    reBuildStatementsPaymentList((byte) 13, clinicIsAcceptedNotThisMonth, query);
+    reBuildStatementsPaymentList((byte) 14, clinicIsAcceptedNotThisMonth, query);
     ClinicInboundAndOutboundVO clinicIsAcceptedNotThisMonthVO = new ClinicInboundAndOutboundVO();
-    clinicIsAcceptedNotThisMonthVO.setType((byte) 13);
+    clinicIsAcceptedNotThisMonthVO.setType((byte) 14);
     clinicIsAcceptedNotThisMonthVO.setName("诊所被代收（非本月）");
     clinicIsAcceptedNotThisMonthVO.setPaymentInfoList(clinicIsAcceptedNotThisMonth);
-    resultList.add(13, clinicIsAcceptedNotThisMonthVO);
+    resultList.add(14, clinicIsAcceptedNotThisMonthVO);
   }
 
   /**
@@ -245,12 +247,12 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
     List<StatementPaymentVO> clinicIsAcceptedThisMonth =
         findClinicIsAcceptedPaymentInfoThisMonth(query);
-    reBuildStatementsPaymentList((byte) 12, clinicIsAcceptedThisMonth, query);
+    reBuildStatementsPaymentList((byte) 13, clinicIsAcceptedThisMonth, query);
     ClinicInboundAndOutboundVO clinicIsAcceptedThisMonthVO = new ClinicInboundAndOutboundVO();
-    clinicIsAcceptedThisMonthVO.setType((byte) 12);
+    clinicIsAcceptedThisMonthVO.setType((byte) 13);
     clinicIsAcceptedThisMonthVO.setName("诊所被代收（本月）");
     clinicIsAcceptedThisMonthVO.setPaymentInfoList(clinicIsAcceptedThisMonth);
-    resultList.add(12, clinicIsAcceptedThisMonthVO);
+    resultList.add(13, clinicIsAcceptedThisMonthVO);
   }
 
   /**
