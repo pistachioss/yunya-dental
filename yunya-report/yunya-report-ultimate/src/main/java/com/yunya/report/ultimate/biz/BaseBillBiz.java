@@ -130,7 +130,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     ExcelUtil<BillRestReceivableAmountVO> excelUtil =
         new ExcelUtil<>(BillRestReceivableAmountVO.class);
     String fileName = excelUtil.getFileName(getAbbreviationById(query.getOrgId()),
-            query.getOrderDate(),null,null,"应收账款余额表");
+            query.getBillDate(),null,null,"应收账款余额表");
     excelUtil.exportExcel(response, resultList, "应收账款余额表", fileName);
   }
 

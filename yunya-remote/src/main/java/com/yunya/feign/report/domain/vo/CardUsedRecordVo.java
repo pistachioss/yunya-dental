@@ -13,16 +13,14 @@ import lombok.Data;
 @Data
 public class CardUsedRecordVo {
 	@ApiModelProperty(value = "产品id")
-	@ExcelProperty(value = "产品id")
 	private Integer couponId;
 	@ApiModelProperty(value = "订单id")
-	@ExcelProperty(value = "订单id")
 	private Integer orderId;
-	@ApiModelProperty(value = "使用时间")
-	@ExcelProperty(value = "使用时间")
+	@ApiModelProperty(value = "使用日期")
+	@ExcelProperty(value = "使用日期")
 	private String usedDate;
-	@ApiModelProperty(value = "开单时间")
-	@ExcelProperty(value = "开单时间")
+	@ApiModelProperty(value = "账单日期")
+	@ExcelProperty(value = "账单日期")
 	private String orderDate;
 	@ApiModelProperty(value = "账单编号")
 	@ExcelProperty(value = "账单编号")
@@ -46,5 +44,6 @@ public class CardUsedRecordVo {
 	@ExcelProperty(value = "卡号")
 	private String cardNumber;
 	@ApiModelProperty(value = "收费人")
+	@ExcelProperty(value = "收费人")
 	private String operateBenefitUser;
 }

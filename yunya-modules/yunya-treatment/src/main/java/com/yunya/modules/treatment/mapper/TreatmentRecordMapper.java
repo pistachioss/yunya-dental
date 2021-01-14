@@ -127,4 +127,11 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    * @return
    */
   int countByPatientId(@Param("patientId") Integer patientId);
+
+  /**
+   * 根据条件统计就诊记录
+   * @param queryForm
+   * @return
+   */
+  Integer countTreatRecordByExample(@Param("queryForm") TreatmentRecordQueryForm queryForm);
 }

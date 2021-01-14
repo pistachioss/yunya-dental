@@ -309,8 +309,35 @@
         </where>
     </select>
 
+    <!-- 根据患者id查就诊记录数 -->
     <select id="countByPatientId" resultType="java.lang.Integer">
         select count(tr.id)
         from treatment_record tr where tr.patient_id=#{patientId}
+    </select>
+
+    <!-- 根据条件统计就诊记录 -->
+    <select id="countTreatRecordByExample" resultType="Integer">
+        select count(tr.id) as acount
+        from treatment_record tr
+        <where>
+            <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
+                and date_format(tr.treat_start_time, '%Y-%m-%d') = date_format(#{queryForm.currentDate}, '%Y-%m-%d')
+            </if>
+            <if test="queryForm.orgId != null">
+                and tr.org_id = #{queryForm.orgId}
+            </if>
+            <if test="queryForm.inservice != null">
+                and tr.inservice = #{queryForm.inservice}
+            </if>
+            <if test="queryForm.dentistId != null">
+                and tr.dentist_id = #{queryForm.dentistId}
+            </if>
+            <if test="queryForm.treatmentStatus != null and queryForm.treatmentStatus.length > 0">
+                and tr.status in
+                <foreach collection="queryForm.treatmentStatus" item="status" open="(" separator="," close=")">
+                    #{status}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>

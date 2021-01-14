@@ -25,7 +25,6 @@ public class BillRestReceivableAmountVO implements Serializable {
   @ApiModelProperty("账单ID")
   private Integer billId;
   /** 开单日期 */
-  @Excel(name = "开单日期")
   @ApiModelProperty("开单日期")
   private String orderDate;
   /** 账单日期 */

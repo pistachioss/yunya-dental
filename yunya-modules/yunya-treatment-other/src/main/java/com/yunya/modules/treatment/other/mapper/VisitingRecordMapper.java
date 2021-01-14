@@ -5,13 +5,11 @@ import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingForMonthVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
+import com.yunya.feign.treatment_other.domain.vo.VisitingStatusCountVO;
 import com.yunya.models.treatment_other.VisitingRecord;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import tk.mybatis.mapper.common.Mapper;
 
-import java.util.Date;
 import java.util.List;
 
 public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
@@ -79,5 +77,10 @@ public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
      */
     List<NextVisitingRecordVo> countNextVisitingListByIds(@Param("patientIds") List<Integer> patientIds,
                                                           @Param("regDate") String regDate);
-
+    /**
+     * 统计患者所有门诊的随访记录的已随访或未随访
+     *
+     * @return
+     */
+    VisitingStatusCountVO countVisiting(@Param("patientId") Integer patientId);
 }
