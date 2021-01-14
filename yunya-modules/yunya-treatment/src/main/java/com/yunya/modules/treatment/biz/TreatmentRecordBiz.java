@@ -46,6 +46,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
+import tk.mybatis.mapper.util.Sqls;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -1301,8 +1303,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     regQuery.setCurrentDate(queryDate);
     regQuery.setDentistId(userId);
     regQuery.setInservice(true);
-    List<WaitingPatientInfoVO> waitingForTreat =
-        registeredMapper.selectRegisteredList((byte) 0, regQuery);
+
+    Integer waitingForTreatCount = registeredMapper.countRegisteredByExample(regQuery);
 
     TreatmentRecordQueryForm queryForm = new TreatmentRecordQueryForm();
     queryForm.setWhetherPage(false);
@@ -1312,14 +1314,14 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     queryForm.setInservice(true);
     // 就诊中
     queryForm.setTreatmentStatus(new Byte[] {0,1});
-    List<TreatmentPatientInfoVO> treatReceiving = mapper.selectTreatingList(queryForm);
+    Integer treatReceiving = mapper.countTreatRecordByExample(queryForm);
     // 接诊完成
     queryForm.setTreatmentStatus(new Byte[] {2});
-    List<TreatmentPatientInfoVO> treatCompleted = mapper.selectTreatingList(queryForm);
+    Integer treatCompleted = mapper.countTreatRecordByExample(queryForm);
     // 已结账
     queryForm.setTreatmentStatus(new Byte[] {3});
     queryForm.setDentistId(query.getDentistId());
-    List<TreatmentPatientInfoVO> treatmentPatientInfos = mapper.selectTreatingList(queryForm);
+    Integer checkedOut = mapper.countTreatRecordByExample(queryForm);
     // 预约未到数量
     AppointmentCurrentListQuery form = new AppointmentCurrentListQuery();
     form.setWhetherPage(false);
@@ -1328,10 +1330,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     form.setCurrentDate(queryDate);
     Integer appointNotArrived = appointmentFeign.countAppointNotArrived(form);
     resultMap.put("appointNotArrived", appointNotArrived);
-    resultMap.put("waitingForTreat", waitingForTreat.size());
-    resultMap.put("treatReceiving", treatReceiving.size());
-    resultMap.put("treatCompleted", treatCompleted.size());
-    resultMap.put("checkedOut", treatmentPatientInfos.size());
+    resultMap.put("waitingForTreat", waitingForTreatCount);
+    resultMap.put("treatReceiving", treatReceiving);
+    resultMap.put("treatCompleted", treatCompleted);
+    resultMap.put("checkedOut", checkedOut);
     return resultMap;
   }
 

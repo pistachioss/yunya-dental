@@ -124,7 +124,20 @@
         </where>
     </select>
 
-    <select id="findRegisteredByIds" resultType="com.yunya.feign.treatment.domain.vo.RegisteredVO">
-
+    <!-- 通过条件统计挂号人数 -->
+    <select id="countRegisteredByExample" resultType="Integer">
+        select count(r.id) as waitingForTreat
+        from registered r
+        <where>
+            <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
+                and date_format(r.crt_time, '%Y-%m-%d') = date_format(#{queryForm.currentDate},'%Y-%m-%d')
+            </if>
+            <if test="queryForm.orgId != null">
+                and r.org_id = #{queryForm.orgId}
+            </if>
+            <if test="queryForm.inservice != null">
+                and r.inservice = #{queryForm.inservice}
+            </if>
+        </where>
     </select>
 </mapper>

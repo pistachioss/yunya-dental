@@ -44,4 +44,11 @@ public interface RegisteredMapper extends Mapper<Registered> {
    * @return
    */
   List<RegisteredVO> registeredInfoDetails(@Param("ids") List<Integer> ids);
+
+  /**
+   * 通过条件统计挂号人数
+   * @param queryForm
+   * @return
+   */
+  Integer countRegisteredByExample(@Param("queryForm") RegisteredQueryForm queryForm);
 }
