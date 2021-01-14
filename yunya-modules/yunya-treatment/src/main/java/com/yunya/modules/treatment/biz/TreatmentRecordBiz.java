@@ -1301,7 +1301,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     regQuery.setCurrentDate(queryDate);
     regQuery.setDentistId(userId);
     regQuery.setInservice(true);
-
+    regQuery.setStatus((byte) 0);
     Integer waitingForTreatCount = registeredMapper.countRegisteredByExample(regQuery);
 
     TreatmentRecordQueryForm queryForm = new TreatmentRecordQueryForm();

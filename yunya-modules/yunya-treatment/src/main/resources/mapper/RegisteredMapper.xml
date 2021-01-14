@@ -135,6 +135,12 @@
             <if test="queryForm.orgId != null">
                 and r.org_id = #{queryForm.orgId}
             </if>
+            <if test="queryForm.dentistId != null">
+                and r.dentist_id = #{queryForm.dentistId}
+            </if>
+            <if test="queryForm.status != null">
+                and r.status = #{queryForm.status}
+            </if>
             <if test="queryForm.inservice != null">
                 and r.inservice = #{queryForm.inservice}
             </if>

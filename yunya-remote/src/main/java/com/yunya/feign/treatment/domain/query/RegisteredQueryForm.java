@@ -48,4 +48,7 @@ public class RegisteredQueryForm implements Serializable {
 
   @ApiModelProperty(value = "是否有效", required = true)
   private Boolean inservice;
+
+  @ApiModelProperty(value = "接诊状态状态（0-待接诊；1-已接诊）;方法内部用", hidden = true)
+  private Byte status;
 }
