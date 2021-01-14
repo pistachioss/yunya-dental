@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.controller;
 
+import com.yunya.feign.treatment.domain.query.TreatmentCountQuery;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.treatment.TreatmentRecord;
@@ -10,6 +11,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Map;
 
 /**
  * 简介:
@@ -37,5 +40,16 @@ public class TreatmentServiceRestTest {
   public void testFindTreatInfo() {
     ResponseResult<TreatmentRecordVO> result = treatmentRecordController.findById(919);
     System.out.println(result);
+  }
+
+  @Test
+  public void find() {
+    TreatmentCountQuery query = new TreatmentCountQuery();
+    query.setOrgId(35);
+    query.setQueryDate("2021-01-14");
+    query.setUserId(568);
+    query.setDentistId(568);
+    ResponseResult<Map<String, Integer>> count = treatmentRecordController.count(query);
+    System.out.println(count);
   }
 }
