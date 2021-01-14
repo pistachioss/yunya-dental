@@ -333,7 +333,8 @@
                 and tr.dentist_id = #{queryForm.dentistId}
             </if>
             <if test="queryForm.treatmentStatus != null and queryForm.treatmentStatus.length > 0">
-                <foreach collection="treatmentStatus" item="status" open="(" separator="," close=")">
+                and tr.status in
+                <foreach collection="queryForm.treatmentStatus" item="status" open="(" separator="," close=")">
                     #{status}
                 </foreach>
             </if>

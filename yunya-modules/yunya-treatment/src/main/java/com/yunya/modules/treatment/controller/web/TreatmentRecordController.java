@@ -140,9 +140,9 @@ public class TreatmentRecordController {
    */
   @ApiOperation("就诊列表数量统计")
   @PostMapping(value = "/count", name = "就诊列表数量统计")
-  public ResponseResult<Map<String, Integer>> count(@RequestBody TreatmentCountQuery query) {
-    Map<String, Integer> resultMap = treatmentRecordBiz.countTreatList(query);
-    return ResponseUtil.success(resultMap);
+  public ResponseResult<CountTreatmentRecordVO> count(@RequestBody TreatmentCountQuery query) {
+    CountTreatmentRecordVO result = treatmentRecordBiz.countTreatList(query);
+    return ResponseUtil.success(result);
   }
 
   /**

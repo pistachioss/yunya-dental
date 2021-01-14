@@ -1289,9 +1289,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param query 查询参数
    * @return
    */
-  public Map<String, Integer> countTreatList(TreatmentCountQuery query) {
-    Map<String, Integer> resultMap = new HashMap<>(16);
-
+  public CountTreatmentRecordVO countTreatList(TreatmentCountQuery query) {
     Integer orgId = query.getOrgId();
     Integer userId = query.getDentistId();
     String queryDate = query.getQueryDate();
@@ -1329,12 +1327,14 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     form.setDentistId(userId);
     form.setCurrentDate(queryDate);
     Integer appointNotArrived = appointmentFeign.countAppointNotArrived(form);
-    resultMap.put("appointNotArrived", appointNotArrived);
-    resultMap.put("waitingForTreat", waitingForTreatCount);
-    resultMap.put("treatReceiving", treatReceiving);
-    resultMap.put("treatCompleted", treatCompleted);
-    resultMap.put("checkedOut", checkedOut);
-    return resultMap;
+
+    CountTreatmentRecordVO countTreatmentRecordVO = new CountTreatmentRecordVO();
+    countTreatmentRecordVO.setAppointNotArrived(appointNotArrived);
+    countTreatmentRecordVO.setWaitingForTreat(waitingForTreatCount);
+    countTreatmentRecordVO.setTreatReceiving(treatReceiving);
+    countTreatmentRecordVO.setTreatCompleted(treatCompleted);
+    countTreatmentRecordVO.setCheckedOut(checkedOut);
+    return countTreatmentRecordVO;
   }
 
   /**
