@@ -53,12 +53,12 @@ public class BillExceptionHandleDetailRecordBiz
    *
    * @param handledRecordId 被处理记录ID（收费记录ID）
    * @param billExceptionHandleRecordId 账单异常处理记录ID
-   * @param preExceptionHandleRecordId 上一次异常处理记录ID
+   * @param nextExceptionHandleRecordId 下一次异常处理记录ID
    */
   public BillPaymentAdjustDetailVO findBillPaymentAdjustDetail(
       Integer handledRecordId,
       Integer billExceptionHandleRecordId,
-      Integer preExceptionHandleRecordId) {
+      Integer nextExceptionHandleRecordId) {
     BillPaymentAdjustDetailVO billAdjustDetailInfo = new BillPaymentAdjustDetailVO();
     Map<String, Object> resultMap = new HashMap<>(16);
     BillPayRecord billPayRecord = billPayRecordMapper.selectByPrimaryKey(handledRecordId);
@@ -79,9 +79,10 @@ public class BillExceptionHandleDetailRecordBiz
     // 调整前后收费方式列表
     List<BillPayDetailRecordVO> beforeAdjustPayList = Lists.newArrayList();
     List<BillPayDetailRecordVO> afterAdjustPayList = Lists.newArrayList();
-    if (0 == preExceptionHandleRecordId) {
+    // 调整前的
+    setBillPaymentValue(billExceptionHandleRecordId, beforeAdjustPayList);
+    if (null == nextExceptionHandleRecordId) {
       // 第一次调整，取当前异常记录对应的异常明细记录作为调整前的收费方式；
-      setBillPaymentValue(billExceptionHandleRecordId, beforeAdjustPayList);
       // 当前记录对应的收费明细，且有效的为调整后收费方式
       List<BillPayDetailRecordVO> billPayDetailRecords =
           billPayDetailRecordMapper.selectBillPayDetailRecord(handledRecordId, true);
@@ -97,10 +98,8 @@ public class BillExceptionHandleDetailRecordBiz
             });
       }
     } else {
-      // 取之前异常处理记录ID对应的异常处理明细列表，查询每条异常明细对应的支付记录作为调整前的收费方式；
-      setBillPaymentValue(preExceptionHandleRecordId, beforeAdjustPayList);
       // 取当前异常处理记录ID对应的异常处理记录列表，查询每条异常明细对应的收费方式作为调增后的收费方式列表
-      setBillPaymentValue(billExceptionHandleRecordId, afterAdjustPayList);
+      setBillPaymentValue(nextExceptionHandleRecordId, afterAdjustPayList);
     }
     resultMap.put("beforeAdjust", beforeAdjustPayList);
     resultMap.put("afterAdjust", afterAdjustPayList);
@@ -200,19 +199,20 @@ public class BillExceptionHandleDetailRecordBiz
    *
    * @param handledRecordId 被处理记录ID（就诊记录ID）
    * @param billExceptionHandleRecordId 异常处理记录ID
-   * @param preExceptionHandleRecordId 上一条异常处理记录ID
+   * @param nextExceptionHandleRecordId 下一条异常处理记录ID
    * @return
    */
   public Map<String, Object> findBillOrderDetailAdjustDetails(
-      Integer handledRecordId,
-      Integer billExceptionHandleRecordId,
-      Integer preExceptionHandleRecordId) {
+          Integer handledRecordId,
+          Integer billExceptionHandleRecordId,
+          Integer nextExceptionHandleRecordId) {
     Map<String, Object> resultMap = new HashMap<>(16);
     List<OrderDetailChargeVO> beforeAdjustBillDetail;
     List<OrderDetailChargeVO> afterAdjustBillDetail = Lists.newArrayList();
-    if (0 == preExceptionHandleRecordId) {
+    // 调整前订单明细列表
+    beforeAdjustBillDetail = getOrderDetailChargeList(billExceptionHandleRecordId);
+    if (null == nextExceptionHandleRecordId) {
       // 第一次调整，当前异常记录ID对应的订单ID
-      beforeAdjustBillDetail = getOrderDetailChargeList(billExceptionHandleRecordId);
       // 当前记录ID对应调整后订单明细列表
       OrderRecord order = new OrderRecord();
       order.setTreatmentRecordId(handledRecordId);
@@ -223,10 +223,8 @@ public class BillExceptionHandleDetailRecordBiz
         afterAdjustBillDetail = billRecordBiz.getOrderDetailCharges(id);
       }
     } else {
-      // 调整前订单明细列表
-      beforeAdjustBillDetail = getOrderDetailChargeList(preExceptionHandleRecordId);
       // 调整后订单明细列表
-      afterAdjustBillDetail = getOrderDetailChargeList(billExceptionHandleRecordId);
+      afterAdjustBillDetail = getOrderDetailChargeList(nextExceptionHandleRecordId);
     }
     resultMap.put("beforeAdjust", beforeAdjustBillDetail);
     resultMap.put("afterAdjust", afterAdjustBillDetail);

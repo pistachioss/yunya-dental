@@ -76,4 +76,12 @@ public interface BillExceptionHandleRecordMapper extends Mapper<BillExceptionHan
    */
   List<BillRevokePayRecordVO> selectCurrentMonthBillRevokePayRecord(
       @Param("query") CurrentMonthBillInfoQuery query);
+
+  /**
+   * 根据id查询下一个异常记录的id
+   *
+   * @param handledRecordId
+   * @return
+   */
+  Integer selectNextId(@Param("id") Integer handledRecordId);
 }

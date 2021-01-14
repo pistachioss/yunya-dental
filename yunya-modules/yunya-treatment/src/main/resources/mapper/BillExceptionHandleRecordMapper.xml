@@ -37,6 +37,16 @@
         order by behr.id desc
     </select>
 
+    <!-- 查询下一个异常记录id -->
+    <select id="selectNextId"
+            resultType="java.lang.Integer">
+        select
+            behr.id
+        from
+            bill_exception_handle_record behr
+        where behr.pre_exception_handle_record_id = #{id}
+    </select>
+
     <!-- 根据账单收费记录ID和操作类型查询上次账单异常处理记录ID -->
     <select id="selectPreExceptionHandleRecordId" resultType="integer">
 		SELECT
