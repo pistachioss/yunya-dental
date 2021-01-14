@@ -152,7 +152,7 @@ public class DiscountController {
 	                       @Valid @RequestBody CardStatisticsQuery query) throws IOException {
 		List<CardStatisticsVo> list = discountBiz.getCardStatisticsList(couponId, query);
 		if(list != null && !list.isEmpty()){
-			discountBiz.buildResponse(response, discountBiz.getCouponName(couponId) + "产品使用记录表");
+			discountBiz.buildResponse(response, discountBiz.getCouponName(couponId) + "售出激活统计");
 			EasyExcel.write(response.getOutputStream(), CardStatisticsVo.class)
 					.sheet("sheet").doWrite(list);
 		}
@@ -239,12 +239,9 @@ public class DiscountController {
 	@PostMapping("/{couponId}/recharge/export")
 	public ResponseResult getRechargePage(HttpServletResponse response, @PathVariable(value = "couponId") Integer couponId,
 	                            @Valid @RequestBody RechargeDetailQuery query) throws IOException {
-		List<RechargeDetailVo> list = discountBiz.getRechargeDetailList(couponId, query);
-		if(list != null && !list.isEmpty()){
-			discountBiz.buildResponse(response, discountBiz.getCouponName(couponId) + "充值卡充值统计明细");
-			EasyExcel.write(response.getOutputStream(), RechargeDetailVo.class)
-					.sheet("sheet").doWrite(discountBiz.getRechargeDetailList(couponId, query));
-		}
+		discountBiz.buildResponse(response, discountBiz.getCouponName(couponId) + "充值卡充值统计明细");
+		EasyExcel.write(response.getOutputStream(), RechargeDetailVo.class)
+				.sheet("sheet").doWrite(discountBiz.getRechargeDetailList(couponId, query));
 		return ResponseUtil.success();
 	}
 
