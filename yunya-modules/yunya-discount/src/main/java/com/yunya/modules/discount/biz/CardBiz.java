@@ -1228,7 +1228,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		List<Integer> mixUsedList = mixUsedMap.get(benefitBo.getCouponId());
 		//当前个体被优惠的卡券共用属性
 		Set<Integer> set = Sets.newHashSet(mixUsedMap.values().stream().flatMap(Collection::stream).collect(toSet()));
-		return CollectionUtils.isNotEmpty(mixUsedList)
+		return CollectionUtils.isNotEmpty(mixUsedList) || set.isEmpty()
 				|| (!set.contains(FALSE.getCode()) && ONE.equals(benefitBo.getMixable()));
 	}
 

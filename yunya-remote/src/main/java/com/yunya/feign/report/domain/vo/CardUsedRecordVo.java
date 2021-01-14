@@ -16,8 +16,8 @@ public class CardUsedRecordVo {
 	private Integer couponId;
 	@ApiModelProperty(value = "订单id")
 	private Integer orderId;
-	@ApiModelProperty(value = "使用时间")
-	@ExcelProperty(value = "使用时间")
+	@ApiModelProperty(value = "使用日期")
+	@ExcelProperty(value = "使用日期")
 	private String usedDate;
 	@ApiModelProperty(value = "账单日期")
 	@ExcelProperty(value = "账单日期")
