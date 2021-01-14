@@ -15,6 +15,7 @@ import com.yunya.modules.employee.expand.model.request.*;
 import com.yunya.modules.employee.expand.model.response.*;
 import org.apache.commons.collections4.*;
 import org.slf4j.*;
+import org.springframework.beans.BeanUtils;
 import org.springframework.cglib.beans.*;
 import org.springframework.stereotype.*;
 import tk.mybatis.mapper.entity.*;
@@ -60,8 +61,8 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
         if (clinicEmployeeConfig == null) {
             mapper.insertSelective(updateEmployee);
         } else {
-            updateEmployee.setId(clinicEmployeeConfig.getId());
-            mapper.updateByPrimaryKeySelective(updateEmployee);
+            BeanUtils.copyProperties(configRequest, clinicEmployeeConfig);
+            mapper.updateByPrimaryKey(clinicEmployeeConfig);
         }
     }
 

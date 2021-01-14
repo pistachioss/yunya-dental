@@ -183,5 +183,11 @@
         patient_id
   </select>
 
-
+  <select id="countVisiting" resultType="com.yunya.feign.treatment_other.domain.vo.VisitingStatusCountVO">
+    select
+        ifnull(sum(case when status=0 then 1 else 0 end),0) AS unVisitCount,
+        ifnull(sum(case when status=1 then 1 else 0 end),0) AS visitedCount
+    from visiting_record
+    where patient_id = #{patientId}
+  </select>
 </mapper>
