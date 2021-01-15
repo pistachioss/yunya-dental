@@ -2,7 +2,9 @@ package com.yunya.modules.clinic_base.controller;
 
 import com.yunya.feign.clinic_base.domain.model.BusinessTargetModel;
 import com.yunya.feign.clinic_base.domain.model.TargetOfMonthModel;
+import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.query.BusinessTargetQuery;
+import com.yunya.feign.clinic_base.domain.vo.BusinessGoalCompletedInfoVO;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
 import com.yunya.framework.common.model.ResponseResult;
 import org.apache.poi.ss.formula.functions.T;
@@ -66,6 +68,18 @@ public class BusinessTargetControllerTest {
     query.setBelongId(35);
     ResponseResult<List<TargetOfMonthVO>> result =
         businessTargetController.businessTargetList(query);
+    System.out.println(result);
+  }
+
+  @Test
+  public void find1() {
+    BusinessGoalCompletedInfoQuery query = new BusinessGoalCompletedInfoQuery();
+    query.setBusinessType((byte) 0);
+    query.setOrgId(35);
+    query.setStartDate("2020-10");
+    query.setEndDate("2020-12");
+    ResponseResult<BusinessGoalCompletedInfoVO> result =
+        businessTargetController.businessGoalCompletedInfo(query);
     System.out.println(result);
   }
 }

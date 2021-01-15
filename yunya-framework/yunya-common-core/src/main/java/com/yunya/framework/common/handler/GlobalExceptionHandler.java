@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
   public ResponseResult otherExceptionHandler(HttpServletResponse response, Exception ex) {
     response.setStatus(500);
     log.error(ex.getMessage(), ex);
-    return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, ex.getMessage(), null);
+    return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, "服务繁忙！请稍后重试", null);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

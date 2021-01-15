@@ -1,6 +1,7 @@
 package com.yunya.feign.treatment;
 
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
+import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
@@ -285,6 +286,36 @@ public interface RemoteTreatmentServiceFeign {
       @RequestBody @Validated CompletedWorkGoalQuery query);
 
   /**
+   * 根据条件查询门诊营业收入完成情况
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  @RequestMapping(value = "/rpc/business/goal/completed", method = RequestMethod.POST)
+  BigDecimal findBusinessIncomeCompletedCount(
+      @RequestBody @Validated BusinessGoalCompletedInfoQuery query);
+
+  /**
+   * 根据条件查询门诊工作量完成情况
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  @RequestMapping(value = "/rpc/business/workload/completed", method = RequestMethod.POST)
+  BigDecimal findBusinessWorkloadCompletedCount(
+      @RequestBody @Validated BusinessGoalCompletedInfoQuery query);
+
+  /**
+   * 根据条件查询门诊初诊人数完成情况
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  @RequestMapping(value = "/rpc/business/first/treat/completed", method = RequestMethod.POST)
+  BigDecimal findBusinessFirstTreatCompletedCount(
+      @RequestBody @Validated BusinessGoalCompletedInfoQuery query);
+
+  /**
    * 根据条件查询门诊开单专科项目完成信息
    *
    * @param query 查询条件
@@ -294,14 +325,15 @@ public interface RemoteTreatmentServiceFeign {
   SpecialistProjectTariffCompletedInfoVO findClinicTariffOrderCompletedInfo(
       @RequestBody @Validated SpecialistProjectTariffCompletedInfoQuery query);
 
-
   /**
    * 查询专科项目数量
+   *
    * @param specialistProjectReportModel 查询条件
    * @return Integer
    */
   @RequestMapping(value = "/rpc/tariff/specialist/percentage", method = RequestMethod.POST)
-  List<SpecialistProjectReportVO> findTariffSpecialistPercentage(@RequestBody @Validated SpecialistProjectReportModel specialistProjectReportModel);
+  List<SpecialistProjectReportVO> findTariffSpecialistPercentage(
+      @RequestBody @Validated SpecialistProjectReportModel specialistProjectReportModel);
 
   /**
    * 根据支付方式统计账单的入账金额

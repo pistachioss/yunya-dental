@@ -8,6 +8,7 @@ import com.yunya.models.clinic_base.BusinessTarget;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface BusinessTargetMapper extends Mapper<BusinessTarget> {
@@ -27,4 +28,17 @@ public interface BusinessTargetMapper extends Mapper<BusinessTarget> {
    * @return List<BusinessWorkGoalVO>
    */
   List<BusinessWorkGoalVO> selectBusinessWorkGoalList(@Param("query") BusinessWorkGoalQuery query);
+
+  /**
+   * 根据条件查询业务目标数量
+   *
+   * @param orgId 组织ID
+   * @param businessType 业务目标类型
+   * @param dateRange 时间区域
+   * @return BigDecimal
+   */
+  BigDecimal selectBusinessGoalCount(
+      @Param("orgId") Integer orgId,
+      @Param("businessType") Byte businessType,
+      @Param("dateRange") List<String> dateRange);
 }

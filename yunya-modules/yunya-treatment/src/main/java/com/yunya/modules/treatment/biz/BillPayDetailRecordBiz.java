@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
+import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
@@ -357,10 +358,20 @@ public class BillPayDetailRecordBiz
   /**
    * 根据支付方式统计账单的入账金额
    *
-   * @param query
-   * @return
+   * @param query 查询条件
+   * @return BigDecimal
    */
   public BigDecimal sumBillPayAmount(CreditCashReceiptQuery query) {
     return mapper.sumBillPayAmount(query);
+  }
+
+  /**
+   * 根据条件查询门诊工作量完成量
+   *
+   * @param query 查询条件
+   * @return SpecialistProjectTariffCompletedInfoVO
+   */
+  public BigDecimal findBusinessWorkloadCompletedCount(BusinessGoalCompletedInfoQuery query) {
+    return mapper.selectBusinessWorkloadCompletedCount(query);
   }
 }

@@ -136,20 +136,24 @@
 
     <!-- PC照片影像小程序已结账列表 -->
     <select id="desktopBillingList" resultType="com.yunya.feign.treatment.domain.vo.DesktopMiniProgramVO">
-        select distinct
-        br.treatment_record_id as id,
-        br.patient_id as patientId,
-        r.first_visit as firstVisit,
-        r.dentist_id as dentistId,
-        tr.treat_start_time as treatStartTime
+        select br.treatment_record_id as id,
+        br.patient_id          as patientId,
+        r.first_visit          as firstVisit,
+        r.dentist_id           as dentistId,
+        tr.treat_start_time    as treatStartTime
         from bill_record br
-        left join registered r on r.patient_id = br.patient_id
         left join treatment_record tr on tr.patient_id = br.patient_id and tr.id = br.treatment_record_id
+        left join registered r on r.patient_id = br.patient_id and r.id = tr.registered_id
         where date_format(br.crt_time, '%Y-%m-%d') = date_format(#{currentDate}, '%Y-%m-%d')
         <if test="orgId != null">
             and br.org_id = #{orgId}
         </if>
-        group by br.treatment_record_id
+        group by
+        br.treatment_record_id,
+        br.patient_id,
+        r.first_visit,
+        r.dentist_id,
+        treat_start_time
         order by tr.treat_start_time desc
     </select>
 
@@ -225,6 +229,26 @@
                 </if>
             </where>
             )
+        </where>
+    </select>
+
+    <!-- 根据条件查询门诊完成营业收入 -->
+    <select id="selectBusinessIncomeCompletedCount" resultType="java.math.BigDecimal">
+        SELECT
+        SUM( br.actual_receivable_amount ) AS actualReceivedAmountCompleted
+        FROM
+        bill_record br
+        <where>
+            AND br.inservice = 1
+            <if test="query.orgId != null">
+                AND br.org_id = #{query.orgId}
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                AND DATE_FORMAT(br.crt_time, '%Y-%m') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                AND DATE_FORMAT(br.crt_time, '%Y-%m') &lt;= #{query.endDate}
+            </if>
         </where>
     </select>
 </mapper>
