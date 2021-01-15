@@ -90,7 +90,7 @@
         else '否'
         end as `used`
         from `base_card` `bc`
-        inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        left join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
         where
         `bc`.`coupon_id` = #{couponId}
         and `bc`.`status` != 0
@@ -112,7 +112,7 @@
             </foreach>
         </if>
         <if test="soldStartDate != null and soldEndDate != null">
-            and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+            and (date_format(`bc`.`sold_date`,'%Y-%m-%d') between date_format(#{soldStartDate},'%Y-%m-%d') and date_format(#{soldEndDate},'%Y-%m-%d'))
         </if>
         <if test="activeOrgIds != null and activeOrgIds.size() > 0">
             and `bc`.`active_org_id` in
@@ -121,7 +121,7 @@
             </foreach>
         </if>
         <if test="activeStartDate != null and activeEndDate != null">
-            and (`bc`.`active_date` &gt;= #{activeStartDate} and `bc`.`active_date` &lt; #{activeEndDate})
+            and (date_format(`bc`.`active_date`,'%Y-%m-%d') between date_format(#{activeStartDate},'%Y-%m-%d') and date_format(#{activeEndDate},'%Y-%m-%d'))
         </if>
         <if test="soldWays != null and soldWays.size() > 0">
             and `bc`.`sold_way` in

@@ -55,7 +55,7 @@ public class DiscountBiz {
 	 */
 	public PageInfo<CardStatisticsVo> getCardStatisticsPage(Integer couponId, CardStatisticsQuery query) {
 		Page<CardStatisticsVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-		cardMapper.listCardByParam(query.getCardNumber(), query.getAllocateOrgIds(), query.getSoldTypes(),
+		List<CardStatisticsVo> cardStatisticsVos = cardMapper.listCardByParam(query.getCardNumber(), query.getAllocateOrgIds(), query.getSoldTypes(),
 				query.getSoldStartDate(), query.getSoldEndDate(), query.getActiveOrgIds(), query.getActiveStartDate(),
 				query.getActiveEndDate(), query.getSoldWays(), query.getChargeStatus(), couponId);
 		return new PageInfo<>(page);
