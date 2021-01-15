@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -57,6 +56,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
      */
     public Integer saveDiscountCoupon(DiscountCouponForm discountCouponForm) {
         CouponCommonInfo data = new CouponCommonInfo();
+        data.setType((byte) 1);
         data.setName(discountCouponForm.getName());
         if (couponCommonInfoMapper.selectOne(data) != null) {
             throw new BaseException("折扣券名称与系统中已有折扣券重复，不允许新增!", NAME_IS_OCCUPIED);
