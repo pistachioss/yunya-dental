@@ -18,10 +18,7 @@ import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingForMonthInfo;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
-import com.yunya.feign.treatment_other.domain.vo.VisitingContentAfterCurrentVo;
-import com.yunya.feign.treatment_other.domain.vo.VisitingContentVo;
-import com.yunya.feign.treatment_other.domain.vo.VisitingForMonthVo;
-import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
+import com.yunya.feign.treatment_other.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -634,5 +631,12 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         return visitingForMonth;
     }
 
-
+    /**
+     * 统计患者所有门诊的随访记录的已随访或未随访
+     *
+     * @return
+     */
+    public VisitingStatusCountVO countVisiting(Integer patientId) {
+        return mapper.countVisiting(patientId);
+    }
 }

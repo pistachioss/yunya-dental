@@ -215,7 +215,9 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
             couponCommonInfoQueryForm.setEndTime(calendar.getTime());
         }
         List<CouponCommonInfoVO>list = mapper.findList(couponCommonInfoQueryForm);
-        List<CouponFileInfo>fileList = couponFileInfoMapper.selectAll();
+        CouponFileInfo couponFileInfo = new CouponFileInfo();
+        couponFileInfo.setFileType(new Byte("0"));
+        List<CouponFileInfo>fileList = couponFileInfoMapper.select(couponFileInfo);
         Map<String, CouponFileInfo> BaseMap = new HashMap();
         fileList.forEach(z -> BaseMap.put(z.getCouponId() + "", z));
 

@@ -24,7 +24,7 @@ public class MiddleTableMsgRest {
         rabbitTemplate.convertAndSend(
                 "DirectExchange_MiddleSingle", "DirectRouting_Temp", messageModel, message -> {
                     // 设置超时时间 3000ms
-                    message.getMessageProperties().setExpiration("5000");
+                    message.getMessageProperties().setExpiration("3000");
                     return message;
                 });
         return "ok";

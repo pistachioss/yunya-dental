@@ -312,6 +312,7 @@
         ) btp ON bb.treatment_id = btp.treatment_id
         ) brr
         <where>
+            brr.billReceivableAmount>0
             <if test="query.orgId != null">
                 and brr.orgId = #{query.orgId}
             </if>
@@ -332,6 +333,7 @@
                 </foreach>
             </if>
         </where>
+        order by brr.billReceivableAmount desc
     </select>
 
 
