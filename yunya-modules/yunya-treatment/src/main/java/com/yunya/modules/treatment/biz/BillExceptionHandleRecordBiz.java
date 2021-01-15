@@ -69,8 +69,8 @@ public class BillExceptionHandleRecordBiz
     }
     // 被处理数据ID
     Integer handledRecordId = handleRecord.getHandledRecordId();
-    // 上一条异常处理记录ID
-    Integer preExceptionHandleRecordId = handleRecord.getPreExceptionHandleRecordId();
+    // 下一条异常处理记录ID
+    Integer nextExceptionHandleRecordId = mapper.selectNextId(billExceptionHandleRecordId);
     // 异常处理类型
     Byte operateType = handleRecord.getOperateType();
     Map<String, Object> resultMap = new HashMap<>(16);
@@ -79,7 +79,7 @@ public class BillExceptionHandleRecordBiz
       case 0:
         BillPaymentAdjustDetailVO billPaymentAdjustDetail =
             billExceptionHandleDetailRecordBiz.findBillPaymentAdjustDetail(
-                handledRecordId, billExceptionHandleRecordId, preExceptionHandleRecordId);
+                handledRecordId, billExceptionHandleRecordId, nextExceptionHandleRecordId);
         resultMap.put("billPaymentAdjustDetail", billPaymentAdjustDetail);
         break;
         // 账单撤销
@@ -92,7 +92,7 @@ public class BillExceptionHandleRecordBiz
       case 2:
         resultMap =
             billExceptionHandleDetailRecordBiz.findBillOrderDetailAdjustDetails(
-                handledRecordId, billExceptionHandleRecordId, preExceptionHandleRecordId);
+                handledRecordId, billExceptionHandleRecordId, nextExceptionHandleRecordId);
         break;
         // 账单退费
       case 3:

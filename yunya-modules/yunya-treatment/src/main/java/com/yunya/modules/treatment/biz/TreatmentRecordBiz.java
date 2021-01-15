@@ -6,6 +6,7 @@ import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.vo.NextAppointsVo;
+import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.emr.RemoteEmrServiceFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
@@ -46,8 +47,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
-import tk.mybatis.mapper.util.Sqls;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -103,10 +102,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   /** 电子病历 */
   @Autowired private RemoteEmrServiceFeign remoteEmrServiceFeign;
   /** 挂号服务 */
-  @Autowired
-  private RegisteredBiz registeredBiz;
-  @Autowired
-  private RemoteMiddleTableServiceFeign remoteMiddleTableServiceFeign;
+  @Autowired private RegisteredBiz registeredBiz;
+
+  @Autowired private RemoteMiddleTableServiceFeign remoteMiddleTableServiceFeign;
 
   /**
    * 开始接诊
@@ -147,7 +145,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     entity.setPatientId(patientId);
     PatientBaseInfo patientBaseInfo = patientServiceFeign.findPatientInfoById(patientId);
     if (null != patientBaseInfo) {
-//      String medicalNumber = patientBaseInfo.getMedicalNumber();
+      //      String medicalNumber = patientBaseInfo.getMedicalNumber();
       int num = mapper.countByPatientId(patientBaseInfo.getId());
       if (num > 0) {
         entity.setType((byte) 1);
@@ -1065,7 +1063,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    */
   public PageInfo<PatientTreatmentInfo4ListVO> findAppTreatList(AppTreatListQuery query) {
 
-
     Integer orgId = query.getOrgId();
     String queryDate = query.getQueryDate();
     Integer dentistId = query.getDentistId();
@@ -1079,29 +1076,37 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     treatmentList4AppQuery.setPageNum(query.getPageNum());
     treatmentList4AppQuery.setOrgId(orgId);
     treatmentList4AppQuery.setDentistId(dentistId);
-    PageInfo<BaseTreatmentProcessVO> pageInfoList = remoteMiddleTableServiceFeign.treatmentList4App(treatmentList4AppQuery);
+    PageInfo<BaseTreatmentProcessVO> pageInfoList =
+        remoteMiddleTableServiceFeign.treatmentList4App(treatmentList4AppQuery);
     // 预约未到
     List<BaseTreatmentProcessVO> treatmentList = pageInfoList.getList();
     if (StringHelper.isNotEmpty(treatmentList)) {
       // 获取预约未到的预约ID
       List<Integer> appointIds = new ArrayList<>();
-      treatmentList.stream().filter(
+      treatmentList.stream()
+          .filter(
               baseTreatmentProcessVO -> {
-                return null != baseTreatmentProcessVO.getAppointmentId() && baseTreatmentProcessVO.getAppointStatus() < 4 && baseTreatmentProcessVO.getRegisteredId() == null;
-              }).forEach(baseTreatmentProcessVO -> {
-        appointIds.add(baseTreatmentProcessVO.getAppointmentId());
-      });
+                return null != baseTreatmentProcessVO.getAppointmentId()
+                    && baseTreatmentProcessVO.getAppointStatus() < 4
+                    && baseTreatmentProcessVO.getRegisteredId() == null;
+              })
+          .forEach(
+              baseTreatmentProcessVO -> {
+                appointIds.add(baseTreatmentProcessVO.getAppointmentId());
+              });
       if (StringHelper.isNotEmpty(appointIds)) {
         // 查询预约助手
-        List<Appointment> appointmentListByIds = appointmentFeign.findAppointmentListByIds(appointIds);
+        List<Appointment> appointmentListByIds =
+            appointmentFeign.findAppointmentListByIds(appointIds);
         // 获取预约助手ID
         List<Integer> assistantIds = new ArrayList<>();
         // 查询预约助手信息
         List<SysUserInfoDetail> assistantInfos = null;
         if (StringHelper.isNotEmpty(appointmentListByIds)) {
-          appointmentListByIds.forEach(appointment -> {
-            assistantIds.add(appointment.getAssistantId());
-          });
+          appointmentListByIds.forEach(
+              appointment -> {
+                assistantIds.add(appointment.getAssistantId());
+              });
           // 查询预约助手信息
           if (StringHelper.isNotEmpty(assistantIds)) {
             assistantInfos = this.systemServiceFeign.findSysUserEmployeeInfoByUserIds(assistantIds);
@@ -1112,23 +1117,37 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           PatientTreatmentInfo4ListVO entity = new PatientTreatmentInfo4ListVO();
           entity.setAppointId(appointmentUnDonePatientInfoVO.getAppointmentId());
           entity.setTreatStatus(appointmentUnDonePatientInfoVO.getAppointStatus());
-          entity.setNodeTime(dateFormat.format(appointmentUnDonePatientInfoVO.getAppointStartTime()));
+          entity.setNodeTime(
+              dateFormat.format(appointmentUnDonePatientInfoVO.getAppointStartTime()));
           entity.setPatientId(appointmentUnDonePatientInfoVO.getPatientId());
           entity.setPatientName(appointmentUnDonePatientInfoVO.getPatientName());
           entity.setDentistId(appointmentUnDonePatientInfoVO.getAppointDentistId());
           entity.setDentistName(appointmentUnDonePatientInfoVO.getAppointDentistName());
           if (StringHelper.isNotEmpty(assistantInfos)) {
-            List<Appointment> collect = appointmentListByIds.stream().filter(appointment -> appointment.getId().equals(appointmentUnDonePatientInfoVO.getAppointmentId())).collect(Collectors.toList());
+            List<Appointment> collect =
+                appointmentListByIds.stream()
+                    .filter(
+                        appointment ->
+                            appointment
+                                .getId()
+                                .equals(appointmentUnDonePatientInfoVO.getAppointmentId()))
+                    .collect(Collectors.toList());
             if (StringHelper.isNotEmpty(collect)) {
               Appointment appointment = collect.get(0);
               // 获取预约助手信息
-              List<SysUserInfoDetail> assistantInfoList = assistantInfos.stream().filter(sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(appointment.getAssistantId())).collect(Collectors.toList());
+              List<SysUserInfoDetail> assistantInfoList =
+                  assistantInfos.stream()
+                      .filter(
+                          sysUserInfoDetail ->
+                              sysUserInfoDetail.getUserId().equals(appointment.getAssistantId()))
+                      .collect(Collectors.toList());
               if (StringHelper.isNotEmpty(assistantInfoList)) {
                 SysUserInfoDetail userInfoDetail = assistantInfoList.get(0);
                 entity.setAssistantId(appointment.getAssistantId());
                 entity.setAssistantName(
-                        StringHelper.isBlank(userInfoDetail.getName()) ?
-                                "--" : userInfoDetail.getName());
+                    StringHelper.isBlank(userInfoDetail.getName())
+                        ? "--"
+                        : userInfoDetail.getName());
               }
             }
           }
@@ -1142,49 +1161,62 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     // 候诊中
     List<Integer> registerIds = new ArrayList<>();
     if (StringHelper.isNotEmpty(treatmentList)) {
-      treatmentList.stream().filter(baseTreatmentProcessVO -> {
-        return baseTreatmentProcessVO.getRegisteredId() != null && baseTreatmentProcessVO.getTreatStatus() == 0;
-      }).forEach(baseTreatmentProcessVO -> {
-        registerIds.add(baseTreatmentProcessVO.getRegisteredId());
-      });
+      treatmentList.stream()
+          .filter(
+              baseTreatmentProcessVO -> {
+                return baseTreatmentProcessVO.getRegisteredId() != null
+                    && baseTreatmentProcessVO.getTreatStatus() == 0;
+              })
+          .forEach(
+              baseTreatmentProcessVO -> {
+                registerIds.add(baseTreatmentProcessVO.getRegisteredId());
+              });
       if (StringHelper.isNotEmpty(registerIds)) {
         List<RegisteredVO> registeredVOS = registeredBiz.registeredInfoDetails(registerIds);
         if (StringHelper.isNotEmpty(registeredVOS)) {
-          registeredVOS.forEach(registeredVO -> {
-            PatientTreatmentInfo4ListVO entity = new PatientTreatmentInfo4ListVO();
-            entity.setAppointId(registeredVO.getAppointmentId());
-            entity.setTreatStatus((byte) 2);
-            entity.setNodeTime(dateFormat.format(registeredVO.getRegTime()));
-            entity.setPatientId(registeredVO.getPatientId());
-            entity.setPatientName(registeredVO.getPatientName());
-            entity.setDentistId(registeredVO.getDentistId());
-            entity.setDentistName(registeredVO.getDentistName());
-            entity.setAssistantId(registeredVO.getAssistantId());
-            entity.setAssistantName(StringHelper.isBlank(registeredVO.getAssistantName()) ?
-                    "--" : registeredVO.getAssistantName());
-            entity.setAge(registeredVO.getAge());
-            entity.setGender(registeredVO.getGender());
-            entity.setOrgId(registeredVO.getOrgId());
-            entity.setRegistedId(registeredVO.getId());
-            patientTreatmentInfo4ListVOList.add(entity);
-          });
+          registeredVOS.forEach(
+              registeredVO -> {
+                PatientTreatmentInfo4ListVO entity = new PatientTreatmentInfo4ListVO();
+                entity.setAppointId(registeredVO.getAppointmentId());
+                entity.setTreatStatus((byte) 2);
+                entity.setNodeTime(dateFormat.format(registeredVO.getRegTime()));
+                entity.setPatientId(registeredVO.getPatientId());
+                entity.setPatientName(registeredVO.getPatientName());
+                entity.setDentistId(registeredVO.getDentistId());
+                entity.setDentistName(registeredVO.getDentistName());
+                entity.setAssistantId(registeredVO.getAssistantId());
+                entity.setAssistantName(
+                    StringHelper.isBlank(registeredVO.getAssistantName())
+                        ? "--"
+                        : registeredVO.getAssistantName());
+                entity.setAge(registeredVO.getAge());
+                entity.setGender(registeredVO.getGender());
+                entity.setOrgId(registeredVO.getOrgId());
+                entity.setRegistedId(registeredVO.getId());
+                patientTreatmentInfo4ListVOList.add(entity);
+              });
         }
       }
     }
     // 就诊中/就诊完成/已结账
     List<Integer> treatmentIds = new ArrayList<>();
-    treatmentList.forEach(baseTreatmentProcessVO -> {
-      Integer treatmentId = baseTreatmentProcessVO.getTreatmentId();
-      if (null != treatmentId) {
-        treatmentIds.add(treatmentId);
-      }
-    });
+    treatmentList.forEach(
+        baseTreatmentProcessVO -> {
+          Integer treatmentId = baseTreatmentProcessVO.getTreatmentId();
+          if (null != treatmentId) {
+            treatmentIds.add(treatmentId);
+          }
+        });
 
     if (StringHelper.isNotEmpty(treatmentIds)) {
-      List<TreatmentRecordExtendVO> treatmentRecordExtendVOS = mapper.selectByIds(treatmentIds.stream().collect(Collectors.toSet()));
+      List<TreatmentRecordExtendVO> treatmentRecordExtendVOS =
+          mapper.selectByIds(treatmentIds.stream().collect(Collectors.toSet()));
       if (StringHelper.isNotEmpty(treatmentRecordExtendVOS)) {
         List<Integer> regAssistantIds = new ArrayList<>();
-        treatmentRecordExtendVOS.forEach(item -> {regAssistantIds.add(item.getRegAssistantId());});
+        treatmentRecordExtendVOS.forEach(
+            item -> {
+              regAssistantIds.add(item.getRegAssistantId());
+            });
         List<SysUserInfoDetail> regAssistantInfos = null;
         if (StringHelper.isNotEmpty(regAssistantIds)) {
           regAssistantInfos = systemServiceFeign.findSysUserEmployeeInfoByUserIds(regAssistantIds);
@@ -1220,18 +1252,26 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           entity.setDentistName(patientTreatmentRecordVO.getRegDentistName());
           if (StringHelper.isNotEmpty(treatmentRecordExtendVOS)) {
             Integer treatmentId = patientTreatmentRecordVO.getTreatmentId();
-            List<TreatmentRecordExtendVO> treatmentRecordExtendVOList = treatmentRecordExtendVOS.stream().filter(item -> item.getId().equals(treatmentId)).collect(Collectors.toList());
+            List<TreatmentRecordExtendVO> treatmentRecordExtendVOList =
+                treatmentRecordExtendVOS.stream()
+                    .filter(item -> item.getId().equals(treatmentId))
+                    .collect(Collectors.toList());
             if (StringHelper.isNotEmpty(treatmentRecordExtendVOList)) {
               TreatmentRecordExtendVO treatmentRecordExtendVO = treatmentRecordExtendVOList.get(0);
               Integer regAssistantId = treatmentRecordExtendVO.getRegAssistantId();
               entity.setAssistantId(regAssistantId);
               if (StringHelper.isNotEmpty(regAssistantInfos)) {
 
-                List<SysUserInfoDetail> regAssistantInfoList = regAssistantInfos.stream().filter(item -> item.getUserId().equals(regAssistantId)).collect(Collectors.toList());
+                List<SysUserInfoDetail> regAssistantInfoList =
+                    regAssistantInfos.stream()
+                        .filter(item -> item.getUserId().equals(regAssistantId))
+                        .collect(Collectors.toList());
                 if (StringHelper.isNotEmpty(regAssistantInfoList)) {
                   SysUserInfoDetail userInfoDetail = regAssistantInfoList.get(0);
-                  entity.setAssistantName(StringHelper.isBlank(userInfoDetail.getName()) ?
-                          "--" : userInfoDetail.getName());
+                  entity.setAssistantName(
+                      StringHelper.isBlank(userInfoDetail.getName())
+                          ? "--"
+                          : userInfoDetail.getName());
                 }
               }
             }
@@ -1246,7 +1286,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       }
     }
     PageInfo resultPage = new PageInfo();
-    BeanUtils.copyProperties(pageInfoList,resultPage);
+    BeanUtils.copyProperties(pageInfoList, resultPage);
     resultPage.setList(patientTreatmentInfo4ListVOList);
     return resultPage;
   }
@@ -1273,13 +1313,17 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     Date startDate = form.getStartDate();
     Date endDate = form.getEndDate();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
-    List<TreatmentInfoForMonthVO> treatmentInfoForMonthVOS = mapper.treatInfoForMonth(dentistId, startDate, endDate,orgId);
+    List<TreatmentInfoForMonthVO> treatmentInfoForMonthVOS =
+        mapper.treatInfoForMonth(dentistId, startDate, endDate, orgId);
     AppointmentForMonthForm queryForm = new AppointmentForMonthForm();
     queryForm.setDentistId(dentistId);
     queryForm.setEndDate(endDate);
     queryForm.setStartDate(startDate);
-    List<TreatmentInfoForMonthVO> appointmentForMonthVos = this.appointmentFeign.appointmentForMonth(queryForm);
-    appointmentForMonthVos.stream().sequential().collect(Collectors.toCollection(() ->treatmentInfoForMonthVOS));
+    List<TreatmentInfoForMonthVO> appointmentForMonthVos =
+        this.appointmentFeign.appointmentForMonth(queryForm);
+    appointmentForMonthVos.stream()
+        .sequential()
+        .collect(Collectors.toCollection(() -> treatmentInfoForMonthVOS));
     return treatmentInfoForMonthVOS;
   }
 
@@ -1311,7 +1355,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     queryForm.setCurrentDate(queryDate);
     queryForm.setInservice(true);
     // 就诊中
-    queryForm.setTreatmentStatus(new Byte[] {0,1});
+    queryForm.setTreatmentStatus(new Byte[] {0, 1});
     Integer treatReceiving = mapper.countTreatRecordByExample(queryForm);
     // 接诊完成
     queryForm.setTreatmentStatus(new Byte[] {2});
@@ -1366,6 +1410,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     // 将信息注入PC照片印象小程序列表
     this.setDesktopMiniProgramVOInfo(desktopMiniProgramVOS, queryForm.getCurrentDate());
 
+    assert desktopMiniProgramVOS != null;
     return new PageInfo<>(desktopMiniProgramVOS);
   }
 
@@ -1379,7 +1424,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       TreatmentRecordQueryForm queryForm) {
     // 0-就诊中;1-已开单;2-治疗完成;3-已结账
     Byte[] treatmentStatusArr = queryForm.getTreatmentStatus();
-    if (treatmentStatusArr.length > 1 || treatmentStatusArr.length < 1) {
+    if (treatmentStatusArr.length != 1) {
       ResponseUtil.fail(PARAMETERS_IS_ILLEGAL, "PC照片影像小程序只允许查询单状态查询", null);
     }
     Byte aByte = treatmentStatusArr[0];
@@ -1461,13 +1506,19 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                   xRayFilmListByPatientIds.stream()
                       .filter(xRayFilm -> xRayFilm.getPatientId().equals(patientId))
                       .collect(Collectors.toList());
-              if (StringHelper.isNotEmpty(xRayFilms)) {
-                desktopMiniProgramVO.setHasImg(true);
-              } else {
-                desktopMiniProgramVO.setHasImg(false);
-              }
+              desktopMiniProgramVO.setHasImg(StringHelper.isNotEmpty(xRayFilms));
             });
       }
     }
+  }
+
+  /**
+   * 根据条件查询初诊人数完成量
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  public BigDecimal findBusinessFirstTreatCompletedCount(BusinessGoalCompletedInfoQuery query) {
+    return mapper.selectBusinessFirstTreatCompletedCount(query);
   }
 }

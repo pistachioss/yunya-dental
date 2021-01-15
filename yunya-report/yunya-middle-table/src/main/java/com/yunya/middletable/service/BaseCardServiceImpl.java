@@ -5,22 +5,10 @@ import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.report.domain.bo.BaseCardBo;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.utils.BeanCopierUtils;
-import com.yunya.middletable.dao.discount.CardMapper;
-import com.yunya.middletable.dao.discount.CouponAllocateMapper;
-import com.yunya.middletable.dao.discount.CouponMapper;
-import com.yunya.middletable.dao.discount.DiscountCouponMapper;
-import com.yunya.middletable.dao.discount.PackageCouponMapper;
-import com.yunya.middletable.dao.discount.SpecialPackageCouponMapper;
-import com.yunya.middletable.dao.discount.VoucheCouponMapper;
+import com.yunya.middletable.dao.discount.*;
 import com.yunya.middletable.dao.report.BaseCardMapper;
 import com.yunya.middletable.dao.system.AccountItemMapper;
-import com.yunya.models.discount.Card;
-import com.yunya.models.discount.CouponAllocate;
-import com.yunya.models.discount.CouponCommonInfo;
-import com.yunya.models.discount.DiscountCoupon;
-import com.yunya.models.discount.PackageCoupon;
-import com.yunya.models.discount.SpecialPackageCoupon;
-import com.yunya.models.discount.VoucheCoupon;
+import com.yunya.models.discount.*;
 import com.yunya.models.report.BaseCard;
 import com.yunya.models.system.AccountItem;
 import lombok.extern.slf4j.Slf4j;
@@ -35,12 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -72,6 +55,8 @@ public class BaseCardServiceImpl{
 	private PackageCouponMapper packageCouponMapper;
 	@Resource
 	private SpecialPackageCouponMapper specialPackageCouponMapper;
+	@Resource
+	private SalesChannelMapper salesChannelMapper;
 	@Resource(name = "customizeThreadPool")
 	private ExecutorService cardThreadPool;
 	@Resource
@@ -269,6 +254,8 @@ public class BaseCardServiceImpl{
 		baseCard.setAllocateDate(getAllocateDate(allocates, card.getCouponId(), card.getCrtTime()));
 		//设置有效期
 		baseCard.setActivationDeadline(getActiveDeadline(deadlineBo, card.getCouponId(), card.getActiveDate()));
+		SalesChannel salesChannel = salesChannelMapper.selectByPrimaryKey(card.getSaleChannelId());
+		baseCard.setSaleChannelName(salesChannel.getName());
 		return baseCard;
 	}
 

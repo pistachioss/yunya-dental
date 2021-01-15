@@ -4,8 +4,10 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.BusinessTargetModel;
 import com.yunya.feign.clinic_base.domain.model.TargetOfMonthModel;
+import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.query.BusinessTargetQuery;
 import com.yunya.feign.clinic_base.domain.query.BusinessWorkGoalQuery;
+import com.yunya.feign.clinic_base.domain.vo.BusinessGoalCompletedInfoVO;
 import com.yunya.feign.clinic_base.domain.vo.BusinessWorkGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
@@ -14,6 +16,7 @@ import com.yunya.feign.treatment.domain.vo.BusinessCompletedWorkGoalVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.clinic_base.BusinessTarget;
@@ -132,8 +135,9 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
             if (!BigDecimal.valueOf(0, 2).equals(actualReceivedAmountGoal)
                 && null != actualReceivedAmountCompleted) {
               BigDecimal percentageOfActualReceivedCompletedAmount =
-                  actualReceivedAmountCompleted.multiply(new BigDecimal(100)).divide(
-                      actualReceivedAmountGoal, 2, BigDecimal.ROUND_HALF_UP);
+                  actualReceivedAmountCompleted
+                      .multiply(new BigDecimal(100))
+                      .divide(actualReceivedAmountGoal, 2, BigDecimal.ROUND_HALF_UP);
               vo.setPercentageOfActualReceivedCompletedAmount(
                   Float.valueOf(percentageOfActualReceivedCompletedAmount.toString()));
             }
@@ -144,7 +148,9 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
             if (!BigDecimal.valueOf(0, 2).equals(workloadAmountGoal)
                 && null != workloadAmountCompleted) {
               BigDecimal percentageOfWorkloadAmountCompleted =
-                  workloadAmountCompleted.multiply(new BigDecimal(100)).divide(workloadAmountGoal, 2, BigDecimal.ROUND_HALF_UP);
+                  workloadAmountCompleted
+                      .multiply(new BigDecimal(100))
+                      .divide(workloadAmountGoal, 2, BigDecimal.ROUND_HALF_UP);
               vo.setPercentageOfWorkloadAmountCompleted(
                   Float.valueOf(percentageOfWorkloadAmountCompleted.toString()));
             }
@@ -156,7 +162,8 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
               float percentageOfFirstTreatPerNumCompleted =
                   (float) firstTreatPerNumCompleted / firstTreatPerNumGoal;
               vo.setPercentageOfFirstTreatPerNumCompleted(
-                  BigDecimal.valueOf(percentageOfFirstTreatPerNumCompleted).multiply(new BigDecimal(100))
+                  BigDecimal.valueOf(percentageOfFirstTreatPerNumCompleted)
+                      .multiply(new BigDecimal(100))
                       .setScale(2, BigDecimal.ROUND_HALF_UP)
                       .floatValue());
             }
@@ -168,7 +175,8 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
               float percentageOfTreatPerTimesCompleted =
                   (float) treatPerTimesCompleted / treatPerTimesGoal;
               vo.setPercentageOfTreatPerTimesCompleted(
-                  BigDecimal.valueOf(percentageOfTreatPerTimesCompleted).multiply(new BigDecimal(100))
+                  BigDecimal.valueOf(percentageOfTreatPerTimesCompleted)
+                      .multiply(new BigDecimal(100))
                       .setScale(2, BigDecimal.ROUND_HALF_UP)
                       .floatValue());
             }
@@ -188,5 +196,50 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
     ExcelUtil<BusinessWorkGoalVO> excelUtil = new ExcelUtil<>(BusinessWorkGoalVO.class);
     PageInfo<BusinessWorkGoalVO> pageInfo = findBusinessWorkGoalList(query);
     excelUtil.exportExcel(response, pageInfo.getList(), "门诊业务目标列表");
+  }
+
+  /**
+   * 根据条件查询组织业务目标完成情况
+   *
+   * @param query 查询条件
+   * @return BusinessGoalCompletedInfoVO
+   */
+  public BusinessGoalCompletedInfoVO findBusinessGoalCompletedInfo(
+      BusinessGoalCompletedInfoQuery query) {
+    String startDate = query.getStartDate();
+    String endDate = query.getEndDate();
+    Byte businessType = query.getBusinessType();
+    Integer orgId = query.getOrgId();
+    List<String> dateRange = DateUtil.sliceUpDateRange(startDate, endDate);
+    BusinessGoalCompletedInfoVO resultData = new BusinessGoalCompletedInfoVO();
+    // 查询该时间段内业务目标设置数量
+    BigDecimal businessGoalCount = mapper.selectBusinessGoalCount(orgId, businessType, dateRange);
+    // 查询业务目标完成数量
+    BigDecimal businessCompletedCount = BigDecimal.ZERO;
+    switch (businessType) {
+        // 营业收入
+      case 0:
+        businessCompletedCount = treatmentServiceFeign.findBusinessIncomeCompletedCount(query);
+        break;
+        // 工作量
+      case 1:
+        businessCompletedCount = treatmentServiceFeign.findBusinessWorkloadCompletedCount(query);
+        break;
+        // 初诊人数
+      case 2:
+        businessCompletedCount = treatmentServiceFeign.findBusinessFirstTreatCompletedCount(query);
+        break;
+      default:
+        break;
+    }
+    resultData.setBusinessGoalCount(businessGoalCount);
+    resultData.setBusinessCompletedCount(businessCompletedCount);
+    if (null != businessGoalCount && !BigDecimal.ZERO.equals(businessGoalCount)) {
+      resultData.setBusinessCompletedPercentage(
+              businessCompletedCount
+              .multiply(new BigDecimal(100))
+              .divide(businessGoalCount, 2, BigDecimal.ROUND_HALF_UP));
+    }
+    return resultData;
   }
 }

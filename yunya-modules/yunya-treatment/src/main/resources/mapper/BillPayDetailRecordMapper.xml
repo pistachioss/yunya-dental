@@ -84,4 +84,34 @@
             </if>
         </where>
     </select>
+
+    <!-- 根据条件查询门诊完成工作量 -->
+    <select id="selectBusinessWorkloadCompletedCount" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM( odpr.actual_receivable ) + SUM( odpr.coupon_workload ), 0) AS workloadAmountCompleted
+        FROM
+        order_detail_pay_record odpr
+        <where>
+            AND odpr.inservice = 1
+            <if test="query.startDate != null and query.startDate != ''">
+                AND DATE_FORMAT(odpr.crt_time, '%Y-%m') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                AND DATE_FORMAT(odpr.crt_time, '%Y-%m') &lt;= #{query.endDate}
+            </if>
+            AND odpr.order_detail_id IN (
+            SELECT
+            od.id
+            FROM
+            order_detail od
+            <where>
+                AND od.inservice = 1
+                AND od.executor_id IS NOT NULL
+                <if test="query.orgId != null">
+                    AND od.org_id = #{query.orgId}
+                </if>
+            </where>
+            )
+        </where>
+    </select>
 </mapper>
