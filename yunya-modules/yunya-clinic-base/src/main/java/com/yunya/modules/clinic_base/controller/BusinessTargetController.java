@@ -108,7 +108,7 @@ public class BusinessTargetController implements Serializable {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-运营分析-运营BI-营业收入(工作量)完成情况")
-  @PostMapping(value = "/business/completed", name = "根据条件查询门诊营业收入完成情况")
+  @PostMapping(value = "/goal/completed", name = "根据条件查询门诊营业收入完成情况")
   public ResponseResult<BusinessGoalCompletedInfoVO> businessGoalCompletedInfo(
       @RequestBody @Validated BusinessGoalCompletedInfoQuery query) {
     BusinessGoalCompletedInfoVO resultData = businessTargetBiz.findBusinessGoalCompletedInfo(query);
