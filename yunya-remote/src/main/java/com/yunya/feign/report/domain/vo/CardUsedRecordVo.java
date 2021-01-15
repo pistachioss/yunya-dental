@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -13,8 +14,10 @@ import lombok.Data;
 @Data
 public class CardUsedRecordVo {
 	@ApiModelProperty(value = "产品id")
+	@ExcelIgnore
 	private Integer couponId;
 	@ApiModelProperty(value = "订单id")
+	@ExcelIgnore
 	private Integer orderId;
 	@ApiModelProperty(value = "使用日期")
 	@ExcelProperty(value = "使用日期")
