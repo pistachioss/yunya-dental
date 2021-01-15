@@ -121,18 +121,18 @@
             `bb`.`actual_amount`,
             `be1`.`employee_name`                as `operateBenefitUser`
         from `base_benefit` `bf`
-            inner join `base_card` `bcd` on `bcd`.`card_id` = `bf`.`card_id`
-            inner join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
+            left join `base_card` `bcd` on `bcd`.`card_id` = `bf`.`card_id`
+            left join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
             <!-- 卡主 -->
-            inner join `base_patient` `bp` on `bp`.`patient_id` = `bcd`.`patient_id`
+            left join `base_patient` `bp` on `bp`.`patient_id` = `bcd`.`patient_id`
             <!-- 优惠券使用患者 -->
-            inner join `base_patient` `bp1` on `bp1`.`patient_id` = `bf`.`patient_id`
-            inner join `base_treatment_process` `btp` on `btp`.`treatment_id` = `bb`.`treatment_id`
+            left join `base_patient` `bp1` on `bp1`.`patient_id` = `bf`.`patient_id`
+            left join `base_treatment_process` `btp` on `btp`.`treatment_id` = `bb`.`treatment_id`
             <!-- 挂号医生 -->
-            inner join `base_employee` `be` on `be`.`user_id` = `btp`.`registered_dentist_id`
-            inner join `base_organization` `bo` on `bo`.`org_id` = `bf`.`org_id`
+            left join `base_employee` `be` on `be`.`user_id` = `btp`.`registered_dentist_id`
+            left join `base_organization` `bo` on `bo`.`org_id` = `bf`.`org_id`
             <!-- 优惠券操作人 -->
-            inner join `base_employee` `be1` on `be1`.`user_id` = `bf`.`operate_user_id`
+            left join `base_employee` `be1` on `be1`.`user_id` = `bf`.`operate_user_id`
         where `bf`.`coupon_id` = #{couponId}
             <if test="cardNumber !=null and cardNumber != ''">
                 and `bcd`.`card_number` like concat('%', #{cardNumber}, '%')
@@ -210,8 +210,8 @@
                 and `bcd`.`card_number` like concat('%', #{cardNumber}, '%')
             </if>
             <if test="patientKeyword !=null and patientKeyword != ''">
-                and (`bp1`.`name` like concat('%', #{patientKeyword}, '%') or `bp1`.`mobile` like concat('%', #{patientKeyword}, '%')
-                or `bp1`.`pinyin_name` like concat('%', #{patientKeyword}, '%'))
+                and (`bp`.`name` like concat('%', #{patientKeyword}, '%') or `bp`.`mobile` like concat('%', #{patientKeyword}, '%')
+                or `bp`.`pinyin_name` like concat('%', #{patientKeyword}, '%'))
             </if>
             <if test="couponTypes != null and couponTypes.size() > 0">
                 and `bco`.`coupon_type` in

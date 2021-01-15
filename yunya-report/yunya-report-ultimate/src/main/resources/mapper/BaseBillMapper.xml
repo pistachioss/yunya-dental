@@ -216,8 +216,9 @@
         LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
         LEFT JOIN ( SELECT btp.registered_dentist_id, btp.treatment_id, be.employee_name FROM base_treatment_process btp
         LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id ) btp ON bb.treatment_id = btp.treatment_id
-        LEFT JOIN ( SELECT bbp.bill_id, bbp.payee_user_id, be.employee_name FROM base_bill_pay bbp LEFT JOIN
-        base_employee be ON bbp.payee_user_id = be.user_id ) bbp ON bb.bill_id = bbp.bill_id
+        LEFT JOIN (SELECT bb.order_id as bill_id,bb.operate_user_id as payee_user_id,be.employee_name FROM
+            (select order_id,operate_user_id from base_benefit group by order_id,operate_user_id) bb
+            LEFT JOIN base_employee be ON bb.operate_user_id = be.user_id ) bbp ON bb.bill_id = bbp.bill_id
         ) bpr
         <where>
             <if test="query.keyWord != null and query.keyWord != ''">

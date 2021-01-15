@@ -55,10 +55,10 @@ public class SysUserInfoDetail extends BaseEntity implements Serializable {
   @ApiModelProperty("邮箱地址")
   private String email;
   /** 性别: 0, 男; 1, 女 */
-  @Excel(name = "性别")
   @ApiModelProperty("性别: 0, 男; 1, 女")
   private String genderValue;
   /** 性别0-男；1-女 */
+  @Excel(name = "性别", readConverterExp = "0=男,1=女", type = Excel.Type.EXPORT)
   @ApiModelProperty("性别0-男；1-女")
   private Byte gender;
   /** 岗位ID */
