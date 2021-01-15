@@ -2,8 +2,10 @@ package com.yunya.modules.clinic_base.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.BusinessTargetModel;
+import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.query.BusinessTargetQuery;
 import com.yunya.feign.clinic_base.domain.query.BusinessWorkGoalQuery;
+import com.yunya.feign.clinic_base.domain.vo.BusinessGoalCompletedInfoVO;
 import com.yunya.feign.clinic_base.domain.vo.BusinessWorkGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -97,5 +99,19 @@ public class BusinessTargetController implements Serializable {
       throws IOException {
     businessTargetBiz.exportBusinessWorkGoalList(response, query);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询门诊业务目标完成情况
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-运营BI-营业收入(工作量)完成情况")
+  @PostMapping(value = "/business/completed", name = "根据条件查询门诊营业收入完成情况")
+  public ResponseResult<BusinessGoalCompletedInfoVO> businessGoalCompletedInfo(
+      @RequestBody @Validated BusinessGoalCompletedInfoQuery query) {
+    BusinessGoalCompletedInfoVO resultData = businessTargetBiz.findBusinessGoalCompletedInfo(query);
+    return ResponseUtil.success(resultData);
   }
 }

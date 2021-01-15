@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.controller.rpc;
 
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
+import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
@@ -385,6 +386,42 @@ public class TreatmentServiceRest {
   }
 
   /**
+   * 根据条件查询门诊营业收入完成情况
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  @RequestMapping(value = "/business/goal/completed", method = RequestMethod.POST)
+  public BigDecimal findBusinessIncomeCompletedCount(
+      @RequestBody @Validated BusinessGoalCompletedInfoQuery query) {
+    return billRecordBiz.findBusinessIncomeCompletedCount(query);
+  }
+
+  /**
+   * 根据条件查询门诊工作量完成情况
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  @RequestMapping(value = "/business/workload/completed", method = RequestMethod.POST)
+  public BigDecimal findBusinessWorkloadCompletedCount(
+      @RequestBody @Validated BusinessGoalCompletedInfoQuery query) {
+    return billPayDetailRecordBiz.findBusinessWorkloadCompletedCount(query);
+  }
+
+  /**
+   * 根据条件查询门诊初诊人数完成情况
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  @RequestMapping(value = "/business/first/treat/completed", method = RequestMethod.POST)
+  public BigDecimal findBusinessFirstTreatCompletedCount(
+      @RequestBody @Validated BusinessGoalCompletedInfoQuery query) {
+    return treatmentRecordBiz.findBusinessFirstTreatCompletedCount(query);
+  }
+
+  /**
    * 根据条件查询门诊开单专科项目完成信息
    *
    * @param query 查询条件
@@ -398,11 +435,13 @@ public class TreatmentServiceRest {
 
   /**
    * 查询专科项目数量
+   *
    * @param specialistProjectReportModel 查询条件
    * @return Integer
    */
   @RequestMapping(value = "/tariff/specialist/percentage", method = RequestMethod.POST)
-  public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(@RequestBody SpecialistProjectReportModel specialistProjectReportModel) {
+  public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(
+      @RequestBody SpecialistProjectReportModel specialistProjectReportModel) {
     return orderDetailBiz.findTariffSpecialistPercentage(specialistProjectReportModel);
   }
 
@@ -416,5 +455,4 @@ public class TreatmentServiceRest {
   public BigDecimal sumBillPayAmount(@RequestBody @Validated CreditCashReceiptQuery query) {
     return billPayDetailRecordBiz.sumBillPayAmount(query);
   }
-
 }

@@ -169,4 +169,27 @@
         ORDER BY
             t.businessDate
     </select>
+
+    <!-- 根据条件查询业务目标数量 -->
+    <select id="selectBusinessGoalCount" resultType="java.math.BigDecimal">
+        SELECT
+            SUM( bt.business_goal )
+        FROM
+            business_target bt
+        <where>
+            AND bt.belong_type = 0
+            <if test="businessType != null">
+                AND bt.business_type = #{businessType}
+            </if>
+            <if test="orgId != null">
+                AND bt.belong_id = #{orgId}
+            </if>
+            <if test="dateRange != null and dateRange.size > 0">
+                AND bt.business_date IN
+                <foreach collection="dateRange" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

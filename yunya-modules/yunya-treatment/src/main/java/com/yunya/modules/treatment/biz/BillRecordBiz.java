@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.biz;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
@@ -131,7 +132,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     BillRecord billRecord = mapper.selectOne(entity);*/
     OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
     if (orderRecord == null) {
-      throw new ClientServiceException("开单记录不存在",PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("开单记录不存在", PARAMETERS_IS_ILLEGAL);
     }
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
     BillRecord entity = new BillRecord();
@@ -566,10 +567,21 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     resultData.setActualReceivedAmountCompleted(completedActualReceivedAmount);
     BigDecimal completedWorkloadAmount = mapper.selectCompletedWorkloadAmount(query);
     resultData.setWorkloadAmountCompleted(completedWorkloadAmount);
-    Integer completedFirstTreatPerNum = treatmentRecordMapper.selectCompletedFirstTreatPerNum(query);
+    Integer completedFirstTreatPerNum =
+        treatmentRecordMapper.selectCompletedFirstTreatPerNum(query);
     resultData.setFirstTreatPerNumCompleted(completedFirstTreatPerNum);
     Integer completedTreatPerTimes = treatmentRecordMapper.selectCompletedTreatPerTimes(query);
     resultData.setTreatPerTimesCompleted(completedTreatPerTimes);
     return resultData;
+  }
+
+  /**
+   * 根据条件查询营业收入完成情况
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  public BigDecimal findBusinessIncomeCompletedCount(BusinessGoalCompletedInfoQuery query) {
+    return mapper.selectBusinessIncomeCompletedCount(query);
   }
 }
