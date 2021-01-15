@@ -234,9 +234,11 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
     }
     resultData.setBusinessGoalCount(businessGoalCount);
     resultData.setBusinessCompletedCount(businessCompletedCount);
-    if (null != businessGoalCount && !BigDecimal.ZERO.equals(businessGoalCount)) {
+    if (null != businessCompletedCount
+        && null != businessGoalCount
+        && !BigDecimal.ZERO.equals(businessGoalCount)) {
       resultData.setBusinessCompletedPercentage(
-              businessCompletedCount
+          businessCompletedCount
               .multiply(new BigDecimal(100))
               .divide(businessGoalCount, 2, BigDecimal.ROUND_HALF_UP));
     }

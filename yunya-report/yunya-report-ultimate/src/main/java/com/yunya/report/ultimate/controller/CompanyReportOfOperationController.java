@@ -192,4 +192,49 @@ public class CompanyReportOfOperationController {
         clinicDataStatisticsBiz.findClinicDataStatisticsInfo(query);
     return ResponseUtil.success(dataStatisticsInfo);
   }
+
+  /**
+   * 根据条件查询门诊运营分析患者数据总览
+   *
+   * @param query 查询条件
+   * @return ClinicDataStatisticsInfoVO
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-运营BI（患者数据统计）")
+  @PostMapping(value = "/analysis/patient/data/statistic", name = "根据条件查询门诊运营分析数据总览")
+  public ResponseResult<PatientDataStatisticsVO> operationalAnalysisPatientDataStatistics(
+      @RequestBody @Validated DataStatisticsQuery query) {
+    PatientDataStatisticsVO patientDataStatisticsInfo =
+        clinicDataStatisticsBiz.findClinicPatientDataStatisticsInfo(query);
+    return ResponseUtil.success(patientDataStatisticsInfo);
+  }
+
+  /**
+   * 根据条件查询不同来源患者初诊占比信息列表
+   *
+   * @param query 查询条件
+   * @return PatientFirstTreatOriginInfoVO
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-运营BI-初诊患者来源分布")
+  @PostMapping(value = "/patient/first/treat/origin", name = "公司端报表-报表统计-运营报表-运营分析-运营BI-初诊患者来源分布")
+  public ResponseResult<PatientFirstTreatOriginInfoVO> firstTreatPatientOrigin(
+      @RequestBody @Validated PatientFirstTreatOriginQuery query) {
+    PatientFirstTreatOriginInfoVO resultDate =
+        clinicDataStatisticsBiz.findPatientFirstTreatOriginInfo(query);
+    return ResponseUtil.success(resultDate);
+  }
+
+  /**
+   * 根据条件查询门诊随访（提醒）完成率
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-运营BI-随访（提醒）完成率")
+  @PostMapping(value = "/visit/remind/completed", name = "公司端报表-报表统计-运营报表-运营分析-运营BI-随访（提醒）完成率")
+  public ResponseResult<VisitAndRemindCompletedInfoVO> visitAndRemindCompletedInfo(
+      @RequestBody @Validated VisitAndRemindCompletedInfoQuery query) {
+    VisitAndRemindCompletedInfoVO resultData =
+        clinicDataStatisticsBiz.findVisitAndRemindCompletedInfo(query);
+    return ResponseUtil.success(resultData);
+  }
 }

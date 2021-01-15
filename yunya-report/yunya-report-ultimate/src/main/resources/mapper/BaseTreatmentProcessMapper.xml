@@ -149,7 +149,8 @@
         DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS matchingDate,
         DATE_FORMAT( btp.treat_start_time, '%H:%i' ) AS treatStartTime,
         DATE_FORMAT( btp.treat_end_time, '%H:%i' ) AS treatEndTime,
-        TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_end_time, '%H:%i'), DATE_FORMAT( btp.treat_start_time, '%H:%i' )))/60 AS matchingDuration
+        TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_end_time, '%H:%i'), DATE_FORMAT( btp.treat_start_time, '%H:%i' )))/60
+        AS matchingDuration
         FROM
         base_treatment_process btp
         LEFT JOIN base_employee be1 ON btp.assistant_1 = be1.user_id
@@ -222,7 +223,8 @@
         (
         TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time )=0,
         1,
-        TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_end_time, '%H:%i'), DATE_FORMAT( btp.treat_start_time, '%H:%i' )))/60) AS matchTime
+        TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_end_time, '%H:%i'), DATE_FORMAT( btp.treat_start_time, '%H:%i'
+        )))/60) AS matchTime
         FROM
         base_treatment_process btp
         <where>
@@ -414,4 +416,60 @@
                 ) t1
     </select>
 
+    <!-- 根据条件查询初诊患者来源分布 -->
+    <select id="selectPatientFirstTreatOriginList"
+            resultType="com.yunya.feign.report.domain.vo.PatientFirstTreatOriginVO">
+        SELECT
+        IFNULL(btp.origin_type, 0) AS originType,
+        IFNULL( btp.origin_type_name, '其他' ) AS orrginTypeName,
+        COUNT(distinct patient_id ) AS patientCount
+        FROM
+        (
+        SELECT
+        btp.patient_id,
+        bp.origin_type,
+        bp.origin_type_name
+        FROM
+        base_treatment_process btp
+        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+        <where>
+            -- 初诊
+            AND btp.treat_type = 0
+            AND btp.treat_end_time IS NOT NULL
+            <if test="query.orgId != null">
+                AND btp.org_id = #{query.orgId}
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m' ) = #{query.endDate}
+            </if>
+        </where>
+        ) btp
+        GROUP BY
+        btp.origin_type,
+        btp.origin_type_name
+    </select>
+
+    <!-- 根据条件查询初诊患者总数 -->
+    <select id="selectFirstTreatTotalCount" resultType="java.lang.Integer">
+        select
+            COUNT(distinct patient_id ) AS patientCount
+        from
+            base_treatment_process btp
+        <where>
+            AND btp.treat_type = 0
+            AND btp.treat_end_time IS NOT NULL
+            <if test="query.orgId != null">
+                AND btp.org_id = #{query.orgId}
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m' ) = #{query.endDate}
+            </if>
+        </where>
+    </select>
 </mapper>
