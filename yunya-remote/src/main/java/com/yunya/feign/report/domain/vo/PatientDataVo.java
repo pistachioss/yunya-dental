@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -48,7 +49,7 @@ public class PatientDataVo implements Serializable {
      * 累计消费
      */
     @ApiModelProperty("累计消费")
-    private Integer cumulativeConsumption;
+    private BigDecimal cumulativeConsumption;
 
     /**
      * 末诊日期
@@ -72,7 +73,7 @@ public class PatientDataVo implements Serializable {
      * 欠费总额
      */
     @ApiModelProperty("欠费总额")
-    private Integer totalArrears;
+    private BigDecimal totalArrears;
 
     /**
      * 预约次数

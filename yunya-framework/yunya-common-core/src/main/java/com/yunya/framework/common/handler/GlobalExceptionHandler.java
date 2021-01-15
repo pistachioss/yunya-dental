@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.ConnectException;
 
 /**
  * 全局异常处理
@@ -77,7 +78,7 @@ public class GlobalExceptionHandler {
   public ResponseResult otherExceptionHandler(HttpServletResponse response, Exception ex) {
     response.setStatus(500);
     log.error(ex.getMessage(), ex);
-    return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, "服务繁忙！请稍后重试", null);
+    return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, "服务器好像出故障了！请联系管理员", null);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -107,5 +108,11 @@ public class GlobalExceptionHandler {
       ClientInvalidException exp, HttpServletRequest request) {
     logger.error("error in \n url:{} \n msg:{}", request.getRequestURL(), exp.getCause());
     return ResponseUtil.fail(CommonConstants.ILLEGAL_PARAMETERS_CODE, "服务验证异常！", null);
+  }
+
+  @ExceptionHandler(ConnectException.class)
+  public ResponseResult connectException(ConnectException e, HttpServletRequest request) {
+    logger.error("error in \n url:{} \n msg:{}",request.getRequestURL(),e.getCause());
+    return ResponseUtil.fail(CommonConstants.CONNECTION_REFUSED_CODE,"服务器繁忙！请稍后重试",null);
   }
 }

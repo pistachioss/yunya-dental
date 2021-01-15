@@ -387,7 +387,7 @@
         WHERE
             btp.patient_id = #{patientId}
             AND btp.treat_type = 0
-			group by btp.patient_id
+			group by btp.patient_id,btp.treat_start_time,be.employee_name,bo.abbreviation
   </select>
 
     <!-- 查询患者末诊信息 -->
