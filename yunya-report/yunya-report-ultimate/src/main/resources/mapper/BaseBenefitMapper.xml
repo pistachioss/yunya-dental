@@ -210,8 +210,8 @@
                 and `bcd`.`card_number` like concat('%', #{cardNumber}, '%')
             </if>
             <if test="patientKeyword !=null and patientKeyword != ''">
-                and (`bp1`.`name` like concat('%', #{patientKeyword}, '%') or `bp1`.`mobile` like concat('%', #{patientKeyword}, '%')
-                or `bp1`.`pinyin_name` like concat('%', #{patientKeyword}, '%'))
+                and (`bp`.`name` like concat('%', #{patientKeyword}, '%') or `bp`.`mobile` like concat('%', #{patientKeyword}, '%')
+                or `bp`.`pinyin_name` like concat('%', #{patientKeyword}, '%'))
             </if>
             <if test="couponTypes != null and couponTypes.size() > 0">
                 and `bco`.`coupon_type` in
