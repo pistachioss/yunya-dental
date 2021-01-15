@@ -754,9 +754,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			log.warn("卡券[{}]不存在", cardId);
 			return ResponseUtil.error(DiscountError.CARD_NOT_EXIST);
 		}
-		if (!ACTIVATED.equals(card.getStatus())) {
+		if (SALE_PENDING.equals(card.getStatus()) || ACTIVE_PENDING.equals(card.getStatus())) {
 			log.warn("卡券[{}]未激活", cardId);
 			return ResponseUtil.error(DiscountError.CARD_NOT_ACTIVATED);
+		}
+		if (USE_ALL.equals(card.getStatus())) {
+			log.warn("卡券[{}]已全部使用", cardId);
+			return ResponseUtil.error(DiscountError.CARD_ALL_USED);
 		}
 		//配置共享人不能是自己
 		List<String> shareIds = Lists.newArrayList(Splitter.on(",").trimResults().omitEmptyStrings().split(form.getSharerIdStr()));

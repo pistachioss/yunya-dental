@@ -399,10 +399,10 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   }
 
   /**
-   * 根据就诊是否是否
+   * 校验账单能否退费
    *
    * @param treatmentRecordId 就诊记录ID
-   * @param orgId
+   * @param orgId 组织ID
    * @return
    */
   private BillRecord checkBillRecord(Integer treatmentRecordId, Integer orgId) {
