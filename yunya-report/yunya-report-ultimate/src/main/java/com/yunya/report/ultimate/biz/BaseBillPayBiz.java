@@ -68,7 +68,18 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       throws IOException {
     List<BillOfPayRecordVO> list = mapper.selectBillRecordOfPayList(query);
     ExcelUtil<BillOfPayRecordVO> excelUtil = new ExcelUtil<>(BillOfPayRecordVO.class);
-    excelUtil.exportExcel(response, list, "账单收费记录表");
+    String fileName = "账单收费记录表";
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    if (null != organization) {
+      fileName =
+          MessageFormat.format(
+              "{0}{1}-{2}{3}",
+              organization.getAbbreviation(),
+              query.getBillStartDate(),
+              query.getBillEndDate(),
+              fileName);
+    }
+    excelUtil.exportExcel(response, list, "账单收费记录表", fileName);
   }
 
   /**

@@ -3,8 +3,8 @@ package com.yunya.report.ultimate.biz;
 import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.query.InboundAndOutboundStatementQuery;
 import com.yunya.feign.report.domain.vo.BaseAccountItemVO;
-import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import com.yunya.feign.report.domain.vo.ClinicInboundAndOutboundVO;
+import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseAccountItem;
@@ -12,8 +12,11 @@ import com.yunya.report.ultimate.mapper.BaseAccountItemMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
@@ -127,6 +130,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     // 预付款退费 -- 查询时间段内本门诊预付款充值退费
     prepaidRefund(query, resultList);
 
+    // 计算出入账合计
+    calculateInboundAndOutbound(resultList);
+
+
     // 诊所被代收（本月）-- 查询时间段内本门诊账单不在本门诊收费
     clinicIsAcceptedThisMonth(query, resultList);
 
@@ -134,6 +141,82 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     clinicIsAcceptedNotThisMonth(query, resultList);
 
     return resultList;
+  }
+
+  /**
+   * 计算出入账合计
+   *
+   * @param resultList 结果集
+   */
+  private void calculateInboundAndOutbound(List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> inboundPayments = new ArrayList<>();
+    List<StatementPaymentVO> outboundPayments = new ArrayList<>();
+    IntStream.range(0, resultList.size())
+        .forEach(
+            i -> {
+              if (i <= 7) {
+                List<StatementPaymentVO> paymentInfoList = resultList.get(i).getPaymentInfoList();
+                inboundPayments.addAll(paymentInfoList);
+              } else if (i <= 11) {
+                List<StatementPaymentVO> paymentInfoList = resultList.get(i).getPaymentInfoList();
+                outboundPayments.addAll(paymentInfoList);
+              }
+            });
+    // 入账支付信息分组求和
+    List<StatementPaymentVO> inboundPaymentResult =
+        groupAndCalculateStatementPayment(inboundPayments);
+    // 出账支付方式分组求和¬
+    List<StatementPaymentVO> outboundPaymentResult =
+        groupAndCalculateStatementPayment(outboundPayments);
+
+    for (StatementPaymentVO in : inboundPaymentResult) {
+      for (StatementPaymentVO out : outboundPaymentResult) {
+        if (in.getAccountItemId().equals(out.getAccountItemId())) {
+          BigDecimal totalAmount = in.getTotalAmount().subtract(out.getTotalAmount());
+          in.setTotalAmount(totalAmount);
+        }
+      }
+    }
+
+    ClinicInboundAndOutboundVO inboundAndOutboundVO = new ClinicInboundAndOutboundVO();
+    inboundAndOutboundVO.setType((byte) 12);
+    inboundAndOutboundVO.setName("合计");
+    inboundAndOutboundVO.setPaymentInfoList(inboundPaymentResult);
+    resultList.add(12, inboundAndOutboundVO);
+  }
+
+  /**
+   * 对入账方式分组求和
+   *
+   * @param payments 支付方式列表
+   * @return List<StatementPaymentVO>
+   */
+  private List<StatementPaymentVO> groupAndCalculateStatementPayment(
+      List<StatementPaymentVO> payments) {
+    List<StatementPaymentVO> paymentResult = new ArrayList<>();
+    if (StringHelper.isNotEmpty(payments)) {
+      // 数据分组统计处理
+      payments.parallelStream()
+          .collect(Collectors.groupingBy(StatementPaymentVO::getAccountItemId, Collectors.toList()))
+          .forEach(
+              (i, transfer) ->
+                  transfer.stream()
+                      .reduce(
+                          (a, b) ->
+                              new StatementPaymentVO(
+                                  a.getAccountItemId(),
+                                  a.getAccountItemName(),
+                                  a.getTotalAmount() == null
+                                      ? BigDecimal.ZERO
+                                      : a.getTotalAmount()
+                                          .add(
+                                              b.getTotalAmount() == null
+                                                  ? BigDecimal.ZERO
+                                                  : b.getTotalAmount()),
+                                  a.getBonusAmount()))
+                      .ifPresent(paymentResult::add));
+    }
+    return paymentResult;
   }
 
   /**
@@ -146,12 +229,12 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
     List<StatementPaymentVO> clinicIsAcceptedNotThisMonth =
         findClinicIsAcceptedPaymentInfoNotThisMonth(query);
-    reBuildStatementsPaymentList((byte) 13, clinicIsAcceptedNotThisMonth, query);
+    reBuildStatementsPaymentList((byte) 14, clinicIsAcceptedNotThisMonth, query);
     ClinicInboundAndOutboundVO clinicIsAcceptedNotThisMonthVO = new ClinicInboundAndOutboundVO();
-    clinicIsAcceptedNotThisMonthVO.setType((byte) 13);
+    clinicIsAcceptedNotThisMonthVO.setType((byte) 14);
     clinicIsAcceptedNotThisMonthVO.setName("诊所被代收（非本月）");
     clinicIsAcceptedNotThisMonthVO.setPaymentInfoList(clinicIsAcceptedNotThisMonth);
-    resultList.add(13, clinicIsAcceptedNotThisMonthVO);
+    resultList.add(14, clinicIsAcceptedNotThisMonthVO);
   }
 
   /**
@@ -164,12 +247,12 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
     List<StatementPaymentVO> clinicIsAcceptedThisMonth =
         findClinicIsAcceptedPaymentInfoThisMonth(query);
-    reBuildStatementsPaymentList((byte) 12, clinicIsAcceptedThisMonth, query);
+    reBuildStatementsPaymentList((byte) 13, clinicIsAcceptedThisMonth, query);
     ClinicInboundAndOutboundVO clinicIsAcceptedThisMonthVO = new ClinicInboundAndOutboundVO();
-    clinicIsAcceptedThisMonthVO.setType((byte) 12);
+    clinicIsAcceptedThisMonthVO.setType((byte) 13);
     clinicIsAcceptedThisMonthVO.setName("诊所被代收（本月）");
     clinicIsAcceptedThisMonthVO.setPaymentInfoList(clinicIsAcceptedThisMonth);
-    resultList.add(12, clinicIsAcceptedThisMonthVO);
+    resultList.add(13, clinicIsAcceptedThisMonthVO);
   }
 
   /**
@@ -466,55 +549,55 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
       Integer[] accountItem,
       StatementPaymentVO boundPayment) {
     switch (type) {
-      case 0://本月账单
+      case 0: // 本月账单
         query.setIsCurMonth((byte) 1);
         BigDecimal billChargeMemberPrincipalAmount =
             mapper.selectBillChargePrincipal(accountItem[0], query);
         boundPayment.setTotalAmount(billChargeMemberPrincipalAmount);
         break;
-      case 1://本月收欠费
+      case 1: // 本月收欠费
         query.setIsCurMonth((byte) 1);
         BigDecimal collectArrearsMemberPrincipalAmount =
             mapper.selectCollectArrearsPrincipal(accountItem[0], query);
         boundPayment.setTotalAmount(collectArrearsMemberPrincipalAmount);
         break;
-      case 2://非本月收欠费
+      case 2: // 非本月收欠费
         query.setIsCurMonth((byte) 0);
         BigDecimal notCurMonthcollectArrearsMemberPrincipalAmount =
-                mapper.selectCollectArrearsPrincipal(accountItem[0], query);
+            mapper.selectCollectArrearsPrincipal(accountItem[0], query);
         boundPayment.setTotalAmount(notCurMonthcollectArrearsMemberPrincipalAmount);
         break;
-      case 6://本月门诊代收
+      case 6: // 本月门诊代收
         query.setIsCurMonth((byte) 1);
         BigDecimal clinicCollectionMemberPrincipalAmount =
             mapper.selectClinicCollectionPrincipal(accountItem[0], query);
         boundPayment.setTotalAmount(clinicCollectionMemberPrincipalAmount);
         break;
-      case 7://非本月门诊代收
+      case 7: // 非本月门诊代收
         query.setIsCurMonth((byte) 0);
         BigDecimal notCurMonthclinicCollectionMemberPrincipalAmount =
-                mapper.selectClinicCollectionPrincipal(accountItem[0], query);
+            mapper.selectClinicCollectionPrincipal(accountItem[0], query);
         boundPayment.setTotalAmount(notCurMonthclinicCollectionMemberPrincipalAmount);
         break;
-      case 8://本月账单退费
+      case 8: // 本月账单退费
         query.setIsCurMonth((byte) 1);
         BigDecimal billRefundMemberPrincipalAmount =
             mapper.selectBillRefundPrincipal(accountItem[0], query);
         boundPayment.setTotalAmount(billRefundMemberPrincipalAmount);
         break;
-      case 9://非本月账单退费
+      case 9: // 非本月账单退费
         query.setIsCurMonth((byte) 0);
         BigDecimal notCurMonthbillRefundMemberPrincipalAmount =
-                mapper.selectBillRefundPrincipal(accountItem[0], query);
+            mapper.selectBillRefundPrincipal(accountItem[0], query);
         boundPayment.setTotalAmount(notCurMonthbillRefundMemberPrincipalAmount);
         break;
-      case 12://本月门诊被代收
+      case 12: // 本月门诊被代收
         query.setIsCurMonth((byte) 1);
         BigDecimal clinicIsAcceptedMemberPrincipalAmount =
-                mapper.selectClinicIsAcceptedPrincipal(accountItem[0], query);
+            mapper.selectClinicIsAcceptedPrincipal(accountItem[0], query);
         boundPayment.setTotalAmount(clinicIsAcceptedMemberPrincipalAmount);
         break;
-      case 13://非本月门诊被代收
+      case 13: // 非本月门诊被代收
         query.setIsCurMonth((byte) 0);
         BigDecimal notCurMonthclinicIsAcceptedMemberPrincipalAmount =
             mapper.selectClinicIsAcceptedPrincipal(accountItem[0], query);
@@ -539,46 +622,46 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
       Integer[] accountItem,
       StatementPaymentVO boundPayment) {
     switch (type) {
-      case 0:// 本月账单收费
+      case 0: // 本月账单收费
         query.setIsCurMonth((byte) 1);
         BigDecimal billChargeMemberBonusAmount =
             mapper.selectBillChargeBonus(accountItem[0], query);
         boundPayment.setTotalAmount(billChargeMemberBonusAmount);
         break;
-      case 1:// 本月收欠费
+      case 1: // 本月收欠费
         query.setIsCurMonth((byte) 1);
         BigDecimal collectArrearsMemberBonusAmount =
             mapper.selectCollectArrearsBonus(accountItem[0], query);
         boundPayment.setTotalAmount(collectArrearsMemberBonusAmount);
         break;
-      case 2:// 非本月收欠费
+      case 2: // 非本月收欠费
         query.setIsCurMonth((byte) 0);
         BigDecimal notCurMonthcollectArrearsMemberBonusAmount =
-                mapper.selectCollectArrearsBonus(accountItem[0], query);
+            mapper.selectCollectArrearsBonus(accountItem[0], query);
         boundPayment.setTotalAmount(notCurMonthcollectArrearsMemberBonusAmount);
         break;
-      case 6:// 本月门诊代收
+      case 6: // 本月门诊代收
         query.setIsCurMonth((byte) 1);
         BigDecimal clinicCollectionMemberBonusAmount =
             mapper.selectClinicCollectionBonus(accountItem[0], query);
         boundPayment.setTotalAmount(clinicCollectionMemberBonusAmount);
         break;
-      case 7:// 非本月门诊代收
+      case 7: // 非本月门诊代收
         query.setIsCurMonth((byte) 0);
         BigDecimal notCurMonthclinicCollectionMemberBonusAmount =
-                mapper.selectClinicCollectionBonus(accountItem[0], query);
+            mapper.selectClinicCollectionBonus(accountItem[0], query);
         boundPayment.setTotalAmount(notCurMonthclinicCollectionMemberBonusAmount);
         break;
-      case 8:// 本月账单退费
+      case 8: // 本月账单退费
         query.setIsCurMonth((byte) 1);
         BigDecimal billRefundMemberBonusAmount =
             mapper.selectBillRefundBonus(accountItem[0], query);
         boundPayment.setTotalAmount(billRefundMemberBonusAmount);
         break;
-      case 9:// 非本月账单退费
+      case 9: // 非本月账单退费
         query.setIsCurMonth((byte) 0);
         BigDecimal notCurMonthbillRefundMemberBonusAmount =
-                mapper.selectBillRefundBonus(accountItem[0], query);
+            mapper.selectBillRefundBonus(accountItem[0], query);
         boundPayment.setTotalAmount(notCurMonthbillRefundMemberBonusAmount);
         break;
       case 12:
@@ -590,7 +673,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
       case 13:
         query.setIsCurMonth((byte) 0);
         BigDecimal notCurMonthclinicIsAcceptedMemberBonusAmount =
-                mapper.selectClinicIsAcceptedBonus(accountItem[0], query);
+            mapper.selectClinicIsAcceptedBonus(accountItem[0], query);
         boundPayment.setTotalAmount(notCurMonthclinicIsAcceptedMemberBonusAmount);
         break;
       default:
