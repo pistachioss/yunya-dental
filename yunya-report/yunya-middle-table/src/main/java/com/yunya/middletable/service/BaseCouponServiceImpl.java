@@ -240,7 +240,11 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 			for (List<BaseCoupon> couponList : partition) {
 				//多线程异步插入
 				cardThreadPool.execute(() -> {
-					mapper.insertList(couponList);
+					try {
+						mapper.insertList(couponList);
+					} catch (Exception e) {
+						log.error("pull coupon batchInsert error", e);
+					}
 				});
 			}
 		}

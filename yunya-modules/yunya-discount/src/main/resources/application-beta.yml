@@ -19,3 +19,6 @@ spring:
 
 codeUrl:
     url: http://172.16.17.177:8080
+
+cardSold:
+    selfChannel: 艾维自有
