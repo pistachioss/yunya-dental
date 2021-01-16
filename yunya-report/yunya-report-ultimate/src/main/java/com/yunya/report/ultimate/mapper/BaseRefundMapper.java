@@ -16,7 +16,7 @@ public interface BaseRefundMapper extends Mapper<BaseRefund> {
    * @param query 查询条件
    * @return List<BillOfRefundRecordVO>
    */
-  List<BillOfRefundRecordVO> selectBillRefundRecord(@Param("query") BillRefundRecordQuery query);
+  List<BillOfRefundRecordInfoVO> selectBillRefundRecord(@Param("query") BillRefundRecordQuery query);
 
   /**
    * 根据条件查询员工退费工作量明细列表

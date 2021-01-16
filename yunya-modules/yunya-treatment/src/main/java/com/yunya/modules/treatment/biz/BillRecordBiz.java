@@ -78,7 +78,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   @Autowired private BaseTariffBiz baseTariffBiz;
   /** 就诊 */
   @Autowired private TreatmentRecordMapper treatmentRecordMapper;
-  /* 账单 */
+  /** 账单 */
   @Autowired private OrderRecordMapper orderRecordMapper;
 
   /**

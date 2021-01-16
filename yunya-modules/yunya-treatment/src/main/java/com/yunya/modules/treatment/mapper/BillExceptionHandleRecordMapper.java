@@ -1,10 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
-import com.yunya.feign.treatment.domain.query.BillAdjustRecordQuery;
-import com.yunya.feign.treatment.domain.query.BillPayRecordAdjustQuery;
-import com.yunya.feign.treatment.domain.query.BillTollRevokeRecordQuery;
-import com.yunya.feign.treatment.domain.query.CurrentMonthBillAdjustQuery;
+import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.models.treatment.BillExceptionHandleRecord;
 import org.apache.ibatis.annotations.Param;
@@ -80,8 +77,17 @@ public interface BillExceptionHandleRecordMapper extends Mapper<BillExceptionHan
   /**
    * 根据id查询下一个异常记录的id
    *
-   * @param handledRecordId
+   * @param handledRecordId 异常处理记录ID
    * @return
    */
   Integer selectNextId(@Param("id") Integer handledRecordId);
+
+  /**
+   * 根据条件查询账单退费记录列表
+   *
+   * @param query 查询条件
+   * @return List<BillOfRefundRecordVO>
+   */
+  List<BillOfRefundRecordVO> selectBillRefundRecordList(
+      @Param("query") BillRefundRecordQuery query);
 }

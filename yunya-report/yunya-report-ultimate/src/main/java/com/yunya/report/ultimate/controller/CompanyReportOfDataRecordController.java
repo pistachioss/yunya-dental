@@ -142,9 +142,9 @@ public class CompanyReportOfDataRecordController {
    */
   @ApiOperation("数据记录-账单记录-账单退费记录")
   @PostMapping(value = "/bill/refund/list", name = "数据记录-账单记录-账单退费记录")
-  public ResponseResult<PageInfo<BillOfRefundRecordVO>> findBillRefundRecordList(
+  public ResponseResult<PageInfo<BillOfRefundRecordInfoVO>> findBillRefundRecordList(
       @RequestBody @Validated BillRefundRecordQuery query) {
-    PageInfo<BillOfRefundRecordVO> resultList = baseRefundBiz.findBillRefundRecord(query);
+    PageInfo<BillOfRefundRecordInfoVO> resultList = baseRefundBiz.findBillRefundRecord(query);
     return ResponseUtil.success(resultList);
   }
 

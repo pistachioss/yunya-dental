@@ -1,24 +1,32 @@
-package com.yunya.feign.report.domain.vo;
+package com.yunya.feign.treatment.domain.vo;
 
 import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 简介: 账单退费记录VO模型
+ * 简介: 账单退费记录信息VO
  *
  * @author: chow
- * @date: 2020/11/23 13:31
+ * @date: 2021/1/16 14:32
  * @description:
  * @since: 1.0.0
  */
+@ApiModel("账单退费记录信息VO")
 @Data
-@ApiModel("账单退费记录VO模型")
+@ToString
 public class BillOfRefundRecordVO implements Serializable {
+  /** 账单异常记录ID */
+  @ApiModelProperty("账单异常记录ID")
+  private Integer billExceptionHandleRecordId;
+  /** 就诊ID */
+  @ApiModelProperty("就诊ID")
+  private Integer treatmentRecordId;
   /** 账单退费记录ID */
   @ApiModelProperty("账单退费记录ID")
   private Integer billRefundRecordId;
@@ -26,9 +34,13 @@ public class BillOfRefundRecordVO implements Serializable {
   @Excel(name = "退费日期")
   @ApiModelProperty("退费日期")
   private String refundDate;
-  /** 开单日期 */
-  @ApiModelProperty("开单日期")
-  private String orderDate;
+  /** 账单ID */
+  @ApiModelProperty("账单ID")
+  private Integer billRecordId;
+  /** 账单日期 */
+  @Excel(name = "账单日期")
+  @ApiModelProperty("账单日期")
+  private String billDate;
   /** 账单编号 */
   @Excel(name = "账单编号")
   @ApiModelProperty("账单编号")
@@ -40,11 +52,14 @@ public class BillOfRefundRecordVO implements Serializable {
   @Excel(name = "患者姓名")
   @ApiModelProperty("患者姓名")
   private String patientName;
+  /** 患者姓名拼音 */
+  @ApiModelProperty("患者姓名拼音")
+  private String pinyinName;
   /** 患者性别 */
   @ApiModelProperty("性别（0-男；1-女)")
   private Byte gender;
   /** 患者手机号 */
-  @Excel(name = "患者手机号")
+  @Excel(name = "手机号")
   @ApiModelProperty("患者手机号")
   private String mobile;
   /** 挂号医生ID */
@@ -77,7 +92,4 @@ public class BillOfRefundRecordVO implements Serializable {
   @Excel(name = "退费原因")
   @ApiModelProperty("退费原因")
   private String refundReason;
-  /** 就诊ID */
-  @ApiModelProperty("就诊ID")
-  private Integer treatmentRecordId;
 }

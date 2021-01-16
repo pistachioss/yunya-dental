@@ -1,7 +1,9 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.treatment.domain.query.BillRefundRecordQuery;
 import com.yunya.feign.treatment.domain.query.CurrentMonthBillAdjustQuery;
 import com.yunya.feign.treatment.domain.vo.BillAdjustRecordVO;
+import com.yunya.feign.treatment.domain.vo.BillOfRefundRecordVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,22 @@ public class BillExceptionHandleRecordMapperTest {
     query.setCurrentMonth("2021-01");
     List<BillAdjustRecordVO> vos =
         billExceptionHandleRecordMapper.selectCurrentMonthAdjustBill(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find1() {
+    BillRefundRecordQuery query = new BillRefundRecordQuery();
+    query.setOrgId(35);
+    // query.setKeyWord();
+    // query.setBillNum("ZD00352010270003");
+    query.setRefundStartDate("2020-10-01");
+    query.setRefundEndDate("2020-12-31");
+    // query.setBillStartDate("2020-10-08");
+    // query.setBillEndDate("2020-12-10");
+    query.setRegDentistIds(new Integer[] {521});
+    List<BillOfRefundRecordVO> vos =
+        billExceptionHandleRecordMapper.selectBillRefundRecordList(query);
     System.out.println(vos);
   }
 }

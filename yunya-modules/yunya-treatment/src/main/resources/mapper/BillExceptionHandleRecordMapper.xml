@@ -161,7 +161,8 @@
         behr.crt_id AS revokeOperatorId,
         behr.crt_name AS revokeOperatorName
         FROM
-        ( SELECT id, treatment_record_id, handled_record_id, crt_id, crt_name, crt_time FROM bill_exception_handle_record WHERE
+        ( SELECT id, treatment_record_id, handled_record_id, crt_id, crt_name, crt_time FROM
+        bill_exception_handle_record WHERE
         operate_type = 1 ) behr
         LEFT JOIN (
         SELECT
@@ -347,39 +348,40 @@
         bar.regDentistId,
         bar.revokeOperatorId,
         bar.revokeOperatorName
-    FROM
+        FROM
         (
         SELECT
-            behr.id AS billExceptionHandleRecordId,
-            bpr.orgId,
-            DATE_FORMAT( behr.crt_time, '%Y-%m-%d' ) revokeDate,
-            bpr.billId,
-            bpr.billDate,
-            bpr.actualAmount,
-            bpr.receivedAmount,
-            bpr.chargeDate,
-            bpr.billNum,
-            bpr.patientId patientId,
-            tr.dentist_id AS regDentistId,
-            behr.crt_id AS revokeOperatorId,
-            behr.crt_name AS revokeOperatorName
+        behr.id AS billExceptionHandleRecordId,
+        bpr.orgId,
+        DATE_FORMAT( behr.crt_time, '%Y-%m-%d' ) revokeDate,
+        bpr.billId,
+        bpr.billDate,
+        bpr.actualAmount,
+        bpr.receivedAmount,
+        bpr.chargeDate,
+        bpr.billNum,
+        bpr.patientId patientId,
+        tr.dentist_id AS regDentistId,
+        behr.crt_id AS revokeOperatorId,
+        behr.crt_name AS revokeOperatorName
         FROM
-            ( SELECT id, treatment_record_id, handled_record_id, crt_id, crt_name, crt_time FROM bill_exception_handle_record WHERE operate_type = 1 ) behr
-            LEFT JOIN (
-            SELECT
-                bpr.id,
-                bpr.org_id AS orgId,
-                bpr.patient_id AS patientId,
-                bpr.received_amount AS receivedAmount,
-                br.id AS billId,
-                br.actual_receivable_amount AS actualAmount,
-                br.bill_number AS billNum,
-                DATE_FORMAT( bpr.crt_time, '%Y-%m-%d' ) AS chargeDate,
-                DATE_FORMAT( br.crt_time, '%Y-%m-%d' ) AS billDate
-            FROM
-                bill_pay_record bpr
-                LEFT JOIN bill_record br ON bpr.bill_record_id = br.id
-            ) bpr ON behr.handled_record_id = bpr.id
+        ( SELECT id, treatment_record_id, handled_record_id, crt_id, crt_name, crt_time FROM
+        bill_exception_handle_record WHERE operate_type = 1 ) behr
+        LEFT JOIN (
+        SELECT
+        bpr.id,
+        bpr.org_id AS orgId,
+        bpr.patient_id AS patientId,
+        bpr.received_amount AS receivedAmount,
+        br.id AS billId,
+        br.actual_receivable_amount AS actualAmount,
+        br.bill_number AS billNum,
+        DATE_FORMAT( bpr.crt_time, '%Y-%m-%d' ) AS chargeDate,
+        DATE_FORMAT( br.crt_time, '%Y-%m-%d' ) AS billDate
+        FROM
+        bill_pay_record bpr
+        LEFT JOIN bill_record br ON bpr.bill_record_id = br.id
+        ) bpr ON behr.handled_record_id = bpr.id
         LEFT JOIN treatment_record tr ON behr.treatment_record_id = tr.id
         ) bar
         <where>
@@ -388,6 +390,103 @@
             </if>
             <if test="query.currentMonth != null and query.currentMonth != ''">
                 and DATE_FORMAT(bar.revokeDate, '%Y-%m') = #{query.currentMonth}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询账单退费记录列表 -->
+    <select id="selectBillRefundRecordList"
+            resultType="com.yunya.feign.treatment.domain.vo.BillOfRefundRecordVO">
+        SELECT
+        billExceptionHandleRecordId,
+        treatmentRecordId,
+        billRefundRecordId,
+        refundDate,
+        refundAmount,
+        billRecordId,
+        billDate,
+        billNum,
+        patientId,
+        actualAmount,
+        receivedAmount,
+        regDentistId,
+        refundOperatorId,
+        refundOperatorName,
+        refundReason
+        FROM
+        (
+        SELECT
+        behr.billExceptionHandleRecordId,
+        behr.treatmentRecordId,
+        behr.billRefundRecordId,
+        DATE_FORMAT(brr.crt_time, '%Y-%m-%d') AS refundDate,
+        brr.total_refund_amount AS refundAmount,
+        behr.billRecordId,
+        behr.billDate,
+        behr.billNum,
+        behr.patientId,
+        behr.actualAmount,
+        behr.receivedAmount,
+        tr.dentist_id AS regDentistId,
+        brr.crt_id AS refundOperatorId,
+        brr.crt_name AS refundOperatorName,
+        brr.reason AS refundReason
+        FROM
+        (
+        SELECT
+        behr.billExceptionHandleRecordId,
+        behr.treatmentRecordId,
+        behr.billRecordId,
+        behdr.associate_record_id AS billRefundRecordId,
+        DATE_FORMAT(br.crt_time, '%Y-%m-%d') AS billDate,
+        br.bill_number AS billNum,
+        behr.patientId,
+        br.actual_receivable_amount AS actualAmount,
+        br.received_amount AS receivedAmount
+        FROM
+        (
+        SELECT
+        behr.id AS billExceptionHandleRecordId,
+        behr.handled_record_id AS billRecordId,
+        behr.treatment_record_id AS treatmentRecordId,
+        behr.patient_id AS patientId
+        FROM
+        bill_exception_handle_record behr
+        <where>
+            AND behr.operate_type = 3
+            <if test="query.orgId != null">
+                AND behr.org_id = #{query.orgId}
+            </if>
+            <if test="query.refundStartDate != null and query.refundStartDate != ''">
+                AND DATE_FORMAT( behr.crt_time, '%Y-%m-%d' ) &gt;= #{query.refundStartDate}
+            </if>
+            <if test="query.refundEndDate != null and query.refundEndDate != ''">
+                AND DATE_FORMAT( behr.crt_time, '%Y-%m-%d' ) &lt;= #{query.refundEndDate}
+            </if>
+        </where>
+        ) behr
+        LEFT JOIN bill_exception_handle_detail_record behdr ON behr.billExceptionHandleRecordId =
+        behdr.bill_handle_record_id
+        LEFT JOIN bill_record br ON behr.billRecordId = br.id
+        ) behr
+        LEFT JOIN treatment_record tr ON behr.treatmentRecordId = tr.id
+        LEFT JOIN bill_refund_record brr ON behr.billRefundRecordId = brr.id
+        ) behr
+        <where>
+            <if test="query.billNum != null and query.billNum != ''">
+                AND behr.billNum like concat('%', #{query.billNum} , '%')
+            </if>
+            <if test="query.billStartDate != null and query.billStartDate != ''">
+                AND behr.billDate &gt;= #{query.billStartDate}
+            </if>
+            <if test="query.billEndDate != null and query.billEndDate != ''">
+                AND behr.billDate &lt;= #{query.billEndDate}
+            </if>
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                AND behr.regDentistId IN
+                <foreach collection="query.regDentistIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>

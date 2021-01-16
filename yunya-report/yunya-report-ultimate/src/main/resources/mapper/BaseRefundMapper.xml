@@ -17,7 +17,7 @@
     </resultMap>
 
     <!-- 根据条件查询账单退费记录列表 -->
-    <select id="selectBillRefundRecord" resultType="com.yunya.feign.report.domain.vo.BillOfRefundRecordVO">
+    <select id="selectBillRefundRecord" resultType="com.yunya.feign.report.domain.vo.BillOfRefundRecordInfoVO">
         SELECT
         billRefundRecordId,
         refundDate,
@@ -42,7 +42,7 @@
         (
         SELECT
         br.refund_id AS billRefundRecordId,
-        DATE_FORMAT(br.refund_date, '%Y-%m-d%') AS refundDate,
+        DATE_FORMAT(br.refund_date, '%Y-%m-%d') AS refundDate,
         DATE_FORMAT( bb.order_date, '%Y-%m-%d' ) AS orderDate,
         DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) AS billDate,
         br.org_id AS orgId,

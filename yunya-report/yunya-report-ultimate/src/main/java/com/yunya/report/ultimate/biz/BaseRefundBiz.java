@@ -44,11 +44,11 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
    * @param query 查询条件
    * @return PageInfo<BillOfRefundRecordVO>
    */
-  public PageInfo<BillOfRefundRecordVO> findBillRefundRecord(BillRefundRecordQuery query) {
+  public PageInfo<BillOfRefundRecordInfoVO> findBillRefundRecord(BillRefundRecordQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    List<BillOfRefundRecordVO> resultList = mapper.selectBillRefundRecord(query);
+    List<BillOfRefundRecordInfoVO> resultList = mapper.selectBillRefundRecord(query);
     return new PageInfo<>(resultList);
   }
 
@@ -60,8 +60,8 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
    */
   public void exportBillRefundRecord(HttpServletResponse response, BillRefundRecordQuery query)
       throws IOException {
-    List<BillOfRefundRecordVO> list = mapper.selectBillRefundRecord(query);
-    ExcelUtil<BillOfRefundRecordVO> excelUtil = new ExcelUtil<>(BillOfRefundRecordVO.class);
+    List<BillOfRefundRecordInfoVO> list = mapper.selectBillRefundRecord(query);
+    ExcelUtil<BillOfRefundRecordInfoVO> excelUtil = new ExcelUtil<>(BillOfRefundRecordInfoVO.class);
     excelUtil.exportExcel(response, list, "账单退费记录表");
   }
 
