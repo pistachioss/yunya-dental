@@ -31,14 +31,14 @@
             <if test="query.orgId != null">
                 AND bvr.org_id = #{query.orgId}
             </if>
-            <if test="query.businessType ！= null">
-                AND bvr.'type' = #{query.businessType}
+            <if test="query.businessType != null">
+                AND bvr.type = #{query.businessType}
             </if>
             <if test="query.startDate != null and query.startDate != ''">
-                AND bvr.crt_time &gt;= #{query.startDate}
+                AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &gt;= #{query.startDate}
             </if>
             <if test="query.endDate != null and query.endDate != ''">
-                AND bvr.crt_time &lt;= #{query.endDate}
+                AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &lt;= #{query.endDate}
             </if>
         </where>
         ) bvr,
@@ -52,14 +52,14 @@
             <if test="query.orgId != null">
                 AND bvr.org_id = #{query.orgId}
             </if>
-            <if test="query.businessType ！= null">
-                AND bvr.'type' = #{query.businessType}
+            <if test="query.businessType != null">
+                AND bvr.type = #{query.businessType}
             </if>
             <if test="query.startDate != null and query.startDate != ''">
-                AND bvr.crt_time &gt;= #{query.startDate}
+                AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &gt;= #{query.startDate}
             </if>
             <if test="query.endDate != null and query.endDate != ''">
-                AND bvr.crt_time &lt;= #{query.endDate}
+                AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &lt;= #{query.endDate}
             </if>
         </where>
         ) bvr1

@@ -7,6 +7,8 @@ import com.yunya.feign.clinic_base.domain.query.SpecialistProjectTargetQuery;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectWorkGoalQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectWorkGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
+import com.yunya.feign.report.domain.query.SpecialistProjectTargetCompletedInfoQuery;
+import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.framework.common.model.ResponseResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,5 +86,17 @@ public class SpecialistProjectTargetControllerTest {
     ResponseResult<PageInfo<SpecialistProjectWorkGoalVO>> list =
         specialistProjectTargetController.specialistProjectWorkGoalList(query);
     System.out.println(list);
+  }
+
+  @Test
+  public void find2() {
+    SpecialistProjectTargetCompletedInfoQuery query =
+        new SpecialistProjectTargetCompletedInfoQuery();
+    query.setOrgId(35);
+    query.setStartDate("2020-10");
+    query.setEndDate("2020-12");
+    ResponseResult<List<SpecialistProjectCompletedInfoVO>> result =
+        specialistProjectTargetController.specialistProjectTargetCompletedInfo(query);
+    System.out.println(result);
   }
 }

@@ -33,4 +33,17 @@ public interface SpecialistBusinessTargetMapper extends Mapper<SpecialistBusines
       @Param("date") String date,
       @Param("specialistProjectId") Integer specialistProjectId,
       @Param("belongIds") Integer[] belongIds);
+
+  /**
+   * 根据条件查询门诊专科项目目标数量
+   *
+   * @param orgId 组织ID
+   * @param specialistProjectId 专科项目ID
+   * @param dateRange 时间范围
+   * @return Integer
+   */
+  Integer selectSpecialistProjectGoalCount(
+      @Param("orgId") Integer orgId,
+      @Param("specialistProjectId") Integer specialistProjectId,
+      @Param("dateRange") List<String> dateRange);
 }

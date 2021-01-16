@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.controller.rpc;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
+import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.query.CreditCashReceiptQuery;
@@ -443,6 +444,18 @@ public class TreatmentServiceRest {
   public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(
       @RequestBody SpecialistProjectReportModel specialistProjectReportModel) {
     return orderDetailBiz.findTariffSpecialistPercentage(specialistProjectReportModel);
+  }
+
+  /**
+   * 根据条件查询专科项目完成数量
+   *
+   * @param query 查询条件
+   * @return Integer
+   */
+  @RequestMapping(value = "/tariff/specialist/completed", method = RequestMethod.POST)
+  public Integer findSpecialistProjectCompletedCount(
+      @RequestBody @Validated SpecialistProjectCompletedCountQuery query) {
+    return orderDetailBiz.findSpecialistProjectCompletedCount(query);
   }
 
   /**

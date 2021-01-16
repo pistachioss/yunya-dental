@@ -172,7 +172,11 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
             for (List<BaseBenefit> baseBenefits : partition) {
                 //多线程异步插入
                 cardThreadPool.execute(() -> {
-                    mapper.insertList(baseBenefits);
+                    try {
+                        mapper.insertList(baseBenefits);
+                    } catch (Exception e) {
+                        log.error("pull benefit batchInsert error",e);
+                    }
                 });
             }
         }
