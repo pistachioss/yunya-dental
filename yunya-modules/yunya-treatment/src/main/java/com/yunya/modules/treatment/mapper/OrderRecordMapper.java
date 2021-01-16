@@ -5,6 +5,7 @@ import com.yunya.models.treatment.OrderRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -36,4 +37,10 @@ public interface OrderRecordMapper extends Mapper<OrderRecord> {
    */
   List<OrderRecord> selectOrderRecordByTreatmentIds(@Param("treatmentRecordIds") List<Integer> treatmentRecordIds);
 
+  /**
+   * 查询当前订单可用预付款支付金额
+   * @param orderRecordId 订单记录ID
+   * @return
+   */
+  BigDecimal currentOrderEnablePrepayment(@Param("orderRecordId") Integer orderRecordId);
 }

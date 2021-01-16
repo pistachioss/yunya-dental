@@ -115,13 +115,14 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
             }
             return false;
         }).collect(Collectors.toList());
-
+        Set<Integer> userIds = new HashSet<>();
         attendanceDeviceBindingVOS.forEach(attendanceDeviceBindingVO -> {
             Integer userId = attendanceDeviceBindingVO.getUserId();
             if (attendanceDeviceBindingVOMap.containsKey(userId)) {
                 Integer count = attendanceDeviceBindingVOMap.get(userId);
                 attendanceDeviceBindingVO.setBindingCount(count);
             }
+            userIds.add(userId);
         });
 
         // 必须查询有记录的员工
@@ -137,8 +138,7 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         model.setWorkStatus(userStatus);
         long total = 0;
         PageInfo pageInfo = new PageInfo<>();
-        if (attendanceDeviceBindingVOMap!=null && !attendanceDeviceBindingVOMap.isEmpty()) {
-            Set<Integer> userIds = attendanceDeviceBindingVOMap.keySet();
+        if (StringHelper.isNotEmpty(userIds)) {
             model.setUserIds(userIds);
             PageInfo<SysUserInfoDetail> userPage = remoteSystemServiceFeign.findSysUserEmployeeInfoPage(model);
             List<SysUserInfoDetail> sysUserInfoDetailList = userPage.getList();

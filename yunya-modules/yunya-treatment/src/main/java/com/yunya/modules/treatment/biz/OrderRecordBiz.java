@@ -619,4 +619,13 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     }
     return orderProcesses;
   }
+
+  /**
+   * 查询当前订单可用预付款支付金额
+   * @param orderRecordId 订单记录ID
+   * @return
+   */
+  public BigDecimal currentOrderEnablePrepayment(Integer orderRecordId) {
+    return mapper.currentOrderEnablePrepayment(orderRecordId);
+  }
 }
