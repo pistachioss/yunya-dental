@@ -142,7 +142,8 @@
                 `be`.`employee_name`                            as `crtUser`,
                 ifnull(sum(`b`.`status` in (0, 1, 2, 3, 4)),0)  as `generatedQuantity`,
                 ifnull(sum(`b`.`status` in (1, 2, 3, 4)),0)     as `soldQuantity`,
-                ifnull(sum(`b`.`status` = 2),0)                 as `activatedQuantity`
+                ifnull(sum(`b`.`status` = 2),0)                 as `activatedQuantity`,
+                ifnull(sum(`b`.`status` in (2,4)),0)            as `rechargeQuantity`
         from `base_coupon` `bc`
             left join `base_card` `b` on `bc`.`coupon_id` = `b`.`coupon_id`
             left join `base_employee` `be` on `bc`.`crt_id` = `be`.`user_id`
