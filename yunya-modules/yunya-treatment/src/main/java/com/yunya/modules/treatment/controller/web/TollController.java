@@ -16,7 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 简介: 收费控制器
@@ -107,4 +111,21 @@ public class TollController {
     tollBiz.cancelCharge(orderRecordId);
     return ResponseUtil.success(null);
   }
+
+  /**
+   * 查询当前订单可用预付款支付金额
+   * @param orderRecordId 订单记录ID
+   * @return
+   */
+  @ApiOperation("查询当前订单可用预付款支付金额")
+  @GetMapping(value = "/enable/prepayment/{orderRecordId}")
+  public ResponseResult<Map<String,Object>> currentOrderEnablePrepayment(@PathVariable("orderRecordId")
+                                                        @Validated
+                                                        @NotNull(message = "订单记录ID不能为空")
+                                                        Integer orderRecordId) {
+    Map<String, Object> result = new HashMap<>();
+    result.put("enablePrepaymentAmount",this.tollBiz.currentOrderEnablePrepayment(orderRecordId));
+    return ResponseUtil.success(result);
+  }
+
 }

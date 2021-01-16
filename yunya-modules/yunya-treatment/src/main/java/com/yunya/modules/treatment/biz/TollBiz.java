@@ -1580,4 +1580,13 @@ public class TollBiz {
   public void cancelCharge(Integer orderRecordId) {
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
   }
+
+  /**
+   * 查询当前订单可用预付款支付金额
+   * @param orderRecordId 订单记录ID
+   * @return
+   */
+  public BigDecimal currentOrderEnablePrepayment(Integer orderRecordId) {
+    return this.orderRecordBiz.currentOrderEnablePrepayment(orderRecordId);
+  }
 }
