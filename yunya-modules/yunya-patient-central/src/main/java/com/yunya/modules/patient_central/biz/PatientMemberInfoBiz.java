@@ -463,10 +463,18 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
               templateParam.put(key, memberRechargeRecord.getMemberId());
               // 会员充值金额
             } else if (SmsTemplateItemEnum.MEMBER_RECHARGE_AMOUNT.getCode().equals(code)) {
-              templateParam.put(key, memberRechargeRecord.getRechargePrincipal().add(memberRechargeRecord.getCurrentRechargeBonus()));
+              BigDecimal rechargeBonus = memberRechargeRecord.getRechargeBonus();
+              if (rechargeBonus == null) {
+                rechargeBonus = BigDecimal.valueOf(0);
+              }
+              templateParam.put(key, memberRechargeRecord.getRechargePrincipal().add(rechargeBonus));
               // 会员剩余金额
             } else if (SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getCode().equals(code)) {
-              templateParam.put(key, memberRechargeRecord.getCurrentRechargePrincipal().add(memberRechargeRecord.getCurrentRechargeBonus()));
+              BigDecimal currentRechargeBonus = memberRechargeRecord.getCurrentRechargeBonus();
+              if (currentRechargeBonus == null) {
+                currentRechargeBonus = BigDecimal.valueOf(0);
+              }
+              templateParam.put(key, memberRechargeRecord.getCurrentRechargePrincipal().add(currentRechargeBonus));
               // 其他
             } else {
               throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
@@ -481,10 +489,18 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
               templateParam.put(key, memberExpendRecord.getMemberId());
               // 会员消费金额
             } else if (SmsTemplateItemEnum.MEMBER_SPENDING_AMOUNT.getCode().equals(code)) {
-              templateParam.put(key, memberExpendRecord.getExpendPrincipal().add(memberExpendRecord.getExpendGift()==null?BigDecimal.valueOf(0):memberExpendRecord.getExpendGift()));
+              BigDecimal expendGift = memberExpendRecord.getExpendGift();
+              if (expendGift == null) {
+                expendGift = BigDecimal.valueOf(0);
+              }
+              templateParam.put(key, memberExpendRecord.getExpendPrincipal().add(expendGift));
               // 会员剩余金额
             } else if (SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getCode().equals(code)) {
-              templateParam.put(key, memberExpendRecord.getExpendPrincipal().add(memberExpendRecord.getExpendGift()==null?BigDecimal.valueOf(0):memberExpendRecord.getExpendGift()));
+              BigDecimal currentBonus = memberExpendRecord.getCurrentBonus();
+              if (currentBonus == null) {
+                currentBonus = BigDecimal.valueOf( 0);
+              }
+              templateParam.put(key, memberExpendRecord.getCurrentPrincipal().add(currentBonus));
               // 其他
             } else {
               throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);

@@ -151,7 +151,11 @@ public class BaseCardServiceImpl{
 			for (List<BaseCard> baseCards : partition) {
 				//多线程异步插入
 				cardThreadPool.submit(() -> {
-					baseCardMapper.insertList(baseCards);
+					try {
+						baseCardMapper.insertList(baseCards);
+					} catch (Exception e) {
+						log.error("pull card batchInsert error",e);
+					}
 				});
 			}
 		}
@@ -254,8 +258,12 @@ public class BaseCardServiceImpl{
 		baseCard.setAllocateDate(getAllocateDate(allocates, card.getCouponId(), card.getCrtTime()));
 		//设置有效期
 		baseCard.setActivationDeadline(getActiveDeadline(deadlineBo, card.getCouponId(), card.getActiveDate()));
-		SalesChannel salesChannel = salesChannelMapper.selectByPrimaryKey(card.getSaleChannelId());
-		baseCard.setSaleChannelName(salesChannel.getName());
+		if (card.getSaleChannelId() != null) {
+			SalesChannel salesChannel = salesChannelMapper.selectByPrimaryKey(card.getSaleChannelId());
+			if (salesChannel != null) {
+				baseCard.setSaleChannelName(salesChannel.getName());
+			}
+		}
 		return baseCard;
 	}
 
