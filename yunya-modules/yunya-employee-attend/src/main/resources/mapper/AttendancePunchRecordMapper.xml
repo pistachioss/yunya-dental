@@ -240,6 +240,9 @@
             <if test="queryForm.punchDate != null" >
                 and t.punch_date = DATE_FORMAT(#{queryForm.punchDate},'%Y-%m-%d')
             </if>
+            <if test="queryForm.notEqualsPunchDate != null" >
+                and t.punch_date &lt;&gt; DATE_FORMAT(#{queryForm.notEqualsPunchDate},'%Y-%m-%d')
+            </if>
             <if test="queryForm.betweenDate!=null and queryForm.andDate!=null" >
                 and t.punch_date between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
             </if>

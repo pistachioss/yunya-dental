@@ -295,8 +295,7 @@ public class AttendancePunchRecordController {
     @ApiOperation("分页查询缺卡统计的明细")
     @PostMapping("/statisticsPunchRecordByUnpunchCount")
     public ResponseResult<PageInfo<AttendanceUnpunchCountVO>> statisticsPunchRecordByUnpunchCount(@RequestBody AttendanceStatisticsQueryForm queryForm) {
-        List<AttendanceUnpunchCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByUnpunchCount(queryForm);
-        PageInfo<AttendanceUnpunchCountVO> pageInfo = new PageInfo<>(result);
+        PageInfo<AttendanceUnpunchCountVO> pageInfo = attendancePunchRecordBiz.statisticsPunchRecordByUnpunchCount(queryForm);
         return ResponseUtil.success(pageInfo);
     }
 

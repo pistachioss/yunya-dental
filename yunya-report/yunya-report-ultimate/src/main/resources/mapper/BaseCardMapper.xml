@@ -79,7 +79,7 @@
         from `base_patient`
         where `patient_id` = `bc`.`patient_id`) as `cardOwnerPhoneNumber`,
         if(isnull(`bc`.`active_date`), null,
-        if(isnull(`b`.`activation_deadline`), date_format(date_add(`bc`.`active_date`, interval
+        if(isnull(`b`.`activation_deadline`), date_format(date_add(`b`.`activation_deadline`, interval
         ifnull(`b`.`effective_days`, 0) day), '%Y-%m-%d'),
         if(date_format(`b`.`activation_deadline`, '%Y-%m-%d') &gt;
         date_format(date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day), '%Y-%m-%d'),

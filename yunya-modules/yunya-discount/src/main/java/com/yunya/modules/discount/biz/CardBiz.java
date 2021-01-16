@@ -687,7 +687,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				return ResponseUtil.error(errorBo.getError());
 			}
 			//4. 卡券激活
-			this.updateOwnActiveCard(patientId, form, loginUserId);
+			this.updateOwnActiveCard(patientId, form, loginUserId, card.getCouponId());
 			mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
 			log.info("【自有平台激活卡券发送消息成功】：卡券id[{}]", cardId);
 			return ResponseUtil.success();
@@ -1847,15 +1847,19 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param form        form
 	 * @param loginUserId loginUserId
 	 */
-	private void updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId) {
+	private void updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId, Integer couponId) {
 		Integer activeOrgId = StringUtils.isBlank(BaseContextHandler.getOrgId()) ? null : Integer.valueOf(BaseContextHandler.getOrgId());
+		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
 		LocalDateTime now = LocalDateTime.now();
 		Card ownActiveCard = new Card();
 		ownActiveCard.setId(form.getCardId());
 		ownActiveCard.setPatientId(patientId);
 		ownActiveCard.setActiveOrgId(activeOrgId);
 		ownActiveCard.setActiveUserId(loginUserId);
-		ownActiveCard.setStatus(USE_ALL.getCode());
+		ownActiveCard.setStatus(ACTIVATED.getCode());
+		if (RECHARGE.equals(coupon.getType().intValue())) {
+			ownActiveCard.setStatus(USE_ALL.getCode());
+		}
 		if (form.getPayId() != null) {
 			ownActiveCard.setSoldAndPay(TRUE.getCode());
 			ownActiveCard.setPayId(form.getPayId());

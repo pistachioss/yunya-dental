@@ -106,4 +106,8 @@ public class AttendancePunchRecordQueryForm implements Serializable {
     /** 不属于的id列表 */
     @ApiModelProperty(value = "不属于的id列表")
     private List<Integer> notInIds;
+
+    /** 不等于打卡日期 */
+    @ApiModelProperty(value = "不等于打卡日期")
+    private Date notEqualsPunchDate;
 }
