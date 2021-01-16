@@ -7,6 +7,8 @@ import com.yunya.feign.clinic_base.domain.query.SpecialistProjectTargetQuery;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectWorkGoalQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectWorkGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
+import com.yunya.feign.report.domain.query.SpecialistProjectTargetCompletedInfoQuery;
+import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -119,5 +121,21 @@ public class SpecialistProjectTargetController {
       throws IOException {
     specialistProjectTargetBiz.exportSpecialistProjectWorkGoalList(response, query);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询专科数量完成情况
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-运营BI-专科数量完成情况")
+  @PostMapping(value = "/specialist/completed", name = "根据条件查询专科数量完成情况")
+  public ResponseResult<List<SpecialistProjectCompletedInfoVO>>
+      specialistProjectTargetCompletedInfo(
+          @RequestBody @Validated SpecialistProjectTargetCompletedInfoQuery query) {
+    List<SpecialistProjectCompletedInfoVO> resultList =
+        specialistProjectTargetBiz.findSpecialistProjectTargetCompletedInfo(query);
+    return ResponseUtil.success(resultList);
   }
 }

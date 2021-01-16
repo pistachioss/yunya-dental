@@ -8,6 +8,9 @@ import com.yunya.feign.clinic_base.domain.query.SpecialistProjectTargetQuery;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectWorkGoalQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectWorkGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
+import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
+import com.yunya.feign.report.domain.query.SpecialistProjectTargetCompletedInfoQuery;
+import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.SpecialistProjectTariffCompletedInfoVO;
@@ -231,7 +234,8 @@ public class SpecialistProjectTargetBiz
             float percentageOfSpecialistProjectCompleted =
                 (float) specialistProjectCompleted / specialistProjectGoal;
             specialistProjectWorkGoal.setPercentageOfSpecialistProjectCompleted(
-                BigDecimal.valueOf(percentageOfSpecialistProjectCompleted).multiply(new BigDecimal(100))
+                BigDecimal.valueOf(percentageOfSpecialistProjectCompleted)
+                    .multiply(new BigDecimal(100))
                     .setScale(2, BigDecimal.ROUND_HALF_UP)
                     .floatValue());
           }
@@ -270,5 +274,68 @@ public class SpecialistProjectTargetBiz
     ExcelUtil<SpecialistProjectWorkGoalVO> excelUtil =
         new ExcelUtil<>(SpecialistProjectWorkGoalVO.class);
     excelUtil.exportExcel(response, infoList, "门诊专科数量目标列表");
+  }
+
+  /**
+   * 根据条件查询专科数量完成情况
+   *
+   * @param query 查询条件
+   * @return List<SpecialistProjectCompletedInfoVO>
+   */
+  public List<SpecialistProjectCompletedInfoVO> findSpecialistProjectTargetCompletedInfo(
+      SpecialistProjectTargetCompletedInfoQuery query) {
+    List<SpecialistProjectCompletedInfoVO> resultList = new ArrayList<>();
+    Integer orgId = query.getOrgId();
+    String startDate = query.getStartDate();
+    String endDate = query.getEndDate();
+    List<String> dateRange = DateUtil.sliceUpDateRange(startDate, endDate);
+    List<SpecialistProject> specialistProjects = specialistProjectMapper.selectAll();
+    if (StringHelper.isNotEmpty(specialistProjects)) {
+      for (SpecialistProject specialistProject : specialistProjects) {
+        SpecialistProjectCompletedInfoVO projectCompletedInfo =
+            new SpecialistProjectCompletedInfoVO();
+        Integer specialistProjectId = specialistProject.getId();
+        projectCompletedInfo.setSpecialistProjectId(specialistProjectId);
+        projectCompletedInfo.setSpecialistProjectName(specialistProject.getName());
+        Integer specialistProjectGoalCount =
+            mapper.selectSpecialistProjectGoalCount(orgId, specialistProjectId, dateRange);
+        projectCompletedInfo.setSpecialistProjectGoalCount(specialistProjectGoalCount);
+        String[] tariffIds = specialistProject.getTariffIds().split(",");
+        Integer specialistProjectCompletedCount =
+            getSpecialistProjectCompletedCount(orgId, startDate, endDate, tariffIds);
+        projectCompletedInfo.setSpecialistProjectCompletedCount(specialistProjectCompletedCount);
+        if (null != specialistProjectCompletedCount) {
+          if (null != specialistProjectGoalCount && 0 != specialistProjectGoalCount) {
+            projectCompletedInfo.setSpecialistProjectCompletedPercentage(
+                BigDecimal.valueOf(
+                        (float) specialistProjectCompletedCount / specialistProjectGoalCount)
+                    .setScale(2, BigDecimal.ROUND_HALF_UP));
+          }
+        }
+        resultList.add(projectCompletedInfo);
+      }
+    }
+    return resultList;
+  }
+
+  /**
+   * 根据条件查询组织专科项目完成数量
+   *
+   * @param orgId 组织ID
+   * @param startDate 开始时间
+   * @param endDate 结束时间
+   * @param tariffIds 价目表ID列表
+   * @return Integer
+   */
+  private Integer getSpecialistProjectCompletedCount(
+      Integer orgId, String startDate, String endDate, String[] tariffIds) {
+    SpecialistProjectCompletedCountQuery specialistProjectCompletedQuery =
+        new SpecialistProjectCompletedCountQuery();
+    specialistProjectCompletedQuery.setOrgId(orgId);
+    specialistProjectCompletedQuery.setTariffIds(tariffIds);
+    specialistProjectCompletedQuery.setStartDate(startDate);
+    specialistProjectCompletedQuery.setEndDate(endDate);
+    return treatmentServiceFeign.findSpecialistProjectCompletedCount(
+        specialistProjectCompletedQuery);
   }
 }

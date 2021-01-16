@@ -1,8 +1,8 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
+import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
-import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
 import com.yunya.feign.treatment.domain.vo.BillPrintInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
@@ -41,24 +41,30 @@ public interface OrderDetailMapper extends Mapper<OrderDetail> {
    * @param billNumber 账单编号
    * @return 返回账单信息
    */
-  BillPrintInfoVO billPrintInfo(@Param("patientId") Integer patientId, @Param("billNumber") String billNumber);
+  BillPrintInfoVO billPrintInfo(
+      @Param("patientId") Integer patientId, @Param("billNumber") String billNumber);
 
   /**
    * 查询总数
+   *
    * @param specialistProjectReportModel 查询条件
    * @return Integer
    */
-  Integer selectCountTariffSpecialist(@Param("form") SpecialistProjectReportModel specialistProjectReportModel);
+  Integer selectCountTariffSpecialist(
+      @Param("form") SpecialistProjectReportModel specialistProjectReportModel);
 
   /**
    * 查询占比数量
+   *
    * @param specialistProjectReportModel 查询条件
    * @return Integer
    */
-  Integer selectTariffSpecialistPercentage(@Param("form") SpecialistProjectReportModel specialistProjectReportModel);
+  Integer selectTariffSpecialistPercentage(
+      @Param("form") SpecialistProjectReportModel specialistProjectReportModel);
 
   /**
    * 计算占比
+   *
    * @param number 专科数量
    * @param count 总数量
    * @return String
@@ -82,4 +88,13 @@ public interface OrderDetailMapper extends Mapper<OrderDetail> {
    */
   List<SpecialistTariffCompletedDetailVO> selectSpecialistProjectTariffDetail(
       @Param("query") SpecialistProjectTariffCompletedInfoQuery query);
+
+  /**
+   * 根据条件查询专科项目开单完成数量
+   *
+   * @param query 查询条件
+   * @return Integer
+   */
+  Integer selectSpecialistProjectCompletedCount(
+      @Param("query") SpecialistProjectCompletedCountQuery query);
 }

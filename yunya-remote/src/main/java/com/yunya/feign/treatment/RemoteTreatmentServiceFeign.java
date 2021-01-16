@@ -3,6 +3,7 @@ package com.yunya.feign.treatment;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
+import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.query.CreditCashReceiptQuery;
@@ -343,4 +344,14 @@ public interface RemoteTreatmentServiceFeign {
    */
   @RequestMapping(value = "/rpc/bill/sumBillPayAmount", method = RequestMethod.POST)
   BigDecimal sumBillPayAmount(@RequestBody CreditCashReceiptQuery cashReceiptQuery);
+
+  /**
+   * 根据条件查询专科项目完成数量
+   *
+   * @param query 查询条件
+   * @return Integer
+   */
+  @RequestMapping(value = "/rpc/tariff/specialist/completed", method = RequestMethod.POST)
+  Integer findSpecialistProjectCompletedCount(
+      @RequestBody @Validated SpecialistProjectCompletedCountQuery query);
 }

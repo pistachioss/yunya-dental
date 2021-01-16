@@ -51,9 +51,9 @@
     <!-- 根据条件查询专科项目目标数量 -->
     <select id="selectClinicSpecialistProjectWorkGoal" resultType="java.lang.Integer">
         SELECT
-            IFNULL(SUM( sbt.business_goal ), 0)
+        SUM( IFNULL(sbt.business_goal, 0) )
         FROM
-            specialist_business_target sbt
+        specialist_business_target sbt
         <where>
             AND sbt.belong_type = 0
             <if test="dateType == 0">
@@ -72,6 +72,28 @@
                 </foreach>
             </if>
         </where>
+    </select>
 
+    <!-- 根据条件查询门诊专科项目目标数量 -->
+    <select id="selectSpecialistProjectGoalCount" resultType="java.lang.Integer">
+        SELECT
+        SUM( IFNULL(sbt.business_goal, 0))
+        FROM
+        specialist_business_target sbt
+        <where>
+            AND sbt.belong_type = 0
+            <if test="orgId != null">
+                AND sbt.belong_id = #{orgId}
+            </if>
+            <if test="specialistProjectId != null">
+                AND sbt.specialist_project_id = #{specialistProjectId}
+            </if>
+            <if test="dateRange != null and dateRange.size > 0">
+                AND sbt.business_date IN
+                <foreach collection="dateRange" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>
