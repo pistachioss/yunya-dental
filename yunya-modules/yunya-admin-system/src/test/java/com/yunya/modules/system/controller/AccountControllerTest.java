@@ -54,7 +54,7 @@ public class AccountControllerTest {
   @Test
   public void findClinicAccount() {
     ResponseResult<ClinicAccountItemListVO> result =
-        clinicAccountItemController.clinicAccountItemList(21);
+        clinicAccountItemController.clinicAccountItemList(156);
     ClinicAccountItemListVO data = result.getData();
     List<AccountItemVO> items = data.getClinicAccountItems();
     items.forEach(System.out::println);
