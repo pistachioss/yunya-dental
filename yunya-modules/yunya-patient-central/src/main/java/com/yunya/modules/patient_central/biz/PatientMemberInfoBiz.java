@@ -874,7 +874,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         // 撤销赠金
         memberRechargeRecord.setRechargeBonus(memberExpend.getExpendGift());
         memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        memberRechargeRecord.setType(0);
+        memberRechargeRecord.setType(1);
         memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         memberRechargeRecord.setCrtName(BaseContextHandler.getName());
         memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
