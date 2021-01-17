@@ -31,13 +31,15 @@
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
         SELECT
         bbpd.account_item_id,
-        bbpd.principal_amount
+        bbpd.principal_amount,
+        bbpd.bonus_amount
         FROM
         base_bill_pay_detail bbpd,(
         SELECT
@@ -104,13 +106,15 @@
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
         SELECT
         bbpd.account_item_id,
-        bbpd.principal_amount
+        bbpd.principal_amount,
+        bbpd.bonus_amount
         FROM
         base_bill_pay_detail bbpd,(
         SELECT
@@ -202,13 +206,15 @@
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
         SELECT
         bbpd.account_item_id,
-        bbpd.principal_amount
+        bbpd.principal_amount,
+        bbpd.bonus_amount
         FROM
         base_bill_pay_detail bbpd,(
         SELECT
@@ -300,12 +306,14 @@
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( bpmol.bonus_amount ), 0 ) AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
         SELECT
         bpmol.credit_amount,
+        bpmol.bonus_amount,
         bpmol.payment_id
         FROM
         base_patient_member_occur_log bpmol
@@ -350,18 +358,20 @@
         bai.account_item_id
     </select>
 
-    <!-- 根据条件查询门诊会员卡充值的入账方式分组信息 -->
+    <!-- 根据条件查询门诊预付款充值的入账方式分组信息 -->
     <select id="selectPaidChargePaymentInfo"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( bpmol.bonus_amount ), 0 ) AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
         SELECT
         bpmol.credit_amount,
+        bpmol.bonus_amount,
         bpmol.payment_id
         FROM
         base_patient_member_occur_log bpmol
@@ -412,7 +422,8 @@
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( bc.sold_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( bc.sold_amount ), 0 ) AS totalAmount,
+        0 AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
@@ -471,13 +482,15 @@
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
         SELECT
         bbpd.account_item_id,
-        bbpd.principal_amount
+        bbpd.principal_amount,
+        bbpd.bonus_amount
         FROM
         base_bill_pay_detail bbpd,(
         SELECT
@@ -570,13 +583,15 @@
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
         SELECT
         bbpd.account_item_id,
-        bbpd.principal_amount
+        bbpd.principal_amount,
+        bbpd.bonus_amount
         FROM
         base_bill_pay_detail bbpd,(
         SELECT
@@ -658,13 +673,15 @@
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( brpd.principal_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( brpd.principal_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( brpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
         SELECT
         brpd.account_item_id,
-        brpd.principal_amount
+        brpd.principal_amount,
+        brpd.bonus_amount
         FROM
         base_refund_pay_detail brpd,(
         SELECT
@@ -754,13 +771,15 @@
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( brpd.principal_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( brpd.principal_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( brpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
         SELECT
         brpd.account_item_id,
-        brpd.principal_amount
+        brpd.principal_amount,
+        brpd.bonus_amount
         FROM
         base_refund_pay_detail brpd,(
         SELECT
@@ -841,12 +860,14 @@
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( bpmol.bonus_amount ), 0 ) AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
         SELECT
         bpmol.credit_amount,
+        bpmol.bonus_amount,
         bpmol.payment_id
         FROM
         base_patient_member_occur_log bpmol
@@ -896,12 +917,14 @@
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( bpmol.bonus_amount ), 0 ) AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
         SELECT
         bpmol.credit_amount,
+        bpmol.bonus_amount,
         bpmol.payment_id
         FROM
         base_patient_member_occur_log bpmol
@@ -951,13 +974,15 @@
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
         SELECT
         bbpd.account_item_id,
-        bbpd.principal_amount
+        bbpd.principal_amount,
+        bbpd.bonus_amount
         FROM
         base_bill_pay_detail bbpd,(
         SELECT
@@ -1047,13 +1072,15 @@
         SELECT
         bai.account_item_id,
         bai.account_item_name,
-        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount
+        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
+        IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
         base_account_item bai
         LEFT JOIN (
         SELECT
         bbpd.account_item_id,
-        bbpd.principal_amount
+        bbpd.principal_amount,
+        bbpd.bonus_amount
         FROM
         base_bill_pay_detail bbpd,(
         SELECT

@@ -56,7 +56,7 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
-   * 根据条件查询门诊会员卡充值的入账方式分组信息
+   * 根据条件查询门诊预付款充值的入账方式分组信息
    *
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
@@ -83,7 +83,7 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
-   * 根据条件查询门诊本月代收的入账方式分组信息
+   * 根据条件查询门诊非本月代收的入账方式分组信息
    *
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
