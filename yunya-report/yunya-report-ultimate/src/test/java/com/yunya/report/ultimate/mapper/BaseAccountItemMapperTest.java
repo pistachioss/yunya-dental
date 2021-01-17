@@ -29,9 +29,9 @@ public class BaseAccountItemMapperTest {
   public void find() {
     InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
     query.setOrgId(35);
-    query.setDateType((byte) 2);
-    query.setStartDate("2020");
-    query.setEndDate("2020");
+    query.setDateType((byte) 0);
+    query.setStartDate("2021-01-17");
+    query.setEndDate("2021-01-17");
     List<StatementPaymentVO> vos = accountItemMapper.selectBillChargePaymentInfoThisMonth(query);
     System.out.println(vos);
   }
@@ -40,9 +40,9 @@ public class BaseAccountItemMapperTest {
   public void find1() {
     InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
     query.setOrgId(35);
-    query.setDateType((byte) 2);
-    query.setStartDate("2020");
-    query.setEndDate("2020");
+    query.setDateType((byte) 0);
+    query.setStartDate("2021-01-17");
+    query.setEndDate("2021-01-17");
     List<StatementPaymentVO> vos =
         accountItemMapper.selectClinicCollectionPaymentInfoThisMonth(query);
     System.out.println(vos);
