@@ -152,6 +152,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	private RemoteRabbitMqServiceFeign mqServiceFeign;
 	@Autowired
 	private RemoteSmsServiceFeign remoteSmsServiceFeign;
+	@Value("${cardSold.selfChannel}")
+	private String selfChannel;
 	/**
 	 * 卡券二维码前缀
 	 */
@@ -410,6 +412,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		log.info("卡券售卖开始提交：[{}]", cardIds);
 		RestErrorBo errorBo;
 		try {
+			SalesChannel salesChannel = new SalesChannel();
+			salesChannel.setName(selfChannel);
+			salesChannel = salesChannelMapper.selectOne(salesChannel);
+			if (salesChannel == null) {
+				throw new ClientServiceException("请先设置销售渠道", OPERATION_NOT_ALLOW);
+			}
 			//获取组织名
 			String orgName = getOrgName(orgId);
 			LocalDateTime now = LocalDateTime.now();
@@ -442,7 +450,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 					return ResponseUtil.error(DiscountError.CARD_SOLD_OUT, orgName, couponInfo.getName());
 				}
 				//5. 卡券售卖
-				this.updateCardForSold(card, form, loginUserId, now);
+				this.updateCardForSold(card, form, loginUserId, now, salesChannel.getId());
 				mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
 				log.info("【售卖卡券发送消息成功】：卡券id[{}]", cardId);
 				if (cardNos.length() > 0) {
@@ -679,7 +687,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				return ResponseUtil.error(errorBo.getError());
 			}
 			//4. 卡券激活
-			this.updateOwnActiveCard(patientId, form, loginUserId);
+			this.updateOwnActiveCard(patientId, form, loginUserId, card.getCouponId());
 			mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
 			log.info("【自有平台激活卡券发送消息成功】：卡券id[{}]", cardId);
 			return ResponseUtil.success();
@@ -754,9 +762,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			log.warn("卡券[{}]不存在", cardId);
 			return ResponseUtil.error(DiscountError.CARD_NOT_EXIST);
 		}
-		if (!ACTIVATED.equals(card.getStatus())) {
+		if (SALE_PENDING.equals(card.getStatus()) || ACTIVE_PENDING.equals(card.getStatus())) {
 			log.warn("卡券[{}]未激活", cardId);
 			return ResponseUtil.error(DiscountError.CARD_NOT_ACTIVATED);
+		}
+		if (USE_ALL.equals(card.getStatus())) {
+			log.warn("卡券[{}]已全部使用", cardId);
+			return ResponseUtil.error(DiscountError.CARD_ALL_USED);
 		}
 		//配置共享人不能是自己
 		List<String> shareIds = Lists.newArrayList(Splitter.on(",").trimResults().omitEmptyStrings().split(form.getSharerIdStr()));
@@ -1228,7 +1240,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		List<Integer> mixUsedList = mixUsedMap.get(benefitBo.getCouponId());
 		//当前个体被优惠的卡券共用属性
 		Set<Integer> set = Sets.newHashSet(mixUsedMap.values().stream().flatMap(Collection::stream).collect(toSet()));
-		return CollectionUtils.isNotEmpty(mixUsedList)
+		return CollectionUtils.isNotEmpty(mixUsedList) || set.isEmpty()
 				|| (!set.contains(FALSE.getCode()) && ONE.equals(benefitBo.getMixable()));
 	}
 
@@ -1768,7 +1780,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return vo;
 	}
 
-	private void updateCardForSold(Card card, CardSoldForm form, Integer loginUserId, LocalDateTime now) {
+	private void updateCardForSold(Card card, CardSoldForm form, Integer loginUserId, LocalDateTime now, Integer saleChannelId) {
 		Card updateCard = BeanCopierUtils.generalCopyBean(form, Card.class);
 		updateCard.setStatus(ACTIVE_PENDING.getCode());
 		if (SOLD.equals(form.getSoldType())) {
@@ -1796,6 +1808,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		updateCard.setLink(Base64.getEncoder().encodeToString(Joiner.on(":").join(new BCryptPasswordEncoder(UserConstant.PW_ENCODER_SALT)
 				.encode(Joiner.on(":").join(card.getCardNumber(), card.getCardPassword())), card.getId())
 				.getBytes()));
+		updateCard.setSaleChannelId(saleChannelId);
 		mapper.updateByPrimaryKeySelective(updateCard);
 	}
 
@@ -1834,8 +1847,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param form        form
 	 * @param loginUserId loginUserId
 	 */
-	private void updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId) {
+	private void updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId, Integer couponId) {
 		Integer activeOrgId = StringUtils.isBlank(BaseContextHandler.getOrgId()) ? null : Integer.valueOf(BaseContextHandler.getOrgId());
+		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
 		LocalDateTime now = LocalDateTime.now();
 		Card ownActiveCard = new Card();
 		ownActiveCard.setId(form.getCardId());
@@ -1843,6 +1857,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		ownActiveCard.setActiveOrgId(activeOrgId);
 		ownActiveCard.setActiveUserId(loginUserId);
 		ownActiveCard.setStatus(ACTIVATED.getCode());
+		if (RECHARGE.equals(coupon.getType().intValue())) {
+			ownActiveCard.setStatus(USE_ALL.getCode());
+		}
 		if (form.getPayId() != null) {
 			ownActiveCard.setSoldAndPay(TRUE.getCode());
 			ownActiveCard.setPayId(form.getPayId());

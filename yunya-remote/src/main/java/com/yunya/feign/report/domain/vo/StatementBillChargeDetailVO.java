@@ -29,6 +29,13 @@ public class StatementBillChargeDetailVO implements Serializable {
   @Excel(name = "收费日期")
   @ApiModelProperty("收费（收欠费）日期")
   private String payeeDate;
+  /** 收费诊所ID */
+  @ApiModelProperty("收费诊所ID")
+  private Integer payeeOrgId;
+  /** 收费诊所名称 */
+  @Excel(name = "收费门诊")
+  @ApiModelProperty("代收门诊")
+  private String payeeOrgName;
   /** 账单ID */
   @ApiModelProperty("账单ID")
   private Integer billId;
@@ -36,6 +43,13 @@ public class StatementBillChargeDetailVO implements Serializable {
   @Excel(name = "账单编号")
   @ApiModelProperty("账单编号")
   private String billNum;
+  /** 开单门诊ID */
+  @ApiModelProperty("开单门诊ID")
+  private Integer billOrgId;
+  /** 开单门诊名称 */
+  @Excel(name = "开单门诊")
+  @ApiModelProperty("开单门诊名称")
+  private String billOrgName;
   /** 账单日期 */
   @Excel(name = "账单日期")
   @ApiModelProperty("账单日期")
@@ -85,6 +99,6 @@ public class StatementBillChargeDetailVO implements Serializable {
   @Excel(name = "收费人")
   @ApiModelProperty("收费人姓名")
   private String payeeName;
-  /**支付方式列表*/
+  /** 支付方式列表 */
   private List<StatementPaymentVO> statementPayments;
 }

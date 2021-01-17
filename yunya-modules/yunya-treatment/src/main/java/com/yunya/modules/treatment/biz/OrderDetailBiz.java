@@ -1,12 +1,12 @@
 package com.yunya.modules.treatment.biz;
 
 import com.google.common.collect.Lists;
-import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
+import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
@@ -490,34 +490,48 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     return resultData;
   }
 
-
   /**
    * 查询专科项目数量
+   *
    * @param specialistProjectReportModel 查询条件
    * @return percentage
    */
-  public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(SpecialistProjectReportModel specialistProjectReportModel) {
+  public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(
+      SpecialistProjectReportModel specialistProjectReportModel) {
     Integer count = 0;
     List<SpecialistProjectReportVO> specialistProjectReportVOList = new ArrayList<>();
-    for (SpecialistProject specialistProject : specialistProjectReportModel.getSpecialistProjects()) {
+    for (SpecialistProject specialistProject :
+        specialistProjectReportModel.getSpecialistProjects()) {
       SpecialistProjectReportVO specialistProjectReportVO = new SpecialistProjectReportVO();
       specialistProjectReportVO.setSpecialistProjectName(specialistProject.getName());
       String tariffIds = specialistProject.getTariffIds();
       if (tariffIds != null) {
         String[] billingItemIds = tariffIds.split(",");
-        if (billingItemIds.length > 0){
+        if (billingItemIds.length > 0) {
           specialistProjectReportModel.setBillingItemIds(billingItemIds);
-          Integer numberOfItems = mapper.selectTariffSpecialistPercentage(specialistProjectReportModel);
+          Integer numberOfItems =
+              mapper.selectTariffSpecialistPercentage(specialistProjectReportModel);
           count = count + numberOfItems;
           specialistProjectReportVO.setPercentage(numberOfItems.toString());
         }
       }
       specialistProjectReportVOList.add(specialistProjectReportVO);
     }
-    for ( SpecialistProjectReportVO specialistProjectReportVO : specialistProjectReportVOList) {
-      String percentage = mapper.percentage(Integer.parseInt(specialistProjectReportVO.getPercentage()), count);
+    for (SpecialistProjectReportVO specialistProjectReportVO : specialistProjectReportVOList) {
+      String percentage =
+          mapper.percentage(Integer.parseInt(specialistProjectReportVO.getPercentage()), count);
       specialistProjectReportVO.setPercentage(percentage);
     }
     return specialistProjectReportVOList;
+  }
+
+  /**
+   * 根据条件查询专科项目完成数量
+   *
+   * @param query 查询条件
+   * @return Integer
+   */
+  public Integer findSpecialistProjectCompletedCount(SpecialistProjectCompletedCountQuery query) {
+    return mapper.selectSpecialistProjectCompletedCount(query);
   }
 }

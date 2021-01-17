@@ -4,7 +4,9 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.bo.ClinicDataStatisticsInfoVO;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
+import com.yunya.feign.report.domain.query.VisitAndRemindCompletedInfoQuery;
 import com.yunya.feign.report.domain.vo.EmployeeWorkloadOfOperationVO;
+import com.yunya.feign.report.domain.vo.VisitAndRemindCompletedInfoVO;
 import com.yunya.framework.common.model.ResponseResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +49,18 @@ public class CompanyReportOfOperationControllerTest {
     query.setEndDate("2020-12-12");
     ResponseResult<ClinicDataStatisticsInfoVO> result =
         companyReportOfOperationController.operationalAnalysisDataStatistics(query);
+    System.out.println(result);
+  }
+
+  @Test
+  public void find1() {
+    VisitAndRemindCompletedInfoQuery query = new VisitAndRemindCompletedInfoQuery();
+    query.setBusinessType((byte) 0);
+    query.setOrgId(35);
+    query.setStartDate("2020-10");
+    query.setEndDate("2020-12");
+    ResponseResult<VisitAndRemindCompletedInfoVO> result =
+        companyReportOfOperationController.visitAndRemindCompletedInfo(query);
     System.out.println(result);
   }
 }

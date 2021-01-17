@@ -28,6 +28,8 @@ public class CommonConstants {
 
   public static final Integer ILLEGAL_PARAMETERS_CODE = 501;
 
+  public static final Integer CONNECTION_REFUSED_CODE = 503;
+
   /** 请求头token */
   public static final String TOKEN_HEADER = "Authorization";
 

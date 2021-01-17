@@ -116,6 +116,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                     baseBillPayDetail.setPrincipalAmount(
                         memberExpendRecordResult.getExpendPrincipal());
                     baseBillPayDetail.setBonusAmount(memberExpendRecordResult.getExpendGift());
+                    baseBillPayDetail.setCardNum(memberNum);
                   }
                 }
                 break;
@@ -136,6 +137,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                     baseBillPayDetail.setPrincipalAmount(
                         prepaidExpendRecordResult.getExpendPrincipal());
                     baseBillPayDetail.setBonusAmount(prepaidExpendRecordResult.getExpendGift());
+                    baseBillPayDetail.setCardNum(prepaidNum);
                   }
                 }
                 break;

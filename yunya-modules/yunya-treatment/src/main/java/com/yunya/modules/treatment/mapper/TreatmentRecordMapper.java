@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
@@ -8,6 +9,7 @@ import com.yunya.models.treatment.TreatmentRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -127,4 +129,21 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    * @return
    */
   int countByPatientId(@Param("patientId") Integer patientId);
+
+  /**
+   * 根据条件统计就诊记录
+   *
+   * @param queryForm
+   * @return
+   */
+  Integer countTreatRecordByExample(@Param("queryForm") TreatmentRecordQueryForm queryForm);
+
+  /**
+   * 根据条件查询初诊人数完成量
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  BigDecimal selectBusinessFirstTreatCompletedCount(
+      @Param("query") BusinessGoalCompletedInfoQuery query);
 }

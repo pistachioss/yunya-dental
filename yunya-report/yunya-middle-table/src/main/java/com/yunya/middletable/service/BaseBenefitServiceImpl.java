@@ -172,7 +172,11 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
             for (List<BaseBenefit> baseBenefits : partition) {
                 //多线程异步插入
                 cardThreadPool.execute(() -> {
-                    mapper.insertList(baseBenefits);
+                    try {
+                        mapper.insertList(baseBenefits);
+                    } catch (Exception e) {
+                        log.error("pull benefit batchInsert error",e);
+                    }
                 });
             }
         }
@@ -252,6 +256,7 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
     private List<BaseBenefit> authTransform(List<AuthDiscountBenefit> authBenefits) {
         return authBenefits.stream().map(obj -> {
             BaseBenefit benefit = BeanCopierUtils.generalCopyBean(obj, BaseBenefit.class, getBenefitConvert());
+            benefit.setItemType(obj.getItemType().byteValue());
             benefit.setChoiceBenefitType(AUTH_BENEFIT.getCode());
             benefit.setOperateUserId(obj.getCrtId());
             return benefit;

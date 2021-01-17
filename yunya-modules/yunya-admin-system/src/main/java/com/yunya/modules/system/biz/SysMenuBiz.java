@@ -227,7 +227,7 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
    */
   public List<SysMenu> getUserMenuResourceList(UserResourceForm resourceForm, HttpServletRequest request) {
     // 获取request 设备信息
-    String deviceName = ServletUtils.getCurrentDevice().getName();
+    String deviceName = ServletUtils.getCurrentDevice(request).getName();
 
     Integer orgId = resourceForm.getOrgId();
     Integer userId = resourceForm.getUserId();

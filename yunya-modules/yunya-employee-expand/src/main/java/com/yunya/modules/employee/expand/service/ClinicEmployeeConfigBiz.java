@@ -3,6 +3,8 @@ package com.yunya.modules.employee.expand.service;
 
 import com.google.common.base.Objects;
 import com.yunya.feign.system.*;
+import com.yunya.feign.system.form.PostGroupModel;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.*;
 import com.yunya.framework.common.biz.*;
 import com.yunya.framework.common.constant.*;
@@ -15,6 +17,7 @@ import com.yunya.modules.employee.expand.model.request.*;
 import com.yunya.modules.employee.expand.model.response.*;
 import org.apache.commons.collections4.*;
 import org.slf4j.*;
+import org.springframework.beans.BeanUtils;
 import org.springframework.cglib.beans.*;
 import org.springframework.stereotype.*;
 import tk.mybatis.mapper.entity.*;
@@ -60,8 +63,8 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
         if (clinicEmployeeConfig == null) {
             mapper.insertSelective(updateEmployee);
         } else {
-            updateEmployee.setId(clinicEmployeeConfig.getId());
-            mapper.updateByPrimaryKeySelective(updateEmployee);
+            BeanUtils.copyProperties(configRequest, clinicEmployeeConfig);
+            mapper.updateByPrimaryKey(clinicEmployeeConfig);
         }
     }
 
@@ -103,13 +106,39 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
         Example example = new Example(ClinicEmployeeConfig.class);
         example.createCriteria().andEqualTo("clinicId", clinicId);
         List<ClinicEmployeeConfig> allList = mapper.selectByExample(example);
+
+        // 在职的可预约可挂号的医生ID
+        List<Integer> enableInserviceEmpIds = null;
+        // 查询可预约挂号医生岗位组
+        PostGroupModel groupQuery = new PostGroupModel();
+        groupQuery.setName("医生");
+        List<PostGroup> postGroupList = systemServiceFeign.findPostGroupList(groupQuery);
+        if (StringHelper.isNotEmpty(postGroupList)) {
+            List<Integer> collect = postGroupList.stream().map(postGroup -> postGroup.getId()).collect(Collectors.toList());
+            // 过滤掉已经离职的员工和没有本崩症登录权限的员工
+            SysUserEmployeeModel sysUserQuery = new SysUserEmployeeModel();
+            List<Integer> orgIds = new ArrayList();
+            orgIds.add(clinicId);
+            sysUserQuery.setOrgIds(orgIds);
+            sysUserQuery.setPostGroupId(collect);
+            sysUserQuery.setWorkStatus(new Byte[]{1});
+            sysUserQuery.setWhetherPage(false);
+            List<SysUserInfoDetail> sysUserEmployeeInfoList = systemServiceFeign.findSysUserEmployeeInfoList(sysUserQuery);
+            if (StringHelper.isNotEmpty(sysUserEmployeeInfoList)) {
+                enableInserviceEmpIds = sysUserEmployeeInfoList.stream().map(sysUserInfoDetail -> sysUserInfoDetail.getUserId()).collect(Collectors.toList());
+            } else {
+                enableInserviceEmpIds = new ArrayList<>();
+            }
+        }
+
         EnableEmployeeRes res = new EnableEmployeeRes();
         if (CollectionUtils.isNotEmpty(allList)) {
+            List<Integer> finalEnableInserviceEmpIds = enableInserviceEmpIds;
             //可预约医生
-            List<ClinicEmployeeConfig> appointList = allList.stream().filter(config -> Objects.equal(BusinessConstants.ENABLE_NUM, config.getEnableAppoint()))
+            List<ClinicEmployeeConfig> appointList = allList.stream().filter(config -> Objects.equal(BusinessConstants.ENABLE_NUM, config.getEnableAppoint()) && finalEnableInserviceEmpIds.contains(config.getEmployeeId()))
                     .collect(Collectors.toList());
             //可挂号医生
-            List<ClinicEmployeeConfig> registerList = allList.stream().filter(config -> Objects.equal(BusinessConstants.ENABLE_NUM, config.getEnableRegistry()))
+            List<ClinicEmployeeConfig> registerList = allList.stream().filter(config -> Objects.equal(BusinessConstants.ENABLE_NUM, config.getEnableRegistry()) && finalEnableInserviceEmpIds.contains(config.getEmployeeId()))
                     .collect(Collectors.toList());
             List<EnableChooseEmployeeRes> appointResList = appointList.stream().map(this::assembleEnableEmployee).collect(Collectors.toList());
             List<EnableChooseEmployeeRes> registerResList = registerList.stream().map(this::assembleEnableEmployee).collect(Collectors.toList());

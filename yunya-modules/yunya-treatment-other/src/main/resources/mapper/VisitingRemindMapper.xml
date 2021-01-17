@@ -60,7 +60,7 @@
         and vrd.org_id = #{query.orgId}
       </if>
       <if test="query.remindDate != null and query.searchId == 1">
-        and date_format(vrd.crt_time,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
+        and date_format(vrd.crt_time,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d') and vrd.crt_id = #{query.crtId}
       </if>
       <if test="query.remindDate != null and query.searchId == 2">
         and date_format(vrd.remind_date,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
@@ -74,14 +74,6 @@
       <if test="query.status != null">
         and vrd.status = #{query.status}
       </if>
-      <choose>
-        <when test="query.dentistId != null">
-          and vrd.crt_id = #{query.dentistId}
-        </when>
-        <otherwise>
-          and vrd.dentist_id = #{query.dentistId}
-        </otherwise>
-      </choose>
     </where>
   </select>
 

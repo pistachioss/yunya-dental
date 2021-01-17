@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.AssistantMatchingDetailQuery;
+import com.yunya.feign.report.domain.query.PatientFirstTreatOriginQuery;
 import com.yunya.feign.report.domain.vo.EmployeeTreatMatchingDetailVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,5 +37,15 @@ public class BaseTreatmentProcessMapperTest {
     List<EmployeeTreatMatchingDetailVO> vos =
         treatmentProcessMapper.selectAssistantMatchingDetailList(query);
     System.out.println(vos);
+  }
+
+  @Test
+  public void find1() {
+    PatientFirstTreatOriginQuery query = new PatientFirstTreatOriginQuery();
+    query.setOrgId(100);
+    query.setStartDate("2020-10");
+    query.setEndDate("2020-12");
+    Integer integer = treatmentProcessMapper.selectFirstTreatTotalCount(query);
+    System.out.println(integer);
   }
 }

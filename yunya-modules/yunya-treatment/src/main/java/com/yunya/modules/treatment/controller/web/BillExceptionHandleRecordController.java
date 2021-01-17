@@ -2,12 +2,10 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
-import com.yunya.feign.treatment.domain.query.BillAdjustRecordQuery;
-import com.yunya.feign.treatment.domain.query.BillPayRecordAdjustQuery;
-import com.yunya.feign.treatment.domain.query.BillTollRevokeRecordQuery;
-import com.yunya.feign.treatment.domain.query.CurrentMonthBillAdjustQuery;
+import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.BillOfAdjustRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillOfPayRecordAdjustVO;
+import com.yunya.feign.treatment.domain.vo.BillOfRefundRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillOfTollRevokeRecordVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -57,6 +55,50 @@ public class BillExceptionHandleRecordController {
     Map<String, Object> resultMap =
         billExceptionHandleRecordBiz.findBillHandleDetail(billHandleRecordId);
     return ResponseUtil.success(resultMap);
+  }
+
+  /**
+   * 根据条件查询账单退费记录列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("数据记录-账单记录-账单退费记录-列表查询")
+  @PostMapping(value = "/bill/refund/list", name = "根据条件查询账单退费记录列表")
+  public ResponseResult<PageInfo<BillOfRefundRecordVO>> billRefundRecordList(
+      @RequestBody @Validated BillRefundRecordQuery query) {
+    List<BillOfRefundRecordVO> resultList =
+        billExceptionHandleRecordBiz.findBillRefundRecordList(query);
+    if (query.getWhetherPage()) {
+      Integer pageNum = query.getPageNum();
+      Integer pageSize = query.getPageSize();
+      int total = resultList.size();
+      PageInfo<BillOfRefundRecordVO> pageInfo = new PageInfo<>();
+      pageInfo.setPageNum(pageNum);
+      pageInfo.setPageSize(pageSize);
+      pageInfo.setTotal(total);
+      List<BillOfRefundRecordVO> list =
+          resultList.subList(pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+      pageInfo.setList(list);
+      return ResponseUtil.success(pageInfo);
+    }
+    return ResponseUtil.success(new PageInfo<>(resultList));
+  }
+
+  /**
+   * 根据条件导出账单退费记录
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("数据记录-账单记录-导出账单退费记录")
+  @PostMapping(value = "/bill/refund/export", name = "数据记录-账单记录-导出账单退费记录")
+  public ResponseResult<T> exportBillRefundRecord(
+      HttpServletResponse response, @RequestBody @Validated BillRefundRecordQuery query)
+      throws IOException {
+    billExceptionHandleRecordBiz.exportBillRefundRecord(response, query);
+    return ResponseUtil.success(null);
   }
 
   /**

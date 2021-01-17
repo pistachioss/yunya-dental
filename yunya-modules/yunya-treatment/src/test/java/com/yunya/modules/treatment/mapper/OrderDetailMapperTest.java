@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.SpecialistTariffCompletedDetailVO;
 import org.junit.Test;
@@ -48,5 +49,16 @@ public class OrderDetailMapperTest {
     List<SpecialistTariffCompletedDetailVO> vos =
         orderDetailMapper.selectSpecialistProjectTariffDetail(query);
     System.out.println(vos);
+  }
+
+  @Test
+  public void find2() {
+    SpecialistProjectCompletedCountQuery query = new SpecialistProjectCompletedCountQuery();
+    query.setOrgId(35);
+    query.setTariffIds(new String[] {"565"});
+    query.setStartDate("2020-10");
+    query.setEndDate("2020-12");
+    Integer count = orderDetailMapper.selectSpecialistProjectCompletedCount(query);
+    System.out.println(count);
   }
 }

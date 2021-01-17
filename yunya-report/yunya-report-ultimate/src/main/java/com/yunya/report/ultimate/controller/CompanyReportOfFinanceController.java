@@ -49,6 +49,8 @@ public class CompanyReportOfFinanceController {
   @Autowired private MemberOccurLogBiz patientMemberOccurLogBiz;
   /** 卡券基础信息 */
   @Autowired private BaseCardBiz baseCardBiz;
+  /** 账单退费记录 */
+  @Autowired private BaseRefundBiz refundBiz;
 
   /**
    * 公司端报表-财务报表-产品售出统计-产品维度
@@ -340,29 +342,29 @@ public class CompanyReportOfFinanceController {
   @PostMapping(value = "/bill/charge/detail/list", name = "根据条件查询门诊账单收费明细（首次收费）")
   public ResponseResult<PageInfo<StatementBillChargeDetailVO>> billChargeDetailInfoList(
       @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
-    PageInfo<StatementBillChargeDetailVO> pageInfo =
-        billPayBiz.selectBillChargeDetailInfoList(query);
+    PageInfo<StatementBillChargeDetailVO> pageInfo = billPayBiz.findBillChargeDetailInfoList(query);
     return ResponseUtil.success(pageInfo);
   }
 
   /**
-   * 根据条件查询导出本月账单收费明细 todo：导出未完成
+   * 根据条件查询导出本月账单收费明细
    *
-   * @param response
-   * @param query
+   * @param response http响应
+   * @param query 查询条件
    * @return
    */
   @ApiOperation("公司端报表-财务报表-对账单-账单收费明细（本月）-账单收费明细列表-导出")
   @PostMapping(value = "/bill/charge/detail/export", name = "根据条件查询门诊账单收费明细（首次收费）")
   public ResponseResult<T> exportBillChargeDetailInfoList(
       HttpServletResponse response,
-      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
-
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query)
+      throws IOException {
+    billPayBiz.exportBillChargeDetailInfoList(response, query);
     return ResponseUtil.success(null);
   }
 
   /**
-   * 根据条件查询门诊账单收欠费明细（本月账单）todo：完善收费记录的支付方式列表
+   * 根据条件查询门诊账单收欠费明细（本月账单）
    *
    * @param query 查询条件
    * @return
@@ -377,23 +379,24 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询导出账单收欠费明细（本月账单本月收欠费） todo：导出未完成
+   * 根据条件查询导出账单收欠费明细（本月）账单本月收欠费
    *
-   * @param response
-   * @param query
+   * @param response http响应
+   * @param query 查询条件
    * @return
    */
   @ApiOperation("公司端报表-财务报表-对账单-账单收欠费明细（本月）-账单收欠（本月）费明细列表-导出")
   @PostMapping(value = "/bill/current/debt/detail/export", name = "根据条件查询门诊账单收费明细（非首次收费）")
   public ResponseResult<T> exportBillCollectDebtDetailList(
       HttpServletResponse response,
-      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
-
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query)
+      throws IOException {
+    billPayBiz.exportBillCollectDebtDetailList(response, query);
     return ResponseUtil.success(null);
   }
 
   /**
-   * 根据条件查询门诊账单收欠费明细（本月账单）todo：完善收费记录的支付方式列表
+   * 根据条件查询门诊账单收欠费明细（非本月账单）
    *
    * @param query 查询条件
    * @return
@@ -408,18 +411,19 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询导出账单收欠费明细（非本月账单本月收欠费） todo：导出未完成
+   * 根据条件查询导出账单收欠费明细（非本月账单本月收欠费）
    *
-   * @param response
-   * @param query
+   * @param response http响应
+   * @param query 查询条件
    * @return
    */
   @ApiOperation("公司端报表-财务报表-对账单-账单收欠费明细（非本月）-账单收欠费（非本月）明细列表-导出")
   @PostMapping(value = "/bill/other/debt/detail/export", name = "根据条件查询门诊账单收费明细（非首次收费）")
   public ResponseResult<T> exportBillOtherCollectDebtDetailList(
       HttpServletResponse response,
-      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
-
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query)
+      throws IOException {
+    billPayBiz.exportBillOtherCollectDebtDetailList(response, query);
     return ResponseUtil.success(null);
   }
 
@@ -429,25 +433,26 @@ public class CompanyReportOfFinanceController {
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-会员卡充值-查询明细")
+  @ApiOperation("公司端报表-财务报表-对账单-会员卡(预付款)充值-查询明细")
   @PostMapping(value = "/member/recharge/detail/list", name = "根据条件查询门诊会员卡充值明细列表")
-  public ResponseResult<PageInfo<StatementPatientCardRechargeDetailVO>> memberRechargeDetailList(
-      @RequestBody @Validated StatementPatientCardRechargeDetailInfoQuery query) {
+  public ResponseResult<PageInfo<StatementPatientCardRechargeDetailVO>>
+      patientCardRechargeDetailList(
+          @RequestBody @Validated StatementPatientCardRechargeDetailInfoQuery query) {
     PageInfo<StatementPatientCardRechargeDetailVO> pageInfo =
         patientMemberOccurLogBiz.findPatientCardRechargeDetailList(query);
     return ResponseUtil.success(pageInfo);
   }
 
   /**
-   * 根据条件导出会员充值记录明细
+   * 根据条件导出患者储值卡（会员卡/预付款）充值记录明细
    *
    * @param response 响应
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-会员充值-会员充值记录明细列表-导出")
-  @PostMapping(value = "/member/recharge/detail/export", name = "根据条件查询导出会员充值记录明细")
-  public ResponseResult<T> exportMemberRechargeDetailList(
+  @ApiOperation("公司端报表-财务报表-对账单-会员(预付款)充值-查询明细-导出")
+  @PostMapping(value = "/member/recharge/detail/export", name = "根据条件查询导出患者储值卡（会员卡/预付款）充值记录明细")
+  public ResponseResult<T> exportPatientCardRechargeDetailList(
       HttpServletResponse response,
       @RequestBody @Validated StatementPatientCardRechargeDetailInfoQuery query)
       throws IOException {
@@ -482,6 +487,224 @@ public class CompanyReportOfFinanceController {
       HttpServletResponse response, @RequestBody @Validated StatementProductSoldDetailQuery query)
       throws IOException {
     baseCardBiz.exportProductSoldDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询诊所代收(本月)明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<StatementBillChargeDetailVO>
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-诊所代收(本月)-查询明细")
+  @PostMapping(value = "/bill/current/collection/detail/list", name = "根据条件查询诊所代收(本月)明细列表")
+  public ResponseResult<PageInfo<StatementBillChargeDetailVO>> currentBillCollectionDetailList(
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
+    PageInfo<StatementBillChargeDetailVO> pageInfo =
+        billPayBiz.findCurrentBillCollectionDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出诊所代收(本月)记录明细
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-诊所代收-导出")
+  @PostMapping(value = "/bill/current/collection/detail/export", name = "根据条件导出产品售出记录明细")
+  public ResponseResult<T> exportCurrentBillCollectionDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query)
+      throws IOException {
+    billPayBiz.exportCurrentBillCollectionDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询诊所代(非本月)收明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<StatementBillChargeDetailVO>
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-诊所代收(非本月)-查询明细")
+  @PostMapping(value = "/bill/other/collection/detail/list", name = "公司端报表-财务报表-对账单-诊所代收(非本月)-查询明细")
+  public ResponseResult<PageInfo<StatementBillChargeDetailVO>> otherBillCollectionDetailList(
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
+    PageInfo<StatementBillChargeDetailVO> pageInfo =
+        billPayBiz.findOtherBillCollectionDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出诊所代收(非本月)记录明细
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-诊所代收(非本月)-导出")
+  @PostMapping(value = "/bill/other/collection/detail/export", name = "根据条件导出产品售出记录明细")
+  public ResponseResult<T> exportOtherBillCollectionDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query)
+      throws IOException {
+    billPayBiz.exportOtherBillCollectionDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询门诊账单退费明细（本月）列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-账单退费（本月）-查询明细")
+  @PostMapping(value = "/bill/current/refund/detail/list", name = "公司端报表-财务报表-对账单-账单退费（本月）-查询明细")
+  public ResponseResult<PageInfo<StatementBillRefundDetailVO>> currentBillRefundDetailList(
+      @RequestBody @Validated StatementBillRefundDetailInfoQuery query) {
+    PageInfo<StatementBillRefundDetailVO> pageInfo =
+        refundBiz.findCurrentBillRefundDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出门诊账单退费明细（本月）列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-账单退费（本月）-查询明细-导出")
+  @PostMapping(value = "/bill/current/refund/detail/export", name = "公司端报表-财务报表-对账单-账单退费（本月）-查询明细")
+  public ResponseResult<T> exportCurrentBillRefundDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated StatementBillRefundDetailInfoQuery query)
+      throws IOException {
+    refundBiz.exportCurrentBillRefundDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询门诊账单退费明细（非本月）列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-账单退费（非本月）-查询明细")
+  @PostMapping(value = "/bill/other/refund/detail/list", name = "公司端报表-财务报表-对账单-账单退费（本月）-查询明细")
+  public ResponseResult<PageInfo<StatementBillRefundDetailVO>> otherBillRefundDetailList(
+      @RequestBody @Validated StatementBillRefundDetailInfoQuery query) {
+    PageInfo<StatementBillRefundDetailVO> pageInfo = refundBiz.findOtherBillRefundDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出门诊账单退费明细（非本月）列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-账单退费（非本月）-查询明细-导出")
+  @PostMapping(value = "/bill/other/refund/detail/export", name = "公司端报表-财务报表-对账单-账单退费（非本月）-查询明细")
+  public ResponseResult<T> exportOtherBillRefundDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated StatementBillRefundDetailInfoQuery query)
+      throws IOException {
+    refundBiz.exportOtherBillRefundDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询患者储值卡（会员卡、预付款）退费明细列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-患者储值卡（0-会员卡；1-预付款）退费-查询明细")
+  @PostMapping(value = "/card/refund/detail/list", name = "根据条件查询患者储值卡退费明细列表")
+  public ResponseResult<PageInfo<StatementPatientCardRefundDetailVO>> patientCardRefundDetailList(
+      @RequestBody @Validated StatementPatientCardRefundDetailQuery query) {
+    PageInfo<StatementPatientCardRefundDetailVO> pageInfo =
+        patientMemberOccurLogBiz.findPatientCardRefundDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出患者储值卡（会员卡、预付款）退费明细列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-患者储值卡（0-会员卡；1-预付款）退费-查询明细")
+  @PostMapping(value = "/card/refund/detail/export", name = "根据条件查询患者储值卡退费明细列表")
+  public ResponseResult<T> exportPatientCardRefundDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated StatementPatientCardRefundDetailQuery query)
+      throws IOException {
+    patientMemberOccurLogBiz.exportPatientCardRefundDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询诊所被代收账（本月）明细列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-诊所被代收账（本月）-查询明细")
+  @PostMapping(value = "/bill/current/accepted/detail/list", name = "根据条件查询诊所被代收账（本月）明细列表")
+  public ResponseResult<PageInfo<StatementBillChargeDetailVO>> currentBillIsAcceptedDetailList(
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
+    PageInfo<StatementBillChargeDetailVO> pageInfo =
+        billPayBiz.findCurrentBillIsAcceptedDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出诊所被代收账（本月）明细列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-诊所被代收账（本月）-查询明细-导出")
+  @PostMapping(value = "/bill/current/accepted/detail/export", name = "根据条件导出诊所被代收账（本月）明细列表")
+  public ResponseResult<T> exportCurrentBillIsAcceptedDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query)
+      throws IOException {
+    billPayBiz.exportCurrentBillIsAcceptedDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询诊所被代收账（非本月）明细列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-诊所被代收账（非本月）-查询明细")
+  @PostMapping(value = "/bill/other/accepted/detail/list", name = "根据条件查询诊所被代收账（非本月）明细列表")
+  public ResponseResult<PageInfo<StatementBillChargeDetailVO>> otherBillIsAcceptedDetailList(
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
+    PageInfo<StatementBillChargeDetailVO> pageInfo =
+        billPayBiz.findOtherBillIsAcceptedDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出诊所被代收账（非本月）明细列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-诊所被代收账（非本月）-查询明细-导出")
+  @PostMapping(value = "/bill/other/accepted/detail/export", name = "根据条件导出诊所被代收账（非本月）明细列表")
+  public ResponseResult<T> exportOtherBillIsAcceptedDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated StatementBillChargeDetailInfoQuery query)
+      throws IOException {
+    billPayBiz.exportOtherBillIsAcceptedDetailList(response, query);
     return ResponseUtil.success(null);
   }
 

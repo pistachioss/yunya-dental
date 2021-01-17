@@ -4,10 +4,8 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.treatment.domain.query.BillAdjustRecordQuery;
-import com.yunya.feign.treatment.domain.query.BillPayRecordAdjustQuery;
-import com.yunya.feign.treatment.domain.query.BillTollRevokeRecordQuery;
-import com.yunya.feign.treatment.domain.query.CurrentMonthBillAdjustQuery;
+import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -25,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -69,8 +68,8 @@ public class BillExceptionHandleRecordBiz
     }
     // 被处理数据ID
     Integer handledRecordId = handleRecord.getHandledRecordId();
-    // 上一条异常处理记录ID
-    Integer preExceptionHandleRecordId = handleRecord.getPreExceptionHandleRecordId();
+    // 下一条异常处理记录ID
+    Integer nextExceptionHandleRecordId = mapper.selectNextId(billExceptionHandleRecordId);
     // 异常处理类型
     Byte operateType = handleRecord.getOperateType();
     Map<String, Object> resultMap = new HashMap<>(16);
@@ -79,7 +78,7 @@ public class BillExceptionHandleRecordBiz
       case 0:
         BillPaymentAdjustDetailVO billPaymentAdjustDetail =
             billExceptionHandleDetailRecordBiz.findBillPaymentAdjustDetail(
-                handledRecordId, billExceptionHandleRecordId, preExceptionHandleRecordId);
+                handledRecordId, billExceptionHandleRecordId, nextExceptionHandleRecordId);
         resultMap.put("billPaymentAdjustDetail", billPaymentAdjustDetail);
         break;
         // 账单撤销
@@ -92,7 +91,7 @@ public class BillExceptionHandleRecordBiz
       case 2:
         resultMap =
             billExceptionHandleDetailRecordBiz.findBillOrderDetailAdjustDetails(
-                handledRecordId, billExceptionHandleRecordId, preExceptionHandleRecordId);
+                handledRecordId, billExceptionHandleRecordId, nextExceptionHandleRecordId);
         break;
         // 账单退费
       case 3:
@@ -163,7 +162,18 @@ public class BillExceptionHandleRecordBiz
       throws IOException {
     List<BillOfAdjustRecordVO> resultList = findBillAdjustRecord(query);
     ExcelUtil<BillOfAdjustRecordVO> excelUtil = new ExcelUtil<>(BillOfAdjustRecordVO.class);
-    excelUtil.exportExcel(response, resultList, "账单调整记录表");
+    String fileName = "账单调整记录";
+    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
+    if (null != orgInfo) {
+      fileName =
+          MessageFormat.format(
+              "{0}{1}-{2}{3}",
+              orgInfo.getAbbreviation(),
+              query.getAdjustStartDate(),
+              query.getAdjustEndDate(),
+              fileName);
+    }
+    excelUtil.exportExcel(response, resultList, "账单调整记录表", fileName);
   }
 
   /**
@@ -220,7 +230,86 @@ public class BillExceptionHandleRecordBiz
       HttpServletResponse response, BillTollRevokeRecordQuery query) throws IOException {
     List<BillOfTollRevokeRecordVO> resultList = findBillRevokeRecordList(query);
     ExcelUtil<BillOfTollRevokeRecordVO> excelUtil = new ExcelUtil<>(BillOfTollRevokeRecordVO.class);
-    excelUtil.exportExcel(response, resultList, "账单收费撤销记录表");
+    String fileName = "账单收费撤销记录";
+    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
+    if (null != orgInfo) {
+      fileName =
+          MessageFormat.format(
+              "{0}{1}-{2}{3}",
+              orgInfo.getAbbreviation(),
+              query.getRevokeStartDate(),
+              query.getRevokeEndDate(),
+              fileName);
+    }
+    excelUtil.exportExcel(response, resultList, "账单收费撤销记录表", fileName);
+  }
+
+  /**
+   * 根据条件查询账单退费记录信息列表
+   *
+   * @param query 查询条件
+   * @return List<BillOfRefundRecordInfoVO>
+   */
+  public List<BillOfRefundRecordVO> findBillRefundRecordList(BillRefundRecordQuery query) {
+    List<BillOfRefundRecordVO> resultList = mapper.selectBillRefundRecordList(query);
+    if (StringHelper.isNotEmpty(resultList)) {
+      resultList.forEach(
+          vo -> {
+            Integer patientId = vo.getPatientId();
+            PatientBaseInfo patientInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
+            if (null != patientInfo) {
+              vo.setPatientName(patientInfo.getName());
+              vo.setPinyinName(patientInfo.getPinyinName());
+              vo.setMobile(patientInfo.getMobile());
+              vo.setGender(patientInfo.getGender());
+            }
+            Integer regDentistId = vo.getRegDentistId();
+            SysEmployee dentist = systemServiceFeign.findSysEmployeeById(regDentistId);
+            if (null != dentist) {
+              vo.setRegDentistName(dentist.getName());
+            }
+          });
+      String keyWord = query.getKeyWord();
+      if (StringHelper.isNotBlank(keyWord)) {
+        List<BillOfRefundRecordVO> billOfRefundRecords = Lists.newArrayList();
+        Pattern pattern = Pattern.compile(keyWord, Pattern.CASE_INSENSITIVE);
+        resultList.forEach(
+            vo -> {
+              Matcher matcherName = pattern.matcher(vo.getPatientName());
+              Matcher matcherPinyinName = pattern.matcher(vo.getPinyinName());
+              Matcher matcherMobile = pattern.matcher(vo.getMobile());
+              if (matcherName.find() || matcherMobile.find() || matcherPinyinName.find()) {
+                billOfRefundRecords.add(vo);
+              }
+            });
+        return billOfRefundRecords;
+      }
+    }
+    return resultList;
+  }
+
+  /**
+   * 根据条件导出账单退费记录
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportBillRefundRecord(HttpServletResponse response, BillRefundRecordQuery query)
+      throws IOException {
+    List<BillOfRefundRecordVO> resultList = findBillRefundRecordList(query);
+    ExcelUtil<BillOfRefundRecordVO> excelUtil = new ExcelUtil<>(BillOfRefundRecordVO.class);
+    String fileName = "账单退费记录";
+    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
+    if (null != orgInfo) {
+      fileName =
+          MessageFormat.format(
+              "{0}{1}-{2}{3}",
+              orgInfo.getAbbreviation(),
+              query.getRefundStartDate(),
+              query.getRefundEndDate(),
+              fileName);
+    }
+    excelUtil.exportExcel(response, resultList, "账单退费记录表", fileName);
   }
 
   /**
@@ -277,7 +366,18 @@ public class BillExceptionHandleRecordBiz
       HttpServletResponse response, BillPayRecordAdjustQuery query) throws IOException {
     List<BillOfPayRecordAdjustVO> resultList = findBillPayAdjustRecordList(query);
     ExcelUtil<BillOfPayRecordAdjustVO> excelUtil = new ExcelUtil<>(BillOfPayRecordAdjustVO.class);
-    excelUtil.exportExcel(response, resultList, "调整入账方式记录表");
+    String fileName = "调整入账方式记录";
+    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
+    if (null != orgInfo) {
+      fileName =
+          MessageFormat.format(
+              "{0}{1}-{2}{3}",
+              orgInfo.getAbbreviation(),
+              query.getAdjustStartDate(),
+              query.getAdjustEndDate(),
+              fileName);
+    }
+    excelUtil.exportExcel(response, resultList, "调整入账方式记录表", fileName);
   }
 
   /**
@@ -309,7 +409,14 @@ public class BillExceptionHandleRecordBiz
         vo.setCurrentMonthBill(currentMonth.equals(billDate) ? "当月账单" : "非当月账单");
       }
     }
-    excelUtil.exportExcel(response, resultList, "门诊当月调整账单记录");
+    String fileName = "门诊当月调整账单记录";
+    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
+    if (null != orgInfo) {
+      fileName =
+          MessageFormat.format(
+              "{0}{1}{3}", orgInfo.getAbbreviation(), query.getCurrentMonth(), fileName);
+    }
+    excelUtil.exportExcel(response, resultList, "门诊当月调整账单记录", fileName);
   }
 
   /**
@@ -341,6 +448,13 @@ public class BillExceptionHandleRecordBiz
       }
     }
     ExcelUtil<BillRevokePayRecordVO> excelUtil = new ExcelUtil<>(BillRevokePayRecordVO.class);
-    excelUtil.exportExcel(response, resultList, "门诊当月撤销收费记录");
+    String fileName = "门诊当月撤销收费记录";
+    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
+    if (null != orgInfo) {
+      fileName =
+          MessageFormat.format(
+              "{0}{1}{3}", orgInfo.getAbbreviation(), query.getCurrentMonth(), fileName);
+    }
+    excelUtil.exportExcel(response, resultList, "门诊当月撤销收费记录", fileName);
   }
 }

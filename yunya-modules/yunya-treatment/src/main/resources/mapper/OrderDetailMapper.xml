@@ -39,12 +39,12 @@
         <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime"/>
         <collection property="billDetail" ofType="com.yunya.feign.treatment.domain.vo.BillDetailPrintInfoVO">
             <id column="id" jdbcType="INTEGER" property="orderDetailId"/>
-            <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL" />
-            <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
-            <result column="actual_receivable" property="actualReceivable" jdbcType="DECIMAL" />
-            <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
+            <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL"/>
+            <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL"/>
+            <result column="actual_receivable" property="actualReceivable" jdbcType="DECIMAL"/>
+            <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
             <result column="billing_item_id" jdbcType="INTEGER" property="billingItemId"/>
-            <result column="price" property="price" jdbcType="DECIMAL" />
+            <result column="price" property="price" jdbcType="DECIMAL"/>
             <result column="tooth_bit" jdbcType="VARCHAR" property="toothBit"/>
             <result column="quantity" jdbcType="INTEGER" property="quantity"/>
             <result column="name" property="name" jdbcType="VARCHAR"/>
@@ -141,10 +141,11 @@
     <!-- 根据条件查询专科项目开单项目完成数量 -->
     <select id="selectSpecialistProjectTariffCompletedAmount" resultType="java.lang.Integer">
         SELECT
-            SUM( od.quantity )
+        SUM( od.quantity )
         FROM
-            order_detail od
+        order_detail od
         <where>
+            AND od.inservice = 1
             AND od.type = 0
             AND od.order_record_id IN (
             SELECT
@@ -179,49 +180,50 @@
     <select id="selectSpecialistProjectTariffDetail"
             resultType="com.yunya.feign.treatment.domain.vo.SpecialistTariffCompletedDetailVO">
         SELECT
-            od.billing_item_id AS tariffItemId,
-            bt.`name` AS tariffItemName,
-            SUM( od.quantity ) AS completedAmount
+        od.billing_item_id AS tariffItemId,
+        bt.`name` AS tariffItemName,
+        SUM( od.quantity ) AS completedAmount
         FROM
-            (
-            SELECT
-                od.billing_item_id,
-                od.quantity
-            FROM
-                order_detail od,(
-                SELECT
-                    id
-                FROM
-                    order_record
-                WHERE
-                    `status` = 2
-                ) ord
-            <where>
-                AND od.order_record_id = ord.id
-                AND od.type = 0
-                <if test="query.dateType == 0">
-                    AND DATE_FORMAT( od.crt_time, '%Y-%m' ) = #{query.queryDate}
-                </if>
-                <if test="query.dateType == 1">
-                    AND DATE_FORMAT( od.crt_time, '%Y' ) = #{query.queryDate}
-                </if>
-                <if test="query.tariffIds != null and query.tariffIds.length > 0">
-                    AND od.billing_item_id IN
-                    <foreach collection="query.tariffIds" item="item" index="index" open="(" close=")" separator=",">
-                        #{item}
-                    </foreach>
-                </if>
-                <if test="query.belongIds != null and query.belongIds.length > 0">
-                    AND od.org_id IN
-                    <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
-                        #{item}
-                    </foreach>
-                </if>
-            </where>
-            ) od
-            LEFT JOIN base_tariff bt ON od.billing_item_id = bt.id
+        (
+        SELECT
+        od.billing_item_id,
+        od.quantity
+        FROM
+        order_detail od,(
+        SELECT
+        id
+        FROM
+        order_record
+        WHERE
+        `status` = 2
+        ) ord
+        <where>
+            AND od.inservice = 1
+            AND od.order_record_id = ord.id
+            AND od.type = 0
+            <if test="query.dateType == 0">
+                AND DATE_FORMAT( od.crt_time, '%Y-%m' ) = #{query.queryDate}
+            </if>
+            <if test="query.dateType == 1">
+                AND DATE_FORMAT( od.crt_time, '%Y' ) = #{query.queryDate}
+            </if>
+            <if test="query.tariffIds != null and query.tariffIds.length > 0">
+                AND od.billing_item_id IN
+                <foreach collection="query.tariffIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.belongIds != null and query.belongIds.length > 0">
+                AND od.org_id IN
+                <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ) od
+        LEFT JOIN base_tariff bt ON od.billing_item_id = bt.id
         GROUP BY
-            od.billing_item_id
+        od.billing_item_id
     </select>
 
     <!-- 查询总数量 -->
@@ -266,7 +268,7 @@
 
     <!-- 查询专科数量 -->
     <select id="selectTariffSpecialistPercentage" resultType="java.lang.Integer">
-        select  IFNULL(SUM(quantity),0)
+        select IFNULL(SUM(quantity),0)
         from order_detail od join order_record ord on od.order_record_id = ord.id
         <where>
             <if test=" form.orgIds != null and form.orgIds.size() > 0 ">
@@ -278,7 +280,8 @@
 
             <if test=" form.billingItemIds != null and form.billingItemIds.length > 0 ">
                 and od.billing_item_id in
-                <foreach collection="form.billingItemIds" item="billingItemId" index="index" open="(" separator="," close=")">
+                <foreach collection="form.billingItemIds" item="billingItemId" index="index" open="(" separator=","
+                         close=")">
                     #{billingItemId}
                 </foreach>
             </if>
@@ -307,6 +310,7 @@
                     and DATE_FORMAT( od.crt_time, '%Y') &lt;= #{form.endDate}
                 </if>
             </if>
+            and od.inservice = 1
             and od.type = 0
             and ord.status = 2
         </where>
@@ -315,5 +319,45 @@
     <!-- 计算占比 -->
     <select id="percentage" resultType="java.lang.String">
         select concat( format( IFNULL(${number} / ${count} * 100,0), 2 )) percentage
+    </select>
+
+    <!-- 根据条件查询专科项目开单完成数量 -->
+    <select id="selectSpecialistProjectCompletedCount" resultType="java.lang.Integer">
+        SELECT
+        SUM( od.quantity )
+        FROM
+        (
+        SELECT
+        ord.`status`,
+        od.org_id,
+        od.quantity,
+        od.type,
+        od.billing_item_id,
+        od.crt_time,
+        od.inservice
+        FROM
+        order_detail od
+        LEFT JOIN order_record ord ON od.order_record_id = ord.id
+        ) od
+        <where>
+            AND od.inservice = 1
+            AND od.`status` = 2
+            AND od.`type` = 0
+            <if test="query.orgId != null">
+                AND od.org_id = #{query.orgId}
+            </if>
+            <if test="query.tariffIds != null and query.tariffIds.length > 0">
+                AND od.billing_item_id IN
+                <foreach collection="query.tariffIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                AND DATE_FORMAT(od.crt_time, '%Y-%m') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                AND DATE_FORMAT(od.crt_time, '%Y-%m') &lt;= #{query.endDate}
+            </if>
+        </where>
     </select>
 </mapper>

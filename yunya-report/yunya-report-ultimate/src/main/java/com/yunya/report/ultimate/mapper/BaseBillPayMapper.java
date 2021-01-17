@@ -66,4 +66,40 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    */
   List<StatementBillChargeDetailVO> selectBillOtherChargeDebtDetailList(
       @Param("query") StatementBillChargeDetailInfoQuery query);
+
+  /**
+   * 根据条件查询门诊代收（当月）账单详情列表
+   *
+   * @param query 查询条件
+   * @return List<StatementBillCollectionDetailVO>
+   */
+  List<StatementBillChargeDetailVO> selectCurrentBillCollectionDetailList(
+      @Param("query") StatementBillChargeDetailInfoQuery query);
+
+  /**
+   * 根据条件查询门诊代收（非当月）账单详情列表
+   *
+   * @param query 查询条件
+   * @return List<StatementBillCollectionDetailVO>
+   */
+  List<StatementBillChargeDetailVO> selectOtherBillCollectionDetailList(
+      @Param("query") StatementBillChargeDetailInfoQuery query);
+
+  /**
+   * 根据条件查询门诊被代收账单（当月）明细列表
+   *
+   * @param query 查询条件
+   * @return List<StatementBillCollectionDetailVO>
+   */
+  List<StatementBillChargeDetailVO> selectCurrentBillIsAcceptedDetailList(
+      @Param("query") StatementBillChargeDetailInfoQuery query);
+
+  /**
+   * 根据条件查询门诊被代收账单（非当月）明细列表
+   *
+   * @param query 查询条件
+   * @return List<StatementBillCollectionDetailVO>
+   */
+  List<StatementBillChargeDetailVO> selectOtherBillIsAcceptedDetailList(
+      @Param("query") StatementBillChargeDetailInfoQuery query);
 }

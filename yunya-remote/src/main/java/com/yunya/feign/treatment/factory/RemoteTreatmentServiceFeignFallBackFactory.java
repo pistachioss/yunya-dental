@@ -1,7 +1,9 @@
 package com.yunya.feign.treatment.factory;
 
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
+import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
+import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
@@ -168,13 +170,29 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
+  public BigDecimal findBusinessIncomeCompletedCount(BusinessGoalCompletedInfoQuery query) {
+    return null;
+  }
+
+  @Override
+  public BigDecimal findBusinessWorkloadCompletedCount(BusinessGoalCompletedInfoQuery query) {
+    return null;
+  }
+
+  @Override
+  public BigDecimal findBusinessFirstTreatCompletedCount(BusinessGoalCompletedInfoQuery query) {
+    return null;
+  }
+
+  @Override
   public SpecialistProjectTariffCompletedInfoVO findClinicTariffOrderCompletedInfo(
       SpecialistProjectTariffCompletedInfoQuery query) {
     return null;
   }
 
   @Override
-  public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(SpecialistProjectReportModel specialistProjectReportModel) {
+  public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(
+      SpecialistProjectReportModel specialistProjectReportModel) {
     return null;
   }
 
@@ -183,5 +201,8 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
     return null;
   }
 
-
+  @Override
+  public Integer findSpecialistProjectCompletedCount(SpecialistProjectCompletedCountQuery query) {
+    return null;
+  }
 }

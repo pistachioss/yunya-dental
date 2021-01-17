@@ -58,9 +58,8 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
   @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
   /** 就诊收费服务调用 */
   @Autowired private RemoteTreatmentServiceFeign treatmentServiceFeign;
-  private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
-  @Autowired
-  private RemoteSystemServiceFeign remoteSystemServiceFeign;
+  /** 系统服务调用 */
+  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
   /**
    * 获取门诊新增期初现金结余金额
@@ -165,7 +164,7 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
     cashReceiptQuery.setOrgId(orgId);
     cashReceiptQuery.setStartDate(startDate);
     cashReceiptQuery.setEndDate(endDate);
-    BigDecimal billCash = remoteTreatmentServiceFeign.sumBillPayAmount(cashReceiptQuery);
+    BigDecimal billCash = treatmentServiceFeign.sumBillPayAmount(cashReceiptQuery);
     if (billCash != null) {
       total = total.add(billCash);
     }

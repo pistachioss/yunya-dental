@@ -24,9 +24,9 @@
 
     <resultMap id="BillDiscountDetail" type="com.yunya.feign.report.domain.vo.BillDiscountVO">
         <result property="operateUserName" column="operateUserName" jdbcType="VARCHAR"/>
+        <result property="billId" column="billId" jdbcType="INTEGER"/>
         <collection property="billDiscountDetail" ofType="com.yunya.feign.report.domain.vo.BillDiscountDetailInifoVO">
             <result property="itemId" column="itemId" jdbcType="INTEGER"/>
-            <result property="billId" column="billId" jdbcType="INTEGER"/>
             <result property="itemName" column="itemName" jdbcType="VARCHAR"/>
             <result property="unit" column="unit" jdbcType="VARCHAR"/>
             <result property="price" column="price" jdbcType="DECIMAL"/>
@@ -216,8 +216,9 @@
         LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
         LEFT JOIN ( SELECT btp.registered_dentist_id, btp.treatment_id, be.employee_name FROM base_treatment_process btp
         LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id ) btp ON bb.treatment_id = btp.treatment_id
-        LEFT JOIN ( SELECT bbp.bill_id, bbp.payee_user_id, be.employee_name FROM base_bill_pay bbp LEFT JOIN
-        base_employee be ON bbp.payee_user_id = be.user_id ) bbp ON bb.bill_id = bbp.bill_id
+        LEFT JOIN (SELECT bb.order_id as bill_id,bb.operate_user_id as payee_user_id,be.employee_name FROM
+            (select order_id,operate_user_id from base_benefit group by order_id,operate_user_id) bb
+            LEFT JOIN base_employee be ON bb.operate_user_id = be.user_id ) bbp ON bb.bill_id = bbp.bill_id
         ) bpr
         <where>
             <if test="query.keyWord != null and query.keyWord != ''">
@@ -252,6 +253,7 @@
                 </foreach>
             </if>
         </where>
+        order by bpr.orderDate desc
     </select>
 
     <!-- 根据条件查询应收账款余额表 -->
@@ -311,6 +313,7 @@
         ) btp ON bb.treatment_id = btp.treatment_id
         ) brr
         <where>
+            brr.billReceivableAmount>0
             <if test="query.orgId != null">
                 and brr.orgId = #{query.orgId}
             </if>
@@ -331,6 +334,7 @@
                 </foreach>
             </if>
         </where>
+        order by brr.billReceivableAmount desc
     </select>
 
 
@@ -678,22 +682,22 @@
     <select id="selectBillDiscountDetailInfo" resultMap="BillDiscountDetail">
         SELECT
              any_value(a.item_id) as itemId,
-                     any_value(a.bill_id) as billId,
-                     any_value(a.item_name) as itemName,
-                     any_value(a.unit) as unit,
-                     any_value(a.price) as price,
-                     any_value(a.quantity) as quantity,
-                     (any_value(a.price) * any_value(a.quantity)) as originPrice,
-                     IF(any_value(bb.coupon_type)=99,any_value(bpm.member_level_name),any_value(bcpon.coupon_name)) as couponName,
-                     IF(any_value(bb.coupon_type)=99,'',any_value(bc.card_number)) as cardNumber,
-                     any_value(bc.sale_channel_name) as saleChannelName,
-                     any_value(bc.card_number) as cardNumber,
-                     any_value(bo.abbreviation) as abbreviation,
-                     any_value(bc.sale_channel_name) as saleChannelName,
-                     any_value(bcpon.coupon_name) as couponName,
-                     (any_value(bb.benefit_amount) * any_value(a.quantity)) as benefitAmount,
-                     be2.employee_name as operateUserName,
-                     any_value(be.employee_name) as employeeName
+             any_value(a.bill_id) as billId,
+             any_value(a.item_name) as itemName,
+             any_value(a.unit) as unit,
+             any_value(a.price) as price,
+             any_value(a.quantity) as quantity,
+             (any_value(a.price) * any_value(a.quantity)) as originPrice,
+             IF(any_value(bb.coupon_type)=99,any_value(bpm.member_level_name),any_value(bcpon.coupon_name)) as couponName,
+             IF(any_value(bb.coupon_type)=99,'',any_value(bc.card_number)) as cardNumber,
+             any_value(bc.sale_channel_name) as saleChannelName,
+             any_value(bc.card_number) as cardNumber,
+             any_value(bo.abbreviation) as abbreviation,
+             any_value(bc.sale_channel_name) as saleChannelName,
+             any_value(bcpon.coupon_name) as couponName,
+             IFNULL((any_value(bb.benefit_amount) * any_value(a.quantity)),0) as benefitAmount,
+             IFNULL(be2.employee_name,'---') as operateUserName,
+             any_value(be.employee_name) as employeeName
         FROM
             (
                 SELECT

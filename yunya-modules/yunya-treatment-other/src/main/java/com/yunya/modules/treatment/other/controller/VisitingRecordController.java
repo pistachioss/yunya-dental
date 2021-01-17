@@ -7,16 +7,13 @@ import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingForMonthInfo;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
-import com.yunya.feign.treatment_other.domain.vo.VisitingContentAfterCurrentVo;
-import com.yunya.feign.treatment_other.domain.vo.VisitingContentVo;
-import com.yunya.feign.treatment_other.domain.vo.VisitingForMonthVo;
-import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
+import com.yunya.feign.treatment_other.domain.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
-import io.swagger.annotations.*;
-import lombok.CustomLog;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -139,10 +136,21 @@ public class VisitingRecordController {
     @ApiOperation(value = "查询指定时间段内指定医生的每一天的随访数(app用)")
     @PostMapping("/visit/range")
     @CurrentUser
-    @Deprecated
     public ResponseResult<List<VisitingForMonthVo>> findVisitingForMonth(@RequestBody @Validated VisitingForMonthInfo forMonthInfo) {
         List<VisitingForMonthVo> visitingForMonth = visitingRecordBiz.findVisitingForMonth(forMonthInfo);
         return ResponseUtil.success(visitingForMonth);
     }
 
+    /**
+     * 统计患者所有门诊的随访记录的已随访或未随访
+     *
+     * @param patientId 患者ID
+     * @return
+     */
+    @ApiOperation(value = "统计患者所有门诊的随访记录的已随访或未随访")
+    @GetMapping(value = "/countVisiting/{patientId}")
+    public ResponseResult<VisitingStatusCountVO> countVisiting(@PathVariable(value = "patientId") Integer patientId) {
+        VisitingStatusCountVO result = visitingRecordBiz.countVisiting(patientId);
+        return ResponseUtil.success(result);
+    }
 }

@@ -24,7 +24,11 @@
         e.user_id as assistantId,
         e.employee_name as assistantName,
         SUM(
-        IF(TIMESTAMPDIFF(MINUTE, btp.treat_start_time, btp.treat_end_time)=0,1,IFNULL(TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time),0))) AS treatMatchingTimeAsAssistant1,
+        IF(
+            TIMESTAMPDIFF(MINUTE, btp.treat_start_time, btp.treat_end_time)=0,
+            1,
+            IFNULL(TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_end_time,'%H:%i'), DATE_FORMAT(btp.treat_start_time,'%H:%i')))/60,0)
+        )) AS treatMatchingTimeAsAssistant1,
         sum(
         IFNULL( btp.actualWorkload, 0 )) AS treatMatchingActualWorkloadAsAssistant1,
         SUM(
@@ -64,7 +68,7 @@
         bbd.discount_amount
         FROM
         base_bill_detail bbd
-        LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+        LEFT JOIN (select bb.treatment_id,bb.bill_id,bb.bill_date from base_bill bb where bb.bill_date is not null) bb ON bbd.bill_id = bb.bill_id
         WHERE
         bbd.executor_id IS NOT NULL
         ) bbd

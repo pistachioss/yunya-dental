@@ -56,10 +56,7 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
         model.setWhetherPage(false);
         Byte[] userStatus = {0,1,3};
         if(approvalPeopleQuery.getIsPc() == 1){
-            List<Integer> list=new ArrayList(Arrays.asList(userStatus));
-            list.add(2);
-            userStatus=new Byte[list.size()];
-            list.toArray(userStatus);
+            userStatus = new  Byte[]{0,1,2,3};
         }
         //离职状态
         model.setWorkStatus(userStatus);
@@ -69,13 +66,15 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
         employees.forEach(z -> employeeMap.put(z.getUserId() + "", z));
         List<ApprovalPeopleVO> list = new ArrayList<>();
         for (ApprovalPeople ap : reList) {
-            ApprovalPeopleVO approvalPeopleVO = new ApprovalPeopleVO();
-            approvalPeopleVO.setId(ap.getId());
-            approvalPeopleVO.setUserId(ap.getUserId());
-            approvalPeopleVO.setName(employeeMap.get(ap.getUserId().toString()).getName());
-            approvalPeopleVO.setIphone(employeeMap.get(ap.getUserId().toString()).getMobilePhone());
-            approvalPeopleVO.setPosts(employeeMap.get(ap.getUserId().toString()).getPosts());
-            list.add(approvalPeopleVO);
+            if(employeeMap.get(ap.getUserId().toString())!=null){
+                ApprovalPeopleVO approvalPeopleVO = new ApprovalPeopleVO();
+                approvalPeopleVO.setId(ap.getId());
+                approvalPeopleVO.setUserId(ap.getUserId());
+                approvalPeopleVO.setName(employeeMap.get(ap.getUserId().toString()).getName());
+                approvalPeopleVO.setIphone(employeeMap.get(ap.getUserId().toString()).getMobilePhone());
+                approvalPeopleVO.setPosts(employeeMap.get(ap.getUserId().toString()).getPosts());
+                list.add(approvalPeopleVO);
+            }
         }
         PageInfo pageInfo =  new PageInfo<>(list);
         pageInfo.setTotal(total);

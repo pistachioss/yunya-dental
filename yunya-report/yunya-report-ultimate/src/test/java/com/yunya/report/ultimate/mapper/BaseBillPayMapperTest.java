@@ -40,14 +40,110 @@ public class BaseBillPayMapperTest {
   public void find1() {
     StatementBillChargeDetailInfoQuery query = new StatementBillChargeDetailInfoQuery();
     query.setOrgId(35);
-    query.setDateType((byte)1);
+    query.setDateType((byte) 1);
     query.setStartDate("2021-01");
     query.setEndDate("2021-01");
-    //query.setPatientKeyword("wang");
-    //query.setBillNum("ZD00352012020009");
-    //query.setChargeStartDate("2020-12-01");
-    //query.setChargeEndDate("2020-12-31");
+    // query.setPatientKeyword("wang");
+    // query.setBillNum("ZD00352012020009");
+    // query.setChargeStartDate("2020-12-01");
+    // query.setChargeEndDate("2020-12-31");
     List<StatementBillChargeDetailVO> vos = billPayMapper.selectBillChargeDetailInfoList(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find2() {
+    StatementBillChargeDetailInfoQuery query = new StatementBillChargeDetailInfoQuery();
+    query.setOrgId(42);
+    query.setDateType((byte) 1);
+    query.setStartDate("2020-10");
+    query.setEndDate("2021-01");
+    // query.setPatientKeyword("wang");
+    // query.setBillNum("ZD00352012020009");
+    // query.setChargeStartDate("2020-12-01");
+    // query.setChargeEndDate("2020-12-31");
+    List<StatementBillChargeDetailVO> vos =
+        billPayMapper.selectCurrentBillCollectionDetailList(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find3() {
+    StatementBillChargeDetailInfoQuery query = new StatementBillChargeDetailInfoQuery();
+    query.setOrgId(42);
+    query.setDateType((byte) 1);
+    query.setStartDate("2020-10");
+    query.setEndDate("2021-01");
+    // query.setPatientKeyword("wang");
+    // query.setBillNum("ZD00352012020009");
+    // query.setChargeStartDate("2020-12-01");
+    // query.setChargeEndDate("2020-12-31");
+    List<StatementBillChargeDetailVO> vos =
+        billPayMapper.selectBillCurrentChargeDebtDetailList(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find4() {
+    StatementBillChargeDetailInfoQuery query = new StatementBillChargeDetailInfoQuery();
+    query.setOrgId(35);
+    query.setDateType((byte) 1);
+    query.setStartDate("2020-10");
+    query.setEndDate("2021-01");
+    // query.setPatientKeyword("wang");
+    // query.setBillNum("ZD00352012020009");
+    // query.setChargeStartDate("2020-12-01");
+    // query.setChargeEndDate("2020-12-31");
+    List<StatementBillChargeDetailVO> vos =
+        billPayMapper.selectBillOtherChargeDebtDetailList(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find5() {
+    StatementBillChargeDetailInfoQuery query = new StatementBillChargeDetailInfoQuery();
+    query.setOrgId(42);
+    query.setDateType((byte) 1);
+    query.setStartDate("2020-10");
+    query.setEndDate("2021-01");
+    // query.setPatientKeyword("wang");
+    // query.setBillNum("ZD00352012020009");
+    // query.setChargeStartDate("2020-12-01");
+    // query.setChargeEndDate("2020-12-31");
+    List<StatementBillChargeDetailVO> vos =
+        billPayMapper.selectOtherBillCollectionDetailList(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find6() {
+    StatementBillChargeDetailInfoQuery query = new StatementBillChargeDetailInfoQuery();
+    query.setOrgId(42);
+    query.setDateType((byte) 1);
+    query.setStartDate("2020-10");
+    query.setEndDate("2021-01");
+    // query.setPatientKeyword("wang");
+    // query.setBillNum("ZD00352012020009");
+    // query.setChargeStartDate("2020-12-01");
+    // query.setChargeEndDate("2020-12-31");
+    List<StatementBillChargeDetailVO> vos =
+        billPayMapper.selectCurrentBillIsAcceptedDetailList(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find7() {
+    StatementBillChargeDetailInfoQuery query = new StatementBillChargeDetailInfoQuery();
+    query.setOrgId(42);
+    query.setDateType((byte) 1);
+    query.setStartDate("2020-10");
+    query.setEndDate("2021-01");
+    // query.setPatientKeyword("wang");
+    // query.setBillNum("ZD00352012020009");
+    // query.setChargeStartDate("2020-12-01");
+    // query.setChargeEndDate("2020-12-31");
+    List<StatementBillChargeDetailVO> vos =
+        billPayMapper.selectOtherBillIsAcceptedDetailList(query);
     System.out.println(vos);
   }
 }

@@ -7,7 +7,6 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
@@ -27,12 +26,10 @@ import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.mapper.RegisteredMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
-import io.swagger.models.auth.In;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -161,8 +158,9 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
     if (i > 0) {
       if (null != appointmentId) {
         rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+      } else {
+        rabbitMqServiceFeign.sendMessage(id, 1, 2, BaseTreatmentProcess);
       }
-      rabbitMqServiceFeign.sendMessage(id, 1, 2, BaseTreatmentProcess);
     }
   }
 

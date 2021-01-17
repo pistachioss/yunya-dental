@@ -228,6 +228,8 @@ public class BaseTreatmentProcessBiz
           treatmentProcess.setTreatType(null);
           treatmentProcess.setRegisteredTime(null);
           treatmentProcess.setTreatStatus(null);
+          treatmentProcess.setRegisteredDate(null);
+          mapper.updateRegisteredValueByAppointmentId(treatmentProcess.getAppointmentId());
           mapper.updateByRegisteredId(registeredId, treatmentProcess);
         } else {
           mapper.deleteByRegisteredId(registeredId);
@@ -321,6 +323,7 @@ public class BaseTreatmentProcessBiz
     treatmentProcess.setTreatType(registered.getFirstVisit());
     treatmentProcess.setRegisteredDentistId(registered.getDentistId());
     treatmentProcess.setRegisteredTime(registered.getRegTime());
+    treatmentProcess.setRegisteredDate(registered.getCrtTime());
   }
 
   /**
@@ -494,21 +497,23 @@ public class BaseTreatmentProcessBiz
       BaseTreatmentProcess process, Integer appointmentId) {
     Registered registered = new Registered();
     registered.setAppointmentId(appointmentId);
+    registered.setInservice(true);
     Registered registeredResult = registeredMapper.selectOne(registered);
     if (null != registeredResult) {
-      if (registeredResult.getInservice()) {
-        process.setTreatType(registeredResult.getFirstVisit());
-        process.setRegisteredId(registeredResult.getId());
-        process.setTreatStatus((byte) 0);
-        process.setRegisteredDentistId(registeredResult.getDentistId());
-        process.setRegisteredTime(registeredResult.getRegTime());
-      } else {
-        process.setTreatType(null);
-        process.setRegisteredId(null);
-        process.setTreatStatus(null);
-        process.setRegisteredDentistId(null);
-        process.setRegisteredTime(null);
-      }
+      process.setTreatType(registeredResult.getFirstVisit());
+      process.setRegisteredId(registeredResult.getId());
+      process.setTreatStatus((byte) 0);
+      process.setRegisteredDentistId(registeredResult.getDentistId());
+      process.setRegisteredTime(registeredResult.getRegTime());
+      process.setRegisteredDate(registeredResult.getCrtTime());
+    } else {// 将挂号信息清空
+      process.setTreatType(null);
+      process.setRegisteredId(null);
+      process.setTreatStatus(null);
+      process.setRegisteredDentistId(null);
+      process.setRegisteredTime(null);
+      process.setRegisteredDate(null);
+      mapper.updateRegisteredValueByAppointmentId(appointmentId);
     }
   }
 

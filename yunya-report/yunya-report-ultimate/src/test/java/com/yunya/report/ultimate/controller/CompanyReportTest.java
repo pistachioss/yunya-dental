@@ -146,4 +146,37 @@ public class CompanyReportTest {
         financeController.productSoldDetailList(query);
     System.out.println(result);
   }
+
+  @Test
+  public void find6() {
+    StatementPatientCardRefundDetailQuery query = new StatementPatientCardRefundDetailQuery();
+    query.setOrgId(35);
+    query.setDateType((byte) 1);
+    query.setStartDate("2021-01");
+    query.setEndDate("2021-01");
+    query.setCardType((byte) 0);
+    // query.setPatientKeyword("");
+    // query.setCardNum("");
+    // query.setRefundStartDate("");
+    // query.setRefundEndDate("");
+    ResponseResult<PageInfo<StatementPatientCardRefundDetailVO>> result =
+        financeController.patientCardRefundDetailList(query);
+    System.out.println(result);
+  }
+
+  @Test
+  public void find7() {
+    StatementBillChargeDetailInfoQuery query = new StatementBillChargeDetailInfoQuery();
+    query.setOrgId(35);
+    query.setDateType((byte) 1);
+    query.setStartDate("2020-12");
+    query.setEndDate("2020-12");
+    //    query.setPatientKeyword();
+    //    query.setBillNum();
+    //    query.setChargeStartDate();
+    //    query.setChargeEndDate();
+    ResponseResult<PageInfo<StatementBillChargeDetailVO>> result =
+        financeController.billChargeDetailInfoList(query);
+    System.out.println(result);
+  }
 }
