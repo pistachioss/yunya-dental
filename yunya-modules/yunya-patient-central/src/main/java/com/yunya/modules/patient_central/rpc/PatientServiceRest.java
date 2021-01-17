@@ -7,9 +7,11 @@ import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 简单介绍:</br>
@@ -53,6 +56,8 @@ public class PatientServiceRest {
     /** 回调中心 */
     @Autowired private InformationCallbackBiz informationCallbackBiz;
 
+    @Autowired private RedisUtils redisUtils;
+
 
     @ApiOperation("根据姓名/手机号/姓名拼音模糊查询患者")
     @RequestMapping (value = "/findPatientByNameAndMobile",method = RequestMethod.POST)
@@ -63,7 +68,15 @@ public class PatientServiceRest {
     @ApiOperation("根据患者id查询患者信息")
     @RequestMapping (value = "/findPatientInfoById/{id}",method = RequestMethod.GET)
     public PatientBaseInfo findPatientInfoById(@PathVariable Integer id){
-        return patientBaseInfoBiz.selectById(id);
+        String key = RedisConstants.setKey(RedisConstants.PATIENT_BASE_INFO, String.valueOf(id));
+        PatientBaseInfo baseInfo = redisUtils.get(key,PatientBaseInfo.class);
+        if (baseInfo != null) {
+            return baseInfo;
+        } else {
+            PatientBaseInfo patientBaseInfo = patientBaseInfoBiz.selectById(id);
+            redisUtils.set(key,patientBaseInfo,3*3600, TimeUnit.SECONDS);
+            return patientBaseInfo;
+        }
     }
 
     @ApiOperation("根据患者id集合查询患者list")
