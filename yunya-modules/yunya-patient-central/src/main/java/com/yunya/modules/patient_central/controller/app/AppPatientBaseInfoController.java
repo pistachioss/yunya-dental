@@ -37,7 +37,6 @@ public class AppPatientBaseInfoController {
         this.patientBaseInfoBiz = patientBaseInfoBiz;
     }
 
-
     /**
      * 添加患者基本信息信息
      * @param patientBaseInfoModel 新增患者信息
@@ -100,6 +99,14 @@ public class AppPatientBaseInfoController {
             @RequestBody @Validated PatientExtendInfoModel patientExtendInfoModel) {
         this.patientBaseInfoBiz.updatePatientInfo(patientExtendInfoModel);
         return ResponseUtil.success();
+    }
+
+
+    @ApiOperation("员工推荐二维码")
+    @GetMapping("staffQRCode/{id}")
+    public ResponseResult staffQRCode(@PathVariable(value = "id") Integer id) {
+        String staffQRCode = this.patientBaseInfoBiz.staffQRCode(id);
+        return ResponseUtil.success(staffQRCode);
     }
 
 

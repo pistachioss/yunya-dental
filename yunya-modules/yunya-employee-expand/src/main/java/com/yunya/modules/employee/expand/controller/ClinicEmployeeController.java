@@ -1,6 +1,7 @@
 package com.yunya.modules.employee.expand.controller;
 
 
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigQueryReq;
@@ -50,6 +51,7 @@ public class ClinicEmployeeController {
 
     @ApiOperation("查询可预约，可挂号医生")
     @GetMapping("{clinicId}/config/list")
+    @CurrentUser
     public ResponseResult<EnableEmployeeRes> getEnableEmployeeList(@PathVariable(value = "clinicId") Integer clinicId) {
         EnableEmployeeRes result = clinicEmployeeConfigBiz.getAllEnableEmployee(clinicId);
         return ResponseUtil.success(result);
