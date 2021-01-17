@@ -282,13 +282,8 @@ public class TollBiz {
     String name = BaseContextHandler.getName();
     // 保存账单信息
     long millis = System.currentTimeMillis();
-    BillRecord billRecord = new BillRecord();
-    billRecord.setOrgId(orderRecordOrgId);
-    billRecord.setPatientId(patientId);
-    billRecord.setTreatmentRecordId(treatmentRecordId);
-    billRecord.setOrderRecordId(orderRecordId);
-    String billNum = billRecordBiz.generateBillNumber(orderRecordOrgId);
-    billRecord.setBillNumber(billNum);
+    BillRecord billRecord =
+        generateBillRecord(treatmentRecordId, patientId, orderRecordId, orderRecordOrgId);
     billRecord.setPrivilegeType(discountType);
     if (0 != discountType) {
       billRecord.setPrivilegeDate(new Date(System.currentTimeMillis()));
@@ -1249,13 +1244,9 @@ public class TollBiz {
       // 计算优惠总额
       BigDecimal privilegeAmount =
           calculatePrivilegeAmount(discountType, orderRecordId, generalDiscount, accreditDiscount);
-      BillRecord billRecord = new BillRecord();
-      billRecord.setOrgId(orderRecordOrgId);
-      billRecord.setPatientId(patientId);
-      billRecord.setTreatmentRecordId(treatmentId);
-      billRecord.setOrderRecordId(orderRecordId);
-      String billNumber = billRecordBiz.generateBillNumber(orderRecordOrgId);
-      billRecord.setBillNumber(billNumber);
+      BillRecord billRecord =
+          generateBillRecord(treatmentId, patientId, orderRecordId, orderRecordOrgId);
+
       billRecord.setReceivableAmount(totalAmount);
       billRecord.setPrivilegeType(discountType);
       billRecord.setPrivilegeAmount(privilegeAmount);
@@ -1323,6 +1314,27 @@ public class TollBiz {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     }
+  }
+
+  /**
+   * 构建账单记录
+   *
+   * @param treatmentId 就诊记录ID
+   * @param patientId 患者ID
+   * @param orderRecordId 订单记录ID
+   * @param orderRecordOrgId 订单组织ID
+   * @return BillRecord
+   */
+  private BillRecord generateBillRecord(
+      Integer treatmentId, Integer patientId, Integer orderRecordId, Integer orderRecordOrgId) {
+    BillRecord billRecord = new BillRecord();
+    billRecord.setOrgId(orderRecordOrgId);
+    billRecord.setPatientId(patientId);
+    billRecord.setTreatmentRecordId(treatmentId);
+    billRecord.setOrderRecordId(orderRecordId);
+    String billNumber = billRecordBiz.generateBillNumber(orderRecordOrgId);
+    billRecord.setBillNumber(billNumber);
+    return billRecord;
   }
 
   /**
