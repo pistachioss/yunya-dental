@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
 
@@ -242,7 +243,9 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     if (null == orderRecord) {
       throw new ClientServiceException("添加商品失败，传入参数有误，为查询到与之匹配的开单记录！", PARAM_NOT_ALLOW_EMPTY);
     }
-
+    if (ORDER_FINISH_STATUS.equals(orderRecord.getStatus())) {
+      throw new ClientServiceException("添加商品失败，当前就诊已结账，无法继续添加商品！", PARAM_NOT_ALLOW_EMPTY);
+    }
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
@@ -385,7 +388,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           }
           break;
         case 1:
-          if (BusinessConstants.ORDER_FINISH_STATUS.equals(status)) {
+          if (ORDER_FINISH_STATUS.equals(status)) {
             throw new ClientServiceException("删除开单明细失败，当前账单已结账，无法删除！", DELETE_NOT_ALLOW);
           }
           break;
