@@ -142,7 +142,8 @@
                 account_item ai
                 LEFT JOIN account_type a ON ai.account_type_id = a.id
             ) ai ON cai.account_item_id = ai.accountItemId
-        WHERE  cai.inservice = #{inservice} and
-            cai.account_item_id = #{accountItemId} and cai.company_id = #{orgId}
+        WHERE
+            cai.account_item_id = #{accountItemId}
+            and cai.company_id = #{orgId}
     </select>
 </mapper>

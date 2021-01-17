@@ -43,11 +43,8 @@ public interface ClinicAccountItemMapper extends Mapper<ClinicAccountItem> {
    *
    * @param orgId 组织ID
    * @param accountItemId 支付方式ID
-   * @param inservice 是否启用
-   * @return
+   * @return AccountItemVO
    */
   AccountItemVO selectAccountItemVO(
-      @Param("orgId") Integer orgId,
-      @Param("accountItemId") Integer accountItemId,
-      @Param("inservice") boolean inservice);
+      @Param("orgId") Integer orgId, @Param("accountItemId") Integer accountItemId);
 }

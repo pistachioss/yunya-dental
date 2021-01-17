@@ -1,14 +1,14 @@
 package com.yunya.modules.employee.expand.rpc;
 
+import com.yunya.models.expand.ClinicEmployeeConfig;
 import com.yunya.modules.employee.expand.model.response.EnableEmployeeRes;
 import com.yunya.modules.employee.expand.service.ClinicEmployeeConfigBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author bruce
@@ -25,5 +25,16 @@ public class ClinicEmployeeApi {
     public EnableEmployeeRes getEnableEmployeeList(@PathVariable(value = "clinicId") Integer clinicId) {
         EnableEmployeeRes result = clinicEmployeeConfigBiz.getAllEnableEmployee(clinicId);
         return result;
+    }
+
+    /**
+     * 新增员工可预约可挂号配置
+     * @param clinicEmployeeConfig
+     * @return
+     */
+    @ApiOperation(value = "新增员工默认可预约可挂号--内部服务使用",hidden = true)
+    @PostMapping("/api/default/employee/config")
+    public Integer addEmployeeConfig(@RequestBody ClinicEmployeeConfig clinicEmployeeConfig) {
+        return clinicEmployeeConfigBiz.addEmployeeConfig(clinicEmployeeConfig);
     }
 }
