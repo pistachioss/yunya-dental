@@ -38,9 +38,11 @@ import com.yunya.modules.patient_central.mapper.*;
 import org.apache.commons.httpclient.NameValuePair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -100,6 +102,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
   /** 就诊服务 */
   @Autowired private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
+
+
+  /** 获取患者服务端口号 */
+  @Value("${codeUrl.url}")
+  private String servePrort;
 
   /**
    * 通过患者id查询患者共用属性
@@ -1063,5 +1070,20 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       });
     }
     return patientTotalInfoVos;
+  }
+
+  /**
+   * 查询员工来源
+   * @return 员工二维码
+   */
+  public String staffQRCode(Integer id) {
+    PatientOrigin patientOrigin = new PatientOrigin();
+    patientOrigin.setOriginType(1);
+    patientOrigin.setParentId(0);
+    PatientOrigin patientOrigins = patientOriginMapper.selectOne(patientOrigin);
+    if (patientOrigins != null){
+      return servePrort+"/#/register?"+"originType="+patientOrigins.getOriginType()+"&originId="+id;
+    }
+   return null;
   }
 }

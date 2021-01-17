@@ -12,9 +12,11 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.Id;
 import java.util.List;
 
 /**
@@ -36,7 +38,6 @@ public class AppPatientBaseInfoController {
     public AppPatientBaseInfoController(PatientBaseInfoBiz patientBaseInfoBiz) {
         this.patientBaseInfoBiz = patientBaseInfoBiz;
     }
-
 
     /**
      * 添加患者基本信息信息
@@ -100,6 +101,15 @@ public class AppPatientBaseInfoController {
             @RequestBody @Validated PatientExtendInfoModel patientExtendInfoModel) {
         this.patientBaseInfoBiz.updatePatientInfo(patientExtendInfoModel);
         return ResponseUtil.success();
+    }
+
+
+    @ApiOperation("员工推荐二维码")
+    @GetMapping("staffQRCode/{id}")
+    public ResponseResult staffQRCode(@PathVariable(value = "id") Integer id) {
+        /** 注入患者来源Mapper */
+        String staffQRCode = this.patientBaseInfoBiz.staffQRCode(id);
+        return ResponseUtil.success(staffQRCode);
     }
 
 

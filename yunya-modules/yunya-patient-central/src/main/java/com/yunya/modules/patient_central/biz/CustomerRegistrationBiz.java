@@ -5,7 +5,9 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -19,6 +21,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * 简介: 客户登记业务层
@@ -63,10 +67,18 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
                 patientBaseInfo.setOriginType(patientOrigin.getOriginType());
             }
         }
+
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setName("杭州艾维医疗投资管理有限公司");
+        organizationModel.setTypes(new Byte[0]);
+        List<OrganizationInfoDetail> orgInfoList = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        if (orgInfoList.size() > 0 ){
+            OrganizationInfoDetail organizationInfoDetail = orgInfoList.get(0);
+            patientBaseInfo.setOrgId(organizationInfoDetail.getId());
+        }
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
         patientBaseInfo.setCrtId(1);
         patientBaseInfo.setCrtName("客户登记");
-        patientBaseInfo.setOrgId(35);
         mapper.insertPatientInfo(patientBaseInfo);
 
         PatientBaseInfoVo patientBaseInfoVo =
