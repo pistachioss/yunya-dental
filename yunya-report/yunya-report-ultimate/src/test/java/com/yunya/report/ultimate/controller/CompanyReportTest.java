@@ -179,4 +179,23 @@ public class CompanyReportTest {
         financeController.billChargeDetailInfoList(query);
     System.out.println(result);
   }
+
+  @Test
+  public void find8() {
+    StatementPatientCardRechargeDetailInfoQuery query =
+        new StatementPatientCardRechargeDetailInfoQuery();
+    query.setOrgId(35);
+    query.setDateType((byte) 0);
+    query.setStartDate("2021-01-01");
+    query.setEndDate("2021-01-17");
+    query.setCardType((byte) 1);
+    // query.setPatientKeyword("");
+    // query.setCardNum("");
+    // query.setRechargeStartDate("");
+    // query.setRechargeEndDate("");
+    // query.setWhetherPage(false);
+    ResponseResult<PageInfo<StatementPatientCardRechargeDetailVO>> result =
+        financeController.patientCardRechargeDetailList(query);
+    System.out.println(result);
+  }
 }
