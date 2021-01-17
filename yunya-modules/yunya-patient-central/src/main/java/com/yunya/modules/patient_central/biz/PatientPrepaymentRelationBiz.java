@@ -37,10 +37,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static com.yunya.framework.common.constant.BusinessConstants.*;
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
+import static com.yunya.framework.common.constant.BusinessConstants.ZERO;
 import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_NOT_ALLOW;
 
 /**
@@ -326,90 +328,88 @@ public class PatientPrepaymentRelationBiz
       patientBaseInfo =
           patientBaseInfoMapper.selectByPrimaryKey(patientPrepaymentsInfoVo.getPatientId());
     }
-    if (smsTemplateSetVO == null) {
-      throw new ClientServiceException("短信模板不存在", DATA_NOT_EXIST);
-    }
-
-    if (patientBaseInfo != null) {
-      String templateItem = smsTemplateSetVO.getTemplateItem();
-      JSONObject templateParam = new JSONObject();
-      if (StringHelper.isNotEmpty(templateItem)) {
-        String[] items = templateItem.split(",");
-        Map<String, Integer> repeat = new HashMap<>();
-        for (String item : items) {
-          Integer reNum = repeat.get(item);
-          String key = SmsTemplateItemEnum.getAction(item);
-          if (reNum == null) {
-            reNum = 0;
-          } else {
-            key = "re" + reNum + key;
-          }
-          repeat.put(item, ++reNum);
-          Integer code = Integer.parseInt(item);
-          // 充值
-          if (type == 0) {
-            // 患者姓名
-            if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {
-              templateParam.put(key, patientBaseInfo.getName());
-              // 预付款卡号
-            } else if (SmsTemplateItemEnum.PREPAID_ACCOUNT.getCode().equals(code)) {
-              templateParam.put(key, prepaidRechargeRecord.getPrepaidId());
-              // 预付款充值金额
-            } else if (SmsTemplateItemEnum.PREPAID_RECHARGE_AMOUNT.getCode().equals(code)) {
-              BigDecimal rechargeBonus = prepaidRechargeRecord.getRechargeBonus();
-              if (rechargeBonus == null) {
-                rechargeBonus = BigDecimal.valueOf(0);
-              }
-              templateParam.put(
-                  key, prepaidRechargeRecord.getRechargePrincipal().add(rechargeBonus));
-              // 预付款剩余金额
-            } else if (SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getCode().equals(code)) {
-              BigDecimal currentRechargeBonus = prepaidRechargeRecord.getCurrentRechargeBonus();
-              if (currentRechargeBonus == null) {
-                currentRechargeBonus = BigDecimal.valueOf(0);
-              }
-              templateParam.put(
-                  key,
-                  prepaidRechargeRecord.getCurrentRechargePrincipal().add(currentRechargeBonus));
-              // 其他
+    if (smsTemplateSetVO != null) {
+      if (patientBaseInfo != null) {
+        String templateItem = smsTemplateSetVO.getTemplateItem();
+        JSONObject templateParam = new JSONObject();
+        if (StringHelper.isNotEmpty(templateItem)) {
+          String[] items = templateItem.split(",");
+          Map<String, Integer> repeat = new HashMap<>();
+          for (String item : items) {
+            Integer reNum = repeat.get(item);
+            String key = SmsTemplateItemEnum.getAction(item);
+            if (reNum == null) {
+              reNum = 0;
             } else {
-              throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
+              key = "re" + reNum + key;
             }
-            // 消费
-          } else {
-            // 患者姓名
-            if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {
-              templateParam.put(key, patientBaseInfo.getName());
-              // 预付款卡号
-            } else if (SmsTemplateItemEnum.PREPAID_ACCOUNT.getCode().equals(code)) {
-              templateParam.put(key, prepaidExpendRecord.getPrepaidId());
-              // 预付款消费金额
-            } else if (SmsTemplateItemEnum.PREPAID_CONSUMPTION_AMOUNT.getCode().equals(code)) {
-              BigDecimal expendGift = prepaidExpendRecord.getExpendGift();
-              if (expendGift == null) {
-                expendGift = BigDecimal.valueOf(0);
+            repeat.put(item, ++reNum);
+            Integer code = Integer.parseInt(item);
+            // 充值
+            if (type == 0) {
+              // 患者姓名
+              if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {
+                templateParam.put(key, patientBaseInfo.getName());
+                // 预付款卡号
+              } else if (SmsTemplateItemEnum.PREPAID_ACCOUNT.getCode().equals(code)) {
+                templateParam.put(key, prepaidRechargeRecord.getPrepaidId());
+                // 预付款充值金额
+              } else if (SmsTemplateItemEnum.PREPAID_RECHARGE_AMOUNT.getCode().equals(code)) {
+                BigDecimal rechargeBonus = prepaidRechargeRecord.getRechargeBonus();
+                if (rechargeBonus == null) {
+                  rechargeBonus = BigDecimal.valueOf(0);
+                }
+                templateParam.put(
+                    key, prepaidRechargeRecord.getRechargePrincipal().add(rechargeBonus));
+                // 预付款剩余金额
+              } else if (SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getCode().equals(code)) {
+                BigDecimal currentRechargeBonus = prepaidRechargeRecord.getCurrentRechargeBonus();
+                if (currentRechargeBonus == null) {
+                  currentRechargeBonus = BigDecimal.valueOf(0);
+                }
+                templateParam.put(
+                    key,
+                    prepaidRechargeRecord.getCurrentRechargePrincipal().add(currentRechargeBonus));
+                // 其他
+              } else {
+                throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
               }
-              templateParam.put(key, prepaidExpendRecord.getExpendPrincipal().add(expendGift));
-              // 预付款剩余金额
-            } else if (SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getCode().equals(code)) {
-              BigDecimal currentBonus = prepaidExpendRecord.getCurrentBonus();
-              if (currentBonus == null) {
-                currentBonus = BigDecimal.valueOf(0);
-              }
-              templateParam.put(key, prepaidExpendRecord.getCurrentPrincipal().add(currentBonus));
-              // 其他
+              // 消费
             } else {
-              throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
+              // 患者姓名
+              if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {
+                templateParam.put(key, patientBaseInfo.getName());
+                // 预付款卡号
+              } else if (SmsTemplateItemEnum.PREPAID_ACCOUNT.getCode().equals(code)) {
+                templateParam.put(key, prepaidExpendRecord.getPrepaidId());
+                // 预付款消费金额
+              } else if (SmsTemplateItemEnum.PREPAID_CONSUMPTION_AMOUNT.getCode().equals(code)) {
+                BigDecimal expendGift = prepaidExpendRecord.getExpendGift();
+                if (expendGift == null) {
+                  expendGift = BigDecimal.valueOf(0);
+                }
+                templateParam.put(key, prepaidExpendRecord.getExpendPrincipal().add(expendGift));
+                // 预付款剩余金额
+              } else if (SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getCode().equals(code)) {
+                BigDecimal currentBonus = prepaidExpendRecord.getCurrentBonus();
+                if (currentBonus == null) {
+                  currentBonus = BigDecimal.valueOf(0);
+                }
+                templateParam.put(key, prepaidExpendRecord.getCurrentPrincipal().add(currentBonus));
+                // 其他
+              } else {
+                throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
+              }
             }
           }
         }
+        SmsCommonSendRecordModel smsModel = new SmsCommonSendRecordModel();
+        smsModel.setMobile(patientBaseInfo.getMobile());
+        smsModel.setSendObject(patientBaseInfo.getName());
+        smsModel.setTemplateParam(templateParam);
+        remoteSmsServiceFeign.batchSendModels(
+            smsTemplateSetVO.getId(), Collections.singletonList(smsModel));
       }
-      SmsCommonSendRecordModel smsModel = new SmsCommonSendRecordModel();
-      smsModel.setMobile(patientBaseInfo.getMobile());
-      smsModel.setSendObject(patientBaseInfo.getName());
-      smsModel.setTemplateParam(templateParam);
-      remoteSmsServiceFeign.batchSendModels(
-          smsTemplateSetVO.getId(), Collections.singletonList(smsModel));
     }
   }
 
