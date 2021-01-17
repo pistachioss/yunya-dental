@@ -1176,8 +1176,8 @@
     <select id="selectBillingItemDetailList" resultType="com.yunya.feign.report.domain.vo.BillingItemDetailVO">
         SELECT
         bbd.billDetailId,
-        DATE_FORMAT(bbd.orderDate, '%Y-%m-%d'),
-        DATE_FORMAT(bbd.billDate, '%Y-%m-%d'),
+        DATE_FORMAT(bbd.orderDate, '%Y-%m-%d') orderDate,
+        DATE_FORMAT(bbd.billDate, '%Y-%m-%d') billDate,
         bbd.billNum,
         bbd.quantity,
         bbd.patientId,
