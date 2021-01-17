@@ -11,10 +11,10 @@ import java.util.List;
 public interface AccountItemMapper extends Mapper<AccountItem> {
 
   /**
-   * 根据ID查询入账方式
+   * 根据支付方式ID查询入账方式
    *
    * @param id 入账方式ID
-   * @return
+   * @return AccountItemVO
    */
   AccountItemVO selectById(@Param("id") Integer id);
 
@@ -22,7 +22,7 @@ public interface AccountItemMapper extends Mapper<AccountItem> {
    * 根据条件查询入账方式列表
    *
    * @param queryForm 查询条件
-   * @return
+   * @return List<AccountItemVO>
    */
   List<AccountItemVO> selectAccountItemList(@Param("queryForm") AccountItemQueryForm queryForm);
 }

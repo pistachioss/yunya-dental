@@ -27,12 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 
@@ -113,7 +110,7 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
       pageInfo.setList(new ArrayList());
     }
     // 设置分页
-    PageHelperUtils.pageFromList(pageInfo,pageInfo.getList(),queryForm.getPageSize());
+    PageHelperUtils.pageFromList(pageInfo, pageInfo.getList(), queryForm.getPageSize());
     return pageInfo;
   }
 
@@ -132,11 +129,21 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
       List<AccountItemVO> clinicAccountItems = Lists.newArrayList();
       List<AccountItem> accountItems = accountItemMapper.selectAll();
       if (StringHelper.isNotEmpty(accountItems)) {
-        clinicAccountItems =
-            accountItems.stream()
-                .map(item -> mapper.selectAccountItemVO(orgId, item.getId(), true))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        ClinicAccountItem entity = new ClinicAccountItem();
+        entity.setCompanyId(orgId);
+        for (AccountItem item : accountItems) {
+          Integer itemId = item.getId();
+          entity.setAccountItemId(itemId);
+          AccountItemVO itemResult = mapper.selectAccountItemVO(orgId, itemId);
+          if (null != itemResult) {
+            if (itemResult.getInservice()) {
+              clinicAccountItems.add(itemResult);
+            }
+          } else {
+            AccountItemVO accountItemVO = accountItemMapper.selectById(itemId);
+            clinicAccountItems.add(accountItemVO);
+          }
+        }
       }
       resultData.setClinicAccountItems(clinicAccountItems);
     }

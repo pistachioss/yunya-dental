@@ -100,7 +100,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       resultData.setOrderRecordId(orderRecordId);
       resultData.setTotalAmount(orderRecord.getTotalAmount());
       resultData.setStatus(orderRecord.getStatus());
-      OrderBill4AppVO orderAndBill4App = billRecordMapper.findOrderAndBill4App(orderRecord.getTreatmentRecordId());
+      OrderBill4AppVO orderAndBill4App =
+          billRecordMapper.findOrderAndBill4App(orderRecord.getTreatmentRecordId());
       if (null != orderAndBill4App) {
         resultData.setPrivilegeAmount(orderAndBill4App.getPrivilegeAmount());
       }
@@ -128,12 +129,13 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     String orderKey = LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId;
     redisUtils.set(orderKey, treatmentRecordId, 5);
     List<OrderDetailModel> models = model.getOrderDetails();
+    Integer treatmentRecordOrgId = treatmentRecord.getOrgId();
     int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     // 将model转换成entity
     List<OrderDetail> orderDetails =
-        orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, models);
+        orderDetailBiz.transferModelToEntity(treatmentRecordOrgId, treatmentRecordId, models);
     // 计算开单总额
     BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
 
@@ -142,8 +144,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     OrderRecord orderResult = mapper.selectOne(orderRecord);
     Integer orderRecordId;
     if (null == orderResult) {
-      orderRecord.setOrgId(orgId);
-      String orderRecordNumber = generateOrderRecordNumber(orgId);
+      orderRecord.setOrgId(treatmentRecordOrgId);
+      String orderRecordNumber = generateOrderRecordNumber(treatmentRecordOrgId);
       orderRecord.setOrderRecordNum(orderRecordNumber);
       orderRecord.setPatientId(treatmentRecord.getPatientId());
       orderRecord.setTotalAmount(totalAmount);
@@ -396,7 +398,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
     redisUtils.set(LOCK_ORDER_PROCESSING_UNLOCK, orderRecordId, 5);
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
-    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    Integer orgId = orderRecord.getOrgId();
     OrderDetail orderDetail = new OrderDetail();
     orderDetail.setOrderRecordId(orderRecordId);
     orderDetailBiz.delete(orderDetail);
@@ -448,10 +450,11 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     entity.setId(billRecordId);
     entity.setInservice(true);
     BillRecord billRecord = billRecordMapper.selectOne(entity);
+    // 未收费不能调整
     if (null == billRecord) {
       throw new ClientServiceException("调整账单失败，请选择正确的就诊记录进行账单调整！", PARAMETERS_IS_ILLEGAL);
     }
-
+    // 收费记录全部撤销后才能调整
     BillPayRecord billPayRecord = new BillPayRecord();
     billPayRecord.setBillRecordId(billRecordId);
     billPayRecord.setInservice(true);
@@ -465,6 +468,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderDetail.setOrderRecordId(orderRecordId);
     orderDetail.setInservice(true);
     List<OrderDetail> orderDetailsData = orderDetailBiz.selectList(orderDetail);
+    // 获取调整后的开单明细，并比较是否有修改
     List<OrderDetailModel> detailModels = model.getOrderDetailModels();
     if (orderDetailsData.size() == detailModels.size()) {
       compareOrderDetails(orderDetailsData, detailModels);
@@ -474,6 +478,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     String name = BaseContextHandler.getName();
     Integer patientId = billRecord.getPatientId();
     Integer treatmentRecordId = billRecord.getTreatmentRecordId();
+    Integer billRecordOrgId = billRecord.getOrgId();
     // 前一条调整账单异常处理记录ID
     Integer preExceptionHandleRecordId =
         billExceptionHandleRecordMapper.selectPreExceptionHandleRecordId(
@@ -524,16 +529,16 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 2, BaseBill);
     }
-    // 订单明细对象转换
+    // 订单明细对象转换(调整账单不改变原来开单门诊ID)
     List<OrderDetail> orderDetails =
-        orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, detailModels);
+        orderDetailBiz.transferModelToEntity(billRecordOrgId, treatmentRecordId, detailModels);
     // 保存调整后订单记录
     BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
     orderRecord.setId(null);
     orderRecord.setPatientId(patientId);
-    orderRecord.setOrgId(orgId);
+    orderRecord.setOrgId(billRecordOrgId);
     orderRecord.setTreatmentRecordId(treatmentRecordId);
-    String orderRecordNumber = generateOrderRecordNumber(orgId);
+    String orderRecordNumber = generateOrderRecordNumber(billRecordOrgId);
     orderRecord.setOrderRecordNum(orderRecordNumber);
     orderRecord.setTotalAmount(totalAmount);
     orderRecord.setInservice(true);
@@ -566,6 +571,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
             detailModels.stream()
                 .filter(
                     model ->
+                        // 开单项目ID和数量是否有改变
                         detail.getBillingItemId().equals(model.getBillingItemId())
                             && detail.getQuantity().equals(model.getQuantity()))
                 .map(model -> detail)
@@ -622,6 +628,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
   /**
    * 查询当前订单可用预付款支付金额
+   *
    * @param orderRecordId 订单记录ID
    * @return
    */

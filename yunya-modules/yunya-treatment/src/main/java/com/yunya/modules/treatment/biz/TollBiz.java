@@ -278,16 +278,12 @@ public class TollBiz {
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    Integer orderRecordOrgId = orderRecord.getOrgId();
     String name = BaseContextHandler.getName();
     // 保存账单信息
     long millis = System.currentTimeMillis();
-    BillRecord billRecord = new BillRecord();
-    billRecord.setOrgId(orgId);
-    billRecord.setPatientId(patientId);
-    billRecord.setTreatmentRecordId(treatmentRecordId);
-    billRecord.setOrderRecordId(orderRecordId);
-    String billNum = billRecordBiz.generateBillNumber(orgId);
-    billRecord.setBillNumber(billNum);
+    BillRecord billRecord =
+        generateBillRecord(treatmentRecordId, patientId, orderRecordId, orderRecordOrgId);
     billRecord.setPrivilegeType(discountType);
     if (0 != discountType) {
       billRecord.setPrivilegeDate(new Date(System.currentTimeMillis()));
@@ -303,7 +299,7 @@ public class TollBiz {
     billRecord.setCrtTime(new Date(millis));
     billRecord.setCrtName(name);
     billRecordBiz.insertSelective(billRecord);
-    // 保存账单记录
+    // 保存账单收费记录
     Integer billRecordId = billRecord.getId();
     BillPayRecord billPayRecord = new BillPayRecord();
     billPayRecord.setOrgId(orgId);
@@ -319,6 +315,7 @@ public class TollBiz {
       billPayRecord.setStillOweAmount(actualReceivableAmount.subtract(totalCharge));
     }
     billPayRecord.setCrtId(userId);
+    // 首次收费时间与账单时间保持一致
     billPayRecord.setCrtTime(new Date(millis));
     billPayRecord.setCrtName(name);
     billPayRecordMapper.insertSelective(billPayRecord);
@@ -1154,7 +1151,7 @@ public class TollBiz {
     Set<MemberAccountModel> memberAccounts = model.getMemberAccountModels();
     Set<PaymentModel> paymentModels = model.getPaymentModels();
     // 计算并校验收欠费入账总额
-    BigDecimal totalCharge = new BigDecimal(0);
+    BigDecimal totalCharge;
     BigDecimal outstandingAmount = model.getOutstandingAmount();
     InvoiceModel invoiceModel = model.getInvoiceModel();
     byte discountType = 0;
@@ -1165,6 +1162,7 @@ public class TollBiz {
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    long currentTimeMillis = System.currentTimeMillis();
     if (null != billRecordResult) {
       BigDecimal privilegeAmount = billRecordResult.getPrivilegeAmount();
       BigDecimal actualReceivableAmount = billRecordResult.getActualReceivableAmount();
@@ -1180,7 +1178,7 @@ public class TollBiz {
         debtAmount = billRecordResult.getDebtAmount();
         checkTotalChargeAndDebtAmount(totalCharge, debtAmount, outstandingAmount);
         debtAmount = debtAmount.subtract(totalCharge);
-        discountType = billRecordResult.getPrivilegeType();//避免原来的优惠被覆盖
+        discountType = billRecordResult.getPrivilegeType(); // 避免原来的优惠被覆盖
       } else {
         usePrivilege = true;
         // 计算并校验收欠费入账总额
@@ -1200,7 +1198,7 @@ public class TollBiz {
         debtAmount = actualReceivableAmount.subtract(totalCharge);
       }
       billRecordResult.setPrivilegeType(discountType);
-      if (0 != discountType && billRecordResult.getPrivilegeDate()!=null) {
+      if (0 != discountType && billRecordResult.getPrivilegeDate() != null) {
         billRecordResult.setPrivilegeDate(new Date(System.currentTimeMillis()));
       }
       // 设置优惠总额
@@ -1225,7 +1223,7 @@ public class TollBiz {
       if (usePrivilege) {
         // 保存优惠明细
         savePrivilegeDetail(
-                discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
+            discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
         updateOrderDetailPayRecordWithPrivilege(orderRecordId, totalCharge);
       } else {
         updateOrderDetailPayRecordUnPrivilege(orderRecordId, totalCharge);
@@ -1237,6 +1235,7 @@ public class TollBiz {
               prepaymentAccounts, memberAccounts, paymentModels, (byte) 2);
       // 调整账单重新收费
       OrderRecord orderRecordResult = checkOrderRecord(treatmentId);
+      Integer orderRecordOrgId = orderRecordResult.getOrgId();
       // 获取开单总额
       BigDecimal totalAmount = orderRecordResult.getTotalAmount();
       orderRecordId = orderRecordResult.getId();
@@ -1245,13 +1244,9 @@ public class TollBiz {
       // 计算优惠总额
       BigDecimal privilegeAmount =
           calculatePrivilegeAmount(discountType, orderRecordId, generalDiscount, accreditDiscount);
-      BillRecord billRecord = new BillRecord();
-      billRecord.setOrgId(orgId);
-      billRecord.setPatientId(patientId);
-      billRecord.setTreatmentRecordId(treatmentId);
-      billRecord.setOrderRecordId(orderRecordId);
-      String billNumber = billRecordBiz.generateBillNumber(orgId);
-      billRecord.setBillNumber(billNumber);
+      BillRecord billRecord =
+          generateBillRecord(treatmentId, patientId, orderRecordId, orderRecordOrgId);
+
       billRecord.setReceivableAmount(totalAmount);
       billRecord.setPrivilegeType(discountType);
       billRecord.setPrivilegeAmount(privilegeAmount);
@@ -1269,6 +1264,7 @@ public class TollBiz {
       }
       billRecord.setCrtId(userId);
       billRecord.setCrtName(name);
+      billRecord.setCrtTime(new Date(currentTimeMillis));
       billRecord.setUpdId(userId);
       billRecord.setUpdName(name);
       billRecordBiz.insertSelective(billRecord);
@@ -1297,6 +1293,7 @@ public class TollBiz {
     billPayRecord.setStillOweAmount(debtAmount);
     billPayRecord.setCrtId(userId);
     billPayRecord.setCrtName(name);
+    billPayRecord.setCrtTime(new Date(currentTimeMillis));
     billPayRecord.setUpdId(userId);
     billPayRecord.setUpdName(name);
     int i = billPayRecordMapper.insertSelective(billPayRecord);
@@ -1317,6 +1314,27 @@ public class TollBiz {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     }
+  }
+
+  /**
+   * 构建账单记录
+   *
+   * @param treatmentId 就诊记录ID
+   * @param patientId 患者ID
+   * @param orderRecordId 订单记录ID
+   * @param orderRecordOrgId 订单组织ID
+   * @return BillRecord
+   */
+  private BillRecord generateBillRecord(
+      Integer treatmentId, Integer patientId, Integer orderRecordId, Integer orderRecordOrgId) {
+    BillRecord billRecord = new BillRecord();
+    billRecord.setOrgId(orderRecordOrgId);
+    billRecord.setPatientId(patientId);
+    billRecord.setTreatmentRecordId(treatmentId);
+    billRecord.setOrderRecordId(orderRecordId);
+    String billNumber = billRecordBiz.generateBillNumber(orderRecordOrgId);
+    billRecord.setBillNumber(billNumber);
+    return billRecord;
   }
 
   /**
@@ -1357,6 +1375,12 @@ public class TollBiz {
     return orderRecordResult;
   }
 
+  /**
+   * 更新订单明细收费记录
+   *
+   * @param orderRecordId 订单ID
+   * @param totalCharge 入账总额
+   */
   private void updateOrderDetailPayRecordUnPrivilege(
       Integer orderRecordId, BigDecimal totalCharge) {
     OrderDetailPayRecord orderDetailPayRecord = new OrderDetailPayRecord();
@@ -1583,6 +1607,7 @@ public class TollBiz {
 
   /**
    * 查询当前订单可用预付款支付金额
+   *
    * @param orderRecordId 订单记录ID
    * @return
    */
