@@ -53,6 +53,18 @@ public class BusinessConstants {
   /** 银行账户支付方式名称 */
   public static final String ACCOUNT_ITEM_OF_BANK = "银行账户";
 
+  /*************************** 岗位组系统初始化参数 ***********************/
+  /** 医生岗位组 */
+  public static final Integer DENTIST_GROUP_ID = 3;
+  /** 助手岗位组 */
+  public static final Integer ASSISTANT_GROUP_ID = 4;
+  /** 门诊经理岗位组 */
+  public static final Integer CLINIC_MANAGER_ID = 7;
+  /** 前台岗位组 */
+  public static final Integer RECEPTIONIST_ID = 8;
+  /** 门诊主任岗位组 */
+  public static final Integer CLINIC_DIRECTOR_ID = 12;
+
   /** -------------------------用户、员工信息相关常量--------------------------- */
 
   /** ------------------------ 其他 ----------------------------------------- */

@@ -39,7 +39,7 @@
             mrrd.type
         FROM
             member_recharge_record mrrd
-        where mrrd.member_id = #{form.cardNumber}
+        where mrrd.member_id = #{form.cardNumber} and 'type' = 0
         order by operatingTime desc
     </select>
 </mapper>

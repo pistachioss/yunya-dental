@@ -2,6 +2,7 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.sms.model.SmsVerifyCodeModel;
@@ -15,6 +16,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.*;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.expand.ClinicEmployeeConfig;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.system.SysUser;
 import com.yunya.models.system.SysUserPost;
@@ -70,6 +72,8 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   @Autowired private RedisUtils redisUtils;
   /** 短信服务调用 */
   @Autowired private RemoteSmsServiceFeign remoteSmsServiceFeign;
+  /** 员工配置 */
+  @Autowired private RemoteClinicEmployeeConfigFeign clinicEmployeeConfigFeign;
 
   /**
    * 根据条件查询用户信息详情列表
@@ -167,6 +171,12 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       entity.setCrtName(BaseContextHandler.getName());
       int i = sysUserPostMapper.insertSelective(entity);
       if (i > 0) {
+//        // 同步新增用户可登录组织的默认配置可预约可挂号
+//        ClinicEmployeeConfig employeeConfig = new ClinicEmployeeConfig();
+//        employeeConfig.setClinicId(form.getOrgId());
+//        employeeConfig.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+//        employeeConfig.setEmployeeId(userId);
+//        this.clinicEmployeeConfigFeign.addEmployeeConfig(employeeConfig);
         // 发送消息同步员工信息
         rabbitMqServiceFeign.sendMessage(entity.getId(), 0, BaseUserPost);
       }

@@ -104,46 +104,68 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
     public EnableEmployeeRes getAllEnableEmployee(Integer clinicId) {
         LOGGER.info("查询可预约，挂号接口请求参数：clinic:{}", clinicId);
         Example example = new Example(ClinicEmployeeConfig.class);
-        example.createCriteria().andEqualTo("clinicId", clinicId);
+        example.createCriteria().andEqualTo("clinicId", clinicId)
+                                .andEqualTo("inservice",true);
         List<ClinicEmployeeConfig> allList = mapper.selectByExample(example);
 
-        // 在职的可预约可挂号的医生ID
-        List<Integer> enableInserviceEmpIds = null;
-        // 查询可预约挂号医生岗位组
-        PostGroupModel groupQuery = new PostGroupModel();
-        groupQuery.setName("医生");
-        List<PostGroup> postGroupList = systemServiceFeign.findPostGroupList(groupQuery);
-        if (StringHelper.isNotEmpty(postGroupList)) {
-            List<Integer> collect = postGroupList.stream().map(postGroup -> postGroup.getId()).collect(Collectors.toList());
-            // 过滤掉已经离职的员工和没有本崩症登录权限的员工
-            SysUserEmployeeModel sysUserQuery = new SysUserEmployeeModel();
-            List<Integer> orgIds = new ArrayList();
-            orgIds.add(clinicId);
-            sysUserQuery.setOrgIds(orgIds);
-            sysUserQuery.setPostGroupId(collect);
-            sysUserQuery.setWorkStatus(new Byte[]{1});
-            sysUserQuery.setWhetherPage(false);
-            List<SysUserInfoDetail> sysUserEmployeeInfoList = systemServiceFeign.findSysUserEmployeeInfoList(sysUserQuery);
-            if (StringHelper.isNotEmpty(sysUserEmployeeInfoList)) {
-                enableInserviceEmpIds = sysUserEmployeeInfoList.stream().map(sysUserInfoDetail -> sysUserInfoDetail.getUserId()).collect(Collectors.toList());
-            } else {
-                enableInserviceEmpIds = new ArrayList<>();
-            }
-        }
+        // 查询可预约可挂号医生，如果clinicEmployeeConfig表中没有对应数据，并且systemUser表中存在数据，则为可预约可挂号
+        // 如果clinicEmployeeConfig表中有数据，则根据表中对应可预约字段和可挂号字段来判断是否可预约可挂号
+        SysUserEmployeeModel sysUserQuery = new SysUserEmployeeModel();
+        List<Integer> orgIds = new ArrayList();
+        orgIds.add(clinicId);
+        sysUserQuery.setOrgIds(orgIds);
+        List<Integer> postGroupIds = new ArrayList<>();
+        // 设置医生岗位组
+        postGroupIds.add(BusinessConstants.DENTIST_GROUP_ID);
+        sysUserQuery.setPostGroupId(postGroupIds);
+        sysUserQuery.setWorkStatus(new Byte[]{0,1,3});
+        sysUserQuery.setWhetherPage(false);
+        List<SysUserInfoDetail> sysUserEmployeeInfoList = systemServiceFeign.findSysUserEmployeeInfoList(sysUserQuery);
 
         EnableEmployeeRes res = new EnableEmployeeRes();
         if (CollectionUtils.isNotEmpty(allList)) {
-            List<Integer> finalEnableInserviceEmpIds = enableInserviceEmpIds;
+            List<SysUserInfoDetail> enableAppointRegisterUsers = sysUserEmployeeInfoList.stream().filter(sysUser -> {
+                Integer userId = sysUser.getUserId();
+                List<ClinicEmployeeConfig> collect = allList.stream().filter(config -> config.getEmployeeId().equals(userId)).collect(Collectors.toList());
+                if (StringHelper.isNotEmpty(collect)) {
+                    ClinicEmployeeConfig clinicEmployeeConfig = collect.get(0);
+                    Integer enableAppoint = clinicEmployeeConfig.getEnableAppoint();
+                    Integer enableRegistry = clinicEmployeeConfig.getEnableRegistry();
+                    if (enableAppoint.equals(1) && enableRegistry.equals(1)) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return true;
+                }
+            }).collect(Collectors.toList());
+
+            List<EnableChooseEmployeeRes> appointResList = null;
+            List<EnableChooseEmployeeRes> registerResList = null;
             //可预约医生
-            List<ClinicEmployeeConfig> appointList = allList.stream().filter(config -> Objects.equal(BusinessConstants.ENABLE_NUM, config.getEnableAppoint()) && finalEnableInserviceEmpIds.contains(config.getEmployeeId()))
-                    .collect(Collectors.toList());
-            //可挂号医生
-            List<ClinicEmployeeConfig> registerList = allList.stream().filter(config -> Objects.equal(BusinessConstants.ENABLE_NUM, config.getEnableRegistry()) && finalEnableInserviceEmpIds.contains(config.getEmployeeId()))
-                    .collect(Collectors.toList());
-            List<EnableChooseEmployeeRes> appointResList = appointList.stream().map(this::assembleEnableEmployee).collect(Collectors.toList());
-            List<EnableChooseEmployeeRes> registerResList = registerList.stream().map(this::assembleEnableEmployee).collect(Collectors.toList());
-            res.setEnableAppointList(appointResList);
-            res.setEnableRegistryList(registerResList);
+            if (StringHelper.isNotEmpty(enableAppointRegisterUsers)) {
+                //可预约医生
+                List<ClinicEmployeeConfig> appointList = allList.stream().filter(config ->
+                    Objects.equal(BusinessConstants.ENABLE_NUM, config.getEnableAppoint())).collect(Collectors.toList());
+                //可挂号医生
+                List<ClinicEmployeeConfig> registerList = allList.stream().filter(config -> Objects.equal(BusinessConstants.ENABLE_NUM, config.getEnableRegistry()))
+                        .collect(Collectors.toList());
+                appointResList = appointList.stream().map(this::assembleEnableEmployee).collect(Collectors.toList());
+                registerResList = registerList.stream().map(this::assembleEnableEmployee).collect(Collectors.toList());
+                for(SysUserInfoDetail user : enableAppointRegisterUsers){
+                    List<ClinicEmployeeConfig> collect = allList.stream().filter(item -> item.getEmployeeId().equals(user.getUserId())).collect(Collectors.toList());
+                    if (StringHelper.isEmpty(collect)) {
+                        EnableChooseEmployeeRes enableChooseEmployeeRes = new EnableChooseEmployeeRes();
+                        enableChooseEmployeeRes.setEmployeeId(user.getUserId());
+                        enableChooseEmployeeRes.setEmployeeName(user.getName());
+                        appointResList.add(enableChooseEmployeeRes);
+                        registerResList.add(enableChooseEmployeeRes);
+                    }
+                }
+            }
+            res.setEnableAppointList(StringHelper.isNotEmpty(appointResList)? appointResList : new ArrayList<>());
+            res.setEnableRegistryList(StringHelper.isNotEmpty(registerResList) ? registerResList : new ArrayList<>());
         }
         return res;
     }
@@ -165,6 +187,15 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
             configRes.setClinicDepartmentRoomName(departmentRoom == null ? null : departmentRoom.getName());
         }
         return configRes;
+    }
+
+    /**
+     * 新增员工可预约可挂号配置
+     * @param clinicEmployeeConfig
+     * @return
+     */
+    public Integer addEmployeeConfig(ClinicEmployeeConfig clinicEmployeeConfig) {
+        return mapper.insertSelective(clinicEmployeeConfig);
     }
 
 
