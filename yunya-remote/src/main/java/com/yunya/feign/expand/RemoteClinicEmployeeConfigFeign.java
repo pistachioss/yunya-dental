@@ -6,11 +6,13 @@ import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.expand.ClinicEmployeeConfig;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -55,4 +57,15 @@ public interface RemoteClinicEmployeeConfigFeign {
     @ApiOperation(value = "根据员工ID查询该员工在所有门诊的可预约可挂号信息--内部服务使用",hidden = true)
     @GetMapping("/api/employee/config/{employeeId}")
     public List<ClinicEmployeeConfig> findClinicEmployeeConfigs(@PathVariable(value = "employeeId") Integer employeeId);
+
+    /**
+     * 根据员工ID和组织ID删除员工配置信息
+     * @param employeeId 员工ID
+     * @param clinicId  门诊ID
+     * @return 成功返回 删除行数，否则返回0
+     */
+    @ApiOperation(value = "根据员工ID和组织ID删除员工配置信息--内部服务使用",hidden = true)
+    @GetMapping("/api/delete/employee/config/{employeeId}/{clinicId}")
+    public Integer deleteClinicEmployeeConfig(@PathVariable("employeeId") @Validated @NotNull(message = "员工ID不能为空") Integer employeeId,
+                                              @PathVariable("clinicId") @Validated @NotNull(message = "门诊ID不能为空") Integer clinicId);
 }

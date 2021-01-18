@@ -190,6 +190,10 @@
         <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
             #{item.employeeId}
         </foreach>
-
     </update>
+
+    <!-- 根据员工ID和门诊ID删除配置信息 -->
+    <delete id="deleteEmployeeConfig">
+        delete cec.* from clinic_employee_config cec where cec.employee_id = #{employeeId} and cec.clinic_id = #{clinicId}
+    </delete>
 </mapper>

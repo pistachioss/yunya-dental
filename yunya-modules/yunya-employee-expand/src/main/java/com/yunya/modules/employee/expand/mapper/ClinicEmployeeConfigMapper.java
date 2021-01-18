@@ -21,4 +21,12 @@ public interface ClinicEmployeeConfigMapper extends Mapper<ClinicEmployeeConfig>
      * @param list
      */
     Integer updateBatch(@Param("list") List<ClinicEmployeeConfig> list);
+
+    /**
+     * 根据员工ID和门诊ID删除配置信息
+     * @param employeeId 员工ID
+     * @param clinicId  门诊ID
+     * @return
+     */
+    Integer deleteEmployeeConfig(@Param("employeeId") Integer employeeId, @Param("clinicId") Integer clinicId);
 }
