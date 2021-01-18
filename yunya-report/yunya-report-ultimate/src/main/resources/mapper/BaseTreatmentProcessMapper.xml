@@ -420,9 +420,9 @@
     <select id="selectPatientFirstTreatOriginList"
             resultType="com.yunya.feign.report.domain.vo.PatientFirstTreatOriginVO">
         SELECT
-        IFNULL(btp.origin_type, 0) AS originType,
-        IFNULL( btp.origin_type_name, '其他' ) AS orrginTypeName,
-        COUNT(distinct patient_id ) AS patientCount
+        IFNULL(btp.origin_type, 0) AS patientOriginTypeId,
+        IFNULL( btp.origin_type_name, '其他' ) AS patientOriginTypeName,
+        COUNT(distinct patient_id ) AS firstTreatCount
         FROM
         (
         SELECT
