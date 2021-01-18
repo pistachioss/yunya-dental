@@ -218,8 +218,6 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
     }
 
     public void uptSelectiveById(SmsChargeOrder smsChargeOrder) {
-        smsChargeOrder.setUptId(-999);
-        smsChargeOrder.setUptTime(new Date(System.currentTimeMillis()));
         mapper.updateByPrimaryKeySelective(smsChargeOrder);
     }
 

@@ -15,4 +15,10 @@ public interface ClinicEmployeeConfigMapper extends Mapper<ClinicEmployeeConfig>
      * @param list
      */
     void insertBatch(@Param("list") List<ClinicEmployeeConfig> list);
+
+    /**
+     * 批量更新数据
+     * @param list
+     */
+    Integer updateBatch(@Param("list") List<ClinicEmployeeConfig> list);
 }

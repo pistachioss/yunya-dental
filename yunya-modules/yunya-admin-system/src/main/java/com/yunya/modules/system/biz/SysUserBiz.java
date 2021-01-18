@@ -16,7 +16,6 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.*;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.expand.ClinicEmployeeConfig;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.system.SysUser;
 import com.yunya.models.system.SysUserPost;
@@ -38,12 +37,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseEmployee;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseUserPost;
+import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGID;
 import static com.yunya.framework.common.constant.BusinessConstants.USER_RESIGNATION_STATUS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.*;
@@ -250,7 +254,34 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysEmployeeEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
       sysEmployeeEntity.setUpdName(BaseContextHandler.getName());
       sysEmployeeEntity.setUpdTime(new Date(System.currentTimeMillis()));
-      sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
+      int updResult = sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
+      if (updResult > 0 && sysEmployeeEntity.getWorkStatus() == 2) {
+        // 从可预约可挂号配置列表中删除该医生
+        List<LoginOrganizationForm> loginOrganizationForms = form.getLoginOrganizationForms();
+        List<ClinicEmployeeConfig> clinicEmployeeConfigs = new ArrayList<>();
+        if (StringHelper.isNotEmpty(loginOrganizationForms)) {
+          loginOrganizationForms.forEach(item->{
+            ClinicEmployeeConfig employeeConfig = new ClinicEmployeeConfig();
+            employeeConfig.setClinicId(item.getOrgId());
+            employeeConfig.setEmployeeId(userId);
+            employeeConfig.setInservice(0);
+            employeeConfig.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+            employeeConfig.setUpdTime(LocalDateTime.now());
+            clinicEmployeeConfigs.add(employeeConfig);
+          });
+          this.clinicEmployeeConfigFeign.editEmployeeConfig(clinicEmployeeConfigs);
+        } else {
+          List<ClinicEmployeeConfig> clinicEmployeeConfigList = this.clinicEmployeeConfigFeign.findClinicEmployeeConfigs(userId);
+          if (StringHelper.isNotEmpty(clinicEmployeeConfigList)) {
+            clinicEmployeeConfigList.forEach(item->{
+              item.setInservice(0);
+              item.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+              item.setUpdTime(LocalDateTime.now());
+            });
+          }
+          this.clinicEmployeeConfigFeign.editEmployeeConfig(clinicEmployeeConfigList);
+        }
+      }
       // 发送消息同步员工信息
       rabbitMqServiceFeign.sendMessage(userId, 1, BaseEmployee);
     }
@@ -451,13 +482,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     smsVerifyCodeModel.setMobile(mobile);
     smsVerifyCodeModel.setVerifyCode(messageCode);
     smsVerifyCodeModel.setEventCode(SmsAutosendEventEnum.FORGET_PASSWORD.getCode());
-    ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(smsVerifyCodeModel);
-    if (responseResult == null) {
-      return ResponseUtil.fail(OPERATION_FAIL, "短信验证码发送失败", null);
-    }
-    if (responseResult.getStatus() != 0) {
-      return ResponseUtil.fail(OPERATION_FAIL, responseResult.getMsg(), null);
-    }
+    redisUtils.lPush(SMS_SEND_VERIFYCODE_QUEUE + COMPANY_ORGID,smsVerifyCodeModel);
     return ResponseUtil.success("短信验证码已发送");
   }
 

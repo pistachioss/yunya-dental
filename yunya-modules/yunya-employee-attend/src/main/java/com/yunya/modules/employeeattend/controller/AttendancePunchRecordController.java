@@ -239,8 +239,7 @@ public class AttendancePunchRecordController {
     @ApiOperation("分页查询请假时长的考勤汇总明细")
     @PostMapping("/statisticsLeavesByMinute")
     public ResponseResult<PageInfo<AttendanceLeaveMinuteVO>> statisticsLeavesByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
-        List<AttendanceLeaveMinuteVO> result = attendancePunchRecordBiz.statisticsLeavesByMinute(queryForm);
-        PageInfo<AttendanceLeaveMinuteVO> pageInfo = new PageInfo<>(result);
+        PageInfo<AttendanceLeaveMinuteVO> pageInfo = attendancePunchRecordBiz.statisticsLeavesByMinute(queryForm);
         return ResponseUtil.success(pageInfo);
     }
 
@@ -253,8 +252,7 @@ public class AttendancePunchRecordController {
     @ApiOperation("分页查询外勤时长的考勤汇总明细")
     @PostMapping("/statisticsFieldsByMinute")
     public ResponseResult<PageInfo<AttendanceFieldMinuteVO>> statisticsFieldsByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
-        List<AttendanceFieldMinuteVO> result = attendancePunchRecordBiz.statisticsFieldsByMinute(queryForm);
-        PageInfo<AttendanceFieldMinuteVO> pageInfo = new PageInfo<>(result);
+        PageInfo<AttendanceFieldMinuteVO> pageInfo = attendancePunchRecordBiz.statisticsFieldsByMinute(queryForm);
         return ResponseUtil.success(pageInfo);
     }
 
@@ -267,8 +265,7 @@ public class AttendancePunchRecordController {
     @ApiOperation("分页查询迟到统计的明细")
     @PostMapping("/statisticsPunchRecordByLaterCount")
     public ResponseResult<PageInfo<AttendanceLaterCountVO>> statisticsPunchRecordByLaterCount(@RequestBody AttendanceStatisticsQueryForm queryForm) {
-        List<AttendanceLaterCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByLaterCount(queryForm);
-        PageInfo<AttendanceLaterCountVO> pageInfo = new PageInfo<>(result);
+        PageInfo<AttendanceLaterCountVO> pageInfo = attendancePunchRecordBiz.statisticsPunchRecordByLaterCount(queryForm);
         return ResponseUtil.success(pageInfo);
     }
 
@@ -281,8 +278,7 @@ public class AttendancePunchRecordController {
     @ApiOperation("分页查询早退统计的明细")
     @PostMapping("/statisticsPunchRecordByEarlyCount")
     public ResponseResult<PageInfo<AttendanceEarlyCountVO>> statisticsPunchRecordByEarlyCount(@RequestBody AttendanceStatisticsQueryForm queryForm) {
-        List<AttendanceEarlyCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByEarlyCount(queryForm);
-        PageInfo<AttendanceEarlyCountVO> pageInfo = new PageInfo<>(result);
+        PageInfo<AttendanceEarlyCountVO> pageInfo = attendancePunchRecordBiz.statisticsPunchRecordByEarlyCount(queryForm);
         return ResponseUtil.success(pageInfo);
     }
 
@@ -308,8 +304,7 @@ public class AttendancePunchRecordController {
     @ApiOperation("分页查询无效卡统计的明细")
     @PostMapping("/statisticsPunchRecordByInvalidCount")
     public ResponseResult<PageInfo<AttendanceInvalidCountVO>> statisticsPunchRecordByInvalidCount(@RequestBody AttendanceStatisticsQueryForm queryForm) {
-        List<AttendanceInvalidCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByInvalidCount(queryForm);
-        PageInfo<AttendanceInvalidCountVO> pageInfo = new PageInfo<>(result);
+        PageInfo<AttendanceInvalidCountVO> pageInfo = attendancePunchRecordBiz.statisticsPunchRecordByInvalidCount(queryForm);
         return ResponseUtil.success(pageInfo);
     }
 }

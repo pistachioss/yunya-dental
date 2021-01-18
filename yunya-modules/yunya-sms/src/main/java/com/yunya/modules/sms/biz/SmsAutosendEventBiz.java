@@ -64,14 +64,15 @@ public class SmsAutosendEventBiz extends BaseBiz<SmsAutosendEventMapper, SmsAuto
         if (autosendEvent == null) {
             throw new ClientServiceException("事件不存在", DATA_NOT_EXIST);
         }
-        if (autosendEvent.getTemplateId() == null) {
-            throw new ClientServiceException("请先关联短信模板", OPERATION_NOT_ALLOW);
-        }
         Byte status = autosendEvent.getStatus();
         if (SmsEnableEnum.DISABLE.getCode().equals(status)) {
             status = SmsEnableEnum.ENABLE.getCode();
         } else {
             status = SmsEnableEnum.DISABLE.getCode();
+        }
+        // 未关联模板的同时想启用
+        if (autosendEvent.getTemplateId()==null && status.equals(SmsEnableEnum.ENABLE.getCode())) {
+            throw new ClientServiceException("请先关联短信模板", OPERATION_NOT_ALLOW);
         }
         SmsAutosendEvent smsAutosendEvent = new SmsAutosendEvent();
         smsAutosendEvent.setId(id);
@@ -85,7 +86,6 @@ public class SmsAutosendEventBiz extends BaseBiz<SmsAutosendEventMapper, SmsAuto
      * @param smsAutosendEventModel 签名设置添加模型
      */
     public void submit(SmsAutosendEventModel smsAutosendEventModel) {
-        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         Integer id = smsAutosendEventModel.getId();
         SmsAutosendEvent autosendEvent = selectById(id);
         if (autosendEvent == null) {
@@ -115,23 +115,23 @@ public class SmsAutosendEventBiz extends BaseBiz<SmsAutosendEventMapper, SmsAuto
     public ResponseResult<T> initAutoSendEvent(Integer orgId, boolean isClinic) {
         List<SmsAutosendEventEnum> events = SmsAutosendEventEnum.values(isClinic);
         String userId = BaseContextHandler.getUserID();
-        if (StringHelper.isNotEmpty(userId)) {
+        if (StringHelper.isNotEmpty(userId)) {// 创建门诊时
             events.forEach(event -> {
                 SmsAutosendEvent entity = new SmsAutosendEvent();
                 entity.setOrgId(orgId);
-                entity.setStatus(SmsEnableEnum.ENABLE.getCode());
+                entity.setStatus(SmsEnableEnum.DISABLE.getCode());
                 entity.setEventCode(event.getCode());
                 entity.setEventName(event.getValue());
                 insert(entity);
             });
-        } else {
+        } else {// 初始化创建
             Date now = new Date(System.currentTimeMillis());
             events.forEach(event -> {
                 SmsAutosendEvent entity = new SmsAutosendEvent();
                 entity.setEventCode(event.getCode());
                 entity.setEventName(event.getValue());
                 entity.setOrgId(orgId);
-                entity.setStatus(SmsEnableEnum.ENABLE.getCode());
+                entity.setStatus(SmsEnableEnum.DISABLE.getCode());
                 entity.setCrtId(-999);
                 entity.setCrtTime(now);
                 entity.setUptId(-999);

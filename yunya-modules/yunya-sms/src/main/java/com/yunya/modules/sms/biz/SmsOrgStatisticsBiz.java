@@ -138,7 +138,7 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
      * @param usedNum：扣费条数
      * @param orgId 门诊
      */
-    public void decrByOrgId(int usedNum, Integer orgId) {
+    public void decrByOrgId(int usedNum, Integer orgId, Integer userId) {
         Date now = new Date(System.currentTimeMillis());
         try {
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
@@ -158,7 +158,7 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
             }
             entity.setId(smsOrgStatisticsVO.getId());
             entity.setSurplusNum(usedNum);
-            entity.setUptId(-999);
+            entity.setUptId(userId);
             entity.setUptTime(now);
             mapper.updateByPrimaryKeySelective(entity);
             redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);

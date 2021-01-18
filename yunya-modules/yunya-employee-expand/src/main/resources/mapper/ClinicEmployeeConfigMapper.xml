@@ -19,11 +19,177 @@
 
     <insert id="insertBatch">
         insert into
-        `clinic_employee`
+        `clinic_employee_config`
         (`employee_id`, `clinic_id`)
         values
         <foreach collection ="list" item="item" index= "index" separator =",">
             (#{item.employeeId}, #{item.clinicId})
         </foreach >
     </insert>
+
+    <!-- 批量更新数据 -->
+    <update id="updateBatch" parameterType="java.util.List">
+        update `clinic_employee_config`
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="assistant_employee_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    when employee_id=#{item.employeeId}
+                     <choose>
+                         <when test="item.clinicId != null">
+                             and clinic_id=#{item.clinicId}
+                         </when>
+                     </choose>
+                     then #{item.assistantEmployeeId}
+                </foreach>
+            </trim>
+            <trim prefix="clinic_department_room_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    when employee_id=#{item.employeeId}
+                    <choose>
+                        <when test="item.clinicId != null">
+                            and clinic_id=#{item.clinicId}
+                        </when>
+                    </choose>
+                    then #{item.clinicDepartmentRoomId}
+                </foreach>
+            </trim>
+            <trim prefix="enable_appoint = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.enableAppoint != null">
+                        when employee_id=#{item.employeeId}
+                        <choose>
+                            <when test="item.clinicId != null">
+                                and clinic_id=#{item.clinicId}
+                            </when>
+                        </choose>
+                        then #{item.enableAppoint}
+                    </if>
+                    <if test="item.enableAppoint == null">
+                        when employee_id=#{item.employeeId}
+                        <choose>
+                            <when test="item.clinicId != null">
+                                and clinic_id=#{item.clinicId}
+                            </when>
+                        </choose>
+                        then 1
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="enable_registry = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.enableRegistry != null">
+                        when employee_id=#{item.employeeId}
+                        <choose>
+                            <when test="item.clinicId != null">
+                                and clinic_id=#{item.clinicId}
+                            </when>
+                        </choose>
+                        then #{item.enableRegistry}
+                    </if>
+                    <if test="item.enableRegistry == null">
+                        when employee_id=#{item.employeeId}
+                        <choose>
+                            <when test="item.clinicId != null">
+                                and clinic_id=#{item.clinicId}
+                            </when>
+                        </choose>
+                        then 1
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="enable_download = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.enableDownload != null">
+                        when employee_id=#{item.employeeId}
+                        <choose>
+                            <when test="item.clinicId != null">
+                                and clinic_id=#{item.clinicId}
+                            </when>
+                        </choose>
+                        then #{item.enableDownload}
+                    </if>
+                    <if test="item.enableDownload == null">
+                        when employee_id=#{item.employeeId}
+                        <choose>
+                            <when test="item.clinicId != null">
+                                and clinic_id=#{item.clinicId}
+                            </when>
+                        </choose>
+                        then 1
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="inservice = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.inservice != null">
+                        when employee_id=#{item.employeeId}
+                        <choose>
+                            <when test="item.clinicId != null">
+                                and clinic_id=#{item.clinicId}
+                            </when>
+                        </choose>
+                        then #{item.inservice}
+                    </if>
+                    <if test="item.inservice == null">
+                        when employee_id=#{item.employeeId}
+                        <choose>
+                            <when test="item.clinicId != null">
+                                and clinic_id=#{item.clinicId}
+                            </when>
+                        </choose>
+                        then 1
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="crt_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    when employee_id=#{item.employeeId}
+                    <choose>
+                        <when test="item.clinicId != null">
+                            and clinic_id=#{item.clinicId}
+                        </when>
+                    </choose>
+                    then #{item.crtId}
+                </foreach>
+            </trim>
+            <trim prefix="crt_time = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    when employee_id=#{item.employeeId}
+                    <choose>
+                        <when test="item.clinicId != null">
+                            and clinic_id=#{item.clinicId}
+                        </when>
+                    </choose>
+                    then #{item.crtTime}
+                </foreach>
+            </trim>
+            <trim prefix="upd_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    when employee_id=#{item.employeeId}
+                    <choose>
+                        <when test="item.clinicId != null">
+                            and clinic_id=#{item.clinicId}
+                        </when>
+                    </choose>
+                    then #{item.updId}
+                </foreach>
+            </trim>
+            <trim prefix="upd_time = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    when employee_id=#{item.employeeId}
+                    <choose>
+                        <when test="item.clinicId != null">
+                            and clinic_id=#{item.clinicId}
+                        </when>
+                    </choose>
+                    then #{item.updTime}
+                </foreach>
+            </trim>
+        </trim>
+        where employee_id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item.employeeId}
+        </foreach>
+
+    </update>
 </mapper>

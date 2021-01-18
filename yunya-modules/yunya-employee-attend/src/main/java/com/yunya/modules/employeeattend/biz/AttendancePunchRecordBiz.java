@@ -3059,6 +3059,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         workQueryForm.setEndTime(andDate);
         workQueryForm.setApprovalStatus(1);
         List<AttendanceOvertimeMinuteVO> workOvertimeVOS = workOvertimeInfoBiz.statisticsWorkOvertimesByMinute(workQueryForm);
+        AttendancePunchPageInfoVO attendancePunchPageInfoVO = new AttendancePunchPageInfoVO(workOvertimeVOS, minute);
         //审批人
         List<Integer> userIds = new ArrayList<>();
         workOvertimeVOS.forEach(workOvertimeMinuteVO -> {
@@ -3134,7 +3135,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             workOvertimeMinuteVO.setOffPunchTime(offPunchTime);
             workOvertimeMinuteVO.setScheduleName(scheduleName.toString());
         });
-        return new AttendancePunchPageInfoVO<>(workOvertimeVOS,minute);
+        return attendancePunchPageInfoVO;
     }
 
     /**
@@ -3143,7 +3144,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      * @param queryForm 查询参数
      * @return
      */
-    public List<AttendanceLeaveMinuteVO> statisticsLeavesByMinute(AttendanceStatisticsQueryForm queryForm) {
+    public PageInfo<AttendanceLeaveMinuteVO> statisticsLeavesByMinute(AttendanceStatisticsQueryForm queryForm) {
         LeaveInfoQueryForm leaveQueryForm = new LeaveInfoQueryForm();
         leaveQueryForm.setWhetherPage(queryForm.getWhetherPage());
         leaveQueryForm.setPageNum(queryForm.getPageNum());
@@ -3174,6 +3175,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         //请假
         leaveQueryForm.setIds(leaveScheduleMap.keySet());
         List<LeaveInfoVO> leaveInfoVOS = leaveInfoBiz.statisticsLeavesByMinute(leaveQueryForm);
+        PageInfo pageInfo = new PageInfo(leaveInfoVOS);
         List<AttendanceLeaveMinuteVO> result = new ArrayList<>(leaveInfoVOS.size());
         leaveInfoVOS.forEach(leaveInfoVO -> {
             AttendanceLeaveMinuteVO leaveMinuteVO = new AttendanceLeaveMinuteVO();
@@ -3215,7 +3217,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             leaveMinuteVO.setApprovalUserName(approvalNames.toString());
             result.add(leaveMinuteVO);
         });
-        return result;
+        pageInfo.setList(result);
+        return pageInfo;
     }
 
     /**
@@ -3224,7 +3227,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      * @param queryForm 查询参数
      * @return
      */
-    public List<AttendanceFieldMinuteVO> statisticsFieldsByMinute(AttendanceStatisticsQueryForm queryForm) {
+    public PageInfo<AttendanceFieldMinuteVO> statisticsFieldsByMinute(AttendanceStatisticsQueryForm queryForm) {
         Integer userId = queryForm.getUserId();
         Integer orgId = queryForm.getOrgId();
         setQueryFormDate(queryForm);
@@ -3242,6 +3245,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         fieldQueryForm.setAndDate(andDate);
         fieldQueryForm.setApprovalStatus(1);
         List<FieldInfoVO> fieldInfoVOS = fieldInfoBiz.findFieldInfoList(fieldQueryForm);
+        PageInfo pageInfo = new PageInfo(fieldInfoVOS);
         // 审批人
         List<Integer> userIds = new ArrayList<>();
         fieldInfoVOS.forEach(fieldInfoVO -> {
@@ -3337,7 +3341,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             fieldMinuteVO.setFieldAddress(fieldInfoVO.getFieldAddress());
             result.add(fieldMinuteVO);
         });
-        return result;
+        pageInfo.setList(result);
+        return pageInfo;
     }
 
     /**
@@ -3517,7 +3522,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      * @param queryForm 查询参数
      * @return
      */
-    public List<AttendanceLaterCountVO> statisticsPunchRecordByLaterCount(AttendanceStatisticsQueryForm queryForm) {
+    public PageInfo<AttendanceLaterCountVO> statisticsPunchRecordByLaterCount(AttendanceStatisticsQueryForm queryForm) {
         Integer userId = queryForm.getUserId();
         Integer orgId = queryForm.getOrgId();
         setQueryFormDate(queryForm);
@@ -3536,6 +3541,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         recordQueryForm.setSource(AttendanceSourceEnum.WORK_SCHEDULE.getCode());
         recordQueryForm.setPunchStatus(AttendanceStatusEnum.LATER_PUNCH.getCode());
         List<AttendancePunchRecordVO> punchRecordVOS = findAttendancePunchRecordList(recordQueryForm);
+        PageInfo pageInfo = new PageInfo(punchRecordVOS);
         List<AttendanceLaterCountVO> result = new ArrayList<>(punchRecordVOS.size());
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         punchRecordVOS.forEach(punchRecord->{
@@ -3559,7 +3565,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             laterCountVO.setMinutes(DateUtil.micro2Min(diff));
             result.add(laterCountVO);
         });
-        return result;
+        pageInfo.setList(result);
+        return pageInfo;
     }
 
     /**
@@ -3568,7 +3575,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      * @param queryForm 查询参数
      * @return
      */
-    public List<AttendanceEarlyCountVO> statisticsPunchRecordByEarlyCount(AttendanceStatisticsQueryForm queryForm) {
+    public PageInfo<AttendanceEarlyCountVO> statisticsPunchRecordByEarlyCount(AttendanceStatisticsQueryForm queryForm) {
         Integer userId = queryForm.getUserId();
         Integer orgId = queryForm.getOrgId();
         setQueryFormDate(queryForm);
@@ -3586,6 +3593,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         recordQueryForm.setSource(AttendanceSourceEnum.WORK_SCHEDULE.getCode());
         recordQueryForm.setPunchStatus(AttendanceStatusEnum.EARLY_PUNCH.getCode());
         List<AttendancePunchRecordVO> punchRecordVOS = findAttendancePunchRecordList(recordQueryForm);
+        PageInfo pageInfo = new PageInfo(punchRecordVOS);
         List<AttendanceEarlyCountVO> result = new ArrayList<>(punchRecordVOS.size());
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         punchRecordVOS.forEach(punchRecord->{
@@ -3609,7 +3617,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             earlyCountVO.setMinutes(DateUtil.micro2Min(diff));
             result.add(earlyCountVO);
         });
-        return result;
+        pageInfo.setList(result);
+        return pageInfo;
     }
 
     /**
@@ -3694,7 +3703,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      * @param queryForm 查询参数
      * @return
      */
-    public List<AttendanceInvalidCountVO> statisticsPunchRecordByInvalidCount(AttendanceStatisticsQueryForm queryForm) {
+    public PageInfo<AttendanceInvalidCountVO> statisticsPunchRecordByInvalidCount(AttendanceStatisticsQueryForm queryForm) {
         Integer userId = queryForm.getUserId();
         Integer orgId = queryForm.getOrgId();
         setQueryFormDate(queryForm);
@@ -3713,6 +3722,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         recordQueryForm.setPunchStatus(AttendanceStatusEnum.INVALID_PUNCH.getCode());
         recordQueryForm.setPunchType(AttendanceTypeEnum.ONDUTY.getCode());
         List<AttendancePunchRecordVO> masterRecordVOS = findAttendancePunchRecordListGroupByDate(recordQueryForm);
+        PageInfo pageInfo = new PageInfo<>(masterRecordVOS);
         List<Integer> notInIds = new ArrayList<>(masterRecordVOS.size());
         masterRecordVOS.forEach(masterRecordVO->notInIds.add(masterRecordVO.getId()));
         Map<Date, List<AttendancePunchRecordVO>> slaveRecordMap = getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, notInIds, null);
@@ -3762,7 +3772,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             invalidCountVO.setPunchAddress(punchAddress.toString());
             result.add(invalidCountVO);
         });
-        return result;
+        pageInfo.setList(result);
+        return pageInfo;
     }
 
     /**

@@ -1,6 +1,9 @@
 package com.yunya.modules.discount.controller;
 
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.models.discount.Card;
+import com.yunya.modules.discount.biz.CardBiz;
 import com.yunya.modules.discount.biz.SalesChannelBiz;
 import com.yunya.models.discount.SalesChannel;
 import com.yunya.framework.common.model.ResponseResult;
@@ -10,7 +13,10 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
 
 /**
  * 描述:
@@ -25,7 +31,8 @@ import javax.validation.Valid;
 public class SalesChannelController {
     @Autowired
     private SalesChannelBiz salesChannelBiz;
-
+    @Autowired
+    private CardBiz cardBiz;
     /**
      * 新增销售渠道
      *
@@ -83,7 +90,15 @@ public class SalesChannelController {
     @DeleteMapping("/{id}")
     @ApiOperation("删除")
     public ResponseResult delete(@PathVariable(name = "id") Integer id) {
-        salesChannelBiz.deleteById(id);
+        Card card = new Card();
+        card.setSaleChannelId(id);
+        Long num = cardBiz.selectCount(card);
+        if(num>0){
+            throw new ClientServiceException("销售渠道已经被使用，不允许删除！", DELETE_NOT_ALLOW);
+        }else{
+            salesChannelBiz.deleteById(id);
+        }
+
         return ResponseUtil.success();
     }
 }

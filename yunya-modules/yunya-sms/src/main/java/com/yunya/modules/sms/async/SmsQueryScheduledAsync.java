@@ -209,6 +209,7 @@ public class SmsQueryScheduledAsync{
                     smsChargeOrder.setOutOrderNo(data.getString("out_order_no"));
                     smsChargeOrder.setOrderStatus(status);
                     smsChargeOrder.setPaymentChannel(data.getString("payment_channel"));
+                    smsChargeOrder.setUptTime(now);
                     smsChargeOrderBiz.uptSelectiveById(smsChargeOrder);
                 } catch (Exception e) {
                     log.error("smsQueryAsync update order error",e);

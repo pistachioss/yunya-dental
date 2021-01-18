@@ -153,4 +153,17 @@ public class VisitingRecordController {
         VisitingStatusCountVO result = visitingRecordBiz.countVisiting(patientId);
         return ResponseUtil.success(result);
     }
+
+    /**
+     * 根据条件查询随访记录
+     * @param query 根据条件查询随访记录
+     * @return  ResponseResult
+     */
+    @ApiOperation(value = "根据条件查询随访记录")
+    @GetMapping("/find")
+    @CurrentUser
+    public ResponseResult<PageInfo<VisitingRecordVo>> getRecordByCondition(@RequestBody @Validated VisitingRecordQuery query){
+        return visitingRecordBiz.getVisitingRecordByCondition(query);
+    }
+
 }
