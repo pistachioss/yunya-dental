@@ -121,10 +121,10 @@ public class CompanyReportTest {
   @Test
   public void find4() {
     InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
-    query.setStartDate("2021-01-11");
-    query.setEndDate("2021-01-11");
+    query.setStartDate("2021-01-17");
+    query.setEndDate("2021-01-17");
     query.setDateType((byte) 0);
-    query.setOrgId(42);
+    query.setOrgId(35);
     System.out.println(
         JSONObject.toJSONString(financeController.inboundAndOutboundStatement(query)));
   }

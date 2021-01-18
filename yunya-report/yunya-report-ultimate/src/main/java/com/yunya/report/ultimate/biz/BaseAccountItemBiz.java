@@ -194,7 +194,8 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     if (StringHelper.isNotEmpty(payments)) {
       // 数据分组统计处理
       payments.parallelStream()
-          .collect(Collectors.groupingBy(StatementPaymentVO::getAccountItemId, Collectors.toList()))
+          .collect(
+              Collectors.groupingBy(StatementPaymentVO::getAccountItemName, Collectors.toList()))
           .forEach(
               (i, transfer) ->
                   transfer.stream()
