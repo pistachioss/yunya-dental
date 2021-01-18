@@ -539,7 +539,7 @@
             and `bpm`.`card_number` like concat('%', #{rechargeAccount}, '%')
         </if>
         <if test="rechargeStartDate != null and rechargeEndDate != null">
-            and (`bc`.`active_date` &gt;= #{rechargeStartDate} and `bc`.`active_date` &lt; #{rechargeEndDate})
+            and (DATE_FORMAT(`bc`.`active_date`,'%Y-%m-%d') between DATE_FORMAT(#{rechargeStartDate},'%Y-%m-%d') and DATE_FORMAT(#{rechargeEndDate},'%Y-%m-%d'))
         </if>
         order by `bc`.`active_date` desc
     </select>
