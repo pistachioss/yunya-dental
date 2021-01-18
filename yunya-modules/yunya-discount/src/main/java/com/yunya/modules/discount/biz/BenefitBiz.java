@@ -36,6 +36,7 @@ import com.yunya.models.discount.VoucheCoupon;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.OrderDetail;
+import com.yunya.models.treatment.OrderRecord;
 import com.yunya.modules.discount.enums.DiscountError;
 import com.yunya.modules.discount.mapper.AuthDiscountBenefitMapper;
 import com.yunya.modules.discount.mapper.CardBenefitMapper;
@@ -129,7 +130,8 @@ public class BenefitBiz {
 				return ResponseUtil.error(DiscountError.ORDER_HAS_BENEFIT);
 			}
 			log.info("收费时选择的优惠券信息：[{}]", model);
-			List<CardBenefit> list = Lists.newArrayList();
+			//设置门诊为开单门诊（重置组织id）
+			this.setOrderField(model);
 			PatientChooseBenefitForm benefitForm = benefitTransformToForm(model);
 			//查询订单项目对应的优惠
 			ResponseResult result = cardBiz.choiceBenefitBo(benefitForm);
@@ -138,6 +140,7 @@ public class BenefitBiz {
 				return result;
 			}
 			List<OrderItemUseBo> data = (List<OrderItemUseBo>) result.getData();
+			List<CardBenefit> list = Lists.newArrayList();
 			CardBenefit cardBenefit;
 			for (OrderItemUseBo itemBenefitBo : data) {
 				List<ItemUseBenefitBo> itemUseBenefitBos = itemBenefitBo.getItemUseBenefitBos();
@@ -189,6 +192,13 @@ public class BenefitBiz {
 			//解锁卡券
 			cardBiz.manualUnLock(model.getPatientId(), RedisConstants.LOCK_CHOICE_CARD);
 			log.info("【保存卡券优惠解锁成功】");
+		}
+	}
+
+	private void setOrderField(PatientOrderBenefitModel model) {
+		OrderRecord record = treatmentServiceFeign.findOrderRecordById(model.getOrderId());
+		if (record != null) {
+			model.setOrgId(record.getOrgId());
 		}
 	}
 
