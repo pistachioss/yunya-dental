@@ -467,7 +467,7 @@
                 AND DATE_FORMAT( btp.treat_end_time, '%Y-%m' ) &gt;= #{query.startDate}
             </if>
             <if test="query.endDate != null and query.endDate != ''">
-                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m' ) = #{query.endDate}
+                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m' ) &lt;= #{query.endDate}
             </if>
         </where>
     </select>

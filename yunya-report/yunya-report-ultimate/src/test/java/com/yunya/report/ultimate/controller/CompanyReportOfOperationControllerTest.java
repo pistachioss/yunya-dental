@@ -81,8 +81,8 @@ public class CompanyReportOfOperationControllerTest {
   public void find3() {
     PatientFirstTreatOriginQuery query = new PatientFirstTreatOriginQuery();
     query.setOrgId(35);
-    query.setStartDate("2021-01");
-    query.setEndDate("2021-01");
+    query.setStartDate("2020-12");
+    query.setEndDate("2021-08");
     ResponseResult<PatientFirstTreatOriginInfoVO> result =
         companyReportOfOperationController.firstTreatPatientOrigin(query);
     System.out.println(result);
