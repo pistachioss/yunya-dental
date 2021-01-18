@@ -118,30 +118,18 @@
     <select id="selectClinicTollDataStatistic"
             resultType="com.yunya.feign.report.domain.vo.TollDataStatisticsVO">
         SELECT
-        IFNULL(SUM( bbp.totalReceivedDebtAmount ), 0) AS totalReceivedDebtAmount,
-        IFNULL(SUM( bbp.totalReceivedAmount ), 0) AS totalReceivedAmount,
-        IFNULL(SUM( bbp.totalBillRefundAmount ), 0) AS totalBillRefundAmount,
-        IFNULL(SUM( bbp.totalClinicCollectionAmount ), 0) AS totalClinicCollectionAmount,
-        IFNULL(SUM( bbp.totalClinicCollectedAmount ), 0) AS totalClinicCollectedAmount
+        bbp.totalReceivedDebtAmount,
+        bbp1.totalReceivedAmount,
+        br.totalBillRefundAmount,
+        bbp2.totalClinicCollectionAmount,
+        bbp3.totalClinicCollectedAmount
         FROM
         (
         SELECT
-        bo.org_id,
-        IFNULL( bbp.totalReceivedDebtAmount, 0 ) AS totalReceivedDebtAmount,
-        IFNULL( bbp1.totalReceivedAmount, 0 ) AS totalReceivedAmount,
-        IFNULL( br.totalBillRefundAmount, 0 ) AS totalBillRefundAmount,
-        IFNULL( bbp2.totalClinicCollectionAmount, 0 ) AS totalClinicCollectionAmount,
-        IFNULL( bbp3.totalClinicCollectedAmount, 0 ) AS totalClinicCollectedAmount
-        FROM
-        base_organization bo
-        LEFT JOIN (
-        SELECT
-        bbp.org_id,
         SUM( bbp.received_amount ) AS totalReceivedDebtAmount
         FROM
         (
         SELECT
-        bbp.org_id,
         bbp.received_amount,
         bbp.payee_date,
         bb.bill_date
@@ -149,6 +137,12 @@
         base_bill_pay bbp
         LEFT JOIN base_bill bb ON bbp.bill_id = bb.bill_id
         <where>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and bbp.org_id in
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
@@ -177,16 +171,19 @@
         ) bbp
         WHERE
         bbp.payee_date != bbp.bill_date
-        GROUP BY
-        bbp.org_id
-        ) bbp ON bo.org_id = bbp.org_id
-        LEFT JOIN (
+        ) bbp,
+        (
         SELECT
-        bbp.org_id,
         SUM( bbp.received_amount ) AS totalReceivedAmount
         FROM
         base_bill_pay bbp
         <where>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and bbp.org_id in
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
@@ -212,16 +209,18 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.org_id
-        ) bbp1 ON bo.org_id = bbp1.org_id
-        LEFT JOIN (
+        ) bbp1,(
         SELECT
-        br.org_id,
         SUM( br.refund_amount ) AS totalBillRefundAmount
         FROM
         base_refund br
         <where>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and br.org_id in
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     and DATE_FORMAT( br.refund_date, '%Y-%m-%d') &gt;= #{query.startDate}
@@ -247,100 +246,16 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        br.org_id
-        ) br ON bo.org_id = br.org_id
-        LEFT JOIN (
+        ) br,
+        (
         SELECT
-        bbp.tollOrgId,
         SUM( bbp.received_amount ) AS totalClinicCollectionAmount
         FROM
         (
         SELECT
-        bbp.org_id AS tollOrgId,
-        bbp.received_amount,
-        bb.org_id AS billOrgId
+        bbp.received_amount
         FROM
         base_bill_pay bbp
-        LEFT JOIN base_bill bb ON bbp.bill_id = bb.bill_id
-        <where>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d') &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bbp.payee_date, '%Y-%m') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bbp.payee_date, '%Y-%m') &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bbp.payee_date, '%Y') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bbp.payee_date, '%Y') &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
-        ) bbp
-        WHERE
-        bbp.tollOrgId != bbp.billOrgId
-        GROUP BY
-        bbp.tollOrgId
-        ) bbp2 ON bo.org_id = bbp2.tollOrgId
-        LEFT JOIN (
-        SELECT
-        bbp.billOrgId,
-        SUM( bbp.received_amount ) AS totalClinicCollectedAmount
-        FROM
-        (
-        SELECT
-        bbp.org_id AS tollOrgId,
-        bbp.received_amount,
-        bb.org_id AS billOrgId
-        FROM
-        base_bill_pay bbp
-        LEFT JOIN base_bill bb ON bbp.bill_id = bb.bill_id
-        <where>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d') &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bbp.payee_date, '%Y-%m') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bbp.payee_date, '%Y-%m') &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bbp.payee_date, '%Y') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bbp.payee_date, '%Y') &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
-        ) bbp
-        WHERE
-        bbp.tollOrgId != bbp.billOrgId
-        GROUP BY
-        bbp.billOrgId
-        ) bbp3 ON bo.org_id = bbp3.billOrgId
-        ) bbp
         <where>
             <if test="query.orgIds != null and query.orgIds.length > 0">
                 and bbp.org_id in
@@ -348,7 +263,103 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bbp.payee_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bbp.payee_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bbp.payee_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bbp.payee_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+            AND bbp.bill_id NOT IN (
+                SELECT
+                bb.bill_id
+                FROM base_bill bb
+                <where>
+                    <if test="query.orgIds != null and query.orgIds.length > 0">
+                        and bb.org_id in
+                        <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </if>
+                </where>
+               )
         </where>
+        ) bbp
+        ) bbp2,
+        (
+        SELECT
+        SUM( bbp.received_amount ) AS totalClinicCollectedAmount
+        FROM
+        (
+        SELECT
+        bbp.received_amount
+        FROM
+        base_bill_pay bbp
+        <where>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and bbp.org_id NOT IN
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bbp.payee_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bbp.payee_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bbp.payee_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bbp.payee_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+            AND bbp.bill_id IN (
+                SELECT
+                bb.bill_id
+                FROM
+                base_bill bb
+                <where>
+                    <if test="query.orgIds != null and query.orgIds.length > 0">
+                        and bb.org_id IN
+                        <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </if>
+                </where>
+                )
+        </where>
+        ) bbp
+        ) bbp3
     </select>
 
     <!-- 根据条件查询门诊当前月账单当前月收费总额 -->

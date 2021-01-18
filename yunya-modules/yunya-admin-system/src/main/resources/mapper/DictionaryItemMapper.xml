@@ -15,6 +15,7 @@
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="english_name" property="englishName" jdbcType="VARCHAR" />
   </resultMap>
     <!-- 根据条件查询字典明细列表 -->
     <select id="selectBrandByExample" resultType="com.yunya.modules.system.vo.DictionaryItemVO">
@@ -22,7 +23,8 @@
         di.id as id,
         di.name as `name`,
         dt.id as dictTypeId,
-        dt.name as dictTypeName
+        dt.name as dictTypeName,
+        dt.english_name as englishName
         from dictionary_item di
         left join dictionary_type dt on di.dictionary_type_id = dt.id
         <where>

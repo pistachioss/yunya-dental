@@ -133,6 +133,7 @@ public class BenefitBiz {
 			PatientChooseBenefitForm benefitForm = benefitTransformToForm(model);
 			//查询订单项目对应的优惠
 			ResponseResult result = cardBiz.choiceBenefitBo(benefitForm);
+			log.info("收费时选择的优惠券信息匹配优惠：{}", result);
 			if (!FALSE.getCode().equals(result.getStatus())) {
 				return result;
 			}

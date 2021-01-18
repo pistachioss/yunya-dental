@@ -237,4 +237,19 @@ public class CompanyReportOfOperationController {
         clinicDataStatisticsBiz.findVisitAndRemindCompletedInfo(query);
     return ResponseUtil.success(resultData);
   }
+
+  /**
+   * 根据条件查询门诊运营综合数据
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-运营BI-工作量完成率、初诊人数目标完成率、老患者介绍率、随访完成率、提醒完成率")
+  @PostMapping(value = "/complex/data", name = "billDetailBiz")
+  public ResponseResult<List<OperationDataComplexInfoVO>> operationDataComplexInfo(
+      OperationDataComplexQuery query) {
+    List<OperationDataComplexInfoVO> resultList =
+        clinicDataStatisticsBiz.findOperationDataComplexInfo(query);
+    return ResponseUtil.success(resultList);
+  }
 }

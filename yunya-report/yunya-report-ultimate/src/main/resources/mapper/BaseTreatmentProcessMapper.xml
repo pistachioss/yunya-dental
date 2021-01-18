@@ -433,7 +433,6 @@
         base_treatment_process btp
         LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
         <where>
-            -- 初诊
             AND btp.treat_type = 0
             AND btp.treat_end_time IS NOT NULL
             <if test="query.orgId != null">
@@ -443,7 +442,7 @@
                 AND DATE_FORMAT( btp.treat_end_time, '%Y-%m' ) &gt;= #{query.startDate}
             </if>
             <if test="query.endDate != null and query.endDate != ''">
-                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m' ) = #{query.endDate}
+                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m' ) &lt;= #{query.endDate}
             </if>
         </where>
         ) btp
