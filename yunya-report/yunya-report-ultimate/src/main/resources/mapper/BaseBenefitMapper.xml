@@ -87,7 +87,7 @@
                 </foreach>
             </if>
             <if test="usedStartDate != null and usedEndDate != null">
-                and (`bf`.`use_date` &gt;= #{usedStartDate} and `bf`.`use_date` &lt; #{usedEndDate})
+                and (`bf`.`use_date` &gt;= #{usedStartDate} and `bf`.`use_date` &lt; DATE_ADD(#{usedEndDate} ,INTERVAL '1' DAY))
             </if>
             <if test="soldChannelIds != null and soldChannelIds.size() > 0">
                 and `bcd`.`sale_channel_id` in
