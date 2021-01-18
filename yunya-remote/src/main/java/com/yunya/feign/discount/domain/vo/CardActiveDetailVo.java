@@ -29,4 +29,6 @@ public class CardActiveDetailVo {
     private Integer charge;
     @ApiModelProperty(value = "赠金")
     private BigDecimal bonus;
+    @ApiModelProperty(value = "售出类型")
+    private String soldTypeName;
 }

@@ -54,10 +54,10 @@ public class BaseBillPayMapperTest {
   @Test
   public void find2() {
     StatementBillChargeDetailInfoQuery query = new StatementBillChargeDetailInfoQuery();
-    query.setOrgId(42);
-    query.setDateType((byte) 1);
-    query.setStartDate("2020-10");
-    query.setEndDate("2021-01");
+    query.setOrgId(156);
+    query.setDateType((byte) 0);
+    query.setStartDate("2021-01-18");
+    query.setEndDate("2021-01-18");
     // query.setPatientKeyword("wang");
     // query.setBillNum("ZD00352012020009");
     // query.setChargeStartDate("2020-12-01");
@@ -118,10 +118,10 @@ public class BaseBillPayMapperTest {
   @Test
   public void find6() {
     StatementBillChargeDetailInfoQuery query = new StatementBillChargeDetailInfoQuery();
-    query.setOrgId(42);
-    query.setDateType((byte) 1);
-    query.setStartDate("2020-10");
-    query.setEndDate("2021-01");
+    query.setOrgId(35);
+    query.setDateType((byte) 0);
+    query.setStartDate("2021-01-18");
+    query.setEndDate("2021-01-18");
     // query.setPatientKeyword("wang");
     // query.setBillNum("ZD00352012020009");
     // query.setChargeStartDate("2020-12-01");

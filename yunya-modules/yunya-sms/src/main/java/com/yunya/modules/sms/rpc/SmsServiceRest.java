@@ -52,7 +52,10 @@ public class SmsServiceRest {
     @RequestMapping(value = "/sms/batchSendModels/{templateId}", method = RequestMethod.POST)
     public ResponseResult<T> batchSendModels(@PathVariable(value = "templateId") Integer templateId,
                              @RequestBody @Validated List<? extends SmsCommonSendRecordModel> models) {
-        return smsSendRecordBiz.batchSend(templateId, models);
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        String name = BaseContextHandler.getName();
+        return smsSendRecordBiz.batchSendByTemplateId(templateId, userId, name, orgId, models);
     }
 
     /**
@@ -65,7 +68,10 @@ public class SmsServiceRest {
     @ApiOperation(value = "批量发送短信")
     @RequestMapping(value = "/sms/batchSend", method = RequestMethod.POST)
     public ResponseResult<T> batchSend(@RequestBody @Validated SmsBatchSendRecordModel batchSendRecordModel) {
-        return smsSendRecordBiz.batchSend(batchSendRecordModel);
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        String name = BaseContextHandler.getName();
+        return smsSendRecordBiz.batchSend(orgId, userId, name, batchSendRecordModel);
     }
 
     /**
@@ -90,7 +96,10 @@ public class SmsServiceRest {
     @ApiOperation(value = "批量发送同内容的短信")
     @RequestMapping(value = "/sms/sendRecord", method = RequestMethod.POST)
     public ResponseResult<T> sendRecord(@RequestBody @Validated SmsSendRecordModel smsSendRecordModel) {
-        return smsSendRecordBiz.sendRecord(smsSendRecordModel);
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        String name = BaseContextHandler.getName();
+        return smsSendRecordBiz.sendRecord(orgId, userId, name, smsSendRecordModel);
     }
 
     /**

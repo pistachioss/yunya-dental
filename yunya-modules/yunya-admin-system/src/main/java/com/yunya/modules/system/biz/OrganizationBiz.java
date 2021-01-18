@@ -12,6 +12,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.TreeUtil;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.*;
 import com.yunya.modules.system.domain.form.OrganizationForm;
 import com.yunya.modules.system.domain.query.OrganizationQueryForm;
@@ -33,6 +34,7 @@ import java.util.List;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseOrganization;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ORG_LIST;
 
 /**
  * 简单介绍:</br> 组织业务层
@@ -60,6 +62,8 @@ public class OrganizationBiz {
   @Autowired private ClinicDepartmentRoomMapper clinicDepartmentRoomMapper;
   /** 短信服务调用 */
   @Autowired private RemoteSmsServiceFeign remoteSmsServiceFeign;
+  /** 缓存*/
+  @Autowired private RedisUtils redisUtils;
   /** 医疗机构类型 */
   private final Byte MEDICAL_TYPE = BusinessConstants.MEDICAL_TYPE;
 
@@ -143,6 +147,7 @@ public class OrganizationBiz {
     Integer companyId = company.getId();
     addClinicExtInfo(resource, companyId, type);
     remoteSmsServiceFeign.initAutoSendEvent(companyId);
+    redisUtils.delete(REDIS_KEY_ORG_LIST);
     // 发送消息，同步中间表数据
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(companyId, 0, BaseOrganization);
@@ -191,6 +196,7 @@ public class OrganizationBiz {
     company.setUpdName(BaseContextHandler.getName());
     company.setUpdTime(new Date(System.currentTimeMillis()));
     int i = companyMapper.updateByPrimaryKeySelective(company);
+    redisUtils.delete(REDIS_KEY_ORG_LIST);
     // 更新医疗机构扩展信息,并校验医疗机构简称是否重复
     updateOrganizationExtInfo(id, resource, companyType);
     // 发送消息
@@ -358,6 +364,7 @@ public class OrganizationBiz {
           "删除ID为'" + organizationId + "'的组织失败，该组织已被使用", DELETE_NOT_ALLOW);
     }
     int i = companyMapper.deleteByPrimaryKey(organizationId);
+    redisUtils.delete(REDIS_KEY_ORG_LIST);
     ClinicExtInfo extInfo = new ClinicExtInfo();
     extInfo.setCompanyId(organizationId);
     clinicExtInfoBiz.delete(extInfo);
@@ -397,6 +404,7 @@ public class OrganizationBiz {
     company.setUpdName(BaseContextHandler.getName());
     company.setUpdTime(new Date());
     companyMapper.updateByPrimaryKeySelective(company);
+    redisUtils.delete(REDIS_KEY_ORG_LIST);
   }
 
   /**

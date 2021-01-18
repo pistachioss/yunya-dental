@@ -25,8 +25,8 @@ import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
+import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
-import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -43,7 +43,6 @@ import com.yunya.framework.common.model.RestError;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.discount.*;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -499,57 +498,39 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     }
   }
 
-  /**
-   * 发送短信
-   *
-   * @param form
-   * @param cardNos
-   * @param cardSecrets
-   */
-  private void sendMessage(CardSoldForm form, StringBuilder cardNos, StringBuilder cardSecrets) {
-    if (form.getSendText() == 0) {
-      return;
-    }
-    SmsTemplateSetVO smsTemplateSetVO =
-        remoteSmsServiceFeign.findSmsTemplateByEventCode(
-            SmsAutosendEventEnum.COUPON_SOLD.getCode());
-    if (smsTemplateSetVO != null) {
-      String templateItem = smsTemplateSetVO.getTemplateItem();
-      JSONObject templateParam = new JSONObject();
-      if (StringHelper.isNotEmpty(templateItem)) {
-        String[] items = templateItem.split(",");
-        Map<String, Integer> repeat = new HashMap<>();
-        for (String item : items) {
-          Integer reNum = repeat.get(item);
-          String key = SmsTemplateItemEnum.getAction(item);
-          if (reNum == null) {
-            reNum = 0;
-          } else {
-            key = "re" + reNum + key;
-          }
-          repeat.put(item, ++reNum);
-          Integer code = Integer.parseInt(item);
-          if (SmsTemplateItemEnum.PRODUCT_MODEL.getCode().equals(code)) { // 产品类型
-            templateParam.put(key, CouponTypeEnum.getValue(form.getCouponType()));
-          } else if (SmsTemplateItemEnum.PRODUCT_NAME.getCode().equals(code)) { // 产品名称
-            templateParam.put(key, form.getCouponName());
-          } else if (SmsTemplateItemEnum.COUPON_CARD_NUMBER.getCode().equals(code)) { // 卡券卡号
-            templateParam.put(key, cardNos.toString());
-          } else if (SmsTemplateItemEnum.COUPON_CARD_SECRET.getCode().equals(code)) { // 卡券卡密
-            templateParam.put(key, cardSecrets.toString());
-          } else { // 其他
-            throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
-          }
-        }
-      }
-      SmsCommonSendRecordModel smsModel = new SmsCommonSendRecordModel();
-      smsModel.setMobile(form.getSoldPhoneNumber());
-      smsModel.setSendObject(form.getSoldTarget());
-      smsModel.setTemplateParam(templateParam);
-      remoteSmsServiceFeign.batchSendModels(
-          smsTemplateSetVO.getId(), Collections.singletonList(smsModel));
-    }
-  }
+	/**
+	 * 发送短信
+	 *
+	 * @param form
+	 * @param cardNos
+	 * @param cardSecrets
+	 */
+	private void sendMessage(CardSoldForm form, StringBuilder cardNos, StringBuilder cardSecrets) {
+		if (form.getSendText() == 0) {
+			return;
+		}
+		JSONObject templateParam = new JSONObject();
+		//产品类型
+		templateParam.put(SmsTemplateItemEnum.PRODUCT_MODEL.getAction(), CouponTypeEnum.getValue(form.getCouponType()));
+		//产品名称
+		templateParam.put(SmsTemplateItemEnum.PRODUCT_NAME.getAction(), form.getCouponName());
+		//卡券卡号
+		templateParam.put(SmsTemplateItemEnum.COUPON_CARD_NUMBER.getAction(), cardNos.toString());
+		//卡券卡密
+		templateParam.put(SmsTemplateItemEnum.COUPON_CARD_SECRET.getAction(), cardSecrets.toString());
+		SmsAutoEventSendRecordModel smsModel = new SmsAutoEventSendRecordModel();
+		SmsCommonSendRecordModel model = new SmsCommonSendRecordModel();
+		model.setMobile(form.getSoldPhoneNumber());
+		model.setSendObject(form.getSoldTarget());
+		model.setTemplateParam(templateParam);
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+		smsModel.setEventCode(SmsAutosendEventEnum.COUPON_SOLD.getCode());
+		smsModel.setModels(Collections.singletonList(model));
+		smsModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
+		smsModel.setOrgId(orgId);
+		smsModel.setName(BaseContextHandler.getName());
+		redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgId,smsModel);
+	}
 
   /**
    * 校验卡券二维码信息

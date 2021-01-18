@@ -102,6 +102,10 @@ public class RedisConstants implements Serializable {
   public static final String LOCK_SMS_ORG_STATISTICS = "lock:sms:statistics:org:";
   /** 短信统计锁时长 */
   public static final Long SMS_STATISTICS_LOCK_SEC = 600L;
+  /** 短信发送的消息队列 */
+  public static final String SMS_SEND_MESSAGE_QUEUE = "sms:send:message:queue:";
+  /** 短信验证码发送的消息队列 */
+  public static final String SMS_SEND_VERIFYCODE_QUEUE = "sms:send:verifycode:queue:";
 
   /** ---------------------------考勤管理----------------------------------------------- */
   /** 考勤锁 */

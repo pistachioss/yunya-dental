@@ -214,4 +214,47 @@ public class RedisUtils {
                     lockValue.getBytes(StandardCharsets.UTF_8));
     return redisTemplate.execute(callback);
   }
+
+  /**
+   * 往队列的左端添加
+   *
+   * @param key
+   * @param value
+   * @return
+   */
+  public Long lPush(String key, Object value) {
+    return redisTemplate.opsForList().leftPush(key, toJson(value));
+  }
+
+  /**
+   * 从队列的左端获取并移除
+   *
+   * @param key
+   * @return
+   */
+  public <T> T lPop(String key, Class<T> clazz) {
+    String value = (String) redisTemplate.opsForList().leftPop(key);
+    return value == null ? null : fromJson(value, clazz);
+  }
+
+  /**
+   * 往队列的左端添加
+   *
+   * @param key
+   * @return
+   */
+  public Long rPush(String key, String value) {
+    return redisTemplate.opsForList().rightPush(key, toJson(value));
+  }
+
+  /**
+   * 从队列的右端获取并移除
+   *
+   * @param key
+   * @return
+   */
+  public <T> T rPop(String key, Class<T> clazz) {
+    String value = (String) redisTemplate.opsForList().rightPop(key);
+    return value == null ? null : fromJson(value, clazz);
+  }
 }

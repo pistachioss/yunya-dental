@@ -10,7 +10,6 @@ import javax.validation.constraints.Min;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Set;
 
 /**
  * @program: yunya-dental
@@ -85,4 +84,7 @@ public class VisitingRecordQuery implements Serializable {
     /** 医生id列表 */
     @ApiModelProperty(value = "医生id列表(用户岗位只有医生的时候必传，其他情况不传)")
     private Collection<Integer> dentistIds;
+    /** 模糊匹配患者病历号 */
+    @ApiModelProperty(value = "模糊匹配患者病历号")
+    private String likeMedicalNumber;
 }

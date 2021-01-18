@@ -391,39 +391,39 @@
         bp.mobile,
         bpm.card_number cardNumber,
         bpm.member_level_name memberLevelName,
-        IFNULL(
-        ( SELECT principal_amount FROM base_patient_member
-        WHERE card_opening_date =
-        (
-        SELECT Max(card_opening_date) FROM base_patient_member
-        <where>
-            type = bpm.type
-            and card_id = bpm.card_id
-            <if test="form.startDate != null and form.startDate != ''">
-                and date_format(card_opening_date, '%Y-%m-%d' ) &lt; date_format(#{form.startDate}, '%Y-%m-%d' )
-            </if>
-        </where>
-        GROUP BY card_opening_date
-        )
-        limit 0,1
-        ),0 ) earlyCurrentRechargePrincipal,
+        IFNULL((
+            SELECT
+                IFNULL( sum( a.current_recharge_principal ), 0 )
+            FROM
+                base_patient_member_occur_log a
+            <where>
+                a.type = bpm.type
+                AND a.card_id = bpm.card_id
+                <if test="form.startDate != null and form.startDate != ''">
+                    AND date_format( a.occur_date, '%Y-%m-%d' ) &lt;= date_format(#{form.startDate}, '%Y-%m-%d' )
+                </if>
+            </where>
+            GROUP BY
+                a.occur_date
+                LIMIT 0,1),0)
+        earlyCurrentRechargePrincipal,
 
-        IFNULL(
-        ( SELECT bonus_amount FROM base_patient_member
-        WHERE card_opening_date =
-        (
-        SELECT Max(card_opening_date) FROM base_patient_member
-        <where>
-            type = bpm.type
-            and card_id = bpm.card_id
-            <if test="form.startDate != null and form.startDate != ''">
-                and date_format(card_opening_date, '%Y-%m-%d' ) &lt; date_format(#{form.startDate}, '%Y-%m-%d' )
-            </if>
-        </where>
-        GROUP BY card_opening_date
-        )
-        limit 0,1
-        ),0 ) earlyCurrentRechargeBonus,
+        IFNULL((
+            SELECT
+                IFNULL( sum( a.current_recharge_bonus ), 0 )
+            FROM
+                base_patient_member_occur_log a
+            <where>
+                a.type = bpm.type
+                AND a.card_id = bpm.card_id
+                <if test="form.startDate != null and form.startDate != ''">
+                    AND date_format( a.occur_date, '%Y-%m-%d' ) &lt;= date_format(#{form.startDate}, '%Y-%m-%d' )
+                </if>
+            </where>
+            GROUP BY
+                a.occur_date
+                LIMIT 0,1),0)
+        earlyCurrentRechargeBonus,
 
         ( SELECT IFNULL(sum( a.principal_amount ),0) FROM base_patient_member_occur_log a
         <where>
