@@ -1137,7 +1137,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
                 Integer couponType = benefitBo.getCouponType();
                 if (MEMBER_CARD.equals(couponType) || benefitUseDetailBo != null) {
-                    log.info("【单个数量】匹配优惠券，订单明细id：[], 卡券id：[], 优惠券id：[]", orderItem.getOrderDetailId()
+                    log.info("【单个数量】匹配优惠券，订单明细id：[{}], 卡券id：[{}], 优惠券id：[{}]", orderItem.getOrderDetailId()
                             ,benefitBo.getCardId(), benefitBo.getCouponId());
                     //订单项目原价
                     BigDecimal originalPrice = orderItem.getReceivableAmount();
@@ -1252,7 +1252,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
                 Integer couponType = benefitBo.getCouponType();
                 if (benefitUseDetailBo != null || MEMBER_CARD.equals(couponType)) {
-                    log.info("【多个数量】匹配优惠券，订单明细id：[], 卡券id：[], 优惠券id：[]", orderItem.getOrderDetailId()
+                    log.info("【多个数量】匹配优惠券，订单明细id：[{}], 卡券id：[{}], 优惠券id：[{}]", orderItem.getOrderDetailId()
                             ,benefitBo.getCardId(), benefitBo.getCouponId());
                     //订单项目原价
                     BigDecimal originalPrice = orderItem.getReceivableAmount().divide(BigDecimal.valueOf(orderItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP);
