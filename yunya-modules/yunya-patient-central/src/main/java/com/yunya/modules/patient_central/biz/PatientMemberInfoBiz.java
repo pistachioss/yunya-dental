@@ -848,6 +848,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         memberRechargeRecord.setCrtName(BaseContextHandler.getName());
         memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
         memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
+        memberRechargeRecord.setRemarks(null);
         memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
         // 发送消息 删除消费消息
         Integer expendId = updPatientMemberInfo(model);
