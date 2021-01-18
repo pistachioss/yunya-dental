@@ -2,11 +2,13 @@ package com.yunya.modules.sms.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.sms.model.AppointmentSmsSendRecordModel;
 import com.yunya.feign.sms.query.SmsSendBatchQueryForm;
 import com.yunya.feign.sms.query.SmsSendRecordQueryForm;
 import com.yunya.feign.sms.vo.SmsSendBatchVO;
 import com.yunya.feign.sms.vo.SmsSendVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -17,13 +19,13 @@ import com.yunya.modules.sms.enums.SmsTypeEnum;
 import com.yunya.modules.sms.vo.SmsSendReportVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
@@ -89,6 +91,21 @@ public class SmsSendMessageController {
         queryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         SmsSendVO smsSendVO = smsSendRecordBiz.findSmsSendRecordPageList(queryForm);
         return ResponseUtil.success(smsSendVO);
+    }
+
+    /**
+     * 发送预约短信
+     *
+     * @param templateId 短信模板id
+     * @param models 短信预约提醒列表
+     * @return
+     */
+    @ApiOperation(value = "发送预约短信")
+    @PostMapping("/sendAppointmentBatchSms/{templateId}")
+    @CurrentUser
+    @RepeatSubmit
+    public ResponseResult<T> sendAppointmentBatchSms(@PathVariable(value = "templateId") @NotNull Integer templateId, @RequestBody @Validated List<AppointmentSmsSendRecordModel> models) {
+        return smsSendRecordBiz.sendAppointmentBatchSms(templateId, models);
     }
 
     /**

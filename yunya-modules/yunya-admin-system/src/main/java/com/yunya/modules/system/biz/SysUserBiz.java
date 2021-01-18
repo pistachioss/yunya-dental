@@ -16,7 +16,6 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.*;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.expand.ClinicEmployeeConfig;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.system.SysUser;
 import com.yunya.models.system.SysUserPost;
@@ -44,6 +43,7 @@ import java.util.Random;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseEmployee;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseUserPost;
+import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGID;
 import static com.yunya.framework.common.constant.BusinessConstants.USER_RESIGNATION_STATUS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.*;
@@ -451,13 +451,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     smsVerifyCodeModel.setMobile(mobile);
     smsVerifyCodeModel.setVerifyCode(messageCode);
     smsVerifyCodeModel.setEventCode(SmsAutosendEventEnum.FORGET_PASSWORD.getCode());
-    ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(smsVerifyCodeModel);
-    if (responseResult == null) {
-      return ResponseUtil.fail(OPERATION_FAIL, "短信验证码发送失败", null);
-    }
-    if (responseResult.getStatus() != 0) {
-      return ResponseUtil.fail(OPERATION_FAIL, responseResult.getMsg(), null);
-    }
+    redisUtils.lPush(SMS_SEND_VERIFYCODE_QUEUE + COMPANY_ORGID,smsVerifyCodeModel);
     return ResponseUtil.success("短信验证码已发送");
   }
 

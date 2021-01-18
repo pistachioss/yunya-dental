@@ -99,25 +99,25 @@
 
   <select id="findSmsTemplateByEventCode" resultType="com.yunya.feign.sms.vo.SmsTemplateSetVO">
       select
-        t.id,
-        t.org_id as orgId,
-        t.signature_id as signatureId,
+        sa.id,
+        sa.org_id as orgId,
+        sa.signature_id as signatureId,
         ss.sign_name as signName,
-        t.template_name as templateName,
-        t.template_content as templateContent,
-        t.template_item as templateItem,
-        t.template_code as templateCode,
-        t.template_status as templateStatus,
-        t.remark,
-        t.sense,
-        t.crt_user as crtUser,
-        sa.status as sendEnable
-      from sms_template_set t left join sms_autosend_event sa on t.id=sa.template_id
-      left join sms_signature_set ss on t.signature_id=ss.id
+        sa.template_name as templateName,
+        sa.template_content as templateContent,
+        sa.template_item as templateItem,
+        sa.template_code as templateCode,
+        sa.template_status as templateStatus,
+        sa.remark,
+        sa.sense,
+        sa.crt_user as crtUser,
+        t.status as sendEnable
+      from sms_autosend_event t left join  sms_template_set sa on sa.id=t.template_id
+      left join sms_signature_set ss on sa.signature_id=ss.id
       <where>
-       sa.event_code = #{eventCode}
+       t.event_code = #{eventCode}
        <if test="orgId != null">
-        and sa.org_id = #{orgId}
+        and t.org_id = #{orgId}
        </if>
       </where>
   </select>

@@ -4,17 +4,15 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.sms.model.SmsBatchSendRecordModel;
-import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
-import com.yunya.feign.sms.model.SmsSendRecordModel;
-import com.yunya.feign.sms.model.SmsVerifyCodeModel;
+import com.yunya.feign.sms.model.*;
 import com.yunya.feign.sms.query.SmsSendRecordQueryForm;
 import com.yunya.feign.sms.vo.SmsSendRecordVO;
 import com.yunya.feign.sms.vo.SmsSendSituationVO;
 import com.yunya.feign.sms.vo.SmsSendVO;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -26,7 +24,10 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.sms.SmsSendBatch;
 import com.yunya.models.sms.SmsSendRecord;
-import com.yunya.modules.sms.enums.*;
+import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
+import com.yunya.modules.sms.enums.SmsEnableEnum;
+import com.yunya.modules.sms.enums.SmsSendStatusEnum;
+import com.yunya.modules.sms.enums.SmsTypeEnum;
 import com.yunya.modules.sms.mapper.SmsSendRecordMapper;
 import com.yunya.modules.sms.utl.AliyunSmsUtl;
 import com.yunya.modules.sms.vo.SmsSendReportVO;
@@ -37,9 +38,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
@@ -61,6 +65,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
     private SmsTemplateSetBiz smsTemplateSetBiz;
     @Autowired
     private SmsOrgStatisticsBiz smsOrgStatisticsBiz;
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Autowired
     private RedisUtils redisUtils;
 
@@ -143,14 +149,14 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      * @return
      */
     public ResponseResult<T> sendVerifyCode(SmsVerifyCodeModel smsVerifyCodeModel) {
-        Integer orgId = smsVerifyCodeModel.getOrgId();
-        SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(smsVerifyCodeModel.getEventCode(), null, null);
+        Integer orgId = COMPANY_ORGID;
+        SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(smsVerifyCodeModel.getEventCode(), null, orgId);
         if (smsTemplateSetVO == null) {
             return ResponseUtil.success();
         }
-        if (SmsSenseEnum.DEVICE_BINDING_VERIFYCODE.getCode().equals(smsTemplateSetVO.getSense())
-            || SmsSenseEnum.RETRIEVE_PWD_VERIFYCODE.getCode().equals(smsTemplateSetVO.getSense())) {
-            orgId = BusinessConstants.COMPANY_ORGID;
+        String signName = smsTemplateSetVO.getSignName();
+        if (StringHelper.isEmpty(signName)) {
+            throw new ClientServiceException("短信模板不存在，请先添加短信模板或关联短信模板",OPERATION_NOT_ALLOW);
         }
         try {
             Integer userId = smsVerifyCodeModel.getUserId();
@@ -164,7 +170,6 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                     SmsTypeEnum.VERIFY_CODE.getCode(), 1, userId, name);
             String content = smsTemplateSetVO.getTemplateContent();
             int count = StringHelper.countChild("@", content);
-            String signName = smsTemplateSetVO.getSignName();
             String templateItem = smsTemplateSetVO.getTemplateItem();
             JSONObject param = new JSONObject();
             String[] items = null;
@@ -186,7 +191,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                     userId, name, userId, name);
             String bizId = AliyunSmsUtl.sendSms(mobile, signName, smsTemplateSetVO.getTemplateCode(), param);
             try {
-                updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, Arrays.asList(recordId));
+                updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, Arrays.asList(recordId));
             } catch (Exception e) {
                 log.error("update bizId error",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId,surplusNum,orgId);
@@ -198,16 +203,53 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
     }
 
     /**
+     * 通过自动发送事件来发送短信
+     *
+     * @param model 短信参数模型
+     * @return
+     */
+    public ResponseResult<T> batchSendByEventCode(SmsAutoEventSendRecordModel model) {
+        return batchSend(model.getEventCode(),
+                null,
+                model.getUserId(),
+                model.getName(),
+                model.getOrgId(),
+                model.getModels());
+    }
+
+    /**
+     * 通过模板id来发送短信
+     *
+     * @param templateId 模板id
+     * @param userId 操作人id
+     * @param name 操作人姓名
+     * @param orgId 组织id
+     * @param models 短信参数模型
+     * @return
+     */
+    public ResponseResult<T> batchSendByTemplateId(Integer templateId, Integer userId, String name, Integer orgId, List<? extends SmsCommonSendRecordModel> models) {
+        return batchSend(null,
+                templateId,
+                userId,
+                name,
+                orgId,
+                models);
+    }
+
+    /**
      * 批量发送短信（不同短信内容）
      * @param templateId
      * @param models
      * @return
      */
-    public ResponseResult<T> batchSend(Integer templateId, List<? extends SmsCommonSendRecordModel> models) {
-        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, templateId, orgId);
+    public ResponseResult<T> batchSend(String eventCode, Integer templateId, Integer userId, String name, Integer orgId, List<? extends SmsCommonSendRecordModel> models) {
+        SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(eventCode, templateId, orgId);
         if (smsTemplateSetVO == null) {
             return ResponseUtil.success();
+        }
+        String signName = smsTemplateSetVO.getSignName();
+        if (StringHelper.isEmpty(signName)) {
+            throw new ClientServiceException("短信模板不存在，请先添加短信模板或关联短信模板",OPERATION_NOT_ALLOW);
         }
         try {
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS,String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
@@ -215,7 +257,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             if (surplusNum <= 0) {
                 throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
             }
-            Integer batchId = smsSendBatchBiz.insertEntity(orgId, templateId, SmsTypeEnum.SMS_NOTIFY.getCode(), models.size());
+            Integer batchId = smsSendBatchBiz.insertEntity(orgId, templateId, SmsTypeEnum.SMS_NOTIFY.getCode(), models.size(), userId, name);
             String content = smsTemplateSetVO.getTemplateContent();
             int count = StringHelper.countChild("@", content);
             String[] contents = content.split("@");
@@ -227,7 +269,6 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             JSONArray mobiles = new JSONArray();
             JSONArray signNames = new JSONArray();
             JSONArray templateParamJson = new JSONArray();
-            String signName = smsTemplateSetVO.getSignName();
             List<Integer> recordIds = new ArrayList<>(models.size());
             int len = 0;
             for (SmsCommonSendRecordModel model : models) {
@@ -238,7 +279,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 }
                 StringBuilder builder = parseSmsContent(items, contents, signName, param);
                 len += getContentLength(builder);
-                Integer recordId = insertSelective(orgId, batchId, builder, mobile, model.getReceiverId(), model.getSendObject());
+                Integer recordId = insertSelective(orgId, batchId, builder, mobile, model.getReceiverId(), model.getSendObject(), userId, name);
                 mobiles.add(mobile);
                 signNames.add(signName);
                 templateParamJson.add(param);
@@ -249,7 +290,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             }
             String bizId = AliyunSmsUtl.sendBatchSms(mobiles, signNames, smsTemplateSetVO.getTemplateCode(), templateParamJson);
             try {
-                updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, recordIds);
+                updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, recordIds);
             } catch (Exception e) {
                 log.error("update bizId error",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId, surplusNum,orgId);
@@ -303,11 +344,14 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      *
      * @param model 短信发送添加模型
      */
-    public ResponseResult<T> batchSend(SmsBatchSendRecordModel model) {
-        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+    public ResponseResult<T> batchSend(Integer orgId, Integer userId, String name, SmsBatchSendRecordModel model) {
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, model.getTemplateId(), orgId);
         if (smsTemplateSetVO == null) {
             return ResponseUtil.success();
+        }
+        String signName = smsTemplateSetVO.getSignName();
+        if (StringHelper.isEmpty(signName)) {
+            throw new ClientServiceException("短信模板不存在，请先添加短信模板或关联短信模板",OPERATION_NOT_ALLOW);
         }
         try {
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
@@ -323,8 +367,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             }
             List<StringBuilder> builders = res.get("0");
             List<String> sendObjects = model.getSendObjects();
-            Integer batchId = smsSendBatchBiz.insertEntity(orgId, model.getTemplateId(), SmsTypeEnum.SMS_NOTIFY.getCode(), sendObjects.size());
-            String signName = smsTemplateSetVO.getSignName();
+            Integer batchId = smsSendBatchBiz.insertEntity(orgId, model.getTemplateId(), SmsTypeEnum.SMS_NOTIFY.getCode(), sendObjects.size(), userId, name);
             JSONArray phoneNumberJson = new JSONArray();
             JSONArray signNameJson = new JSONArray();
             List<Integer> userIds = model.getReceiverIds();
@@ -332,13 +375,13 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             int len = 0;
             for (int i = 0; i < mobiles.length; i++) {
                 String mobile = mobiles[i];
-                Integer userId = null;
+                Integer optId = null;
                 if (userIds != null && !userIds.isEmpty()) {
-                    userId = userIds.get(i);
+                    optId = userIds.get(i);
                 }
                 StringBuilder content = builders.get(i);
                 len += getContentLength(content);
-                Integer recordId = insertSelective(orgId, batchId, content, mobile, userId, sendObjects.get(i));
+                Integer recordId = insertSelective(orgId, batchId, content, mobile, optId, sendObjects.get(i), userId, name);
                 signNameJson.add(signName);
                 phoneNumberJson.add(mobile);
                 recordIds.add(recordId);
@@ -348,7 +391,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             }
             String bizId = AliyunSmsUtl.sendBatchSms(phoneNumberJson, signNameJson, smsTemplateSetVO.getTemplateCode(), templateParamJson);
             try {
-                updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, recordIds);
+                updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, recordIds);
             } catch (Exception e) {
                 log.error("update bizId error",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId,surplusNum,orgId);
@@ -365,11 +408,14 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      * @param model
      * @return
      */
-    public ResponseResult<T> sendRecord(SmsSendRecordModel model) {
-        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+    public ResponseResult<T> sendRecord(Integer orgId, Integer userId, String name, SmsSendRecordModel model) {
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(null, model.getTemplateId(), orgId);
         if (smsTemplateSetVO == null) {
             return ResponseUtil.success();
+        }
+        String signName = smsTemplateSetVO.getSignName();
+        if (StringHelper.isEmpty(signName)) {
+            throw new ClientServiceException("短信模板不存在，请先添加短信模板或关联短信模板",OPERATION_NOT_ALLOW);
         }
         try {
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
@@ -386,20 +432,19 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             }
             List<StringBuilder> builders = res.get("0");
             List<String> sendObjects = model.getSendObjects();
-            Integer batchId = smsSendBatchBiz.insertEntity(orgId, model.getTemplateId(), SmsTypeEnum.SMS_NOTIFY.getCode(), sendObjects.size());
-            String signName = smsTemplateSetVO.getSignName();
+            Integer batchId = smsSendBatchBiz.insertEntity(orgId, model.getTemplateId(), SmsTypeEnum.SMS_NOTIFY.getCode(), sendObjects.size(), userId, name);
             List<Integer> userIds = model.getReceiverIds();
             List<Integer> recordIds = new ArrayList<>(mobiles.length);
             int len = 0;
             for (int i = 0; i < mobiles.length; i++) {
                 String mobile = mobiles[i];
-                Integer userId = null;
+                Integer uptId = null;
                 if (userIds != null && !userIds.isEmpty()) {
-                    userId = userIds.get(i);
+                    uptId = userIds.get(i);
                 }
                 StringBuilder content = builders.get(0);
                 len += getContentLength(content);
-                Integer recordId = insertSelective(orgId, batchId, content, mobile, userId, sendObjects.get(i));
+                Integer recordId = insertSelective(orgId, batchId, content, mobile, uptId, sendObjects.get(i), userId, name);
                 recordIds.add(recordId);
             }
             if (surplusNum <=0) {
@@ -407,7 +452,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             }
             String bizId = AliyunSmsUtl.sendSms(model.getMobiles(), signName, smsTemplateSetVO.getTemplateCode(), model.getTemplateParamJson());
             try {
-                updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, recordIds);
+                updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, userId, recordIds);
             } catch (Exception e) {
                 log.error("update bizId error",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId,surplusNum,orgId);
@@ -428,18 +473,23 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      * @param batchId 发送批次id
      * @param recordIds 发送记录id
      */
-    private void updateBizIdAndSurplusNum(String bizId, int surplusNum, int count, Integer orgId, Integer batchId, List<Integer> recordIds) {
-        smsOrgStatisticsBiz.decrByOrgId(surplusNum-count, orgId);
+    private void updateBizIdAndSurplusNum(String bizId, int surplusNum, int count, Integer orgId, Integer batchId, Integer userId, List<Integer> recordIds) {
+        smsOrgStatisticsBiz.decrByOrgId(surplusNum-count, orgId, userId);
         SmsSendBatch smsSendBatch = new SmsSendBatch();
         smsSendBatch.setId(batchId);
         smsSendBatch.setBizId(bizId);
         smsSendBatch.setSendNum(count);
+        Date now = new Date(System.currentTimeMillis());
+        smsSendBatch.setUptTime(now);
+        smsSendBatch.setUptId(userId);
         smsSendBatchBiz.uptSelectiveById(smsSendBatch);
         for (Integer recordId : recordIds) {
             SmsSendRecord smsSendRecord = new SmsSendRecord();
             smsSendRecord.setId(recordId);
             smsSendRecord.setBizId(bizId);
-            uptSelectiveById(smsSendRecord);
+            smsSendRecord.setUptTime(now);
+            smsSendRecord.setUptId(userId);
+            mapper.updateByPrimaryKeySelective(smsSendRecord);
         }
     }
 
@@ -509,23 +559,6 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
     /**
      * 添加短信发送记录
      *
-     * @param orgId
-     * @param batchId
-     * @param content
-     * @param mobile
-     * @param receiverId
-     * @param sendObject
-     * @return
-     */
-    public Integer insertSelective(Integer orgId, Integer batchId, StringBuilder content, String mobile, Integer receiverId, String sendObject) {
-        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
-        String name = BaseContextHandler.getName();
-        return insertSelective(orgId,batchId,content,mobile,receiverId,sendObject,userId,name);
-    }
-
-    /**
-     * 添加短信发送记录
-     *
      * @param orgId 门诊id
      * @param batchId 批次id
      * @param content 短信内容
@@ -575,6 +608,103 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
     }
 
     /**
+     * 发送预约短信
+     *
+     * @param templateId 短信模板id
+     * @param models 短信预约提醒列表
+     * @return
+     */
+    public ResponseResult<T> sendAppointmentBatchSms(Integer templateId, List<AppointmentSmsSendRecordModel> models) {
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        SmsTemplateSetVO smsTemplateSetVO = smsTemplateSetBiz.findSmsTemplateSetById(templateId);
+        if (smsTemplateSetVO == null) {
+            throw new ClientServiceException("该短信模板不存在", DATA_NOT_EXIST);
+        }
+        String templateItem = smsTemplateSetVO.getTemplateItem();
+        if (StringHelper.isNotEmpty(templateItem)) {
+            String code2 = null;
+            String code3 = null;
+            String code4 = null;
+            if (templateItem.indexOf(SmsTemplateItemEnum.CLINIC_NAME.getCode()+"")!=-1
+                    ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_PHONE.getCode()+"")!=-1
+                    ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_ADDRESS.getCode()+"")!=-1) {
+                MedicalOrganizationInfoVO medicalOrganizationInfoVO = remoteSystemServiceFeign.clinicExtInfoByCompanyId(orgId);
+                code2 = medicalOrganizationInfoVO.getAbbreviation();
+                code3 = medicalOrganizationInfoVO.getTel();
+                code4 = medicalOrganizationInfoVO.getAddress();
+            }
+            String[] items = templateItem.split(",");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            for (AppointmentSmsSendRecordModel model : models) {
+                JSONObject object = new JSONObject();
+                Map<String, Integer> repeat = new HashMap<>();
+                for (String item : items) {
+                    Integer reNum = repeat.get(item);
+                    String key = SmsTemplateItemEnum.getAction(item);
+                    if (reNum == null) {
+                        reNum = 0;
+                    } else {
+                        key = "re" + reNum + key;
+                    }
+                    repeat.put(item, ++reNum);
+                    Integer code = Integer.parseInt(item);
+                    if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {// 患者姓名
+                        object.put(key, model.getSendObject());
+                    } else if (SmsTemplateItemEnum.CLINIC_NAME.getCode().equals(code)) { // 诊所名称
+                        object.put(key,code2);
+                    } else if (SmsTemplateItemEnum.CLINIC_PHONE.getCode().equals(code)) {// 诊所电话
+                        object.put(key,code3);
+                    } else if (SmsTemplateItemEnum.CLINIC_ADDRESS.getCode().equals(code)) {// 诊所地址
+                        object.put(key,code4);
+                    } else if (SmsTemplateItemEnum.APPOINTMENT_DOCTOR.getCode().equals(code)) {// 预约医生姓名
+                        object.put(key, model.getDentistName());
+                    } else if (SmsTemplateItemEnum.APPOINTMENT.getCode().equals(code)) { // 预约时间
+                        String code7 = model.getAppointDate() + model.getAppointTime();
+                        object.put(key, code7);
+                    } else if (SmsTemplateItemEnum.APPELLATION.getCode().equals(code)) { // 先生/女士/小朋友
+                        Integer age = model.getAge();
+                        String code7 = "先生";
+                        Integer gener = model.getGender();
+                        if (age != null) {
+                            code7 = "小朋友";
+                            if (age>15 && gener!=null && gener==1) {
+                                code7 = "女生";
+                            }
+                        } else {
+                            if (gener!=null && gener==1) {
+                                code7 = "女生";
+                            }
+                        }
+                        object.put(key, code7);
+                    } else if (SmsTemplateItemEnum.MORNING_AFTERNOON.getCode().equals(code)) {// 上午/下午
+                        String code7 = model.getAppointDate() + " " + model.getAppointTime() + ":59";
+                        String middleStr = model.getAppointDate() + " 12:00:00";
+                        String lastStr = model.getAppointDate() + " 00:00:00";
+                        try {
+                            Date appointDateTime = sdf.parse(code7);
+                            Date middle = sdf.parse(middleStr);
+                            Date last = sdf.parse(lastStr);
+                            String code9 = "上午";
+                            if (appointDateTime.after(middle) && appointDateTime.before(last)) {
+                                code9 = "下午";
+                            }
+                            object.put(key, code9);
+                        } catch (ParseException e) {
+                            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+                        }
+                    } else { // 其他
+                        throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
+                    }
+                }
+                model.setTemplateParam(object);
+            }
+        }
+        batchSendByTemplateId(templateId, Integer.parseInt(BaseContextHandler.getUserID()),
+                BaseContextHandler.getName(), orgId, models);
+        return ResponseUtil.success(null);
+    }
+
+    /**
      * 阿里云短信发送状态推送通知
      *
      * @param
@@ -600,6 +730,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             String mobile = smsSendRecordVO.getMobile();
             List<SmsSendReportVO> list = reportMap.get(bizId);
             if (list != null) {
+                Date now = new Date(System.currentTimeMillis());
                 for (SmsSendReportVO smsSendReportVO : list) {
                     if (mobile.equals(smsSendReportVO.getPhone_number())) {
                         SmsSendRecord smsSendRecord = new SmsSendRecord();
@@ -615,7 +746,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                         }
                         smsSendRecord.setBizMsg(smsSendReportVO.getErr_msg());
                         smsSendRecord.setStatus(status);
-                        uptSelectiveById(smsSendRecord);
+                        smsSendRecord.setUptTime(now);
+                        mapper.updateByPrimaryKeySelective(smsSendRecord);
                         break;
                     }
                 }
@@ -628,9 +760,6 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
     }
 
     public void uptSelectiveById(SmsSendRecord smsSendRecord) {
-        Date now = new Date(System.currentTimeMillis());
-        smsSendRecord.setUptTime(now);
-        smsSendRecord.setUptId(-999);
         mapper.updateByPrimaryKeySelective(smsSendRecord);
     }
 }

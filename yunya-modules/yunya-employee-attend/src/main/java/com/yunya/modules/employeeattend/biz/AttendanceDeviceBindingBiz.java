@@ -32,7 +32,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.SMS_SEND_VERIFYCODE_QUEUE;
 
 /**
  * 简介：考勤设备绑定业务层
@@ -278,25 +280,18 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
             return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL,"请填写正确的手机号码",null);
         }
         String  messageCode = this.messageCodeGenerator();
-        // 发送短信验证码
-        SmsVerifyCodeModel smsVerifyCodeModel = new SmsVerifyCodeModel();
-        smsVerifyCodeModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
-        smsVerifyCodeModel.setName(BaseContextHandler.getName());
-//        smsVerifyCodeModel.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        smsVerifyCodeModel.setMobile(mobile);
-        smsVerifyCodeModel.setVerifyCode(messageCode);
-        smsVerifyCodeModel.setEventCode(SmsAutosendEventEnum.ATTENDANCE_DEVICE_BINDING.getCode());
-        ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(smsVerifyCodeModel);
-        if (responseResult==null) {
-            return ResponseUtil.fail(OPERATION_FAIL,"短信验证码发送失败",null);
-        }
-        if (responseResult.getStatus() != 0) {
-            return ResponseUtil.fail(OPERATION_FAIL, responseResult.getMsg(),null);
-        }
         String key = RedisConstants.ATTENDANCE_DEVICE_BINDING_AUTHORIZATION + mobile;
         if (redisUtils.hasKey(key)) {
             return ResponseUtil.fail(OBJECT_EDIT_FAIL,"短信验证码已发送，请稍后再试",null);
         }
+        // 发送短信验证码
+        SmsVerifyCodeModel smsVerifyCodeModel = new SmsVerifyCodeModel();
+        smsVerifyCodeModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
+        smsVerifyCodeModel.setName(BaseContextHandler.getName());
+        smsVerifyCodeModel.setMobile(mobile);
+        smsVerifyCodeModel.setVerifyCode(messageCode);
+        smsVerifyCodeModel.setEventCode(SmsAutosendEventEnum.ATTENDANCE_DEVICE_BINDING.getCode());
+        redisUtils.lPush(SMS_SEND_VERIFYCODE_QUEUE + COMPANY_ORGID, smsVerifyCodeModel);
         redisUtils.set(key, messageCode, DEVICE_BINDING_AUTH_EXPIRE);
         return ResponseUtil.success("短信验证码已发送", messageCode);
     }

@@ -36,4 +36,9 @@ public class SmsServiceRestTest {
     public void clear() {
         redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG +35);
     }
+
+    @Test
+    public void clear2() {
+        redisUtils.delete(RedisConstants.REDIS_KEY_ORG_LIST);
+    }
 }
