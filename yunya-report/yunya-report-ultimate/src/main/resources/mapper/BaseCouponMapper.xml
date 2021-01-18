@@ -89,7 +89,7 @@
                 </foreach>
             </if>
             <if test="crtStartDate != null and crtEndDate != null">
-                and (`bc`.`crt_time` &gt;= #{crtStartDate} and `bc`.`crt_time` &lt; #{crtEndDate})
+                and (DATE_FORMAT(`bc`.`crt_time`,'%Y-%m-%d') between DATE_FORMAT(#{crtStartDate},'%Y-%m-%d') and DATE_FORMAT(#{crtEndDate},'%Y-%m-%d'))
             </if>
         </where>
         group by `bc`.`coupon_id`, `bc`.`crt_time`

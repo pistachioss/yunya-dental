@@ -9,7 +9,7 @@ import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.modules.sms.biz.*;
+import com.yunya.modules.sms.biz.SmsSendRecordBiz;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,23 +41,11 @@ public class SmsSendMessageScheduledAsync {
     // 缓存1天
     private static final long EXPIRE = 86400;
     @Autowired
-    private SmsSignatureSetBiz smsSignatureSetBiz;
-    @Autowired
-    private SmsTemplateSetBiz smsTemplateSetBiz;
-    @Autowired
-    private SmsChargeOrderBiz smsChargeOrderBiz;
-    @Autowired
     private SmsSendRecordBiz smsSendRecordBiz;
-    @Autowired
-    private SmsOrgStatisticsBiz smsOrgStatisticsBiz;
     @Autowired
     private RedisUtils redisUtils;
     @Resource(name = "poolExecutor")
     private ThreadPoolExecutor threadPoolExecutor;
-    /**
-     * 两个小时
-     */
-    private final long expireIn = 3600000 * 2;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
 

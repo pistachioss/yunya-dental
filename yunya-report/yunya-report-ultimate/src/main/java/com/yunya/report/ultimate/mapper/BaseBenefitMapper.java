@@ -1,10 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.report.domain.vo.BenefitItemVo;
-import com.yunya.feign.report.domain.vo.CardUsedRecordVo;
-import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
-import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
-import com.yunya.feign.report.domain.vo.OnceCardUseVo;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseBenefit;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -46,4 +42,9 @@ public interface BaseBenefitMapper extends Mapper<BaseBenefit> {
 	 * 查询卡券项目的使用详情
 	 */
 	List<BenefitItemVo> listItemUseById(@Param("cardId") Integer cardId);
+
+	/**
+	 * 产品使用统计-使用详情
+	 */
+	List<CardUsedDetailVo> listCardUsedDetailByBillId(@Param("orderId") Integer orderId, @Param("cardId") Integer cardId);
 }

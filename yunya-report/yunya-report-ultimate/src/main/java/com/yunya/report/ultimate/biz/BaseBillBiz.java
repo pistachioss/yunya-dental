@@ -66,7 +66,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       throws IOException {
     List<BillOfOrderRecordVO> list = mapper.selectBillRecordOfOrderList(query);
     ExcelUtil<BillOfOrderRecordVO> excelUtil = new ExcelUtil<>(BillOfOrderRecordVO.class);
-    excelUtil.exportExcel(response, list, "开单记录表");
+    String fileName = excelUtil.getFileName(null,null,
+            getAbbreviationById(query.getOrgId()), "开单记录表");
+    excelUtil.exportExcel(response, list, "开单记录表",fileName);
   }
 
   /**

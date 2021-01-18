@@ -4,6 +4,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -37,6 +39,8 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
   @Autowired private BaseOrganizationMapper organizationMapper;
   /** 账单退费付款明细 */
   @Autowired private BaseRefundPayDetailMapper refundPayDetailMapper;
+  /** 系统服务 */
+  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
   /**
    * 根据条件查询账单退费记录列表
@@ -62,7 +66,13 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
       throws IOException {
     List<BillOfRefundRecordInfoVO> list = mapper.selectBillRefundRecord(query);
     ExcelUtil<BillOfRefundRecordInfoVO> excelUtil = new ExcelUtil<>(BillOfRefundRecordInfoVO.class);
-    excelUtil.exportExcel(response, list, "账单退费记录表");
+    String fileName = excelUtil.getFileName(null,null,getAbbreviationById(query.getOrgId()),"账单退费记录表");
+    excelUtil.exportExcel(response, list, "账单退费记录表", fileName);
+  }
+
+  public String getAbbreviationById(Integer orgId) {
+    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+    return organizationInfo.getAbbreviation();
   }
 
   /**

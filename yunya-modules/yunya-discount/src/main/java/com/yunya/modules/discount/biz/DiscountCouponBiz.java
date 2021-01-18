@@ -10,6 +10,7 @@ import com.yunya.models.discount.CouponAllocate;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.CouponFileInfo;
 import com.yunya.models.discount.DiscountCoupon;
+import com.yunya.modules.discount.enums.CouponTypeEnum;
 import com.yunya.modules.discount.form.DiscountCouponForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
@@ -56,7 +57,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
      */
     public Integer saveDiscountCoupon(DiscountCouponForm discountCouponForm) {
         CouponCommonInfo data = new CouponCommonInfo();
-        data.setType((byte) 1);
+        data.setType((byte) CouponTypeEnum.DISCOUNT.getCode().intValue());
         data.setName(discountCouponForm.getName());
         if (couponCommonInfoMapper.selectOne(data) != null) {
             throw new BaseException("折扣券名称与系统中已有折扣券重复，不允许新增!", NAME_IS_OCCUPIED);

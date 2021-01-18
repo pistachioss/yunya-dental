@@ -123,8 +123,8 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
             if (attendanceDeviceBindingVOMap.containsKey(userId)) {
                 Integer count = attendanceDeviceBindingVOMap.get(userId);
                 attendanceDeviceBindingVO.setBindingCount(count);
+                userIds.add(userId);
             }
-            userIds.add(userId);
         });
 
         // 必须查询有记录的员工
