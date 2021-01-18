@@ -22,4 +22,14 @@ public class RemoteClinicEmployeeConfigFactory implements RemoteClinicEmployeeCo
     public Integer addEmployeeConfig(ClinicEmployeeConfig clinicEmployeeConfig) {
         return null;
     }
+
+    @Override
+    public Integer editEmployeeConfig(List<ClinicEmployeeConfig> clinicEmployeeConfigs) {
+        return null;
+    }
+
+    @Override
+    public List<ClinicEmployeeConfig> findClinicEmployeeConfigs(Integer employeeId) {
+        return null;
+    }
 }

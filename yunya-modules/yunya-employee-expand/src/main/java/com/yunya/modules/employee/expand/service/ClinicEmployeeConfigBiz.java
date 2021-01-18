@@ -198,5 +198,28 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
         return mapper.insertSelective(clinicEmployeeConfig);
     }
 
+    /**
+     * 编辑员工可预约配置
+     * @param clinicEmployeeConfigs
+     * @return
+     */
+    public Integer editEmployeeConfig(List<ClinicEmployeeConfig> clinicEmployeeConfigs) {
+        return mapper.updateBatch(clinicEmployeeConfigs);
+    }
+
+    /**
+     * 根据员工ID查询该员工在所有门诊的可预约可挂号信息
+     * @param employeeId
+     * @return
+     */
+    public List<ClinicEmployeeConfig> findClinicEmployeeConfigs(Integer employeeId) {
+        if (employeeId != null) {
+            ClinicEmployeeConfig clinicEmployeeConfig = new ClinicEmployeeConfig();
+            clinicEmployeeConfig.setEmployeeId(employeeId);
+            return mapper.select(clinicEmployeeConfig);
+        }
+        return new ArrayList<>();
+    }
+
 
 }

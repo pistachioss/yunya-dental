@@ -38,6 +38,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -250,7 +254,34 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysEmployeeEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
       sysEmployeeEntity.setUpdName(BaseContextHandler.getName());
       sysEmployeeEntity.setUpdTime(new Date(System.currentTimeMillis()));
-      sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
+      int updResult = sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
+      if (updResult > 0 && sysEmployeeEntity.getWorkStatus() == 2) {
+        // 从可预约可挂号配置列表中删除该医生
+        List<LoginOrganizationForm> loginOrganizationForms = form.getLoginOrganizationForms();
+        List<ClinicEmployeeConfig> clinicEmployeeConfigs = new ArrayList<>();
+        if (StringHelper.isNotEmpty(loginOrganizationForms)) {
+          loginOrganizationForms.forEach(item->{
+            ClinicEmployeeConfig employeeConfig = new ClinicEmployeeConfig();
+            employeeConfig.setClinicId(item.getOrgId());
+            employeeConfig.setEmployeeId(userId);
+            employeeConfig.setInservice(0);
+            employeeConfig.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+            employeeConfig.setUpdTime(LocalDateTime.now());
+            clinicEmployeeConfigs.add(employeeConfig);
+          });
+          this.clinicEmployeeConfigFeign.editEmployeeConfig(clinicEmployeeConfigs);
+        } else {
+          List<ClinicEmployeeConfig> clinicEmployeeConfigList = this.clinicEmployeeConfigFeign.findClinicEmployeeConfigs(userId);
+          if (StringHelper.isNotEmpty(clinicEmployeeConfigList)) {
+            clinicEmployeeConfigList.forEach(item->{
+              item.setInservice(0);
+              item.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+              item.setUpdTime(LocalDateTime.now());
+            });
+          }
+          this.clinicEmployeeConfigFeign.editEmployeeConfig(clinicEmployeeConfigList);
+        }
+      }
       // 发送消息同步员工信息
       rabbitMqServiceFeign.sendMessage(userId, 1, BaseEmployee);
     }
