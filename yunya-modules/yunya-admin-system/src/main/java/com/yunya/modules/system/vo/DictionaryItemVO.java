@@ -31,4 +31,9 @@ public class DictionaryItemVO implements Serializable {
   /** 字典类型名称 */
   @ApiModelProperty("字典类型名称")
   private String dictTypeName;
+  /** 字典类型英文名称 */
+  @ApiModelProperty("字典类型英文名称")
+  private String englishName;
+
+
 }

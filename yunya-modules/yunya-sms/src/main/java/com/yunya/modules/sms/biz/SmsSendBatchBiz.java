@@ -5,7 +5,6 @@ import com.yunya.feign.sms.query.SmsSendBatchQueryForm;
 import com.yunya.feign.sms.vo.SmsSendBatchVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
-import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.sms.SmsSendBatch;
 import com.yunya.modules.sms.mapper.SmsSendBatchMapper;
@@ -40,12 +39,6 @@ public class SmsSendBatchBiz extends BaseBiz<SmsSendBatchMapper, SmsSendBatch> {
         return mapper.findSmsSendBatchList(queryForm);
     }
 
-    public int insertEntity(Integer orgId, Integer templateId, Byte type, Integer sendNum) {
-        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
-        String name = BaseContextHandler.getName();
-        return insertEntity(orgId, templateId, type, sendNum, userId, name);
-    }
-
     /**
      * 添加并返回将主键id装配到实体上
      *
@@ -75,9 +68,6 @@ public class SmsSendBatchBiz extends BaseBiz<SmsSendBatchMapper, SmsSendBatch> {
     }
 
     public void uptSelectiveById(SmsSendBatch smsSendBatch) {
-        Date now = new Date(System.currentTimeMillis());
-        smsSendBatch.setUptTime(now);
-        smsSendBatch.setUptId(-999);
         mapper.updateById(smsSendBatch);
     }
 }
