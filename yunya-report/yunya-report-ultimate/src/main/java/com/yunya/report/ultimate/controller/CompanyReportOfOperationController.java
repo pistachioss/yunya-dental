@@ -245,9 +245,9 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-运营分析-运营BI-工作量完成率、初诊人数目标完成率、老患者介绍率、随访完成率、提醒完成率")
-  @PostMapping(value = "/complex/data", name = "billDetailBiz")
+  @PostMapping(value = "/complex/data", name = "根据条件查询门诊运营综合数据")
   public ResponseResult<List<OperationDataComplexInfoVO>> operationDataComplexInfo(
-      OperationDataComplexQuery query) {
+      @RequestBody @Validated OperationDataComplexQuery query) {
     List<OperationDataComplexInfoVO> resultList =
         clinicDataStatisticsBiz.findOperationDataComplexInfo(query);
     return ResponseUtil.success(resultList);
