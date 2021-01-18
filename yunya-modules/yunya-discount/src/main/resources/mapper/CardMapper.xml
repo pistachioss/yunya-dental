@@ -180,6 +180,12 @@
             `c`.`sold_phone_number`,
             `cci`.`sold_amount` as `paidAmount`,
             case
+                when `c`.`sold_type` = 0 then '售卖'
+                when `c`.`sold_type` = 1 then '置换'
+                when `c`.`sold_type` = 2 then '赠送'
+            else null
+            end as `soldTypeName`,
+            case
                 when `c`.`is_sold_and_pay` = 0 then 1
                 else 0
                 end              as `charge`,
