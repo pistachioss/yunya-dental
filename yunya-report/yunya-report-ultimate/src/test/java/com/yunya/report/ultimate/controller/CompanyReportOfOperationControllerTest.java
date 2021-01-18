@@ -2,12 +2,10 @@ package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.bo.ClinicDataStatisticsInfoVO;
-import com.yunya.feign.report.domain.query.DataStatisticsQuery;
-import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
-import com.yunya.feign.report.domain.query.OperationDataComplexQuery;
-import com.yunya.feign.report.domain.query.VisitAndRemindCompletedInfoQuery;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.EmployeeWorkloadOfOperationVO;
 import com.yunya.feign.report.domain.vo.OperationDataComplexInfoVO;
+import com.yunya.feign.report.domain.vo.PatientFirstTreatOriginInfoVO;
 import com.yunya.feign.report.domain.vo.VisitAndRemindCompletedInfoVO;
 import com.yunya.framework.common.model.ResponseResult;
 import org.junit.Test;
@@ -76,6 +74,17 @@ public class CompanyReportOfOperationControllerTest {
     query.setEndDate("2021-01");
     ResponseResult<List<OperationDataComplexInfoVO>> result =
         companyReportOfOperationController.operationDataComplexInfo(query);
+    System.out.println(result);
+  }
+
+  @Test
+  public void find3() {
+    PatientFirstTreatOriginQuery query = new PatientFirstTreatOriginQuery();
+    query.setOrgId(35);
+    query.setStartDate("2021-01");
+    query.setEndDate("2021-01");
+    ResponseResult<PatientFirstTreatOriginInfoVO> result =
+        companyReportOfOperationController.firstTreatPatientOrigin(query);
     System.out.println(result);
   }
 }

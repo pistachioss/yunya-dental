@@ -435,7 +435,7 @@ public class BaseTreatmentProcessBiz
           if (null != firstTreatCount) {
             if (null != totalCount && 0 != totalCount) {
               treatOrigin.setFirstTreatPercentage(
-                  BigDecimal.valueOf(firstTreatCount / totalCount)
+                  BigDecimal.valueOf((float) firstTreatCount / totalCount)
                       .multiply(new BigDecimal(100))
                       .setScale(2, BigDecimal.ROUND_HALF_UP));
             }
