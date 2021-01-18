@@ -339,7 +339,7 @@
     WHERE
 	ai.leave_id = #{id}
     ORDER BY
-	als.approval_priority
+	als.approval_priority desc
     </select>
 
     <select id="findApprovalByMe" resultType="com.yunya.feign.employee_attend.vo.LeaveAppVO">

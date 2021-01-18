@@ -183,9 +183,11 @@
             </if>
         </where>
         union all
-        select li.id as id,li.user_id as userId,li.crt_time as crtTime,li.start_time as startTime,li.end_time as endTime,GROUP_CONCAT(ap.user_id) as approvalPeopleId,'请假' as status,li.approval_status as approvalStatus from leave_info li
+        select  any_value(li.id) as id,any_value(li.user_id) as userId,any_value(li.crt_time) as crtTime,any_value(li.start_time) as startTime,any_value(li.end_time) as endTime,
+        any_value(GROUP_CONCAT(ap.user_id ORDER BY als.approval_priority desc)) as approvalPeopleId,any_value('请假') as status,any_value(li.approval_status) as approvalStatus from leave_info li
         LEFT JOIN approval_info ai on ai.leave_id = li.id
         LEFT JOIN approval_people ap on ap.id = ai.approval_people_id
+        LEFT JOIN approval_level_set als on ap.approval_level_id = als.id
         <where>
             <if test="crtTime!=null">
                 AND  DATE_FORMAT(li.crt_time,'%Y-%m-%d') =  DATE_FORMAT(#{crtTime},'%Y-%m-%d')

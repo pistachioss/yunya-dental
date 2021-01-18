@@ -109,6 +109,10 @@ public class RedisConstants implements Serializable {
   /** 考勤锁时长 */
   public static final Long ATTENDANCE_PUNCH_LOCK_SEC = 600L;
 
+  /** -----------------------------------患者信息--------------------------------------- */
+  /** 患者信息  patient_base_info_{患者ID} */
+  public static final String PATIENT_BASE_INFO = "patient_base_info_{}";
+
   /**
    * 设置key中的占位符
    * @param keyPrefix key前缀

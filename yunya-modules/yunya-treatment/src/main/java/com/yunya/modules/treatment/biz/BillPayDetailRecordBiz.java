@@ -218,7 +218,7 @@ public class BillPayDetailRecordBiz
     BillPayDetailRecord payDetail = new BillPayDetailRecord();
     paymentModels.forEach(
         model -> {
-          payDetail.setOrgId(orgId);
+          payDetail.setOrgId(billPayRecord.getOrgId());
           payDetail.setPatientId(patientId);
           payDetail.setTreatmentRecordId(treatmentRecordId);
           payDetail.setBillPayRecordId(billPayRecordId);
