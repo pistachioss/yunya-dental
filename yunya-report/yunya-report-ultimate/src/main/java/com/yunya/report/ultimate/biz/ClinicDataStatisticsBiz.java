@@ -1,12 +1,20 @@
 package com.yunya.report.ultimate.biz;
 
+import com.yunya.feign.clinic_base.RemoteClinicBaseServiceFeign;
+import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
+import com.yunya.feign.clinic_base.domain.vo.BusinessGoalCompletedInfoVO;
 import com.yunya.feign.report.domain.bo.ClinicDataStatisticsInfoVO;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
+import com.yunya.feign.report.domain.query.OperationDataComplexQuery;
 import com.yunya.feign.report.domain.query.PatientFirstTreatOriginQuery;
 import com.yunya.feign.report.domain.query.VisitAndRemindCompletedInfoQuery;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.framework.common.utils.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 简介: 门诊数据统计业务层
@@ -33,6 +41,8 @@ public class ClinicDataStatisticsBiz {
   @Autowired private BaseTreatmentProcessBiz treatmentProcessBiz;
   /** 随访提醒 */
   @Autowired private BaseVisitRemindBiz visitRemindBiz;
+  /** 诊所基础信息 */
+  @Autowired private RemoteClinicBaseServiceFeign clinicBaseServiceFeign;
 
   /**
    * 根据条件查询门诊数据统计
@@ -96,5 +106,88 @@ public class ClinicDataStatisticsBiz {
   public VisitAndRemindCompletedInfoVO findVisitAndRemindCompletedInfo(
       VisitAndRemindCompletedInfoQuery query) {
     return visitRemindBiz.findVisitAndRemindCompletedInfo(query);
+  }
+
+  /**
+   * 根据条件查询门诊运营综合数据
+   *
+   * @param query 查询条件
+   * @return Map<String, Object>
+   */
+  public List<OperationDataComplexInfoVO> findOperationDataComplexInfo(
+      OperationDataComplexQuery query) {
+    Integer orgId = query.getOrgId();
+    String startDate = query.getStartDate();
+    String endDate = query.getEndDate();
+    List<OperationDataComplexInfoVO> resultList = new ArrayList<>();
+
+    BusinessGoalCompletedInfoQuery businessGoalQuery = new BusinessGoalCompletedInfoQuery();
+    businessGoalQuery.setBusinessType((byte) 1);
+    businessGoalQuery.setOrgId(orgId);
+    businessGoalQuery.setStartDate(startDate);
+    businessGoalQuery.setEndDate(endDate);
+    BusinessGoalCompletedInfoVO workloadCompleted =
+        clinicBaseServiceFeign.businessGoalCompletedInfo(businessGoalQuery);
+    OperationDataComplexInfoVO workload = new OperationDataComplexInfoVO();
+    workload.setComplexInfoName("工作量目标完成率");
+    workload.setGoalCount(workloadCompleted.getBusinessGoalCount().toString());
+    workload.setCompletedCount(workloadCompleted.getBusinessCompletedCount().toString());
+    workload.setCompletedPercentage(workloadCompleted.getBusinessCompletedPercentage());
+    resultList.add(0, workload);
+
+    businessGoalQuery.setBusinessType((byte) 2);
+    BusinessGoalCompletedInfoVO firstTreatCompleted =
+        clinicBaseServiceFeign.businessGoalCompletedInfo(businessGoalQuery);
+    OperationDataComplexInfoVO firstTreat = new OperationDataComplexInfoVO();
+    firstTreat.setComplexInfoName("初诊人数目标完成率");
+    firstTreat.setGoalCount(firstTreatCompleted.getBusinessGoalCount().toString());
+    firstTreat.setCompletedCount(firstTreatCompleted.getBusinessCompletedCount().toString());
+    firstTreat.setCompletedPercentage(firstTreatCompleted.getBusinessCompletedPercentage());
+    resultList.add(1, firstTreat);
+
+    PatientFirstTreatOriginQuery patientTreatOriginQuery = new PatientFirstTreatOriginQuery();
+    patientTreatOriginQuery.setOrgId(orgId);
+    patientTreatOriginQuery.setStartDate(startDate);
+    patientTreatOriginQuery.setEndDate(endDate);
+    PatientFirstTreatOriginInfoVO treatOriginInfo =
+        treatmentProcessBiz.findPatientFirstTreatOriginInfo(patientTreatOriginQuery);
+    OperationDataComplexInfoVO firstPatient = new OperationDataComplexInfoVO();
+    firstPatient.setComplexInfoName("老患者介绍率");
+    firstPatient.setGoalCount(treatOriginInfo.getFirstTreatTotalCount().toString());
+    List<PatientFirstTreatOriginVO> treatOrigins = treatOriginInfo.getPatientFirstTreatOrigins();
+    if (StringHelper.isNotEmpty(treatOrigins)) {
+      for (PatientFirstTreatOriginVO treatOrigin : treatOrigins) {
+        if ("老患者介绍".equals(treatOrigin.getPatientOriginTypeName())) {
+          firstPatient.setCompletedCount(treatOrigin.getFirstTreatCount().toString());
+          firstPatient.setCompletedPercentage(treatOrigin.getFirstTreatPercentage());
+        }
+      }
+    }
+    resultList.add(2, firstPatient);
+
+    VisitAndRemindCompletedInfoQuery visitQuery = new VisitAndRemindCompletedInfoQuery();
+    visitQuery.setBusinessType((byte) 0);
+    visitQuery.setOrgId(orgId);
+    visitQuery.setStartDate(startDate);
+    visitQuery.setEndDate(endDate);
+    VisitAndRemindCompletedInfoVO visitCompletedInfo =
+        visitRemindBiz.findVisitAndRemindCompletedInfo(visitQuery);
+    OperationDataComplexInfoVO visit = new OperationDataComplexInfoVO();
+    visit.setComplexInfoName("随访完成率");
+    visit.setGoalCount(visitCompletedInfo.getWaitingForCompletedCount().toString());
+    visit.setCompletedCount(visitCompletedInfo.getCompletedCount().toString());
+    visit.setCompletedPercentage(visitCompletedInfo.getCompletedPercentage());
+    resultList.add(3, visit);
+
+    visitQuery.setBusinessType((byte) 1);
+    VisitAndRemindCompletedInfoVO remindCompletedInfo =
+        visitRemindBiz.findVisitAndRemindCompletedInfo(visitQuery);
+    OperationDataComplexInfoVO remind = new OperationDataComplexInfoVO();
+    remind.setComplexInfoName("提醒完成率");
+    remind.setGoalCount(remindCompletedInfo.getWaitingForCompletedCount().toString());
+    remind.setCompletedCount(remindCompletedInfo.getCompletedCount().toString());
+    remind.setCompletedPercentage(remindCompletedInfo.getCompletedPercentage());
+    resultList.add(4, remind);
+    return resultList;
   }
 }

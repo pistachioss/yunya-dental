@@ -16,6 +16,8 @@ public interface YunyaServiceNameConstants {
   String YUNYA_GATE_SERVICE = "yunya-gateway";
   /** 云牙系统服务 */
   String YUNYA_SYSTEM_SERVICE = "yunya-system";
+  /** 诊所基础信息 */
+  String YUNYA_CLINIC_BASE = "yunya-clinic-base";
   /** 云牙排班服务 */
   String YUNYA_EMPLOYEE_ATTEND = "yunya-employee-attend";
   /** 员工扩展服务 */
