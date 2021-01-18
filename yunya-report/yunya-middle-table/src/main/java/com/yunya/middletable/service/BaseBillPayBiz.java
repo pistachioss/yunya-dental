@@ -87,10 +87,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     billPayDetailRecord.setInservice(true);
     List<BillPayDetailRecord> billPayDetailRecords =
         billPayDetailRecordMapper.select(billPayDetailRecord);
-    BaseBillPayDetail baseBillPayDetail = new BaseBillPayDetail();
-    baseBillPayDetail.setBillPayId(billPayRecordId);
-    baseBillPayDetailMapper.delete(baseBillPayDetail);
     if (StringHelper.isNotEmpty(billPayDetailRecords)) {
+      BaseBillPayDetail baseBillPayDetail = new BaseBillPayDetail();
+      baseBillPayDetail.setBillPayId(billPayRecordId);
+      baseBillPayDetailMapper.delete(baseBillPayDetail);
       log.info("BaseBillPayBiz_saveBillPayDetailRecord_收费记录明细列表---:{}", billPayDetailRecords);
       billPayDetailRecords.forEach(
           payDetailRecord -> {
