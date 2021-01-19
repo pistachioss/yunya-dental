@@ -455,7 +455,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         templateParam.put(
             SmsTemplateItemEnum.MEMBER_RECHARGE_AMOUNT.getAction(),
-            memberRechargeRecord.getRechargePrincipal().add(rechargeBonus));
+            memberRechargeRecord.getRechargePrincipal().add(rechargeBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
         // 会员剩余金额
         BigDecimal currentRechargeBonus = memberRechargeRecord.getCurrentRechargeBonus();
         if (currentRechargeBonus == null) {
@@ -463,7 +463,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         templateParam.put(
             SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getAction(),
-            memberRechargeRecord.getCurrentRechargePrincipal().add(currentRechargeBonus));
+            memberRechargeRecord.getCurrentRechargePrincipal().add(currentRechargeBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
         // 消费
       } else {
         // 患者姓名
@@ -478,7 +478,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         templateParam.put(
             SmsTemplateItemEnum.MEMBER_SPENDING_AMOUNT.getAction(),
-            memberExpendRecord.getExpendPrincipal().add(expendGift));
+            memberExpendRecord.getExpendPrincipal().add(expendGift).setScale(2, BigDecimal.ROUND_HALF_UP));
         // 会员剩余金额
         BigDecimal currentBonus = memberExpendRecord.getCurrentBonus();
         if (currentBonus == null) {
@@ -486,7 +486,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         templateParam.put(
             SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getAction(),
-            memberExpendRecord.getCurrentPrincipal().add(currentBonus));
+            memberExpendRecord.getCurrentPrincipal().add(currentBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
       }
       Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
       SmsAutoEventSendRecordModel smsModel = new SmsAutoEventSendRecordModel();

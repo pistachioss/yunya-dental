@@ -336,13 +336,15 @@ public class PatientPrepaymentRelationBiz
         if (rechargeBonus == null) {
           rechargeBonus = BigDecimal.valueOf(0);
         }
-        templateParam.put(SmsTemplateItemEnum.PREPAID_RECHARGE_AMOUNT.getAction(), prepaidRechargeRecord.getRechargePrincipal().add(rechargeBonus));
+        templateParam.put(SmsTemplateItemEnum.PREPAID_RECHARGE_AMOUNT.getAction(),
+                prepaidRechargeRecord.getRechargePrincipal().add(rechargeBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
         // 预付款剩余金额
         BigDecimal currentRechargeBonus = prepaidRechargeRecord.getCurrentRechargeBonus();
         if (currentRechargeBonus == null) {
           currentRechargeBonus = BigDecimal.valueOf(0);
         }
-        templateParam.put(SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getAction(), prepaidRechargeRecord.getCurrentRechargePrincipal().add(currentRechargeBonus));
+        templateParam.put(SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getAction(),
+                prepaidRechargeRecord.getCurrentRechargePrincipal().add(currentRechargeBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
         // 消费
       } else {
         // 患者姓名
@@ -354,13 +356,15 @@ public class PatientPrepaymentRelationBiz
         if (expendGift == null) {
           expendGift = BigDecimal.valueOf(0);
         }
-        templateParam.put(SmsTemplateItemEnum.PREPAID_CONSUMPTION_AMOUNT.getAction(), prepaidExpendRecord.getExpendPrincipal().add(expendGift));
+        templateParam.put(SmsTemplateItemEnum.PREPAID_CONSUMPTION_AMOUNT.getAction(),
+                prepaidExpendRecord.getExpendPrincipal().add(expendGift).setScale(2, BigDecimal.ROUND_HALF_UP));
         // 预付款剩余金额
         BigDecimal currentBonus = prepaidExpendRecord.getCurrentBonus();
         if (currentBonus == null) {
           currentBonus = BigDecimal.valueOf(0);
         }
-        templateParam.put(SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getAction(), prepaidExpendRecord.getCurrentPrincipal().add(currentBonus));
+        templateParam.put(SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getAction(),
+                prepaidExpendRecord.getCurrentPrincipal().add(currentBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
       }
       Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
       SmsAutoEventSendRecordModel smsModel = new SmsAutoEventSendRecordModel();
