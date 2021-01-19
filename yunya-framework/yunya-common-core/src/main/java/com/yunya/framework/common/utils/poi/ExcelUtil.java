@@ -278,6 +278,15 @@ public class ExcelUtil<T> {
     exportExcel(response.getOutputStream());
   }
 
+  /**
+   * 获取文件名
+   *
+   * @param sDate
+   * @param eDate
+   * @param mid
+   * @param tail
+   * @return
+   */
   public String getFileName(String sDate, String eDate, String mid, String tail) {
     return getFileName(null, sDate, eDate, mid, tail);
   }

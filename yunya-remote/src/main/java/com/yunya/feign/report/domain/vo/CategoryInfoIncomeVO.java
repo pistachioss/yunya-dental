@@ -28,7 +28,7 @@ public class CategoryInfoIncomeVO implements Serializable {
   @ApiModelProperty("项目分类ID")
   private Integer categoryId;
   /** 项目分类类型：0-价目表；1-商品 */
-//  @Excel(name = "项目类型", readConverterExp = "0=开单处置,1-商品")
+  //  @Excel(name = "项目类型", readConverterExp = "0=开单处置,1-商品")
   @ApiModelProperty("项目分类类型：0-价目表；1-商品")
   private Byte categoryType;
   /** 项目分类名称 */
@@ -36,11 +36,11 @@ public class CategoryInfoIncomeVO implements Serializable {
   @ApiModelProperty("项目分类名称")
   private String categoryName;
   /** 实收金额合计 */
-  @Excel(name = "实收金额合计")
+  @Excel(name = "实收金额合计", scale = 2)
   @ApiModelProperty("实收金额合计")
   private BigDecimal totalActualAmount;
   /** 优惠金额合计 */
-  @Excel(name = "优惠金额合计")
+  @Excel(name = "优惠金额合计", scale = 2)
   @ApiModelProperty("优惠金额合计")
   private BigDecimal totalDiscountAmount;
 }
