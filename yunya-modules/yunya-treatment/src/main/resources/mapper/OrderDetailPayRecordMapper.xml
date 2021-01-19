@@ -1,28 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.treatment.mapper.OrderDetailPayRecordMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.treatment.OrderDetailPayRecord" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="treatment_record_id" property="treatmentRecordId" jdbcType="INTEGER" />
-    <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
-    <result column="order_detail_id" property="orderDetailId" jdbcType="INTEGER" />
-    <result column="bill_record_id" property="billRecordId" jdbcType="INTEGER" />
-    <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL" />
-    <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
-    <result column="actual_receivable" property="actualReceivable" jdbcType="DECIMAL" />
-    <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
-    <result column="coupon_workload" property="couponWorkload" jdbcType="DECIMAL" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upd_id" property="updId" jdbcType="INTEGER" />
-    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.treatment.mapper.OrderDetailPayRecordMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.treatment.OrderDetailPayRecord">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="treatment_record_id" property="treatmentRecordId" jdbcType="INTEGER"/>
+        <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER"/>
+        <result column="order_detail_id" property="orderDetailId" jdbcType="INTEGER"/>
+        <result column="bill_record_id" property="billRecordId" jdbcType="INTEGER"/>
+        <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL"/>
+        <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL"/>
+        <result column="actual_receivable" property="actualReceivable" jdbcType="DECIMAL"/>
+        <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
+        <result column="coupon_workload" property="couponWorkload" jdbcType="DECIMAL"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 查询账单优惠为0的明细总额 -->
+    <select id="selectNoDiscountAmount" resultType="java.math.BigDecimal">
+        SELECT
+            IFNULL(SUM( actual_receivable ) ,0)
+        FROM
+            order_detail_pay_record odpr
+        WHERE
+            odpr.bill_record_id = #{billRecordId}
+            AND odpr.privilege_amount = 0
+    </select>
 </mapper>

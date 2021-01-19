@@ -6,6 +6,8 @@ import com.yunya.modules.treatment.mapper.OrderDetailPayRecordMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 /**
  * 简介: 订单明细支付记录业务层
  *
@@ -18,5 +20,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(rollbackFor = Exception.class)
 public class OrderDetailPayRecordBiz
     extends BaseBiz<OrderDetailPayRecordMapper, OrderDetailPayRecord> {
-  /***/
+
+  /**
+   * 查询账单优惠为0的订单金额
+   *
+   * @param billRecordId 账单记录ID
+   * @return BigDecimal
+   */
+  public BigDecimal selectNoDiscountAmount(Integer billRecordId) {
+    return mapper.selectNoDiscountAmount(billRecordId);
+  }
 }
