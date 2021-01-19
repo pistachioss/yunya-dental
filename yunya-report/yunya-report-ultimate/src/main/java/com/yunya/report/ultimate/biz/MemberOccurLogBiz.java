@@ -495,6 +495,7 @@ public class MemberOccurLogBiz
   public void exportMemberBalanceList(HttpServletResponse response, MemberQueryForm form)
       throws ParseException, IOException {
     String endDate = form.getEndDate();
+    String formEndDate = form.getEndDate();
     if (StringHelper.isNotEmpty(endDate)) {
       endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
@@ -514,14 +515,14 @@ public class MemberOccurLogBiz
       List<ExcelBaseMemberBalanceInfoVo> build =
           EntityUtils.build(resultList, ExcelBaseMemberBalanceInfoVo.class);
       excelUtil.exportExcel(
-          response, build, "会员余额结存表", (form.getStartDate() + "-" + form.getEndDate()) + "会员余额结存表");
+          response, build, "会员余额结存表", (form.getStartDate() + "-" + formEndDate) + "会员余额结存表");
     } else {
       ExcelUtil<ExcelBasePrepaymentsBalanceInfoVo> excelUtil =
           new ExcelUtil<>(ExcelBasePrepaymentsBalanceInfoVo.class);
       List<ExcelBasePrepaymentsBalanceInfoVo> build =
           EntityUtils.build(resultList, ExcelBasePrepaymentsBalanceInfoVo.class);
       excelUtil.exportExcel(
-          response, build, "预付款余额结存表", (form.getStartDate() + "-" + form.getEndDate()) + "预付款余额结存表");
+          response, build, "预付款余额结存表", (form.getStartDate() + "-" + formEndDate) + "预付款余额结存表");
     }
   }
 

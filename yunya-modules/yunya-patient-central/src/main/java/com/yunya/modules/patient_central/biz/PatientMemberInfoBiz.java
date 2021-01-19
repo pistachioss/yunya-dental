@@ -366,7 +366,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param model 会员卡充值Model
    */
   public ResponseResult recharge(MemberRechargeModel model) {
-    if (model.getRechargePrincipal().compareTo(model.getPaymentAmount()) == 0){
+    if (model.getRechargePrincipal().compareTo(model.getAccountedWayModel().getCreditAmount()) == 0){
       // 查询会员余额 余额增加
       PatientMemberInfo patientMemberInfo =
               patientMemberInfoMapper.selectCardNumber(model.getMemberId());

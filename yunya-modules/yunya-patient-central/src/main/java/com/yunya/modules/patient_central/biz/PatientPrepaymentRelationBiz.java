@@ -224,7 +224,7 @@ public class PatientPrepaymentRelationBiz
    */
   public ResponseResult recharge(PrepaidRechargeModel model) {
     // 判断充值本金和入账金额是否相等
-    if (model.getRechargePrincipal().compareTo(model.getPaymentAmount()) == 0){
+    if (model.getRechargePrincipal().compareTo(model.getPrepaidRechargeTollRecordModel().getCreditAmount()) == 0){
       // 查询预付款余额 增加余额
       PatientPrepaymentsInfo patientPrepaymentsInfo =
               patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidCard());
@@ -265,7 +265,6 @@ public class PatientPrepaymentRelationBiz
         if (prepaidRechargeRecord.getRechargeBonus() == null) {
           prepaidRechargeRecord.setRechargeBonus(new BigDecimal(0));
         }
-        prepaidRechargeTollRecord.setCreditAmount(model.getPaymentAmount());
         prepaidRechargeTollRecord.setRechargeRecordId(prepaidRechargeRecord.getId());
         prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));

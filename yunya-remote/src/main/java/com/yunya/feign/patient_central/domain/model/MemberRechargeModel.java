@@ -53,12 +53,6 @@ public class MemberRechargeModel implements Serializable {
     private AccountedWayModel accountedWayModel;
 
     /**
-     * 入账方式金额
-     */
-    @ApiModelProperty(value = "入账方式金额",required = true)
-    private BigDecimal paymentAmount;
-
-    /**
      * 备注
      */
     @ApiModelProperty(value = "备注")
