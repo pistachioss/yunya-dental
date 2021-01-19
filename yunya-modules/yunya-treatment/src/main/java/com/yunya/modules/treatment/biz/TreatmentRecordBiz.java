@@ -7,7 +7,6 @@ import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.vo.NextAppointsVo;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
-import com.yunya.feign.emr.RemoteEmrServiceFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
@@ -99,8 +98,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
   /** 随访提醒，图片影像 */
   @Autowired private RemoteTreatmentOtherFeign remoteTreatmentOther;
-  /** 电子病历 */
-  @Autowired private RemoteEmrServiceFeign remoteEmrServiceFeign;
   /** 挂号服务 */
   @Autowired private RegisteredBiz registeredBiz;
 
@@ -120,8 +117,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     }
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     Integer dentistId = regResult.getDentistId();
-    if (!dentistId.equals(userId)) {
-      throw new ClientServiceException("接诊失败，当前挂号医生与接诊医生不是同一个人！", PARAMETERS_IS_ILLEGAL);
+    if (postType != 0) {
+      if (!dentistId.equals(userId)) {
+        throw new ClientServiceException("接诊失败，当前挂号医生与接诊医生不是同一个人！", PARAMETERS_IS_ILLEGAL);
+      }
     }
     String treatingKey = REDIS_KEY_TREATMENT_ING + regId;
     String treatingValue = redisUtils.get(treatingKey);
