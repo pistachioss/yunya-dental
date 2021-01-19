@@ -457,9 +457,9 @@ public class MemberOccurLogBiz
   }
 
   /**
-   * 查询会员余额结存表
+   * 查询会员or预付款余额结存信息列表
    *
-   * @param form 会员余额结存条件
+   * @param form 条件
    * @return List<BaseMemberBalanceInfoVo>
    */
   public PageInfo<BaseMemberBalanceInfoVo> memberBalanceList(MemberQueryForm form)
@@ -514,14 +514,14 @@ public class MemberOccurLogBiz
       List<ExcelBaseMemberBalanceInfoVo> build =
           EntityUtils.build(resultList, ExcelBaseMemberBalanceInfoVo.class);
       excelUtil.exportExcel(
-          response, build, "会员余额结存表", (form.getStartDate() + "-" + endDate) + "会员余额结存表");
+          response, build, "会员余额结存表", (form.getStartDate() + "-" + form.getEndDate()) + "会员余额结存表");
     } else {
       ExcelUtil<ExcelBasePrepaymentsBalanceInfoVo> excelUtil =
           new ExcelUtil<>(ExcelBasePrepaymentsBalanceInfoVo.class);
       List<ExcelBasePrepaymentsBalanceInfoVo> build =
           EntityUtils.build(resultList, ExcelBasePrepaymentsBalanceInfoVo.class);
       excelUtil.exportExcel(
-          response, build, "预付款余额结存表", (form.getStartDate() + "-" + endDate) + "预付款余额结存表");
+          response, build, "预付款余额结存表", (form.getStartDate() + "-" + form.getEndDate()) + "预付款余额结存表");
     }
   }
 

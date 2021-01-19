@@ -48,7 +48,7 @@
         WHERE
             merd.member_id = #{form.memberId}
             and merd.inservice = 1
-            and 'type' = 0
+            and type = 0
             order by merd.crt_time desc
     </select>
 

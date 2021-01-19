@@ -22,9 +22,9 @@
         select
         di.id as id,
         di.name as `name`,
+        di.english_name as englishName,
         dt.id as dictTypeId,
-        dt.name as dictTypeName,
-        dt.english_name as englishName
+        dt.name as dictTypeName
         from dictionary_item di
         left join dictionary_type dt on di.dictionary_type_id = dt.id
         <where>
