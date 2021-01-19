@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.mapper;
 import com.yunya.feign.report.domain.query.AssistantMatchingDetailQuery;
 import com.yunya.feign.report.domain.query.PatientFirstTreatOriginQuery;
 import com.yunya.feign.report.domain.vo.EmployeeTreatMatchingDetailVO;
+import com.yunya.feign.report.domain.vo.PatientFirstTreatOriginVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,5 +48,16 @@ public class BaseTreatmentProcessMapperTest {
     query.setEndDate("2020-12");
     Integer integer = treatmentProcessMapper.selectFirstTreatTotalCount(query);
     System.out.println(integer);
+  }
+
+  @Test
+  public void find2() {
+    PatientFirstTreatOriginQuery query = new PatientFirstTreatOriginQuery();
+    query.setOrgId(35);
+    query.setStartDate("2021-01");
+    query.setEndDate("2021-01");
+    List<PatientFirstTreatOriginVO> vos =
+        treatmentProcessMapper.selectPatientFirstTreatOriginList(query);
+    System.out.println(vos);
   }
 }

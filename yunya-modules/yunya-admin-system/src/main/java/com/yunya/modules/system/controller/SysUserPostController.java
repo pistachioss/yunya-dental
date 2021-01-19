@@ -150,6 +150,7 @@ public class SysUserPostController {
    */
   @ApiOperation("根据ID删除用户可登陆组织")
   @DeleteMapping("/delete/{userPostId}")
+  @CurrentUser
   public ResponseResult<T> remove(@PathVariable Integer userPostId) {
     sysUserPostBiz.remove(userPostId);
     return ResponseUtil.success(null);

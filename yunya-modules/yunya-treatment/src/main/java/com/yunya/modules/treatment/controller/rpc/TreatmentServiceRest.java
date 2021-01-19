@@ -3,10 +3,10 @@ package com.yunya.modules.treatment.controller.rpc;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
-import com.yunya.feign.treatment.domain.query.CreditCashReceiptQuery;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.BusinessCompletedWorkGoalVO;
 import com.yunya.feign.treatment.domain.vo.RegisteredVO;
@@ -71,6 +71,8 @@ public class TreatmentServiceRest {
   @Autowired private BillRecordBiz billRecordBiz;
   /** 账单收费详情 */
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
+  /** 账单退费 */
+  @Autowired private BillRefundRecordBiz refundRecordBiz;
 
   /**
    * 根据商品分类ID查询商品分类信息
@@ -461,11 +463,23 @@ public class TreatmentServiceRest {
   /**
    * 根据支付方式统计账单的入账金额
    *
-   * @param
-   * @return
+   * @param query 查询条件
+   * @return BigDecimal
    */
-  @PostMapping(value = "/bill/sumBillPayAmount")
-  public BigDecimal sumBillPayAmount(@RequestBody @Validated CreditCashReceiptQuery query) {
+  @RequestMapping(value = "/bill/sumBillPayAmount", method = RequestMethod.POST)
+  public BigDecimal sumBillPayAmount(@RequestBody @Validated CashReceiptOrRefundQuery query) {
     return billPayDetailRecordBiz.sumBillPayAmount(query);
+  }
+
+  /**
+   * 根据条件查询账单退费退费现金总额
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  @RequestMapping(value = "bill/refund/cash", method = RequestMethod.POST)
+  public BigDecimal findBillRefundTotalCashAmount(
+      @RequestBody @Validated CashReceiptOrRefundQuery query) {
+    return refundRecordBiz.findBillRefundTotalCashAmount(query);
   }
 }

@@ -1,6 +1,7 @@
 package com.yunya.feign.discount.domain.bo;
 
 import com.google.common.collect.Lists;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,8 +12,7 @@ import java.util.List;
  * @author xiangyang
  * @date 2020/9/14
  */
-@Getter
-@Setter
+@Data
 public class OrderItemUseBo {
 	private Integer orderDetailId;
 	private Integer itemId;

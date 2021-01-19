@@ -16,6 +16,7 @@ import com.yunya.modules.employee.expand.mapper.*;
 import com.yunya.modules.employee.expand.model.request.*;
 import com.yunya.modules.employee.expand.model.response.*;
 import org.apache.commons.collections4.*;
+import org.omg.CORBA.INTERNAL;
 import org.slf4j.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cglib.beans.*;
@@ -219,6 +220,19 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
             return mapper.select(clinicEmployeeConfig);
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * 根据员工ID和组织ID删除员工配置信息
+     * @param employeeId 员工ID
+     * @param clinicId  门诊ID
+     * @return 成功返回 删除行数，否则返回0
+     */
+    public Integer deleteClinicEmployeeConfig(Integer employeeId, Integer clinicId) {
+        if (employeeId != null && clinicId != null) {
+            return mapper.deleteEmployeeConfig(employeeId,clinicId);
+        }
+        return 0;
     }
 
 

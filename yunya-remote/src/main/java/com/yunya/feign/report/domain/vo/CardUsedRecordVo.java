@@ -19,6 +19,8 @@ public class CardUsedRecordVo {
 	@ApiModelProperty(value = "订单id")
 	@ExcelIgnore
 	private Integer orderId;
+	@ApiModelProperty(value = "卡id")
+	private Integer cardId;
 	@ApiModelProperty(value = "使用日期")
 	@ExcelProperty(value = "使用日期")
 	private String usedDate;

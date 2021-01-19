@@ -5,9 +5,9 @@ import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
-import com.yunya.feign.discount.domain.query.CardSaleCashReceiptQuery;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.framework.common.model.ResponseResult;
 
 import java.math.BigDecimal;
@@ -49,7 +49,7 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     }
 
     @Override
-    public BigDecimal sumCardSoldAmount(CardSaleCashReceiptQuery query) {
+    public BigDecimal sumCardSoldAmount(CashReceiptOrRefundQuery query) {
         return null;
     }
 }

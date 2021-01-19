@@ -2,12 +2,14 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.form.EmployeeInfoQueryForm;
 import com.yunya.feign.system.vo.EmployeeInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.models.expand.ClinicEmployeeConfig;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.domain.form.LoginOrganizationForm;
 import com.yunya.modules.system.domain.model.SysUserPostModel;
@@ -20,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseUserPost;
@@ -42,6 +46,8 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 注入对象 */
   @Autowired private SysUserPostMapper sysUserPostMapper;
+  /** 门诊员工配置 */
+  @Autowired private RemoteClinicEmployeeConfigFeign clinicEmployeeConfigFeign;
 
   /**
    * 新增用户可登录组织信息
@@ -154,10 +160,15 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
    * @param userPostId 可登陆组织ID
    */
   public void remove(Integer userPostId) {
-    int i = mapper.deleteByPrimaryKey(userPostId);
-    if (i > 0) {
-      // 发送消息同步员工可登录组织信息
-      rabbitMqServiceFeign.sendMessage(userPostId, 2, BaseUserPost);
+    SysUserPost sysUserPost = mapper.selectByPrimaryKey(userPostId);
+    if (sysUserPost != null) {
+      int i = mapper.deleteByPrimaryKey(userPostId);
+      if (i > 0) {
+        // 删除可挂号可预约医生信息
+        this.clinicEmployeeConfigFeign.deleteClinicEmployeeConfig(sysUserPost.getUserId(),sysUserPost.getCompanyId());
+        // 发送消息同步员工可登录组织信息
+        rabbitMqServiceFeign.sendMessage(userPostId, 2, BaseUserPost);
+      }
     }
   }
 

@@ -28,10 +28,10 @@ public class BaseBillPayMapperTest {
   @Test
   public void find() {
     DataStatisticsQuery query = new DataStatisticsQuery();
-    query.setOrgIds(new Integer[] {35, 42, 72});
+    query.setOrgIds(new Integer[] {35, 42});
     query.setDateType((byte) 0);
-    query.setStartDate("2020-07-01");
-    query.setEndDate("2020-12-12");
+    query.setStartDate("2020-12-01");
+    query.setEndDate("2021-01-18");
     TollDataStatisticsVO vo = billPayMapper.selectClinicTollDataStatistic(query);
     System.out.println(vo);
   }
@@ -122,7 +122,7 @@ public class BaseBillPayMapperTest {
     query.setDateType((byte) 0);
     query.setStartDate("2021-01-18");
     query.setEndDate("2021-01-18");
-    // query.setPatientKeyword("wang");
+    query.setPatientKeyword("wang");
     // query.setBillNum("ZD00352012020009");
     // query.setChargeStartDate("2020-12-01");
     // query.setChargeEndDate("2020-12-31");

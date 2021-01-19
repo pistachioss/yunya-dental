@@ -2,48 +2,15 @@ package com.yunya.report.ultimate.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.CardSoldRecordQuery;
-import com.yunya.feign.report.domain.query.CardSoldStatisticsQuery;
-import com.yunya.feign.report.domain.query.CardStatisticsQuery;
-import com.yunya.feign.report.domain.query.CardUsedRecordQuery;
-import com.yunya.feign.report.domain.query.CardUsedStatisticsQuery;
-import com.yunya.feign.report.domain.query.CouponActiveDetailQuery;
-import com.yunya.feign.report.domain.query.CouponSoldDetailQuery;
-import com.yunya.feign.report.domain.query.CouponSoldStatisticsQuery;
-import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
-import com.yunya.feign.report.domain.query.CouponUsedDetailQuery;
-import com.yunya.feign.report.domain.query.CouponUsedQuery;
-import com.yunya.feign.report.domain.query.MultiCardUseQuery;
-import com.yunya.feign.report.domain.query.OnceCardUseQuery;
-import com.yunya.feign.report.domain.query.RechargeCardStatisticsQuery;
-import com.yunya.feign.report.domain.query.RechargeDetailQuery;
-import com.yunya.feign.report.domain.query.RechargeQuery;
-import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
-import com.yunya.feign.report.domain.vo.CardStatisticsVo;
-import com.yunya.feign.report.domain.vo.CardUsedRecordVo;
-import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
-import com.yunya.feign.report.domain.vo.CouponActiveDetailVo;
-import com.yunya.feign.report.domain.vo.CouponSoldDetailVo;
-import com.yunya.feign.report.domain.vo.CouponSoldRecordVo;
-import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
-import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
-import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
-import com.yunya.feign.report.domain.vo.CouponUsedVo;
-import com.yunya.feign.report.domain.vo.MultiCardUseVo;
-import com.yunya.feign.report.domain.vo.OnceCardUseVo;
-import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
-import com.yunya.feign.report.domain.vo.RechargeDetailVo;
-import com.yunya.feign.report.domain.vo.RechargeVo;
+import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.DiscountBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -144,6 +111,12 @@ public class DiscountController {
 	@PostMapping("/coupon/sold/record")
 	public ResponseResult<PageInfo<CouponSoldRecordVo>> getCardSoldRecord(@Valid @RequestBody CardSoldRecordQuery query) {
 		return ResponseUtil.success(discountBiz.getCardSoldRecordPage(query));
+	}
+
+	@ApiOperation(value = "产品记录-产品使用记录-查看详情")
+	@PostMapping("/coupon/used/detail")
+	public ResponseResult<PageInfo<CardUsedDetailVo>> getCardUsedRecordDetail(@RequestBody CardUsedDetailQuery query) {
+		return ResponseUtil.success(discountBiz.getCardUsedDetailPage(query));
 	}
 
 	@ApiOperation(value = "产品记录-产品使用记录")

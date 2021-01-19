@@ -280,7 +280,7 @@
             </foreach>
         </if>
         <if test="soldStartDate != null and soldEndDate != null">
-            and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+            and (DATE_FORMAT(`bc`.`sold_date`,'%Y-%m-%d') between DATE_FORMAT(#{soldStartDate},'%Y-%m-%d') and DATE_FORMAT(#{soldEndDate},'%Y-%m-%d'))
         </if>
         <if test="soldWays != null and soldWays.size() > 0">
             and `bc`.`sold_way` in
@@ -311,7 +311,7 @@
         where `patient_id` = `bc`.`patient_id`) as `cardOwner`,
         `bc`.`sold_target`,
         `bc`.`sold_phone_number`,
-        `bc`.`sale_channel_name`,
+        `bc`.`sale_channel_name` as soldChannelName,
         (select
         `employee_name`
         from `base_employee`
@@ -336,7 +336,7 @@
             </foreach>
         </if>
         <if test="activeStartDate != null and activeEndDate != null">
-            and (`bc`.`active_date` &gt;= #{activeStartDate} and `bc`.`active_date` &lt; #{activeStartDate})
+            and (DATE_FORMAT(`bc`.`active_date`,'%Y-%m-%d') between DATE_FORMAT(#{activeStartDate},'%Y-%m-%d') and DATE_FORMAT(#{activeEndDate},'%Y-%m-%d'))
         </if>
         <if test="activeOrgIds != null and activeOrgIds.size() > 0">
             and `bc`.`active_org_id` in
@@ -420,7 +420,7 @@
             </foreach>
         </if>
         <if test="soldStartDate != null and soldEndDate != null">
-            and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+            and (DATE_FORMAT(`bc`.`sold_date`,'%Y-%m-%d') between DATE_FORMAT(#{soldStartDate},'%Y-%m-%d') and DATE_FORMAT(#{soldEndDate},'%Y-%m-%d'))
         </if>
         <if test="soldWays != null and soldWays.size() > 0">
             and `bc`.`sold_way` in
@@ -539,7 +539,7 @@
             and `bpm`.`card_number` like concat('%', #{rechargeAccount}, '%')
         </if>
         <if test="rechargeStartDate != null and rechargeEndDate != null">
-            and (`bc`.`active_date` &gt;= #{rechargeStartDate} and `bc`.`active_date` &lt; #{rechargeEndDate})
+            and (DATE_FORMAT(`bc`.`active_date`,'%Y-%m-%d') between DATE_FORMAT(#{rechargeStartDate},'%Y-%m-%d') and DATE_FORMAT(#{rechargeEndDate},'%Y-%m-%d'))
         </if>
         order by `bc`.`active_date` desc
     </select>

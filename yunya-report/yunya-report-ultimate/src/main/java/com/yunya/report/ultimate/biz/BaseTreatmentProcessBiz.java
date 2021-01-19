@@ -430,16 +430,21 @@ public class BaseTreatmentProcessBiz
         mapper.selectPatientFirstTreatOriginList(query);
     if (StringHelper.isNotEmpty(firstTreatOrigins)) {
       for (PatientFirstTreatOriginVO treatOrigin : firstTreatOrigins) {
-        Integer firstTreatCount = treatOrigin.getFirstTreatCount();
-        if (null != firstTreatCount && 0 != totalCount) {
-          treatOrigin.setFirstTreatPercentage(
-              BigDecimal.valueOf(firstTreatCount / totalCount)
-                  .multiply(new BigDecimal(100))
-                  .setScale(2, BigDecimal.ROUND_HALF_UP));
+        if (null != treatOrigin) {
+          Integer firstTreatCount = treatOrigin.getFirstTreatCount();
+          if (null != firstTreatCount) {
+            if (null != totalCount && 0 != totalCount) {
+              treatOrigin.setFirstTreatPercentage(
+                  BigDecimal.valueOf((float) firstTreatCount / totalCount)
+                      .multiply(new BigDecimal(100))
+                      .setScale(2, BigDecimal.ROUND_HALF_UP));
+            }
+          }
         }
       }
     }
     resultData.setFirstTreatTotalCount(totalCount);
+    resultData.setPatientFirstTreatOrigins(firstTreatOrigins);
     return resultData;
   }
 }

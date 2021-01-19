@@ -1,13 +1,14 @@
 package com.yunya.modules.discount.mapper;
 
 import com.yunya.feign.discount.domain.bo.*;
-import com.yunya.feign.discount.domain.query.CardSaleCashReceiptQuery;
-import com.yunya.feign.discount.domain.vo.*;
-import com.yunya.models.discount.*;
-import org.apache.ibatis.annotations.*;
+import com.yunya.feign.discount.domain.vo.CardActiveDetailVo;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
+import com.yunya.models.discount.Card;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.List;
 
 
 @Mapper
@@ -69,5 +70,5 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
      * @param query 查询条件
      * @return BigDecimal
      */
-    BigDecimal selectCardSaleCashReceipt(@Param("query") CardSaleCashReceiptQuery query);
+    BigDecimal selectCardSaleCashReceipt(@Param("query") CashReceiptOrRefundQuery query);
 }

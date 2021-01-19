@@ -4,10 +4,10 @@ import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
-import com.yunya.feign.discount.domain.query.CardSaleCashReceiptQuery;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.discount.factory.RemoteDiscountFallBackFactory;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import io.swagger.annotations.ApiOperation;
@@ -54,5 +54,5 @@ public interface RemoteDiscountFeign {
      * @return
      */
     @RequestMapping(value = "/card/sumCardSoldAmount", method = RequestMethod.POST)
-    BigDecimal sumCardSoldAmount(@RequestBody CardSaleCashReceiptQuery saleCashReceiptQuery);
+    BigDecimal sumCardSoldAmount(@RequestBody CashReceiptOrRefundQuery saleCashReceiptQuery);
 }

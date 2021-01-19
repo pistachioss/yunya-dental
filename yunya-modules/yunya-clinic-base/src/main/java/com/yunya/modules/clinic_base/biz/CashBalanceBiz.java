@@ -11,12 +11,10 @@ import com.yunya.feign.clinic_base.domain.vo.CashBalanceDetailVO;
 import com.yunya.feign.clinic_base.domain.vo.CashBalanceVO;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.CertificatesForm;
-import com.yunya.feign.discount.domain.query.CardSaleCashReceiptQuery;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
-import com.yunya.feign.patient_central.domain.query.RechargeCashReceiptQuery;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
-import com.yunya.feign.treatment.domain.query.CreditCashReceiptQuery;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -158,35 +156,35 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
     entity.setName(ACCOUNT_ITEM_OF_CASH);
     AccountItem accountItem = remoteSystemServiceFeign.findAccountItem(entity);
     Integer payId = accountItem.getId();
-    //账单的现金收款
-    CreditCashReceiptQuery cashReceiptQuery = new CreditCashReceiptQuery();
-    cashReceiptQuery.setPayId(payId);
-    cashReceiptQuery.setOrgId(orgId);
-    cashReceiptQuery.setStartDate(startDate);
-    cashReceiptQuery.setEndDate(endDate);
-    BigDecimal billCash = treatmentServiceFeign.sumBillPayAmount(cashReceiptQuery);
+    CashReceiptOrRefundQuery query = new CashReceiptOrRefundQuery();
+    query.setPayId(payId);
+    query.setOrgId(orgId);
+    query.setStartDate(startDate);
+    query.setEndDate(endDate);
+    // 账单的现金收款
+    BigDecimal billCash = treatmentServiceFeign.sumBillPayAmount(query);
     if (billCash != null) {
       total = total.add(billCash);
     }
-    //产品售卖的现金收款
-    CardSaleCashReceiptQuery saleCashReceiptQuery = new CardSaleCashReceiptQuery();
-    saleCashReceiptQuery.setPayId(payId);
-    saleCashReceiptQuery.setOrgId(orgId);
-    saleCashReceiptQuery.setStartDate(startDate);
-    saleCashReceiptQuery.setEndDate(endDate);
-    BigDecimal soldCash = discountFeign.sumCardSoldAmount(saleCashReceiptQuery);
+    // 查询账单现金退款
+    BigDecimal cashRefundAmount = treatmentServiceFeign.findBillRefundTotalCashAmount(query);
+    if (null != cashRefundAmount) {
+      total = total.subtract(cashRefundAmount);
+    }
+    // 产品售卖的现金收款
+    BigDecimal soldCash = discountFeign.sumCardSoldAmount(query);
     if (soldCash != null) {
       total = total.add(soldCash);
     }
-    //会员充值的现金收款+预付款充值的现金收款
-    RechargeCashReceiptQuery rechargeCashReceiptQuery = new RechargeCashReceiptQuery();
-    rechargeCashReceiptQuery.setPayId(payId);
-    rechargeCashReceiptQuery.setOrgId(orgId);
-    rechargeCashReceiptQuery.setStartDate(startDate);
-    rechargeCashReceiptQuery.setEndDate(endDate);
-    BigDecimal rechargeCash = patientCentralServiceFeign.sumMemberAndPrepayRechargeCash(rechargeCashReceiptQuery);
+    // 会员充值的现金收款+预付款充值的现金收款
+    BigDecimal rechargeCash = patientCentralServiceFeign.sumMemberAndPrepayRechargeCash(query);
     if (rechargeCash != null) {
       total = total.add(rechargeCash);
+    }
+    // 查询会员卡退费、预付款退费现金退款
+    BigDecimal refundMemberCash = patientCentralServiceFeign.sumMemberAndPrepaidRefundCash(query);
+    if (null != rechargeCash) {
+      total = total.subtract(refundMemberCash);
     }
     return total;
   }
@@ -201,7 +199,8 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
     if (settlementDate.compareTo(lastSettlementDate) <= 0) {
       SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
       throw new ClientServiceException(
-          "新增失败，当前结存日期不能早于或等于系统最近的结存日期：" + format.format(lastSettlementDate), PARAMETERS_IS_ILLEGAL);
+          "新增失败，当前结存日期不能早于或等于系统最近的结存日期：" + format.format(lastSettlementDate),
+          PARAMETERS_IS_ILLEGAL);
     }
   }
 

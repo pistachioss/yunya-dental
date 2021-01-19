@@ -10,17 +10,17 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 简介: 充值现金收款查询
+ * 简介: 现金收款或退款查询
  *
  * @author: chow
  * @date: 2020/12/19 13:42
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("充值现金收款查询")
+@ApiModel("现金收退款查询参数模型")
 @Data
 @ToString
-public class RechargeCashReceiptQuery implements Serializable {
+public class CashReceiptOrRefundQuery implements Serializable {
 
   /** 支付账户id */
   @ApiModelProperty(value = "支付账户id", required = true)

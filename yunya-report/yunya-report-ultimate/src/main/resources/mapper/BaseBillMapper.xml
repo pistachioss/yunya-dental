@@ -370,6 +370,7 @@
         base_bill bb
         <where>
             AND bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     and DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}

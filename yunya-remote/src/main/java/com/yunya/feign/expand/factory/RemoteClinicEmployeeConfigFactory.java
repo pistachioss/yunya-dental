@@ -4,6 +4,7 @@ import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
 import com.yunya.feign.expand.model.response.EnableEmployeeRes;
 import com.yunya.models.expand.ClinicEmployeeConfig;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -30,6 +31,11 @@ public class RemoteClinicEmployeeConfigFactory implements RemoteClinicEmployeeCo
 
     @Override
     public List<ClinicEmployeeConfig> findClinicEmployeeConfigs(Integer employeeId) {
+        return null;
+    }
+
+    @Override
+    public Integer deleteClinicEmployeeConfig(@NotNull(message = "员工ID不能为空") Integer employeeId, @NotNull(message = "门诊ID不能为空") Integer clinicId) {
         return null;
     }
 }

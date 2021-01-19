@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -136,7 +137,8 @@ public class BillRefundRecordBiz extends BaseBiz<BillRefundRecordMapper, BillRef
   private void setBillRefundGroupInfoValue(
       BillRefundGroupInfoVO billRefundGroupInfo, Integer billRefundRecordId) {
     // 获取退费订单详情
-    List<BillRefundOrderDetailVO> billRefundOrderDetails = getBillRefundOrderDetails(billRefundRecordId);
+    List<BillRefundOrderDetailVO> billRefundOrderDetails =
+        getBillRefundOrderDetails(billRefundRecordId);
     billRefundGroupInfo.setBillRefundOrderDetails(
         StringHelper.isEmpty(billRefundOrderDetails)
             ? Lists.newArrayList()
@@ -249,5 +251,15 @@ public class BillRefundRecordBiz extends BaseBiz<BillRefundRecordMapper, BillRef
           });
     }
     return billRefundPayments;
+  }
+
+  /**
+   * 根据条件查询退费现金之和
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  public BigDecimal findBillRefundTotalCashAmount(CashReceiptOrRefundQuery query) {
+    return mapper.selectCashRefundAmount(query);
   }
 }

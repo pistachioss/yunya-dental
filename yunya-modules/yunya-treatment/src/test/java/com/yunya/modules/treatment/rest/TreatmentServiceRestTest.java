@@ -1,6 +1,6 @@
 package com.yunya.modules.treatment.rest;
 
-import com.yunya.feign.treatment.domain.query.CreditCashReceiptQuery;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.modules.treatment.controller.rpc.TreatmentServiceRest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +28,7 @@ public class TreatmentServiceRestTest {
 
     @Test
     public void test1() {
-        CreditCashReceiptQuery query = new CreditCashReceiptQuery();
+        CashReceiptOrRefundQuery query = new CashReceiptOrRefundQuery();
         query.setOrgId(35);
         query.setPayId(57);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");

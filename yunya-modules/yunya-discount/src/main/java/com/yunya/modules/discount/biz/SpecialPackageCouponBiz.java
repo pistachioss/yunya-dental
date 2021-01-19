@@ -10,6 +10,7 @@ import com.yunya.models.discount.CouponAllocate;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.CouponFileInfo;
 import com.yunya.models.discount.SpecialPackageCoupon;
+import com.yunya.modules.discount.enums.CouponTypeEnum;
 import com.yunya.modules.discount.form.SpecialPackageCouponForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
@@ -24,7 +25,8 @@ import java.util.Date;
 import java.util.List;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCoupon;
-import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.INSERT_MODEL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
 
 /**
  * @author 杨柳絮
@@ -54,6 +56,7 @@ public class SpecialPackageCouponBiz  extends BaseBiz<SpecialPackageCouponMapper
      */
     public Integer saveSpecialPackageCoupon(SpecialPackageCouponForm specialPackageCouponForm) {
         CouponCommonInfo data = new CouponCommonInfo();
+        data.setType((byte) CouponTypeEnum.SPECIAL_PACKAGE.getCode().intValue());
         data.setName(specialPackageCouponForm.getName());
         if (couponCommonInfoMapper.selectOne(data) != null) {
             throw new BaseException("套餐券名称与系统中已有套餐券重复，不允许新增!", NAME_IS_OCCUPIED);

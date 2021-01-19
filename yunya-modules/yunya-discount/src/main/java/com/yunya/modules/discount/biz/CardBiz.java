@@ -9,60 +9,15 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.yunya.feign.discount.domain.bo.AllocateNumBo;
-import com.yunya.feign.discount.domain.bo.BenefitUseBo;
-import com.yunya.feign.discount.domain.bo.CouponItemUseBo;
-import com.yunya.feign.discount.domain.bo.CouponSaleBo;
-import com.yunya.feign.discount.domain.bo.GenerateAllocatePageBo;
-import com.yunya.feign.discount.domain.bo.ItemBenefitUseDetailBo;
-import com.yunya.feign.discount.domain.bo.ItemUseBenefitBo;
-import com.yunya.feign.discount.domain.bo.OrderItemChangeBo;
-import com.yunya.feign.discount.domain.bo.OrderItemUseBo;
-import com.yunya.feign.discount.domain.bo.OrgCouponAllocateBo;
-import com.yunya.feign.discount.domain.bo.PatientBenefitBo;
-import com.yunya.feign.discount.domain.bo.PatientCardBo;
-import com.yunya.feign.discount.domain.bo.PatientUseBenefitBo;
-import com.yunya.feign.discount.domain.bo.UseClinicBo;
-import com.yunya.feign.discount.domain.bo.ViewAllocateBo;
-import com.yunya.feign.discount.domain.form.CardSoldForm;
-import com.yunya.feign.discount.domain.form.ConfigSharerForm;
-import com.yunya.feign.discount.domain.form.OtherCardActiveForm;
-import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
-import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
+import com.yunya.feign.discount.domain.bo.*;
+import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.ClinicAllocateModel;
 import com.yunya.feign.discount.domain.model.GenerateAllocateModel;
-import com.yunya.feign.discount.domain.query.CardActiveQuery;
-import com.yunya.feign.discount.domain.query.CardSaleCashReceiptQuery;
-import com.yunya.feign.discount.domain.query.CardSaleQuery;
-import com.yunya.feign.discount.domain.query.CouponAllocateQuery;
-import com.yunya.feign.discount.domain.query.CouponSaleQuery;
-import com.yunya.feign.discount.domain.query.GenerateAllocateCardQuery;
-import com.yunya.feign.discount.domain.query.GenerateAllocateDetailQuery;
-import com.yunya.feign.discount.domain.query.PatientBenefitQuery;
-import com.yunya.feign.discount.domain.query.PatientCardQuery;
-import com.yunya.feign.discount.domain.vo.CardActiveDetailVo;
-import com.yunya.feign.discount.domain.vo.CardQrCodeVo;
-import com.yunya.feign.discount.domain.vo.CardSalePageVo;
-import com.yunya.feign.discount.domain.vo.CouponSalePageVo;
-import com.yunya.feign.discount.domain.vo.ExportCardAllocateVo;
-import com.yunya.feign.discount.domain.vo.GenerateAllocateDetailVo;
-import com.yunya.feign.discount.domain.vo.GenerateAllocatePageVo;
-import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
-import com.yunya.feign.discount.domain.vo.PatientCardBaseVo;
-import com.yunya.feign.discount.domain.vo.PatientCardSharerVo;
-import com.yunya.feign.discount.domain.vo.PatientDiscountVo;
-import com.yunya.feign.discount.domain.vo.PatientExchangeVo;
-import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
-import com.yunya.feign.discount.domain.vo.PatientMemberCardVo;
-import com.yunya.feign.discount.domain.vo.PatientOptionalBenefitVo;
-import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
-import com.yunya.feign.discount.domain.vo.PatientOwnCardVo;
-import com.yunya.feign.discount.domain.vo.PatientPackageVo;
-import com.yunya.feign.discount.domain.vo.PatientShareCardVo;
-import com.yunya.feign.discount.domain.vo.PatientVoucherVo;
-import com.yunya.feign.discount.domain.vo.ViewAllocateVo;
+import com.yunya.feign.discount.domain.query.*;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
@@ -90,21 +45,7 @@ import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.discount.Card;
-import com.yunya.models.discount.CardBenefit;
-import com.yunya.models.discount.CardCancelLog;
-import com.yunya.models.discount.CouponAllocate;
-import com.yunya.models.discount.CouponCommonInfo;
-import com.yunya.models.discount.DiscountCoupon;
-import com.yunya.models.discount.PackageCoupon;
-import com.yunya.models.discount.PackageCouponItem;
-import com.yunya.models.discount.ProductType;
-import com.yunya.models.discount.RechargeCard;
-import com.yunya.models.discount.SalesChannel;
-import com.yunya.models.discount.SpecialPackageCoupon;
-import com.yunya.models.discount.SpecialPackageCouponItem;
-import com.yunya.models.discount.VoucheCoupon;
-import com.yunya.models.discount.VoucherDiscountItem;
+import com.yunya.models.discount.*;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseTariff;
@@ -112,28 +53,8 @@ import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
 import com.yunya.models.tariff.ClinicTariffMemberPrice;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
-import com.yunya.modules.discount.enums.CardStatusEnum;
-import com.yunya.modules.discount.enums.CouponTypeEnum;
-import com.yunya.modules.discount.enums.DiscountError;
-import com.yunya.modules.discount.enums.SoldTypeEnum;
-import com.yunya.modules.discount.enums.SoldWayEnum;
-import com.yunya.modules.discount.enums.TrueFalseEnum;
-import com.yunya.modules.discount.enums.UseWayEnum;
-import com.yunya.modules.discount.mapper.CardBenefitMapper;
-import com.yunya.modules.discount.mapper.CardCancelLogMapper;
-import com.yunya.modules.discount.mapper.CardMapper;
-import com.yunya.modules.discount.mapper.CouponAllocateMapper;
-import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
-import com.yunya.modules.discount.mapper.DiscountCouponMapper;
-import com.yunya.modules.discount.mapper.PackageCouponItemMapper;
-import com.yunya.modules.discount.mapper.PackageCouponMapper;
-import com.yunya.modules.discount.mapper.ProductTypeMapper;
-import com.yunya.modules.discount.mapper.RechargeCardMapper;
-import com.yunya.modules.discount.mapper.SalesChannelMapper;
-import com.yunya.modules.discount.mapper.SpecialPackageCouponItemMapper;
-import com.yunya.modules.discount.mapper.SpecialPackageCouponMapper;
-import com.yunya.modules.discount.mapper.VoucheCouponMapper;
-import com.yunya.modules.discount.mapper.VoucherDiscountItemMapper;
+import com.yunya.modules.discount.enums.*;
+import com.yunya.modules.discount.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.SetUtils;
@@ -154,16 +75,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -172,17 +84,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCardBatch;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCardSingle;
 import static com.yunya.framework.common.constant.BusinessConstants.*;
-import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static com.yunya.modules.discount.enums.BenefitTypeEnum.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_NOT_ALLOW;
+import static com.yunya.modules.discount.enums.BenefitTypeEnum.COUPON_TYPE;
+import static com.yunya.modules.discount.enums.BenefitTypeEnum.MEMBER_TYPE;
 import static com.yunya.modules.discount.enums.CardQrCodeEnum.*;
 import static com.yunya.modules.discount.enums.CardStatusEnum.*;
-import static com.yunya.modules.discount.enums.CouponTypeEnum.EXCHANGE;
 import static com.yunya.modules.discount.enums.CouponTypeEnum.*;
 import static com.yunya.modules.discount.enums.RangTypeEnum.*;
-import static com.yunya.modules.discount.enums.SoldTypeEnum.*;
-import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
+import static com.yunya.modules.discount.enums.SoldTypeEnum.SOLD;
+import static com.yunya.modules.discount.enums.TrueFalseEnum.FALSE;
+import static com.yunya.modules.discount.enums.TrueFalseEnum.TRUE;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -1137,6 +1051,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
                 Integer couponType = benefitBo.getCouponType();
                 if (MEMBER_CARD.equals(couponType) || benefitUseDetailBo != null) {
+                    log.info("【单个数量】匹配优惠券，订单明细id：[{}], 卡券id：[{}], 优惠券id：[{}]", orderItem.getOrderDetailId()
+                            ,benefitBo.getCardId(), benefitBo.getCouponId());
                     //订单项目原价
                     BigDecimal originalPrice = orderItem.getReceivableAmount();
                     //订单项目已优惠金额
@@ -1250,6 +1166,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
                 Integer couponType = benefitBo.getCouponType();
                 if (benefitUseDetailBo != null || MEMBER_CARD.equals(couponType)) {
+                    log.info("【多个数量】匹配优惠券，订单明细id：[{}], 卡券id：[{}], 优惠券id：[{}]", orderItem.getOrderDetailId()
+                            ,benefitBo.getCardId(), benefitBo.getCouponId());
                     //订单项目原价
                     BigDecimal originalPrice = orderItem.getReceivableAmount().divide(BigDecimal.valueOf(orderItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP);
                     //订单项目index已优惠金额
@@ -3071,7 +2989,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @param query 查询条件
      * @return BigDecimal
      */
-    public BigDecimal findCardSaleCashReceipt(CardSaleCashReceiptQuery query) {
+    public BigDecimal findCardSaleCashReceipt(CashReceiptOrRefundQuery query) {
         return mapper.selectCardSaleCashReceipt(query);
     }
 }
