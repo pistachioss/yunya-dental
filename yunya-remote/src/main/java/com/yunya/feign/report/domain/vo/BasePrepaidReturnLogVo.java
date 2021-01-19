@@ -78,4 +78,9 @@ public class BasePrepaidReturnLogVo {
     @Excel(name = "退费人")
     @ApiModelProperty("退费人")
     private String operatorUserName;
+
+    /** 退费原因 */
+    @Excel(name = "退费原因")
+    @ApiModelProperty("退费原因")
+    private String remarks;
 }
