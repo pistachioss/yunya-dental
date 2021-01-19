@@ -183,7 +183,7 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
     }
     // 查询会员卡退费、预付款退费现金退款
     BigDecimal refundMemberCash = patientCentralServiceFeign.sumMemberAndPrepaidRefundCash(query);
-    if (null != rechargeCash) {
+    if (null != refundMemberCash) {
       total = total.subtract(refundMemberCash);
     }
     return total;

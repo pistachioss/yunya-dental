@@ -27,8 +27,8 @@ public class CashBalanceControllerTest {
   @Test
   public void find() {
     PeriodCashQuery query = new PeriodCashQuery();
-    query.setOrgId(35);
-    query.setSettlementDate("2021-01-18");
+    query.setOrgId(30);
+    query.setSettlementDate("2021-01-19");
     ResponseResult<BigDecimal> result = cashBalanceController.periodCash(query);
     System.out.println(result);
   }
