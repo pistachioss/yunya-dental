@@ -8,15 +8,19 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.middletable.dao.discount.CouponMapper;
 import com.yunya.middletable.dao.discount.DiscountCouponMapper;
+import com.yunya.middletable.dao.discount.PackageCouponMapper;
 import com.yunya.middletable.dao.discount.ProductTypeMapper;
 import com.yunya.middletable.dao.discount.RechargeCardMapper;
+import com.yunya.middletable.dao.discount.SpecialPackageCouponMapper;
 import com.yunya.middletable.dao.discount.VoucheCouponMapper;
 import com.yunya.middletable.dao.report.BaseCouponMapper;
 import com.yunya.middletable.enums.MiddleError;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.DiscountCoupon;
+import com.yunya.models.discount.PackageCoupon;
 import com.yunya.models.discount.ProductType;
 import com.yunya.models.discount.RechargeCard;
+import com.yunya.models.discount.SpecialPackageCoupon;
 import com.yunya.models.discount.VoucheCoupon;
 import com.yunya.models.report.BaseCoupon;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +60,10 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 	private VoucheCouponMapper voucheCouponMapper;
 	@Resource
 	private DiscountCouponMapper discountCouponMapper;
+	@Resource
+	private PackageCouponMapper packageCouponMapper;
+	@Resource
+	private SpecialPackageCouponMapper specialPackageCouponMapper;
 	@Resource
 	private ProductTypeMapper productTypeMapper;
 	@Resource
@@ -117,10 +125,32 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 		if (VOUCHER.equals(coupon.getType().intValue())) {
 			VoucheCoupon voucheCoupon = baseCouponBo.getVoucherMap().get(coupon.getId());
 			baseCoupon.setWorkloadRate(voucheCoupon == null ? null : voucheCoupon.getWorkloadRate());
+			Date activationDeadline = voucheCoupon.getActivationDeadline();
+			baseCoupon.setActivationDeadline(activationDeadline == null ? null
+					: activationDeadline.toInstant().atZone(ZoneOffset.ofHours(8)).toLocalDateTime());
+			baseCoupon.setEffectiveDays(voucheCoupon.getEffectiveDays());
 		}
 		if (DISCOUNT.equals(coupon.getType().intValue())) {
 			DiscountCoupon discountCoupon = baseCouponBo.getDiscountMap().get(coupon.getId());
 			baseCoupon.setWorkloadRate(discountCoupon == null ? null : discountCoupon.getWorkloadRate());
+			Date activationDeadline = discountCoupon.getActivationDeadline();
+			baseCoupon.setActivationDeadline(activationDeadline == null ? null
+					: activationDeadline.toInstant().atZone(ZoneOffset.ofHours(8)).toLocalDateTime());
+			baseCoupon.setEffectiveDays(discountCoupon.getEffectiveDays());
+		}
+		if (EXCHANGE.equals(coupon.getType().intValue())) {
+			PackageCoupon packageCoupon = baseCouponBo.getPackageCouponMap().get(coupon.getId());
+			Date activationDeadline = packageCoupon.getActivationDeadline();
+			baseCoupon.setActivationDeadline(activationDeadline == null ? null
+					: activationDeadline.toInstant().atZone(ZoneOffset.ofHours(8)).toLocalDateTime());
+			baseCoupon.setEffectiveDays(packageCoupon.getEffectiveDays());
+		}
+		if (SPECIAL_PACKAGE.equals(coupon.getType().intValue())) {
+			SpecialPackageCoupon specialPackageCoupon = baseCouponBo.getSpecialPackageCouponMap().get(coupon.getId());
+			Date activationDeadline = specialPackageCoupon.getActivationDeadline();
+			baseCoupon.setActivationDeadline(activationDeadline == null ? null
+					: activationDeadline.toInstant().atZone(ZoneOffset.ofHours(8)).toLocalDateTime());
+			baseCoupon.setEffectiveDays(specialPackageCoupon.getEffectiveDays());
 		}
 		return baseCoupon;
 	}
@@ -358,6 +388,10 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 		List<VoucheCoupon> vouchers = listByCouponIds(voucherIds, VoucheCoupon.class, voucheCouponMapper);
 		//折扣卡集合
 		List<DiscountCoupon> discounts = listByCouponIds(discountIds, DiscountCoupon.class, discountCouponMapper);
+		//兑换券集合
+		List<PackageCoupon> packageCoupons = listByCouponIds(discountIds, PackageCoupon.class, packageCouponMapper);
+		//兑换券集合
+		List<SpecialPackageCoupon> specialPackageCoupons = listByCouponIds(discountIds, SpecialPackageCoupon.class, specialPackageCouponMapper);
 		if (CollectionUtils.isNotEmpty(rechargeCards)) {
 			Map<Integer, RechargeCard> rechargeMap = rechargeCards.stream().collect(toMap(RechargeCard::getCouponId,
 					Function.identity()));
@@ -372,6 +406,16 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 			Map<Integer, DiscountCoupon> discountMap = discounts.stream().collect(toMap(DiscountCoupon::getCouponId,
 					Function.identity()));
 			baseCouponBo.setDiscountMap(discountMap);
+		}
+		if (CollectionUtils.isNotEmpty(packageCoupons)) {
+			Map<Integer, PackageCoupon> packageCouponMap = packageCoupons.stream().collect(toMap(PackageCoupon::getCouponId,
+					Function.identity()));
+			baseCouponBo.setPackageCouponMap(packageCouponMap);
+		}
+		if (CollectionUtils.isNotEmpty(specialPackageCoupons)) {
+			Map<Integer, SpecialPackageCoupon> specialPackageCouponMap = specialPackageCoupons.stream().collect(toMap(SpecialPackageCoupon::getCouponId,
+					Function.identity()));
+			baseCouponBo.setSpecialPackageCouponMap(specialPackageCouponMap);
 		}
 		//产品分类
 		Map<Integer, String> productTypeMap = getProductTypeMap();
