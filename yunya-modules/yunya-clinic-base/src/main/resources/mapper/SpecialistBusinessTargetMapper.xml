@@ -51,7 +51,7 @@
     <!-- 根据条件查询专科项目目标数量 -->
     <select id="selectClinicSpecialistProjectWorkGoal" resultType="java.lang.Integer">
         SELECT
-        SUM( IFNULL(sbt.business_goal, 0) )
+        IFNULL(SUM( IFNULL(sbt.business_goal, 0) ), 0)
         FROM
         specialist_business_target sbt
         <where>
@@ -77,7 +77,7 @@
     <!-- 根据条件查询门诊专科项目目标数量 -->
     <select id="selectSpecialistProjectGoalCount" resultType="java.lang.Integer">
         SELECT
-        SUM( IFNULL(sbt.business_goal, 0))
+        IFNULL(SUM( IFNULL(sbt.business_goal, 0)), 0)
         FROM
         specialist_business_target sbt
         <where>
