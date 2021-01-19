@@ -1,6 +1,8 @@
 package com.yunya.modules.discount.controller;
 
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
@@ -28,10 +30,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCoupon;
 
 /**
  * 设置适用项目
@@ -49,6 +54,8 @@ public class VoucherDiscountItemController {
     @Autowired private PackageCouponItemBiz packageCouponItemBiz;
     @Autowired private SpecialPackageCouponItemBiz specialPackageCouponItemBiz;
     @Autowired private CouponCommonInfoBiz couponCommonInfoBiz;
+    @Resource
+    private RemoteRabbitMqServiceFeign mqServiceFeign;
     /**
      * 新增代金券折扣券适用项目
      *
@@ -123,6 +130,7 @@ public class VoucherDiscountItemController {
             couponCommonInfo.setSoldAmount(saleAmount);
             //插入卡券售出金额
             couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
+            mqServiceFeign.sendMessage(couponCommonInfo.getId(), BusinessConstants.UPDATE, BaseCoupon);
         }
         return ResponseUtil.success(voucherDiscountItemBiz.savePackage(packageCouponItemItems));
     }

@@ -141,7 +141,7 @@ public class AttendancePunchRecordController {
      * @return
      */
     @ApiOperation("根据条件分页查询考勤汇总导出")
-    @PostMapping("/statisticsPunchRecordExport")
+    @PostMapping("/statisticsPunchRecordExport/export")
     public void statisticsPunchRecordExport(HttpServletResponse response, @RequestBody AttendanceStatisticsQueryForm queryForm) throws IOException {
         queryForm.setWhetherPage(false);
         String date = queryForm.getDate();
@@ -177,7 +177,7 @@ public class AttendancePunchRecordController {
      * @return
      */
     @ApiOperation("分页查询工作时长的考勤汇总明细导出")
-    @PostMapping("/statisticsWorkDateByMinuteExport")
+    @PostMapping("/statisticsWorkDateByMinuteExport/export")
     public void statisticsWorkDateByMinuteExport(HttpServletResponse response, @RequestBody AttendanceStatisticsQueryForm queryForm) throws IOException {
         queryForm.setWhetherPage(false);
         PageInfo<AttendanceWorkDateMinuteVO> pageInfo = attendancePunchRecordBiz.statisticsWorkDateByMinute(queryForm);

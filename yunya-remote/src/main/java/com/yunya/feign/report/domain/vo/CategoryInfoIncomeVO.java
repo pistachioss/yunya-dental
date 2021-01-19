@@ -21,9 +21,6 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class CategoryInfoIncomeVO implements Serializable {
-  /** 门诊ID */
-  @ApiModelProperty("门诊ID")
-  private Integer orgId;
   /** 项目分类ID */
   @ApiModelProperty("项目分类ID")
   private Integer categoryId;

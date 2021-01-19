@@ -125,7 +125,9 @@ public class CompanyDepartmentBiz extends BaseBiz<CompanyDepartmentMapper, Compa
       throw new ClientServiceException("修改组织部门，组织部门ID为'" + id + "'的数据不存在", QUERY_RESULT_INVALID);
     }
     Integer parentId = form.getParentId();
-    if (null != parentId && !DEFAULT_PARENT_ID.equals(parentId)) {
+    if (null != parentId
+        && !DEFAULT_PARENT_ID.equals(parentId)
+        && !result.getParentId().equals(parentId)) {
       Integer departmentId = result.getDepartmentId();
       CompanyDepartment parentResult = mapper.selectByPrimaryKey(parentId);
       if (parentResult.getDepartmentId().equals(departmentId)) {
