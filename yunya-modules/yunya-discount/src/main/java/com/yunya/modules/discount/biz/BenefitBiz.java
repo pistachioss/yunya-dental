@@ -184,7 +184,7 @@ public class BenefitBiz {
 				Set<Card> updateCards = updateCardStatus(list);
 				mqServiceFeign.sendMessage(orderId, ADD, BaseBenefit);
 				log.info("【订单使用卡券优惠发送消息成功】：订单id[{}]", orderId);
-				updateCards.forEach(obj -> cardThreadPool.execute(() -> mqServiceFeign.sendMessage(obj.getId(), UPDATE, BaseCardSingle)));
+				updateCards.forEach(obj -> mqServiceFeign.sendMessage(obj.getId(), UPDATE, BaseCardSingle));
 				log.info("【订单使用卡券优惠，更新卡券发送消息成功】：卡券ids：{}", updateCards.stream().map(Card::getId).collect(toList()));
 			}
 			return ResponseUtil.success();
