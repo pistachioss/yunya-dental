@@ -114,13 +114,9 @@ public class DiscountController {
 	}
 
 	@ApiOperation(value = "产品记录-产品使用记录-查看详情")
-	@PostMapping("/coupon/used/detail/orderId")
-	public ResponseResult<PageInfo<CardUsedDetailVo>> getCardUsedRecordDetail(@PathVariable(value = "orderId") Integer orderId,
-		  @RequestParam(value = "cardId") Integer cardId,
-		  @RequestParam(value = "whetherPage",defaultValue = "true") Boolean whetherPag,
-		  @RequestParam(value = "pageNum",defaultValue = "1") Integer pageNum,
-		  @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
-		return ResponseUtil.success(discountBiz.getCardUsedDetailPage(orderId, cardId, whetherPag, pageNum, pageSize));
+	@PostMapping("/coupon/used/detail")
+	public ResponseResult<PageInfo<CardUsedDetailVo>> getCardUsedRecordDetail(@RequestBody CardUsedDetailQuery query) {
+		return ResponseUtil.success(discountBiz.getCardUsedDetailPage(query));
 	}
 
 	@ApiOperation(value = "产品记录-产品使用记录")

@@ -244,8 +244,8 @@
 			left join base_employee be on be.user_id = bf.operate_user_id
         where
             bco.coupon_type != 4
-            and bf.order_id = #{orderId}
-            and bf.card_id = #{cardId}
+            and bf.order_id = #{query.orderId}
+            and bf.card_id = #{query.cardId}
         group by bf.coupon_id,bf.order_detail_id,bt.item_num,bt.item_name,bf.operate_user_id
         order by `bf`.`use_date` desc
     </select>

@@ -1,6 +1,5 @@
 package com.yunya.report.ultimate.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.bo.ClinicDataStatisticsInfoVO;
 import com.yunya.feign.report.domain.query.*;
@@ -88,10 +87,5 @@ public class CompanyReportOfOperationControllerTest {
     ResponseResult<PatientFirstTreatOriginInfoVO> result =
         companyReportOfOperationController.firstTreatPatientOrigin(query);
     System.out.println(result);
-  }
-
-  @Test
-  public void find10() {
-    System.out.println(JSONObject.toJSONString(discountController.getCardUsedRecordDetail(1323, 51571, true, 1, 10)));
   }
 }

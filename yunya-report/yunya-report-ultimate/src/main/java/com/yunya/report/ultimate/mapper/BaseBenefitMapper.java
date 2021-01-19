@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.CardUsedDetailQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseBenefit;
 import org.apache.ibatis.annotations.Param;
@@ -46,5 +47,5 @@ public interface BaseBenefitMapper extends Mapper<BaseBenefit> {
 	/**
 	 * 产品使用统计-使用详情
 	 */
-	List<CardUsedDetailVo> listCardUsedDetailByBillId(@Param("orderId") Integer orderId, @Param("cardId") Integer cardId);
+	List<CardUsedDetailVo> listCardUsedDetailByBillId(@Param("query") CardUsedDetailQuery query);
 }

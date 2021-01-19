@@ -225,13 +225,12 @@ public class DiscountBiz {
 	/**
 	 * 产品记录-产品使用记录详情
 	 *
-	 * @param orderId
-	 * @param cardId
+	 * @param query
 	 * @return page
 	 */
-	public PageInfo<CardUsedDetailVo> getCardUsedDetailPage(Integer orderId, Integer cardId, Boolean whetherPage, Integer pageNum, Integer pageSize) {
-		Page<CardUsedDetailVo> page = PageHelper.startPage(pageNum, pageSize);
-		benefitMapper.listCardUsedDetailByBillId(orderId, cardId);
+	public PageInfo<CardUsedDetailVo> getCardUsedDetailPage(CardUsedDetailQuery query) {
+		Page<CardUsedDetailVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		benefitMapper.listCardUsedDetailByBillId(query);
 		return new PageInfo<>(page);
 	}
 
