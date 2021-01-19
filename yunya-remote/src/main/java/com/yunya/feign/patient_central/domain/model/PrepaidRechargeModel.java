@@ -54,6 +54,12 @@ public class PrepaidRechargeModel implements Serializable {
     private PrepaidRechargeTollRecordModel prepaidRechargeTollRecordModel;
 
     /**
+     * 入账方式金额
+     */
+    @ApiModelProperty(value = "入账方式金额",required = true)
+    private BigDecimal paymentAmount;
+
+    /**
      * 充值卡卡号
      */
     @ApiModelProperty(value = "充值卡卡号")

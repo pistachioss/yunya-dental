@@ -37,7 +37,7 @@ public class MemberRechargeModel implements Serializable {
     /**
      * 充值本金
      */
-    @ApiModelProperty(value = "充值本金",required = false)
+    @ApiModelProperty(value = "充值本金",required = true)
     private BigDecimal rechargePrincipal;
 
     /**
@@ -49,8 +49,14 @@ public class MemberRechargeModel implements Serializable {
     /**
      * 入账方式
      */
-    @ApiModelProperty(value = "入账方式",required = false)
+    @ApiModelProperty(value = "入账方式",required = true)
     private AccountedWayModel accountedWayModel;
+
+    /**
+     * 入账方式金额
+     */
+    @ApiModelProperty(value = "入账方式金额",required = true)
+    private BigDecimal paymentAmount;
 
     /**
      * 备注

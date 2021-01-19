@@ -223,73 +223,76 @@ public class PatientPrepaymentRelationBiz
    * @param model
    */
   public ResponseResult recharge(PrepaidRechargeModel model) {
-    // 查询预付款余额 增加余额
-    PatientPrepaymentsInfo patientPrepaymentsInfo =
-        patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidCard());
-    if (patientPrepaymentsInfo != null) {
-      BigDecimal rechargePrincipal = model.getRechargePrincipal();
-      if (rechargePrincipal == null) {
-        rechargePrincipal = new BigDecimal(0);
-      }
-      BigDecimal rechargeBonus = model.getRechargeBonus();
-      if (rechargeBonus == null) {
-        rechargeBonus = new BigDecimal(0);
-      }
-      patientPrepaymentsInfo.setPrepaymentPrincipal(
-          patientPrepaymentsInfo.getPrepaymentPrincipal().add(rechargePrincipal));
-      patientPrepaymentsInfo.setPrepaymentBonus(
-          patientPrepaymentsInfo.getPrepaymentBonus().add(rechargeBonus));
-      patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
+    // 判断充值本金和入账金额是否相等
+    if (model.getRechargePrincipal().compareTo(model.getPaymentAmount()) == 0){
+      // 查询预付款余额 增加余额
+      PatientPrepaymentsInfo patientPrepaymentsInfo =
+              patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidCard());
+      if (patientPrepaymentsInfo != null) {
+        BigDecimal rechargePrincipal = model.getRechargePrincipal();
+        if (rechargePrincipal == null) {
+          rechargePrincipal = new BigDecimal(0);
+        }
+        BigDecimal rechargeBonus = model.getRechargeBonus();
+        if (rechargeBonus == null) {
+          rechargeBonus = new BigDecimal(0);
+        }
+        patientPrepaymentsInfo.setPrepaymentPrincipal(
+                patientPrepaymentsInfo.getPrepaymentPrincipal().add(rechargePrincipal));
+        patientPrepaymentsInfo.setPrepaymentBonus(
+                patientPrepaymentsInfo.getPrepaymentBonus().add(rechargeBonus));
+        patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
 
-      // 添加预付款充值记录
-      PrepaidRechargeRecord prepaidRechargeRecord = new PrepaidRechargeRecord();
-      BeanUtils.copyProperties(model, prepaidRechargeRecord);
-      prepaidRechargeRecord.setPrepaidId(model.getPrepaidCard());
-      prepaidRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-      prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-      prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
-      prepaidRechargeRecord.setCurrentRechargePrincipal(
-          patientPrepaymentsInfo.getPrepaymentPrincipal());
-      prepaidRechargeRecord.setCurrentRechargeBonus(patientPrepaymentsInfo.getPrepaymentBonus());
-      prepaidRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-      prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
-      prepaidRechargeRecord.setRemarks(model.getPrepaidRechargeTollRecordModel().getRemarks());
-      prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
+        // 添加预付款充值记录
+        PrepaidRechargeRecord prepaidRechargeRecord = new PrepaidRechargeRecord();
+        BeanUtils.copyProperties(model, prepaidRechargeRecord);
+        prepaidRechargeRecord.setPrepaidId(model.getPrepaidCard());
+        prepaidRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
+        prepaidRechargeRecord.setCurrentRechargePrincipal(
+                patientPrepaymentsInfo.getPrepaymentPrincipal());
+        prepaidRechargeRecord.setCurrentRechargeBonus(patientPrepaymentsInfo.getPrepaymentBonus());
+        prepaidRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
+        prepaidRechargeRecord.setRemarks(model.getPrepaidRechargeTollRecordModel().getRemarks());
+        prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
 
-      // 添加预付款充值收费记录
-      PrepaidRechargeTollRecord prepaidRechargeTollRecord = new PrepaidRechargeTollRecord();
-      BeanUtils.copyProperties(
-          model.getPrepaidRechargeTollRecordModel(), prepaidRechargeTollRecord);
-      if (prepaidRechargeRecord.getRechargeBonus() == null) {
-        prepaidRechargeRecord.setRechargeBonus(new BigDecimal(0));
-      }
-      prepaidRechargeTollRecord.setCreditAmount(
-          prepaidRechargeRecord
-              .getRechargePrincipal()
-              .add(prepaidRechargeRecord.getRechargeBonus()));
-      prepaidRechargeTollRecord.setRechargeRecordId(prepaidRechargeRecord.getId());
-      prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-      prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-      prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
-      prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
-      if (model.getRechargeType() == 1) {
-        if (patientPrepaymentsInfo.getPatientId() != null && model.getCardId() != null) {
-          OwnCardActiveForm ownCardActiveForm = new OwnCardActiveForm();
-          ownCardActiveForm.setCardId(model.getCardId());
-          ResponseResult result =
-              remoteDiscountFeign.ownActiveCard(
-                  patientPrepaymentsInfo.getPatientId(), ownCardActiveForm);
-          if (!result.getStatus().equals(ZERO)) {
-            return result;
+        // 添加预付款充值收费记录
+        PrepaidRechargeTollRecord prepaidRechargeTollRecord = new PrepaidRechargeTollRecord();
+        BeanUtils.copyProperties(
+                model.getPrepaidRechargeTollRecordModel(), prepaidRechargeTollRecord);
+        if (prepaidRechargeRecord.getRechargeBonus() == null) {
+          prepaidRechargeRecord.setRechargeBonus(new BigDecimal(0));
+        }
+        prepaidRechargeTollRecord.setCreditAmount(model.getPaymentAmount());
+        prepaidRechargeTollRecord.setRechargeRecordId(prepaidRechargeRecord.getId());
+        prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
+        prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
+        if (model.getRechargeType() == 1) {
+          if (patientPrepaymentsInfo.getPatientId() != null && model.getCardId() != null) {
+            OwnCardActiveForm ownCardActiveForm = new OwnCardActiveForm();
+            ownCardActiveForm.setCardId(model.getCardId());
+            ResponseResult result =
+                    remoteDiscountFeign.ownActiveCard(
+                            patientPrepaymentsInfo.getPatientId(), ownCardActiveForm);
+            if (!result.getStatus().equals(ZERO)) {
+              return result;
+            }
           }
         }
+        // 发送消息 预付款充值
+        sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 1);
+        // 预付款充值 短信发送
+        memberSendMessages(prepaidRechargeRecord, 0);
+      } else {
+        return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到预付款记录", null);
       }
-      // 发送消息 预付款充值
-      sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 1);
-      // 预付款充值 短信发送
-      memberSendMessages(prepaidRechargeRecord, 0);
-    } else {
-      return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到预付款记录", "");
+    }else {
+      return ResponseUtil.fail(
+              OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "充值金额与入账金额不相等!",null);
     }
     return ResponseUtil.success();
   }

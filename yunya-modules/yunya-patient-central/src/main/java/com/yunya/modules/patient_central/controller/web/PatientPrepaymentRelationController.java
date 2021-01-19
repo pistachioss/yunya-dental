@@ -110,8 +110,7 @@ public class PatientPrepaymentRelationController {
   @ApiOperation("充值")
   @PostMapping("/recharge")
   public ResponseResult recharge(@RequestBody PrepaidRechargeModel memberRechargeModel) {
-    this.patientPrepaymentBiz.recharge(memberRechargeModel);
-    return ResponseUtil.success();
+    return this.patientPrepaymentBiz.recharge(memberRechargeModel);
   }
 
 
