@@ -1,0 +1,40 @@
+feign:
+  httpclient:
+    enabled: false
+  okhttp:
+    enabled: true
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath:mapper/*.xml
+  mapperLocations: classpath:mapper/*Mapper.xml
+  type-aliases-package: com.yunya.models.yunya-employee-attend
+server:
+  port: 8103
+spring:
+  application:
+    name: yunya-employee-attend
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.31.215:8848
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.name}?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false&serverTimezone=CST
+  main:
+    allow-bean-definition-overriding: true
+  profiles:
+    active: migration
+  redis:
+    database: 2
+    host: 192.168.31.90
+    password: foobared
+    port: 6379
+swagger:
+  base-package: com.yunya.modules.employeeattend
+  contact:
+    name: yunya-employee-attend
+  description: \uFFFD\u0170\uFFFD
+  enabled: true
+  title: yunya-employee-attend
+  version: 1.0.0.SNAPSHOT
