@@ -230,7 +230,8 @@ public class SpecialistProjectTargetBiz
           Integer specialistProjectCompleted =
               specialistProjectCompletedInfo.getSpecialistProjectCompleted();
           Integer specialistProjectGoal = specialistProjectWorkGoal.getSpecialistProjectGoal();
-          if (0 != specialistProjectGoal && null != specialistProjectCompleted) {
+          if ((null != specialistProjectGoal && 0 != specialistProjectGoal)
+              && null != specialistProjectCompleted) {
             float percentageOfSpecialistProjectCompleted =
                 (float) specialistProjectCompleted / specialistProjectGoal;
             specialistProjectWorkGoal.setPercentageOfSpecialistProjectCompleted(
