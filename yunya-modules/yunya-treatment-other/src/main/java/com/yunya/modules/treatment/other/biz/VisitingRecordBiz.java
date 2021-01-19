@@ -4,12 +4,10 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
-import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
@@ -325,20 +323,11 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param visitingRecordVo 随访记录
      * @return 返回组合之后的随访记录信息
      */
-    public VisitingRecordVo comboVisitingRecord(VisitingRecordVo visitingRecordVo) {
-        return comboVisitingRecord(visitingRecordVo,null,null);
-    }
-
-    public VisitingRecordVo comboVisitingRecord(VisitingRecordVo visitingRecordVo, Map<Integer, PatientTotalInfoVo> patientMap, Map<Integer, SysUserInfoDetail> denstistNames){
+    public VisitingRecordVo comboVisitingRecord(VisitingRecordVo visitingRecordVo){
         // 组合患者信息
         Integer patientId = visitingRecordVo.getPatientId();
         if (patientId != null) {
-            PatientTotalInfoVo patientTotalInfo = null;
-            if (StringHelper.isNotEmpty(patientMap)) {
-                patientTotalInfo = patientMap.get(patientId);
-            } else {
-                patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
-            }
+            PatientTotalInfoVo patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
             if (patientTotalInfo != null){
                 visitingRecordVo.setPatientName(patientTotalInfo.getName());
                 visitingRecordVo.setMobile(patientTotalInfo.getMobile());
@@ -371,12 +360,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         // 设置医生姓名
         Integer dentistId = visitingRecordVo.getDentistId();
         if (dentistId != null){
-            SysUserInfoDetail dentistInfo = null;
-            if (StringHelper.isNotEmpty(denstistNames)) {
-                dentistInfo = denstistNames.get(dentistId);
-            } else {
-                dentistInfo = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
-            }
+            SysUserInfoDetail dentistInfo  = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
             if (dentistInfo != null){
                 visitingRecordVo.setDentistName(dentistInfo.getName());
             }
@@ -654,45 +638,5 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      */
     public VisitingStatusCountVO countVisiting(Integer patientId) {
         return mapper.countVisiting(patientId);
-    }
-
-    /**
-     * 根据条件查询随访记录
-     * @param query 查询条件
-     * @return ResponseResult
-     */
-    public ResponseResult<PageInfo<VisitingRecordVo>> getVisitingRecordByCondition(VisitingRecordQuery query){
-        // 设置分页
-        if (query.getWhetherPage()){
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
-        }
-        Map<Integer, PatientTotalInfoVo> patientTotalInfoVoMap = new HashMap<>(16);
-        if (StringHelper.isNotEmpty(query.getSearch()) || StringHelper.isNotEmpty(query.getMedicalNumber())) {//模糊匹配患者姓名和手机号，模糊匹配病历号
-            PatientBaseInfoQueryForm queryForm = new PatientBaseInfoQueryForm();
-            queryForm.setSearch(query.getSearch());
-            queryForm.setMedicalNumber(query.getMedicalNumber());
-            List<PatientTotalInfoVo> patientInfos = remotePatientCentralServiceFeign.findPatientTotalInfo(queryForm);
-            if (StringHelper.isNotEmpty(patientInfos)) {
-                patientInfos.forEach(patientInfo->patientTotalInfoVoMap.put(patientInfo.getId(),patientInfo));
-                query.setPatientIds(patientTotalInfoVoMap.keySet());
-            }
-        }
-        Map<Integer, SysUserInfoDetail> sysUserInfoDetailMap = new HashMap<>(16);
-        if (StringHelper.isNotEmpty(query.getDistentName())) {//精确匹配医生姓名
-            SysUserEmployeeModel model = new SysUserEmployeeModel();
-            model.setWhetherPage(false);
-            model.setUserName(query.getDistentName());
-            List<SysUserInfoDetail> sysUserInfoDetails = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
-            if (StringHelper.isNotEmpty(sysUserInfoDetails)) {
-                sysUserInfoDetails.forEach(sysUserInfo->sysUserInfoDetailMap.put(sysUserInfo.getUserId(),sysUserInfo));
-                query.setDentistIds(sysUserInfoDetailMap.keySet());
-            }
-        }
-        List<VisitingRecordVo> visitingRecordVos = mapper.getVisitingRecordByCondition(query);
-        if (visitingRecordVos != null && !visitingRecordVos.isEmpty()){
-            visitingRecordVos.forEach(visitingRecordVo->comboVisitingRecord(visitingRecordVo,patientTotalInfoVoMap,sysUserInfoDetailMap));
-        }
-        PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
-        return ResponseUtil.success(visitingRecordVoPageInfo);
     }
 }

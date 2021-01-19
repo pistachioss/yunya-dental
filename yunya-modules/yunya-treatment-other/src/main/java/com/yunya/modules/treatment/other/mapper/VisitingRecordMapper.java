@@ -83,6 +83,4 @@ public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
      * @return
      */
     VisitingStatusCountVO countVisiting(@Param("patientId") Integer patientId);
-
-    List<VisitingRecordVo> getVisitingRecordByCondition(@Param("query") VisitingRecordQuery query);
 }
