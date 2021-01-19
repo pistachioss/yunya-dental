@@ -230,14 +230,16 @@ public class SpecialistProjectTargetBiz
           Integer specialistProjectCompleted =
               specialistProjectCompletedInfo.getSpecialistProjectCompleted();
           Integer specialistProjectGoal = specialistProjectWorkGoal.getSpecialistProjectGoal();
-          if (0 != specialistProjectGoal && null != specialistProjectCompleted) {
-            float percentageOfSpecialistProjectCompleted =
-                (float) specialistProjectCompleted / specialistProjectGoal;
-            specialistProjectWorkGoal.setPercentageOfSpecialistProjectCompleted(
-                BigDecimal.valueOf(percentageOfSpecialistProjectCompleted)
-                    .multiply(new BigDecimal(100))
-                    .setScale(2, BigDecimal.ROUND_HALF_UP)
-                    .floatValue());
+          if (null != specialistProjectGoal && 0 != specialistProjectGoal) {
+            if (null != specialistProjectCompleted) {
+              float percentageOfSpecialistProjectCompleted =
+                  (float) specialistProjectCompleted / specialistProjectGoal;
+              specialistProjectWorkGoal.setPercentageOfSpecialistProjectCompleted(
+                  BigDecimal.valueOf(percentageOfSpecialistProjectCompleted)
+                      .multiply(new BigDecimal(100))
+                      .setScale(2, BigDecimal.ROUND_HALF_UP)
+                      .floatValue());
+            }
           }
           specialistProjectWorkGoals.add(specialistProjectWorkGoal);
         }
