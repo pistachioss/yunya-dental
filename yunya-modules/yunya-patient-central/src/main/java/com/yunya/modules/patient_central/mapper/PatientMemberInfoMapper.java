@@ -2,7 +2,7 @@ package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
-import com.yunya.feign.patient_central.domain.query.RechargeCashReceiptQuery;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.MemberBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientMemberRelationVo;
@@ -76,6 +76,18 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
      */
     List<MemberBaseInfoVo> selectMemberRelationByMasterPatientId(Integer id);
 
+    /**
+     * 查询预付款、会员卡现金充值
+     * @param query
+     * @return BigDecimal
+     */
+    BigDecimal sumMemberAndPrepayRechargeCash(@Param("query") CashReceiptOrRefundQuery query);
 
-    BigDecimal sumMemberAndPrepayRechargeCash(@Param("query") RechargeCashReceiptQuery query);
+    /**
+     * 查询某支付方式预付款、会员卡现金退款金额
+     *
+     * @param query
+     * @return BigDecimal
+     */
+    BigDecimal sumMemberAndPrepaidRefundCash(@Param("query") CashReceiptOrRefundQuery query);
 }

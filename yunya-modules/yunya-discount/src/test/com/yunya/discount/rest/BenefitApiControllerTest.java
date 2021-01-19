@@ -1,6 +1,5 @@
 package com.yunya.discount.rest;
 
-import com.yunya.feign.discount.domain.query.CardSaleCashReceiptQuery;
 import com.yunya.modules.discount.ClinicDiscountApplication;
 import com.yunya.modules.discount.rpc.BenefitApiController;
 import org.junit.Test;
@@ -29,7 +28,7 @@ public class BenefitApiControllerTest {
 
     @Test
     public void test1() {
-        CardSaleCashReceiptQuery query = new CardSaleCashReceiptQuery();
+        CashReceiptOrRefundQuery query = new CashReceiptOrRefundQuery();
         query.setOrgId(35);
         query.setPayId(100);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");

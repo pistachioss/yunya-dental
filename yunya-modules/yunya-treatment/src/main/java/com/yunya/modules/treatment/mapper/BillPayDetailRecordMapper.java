@@ -1,7 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
-import com.yunya.feign.treatment.domain.query.CreditCashReceiptQuery;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import org.apache.ibatis.annotations.Param;
@@ -38,7 +38,7 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
    * @param query
    * @return
    */
-  BigDecimal sumBillPayAmount(@Param("query") CreditCashReceiptQuery query);
+  BigDecimal sumBillPayAmount(@Param("query") CashReceiptOrRefundQuery query);
 
   /**
    * 根据条件查询门诊完成工作量

@@ -64,4 +64,34 @@
         </where>
         ORDER BY br.billRefundDate DESC
     </select>
+
+    <!-- 根据条件查询退款现金 -->
+    <select id="selectCashRefundAmount" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM( IFNULL( brpdr.refund_pay_amount, 0 ) ), 0)
+        FROM
+        bill_refund_pay_detail_record brpdr
+        <where>
+            <if test="query.payId != null">
+                AND brpdr.account_item_id = #{query.payId}
+            </if>
+            <if test="query.startDate != null">
+                AND DATE_FORMAT(brpdr.crt_time, '%Y-%m-%d') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null">
+                AND DATE_FORMAT(brpdr.crt_time, '%Y-%m-%d') &lt;= #{query.endDate}
+            </if>
+            AND brpdr.bill_refund_record_id IN (
+            SELECT
+            brr.id
+            FROM
+            bill_refund_record brr
+            <where>
+                <if test="query.orgId != null">
+                    AND brr.org_id = #{query.orgId}
+                </if>
+            </where>
+            )
+        </where>
+    </select>
 </mapper>

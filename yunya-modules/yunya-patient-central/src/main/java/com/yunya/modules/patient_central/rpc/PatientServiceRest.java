@@ -255,9 +255,22 @@ public class PatientServiceRest {
      * @return
      */
     @PostMapping(value = "/member/sumMemberAndPrepayRechargeCash")
-    public BigDecimal sumMemberAndPrepayRechargeCash(@RequestBody @Validated RechargeCashReceiptQuery query) {
+    public BigDecimal sumMemberAndPrepayRechargeCash(@RequestBody @Validated CashReceiptOrRefundQuery query) {
         return patientMemberInfoBiz.sumMemberAndPrepayRechargeCash(query);
     }
+
+    /**
+     * 根据条件查询预付款、会员现金退费
+     *
+     * @param query
+     * @return
+     */
+    @ApiOperation("根据条件查询患者全部信息")
+    @RequestMapping(value = "/refund/cash", method = RequestMethod.POST)
+    BigDecimal sumMemberAndPrepaidRefundCash(@RequestBody @Validated CashReceiptOrRefundQuery query){
+        return  patientMemberInfoBiz.sumMemberAndPrepaidRefundCash(query);
+    }
+
 
     /**
      * 根据条件查询患者全部信息

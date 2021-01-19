@@ -146,12 +146,17 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     }
 
     @Override
-    public BigDecimal sumMemberAndPrepayRechargeCash(RechargeCashReceiptQuery query) {
+    public BigDecimal sumMemberAndPrepayRechargeCash(CashReceiptOrRefundQuery query) {
         return null;
     }
 
     @Override
     public List<PatientTotalInfoVo> findPatientTotalInfo(PatientBaseInfoQueryForm queryForm) {
+        return null;
+    }
+
+    @Override
+    public BigDecimal sumMemberAndPrepaidRefundCash(CashReceiptOrRefundQuery query) {
         return null;
     }
 

@@ -2,13 +2,13 @@ package com.yunya.modules.treatment.biz;
 
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.form.BillPayDetailForm;
 import com.yunya.feign.treatment.domain.model.PaymentModel;
-import com.yunya.feign.treatment.domain.query.CreditCashReceiptQuery;
 import com.yunya.feign.treatment.domain.query.PaymentRecordQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;
@@ -361,7 +361,7 @@ public class BillPayDetailRecordBiz
    * @param query 查询条件
    * @return BigDecimal
    */
-  public BigDecimal sumBillPayAmount(CreditCashReceiptQuery query) {
+  public BigDecimal sumBillPayAmount(CashReceiptOrRefundQuery query) {
     return mapper.sumBillPayAmount(query);
   }
 

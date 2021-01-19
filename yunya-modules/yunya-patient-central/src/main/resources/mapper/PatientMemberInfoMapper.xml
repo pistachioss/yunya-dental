@@ -114,10 +114,10 @@
             select IFNULL(sum(t.credit_amount),0) amount from member_recharge_toll_record t
             <where>
                 t.inservice = 1
-                <if test="query.startDate">
+                <if test="query.startDate != null">
                     and DATE_FORMAT(t.crt_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{query.startDate},'%Y-%m-%d')
                 </if>
-                <if test="query.endDate">
+                <if test="query.endDate != null">
                     and DATE_FORMAT(t.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{query.endDate},'%Y-%m-%d')
                 </if>
                 <if test="query.orgId != null">
@@ -131,10 +131,10 @@
             select IFNULL(sum(t.credit_amount),0) amount from prepaid_recharge_toll_record t
             <where>
                 t.inservice = 1
-                <if test="query.startDate">
+                <if test="query.startDate != null">
                     and DATE_FORMAT(t.crt_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{query.startDate},'%Y-%m-%d')
                 </if>
-                <if test="query.endDate">
+                <if test="query.endDate != null">
                     and DATE_FORMAT(t.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{query.endDate},'%Y-%m-%d')
                 </if>
                 <if test="query.orgId != null">
@@ -144,6 +144,45 @@
                     and t.payment_id = #{query.payId}
                 </if>
             </where>
+        ) as total
+    </select>
+
+    <!-- 查询预付款、会员卡现金退款 -->
+    <select id="sumMemberAndPrepaidRefundCash" resultType="java.math.BigDecimal">
+        select sum(amount) from (
+        select IFNULL(sum(t.actual_return_amount),0) amount from member_return_record t
+        <where>
+            t.inservice = 1
+            <if test="query.startDate != null">
+                and DATE_FORMAT(t.crt_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{query.startDate},'%Y-%m-%d')
+            </if>
+            <if test="query.endDate != null">
+                and DATE_FORMAT(t.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{query.endDate},'%Y-%m-%d')
+            </if>
+            <if test="query.orgId != null">
+                and t.org_id = #{query.orgId}
+            </if>
+            <if test="query.payId != null">
+                and t.return_way_id = #{query.payId}
+            </if>
+        </where>
+        union all
+        select IFNULL(sum(t.actual_return_amount),0) amount from prepaid_return_record t
+        <where>
+            t.inservice = 1
+            <if test="query.startDate != null">
+                and DATE_FORMAT(t.crt_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{query.startDate},'%Y-%m-%d')
+            </if>
+            <if test="query.endDate != null">
+                and DATE_FORMAT(t.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{query.endDate},'%Y-%m-%d')
+            </if>
+            <if test="query.orgId != null">
+                and t.org_id = #{query.orgId}
+            </if>
+            <if test="query.payId != null">
+                and t.return_way_id = #{query.payId}
+            </if>
+        </where>
         ) as total
     </select>
 </mapper>

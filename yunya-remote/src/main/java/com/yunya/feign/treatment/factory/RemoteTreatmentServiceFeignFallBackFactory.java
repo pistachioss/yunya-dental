@@ -3,11 +3,11 @@ package com.yunya.feign.treatment.factory;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
-import com.yunya.feign.treatment.domain.query.CreditCashReceiptQuery;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.BusinessCompletedWorkGoalVO;
 import com.yunya.feign.treatment.domain.vo.RegisteredVO;
@@ -197,7 +197,12 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
-  public BigDecimal sumBillPayAmount(CreditCashReceiptQuery query) {
+  public BigDecimal sumBillPayAmount(CashReceiptOrRefundQuery query) {
+    return null;
+  }
+
+  @Override
+  public BigDecimal findBillRefundTotalCashAmount(CashReceiptOrRefundQuery query) {
     return null;
   }
 
