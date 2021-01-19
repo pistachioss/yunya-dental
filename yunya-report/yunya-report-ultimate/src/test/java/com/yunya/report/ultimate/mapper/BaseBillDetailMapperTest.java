@@ -113,4 +113,13 @@ public class BaseBillDetailMapperTest {
     List<CurrentMonthBillPayRecordVO> vos = baseBillDetailMapper.selectCurrentMonthBillPayRecord(query);
     System.out.println(vos);
   }
+
+  @Test
+  public void find3() {
+    BillCategoryIncomeQuery query = new BillCategoryIncomeQuery();
+    query.setOrgId(35);
+    query.setQueryDate("2020-12");
+    List<CategoryInfoIncomeVO> vos = baseBillDetailMapper.selectCategoryIncomeList(query);
+    System.out.println(vos);
+  }
 }
