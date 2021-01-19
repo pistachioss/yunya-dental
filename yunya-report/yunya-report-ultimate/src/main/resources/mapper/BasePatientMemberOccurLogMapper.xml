@@ -506,7 +506,7 @@
             type = bpm.type
             and card_id = bpm.card_id
             <if test="form.endDate != null and form.endDate != ''">
-                and date_format(card_opening_date, '%Y-%m-%d' ) &lt; date_format(#{form.endDate}, '%Y-%m-%d' )
+                and date_format(card_opening_date, '%Y-%m-%d' ) = date_format(#{form.endDate}, '%Y-%m-%d' )
             </if>
         </where>
         GROUP BY card_opening_date
@@ -523,7 +523,7 @@
             type = bpm.type
             and card_id = bpm.card_id
             <if test="form.endDate != null and form.endDate != ''">
-                and date_format(card_opening_date, '%Y-%m-%d' ) &lt; date_format(#{form.endDate}, '%Y-%m-%d' )
+                and date_format(card_opening_date, '%Y-%m-%d' ) = date_format(#{form.endDate}, '%Y-%m-%d' )
             </if>
         </where>
         GROUP BY card_opening_date

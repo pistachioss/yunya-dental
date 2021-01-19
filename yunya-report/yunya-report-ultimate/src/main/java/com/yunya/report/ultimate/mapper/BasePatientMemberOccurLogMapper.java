@@ -88,7 +88,7 @@ public interface BasePatientMemberOccurLogMapper extends Mapper<BasePatientMembe
       @Param("patientIds") List<Integer> patientIds);
 
   /**
-   * 查询会员余额结存信息列表
+   * 查询会员or预付款余额结存信息列表
    *
    * @param form 查询条件
    * @param patientIds 患者id集合
