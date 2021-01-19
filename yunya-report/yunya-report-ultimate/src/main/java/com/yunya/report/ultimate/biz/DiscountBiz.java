@@ -222,6 +222,18 @@ public class DiscountBiz {
 		return new PageInfo<>(page);
 	}
 
+	/**
+	 * 产品记录-产品使用记录详情
+	 *
+	 * @param query
+	 * @return page
+	 */
+	public PageInfo<CardUsedDetailVo> getCardUsedDetailPage(CardUsedDetailQuery query) {
+		Page<CardUsedDetailVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		benefitMapper.listCardUsedDetailByBillId(query);
+		return new PageInfo<>(page);
+	}
+
 	public void buildResponse(HttpServletResponse response, String fileName) throws UnsupportedEncodingException {
 		response.setContentType("application/vnd.ms-excel");
 		response.setCharacterEncoding("utf-8");

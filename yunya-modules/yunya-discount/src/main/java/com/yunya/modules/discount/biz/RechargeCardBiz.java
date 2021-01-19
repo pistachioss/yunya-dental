@@ -10,6 +10,7 @@ import com.yunya.models.discount.CouponAllocate;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.CouponFileInfo;
 import com.yunya.models.discount.RechargeCard;
+import com.yunya.modules.discount.enums.CouponTypeEnum;
 import com.yunya.modules.discount.form.RechargeCardForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
@@ -51,6 +52,7 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
      */
     public Integer saveRechargeCard(RechargeCardForm rechargeCardForm) {
         CouponCommonInfo data = new CouponCommonInfo();
+        data.setType((byte) CouponTypeEnum.RECHARGE.getCode().intValue());
         data.setName(rechargeCardForm.getName());
         if (couponCommonInfoMapper.selectOne(data) != null) {
             throw new BaseException("充值卡名称与系统中已有充值卡重复，不允许新增!", NAME_IS_OCCUPIED);

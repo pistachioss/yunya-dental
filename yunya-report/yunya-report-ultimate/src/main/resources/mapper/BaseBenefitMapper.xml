@@ -171,6 +171,8 @@
 
     <select id="listCardUsedRecordByParam" resultType="com.yunya.feign.report.domain.vo.CardUsedRecordVo">
         select
+            bcd.card_id as cardId,
+            bb.bill_id as order_id,
             date_format(`bf`.`use_date`, '%Y-%m-%d') as `usedDate`,
             date_format(`bb`.`order_date`, '%Y-%m-%d') as `orderDate`,
             `bb`.`bill_num`                         as `billNumber`,
@@ -226,6 +228,25 @@
                 </foreach>
             </if>
         group by `bf`.`card_id`, `bf`.`order_id`
+        order by `bf`.`use_date` desc
+    </select>
+
+    <select id="listCardUsedDetailByBillId" resultType="com.yunya.feign.report.domain.vo.CardUsedDetailVo">
+        select
+            sum(bf.benefit_amount) as amount,
+            count(bf.coupon_id) as num,
+            bt.item_num as itemNum,
+            bt.item_name as itemName,
+            be.employee_name as executor
+        from base_benefit bf
+            inner join base_coupon bco on bco.coupon_id = bf.coupon_id
+			left join base_tariff_info bt on bt.item_id=bf.item_id
+			left join base_employee be on be.user_id = bf.operate_user_id
+        where
+            bco.coupon_type != 4
+            and bf.order_id = #{query.orderId}
+            and bf.card_id = #{query.cardId}
+        group by bf.coupon_id,bf.order_detail_id,bt.item_num,bt.item_name,bf.operate_user_id
         order by `bf`.`use_date` desc
     </select>
 

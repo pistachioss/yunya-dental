@@ -1,19 +1,23 @@
 package com.yunya.modules.discount.biz;
 
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.models.discount.*;
-import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.BaseException;
+import com.yunya.models.discount.CouponAllocate;
+import com.yunya.models.discount.CouponCommonInfo;
+import com.yunya.models.discount.CouponFileInfo;
+import com.yunya.models.discount.VoucheCoupon;
+import com.yunya.modules.discount.enums.CouponTypeEnum;
 import com.yunya.modules.discount.form.CouponCommonInfoQueryForm;
+import com.yunya.modules.discount.form.VoucheCouponForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
 import com.yunya.modules.discount.mapper.CouponFileInfoMapper;
 import com.yunya.modules.discount.mapper.VoucheCouponMapper;
 import com.yunya.modules.discount.vo.CouponCommonInfoVO;
-import com.yunya.modules.discount.form.VoucheCouponForm;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,7 +27,8 @@ import javax.annotation.Resource;
 import java.util.*;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCoupon;
-import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.INSERT_MODEL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
 
 /**
  * 描述:
@@ -57,6 +62,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
      */
     public Integer saveVoucher(VoucheCouponForm voucheCouponForm) {
         CouponCommonInfo data = new CouponCommonInfo();
+        data.setType((byte) CouponTypeEnum.VOUCHER.getCode().intValue());
         data.setName(voucheCouponForm.getName());
         if (couponCommonInfoMapper.selectOne(data) != null) {
             throw new BaseException("代金券名称与系统中已有代金券重复，不允许新增!", NAME_IS_OCCUPIED);

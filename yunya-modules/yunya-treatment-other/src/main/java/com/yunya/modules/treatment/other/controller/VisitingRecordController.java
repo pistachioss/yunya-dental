@@ -160,7 +160,7 @@ public class VisitingRecordController {
      * @return  ResponseResult
      */
     @ApiOperation(value = "根据条件查询随访记录")
-    @GetMapping("/find")
+    @PostMapping("/get")
     @CurrentUser
     public ResponseResult<PageInfo<VisitingRecordVo>> getRecordByCondition(@RequestBody @Validated VisitingRecordQuery query){
         return visitingRecordBiz.getVisitingRecordByCondition(query);

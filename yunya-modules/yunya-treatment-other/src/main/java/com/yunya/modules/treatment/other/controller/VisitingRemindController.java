@@ -90,7 +90,7 @@ public class VisitingRemindController {
      * @return  ResponseResult
      */
     @ApiOperation("根据条件查询随访提醒")
-    @GetMapping("/find")
+    @PostMapping("/get")
     @CurrentUser
     public ResponseResult getVisitingRemindByCondition(@RequestBody @Validated VisitingRemindQuery query) {
         return visitingRemindBiz.getVisitingRemindByCondition(query);

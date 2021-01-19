@@ -29,6 +29,7 @@ import java.util.List;
 public class CompanyReportOfOperationControllerTest {
 
   @Autowired private CompanyReportOfOperationController companyReportOfOperationController;
+  @Autowired private DiscountController discountController;
 
   @Test
   public void findList() {
