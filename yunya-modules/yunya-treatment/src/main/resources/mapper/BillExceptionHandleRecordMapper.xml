@@ -134,7 +134,7 @@
             resultType="com.yunya.feign.treatment.domain.vo.BillOfTollRevokeRecordVO">
         SELECT
         bar.billExceptionHandleRecordId,
-        bar.revokeDate,
+        DATE_FORMAT(bar.crt_time,'%Y-%m-%d') as revokeDate,
         bar.orderDate,
         bar.actualAmount,
         bar.receivedAmount,
@@ -149,7 +149,7 @@
         SELECT
         behr.id AS billExceptionHandleRecordId,
         bpr.orgId,
-        DATE_FORMAT( behr.crt_time, '%Y-%m-%d' ) revokeDate,
+        behr.crt_time,
         bpr.orderDate AS orderDate,
         bpr.actualAmount,
         bpr.receivedAmount,
@@ -188,10 +188,10 @@
                 and bar.billNum like concat('%', #{query.billNum}, '%')
             </if>
             <if test="query.revokeStartDate != null and query.revokeStartDate != ''">
-                and bar.revokeDate &gt;= #{query.revokeStartDate}
+                and DATE_FORMAT(bar.crt_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{query.revokeStartDate},'%Y-%m-%d')
             </if>
             <if test="query.revokeEndDate != null and query.revokeEndDate != ''">
-                and bar.revokeDate &lt;= #{query.revokeEndDate}
+                and DATE_FORMAT(bar.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{query.revokeEndDate},'%Y-%m-%d')
             </if>
             <if test="query.chargeStartDate != null and query.chargeStartDate != ''">
                 and bar.chargeDate &gt;= #{query.chargeStartDate}
@@ -207,7 +207,7 @@
             </if>
         </where>
         ORDER BY
-        bar.revokeDate DESC
+        bar.crt_time DESC
     </select>
 
     <!-- 根据条件查询调整入账方式记录 -->
@@ -215,7 +215,7 @@
             resultType="com.yunya.feign.treatment.domain.vo.BillOfPayRecordAdjustVO">
         SELECT
         bar.billExceptionHandleRecordId,
-        bar.adjustDate,
+        DATE_FORMAT(bar.crt_time,'%Y-%m-%d') as adjustDate,
         bar.orderDate,
         bar.actualAmount,
         bar.receivedAmount,
@@ -230,7 +230,7 @@
         SELECT
         behr.id AS billExceptionHandleRecordId,
         behr.org_id AS orgId,
-        DATE_FORMAT( behr.crt_time, '%Y-%m-%d' ) adjustDate,
+        behr.crt_time,
         bpr.orderDate AS orderDate,
         bpr.actualAmount,
         bpr.receivedAmount,
@@ -268,10 +268,10 @@
                 and bar.billNum like concat('%', #{query.billNum}, '%')
             </if>
             <if test="query.adjustStartDate != null and query.adjustStartDate != ''">
-                and bar.adjustDate &gt;= #{query.adjustStartDate}
+                and DATE_FORMAT(bar.crt_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{query.adjustStartDate},'%Y-%m-%d')
             </if>
             <if test="query.adjustEndDate != null and query.adjustEndDate != ''">
-                and bar.adjustDate &lt;= #{query.adjustEndDate}
+                and DATE_FORMAT(bar.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{query.adjustEndDate},'%Y-%m-%d')
             </if>
             <if test="query.chargeStartDate != null and query.chargeStartDate != ''">
                 and bar.chargeDate &gt;= #{query.chargeStartDate}
@@ -287,7 +287,7 @@
             </if>
         </where>
         ORDER BY
-        bar.adjustDate DESC
+        bar.crt_time DESC
     </select>
 
     <!-- 根据条件查询门诊当月账单调整记录 -->
