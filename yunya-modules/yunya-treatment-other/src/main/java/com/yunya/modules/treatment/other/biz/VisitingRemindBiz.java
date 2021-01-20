@@ -3,12 +3,10 @@ package com.yunya.modules.treatment.other.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
-import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
@@ -36,7 +34,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -387,108 +388,5 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 return 0;
             }
         })).collect(Collectors.toList());
-    }
-
-    public ResponseResult getVisitingRemindByCondition(VisitingRemindQuery query){
-        // 分页
-        if (query.getWhetherPage()){
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
-        }
-        Map<Integer, PatientTotalInfoVo> patientTotalInfoVoMap = new HashMap<>(16);
-        if (StringHelper.isNotEmpty(query.getSearch()) || StringHelper.isNotEmpty(query.getMedicalNumber())) {//模糊匹配患者姓名和手机号，模糊匹配病历号
-            PatientBaseInfoQueryForm queryForm = new PatientBaseInfoQueryForm();
-            queryForm.setSearch(query.getSearch());
-            queryForm.setMedicalNumber(query.getMedicalNumber());
-            List<PatientTotalInfoVo> patientInfos = remotePatientCentralServiceFeign.findPatientTotalInfo(queryForm);
-            if (StringHelper.isNotEmpty(patientInfos)) {
-                patientInfos.forEach(patientInfo->patientTotalInfoVoMap.put(patientInfo.getId(),patientInfo));
-                query.setPatientIds(patientTotalInfoVoMap.keySet());
-            }
-        }
-        Map<Integer, SysUserInfoDetail> sysUserInfoDetailMap = new HashMap<>(16);
-        if (StringHelper.isNotEmpty(query.getDistentName())) {//精确匹配医生姓名
-            SysUserEmployeeModel model = new SysUserEmployeeModel();
-            model.setWhetherPage(false);
-            model.setUserName(query.getDistentName());
-            List<SysUserInfoDetail> sysUserInfoDetails = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
-            if (StringHelper.isNotEmpty(sysUserInfoDetails)) {
-                sysUserInfoDetails.forEach(sysUserInfo->sysUserInfoDetailMap.put(sysUserInfo.getUserId(),sysUserInfo));
-                query.setDentistIds(sysUserInfoDetailMap.keySet());
-            }
-        }
-        // 组合随访提醒信息列表
-        List<VisitingRemindVo> visitingRemindVos = new ArrayList<>();
-        // 检索随访提醒内容列表
-        List<VisitingRemind> visitingReminds = mapper.findVisitingRemindByCondition(query);
-        if (!StringHelper.isEmpty(visitingReminds)) {
-            visitingReminds.forEach(visitingRemind -> {
-                VisitingRemindVo build = EntityUtils.build(visitingRemind, VisitingRemindVo.class);
-                // 设置医生信息
-                Integer dentistId = build.getDentistId();
-                if (dentistId != null){
-                    SysUserInfoDetail userInfoDetail = null;
-                    if (StringHelper.isNotEmpty(sysUserInfoDetailMap)) {
-                        userInfoDetail = sysUserInfoDetailMap.get(dentistId);
-                    } else {
-                        userInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
-                    }
-                    if (userInfoDetail != null){
-                        build.setDentistName(userInfoDetail.getName());
-                    }
-                }
-                // 设置患者信息
-                Integer patientId = build.getPatientId();
-                if (patientId != null){
-                    PatientTotalInfoVo patientTotalInfo = null;
-                    if (StringHelper.isNotEmpty(patientTotalInfoVoMap)) {
-                        patientTotalInfo = patientTotalInfoVoMap.get(patientId);
-                    } else {
-                        patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
-                    }
-                    if (patientTotalInfo != null){
-                        build.setPatientName(patientTotalInfo.getName());
-                        build.setAge(patientTotalInfo.getAge());
-                        build.setGender(patientTotalInfo.getGender());
-                        build.setBirthday(patientTotalInfo.getBirthday());
-                        build.setMedicalNumber(patientTotalInfo.getMedicalNumber());
-                        build.setMobile(patientTotalInfo.getMobile());
-                        build.setAllergen(patientTotalInfo.getAllergens());
-                        build.setPatientRemark(patientTotalInfo.getRemarks());
-                        build.setPinyinName(patientTotalInfo.getPinyinName());
-                        build.setPatientKind(patientTotalInfo.getPatientKindName());
-                        // 设置会员图标
-                        Integer memberTypeId = patientTotalInfo.getMemberTypeId();
-                        if (memberTypeId != null){
-                            MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
-                            if (memberType != null){
-                                build.setMemberIcon(memberType.getIcon());
-                            }
-                        }
-                        // 欠费总额
-                        List<Integer> patientIds = new ArrayList<>();
-                        patientIds.add(patientId);
-                        List<DebtAmountModel> debtAmountList = this.remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
-                        if (StringHelper.isNotEmpty(debtAmountList)) {
-                            DebtAmountModel debtAmountModel = debtAmountList.get(0);
-                            build.setArrears(debtAmountModel.getDebtAmount());
-                        }
-                        // 设置初复诊
-                        Registered registered = new Registered();
-                        registered.setPatientId(patientId);
-                        List<Registered> registereds = remoteTreatmentServiceFeign.findRegisteredList(registered);
-                        if (StringHelper.isNotEmpty(registereds)) {
-                            if (registereds.size() > 1) {
-                                build.setFirstVisit((byte) 1);
-                            }else {
-                                build.setFirstVisit((byte) 0);
-                            }
-                        }
-
-                    }
-                }
-                visitingRemindVos.add(build);
-            });
-        }
-        return ResponseUtil.success(new PageInfo<>(visitingRemindVos));
     }
 }

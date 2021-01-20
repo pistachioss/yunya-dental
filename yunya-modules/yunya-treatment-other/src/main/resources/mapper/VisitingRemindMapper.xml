@@ -75,9 +75,6 @@
         and vrd.status = #{query.status}
       </if>
     </where>
-    <if test="query.searchId == 2">
-      order by vrd.remind_date desc, TIME(vrd.remind_time) desc
-    </if>
   </select>
 
 </mapper>

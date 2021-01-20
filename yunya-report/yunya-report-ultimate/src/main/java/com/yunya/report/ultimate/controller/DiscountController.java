@@ -81,7 +81,7 @@ public class DiscountController {
 		return ResponseUtil.success(discountBiz.getCouponUsedPage(query));
 	}
 
-	@ApiOperation(value = "产品使用统计-时间维度")
+	@ApiOperation(value = "产品使用统计-时间维度 ")
 	@PostMapping("/card/used/statistics")
 	public ResponseResult<PageInfo<CardUsedStatisticsVo>> getCouponUsed(@Valid @RequestBody CardUsedStatisticsQuery query) {
 		return ResponseUtil.success(discountBiz.getCardUsedPage(query));
