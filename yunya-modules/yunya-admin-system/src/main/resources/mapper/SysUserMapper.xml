@@ -198,7 +198,10 @@
         FROM
         sys_user_post sup
         GROUP BY
-        sup.user_id
+        sup.user_id,
+        sup.company_id,
+        sup.post_id,
+        sup.group_id
         ) sup ON su.id = sup.user_id
         ) user_info
         where user_info.userId = #{userId}
@@ -279,7 +282,10 @@
                         FROM
                             sys_user_post sup
                         GROUP BY
-                            sup.user_id
+                            sup.user_id,
+                            sup.company_id,
+                            sup.post_id,
+                            sup.group_id
                     ) sup ON su.id = sup.user_id
             ) user_info
         where user_info.userId in
@@ -389,7 +395,10 @@
             </if>
         </where>
         GROUP BY
-        sup.user_id
+        sup.user_id,
+        sup.company_id,
+        sup.group_id,
+        sup.post_id
         ) sup ON su.id = sup.user_id
         ) user_info
         <where>
@@ -441,6 +450,7 @@
         order by user_info.userId desc
     </select>
 
+    <!-- 根据条件查询员工组织信息列表 -->
     <select id="selectSysEmployeeWithOrgList" resultType="com.yunya.feign.system.vo.SysUserInfoDetail">
         SELECT
             t2.user_id as userId,
