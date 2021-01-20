@@ -1,5 +1,6 @@
 package com.yunya.modules.emr.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
 
 import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
@@ -100,22 +101,22 @@ public class MedicalCommonRecordController {
       BeanUtils.copyProperties(medical, medicalCommonRecordModel);
       medicalCommonRecordModel.setMajorDentistName(employeeMap.get(medicalCommonRecordModel.getCrtId()+"").getName());
 
-      if (medical.getExamination() != null) {
+      if (!StrUtil.isEmpty(medical.getExamination())) {
         jsonArray = JSONArray.parseArray(medical.getExamination());
         list1 = jsonArray.toJavaList(ExaminationsVO.class);
         medicalCommonRecordModel.setExamination(list1);
       }
-      if (medical.getDiagnosis() != null) {
+      if (!StrUtil.isEmpty(medical.getDiagnosis())) {
         jsonArray = JSONArray.parseArray(medical.getDiagnosis());
         list1 = jsonArray.toJavaList(ExaminationsVO.class);
         medicalCommonRecordModel.setDiagnosis(list1);
       }
-      if (medical.getPlan() != null) {
+      if (!StrUtil.isEmpty(medical.getPlan())) {
         jsonArray = JSONArray.parseArray(medical.getPlan());
         list1 = jsonArray.toJavaList(ExaminationsVO.class);
         medicalCommonRecordModel.setPlan(list1);
       }
-      if (medical.getTreatment() != null) {
+      if (!StrUtil.isEmpty(medical.getTreatment())) {
         jsonArray = JSONArray.parseArray(medical.getTreatment());
         list1 = jsonArray.toJavaList(ExaminationsVO.class);
         medicalCommonRecordModel.setTreatment(list1);
@@ -138,8 +139,11 @@ public class MedicalCommonRecordController {
 
       //赋予就诊时间
       for(MedicalCommonRecordModel medicalModel : reList){
-        medicalModel.setTreatmentTime(tListsMap.get(medicalModel.getTreatmentId().toString()).getTreatStartTime());
-        medicalModel.setCompanyName(cliListsMap.get(tListsMap.get(medicalModel.getTreatmentId().toString()).getOrgId().toString()).getName());
+        TreatmentRecordExtendVO treatmentRecordExtendVO = tListsMap.get(medicalModel.getTreatmentId().toString());
+        if(treatmentRecordExtendVO!=null){
+          medicalModel.setTreatmentTime(treatmentRecordExtendVO.getTreatStartTime());
+          medicalModel.setCompanyName(cliListsMap.get(treatmentRecordExtendVO.getOrgId().toString()).getName());
+        }
       }
     }
     return ResponseUtil.success(reList);
