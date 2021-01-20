@@ -9,7 +9,7 @@ import lombok.ToString;
 import java.math.BigDecimal;
 
 /**
- * 简介: 报表预付款充值vo
+ * 简介: 预付款消费列表Vo
  *
  * @author: WY
  * @date: 2020/10/24 14:11
