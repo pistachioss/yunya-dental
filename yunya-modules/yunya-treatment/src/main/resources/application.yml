@@ -57,6 +57,8 @@ spring:
     sentinel:
       transport:
         dashboard: localhost:8080
+  profiles:
+    active: dev
 sample:
   zipkin:
     discovery-client-enabled: false
@@ -69,7 +71,6 @@ mybatis:
 
 server:
   port: 8111
-
 # 必须配置
 feign:
   httpclient:

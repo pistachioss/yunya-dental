@@ -65,7 +65,7 @@
     <select id="selectBillAdjustRecord" resultType="com.yunya.feign.treatment.domain.vo.BillOfAdjustRecordVO">
         SELECT
         bar.billExceptionHandleRecordId,
-        bar.adjustDate,
+        DATE_FORMAT(bar.crt_time, '%Y-%m-%d') adjustDate,
         bar.orderDate,
         bar.billNum,
         bar.patientId,
@@ -76,7 +76,7 @@
         SELECT
         behr.id AS billExceptionHandleRecordId,
         behdr.orgId,
-        DATE_FORMAT( behr.crt_time, '%Y-%m-%d' ) adjustDate,
+        behr.crt_time,
         behdr.orderDate AS orderDate,
         behdr.billNumber AS billNum,
         behdr.patientId patientId,
@@ -108,16 +108,16 @@
                 and bar.billNum like concat('%', #{query.billNum}, '%')
             </if>
             <if test="query.adjustStartDate != null and query.adjustStartDate != ''">
-                and bar.adjustDate &gt;= #{query.adjustStartDate}
+                and DATE_FORMAT(bar.crt_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{query.adjustStartDate},'%Y-%m-%d')
             </if>
             <if test="query.adjustEndDate != null and query.adjustEndDate != ''">
-                and bar.adjustDate &lt;= #{query.adjustEndDate}
+                and DATE_FORMAT(bar.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{query.adjustEndDate},'%Y-%m-%d')
             </if>
             <if test="query.billStartDate != null and query.billStartDate != ''">
-                and bar.billDate &gt;= #{query.billStartDate}
+                and DATE_FORMAT(bar.billDate,'%Y-%m-%d') &gt;= #{query.billStartDate},'%Y-%m-%d')
             </if>
             <if test="query.billEndDate != null and query.billEndDate != ''">
-                and bar.billDate &lt;= #{query.billEndDate}
+                and DATE_FORMAT(bar.billDate,'%Y-%m-%d') &lt;= DATE_FORMAT(#{query.billEndDate},'%Y-%m-%d')
             </if>
             <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
                 and bar.regDentistId in
@@ -126,8 +126,7 @@
                 </foreach>
             </if>
         </where>
-        ORDER BY
-        bar.adjustDate DESC
+        ORDER BY bar.crt_time DESC
     </select>
 
     <!-- 根据条件查询账单撤销 -->

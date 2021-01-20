@@ -85,18 +85,6 @@ public class VisitingRemindController {
     }
 
     /**
-     * 根据条件查询随访提醒
-     * @param query 查询条件
-     * @return  ResponseResult
-     */
-    @ApiOperation("根据条件查询随访提醒")
-    @PostMapping("/get")
-    @CurrentUser
-    public ResponseResult getVisitingRemindByCondition(@RequestBody @Validated VisitingRemindQuery query) {
-        return visitingRemindBiz.getVisitingRemindByCondition(query);
-    }
-
-    /**
      * 完成提醒
      * @param id 提醒id
      * @return ResponseResult
