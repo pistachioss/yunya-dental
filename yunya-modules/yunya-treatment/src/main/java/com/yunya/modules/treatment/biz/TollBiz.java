@@ -25,6 +25,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper;
@@ -44,6 +45,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
+import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
@@ -1613,5 +1615,21 @@ public class TollBiz {
    */
   public BigDecimal currentOrderEnablePrepayment(Integer orderRecordId) {
     return this.orderRecordBiz.currentOrderEnablePrepayment(orderRecordId);
+  }
+
+  /**
+   * 根据账单ID查询当前订单剩余可用预付款支付金额
+   *
+   * @param billRecordId 账单记录ID
+   * @return BigDecimal
+   */
+  public BigDecimal findRestPrepaidAmount(Integer billRecordId) {
+    BigDecimal amount = orderDetailPayRecordBiz.selectNoDiscountAmount(billRecordId);
+    AccountItem accountItem = new AccountItem();
+    accountItem.setName(ACCOUNT_ITEM_OF_PREPARE);
+    AccountItem item = systemServiceFeign.findAccountItem(accountItem);
+    BigDecimal receiptAmount =
+        billPayDetailRecordMapper.selectReceiptAmountOfPrepaid(billRecordId, item.getId());
+    return amount.subtract(receiptAmount);
   }
 }

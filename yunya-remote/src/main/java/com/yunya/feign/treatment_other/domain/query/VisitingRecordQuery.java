@@ -77,13 +77,6 @@ public class VisitingRecordQuery implements Serializable {
     /** 实际随访执行人ID */
     @ApiModelProperty(value = "实际随访执行人ID",hidden = true)
     private Integer executorId;
-
-    /** 患者id列表 */
-    @ApiModelProperty(value = "患者id列表(患者档案中查询需要传入)")
-    private Collection<Integer> patientIds;
-    /** 医生id列表 */
-    @ApiModelProperty(value = "医生id列表(用户岗位只有医生的时候必传，其他情况不传)")
-    private Collection<Integer> dentistIds;
     /** 模糊匹配患者病历号 */
     @ApiModelProperty(value = "模糊匹配患者病历号")
     private String likeMedicalNumber;

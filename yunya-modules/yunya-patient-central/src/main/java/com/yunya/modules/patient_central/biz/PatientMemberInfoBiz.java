@@ -365,47 +365,53 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    *
    * @param model 会员卡充值Model
    */
-  public void recharge(MemberRechargeModel model) {
-    // 查询会员余额 余额增加
-    PatientMemberInfo patientMemberInfo =
-        patientMemberInfoMapper.selectCardNumber(model.getMemberId());
-    if (patientMemberInfo != null) {
-      patientMemberInfo.setPrincipalAmount(
-          patientMemberInfo.getPrincipalAmount().add(model.getRechargePrincipal()));
-      BigDecimal rechargeBonus = model.getRechargeBonus();
-      if (null != rechargeBonus) {
-        patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(rechargeBonus));
+  public ResponseResult recharge(MemberRechargeModel model) {
+    if (model.getRechargePrincipal().compareTo(model.getAccountedWayModel().getCreditAmount()) == 0){
+      // 查询会员余额 余额增加
+      PatientMemberInfo patientMemberInfo =
+              patientMemberInfoMapper.selectCardNumber(model.getMemberId());
+      if (patientMemberInfo != null) {
+        patientMemberInfo.setPrincipalAmount(
+                patientMemberInfo.getPrincipalAmount().add(model.getRechargePrincipal()));
+        BigDecimal rechargeBonus = model.getRechargeBonus();
+        if (null != rechargeBonus) {
+          patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(rechargeBonus));
+        }
+        patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
+        // 添加会员卡充值记
+        MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
+        BeanUtils.copyProperties(model, memberRechargeRecord);
+        memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
+        memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
+        memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        memberRechargeRecord.setCrtName(BaseContextHandler.getName());
+        memberRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        memberRechargeRecord.setUpdName(BaseContextHandler.getName());
+        memberRechargeRecord.setRemarks(model.getAccountedWayModel().getRemarks());
+        memberRechargeRecord.setType(0);
+        memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
+        // 发送会员充值消息
+        sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 1);
+        // 添加会员卡充值收费记录
+        AccountedWayModel accountedWayModel = model.getAccountedWayModel();
+        if (StringHelper.isNotNull(accountedWayModel)) {
+          MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
+          BeanUtils.copyProperties(accountedWayModel, memberRechargeTollRecord);
+          memberRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+          memberRechargeTollRecord.setRechargeRecordId(memberRechargeRecord.getId());
+          memberRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+          memberRechargeTollRecord.setCrtName(BaseContextHandler.getName());
+          memberRechargeTollRecordMapper.insertSelective(memberRechargeTollRecord);
+        }
+        // 会员卡充值发送短信 type:0充值 1消费
+        memberSendMessages(memberRechargeRecord, 0);
       }
-      patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
-      // 添加会员卡充值记
-      MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
-      BeanUtils.copyProperties(model, memberRechargeRecord);
-      memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
-      memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
-      memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-      memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-      memberRechargeRecord.setCrtName(BaseContextHandler.getName());
-      memberRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-      memberRechargeRecord.setUpdName(BaseContextHandler.getName());
-      memberRechargeRecord.setRemarks(model.getAccountedWayModel().getRemarks());
-      memberRechargeRecord.setType(0);
-      memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
-      // 发送会员充值消息
-      sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 1);
-      // 添加会员卡充值收费记录
-      AccountedWayModel accountedWayModel = model.getAccountedWayModel();
-      if (StringHelper.isNotNull(accountedWayModel)) {
-        MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
-        BeanUtils.copyProperties(accountedWayModel, memberRechargeTollRecord);
-        memberRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        memberRechargeTollRecord.setRechargeRecordId(memberRechargeRecord.getId());
-        memberRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        memberRechargeTollRecord.setCrtName(BaseContextHandler.getName());
-        memberRechargeTollRecordMapper.insertSelective(memberRechargeTollRecord);
-      }
-      // 会员卡充值发送短信 type:0充值 1消费
-      memberSendMessages(memberRechargeRecord, 0);
+    }else {
+      return ResponseUtil.fail(
+              OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "充值金额与入账金额不相等!",null);
     }
+    return ResponseUtil.success();
   }
 
   /**
@@ -449,7 +455,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         templateParam.put(
             SmsTemplateItemEnum.MEMBER_RECHARGE_AMOUNT.getAction(),
-            memberRechargeRecord.getRechargePrincipal().add(rechargeBonus));
+            memberRechargeRecord.getRechargePrincipal().add(rechargeBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
         // 会员剩余金额
         BigDecimal currentRechargeBonus = memberRechargeRecord.getCurrentRechargeBonus();
         if (currentRechargeBonus == null) {
@@ -457,7 +463,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         templateParam.put(
             SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getAction(),
-            memberRechargeRecord.getCurrentRechargePrincipal().add(currentRechargeBonus));
+            memberRechargeRecord.getCurrentRechargePrincipal().add(currentRechargeBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
         // 消费
       } else {
         // 患者姓名
@@ -472,7 +478,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         templateParam.put(
             SmsTemplateItemEnum.MEMBER_SPENDING_AMOUNT.getAction(),
-            memberExpendRecord.getExpendPrincipal().add(expendGift));
+            memberExpendRecord.getExpendPrincipal().add(expendGift).setScale(2, BigDecimal.ROUND_HALF_UP));
         // 会员剩余金额
         BigDecimal currentBonus = memberExpendRecord.getCurrentBonus();
         if (currentBonus == null) {
@@ -480,7 +486,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         templateParam.put(
             SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getAction(),
-            memberExpendRecord.getCurrentPrincipal().add(currentBonus));
+            memberExpendRecord.getCurrentPrincipal().add(currentBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
       }
       Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
       SmsAutoEventSendRecordModel smsModel = new SmsAutoEventSendRecordModel();

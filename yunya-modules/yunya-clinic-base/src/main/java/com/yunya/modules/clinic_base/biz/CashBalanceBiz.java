@@ -14,6 +14,7 @@ import com.yunya.feign.discount.domain.form.CertificatesForm;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -240,7 +241,13 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
       throws IOException {
     ExcelUtil<CashBalanceVO> excelUtil = new ExcelUtil<>(CashBalanceVO.class);
     List<CashBalanceVO> resultList = mapper.selectCashBalanceList(query);
-    excelUtil.exportExcel(response, resultList, "现金结存列表");
+    String fileName = "现金结存记录表";
+    OrganizationInfo orgInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
+    if (null != orgInfo) {
+      fileName =
+          orgInfo.getAbbreviation() + query.getStartDate() + "-" + query.getEndDate() + fileName;
+    }
+    excelUtil.exportExcel(response, resultList, "现金结存列表", fileName);
   }
 
   /**

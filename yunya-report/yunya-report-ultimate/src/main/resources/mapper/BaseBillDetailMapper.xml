@@ -479,18 +479,19 @@
         bti.category_name as categoryName,
         bbd.discount_amount as discountAmount,
         bbd.price * bbd.quantity as totalOriginalAmount,
-        date_format(bb.order_date, '%Y-%m') as orderDate
+        date_format(bb.bill_date, '%Y-%m') as billDate
         from base_bill_detail bbd
         left join base_tariff_info bti on bbd.item_id = bti.item_id
         and bbd.item_type = bti.item_type
         left join base_bill bb on bbd.bill_id = bb.bill_id
         order by bti.item_type, bti.category_id) bdp
         <where>
+            and bdp.billDate is not null
             <if test="query.orgId != null">
                 and bdp.orgId = #{query.orgId}
             </if>
             <if test="query.queryDate != null and query.queryDate != ''">
-                and bdp.orderDate = #{query.queryDate}
+                and bdp.billDate = #{query.queryDate}
             </if>
         </where>
         group by bdp.itemType, bdp.categoryId

@@ -10,6 +10,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.TollBiz;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +70,26 @@ public class TollController {
   }
 
   /**
+   * 查询账单剩余可用预付款支付金额
+   *
+   * @param billRecordId 账单记录ID
+   * @return
+   */
+  @ApiOperation("根据账单ID查询该订单可用预付款支付金额")
+  @ApiImplicitParam(
+      name = "billRecordId",
+      value = "账单记录ID",
+      required = true,
+      dataType = "int",
+      paramType = "path")
+  @GetMapping(value = "/prepaid/amount/{billRecordId}", name = "根据账单ID查询该订单可用预付款支付金额")
+  public ResponseResult<BigDecimal> restPrepaidAmount(
+      @PathVariable(value = "billRecordId") Integer billRecordId) {
+    BigDecimal amount = tollBiz.findRestPrepaidAmount(billRecordId);
+    return ResponseUtil.success(amount);
+  }
+
+  /**
    * 收欠费
    *
    * @param model 收费参数
@@ -114,18 +135,17 @@ public class TollController {
 
   /**
    * 查询当前订单可用预付款支付金额
+   *
    * @param orderRecordId 订单记录ID
    * @return
    */
   @ApiOperation("查询当前订单可用预付款支付金额")
   @GetMapping(value = "/enable/prepayment/{orderRecordId}")
-  public ResponseResult<Map<String,Object>> currentOrderEnablePrepayment(@PathVariable("orderRecordId")
-                                                        @Validated
-                                                        @NotNull(message = "订单记录ID不能为空")
-                                                        Integer orderRecordId) {
+  public ResponseResult<Map<String, Object>> currentOrderEnablePrepayment(
+      @PathVariable("orderRecordId") @Validated @NotNull(message = "订单记录ID不能为空")
+          Integer orderRecordId) {
     Map<String, Object> result = new HashMap<>();
-    result.put("enablePrepaymentAmount",this.tollBiz.currentOrderEnablePrepayment(orderRecordId));
+    result.put("enablePrepaymentAmount", this.tollBiz.currentOrderEnablePrepayment(orderRecordId));
     return ResponseUtil.success(result);
   }
-
 }

@@ -45,6 +45,8 @@
                 and bpdr.bill_pay_record_id = #{billPayRecordId}
             </if>
         </where>
+        order by bpdr.id desc
+        limit 0,1
     </select>
 
     <!-- 账单异常处理数据详情记录ID查询异常处理记录 -->
@@ -113,5 +115,15 @@
             </where>
             )
         </where>
+    </select>
+
+    <!-- 查询某种支付方式收费金额 -->
+    <select id="selectReceiptAmountOfPrepaid" resultType="java.math.BigDecimal">
+        SELECT
+            IFNULL(SUM(amount), 0)
+        FROM bill_pay_detail_record bpdr
+        WHERE
+            bill_record_id = #{billRecordId}
+            and account_item_id = #{accountItemId}
     </select>
 </mapper>

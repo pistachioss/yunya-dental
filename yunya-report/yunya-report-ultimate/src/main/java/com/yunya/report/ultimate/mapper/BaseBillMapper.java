@@ -133,4 +133,12 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    */
   List<CurrentMonthBillCollectionDebtVO> selectCurrentMonthBillCollectionDebtList(
       @Param("query") CurrentMonthBillInfoQuery query);
+
+  /**
+   * 查询患者消费信息
+   *
+   * @param patientId 患者ID
+   * @return PatientCostInfoVO
+   */
+  PatientCostInfoVO selectPatientCostInfo(@Param("patientId") Integer patientId);
 }

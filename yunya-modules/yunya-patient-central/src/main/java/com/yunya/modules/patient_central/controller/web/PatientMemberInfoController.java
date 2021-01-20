@@ -156,8 +156,7 @@ public class PatientMemberInfoController {
   @ApiOperation("充值")
   @PostMapping("/recharge")
   public ResponseResult recharge(@RequestBody MemberRechargeModel memberRechargeModel) {
-    patientMemberInfoBiz.recharge(memberRechargeModel);
-    return ResponseUtil.success();
+    return patientMemberInfoBiz.recharge(memberRechargeModel);
   }
 
   /**
