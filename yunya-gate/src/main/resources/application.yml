@@ -189,7 +189,7 @@ spring:
       transport:
         dashboard: localhost:8080
   profiles:
-    active: dev
+    active: migration
 logging:
   level:
     com.yunya.gate: info

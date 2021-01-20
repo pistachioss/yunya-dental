@@ -59,6 +59,8 @@ spring:
     sentinel:
       transport:
         dashboard: localhost:8080
+  profiles:
+    active: migration
 sample:
   zipkin:
     discovery-client-enabled: false
@@ -112,7 +114,6 @@ swagger:
   description: YUNYA系统管理后端服务
   contact:
     name: yunya-system
-
 #redis-cache 相关
 
 # 暴露所以端点
