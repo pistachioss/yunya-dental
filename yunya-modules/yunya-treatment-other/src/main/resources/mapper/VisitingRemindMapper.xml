@@ -74,6 +74,12 @@
       <if test="query.status != null">
         and vrd.status = #{query.status}
       </if>
+      <if test="query.crtId != null">
+        and vrd.crt_id = #{query.crtId}
+      </if>
+      <if test="query.dentistId != null">
+        and vrd.dentist_id = #{query.dentistId}
+      </if>
     </where>
   </select>
 

@@ -167,6 +167,16 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
             }
             res.setEnableAppointList(StringHelper.isNotEmpty(appointResList)? appointResList : new ArrayList<>());
             res.setEnableRegistryList(StringHelper.isNotEmpty(registerResList) ? registerResList : new ArrayList<>());
+        } else {
+            List<EnableChooseEmployeeRes> enableChooseEmployeeRes = new ArrayList<>();
+            sysUserEmployeeInfoList.forEach(item -> {
+                EnableChooseEmployeeRes entity = new EnableChooseEmployeeRes();
+                entity.setEmployeeName(item.getName());
+                entity.setEmployeeId(item.getUserId());
+                enableChooseEmployeeRes.add(entity);
+            });
+            res.setEnableAppointList(enableChooseEmployeeRes);
+            res.setEnableRegistryList(enableChooseEmployeeRes);
         }
         return res;
     }
