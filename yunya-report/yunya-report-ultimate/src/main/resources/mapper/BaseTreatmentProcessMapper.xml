@@ -359,15 +359,13 @@
         FROM
             (
             SELECT
-                MIN( btp.treatment_id ) AS treatmentId,
-                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS treatDate,
-                btp.registered_dentist_id,
-                btp.org_id
+                btp.treatmentId,
+                DATE_FORMAT( btp1.treat_start_time, '%Y-%m-%d' ) AS treatDate,
+                btp1.registered_dentist_id,
+                btp1.org_id
             FROM
-                base_treatment_process btp
-            WHERE
-                btp.treat_end_time IS NOT NULL
-                AND btp.patient_id = #{patientId}
+                ( SELECT min ( btp.treatment_id ) AS treatmentId FROM base_treatment_process btp WHERE btp.treat_end_time IS NOT NULL AND btp.patient_id = #{patientId} ) btp
+                LEFT JOIN base_treatment_process btp1 ON btp.treatmentId = btp1.treatment_id
             ) btp
             LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
             LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
@@ -385,15 +383,13 @@
         FROM
             (
             SELECT
-                MAX( btp.treatment_id ) AS treatmentId,
-                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS treatDate,
-                btp.registered_dentist_id,
-                btp.org_id
+                btp.treatmentId,
+                DATE_FORMAT( btp1.treat_start_time, '%Y-%m-%d' ) AS treatDate,
+                btp1.registered_dentist_id,
+                btp1.org_id
             FROM
-                base_treatment_process btp
-            WHERE
-                btp.treat_end_time IS NOT NULL
-                AND btp.patient_id = #{patientId}
+                ( SELECT max( btp.treatment_id ) AS treatmentId FROM base_treatment_process btp WHERE btp.treat_end_time IS NOT NULL AND btp.patient_id = #{patientId} ) btp
+                LEFT JOIN base_treatment_process btp1 ON btp.treatmentId = btp1.treatment_id
             ) btp
             LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
             LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
