@@ -364,12 +364,12 @@
                 btp1.registered_dentist_id,
                 btp1.org_id
             FROM
-                ( SELECT min ( btp.treatment_id ) AS treatmentId FROM base_treatment_process btp WHERE btp.treat_end_time IS NOT NULL AND btp.patient_id = #{patientId} ) btp
+                ( SELECT min( btp.treatment_id ) AS treatmentId FROM base_treatment_process btp WHERE btp.treat_end_time IS NOT NULL AND btp.patient_id = #{patientId} ) btp
                 LEFT JOIN base_treatment_process btp1 ON btp.treatmentId = btp1.treatment_id
             ) btp
             LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
             LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
-  </select>
+    </select>
 
     <!-- 查询患者末次就诊信息 -->
     <select id="selectLastVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientTreatInfoVo">
@@ -393,7 +393,7 @@
             ) btp
             LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
             LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
-  </select>
+    </select>
 
     <!-- 根据条件查询初诊患者来源分布 -->
     <select id="selectPatientFirstTreatOriginList"
