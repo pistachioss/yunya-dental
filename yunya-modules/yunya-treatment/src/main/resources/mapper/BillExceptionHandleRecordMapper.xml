@@ -114,7 +114,7 @@
                 and DATE_FORMAT(bar.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{query.adjustEndDate},'%Y-%m-%d')
             </if>
             <if test="query.billStartDate != null and query.billStartDate != ''">
-                and DATE_FORMAT(bar.billDate,'%Y-%m-%d') &gt;= #{query.billStartDate},'%Y-%m-%d')
+                and DATE_FORMAT(bar.billDate,'%Y-%m-%d') &gt;= DATE_FORMAT(#{query.billStartDate},'%Y-%m-%d')
             </if>
             <if test="query.billEndDate != null and query.billEndDate != ''">
                 and DATE_FORMAT(bar.billDate,'%Y-%m-%d') &lt;= DATE_FORMAT(#{query.billEndDate},'%Y-%m-%d')

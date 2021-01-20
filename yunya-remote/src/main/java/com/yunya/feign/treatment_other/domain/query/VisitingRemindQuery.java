@@ -85,12 +85,4 @@ public class VisitingRemindQuery implements Serializable {
     /** 创建人ID */
     @ApiModelProperty(value = "创建人ID")
     private Integer crtId;
-
-    /** 患者id列表 */
-    @ApiModelProperty(value = "患者id列表(患者档案中查询需要传入)")
-    private Collection<Integer> patientIds;
-
-    /** 医生id列表 */
-    @ApiModelProperty(value = "医生id列表(用户岗位只有医生的时候必传，其他情况不传)", notes = "权限控制")
-    private Collection<Integer> dentistIds;
 }
