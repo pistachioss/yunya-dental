@@ -360,7 +360,7 @@
             (
             SELECT
                 MIN( btp.treatment_id ) AS treatmentId,
-                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS firstVisitDate,
+                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS treatDate,
                 btp.registered_dentist_id,
                 btp.org_id
             FROM
@@ -386,7 +386,7 @@
             (
             SELECT
                 MAX( btp.treatment_id ) AS treatmentId,
-                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS firstVisitDate,
+                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS treatDate,
                 btp.registered_dentist_id,
                 btp.org_id
             FROM
