@@ -124,7 +124,7 @@
         </where>
     </select>
 
-    <!-- 通过条件统计挂号人数 -->
+    <!-- 通过条件统计挂号次数 -->
     <select id="countRegisteredByExample" resultType="Integer">
         select count(r.id) as waitingForTreat
         from registered r

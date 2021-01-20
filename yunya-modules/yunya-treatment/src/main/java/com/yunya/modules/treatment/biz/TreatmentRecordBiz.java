@@ -1334,42 +1334,45 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    */
   public CountTreatmentRecordVO countTreatList(TreatmentCountQuery query) {
     Integer orgId = query.getOrgId();
-    Integer userId = query.getDentistId();
+    Integer dentistId = query.getDentistId();
     String queryDate = query.getQueryDate();
 
-    // 查询就诊中列表
-    RegisteredQueryForm regQuery = new RegisteredQueryForm();
-    regQuery.setWhetherPage(false);
-    regQuery.setOrgId(orgId);
-    regQuery.setCurrentDate(queryDate);
-    regQuery.setDentistId(userId);
-    regQuery.setInservice(true);
-    regQuery.setStatus((byte) 0);
-    Integer waitingForTreatCount = registeredMapper.countRegisteredByExample(regQuery);
-
-    TreatmentRecordQueryForm queryForm = new TreatmentRecordQueryForm();
-    queryForm.setWhetherPage(false);
-    queryForm.setOrgId(orgId);
-    queryForm.setDentistId(userId);
-    queryForm.setCurrentDate(queryDate);
-    queryForm.setInservice(true);
-    // 就诊中
-    queryForm.setTreatmentStatus(new Byte[] {0, 1});
-    Integer treatReceiving = mapper.countTreatRecordByExample(queryForm);
-    // 接诊完成
-    queryForm.setTreatmentStatus(new Byte[] {2});
-    Integer treatCompleted = mapper.countTreatRecordByExample(queryForm);
-    // 已结账
-    queryForm.setTreatmentStatus(new Byte[] {3});
-    queryForm.setDentistId(query.getDentistId());
-    Integer checkedOut = mapper.countTreatRecordByExample(queryForm);
     // 预约未到数量
     AppointmentCurrentListQuery form = new AppointmentCurrentListQuery();
     form.setWhetherPage(false);
     form.setOrgId(orgId);
-    form.setDentistId(userId);
+    form.setDentistId(dentistId);
     form.setCurrentDate(queryDate);
     Integer appointNotArrived = appointmentFeign.countAppointNotArrived(form);
+
+    // 查询候诊中列表
+    RegisteredQueryForm regQuery = new RegisteredQueryForm();
+    regQuery.setWhetherPage(false);
+    regQuery.setOrgId(orgId);
+    regQuery.setCurrentDate(queryDate);
+    regQuery.setDentistId(dentistId);
+    regQuery.setInservice(true);
+    regQuery.setStatus((byte) 0);
+    Integer waitingForTreatCount = registeredMapper.countRegisteredByExample(regQuery);
+
+    // 就诊中
+    TreatmentRecordQueryForm queryForm = new TreatmentRecordQueryForm();
+    queryForm.setWhetherPage(false);
+    queryForm.setOrgId(orgId);
+    queryForm.setDentistId(dentistId);
+    queryForm.setCurrentDate(queryDate);
+    queryForm.setInservice(true);
+    queryForm.setTreatmentStatus(new Byte[] {0, 1});
+    Integer treatReceiving = mapper.countTreatRecordByExample(queryForm);
+
+    // 接诊完成
+    queryForm.setTreatmentStatus(new Byte[] {2});
+    Integer treatCompleted = mapper.countTreatRecordByExample(queryForm);
+
+    // 已结账
+    queryForm.setTreatmentStatus(new Byte[] {3});
+    queryForm.setDentistId(dentistId);
+    Integer checkedOut = mapper.countTreatRecordByExample(queryForm);
 
     CountTreatmentRecordVO countTreatmentRecordVO = new CountTreatmentRecordVO();
     countTreatmentRecordVO.setAppointNotArrived(appointNotArrived);

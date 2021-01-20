@@ -8,7 +8,6 @@ import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
-import java.util.Set;
 
 public interface RegisteredMapper extends Mapper<Registered> {
 
@@ -22,17 +21,17 @@ public interface RegisteredMapper extends Mapper<Registered> {
   List<WaitingPatientInfoVO> selectRegisteredList(
       @Param("status") Byte status, @Param("queryForm") RegisteredQueryForm queryForm);
 
-
   /**
    * 根据id集合查询挂号列表信息
+   *
    * @param ids 挂号ID集合
-   * @return  实例列表
+   * @return 实例列表
    */
   List<Registered> selectRegisteredListByIds(@Param("ids") List<Integer> ids);
 
-
   /**
    * 根据挂号ID查询挂号信息
+   *
    * @param id 挂号信息
    * @return
    */
@@ -40,6 +39,7 @@ public interface RegisteredMapper extends Mapper<Registered> {
 
   /**
    * 根据挂号ID查询挂号信息
+   *
    * @param ids 挂号信息
    * @return
    */
@@ -47,7 +47,8 @@ public interface RegisteredMapper extends Mapper<Registered> {
 
   /**
    * 通过条件统计挂号人数
-   * @param queryForm
+   *
+   * @param queryForm 查询条件
    * @return
    */
   Integer countRegisteredByExample(@Param("queryForm") RegisteredQueryForm queryForm);
