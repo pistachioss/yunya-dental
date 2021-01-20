@@ -323,6 +323,7 @@ public class SystemServiceRest {
       @RequestBody SysUserEmployeeModel model) {
     SysUserInfoDetailQueryFrom from = new SysUserInfoDetailQueryFrom();
     BeanUtils.copyProperties(model, from);
+    from.setPostGroupIds(model.getPostGroupId());
     return sysUserBiz.findUserDetailInfoList(from).getList();
   }
 
