@@ -85,7 +85,7 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
       startDate = balance.getSettlementDate();
       if (settlementDate.compareTo(startDate) <= 0) {
         throw new ClientServiceException(
-            "结存日期不能早于最近结存日期" + new DateTime(startDate).toString("yyyy-MM-dd"),
+            "结存日期不能早于或等于最近结存日期：" + new DateTime(startDate).toString("yyyy-MM-dd"),
             PARAMETERS_IS_ILLEGAL);
       }
     }
