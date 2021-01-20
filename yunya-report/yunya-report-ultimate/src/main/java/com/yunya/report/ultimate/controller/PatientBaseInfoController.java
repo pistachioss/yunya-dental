@@ -25,23 +25,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("patient")
 public class PatientBaseInfoController {
 
-    /** 注入服务 */
-    @Autowired
-    PatientBaseInfoBiz patientBaseInfoBiz;
+  /** 注入服务 */
+  @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;
 
-
-    /**
-     * 查询患者资料信息
-     * @param id 患者id
-     * @return BasePatient
-     */
-    @ApiOperation("查询患者资料预约信息")
-    @GetMapping("/patientInfo/{id}")
-    public ResponseResult<PatientDataVo> patientInfo(@PathVariable("id") Integer id) {
-        PatientDataVo patientDataVo = patientBaseInfoBiz.patientDataVo(id);
-        return ResponseUtil.success(patientDataVo);
-    }
-
-
-
+  /**
+   * 查询患者资料信息
+   *
+   * @param patientId 患者id
+   * @return BasePatient
+   */
+  @ApiOperation("查询患者资料就诊信息")
+  @GetMapping("/patientInfo/{patientId}")
+  public ResponseResult<PatientDataVo> patientInfo(@PathVariable("patientId") Integer patientId) {
+    PatientDataVo patientDataVo = patientBaseInfoBiz.patientDataVo(patientId);
+    return ResponseUtil.success(patientDataVo);
+  }
 }

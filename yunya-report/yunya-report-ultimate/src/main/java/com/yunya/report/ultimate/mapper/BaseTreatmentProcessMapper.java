@@ -38,38 +38,6 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
       @Param("query") AssistantMatchingDetailQuery query);
 
   /**
-   * 根据患者id查询履约次数
-   *
-   * @param id 患者id
-   * @return int
-   */
-  Integer selectPatientPerformance(@Param("patientId") Integer id);
-
-  /**
-   * 根据患者id查询预约次数
-   *
-   * @param id 患者id
-   * @return Integer
-   */
-  Integer selectPatientReservation(@Param("patientId") Integer id);
-
-  /**
-   * 根据患者id查询失约次数
-   *
-   * @param id 患者id
-   * @return Integer
-   */
-  Integer selectMissedAppointment(@Param("patientId") Integer id);
-
-  /**
-   * 查询患者就诊次数
-   *
-   * @param id 患者id
-   * @return 返回患者就诊次数
-   */
-  Integer selectNumberOfVisits(@Param("patientId") Integer id);
-
-  /**
    * 根据门诊ID,医生ID,当前时间查询就诊信息
    *
    * @param orgId 门诊ID
@@ -95,18 +63,18 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
   /**
    * 查询患者初诊信息
    *
-   * @param id 患者id
+   * @param patientId 患者id
    * @return 患者初诊信息
    */
-  PatientDataFirstVisitVo selectFirstVisitInfo(@Param("patientId") Integer id);
+  PatientTreatInfoVo selectFirstVisitInfo(@Param("patientId") Integer patientId);
 
   /**
    * 查询患者末诊信息
    *
-   * @param id 患者id
+   * @param patientId 患者id
    * @return 患者末诊信息
    */
-  PatientDataVo selectLastVisitInfo(@Param("patientId") Integer id);
+  PatientTreatInfoVo selectLastVisitInfo(@Param("patientId") Integer patientId);
 
   /**
    * 根据条件查询初诊患者来源分布
@@ -124,4 +92,12 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    * @return Integer
    */
   Integer selectFirstTreatTotalCount(@Param("query") PatientFirstTreatOriginQuery query);
+
+  /**
+   * 查询患者预约相关信息
+   *
+   * @param patientId 患者ID
+   * @return PatientAppointmentInfoVO 预约相关信息
+   */
+  PatientAppointmentInfoVO selectPatientAppointmentInfo(@Param("patientId") Integer patientId);
 }

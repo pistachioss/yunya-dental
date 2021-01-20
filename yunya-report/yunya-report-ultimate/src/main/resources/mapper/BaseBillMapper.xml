@@ -822,4 +822,13 @@
             </if>
         </where>
     </select>
+
+    <!-- 根据患者ID查询患者消费信息 -->
+    <select id="selectPatientCostInfo" resultType="com.yunya.feign.report.domain.vo.PatientCostInfoVO">
+        select
+            sum(bb.actual_amount) as cumulativeConsumption,
+            sum(bb.debt_amount) as totalArrears
+        from base_bill bb
+        where bb.patient_id = #{patientId}
+    </select>
 </mapper>

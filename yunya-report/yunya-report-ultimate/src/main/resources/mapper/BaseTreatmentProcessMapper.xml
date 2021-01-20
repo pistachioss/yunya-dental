@@ -284,33 +284,6 @@
         </where>
     </select>
 
-    <!-- 根据患者id查询履约次数 -->
-    <select id="selectPatientPerformance" resultType="java.lang.Integer">
-        select count(*) from base_treatment_process  where patient_id = #{patientId} and  appointment_id is not null and registered_id is not null
-    </select>
-
-    <!-- 根据患者id查询预约次数 -->
-    <select id="selectPatientReservation" resultType="java.lang.Integer">
-        select count(*) from base_treatment_process  where patient_id = #{patientId} and  appointment_id is not null
-    </select>
-
-    <!-- 根据患者id查询预约次数 -->
-    <select id="selectMissedAppointment" resultType="java.lang.Integer">
-        select count(*) from base_treatment_process
-        where patient_id = #{patientId}
-        and appointment_id is not null
-        and registered_id is null
-        and CONCAT(date_format(appoint_start_time,'%Y-%m-%d'),' 23:59:59') &lt; NOW()
-        and appoint_status != 2
-    </select>
-
-    <!-- 根据患者id查询患者就诊次数 -->
-    <select id="selectNumberOfVisits" resultType="java.lang.Integer">
-        select count(*) from base_treatment_process
-        where patient_id = #{patientId}
-        and treat_start_time is not null
-    </select>
-
     <select id="treatmentList4App" resultType="com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO">
         select
         btp.appointment_id as appointmentId,btp.registered_id as registeredId,btp.treatment_id as treatmentId,btp.org_id
@@ -375,46 +348,56 @@
     </select>
 
     <!-- 查询患者初诊信息 -->
-    <select id="selectFirstVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientDataFirstVisitVo">
+    <select id="selectFirstVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientTreatInfoVo">
         SELECT
-            btp.patient_id patientId,
-            DATE_FORMAT(btp.treat_start_time, '%Y-%m-%d' ) firstVisitDate,
-            be.employee_name firstVisitDoctors,
-            bo.abbreviation firstVisitOutpatient,
-            (SELECT sum(received_amount) FROM base_bill where patient_id = #{patientId})  cumulativeConsumption
+            btp.treatmentId,
+            btp.treatDate,
+            btp.registered_dentist_id AS treatDentistId,
+            be.employee_name AS firstVisitDoctors,
+            btp.org_id AS orgId,
+            bo.abbreviation AS firstVisitOutpatient
         FROM
-            base_treatment_process btp
+            (
+            SELECT
+                MIN( btp.treatment_id ) AS treatmentId,
+                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS firstVisitDate,
+                btp.registered_dentist_id,
+                btp.org_id
+            FROM
+                base_treatment_process btp
+            WHERE
+                btp.treat_end_time IS NOT NULL
+                AND btp.patient_id = #{patientId}
+            ) btp
             LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
             LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
-        WHERE
-            btp.patient_id = #{patientId}
-            AND btp.treat_type = 0
-			group by btp.patient_id,btp.treat_start_time,be.employee_name,bo.abbreviation
   </select>
 
-    <!-- 查询患者末诊信息 -->
-    <select id="selectLastVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientDataVo">
+    <!-- 查询患者末次就诊信息 -->
+    <select id="selectLastVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientTreatInfoVo">
         SELECT
-            date_format(t1.lastVisitDate,'%Y-%m-%d') lastVisitDate,
-            t1.lastVisitDoctors,
-            t1.lastVisitOutpatient,
-            t1.totalArrears
-            from (
-                SELECT
-                    btp.patient_id patientId,
-                    btp.treat_start_time lastVisitDate,
-                    be.employee_name lastVisitDoctors,
-                    bo.abbreviation lastVisitOutpatient,
-                    ( SELECT sum( debt_amount ) FROM `base_bill` WHERE patient_id = #{patientId} ) totalArrears
-                FROM
-                    base_treatment_process btp
-                    LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-                    LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
-                WHERE
-                    btp.patient_id = #{patientId}
-                    AND btp.treat_end_time = ( SELECT max( treat_end_time ) FROM base_treatment_process WHERE patient_id = #{patientId} )
-                ) t1
-    </select>
+            btp.treatmentId,
+            btp.treatDate,
+            btp.registered_dentist_id AS treatDentistId,
+            be.employee_name AS firstVisitDoctors,
+            btp.org_id AS orgId,
+            bo.abbreviation AS firstVisitOutpatient
+        FROM
+            (
+            SELECT
+                MAX( btp.treatment_id ) AS treatmentId,
+                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS firstVisitDate,
+                btp.registered_dentist_id,
+                btp.org_id
+            FROM
+                base_treatment_process btp
+            WHERE
+                btp.treat_end_time IS NOT NULL
+                AND btp.patient_id = #{patientId}
+            ) btp
+            LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+            LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+  </select>
 
     <!-- 根据条件查询初诊患者来源分布 -->
     <select id="selectPatientFirstTreatOriginList"
@@ -454,9 +437,9 @@
     <!-- 根据条件查询初诊患者总数 -->
     <select id="selectFirstTreatTotalCount" resultType="java.lang.Integer">
         select
-            COUNT(distinct patient_id ) AS patientCount
+        COUNT(distinct patient_id ) AS patientCount
         from
-            base_treatment_process btp
+        base_treatment_process btp
         <where>
             AND btp.treat_type = 0
             AND btp.treat_end_time IS NOT NULL
@@ -470,5 +453,40 @@
                 AND DATE_FORMAT( btp.treat_end_time, '%Y-%m' ) &lt;= #{query.endDate}
             </if>
         </where>
+    </select>
+
+    <!-- 预约相关信息 -->
+    <select id="selectPatientAppointmentInfo"
+            resultType="com.yunya.feign.report.domain.vo.PatientAppointmentInfoVO">
+        SELECT
+        btp.totalReservation,
+        btp1.totalPerformance,
+        btp2.totalMissedAppointment ,
+        btp3.numberOfVisits
+        FROM
+        ( SELECT COUNT( btp.appointment_id ) AS totalReservation FROM base_treatment_process btp WHERE btp.patient_id =
+        #{patientId} AND btp.appoint_status != 2 ) btp,(
+        SELECT
+        COUNT( btp.appointment_id ) AS totalPerformance
+        FROM
+        base_treatment_process btp
+        WHERE
+        btp.patient_id = #{patientId}
+        AND btp.appoint_status != 2
+        AND btp.registered_id IS NOT NULL
+        ) btp1,
+        (
+        SELECT
+        COUNT( btp.appointment_id ) AS totalMissedAppointment
+        FROM
+        base_treatment_process btp
+        WHERE
+        btp.patient_id = #{patientId}
+        AND btp.appoint_status != 2
+        AND btp.registered_id IS NULL
+        AND date_format( btp.appoint_start_time, '%Y-%m-%d' ) &lt; date_format( now(), '%Y-%m-%d' )
+        ) btp2,
+        ( SELECT COUNT( btp.treatment_id ) AS numberOfVisits FROM base_treatment_process btp WHERE btp.patient_id = #{patientId}
+        AND btp.treat_end_time IS NOT NULL ) btp3
     </select>
 </mapper>
