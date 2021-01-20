@@ -353,9 +353,9 @@
             btp.treatmentId,
             btp.treatDate,
             btp.registered_dentist_id AS treatDentistId,
-            be.employee_name AS firstVisitDoctors,
+            be.employee_name AS treatDentistName,
             btp.org_id AS orgId,
-            bo.abbreviation AS firstVisitOutpatient
+            bo.abbreviation AS treatOutpatient
         FROM
             (
             SELECT
@@ -379,9 +379,9 @@
             btp.treatmentId,
             btp.treatDate,
             btp.registered_dentist_id AS treatDentistId,
-            be.employee_name AS firstVisitDoctors,
+            be.employee_name AS treatDentistName,
             btp.org_id AS orgId,
-            bo.abbreviation AS firstVisitOutpatient
+            bo.abbreviation AS treatOutpatient
         FROM
             (
             SELECT
