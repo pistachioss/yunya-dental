@@ -23,7 +23,7 @@
     </resultMap>
 
     <resultMap id="BillDiscountDetail" type="com.yunya.feign.report.domain.vo.BillDiscountVO">
-        <result property="operateUserName" column="operateUserName" jdbcType="VARCHAR"/>
+<!--        <result property="operateUserName" column="operateUserName" jdbcType="VARCHAR"/>-->
         <result property="billId" column="billId" jdbcType="INTEGER"/>
         <collection property="billDiscountDetail" ofType="com.yunya.feign.report.domain.vo.BillDiscountDetailInifoVO">
             <result property="itemId" column="itemId" jdbcType="INTEGER"/>
