@@ -188,6 +188,11 @@
         FROM
         patient_base_info
         WHERE org_id = #{orgId}
+        <trim>
+            <if test="onlineDateTime != null and onlineDateTime != ''">
+                and date_format(crt_time,'%Y-%m-%d %H:%i:%s') > date_format(#{onlineDateTime},'%Y-%m-%d %H:%i:%s')
+            </if>
+        </trim>
     </select>
 
     <!-- 根据患者id查询患者信息 -->

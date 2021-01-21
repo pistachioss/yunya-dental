@@ -726,6 +726,7 @@
                 LEFT JOIN base_patient_member bpm on bpm.member_level_id=bb.card_id
                 LEFT JOIN base_organization bo on bo.org_id = a.org_id
                 LEFT JOIN base_employee be2 on be2.user_id = bb.operate_user_id
+        where bb.order_id = #{billId}
         group by
             a.item_id,
             a.bill_id,

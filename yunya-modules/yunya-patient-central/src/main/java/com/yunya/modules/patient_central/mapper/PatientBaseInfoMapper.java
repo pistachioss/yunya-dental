@@ -125,7 +125,7 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @param orgId 门诊id
    * @return String
    */
-  String findMedicalNumberByOrgId(@Param("orgId") Integer orgId);
+  String findMedicalNumberByOrgId(@Param("orgId") Integer orgId, @Param("onlineDateTime") String onlineDateTime);
 
   /**
    * 根据患者id查询患者信息

@@ -12,16 +12,13 @@ import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm
 import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.patient_central.PatientPrepaymentsInfo;
 import com.yunya.modules.patient_central.biz.PatientPrepaymentRelationBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -178,7 +175,6 @@ public class PatientPrepaymentRelationController {
    * @param queryForm 预付款消费QueryForm
    * @return ResponseResult
    */
-  @CurrentUser
   @ApiOperation("消费记录")
   @PostMapping("/expendList")
   public ResponseResult expendList(@RequestBody PrepaidExpendRecordQueryForm queryForm) {
