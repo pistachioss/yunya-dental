@@ -141,4 +141,12 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @return PatientCostInfoVO
    */
   PatientCostInfoVO selectPatientCostInfo(@Param("patientId") Integer patientId);
+
+  /**
+   * 根据billId查询所有优惠的项目
+   *
+   * @param billId
+   * @return
+   */
+  List selectBaseBenefitInfoByBillId(@Param("billId") Integer billId);
 }

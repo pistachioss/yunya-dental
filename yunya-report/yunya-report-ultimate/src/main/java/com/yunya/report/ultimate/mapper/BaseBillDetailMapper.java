@@ -152,4 +152,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<CurrentMonthBillPayRecordVO> selectCurrentMonthBillPayRecord(
       @Param("query") CurrentMonthBillInfoQuery query);
+
+  /**
+   * 查询账单详情
+   *
+   * @param billId 账单ID
+   * @return
+   */
+  List<BaseBillDetailVO> selectBillDetailByBillId(@Param("billId") Integer billId);
 }

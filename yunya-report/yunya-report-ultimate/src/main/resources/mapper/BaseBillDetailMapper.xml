@@ -1558,4 +1558,18 @@
             </if>
         </where>
     </select>
+
+    <select id="selectBillDetailByBillId" resultType="com.yunya.feign.report.domain.vo.BaseBillDetailVO">
+        SELECT
+            bbd.bill_detail_id as billDetailId,
+            bbd.item_type as itemType,
+            bbd.price,
+            be.employee_name as operateUserName,
+            bti.unit,
+            bti.item_name as itemName
+        FROM base_bill_detail bbd
+        LEFT JOIN base_tariff_info bti ON (bti.item_id=bbd.item_id AND bti.item_type=bbd.item_type)
+        LEFT JOIN base_employee be ON be.user_id = bbd.executor_id
+        WHERE bbd.bill_id = #{billId}
+    </select>
 </mapper>

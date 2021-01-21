@@ -2,6 +2,7 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -11,6 +12,7 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBill;
+import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
 import com.yunya.report.ultimate.mapper.BaseBillPayMapper;
 import com.yunya.report.ultimate.mapper.CurrentMonthBillStatisticsMapper;
@@ -21,7 +23,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 简介: 账单报表业务层
@@ -40,6 +45,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Autowired private BaseBillPayMapper billPayMapper;
   /** 系统服务调用 */
   @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
+  /** 账单详情 **/
+  @Autowired private BaseBillDetailMapper baseBillDetailMapper;
 
   /**
    * 根据条件查询开单列表
@@ -262,9 +269,62 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * @return 返回结果信息
    */
   public BillDiscountVO billDiscountDetailInfo(Integer billId) {
-    BillDiscountVO billDiscountVOs = mapper.selectBillDiscountDetailInfo(billId);
+    BillDiscountVO billDiscountVOs = new BillDiscountVO();
+    List<BillDiscountDetailInifoVO> billDiscountDetails = Lists.newArrayList();
+    // 查询账单详情列表
+    List<BaseBillDetailVO> baseBillDetails = baseBillDetailMapper.selectBillDetailByBillId(billId);
+    Map<Integer, BaseBillDetailVO> details = baseBillDetails.stream().collect(Collectors.toMap(BaseBillDetailVO::getBillDetailId,(vo)->vo));
+    // 查询该账单下所有的使用了产品优惠
+    List<BaseBenefitInfoVO> benefits = mapper.selectBaseBenefitInfoByBillId(billId);
+    Map<String, BaseBenefitInfoVO> benefitMap = new HashMap<>(16);
+    Map<String, BigDecimal[]> countMap = new HashMap<>(16);
+    benefits.forEach(benefit->{
+      Integer orderDetailId = benefit.getOrderDetailId();
+      Integer cardId = benefit.getCardId();
+      String key = orderDetailId + "," + cardId;
+      BigDecimal[] counts = countMap.get(key);
+      if (counts == null) {
+        counts = new BigDecimal[]{BigDecimal.valueOf(0), BigDecimal.valueOf(0)};
+      }
+      counts[0] = counts[0].add(new BigDecimal(1));
+      counts[1] = counts[1].add(benefit.getBenefitAmount());
+      countMap.put(key, counts);
+      if (!benefitMap.containsKey(key)) {
+        benefitMap.put(key, benefit);
+      }
+    });
+    if (StringHelper.isNotEmpty(countMap)) {
+      countMap.forEach((key, counts)->{
+        BillDiscountDetailInifoVO vo = new BillDiscountDetailInifoVO();
+        BaseBenefitInfoVO benefitInfoVO = benefitMap.get(key);
+        if (benefitInfoVO != null) {
+          vo.setCouponName(benefitInfoVO.getCouponName());
+          vo.setSaleChannelName(benefitInfoVO.getSaleChannelName());
+          vo.setCardNumber(benefitInfoVO.getCardNumber());
+        }
+        vo.setQuantity(counts[0].intValue());
+        vo.setBenefitAmount(counts[1]);
+        Integer orderDetailId = Integer.parseInt(key.split(",")[0]);
+        BaseBillDetailVO detailVO = details.get(orderDetailId);
+        if (detailVO != null) {
+          vo.setItemName(detailVO.getItemName());
+          vo.setUnit(detailVO.getUnit());
+          vo.setEmployeeName(detailVO.getOperateUserName());
+          vo.setPrice(detailVO.getPrice());
+          vo.setOriginPrice(counts[0].multiply(detailVO.getPrice()));
+        }
+        billDiscountDetails.add(vo);
+      });
+    }
+    billDiscountVOs.setBillDiscountDetail(billDiscountDetails);
     return billDiscountVOs;
   }
+
+
+//  public BillDiscountVO billDiscountDetailInfo(Integer billId) {
+//    BillDiscountVO billDiscountVOs = mapper.selectBillDiscountDetailInfo(billId);
+//    return billDiscountVOs;
+//  }
 
   /**
    * 根据条件查询本月对账单账单统计信息

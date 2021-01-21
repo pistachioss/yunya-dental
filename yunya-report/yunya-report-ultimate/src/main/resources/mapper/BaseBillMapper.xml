@@ -832,4 +832,19 @@
         from base_bill bb
         where bb.patient_id = #{patientId}
     </select>
+
+    <select id="selectBaseBenefitInfoByBillId" resultType="com.yunya.feign.report.domain.vo.BaseBenefitInfoVO">
+        SELECT
+            bb.order_detail_id as orderDetailId,
+            bb.card_id as cardId,
+            bc.sale_channel_name as saleChannelName,
+            bb.benefit_amount as benefitAmount,
+            IF(bb.coupon_type=99,bpm.member_level_name,bcpon.coupon_name) AS couponName,
+            IF(bb.coupon_type=99,'',bc.card_number) AS cardNumber
+        FROM base_benefit bb
+        LEFT JOIN base_card bc ON bc.card_id = bb.card_id
+        LEFT JOIN base_coupon bcpon ON bcpon.coupon_id = bc.coupon_id
+        LEFT JOIN base_patient_member bpm ON bpm.member_level_id = bb.card_id
+        WHERE bb.order_id = #{billId}
+    </select>
 </mapper>
