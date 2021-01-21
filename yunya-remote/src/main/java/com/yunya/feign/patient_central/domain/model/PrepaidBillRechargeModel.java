@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -39,6 +40,12 @@ public class PrepaidBillRechargeModel implements Serializable {
      */
     @ApiModelProperty(value = "充值赠金",required = false)
     private BigDecimal rechargeBonus;
+
+    /**
+     * 订单id
+     */
+    @ApiModelProperty(value = "订单id",required = false)
+    private Integer orderRecordId;
 
     /**
      * 备注

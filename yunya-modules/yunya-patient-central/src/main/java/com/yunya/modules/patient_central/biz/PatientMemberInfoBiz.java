@@ -820,6 +820,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberRechargeRecord.setCrtName(BaseContextHandler.getName());
       memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
       memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
+      memberRechargeRecord.setOrderRecordId(model.getOrderRecordId());
       memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
       // 发送消息 账单退费
       sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 5);
@@ -866,6 +867,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         memberRechargeRecord.setCrtName(BaseContextHandler.getName());
         memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
         memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
+        memberRechargeRecord.setOrderRecordId(memberExpend.getOrderRecordId());
+        memberRechargeRecord.setBillRecordId(memberExpend.getBillRecordId());
+        memberRechargeRecord.setBillPayRecordId(memberExpend.getBillPayRecordId());
         memberRechargeRecord.setRemarks(null);
         memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
         // 发送消息 删除消费消息

@@ -23,6 +23,9 @@
         <result column="current_recharge_principal" property="currentRechargePrincipal" jdbcType="DECIMAL"/>
         <result column="current_recharge_bonus" property="currentRechargeBonus" jdbcType="DECIMAL"/>
         <result column="type" property="type" jdbcType="INTEGER"/>
+        <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER"/>
+        <result column="bill_record_id" property="billRecordId" jdbcType="INTEGER"/>
+        <result column="bill_pay_record_id" property="billPayRecordId" jdbcType="INTEGER"/>
     </resultMap>
 
     <!-- 预付款充值记录查询 -->
