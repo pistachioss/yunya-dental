@@ -81,9 +81,12 @@
 
     <!-- 查询当前订单可用预付款支付金额 -->
     <select id="currentOrderEnablePrepayment" resultType="decimal">
-        select cast((ifnull(o1.total_amount,0) - ifnull(bpdr.amount,0)) as decimal(19,2)) as enablePrepaymentAmount
+        select cast((ifnull(o1.total_amount, 0) -
+                     ifnull((select sum(amount)
+                             from bill_pay_detail_record bpdr
+                             where bpdr.order_record_id = #{orderRecordId} and bpdr.type = 0),
+                            0)) as decimal(19, 2)) as enablePrepaymentAmount
         from order_record o1
-                 left join bill_pay_detail_record bpdr on bpdr.order_record_id = o1.id and bpdr.type = 0
         where o1.id = #{orderRecordId}
     </select>
 </mapper>

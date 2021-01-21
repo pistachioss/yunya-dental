@@ -6,7 +6,7 @@ spring:
   application:
     name: yunya-system
   profiles:
-    active: migration
+    active: dev
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
@@ -122,4 +122,5 @@ management:
         include: '*'
   security:
     enabled: false
+
 

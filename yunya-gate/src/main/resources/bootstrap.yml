@@ -9,4 +9,4 @@ spring:
   main:
     allow-bean-definition-overriding: true
   profiles:
-    active: migration
+    active: dev

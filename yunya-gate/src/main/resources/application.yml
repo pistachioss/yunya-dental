@@ -215,7 +215,6 @@ auth:
   client:
     id: yunya-gate  #不填则默认读取spring.application.name
     secret: 123456
-
 # 负载均衡
 ribbon:
   eureka:
@@ -225,7 +224,6 @@ ribbon:
   MaxAutoRetries: 0
   MaxAutoRetriesNextServer: 1
   OkToRetryOnAllOperations: false
-
 hystrix:
   threadpool:
     default:

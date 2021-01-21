@@ -58,7 +58,7 @@ spring:
       transport:
         dashboard: localhost:8080
   profiles:
-    active: migration
+    active: dev
 sample:
   zipkin:
     discovery-client-enabled: false

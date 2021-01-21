@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: migration
+    active: dev
   application:
     name: yunya-auth
   jackson:
