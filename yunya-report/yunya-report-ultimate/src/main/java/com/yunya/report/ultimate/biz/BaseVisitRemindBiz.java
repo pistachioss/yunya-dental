@@ -29,6 +29,8 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
   public VisitAndRemindCompletedInfoVO findVisitAndRemindCompletedInfo(
       VisitAndRemindCompletedInfoQuery query) {
     VisitAndRemindCompletedInfoVO resultData = mapper.selectVisitAndRemindCompletedInfo(query);
+    resultData.setCompletedPercentage(new BigDecimal("0.00"));
+
     Integer waitingForCompletedCount = resultData.getWaitingForCompletedCount();
     Integer completedCount = resultData.getCompletedCount();
     if (0 != waitingForCompletedCount) {

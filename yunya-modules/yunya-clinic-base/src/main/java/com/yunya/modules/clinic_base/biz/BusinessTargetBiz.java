@@ -212,8 +212,7 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
     Integer orgId = query.getOrgId();
     List<String> dateRange = DateUtil.sliceUpDateRange(startDate, endDate);
     BusinessGoalCompletedInfoVO resultData = new BusinessGoalCompletedInfoVO();
-    resultData.setBusinessGoalCount(new BigDecimal("0"));
-    resultData.setBusinessCompletedPercentage(new BigDecimal("0"));
+    resultData.setBusinessCompletedPercentage(new BigDecimal("0.00"));
 
     // 查询该时间段内业务目标设置数量
     BigDecimal businessGoalCount = mapper.selectBusinessGoalCount(orgId, businessType, dateRange);
