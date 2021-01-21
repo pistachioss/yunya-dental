@@ -8,3 +8,5 @@ spring:
         file-extension: yaml
   main:
     allow-bean-definition-overriding: true
+  profiles:
+    active: migration

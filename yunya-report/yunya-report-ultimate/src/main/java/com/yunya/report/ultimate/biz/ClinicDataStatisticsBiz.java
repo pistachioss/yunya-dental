@@ -130,8 +130,8 @@ public class ClinicDataStatisticsBiz {
         clinicBaseServiceFeign.businessGoalCompletedInfo(businessGoalQuery);
     OperationDataComplexInfoVO workload = new OperationDataComplexInfoVO();
     workload.setComplexInfoName("工作量目标完成率");
-    workload.setGoalCount(workloadCompleted.getBusinessGoalCount().toString());
-    workload.setCompletedCount(workloadCompleted.getBusinessCompletedCount().toString());
+    workload.setGoalCount(String.format("%s", workloadCompleted.getBusinessGoalCount()));
+    workload.setCompletedCount(String.format("%s", workloadCompleted.getBusinessCompletedCount()));
     workload.setCompletedPercentage(workloadCompleted.getBusinessCompletedPercentage());
     resultList.add(0, workload);
 
@@ -153,7 +153,7 @@ public class ClinicDataStatisticsBiz {
         treatmentProcessBiz.findPatientFirstTreatOriginInfo(patientTreatOriginQuery);
     OperationDataComplexInfoVO firstPatient = new OperationDataComplexInfoVO();
     firstPatient.setComplexInfoName("老患者介绍率");
-    firstPatient.setGoalCount(treatOriginInfo.getFirstTreatTotalCount().toString());
+    firstPatient.setGoalCount(String.format("%d", treatOriginInfo.getFirstTreatTotalCount()));
     List<PatientFirstTreatOriginVO> treatOrigins = treatOriginInfo.getPatientFirstTreatOrigins();
     if (StringHelper.isNotEmpty(treatOrigins)) {
       for (PatientFirstTreatOriginVO treatOrigin : treatOrigins) {

@@ -5,6 +5,8 @@ logging:
 spring:
   application:
     name: yunya-system
+  profiles:
+    active: migration
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
@@ -110,7 +112,6 @@ swagger:
   description: YUNYA系统管理后端服务
   contact:
     name: yunya-system
-
 #redis-cache 相关
 
 # 暴露所以端点

@@ -71,6 +71,8 @@ spring:
     sentinel:
       transport:
         dashboard: localhost:8080
+  profiles:
+    active: migration
 sample:
   zipkin:
     discovery-client-enabled: false
@@ -80,7 +82,6 @@ mybatis:
   basepackage: com.yunya.modules.patient_central.mapper
   xmlLocation: classpath:mapper/**/*.xml
   mapper-locations: "classpath*:mapper/*.xml"
-
 
 
 # 必须配置

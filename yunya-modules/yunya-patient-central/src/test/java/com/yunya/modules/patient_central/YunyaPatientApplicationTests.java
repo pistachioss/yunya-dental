@@ -1,4 +1,4 @@
-package com.yunya.modules.patient;
+package com.yunya.modules.patient_central;
 
 import com.alibaba.fastjson.JSONObject;
 import com.uniubi.sdk.api.DeviceControllerApi;
@@ -11,7 +11,7 @@ import com.uniubi.sdk.model.ResultDeviceOutput;
 import com.uniubi.sdk.model.ResultPageResultBeanAuthOutput;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.framework.common.utils.MD5Util;
-import com.yunya.modules.patient.tokenApi.TokenTask;
+import com.yunya.modules.patient_central.tokenApi.TokenTask;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import com.yunya.modules.patient_central.constant.WoPlatformConstants;
 import org.apache.commons.httpclient.NameValuePair;
