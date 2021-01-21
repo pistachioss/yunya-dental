@@ -291,7 +291,7 @@
         bpt.patient_id patientId,
         bpt.NAME,
         bpt.mobile,
-        ( SELECT NAME FROM base_patient WHERE patient_id = bpm.patient_id ) masterCardName,
+        ( SELECT bp.NAME FROM base_patient bp join base_patient_member bpm on bp.patient_id = bpm.patient_id where bpm.card_id = bpmol.card_id ) masterCardName,
         bpm.card_number cardNumber,
         IFNULL(bpmol.principal_amount,0) principalAmount,
         IFNULL(bpmol.bonus_amount,0) bonusAmount,
