@@ -110,7 +110,7 @@ public class MemberRechargeRecord {
     /**
      * 订单id
      */
-    @Column(name = "bill_record_id")
+    @Column(name = "order_record_id")
     private Integer orderRecordId;
 
     /**
