@@ -34,6 +34,8 @@ spring:
         server-addr: 192.168.31.215:8848
   zipkin:
     discovery-client-enabled: false
+  profiles:
+    active: dev
 
 mybatis:
   mapperLocations: classpath:mapper/*Mapper.xml
@@ -87,4 +89,3 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 110000
-
