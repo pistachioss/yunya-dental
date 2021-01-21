@@ -503,7 +503,7 @@ public class PatientPrepaymentRelationBiz
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<PrepaidExpendRecordVo> resultList = prepaidExpendRecordMapper.expendList(queryForm);
-    if (!StringHelper.isEmpty(resultList)) {
+    if (StringHelper.isNotEmpty(resultList)) {
       for (PrepaidExpendRecordVo prepaidExpendRecordVo : resultList) {
         // 获取门诊简称
         OrganizationInfo organizationInfo =
