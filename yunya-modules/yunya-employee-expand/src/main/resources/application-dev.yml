@@ -1,10 +1,10 @@
 spring:
     datasource:
-        host: community.yunya365.com
+        host: 192.168.31.90.yunya365.com
         port: 3306
         username: sa
         password: Admin001!
-        name: ivy2_yunya_employee_expand
+        name: yunya_employee_expand
 
     cloud:
         nacos:
