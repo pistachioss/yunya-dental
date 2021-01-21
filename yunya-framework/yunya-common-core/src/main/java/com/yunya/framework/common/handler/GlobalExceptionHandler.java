@@ -81,7 +81,7 @@ public class GlobalExceptionHandler {
     // 生产环境需要放开注释
 //    return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, "服务器走丢了！请联系管理员", null);
     // 生产环境需要删除
-    return ResponseUtil.error("服务器内部异常-调试用",ex);
+    return ResponseUtil.error("服务器内部异常-Debug用",ex.getMessage());
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
