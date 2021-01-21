@@ -75,11 +75,11 @@ public class SpecialistProjectTargetControllerTest {
   public void find1() {
     SpecialistProjectWorkGoalQuery query = new SpecialistProjectWorkGoalQuery();
     query.setDateType((byte) 0);
-    query.setStartDate("2020-10");
-    query.setEndDate("2020-12");
+    query.setStartDate("2021-01");
+    query.setEndDate("2021-12");
     query.setBelongType((byte) 0);
-    query.setBelongIds(new Integer[] {35, 42});
-    query.setSpecialistProjectIds(new Integer[] {2, 4});
+    query.setBelongIds(new Integer[] {32});
+    query.setSpecialistProjectIds(new Integer[] {17});
     query.setWhetherPage(true);
     query.setPageNum(1);
     query.setPageSize(10);

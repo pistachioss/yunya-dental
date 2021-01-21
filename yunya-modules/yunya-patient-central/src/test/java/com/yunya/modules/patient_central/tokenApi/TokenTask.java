@@ -1,4 +1,4 @@
-package com.yunya.modules.patient.tokenApi;
+package com.yunya.modules.patient_central.tokenApi;
 
 import com.uniubi.sdk.auth.authToken.AppAuthParam;
 import com.uniubi.sdk.auth.authToken.CustomTokenFetcher;
