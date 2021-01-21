@@ -94,9 +94,9 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         }
         int i = mapper.delete(employeeSchedule);
         //一会打开
-//        if (i > 0) {
-//            rabbitMqServiceFeign.sendMessage(employeeScheduleDeleteForm.getId(), 2, BaseEmployeeSchedule);
-//        }
+        if (i > 0) {
+            rabbitMqServiceFeign.sendMessage(employeeScheduleDeleteForm.getId(), 2, BaseEmployeeSchedule);
+        }
         return i;
     }
 
@@ -149,9 +149,9 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         }
         int i = mapper.insertSelective(employeeSchedule);
         //一会打开
-//        if (i > 0) {
-//            rabbitMqServiceFeign.sendMessage(employeeSchedule.getId(), 0, BaseEmployeeSchedule);
-//        }
+        if (i > 0) {
+            rabbitMqServiceFeign.sendMessage(employeeSchedule.getId(), 0, BaseEmployeeSchedule);
+        }
         return i;
     }
 
