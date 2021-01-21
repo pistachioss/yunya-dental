@@ -25,7 +25,7 @@ public class BillControllerTest {
   @Test
   public void testFind() {
     ResponseResult<BillDetailGroupVO> record =
-        billRecordController.findOrderDetailAndBillDetailByOrderRecordId(23);
+        billRecordController.findOrderDetailAndBillDetailByOrderRecordId(1403);
     System.out.println(record);
   }
 }
