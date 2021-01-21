@@ -28,6 +28,7 @@ public class DictionaryItem {
     /**
      * 英文字典选项
      */
+    @Column(name = "english_name")
     private String englishName;
 
     /**
