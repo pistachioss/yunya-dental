@@ -81,7 +81,8 @@
         behdr.billNumber AS billNum,
         behdr.patientId patientId,
         tr.dentist_id AS regDentistId,
-        behr.crt_id AS adjustOperatorId
+        behr.crt_id AS adjustOperatorId,
+        behdr.billDate
         FROM
         ( SELECT id, treatment_record_id, crt_id, crt_time FROM bill_exception_handle_record WHERE operate_type = 2 )
         behr
