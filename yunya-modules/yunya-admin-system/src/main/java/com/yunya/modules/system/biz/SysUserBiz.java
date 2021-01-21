@@ -29,6 +29,7 @@ import com.yunya.modules.system.mapper.SysEmployeeMapper;
 import com.yunya.modules.system.mapper.SysUserMapper;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -490,7 +491,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    * @param userId 用户ID
    * @return 返回结果信息
    */
-  public ResponseResult resetPassword(Integer userId) {
+  public ResponseResult<T> resetPassword(Integer userId) {
     SysUser entity = new SysUser();
     entity.setId(userId);
     SysUser sysUser = mapper.selectOne(entity);
