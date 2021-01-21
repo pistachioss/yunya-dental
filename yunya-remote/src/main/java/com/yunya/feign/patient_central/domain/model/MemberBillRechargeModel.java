@@ -41,6 +41,12 @@ public class MemberBillRechargeModel implements Serializable {
     private BigDecimal rechargeBonus;
 
     /**
+     * 订单id
+     */
+    @ApiModelProperty(value = "订单id",required = false)
+    private Integer orderRecordId;
+
+    /**
      * 备注
      */
     @ApiModelProperty(value = "备注",required = false)

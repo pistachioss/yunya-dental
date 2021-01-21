@@ -172,6 +172,7 @@ public class PatientPrepaymentRelationBiz
     paramMap.put("operationType", operationType);
     remoteRabbitMqServiceFeign.sendMessage(
         paramMap, operateType, MsgCategoryEnum.BasePatientMemberOccurLog);
+
   }
 
   /**
@@ -646,7 +647,6 @@ public class PatientPrepaymentRelationBiz
     PatientPrepaymentsInfo patientPrepaymentsInfo =
         patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidId());
     if (patientPrepaymentsInfo != null) {
-
       if (model.getRechargePrincipal() != null) {
         patientPrepaymentsInfo.setPrepaymentPrincipal(
             patientPrepaymentsInfo.getPrepaymentPrincipal().add(model.getRechargePrincipal()));
@@ -665,8 +665,9 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeRecord.setCurrentRechargePrincipal(
           prepaidRechargeRecord.getRechargePrincipal());
       prepaidRechargeRecord.setCurrentRechargeBonus(prepaidRechargeRecord.getRechargeBonus());
+      prepaidRechargeRecord.setOrderRecordId(model.getOrderRecordId());
       prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
-      // 发送消息 撤销收费
+      // 发送消息 账单退费
       sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 5);
     }
   }
@@ -685,8 +686,6 @@ public class PatientPrepaymentRelationBiz
     if (prepaidExpend != null) {
       prepaidExpend.setInservice(false);
       prepaidExpendRecordMapper.updateByPrimaryKeySelective(prepaidExpend);
-      remoteRabbitMqServiceFeign.sendMessage(
-          prepaidExpend.getId(), 1, 2, MsgCategoryEnum.BasePatientMemberOccurLog);
       PatientPrepaymentsInfo patientPrepaymentsInfo =
           patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidCard());
       if (patientPrepaymentsInfo != null) {
@@ -716,6 +715,9 @@ public class PatientPrepaymentRelationBiz
         prepaidRechargeRecord.setCurrentRechargeBonus(patientPrepaymentsInfo.getPrepaymentBonus());
         prepaidRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
         prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
+        prepaidRechargeRecord.setOrderRecordId(prepaidExpend.getOrderRecordId());
+        prepaidRechargeRecord.setBillRecordId(prepaidExpend.getBillRecordId());
+        prepaidRechargeRecord.setBillPayRecordId(prepaidExpend.getBillPayRecordId());
         prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
         // 发送消息 删除消费消息
         Integer expendId = updPatientPrepaidInfo(model);
@@ -724,7 +726,7 @@ public class PatientPrepaymentRelationBiz
               expendId, 1, 2, 2, MsgCategoryEnum.BasePatientMemberOccurLog);
         }
         // 发送消息 撤销收费
-        sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 2, 1, 4);
+        sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 4);
         return ResponseUtil.success();
       } else {
         return ResponseUtil.fail(
