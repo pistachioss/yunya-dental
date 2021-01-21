@@ -87,15 +87,12 @@ public class BillExceptionHandleDetailRecordBiz
       List<BillPayDetailRecordVO> billPayDetailRecords =
           billPayDetailRecordMapper.selectBillPayDetailRecord(handledRecordId, null);
       if (StringHelper.isNotEmpty(billPayDetailRecords)) {
-        billPayDetailRecords.forEach(
-            record -> {
-              Integer accountItemId = record.getAccountItemId();
-              AccountItem accountItem = systemServiceFeign.findAccountItemById(accountItemId);
-              if (null != accountItem) {
-                record.setAccountItemName(accountItem.getName());
-              }
-              afterAdjustPayList.add(record);
-            });
+          BillPayDetailRecordVO record = billPayDetailRecords.get(0);
+          AccountItem accountItem = systemServiceFeign.findAccountItemById(record.getAccountItemId());
+          if (null != accountItem) {
+            record.setAccountItemName(accountItem.getName());
+          }
+          afterAdjustPayList.add(record);
       }
     } else {
       // 取当前异常处理记录ID对应的异常处理记录列表，查询每条异常明细对应的收费方式作为调增后的收费方式列表
