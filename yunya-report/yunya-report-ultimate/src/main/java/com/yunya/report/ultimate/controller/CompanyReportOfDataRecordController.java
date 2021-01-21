@@ -14,13 +14,11 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * 简介: 公司端报表-数据统计控制器
@@ -105,6 +103,20 @@ public class CompanyReportOfDataRecordController {
   }
 
   /**
+   * 根据账单ID（开单记录ID）查询收费记录列表
+   *
+   * @param billId 账单ID
+   * @return
+   */
+  @ApiOperation("数据记录-账单记录-开单记录-查看明细")
+  @GetMapping(value = "/pay/detail/{billId}", name = "数据记录-账单记录-开单记录-查看明细")
+  public ResponseResult<List<BaseBillPayVO>> payDetailList(
+      @PathVariable(value = "billId") Integer billId) {
+    List<BaseBillPayVO> resultList = billPayBiz.findBillPayList(billId);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
    * 根据条件查询账单收费记录
    *
    * @param query 查询条件
@@ -158,7 +170,8 @@ public class CompanyReportOfDataRecordController {
   @ApiOperation("根据条件导出账单退费记录-数据记录-账单记录-账单退费记录")
   @PostMapping(value = "/bill/refund/export", name = "根据条件导出账单退费记录")
   public ResponseResult<T> exportBillRefundRecord(
-      HttpServletResponse response, @RequestBody @Validated BillRefundRecordQuery query) throws IOException {
+      HttpServletResponse response, @RequestBody @Validated BillRefundRecordQuery query)
+      throws IOException {
     baseRefundBiz.exportBillRefundRecord(response, query);
     return ResponseUtil.success(null);
   }

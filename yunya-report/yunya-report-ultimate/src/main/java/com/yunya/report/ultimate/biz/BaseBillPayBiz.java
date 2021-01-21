@@ -45,6 +45,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   @Autowired private BaseOrganizationMapper organizationMapper;
 
   /**
+   * 根据账单ID（开单记录ID）查询收费记录列表
+   *
+   * @param billId 账单ID
+   * @return List<BaseBillPayVO>
+   */
+  public List<BaseBillPayVO> findBillPayList(Integer billId) {
+    return mapper.selectBillPayList(billId);
+  }
+
+  /**
    * 根据条件查询账单支付记录列表
    *
    * @param query 查询条件

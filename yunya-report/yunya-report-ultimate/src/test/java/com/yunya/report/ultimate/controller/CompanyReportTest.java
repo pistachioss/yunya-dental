@@ -198,4 +198,11 @@ public class CompanyReportTest {
         financeController.patientCardRechargeDetailList(query);
     System.out.println(result);
   }
+
+  @Test
+  public void find9() {
+    ResponseResult<List<BaseBillPayVO>> result =
+        companyReportOfDataRecordController.payDetailList(131);
+    System.out.println(result);
+  }
 }

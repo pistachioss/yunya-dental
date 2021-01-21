@@ -4,6 +4,7 @@ import com.yunya.feign.report.domain.query.BillPayRecordQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.StatementBillChargeDetailInfoQuery;
 import com.yunya.feign.report.domain.query.StatementStatisticQuery;
+import com.yunya.feign.report.domain.vo.BaseBillPayVO;
 import com.yunya.feign.report.domain.vo.BillOfPayRecordVO;
 import com.yunya.feign.report.domain.vo.StatementBillChargeDetailVO;
 import com.yunya.feign.report.domain.vo.TollDataStatisticsVO;
@@ -15,6 +16,14 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
+
+  /**
+   * 根据账单ID查询收费记录列表
+   *
+   * @param billId 账单ID
+   * @return List<BaseBillPayVO>
+   */
+  List<BaseBillPayVO> selectBillPayList(@Param("billId") Integer billId);
 
   /**
    * 根据条件查询账单支付记录列表
