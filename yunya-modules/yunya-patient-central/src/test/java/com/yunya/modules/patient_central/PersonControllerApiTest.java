@@ -1,4 +1,4 @@
-package com.yunya.modules.patient;
+package com.yunya.modules.patient_central;
 
 import com.uniubi.sdk.api.PersonControllerApi;
 import com.uniubi.sdk.auth.authToken.AppAuthParam;

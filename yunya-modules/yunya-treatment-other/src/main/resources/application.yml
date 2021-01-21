@@ -26,7 +26,8 @@ spring:
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848
-
+  profiles:
+    active: migration
 mybatis:
   mapperLocations: classpath:mapper/*Mapper.xml
   type-aliases-package: com.yunya.models.treatment.other

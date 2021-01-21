@@ -11,6 +11,7 @@
         <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
         <result column="return_principal_amount" property="returnPrincipalAmount" jdbcType="DECIMAL"/>
         <result column="return_gift_amount" property="returnGiftAmount" jdbcType="DECIMAL"/>
+        <result column="actual_return_amount" property="actualReturnAmount" javaType="DECIMAL"/>
         <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
         <result column="return_way_id" property="returnWayId" jdbcType="INTEGER"/>
         <result column="return_way_type" property="returnWayType" jdbcType="VARCHAR"/>

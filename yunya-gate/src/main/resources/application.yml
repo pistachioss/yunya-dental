@@ -188,6 +188,8 @@ spring:
     sentinel:
       transport:
         dashboard: localhost:8080
+  profiles:
+    active: migration
 logging:
   level:
     com.yunya.gate: info
