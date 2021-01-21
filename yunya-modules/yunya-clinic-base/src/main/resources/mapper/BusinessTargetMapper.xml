@@ -173,7 +173,7 @@
     <!-- 根据条件查询业务目标数量 -->
     <select id="selectBusinessGoalCount" resultType="java.math.BigDecimal">
         SELECT
-            SUM( bt.business_goal )
+            IFNULL(SUM( bt.business_goal ), 0)
         FROM
             business_target bt
         <where>

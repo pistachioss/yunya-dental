@@ -78,7 +78,10 @@ public class GlobalExceptionHandler {
   public ResponseResult otherExceptionHandler(HttpServletResponse response, Exception ex) {
     response.setStatus(500);
     log.error(ex.getMessage(), ex);
-    return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, "服务器好像出故障了！请联系管理员", null);
+    // 生产环境需要放开注释
+//    return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, "服务器走丢了！请联系管理员", null);
+    // 生产环境需要删除
+    return ResponseUtil.error("服务器内部异常-Debug用",ex.getMessage());
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

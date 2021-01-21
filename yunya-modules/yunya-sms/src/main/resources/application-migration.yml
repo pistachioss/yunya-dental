@@ -1,0 +1,23 @@
+spring:
+    datasource:
+        host: community.yunya365.com
+        port: 3306
+        username: sa
+        password: Admin001!
+        name: ivy2_yunya_sms
+    cloud:
+        nacos:
+            discovery:
+                server-addr: 127.0.0.1:8848
+            config:
+                server-addr: 127.0.0.1:8848
+    redis:
+        database: 3
+        host: 192.168.31.90
+        port: 6379
+        password: foobared
+
+wiki:
+    host: yunya.test.utools.club
+    notifyUrl: http://${wiki.host}/smsChargeOrder/notifyUrl
+    redirectUrl: http://${wiki.host}/smsChargeOrder/redirectUrl

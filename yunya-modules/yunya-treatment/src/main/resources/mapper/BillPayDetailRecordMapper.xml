@@ -46,7 +46,6 @@
             </if>
         </where>
         order by bpdr.id desc
-        limit 0,1
     </select>
 
     <!-- 账单异常处理数据详情记录ID查询异常处理记录 -->

@@ -212,6 +212,8 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
     Integer orgId = query.getOrgId();
     List<String> dateRange = DateUtil.sliceUpDateRange(startDate, endDate);
     BusinessGoalCompletedInfoVO resultData = new BusinessGoalCompletedInfoVO();
+    resultData.setBusinessCompletedPercentage(new BigDecimal("0.00"));
+
     // 查询该时间段内业务目标设置数量
     BigDecimal businessGoalCount = mapper.selectBusinessGoalCount(orgId, businessType, dateRange);
     // 查询业务目标完成数量
@@ -232,15 +234,19 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
       default:
         break;
     }
-    resultData.setBusinessGoalCount(businessGoalCount);
-    resultData.setBusinessCompletedCount(businessCompletedCount);
-    if (null != businessCompletedCount
-        && null != businessGoalCount
-        && !BigDecimal.ZERO.equals(businessGoalCount)) {
-      resultData.setBusinessCompletedPercentage(
-          businessCompletedCount
-              .multiply(new BigDecimal(100))
-              .divide(businessGoalCount, 2, BigDecimal.ROUND_HALF_UP));
+    if (null != businessGoalCount) {
+      resultData.setBusinessGoalCount(businessGoalCount);
+    }
+    if (null != businessCompletedCount) {
+      resultData.setBusinessCompletedCount(businessCompletedCount);
+    }
+    if (null != businessCompletedCount) {
+      if (null != businessGoalCount && businessGoalCount.compareTo(BigDecimal.ZERO) > 0) {
+        resultData.setBusinessCompletedPercentage(
+            businessCompletedCount
+                .multiply(new BigDecimal(100))
+                .divide(businessGoalCount, 2, BigDecimal.ROUND_HALF_UP));
+      }
     }
     return resultData;
   }

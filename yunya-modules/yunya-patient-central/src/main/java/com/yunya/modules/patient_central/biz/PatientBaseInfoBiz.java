@@ -42,7 +42,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -103,6 +102,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   /** 就诊服务 */
   @Autowired private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
 
+  @Value("${serverInfo.onlineDateTime}")
+  private String onlineDateTime;
 
   /** 获取患者服务端口号 */
   @Value("${codeUrl.url}")
@@ -728,7 +729,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @return String
    */
   public String findMedicalNumberByOrgId(Integer orgId) {
-    return mapper.findMedicalNumberByOrgId(orgId);
+    return mapper.findMedicalNumberByOrgId(orgId,onlineDateTime);
   }
 
   /**

@@ -505,10 +505,11 @@ public class PatientPrepaymentRelationBiz
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<PrepaidExpendRecordVo> resultList = prepaidExpendRecordMapper.expendList(queryForm);
-    if (!StringHelper.isEmpty(resultList)) {
+    if (StringHelper.isNotEmpty(resultList)) {
       for (PrepaidExpendRecordVo prepaidExpendRecordVo : resultList) {
+        // 获取门诊简称
         OrganizationInfo organizationInfo =
-            remoteSystemServiceFeign.findOrgInfoByOrgId(prepaidExpendRecordVo.getOrgId()); // 获取门诊简称
+            remoteSystemServiceFeign.findOrgInfoByOrgId(prepaidExpendRecordVo.getOrgId());
         if (organizationInfo != null) {
           prepaidExpendRecordVo.setOrgName(organizationInfo.getAbbreviation());
         }

@@ -1,7 +1,6 @@
-package com.yunya.modules.patient;
+package com.yunya.modules.patient_central;
 
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
-import com.yunya.modules.patient_central.YunyaPatientApplication;
 import com.yunya.modules.patient_central.rpc.PatientServiceRest;
 import org.junit.Test;
 import org.junit.runner.RunWith;

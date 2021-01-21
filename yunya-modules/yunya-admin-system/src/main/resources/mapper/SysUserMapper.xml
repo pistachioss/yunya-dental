@@ -192,9 +192,9 @@
         LEFT JOIN (
         SELECT
         sup.user_id,
-        GROUP_CONCAT( DISTINCT sup.company_id SEPARATOR ',' ) AS company_ids,
-        GROUP_CONCAT( DISTINCT sup.post_id SEPARATOR ',' ) AS post_ids,
-        GROUP_CONCAT( DISTINCT sup.group_id SEPARATOR ',' ) AS group_ids
+        GROUP_CONCAT( DISTINCT any_value(sup.company_id) SEPARATOR ',' ) AS company_ids,
+        GROUP_CONCAT( DISTINCT any_value(sup.post_id) SEPARATOR ',' ) AS post_ids,
+        GROUP_CONCAT( DISTINCT any_value(sup.group_id) SEPARATOR ',' ) AS group_ids
         FROM
         sys_user_post sup
         GROUP BY
@@ -273,9 +273,9 @@
                         LEFT JOIN (
                         SELECT
                             sup.user_id,
-                            GROUP_CONCAT( DISTINCT sup.company_id SEPARATOR ',' ) AS company_ids,
-                            GROUP_CONCAT( DISTINCT sup.post_id SEPARATOR ',' ) AS post_ids,
-                            GROUP_CONCAT( DISTINCT sup.group_id SEPARATOR ',' ) AS group_ids
+                            GROUP_CONCAT( DISTINCT any_value(sup.company_id) SEPARATOR ',' ) AS company_ids,
+                            GROUP_CONCAT( DISTINCT any_value(sup.post_id) SEPARATOR ',' ) AS post_ids,
+                            GROUP_CONCAT( DISTINCT any_value(sup.group_id) SEPARATOR ',' ) AS group_ids
                         FROM
                             sys_user_post sup
                         GROUP BY
@@ -360,9 +360,9 @@
         LEFT JOIN (
         SELECT
         sup.user_id,
-        GROUP_CONCAT( DISTINCT sup.company_id SEPARATOR ',' ) AS company_ids,
-        GROUP_CONCAT( DISTINCT sup.group_id SEPARATOR ',' ) AS group_ids,
-        GROUP_CONCAT( DISTINCT sup.post_id SEPARATOR ',' ) AS post_ids
+        GROUP_CONCAT( DISTINCT any_value(sup.company_id) SEPARATOR ',' ) AS company_ids,
+        GROUP_CONCAT( DISTINCT any_value(sup.group_id) SEPARATOR ',' ) AS group_ids,
+        GROUP_CONCAT( DISTINCT any_value(sup.post_id) SEPARATOR ',' ) AS post_ids
         FROM
         sys_user_post sup
         <where>
@@ -441,6 +441,7 @@
         order by user_info.userId desc
     </select>
 
+    <!-- 根据条件查询员工组织信息列表 -->
     <select id="selectSysEmployeeWithOrgList" resultType="com.yunya.feign.system.vo.SysUserInfoDetail">
         SELECT
             t2.user_id as userId,
