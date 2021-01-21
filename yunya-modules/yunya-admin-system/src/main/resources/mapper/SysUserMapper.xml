@@ -192,16 +192,13 @@
         LEFT JOIN (
         SELECT
         sup.user_id,
-        GROUP_CONCAT( DISTINCT sup.company_id SEPARATOR ',' ) AS company_ids,
-        GROUP_CONCAT( DISTINCT sup.post_id SEPARATOR ',' ) AS post_ids,
-        GROUP_CONCAT( DISTINCT sup.group_id SEPARATOR ',' ) AS group_ids
+        GROUP_CONCAT( DISTINCT any_value(sup.company_id) SEPARATOR ',' ) AS company_ids,
+        GROUP_CONCAT( DISTINCT any_value(sup.post_id) SEPARATOR ',' ) AS post_ids,
+        GROUP_CONCAT( DISTINCT any_value(sup.group_id) SEPARATOR ',' ) AS group_ids
         FROM
         sys_user_post sup
         GROUP BY
-        sup.user_id,
-        sup.company_id,
-        sup.post_id,
-        sup.group_id
+        sup.user_id
         ) sup ON su.id = sup.user_id
         ) user_info
         where user_info.userId = #{userId}
@@ -276,16 +273,13 @@
                         LEFT JOIN (
                         SELECT
                             sup.user_id,
-                            GROUP_CONCAT( DISTINCT sup.company_id SEPARATOR ',' ) AS company_ids,
-                            GROUP_CONCAT( DISTINCT sup.post_id SEPARATOR ',' ) AS post_ids,
-                            GROUP_CONCAT( DISTINCT sup.group_id SEPARATOR ',' ) AS group_ids
+                            GROUP_CONCAT( DISTINCT any_value(sup.company_id) SEPARATOR ',' ) AS company_ids,
+                            GROUP_CONCAT( DISTINCT any_value(sup.post_id) SEPARATOR ',' ) AS post_ids,
+                            GROUP_CONCAT( DISTINCT any_value(sup.group_id) SEPARATOR ',' ) AS group_ids
                         FROM
                             sys_user_post sup
                         GROUP BY
-                            sup.user_id,
-                            sup.company_id,
-                            sup.post_id,
-                            sup.group_id
+                            sup.user_id
                     ) sup ON su.id = sup.user_id
             ) user_info
         where user_info.userId in
@@ -366,9 +360,9 @@
         LEFT JOIN (
         SELECT
         sup.user_id,
-        GROUP_CONCAT( DISTINCT sup.company_id SEPARATOR ',' ) AS company_ids,
-        GROUP_CONCAT( DISTINCT sup.group_id SEPARATOR ',' ) AS group_ids,
-        GROUP_CONCAT( DISTINCT sup.post_id SEPARATOR ',' ) AS post_ids
+        GROUP_CONCAT( DISTINCT any_value(sup.company_id) SEPARATOR ',' ) AS company_ids,
+        GROUP_CONCAT( DISTINCT any_value(sup.group_id) SEPARATOR ',' ) AS group_ids,
+        GROUP_CONCAT( DISTINCT any_value(sup.post_id) SEPARATOR ',' ) AS post_ids
         FROM
         sys_user_post sup
         <where>
@@ -395,10 +389,7 @@
             </if>
         </where>
         GROUP BY
-        sup.user_id,
-        sup.company_id,
-        sup.group_id,
-        sup.post_id
+        sup.user_id
         ) sup ON su.id = sup.user_id
         ) user_info
         <where>

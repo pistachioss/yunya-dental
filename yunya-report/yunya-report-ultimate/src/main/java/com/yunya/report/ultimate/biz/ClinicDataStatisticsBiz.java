@@ -13,6 +13,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -140,8 +141,9 @@ public class ClinicDataStatisticsBiz {
         clinicBaseServiceFeign.businessGoalCompletedInfo(businessGoalQuery);
     OperationDataComplexInfoVO firstTreat = new OperationDataComplexInfoVO();
     firstTreat.setComplexInfoName("初诊人数目标完成率");
-    firstTreat.setGoalCount(firstTreatCompleted.getBusinessGoalCount().toString());
-    firstTreat.setCompletedCount(firstTreatCompleted.getBusinessCompletedCount().toString());
+    firstTreat.setGoalCount(String.format("%s", firstTreatCompleted.getBusinessGoalCount()));
+    firstTreat.setCompletedCount(
+        String.format("%s", firstTreatCompleted.getBusinessCompletedCount()));
     firstTreat.setCompletedPercentage(firstTreatCompleted.getBusinessCompletedPercentage());
     resultList.add(1, firstTreat);
 
@@ -152,13 +154,18 @@ public class ClinicDataStatisticsBiz {
     PatientFirstTreatOriginInfoVO treatOriginInfo =
         treatmentProcessBiz.findPatientFirstTreatOriginInfo(patientTreatOriginQuery);
     OperationDataComplexInfoVO firstPatient = new OperationDataComplexInfoVO();
+    firstPatient.setCompletedCount("0");
+    firstPatient.setCompletedPercentage(new BigDecimal("0.00"));
     firstPatient.setComplexInfoName("老患者介绍率");
-    firstPatient.setGoalCount(String.format("%d", treatOriginInfo.getFirstTreatTotalCount()));
+    Integer firstTreatTotalCount = treatOriginInfo.getFirstTreatTotalCount();
+    if (null != firstTreatTotalCount) {
+      firstPatient.setGoalCount(String.format("%d", firstTreatTotalCount));
+    }
     List<PatientFirstTreatOriginVO> treatOrigins = treatOriginInfo.getPatientFirstTreatOrigins();
     if (StringHelper.isNotEmpty(treatOrigins)) {
       for (PatientFirstTreatOriginVO treatOrigin : treatOrigins) {
         if ("老患者介绍".equals(treatOrigin.getPatientOriginTypeName())) {
-          firstPatient.setCompletedCount(treatOrigin.getFirstTreatCount().toString());
+          firstPatient.setCompletedCount(String.format("%d", treatOrigin.getFirstTreatCount()));
           firstPatient.setCompletedPercentage(treatOrigin.getFirstTreatPercentage());
         }
       }
