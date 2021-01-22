@@ -129,8 +129,7 @@
         bb.privilege_amount AS privilegeAmount,
         bb.actual_amount AS actualAmount,
         bb.received_amount AS receivedAmount,
-        IF
-        ( bb.bill_num = NULL OR '', 0, 1 ) AS chargeStatus,
+        IF( bb.bill_num IS NULL OR bb.bill_num='', 0, 1 ) AS chargeStatus,
         bb.biller_id AS billerId,
         be.employee_name AS biller
         FROM
