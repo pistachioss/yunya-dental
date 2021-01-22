@@ -8,10 +8,7 @@ import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
-import com.yunya.feign.treatment.domain.vo.BusinessCompletedWorkGoalVO;
-import com.yunya.feign.treatment.domain.vo.RegisteredVO;
-import com.yunya.feign.treatment.domain.vo.SpecialistProjectTariffCompletedInfoVO;
-import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.OrderDetail;
@@ -481,5 +478,17 @@ public class TreatmentServiceRest {
   public BigDecimal findBillRefundTotalCashAmount(
       @RequestBody @Validated CashReceiptOrRefundQuery query) {
     return refundRecordBiz.findBillRefundTotalCashAmount(query);
+  }
+
+  /**
+   * 查询患者末次就诊记录
+   *
+   * @param patientId 患者ID
+   * @return 就诊信息
+   */
+  @RequestMapping(value = "/treat/last/{patientId}", method = RequestMethod.GET)
+  LastTreatmentInfoVO findLastTreatmentRecord(
+      @PathVariable(value = "patientId") Integer patientId) {
+    return treatmentRecordBiz.lastTreatmentInfo(patientId);
   }
 }

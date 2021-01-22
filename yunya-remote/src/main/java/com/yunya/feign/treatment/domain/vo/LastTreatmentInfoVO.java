@@ -13,17 +13,24 @@ import java.util.Date;
  * @description: 末次就诊信息
  * @author: LHB
  * @create: 2020-10-28 16:19
- **/
-@ApiModel(value = "LastTreatmentInfoVO",description = "末次就诊信息")
+ */
+@ApiModel(value = "LastTreatmentInfoVO", description = "末次就诊信息")
 @Data
 public class LastTreatmentInfoVO implements Serializable {
-    @ApiModelProperty(name = "patientId", value = "末次就诊患者ID")
-    private Integer patientId;
-    @ApiModelProperty(name = "dentistId", value = "末次就诊医生ID")
-    private Integer dentistId;
-    @ApiModelProperty(name = "dentistId", value = "末次就诊日期")
-    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
-    private Date treatmentDate;
-    @ApiModelProperty(name = "dentistId", value = "末次就诊科室ID")
-    private Integer deptRoomId;
+  /** 末诊门诊ID */
+  @ApiModelProperty("末诊门诊ID")
+  private Integer orgId;
+  /** 末诊门诊名称 */
+  @ApiModelProperty("末诊门诊名称")
+  private String orgName;
+  /** 末诊医生ID */
+  @ApiModelProperty(name = "dentistId", value = "末次就诊医生ID")
+  private Integer dentistId;
+  /** 末诊医生姓名 */
+  @ApiModelProperty("末诊医生姓名")
+  private String dentistName;
+  /** 末诊日期 */
+  @ApiModelProperty(name = "dentistId", value = "末次就诊日期")
+  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+  private Date treatmentDate;
 }

@@ -131,6 +131,9 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
           basePatient.setOriginTypeName(origin.getName());
         }
       }
+      if (patientBaseInfo.getFaceUrl() != null){
+        basePatient.setFaceUrl(patientBaseInfo.getFaceUrl());
+      }
       basePatient.setGender(patientBaseInfo.getGender());
       basePatient.setPinyinName(patientBaseInfo.getPinyinName());
       basePatient.setPatientCrtTime(patientBaseInfo.getCrtTime());
