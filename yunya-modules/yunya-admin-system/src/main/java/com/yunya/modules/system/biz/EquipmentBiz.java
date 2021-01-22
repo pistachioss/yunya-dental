@@ -232,12 +232,11 @@ public class EquipmentBiz extends BaseBiz<EquipmentInfoMapper, EquipmentInfo> {
 
     /**
      * 设备信息列表
-     * @param queryForm
      * @return PageInfo<DictionaryTypeVO>
      */
     public EquipmentInfo findEquipmentInfoVO() {
         List<EquipmentInfo> equipmentInfoVOS = mapper.selectAll();
-        if (StringHelper.isNotNull(equipmentInfoVOS)){
+        if (StringHelper.isNotEmpty(equipmentInfoVOS)){
             return equipmentInfoVOS.get(0);
         }
         return null;
