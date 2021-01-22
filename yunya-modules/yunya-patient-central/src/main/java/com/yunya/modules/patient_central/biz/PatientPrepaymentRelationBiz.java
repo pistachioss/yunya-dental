@@ -275,6 +275,7 @@ public class PatientPrepaymentRelationBiz
         prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
+        prepaidRechargeTollRecord.setCreditAmount(model.getRechargePrincipal());
         prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
         if (model.getRechargeType() == 1) {
           if (patientPrepaymentsInfo.getPatientId() != null && model.getCardId() != null) {

@@ -19,6 +19,7 @@ import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
 import com.yunya.modules.patient_central.mapper.PatientPrepaymentsInfoMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +52,9 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     @Autowired private PatientMemberInfoMapper patientMemberInfoMapper;
 
     @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
+    @Value("${serverInfo.onlineDateTime}")
+    private String onlineDateTime;
 
     /**
      * 添加客户登记
@@ -101,8 +105,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
             patientPrepaymentsInfo.setPatientId(patientBaseInfo.getId());
             // 预付款卡号生成规则 开通Y
             patientPrepaymentsInfo.setPrepaymentNumber(
-                    this.generateCardNumber(
-                            "Y", "patient_prepayments_info", "prepayment_number"));
+                    this.generateCardNumber("Y"));
             patientPrepaymentsInfo.setCrtId(1);
             patientPrepaymentsInfo.setCrtName("管理员");
             this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
@@ -113,17 +116,15 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
 
 
     /**
-     * 生产会员卡号
+     * 生产预付款卡号
      *
      * @param mark 会员号标识 H：会员卡，Y：预付款
-     * @param tableName 数据库表名
-     * @param column 表中列的名称
      * @return String 卡号
      */
-    public String generateCardNumber(String mark, String tableName, String column) {
+    public String generateCardNumber(String mark) {
         String number =
-                this.patientMemberInfoMapper.generateCardNumber(
-                        35, tableName, column);
+                this.patientMemberInfoMapper.generateCardNumber4Prepay(
+                        35, onlineDateTime);
         String suffix = String.format("%06d", Integer.parseInt(number) + 1);
         // 获取门诊简称
         OrganizationInfo organizationInfo =

@@ -35,10 +35,19 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
 
     /**
      * 根据门诊id获取病历号后六位
-     * @param id 门诊id
+     * @param orgId 门诊id
+     * @param onlineDateTime 服务上线日期
      * @return String
      */
-    String generateCardNumber(@Param("orgId") Integer id ,@Param("from") String tableName,@Param("memberNo") String column);
+    String generateCardNumber(@Param("orgId") Integer orgId ,@Param("onlineDateTime") String onlineDateTime);
+
+    /**
+     * 根据门诊id获取最新预付款号后六位
+     * @param orgId 门诊id
+     * @param onlineDateTime 服务上线日期
+     * @return String
+     */
+    String generateCardNumber4Prepay(@Param("orgId") Integer orgId ,@Param("onlineDateTime") String onlineDateTime);
 
     /**
      * 根据会员卡号查询
