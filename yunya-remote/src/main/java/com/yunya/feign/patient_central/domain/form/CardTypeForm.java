@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -23,18 +24,21 @@ public class CardTypeForm implements Serializable {
     /**
      * 会员卡卡号
      */
+    @NotNull
     @ApiModelProperty(value = "会员卡卡号")
     private String cardNumber;
 
     /**
      * 会员卡类型ID
      */
+    @NotNull
     @ApiModelProperty(value = "会员卡类型ID",required = true)
     private Integer memberTypeId;
 
     /**
      * 患者id
      */
+    @NotNull
     @ApiModelProperty(value = "患者id",required = true)
     private Integer patientId;
 

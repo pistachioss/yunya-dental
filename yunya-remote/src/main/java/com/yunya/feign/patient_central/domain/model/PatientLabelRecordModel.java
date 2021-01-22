@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Map;
 
@@ -24,12 +25,14 @@ public class PatientLabelRecordModel implements Serializable {
     /**
      * 患者ID
      */
+    @NotNull(message = "患者id不能为空")
     @ApiModelProperty(value = "患者id",required = true)
     private Integer patientId;
 
     /**
      * 字典明细ID
      */
+    @NotNull(message = "标签字典id不能为空")
     @ApiModelProperty(value = "标签字典id",required = true)
     private Integer dictItemId;
 
@@ -42,6 +45,7 @@ public class PatientLabelRecordModel implements Serializable {
     /**
      * 操作类型
      */
+    @NotNull(message = "操作类型 0:删除，1：增加不能为空")
     @ApiModelProperty(value = "操作类型 0:删除，1：增加",required = true)
     private Integer operatingType;
 }

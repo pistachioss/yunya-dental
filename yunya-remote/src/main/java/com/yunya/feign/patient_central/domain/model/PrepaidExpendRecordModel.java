@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -23,12 +24,14 @@ public class PrepaidExpendRecordModel implements Serializable {
     /**
      * 患者id
      */
+    @NotNull(message = "患者id (就诊患者id)不能为空")
     @ApiModelProperty(value = "患者id (就诊患者id)",required = true)
     private Integer patientId;
 
     /**
      * 预付款账号
      */
+    @NotNull(message = "预付款账号不能为空")
     @ApiModelProperty(value = "预付款账号",required = true)
     private String prepaidId;
 
@@ -41,24 +44,28 @@ public class PrepaidExpendRecordModel implements Serializable {
     /**
      * 就诊id
      */
+    @NotNull(message = "就诊id不能为空")
     @ApiModelProperty(value = "就诊id",required = true)
     private Integer treatmentRecordId;
 
     /**
      * 账单id
      */
+    @NotNull(message = "账单id不能为空")
     @ApiModelProperty(value = "账单id",required = true)
     private Integer billRecordId;
 
     /**
      * 账单付款记录id
      */
+    @NotNull(message = "账单付款记录id不能为空")
     @ApiModelProperty(value = "账单付款记录id",required = true)
     private Integer billPayRecordId;
 
     /**
      * 订单记录id
      */
+    @NotNull(message = "订单记录id不能为空")
     @ApiModelProperty(value = "订单记录id",required = true)
     private Integer orderRecordId;
 

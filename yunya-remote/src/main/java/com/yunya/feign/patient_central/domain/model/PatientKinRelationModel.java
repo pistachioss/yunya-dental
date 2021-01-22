@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -36,18 +37,21 @@ public class PatientKinRelationModel implements Serializable {
     /**
      * 患者ID
      */
+    @NotNull(message = "患者id不能为空")
     @ApiModelProperty(value = "患者id",required = true)
     private Integer patientId;
 
     /**
      * 关联患者ID
      */
+    @NotNull(message = "关联患者ID不能为空")
     @ApiModelProperty(value = "关联患者ID",required = true)
     private Integer linkedPatientId;
 
     /**
      * 亲属关系字典类型ID 字典管理
      */
+    @NotNull(message = "亲属关系字典类型ID不能为空")
     @ApiModelProperty(value = "亲属关系字典类型ID",required = true)
     private Integer kinshipId;
 

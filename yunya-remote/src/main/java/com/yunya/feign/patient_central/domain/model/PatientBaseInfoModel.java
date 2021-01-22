@@ -86,7 +86,6 @@ public class PatientBaseInfoModel implements Serializable {
     @ApiModelProperty(value = "性别 0-男；1-女；2-未知",required = false)
     private Byte gender;
 
-
     /**
      * 出生日期
      */
@@ -112,48 +111,6 @@ public class PatientBaseInfoModel implements Serializable {
      */
     @ApiModelProperty(value = "备注")
     private String remarks;
-
-    /**
-     * 是否有效 是否有效
-     */
-    @ApiModelProperty(value = "是否有效(默认有效)")
-    private Boolean inservice;
-
-    /**
-     * 创建人ID
-     */
-    @ApiModelProperty(value = "创建人ID")
-    private Integer crtId;
-
-    /**
-     * 创建人姓名
-     */
-    @ApiModelProperty(value = "创建人姓名")
-    private String crtName;
-
-    /**
-     * 创建时间
-     */
-    @ApiModelProperty(value = "创建时间")
-    private Date crtTime;
-
-    /**
-     * 更新人ID
-     */
-    @ApiModelProperty(value = "更新人ID")
-    private Integer uptId;
-
-    /**
-     * 更新人姓名
-     */
-    @ApiModelProperty(value = "更新人姓名")
-    private String updName;
-
-    /**
-     * 更新时间
-     */
-    @ApiModelProperty(value = "更新时间")
-    private Date updTime;
 
     /**
      * 员工 老患者

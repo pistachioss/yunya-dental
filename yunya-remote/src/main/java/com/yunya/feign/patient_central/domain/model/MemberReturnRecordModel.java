@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -22,12 +23,14 @@ public class MemberReturnRecordModel implements Serializable {
     /**
      * 会员卡id
      */
+    @NotNull(message = "会员卡id不能为空")
     @ApiModelProperty(value = "会员卡id",required = true)
     private String memberId;
 
     /**
      * 患者id
      */
+    @NotNull(message = "患者id不能为空")
     @ApiModelProperty(value = "患者id",required = true)
     private Integer patientId;
 

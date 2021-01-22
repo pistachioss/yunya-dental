@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.persistence.Column;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -24,12 +25,14 @@ public class MemberExpendRecordModel implements Serializable {
     /**
      * 患者id
      */
+    @NotNull(message = "患者id (就诊患者id)不能为空")
     @ApiModelProperty(value = "患者id (就诊患者id)",required = true)
     private Integer patientId;
 
     /**
      * 会员卡号
      */
+    @NotNull(message = "会员卡号不能为空")
     @ApiModelProperty(value = "会员卡号",required = true)
     private String memberId;
 

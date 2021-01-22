@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -25,19 +26,21 @@ public class MemberRevocationFeeModel implements Serializable {
     /**
      * 会员卡号
      */
+    @NotNull(message = "会员卡号不能为空")
     @ApiModelProperty(value = "会员卡号",required = true)
     private String memberId;
 
     /**
      * 账单付款记录id
      */
+    @NotNull(message = "账单付款记录id不能为空")
     @ApiModelProperty(value = "账单付款记录id",required = true)
     private Integer billPayRecordId;
 
     /**
      * 备注
      */
-    @ApiModelProperty(value = "备注",required = true)
+    @ApiModelProperty(value = "备注",required = false)
     private String remarks;
 
 }

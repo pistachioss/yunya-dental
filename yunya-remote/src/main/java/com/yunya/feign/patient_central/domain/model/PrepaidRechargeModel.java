@@ -26,30 +26,35 @@ public class PrepaidRechargeModel implements Serializable {
     /**
      * 患者id
      */
+    @NotNull(message = "患者id不能为空")
     @ApiModelProperty(value = "患者id",required = true)
     private Integer patientId;
 
     /**
      * 预付款卡号ID
      */
+    @NotNull(message = "预付款卡号不能为空")
     @ApiModelProperty(value = "预付款卡号",required = true)
     private String prepaidCard;
 
     /**
      * 充值本金
      */
+    @NotNull(message = "充值本金不能为空")
     @ApiModelProperty(value = "充值本金",required = false)
     private BigDecimal rechargePrincipal;
 
     /**
      * 充值赠金
      */
+    @NotNull(message = "充值赠金不能为空")
     @ApiModelProperty(value = "充值赠金",required = false)
     private BigDecimal rechargeBonus;
 
     /**
      * 入账方式
      */
+    @NotNull(message = "入账方式不能为空")
     @ApiModelProperty(value = "入账方式",required = true)
     private PrepaidRechargeTollRecordModel prepaidRechargeTollRecordModel;
 
