@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.persistence.Column;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -26,6 +27,7 @@ public class PrepaidBillRechargeModel implements Serializable {
     /**
      * 预付款账号
      */
+    @NotNull(message = "预付款账号不能为空")
     @ApiModelProperty(value = "预付款账号",required = true)
     private String prepaidId;
 
