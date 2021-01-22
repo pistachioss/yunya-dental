@@ -86,11 +86,25 @@
 
     <!-- 根据姓名/手机号/姓名拼音模糊查询患者 -->
     <select id="findPatientByNameAndMobile" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
-        select
-        <include refid="Patient_Column_List"/>
-        from patient_base_info where concat(IFNULL(name,''),
-        IFNULL(medical_number,''),IFNULL(pinyin_name,''),IFNULL(mobile,'')) like
-        concat(concat('%',#{form.condition}),'%') LIMIT 0,10
+        SELECT
+        pbi.id,
+        pbi.`name`,
+        pbi.face_url AS faceUrl,
+        pbi.mobile AS mobile,
+        pbi.medical_number AS medicalNumber,
+        pbi.gender,
+        TIMESTAMPDIFF(
+            YEAR,
+            pbi.birthday,
+        CURDATE()) AS age
+        FROM
+        patient_base_info pbi
+        where
+            concat(IFNULL(pbi.`name`,''),
+            IFNULL(pbi.medical_number,''),
+            IFNULL(pbi.pinyin_name,''),
+            IFNULL(pbi.mobile,''))
+            like concat(concat('%', #{form.condition}), '%') LIMIT 0,10
     </select>
 
     <!-- 根据患者id集合查询患者list -->

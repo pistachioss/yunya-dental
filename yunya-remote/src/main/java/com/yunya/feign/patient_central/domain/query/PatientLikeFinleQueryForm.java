@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -25,7 +25,7 @@ public class PatientLikeFinleQueryForm implements Serializable {
      * 患者查询条件合并字段
      */
     @ApiModelProperty(value = "患者查询条件(姓名or姓名拼音or手机号)", required = true)
-    @NotNull(message = "患者查询条件不能为空！")
+    @NotBlank(message = "患者查询条件不能为空！")
     private String condition;
 
 

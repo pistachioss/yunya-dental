@@ -185,20 +185,12 @@
     <!-- 根据患者ID查询末次就诊信息 -->
     <select id="lastTreatmentInfo" resultType="com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO">
         SELECT
-        r.patient_id AS patientId,
-        r.dentist_id AS dentistId,
-        r.dept_room_id AS deptRoomId,
-        r.crt_time AS crtTime
+            tr1.dentist_id,
+            tr1.org_id,
+            tr1.treat_start_time
         FROM
-        registered r
-        <where>
-            <if test="patientId != null">
-                r.patient_id = #{patientId}
-            </if>
-        </where>
-        ORDER BY
-        r.crt_time DESC
-        LIMIT 1
+            ( SELECT MAX( tr.id ) AS treatmentId FROM treatment_record tr WHERE tr.patient_id = #{patientId} ) tr
+            LEFT JOIN treatment_record tr1 ON tr.treatmentId = tr1.id
     </select>
 
     <!-- 查询指定时间段内每个医生每天患者就诊人数 -->

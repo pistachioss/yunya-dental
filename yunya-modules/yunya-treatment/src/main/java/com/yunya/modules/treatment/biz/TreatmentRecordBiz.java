@@ -1297,8 +1297,22 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @return 返回末次就诊实体对象
    */
   public LastTreatmentInfoVO lastTreatmentInfo(Integer patientId) {
-    LastTreatmentInfoVO lastTreatmentInfoVO = mapper.lastTreatmentInfo(patientId);
-    return lastTreatmentInfoVO;
+    LastTreatmentInfoVO lastTreatmentInfo = mapper.lastTreatmentInfo(patientId);
+    if (null != lastTreatmentInfo) {
+      OrganizationInfo orgInfo =
+          systemServiceFeign.findOrgInfoByOrgId(lastTreatmentInfo.getOrgId());
+      if (null != orgInfo) {
+        lastTreatmentInfo.setOrgName(orgInfo.getAbbreviation());
+      }
+      SysUserInfoDetail sysUser =
+          systemServiceFeign.findSysUserEmployeeInfoByUserId(lastTreatmentInfo.getDentistId());
+      if (null != sysUser) {
+        lastTreatmentInfo.setDentistName(sysUser.getName());
+      }
+    } else {
+      return new LastTreatmentInfoVO();
+    }
+    return lastTreatmentInfo;
   }
 
   /**

@@ -8,10 +8,7 @@ import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
-import com.yunya.feign.treatment.domain.vo.BusinessCompletedWorkGoalVO;
-import com.yunya.feign.treatment.domain.vo.RegisteredVO;
-import com.yunya.feign.treatment.domain.vo.SpecialistProjectTariffCompletedInfoVO;
-import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFeignFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.tariff.*;
@@ -363,4 +360,13 @@ public interface RemoteTreatmentServiceFeign {
   @RequestMapping(value = "/rpc/tariff/specialist/completed", method = RequestMethod.POST)
   Integer findSpecialistProjectCompletedCount(
       @RequestBody @Validated SpecialistProjectCompletedCountQuery query);
+
+  /**
+   * 查询患者末次就诊记录
+   *
+   * @param patientId 患者ID
+   * @return 就诊记录信息
+   */
+  @RequestMapping(value = "/rpc/treat/last/{patientId}", method = RequestMethod.GET)
+  LastTreatmentInfoVO findLastTreatmentRecord(@PathVariable(value = "patientId") Integer patientId);
 }

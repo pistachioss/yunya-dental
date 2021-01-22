@@ -72,6 +72,7 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    * @param dentistId 医生ID
    * @param startDate 开始日期
    * @param endDate 结束日期
+   * @param orgId 组织ID
    * @return 实体列表
    */
   List<TreatmentInfoForMonthVO> treatInfoForMonth(
@@ -125,7 +126,7 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
   /**
    * 根据患者id查就诊记录数
    *
-   * @param patientId
+   * @param patientId 患者ID
    * @return
    */
   int countByPatientId(@Param("patientId") Integer patientId);
@@ -133,7 +134,7 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
   /**
    * 根据条件统计就诊记录
    *
-   * @param queryForm
+   * @param queryForm 查询条件
    * @return
    */
   Integer countTreatRecordByExample(@Param("queryForm") TreatmentRecordQueryForm queryForm);

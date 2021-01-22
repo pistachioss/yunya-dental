@@ -9,10 +9,7 @@ import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
-import com.yunya.feign.treatment.domain.vo.BusinessCompletedWorkGoalVO;
-import com.yunya.feign.treatment.domain.vo.RegisteredVO;
-import com.yunya.feign.treatment.domain.vo.SpecialistProjectTariffCompletedInfoVO;
-import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
@@ -208,6 +205,11 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
 
   @Override
   public Integer findSpecialistProjectCompletedCount(SpecialistProjectCompletedCountQuery query) {
+    return null;
+  }
+
+  @Override
+  public LastTreatmentInfoVO findLastTreatmentRecord(Integer patientId) {
     return null;
   }
 }
