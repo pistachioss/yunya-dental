@@ -662,9 +662,8 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeRecord.setType(2);
       prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
-      prepaidRechargeRecord.setCurrentRechargePrincipal(
-          prepaidRechargeRecord.getRechargePrincipal());
-      prepaidRechargeRecord.setCurrentRechargeBonus(prepaidRechargeRecord.getRechargeBonus());
+      prepaidRechargeRecord.setCurrentRechargePrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
+      prepaidRechargeRecord.setCurrentRechargeBonus(patientPrepaymentsInfo.getPrepaymentBonus());
       prepaidRechargeRecord.setOrderRecordId(model.getOrderRecordId());
       prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
       // 发送消息 账单退费

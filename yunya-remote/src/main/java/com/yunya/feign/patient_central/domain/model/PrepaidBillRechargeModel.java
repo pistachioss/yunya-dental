@@ -48,11 +48,10 @@ public class PrepaidBillRechargeModel implements Serializable {
     private Integer orderRecordId;
 
     /**
-     * 订单id
+     * 账单退款记录id
      */
     @ApiModelProperty(value = "账单付款记录id",required = false)
     private Integer billPayRecordId;
-
 
     /**
      * 备注
