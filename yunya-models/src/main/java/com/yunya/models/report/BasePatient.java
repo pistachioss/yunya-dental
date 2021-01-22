@@ -37,6 +37,12 @@ public class BasePatient {
     private String medicalNumber;
 
     /**
+     * 头像地址
+     */
+    @Column(name = "face_url")
+    private String faceUrl;
+
+    /**
      * 出生日期
      */
     private Date birthday;
@@ -265,6 +271,24 @@ public class BasePatient {
      */
     public void setMedicalNumber(String medicalNumber) {
         this.medicalNumber = medicalNumber;
+    }
+
+    /**
+     * 获取患者头像地址
+     *
+     * @return faceUrl
+     */
+    public String getFaceUrl() {
+        return faceUrl;
+    }
+
+    /**
+     * 设置患者头像地址
+     *
+     * @param faceUrl 头像地址
+     */
+    public void setFaceUrl(String faceUrl) {
+        this.faceUrl = faceUrl;
     }
 
     /**

@@ -1,9 +1,6 @@
 package com.yunya.report.ultimate.biz;
 
-import com.yunya.feign.report.domain.vo.PatientAppointmentInfoVO;
-import com.yunya.feign.report.domain.vo.PatientCostInfoVO;
-import com.yunya.feign.report.domain.vo.PatientDataVo;
-import com.yunya.feign.report.domain.vo.PatientTreatInfoVo;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.report.BasePatient;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
@@ -15,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 简介:患者信息业务层
@@ -84,5 +82,15 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
       patientDataVo.setTotalArrears(costInfo.getTotalArrears());
     }
     return patientDataVo;
+  }
+
+  /**
+   * 根据条件查询患者信息
+   *
+   * @param keyword 关键字
+   * @return 患者信息列表
+   */
+  public List<PatientInfoVO> findPatientInfoByExample(String keyword) {
+    return mapper.selectPatientInfoByExample(keyword);
   }
 }

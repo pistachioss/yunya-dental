@@ -1,16 +1,16 @@
 package com.yunya.report.ultimate.controller;
 
 import com.yunya.feign.report.domain.vo.PatientDataVo;
+import com.yunya.feign.report.domain.vo.PatientInfoVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.PatientBaseInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 简介:
@@ -27,6 +27,19 @@ public class PatientBaseInfoController {
 
   /** 注入服务 */
   @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;
+
+  /**
+   * 根据关键字搜索患者信息
+   *
+   * @param keyword 查询条件
+   * @return
+   */
+  @ApiOperation("根据条件搜索患者信息")
+  @GetMapping(value = "/patient/search", name = "根据条件搜索患者信息")
+  public ResponseResult<List<PatientInfoVO>> patientSearch(@RequestParam String keyword) {
+    List<PatientInfoVO> patientInfo = patientBaseInfoBiz.findPatientInfoByExample(keyword);
+    return ResponseUtil.success(patientInfo);
+  }
 
   /**
    * 查询患者资料信息
