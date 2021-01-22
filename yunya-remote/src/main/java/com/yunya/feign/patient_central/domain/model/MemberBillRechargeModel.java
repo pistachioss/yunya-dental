@@ -47,6 +47,12 @@ public class MemberBillRechargeModel implements Serializable {
     private Integer orderRecordId;
 
     /**
+     * 账退款款记录id
+     */
+    @ApiModelProperty(value = "账单付款记录id",required = false)
+    private Integer billPayRecordId;
+
+    /**
      * 备注
      */
     @ApiModelProperty(value = "备注",required = false)

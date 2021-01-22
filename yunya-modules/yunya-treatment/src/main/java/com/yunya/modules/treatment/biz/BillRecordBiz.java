@@ -291,7 +291,11 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
         });
     // 保存账单退费付款明细记录
     saveBillRefundPayDetailRecord(
-        billRefundRecordId, memberRefundModel, prepaymentRefundModel, refundPaymentModels);
+        orderRecordId,
+        billRefundRecordId,
+        memberRefundModel,
+        prepaymentRefundModel,
+        refundPaymentModels);
     // 保存账单退费异常处理记录
     BillExceptionHandleRecord exceptionHandleRecord = new BillExceptionHandleRecord();
     exceptionHandleRecord.setOrgId(orgId);
@@ -319,12 +323,14 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   /**
    * 保存账单退费付款明细记录
    *
+   * @param orderRecordId 订单记录ID
    * @param billRefundRecordId 退费记录ID
    * @param memberRefundModel 会员卡退费
    * @param prepaymentRefundModel 预付款踢飞
    * @param refundPaymentModels 其他方式退费
    */
   private void saveBillRefundPayDetailRecord(
+      Integer orderRecordId,
       Integer billRefundRecordId,
       MemberRefundModel memberRefundModel,
       PrepaymentRefundModel prepaymentRefundModel,
@@ -352,9 +358,11 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       billRefundPayDetailRecordMapper.insertSelective(refundPayDetailRecord);
       // 会员卡退费金额返还
       MemberBillRechargeModel memberModel = new MemberBillRechargeModel();
+      memberModel.setOrderRecordId(orderRecordId);
       memberModel.setMemberId(memberNum);
       memberModel.setRechargePrincipal(principalAmount);
       memberModel.setRechargeBonus(giftAmount);
+      memberModel.setBillPayRecordId(billRefundRecordId);
       memberModel.setRemarks(billRefundRecordId.toString());
       patientCentralServiceFeign.billRefund(memberModel);
     }
@@ -377,9 +385,11 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       billRefundPayDetailRecordMapper.insertSelective(refundPayDetailRecord);
       // 预付款退费金额返还
       PrepaidBillRechargeModel prepaidModel = new PrepaidBillRechargeModel();
+      prepaidModel.setOrderRecordId(orderRecordId);
       prepaidModel.setPrepaidId(prepaymentNum);
       prepaidModel.setRechargePrincipal(principalAmount);
       prepaidModel.setRechargeBonus(giftAmount);
+      prepaidModel.setBillPayRecordId(billRefundRecordId);
       prepaidModel.setRemarks(billRefundRecordId.toString());
       patientCentralServiceFeign.billRefund(prepaidModel);
     }
