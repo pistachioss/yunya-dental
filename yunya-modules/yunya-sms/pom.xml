@@ -46,11 +46,11 @@
             <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
         </dependency>
 
-        <!-- 链路追踪 -->
+        <!-- 链路追踪
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-sleuth-zipkin</artifactId>
-        </dependency>
+        </dependency> -->
 
         <!-- spring-boot-admin-client -->
         <dependency>
