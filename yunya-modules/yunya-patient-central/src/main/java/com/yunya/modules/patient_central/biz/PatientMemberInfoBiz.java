@@ -33,6 +33,7 @@ import com.yunya.modules.patient_central.mapper.*;
 import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,6 +76,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
   /** redis队列 */
   @Autowired private RedisUtils redisUtils;
+
+  /** 当前服务上线日期 */
+  @Value("${serverInfo.onlineDateTime}")
+  private String onlineDateTime;
 
   /**
    * 根据患者id查询会员基本信息
@@ -214,7 +219,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     patientMemberInfo.setPatientId(openCardModel.getPatientId());
     patientMemberInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
-    String card = this.generateCardNumber("H", "patient_member_info", "card_number");
+    String card = this.generateCardNumber("H");
     if (card == null) {
       return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未获取到门诊id", card);
     }
@@ -232,14 +237,19 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * 生产会员卡号
    *
    * @param mark 会员号标识 H：会员卡，Y：预付款
-   * @param tableName 数据库表名
-   * @param column 表中列的名称
    * @return String 卡号
    */
-  public String generateCardNumber(String mark, String tableName, String column) {
+  public String generateCardNumber(String mark) {
     String orgId = BaseContextHandler.getOrgId();
+    String number = "";
     if (orgId != null) {
-      String number = this.mapper.generateCardNumber(Integer.parseInt(orgId), tableName, column);
+      if ("Y".equals(mark)) {
+        number = this.mapper.generateCardNumber4Prepay(Integer.parseInt(orgId),onlineDateTime);
+      } else if ("H".equals(mark)) {
+        number = this.mapper.generateCardNumber(Integer.parseInt(orgId),onlineDateTime);
+      } else {
+        return null;
+      }
       String suffix = String.format("%06d", Integer.parseInt(number) + 1);
       // 获取门诊简称
       OrganizationInfo organizationInfo =
