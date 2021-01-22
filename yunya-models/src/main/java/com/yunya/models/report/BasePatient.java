@@ -1,10 +1,13 @@
 package com.yunya.models.report;
 
+import lombok.Data;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
 
+@Data
 @Table(name = "base_patient")
 public class BasePatient {
     /**
@@ -514,14 +517,5 @@ public class BasePatient {
      */
     public Integer getNumberOfVisits() {
         return numberOfVisits;
-    }
-
-    /**
-     * 设置就诊次数
-     *
-     * @param numberOfVisits 就诊次数
-     */
-    public void setNumberOfVisits(Integer numberOfVisits) {
-        this.numberOfVisits = numberOfVisits;
     }
 }
