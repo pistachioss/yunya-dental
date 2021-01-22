@@ -61,7 +61,7 @@
         <if test="onlineDateTime != null and onlineDateTime != ''">
             and date_format(crt_time, '%Y-%m-%d %H:%i:%s') &gt;= date_format(#{onlineDateTime},'%Y-%m-%d %H:%i:%s')
         </if>
-    </select>   generateCardNumber4Prepay
+    </select>
 
     <!-- 根据门诊id获取病历号后六位 -->
     <select id="generateCardNumber4Prepay" resultType="java.lang.String">
