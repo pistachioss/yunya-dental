@@ -9,7 +9,7 @@ spring:
 aliyun:
     oss:
         endpoint: http://oss-cn-hangzhou.aliyuncs.com
-        access-key-id: LTAI4GL3SpbVMBDnzGRYz6GZ
-        access-key-secret: nQKA5iLUfMCPHH6Yy2UrBageveHmeh
-        bucket: yunya-backend
-        prefixPath: #统一根目录，可不填       # 只能包括小写字母、数字和短划线（-）
+        access-key-id: LTAI4GCyjcFUr2XAQbyrELSj
+        access-key-secret: RhEEw0tOFDm8usDfTAnnfsXHt82hvt
+        bucket: ivy2-oss
+        prefixPath: ivy2    #统一根目录，可不填       # 只能包括小写字母、数字和短划线（-）
