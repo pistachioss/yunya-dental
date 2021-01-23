@@ -367,12 +367,12 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     List<CurrentMonthBillCollectionDebtVO> resultList =
         mapper.selectCurrentMonthBillCollectionDebtList(query);
     if (StringHelper.isNotEmpty(resultList)) {
-      String currentMonth =
-          DateUtil.parseDateToStr("yyyy-MM", new Date(System.currentTimeMillis()));
       for (CurrentMonthBillCollectionDebtVO vo : resultList) {
         String billDate = vo.getBillDate();
         vo.setCurrentMonthBill(
-            currentMonth.equals(new DateTime(billDate).toString("yyyy-MM")) ? "当月账单" : "非当月账单");
+            query.getCurrentMonth().equals(new DateTime(billDate).toString("yyyy-MM"))
+                ? "当月账单"
+                : "非当月账单");
       }
     }
     ExcelUtil<CurrentMonthBillCollectionDebtVO> excelUtil =
