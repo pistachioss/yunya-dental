@@ -66,7 +66,12 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
       throws IOException {
     List<BillOfRefundRecordInfoVO> list = mapper.selectBillRefundRecord(query);
     ExcelUtil<BillOfRefundRecordInfoVO> excelUtil = new ExcelUtil<>(BillOfRefundRecordInfoVO.class);
-    String fileName = excelUtil.getFileName(null,null,getAbbreviationById(query.getOrgId()),"账单退费记录表");
+    String fileName =
+        excelUtil.getFileName(
+            query.getRefundStartDate(),
+            query.getRefundEndDate(),
+            getAbbreviationById(query.getOrgId()),
+            "账单退费记录表");
     excelUtil.exportExcel(response, list, "账单退费记录表", fileName);
   }
 

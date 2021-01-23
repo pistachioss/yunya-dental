@@ -129,8 +129,7 @@
         bb.privilege_amount AS privilegeAmount,
         bb.actual_amount AS actualAmount,
         bb.received_amount AS receivedAmount,
-        IF
-        ( bb.bill_num = NULL OR '', 0, 1 ) AS chargeStatus,
+        IF( bb.bill_num IS NULL OR bb.bill_num='', 0, 1 ) AS chargeStatus,
         bb.biller_id AS billerId,
         be.employee_name AS biller
         FROM
@@ -777,7 +776,7 @@
         SELECT
         bb.bill_id AS billId,
         DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) AS collectDebtDate,
-        bb.bill_date AS billDate,
+        DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) AS billDate,
         bb.bill_num AS billNum,
         bb.patient_id AS patientId,
         bp.`name` AS patientName,
@@ -798,8 +797,7 @@
         base_treatment_process btp
         LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
         WHERE
-        btp.registered_id IS NOT NULL
-        AND btp.treat_end_time IS NOT NULL
+          btp.treat_end_time IS NOT NULL
         ) btp ON bb.treatment_id = btp.treatment_id
         LEFT JOIN (
         SELECT
@@ -810,11 +808,9 @@
         FROM
         base_bill_pay bbp
         LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
-        ) bbp ON bb.bill_id = bbp.bill_id
-        AND DATE_FORMAT( bb.privilege_date, '%Y-%m-%d %H:%i' ) = DATE_FORMAT( bbp.payee_date, '%Y-%m-%d %H:%i' )
+        ) bbp ON bb.bill_id = bbp.bill_id AND bb.privilege_date = bbp.payee_date
         <where>
-            AND bb.bill_num IS NOT NULL
-            AND bb.bill_date IS NOT NULL
+            AND bb.bill_date != bb.privilege_date
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>

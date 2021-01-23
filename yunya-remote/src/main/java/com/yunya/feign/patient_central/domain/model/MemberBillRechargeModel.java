@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -25,18 +26,21 @@ public class MemberBillRechargeModel implements Serializable {
     /**
      * 会员卡号
      */
+    @NotNull(message = "会员卡号不能为空")
     @ApiModelProperty(value = "会员卡号",required = true)
     private String memberId;
 
     /**
      * 充值本金
      */
+    @NotNull(message = "充值本金不能为空")
     @ApiModelProperty(value = "充值本金",required = true)
     private BigDecimal rechargePrincipal;
 
     /**
      * 充值赠金
      */
+    @NotNull(message = "充值赠金不能为空")
     @ApiModelProperty(value = "充值赠金",required = true)
     private BigDecimal rechargeBonus;
 

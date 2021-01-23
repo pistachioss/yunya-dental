@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -22,12 +23,14 @@ public class OpenCardModel implements Serializable {
     /**
      * 患者ID
      */
+    @NotNull(message = "患者ID不能为空")
     @ApiModelProperty(value = "患者ID",required = true)
     private Integer patientId;
 
     /**
      * 会员卡类型
      */
+    @NotNull(message = "会员卡类型不能为空")
     @ApiModelProperty(value = "会员卡类型",required = true)
     private Integer memberTypeId;
 

@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -20,36 +21,42 @@ public class MemberBindingRelationInfoModel implements Serializable {
 
     /**   * 患者id
      */
+    @NotNull(message = "患者id不能为空")
     @ApiModelProperty(value = "患者id",required = true)
     private Integer patientId;
 
     /**
      * 诊所Id
      */
-    @ApiModelProperty(value = "患者id")
+    @NotNull(message = "诊所Id不能为空")
+    @ApiModelProperty(value = "诊所Id")
     private Integer orgId;
 
     /**
      * 关联人名称
      */
-    @ApiModelProperty(value = "患者id")
+    @NotNull(message = "关联人名称不能为空")
+    @ApiModelProperty(value = "关联人名称")
     private String name;
 
     /**
-     * 主卡会员人ID
+     * 主卡人患者id
      */
-    @ApiModelProperty(value = "主卡会员人ID",required = true)
+    @NotNull(message = "主卡人患者id不能为空")
+    @ApiModelProperty(value = "主卡人患者id",required = true)
     private Integer masterCardId;
 
     /**
-     * 副卡会员人ID
+     * 副卡人患者ID
      */
+    @NotNull(message = "副卡会员人ID不能为空")
     @ApiModelProperty(value = "副卡会员人ID",required = true)
     private Integer secondaryCardId;
 
     /**
      * 关联类型
      */
+    @NotNull(message = "关联类型不能为空")
     @ApiModelProperty(value = "关联类型",required = true)
     private Byte bindType;
 
