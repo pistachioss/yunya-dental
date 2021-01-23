@@ -20,6 +20,7 @@ public class CardUsedRecordVo {
 	@ExcelIgnore
 	private Integer orderId;
 	@ApiModelProperty(value = "卡id")
+	@ExcelIgnore
 	private Integer cardId;
 	@ApiModelProperty(value = "使用日期")
 	@ExcelProperty(value = "使用日期")
