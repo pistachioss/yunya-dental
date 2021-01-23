@@ -16,6 +16,7 @@ import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
 import com.yunya.report.ultimate.mapper.BaseBillPayMapper;
 import com.yunya.report.ultimate.mapper.CurrentMonthBillStatisticsMapper;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,7 +46,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Autowired private BaseBillPayMapper billPayMapper;
   /** 系统服务调用 */
   @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
-  /** 账单详情 **/
+  /** 账单详情 * */
   @Autowired private BaseBillDetailMapper baseBillDetailMapper;
 
   /**
@@ -73,9 +74,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       throws IOException {
     List<BillOfOrderRecordVO> list = mapper.selectBillRecordOfOrderList(query);
     ExcelUtil<BillOfOrderRecordVO> excelUtil = new ExcelUtil<>(BillOfOrderRecordVO.class);
-    String fileName = excelUtil.getFileName(null,null,
-            getAbbreviationById(query.getOrgId()), "开单记录表");
-    excelUtil.exportExcel(response, list, "开单记录表",fileName);
+    String fileName =
+        excelUtil.getFileName(null, null, getAbbreviationById(query.getOrgId()), "开单记录表");
+    excelUtil.exportExcel(response, list, "开单记录表", fileName);
   }
 
   /**
@@ -138,8 +139,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     List<BillRestReceivableAmountVO> resultList = mapper.selectBillReceivableAmountList(query);
     ExcelUtil<BillRestReceivableAmountVO> excelUtil =
         new ExcelUtil<>(BillRestReceivableAmountVO.class);
-    String fileName = excelUtil.getFileName(getAbbreviationById(query.getOrgId()),
-            query.getBillDate(),null,null,"应收账款余额表");
+    String fileName =
+        excelUtil.getFileName(
+            getAbbreviationById(query.getOrgId()), query.getBillDate(), null, null, "应收账款余额表");
     excelUtil.exportExcel(response, resultList, "应收账款余额表", fileName);
   }
 
@@ -273,58 +275,56 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     List<BillDiscountDetailInifoVO> billDiscountDetails = Lists.newArrayList();
     // 查询账单详情列表
     List<BaseBillDetailVO> baseBillDetails = baseBillDetailMapper.selectBillDetailByBillId(billId);
-    Map<Integer, BaseBillDetailVO> details = baseBillDetails.stream().collect(Collectors.toMap(BaseBillDetailVO::getBillDetailId,(vo)->vo));
+    Map<Integer, BaseBillDetailVO> details =
+        baseBillDetails.stream()
+            .collect(Collectors.toMap(BaseBillDetailVO::getBillDetailId, (vo) -> vo));
     // 查询该账单下所有的使用了产品优惠
     List<BaseBenefitInfoVO> benefits = mapper.selectBaseBenefitInfoByBillId(billId);
     Map<String, BaseBenefitInfoVO> benefitMap = new HashMap<>(16);
     Map<String, BigDecimal[]> countMap = new HashMap<>(16);
-    benefits.forEach(benefit->{
-      Integer orderDetailId = benefit.getOrderDetailId();
-      Integer cardId = benefit.getCardId();
-      String key = orderDetailId + "," + cardId;
-      BigDecimal[] counts = countMap.get(key);
-      if (counts == null) {
-        counts = new BigDecimal[]{BigDecimal.valueOf(0), BigDecimal.valueOf(0)};
-      }
-      counts[0] = counts[0].add(new BigDecimal(1));
-      counts[1] = counts[1].add(benefit.getBenefitAmount());
-      countMap.put(key, counts);
-      if (!benefitMap.containsKey(key)) {
-        benefitMap.put(key, benefit);
-      }
-    });
+    benefits.forEach(
+        benefit -> {
+          Integer orderDetailId = benefit.getOrderDetailId();
+          Integer cardId = benefit.getCardId();
+          String key = orderDetailId + "," + cardId;
+          BigDecimal[] counts = countMap.get(key);
+          if (counts == null) {
+            counts = new BigDecimal[] {BigDecimal.valueOf(0), BigDecimal.valueOf(0)};
+          }
+          counts[0] = counts[0].add(new BigDecimal(1));
+          counts[1] = counts[1].add(benefit.getBenefitAmount());
+          countMap.put(key, counts);
+          if (!benefitMap.containsKey(key)) {
+            benefitMap.put(key, benefit);
+          }
+        });
     if (StringHelper.isNotEmpty(countMap)) {
-      countMap.forEach((key, counts)->{
-        BillDiscountDetailInifoVO vo = new BillDiscountDetailInifoVO();
-        BaseBenefitInfoVO benefitInfoVO = benefitMap.get(key);
-        if (benefitInfoVO != null) {
-          vo.setCouponName(benefitInfoVO.getCouponName());
-          vo.setSaleChannelName(benefitInfoVO.getSaleChannelName());
-          vo.setCardNumber(benefitInfoVO.getCardNumber());
-        }
-        vo.setQuantity(counts[0].intValue());
-        vo.setBenefitAmount(counts[1]);
-        Integer orderDetailId = Integer.parseInt(key.split(",")[0]);
-        BaseBillDetailVO detailVO = details.get(orderDetailId);
-        if (detailVO != null) {
-          vo.setItemName(detailVO.getItemName());
-          vo.setUnit(detailVO.getUnit());
-          vo.setEmployeeName(detailVO.getOperateUserName());
-          vo.setPrice(detailVO.getPrice());
-          vo.setOriginPrice(counts[0].multiply(detailVO.getPrice()));
-        }
-        billDiscountDetails.add(vo);
-      });
+      countMap.forEach(
+          (key, counts) -> {
+            BillDiscountDetailInifoVO vo = new BillDiscountDetailInifoVO();
+            BaseBenefitInfoVO benefitInfoVO = benefitMap.get(key);
+            if (benefitInfoVO != null) {
+              vo.setCouponName(benefitInfoVO.getCouponName());
+              vo.setSaleChannelName(benefitInfoVO.getSaleChannelName());
+              vo.setCardNumber(benefitInfoVO.getCardNumber());
+            }
+            vo.setQuantity(counts[0].intValue());
+            vo.setBenefitAmount(counts[1]);
+            Integer orderDetailId = Integer.parseInt(key.split(",")[0]);
+            BaseBillDetailVO detailVO = details.get(orderDetailId);
+            if (detailVO != null) {
+              vo.setItemName(detailVO.getItemName());
+              vo.setUnit(detailVO.getUnit());
+              vo.setEmployeeName(detailVO.getOperateUserName());
+              vo.setPrice(detailVO.getPrice());
+              vo.setOriginPrice(counts[0].multiply(detailVO.getPrice()));
+            }
+            billDiscountDetails.add(vo);
+          });
     }
     billDiscountVOs.setBillDiscountDetail(billDiscountDetails);
     return billDiscountVOs;
   }
-
-
-//  public BillDiscountVO billDiscountDetailInfo(Integer billId) {
-//    BillDiscountVO billDiscountVOs = mapper.selectBillDiscountDetailInfo(billId);
-//    return billDiscountVOs;
-//  }
 
   /**
    * 根据条件查询本月对账单账单统计信息
@@ -371,7 +371,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           DateUtil.parseDateToStr("yyyy-MM", new Date(System.currentTimeMillis()));
       for (CurrentMonthBillCollectionDebtVO vo : resultList) {
         String billDate = vo.getBillDate();
-        vo.setCurrentMonthBill(currentMonth.equals(billDate) ? "当月账单" : "非当月账单");
+        vo.setCurrentMonthBill(
+            currentMonth.equals(new DateTime(billDate).toString("yyyy-MM")) ? "当月账单" : "非当月账单");
       }
     }
     ExcelUtil<CurrentMonthBillCollectionDebtVO> excelUtil =
