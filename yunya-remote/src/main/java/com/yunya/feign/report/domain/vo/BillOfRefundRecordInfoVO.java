@@ -27,8 +27,12 @@ public class BillOfRefundRecordInfoVO implements Serializable {
   @ApiModelProperty("退费日期")
   private String refundDate;
   /** 开单日期 */
-  @ApiModelProperty("开单日期")
+  @ApiModelProperty("订单日期")
   private String orderDate;
+  /** 账单日期 */
+  @Excel(name = "账单日期")
+  @ApiModelProperty("账单日期")
+  private String billDate;
   /** 账单编号 */
   @Excel(name = "账单编号")
   @ApiModelProperty("账单编号")

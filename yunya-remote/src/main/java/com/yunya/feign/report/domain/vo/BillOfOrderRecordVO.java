@@ -22,8 +22,8 @@ import java.math.BigDecimal;
 @ToString
 public class BillOfOrderRecordVO implements Serializable {
   /** 开单日期 */
-  @Excel(name = "开单日期")
-  @ApiModelProperty("开单日期")
+  @Excel(name = "订单日期")
+  @ApiModelProperty("订单日期")
   private String orderDate;
   /** 账单ID */
   @ApiModelProperty("账单ID")
