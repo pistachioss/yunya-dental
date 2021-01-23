@@ -102,7 +102,7 @@
                 </foreach>
             </if>
         </where>
-        order by br.refundDate desc
+        order by br.billRefundRecordId desc
     </select>
 
     <!--  根据条件查询员工退费工作量明细列表 -->
