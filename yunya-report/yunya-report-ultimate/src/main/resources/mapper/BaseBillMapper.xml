@@ -359,11 +359,11 @@
         FROM
         (
         SELECT
-        bb.org_id,
-        SUM( bb.order_amount ) AS totalOriginalAmount,
-        SUM( bb.privilege_amount ) AS totalDiscountAmount,
-        SUM( bb.actual_amount ) AS totalActualReceiveAmount,
-        SUM( bb.debt_amount ) AS totalDebtAmount
+        any_value(bb.org_id) as org_id,
+        SUM( any_value(bb.order_amount) ) AS totalOriginalAmount,
+        SUM( any_value(bb.privilege_amount) ) AS totalDiscountAmount,
+        SUM( any_value(bb.actual_amount) ) AS totalActualReceiveAmount,
+        SUM( any_value(bb.debt_amount) ) AS totalDebtAmount
         FROM
         base_bill bb
         <where>
@@ -430,10 +430,10 @@
         FROM
         (
         SELECT
-        bb.patient_id,
-        IFNULL( SUM( bb.actual_amount ), 0 ) AS totalActualAmount,
-        IFNULL( SUM( bb.received_amount ), 0 ) AS totalReceivedAmount,
-        IFNULL( SUM( bb.debt_amount ), 0 ) AS totalRemainingArrearsAmount
+        any_value(bb.patient_id) as patient_id,
+        IFNULL( SUM( any_value(bb.actual_amount) ), 0 ) AS totalActualAmount,
+        IFNULL( SUM( any_value(bb.received_amount) ), 0 ) AS totalReceivedAmount,
+        IFNULL( SUM( any_value(bb.debt_amount) ), 0 ) AS totalRemainingArrearsAmount
         FROM
         base_bill bb
         WHERE
@@ -470,16 +470,16 @@
         FROM
             (
             SELECT
-                bb.org_id AS orgId,
-                bb.bill_id AS billId,
-                bb.bill_date AS billDate,
-                bb.bill_num AS billNum,
-                bb.treatment_id,
-                bb.order_amount AS originalAmount,
-                bb.actual_amount AS actualAmount,
-                bb.received_amount AS receivedAmount,
-                bb.debt_amount AS remainingArrears,
-                bb.privilege_amount AS privilegeAmount
+                any_value(bb.org_id) AS orgId,
+                any_value(bb.bill_id) AS billId,
+                any_value(bb.bill_date) AS billDate,
+                any_value(bb.bill_num) AS billNum,
+                any_value(bb.treatment_id) as treatment_id,
+                any_value(bb.order_amount) AS originalAmount,
+                any_value(bb.actual_amount) AS actualAmount,
+                any_value(bb.received_amount) AS receivedAmount,
+                any_value(bb.debt_amount) AS remainingArrears,
+                any_value(bb.privilege_amount) AS privilegeAmount
             FROM
                 base_bill bb
             WHERE
