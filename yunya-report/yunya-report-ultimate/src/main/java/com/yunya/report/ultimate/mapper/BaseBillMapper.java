@@ -145,8 +145,8 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
   /**
    * 根据billId查询所有优惠的项目
    *
-   * @param billId
+   * @param billId 订单ID
    * @return
    */
-  List selectBaseBenefitInfoByBillId(@Param("billId") Integer billId);
+  List<BaseBenefitInfoVO> selectBaseBenefitInfoByBillId(@Param("billId") Integer billId);
 }
