@@ -59,6 +59,11 @@ public class PrepaidReturnRecord {
     private String remarks;
 
     /**
+     * 是否可用
+     */
+    private Boolean inservice;
+
+    /**
      * 退费方式
      */
     @Column(name = "return_way_type")
