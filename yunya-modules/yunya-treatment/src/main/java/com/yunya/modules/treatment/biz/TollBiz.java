@@ -1200,7 +1200,7 @@ public class TollBiz {
         debtAmount = actualReceivableAmount.subtract(totalCharge);
       }
       billRecordResult.setPrivilegeType(discountType);
-      if (0 != discountType && billRecordResult.getPrivilegeDate() != null) {
+      if (0 != discountType && billRecordResult.getPrivilegeDate() == null) {
         billRecordResult.setPrivilegeDate(new Date(System.currentTimeMillis()));
       }
       // 设置优惠总额
@@ -1253,7 +1253,7 @@ public class TollBiz {
       billRecord.setPrivilegeType(discountType);
       billRecord.setPrivilegeAmount(privilegeAmount);
       if (0 != discountType) {
-        billRecord.setPrivilegeDate(new Date(System.currentTimeMillis()));
+        billRecord.setPrivilegeDate(new Date(currentTimeMillis));
       }
       BigDecimal actualReceivableAmount = totalAmount.subtract(privilegeAmount);
       billRecord.setActualReceivableAmount(actualReceivableAmount);
