@@ -68,15 +68,17 @@ public class PatientMemberInfoController {
   }
 
   /**
-   * 会员卡付款余额查询
+   * 患者可用会员卡列表查询
    *
-   * @param id 患者id
+   * @param patientId 患者id
    * @return PatientPrepaymentBalanceVo
    */
-  @ApiOperation("会员卡付款余额查询")
-  @GetMapping("/balancePayment/{id}")
-  public ResponseResult<PatientMemberBalanceVo> balancePayment(@PathVariable("id") Integer id) {
-    return ResponseUtil.success(this.patientMemberInfoBiz.balancePayment(id));
+  @ApiOperation("患者可用会员卡列表查询")
+  @GetMapping("/balancePayment/{patientId}")
+  public ResponseResult<List<MemberBaseInfoVo>> balancePayment(
+      @PathVariable("patientId") Integer patientId) {
+    List<MemberBaseInfoVo> resultList = this.patientMemberInfoBiz.balancePayment(patientId);
+    return ResponseUtil.success(resultList);
   }
 
   /**
@@ -173,8 +175,6 @@ public class PatientMemberInfoController {
     return ResponseUtil.success();
   }
 
-
-
   /**
    * 充值记录
    *
@@ -232,7 +232,8 @@ public class PatientMemberInfoController {
   }
 
   /**
-   *  会员卡消费
+   * 会员卡消费
+   *
    * @param model 消费model
    * @return ResponseResult
    */
@@ -243,9 +244,9 @@ public class PatientMemberInfoController {
     return patientMemberInfoBiz.expend(model);
   }
 
-
   /**
    * 会员卡撤销收费
+   *
    * @param model 撤销收费参数模型
    * @return ResponseResult
    */

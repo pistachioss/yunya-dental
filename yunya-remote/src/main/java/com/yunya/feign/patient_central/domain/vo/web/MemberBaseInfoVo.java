@@ -1,6 +1,7 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -21,60 +22,46 @@ import java.util.Date;
 @ApiModel("返回会员信息模型")
 public class MemberBaseInfoVo implements Serializable {
 
+  /** 主键id */
+  @ApiModelProperty("会员卡ID")
+  private Integer id;
 
-    /**
-     * 主键id
-     */
-    private Integer id;
+  /** 诊所id */
+  @ApiModelProperty("诊所id")
+  private Integer orgId;
 
-    /**
-     * 诊所id
-     */
-    private Integer orgId;
+  /** 患者id */
+  @ApiModelProperty("患者id")
+  private Integer patientId;
 
-    /**
-     * 患者id
-     */
-    private Integer patientId;
+  /** 患者名称 */
+  @ApiModelProperty("患者名称")
+  private String name;
 
-    /**
-     * 患者名称
-     */
-    private String name;
+  /** 会员卡卡号 */
+  @ApiModelProperty("会员卡卡号")
+  private String cardNumber;
 
-    /**
-     * 会员卡卡号
-     */
-    private String cardNumber;
+  /** 会员卡类型id */
+  @ApiModelProperty("会员卡类型id")
+  private Integer memberTypeId;
 
-    /**
-     * 会员卡类型名称
-     */
-    private String memberCardName;
+  /** 会员卡类型名称 */
+  @ApiModelProperty("会员卡类型名称")
+  private String memberCardName;
 
-    /**
-     * 会员本卡总余额（本金+赠金）
-     */
-    private BigDecimal memberCardMoneySum;
+  /** 会员本卡总余额（本金+赠金） */
+  @ApiModelProperty("会员本卡总余额（本金+赠金）")
+  private BigDecimal memberCardMoneySum;
 
-    /**
-     *  本金
-     */
-    private BigDecimal principalAmount;
+  /** 本金 */
+  @ApiModelProperty("本金")
+  private BigDecimal principalAmount;
 
-    /**
-     *  赠金
-     */
-    private BigDecimal bonusAmount;
+  /** 赠金 */
+  @ApiModelProperty("赠金")
+  private BigDecimal bonusAmount;
 
-    /**
-     * 会员卡类型id
-     */
-    private Integer memberTypeId;
-
-    /**
-     * 开卡日期
-     */
-    private Date crtTime;
-
+  /** 开卡日期 */
+  private Date crtTime;
 }

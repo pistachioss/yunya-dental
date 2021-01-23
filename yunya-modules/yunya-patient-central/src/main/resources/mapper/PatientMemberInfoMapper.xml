@@ -103,24 +103,25 @@
         from patient_member_info where patient_id = #{form.patientId}
     </select>
 
-    <!-- 根据主卡人id 查询会员贡献值关联信息 -->
+    <!-- 根据患者id查询患者可用会员卡列表 -->
     <select id="selectMemberRelationByMasterPatientId"
             resultType="com.yunya.feign.patient_central.domain.vo.web.MemberBaseInfoVo">
         SELECT
-            pmio.id id,
-            pmio.org_id orgid,
-            pmio.patient_id patientId,
-            pmio.card_number cardNumber,
-            pmio.crt_time crtTime,
-            pbio.NAME NAME,
-            CAST(IFNULL( pmio.principal_amount + pmio.bonus_amount, 0 ) AS DECIMAL ( 15, 2 )) memberCardMoneySum,
-            CAST(IFNULL( pmio.principal_amount, 0 ) AS DECIMAL ( 15, 2 )) principalAmount,
-            CAST(IFNULL( pmio.bonus_amount, 0 ) AS DECIMAL ( 15, 2 )) bonusAmount
+            pmi.id,
+            pmr.master_card_id AS patientId,
+            pbi.`name`,
+            pmi.member_type_id AS memberTypeId,
+            pmi.card_number AS cardNumber,
+            CAST(
+            IFNULL( pmi.principal_amount + pmi.bonus_amount, 0 ) AS DECIMAL ( 15, 2 )) memberCardMoneySum,
+            CAST(
+            IFNULL( pmi.principal_amount, 0 ) AS DECIMAL ( 15, 2 )) principalAmount,
+            CAST(
+            IFNULL( pmi.bonus_amount, 0 ) AS DECIMAL ( 15, 2 )) bonusAmount
         FROM
-            patient_member_relation pmrn
-          join  patient_member_info pmio on pmrn.secondary_card_id = pmio.patient_id
-          join  patient_base_info pbio on pmio.patient_id = pbio.id
-          where pmrn.master_card_id  =#{id} and pmrn.bind_type = 1
+            ( SELECT pmr.master_card_id FROM patient_member_relation pmr WHERE bind_type = 1 AND pmr.secondary_card_id = #{patientId} GROUP BY pmr.master_card_id ) pmr
+            LEFT JOIN patient_member_info pmi ON pmr.master_card_id = pmi.patient_id
+            LEFT JOIN patient_base_info pbi ON pmr.master_card_id = pbi.id
     </select>
 
     <select id="sumMemberAndPrepayRechargeCash" resultType="java.math.BigDecimal">

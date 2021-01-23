@@ -787,20 +787,19 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param id
    * @return PatientPrepaymentBalanceVo
    */
-  public PatientMemberBalanceVo balancePayment(Integer id) {
+  public List<MemberBaseInfoVo> balancePayment(Integer id) {
+    List<MemberBaseInfoVo> resultList = new ArrayList<>();
+    // 患者本人会员卡
     MemberBaseInfoVo memberBaseInfo = patientMemberInfoMapper.findMemberBaseInfo(id);
     if (null != memberBaseInfo) {
-      PatientMemberBalanceVo patientMemberBalanceVo = new PatientMemberBalanceVo();
-      patientMemberBalanceVo.setMemberBaseInfoVo(memberBaseInfo);
-
-      List<MemberBaseInfoVo> memberBaseInfoVoList =
-          patientMemberInfoMapper.selectMemberRelationByMasterPatientId(id);
-      if (StringHelper.isNotNull(memberBaseInfoVoList)) {
-        patientMemberBalanceVo.setMemberBaseInfoVoList(memberBaseInfoVoList);
-      }
-      return patientMemberBalanceVo;
+      resultList.add(memberBaseInfo);
     }
-    return null;
+    // 患者作为副卡人可用会员卡
+    List<MemberBaseInfoVo> memberBaseInfoVoList =
+            patientMemberInfoMapper.selectMemberRelationByMasterPatientId(id);
+    resultList.addAll(memberBaseInfoVoList);
+
+    return resultList;
   }
 
   /**
