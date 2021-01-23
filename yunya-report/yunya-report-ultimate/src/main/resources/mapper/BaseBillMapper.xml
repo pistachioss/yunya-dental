@@ -86,8 +86,7 @@
             </if>
 
         </where>
-        group by bb.order_date asc
-
+        order by bb.order_date asc
     </select>
 
     <!-- 根据条件查询开单记录列表 -->
@@ -360,11 +359,11 @@
         FROM
         (
         SELECT
-        bb.org_id,
-        SUM( bb.order_amount ) AS totalOriginalAmount,
-        SUM( bb.privilege_amount ) AS totalDiscountAmount,
-        SUM( bb.actual_amount ) AS totalActualReceiveAmount,
-        SUM( bb.debt_amount ) AS totalDebtAmount
+        any_value(bb.org_id) as org_id,
+        SUM( any_value(bb.order_amount) ) AS totalOriginalAmount,
+        SUM( any_value(bb.privilege_amount) ) AS totalDiscountAmount,
+        SUM( any_value(bb.actual_amount) ) AS totalActualReceiveAmount,
+        SUM( any_value(bb.debt_amount) ) AS totalDebtAmount
         FROM
         base_bill bb
         <where>
@@ -431,10 +430,10 @@
         FROM
         (
         SELECT
-        bb.patient_id,
-        IFNULL( SUM( bb.actual_amount ), 0 ) AS totalActualAmount,
-        IFNULL( SUM( bb.received_amount ), 0 ) AS totalReceivedAmount,
-        IFNULL( SUM( bb.debt_amount ), 0 ) AS totalRemainingArrearsAmount
+        any_value(bb.patient_id) as patient_id,
+        IFNULL( SUM( any_value(bb.actual_amount) ), 0 ) AS totalActualAmount,
+        IFNULL( SUM( any_value(bb.received_amount) ), 0 ) AS totalReceivedAmount,
+        IFNULL( SUM( any_value(bb.debt_amount) ), 0 ) AS totalRemainingArrearsAmount
         FROM
         base_bill bb
         WHERE
@@ -471,16 +470,16 @@
         FROM
             (
             SELECT
-                bb.org_id AS orgId,
-                bb.bill_id AS billId,
-                bb.bill_date AS billDate,
-                bb.bill_num AS billNum,
-                bb.treatment_id,
-                bb.order_amount AS originalAmount,
-                bb.actual_amount AS actualAmount,
-                bb.received_amount AS receivedAmount,
-                bb.debt_amount AS remainingArrears,
-                bb.privilege_amount AS privilegeAmount
+                any_value(bb.org_id) AS orgId,
+                any_value(bb.bill_id) AS billId,
+                any_value(bb.bill_date) AS billDate,
+                any_value(bb.bill_num) AS billNum,
+                any_value(bb.treatment_id) as treatment_id,
+                any_value(bb.order_amount) AS originalAmount,
+                any_value(bb.actual_amount) AS actualAmount,
+                any_value(bb.received_amount) AS receivedAmount,
+                any_value(bb.debt_amount) AS remainingArrears,
+                any_value(bb.privilege_amount) AS privilegeAmount
             FROM
                 base_bill bb
             WHERE
@@ -516,10 +515,10 @@
         FROM
         (
         SELECT
-        btp.dentistId,
-        btp.dentistName,
-        bb.bill_id,
-        bb.debt_amount
+        any_value(btp.dentistId) as dentistId,
+        any_value(btp.dentistName) as dentistName,
+        any_value(bb.bill_id) as  bill_id,
+        any_value(bb.debt_amount) as debt_amount
         FROM
         ( SELECT bb.bill_id, bb.treatment_id, bb.debt_amount FROM base_bill bb WHERE bb.debt_amount > 0 ) bb
         LEFT JOIN (
@@ -586,21 +585,21 @@
         FROM
         (
         SELECT
-        bb.org_id AS orgId,
-        btp.registered_dentist_id,
-        bo.abbreviation AS orgName,
-        bb.bill_id AS billId,
-        DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) AS billDate,
-        bb.bill_num AS billNum,
-        bb.patient_id AS patientId,
-        bp.`name` AS patientName,
-        bp.pinyin_name AS pinyinName,
-        bp.mobile,
-        bb.originalAmount,
-        bb.privilegeAmount,
-        bb.actualAmount,
-        bb.receivedAmount,
-        bb.remainingArrears
+        any_value(bb.org_id) AS orgId,
+        any_value(btp.registered_dentist_id) as registered_dentist_id,
+        any_value(bo.abbreviation) AS orgName,
+        any_value(bb.bill_id) AS billId,
+        DATE_FORMAT(any_value(bb.bill_date), '%Y-%m-%d' ) AS billDate,
+        any_value(bb.bill_num) AS billNum,
+        any_value(bb.patient_id) AS patientId,
+        any_value(bp.`name`) AS patientName,
+        any_value(bp.pinyin_name) AS pinyinName,
+        any_value(bp.mobile) as mobile,
+        any_value(bb.originalAmount) as originalAmount,
+        any_value(bb.privilegeAmount) as privilegeAmount,
+        any_value(bb.actualAmount) as actualAmount,
+        any_value(bb.receivedAmount) as receivedAmount,
+        any_value(bb.remainingArrears) as remainingArrears
         FROM
         (
         SELECT

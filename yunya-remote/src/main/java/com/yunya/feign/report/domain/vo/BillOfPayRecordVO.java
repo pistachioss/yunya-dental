@@ -26,10 +26,11 @@ public class BillOfPayRecordVO implements Serializable {
   @ApiModelProperty("收费日期")
   private String toolDate;
   /** 开单日期 */
-  @Excel(name = "开单日期")
-  @ApiModelProperty("开单日期")
+  @Excel(name = "订单日期")
+  @ApiModelProperty("订单日期")
   private String orderDate;
   /** 账单日期 */
+  @Excel(name = "账单日期")
   @ApiModelProperty("账单日期")
   private String billDate;
   /** 账单ID */

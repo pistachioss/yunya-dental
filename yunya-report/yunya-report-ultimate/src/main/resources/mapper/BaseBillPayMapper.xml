@@ -126,7 +126,7 @@
             </if>
         </where>
         ORDER BY
-        brp.toolDate DESC
+        brp.billPayId DESC
     </select>
 
     <!-- 根据条件查询门诊收费数据总览 -->
