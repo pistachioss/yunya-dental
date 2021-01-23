@@ -288,7 +288,7 @@ public class TollBiz {
         generateBillRecord(treatmentRecordId, patientId, orderRecordId, orderRecordOrgId);
     billRecord.setPrivilegeType(discountType);
     if (0 != discountType) {
-      billRecord.setPrivilegeDate(new Date(System.currentTimeMillis()));
+      billRecord.setPrivilegeDate(new Date(millis));
     }
     billRecord.setReceivableAmount(totalAmount);
     billRecord.setPrivilegeAmount(privilegeAmount);
