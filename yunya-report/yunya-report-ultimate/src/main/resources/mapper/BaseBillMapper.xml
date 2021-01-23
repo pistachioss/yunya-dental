@@ -165,7 +165,7 @@
                 </foreach>
             </if>
         </where>
-        ORDER BY bor.orderDate DESC
+        ORDER BY bor.billId DESC
     </select>
 
     <!-- 根据条件查询账单优惠明细列表 -->
@@ -251,7 +251,7 @@
                 </foreach>
             </if>
         </where>
-        order by bpr.orderDate desc
+        order by bpr.billId desc
     </select>
 
     <!-- 根据条件查询应收账款余额表 -->
