@@ -18,9 +18,6 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.ParseException;
-import java.util.Map;
-
 /**
  * 简介: 患者接诊管理控制器
  *
@@ -135,38 +132,45 @@ public class TreatmentRecordController {
 
   /**
    * 查询门诊某天的就诊列表数量
+   *
    * @param query 查询
    * @return
    */
   @ApiOperation("就诊列表数量统计")
   @PostMapping(value = "/count", name = "就诊列表数量统计")
-  public ResponseResult<CountTreatmentRecordVO> count(@RequestBody TreatmentCountQuery query) {
+  public ResponseResult<CountTreatmentRecordVO> count(
+      @RequestBody @Validated TreatmentCountQuery query) {
     CountTreatmentRecordVO result = treatmentRecordBiz.countTreatList(query);
     return ResponseUtil.success(result);
   }
 
   /**
    * PC照片影像小程序就诊中/治疗完成/已结账请求接口
+   *
    * @param queryForm
    * @return
    */
   @ApiOperation("PC照片影像小程序就诊中/治疗完成/已结账请求接口")
   @PostMapping(value = "/desktop/treatment/list")
-  public ResponseResult<PageInfo<DesktopMiniProgramVO>> desktopTreatList(@RequestBody @Validated TreatmentRecordQueryForm queryForm) {
-    PageInfo<DesktopMiniProgramVO> desktopMiniProgramVOPageInfo = treatmentRecordBiz.desktopTreatList(queryForm);
+  public ResponseResult<PageInfo<DesktopMiniProgramVO>> desktopTreatList(
+      @RequestBody @Validated TreatmentRecordQueryForm queryForm) {
+    PageInfo<DesktopMiniProgramVO> desktopMiniProgramVOPageInfo =
+        treatmentRecordBiz.desktopTreatList(queryForm);
     return ResponseUtil.success(desktopMiniProgramVOPageInfo);
   }
 
   /**
    * 根据患者姓名、手机号、病历号查询影像小程序列表中患者信息
+   *
    * @param queryForm 查询参数
    * @return
    */
   @ApiOperation("根据患者姓名、手机号、病历号查询影像小程序列表中患者信息")
   @PostMapping(value = "/desktop/treatment/find")
-  public ResponseResult<PageInfo<DesktopMiniProgramVO>> findDesktopTreatListItem(@RequestBody @Validated TreatmentRecordQueryForm queryForm) {
-    PageInfo<DesktopMiniProgramVO> desktopTreatListItems = treatmentRecordBiz.findDesktopTreatListItem(queryForm);
+  public ResponseResult<PageInfo<DesktopMiniProgramVO>> findDesktopTreatListItem(
+      @RequestBody @Validated TreatmentRecordQueryForm queryForm) {
+    PageInfo<DesktopMiniProgramVO> desktopTreatListItems =
+        treatmentRecordBiz.findDesktopTreatListItem(queryForm);
     return ResponseUtil.success(desktopTreatListItems);
   }
-
 }
