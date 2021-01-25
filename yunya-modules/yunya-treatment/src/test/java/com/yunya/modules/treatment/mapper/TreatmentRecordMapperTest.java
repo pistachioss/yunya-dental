@@ -3,6 +3,8 @@ package com.yunya.modules.treatment.mapper;
 import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.query.TreatmentCountQuery;
+import com.yunya.feign.treatment.domain.vo.CountTreatmentRecordVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.models.treatment.AssistantMatchingRecord;
 import org.junit.Test;
@@ -26,8 +28,8 @@ import java.util.List;
 public class TreatmentRecordMapperTest {
   /** 注入对象 */
   @Autowired private TreatmentRecordMapper treatmentRecordMapper;
-  @Autowired
-  private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
+
+  @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
 
   @Test
   public void findPatientTreatList() {
@@ -66,12 +68,22 @@ public class TreatmentRecordMapperTest {
     AssistantMatchingRecord assistantMatchRecord = new AssistantMatchingRecord();
     assistantMatchRecord.setTreatmentRecordId(null);
     List<AssistantMatchingRecord> matchingRecords =
-            assistantMatchingRecordMapper.select(assistantMatchRecord);
+        assistantMatchingRecordMapper.select(assistantMatchRecord);
     System.out.println(JSONObject.toJSONString(matchingRecords));
   }
 
   @Test
   public void count() {
     System.out.println(treatmentRecordMapper.countByPatientId(3414));
+  }
+
+  @Test
+  public void count1() {
+    TreatmentCountQuery query = new TreatmentCountQuery();
+    query.setDentistId(559);
+    query.setOrgId(32);
+    query.setQueryDate("2021-01-25");
+    CountTreatmentRecordVO vo = treatmentRecordMapper.selectTreatCountByExample(query);
+    System.out.println(vo);
   }
 }

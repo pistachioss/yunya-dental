@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.mapper;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.query.TreatmentCountQuery;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.models.treatment.TreatmentRecord;
@@ -147,4 +148,12 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    */
   BigDecimal selectBusinessFirstTreatCompletedCount(
       @Param("query") BusinessGoalCompletedInfoQuery query);
+
+  /**
+   * 根据条件查询就诊列表各类数量
+   *
+   * @param queryForm 查询条件
+   * @return CountTreatmentRecordVO
+   */
+  CountTreatmentRecordVO selectTreatCountByExample(@Param("queryForm") TreatmentCountQuery queryForm);
 }
