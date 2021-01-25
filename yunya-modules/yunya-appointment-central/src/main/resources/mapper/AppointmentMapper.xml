@@ -565,4 +565,21 @@
         GROUP BY a.appoint_date
     </select>
 
+    <!-- 预约未到列表统计 -->
+    <select id="countAppointNotArrived" resultType="integer">
+        select
+        count(a.id)
+        from appointment a
+        <where>
+            and a.appoint_status = 0
+            and a.inservice = 1
+            <if test="queryForm.orgId != null">
+                and a.org_id = #{queryForm.orgId}
+            </if>
+            <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
+                and DATE_FORMAT(a.appoint_date, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
+            </if>
+        </where>
+    </select>
+
 </mapper>

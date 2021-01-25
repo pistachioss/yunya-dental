@@ -655,10 +655,27 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     public List<AppointmentDimensionVo> findAppointmentPatientDimensionByExample(PatientDimensionByDayQuery query) {
 
         List<AppointmentDimensionVo> appointmentDimensionVos;
+        log.info("============预约可视图（患者维度）查询 start============");
+        log.info("==>【根据门诊ID获取该门诊所有可预约医生的ID start】");
+        long start = System.currentTimeMillis();
+        log.info("==> start time:{}",start);
+
         // 根据门诊ID获取该门诊所有可预约医生的ID
         Integer[] enableDentistIds = this.enableAppointDentistIds(query.getOrgId());
+
+        log.info("==> end time:{}", System.currentTimeMillis());
+        log.info("==> spend time:{}",System.currentTimeMillis() - start);
+        log.info("==> 【根据门诊ID获取该门诊所有可预约医生的ID end】");
+
+        log.info("==> 【组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）start】");
+        long startCom = System.currentTimeMillis();
+        log.info("==> start time:{}",startCom);
         // 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
         appointmentDimensionVos = this.dimensionAppointInfo(query,enableDentistIds);
+        log.info("==> end time:{}",System.currentTimeMillis());
+        log.info("==> spend time:{}", System.currentTimeMillis() - startCom);
+        log.info("==> 【组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）start】");
+        log.info("============预约可视图（患者维度）查询 end============");
         // 最后进行排序
         return this.sort(appointmentDimensionVos, query.getOrder(), query.getOrderBy());
     }
@@ -731,6 +748,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Integer orgId = query.getOrgId();
         Date startDate = query.getStartDate();
         Date endDate = query.getEndDate();
+
         for (UserWorkVO userWorkVO : filterAppointIds) {
             // 组合预约医生和患者信息（患者维度）
             List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(orgId, startDate, endDate, userWorkVO);
@@ -1778,9 +1796,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return
      */
     public Integer countAppointNotArrived(AppointmentCurrentListQuery queryForm){
-      List<AppointmentUnDonePatientInfoVO> resultList =
-              mapper.selectAppointmentUnDonePatientInfoList(queryForm);
-      return resultList.size();
+      return mapper.countAppointNotArrived(queryForm);
     }
 
     /**
