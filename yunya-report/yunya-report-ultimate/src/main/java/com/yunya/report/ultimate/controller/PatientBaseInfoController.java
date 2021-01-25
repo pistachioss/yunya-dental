@@ -35,7 +35,7 @@ public class PatientBaseInfoController {
    * @return
    */
   @ApiOperation("根据条件搜索患者信息")
-  @GetMapping(value = "/patient/search", name = "根据条件搜索患者信息")
+  @GetMapping(value = "/full/search", name = "根据条件搜索患者信息")
   public ResponseResult<List<PatientInfoVO>> patientSearch(@RequestParam String keyword) {
     List<PatientInfoVO> patientInfo = patientBaseInfoBiz.findPatientInfoByExample(keyword);
     return ResponseUtil.success(patientInfo);
