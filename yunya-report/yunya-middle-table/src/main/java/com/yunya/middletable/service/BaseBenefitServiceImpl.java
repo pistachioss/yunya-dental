@@ -93,8 +93,6 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
             }
             if (AUTH_BENEFIT.equals(orderBenefit.getBenefitType())) {
                 List<AuthDiscountBenefit> originData = getBenefitDetail(Collections.singleton(orderId), AuthDiscountBenefit.class, authBenefitMapper);
-                //将授权人设置到卡券信息
-                originData.forEach(obj -> obj.setCrtId(orderBenefit.getAuthorizedId()));
                 baseBenefits = authTransform(originData);
             }
             List<BaseBenefit> existBenefits = getExistByOrderIds(Collections.singletonList(orderId));
