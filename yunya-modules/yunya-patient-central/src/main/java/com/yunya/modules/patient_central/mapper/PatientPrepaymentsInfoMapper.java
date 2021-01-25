@@ -15,10 +15,10 @@ import java.util.List;
 public interface PatientPrepaymentsInfoMapper extends Mapper<PatientPrepaymentsInfo> {
     /**
      * 根据患者id患者预付款基本信息查询
-     * @param id 患者id
+     * @param patientId 患者id
      * @return PatientPrepaymentRelationVo
      */
-    PatientPrepaymentsInfoVo findPrepaymentInfo(@Param("id") Integer id);
+    PatientPrepaymentsInfoVo findPrepaymentInfo(@Param("patientId") Integer patientId);
 
     /**
      * 根据预付款卡号和患者id查询预付款信息
@@ -29,10 +29,10 @@ public interface PatientPrepaymentsInfoMapper extends Mapper<PatientPrepaymentsI
 
     /**
      * 根据主卡人id 查询副卡人信息
-     * @param id 主卡人id
+     * @param patientId 主卡人id
      * @return  List<PatientPrepaymentsInfoVo
      */
-    List<PatientPrepaymentsInfoVo> selectPrepaymentRelationByMasterPatientId(@Param("id") Integer id);
+    List<PatientPrepaymentsInfoVo> selectPrepaymentRelationByMasterPatientId(@Param("patientId") Integer patientId);
 
 
     /**

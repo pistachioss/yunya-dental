@@ -1,6 +1,7 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -23,45 +24,54 @@ public class PatientPrepaymentsInfoVo implements Serializable {
     /**
      * 主键id
      */
+    @ApiModelProperty("预付款ID")
     private Integer id;
 
     /**
      * 诊所id
      */
+    @ApiModelProperty("组织ID")
     private Integer orgId;
 
     /**
      * 患者id
      */
+    @ApiModelProperty("患者ID")
     private Integer patientId;
 
     /**
      * 患者名称
      */
+    @ApiModelProperty("患者姓名")
     private String name;
 
     /**
      * 预付款账号
      */
+    @ApiModelProperty("预付款号")
     private String prepaymentNumber;
 
     /**
      * 预付款本金+预付款赠金
      */
+    @ApiModelProperty("预付款本金+预付款赠金")
     private BigDecimal prepaymentMoneySum;
 
     /**
      * 赠金
      */
+    @ApiModelProperty("赠金")
     private BigDecimal prepaymentBonus;
 
     /**
      * 本金
      */
+    @ApiModelProperty("本金")
     private BigDecimal prepaymentPrincipal;
 
     /**
      * 开户日期
      */
+    @ApiModelProperty("开户日期")
     private Date crtTime;
 }

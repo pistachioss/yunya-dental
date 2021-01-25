@@ -76,14 +76,15 @@ public class PatientPrepaymentRelationController {
   }
 
   /**
-   * 预付款付款余额查询
-   * @param id 患者id
+   * 患者可用预付款列表查询
+   * @param patientId 患者id
    * @return PatientPrepaymentBalanceVo
    */
-  @ApiOperation("预付款付款余额查询")
-  @GetMapping("/balancePayment/{id}")
-  public ResponseResult<PatientPrepaymentBalanceVo> balancePayment(@PathVariable("id") Integer id) {
-    return ResponseUtil.success(this.patientPrepaymentBiz.balancePayment(id));
+  @ApiOperation("患者可用预付款列表查询")
+  @GetMapping("/balancePayment/{patientId}")
+  public ResponseResult<List<PatientPrepaymentsInfoVo>> balancePayment(@PathVariable("patientId") Integer patientId) {
+    List<PatientPrepaymentsInfoVo> resultList = this.patientPrepaymentBiz.balancePayment(patientId);
+    return ResponseUtil.success(resultList);
   }
 
   /**

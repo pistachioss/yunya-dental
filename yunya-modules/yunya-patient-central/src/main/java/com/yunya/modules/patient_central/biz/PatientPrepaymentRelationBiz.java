@@ -37,10 +37,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ZERO;
 import static com.yunya.framework.common.constant.RedisConstants.SMS_SEND_MESSAGE_QUEUE;
@@ -172,7 +169,6 @@ public class PatientPrepaymentRelationBiz
     paramMap.put("operationType", operationType);
     remoteRabbitMqServiceFeign.sendMessage(
         paramMap, operateType, MsgCategoryEnum.BasePatientMemberOccurLog);
-
   }
 
   /**
@@ -224,78 +220,81 @@ public class PatientPrepaymentRelationBiz
    * @param model
    */
   public ResponseResult recharge(PrepaidRechargeModel model) {
-      if (model.getRechargeCardNumber() == null){
-        // 判断充值本金和入账金额是否相等
-        if (model.getRechargePrincipal().compareTo(model.getPrepaidRechargeTollRecordModel().getCreditAmount()) != 0){
-          return ResponseUtil.fail(
-                  OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "充值金额与入账金额不相等!",null);
-        }
+    if (model.getRechargeCardNumber() == null) {
+      // 判断充值本金和入账金额是否相等
+      if (model
+              .getRechargePrincipal()
+              .compareTo(model.getPrepaidRechargeTollRecordModel().getCreditAmount())
+          != 0) {
+        return ResponseUtil.fail(
+            OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "充值金额与入账金额不相等!", null);
       }
-      // 查询预付款余额 增加余额
-      PatientPrepaymentsInfo patientPrepaymentsInfo =
-              patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidCard());
-      if (patientPrepaymentsInfo != null) {
-        BigDecimal rechargePrincipal = model.getRechargePrincipal();
-        if (rechargePrincipal == null) {
-          rechargePrincipal = new BigDecimal(0);
-        }
-        BigDecimal rechargeBonus = model.getRechargeBonus();
-        if (rechargeBonus == null) {
-          rechargeBonus = new BigDecimal(0);
-        }
-        patientPrepaymentsInfo.setPrepaymentPrincipal(
-                patientPrepaymentsInfo.getPrepaymentPrincipal().add(rechargePrincipal));
-        patientPrepaymentsInfo.setPrepaymentBonus(
-                patientPrepaymentsInfo.getPrepaymentBonus().add(rechargeBonus));
-        patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
+    }
+    // 查询预付款余额 增加余额
+    PatientPrepaymentsInfo patientPrepaymentsInfo =
+        patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidCard());
+    if (patientPrepaymentsInfo != null) {
+      BigDecimal rechargePrincipal = model.getRechargePrincipal();
+      if (rechargePrincipal == null) {
+        rechargePrincipal = new BigDecimal(0);
+      }
+      BigDecimal rechargeBonus = model.getRechargeBonus();
+      if (rechargeBonus == null) {
+        rechargeBonus = new BigDecimal(0);
+      }
+      patientPrepaymentsInfo.setPrepaymentPrincipal(
+          patientPrepaymentsInfo.getPrepaymentPrincipal().add(rechargePrincipal));
+      patientPrepaymentsInfo.setPrepaymentBonus(
+          patientPrepaymentsInfo.getPrepaymentBonus().add(rechargeBonus));
+      patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
 
-        // 添加预付款充值记录
-        PrepaidRechargeRecord prepaidRechargeRecord = new PrepaidRechargeRecord();
-        BeanUtils.copyProperties(model, prepaidRechargeRecord);
-        prepaidRechargeRecord.setPrepaidId(model.getPrepaidCard());
-        prepaidRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
-        prepaidRechargeRecord.setCurrentRechargePrincipal(
-                patientPrepaymentsInfo.getPrepaymentPrincipal());
-        prepaidRechargeRecord.setCurrentRechargeBonus(patientPrepaymentsInfo.getPrepaymentBonus());
-        prepaidRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-        prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
-        prepaidRechargeRecord.setRemarks(model.getPrepaidRechargeTollRecordModel().getRemarks());
-        prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
+      // 添加预付款充值记录
+      PrepaidRechargeRecord prepaidRechargeRecord = new PrepaidRechargeRecord();
+      BeanUtils.copyProperties(model, prepaidRechargeRecord);
+      prepaidRechargeRecord.setPrepaidId(model.getPrepaidCard());
+      prepaidRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
+      prepaidRechargeRecord.setCurrentRechargePrincipal(
+          patientPrepaymentsInfo.getPrepaymentPrincipal());
+      prepaidRechargeRecord.setCurrentRechargeBonus(patientPrepaymentsInfo.getPrepaymentBonus());
+      prepaidRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
+      prepaidRechargeRecord.setRemarks(model.getPrepaidRechargeTollRecordModel().getRemarks());
+      prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
 
-        // 添加预付款充值收费记录
-        PrepaidRechargeTollRecord prepaidRechargeTollRecord = new PrepaidRechargeTollRecord();
-        BeanUtils.copyProperties(
-                model.getPrepaidRechargeTollRecordModel(), prepaidRechargeTollRecord);
-        if (prepaidRechargeRecord.getRechargeBonus() == null) {
-          prepaidRechargeRecord.setRechargeBonus(new BigDecimal(0));
-        }
-        prepaidRechargeTollRecord.setRechargeRecordId(prepaidRechargeRecord.getId());
-        prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
-        prepaidRechargeTollRecord.setCreditAmount(model.getRechargePrincipal());
-        prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
-        if (model.getRechargeType() == 1) {
-          if (patientPrepaymentsInfo.getPatientId() != null && model.getCardId() != null) {
-            OwnCardActiveForm ownCardActiveForm = new OwnCardActiveForm();
-            ownCardActiveForm.setCardId(model.getCardId());
-            ResponseResult result =
-                    remoteDiscountFeign.ownActiveCard(
-                            patientPrepaymentsInfo.getPatientId(), ownCardActiveForm);
-            if (!result.getStatus().equals(ZERO)) {
-              return result;
-            }
+      // 添加预付款充值收费记录
+      PrepaidRechargeTollRecord prepaidRechargeTollRecord = new PrepaidRechargeTollRecord();
+      BeanUtils.copyProperties(
+          model.getPrepaidRechargeTollRecordModel(), prepaidRechargeTollRecord);
+      if (prepaidRechargeRecord.getRechargeBonus() == null) {
+        prepaidRechargeRecord.setRechargeBonus(new BigDecimal(0));
+      }
+      prepaidRechargeTollRecord.setRechargeRecordId(prepaidRechargeRecord.getId());
+      prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
+      prepaidRechargeTollRecord.setCreditAmount(model.getRechargePrincipal());
+      prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
+      if (model.getRechargeType() == 1) {
+        if (patientPrepaymentsInfo.getPatientId() != null && model.getCardId() != null) {
+          OwnCardActiveForm ownCardActiveForm = new OwnCardActiveForm();
+          ownCardActiveForm.setCardId(model.getCardId());
+          ResponseResult result =
+              remoteDiscountFeign.ownActiveCard(
+                  patientPrepaymentsInfo.getPatientId(), ownCardActiveForm);
+          if (!result.getStatus().equals(ZERO)) {
+            return result;
           }
         }
-        // 发送消息 预付款充值
-        sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 1);
-        // 预付款充值 短信发送
-        memberSendMessages(prepaidRechargeRecord, 0);
-      } else {
-        return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到预付款记录", null);
       }
+      // 发送消息 预付款充值
+      sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 1);
+      // 预付款充值 短信发送
+      memberSendMessages(prepaidRechargeRecord, 0);
+    } else {
+      return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到预付款记录", null);
+    }
 
     return ResponseUtil.success();
   }
@@ -316,15 +315,19 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeRecord = (PrepaidRechargeRecord) object;
       PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
       patientPrepaymentsInfo.setPrepaymentNumber(prepaidRechargeRecord.getPrepaidId());
-      PatientPrepaymentsInfo patientPrepaymentsInfoVo = patientPrepaymentsInfoMapper.selectOne(patientPrepaymentsInfo);
-      patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(patientPrepaymentsInfoVo.getPatientId());
+      PatientPrepaymentsInfo patientPrepaymentsInfoVo =
+          patientPrepaymentsInfoMapper.selectOne(patientPrepaymentsInfo);
+      patientBaseInfo =
+          patientBaseInfoMapper.selectByPrimaryKey(patientPrepaymentsInfoVo.getPatientId());
     } else {
       eventCode = SmsAutosendEventEnum.PREPAY_CONSUME.getCode();
       prepaidExpendRecord = (PrepaidExpendRecord) object;
       PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
       patientPrepaymentsInfo.setPrepaymentNumber(prepaidExpendRecord.getPrepaidId());
-      PatientPrepaymentsInfo patientPrepaymentsInfoVo = patientPrepaymentsInfoMapper.selectOne(patientPrepaymentsInfo);
-      patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(patientPrepaymentsInfoVo.getPatientId());
+      PatientPrepaymentsInfo patientPrepaymentsInfoVo =
+          patientPrepaymentsInfoMapper.selectOne(patientPrepaymentsInfo);
+      patientBaseInfo =
+          patientBaseInfoMapper.selectByPrimaryKey(patientPrepaymentsInfoVo.getPatientId());
     }
 
     if (patientBaseInfo != null) {
@@ -334,41 +337,59 @@ public class PatientPrepaymentRelationBiz
         // 患者姓名
         templateParam.put(SmsTemplateItemEnum.PATIENT_NAME.getAction(), patientBaseInfo.getName());
         // 预付款卡号
-        templateParam.put(SmsTemplateItemEnum.PREPAID_ACCOUNT.getAction(), prepaidRechargeRecord.getPrepaidId());
+        templateParam.put(
+            SmsTemplateItemEnum.PREPAID_ACCOUNT.getAction(), prepaidRechargeRecord.getPrepaidId());
         // 预付款充值金额
         BigDecimal rechargeBonus = prepaidRechargeRecord.getRechargeBonus();
         if (rechargeBonus == null) {
           rechargeBonus = BigDecimal.valueOf(0);
         }
-        templateParam.put(SmsTemplateItemEnum.PREPAID_RECHARGE_AMOUNT.getAction(),
-                prepaidRechargeRecord.getRechargePrincipal().add(rechargeBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
+        templateParam.put(
+            SmsTemplateItemEnum.PREPAID_RECHARGE_AMOUNT.getAction(),
+            prepaidRechargeRecord
+                .getRechargePrincipal()
+                .add(rechargeBonus)
+                .setScale(2, BigDecimal.ROUND_HALF_UP));
         // 预付款剩余金额
         BigDecimal currentRechargeBonus = prepaidRechargeRecord.getCurrentRechargeBonus();
         if (currentRechargeBonus == null) {
           currentRechargeBonus = BigDecimal.valueOf(0);
         }
-        templateParam.put(SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getAction(),
-                prepaidRechargeRecord.getCurrentRechargePrincipal().add(currentRechargeBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
+        templateParam.put(
+            SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getAction(),
+            prepaidRechargeRecord
+                .getCurrentRechargePrincipal()
+                .add(currentRechargeBonus)
+                .setScale(2, BigDecimal.ROUND_HALF_UP));
         // 消费
       } else {
         // 患者姓名
         templateParam.put(SmsTemplateItemEnum.PATIENT_NAME.getAction(), patientBaseInfo.getName());
         // 预付款卡号
-        templateParam.put(SmsTemplateItemEnum.PREPAID_ACCOUNT.getAction(), prepaidExpendRecord.getPrepaidId());
+        templateParam.put(
+            SmsTemplateItemEnum.PREPAID_ACCOUNT.getAction(), prepaidExpendRecord.getPrepaidId());
         // 预付款消费金额
         BigDecimal expendGift = prepaidExpendRecord.getExpendGift();
         if (expendGift == null) {
           expendGift = BigDecimal.valueOf(0);
         }
-        templateParam.put(SmsTemplateItemEnum.PREPAID_CONSUMPTION_AMOUNT.getAction(),
-                prepaidExpendRecord.getExpendPrincipal().add(expendGift).setScale(2, BigDecimal.ROUND_HALF_UP));
+        templateParam.put(
+            SmsTemplateItemEnum.PREPAID_CONSUMPTION_AMOUNT.getAction(),
+            prepaidExpendRecord
+                .getExpendPrincipal()
+                .add(expendGift)
+                .setScale(2, BigDecimal.ROUND_HALF_UP));
         // 预付款剩余金额
         BigDecimal currentBonus = prepaidExpendRecord.getCurrentBonus();
         if (currentBonus == null) {
           currentBonus = BigDecimal.valueOf(0);
         }
-        templateParam.put(SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getAction(),
-                prepaidExpendRecord.getCurrentPrincipal().add(currentBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
+        templateParam.put(
+            SmsTemplateItemEnum.PREPAID_REMAINING_AMOUNT.getAction(),
+            prepaidExpendRecord
+                .getCurrentPrincipal()
+                .add(currentBonus)
+                .setScale(2, BigDecimal.ROUND_HALF_UP));
       }
       Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
       SmsAutoEventSendRecordModel smsModel = new SmsAutoEventSendRecordModel();
@@ -381,10 +402,9 @@ public class PatientPrepaymentRelationBiz
       smsModel.setName(BaseContextHandler.getName());
       smsModel.setEventCode(eventCode);
       smsModel.setModels(Collections.singletonList(model));
-      redisUtils.lPush(SMS_SEND_MESSAGE_QUEUE + orgId,smsModel);
+      redisUtils.lPush(SMS_SEND_MESSAGE_QUEUE + orgId, smsModel);
     }
   }
-
 
   /**
    * 充值记录
@@ -620,23 +640,19 @@ public class PatientPrepaymentRelationBiz
   /**
    * 预付款付款余额查询
    *
-   * @param id
+   * @param patientId 患者ID
    * @return PatientPrepaymentBalanceVo
    */
-  public PatientPrepaymentBalanceVo balancePayment(Integer id) {
-    PatientPrepaymentsInfoVo prepaymentInfo = patientPrepaymentsInfoMapper.findPrepaymentInfo(id);
+  public List<PatientPrepaymentsInfoVo> balancePayment(Integer patientId) {
+    List<PatientPrepaymentsInfoVo> resultList = new ArrayList<>();
+    PatientPrepaymentsInfoVo prepaymentInfo = patientPrepaymentsInfoMapper.findPrepaymentInfo(patientId);
     if (null != prepaymentInfo) {
-      PatientPrepaymentBalanceVo patientPrepaymentBalanceVo = new PatientPrepaymentBalanceVo();
-      patientPrepaymentBalanceVo.setPatientPrepaymentsInfoVo(prepaymentInfo);
-
-      List<PatientPrepaymentsInfoVo> prepaymentsInfoVoList =
-          patientPrepaymentsInfoMapper.selectPrepaymentRelationByMasterPatientId(id);
-      if (StringHelper.isNotNull(prepaymentsInfoVoList)) {
-        patientPrepaymentBalanceVo.setPrepaymentsInfoVoList(prepaymentsInfoVoList);
-      }
-      return patientPrepaymentBalanceVo;
+      resultList.add(prepaymentInfo);
     }
-    return null;
+    List<PatientPrepaymentsInfoVo> prepaymentsInfoVoList =
+            patientPrepaymentsInfoMapper.selectPrepaymentRelationByMasterPatientId(patientId);
+    resultList.addAll(prepaymentsInfoVoList);
+    return resultList;
   }
 
   /**
@@ -663,7 +679,8 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeRecord.setType(2);
       prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
-      prepaidRechargeRecord.setCurrentRechargePrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
+      prepaidRechargeRecord.setCurrentRechargePrincipal(
+          patientPrepaymentsInfo.getPrepaymentPrincipal());
       prepaidRechargeRecord.setCurrentRechargeBonus(patientPrepaymentsInfo.getPrepaymentBonus());
       prepaidRechargeRecord.setOrderRecordId(model.getOrderRecordId());
       prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);

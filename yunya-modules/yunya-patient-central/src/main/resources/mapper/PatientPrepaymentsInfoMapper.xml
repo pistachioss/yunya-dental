@@ -60,14 +60,28 @@
     <!-- 根据主卡人id 查询副卡人信息  -->
     <select id="selectPrepaymentRelationByMasterPatientId"
             resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsInfoVo">
-        select ppio.id id,ppio.org_id orgid,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber,ppio.crt_time crtTime,pbio.name name,
-			   CAST(IFNULL(ppio.prepayment_principal+ppio.prepayment_bonus,0) AS decimal(15,2)) prepaymentMoneySum,
-               CAST(IFNULL(ppio.prepayment_bonus,0) AS decimal(15,2)) prepaymentBonus,
-			   CAST(IFNULL(ppio.prepayment_principal,0) AS decimal(15,2)) prepaymentPrincipal
-        from patient_prepayment_relation pprn
-        join  patient_prepayments_info ppio on pprn.secondary_card_id = ppio.patient_id
-        join  patient_base_info pbio on ppio.patient_id = pbio.id
-        where master_card_id  = #{id}
+         SELECT
+            ppi.id,
+            ppr.master_card_id AS patientId,
+            pbi.`name`,
+            ppi.prepayment_number AS prepaymentNumber,
+            CAST(
+            IFNULL( ppi.prepayment_principal + ppi.prepayment_bonus, 0 ) AS DECIMAL ( 15, 2 )) prepaymentMoneySum,
+            CAST(
+            IFNULL( ppi.prepayment_principal, 0 ) AS DECIMAL ( 15, 2 )) prepaymentPrincipal,
+            CAST(
+            IFNULL( ppi.prepayment_bonus, 0 ) AS DECIMAL ( 15, 2 )) prepaymentBonus
+        FROM
+            (
+            SELECT
+                ppr.master_card_id
+            FROM patient_prepayment_relation ppr
+            WHERE
+                ppr.secondary_card_id = #{patientId}
+            GROUP BY
+                ppr.master_card_id ) ppr
+            LEFT JOIN patient_prepayments_info ppi ON ppr.master_card_id = ppi.patient_id
+            LEFT JOIN patient_base_info pbi ON ppr.master_card_id = pbi.id
     </select>
 
     <!-- 根据预付款卡号查询预付款信息 -->
