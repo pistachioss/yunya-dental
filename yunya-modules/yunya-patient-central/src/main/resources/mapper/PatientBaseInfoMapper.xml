@@ -183,7 +183,7 @@
                  left join patient_exp_info pei on pbi.id = pei.patient_id
                  left join patient_member_info pmi on pbi.id = pmi.patient_id
         where pbi.id in
-              <foreach collection="ids" item="id" open="(" separator="," close=")">
+              <foreach collection="ids" index="index" item="id" open="(" separator="," close=")">
                   #{id}
               </foreach>
     </select>
