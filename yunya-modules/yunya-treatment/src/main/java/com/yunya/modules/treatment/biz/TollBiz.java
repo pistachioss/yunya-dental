@@ -962,7 +962,7 @@ public class TollBiz {
     Integer treatmentRecordId = billPayRecord.getTreatmentRecordId();
     Integer orderRecordId = billPayRecord.getOrderRecordId();
     Integer billRecordId = billPayRecord.getBillRecordId();
-    billPayDetailRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+    billPayDetailRecord.setOrgId(billPayRecord.getOrgId());
     billPayDetailRecord.setPatientId(patientId);
     billPayDetailRecord.setTreatmentRecordId(treatmentRecordId);
     billPayDetailRecord.setOrderRecordId(orderRecordId);
