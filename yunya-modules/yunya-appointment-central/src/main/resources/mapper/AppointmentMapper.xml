@@ -571,14 +571,14 @@
         count(a.id)
         from appointment a
         <where>
-            and a.appoint_status = 0
-            and a.inservice = 1
             <if test="queryForm.orgId != null">
                 and a.org_id = #{queryForm.orgId}
             </if>
+            and a.appoint_status = 0
             <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
                 and DATE_FORMAT(a.appoint_date, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
             </if>
+            and a.inservice = 1
         </where>
     </select>
 
