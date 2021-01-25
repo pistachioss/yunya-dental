@@ -253,4 +253,12 @@ public interface AppointmentMapper extends Mapper<Appointment> {
           @Param("startDate") Date startDate,
           @Param("endDate") Date endDate,
           @Param("orgId") Integer orgId);
+
+  /**
+   * 计算预约未到列表数量
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  Integer countAppointNotArrived(@Param("queryForm") AppointmentCurrentListQuery queryForm);
 }
