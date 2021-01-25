@@ -35,5 +35,5 @@ public class ClinicTariffUniteDiscountForm implements Serializable {
   /** 会员折扣信息 */
   @ApiModelProperty(value = "会员折扣信息", required = true)
   @Size(min = 1, message = "会员折扣信息不能为空！")
-  private Set<MemberUniteDiscountForm> memberUniteDiscountForms;
+  private List<MemberUniteDiscountForm> memberUniteDiscountForms;
 }

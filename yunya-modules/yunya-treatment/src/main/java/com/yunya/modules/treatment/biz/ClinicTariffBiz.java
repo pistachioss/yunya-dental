@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
@@ -299,11 +300,11 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       throw new ClientServiceException("统一设置门诊价目表折扣失败，当前未选择任何门诊价目表项目！", PARAMETERS_IS_ILLEGAL);
     }
 
-    Set<MemberUniteDiscountForm> memberUniteDiscountForms = form.getMemberUniteDiscountForms();
+    List<MemberUniteDiscountForm> memberUniteDiscountForms = form.getMemberUniteDiscountForms();
     if (StringHelper.isEmpty(memberUniteDiscountForms)) {
       throw new ClientServiceException("统一设置门诊价目表折扣失败,当前未选择任何会员卡类型", PARAMETERS_IS_ILLEGAL);
     }
-    // 检查是否有相同会员卡折扣
+      // 检查是否有相同会员卡折扣
     checkMemberUniteDiscountForms(memberUniteDiscountForms);
     // 设置门诊价目表会员折扣价
     Integer orgId = form.getOrgId();
@@ -355,7 +356,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    *
    * @param memberUniteDiscounts 会员卡折扣列表
    */
-  private void checkMemberUniteDiscountForms(Set<MemberUniteDiscountForm> memberUniteDiscounts) {
+  private void checkMemberUniteDiscountForms(List<MemberUniteDiscountForm> memberUniteDiscounts) {
     Set<MemberUniteDiscountForm> forms =
         new TreeSet<>(Comparator.comparing(MemberUniteDiscountForm::getMemberTypeId));
     forms.addAll(memberUniteDiscounts);
