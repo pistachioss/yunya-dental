@@ -244,9 +244,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     String number = "";
     if (orgId != null) {
       if ("Y".equals(mark)) {
-        number = this.mapper.generateCardNumber4Prepay(Integer.parseInt(orgId),onlineDateTime);
+        number = this.mapper.generateCardNumber4Prepay(Integer.parseInt(orgId), onlineDateTime);
       } else if ("H".equals(mark)) {
-        number = this.mapper.generateCardNumber(Integer.parseInt(orgId),onlineDateTime);
+        number = this.mapper.generateCardNumber(Integer.parseInt(orgId), onlineDateTime);
       } else {
         return null;
       }
@@ -376,13 +376,14 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param model 会员卡充值Model
    */
   public ResponseResult recharge(MemberRechargeModel model) {
-    if (model.getRechargePrincipal().compareTo(model.getAccountedWayModel().getCreditAmount()) == 0){
+    if (model.getRechargePrincipal().compareTo(model.getAccountedWayModel().getCreditAmount())
+        == 0) {
       // 查询会员余额 余额增加
       PatientMemberInfo patientMemberInfo =
-              patientMemberInfoMapper.selectCardNumber(model.getMemberId());
+          patientMemberInfoMapper.selectCardNumber(model.getMemberId());
       if (patientMemberInfo != null) {
         patientMemberInfo.setPrincipalAmount(
-                patientMemberInfo.getPrincipalAmount().add(model.getRechargePrincipal()));
+            patientMemberInfo.getPrincipalAmount().add(model.getRechargePrincipal()));
         BigDecimal rechargeBonus = model.getRechargeBonus();
         if (null != rechargeBonus) {
           patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(rechargeBonus));
@@ -417,9 +418,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         // 会员卡充值发送短信 type:0充值 1消费
         memberSendMessages(memberRechargeRecord, 0);
       }
-    }else {
-      return ResponseUtil.fail(
-              OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "充值金额与入账金额不相等!",null);
+    } else {
+      return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "充值金额与入账金额不相等!", null);
     }
     return ResponseUtil.success();
   }
@@ -465,7 +465,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         templateParam.put(
             SmsTemplateItemEnum.MEMBER_RECHARGE_AMOUNT.getAction(),
-            memberRechargeRecord.getRechargePrincipal().add(rechargeBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
+            memberRechargeRecord
+                .getRechargePrincipal()
+                .add(rechargeBonus)
+                .setScale(2, BigDecimal.ROUND_HALF_UP));
         // 会员剩余金额
         BigDecimal currentRechargeBonus = memberRechargeRecord.getCurrentRechargeBonus();
         if (currentRechargeBonus == null) {
@@ -473,7 +476,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         templateParam.put(
             SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getAction(),
-            memberRechargeRecord.getCurrentRechargePrincipal().add(currentRechargeBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
+            memberRechargeRecord
+                .getCurrentRechargePrincipal()
+                .add(currentRechargeBonus)
+                .setScale(2, BigDecimal.ROUND_HALF_UP));
         // 消费
       } else {
         // 患者姓名
@@ -488,7 +494,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         templateParam.put(
             SmsTemplateItemEnum.MEMBER_SPENDING_AMOUNT.getAction(),
-            memberExpendRecord.getExpendPrincipal().add(expendGift).setScale(2, BigDecimal.ROUND_HALF_UP));
+            memberExpendRecord
+                .getExpendPrincipal()
+                .add(expendGift)
+                .setScale(2, BigDecimal.ROUND_HALF_UP));
         // 会员剩余金额
         BigDecimal currentBonus = memberExpendRecord.getCurrentBonus();
         if (currentBonus == null) {
@@ -496,7 +505,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         templateParam.put(
             SmsTemplateItemEnum.MEMBER_REMAINING_AMOUNT.getAction(),
-            memberExpendRecord.getCurrentPrincipal().add(currentBonus).setScale(2, BigDecimal.ROUND_HALF_UP));
+            memberExpendRecord
+                .getCurrentPrincipal()
+                .add(currentBonus)
+                .setScale(2, BigDecimal.ROUND_HALF_UP));
       }
       Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
       SmsAutoEventSendRecordModel smsModel = new SmsAutoEventSendRecordModel();
@@ -796,9 +808,11 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     }
     // 患者作为副卡人可用会员卡
     List<MemberBaseInfoVo> memberBaseInfoVoList =
-            patientMemberInfoMapper.selectMemberRelationByMasterPatientId(id);
+        patientMemberInfoMapper.selectMemberRelationByMasterPatientId(id);
     resultList.addAll(memberBaseInfoVoList);
-
+    if (StringHelper.isNotEmpty(resultList)) {
+      resultList.removeIf(vo -> null == vo.getId());
+    }
     return resultList;
   }
 
