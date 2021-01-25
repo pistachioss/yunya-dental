@@ -360,15 +360,21 @@
     <select id="selectTreatCountByExample"
             resultType="com.yunya.feign.treatment.domain.vo.CountTreatmentRecordVO">
         SELECT
-        count( r.id ) AS waitingForTreat,
-        count( tr.id ) AS treatReceiving,
-        count( tr1.id ) AS treatCompleted,
-        count( tr2.id ) AS checkedOut
-        FROM (
-        select r.id
-        from registered r
+        sum( waitingForTreat ) waitingForTreat,
+        sum( treatReceiving ) treatReceiving,
+        sum( treatCompleted ) treatCompleted,
+        sum( checkedOut ) checkedOut
+        FROM
+        (
+        SELECT
+        COUNT( r.id ) AS waitingForTreat,
+        0 AS treatReceiving,
+        0 AS treatCompleted,
+        0 AS checkedOut
+        FROM
+        registered r
         <where>
-            and r.status = 0
+            and r.`status` = 0
             and r.inservice = 1
             <if test="queryForm.queryDate != null and queryForm.queryDate != ''">
                 and date_format(r.crt_time, '%Y-%m-%d') = date_format(#{queryForm.queryDate},'%Y-%m-%d')
@@ -380,14 +386,15 @@
                 and r.dentist_id = #{queryForm.dentistId}
             </if>
         </where>
-        GROUP BY
-        r.id
-        ) r,
-        (
-        select tr.id
-        from treatment_record tr
+        UNION ALL
+        SELECT
+        0 AS waitingForTreat,
+        COUNT( IF ( tr.`status` = 0 OR tr.`status` = 1, 1, NULL ) ) AS treatReceiving,
+        COUNT( IF ( tr.`status` = 2, 1, NULL ) ) AS treatCompleted,
+        COUNT( IF ( tr.`status` = 3, 1, NULL ) ) AS checkedOut
+        FROM
+        treatment_record tr
         <where>
-            and tr.`status` in ( 0 , 1 )
             and tr.inservice = 1
             <if test="queryForm.queryDate != null and queryForm.queryDate != ''">
                 and date_format(tr.treat_start_time, '%Y-%m-%d') = date_format(#{queryForm.queryDate}, '%Y-%m-%d')
@@ -399,46 +406,6 @@
                 and tr.dentist_id = #{queryForm.dentistId}
             </if>
         </where>
-        GROUP BY
-        tr.id
-        ) tr,
-        (
-        select tr.id
-        from treatment_record tr
-        <where>
-            and tr.inservice = 1
-            and tr.status = 2
-            <if test="queryForm.queryDate != null and queryForm.queryDate != ''">
-                and date_format(tr.treat_start_time, '%Y-%m-%d') = date_format(#{queryForm.queryDate}, '%Y-%m-%d')
-            </if>
-            <if test="queryForm.orgId != null">
-                and tr.org_id = #{queryForm.orgId}
-            </if>
-            <if test="queryForm.dentistId != null">
-                and tr.dentist_id = #{queryForm.dentistId}
-            </if>
-        </where>
-        GROUP BY
-        tr.id
-        ) tr1,
-        (
-        select tr.id
-        from treatment_record tr
-        <where>
-            and tr.inservice = 1
-            and tr.status = 3
-            <if test="queryForm.queryDate != null and queryForm.queryDate != ''">
-                and date_format(tr.treat_start_time, '%Y-%m-%d') = date_format(#{queryForm.queryDate}, '%Y-%m-%d')
-            </if>
-            <if test="queryForm.orgId != null">
-                and tr.org_id = #{queryForm.orgId}
-            </if>
-            <if test="queryForm.dentistId != null">
-                and tr.dentist_id = #{queryForm.dentistId}
-            </if>
-        </where>
-        GROUP BY
-        tr.id
-        ) tr2
+        ) t
     </select>
 </mapper>

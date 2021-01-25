@@ -80,7 +80,7 @@ public class TreatmentRecordMapperTest {
   @Test
   public void count1() {
     TreatmentCountQuery query = new TreatmentCountQuery();
-    query.setDentistId(559);
+    //query.setDentistId(559);
     query.setOrgId(32);
     query.setQueryDate("2021-01-25");
     CountTreatmentRecordVO vo = treatmentRecordMapper.selectTreatCountByExample(query);
