@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.model.ResponseResult;
@@ -30,6 +31,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BasePatient;
 
 /**
  * 简单介绍:</br>
@@ -57,6 +60,8 @@ public class PatientServiceRest {
     @Autowired private InformationCallbackBiz informationCallbackBiz;
 
     @Autowired private RedisUtils redisUtils;
+
+    @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
 
     @ApiOperation("根据姓名/手机号/姓名拼音模糊查询患者")
@@ -110,6 +115,7 @@ public class PatientServiceRest {
     @RequestMapping (value = "/updatePatientInfo",method = RequestMethod.POST)
     public void updatePatientInfo(@RequestBody PatientBaseInfo patientBaseInfo){
         patientBaseInfoBiz.updateSelectiveById(patientBaseInfo);
+        rabbitMqServiceFeign.sendMessage(patientBaseInfo.getId(),1, BasePatient);
     }
 
     @ApiOperation("查询患者信息")
