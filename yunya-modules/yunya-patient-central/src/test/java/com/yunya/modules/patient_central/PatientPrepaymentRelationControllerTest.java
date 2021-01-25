@@ -1,6 +1,7 @@
 package com.yunya.modules.patient_central;
 
 import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
+import com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsInfoVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.patient_central.controller.web.PatientPrepaymentRelationController;
 import org.junit.Test;
@@ -8,6 +9,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
 
 /**
  * 简介:
@@ -30,5 +33,12 @@ public class PatientPrepaymentRelationControllerTest {
     query.setPatientId(256);
     ResponseResult result = prepaymentRelationController.expendList(query);
     System.out.println(result.getData());
+  }
+
+  @Test
+  public void find1() {
+    ResponseResult<List<PatientPrepaymentsInfoVo>> result =
+        prepaymentRelationController.balancePayment(93459);
+    System.out.println(result);
   }
 }

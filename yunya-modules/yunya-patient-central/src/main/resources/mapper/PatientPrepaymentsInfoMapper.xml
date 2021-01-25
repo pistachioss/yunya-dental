@@ -33,7 +33,7 @@
         CAST(IFNULL(ppio.prepayment_bonus,0) AS decimal(15,2)) prepaymentBonus,
 		CAST(IFNULL(ppio.prepayment_principal,0) AS decimal(15,2)) prepaymentPrincipal
         from patient_prepayments_info ppio join patient_base_info pbio on ppio.patient_id = pbio.id
-        where ppio.patient_id = #{id}
+        where ppio.patient_id = #{patientId}
     </select>
 
     <!-- 根据预付款卡号和患者id查询预付款信息 -->
