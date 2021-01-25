@@ -46,6 +46,7 @@ import java.util.function.Consumer;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
+import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
@@ -304,7 +305,8 @@ public class TollBiz {
     // 保存账单收费记录
     Integer billRecordId = billRecord.getId();
     BillPayRecord billPayRecord = new BillPayRecord();
-    billPayRecord.setOrgId(orgId);
+    // 如果当前组织是公司，收费门诊则是开单门诊
+    billPayRecord.setOrgId(COMPANY_ORGID.equals(orgId) ? orderRecordOrgId : orgId);
     billPayRecord.setPatientId(patientId);
     billPayRecord.setTreatmentRecordId(treatmentRecordId);
     billPayRecord.setOrderRecordId(orderRecordId);
