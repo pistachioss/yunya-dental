@@ -57,6 +57,7 @@ public class BaseBill {
     @Column(name = "order_date")
     private Date orderDate;
 
+
     /**
      * 账单日期
      */
@@ -110,6 +111,12 @@ public class BaseBill {
      */
     @Column(name = "biller_id")
     private Integer billerId;
+
+    /**
+     * 结账人ID
+     */
+    @Column(name = "checker_id")
+    private Integer checkerId;
 
     /**
      * 获取订单记录ID
@@ -415,5 +422,23 @@ public class BaseBill {
      */
     public void setBillerId(Integer billerId) {
         this.billerId = billerId;
+    }
+
+    /**
+     * 获取结账人ID（第一次收费）
+     *
+     * @return checkerId
+     */
+    public Integer getCheckerId() {
+        return checkerId;
+    }
+
+    /**
+     * 设置结账人ID
+     *
+     * @param checkerId 结账人ID
+     */
+    public void setCheckerId(Integer checkerId) {
+        this.checkerId = checkerId;
     }
 }

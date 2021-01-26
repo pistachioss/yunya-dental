@@ -281,26 +281,24 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     // 查询该账单下所有的使用了产品优惠
     List<BaseBenefitInfoVO> benefits = mapper.selectBaseBenefitInfoByBillId(billId);
     Map<String, BaseBenefitInfoVO> benefitMap = new HashMap<>(16);
-    Map<String, BigDecimal[]> countMap = new HashMap<>(16);
+    Map<String, BigDecimal> amountMap = new HashMap<>(16);
     benefits.forEach(
         benefit -> {
           Integer orderDetailId = benefit.getOrderDetailId();
           Integer cardId = benefit.getCardId();
           String key = orderDetailId + "," + cardId;
-          BigDecimal[] counts = countMap.get(key);
-          if (counts == null) {
-            counts = new BigDecimal[] {BigDecimal.valueOf(0), BigDecimal.valueOf(0)};
+          BigDecimal amount = amountMap.get(key);
+          if (amount == null) {
+            amount = BigDecimal.ZERO;
           }
-          counts[0] = counts[0].add(new BigDecimal(1));
-          counts[1] = counts[1].add(benefit.getBenefitAmount());
-          countMap.put(key, counts);
+          amountMap.put(key, amount.add(benefit.getBenefitAmount()));
           if (!benefitMap.containsKey(key)) {
             benefitMap.put(key, benefit);
           }
         });
-    if (StringHelper.isNotEmpty(countMap)) {
-      countMap.forEach(
-          (key, counts) -> {
+    if (StringHelper.isNotEmpty(amountMap)) {
+      amountMap.forEach(
+          (key, amount) -> {
             BillDiscountDetailInifoVO vo = new BillDiscountDetailInifoVO();
             BaseBenefitInfoVO benefitInfoVO = benefitMap.get(key);
             if (benefitInfoVO != null) {
@@ -308,22 +306,49 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
               vo.setSaleChannelName(benefitInfoVO.getSaleChannelName());
               vo.setCardNumber(benefitInfoVO.getCardNumber());
             }
-            vo.setQuantity(counts[0].intValue());
-            vo.setBenefitAmount(counts[1]);
+
+            vo.setBenefitAmount(amount);
             Integer orderDetailId = Integer.parseInt(key.split(",")[0]);
             BaseBillDetailVO detailVO = details.get(orderDetailId);
+            BigDecimal quantity = BigDecimal.ZERO;
             if (detailVO != null) {
+              BigDecimal price = detailVO.getPrice();
               vo.setItemName(detailVO.getItemName());
               vo.setUnit(detailVO.getUnit());
               vo.setEmployeeName(detailVO.getOperateUserName());
-              vo.setPrice(detailVO.getPrice());
-              vo.setOriginPrice(counts[0].multiply(detailVO.getPrice()));
+              vo.setPrice(price);
+              quantity = compute(price, amount);
+              vo.setOriginPrice(quantity.multiply(price));
             }
+            vo.setQuantity(quantity.intValue());
             billDiscountDetails.add(vo);
           });
     }
     billDiscountVOs.setBillDiscountDetail(billDiscountDetails);
     return billDiscountVOs;
+  }
+
+  /**
+   * 计算使用优惠的数量
+   *
+   * @param price 单价
+   * @param amount 优惠总价
+   * @return
+   */
+  private static BigDecimal compute(BigDecimal price, BigDecimal amount) {
+    BigDecimal res = BigDecimal.ZERO;
+    BigDecimal[] result = amount.divideAndRemainder(price);
+    BigDecimal quotient = result[0]; // 商
+    BigDecimal remainder = result[1]; // 余数
+    if (quotient.compareTo(res) == 0 && remainder.compareTo(res) == 0) {
+      return res;
+    } else {
+      res = quotient;
+      if (remainder.compareTo(res) > 0) {
+        res = res.add(new BigDecimal(1));
+      }
+    }
+    return res;
   }
 
   /**
@@ -378,5 +403,19 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     ExcelUtil<CurrentMonthBillCollectionDebtVO> excelUtil =
         new ExcelUtil<>(CurrentMonthBillCollectionDebtVO.class);
     excelUtil.exportExcel(response, resultList, "门诊当月收欠费（使用优惠）账单记录");
+  }
+
+  /**
+   * 根据条件查询未结账订单列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillRecordOfUncheckedVO>
+   */
+  public PageInfo<BillRecordOfUncheckedVO> findUncheckedBillList(BillUnCheckedQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BillRecordOfUncheckedVO> resultList = mapper.selectUncheckedBillList(query);
+    return new PageInfo<>(resultList);
   }
 }

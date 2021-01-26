@@ -38,32 +38,52 @@
 
     <!-- 订单处理查询（门诊端-订单处理） -->
     <select id="selectOrderProcess" resultType="com.yunya.feign.treatment.domain.vo.OrderProcessVO">
-        select
-        ord.id,
-        ord.order_record_num as orderRecordNum,
-        date_format(ord.crt_time,'%Y-%m-%d') as crtTime,
-        ord.org_id as orgId,
-        ord.patient_id as patientId,
-        ord.treatment_record_id as treatmentRecordId,
-        tr.`status` as treatmentStatus,
-        ord.`status`,
-        ord.total_amount as totalAmount,
-        ord.crt_name as crtName
-        from order_record ord
-        LEFT JOIN treatment_record tr ON ord.treatment_record_id = tr.id AND tr.`status` = 2
+        SELECT
+        id,
+        orderrecordnum,
+        crttime,
+        orgid,
+        patientid,
+        treatmentrecordid,
+        treatmentstatus,
+        status,
+        totalamount,
+        crtid,
+        crtname
+        FROM
+        (
+        SELECT
+        ord.id AS id,
+        ord.order_record_num AS orderRecordNum,
+        date_format( ord.crt_time, '%Y-%m-%d' ) AS crtTime,
+        ord.org_id AS orgId,
+        ord.patient_id AS patientId,
+        ord.treatment_record_id AS treatmentRecordId,
+        tr.`status` AS treatmentStatus,
+        ord.`status` AS `status`,
+        ord.total_amount AS totalAmount,
+        ord.crt_id AS crtId,
+        ord.crt_name AS crtName
+        FROM
+        order_record ord
+        LEFT JOIN treatment_record tr ON ord.treatment_record_id = tr.id
         <where>
-            ord.status = 1
+            AND ord.status = 1
             <if test="orderRecordNum != null and orderRecordNum != ''">
-                and ord.order_record_num like concat('%', #{orderRecordNum}, '%')
+                AND ord.order_record_num like concat('%', #{orderRecordNum}, '%')
             </if>
-            <if test="orgIds != null and orgIds.length &gt; 0">
-                and ord.org_id in
-                <foreach collection="orgIds" open="(" separator="," close=")" item="orgId">
+            <if test="orgIds != null and orgIds.length > 0">
+                AND ord.org_id in
+                <foreach collection="orgIds" index="index" open="(" separator="," close=")" item="orgId">
                     #{orgId}
                 </foreach>
             </if>
         </where>
-        order by ord.crt_time desc
+        ) ord
+        WHERE
+        ord.treatmentStatus = 2
+        ORDER BY
+        ord.crtTime DESC
     </select>
 
     <!-- 根据订单ID集合查询订单记录信息列表 -->

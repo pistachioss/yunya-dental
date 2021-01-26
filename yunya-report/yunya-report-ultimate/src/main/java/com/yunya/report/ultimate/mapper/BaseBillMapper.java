@@ -149,4 +149,12 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @return
    */
   List<BaseBenefitInfoVO> selectBaseBenefitInfoByBillId(@Param("billId") Integer billId);
+
+  /**
+   * 根据条件查询未结账订单列表
+   *
+   * @param query 查询条件
+   * @return List<BillRecordOfUncheckedVO>
+   */
+  List<BillRecordOfUncheckedVO> selectUncheckedBillList(@Param("query") BillUnCheckedQuery query);
 }

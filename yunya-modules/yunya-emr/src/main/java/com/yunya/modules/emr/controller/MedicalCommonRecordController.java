@@ -2,10 +2,9 @@ package com.yunya.modules.emr.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONArray;
-
 import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
-import com.yunya.feign.emr.domain.query.MedicalCommonRecordQueryForm;
 import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
+import com.yunya.feign.emr.domain.query.MedicalCommonRecordQueryForm;
 import com.yunya.feign.emr.domain.vo.ExaminationsVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
@@ -14,21 +13,17 @@ import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
-import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.emr.MedicalCommonRecord;
-
-import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.emr.biz.MedicalCommonRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 
 import javax.validation.Valid;
 import java.util.*;
@@ -99,7 +94,7 @@ public class MedicalCommonRecordController {
     for (MedicalCommonRecord medical : list) {
       MedicalCommonRecordModel medicalCommonRecordModel = new MedicalCommonRecordModel();
       BeanUtils.copyProperties(medical, medicalCommonRecordModel);
-      medicalCommonRecordModel.setMajorDentistName(employeeMap.get(medicalCommonRecordModel.getCrtId()+"").getName());
+      medicalCommonRecordModel.setMajorDentistName(employeeMap.get(medicalCommonRecordModel.getMajorDentistId()+"").getName());
 
       if (!StrUtil.isEmpty(medical.getExamination())) {
         jsonArray = JSONArray.parseArray(medical.getExamination());

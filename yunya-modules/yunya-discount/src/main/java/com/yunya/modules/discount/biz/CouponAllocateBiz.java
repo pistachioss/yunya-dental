@@ -65,10 +65,10 @@ public class CouponAllocateBiz extends BaseBiz<CouponAllocateMapper, CouponAlloc
             }else{
                 throw new BaseException("无此分配人信息", OperationCodeConstants.DATA_NOT_EXIST);
             }
-            Card card = new Card();
-            card.setCouponAllocateId(couponAllocateVO.getId());
+//            Card card = new Card();
+//            card.setCouponAllocateId(couponAllocateVO.getId());
             couponAllocateVO.setIsAllocate(false);
-            if (cardBiz.selectList(card).size() > 0) {
+            if (couponAllocateVO.getIsAllocateNum() > 0) {
                 couponAllocateVO.setIsAllocate(true);
             }
         }

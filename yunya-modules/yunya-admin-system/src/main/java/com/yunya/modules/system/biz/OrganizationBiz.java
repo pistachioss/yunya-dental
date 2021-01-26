@@ -7,6 +7,7 @@ import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.constant.BusinessConstants;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -62,7 +63,7 @@ public class OrganizationBiz {
   @Autowired private ClinicDepartmentRoomMapper clinicDepartmentRoomMapper;
   /** 短信服务调用 */
   @Autowired private RemoteSmsServiceFeign remoteSmsServiceFeign;
-  /** 缓存*/
+  /** 缓存 */
   @Autowired private RedisUtils redisUtils;
   /** 医疗机构类型 */
   private final Byte MEDICAL_TYPE = BusinessConstants.MEDICAL_TYPE;
@@ -74,7 +75,15 @@ public class OrganizationBiz {
    * @return
    */
   public OrganizationInfo findOrgInfoById(Integer id) {
-    return companyMapper.selectOrgInfoById(id);
+    String orgKey = RedisConstants.REDIS_KEY_ORG_ID + id;
+    OrganizationInfo organizationInfo = redisUtils.get(orgKey, OrganizationInfo.class);
+    if (null == organizationInfo) {
+      organizationInfo = companyMapper.selectOrgInfoById(id);
+      if (null != organizationInfo) {
+        redisUtils.set(orgKey, organizationInfo);
+      }
+    }
+    return organizationInfo;
   }
 
   /**
@@ -197,6 +206,7 @@ public class OrganizationBiz {
     company.setUpdTime(new Date(System.currentTimeMillis()));
     int i = companyMapper.updateByPrimaryKeySelective(company);
     redisUtils.delete(REDIS_KEY_ORG_LIST);
+    redisUtils.delete(RedisConstants.REDIS_KEY_ORG_ID + id);
     // 更新医疗机构扩展信息,并校验医疗机构简称是否重复
     updateOrganizationExtInfo(id, resource, companyType);
     // 发送消息
@@ -247,6 +257,7 @@ public class OrganizationBiz {
       clinicExtInfo.setUpdName(BaseContextHandler.getName());
       clinicExtInfo.setUpdTime(new Date(System.currentTimeMillis()));
       clinicExtInfoBiz.updateSelectiveById(clinicExtInfo);
+      redisUtils.delete(RedisConstants.REDIS_KEY_ORG_ID + id);
     }
   }
 

@@ -73,6 +73,20 @@ public class CompanyReportOfDataRecordController {
   }
 
   /**
+   * 根据条件查询订单处理列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("订单处理列表查询")
+  @PostMapping(value = "/bill/unchecked/list", name = "订单处理列表查询")
+  public ResponseResult<PageInfo<BillRecordOfUncheckedVO>> findUncheckedBillList(
+      @RequestBody @Validated BillUnCheckedQuery query) {
+    PageInfo<BillRecordOfUncheckedVO> pageInfo = billBiz.findUncheckedBillList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
    * 根据条件查询开单记录列表
    *
    * @param query 查询条件

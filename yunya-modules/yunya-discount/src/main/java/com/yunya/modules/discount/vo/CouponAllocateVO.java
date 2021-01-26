@@ -36,6 +36,10 @@ public class CouponAllocateVO {
      * 是否配给
      */
     private Boolean isAllocate;
+    /**
+     * 判断是否配给 为sql查询出后进行判断用 0为为配给 大于0就是已经配镜
+     */
+    private Integer isAllocateNum;
 
     private Integer crtId;
 

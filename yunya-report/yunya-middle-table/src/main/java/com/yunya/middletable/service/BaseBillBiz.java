@@ -127,6 +127,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       baseBill.setActualAmount(billRecord.getActualReceivableAmount());
       baseBill.setReceivedAmount(billRecord.getReceivedAmount());
       baseBill.setDebtAmount(debtAmount);
+      baseBill.setCheckerId(billRecord.getCrtId());
     }
   }
 

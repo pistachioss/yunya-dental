@@ -13,6 +13,7 @@
     <result column="order_num" property="orderNum" jdbcType="VARCHAR" />
     <result column="order_amount" property="orderAmount" jdbcType="DECIMAL" />
     <result column="order_date" property="orderDate" jdbcType="TIMESTAMP" />
+    <result column="biller_id" property="billerId" jdbcType="INTEGER" />
     <result column="privilege_type" property="privilegeType" jdbcType="TINYINT" />
     <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
     <result column="privilege_date" property="privilegeDate" jdbcType="TIMESTAMP" />
@@ -21,6 +22,6 @@
     <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
     <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
     <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL" />
-    <result column="biller_id" property="billerId" jdbcType="INTEGER" />
+    <result column="checker_id" property="checkerId" jdbcType="INTEGER" />
   </resultMap>
 </mapper>
