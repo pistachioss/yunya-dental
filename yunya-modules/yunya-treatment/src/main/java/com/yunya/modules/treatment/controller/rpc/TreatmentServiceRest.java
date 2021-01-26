@@ -317,6 +317,20 @@ public class TreatmentServiceRest {
   }
 
   /**
+   * 根据预约ID查询患者接诊记录
+   *
+   * @param appointIds 预约记录
+   * @return List<TreatmentRecord>
+   */
+  @RequestMapping(value = "/treatment/by/appointIds", method = RequestMethod.POST)
+  public List<TreatmentRecord> findTreatmentRecordListByAppointIds(@RequestBody List<Integer> appointIds) {
+    if (StringHelper.isNotEmpty(appointIds)) {
+      return treatmentRecordBiz.findTreatmentRecordListByAppointIds(appointIds);
+    }
+    return null;
+  }
+
+  /**
    * 修改就诊记录病历书写状态
    *
    * @param id 就诊记录ID

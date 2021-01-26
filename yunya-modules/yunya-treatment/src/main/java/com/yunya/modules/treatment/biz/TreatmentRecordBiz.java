@@ -46,6 +46,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -1503,5 +1506,18 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    */
   public BigDecimal findBusinessFirstTreatCompletedCount(BusinessGoalCompletedInfoQuery query) {
     return mapper.selectBusinessFirstTreatCompletedCount(query);
+  }
+
+  /**
+   * 根据预约ID查询患者接诊记录
+   *
+   * @param appointIds 预约记录
+   * @return List<TreatmentRecord>
+   */
+  public List<TreatmentRecord> findTreatmentRecordListByAppointIds(List<Integer> appointIds) {
+    if (StringHelper.isNotEmpty(appointIds)) {
+      return mapper.findTreatmentRecordListByAppointIds(appointIds);
+    }
+    return null;
   }
 }

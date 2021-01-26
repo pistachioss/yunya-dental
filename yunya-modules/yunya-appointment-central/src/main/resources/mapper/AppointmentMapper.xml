@@ -351,10 +351,6 @@
             and a.appoint_date between DATE_FORMAT(#{startDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
         </if>
     </where>
-
-
-
-
   </select>
 
     <!-- 根据条件查询预约未到患者信息列表 -->
@@ -575,12 +571,53 @@
             <if test="queryForm.orgId != null">
                 and a.org_id = #{queryForm.orgId}
             </if>
+            <if test="queryForm.dentistId != null">
+                and a.dentist_id = #{queryForm.dentistId}
+            </if>
             and a.appoint_status = 0
             <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
                 and DATE_FORMAT(a.appoint_date, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
             </if>
             <if test="queryForm.dentistId != null">
                 and a.dentist_id = #{queryForm.dentistId}
+            </if>
+        </where>
+    </select>
+    <!-- 根据时间查询预约维度公共信息 -->
+    <select id="findAppointmentDimensionCommInfo"
+            resultMap="appointmentDimensionColumn">
+        select
+        a.id,
+        a.dentist_id,
+        a.patient_id,
+        a.appoint_type,
+        a.appoint_content,
+        a.appoint_date,
+        a.appoint_time,
+        a.appoint_duration,
+        a.confirm_status,
+        (select COUNT(a1.dentist_id) as num from appointment a1
+        where
+        a1.dentist_id = a.dentist_id
+        and a1.inservice = 1
+        and a1.appoint_date between DATE_FORMAT(#{startDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
+        and a1.org_id = a.org_id
+        and a1.appoint_status &lt;&gt; 3) as patientNum
+        from appointment a
+        <where>
+            a.inservice = 1
+            and a.appoint_status &lt;&gt; 3
+            <if test="orgId != null">
+                and a.org_id = #{orgId}
+            </if>
+            <if test="dentistIds != null and dentistIds.size() > 0">
+                and a.dentist_id in
+                 <foreach collection="dentistIds" item="dentistId" open="(" separator="," close=")">
+                     #{dentistId}
+                 </foreach>
+            </if>
+            <if test="startDate != null and endDate != null">
+                and a.appoint_date between DATE_FORMAT(#{startDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
             </if>
         </where>
     </select>

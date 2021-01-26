@@ -369,4 +369,13 @@ public interface RemoteTreatmentServiceFeign {
    */
   @RequestMapping(value = "/rpc/treat/last/{patientId}", method = RequestMethod.GET)
   LastTreatmentInfoVO findLastTreatmentRecord(@PathVariable(value = "patientId") Integer patientId);
+
+  /**
+   * 根据预约ID查询患者接诊记录
+   *
+   * @param appointIds 预约记录
+   * @return List<TreatmentRecord>
+   */
+  @RequestMapping(value = "/rpc/treatment/by/appointIds", method = RequestMethod.POST)
+  public List<TreatmentRecord> findTreatmentRecordListByAppointIds(@RequestBody List<Integer> appointIds);
 }
