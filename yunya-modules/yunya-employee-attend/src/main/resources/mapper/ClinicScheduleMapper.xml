@@ -46,10 +46,11 @@
         bs.first_end_time,bs.second_start_time,bs.second_end_time,(IFNULL(cs.inservice,bs.inservice)) as inservice
         from base_schedule bs
         left join clinic_schedule cs on cs.schedule_id = bs.id
-        where 1=1
+        <where>
         <if test="clinicId != null and clinicId != ''">
             and cs.clinic_id = #{clinicId}
         </if>
+        </where>
     </select>
 
     <select id="selectVOsByClinicIdAndInservice" resultMap="ClinicScheduleVOMap">
