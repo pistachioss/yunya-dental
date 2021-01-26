@@ -156,4 +156,12 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    * @return CountTreatmentRecordVO
    */
   CountTreatmentRecordVO selectTreatCountByExample(@Param("queryForm") TreatmentCountQuery queryForm);
+
+  /**
+   * 根据预约ID查询患者接诊记录
+   *
+   * @param appointIds 预约记录
+   * @return List<TreatmentRecord>
+   */
+  public List<TreatmentRecord> findTreatmentRecordListByAppointIds(@Param("appointIds") List<Integer> appointIds);
 }
