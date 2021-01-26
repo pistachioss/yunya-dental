@@ -5,21 +5,24 @@
         <!--
           WARNING - @mbg.generated
         -->
-        <result column="bill_id" property="billId" jdbcType="INTEGER"/>
-        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
-        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
-        <result column="treatment_id" property="treatmentId" jdbcType="INTEGER"/>
-        <result column="bill_status" property="billStatus" jdbcType="TINYINT"/>
-        <result column="order_num" property="orderNum" jdbcType="VARCHAR"/>
-        <result column="order_amount" property="orderAmount" jdbcType="DECIMAL"/>
-        <result column="order_date" property="orderDate" jdbcType="TIMESTAMP"/>
-        <result column="privilege_type" property="privilegeType" jdbcType="TINYINT"/>
-        <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL"/>
+        <result column="bill_id" property="billId" jdbcType="INTEGER" />
+        <result column="org_id" property="orgId" jdbcType="INTEGER" />
+        <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+        <result column="treatment_id" property="treatmentId" jdbcType="INTEGER" />
+        <result column="bill_status" property="billStatus" jdbcType="TINYINT" />
+        <result column="order_num" property="orderNum" jdbcType="VARCHAR" />
+        <result column="order_amount" property="orderAmount" jdbcType="DECIMAL" />
+        <result column="order_date" property="orderDate" jdbcType="TIMESTAMP" />
+        <result column="biller_id" property="billerId" jdbcType="INTEGER" />
+        <result column="privilege_type" property="privilegeType" jdbcType="TINYINT" />
+        <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
+        <result column="privilege_date" property="privilegeDate" jdbcType="TIMESTAMP" />
         <result column="bill_date" property="billDate" jdbcType="TIMESTAMP"/>
-        <result column="bill_num" property="billNum" jdbcType="VARCHAR"/>
-        <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL"/>
-        <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
-        <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL"/>
+        <result column="bill_num" property="billNum" jdbcType="VARCHAR" />
+        <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
+        <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
+        <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL" />
+        <result column="checker_id" property="checkerId" jdbcType="INTEGER" />
     </resultMap>
 
     <resultMap id="BillDiscountDetail" type="com.yunya.feign.report.domain.vo.BillDiscountVO">
@@ -841,5 +844,65 @@
         LEFT JOIN base_coupon bcpon ON bcpon.coupon_id = bc.coupon_id
         LEFT JOIN base_patient_member bpm ON bpm.member_level_id = bb.card_id
         WHERE bb.order_id = #{billId}
+    </select>
+
+    <!-- 根据条件查询未结账订单列表 -->
+    <select id="selectUncheckedBillList" resultType="com.yunya.feign.report.domain.vo.BillRecordOfUncheckedVO">
+        SELECT
+            id,
+            orgId,
+            orgName,
+            orderRecordNum,
+            totalAmount,
+            crtTime,
+            patientId,
+            patientName,
+            patientMobile,
+            treatmentRecordId,
+            treatmentStatus,
+            crtId,
+            crtName
+        FROM
+            (
+            SELECT
+                bb.bill_id AS id,
+                bb.org_id AS orgId,
+                bo.abbreviation AS orgName,
+                bb.order_num AS orderRecordNum,
+                bb.order_amount AS totalAmount,
+                DATE_FORMAT( bb.order_date, '%Y-%m-%d' ) AS crtTime,
+                bb.patient_id AS patientId,
+                bp.`name` AS patientName,
+                bp.mobile AS patientMobile,
+                bp.pinyin_name AS pinyinName,
+                bb.treatment_id AS treatmentRecordId,
+                btp.treat_status AS treatmentStatus,
+                bb.biller_id AS crtId,
+                be.employee_name AS crtName
+            FROM
+                base_bill bb
+                LEFT JOIN base_treatment_process btp ON bb.treatment_id = btp.treatment_id
+                LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+                LEFT JOIN base_organization bo ON bb.org_id = bo.org_id
+            LEFT JOIN base_employee be ON bb.bill_id = be.user_id
+            WHERE
+            bb.bill_num IS NULL
+            AND bb.bill_date IS NULL
+        ) bb
+        <where>
+            <if test="query.orderRecordNum != null and query.orderRecordNum != ''">
+                AND bb.orderRecordNum like concat('%', #{query.orderRecordNum} , '%')
+            </if>
+            <if test="query.search != null and query.search != ''">
+                AND concat(IFNULL(bb.patientName, ''), IFNULL(bb.pinyinName, ''), IFNULL(bb.patientMobile, '')) like
+                concat('%', #{query.search}, '%')
+            </if>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                AND bb.orgId in
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>

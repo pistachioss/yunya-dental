@@ -338,9 +338,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   private static BigDecimal compute(BigDecimal price, BigDecimal amount) {
     BigDecimal res = BigDecimal.ZERO;
     BigDecimal[] result = amount.divideAndRemainder(price);
-    BigDecimal quotient = result[0];// 商
-    BigDecimal remainder = result[1];// 余数
-    if (quotient.compareTo(res)==0 && remainder.compareTo(res)==0) {
+    BigDecimal quotient = result[0]; // 商
+    BigDecimal remainder = result[1]; // 余数
+    if (quotient.compareTo(res) == 0 && remainder.compareTo(res) == 0) {
       return res;
     } else {
       res = quotient;
@@ -403,5 +403,19 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     ExcelUtil<CurrentMonthBillCollectionDebtVO> excelUtil =
         new ExcelUtil<>(CurrentMonthBillCollectionDebtVO.class);
     excelUtil.exportExcel(response, resultList, "门诊当月收欠费（使用优惠）账单记录");
+  }
+
+  /**
+   * 根据条件查询未结账订单列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillRecordOfUncheckedVO>
+   */
+  public PageInfo<BillRecordOfUncheckedVO> findUncheckedBillList(BillUnCheckedQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BillRecordOfUncheckedVO> resultList = mapper.selectUncheckedBillList(query);
+    return new PageInfo<>(resultList);
   }
 }
