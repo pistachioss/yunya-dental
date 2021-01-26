@@ -117,15 +117,19 @@
     </select>
     <!-- 根据条件查询门诊商品项目列表 -->
     <select id="selectClinicOralTariffExportList"
-            resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffExportVO">
+            resultType="com.yunya.feign.treatment.domain.vo.BaseOralTariffVO">
         select
+        cot.id,
+        cot.oralTariffCategoryId,
+        cot.oralTariffCategoryName,
+        cot.oralTariffCategoryNumber,
         cot.`number` as itemNumber,
         cot.`name`,
-        cot.oralTariffCategoryNumber,
-        cot.oralTariffCategoryName,
+        cot.pinyin,
         cot.englishName,
         cot.unit,
-        cot.price
+        cot.price,
+        cot.inservice
         from
         (
         select

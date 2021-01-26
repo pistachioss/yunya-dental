@@ -9,9 +9,11 @@ import com.yunya.feign.treatment.domain.form.ClinicItemMemberPriceForm;
 import com.yunya.feign.treatment.domain.form.ClinicTariffForm;
 import com.yunya.feign.treatment.domain.form.ClinicTariffUniteDiscountForm;
 import com.yunya.feign.treatment.domain.form.MemberUniteDiscountForm;
-import com.yunya.feign.treatment.domain.query.BaseTariffQueryForm;
 import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
-import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.feign.treatment.domain.vo.BaseCategoryInfoVO;
+import com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO;
+import com.yunya.feign.treatment.domain.vo.BaseTariffVO;
+import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -34,7 +36,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
@@ -99,10 +100,11 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     Integer orgId = queryForm.getOrgId();
-    BaseTariffQueryForm form = new BaseTariffQueryForm();
-    form.setTariffCategoryId(queryForm.getTariffCategoryId());
-    form.setKeyWord(queryForm.getKeyWord());
-    List<BaseTariffVO> baseTariffs = baseTariffMapper.selectBaseTariffList(form);
+//    BaseTariffQueryForm form = new BaseTariffQueryForm();
+//    form.setTariffCategoryId(queryForm.getTariffCategoryId());
+//    form.setKeyWord(queryForm.getKeyWord());
+//    List<BaseTariffVO> baseTariffs = baseTariffMapper.selectBaseTariffList(form);
+    List<BaseTariffVO> baseTariffs = mapper.selectClinicTariffExportList(queryForm);
     pageInfo = new PageInfo(baseTariffs);
     List<ClinicTariffVO> resultList = Lists.newArrayList();
     if (StringHelper.isNotEmpty(baseTariffs)) {
@@ -373,14 +375,14 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    */
   public void exportClinicTariffList(HttpServletResponse response, ClinicTariffQueryForm queryForm)
       throws IOException {
-    List<ClinicTariffExportVO> resultList = mapper.selectClinicTariffExportList(queryForm);
+    List<BaseTariffVO> resultList = mapper.selectClinicTariffExportList(queryForm);
     Integer orgId = queryForm.getOrgId();
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
     String abbreviation = null;
     if (null != orgInfo) {
       abbreviation = orgInfo.getAbbreviation();
     }
-    ExcelUtil<ClinicTariffExportVO> excelUtil = new ExcelUtil<>(ClinicTariffExportVO.class);
+    ExcelUtil<BaseTariffVO> excelUtil = new ExcelUtil<>(BaseTariffVO.class);
     excelUtil.exportExcel(response, resultList, abbreviation + "-价目表信息列表");
   }
 

@@ -134,15 +134,19 @@
     </select>
     <!-- 根据条件查询门诊价目表导出列表 -->
     <select id="selectClinicTariffExportList"
-            resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffExportVO">
+            resultType="com.yunya.feign.treatment.domain.vo.BaseTariffVO">
         select
+        ct.id,
         ct.`number` as itemNumber,
         ct.`name`,
+        ct.tariffCategoryId,
         ct.tariffCategoryNumber,
         ct.tariffCategoryName,
+        ct.pinyin,
         ct.englishName,
         ct.unit,
-        ct.price
+        ct.price,
+        ct.inservice
         from
         (
         select
