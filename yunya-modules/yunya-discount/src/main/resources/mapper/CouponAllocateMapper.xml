@@ -48,18 +48,20 @@
     </insert>
 
     <select id="findVOList" resultType="com.yunya.modules.discount.vo.CouponAllocateVO">
-        SELECT
-        any_value(id),
-	any_value(sum(allocate_num)) allocateNum,
-	any_value(allocate_date) allocateDate,
-	any_value(allocate_user_id) allocateUserId,
-	any_value(crt_id) crtId,
-	crt_time crtTime
-    FROM
-	coupon_allocate
-	where coupon_id = #{id}
-    GROUP BY
-	crt_time
+                SELECT
+                any_value(ca.id) id,
+				any_value(sum(ca.allocate_num)) allocateNum,
+				any_value(ca.allocate_date) allocateDate,
+				any_value(ca.allocate_user_id) allocateUserId,
+				any_value(ca.crt_id) crtId,
+				ca.crt_time crtTime,
+				IFNULL(cd.num,0) as isAllocateNum
+				FROM
+				coupon_allocate ca LEFT JOIN
+				(select any_value(COUNT(id)) as num,any_value(coupon_allocate_id) as coupon_allocate_id  from card GROUP BY coupon_allocate_id) cd on ca.id = cd.coupon_allocate_id
+				where ca.coupon_id = #{id}
+				GROUP BY
+				ca.crt_time
     </select>
 
     <select id="findVODetailList" resultType="com.yunya.modules.discount.vo.CouponAllocateDetailVO">
