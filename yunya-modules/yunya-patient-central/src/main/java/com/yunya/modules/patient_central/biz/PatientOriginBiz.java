@@ -120,6 +120,10 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
                 if (patientOriginInfoVo.getParentId() != 0){
                     patientOriginInfoVo.setCodeUrl(getCodeUrl(patientOriginInfoVo));
                 }
+                if (patientOriginInfoVo.getTimeLimit() == 0) {
+                    patientOriginInfoVo.setLimitStartDate(null);
+                    patientOriginInfoVo.setLimitEndDate(null);
+                }
               }
       );
     }

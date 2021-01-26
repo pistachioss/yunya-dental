@@ -9,6 +9,8 @@ import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientOrigin;
@@ -23,7 +25,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
 /**
  * 简介: 客户登记业务层
@@ -67,9 +73,18 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         if (patientBaseInfo.getOriginId() != null) {
             PatientOrigin patientOrigin =
                     this.patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
-            if (patientOrigin != null) {
-                patientBaseInfo.setOriginType(patientOrigin.getOriginType());
+            if (patientOrigin == null) {
+                throw new ClientServiceException("该患者来源不存在", DATA_NOT_EXIST);
             }
+            if (patientOrigin.getTimeLimit().intValue()==1) {
+                Date curDate = DateUtil.getCurrentDate();
+                Date startDate = DateUtil.toDate(patientOrigin.getLimitStartDate());
+                Date endDate = DateUtil.toDate(patientOrigin.getLimitEndDate());
+                if (curDate.before(startDate) || curDate.after(endDate)) {
+                    throw new ClientServiceException("该患者来源已过期", PARAMETERS_IS_ILLEGAL);
+                }
+            }
+            patientBaseInfo.setOriginType(patientOrigin.getOriginType());
         }
 
         OrganizationModel organizationModel = new OrganizationModel();
