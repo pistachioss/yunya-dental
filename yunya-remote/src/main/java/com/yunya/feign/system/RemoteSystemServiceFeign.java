@@ -7,6 +7,7 @@ import com.yunya.feign.system.vo.*;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.system.*;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -202,7 +203,7 @@ public interface RemoteSystemServiceFeign {
   /**
    * 根据用户ID查询员工信息
    *
-   * @param userId  用户ID
+   * @param userId 用户ID
    * @return
    */
   @RequestMapping(value = "/api/employee/{userId}", method = RequestMethod.GET)
@@ -224,13 +225,24 @@ public interface RemoteSystemServiceFeign {
    * @return list
    */
   @RequestMapping(value = "/api/userWithOrg/list", method = RequestMethod.POST)
-  PageInfo<SysUserInfoDetail> findSysUserEmployeeWithOrgList(@RequestBody SysUserEmployeeModel model);
+  PageInfo<SysUserInfoDetail> findSysUserEmployeeWithOrgList(
+      @RequestBody SysUserEmployeeModel model);
+
+  /**
+   * 根据条件查询可登陆组织员工列表
+   *
+   * @param queryForm 查询条件
+   * @return List<EmployeeInfoVO>
+   */
+  @RequestMapping(value = "/api/enable/login/list", method = RequestMethod.POST)
+  List<EmployeeInfoVO> findEnableLoginEmployeeList(
+      @RequestBody @Validated EmployeeInfoQueryForm queryForm);
 
   /**
    * 根据科室ID查询科室
    *
    * @param id 科室模板ID
-   * @return
+   * @return DepartmentRoom
    */
   @RequestMapping(value = "/api/deptRoom/{id}", method = RequestMethod.GET)
   DepartmentRoom findDepartmentRoomById(@PathVariable(value = "id") Integer id);
@@ -239,7 +251,7 @@ public interface RemoteSystemServiceFeign {
    * 根据科室ID集合查询科室
    *
    * @param ids 科室模板ID集合
-   * @return
+   * @return List<DepartmentRoom>
    */
   @RequestMapping(value = "/api/deptRoom/ids/list", method = RequestMethod.POST)
   List<DepartmentRoom> findDepartmentRoomByIds(@RequestBody List<Integer> ids);
@@ -248,7 +260,7 @@ public interface RemoteSystemServiceFeign {
    * 根据条件查询科室列表
    *
    * @param departmentRoom 查询条件
-   * @return
+   * @return List<DepartmentRoom>
    */
   @RequestMapping(value = "/api/deptRoom/list", method = RequestMethod.POST)
   List<DepartmentRoom> findDepartmentRoomList(@RequestBody DepartmentRoom departmentRoom);
@@ -257,7 +269,7 @@ public interface RemoteSystemServiceFeign {
    * 根据ID查询门诊科室信息
    *
    * @param id 门诊科室ID
-   * @return
+   * @return ClinicDepartmentRoomVO
    */
   @RequestMapping(value = "/api/deptRoom/clinic/{id}", method = RequestMethod.GET)
   ClinicDepartmentRoomVO findClinicDepartmentRoomById(@PathVariable(value = "id") Integer id);
@@ -266,7 +278,7 @@ public interface RemoteSystemServiceFeign {
    * 根据条件查询门诊科室列表
    *
    * @param queryForm 查询条件
-   * @return
+   * @return List<ClinicDepartmentRoomVO>
    */
   @RequestMapping(value = "/api/deptRoom/clinic/list", method = RequestMethod.POST)
   List<ClinicDepartmentRoomVO> findClinicDepartmentRoomList(
@@ -352,7 +364,7 @@ public interface RemoteSystemServiceFeign {
    */
   @RequestMapping(value = "/api/accountItem/clinic/list", method = RequestMethod.POST)
   List<ClinicAccountItemVO> findClinicAccountItemList(
-          @RequestBody ClinicAccountItemQueryForm queryForm);
+      @RequestBody ClinicAccountItemQueryForm queryForm);
 
   /**
    * 根据用户ID获取用户的权限列表
@@ -390,9 +402,10 @@ public interface RemoteSystemServiceFeign {
 
   /**
    * 获取设备信息
+   *
    * @return EquipmentInfo
    */
-  @RequestMapping(value = "/api/equipmentInfoOne",method = RequestMethod.GET)
+  @RequestMapping(value = "/api/equipmentInfoOne", method = RequestMethod.GET)
   EquipmentInfo equipmentInfoOne();
 
   /**
@@ -429,5 +442,6 @@ public interface RemoteSystemServiceFeign {
    * @return MedicalOrganizationInfoVO
    */
   @RequestMapping(value = "/api//clinicExtInfo/{companyId}", method = RequestMethod.GET)
-  MedicalOrganizationInfoVO clinicExtInfoByCompanyId(@PathVariable(value = "companyId")  Integer companyId);
+  MedicalOrganizationInfoVO clinicExtInfoByCompanyId(
+      @PathVariable(value = "companyId") Integer companyId);
 }

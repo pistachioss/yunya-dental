@@ -16,7 +16,6 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.*;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.expand.ClinicEmployeeConfig;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.system.SysUser;
 import com.yunya.models.system.SysUserPost;
@@ -30,6 +29,7 @@ import com.yunya.modules.system.mapper.SysUserMapper;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.formula.functions.T;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -38,9 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -132,13 +129,8 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       // 新增员工就职状态为离职处理
       if (USER_RESIGNATION_STATUS.equals(resource.getWorkStatus())) {
         String leaveTime = resource.getLeaveTime();
-        if (StringHelper.isBlank(leaveTime)) {
-          SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-          String systemTime = format.format(new Date(System.currentTimeMillis()));
-          sysEmployee.setLeaveTime(systemTime);
-        } else {
-          sysEmployee.setLeaveTime(leaveTime);
-        }
+        sysEmployee.setLeaveTime(
+            StringHelper.isBlank(leaveTime) ? new DateTime().toString("yyyy-MM-dd") : leaveTime);
       }
       sysEmployee.setPinyin(HanyuPinyinHelper.getFirstLettersLo(resource.getName()));
       sysEmployee.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -175,12 +167,12 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       entity.setCrtName(BaseContextHandler.getName());
       int i = sysUserPostMapper.insertSelective(entity);
       if (i > 0) {
-//        // 同步新增用户可登录组织的默认配置可预约可挂号
-//        ClinicEmployeeConfig employeeConfig = new ClinicEmployeeConfig();
-//        employeeConfig.setClinicId(form.getOrgId());
-//        employeeConfig.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-//        employeeConfig.setEmployeeId(userId);
-//        this.clinicEmployeeConfigFeign.addEmployeeConfig(employeeConfig);
+        //        // 同步新增用户可登录组织的默认配置可预约可挂号
+        //        ClinicEmployeeConfig employeeConfig = new ClinicEmployeeConfig();
+        //        employeeConfig.setClinicId(form.getOrgId());
+        //        employeeConfig.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        //        employeeConfig.setEmployeeId(userId);
+        //        this.clinicEmployeeConfigFeign.addEmployeeConfig(employeeConfig);
         // 发送消息同步员工信息
         rabbitMqServiceFeign.sendMessage(entity.getId(), 0, BaseUserPost);
       }
@@ -250,38 +242,14 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       SysEmployee employeeResult = sysEmployeeMapper.selectByUserId(userId);
       SysEmployee sysEmployeeEntity = EntityUtils.build(form, SysEmployee.class);
       sysEmployeeEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(form.getName()));
+      if (!USER_RESIGNATION_STATUS.equals(form.getWorkStatus())) {
+        sysEmployeeEntity.setLeaveTime("");
+      }
       sysEmployeeEntity.setId(employeeResult.getId());
       sysEmployeeEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
       sysEmployeeEntity.setUpdName(BaseContextHandler.getName());
       sysEmployeeEntity.setUpdTime(new Date(System.currentTimeMillis()));
-      int updResult = sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
-      if (updResult > 0 && sysEmployeeEntity.getWorkStatus() == 2) {
-        // 从可预约可挂号配置列表中删除该医生
-        List<LoginOrganizationForm> loginOrganizationForms = form.getLoginOrganizationForms();
-        List<ClinicEmployeeConfig> clinicEmployeeConfigs = new ArrayList<>();
-        if (StringHelper.isNotEmpty(loginOrganizationForms)) {
-          loginOrganizationForms.forEach(item->{
-            ClinicEmployeeConfig employeeConfig = new ClinicEmployeeConfig();
-            employeeConfig.setClinicId(item.getOrgId());
-            employeeConfig.setEmployeeId(userId);
-            employeeConfig.setInservice(0);
-            employeeConfig.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-            employeeConfig.setUpdTime(LocalDateTime.now());
-            clinicEmployeeConfigs.add(employeeConfig);
-          });
-          this.clinicEmployeeConfigFeign.editEmployeeConfig(clinicEmployeeConfigs);
-        } else {
-          List<ClinicEmployeeConfig> clinicEmployeeConfigList = this.clinicEmployeeConfigFeign.findClinicEmployeeConfigs(userId);
-          if (StringHelper.isNotEmpty(clinicEmployeeConfigList)) {
-            clinicEmployeeConfigList.forEach(item->{
-              item.setInservice(0);
-              item.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-              item.setUpdTime(LocalDateTime.now());
-            });
-          }
-          this.clinicEmployeeConfigFeign.editEmployeeConfig(clinicEmployeeConfigList);
-        }
-      }
+      sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
       // 发送消息同步员工信息
       rabbitMqServiceFeign.sendMessage(userId, 1, BaseEmployee);
     }
@@ -291,7 +259,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       // 设置redis key
       String redisKeyUserId = setKey(REDIS_KEY_USER_ID, deviceName, String.valueOf(userId));
       // 获取被修改用户的token
-      String token =  redisUtils.get(redisKeyUserId);
+      String token = redisUtils.get(redisKeyUserId);
       if (StringUtils.isNotBlank(token)) {
         // 移除缓存中被修改用户的信息
         redisUtils.delete(REDIS_KEY_USER_TOKEN + token);
@@ -482,12 +450,13 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     smsVerifyCodeModel.setMobile(mobile);
     smsVerifyCodeModel.setVerifyCode(messageCode);
     smsVerifyCodeModel.setEventCode(SmsAutosendEventEnum.FORGET_PASSWORD.getCode());
-    redisUtils.lPush(SMS_SEND_VERIFYCODE_QUEUE + COMPANY_ORGID,smsVerifyCodeModel);
+    redisUtils.lPush(SMS_SEND_VERIFYCODE_QUEUE + COMPANY_ORGID, smsVerifyCodeModel);
     return ResponseUtil.success("短信验证码已发送");
   }
 
   /**
    * 重置密码
+   *
    * @param userId 用户ID
    * @return 返回结果信息
    */
@@ -497,7 +466,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     SysUser sysUser = mapper.selectOne(entity);
     if (null != sysUser) {
       // 密码加密，加盐，设置默认密码
-      sysUser.setPassword(new BCryptPasswordEncoder(PW_ENCODER_SALT).encode("123456"));
+      sysUser.setPassword(new BCryptPasswordEncoder(PW_ENCODER_SALT).encode(DEFAULT_USER_PASSWORD));
       sysUser.setUpdId(sysUser.getId());
       sysUser.setUpdName(sysUser.getName());
       int i = mapper.updateByPrimaryKey(sysUser);
@@ -505,7 +474,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
         return ResponseUtil.success();
       }
     }
-    return ResponseUtil.fail(OBJECT_EDIT_FAIL,"密码重置失败,请确认用户是否存在",null);
+    return ResponseUtil.fail(OBJECT_EDIT_FAIL, "密码重置失败,请确认用户是否存在", null);
   }
 
   /**

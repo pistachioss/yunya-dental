@@ -10,12 +10,12 @@ import com.yunya.modules.system.domain.query.ClinicAccountItemQueryForm;
 import com.yunya.modules.system.domain.query.ClinicDepartmentRoomQueryForm;
 import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
 import com.yunya.modules.system.rpc.service.PermissionService;
-import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -55,6 +55,8 @@ public class SystemServiceRest {
   @Autowired private PostGroupBiz postGroupBiz;
   /** 用户（员工） */
   @Autowired private SysUserBiz sysUserBiz;
+  /** 员工可登录组织 */
+  @Autowired private SysUserPostBiz sysUserPostBiz;
   /** 员工 */
   @Autowired private SysEmployeeBiz sysEmployeeBiz;
   /** 科室模版 */
@@ -284,6 +286,18 @@ public class SystemServiceRest {
     PostGroup postGroup = new PostGroup();
     BeanUtils.copyProperties(model, postGroup);
     return postGroupBiz.selectByObj(postGroup);
+  }
+
+  /**
+   * 根据条件查询可登陆组织员工列表
+   *
+   * @param queryForm 查询条件
+   * @return List<EmployeeInfoVO>
+   */
+  @RequestMapping(value = "/enable/login/list", method = RequestMethod.POST)
+  List<EmployeeInfoVO> findEnableLoginEmployeeList(
+          @RequestBody @Validated EmployeeInfoQueryForm queryForm) {
+    return sysUserPostBiz.findEnableLoginEmployeeList(queryForm);
   }
 
   /**
