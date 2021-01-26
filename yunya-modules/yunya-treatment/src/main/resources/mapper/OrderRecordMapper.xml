@@ -48,6 +48,7 @@
         tr.`status` as treatmentStatus,
         ord.`status`,
         ord.total_amount as totalAmount,
+        ord.crt_id as crtId,
         ord.crt_name as crtName
         from order_record ord
         LEFT JOIN treatment_record tr ON ord.treatment_record_id = tr.id AND tr.`status` = 2
@@ -56,9 +57,9 @@
             <if test="orderRecordNum != null and orderRecordNum != ''">
                 and ord.order_record_num like concat('%', #{orderRecordNum}, '%')
             </if>
-            <if test="orgIds != null and orgIds.length &gt; 0">
+            <if test="orgIds != null and orgIds.length > 0">
                 and ord.org_id in
-                <foreach collection="orgIds" open="(" separator="," close=")" item="orgId">
+                <foreach collection="orgIds" index="index" open="(" separator="," close=")" item="orgId">
                     #{orgId}
                 </foreach>
             </if>
