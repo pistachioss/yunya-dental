@@ -140,6 +140,11 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   }
 
   @Override
+  public List<EmployeeInfoVO> findEnableLoginEmployeeList(EmployeeInfoQueryForm queryForm) {
+    return null;
+  }
+
+  @Override
   public DepartmentRoom findDepartmentRoomById(Integer id) {
     return null;
   }
