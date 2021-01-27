@@ -30,27 +30,27 @@ public class VoucherDiscountItemBiz extends BaseBiz<VoucherDiscountItemMapper, V
     @Resource
     private RemoteRabbitMqServiceFeign mqServiceFeign;
 
-   public int saveVouAndDis(List<VoucherDiscountItemForm> list){
-       int a = mapper.saveVouAndDis(list);
-       if(a>0&&list.size()>0){
-           mqServiceFeign.sendMessage(list.get(0).getCouponId(), BusinessConstants.ADD, BaseCouponItem);
-       }
+    public int saveVouAndDis(List<VoucherDiscountItemForm> list) {
+        int a = mapper.saveVouAndDis(list);
+        if (a > 0 && list.size() > 0) {
+            mqServiceFeign.sendMessage(list.get(0).getCouponId(), BusinessConstants.ADD, BaseCouponItem);
+        }
         return a;
     }
 
-    public int savePackage(List<PackageCouponItemForm> list){
+    public int savePackage(List<PackageCouponItemForm> list) {
         int a = mapper.savePackage(list);
-        if(a>0&&list.size()>0){
+        if (a > 0 && list.size() > 0) {
             mqServiceFeign.sendMessage(list.get(0).getCouponId(), BusinessConstants.ADD, BaseCouponItem);
         }
         return a;
     }
 
-    public int saveSpecial(List<SpecialPackageCouponItemForm> list){
+    public int saveSpecial(List<SpecialPackageCouponItemForm> list) {
         int a = mapper.saveSpecial(list);
-        if(a>0&&list.size()>0){
+        if (a > 0 && list.size() > 0) {
             mqServiceFeign.sendMessage(list.get(0).getCouponId(), BusinessConstants.ADD, BaseCouponItem);
         }
-       return a;
+        return a;
     }
 }
