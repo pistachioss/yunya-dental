@@ -559,7 +559,12 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
               if (patientKind != null) {
                 DictionaryItem dictionaryItemById =
                     remoteSystemServiceFeign.findDictionaryItemById(patientKind);
-                patientTotalInfoVo.setPatientKindName(dictionaryItemById.getName());
+                if (dictionaryItemById != null) {
+                  String name = dictionaryItemById.getName();
+                  if (StringHelper.isNotBlank(name)) {
+                    patientTotalInfoVo.setPatientKindName(name);
+                  }
+                }
               }
               // 设置患者扩展信息
               this.setPatientExtInfo(patientTotalInfoVo.getId(), patientTotalInfoVo);

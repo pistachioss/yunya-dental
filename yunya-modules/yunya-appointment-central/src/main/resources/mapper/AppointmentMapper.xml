@@ -600,9 +600,10 @@
         where
         a1.dentist_id = a.dentist_id
         and a1.inservice = 1
-        and a1.appoint_date between DATE_FORMAT(#{startDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
+        and a1.appoint_status &lt;&gt; 3
         and a1.org_id = a.org_id
-        and a1.appoint_status &lt;&gt; 3) as patientNum
+        and a1.appoint_date between DATE_FORMAT(#{startDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
+        ) as patientNum
         from appointment a
         <where>
             a.inservice = 1

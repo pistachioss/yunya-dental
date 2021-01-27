@@ -175,6 +175,21 @@ public interface AppointmentMapper extends Mapper<Appointment> {
       @Param("orgId") Integer orgId);
 
   /**
+   * 根据时间查询预约维度公共信息
+   *
+   * @param startDate 开始时间
+   * @param endDate 结束时间
+   * @param dentistId 医生id
+   * @param orgId 门诊id
+   * @return
+   */
+  List<AppointmentDimensionVo> findAppointmentDimensionCommInfo(
+          @Param("startDate") Date startDate,
+          @Param("endDate") Date endDate,
+          @Param("dentistIds") List<Integer> dentistIds,
+          @Param("orgId") Integer orgId);
+
+  /**
    * 根据条件查询预约未到患者信息列表
    *
    * @param queryForm 查询条件

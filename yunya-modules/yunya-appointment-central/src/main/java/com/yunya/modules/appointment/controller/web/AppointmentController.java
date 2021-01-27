@@ -192,7 +192,7 @@ public class AppointmentController {
   @ApiOperation(value = "根据条件查询患者维度预约可视图(按医生id、时间段查询)")
   @PostMapping("/find/patient/dimension")
   public ResponseResult<Page<AppointmentDimensionVo>> findAppointmentPatientDimensionByDate(
-      @RequestBody @Validated PatientDimensionByDayQuery query) {
+      @RequestBody @Validated PatientDimensionByDayQuery query) throws InterruptedException {
     List<AppointmentDimensionVo> appointmentDimensionVos =
         appointmentBiz.findAppointmentPatientDimensionByExample(query);
     // 分页
@@ -210,7 +210,7 @@ public class AppointmentController {
   @ApiOperation(value = "根据排班开始结束日期/门诊id/医生id查询医生维度预约可视图")
   @PostMapping("/find/dentist/dimension")
   public ResponseResult<Page<AppointmentDimensionVo>> findAppointmentDentistDimensionByExample(
-      @RequestBody PatientDimensionByDayQuery query) {
+      @RequestBody PatientDimensionByDayQuery query) throws InterruptedException {
     return appointmentBiz.findAppointmentDentistDimensionByExample(query);
   }
 
