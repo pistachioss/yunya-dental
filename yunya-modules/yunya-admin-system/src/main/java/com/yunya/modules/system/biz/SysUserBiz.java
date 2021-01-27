@@ -446,13 +446,14 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   /**
    * 重置密码
    *
+   *
+   * @param request
    * @param userId 用户ID
    * @return 返回结果信息
    */
-  public ResponseResult<T> resetPassword(Integer userId) {
-    SysUser entity = new SysUser();
-    entity.setId(userId);
-    SysUser sysUser = mapper.selectOne(entity);
+  public ResponseResult<T> resetPassword(HttpServletRequest request, Integer userId) {
+    String deviceName = ServletUtils.getCurrentDevice(request).getName();
+    SysUser sysUser = mapper.selectByPrimaryKey(userId);
     if (null != sysUser) {
       // 密码加密，加盐，设置默认密码
       sysUser.setPassword(new BCryptPasswordEncoder(PW_ENCODER_SALT).encode(DEFAULT_USER_PASSWORD));
@@ -460,6 +461,15 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysUser.setUpdName(sysUser.getName());
       int i = mapper.updateByPrimaryKey(sysUser);
       if (i > 0) {
+        // 设置redis key
+        String redisKeyUserId = setKey(REDIS_KEY_USER_ID, deviceName, String.valueOf(userId));
+        // 获取被修改用户的token
+        String token = redisUtils.get(redisKeyUserId);
+        if (StringUtils.isNotBlank(token)) {
+          // 移除缓存中被修改用户的信息
+          redisUtils.delete(REDIS_KEY_USER_TOKEN + token);
+          redisUtils.delete(redisKeyUserId);
+        }
         return ResponseUtil.success();
       }
     }
