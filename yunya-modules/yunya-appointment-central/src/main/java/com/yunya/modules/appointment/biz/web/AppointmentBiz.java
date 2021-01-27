@@ -555,13 +555,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 获取患者欠费信息
             List<DebtAmountModel> debtAmountList = remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
 
+            // 获取患者会员卡类型ID列表
+            List<Integer> memberTypeIds = patientTotalInfos.stream().map(PatientTotalInfoVo::getMemberTypeId).collect(Collectors.toList());
+            // 会员卡类型列表
+            List<MemberType> memberTypes = remoteSystemServiceFeign.findMemberTypeByIds(memberTypeIds);
             // 组合预约列表信息
             appointmentVos.forEach(appointmentVo -> {
                 AppointmentListItemVo build = EntityUtils.build(appointmentVo, AppointmentListItemVo.class);
                 // 向预约列表中注入预约相关信息
                 this.setAppointmentInfo(build, appointmentVo, dentistAndAssistantInfos, departmentRooms);
                 // 向预约列表中注入患者信息
-                this.setPatientInfo(build, patientTotalInfos, debtAmountList);
+                this.setPatientInfo(build, patientTotalInfos, debtAmountList,memberTypes);
                 appointmentList.add(build);
             });
             // 关键字检索
@@ -2076,7 +2080,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     appointmentPatientCardVo.setStation(aByte);
                 }
             }
-            System.out.println(appointmentDimensionVo.toString());
+            log.info("预约维度实体类：{}",appointmentDimensionVo.toString());
             // 判断大医生下面的助手列表中是否已经存在同一个助手了，如果存在同一个助手，则合并助手下的所有患者
             appointmentDimensionVo = this.mergeAssistant(appointmentDimensionVo);
 
@@ -2419,36 +2423,39 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                                     List<DepartmentRoom> departmentRooms) {
         // 查询预约医生信息
         Integer dentistId = build.getDentistId();
-        if (dentistId != null) {
-            List<SysUserInfoDetail> collect = sysUserInfoDetails.stream().filter(
-                    sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(dentistId)).collect(Collectors.toList());
-            SysUserInfoDetail userInfoDetail = collect.get(0);
-            String name = userInfoDetail.getName();
-            build.setDentistName(StringHelper.isBlank(name) ? "--" : name);
+        if (dentistId != null && StringHelper.isNotEmpty(sysUserInfoDetails)) {
+            boolean b = sysUserInfoDetails.stream().anyMatch(entity -> entity.getUserId().equals(dentistId));
+            if (b) {
+                SysUserInfoDetail userInfoDetail = sysUserInfoDetails.stream().filter(entity -> entity.getUserId().equals(dentistId)).findAny().get();
+                String name = userInfoDetail.getName();
+                build.setDentistName(StringHelper.isBlank(name) ? "--" : name);
+            }
         } else {
             build.setDentistName("--");
         }
 
         // 查询预约助手信息
         Integer assistantId = build.getAssistantId();
-        if (assistantId != null) {
-            List<SysUserInfoDetail> collect = sysUserInfoDetails.stream().filter(
-                    sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(assistantId)).collect(Collectors.toList());
-            SysUserInfoDetail userInfoDetail = collect.get(0);
-            String name = userInfoDetail.getName();
-            build.setAssistantName(StringHelper.isBlank(name) ? "--" : name);
+        if (assistantId != null && StringHelper.isNotEmpty(sysUserInfoDetails)) {
+            boolean b = sysUserInfoDetails.stream().anyMatch(entity -> entity.getUserId().equals(assistantId));
+            if (b) {
+                SysUserInfoDetail userInfoDetail = sysUserInfoDetails.stream().filter(entity -> entity.getUserId().equals(assistantId)).findAny().get();
+                String name = userInfoDetail.getName();
+                build.setAssistantName(StringHelper.isBlank(name) ? "--" : name);
+            }
         } else {
             build.setAssistantName("--");
         }
 
         // 设置默认科室信息
         Integer deptRoomId = appointmentVo.getDeptRoomId();
-        if (deptRoomId != null) {
-            List<DepartmentRoom> collect = departmentRooms.stream().filter(
-                    departmentRoom -> departmentRoom.getId().equals(deptRoomId)).collect(Collectors.toList());
-            DepartmentRoom departmentRoom = collect.get(0);
-            String name = departmentRoom.getName();
-            build.setClinicDeptRoomName(StringHelper.isBlank(name) ? "--" : name);
+        if (deptRoomId != null && StringHelper.isNotEmpty(departmentRooms)) {
+            boolean b = departmentRooms.stream().anyMatch(entity -> entity.getId().equals(deptRoomId));
+            if(b) {
+                DepartmentRoom departmentRoom = departmentRooms.stream().filter(entity -> entity.getId().equals(deptRoomId)).findAny().get();
+                String name = departmentRoom.getName();
+                build.setClinicDeptRoomName(StringHelper.isBlank(name) ? "--" : name);
+            }
         } else {
             build.setClinicDeptRoomName("--");
         }
@@ -2466,14 +2473,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     private void setPatientInfo(AppointmentListItemVo build,
                                 List<PatientTotalInfoVo> patientTotalInfoVos,
-                                List<DebtAmountModel> debtAmountModels) {
+                                List<DebtAmountModel> debtAmountModels,
+                                List<MemberType> memberTypes) {
         // 设置患者详细信息
         Integer patientId = build.getPatientId();
-        if (patientId != null){
-            List<PatientTotalInfoVo> collect = patientTotalInfoVos.stream().filter(
-                    patientTotalInfoVo -> patientTotalInfoVo.getId().equals(patientId)).collect(Collectors.toList());
-            PatientTotalInfoVo patientInfo = collect.get(0);
-            if (patientInfo != null){
+        if (patientId != null && StringHelper.isNotEmpty(patientTotalInfoVos)){
+            boolean result = patientTotalInfoVos.stream().anyMatch(entity -> entity.getId().equals(patientId));
+            if (result){
+                PatientTotalInfoVo patientInfo = patientTotalInfoVos.stream().filter(entity->entity.getId().equals(patientId)).findAny().get();
                 build.setAge(patientInfo.getAge());
                 try {
                     String birthday = patientInfo.getBirthday();
@@ -2496,18 +2503,21 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 build.setPatientKind(patientInfo.getPatientKindName());
                 // 设置会员卡图标类型
                 Integer memberTypeId = patientInfo.getMemberTypeId();
-                if (memberTypeId != null) {
-                    MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
-                    if (memberType != null) {
+                if (memberTypeId != null && StringHelper.isNotEmpty(memberTypes)) {
+                    boolean b = memberTypes.stream().anyMatch(memberType -> memberType.getId().equals(memberTypeId));
+                    if (b) {
+                        MemberType memberType = memberTypes.stream().filter(entity -> entity.getId().equals(memberTypeId)).findAny().get();
                         build.setMemberIcon(String.valueOf(memberType.getIcon()));
                     }
                 }
             }
             // 欠费金额
-            List<DebtAmountModel> DebtAmountModels = debtAmountModels.stream().filter(
-                    debtAmountModel -> debtAmountModel.getPatientId().equals(patientId)).collect(Collectors.toList());
-            if (StringHelper.isNotEmpty(DebtAmountModels)) {
-                build.setArrears(DebtAmountModels.get(0).getDebtAmount());
+            if (StringHelper.isNotEmpty(debtAmountModels)) {
+                boolean b = debtAmountModels.stream().anyMatch(entity -> entity.getPatientId().equals(patientId));
+                if (b) {
+                    DebtAmountModel debtAmountModel = debtAmountModels.stream().filter(entity -> entity.getPatientId().equals(patientId)).findAny().get();
+                    build.setArrears(debtAmountModel.getDebtAmount());
+                }
             }
         }
     }
