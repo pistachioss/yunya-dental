@@ -9,6 +9,7 @@ import com.yunya.feign.treatment.domain.form.ClinicItemMemberPriceForm;
 import com.yunya.feign.treatment.domain.form.ClinicOralTariffForm;
 import com.yunya.feign.treatment.domain.form.ClinicOralTariffUniteDiscountForm;
 import com.yunya.feign.treatment.domain.form.MemberUniteDiscountForm;
+import com.yunya.feign.treatment.domain.query.BaseOralTariffQueryForm;
 import com.yunya.feign.treatment.domain.query.ClinicOralTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffInfoVO;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffVO;
@@ -98,11 +99,11 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     Integer orgId = queryForm.getOrgId();
-//    BaseOralTariffQueryForm form = new BaseOralTariffQueryForm();
-//    form.setOralTariffCategoryId(queryForm.getOralTariffCategoryId());
-//    form.setKeyWord(queryForm.getKeyWord());
-//    List<BaseOralTariffVO> baseOralTariffs = baseOralTariffMapper.selectBaseOralTariffList(form);
-    List<BaseOralTariffVO> baseOralTariffs = mapper.selectClinicOralTariffExportList(queryForm);
+    BaseOralTariffQueryForm form = new BaseOralTariffQueryForm();
+    form.setOralTariffCategoryId(queryForm.getOralTariffCategoryId());
+    form.setKeyWord(queryForm.getKeyWord());
+    List<BaseOralTariffVO> baseOralTariffs = baseOralTariffMapper.selectBaseOralTariffList(form);
+//    List<BaseOralTariffVO> baseOralTariffs = mapper.selectClinicOralTariffExportList(queryForm);
     pageInfo = new PageInfo(baseOralTariffs);
     List<ClinicOralTariffVO> resultList = Lists.newArrayList();
     if (StringHelper.isNotEmpty(baseOralTariffs)) {
@@ -374,14 +375,16 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
    */
   public void exportClinicOralTariffList(
       HttpServletResponse response, ClinicOralTariffQueryForm queryForm) throws IOException {
-    List<BaseOralTariffVO> resultList = mapper.selectClinicOralTariffExportList(queryForm);
+      queryForm.setWhetherPage(false);
+      List<ClinicOralTariffVO> resultList = findList(queryForm).getList();
+//    List<BaseOralTariffVO> resultList = mapper.selectClinicOralTariffExportList(queryForm);
     Integer orgId = queryForm.getOrgId();
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
     String abbreviation = null;
     if (null != orgInfo) {
       abbreviation = orgInfo.getAbbreviation();
     }
-    ExcelUtil<BaseOralTariffVO> excelUtil = new ExcelUtil<>(BaseOralTariffVO.class);
+    ExcelUtil<ClinicOralTariffVO> excelUtil = new ExcelUtil<>(ClinicOralTariffVO.class);
     excelUtil.exportExcel(response, resultList, abbreviation + "_商品项目列表");
   }
 }
