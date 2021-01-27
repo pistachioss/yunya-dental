@@ -63,7 +63,6 @@
         </where>
         order by t.start_time asc
     </select>
-
     <select id="findLeaveInfoList" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoVO">
         select
         t.id,
@@ -103,7 +102,6 @@
         </where>
         order by t.start_time asc
     </select>
-
     <select id="findLeaveInfosBySchedule" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoVO">
         select
         t.id,
@@ -141,7 +139,6 @@
         </where>
         order by t.start_time asc
     </select>
-
     <select id="statisticsLeavesByMinute" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoVO">
         select
             t.id,
@@ -183,7 +180,6 @@
         </where>
         order by t.start_time asc
     </select>
-
     <select id="findLeaveListByDay" resultMap="BaseResultMap">
         select
         id,
