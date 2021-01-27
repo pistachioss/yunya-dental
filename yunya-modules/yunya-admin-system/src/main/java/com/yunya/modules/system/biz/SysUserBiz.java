@@ -2,9 +2,7 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
-import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.sms.model.SmsVerifyCodeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
@@ -71,10 +69,6 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   @Autowired private SysUserPostMapper sysUserPostMapper;
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
-  /** 短信服务调用 */
-  @Autowired private RemoteSmsServiceFeign remoteSmsServiceFeign;
-  /** 员工配置 */
-  @Autowired private RemoteClinicEmployeeConfigFeign clinicEmployeeConfigFeign;
 
   /**
    * 根据条件查询用户信息详情列表
