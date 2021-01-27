@@ -13,7 +13,6 @@ import com.yunya.feign.treatment.domain.query.BaseOralTariffQueryForm;
 import com.yunya.feign.treatment.domain.query.ClinicOralTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffInfoVO;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffVO;
-import com.yunya.feign.treatment.domain.vo.ClinicOralTariffExportVO;
 import com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -104,6 +103,7 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     form.setOralTariffCategoryId(queryForm.getOralTariffCategoryId());
     form.setKeyWord(queryForm.getKeyWord());
     List<BaseOralTariffVO> baseOralTariffs = baseOralTariffMapper.selectBaseOralTariffList(form);
+//    List<BaseOralTariffVO> baseOralTariffs = mapper.selectClinicOralTariffExportList(queryForm);
     pageInfo = new PageInfo(baseOralTariffs);
     List<ClinicOralTariffVO> resultList = Lists.newArrayList();
     if (StringHelper.isNotEmpty(baseOralTariffs)) {
@@ -375,14 +375,16 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
    */
   public void exportClinicOralTariffList(
       HttpServletResponse response, ClinicOralTariffQueryForm queryForm) throws IOException {
-    List<ClinicOralTariffExportVO> resultList = mapper.selectClinicOralTariffExportList(queryForm);
+      queryForm.setWhetherPage(false);
+      List<ClinicOralTariffVO> resultList = findList(queryForm).getList();
+//    List<BaseOralTariffVO> resultList = mapper.selectClinicOralTariffExportList(queryForm);
     Integer orgId = queryForm.getOrgId();
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
     String abbreviation = null;
     if (null != orgInfo) {
       abbreviation = orgInfo.getAbbreviation();
     }
-    ExcelUtil<ClinicOralTariffExportVO> excelUtil = new ExcelUtil<>(ClinicOralTariffExportVO.class);
+    ExcelUtil<ClinicOralTariffVO> excelUtil = new ExcelUtil<>(ClinicOralTariffVO.class);
     excelUtil.exportExcel(response, resultList, abbreviation + "_商品项目列表");
   }
 }

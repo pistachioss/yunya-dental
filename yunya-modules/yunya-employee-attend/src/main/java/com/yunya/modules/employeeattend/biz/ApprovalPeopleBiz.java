@@ -48,15 +48,15 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
         if (approvalPeopleQuery.getWhetherPage()) {
             PageHelper.startPage(approvalPeopleQuery.getPage(), approvalPeopleQuery.getSize());
         }
-         approvalPeople = new ApprovalPeople();
+        approvalPeople = new ApprovalPeople();
         BeanUtils.copyProperties(approvalPeopleQuery, approvalPeople);
         List<ApprovalPeople> reList = mapper.select(approvalPeople);
         //获取员工信息
         SysUserEmployeeModel model = new SysUserEmployeeModel();
         model.setWhetherPage(false);
-        Byte[] userStatus = {0,1,3};
-        if(approvalPeopleQuery.getIsPc() == 1){
-            userStatus = new  Byte[]{0,1,2,3};
+        Byte[] userStatus = {0, 1, 3};
+        if (approvalPeopleQuery.getIsPc() == 1) {
+            userStatus = new Byte[]{0, 1, 2, 3};
         }
         //离职状态
         model.setWorkStatus(userStatus);
@@ -66,7 +66,7 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
         employees.forEach(z -> employeeMap.put(z.getUserId() + "", z));
         List<ApprovalPeopleVO> list = new ArrayList<>();
         for (ApprovalPeople ap : reList) {
-            if(employeeMap.get(ap.getUserId().toString())!=null){
+            if (employeeMap.get(ap.getUserId().toString()) != null) {
                 ApprovalPeopleVO approvalPeopleVO = new ApprovalPeopleVO();
                 approvalPeopleVO.setId(ap.getId());
                 approvalPeopleVO.setUserId(ap.getUserId());
@@ -76,27 +76,30 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
                 list.add(approvalPeopleVO);
             }
         }
-        PageInfo pageInfo =  new PageInfo<>(list);
+        PageInfo pageInfo = new PageInfo<>(list);
         pageInfo.setTotal(total);
         return pageInfo;
     }
 
     public int create(ApprovalPeopleForm approvalPeopleForm) {
-        int num = mapper.findCount(approvalPeopleForm);
-        if(num>0){
-            throw new ClientServiceException("用户已经添加在此优先级下", SAME_DATA_EXIST);
+        if (approvalPeopleForm.getUserId().size() > 0) {
+            int num = mapper.findCount(approvalPeopleForm);
+            if (num > 0) {
+                throw new ClientServiceException("用户已经添加在此优先级下", SAME_DATA_EXIST);
+            }
+            List<ApprovalPeople> list = new ArrayList<>();
+            for (Integer userId : approvalPeopleForm.getUserId()) {
+                ApprovalPeople approvalPeople = new ApprovalPeople();
+                approvalPeople.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                approvalPeople.setApprovalLevelId(approvalPeopleForm.getApprovalLevelId());
+                approvalPeople.setUserId(userId);
+                approvalPeople.setCrtTime(new Date());
+                list.add(approvalPeople);
+            }
+            int re = mapper.batchInsert(list);
+            return re;
         }
-        List<ApprovalPeople>list = new ArrayList<>();
-        for(Integer userId:approvalPeopleForm.getUserId()){
-            ApprovalPeople approvalPeople = new ApprovalPeople();
-            approvalPeople.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-            approvalPeople.setApprovalLevelId(approvalPeopleForm.getApprovalLevelId());
-            approvalPeople.setUserId(userId);
-            approvalPeople.setCrtTime(new Date());
-            list.add(approvalPeople);
-        }
-        int re = mapper.batchInsert(list);
-        return re;
+        return 0;
     }
 
     public int delete(ApprovalPeopleDeleteForm approvalPeopleDeleteForm) {

@@ -9,7 +9,6 @@ import com.yunya.feign.system.vo.EmployeeInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.models.expand.ClinicEmployeeConfig;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.domain.form.LoginOrganizationForm;
 import com.yunya.modules.system.domain.model.SysUserPostModel;
@@ -22,8 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseUserPost;
@@ -165,7 +162,8 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
       int i = mapper.deleteByPrimaryKey(userPostId);
       if (i > 0) {
         // 删除可挂号可预约医生信息
-        this.clinicEmployeeConfigFeign.deleteClinicEmployeeConfig(sysUserPost.getUserId(),sysUserPost.getCompanyId());
+        this.clinicEmployeeConfigFeign.deleteClinicEmployeeConfig(
+            sysUserPost.getUserId(), sysUserPost.getCompanyId());
         // 发送消息同步员工可登录组织信息
         rabbitMqServiceFeign.sendMessage(userPostId, 2, BaseUserPost);
       }
@@ -218,5 +216,15 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
   public List<PostVO> findUserPostList(Integer orgId, Integer userId) {
     List<PostVO> resultList = mapper.selectPostList(orgId, userId);
     return resultList;
+  }
+
+  /**
+   * 查询可登陆组织的员工列表
+   *
+   * @param queryForm 查询条件
+   * @return List<EmployeeInfoVO>
+   */
+  public List<EmployeeInfoVO> findEnableLoginEmployeeList(EmployeeInfoQueryForm queryForm) {
+    return mapper.selectEmployeeList(queryForm);
   }
 }

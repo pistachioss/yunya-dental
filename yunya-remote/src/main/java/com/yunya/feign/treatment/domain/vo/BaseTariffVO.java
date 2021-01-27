@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment.domain.vo;
 
+import com.yunya.framework.common.annation.Excel;
 import lombok.Data;
 import lombok.ToString;
 
@@ -22,27 +23,34 @@ public class BaseTariffVO implements Serializable {
   private Integer tariffCategoryId;
 
   /** 基础分类名称 */
+  @Excel(name = "项目分类名称")
   private String tariffCategoryName;
 
   /** 基础分类编号 */
+  @Excel(name = "项目分类编号")
   private String tariffCategoryNumber;
 
   /** 项目编码 */
+  @Excel(name = "项目编码")
   private String itemNumber;
 
   /** 项目名称 */
+  @Excel(name = "项目名称")
   private String name;
 
   /** 拼音 */
   private String pinyin;
 
   /** 项目英文名称 */
+  @Excel(name = "项目英文名称")
   private String englishName;
 
   /** 单位 */
+  @Excel(name = "单位")
   private String unit;
 
   /** 价格 */
+  @Excel(name = "单价")
   private BigDecimal price;
 
   /** 是否启用 */
