@@ -161,12 +161,6 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       entity.setCrtName(BaseContextHandler.getName());
       int i = sysUserPostMapper.insertSelective(entity);
       if (i > 0) {
-        //        // 同步新增用户可登录组织的默认配置可预约可挂号
-        //        ClinicEmployeeConfig employeeConfig = new ClinicEmployeeConfig();
-        //        employeeConfig.setClinicId(form.getOrgId());
-        //        employeeConfig.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        //        employeeConfig.setEmployeeId(userId);
-        //        this.clinicEmployeeConfigFeign.addEmployeeConfig(employeeConfig);
         // 发送消息同步员工信息
         rabbitMqServiceFeign.sendMessage(entity.getId(), 0, BaseUserPost);
       }
