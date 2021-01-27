@@ -82,7 +82,6 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
     }
 
     public int create(ApprovalPeopleForm approvalPeopleForm) {
-
         if (approvalPeopleForm.getUserId().size() > 0) {
             int num = mapper.findCount(approvalPeopleForm);
             if (num > 0) {
