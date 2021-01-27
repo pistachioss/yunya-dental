@@ -489,5 +489,6 @@
                 </foreach>
             </if>
         </where>
+        ORDER BY behr.billRefundRecordId DESC
     </select>
 </mapper>
