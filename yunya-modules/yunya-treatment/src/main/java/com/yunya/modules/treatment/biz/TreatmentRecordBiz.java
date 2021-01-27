@@ -46,9 +46,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -998,7 +995,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       resultList.forEach(
           vo -> {
             Integer orgId = vo.getOrgId();
-            // todo 从缓存中查询组织信息
+            // 查询组织信息
             OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
             if (null != orgInfo) {
               vo.setOrgName(orgInfo.getAbbreviation());
