@@ -52,7 +52,9 @@
 
     <!-- 通过用户id查询患者公共字段 -->
     <select id="findPatientPublicInfoById" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo">
-        select pbi.face_url faceUrl,pbi.name name,pbi.gender gender,pbi.age age,pbi.mobile mobile,
+        select pbi.face_url faceUrl,pbi.name name,pbi.gender gender,
+               TIMESTAMPDIFF(YEAR,pbi.birthday,CURDATE()) AS age,
+               pbi.mobile mobile,
                pbi.medical_number medicalNumber,pmi.member_type_id memberTypeId,
                cast(IFNULL(pmi.principal_amount,0) as decimal(15,2)) principalAmount,
 			   cast(IFNULL(pmi.bonus_amount,0) as decimal(15,2)) bonusAmount,
