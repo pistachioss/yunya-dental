@@ -52,4 +52,7 @@ public class EmployeeInfoVO implements Serializable {
   /** 岗位组名称 */
   @ApiModelProperty("岗位名称")
   private String postName;
+  /** 在职状态 */
+  @ApiModelProperty("在职状态:0-试用期；1-已转正；2-离职；-实习")
+  private Byte workStatus;
 }

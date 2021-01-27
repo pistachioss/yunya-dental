@@ -60,6 +60,7 @@
         se.`name` AS name,
         se.gender,
         se.mobile_phone AS mobilePhone,
+        se.work_status AS workStatus,
         sup.company_id AS orgId,
         IFNULL( cei.abbreviation, '公司' ) AS orgName,
         sup.group_id AS postGroupId,

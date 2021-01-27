@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.DENTIST_GROUP_ID;
+import static com.yunya.framework.common.constant.BusinessConstants.USER_RESIGNATION_STATUS;
 
 /**
  * 描述:
@@ -58,7 +59,7 @@ public class ClinicEmployeeConfigBiz
   public void modifyClinicEmployeeConfig(
       Integer employeeId, Integer clinicId, ClinicEmployeeConfigReq configRequest) {
     SysUserInfoDetail employee = systemServiceFeign.findSysUserEmployeeInfoByUserId(employeeId);
-    if (BusinessConstants.USER_RESIGNATION_STATUS.equals(employee.getWorkStatus())) {
+    if (USER_RESIGNATION_STATUS.equals(employee.getWorkStatus())) {
       throw new ClientServiceException("员工已离职", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
     // 查询该员工对应扩展表主键
@@ -314,35 +315,37 @@ public class ClinicEmployeeConfigBiz
     if (StringHelper.isNotEmpty(employeeList)) {
       ClinicEmployeeConfig entity = new ClinicEmployeeConfig();
       for (EmployeeInfoVO vo : employeeList) {
-        Integer userId = vo.getUserId();
-        entity.setClinicId(orgId);
-        entity.setEmployeeId(userId);
-        ClinicEmployeeConfig employeeConfig = mapper.selectOne(entity);
-        EnableChooseEmployeeRes employeeRes = new EnableChooseEmployeeRes();
-        employeeRes.setEmployeeId(vo.getUserId());
-        employeeRes.setEmployeeName(vo.getName());
-        if (null == employeeConfig) {
-          resultList.add(employeeRes);
-        } else {
-          Integer enableAppoint = employeeConfig.getEnableAppoint();
-          if (1 == enableAppoint) {
-            Integer assistantEmployeeId = employeeConfig.getAssistantEmployeeId();
-            employeeRes.setAssistantEmployeeId(assistantEmployeeId);
-            if (null != assistantEmployeeId) {
-              SysUserInfoDetail userEmployeeInfo =
-                  systemServiceFeign.findSysUserEmployeeInfoByUserId(assistantEmployeeId);
-              employeeRes.setAssistantName(userEmployeeInfo.getName());
-            }
-            Integer clinicDepartmentRoomId = employeeConfig.getClinicDepartmentRoomId();
-            employeeRes.setClinicDepartmentRoomId(clinicDepartmentRoomId);
-            if (null != clinicDepartmentRoomId) {
-              DepartmentRoom departmentRoom =
-                  systemServiceFeign.findDepartmentRoomById(clinicDepartmentRoomId);
-              if (null != departmentRoom) {
-                employeeRes.setClinicDepartmentRoomName(departmentRoom.getName());
-              }
-            }
+        if (!USER_RESIGNATION_STATUS.equals(vo.getWorkStatus())) {
+          Integer userId = vo.getUserId();
+          entity.setClinicId(orgId);
+          entity.setEmployeeId(userId);
+          ClinicEmployeeConfig employeeConfig = mapper.selectOne(entity);
+          EnableChooseEmployeeRes employeeRes = new EnableChooseEmployeeRes();
+          employeeRes.setEmployeeId(vo.getUserId());
+          employeeRes.setEmployeeName(vo.getName());
+          if (null == employeeConfig) {
             resultList.add(employeeRes);
+          } else {
+            Integer enableAppoint = employeeConfig.getEnableAppoint();
+            if (1 == enableAppoint) {
+              Integer assistantEmployeeId = employeeConfig.getAssistantEmployeeId();
+              employeeRes.setAssistantEmployeeId(assistantEmployeeId);
+              if (null != assistantEmployeeId) {
+                SysUserInfoDetail userEmployeeInfo =
+                        systemServiceFeign.findSysUserEmployeeInfoByUserId(assistantEmployeeId);
+                employeeRes.setAssistantName(userEmployeeInfo.getName());
+              }
+              Integer clinicDepartmentRoomId = employeeConfig.getClinicDepartmentRoomId();
+              employeeRes.setClinicDepartmentRoomId(clinicDepartmentRoomId);
+              if (null != clinicDepartmentRoomId) {
+                DepartmentRoom departmentRoom =
+                        systemServiceFeign.findDepartmentRoomById(clinicDepartmentRoomId);
+                if (null != departmentRoom) {
+                  employeeRes.setClinicDepartmentRoomName(departmentRoom.getName());
+                }
+              }
+              resultList.add(employeeRes);
+            }
           }
         }
       }
@@ -366,35 +369,37 @@ public class ClinicEmployeeConfigBiz
     if (StringHelper.isNotEmpty(employeeList)) {
       ClinicEmployeeConfig entity = new ClinicEmployeeConfig();
       for (EmployeeInfoVO vo : employeeList) {
-        Integer userId = vo.getUserId();
-        entity.setClinicId(orgId);
-        entity.setEmployeeId(userId);
-        ClinicEmployeeConfig employeeConfig = mapper.selectOne(entity);
-        EnableChooseEmployeeRes employeeRes = new EnableChooseEmployeeRes();
-        employeeRes.setEmployeeId(vo.getUserId());
-        employeeRes.setEmployeeName(vo.getName());
-        if (null == employeeConfig) {
-          resultList.add(employeeRes);
-        } else {
-          Integer enableRegistry = employeeConfig.getEnableRegistry();
-          if (1 == enableRegistry) {
-            Integer assistantEmployeeId = employeeConfig.getAssistantEmployeeId();
-            employeeRes.setAssistantEmployeeId(assistantEmployeeId);
-            if (null != assistantEmployeeId) {
-              SysUserInfoDetail userEmployeeInfo =
-                      systemServiceFeign.findSysUserEmployeeInfoByUserId(assistantEmployeeId);
-              employeeRes.setAssistantName(userEmployeeInfo.getName());
-            }
-            Integer clinicDepartmentRoomId = employeeConfig.getClinicDepartmentRoomId();
-            employeeRes.setClinicDepartmentRoomId(clinicDepartmentRoomId);
-            if (null != clinicDepartmentRoomId) {
-              DepartmentRoom departmentRoom =
-                      systemServiceFeign.findDepartmentRoomById(clinicDepartmentRoomId);
-              if (null != departmentRoom) {
-                employeeRes.setClinicDepartmentRoomName(departmentRoom.getName());
-              }
-            }
+        if (!USER_RESIGNATION_STATUS.equals(vo.getWorkStatus())) {
+          Integer userId = vo.getUserId();
+          entity.setClinicId(orgId);
+          entity.setEmployeeId(userId);
+          ClinicEmployeeConfig employeeConfig = mapper.selectOne(entity);
+          EnableChooseEmployeeRes employeeRes = new EnableChooseEmployeeRes();
+          employeeRes.setEmployeeId(vo.getUserId());
+          employeeRes.setEmployeeName(vo.getName());
+          if (null == employeeConfig) {
             resultList.add(employeeRes);
+          } else {
+            Integer enableRegistry = employeeConfig.getEnableRegistry();
+            if (1 == enableRegistry) {
+              Integer assistantEmployeeId = employeeConfig.getAssistantEmployeeId();
+              employeeRes.setAssistantEmployeeId(assistantEmployeeId);
+              if (null != assistantEmployeeId) {
+                SysUserInfoDetail userEmployeeInfo =
+                        systemServiceFeign.findSysUserEmployeeInfoByUserId(assistantEmployeeId);
+                employeeRes.setAssistantName(userEmployeeInfo.getName());
+              }
+              Integer clinicDepartmentRoomId = employeeConfig.getClinicDepartmentRoomId();
+              employeeRes.setClinicDepartmentRoomId(clinicDepartmentRoomId);
+              if (null != clinicDepartmentRoomId) {
+                DepartmentRoom departmentRoom =
+                        systemServiceFeign.findDepartmentRoomById(clinicDepartmentRoomId);
+                if (null != departmentRoom) {
+                  employeeRes.setClinicDepartmentRoomName(departmentRoom.getName());
+                }
+              }
+              resultList.add(employeeRes);
+            }
           }
         }
       }
