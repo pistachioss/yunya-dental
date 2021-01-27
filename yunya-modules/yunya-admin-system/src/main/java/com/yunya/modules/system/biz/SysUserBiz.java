@@ -232,6 +232,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysEmployeeEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(form.getName()));
       if (!USER_RESIGNATION_STATUS.equals(form.getWorkStatus()) || 1 == userId) {
         sysEmployeeEntity.setLeaveTime("");
+        sysEmployeeEntity.setWorkStatus((byte) 1);
       }
       sysEmployeeEntity.setId(employeeResult.getId());
       sysEmployeeEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
