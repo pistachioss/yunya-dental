@@ -82,8 +82,9 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
     }
 
     public int create(ApprovalPeopleForm approvalPeopleForm) {
-        int num = mapper.findCount(approvalPeopleForm);
+
         if (approvalPeopleForm.getUserId().size() > 0) {
+            int num = mapper.findCount(approvalPeopleForm);
             if (num > 0) {
                 throw new ClientServiceException("用户已经添加在此优先级下", SAME_DATA_EXIST);
             }
