@@ -638,12 +638,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     }
 
     public ResponseResult<CardActiveDetailVo> getRechargeDetailByMachine(String qrCode) {
-        String qrCodeData = new String(Base64.getDecoder().decode(qrCode.trim()));
-        List<String> data = Lists.newArrayList(Splitter.on(":").trimResults().omitEmptyStrings().split(qrCodeData));
+        String qrCodeData = null;
         Card card = null;
         try {
+            qrCodeData = new String(Base64.getDecoder().decode(qrCode.trim()));
+            List<String> data = Lists.newArrayList(Splitter.on(":").trimResults().omitEmptyStrings().split(qrCodeData));
             card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             throw new ClientServiceException("编码格式有误", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         //校验充值卡券
