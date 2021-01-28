@@ -38,7 +38,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseEmployee;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseUserPost;
@@ -432,7 +431,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     if (redisUtils.hasKey(key)) {
       return ResponseUtil.fail(OBJECT_EDIT_FAIL, "消息已发送, 请稍后再试", null);
     }
-    String messageCode = this.messageCodeGenerator();
+    String messageCode = this.messageCodeGenerator(true, 6);
     // 设置验证码到缓存
     redisUtils.set(key, messageCode, 60);
     SmsVerifyCodeModel smsVerifyCodeModel = new SmsVerifyCodeModel();
@@ -445,7 +444,6 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
 
   /**
    * 重置密码
-   *
    *
    * @param request
    * @param userId 用户ID
@@ -479,25 +477,31 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   /**
    * 随机生成六位数，并且每位数都不重复
    *
+   * @param numberFlag 是否是数字
+   * @param length 长度
    * @return 返回短信验证码
    */
-  private String messageCodeGenerator() {
-    int[] array = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    Random rand = new Random();
-    for (int i = 10; i > 1; i--) {
-      int index = rand.nextInt(i);
-      int tmp = array[index];
-      array[index] = array[i - 1];
-      array[i - 1] = tmp;
-    }
-    int result = 0;
-    for (int i = 0; i < 6; i++) {
-      result = result * 10 + array[i];
-    }
-    if (String.valueOf(result).length() == 6) {
-      return String.valueOf(result);
-    } else {
-      return String.valueOf(messageCodeGenerator());
-    }
+  private String messageCodeGenerator(boolean numberFlag, int length) {
+    StringBuilder retStr;
+    String strTable = numberFlag ? "1234567890" : "1234567890abcdefghijkmnpqrstuvwxyz";
+    int len = strTable.length();
+    boolean bDone = true;
+    do {
+      retStr = new StringBuilder();
+      int count = 0;
+      for (int i = 0; i < length; i++) {
+        double dblR = Math.random() * len;
+        int intR = (int) Math.floor(dblR);
+        char c = strTable.charAt(intR);
+        if (('0' <= c) && (c <= '9')) {
+          count++;
+        }
+        retStr.append(strTable.charAt(intR));
+      }
+      if (count >= 2) {
+        bDone = false;
+      }
+    } while (bDone);
+    return retStr.toString();
   }
 }
