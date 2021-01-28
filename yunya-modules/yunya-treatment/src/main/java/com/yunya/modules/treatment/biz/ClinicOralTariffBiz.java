@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
@@ -94,6 +95,10 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
    * @return
    */
   public PageInfo<ClinicOralTariffVO> findList(ClinicOralTariffQueryForm queryForm) {
+    return findList(queryForm, false);
+  }
+
+  public PageInfo<ClinicOralTariffVO> findList(ClinicOralTariffQueryForm queryForm, boolean isExport) {
     PageInfo pageInfo;
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
@@ -103,17 +108,14 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     form.setOralTariffCategoryId(queryForm.getOralTariffCategoryId());
     form.setKeyWord(queryForm.getKeyWord());
     List<BaseOralTariffVO> baseOralTariffs = baseOralTariffMapper.selectBaseOralTariffList(form);
-//    List<BaseOralTariffVO> baseOralTariffs = mapper.selectClinicOralTariffExportList(queryForm);
     pageInfo = new PageInfo(baseOralTariffs);
     List<ClinicOralTariffVO> resultList = Lists.newArrayList();
     if (StringHelper.isNotEmpty(baseOralTariffs)) {
+      List<Integer> tariffIds = baseOralTariffs.stream().map(BaseOralTariffVO::getId).collect(Collectors.toList());
+      List<ClinicOralTariff> clinicOralTariffs = mapper.selectClinicOralTariffInId(orgId, tariffIds);
       baseOralTariffs.forEach(
           baseOralTariff -> {
             Integer tariffId = baseOralTariff.getId();
-            ClinicOralTariff entity = new ClinicOralTariff();
-            entity.setOralTariffId(tariffId);
-            entity.setClinicId(orgId);
-            ClinicOralTariff clinicOralTariff = mapper.selectOne(entity);
             ClinicOralTariffVO vo = new ClinicOralTariffVO();
             vo.setOrgId(orgId);
             vo.setOralTariffCategoryId(baseOralTariff.getOralTariffCategoryId());
@@ -124,17 +126,20 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
             vo.setEnglishName(baseOralTariff.getEnglishName());
             vo.setNumber(baseOralTariff.getItemNumber());
             vo.setUnit(baseOralTariff.getUnit());
-            if (null != clinicOralTariff) {
-              vo.setId(clinicOralTariff.getId());
-              vo.setPrice(clinicOralTariff.getPrice().setScale(2,BigDecimal.ROUND_HALF_UP));
-              vo.setInservice(clinicOralTariff.getInservice());
-            } else {
-              vo.setPrice(baseOralTariff.getPrice().setScale(2,BigDecimal.ROUND_HALF_UP));
-              vo.setInservice(baseOralTariff.getInservice());
+            vo.setPrice(baseOralTariff.getPrice().setScale(2,BigDecimal.ROUND_HALF_UP));
+            vo.setInservice(baseOralTariff.getInservice());
+            if (StringHelper.isNotEmpty(clinicOralTariffs)) {
+              clinicOralTariffs.forEach(clinicOralTariff -> {
+                if (clinicOralTariff.getOralTariffId().equals(tariffId)) {
+                  vo.setId(clinicOralTariff.getId());
+                  vo.setPrice(clinicOralTariff.getPrice().setScale(2, BigDecimal.ROUND_HALF_UP));
+                  vo.setInservice(clinicOralTariff.getInservice());
+                }
+              });
             }
             resultList.add(vo);
           });
-      if (StringHelper.isNotEmpty(resultList)) {
+      if (StringHelper.isNotEmpty(resultList) && !isExport) {
         List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
         if (StringHelper.isNotEmpty(memberTypes)) {
           resultList.forEach(
@@ -376,7 +381,7 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
   public void exportClinicOralTariffList(
       HttpServletResponse response, ClinicOralTariffQueryForm queryForm) throws IOException {
       queryForm.setWhetherPage(false);
-      List<ClinicOralTariffVO> resultList = findList(queryForm).getList();
+      List<ClinicOralTariffVO> resultList = findList(queryForm, true).getList();
 //    List<BaseOralTariffVO> resultList = mapper.selectClinicOralTariffExportList(queryForm);
     Integer orgId = queryForm.getOrgId();
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);

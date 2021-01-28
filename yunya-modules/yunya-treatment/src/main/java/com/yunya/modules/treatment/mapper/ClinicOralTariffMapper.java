@@ -38,4 +38,6 @@ public interface ClinicOralTariffMapper extends Mapper<ClinicOralTariff> {
    */
   List<BaseOralTariffVO> selectClinicOralTariffExportList(
       @Param("queryForm") ClinicOralTariffQueryForm queryForm);
+
+  List<ClinicOralTariff> selectClinicOralTariffInId(@Param("orgId") Integer orgId, @Param("tariffIds") List<Integer> tariffIds);
 }

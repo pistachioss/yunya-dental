@@ -61,4 +61,6 @@ public interface ClinicTariffMapper extends Mapper<ClinicTariff> {
    * @return 返回影响行数
    */
   int insertEntities(@Param("list") List<ClinicTariff> list);
+
+  List<ClinicTariff> selectClinicTariffInId(@Param("orgId") Integer orgId, @Param("tariffIds") List<Integer> tariffIds);
 }

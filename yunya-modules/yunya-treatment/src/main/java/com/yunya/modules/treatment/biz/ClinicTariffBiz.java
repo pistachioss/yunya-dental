@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
@@ -96,6 +97,10 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    * @return
    */
   public PageInfo<ClinicTariffVO> findList(ClinicTariffQueryForm queryForm) {
+    return findList(queryForm,false);
+  }
+
+  public PageInfo<ClinicTariffVO> findList(ClinicTariffQueryForm queryForm, boolean isExport) {
     PageInfo pageInfo;
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
@@ -105,17 +110,14 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     form.setTariffCategoryId(queryForm.getTariffCategoryId());
     form.setKeyWord(queryForm.getKeyWord());
     List<BaseTariffVO> baseTariffs = baseTariffMapper.selectBaseTariffList(form);
-//    List<BaseTariffVO> baseTariffs = mapper.selectClinicTariffExportList(queryForm);
     pageInfo = new PageInfo(baseTariffs);
     List<ClinicTariffVO> resultList = Lists.newArrayList();
     if (StringHelper.isNotEmpty(baseTariffs)) {
+      List<Integer> tariffIds = baseTariffs.stream().map(BaseTariffVO::getId).collect(Collectors.toList());
+      List<ClinicTariff> clinicTariffs = mapper.selectClinicTariffInId(orgId, tariffIds);
       baseTariffs.forEach(
           baseTariff -> {
             Integer tariffId = baseTariff.getId();
-            ClinicTariff entity = new ClinicTariff();
-            entity.setTariffId(tariffId);
-            entity.setClinicId(orgId);
-            ClinicTariff clinicTariff = mapper.selectOne(entity);
             ClinicTariffVO vo = new ClinicTariffVO();
             vo.setOrgId(orgId);
             vo.setTariffCategoryId(baseTariff.getTariffCategoryId());
@@ -126,17 +128,20 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
             vo.setEnglishName(baseTariff.getEnglishName());
             vo.setNumber(baseTariff.getItemNumber());
             vo.setUnit(baseTariff.getUnit());
-            if (null != clinicTariff) {
-              vo.setId(clinicTariff.getId());
-              vo.setPrice(clinicTariff.getPrice());
-              vo.setInservice(clinicTariff.getInservice());
-            } else {
-              vo.setPrice(baseTariff.getPrice());
-              vo.setInservice(baseTariff.getInservice());
+            vo.setPrice(baseTariff.getPrice());
+            vo.setInservice(baseTariff.getInservice());
+            if (StringHelper.isNotEmpty(clinicTariffs)) {
+              clinicTariffs.forEach(clinicTariff -> {
+                if (clinicTariff.getTariffId().equals(tariffId)) {
+                  vo.setId(clinicTariff.getId());
+                  vo.setPrice(clinicTariff.getPrice());
+                  vo.setInservice(clinicTariff.getInservice());
+                }
+              });
             }
             resultList.add(vo);
           });
-      if (StringHelper.isNotEmpty(resultList)) {
+      if (StringHelper.isNotEmpty(resultList) && !isExport) {
         List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
         if (StringHelper.isNotEmpty(memberTypes)) {
           resultList.forEach(
@@ -376,7 +381,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    */
   public void exportClinicTariffList(HttpServletResponse response, ClinicTariffQueryForm queryForm)
       throws IOException {
-      List<ClinicTariffVO> resultList = findList(queryForm).getList();
+      List<ClinicTariffVO> resultList = findList(queryForm, true).getList();
 //    List<BaseTariffVO> resultList = mapper.selectClinicTariffExportList(queryForm);
     Integer orgId = queryForm.getOrgId();
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
