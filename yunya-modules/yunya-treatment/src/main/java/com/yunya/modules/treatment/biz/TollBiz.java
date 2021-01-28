@@ -1182,7 +1182,8 @@ public class TollBiz {
         debtAmount = billRecordResult.getDebtAmount();
         checkTotalChargeAndDebtAmount(totalCharge, debtAmount, outstandingAmount);
         debtAmount = debtAmount.subtract(totalCharge);
-        discountType = billRecordResult.getPrivilegeType(); // 避免原来的优惠被覆盖
+        // 避免原来的优惠被覆盖
+        discountType = billRecordResult.getPrivilegeType();
       } else {
         usePrivilege = true;
         // 计算并校验收欠费入账总额
@@ -1524,8 +1525,10 @@ public class TollBiz {
       }
       // 只能使用一种优惠
       Byte privilegeType = record.getPrivilegeType();
-      if (0 != privilegeType && (null != generalDiscountModel || null != accreditDiscountModel)) {
-        throw new ClientServiceException("收欠费失败，当前账单已使用优惠，不能继续使用优惠！", PARAMETERS_IS_ILLEGAL);
+      if (null != generalDiscountModel || null != accreditDiscountModel) {
+        if (0 != privilegeType) {
+          throw new ClientServiceException("收欠费失败，当前账单已使用优惠，不能继续使用优惠！", PARAMETERS_IS_ILLEGAL);
+        }
       }
       // todo 校验发票
       return record;
