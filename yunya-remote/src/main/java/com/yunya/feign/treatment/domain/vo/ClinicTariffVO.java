@@ -44,6 +44,7 @@ public class ClinicTariffVO implements Serializable {
   private String name;
 
   /** 基础价目表名称 */
+  @Excel(name = "项目英文名称")
   private String englishName;
 
   /** 基础价目表编号 */

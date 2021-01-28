@@ -259,4 +259,19 @@
             (#{item.id},#{item.clinicId},#{item.tariffId},#{item.price},#{item.crtId},#{item.crtName})
         </foreach>
     </insert>
+
+    <select id="selectClinicTariffInId" resultType="com.yunya.models.tariff.ClinicTariff">
+        select
+            t.id,
+            t.clinic_id as clinicId,
+            t.tariff_id as tariffId,
+            t.price,
+            t.inservice
+        from clinic_tariff t
+        where t.clinic_id = #{orgId}
+        and t.tariff_id in
+        <foreach collection="tariffIds" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 </mapper>
