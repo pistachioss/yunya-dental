@@ -20,6 +20,7 @@ import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigReq;
 import com.yunya.modules.employee.expand.model.response.ClinicEmployeeConfigRes;
 import com.yunya.modules.employee.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.modules.employee.expand.model.response.EnableEmployeeRes;
+import io.swagger.models.auth.In;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -313,44 +314,80 @@ public class ClinicEmployeeConfigBiz
     query.setOrgIds(new Integer[] {orgId});
     List<EmployeeInfoVO> employeeList = systemServiceFeign.findEnableLoginEmployeeList(query);
     if (StringHelper.isNotEmpty(employeeList)) {
-      ClinicEmployeeConfig entity = new ClinicEmployeeConfig();
+      List<Integer> assistantEmployeeIds = new ArrayList<>();
+      List<Integer> clinicDepartmentRoomIds = new ArrayList<>();
+      // 过滤用户ID
+      List<Integer> userIds = employeeList.stream().map(EmployeeInfoVO::getUserId).collect(Collectors.toList());
+      List<ClinicEmployeeConfig> clinicEmployeeConfigList = mapper.findBatch(orgId, userIds);
       for (EmployeeInfoVO vo : employeeList) {
         if (!USER_RESIGNATION_STATUS.equals(vo.getWorkStatus())) {
           Integer userId = vo.getUserId();
-          entity.setClinicId(orgId);
-          entity.setEmployeeId(userId);
-          ClinicEmployeeConfig employeeConfig = mapper.selectOne(entity);
           EnableChooseEmployeeRes employeeRes = new EnableChooseEmployeeRes();
           employeeRes.setEmployeeId(vo.getUserId());
           employeeRes.setEmployeeName(vo.getName());
-          if (null == employeeConfig) {
-            resultList.add(employeeRes);
-          } else {
+          boolean b = clinicEmployeeConfigList.stream().anyMatch(clinicEmployeeConfig -> clinicEmployeeConfig.getEmployeeId().equals(userId));
+          if (b) {
+            ClinicEmployeeConfig employeeConfig = clinicEmployeeConfigList.stream().filter(entity -> entity.getEmployeeId().equals(userId)).findAny().get();
             Integer enableAppoint = employeeConfig.getEnableAppoint();
             if (1 == enableAppoint) {
               Integer assistantEmployeeId = employeeConfig.getAssistantEmployeeId();
               employeeRes.setAssistantEmployeeId(assistantEmployeeId);
               if (null != assistantEmployeeId) {
-                SysUserInfoDetail userEmployeeInfo =
-                        systemServiceFeign.findSysUserEmployeeInfoByUserId(assistantEmployeeId);
-                employeeRes.setAssistantName(userEmployeeInfo.getName());
+                assistantEmployeeIds.add(assistantEmployeeId);
               }
               Integer clinicDepartmentRoomId = employeeConfig.getClinicDepartmentRoomId();
               employeeRes.setClinicDepartmentRoomId(clinicDepartmentRoomId);
               if (null != clinicDepartmentRoomId) {
-                DepartmentRoom departmentRoom =
-                        systemServiceFeign.findDepartmentRoomById(clinicDepartmentRoomId);
-                if (null != departmentRoom) {
-                  employeeRes.setClinicDepartmentRoomName(departmentRoom.getName());
-                }
+                clinicDepartmentRoomIds.add(clinicDepartmentRoomId);
               }
               resultList.add(employeeRes);
             }
+          } else {
+            resultList.add(employeeRes);
           }
         }
       }
+      // 设置可预约医生的默认助手和默认科室信息
+      this.setAssistantAndDeptRoom(assistantEmployeeIds,clinicDepartmentRoomIds,resultList);
     }
     return resultList;
+  }
+
+  /**
+   * 设置可预约医生的默认助手和默认科室信息
+   * @param assistantEmployeeIds    助手ID列表
+   * @param clinicDepartmentRoomIds  科室ID列表
+   * @param resultList  可预约医生列表
+   */
+  private void setAssistantAndDeptRoom(List<Integer> assistantEmployeeIds, List<Integer> clinicDepartmentRoomIds, List<EnableChooseEmployeeRes> resultList) {
+    // 设置科室，助手信息
+    if (StringHelper.isNotEmpty(assistantEmployeeIds)) {
+      List<SysUserInfoDetail> sysUserEmployeeInfoList = systemServiceFeign.findSysUserEmployeeInfoByUserIds(assistantEmployeeIds);
+      if (StringHelper.isNotEmpty(sysUserEmployeeInfoList)) {
+        resultList.forEach(enableChooseEmployeeRes -> {
+          Integer assistantEmployeeId = enableChooseEmployeeRes.getAssistantEmployeeId();
+          boolean b = sysUserEmployeeInfoList.stream().anyMatch(sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(assistantEmployeeId));
+          if (b) {
+            SysUserInfoDetail userInfoDetail = sysUserEmployeeInfoList.stream().filter(sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(assistantEmployeeId)).findAny().get();
+            enableChooseEmployeeRes.setAssistantName(userInfoDetail.getName());
+          }
+        });
+      }
+    }
+    if (StringHelper.isNotEmpty(clinicDepartmentRoomIds)) {
+      List<DepartmentRoom> departmentRoomList = systemServiceFeign.findDepartmentRoomByIds(clinicDepartmentRoomIds);
+      if (StringHelper.isNotEmpty(departmentRoomList)) {
+        resultList.forEach(enableChooseEmployeeRes -> {
+          Integer clinicDepartmentRoomId = enableChooseEmployeeRes.getClinicDepartmentRoomId();
+          boolean b = departmentRoomList.stream().anyMatch(departmentRoom -> departmentRoom.getId().equals(clinicDepartmentRoomId));
+          if (b) {
+            DepartmentRoom departmentRoomInfo = departmentRoomList.stream().filter(departmentRoom -> departmentRoom.getId().equals(clinicDepartmentRoomId)).findAny().get();
+            enableChooseEmployeeRes.setClinicDepartmentRoomName(departmentRoomInfo.getName());
+
+          }
+        });
+      }
+    }
   }
 
   /**
