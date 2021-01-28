@@ -498,7 +498,8 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
         }
         retStr.append(strTable.charAt(intR));
       }
-      if (count >= 2) {
+      int firstCount = 2;
+      if (count >= firstCount) {
         bDone = false;
       }
     } while (bDone);
