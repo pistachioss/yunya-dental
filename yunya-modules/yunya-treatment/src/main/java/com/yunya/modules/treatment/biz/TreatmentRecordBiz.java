@@ -994,24 +994,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           vo -> {
-            Integer treatmentRecordId = vo.getTreatmentRecordId();
-            OrderRecord orderRecord = new OrderRecord();
-            orderRecord.setTreatmentRecordId(treatmentRecordId);
-            orderRecord.setInservice(true);
-            OrderRecord orderRecordResult = orderRecordMapper.selectOne(orderRecord);
-            if (null != orderRecordResult) {
-              vo.setOrderRecordId(orderRecordResult.getId());
-              vo.setOriginalPrice(orderRecordResult.getTotalAmount());
-            }
-            BillRecord billRecord = new BillRecord();
-            billRecord.setTreatmentRecordId(treatmentRecordId);
-            billRecord.setInservice(true);
-            BillRecord billRecordResult = billRecordMapper.selectOne(billRecord);
-            if (null != billRecordResult) {
-              vo.setBillRecordId(billRecordResult.getId());
-              vo.setActualReceivableAmount(billRecordResult.getActualReceivableAmount());
-              vo.setDebtAmount(billRecordResult.getDebtAmount());
-            }
             // 查询组织信息
             OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(vo.getOrgId());
             if (null != orgInfo) {
@@ -1023,8 +1005,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
             if (null != employee) {
               vo.setDentistName(employee.getName());
             }
+            // 就诊助手信息
             AssistantMatchingRecord assistantMatchingRecord = new AssistantMatchingRecord();
-            assistantMatchingRecord.setTreatmentRecordId(treatmentRecordId);
+            assistantMatchingRecord.setTreatmentRecordId(vo.getTreatmentRecordId());
             List<AssistantMatchingRecord> assistantMatchingRecords =
                 assistantMatchingRecordMapper.select(assistantMatchingRecord);
             if (StringHelper.isNotEmpty(assistantMatchingRecords)) {

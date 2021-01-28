@@ -126,13 +126,43 @@
         tr.dentist_id AS dentistId,
         tr.type AS firstVisit,
         tr.`status` AS treatmentStatus,
-        tr.appointment_id as appointmentId,
-        tr.registered_id as registeredId
+        tr.appointment_id AS appointmentId,
+        tr.registered_id AS registeredId,
+        ord.id AS orderRecordId,
+        ord.total_amount AS originalPrice,
+        br.id AS billRecordId,
+        br.actual_receivable_amount AS actualReceivableAmount,
+        br.debt_amount AS debtAmount
         FROM
         treatment_record tr
+        LEFT JOIN (
+        SELECT
+        ord.treatment_record_id,
+        ord.id,
+        ord.total_amount,
+        ord.patient_id
+        FROM
+        order_record ord
+        WHERE
+        ord.inservice = 1
+        ) ord ON tr.id = ord.treatment_record_id
+        LEFT JOIN (
+        SELECT
+        br.treatment_record_id,
+        br.id,
+        br.actual_receivable_amount,
+        br.debt_amount,
+        br.patient_id
+        FROM
+        bill_record br
+        WHERE
+        br.inservice = 1
+        ) br ON tr.id = br.treatment_record_id
         <where>
             <if test="queryForm.patientId != null">
                 and tr.patient_id = #{queryForm.patientId}
+                and ord.patient_id = #{queryForm.patientId}
+                and br.patient_id = #{queryForm.patientId}
             </if>
             <if test="queryForm.startDate != null and queryForm.startDate!= ''">
                 and DATE_FORMAT(tr.treat_start_time,'%Y-%m-%d') &gt;= #{queryForm.startDate}
