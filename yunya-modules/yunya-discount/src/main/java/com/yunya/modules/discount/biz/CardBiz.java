@@ -88,6 +88,7 @@ import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCardBatch;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCardSingle;
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_NOT_ALLOW;
+import static com.yunya.framework.common.constant.OperationCodeConstants.SAME_DATA_EXIST;
 import static com.yunya.modules.discount.enums.BenefitTypeEnum.COUPON_TYPE;
 import static com.yunya.modules.discount.enums.BenefitTypeEnum.MEMBER_TYPE;
 import static com.yunya.modules.discount.enums.CardQrCodeEnum.*;
@@ -636,7 +637,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     }
 
     public ResponseResult<CardActiveDetailVo> getRechargeDetailByMachine(String qrCode) {
-        String qrCodeData = new String(Base64.getDecoder().decode(qrCode.trim()));
+        String qrCodeData = null;
+        try {
+            qrCodeData = new String(Base64.getDecoder().decode(qrCode.trim()));
+        } catch (Exception e) {
+            throw new ClientServiceException("编码格式有误", SAME_DATA_EXIST);
+        }
         List<String> data = Lists.newArrayList(Splitter.on(":").trimResults().omitEmptyStrings().split(qrCodeData));
         Card card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
         //校验充值卡券
