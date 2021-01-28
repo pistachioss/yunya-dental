@@ -86,15 +86,13 @@
         od.quantity,
         od.receivable_amount as receivableAmount,
         od.receivable_amount as actualAmount,
-        ifnull(odpr.received_amount, 0) as receivedAmount,
         100 as discountRate,
         od.tooth_bit as toothBit,
         od.executor_id as executorId,
         od.source_type as sourceType,
         od.remarks
         from order_detail od
-        left join order_detail_pay_record odpr on od.id = odpr.order_detail_id
-        where od.order_record_id = #{orderRecordId} and odpr.order_record_id = #{orderRecordId}
+        where od.order_record_id = #{orderRecordId}
     </select>
 
     <!-- 打印账单信息 -->
