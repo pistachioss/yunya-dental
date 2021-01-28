@@ -1553,11 +1553,10 @@ public class TollBiz {
     BigDecimal totalCharge =
         calculateTotalCharge(prepaymentAccountModels, memberAccountModels, paymentModels);
     if (BigDecimal.valueOf(0).compareTo(totalCharge) >= 0) {
-      switch (flag) {
-        case 0:
-          throw new ClientServiceException("收欠费失败，收欠费总额不能小于或等于0！", PARAMETERS_IS_ILLEGAL);
-        case 1:
-          throw new ClientServiceException("收欠费失败，收欠费总额不能小于0！", PARAMETERS_IS_ILLEGAL);
+      if (flag == 0) {
+        throw new ClientServiceException("收欠费失败，收欠费总额不能小于或等于0！", PARAMETERS_IS_ILLEGAL);
+      } else if (flag == 1) {
+        throw new ClientServiceException("收欠费失败，收欠费总额不能小于0！", PARAMETERS_IS_ILLEGAL);
       }
     }
     return totalCharge;
