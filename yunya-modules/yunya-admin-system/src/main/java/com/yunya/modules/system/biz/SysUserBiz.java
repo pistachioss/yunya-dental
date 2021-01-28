@@ -445,7 +445,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   /**
    * 重置密码
    *
-   * @param request
+   * @param request 请求
    * @param userId 用户ID
    * @return 返回结果信息
    */
