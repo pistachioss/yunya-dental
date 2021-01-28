@@ -70,4 +70,28 @@
     </where>
   </select>
 
+  <!-- 根据条件批量查询分解预约 -->
+  <select id="findAppointmentSplitByExampleBatch" resultType="com.yunya.feign.appointment.vo.AppointmentSplitVo">
+    select
+    split.id,
+    split.org_id as orgId,
+    split.appointment_id as appointmentId,
+    DATE_FORMAT(split.split_start_time,"%H:%i") as splitStartTime,
+    DATE_FORMAT(split.split_end_time,"%H:%i") as splitEndTime,
+    split.assistant_id as assistantId,
+    split.remarks,
+    split.inservice
+    from appointment_split split
+    <where>
+      split.org_id = #{orgId}
+      <if test="appointmentIds != null and appointmentIds.size() > 0">
+        and split.appointment_id in
+        <foreach collection="appointmentIds" item="appointId" open="(" separator="," close=")">
+          #{appointId}
+        </foreach>
+      </if>
+        and split.inservice = 1
+    </where>
+  </select>
+
 </mapper>

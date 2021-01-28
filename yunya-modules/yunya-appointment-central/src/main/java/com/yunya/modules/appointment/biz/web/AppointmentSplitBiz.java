@@ -4,6 +4,7 @@ import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
 import com.yunya.feign.appointment.vo.AppointConflictInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -27,6 +28,7 @@ import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 预约拆分
@@ -77,6 +79,35 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
             });
         }
         return splitVos;
+    }
+
+    /**
+     * 根据条件批量查询分解预约
+     * @param orgId 组织ID
+     * @param appointIds 预约ID集合
+     * @return list
+     */
+    public List<AppointmentSplitVo> findAppointmentSplitByExampleBatch(Integer orgId, List<Integer> appointIds){
+        if(StringHelper.isNotEmpty(appointIds)) {
+            List<AppointmentSplitVo> splitVos = mapper.findAppointmentSplitByExampleBatch(orgId, appointIds);
+            if (!StringHelper.isEmpty(splitVos)) {
+                List<Integer> assistantIds = splitVos.stream().map(AppointmentSplitVo::getAssistantId).collect(Collectors.toList());
+                // 查询助手信息
+                List<SysUserInfoDetail> sysUserEmployeeInfoByUserIds = this.remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(assistantIds);
+                if (StringHelper.isNotEmpty(sysUserEmployeeInfoByUserIds)) {
+                    splitVos.forEach(appointmentSplitVo -> {
+                        boolean parallel = sysUserEmployeeInfoByUserIds.stream().anyMatch(entity -> entity.getUserId().equals(appointmentSplitVo.getAssistantId()));
+                        if (parallel) {
+                            SysUserInfoDetail userInfoDetail = sysUserEmployeeInfoByUserIds.stream().filter(entity -> entity.getUserId().equals(appointmentSplitVo.getAssistantId())).findAny().get();
+                            String name = userInfoDetail.getName();
+                            appointmentSplitVo.setAssistantName(name);
+                        }
+                    });
+                }
+            }
+            return splitVos;
+        }
+        return null;
     }
 
     /**

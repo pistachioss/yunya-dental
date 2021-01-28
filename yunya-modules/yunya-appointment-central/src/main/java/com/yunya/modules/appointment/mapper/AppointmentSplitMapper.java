@@ -1,13 +1,11 @@
 package com.yunya.modules.appointment.mapper;
 
-import com.yunya.feign.appointment.vo.AppointConflictInfoVo;
-import com.yunya.models.appointment.AppointmentSplit;
 import com.yunya.feign.appointment.domain.query.AppointmentSplitQuery;
 import com.yunya.feign.appointment.vo.AppointmentSplitVo;
+import com.yunya.models.appointment.AppointmentSplit;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
-import java.util.Date;
 import java.util.List;
 
 public interface AppointmentSplitMapper extends Mapper<AppointmentSplit> {
@@ -32,6 +30,15 @@ public interface AppointmentSplitMapper extends Mapper<AppointmentSplit> {
      * @return
      */
     List<AppointmentSplitVo> findAppointmentSplitByExample(@Param("query") AppointmentSplitQuery query);
+
+    /**
+     * 根据条件批量查询分解预约
+     * @param orgId 组织ID
+     * @param appointmentIds 预约ID集合
+     * @return list
+     */
+    public List<AppointmentSplitVo> findAppointmentSplitByExampleBatch(@Param("orgId") Integer orgId,
+                                                                       @Param("appointmentIds") List<Integer> appointmentIds);
 
 
 }
