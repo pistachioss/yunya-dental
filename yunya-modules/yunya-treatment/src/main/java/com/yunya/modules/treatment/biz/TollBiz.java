@@ -363,17 +363,29 @@ public class TollBiz {
     int i = treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
     // 发送消息同步就诊、账单数据
     if (i > 0) {
-      rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
-      rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
-      Integer appointmentId = treatmentRecord.getAppointmentId();
-      if (null != appointmentId) {
-        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
-      } else {
-        rabbitMqServiceFeign.sendMessage(
-            treatmentRecord.getRegisteredId(), 1, 1, BaseTreatmentProcess);
-      }
+      sendMessageForMiddleTable(orderRecordId, billPayRecordId, treatmentRecord);
     }
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
+  }
+
+  /**
+   * 发送消息同步中间表数据
+   *
+   * @param orderRecordId 订单记录ID
+   * @param billPayRecordId 账单支付记录ID
+   * @param treatmentRecord 就诊记录ID
+   */
+  private void sendMessageForMiddleTable(
+      Integer orderRecordId, Integer billPayRecordId, TreatmentRecord treatmentRecord) {
+    rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+    rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
+    Integer appointmentId = treatmentRecord.getAppointmentId();
+    if (null != appointmentId) {
+      rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+    } else {
+      rabbitMqServiceFeign.sendMessage(
+          treatmentRecord.getRegisteredId(), 1, 1, BaseTreatmentProcess);
+    }
   }
 
   /**
