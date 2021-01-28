@@ -15,16 +15,19 @@ public interface CouponAllocateMapper extends Mapper<CouponAllocate> {
     /**
      * 查询已生成卡券数量
      */
-    int  countGeneratedByParam(@Param("couponId") Integer couponId, @Param("submitDate")LocalDateTime sumitDate);
+    int countGeneratedByParam(@Param("couponId") Integer couponId, @Param("submitDate") LocalDateTime sumitDate);
+
     int insertAll(List<CouponAllocateForm> list);
+
     List<CouponAllocateVO> findVOList(Integer id);
+
     List<CouponAllocateDetailVO> findVODetailList(CouponAllocateDetailForm couponAllocateDetailForm);
 
     /**
      * 更新优惠券分配信息状态
      */
-    void updateAllocateByIds(@Param("couponAllocateIds")List<Integer> couponAllocateIds, @Param("submitDate") LocalDateTime submitDate
-                             ,@Param("allocateUserId") Integer allocateUserId, @Param("allocateDate") LocalDateTime allocateDate);
+    void updateAllocateByIds(@Param("couponAllocateIds") List<Integer> couponAllocateIds, @Param("submitDate") LocalDateTime submitDate
+            , @Param("allocateUserId") Integer allocateUserId, @Param("allocateDate") LocalDateTime allocateDate);
 
 
     OrgCouponAllocateBo getOrgAllocateByParam(@Param("couponId") Integer couponId, @Param("orgId") Integer orgId);
