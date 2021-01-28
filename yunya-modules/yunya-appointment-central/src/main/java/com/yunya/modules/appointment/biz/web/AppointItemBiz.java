@@ -141,8 +141,6 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
     public List<AppointmentItemVo> findAppointItemByExample(AppointItemQuery form) {
         //通过feign查询预约信息，查询门诊端预约信息
         List<AppointmentItemVo> ordersTypes = mapper.findAppointItemByExample(form);
-
-
         return ordersTypes;
     }
 

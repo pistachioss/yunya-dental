@@ -111,7 +111,9 @@ public class SysUserController {
   @ApiOperation("用户修改")
   @PutMapping("/edit/{userId}")
   public ResponseResult<T> edit(
-          @PathVariable(value = "userId") Integer userId, @RequestBody @Validated SysUserForm form, HttpServletRequest request) {
+      @PathVariable(value = "userId") Integer userId,
+      @RequestBody @Validated SysUserForm form,
+      HttpServletRequest request) {
     sysUserBiz.edit(userId, form, request);
     return ResponseUtil.success(null);
   }
@@ -190,6 +192,7 @@ public class SysUserController {
   /**
    * 重置用户密码
    *
+   * @param request 请求
    * @param userId 用户ID
    * @return 返回状态
    */
@@ -197,9 +200,14 @@ public class SysUserController {
   @PostMapping("/reset/password/{userId}")
   @CurrentUser
   @ApiImplicitParams({
-          @ApiImplicitParam(name = "userId", value = "用户ID", required = true, dataTypeClass = Integer.class)
+    @ApiImplicitParam(
+        name = "userId",
+        value = "用户ID",
+        required = true,
+        dataTypeClass = Integer.class)
   })
-  public ResponseResult<T> resetPassword(@PathVariable("userId") Integer userId) {
-    return sysUserBiz.resetPassword(userId);
+  public ResponseResult<T> resetPassword(
+      HttpServletRequest request, @PathVariable("userId") Integer userId) {
+    return sysUserBiz.resetPassword(request, userId);
   }
 }
