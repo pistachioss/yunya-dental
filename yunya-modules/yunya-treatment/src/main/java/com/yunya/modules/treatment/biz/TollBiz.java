@@ -1237,7 +1237,7 @@ public class TollBiz {
       // 计算并校验收欠费入账总额
       totalCharge =
           calculateAndCheckReceivedAmount(
-              prepaymentAccounts, memberAccounts, paymentModels, (byte) 2);
+              prepaymentAccounts, memberAccounts, paymentModels, (byte) 1);
       // 调整账单重新收费
       OrderRecord orderRecordResult = checkOrderRecord(treatmentId);
       Integer orderRecordOrgId = orderRecordResult.getOrgId();
@@ -1552,12 +1552,12 @@ public class TollBiz {
       byte flag) {
     BigDecimal totalCharge =
         calculateTotalCharge(prepaymentAccountModels, memberAccountModels, paymentModels);
-    if (BigDecimal.valueOf(0).compareTo(totalCharge) > 0) {
+    if (BigDecimal.valueOf(0).compareTo(totalCharge) >= 0) {
       switch (flag) {
         case 0:
-          throw new ClientServiceException("收欠费失败，收欠费总额不能小于0！", PARAMETERS_IS_ILLEGAL);
+          throw new ClientServiceException("收欠费失败，收欠费总额不能小于或等于0！", PARAMETERS_IS_ILLEGAL);
         case 1:
-          throw new ClientServiceException("收欠费失败，收欠费总额不能小于等于0！", PARAMETERS_IS_ILLEGAL);
+          throw new ClientServiceException("收欠费失败，收欠费总额不能小于0！", PARAMETERS_IS_ILLEGAL);
       }
     }
     return totalCharge;
