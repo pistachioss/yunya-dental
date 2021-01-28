@@ -94,7 +94,7 @@
         od.remarks
         from order_detail od
         left join order_detail_pay_record odpr on od.id = odpr.order_detail_id
-        where od.order_record_id = #{orderRecordId}
+        where od.order_record_id = #{orderRecordId} and odpr.order_record_id = #{orderRecordId}
     </select>
 
     <!-- 打印账单信息 -->

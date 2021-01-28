@@ -101,17 +101,21 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @return resultData 账单详情信息
    */
   public BillDetailGroupVO findOrderDetailAndBillDetail(Integer orderRecordId) {
+    OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
+    if (orderRecord == null) {
+      throw new ClientServiceException("订单记录不存在", PARAMETERS_IS_ILLEGAL);
+    }
     BillDetailGroupVO resultData = new BillDetailGroupVO();
     // 获取开单优惠详情
     List<OrderDetailChargeVO> orderDetails = getOrderDetailCharges(orderRecordId);
     resultData.setOrderDetails(orderDetails);
-
+    // 账单收费记录
     List<BillPayRecordVO> billPayRecords = mapper.selectBillPayRecord(orderRecordId);
     if (StringHelper.isNotEmpty(billPayRecords)) {
       billPayRecords.forEach(
           billPayRecord -> {
             Integer orgId = billPayRecord.getOrgId();
-            // todo 从缓存中查询诊所信息
+            // 从缓存中查询诊所信息
             OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
             if (null != orgInfo) {
               billPayRecord.setOrgName(orgInfo.getAbbreviation());
@@ -126,14 +130,6 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     }
     resultData.setBillPayRecords(billPayRecords);
     // 账单异常记录
-    /*BillRecord entity = new BillRecord();
-    entity.setOrderRecordId(orderRecordId);
-    entity.setInservice(true);
-    BillRecord billRecord = mapper.selectOne(entity);*/
-    OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
-    if (orderRecord == null) {
-      throw new ClientServiceException("开单记录不存在", PARAMETERS_IS_ILLEGAL);
-    }
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
     BillRecord entity = new BillRecord();
     entity.setTreatmentRecordId(treatmentRecordId);
@@ -145,7 +141,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
         billHandleRecords.forEach(
             handleRecord -> {
               Integer orgId = handleRecord.getOrgId();
-              // todo 从缓存中查询诊所信息
+              // 从缓存中查询诊所信息
               OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
               if (null != orgInfo) {
                 handleRecord.setOrgName(orgInfo.getAbbreviation());
