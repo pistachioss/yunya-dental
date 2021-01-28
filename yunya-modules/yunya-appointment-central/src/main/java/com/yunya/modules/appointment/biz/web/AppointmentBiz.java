@@ -74,7 +74,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -140,6 +140,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /** 注入redis缓冲服务 */
     @Autowired
     private RedisUtils redisUtils;
+
+    @Resource(name = "poolExecutor")
+    private ExecutorService poolExecutor;
 
     /**
      * 添加预约（检查预约是否冲突）
@@ -698,12 +701,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Date startDate = query.getStartDate();
         Date endDate = query.getEndDate();
         // 预约可视图列表
-        List<AppointmentDimensionVo> appointmentDimensionVoList = new ArrayList<>();
+        List<AppointmentDimensionVo> appointmentDimensionVoList = Collections.synchronizedList(new ArrayList<>());
         // 查询当前天有排班的员工列表
         // 获取当天的所有医生的排班（包含有排班和没有排班的医生）
         List<UserWorkVO> shiftWorkDatas = getEmployeeScheduleList(startDate,endDate,query.getOrgId(),query.getDentistId());
         // 没有排班医生
         List<Integer> unScheduleIds = new ArrayList<>();
+        // 查询某一天数据会过滤出没有排班员工
         if (startDate.getTime() == endDate.getTime()) {
             for (UserWorkVO userWorkVO : shiftWorkDatas) {
                 List<WorkDayVO> days = userWorkVO.getDays();
@@ -764,7 +768,18 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             patientTotalInfos = new ArrayList<>();
         }
 
+        List<Future<List<AppointmentDimensionVo>>> appointmentDimensionFutureList = new ArrayList<>();
+        CountDownLatch latch = new CountDownLatch(filterAppointIds.size());
         for (UserWorkVO userWorkVO : filterAppointIds) {
+            appointmentDimensionFutureList.add(poolExecutor.submit(()->{
+                // 组合预约医生和患者信息（患者维度）
+                List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(userWorkVO,
+                        appointmentDimensionCommInfos,treatmentRecordListByAppointIds,patientTotalInfos);
+                latch.countDown();
+                return dimensionVoList;
+            }));
+
+/*
             // 组合预约医生和患者信息（患者维度）
             List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(userWorkVO,
                     appointmentDimensionCommInfos,treatmentRecordListByAppointIds,patientTotalInfos);
@@ -782,7 +797,38 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     }
                 });
             }
+            */
         }
+
+        try {
+            latch.await();
+            CountDownLatch latch1 = new CountDownLatch(appointmentDimensionFutureList.size());
+            for (Future<List<AppointmentDimensionVo>> listFuture : appointmentDimensionFutureList) {
+                List<AppointmentDimensionVo> appointmentDimensionVos = listFuture.get();
+                if (StringHelper.isNotEmpty(appointmentDimensionVos)) {
+                    poolExecutor.execute(()->{
+                        appointmentDimensionVos.forEach(entity->{
+                            Integer dentistId = entity.getDentistId();
+                            List<AppointmentDimensionVo> appointmentAssistants = entity.getAppointmentAssistants();
+                            List<AppointmentPatientCardVo> appointmentPatientCardVos = entity.getAppointmentPatientCardVos();
+                            // 只有在当天有预约或者有排班才将预约信息添加到预约信息列表
+                            if (!(StringHelper.isEmpty(appointmentAssistants) &&
+                                    StringHelper.isEmpty(appointmentPatientCardVos) &&
+                                    unScheduleIds.contains(dentistId))) {
+                                appointmentDimensionVoList.add(entity);
+                            }
+                        });
+                    });
+
+                }
+                latch1.countDown();
+            }
+            latch1.await();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
+
         return appointmentDimensionVoList;
     }
 
@@ -1720,7 +1766,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointListExportVo.setPatientName(appointmentListItemVo.getPatientName());
         appointListExportVo.setMobile(appointmentListItemVo.getMobile());
         appointListExportVo.setAssistantName(appointmentListItemVo.getAssistantName());
-        appointListExportVo.setAppointType(appointmentListItemVo.getAppointType());
+        appointListExportVo.setAppointType(appointmentListItemVo.getFirstVisit());
         appointListExportVo.setClinicDeptRoomName(appointmentListItemVo.getClinicDeptRoomName());
         appointListExportVo.setAppointTime(appointmentListItemVo.getAppointTime());
         appointListExportVo.setAppointDuration(appointmentListItemVo.getAppointDuration());
@@ -2015,7 +2061,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 vo.setAppointDuration(appointment.getAppointDuration());
                 vo.setAppointContent(appointment.getAppointContent());
                 vo.setAppointRemark(appointment.getRemarks());
-                vo.setAppointType(appointment.getAppointType());
+                vo.setFirstVisit(appointment.getAppointType());
                 vo.setAppointStatus(appointment.getAppointStatus());
                 vo.setConfirmStatus(appointment.getConfirmStatus());
             }
@@ -2027,6 +2073,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * 组合患者预约医生维度信息（预约患者信息+医生排班信息）
      * @param orgId 门诊id
      * @param appointmentDimensionVo 患者信息视图信息
+     * @param appointmentSplits 预约分解信息
+     * @param assistentInfoList 助手信息列表
+     * @param treatmentRecordList 就诊记录列表
      * @return AppointmentDentistDimensionVo
      */
     private AppointmentDimensionVo combinationDentistDimensionVo(Integer orgId,
@@ -2116,7 +2165,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     // 获取大医生下患者当前处于哪个就诊状态
                     // 设置大医生下所有的患者就诊状态
                     this.setTreatmentStation(appointmentPatientCardVo,appointmentPatientCardVo.getId(),treatmentRecordList);
-
                 }
             }
             // 判断大医生下面的助手列表中是否已经存在同一个助手了，如果存在同一个助手，则合并助手下的所有患者
@@ -2187,6 +2235,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * 设置医生维度大医生下的预约助手相关信息（助手排班、助手分解到的患者信息）
      * @param appointmentPatientCardVo  大医生下的患者卡信息
      * @param appointmentSplitVo  大医生下患者预约相关的预约分解
+     * @param assistentInfoList 助手信息列表
+     * @param treatmentRecordList 就诊记录列表
      * @return 医生维度视图模型
      */
     private AppointmentDimensionVo setAppointAssistantInfo(AppointmentPatientCardVo appointmentPatientCardVo,
@@ -2254,9 +2304,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     }
 
     /**
-     * 设置患者就诊流程的状态
+     * 设置患者就诊流程的状态(将来会弃用)
      * @return 返回就诊状态 0-待挂号状态；1-就诊中状态；2-就诊完成状态
      */
+    @Deprecated
     private Byte getTreatmentStation(Integer appointId, Integer patientId) {
         Registered registered = new Registered();
         registered.setAppointmentId(appointId);
@@ -2290,7 +2341,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     }
 
     /**
-     * 组合患者预约医生维度信息（预约患者信息+医生排班信息）
+     * 组合患者预约医生维度信息（预约患者信息+医生排班信息）(将来弃用)
      * @param orgId 门诊id
      * @param appointmentDimensionVo 患者信息视图信息
      * @return AppointmentDentistDimensionVo
@@ -2433,7 +2484,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param appointmentPatientCardVo 要注入的类
      * @param appointId 预约ID
      * @param treatmentRecordListByAppointIds 就诊记录ID集合
-     * @return 返回就诊状态 0-待挂号状态；1-就诊中状态；2-就诊完成状态
      */
     private void setTreatmentStation(AppointmentPatientCardVo appointmentPatientCardVo,Integer appointId,  List<TreatmentRecord> treatmentRecordListByAppointIds) {
         if (StringHelper.isNotEmpty(treatmentRecordListByAppointIds) && null != appointId) {
@@ -2461,6 +2511,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * 向预约列表中注入预约相关信息
      * @param build 预约信息列表
      * @param appointmentVo  预约信息
+     * @param sysUserInfoDetails 医生或者助手信息列表
+     * @param departmentRooms 科室信息列表
      */
     private void setAppointmentInfo(AppointmentListItemVo build,
                                     AppointmentVo appointmentVo,
@@ -2504,6 +2556,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         } else {
             build.setClinicDeptRoomName("--");
         }
+        // 设置初诊/复诊
+        build.setFirstVisit(appointmentVo.getAppointType());
         String remarks = appointmentVo.getRemarks();
         build.setRemarks(StringHelper.isBlank(remarks) ? "--" : remarks);
         String appointContent = appointmentVo.getAppointContent();
@@ -2515,6 +2569,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param build  预约信息列表
      * @param patientTotalInfoVos 患者信息列表
      * @param debtAmountModels  患者欠费金额列表
+     * @param memberTypes 会员类型列表
      */
     private void setPatientInfo(AppointmentListItemVo build,
                                 List<PatientTotalInfoVo> patientTotalInfoVos,
@@ -2788,7 +2843,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      *
      * @param templateId 短信模板id
      * @param models 短信预约提醒列表
-     * @return
+     * @return ResponseResult
      */
     public ResponseResult<T> sendAppointmentBatchSms(Integer templateId, List<AppointmentSmsSendRecordModel> models) {
         Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
@@ -2801,9 +2856,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             String code2 = null;
             String code3 = null;
             String code4 = null;
-            if (templateItem.indexOf(SmsTemplateItemEnum.CLINIC_NAME.getCode()+"")!=-1
-                    ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_PHONE.getCode()+"")!=-1
-                    ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_ADDRESS.getCode()+"")!=-1) {
+            if (templateItem.contains(SmsTemplateItemEnum.CLINIC_NAME.getCode() + "")
+                    || templateItem.contains(SmsTemplateItemEnum.CLINIC_PHONE.getCode() + "")
+                    || templateItem.contains(SmsTemplateItemEnum.CLINIC_ADDRESS.getCode() + "")) {
                 MedicalOrganizationInfoVO medicalOrganizationInfoVO = remoteSystemServiceFeign.clinicExtInfoByCompanyId(orgId);
                 code2 = medicalOrganizationInfoVO.getAbbreviation();
                 code3 = medicalOrganizationInfoVO.getTel();
