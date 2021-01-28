@@ -33,6 +33,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.constant.UserConstant;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -637,14 +638,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     }
 
     public ResponseResult<CardActiveDetailVo> getRechargeDetailByMachine(String qrCode) {
-        String qrCodeData = null;
-        try {
-            qrCodeData = new String(Base64.getDecoder().decode(qrCode.trim()));
-        } catch (Exception e) {
-            throw new ClientServiceException("编码格式有误", SAME_DATA_EXIST);
-        }
+        String qrCodeData = new String(Base64.getDecoder().decode(qrCode.trim()));
         List<String> data = Lists.newArrayList(Splitter.on(":").trimResults().omitEmptyStrings().split(qrCodeData));
-        Card card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
+        Card card = null;
+        try {
+            card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
+        } catch (NumberFormatException e) {
+            throw new ClientServiceException("编码格式有误", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        }
         //校验充值卡券
         RestErrorBo errorBo = checkRechargeCardInfo(card);
         if (errorBo.getError() != null) {
