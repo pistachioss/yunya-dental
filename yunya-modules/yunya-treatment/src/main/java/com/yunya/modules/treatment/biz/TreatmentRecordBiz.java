@@ -855,7 +855,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     String name = BaseContextHandler.getName();
     orderRecord.setUpdId(userId);
     orderRecord.setUpdName(name);
-    int i1 = orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
+    orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
     treatmentRecord.setTreatEndTime(new Date(System.currentTimeMillis()));
     treatmentRecord.setStatus((byte) 2);
     treatmentRecord.setUpdId(userId);
@@ -994,19 +994,35 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           vo -> {
-            Integer orgId = vo.getOrgId();
+            Integer treatmentRecordId = vo.getTreatmentRecordId();
+            OrderRecord orderRecord = new OrderRecord();
+            orderRecord.setTreatmentRecordId(treatmentRecordId);
+            orderRecord.setInservice(true);
+            OrderRecord orderRecordResult = orderRecordMapper.selectOne(orderRecord);
+            if (null != orderRecordResult) {
+              vo.setOrderRecordId(orderRecordResult.getId());
+              vo.setOriginalPrice(orderRecordResult.getTotalAmount());
+            }
+            BillRecord billRecord = new BillRecord();
+            billRecord.setTreatmentRecordId(treatmentRecordId);
+            billRecord.setInservice(true);
+            BillRecord billRecordResult = billRecordMapper.selectOne(billRecord);
+            if (null != billRecordResult) {
+              vo.setBillRecordId(billRecordResult.getId());
+              vo.setActualReceivableAmount(billRecordResult.getActualReceivableAmount());
+              vo.setDebtAmount(billRecordResult.getDebtAmount());
+            }
             // 查询组织信息
-            OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+            OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(vo.getOrgId());
             if (null != orgInfo) {
               vo.setOrgName(orgInfo.getAbbreviation());
             }
             Integer dentistId = vo.getDentistId();
-            // todo 从缓存中查询用户
+            // 从缓存中查询用户
             SysEmployee employee = systemServiceFeign.findSysEmployeeById(dentistId);
             if (null != employee) {
               vo.setDentistName(employee.getName());
             }
-            Integer treatmentRecordId = vo.getTreatmentRecordId();
             AssistantMatchingRecord assistantMatchingRecord = new AssistantMatchingRecord();
             assistantMatchingRecord.setTreatmentRecordId(treatmentRecordId);
             List<AssistantMatchingRecord> assistantMatchingRecords =

@@ -127,16 +127,9 @@
         tr.type AS firstVisit,
         tr.`status` AS treatmentStatus,
         tr.appointment_id as appointmentId,
-        tr.registered_id as registeredId,
-        ord.id as orderRecordId,
-        ord.total_amount as originalPrice,
-        br.id as billRecordId,
-        br.actual_receivable_amount as actualReceivableAmount,
-        br.debt_amount as debtAmount
+        tr.registered_id as registeredId
         FROM
         treatment_record tr
-        LEFT JOIN order_record ord on ord.inservice = 1 and tr.id = ord.treatment_record_id
-        LEFT JOIN bill_record br on br.inservice = 1 and tr.id = br.treatment_record_id
         <where>
             <if test="queryForm.patientId != null">
                 and tr.patient_id = #{queryForm.patientId}
@@ -160,7 +153,7 @@
                 </foreach>
             </if>
         </where>
-        ORDER BY tr.treat_start_time DESC
+        ORDER BY treatmentRecordId DESC
     </select>
     <!-- 根据就诊记录ID列表查询就诊记录列表 -->
     <select id="selectByIds" resultMap="BaseResultExtendMap">

@@ -34,10 +34,10 @@ public class TreatmentRecordMapperTest {
   @Test
   public void findPatientTreatList() {
     PatientTreatmentRecordQueryForm queryForm = new PatientTreatmentRecordQueryForm();
-    queryForm.setOrgIds(new Integer[] {21});
+    //queryForm.setOrgIds(new Integer[] {21});
 
-    queryForm.setTreatStatus(new Byte[] {0, 2});
-    queryForm.setPatientId(11);
+    //queryForm.setTreatStatus(new Byte[] {0, 2});
+    queryForm.setPatientId(13282);
     List<PatientTreatmentRecordVO> list =
         treatmentRecordMapper.selectPatientTreatmentRecordList(queryForm);
     System.out.println(list);
