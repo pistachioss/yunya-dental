@@ -515,7 +515,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         smsModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
         smsModel.setOrgId(orgId);
         smsModel.setName(BaseContextHandler.getName());
-        redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgId,smsModel);
+        redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgId, smsModel);
     }
 
     /**
@@ -626,9 +626,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     }
 
     public ResponseResult<CardActiveDetailVo> getCardDetailByMachine(String qrCode) {
-        String qrCodeData = new String(Base64.getDecoder().decode(qrCode.trim()));
-        List<String> data = Lists.newArrayList(Splitter.on(":").trimResults().omitEmptyStrings().split(qrCodeData));
-        Card card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
+        Card card = null;
+        try {
+            String qrCodeData = new String(Base64.getDecoder().decode(qrCode.trim()));
+            List<String> data = Lists.newArrayList(Splitter.on(":").trimResults().omitEmptyStrings().split(qrCodeData));
+            card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
+        } catch (Exception e) {
+            throw new ClientServiceException("编码格式有误", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        }
         //校验卡券
         RestErrorBo errorBo = checkCardInfo(card);
         if (errorBo.getError() != null) {
@@ -638,10 +643,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     }
 
     public ResponseResult<CardActiveDetailVo> getRechargeDetailByMachine(String qrCode) {
-        String qrCodeData = null;
         Card card = null;
         try {
-            qrCodeData = new String(Base64.getDecoder().decode(qrCode.trim()));
+            String qrCodeData = new String(Base64.getDecoder().decode(qrCode.trim()));
             List<String> data = Lists.newArrayList(Splitter.on(":").trimResults().omitEmptyStrings().split(qrCodeData));
             card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
         } catch (Exception e) {
@@ -1060,7 +1064,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 Integer couponType = benefitBo.getCouponType();
                 if (MEMBER_CARD.equals(couponType) || benefitUseDetailBo != null) {
                     log.info("【单个数量】匹配优惠券，订单明细id：[{}], 卡券id：[{}], 优惠券id：[{}]", orderItem.getOrderDetailId()
-                            ,benefitBo.getCardId(), benefitBo.getCouponId());
+                            , benefitBo.getCardId(), benefitBo.getCouponId());
                     //订单项目原价
                     BigDecimal originalPrice = orderItem.getReceivableAmount();
                     //订单项目已优惠金额
@@ -1175,7 +1179,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 Integer couponType = benefitBo.getCouponType();
                 if (benefitUseDetailBo != null || MEMBER_CARD.equals(couponType)) {
                     log.info("【多个数量】匹配优惠券，订单明细id：[{}], 卡券id：[{}], 优惠券id：[{}]", orderItem.getOrderDetailId()
-                            ,benefitBo.getCardId(), benefitBo.getCouponId());
+                            , benefitBo.getCardId(), benefitBo.getCouponId());
                     //订单项目原价
                     BigDecimal originalPrice = orderItem.getReceivableAmount().divide(BigDecimal.valueOf(orderItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP);
                     //订单项目index已优惠金额
