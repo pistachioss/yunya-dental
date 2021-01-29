@@ -11,6 +11,7 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
+import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.feign.treatment_other.domain.form.FinishVisitingForm;
 import com.yunya.feign.treatment_other.domain.form.VisitingRecordForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingContentModel;
@@ -254,7 +255,22 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         if (visitingRecordVo == null){
             return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"没有数据",null);
         }
-        visitingRecordVo = this.comboVisitingRecord(visitingRecordVo);
+        List<VisitingRecordVo> visitingRecordVos = new ArrayList<>();
+        visitingRecordVos.add(visitingRecordVo);
+        // 过滤出患者基本信息列表
+        List<PatientTotalInfoVo> patientTotalInfoList = this.patientTotalInfoVoListFilte(visitingRecordVos);
+        // 过滤出患者会员类型
+        List<MemberType> memberTypeList = this.memberTypeInfoListFilter(patientTotalInfoList);
+        // 过滤出患者欠费总额列表
+        List<DebtAmountModel> debtAmountList = this.debtAmountModelListFilter(visitingRecordVos);
+        // 过滤出医生信息列表
+        List<SysUserInfoDetail> dentistInfoList = this.dentistInfoListFilter(visitingRecordVos);
+        // 过滤出末诊科室信息列表
+        List<DepartmentRoom> departmentRoomInfoList = this.departmentRoomInfoListFilter(visitingRecordVos);
+        // 过滤出患者就诊信息列表
+        List<TreatmentRecordExtendVO> treatmentRecordInfoList = this.treatmentRecordExtendInfoListFilter(visitingRecordVos);
+        // 组合信息
+        this.comboVisitingRecord(visitingRecordVo,patientTotalInfoList,memberTypeList,debtAmountList,dentistInfoList,departmentRoomInfoList,treatmentRecordInfoList);
         return ResponseUtil.success(visitingRecordVo);
     }
 
@@ -277,12 +293,28 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         String distentName = query.getDistentName();
         List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
         PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
-        if (visitingRecordVos != null && !visitingRecordVos.isEmpty()){
+        if (StringHelper.isNotEmpty(visitingRecordVos)){
+
+            // 过滤出患者基本信息列表
+            List<PatientTotalInfoVo> patientTotalInfoList = this.patientTotalInfoVoListFilte(visitingRecordVos);
+            // 过滤出患者会员类型
+            List<MemberType> memberTypeList = this.memberTypeInfoListFilter(patientTotalInfoList);
+            // 过滤出患者欠费总额列表
+            List<DebtAmountModel> debtAmountList = this.debtAmountModelListFilter(visitingRecordVos);
+            // 过滤出医生信息列表
+            List<SysUserInfoDetail> dentistInfoList = this.dentistInfoListFilter(visitingRecordVos);
+            // 过滤出末诊科室信息列表
+            List<DepartmentRoom> departmentRoomInfoList = this.departmentRoomInfoListFilter(visitingRecordVos);
+            // 过滤出患者就诊信息列表
+            List<TreatmentRecordExtendVO> treatmentRecordInfoList = this.treatmentRecordExtendInfoListFilter(visitingRecordVos);
             // 组合随访记录信息
-            for(VisitingRecordVo visitingRecordVo : visitingRecordVos){
-                VisitingRecordVo recordVo = this.comboVisitingRecord(visitingRecordVo);
-                visitingRecordVoList.add(recordVo);
+            for(VisitingRecordVo visitingRecordVo : visitingRecordVos) {
+                // 组合随访记录信息中的患者信息、会员图标信息、医生姓名、就诊信息
+                this.comboVisitingRecord(visitingRecordVo,
+                        patientTotalInfoList,memberTypeList,debtAmountList,dentistInfoList,departmentRoomInfoList, treatmentRecordInfoList);
+                visitingRecordVoList.add(visitingRecordVo);
             }
+
             if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName)) {
                 // 排序
                 searchVisitingRecordVo = this.sort(visitingRecordVoList);
@@ -319,78 +351,188 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
     }
 
     /**
+     * 从随访记录列表中过滤出患者基本信息列表
+     * @param visitingRecordVos  随访列表
+     * @return 患者信息列表
+     */
+    private List<PatientTotalInfoVo> patientTotalInfoVoListFilte(List<VisitingRecordVo> visitingRecordVos) {
+        if (StringHelper.isNotEmpty(visitingRecordVos)) {
+            // 过滤出患者基本信息列表
+            List<Integer> patientIds = visitingRecordVos.stream().map(VisitingRecordVo::getPatientId).collect(Collectors.toList());
+            return this.remotePatientCentralServiceFeign.findPatientTotalInfo(patientIds);
+        }
+        return null;
+    }
+
+    /**
+     * 从患者信息列表中过滤出患者会员卡类型列表
+     * @param patientTotalInfoList  患者信息列表
+     * @return  患者会员卡信息列表
+     */
+    private List<MemberType> memberTypeInfoListFilter(List<PatientTotalInfoVo> patientTotalInfoList) {
+        // 过滤出患者会员类型
+        if (StringHelper.isNotEmpty(patientTotalInfoList)) {
+            List<Integer> memberTypeIds = patientTotalInfoList.stream().map(PatientTotalInfoVo::getMemberTypeId).collect(Collectors.toList());
+            return this.remoteSystemServiceFeign.findMemberTypeByIds(memberTypeIds);
+        }
+        return null;
+    }
+
+    /**
+     * 从随访列表中过滤出患者欠费总额列表
+     * @param visitingRecordVos 随访信息列表
+     * @return 患者欠费总额列表
+     */
+    private List<DebtAmountModel> debtAmountModelListFilter(List<VisitingRecordVo> visitingRecordVos) {
+        if (StringHelper.isNotEmpty(visitingRecordVos)) {
+            List<Integer> patientIds = visitingRecordVos.stream().map(VisitingRecordVo::getPatientId).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(patientIds)) {
+                return this.remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 从随访列表中过滤出患者末诊医生信息列表
+     * @param visitingRecordVos  随访信息列表
+     * @return  医生信息列表
+     */
+    private List<SysUserInfoDetail> dentistInfoListFilter(List<VisitingRecordVo> visitingRecordVos) {
+        if (StringHelper.isNotEmpty(visitingRecordVos)) {
+            List<Integer> dentistIds = visitingRecordVos.stream().map(VisitingRecordVo::getDentistId).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(dentistIds)) {
+                return this.remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 从随访列表中过滤出患者末诊科室的信息列表
+     * @param visitingRecordVos 随访信息列表
+     * @return  科室信息列表
+     */
+    private List<DepartmentRoom> departmentRoomInfoListFilter(List<VisitingRecordVo> visitingRecordVos) {
+        if (StringHelper.isNotEmpty(visitingRecordVos)) {
+            // 过滤出末诊科室信息列表
+            List<Integer> deptRoomIds = visitingRecordVos.stream().map(VisitingRecordVo::getDeptRoomId).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(deptRoomIds)) {
+                return this.remoteSystemServiceFeign.findDepartmentRoomByIds(deptRoomIds);
+            }
+        }
+        return null;
+    }
+
+    private List<TreatmentRecordExtendVO> treatmentRecordExtendInfoListFilter(List<VisitingRecordVo> visitingRecordVos) {
+        if (StringHelper.isNotEmpty(visitingRecordVos)) {
+            List<Integer> treatmentIds = visitingRecordVos.stream().map(VisitingRecordVo::getTreatmentId).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(treatmentIds)) {
+                return this.remoteTreatmentServiceFeign.findTreatmentRecordByIds(new HashSet<>(treatmentIds));
+            }
+        }
+        return null;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
      * 组合随访记录信息中的患者信息、会员图标信息、医生姓名、就诊信息
      * @param visitingRecordVo 随访记录
-     * @return 返回组合之后的随访记录信息
+     * @param patientTotalInfoList 患者信息列表
+     * @param memberTypeList 会员信息列表
+     * @param debtAmountList 患者欠费总额列表
+     * @param dentistInfoList 医生信息列表
+     * @param departmentRoomInfoList 预约科室信息列表
+     * @param treatmentRecordInfoList 患者就诊信息列表
      */
-    public VisitingRecordVo comboVisitingRecord(VisitingRecordVo visitingRecordVo){
+    public void comboVisitingRecord(VisitingRecordVo visitingRecordVo,
+                                                List<PatientTotalInfoVo> patientTotalInfoList,
+                                                List<MemberType> memberTypeList,
+                                                List<DebtAmountModel> debtAmountList,
+                                                List<SysUserInfoDetail> dentistInfoList,
+                                                List<DepartmentRoom> departmentRoomInfoList,
+                                                List<TreatmentRecordExtendVO> treatmentRecordInfoList){
         // 组合患者信息
         Integer patientId = visitingRecordVo.getPatientId();
-        if (patientId != null) {
-            PatientTotalInfoVo patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
-            if (patientTotalInfo != null){
+        if (StringHelper.isNotEmpty(patientTotalInfoList)) {
+            patientTotalInfoList.forEach(patientTotalInfo -> {
                 visitingRecordVo.setPatientName(patientTotalInfo.getName());
                 visitingRecordVo.setMobile(patientTotalInfo.getMobile());
                 visitingRecordVo.setGender(patientTotalInfo.getGender());
                 visitingRecordVo.setBirthday(patientTotalInfo.getBirthday());
                 visitingRecordVo.setAge(patientTotalInfo.getAge());
-                visitingRecordVo.setAllergen(patientTotalInfo.getAllergens());
                 visitingRecordVo.setPatientRemark(patientTotalInfo.getRemarks());
                 visitingRecordVo.setMedicalNumber(patientTotalInfo.getMedicalNumber());
                 visitingRecordVo.setPatientKind(patientTotalInfo.getPatientKindName());
+                // 设置患者过敏源
+                visitingRecordVo.setAllergen(patientTotalInfo.getAllergensDescriptions());
                 // 设置会员图标信息
                 Integer memberTypeId = patientTotalInfo.getMemberTypeId();
-                if (memberTypeId != null) {
-                    MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
-                    if (memberType != null){
+                if (memberTypeId != null && StringHelper.isNotEmpty(memberTypeList)) {
+                    boolean b = memberTypeList.stream().anyMatch(entity -> entity.getId().equals(memberTypeId));
+                    if (b){
+                        MemberType memberType = memberTypeList.stream().filter(entity -> entity.getId().equals(memberTypeId)).findAny().get();
                         visitingRecordVo.setMemberIcon(memberType.getIcon());
                     }
                 }
                 // 欠费总额
-                List<Integer> patientIds = new ArrayList<>();
-                patientIds.add(patientId);
-                List<DebtAmountModel> debtAmountList = remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
                 if (StringHelper.isNotEmpty(debtAmountList)) {
-                    DebtAmountModel debtAmountModel = debtAmountList.get(0);
-                    visitingRecordVo.setArrears(debtAmountModel.getDebtAmount());
+                    boolean b = debtAmountList.stream().anyMatch(entity -> entity.getPatientId().equals(patientId));
+                    if (b) {
+                        DebtAmountModel debtAmountModel = debtAmountList.stream().filter(entity->entity.getPatientId().equals(patientId)).findAny().get();
+                        visitingRecordVo.setArrears(debtAmountModel.getDebtAmount());
+                    }
                 }
-            }
+            });
+
         }
 
         // 设置医生姓名
         Integer dentistId = visitingRecordVo.getDentistId();
-        if (dentistId != null){
-            SysUserInfoDetail dentistInfo  = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
-            if (dentistInfo != null){
+        if (dentistId != null && StringHelper.isNotEmpty(dentistInfoList)){
+            boolean b = dentistInfoList.stream().anyMatch(entity -> entity.getUserId().equals(dentistId));
+            if (b){
+                SysUserInfoDetail dentistInfo = dentistInfoList.stream().filter(entity -> entity.getUserId().equals(dentistId)).findAny().get();
                 visitingRecordVo.setDentistName(dentistInfo.getName());
             }
         }
 
         // 设置末诊科室信息
         Integer deptRoomId = visitingRecordVo.getDeptRoomId();
-        if (deptRoomId != null) {
-            DepartmentRoom departmentRoomInfo = remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
-            if (departmentRoomInfo != null){
+        if (deptRoomId != null && StringHelper.isNotEmpty(departmentRoomInfoList)) {
+            boolean b = departmentRoomInfoList.stream().anyMatch(entity -> entity.getId().equals(deptRoomId));
+            if (b){
+                DepartmentRoom departmentRoomInfo = departmentRoomInfoList.stream().filter(entity -> entity.getId().equals(deptRoomId)).findAny().get();
                 visitingRecordVo.setDeptRoomName(departmentRoomInfo.getName());
             }
         }
 
         // 设置就诊信息
         Integer treatmentId = visitingRecordVo.getTreatmentId();
-        if (treatmentId != null) {
-            TreatmentRecord treatmentRecord = remoteTreatmentServiceFeign.findTreatmentRecordById(treatmentId);
-            if (treatmentRecord != null){
+        if (treatmentId != null && StringHelper.isNotEmpty(treatmentRecordInfoList)) {
+            boolean b = treatmentRecordInfoList.stream().anyMatch(entity -> entity.getId().equals(treatmentId));
+            if (b){
+                TreatmentRecordExtendVO treatmentRecord = treatmentRecordInfoList.stream().filter(entity -> entity.getId().equals(treatmentId)).findAny().get();
                 visitingRecordVo.setTreatmentDate(treatmentRecord.getTreatEndTime());
                 // 设置初复诊
                 visitingRecordVo.setFirstVisit(treatmentRecord.getType());
             }
         }
-        // 设置患者过敏源
-        PatientTotalInfoVo patientTotalInfo = this.remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
-        if (patientTotalInfo != null) {
-            visitingRecordVo.setAllergen(patientTotalInfo.getAllergensDescriptions());
-        }
-        return visitingRecordVo;
     }
 
     /**
@@ -553,8 +695,22 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         // 随访记录结果列表
         List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
         if (visitingRecordVos != null && !visitingRecordVos.isEmpty()) {
+            // 过滤出患者基本信息列表
+            List<PatientTotalInfoVo> patientTotalInfoList = this.patientTotalInfoVoListFilte(visitingRecordVos);
+            // 过滤出患者会员类型
+            List<MemberType> memberTypeList = this.memberTypeInfoListFilter(patientTotalInfoList);
+            // 过滤出患者欠费总额列表
+            List<DebtAmountModel> debtAmountList = this.debtAmountModelListFilter(visitingRecordVos);
+            // 过滤出医生信息列表
+            List<SysUserInfoDetail> dentistInfoList = this.dentistInfoListFilter(visitingRecordVos);
+            // 过滤出末诊科室信息列表
+            List<DepartmentRoom> departmentRoomInfoList = this.departmentRoomInfoListFilter(visitingRecordVos);
+            // 过滤出患者就诊信息列表
+            List<TreatmentRecordExtendVO> treatmentRecordInfoList = this.treatmentRecordExtendInfoListFilter(visitingRecordVos);
             // 组合随访记录信息
-            visitingRecordVos.forEach(this::comboVisitingRecord);
+            visitingRecordVos.forEach(item->{
+                this.comboVisitingRecord(item,patientTotalInfoList,memberTypeList,debtAmountList,dentistInfoList,departmentRoomInfoList,treatmentRecordInfoList);
+            });
         }
         return visitingRecordVos;
     }
@@ -567,21 +723,17 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param distentNameStr 医生名字
      * @return 检索并且排序之后的列表
      */
-    private List searchAndOrder(List<VisitingRecordVo> visitingRecordVoList, String searchStr, String medicalNumberStr, String distentNameStr) {
-        // 匹配姓名
-        String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
-        // 匹配手机号
-        String mobileReg = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|16[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
-        List<VisitingRecordVo> searchVisitingRecordVo = visitingRecordVoList.stream().filter(visitingRecordVo -> {
+    private List<VisitingRecordVo> searchAndOrder(List<VisitingRecordVo> visitingRecordVoList, String searchStr, String medicalNumberStr, String distentNameStr) {
+        return visitingRecordVoList.stream().filter(visitingRecordVo -> {
             String patientName = visitingRecordVo.getPatientName();
             String mobile = visitingRecordVo.getMobile();
             String medicalNumber = visitingRecordVo.getMedicalNumber();
             String distentName = visitingRecordVo.getDentistName();
             boolean result = false;
             if (!StringHelper.isEmpty(searchStr)) {
-                if (searchStr.matches(patientNameReg) && !StringHelper.isEmpty(patientName)) {
+                if (searchStr.matches(BusinessConstants.NAME_REGEXP) && !StringHelper.isEmpty(patientName)) {
                     result = patientName.contains(searchStr);
-                } else if (searchStr.matches(mobileReg) && !StringHelper.isEmpty(mobile)) {
+                } else if (searchStr.matches(BusinessConstants.MOBILE_REGEXP) && !StringHelper.isEmpty(mobile)) {
                     result = mobile.contains(searchStr);
                 }
             }
@@ -594,7 +746,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             }
             return result;
         }).collect(Collectors.toList());
-        return searchVisitingRecordVo;
     }
 
     /**
