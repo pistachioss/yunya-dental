@@ -78,23 +78,32 @@
     <!-- 根据开单记录ID查询收费开单明细 -->
     <select id="selectChargeOrderDetailList"
             resultType="com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO">
-        select
-        od.id as orderDetailId,
-        od.`type`,
-        od.billing_item_id as billingItemId,
-        od.price,
-        od.quantity,
-        od.receivable_amount as receivableAmount,
-        od.receivable_amount as actualAmount,
-        ifnull(odpr.received_amount, 0) as receivedAmount,
-        100 as discountRate,
-        od.tooth_bit as toothBit,
-        od.executor_id as executorId,
-        od.source_type as sourceType,
-        od.remarks
-        from order_detail od
-        left join order_detail_pay_record odpr on od.id = odpr.order_detail_id
-        where od.order_record_id = #{orderRecordId}
+        SELECT
+            od.id AS orderDetailId,
+            od.`type`,
+            od.billing_item_id AS billingItemId,
+            od.price,
+            od.quantity,
+            od.receivable_amount AS receivableAmount,
+            od.receivable_amount AS actualAmount,
+            ifnull( odpr.received_amount, 0 ) AS receivedAmount,
+            100 AS discountRate,
+            od.tooth_bit AS toothBit,
+            od.executor_id AS executorId,
+            od.source_type AS sourceType,
+            od.remarks
+        FROM
+            order_detail od
+            LEFT JOIN (
+                SELECT
+                odpr.order_detail_id, 
+                odpr.received_amount
+                FROM order_detail_pay_record odpr
+                WHERE
+                odpr.order_record_id = #{orderRecordId}
+            ) odpr ON od.id = odpr.order_detail_id
+        WHERE
+         od.order_record_id = #{orderRecordId}
     </select>
 
     <!-- 打印账单信息 -->
