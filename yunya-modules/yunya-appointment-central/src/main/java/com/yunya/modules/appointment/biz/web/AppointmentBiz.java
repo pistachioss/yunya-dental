@@ -666,7 +666,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return List<AppointmentDimensionVo>
      */
     public List<AppointmentDimensionVo> findAppointmentPatientDimensionByExample(PatientDimensionByDayQuery query) throws InterruptedException {
-
         List<AppointmentDimensionVo> appointmentDimensionVos;
         // 根据门诊ID获取该门诊所有可预约医生的ID
         List<Integer> enableDentistIds = this.enableAppointDentistIds(query.getOrgId());
@@ -779,7 +778,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 return dimensionVoList;
             }));
 
-/*
             // 组合预约医生和患者信息（患者维度）
             List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(userWorkVO,
                     appointmentDimensionCommInfos,treatmentRecordListByAppointIds,patientTotalInfos);
@@ -797,38 +795,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     }
                 });
             }
-            */
         }
-
-        try {
-            latch.await();
-            CountDownLatch latch1 = new CountDownLatch(appointmentDimensionFutureList.size());
-            for (Future<List<AppointmentDimensionVo>> listFuture : appointmentDimensionFutureList) {
-                List<AppointmentDimensionVo> appointmentDimensionVos = listFuture.get();
-                if (StringHelper.isNotEmpty(appointmentDimensionVos)) {
-                    poolExecutor.execute(()->{
-                        appointmentDimensionVos.forEach(entity->{
-                            Integer dentistId = entity.getDentistId();
-                            List<AppointmentDimensionVo> appointmentAssistants = entity.getAppointmentAssistants();
-                            List<AppointmentPatientCardVo> appointmentPatientCardVos = entity.getAppointmentPatientCardVos();
-                            // 只有在当天有预约或者有排班才将预约信息添加到预约信息列表
-                            if (!(StringHelper.isEmpty(appointmentAssistants) &&
-                                    StringHelper.isEmpty(appointmentPatientCardVos) &&
-                                    unScheduleIds.contains(dentistId))) {
-                                appointmentDimensionVoList.add(entity);
-                            }
-                        });
-                    });
-
-                }
-                latch1.countDown();
-            }
-            latch1.await();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-
-
         return appointmentDimensionVoList;
     }
 
@@ -876,7 +843,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         String ORDER_BY_ASC = "asc";
         // 降序
         String ORDER_BY_DESC = "desc";
-        if (!StringHelper.isEmpty(appointmentDimensionVoList)) {
+        if (StringHelper.isNotEmpty(appointmentDimensionVoList)) {
             if (ORDER_PATIENTNUM.equals(field) && ORDER_BY_ASC.equals(orderBy)) {
                 return appointmentDimensionVoList
                         .stream()
@@ -889,7 +856,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                         .stream()
                         .sorted(Comparator.comparing(AppointmentDimensionVo::getPatientNum,
                                 Comparator.nullsFirst(Integer::compareTo)).reversed()).collect(Collectors.toList());
-
             } else if (ORDER_DATE.equals(field) && ORDER_BY_ASC.equals(orderBy)) {
                 // 按日期升序排列
                 return appointmentDimensionVoList

@@ -2,6 +2,7 @@ package com.yunya.modules.appointment.util.pageUtil;
 import com.yunya.feign.appointment.vo.AppointmentDimensionVo;
 import com.yunya.modules.appointment.util.pageUtil.model.AssistantPageModel;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
  *         其中 page 为想要的分页页码，默认为1。
  * @param <T> 传入的总列表中元素的类型
  */
+@Slf4j
 public class PageUtil<T> {
 
     private Page page = null;
@@ -184,6 +186,9 @@ public class PageUtil<T> {
             } else {
                 end = start + page.getPageCount();
             }
+            log.info("========【预约列表分页】=======");
+            log.info("==>start:{}",start);
+            log.info("==>end:{}",end);
             // 截取分页范围
             List<AppointmentDimensionVo> appointmentDimensionVos = obj.subList(start, end);
             // 设置分页列表
