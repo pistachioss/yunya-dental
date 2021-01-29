@@ -733,6 +733,9 @@ public class TollBiz {
     PatientOrderBenefitVo benefitVo = choiceBenefit.getData();
     if (null != benefitVo) {
       privilegeAmount = benefitVo.getBenefitTotalAmount();
+      if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
+        throw new ClientServiceException("收费失败，优惠金额小于0，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
+      }
     }
     return privilegeAmount;
   }
@@ -753,6 +756,9 @@ public class TollBiz {
         BigDecimal receivableAmount = orderDetail.getReceivableAmount();
         BigDecimal actualAmount = detailModel.getActualAmount();
         privilegeAmount = privilegeAmount.add(receivableAmount.subtract(actualAmount));
+        if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
+          throw new ClientServiceException("收费失败，优惠金额小于0，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
+        }
       }
     }
     return privilegeAmount;
