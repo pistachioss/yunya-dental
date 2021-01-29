@@ -69,14 +69,20 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      */
     public List<AppointmentSplitVo> findAppointmentSplitByExample(AppointmentSplitQuery query){
         List<AppointmentSplitVo> splitVos = mapper.findAppointmentSplitByExample(query);
-        if (!StringHelper.isEmpty(splitVos)) {
-            splitVos.forEach(appointmentSplitVo -> {
-                SysEmployee sysEmployee = this.remoteSystemServiceFeign.findSysEmployeeById(appointmentSplitVo.getAssistantId());
-                if (null != sysEmployee) {
-                    String name = sysEmployee.getName();
-                    appointmentSplitVo.setAssistantName(name);
-                }
-            });
+        if (StringHelper.isNotEmpty(splitVos)) {
+            List<Integer> assistantIds = splitVos.stream().map(AppointmentSplitVo::getAssistantId).collect(Collectors.toList());
+            List<SysUserInfoDetail> assistantInfoList = this.remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(assistantIds);
+            if (StringHelper.isNotEmpty(assistantInfoList)) {
+                splitVos.forEach(appointmentSplitVo -> {
+                    Integer assistantId = appointmentSplitVo.getAssistantId();
+                    boolean b = assistantInfoList.stream().anyMatch(sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(assistantId));
+                    if (b) {
+                        SysUserInfoDetail assistantInfo = assistantInfoList.stream().filter(entity -> entity.getUserId().equals(assistantId)).findAny().get();
+                        String name = assistantInfo.getName();
+                        appointmentSplitVo.setAssistantName(name);
+                    }
+                });
+            }
         }
         return splitVos;
     }

@@ -193,7 +193,7 @@ public class AppointmentController {
   @ApiOperation(value = "根据条件查询患者维度预约可视图(按医生id、时间段查询)")
   @PostMapping("/find/patient/dimension")
   public ResponseResult<Page<AppointmentDimensionVo>> findAppointmentPatientDimensionByDate(
-      @RequestBody @Validated PatientDimensionByDayQuery query) throws InterruptedException, ExecutionException {
+      @RequestBody @Validated PatientDimensionByDayQuery query) {
     List<AppointmentDimensionVo> appointmentDimensionVos =
         appointmentBiz.findAppointmentPatientDimensionByExample(query);
     // 分页

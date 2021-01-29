@@ -665,7 +665,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param query 查询条件
      * @return List<AppointmentDimensionVo>
      */
-    public List<AppointmentDimensionVo> findAppointmentPatientDimensionByExample(PatientDimensionByDayQuery query) throws InterruptedException {
+    public List<AppointmentDimensionVo> findAppointmentPatientDimensionByExample(PatientDimensionByDayQuery query) {
         List<AppointmentDimensionVo> appointmentDimensionVos;
         // 根据门诊ID获取该门诊所有可预约医生的ID
         List<Integer> enableDentistIds = this.enableAppointDentistIds(query.getOrgId());
@@ -767,17 +767,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             patientTotalInfos = new ArrayList<>();
         }
 
-        List<Future<List<AppointmentDimensionVo>>> appointmentDimensionFutureList = new ArrayList<>();
-        CountDownLatch latch = new CountDownLatch(filterAppointIds.size());
         for (UserWorkVO userWorkVO : filterAppointIds) {
-            appointmentDimensionFutureList.add(poolExecutor.submit(()->{
-                // 组合预约医生和患者信息（患者维度）
-                List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(userWorkVO,
-                        appointmentDimensionCommInfos,treatmentRecordListByAppointIds,patientTotalInfos);
-                latch.countDown();
-                return dimensionVoList;
-            }));
-
             // 组合预约医生和患者信息（患者维度）
             List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(userWorkVO,
                     appointmentDimensionCommInfos,treatmentRecordListByAppointIds,patientTotalInfos);
