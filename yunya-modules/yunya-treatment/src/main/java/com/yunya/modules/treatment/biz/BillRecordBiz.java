@@ -175,6 +175,9 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
               BigDecimal actualAmount = orderDetail.getActualAmount();
               BigDecimal itemBenefitAmount = benefitDetailVo.getItemBenefitAmount();
               actualAmount = actualAmount.subtract(itemBenefitAmount);
+              if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
+                actualAmount = BigDecimal.valueOf(0);
+              }
               orderDetail.setActualAmount(actualAmount);
               if (receivableAmount.compareTo(new BigDecimal(0)) != 0) {
                 orderDetail.setDiscountRate(
