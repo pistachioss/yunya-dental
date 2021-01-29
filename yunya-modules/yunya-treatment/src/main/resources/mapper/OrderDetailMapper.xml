@@ -95,12 +95,12 @@
         FROM
             order_detail od
             LEFT JOIN (
-                SELECT
-                odpr.order_detail_id, 
-                odpr.received_amount
-                FROM order_detail_pay_record odpr
-                WHERE
-                odpr.order_record_id = #{orderRecordId}
+            SELECT
+            odpr.order_detail_id,
+            odpr.received_amount
+            FROM order_detail_pay_record odpr
+            WHERE
+            odpr.order_record_id = #{orderRecordId}
             ) odpr ON od.id = odpr.order_detail_id
         WHERE
          od.order_record_id = #{orderRecordId}
