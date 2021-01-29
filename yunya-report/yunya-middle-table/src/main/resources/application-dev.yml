@@ -1,6 +1,6 @@
 ## 数据源连接
 myjdbc:
-    host: rm-bp18uejcrk63u04c9so.mysql.rds.aliyuncs.com
+    host: rm-bp18uejcrk63u04c9.mysql.rds.aliyuncs.com
     port: 3306
     username: sa
     password: Admin001!
