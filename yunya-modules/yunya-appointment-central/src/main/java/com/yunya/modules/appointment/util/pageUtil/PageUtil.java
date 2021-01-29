@@ -183,11 +183,7 @@ public class PageUtil<T> {
             int start = (page.getPageNum() - 1) * page.getPageCount();
             // 分页结束位置
             int end = 0;
-            if (start + page.getPageCount() >= total) {
-                end = total;
-            } else {
-                end = start + page.getPageCount();
-            }
+            end = Math.min(start + page.getPageCount(), total);
             // 检查分页参数是否正确，如果在下一页的时候重新设置了页面可显示的行数，则
             log.info("========【预约列表分页】=======");
             log.info("==>start:{}",start);
