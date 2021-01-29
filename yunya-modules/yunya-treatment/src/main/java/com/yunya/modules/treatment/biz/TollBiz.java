@@ -530,7 +530,13 @@ public class TollBiz {
             Integer orderDetailId = vo.getOrderDetailId();
             if (detailId.equals(orderDetailId)) {
               privilegeAmount = vo.getItemBenefitAmount();
+              if (privilegeAmount.compareTo(actualAmount) > 0) {
+                privilegeAmount = actualAmount;
+              }
               actualAmount = receivableAmount.subtract(privilegeAmount);
+              if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
+                actualAmount = BigDecimal.ZERO;
+              }
               // TODO: 2020/12/31 从vo中获取补入时长
               //              couponWorkload = vo.
             }
@@ -636,7 +642,13 @@ public class TollBiz {
           Integer orderDetailId = discountDetailModel.getOrderDetailId();
           if (detailId.equals(orderDetailId)) {
             actualAmount = discountDetailModel.getActualAmount();
+            if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
+              throw new ClientServiceException("实收金额不能小于0！", PARAMETERS_IS_ILLEGAL);
+            }
             privilegeAmount = receivableAmount.subtract(actualAmount);
+            if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
+              throw new ClientServiceException("授权折扣的实收金额不能大于原价！", PARAMETERS_IS_ILLEGAL);
+            }
           }
         }
         detailPayRecord.setPrivilegeAmount(privilegeAmount);
@@ -721,6 +733,9 @@ public class TollBiz {
     PatientOrderBenefitVo benefitVo = choiceBenefit.getData();
     if (null != benefitVo) {
       privilegeAmount = benefitVo.getBenefitTotalAmount();
+      if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
+        throw new ClientServiceException("收费失败，优惠金额小于0，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
+      }
     }
     return privilegeAmount;
   }
@@ -741,6 +756,9 @@ public class TollBiz {
         BigDecimal receivableAmount = orderDetail.getReceivableAmount();
         BigDecimal actualAmount = detailModel.getActualAmount();
         privilegeAmount = privilegeAmount.add(receivableAmount.subtract(actualAmount));
+        if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
+          throw new ClientServiceException("收费失败，优惠金额小于0，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
+        }
       }
     }
     return privilegeAmount;
@@ -851,7 +869,7 @@ public class TollBiz {
               "==> [params]:discountType={},generalDiscountModel={},accreditDiscountModel{}",
               discountType,
               generalDiscountModel,
-                  null);
+              null);
           log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
           throw new ClientServiceException("授权折扣异常", PARAMETERS_IS_ILLEGAL);
         }
@@ -1236,11 +1254,11 @@ public class TollBiz {
       // 保存收费记录
       billRecordId = billRecordResult.getId();
       orderRecordId = billRecordResult.getOrderRecordId();
-      // 更新订单明细收费记录
       if (usePrivilege) {
         // 保存优惠明细
         savePrivilegeDetail(
             discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
+        // 更新订单明细收费记录
         updateOrderDetailPayRecordWithPrivilege(orderRecordId, totalCharge);
       } else {
         updateOrderDetailPayRecordUnPrivilege(orderRecordId, totalCharge);
@@ -1473,6 +1491,10 @@ public class TollBiz {
         if (detail.getOrderDetailId().equals(orderDetailId)) {
           privilegeAmount = vo.getItemBenefitAmount();
           actualAmount = receivableAmount.subtract(privilegeAmount);
+          if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
+            actualAmount = BigDecimal.ZERO;
+            privilegeAmount = receivableAmount;
+          }
           // TODO 补入工作量
           detail.setCouponWorkload(BigDecimal.valueOf(0));
         }
