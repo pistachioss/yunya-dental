@@ -139,8 +139,7 @@
         SELECT
         ord.treatment_record_id,
         ord.id,
-        ord.total_amount,
-        ord.patient_id
+        ord.total_amount
         FROM
         order_record ord
         WHERE
@@ -151,8 +150,7 @@
         br.treatment_record_id,
         br.id,
         br.actual_receivable_amount,
-        br.debt_amount,
-        br.patient_id
+        br.debt_amount
         FROM
         bill_record br
         WHERE
@@ -161,8 +159,6 @@
         <where>
             <if test="queryForm.patientId != null">
                 and tr.patient_id = #{queryForm.patientId}
-                and ord.patient_id = #{queryForm.patientId}
-                and br.patient_id = #{queryForm.patientId}
             </if>
             <if test="queryForm.startDate != null and queryForm.startDate!= ''">
                 and DATE_FORMAT(tr.treat_start_time,'%Y-%m-%d') &gt;= #{queryForm.startDate}
