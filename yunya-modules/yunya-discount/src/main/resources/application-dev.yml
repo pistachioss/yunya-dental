@@ -1,6 +1,6 @@
 spring:
     datasource:
-        host: rm-bp18uejcrk63u04c9so.mysql.rds.aliyuncs.com
+        host: rm-bp18uejcrk63u04c9.mysql.rds.aliyuncs.com
         port: 3306
         username: sa
         password: Admin001!
@@ -12,6 +12,8 @@ spring:
             config:
                 server-addr: 120.26.251.139:8848
     redis:
+
+
         database: 2
         host: 192.168.100.79
         port: 6379
