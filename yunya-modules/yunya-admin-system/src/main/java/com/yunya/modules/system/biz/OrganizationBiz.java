@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseOrganization;
+import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_TYPE;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ORG_LIST;
 
@@ -65,8 +66,6 @@ public class OrganizationBiz {
   @Autowired private RemoteSmsServiceFeign remoteSmsServiceFeign;
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
-  /** 医疗机构类型 */
-  private final Byte MEDICAL_TYPE = BusinessConstants.MEDICAL_TYPE;
 
   /**
    * 根据ID获取组织信息
