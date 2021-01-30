@@ -71,6 +71,7 @@ import org.springframework.util.Assert;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -2549,7 +2550,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     throw new ClientServiceException("时间格式转化异常！",OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
                 }
                 build.setGender(patientInfo.getGender());
-                build.setMedicalNumber(patientInfo.getMedicalNumber());
+                build.setMedicalNumber(StringHelper.isEmpty(patientInfo.getMedicalNumber()) ? "--" : patientInfo.getMedicalNumber());
                 build.setMobile(patientInfo.getMobile());
                 build.setPatientId(patientInfo.getId());
                 build.setPatientName(patientInfo.getName());
@@ -2572,7 +2573,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 boolean b = debtAmountModels.stream().anyMatch(entity -> entity.getPatientId().equals(patientId));
                 if (b) {
                     DebtAmountModel debtAmountModel = debtAmountModels.stream().filter(entity -> entity.getPatientId().equals(patientId)).findAny().get();
-                    build.setArrears(debtAmountModel.getDebtAmount());
+                    build.setArrears(debtAmountModel.getDebtAmount() == null ? new BigDecimal(0) : debtAmountModel.getDebtAmount());
                 }
             }
         }
