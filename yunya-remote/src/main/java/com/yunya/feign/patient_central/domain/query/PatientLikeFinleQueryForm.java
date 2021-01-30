@@ -1,8 +1,10 @@
 package com.yunya.feign.patient_central.domain.query;
 
+import com.yunya.framework.common.model.PageQuery;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
@@ -19,7 +21,8 @@ import java.io.Serializable;
 @Data
 @ToString
 @ApiModel("患者模糊查询模板")
-public class PatientLikeFinleQueryForm implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class PatientLikeFinleQueryForm extends PageQuery implements Serializable {
 
     /**
      * 患者查询条件合并字段

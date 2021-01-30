@@ -207,8 +207,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientPrepaymentsInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       patientPrepaymentsInfo.setPatientId(patientBaseInfo.getId());
       // 预付款卡号生成规则 开通Y
-      patientPrepaymentsInfo.setPrepaymentNumber(
-          this.patientMemberInfoBiz.generateCardNumber("Y"));
+      patientPrepaymentsInfo.setPrepaymentNumber(this.patientMemberInfoBiz.generateCardNumber("Y"));
       patientPrepaymentsInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientPrepaymentsInfo.setCrtName(BaseContextHandler.getName());
       this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
@@ -418,7 +417,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param form 患者模糊查询模板
    * @return List<PatientBaseInfoVo>
    */
-  public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
+  public PageInfo<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
+    if (form.getWhetherPage()) {
+      PageHelper.startPage(form.getPageNum(), form.getPageSize());
+    }
     List<PatientBaseInfoVo> patients = patientBaseInfoMapper.findPatientByNameAndMobile(form);
     // 调用就诊服务查询患者末次就诊记录
     if (StringHelper.isNotEmpty(patients)) {
@@ -429,7 +431,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patient.setLastVisit(treatmentRecord.getDentistName());
       }
     }
-    return patients;
+    return new PageInfo<>(patients);
   }
 
   /**
@@ -555,25 +557,35 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (StringHelper.isNotEmpty(ids)) {
       List<PatientTotalInfoVo> patientTotalInfoVos = mapper.selectPatientDataByIds(ids);
       if (StringHelper.isNotEmpty(patientTotalInfoVos)) {
-        List<Integer> patientKinds = patientTotalInfoVos.stream().map(PatientTotalInfoVo::getPatientKind).collect(Collectors.toList());
+        List<Integer> patientKinds =
+            patientTotalInfoVos.stream()
+                .map(PatientTotalInfoVo::getPatientKind)
+                .collect(Collectors.toList());
         if (StringHelper.isNotEmpty(patientKinds)) {
-          List<DepartmentRoom> departmentRoomInfoList = this.remoteSystemServiceFeign.findDepartmentRoomByIds(patientKinds);
+          List<DepartmentRoom> departmentRoomInfoList =
+              this.remoteSystemServiceFeign.findDepartmentRoomByIds(patientKinds);
           patientTotalInfoVos.forEach(
-                  patientTotalInfoVo -> {
-                    Integer patientKind = patientTotalInfoVo.getPatientKind();
-                    if (patientKind != null) {
-                      boolean b = departmentRoomInfoList.stream().anyMatch(departmentRoom -> departmentRoom.getId().equals(patientKind));
-                      if (b) {
-                        DepartmentRoom departmentRoom = departmentRoomInfoList.stream().filter(entity -> entity.getId().equals(patientKind)).findAny().get();
-                        String name = departmentRoom.getName();
-                        if (StringHelper.isNotBlank(name)) {
-                          patientTotalInfoVo.setPatientKindName(name);
-                        }
-                      }
+              patientTotalInfoVo -> {
+                Integer patientKind = patientTotalInfoVo.getPatientKind();
+                if (patientKind != null) {
+                  boolean b =
+                      departmentRoomInfoList.stream()
+                          .anyMatch(departmentRoom -> departmentRoom.getId().equals(patientKind));
+                  if (b) {
+                    DepartmentRoom departmentRoom =
+                        departmentRoomInfoList.stream()
+                            .filter(entity -> entity.getId().equals(patientKind))
+                            .findAny()
+                            .get();
+                    String name = departmentRoom.getName();
+                    if (StringHelper.isNotBlank(name)) {
+                      patientTotalInfoVo.setPatientKindName(name);
                     }
-                    // 设置患者扩展信息
-                    this.setPatientExtInfo(patientTotalInfoVo.getId(), patientTotalInfoVo);
-                  });
+                  }
+                }
+                // 设置患者扩展信息
+                this.setPatientExtInfo(patientTotalInfoVo.getId(), patientTotalInfoVo);
+              });
         }
       }
       return patientTotalInfoVos;

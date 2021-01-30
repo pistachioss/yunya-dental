@@ -67,7 +67,7 @@ public class PatientServiceRest {
     @ApiOperation("根据姓名/手机号/姓名拼音模糊查询患者")
     @RequestMapping (value = "/findPatientByNameAndMobile",method = RequestMethod.POST)
     public List<PatientBaseInfoVo> findPatientByNameAndMobile(@RequestBody PatientLikeFinleQueryForm patientBaseInfoQueryForm){
-        return patientBaseInfoBiz.findPatientByNameAndMobile(patientBaseInfoQueryForm);
+        return patientBaseInfoBiz.findPatientByNameAndMobile(patientBaseInfoQueryForm).getList();
     }
 
     @ApiOperation("根据患者id查询患者信息")
