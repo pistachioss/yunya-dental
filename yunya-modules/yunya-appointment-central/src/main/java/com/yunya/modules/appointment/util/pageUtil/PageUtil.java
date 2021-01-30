@@ -96,29 +96,31 @@ public class PageUtil<T> {
             end = start + page.getPageCount();
         }
 
-        // 先对助手分页;---助手分页的时候，每页显示的最大条数 = pageCount - 1(大医生)
-        List<AssistantPageModel> assistantPageModels = assistantVoData.subList(start, end);
-        Map<Integer, List<AssistantPageModel>> collect = assistantPageModels.stream().collect(Collectors.groupingBy(AssistantPageModel::getDistentIndex));
+        if (start < end) {
+            // 先对助手分页;---助手分页的时候，每页显示的最大条数 = pageCount - 1(大医生)
+            List<AssistantPageModel> assistantPageModels = assistantVoData.subList(start, end);
+            Map<Integer, List<AssistantPageModel>> collect = assistantPageModels.stream().collect(Collectors.groupingBy(AssistantPageModel::getDistentIndex));
 
-        for (Map.Entry<Integer,List<AssistantPageModel>> entry : collect.entrySet()) {
-            if (null != obj && !obj.isEmpty()) {
-                AppointmentDimensionVo appointmentDimensionVo = obj.get(entry.getKey());
-                // 获取助手列表
-                List<AssistantPageModel> value = entry.getValue();
-                List<AppointmentDimensionVo> assistantList = new ArrayList<>();
-                // 将AssistantPageModel====>AppointmentDimensionVo
-                for (AssistantPageModel assistantPageModel : value) {
-                    AppointmentDimensionVo assistantVo = assistantPageModel.getAssistantVo();
-                    if (null != assistantVo) {
-                        assistantList.add(assistantVo);
+            for (Map.Entry<Integer, List<AssistantPageModel>> entry : collect.entrySet()) {
+                if (null != obj && !obj.isEmpty()) {
+                    AppointmentDimensionVo appointmentDimensionVo = obj.get(entry.getKey());
+                    // 获取助手列表
+                    List<AssistantPageModel> value = entry.getValue();
+                    List<AppointmentDimensionVo> assistantList = new ArrayList<>();
+                    // 将AssistantPageModel====>AppointmentDimensionVo
+                    for (AssistantPageModel assistantPageModel : value) {
+                        AppointmentDimensionVo assistantVo = assistantPageModel.getAssistantVo();
+                        if (null != assistantVo) {
+                            assistantList.add(assistantVo);
+                        }
                     }
+                    // 对助手的预约患者数排序(降序)
+                    List<AppointmentDimensionVo> orderList = assistantList.stream().sorted(
+                            Comparator.comparing(AppointmentDimensionVo::getPatientNum).reversed()).collect(Collectors.toList());
+                    appointmentDimensionVo.setAppointmentAssistants(orderList);
+                    // 将助手加入分解结果列表中
+                    result.add(appointmentDimensionVo);
                 }
-                // 对助手的预约患者数排序(降序)
-                List<AppointmentDimensionVo> orderList = assistantList.stream().sorted(
-                        Comparator.comparing(AppointmentDimensionVo::getPatientNum).reversed()).collect(Collectors.toList());
-                appointmentDimensionVo.setAppointmentAssistants(orderList);
-                // 将助手加入分解结果列表中
-                result.add(appointmentDimensionVo);
             }
         }
         // 将助手加入到分页对象中
