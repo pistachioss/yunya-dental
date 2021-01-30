@@ -6,8 +6,6 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
-import com.yunya.framework.common.constant.BusinessConstants;
-import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -34,8 +32,10 @@ import java.util.Date;
 import java.util.List;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseOrganization;
+import static com.yunya.framework.common.constant.BusinessConstants.DEFAULT_PARENT_ID;
 import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_TYPE;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ORG_ID;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ORG_LIST;
 
 /**
@@ -74,7 +74,7 @@ public class OrganizationBiz {
    * @return
    */
   public OrganizationInfo findOrgInfoById(Integer id) {
-    String orgKey = RedisConstants.REDIS_KEY_ORG_ID + id;
+    String orgKey = REDIS_KEY_ORG_ID + id;
     OrganizationInfo organizationInfo = redisUtils.get(orgKey, OrganizationInfo.class);
     if (null == organizationInfo) {
       organizationInfo = companyMapper.selectOrgInfoById(id);
@@ -112,7 +112,7 @@ public class OrganizationBiz {
         trees.add(node);
       }
     }
-    return TreeUtil.buildByRecursive(trees, BusinessConstants.DEFAULT_PARENT_ID);
+    return TreeUtil.buildByRecursive(trees, DEFAULT_PARENT_ID);
   }
 
   /**
@@ -255,7 +255,7 @@ public class OrganizationBiz {
       clinicExtInfo.setUpdName(BaseContextHandler.getName());
       clinicExtInfo.setUpdTime(new Date(System.currentTimeMillis()));
       clinicExtInfoBiz.updateSelectiveById(clinicExtInfo);
-      redisUtils.delete(RedisConstants.REDIS_KEY_ORG_ID + id);
+      redisUtils.delete(REDIS_KEY_ORG_ID + id);
     }
   }
 
@@ -278,6 +278,7 @@ public class OrganizationBiz {
             "修改组织'" + companyName + "'类型失败，该组织机构已关联其他数据", OBJECT_EDIT_FAIL);
       }
       clinicExtInfoBiz.delete(clinicExtInfo);
+      redisUtils.delete(REDIS_KEY_ORG_ID + id);
     }
   }
 
@@ -350,35 +351,35 @@ public class OrganizationBiz {
   /**
    * 根据ID删除组织信息
    *
-   * @param organizationId 组织ID
+   * @param orgId 组织ID
    */
-  public void deleteOrganization(Integer organizationId) {
+  public void deleteOrganization(Integer orgId) {
     Company company = new Company();
-    company.setParentId(organizationId);
+    company.setParentId(orgId);
     int companyCount = companyMapper.selectCount(company);
     SysUserPost sysUserPost = new SysUserPost();
-    sysUserPost.setCompanyId(organizationId);
+    sysUserPost.setCompanyId(orgId);
     int userPostCount = sysUserPostMapper.selectCount(sysUserPost);
     ClinicAccountItem clinicAccountItem = new ClinicAccountItem();
-    clinicAccountItem.setCompanyId(organizationId);
+    clinicAccountItem.setCompanyId(orgId);
     int clinicAccountItemCount = clinicAccountItemMapper.selectCount(clinicAccountItem);
     ClinicDepartmentRoom clinicDeptRoom = new ClinicDepartmentRoom();
-    clinicDeptRoom.setCompanyId(organizationId);
+    clinicDeptRoom.setCompanyId(orgId);
     int clinicDeptRoomCount = clinicDepartmentRoomMapper.selectCount(clinicDeptRoom);
     if (companyCount > 0
         || userPostCount > 0
         || clinicAccountItemCount > 0
         || clinicDeptRoomCount > 0) {
-      throw new ClientServiceException(
-          "删除ID为'" + organizationId + "'的组织失败，该组织已被使用", DELETE_NOT_ALLOW);
+      throw new ClientServiceException("删除ID为'" + orgId + "'的组织失败，该组织已被使用", DELETE_NOT_ALLOW);
     }
-    int i = companyMapper.deleteByPrimaryKey(organizationId);
+    int i = companyMapper.deleteByPrimaryKey(orgId);
     redisUtils.delete(REDIS_KEY_ORG_LIST);
     ClinicExtInfo extInfo = new ClinicExtInfo();
-    extInfo.setCompanyId(organizationId);
+    extInfo.setCompanyId(orgId);
     clinicExtInfoBiz.delete(extInfo);
+    redisUtils.delete(REDIS_KEY_ORG_ID + orgId);
     if (i > 0) {
-      rabbitMqServiceFeign.sendMessage(organizationId, 2, BaseOrganization);
+      rabbitMqServiceFeign.sendMessage(orgId, 2, BaseOrganization);
     }
   }
 
@@ -414,6 +415,7 @@ public class OrganizationBiz {
     company.setUpdTime(new Date());
     companyMapper.updateByPrimaryKeySelective(company);
     redisUtils.delete(REDIS_KEY_ORG_LIST);
+    redisUtils.delete(REDIS_KEY_ORG_ID + companyId);
   }
 
   /**
