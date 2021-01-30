@@ -40,4 +40,6 @@ public class EmployeeInfoQueryForm implements Serializable {
   /** 岗位ID列表 */
   @ApiModelProperty("岗位ID列表")
   private Integer[] postIds;
+  @ApiModelProperty("在职状态（0-使用；1-转正；2-离职）")
+  private Byte[] workStatus;
 }

@@ -116,7 +116,14 @@
         </where>
         group by sup.user_id
         ) sup
-        where sup.workStatus != 2
+        <where>
+            <if test="queryForm.workStatus != null and queryForm.workStatus.length > 0">
+                and sup.workStatus in
+                <foreach collection="queryForm.workStatus" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
     <!-- 根据组织ID、用户ID查询岗位列表(员工管理-可登录组织列表) -->
     <select id="selectUserPostListByUserId" resultType="com.yunya.modules.system.vo.SysUserPostOrgVO">
