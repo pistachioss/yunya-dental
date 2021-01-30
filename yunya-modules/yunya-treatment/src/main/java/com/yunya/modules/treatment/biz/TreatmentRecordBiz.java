@@ -225,7 +225,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     TreatmentRecordVO resultData = mapper.selectTreatmentInfoById(id);
     if (null != resultData) {
       Integer orgId = resultData.getOrgId();
-      // todo 从缓存中查询组织
+      // 从缓存中查询组织
       OrganizationInfo organizationInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
       if (null != organizationInfo) {
         resultData.setOrgName(organizationInfo.getAbbreviation());
@@ -1208,7 +1208,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
     if (StringHelper.isNotEmpty(treatmentIds)) {
       List<TreatmentRecordExtendVO> treatmentRecordExtendVOS =
-          mapper.selectByIds(treatmentIds.stream().collect(Collectors.toSet()));
+          mapper.selectByIds(new HashSet<>(treatmentIds));
       if (StringHelper.isNotEmpty(treatmentRecordExtendVOS)) {
         List<Integer> regAssistantIds = new ArrayList<>();
         treatmentRecordExtendVOS.forEach(
