@@ -16,28 +16,24 @@ public class BaseAppointmentModify {
     /**
      * 诊所ID
      */
-    @Id
     @Column(name = "org_id")
     private Integer orgId;
 
     /**
      * 预约ID
      */
-    @Id
     @Column(name = "appointment_id")
     private Integer appointmentId;
 
     /**
      * 被修改的预约日期
      */
-    @Id
     @Column(name = "appoint_date")
     private Date appointDate;
 
     /**
      * 被修改的预约医生
      */
-    @Id
     @Column(name = "dentist_id")
     private Integer dentistId;
 
@@ -46,6 +42,12 @@ public class BaseAppointmentModify {
      */
     @Column(name = "crt_time")
     private Date crtTime;
+
+    /**
+     * 创建人ID
+     */
+    @Column(name = "crt_id")
+    private Integer crtId;
 
     /**
      * 获取主键
@@ -153,5 +155,23 @@ public class BaseAppointmentModify {
      */
     public void setCrtTime(Date crtTime) {
         this.crtTime = crtTime;
+    }
+
+    /**
+     * 获取创建人ID
+     *
+     * @return crt_id - 创建人ID
+     */
+    public Integer getCrtId() {
+        return crtId;
+    }
+
+    /**
+     * 设置创建人ID
+     *
+     * @param crtId 创建人ID
+     */
+    public void setCrtId(Integer crtId) {
+        this.crtId = crtId;
     }
 }

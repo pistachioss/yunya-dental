@@ -95,6 +95,7 @@ public class BaseAppointmentModifyBiz extends BaseBiz<BaseAppointmentModifyMappe
     baseAppointmentModify.setCrtTime(appointmentModifyRecord.getCrtTime());
     baseAppointmentModify.setDentistId(appointmentModifyRecord.getDentistId());
     baseAppointmentModify.setOrgId(appointmentModifyRecord.getOrgId());
+    baseAppointmentModify.setCrtId(appointmentModifyRecord.getCrtId());
     return baseAppointmentModify;
   }
 
@@ -113,9 +114,7 @@ public class BaseAppointmentModifyBiz extends BaseBiz<BaseAppointmentModifyMappe
       result.forEach(
           entity -> {
             Integer id = entity.getId();
-            BaseAppointmentModify modify = new BaseAppointmentModify();
-            modify.setId(id);
-            mapper.delete(modify);
+            mapper.deleteByPrimaryKey(id);
             BaseAppointmentModify baseAppointmentModify = setBaseAppointmentModifyValue(id, entity);
             mapper.insertSelective(baseAppointmentModify);
           });
