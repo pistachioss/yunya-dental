@@ -417,7 +417,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param form 患者模糊查询模板
    * @return List<PatientBaseInfoVo>
    */
-  public PageInfo<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
+  public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
@@ -431,7 +431,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patient.setLastVisit(treatmentRecord.getDentistName());
       }
     }
-    return new PageInfo<>(patients);
+    return new PageInfo<>(patients).getList();
   }
 
   /**
