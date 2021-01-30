@@ -6,7 +6,6 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
-import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -33,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseOrganization;
+import static com.yunya.framework.common.constant.BusinessConstants.DEFAULT_PARENT_ID;
 import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_TYPE;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ORG_ID;
@@ -112,7 +112,7 @@ public class OrganizationBiz {
         trees.add(node);
       }
     }
-    return TreeUtil.buildByRecursive(trees, BusinessConstants.DEFAULT_PARENT_ID);
+    return TreeUtil.buildByRecursive(trees, DEFAULT_PARENT_ID);
   }
 
   /**
