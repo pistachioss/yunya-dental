@@ -179,7 +179,7 @@
                 </foreach>
             </if>
         </where>
-        ORDER BY treatmentRecordId DESC
+        ORDER BY tr.treat_start_time DESC
     </select>
     <!-- 根据就诊记录ID列表查询就诊记录列表 -->
     <select id="selectByIds" resultMap="BaseResultExtendMap">
