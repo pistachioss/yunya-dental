@@ -6,6 +6,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.DictionaryType;
 import com.yunya.modules.system.domain.form.DictForm;
@@ -17,6 +18,9 @@ import com.yunya.modules.system.vo.DictionaryItemVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.Date;
 import java.util.List;
@@ -117,5 +121,18 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
    */
   public void deleteDictItem(Integer id) {
     mapper.deleteByPrimaryKey(id);
+  }
+
+  /**
+   * 根据ID查询字典明细列表
+   *
+   * @param ids 字典明细ID列表
+   * @return 字典信息列表
+   */
+  public List<DictionaryItem> findDictionaryItemByIds(@RequestBody List<Integer> ids) {
+    if (StringHelper.isNotEmpty(ids)) {
+      return mapper.findByIds(ids);
+    }
+    return null;
   }
 }

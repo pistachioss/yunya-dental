@@ -17,6 +17,11 @@
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
     <result column="english_name" property="englishName" jdbcType="VARCHAR" />
   </resultMap>
+
+    <sql id="baseColumns">
+        id,dictionary_type_id,`name`,inservice,crt_id,crt_name,crt_time,upd_id,upd_name,upd_time,english_name
+    </sql>
+
     <!-- 根据条件查询字典明细列表 -->
     <select id="selectBrandByExample" resultType="com.yunya.modules.system.vo.DictionaryItemVO">
         select
@@ -40,6 +45,21 @@
           <if test="queryForm.inservice != null">
             and di.inservice = #{queryForm.inservice}
           </if>
+        </where>
+    </select>
+
+    <!-- 根据ID查询字典明细列表 -->
+    <select id="findByIds" resultMap="BaseResultMap">
+        select
+          <include refid="baseColumns"></include>
+        from dictionary_item
+        <where>
+            <if test="ids != null and ids.size() > 0">
+                id in
+                <foreach collection="ids" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
         </where>
     </select>
 </mapper>

@@ -30,6 +30,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
+import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
@@ -42,6 +43,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 简单介绍:</br> 患者基本信息业务层
@@ -553,22 +555,26 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (StringHelper.isNotEmpty(ids)) {
       List<PatientTotalInfoVo> patientTotalInfoVos = mapper.selectPatientDataByIds(ids);
       if (StringHelper.isNotEmpty(patientTotalInfoVos)) {
-        patientTotalInfoVos.forEach(
-            patientTotalInfoVo -> {
-              Integer patientKind = patientTotalInfoVo.getPatientKind();
-              if (patientKind != null) {
-                DictionaryItem dictionaryItemById =
-                    remoteSystemServiceFeign.findDictionaryItemById(patientKind);
-                if (dictionaryItemById != null) {
-                  String name = dictionaryItemById.getName();
-                  if (StringHelper.isNotBlank(name)) {
-                    patientTotalInfoVo.setPatientKindName(name);
-                  }
-                }
-              }
-              // 设置患者扩展信息
-              this.setPatientExtInfo(patientTotalInfoVo.getId(), patientTotalInfoVo);
-            });
+        List<Integer> patientKinds = patientTotalInfoVos.stream().map(PatientTotalInfoVo::getPatientKind).collect(Collectors.toList());
+        if (StringHelper.isNotEmpty(patientKinds)) {
+          List<DepartmentRoom> departmentRoomInfoList = this.remoteSystemServiceFeign.findDepartmentRoomByIds(patientKinds);
+          patientTotalInfoVos.forEach(
+                  patientTotalInfoVo -> {
+                    Integer patientKind = patientTotalInfoVo.getPatientKind();
+                    if (patientKind != null) {
+                      boolean b = departmentRoomInfoList.stream().anyMatch(departmentRoom -> departmentRoom.getId().equals(patientKind));
+                      if (b) {
+                        DepartmentRoom departmentRoom = departmentRoomInfoList.stream().filter(entity -> entity.getId().equals(patientKind)).findAny().get();
+                        String name = departmentRoom.getName();
+                        if (StringHelper.isNotBlank(name)) {
+                          patientTotalInfoVo.setPatientKindName(name);
+                        }
+                      }
+                    }
+                    // 设置患者扩展信息
+                    this.setPatientExtInfo(patientTotalInfoVo.getId(), patientTotalInfoVo);
+                  });
+        }
       }
       return patientTotalInfoVos;
     }
