@@ -1,5 +1,7 @@
 package com.yunya.report.ultimate.controller;
 
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.vo.PatientDataVo;
 import com.yunya.feign.report.domain.vo.PatientInfoVO;
 import com.yunya.framework.common.model.ResponseResult;
@@ -31,13 +33,14 @@ public class PatientBaseInfoController {
   /**
    * 根据关键字搜索患者信息
    *
-   * @param keyword 查询条件
+   * @param query 查询条件
    * @return
    */
   @ApiOperation("根据条件搜索患者信息")
-  @GetMapping(value = "/full/search", name = "根据条件搜索患者信息")
-  public ResponseResult<List<PatientInfoVO>> patientSearch(@RequestParam String keyword) {
-    List<PatientInfoVO> patientInfo = patientBaseInfoBiz.findPatientInfoByExample(keyword);
+  @PostMapping(value = "/full/search", name = "根据条件搜索患者信息")
+  public ResponseResult<PageInfo<PatientInfoVO>> patientSearch(
+      @RequestBody PatientSearchQuery query) {
+    PageInfo<PatientInfoVO> patientInfo = patientBaseInfoBiz.findPatientInfoByExample(query);
     return ResponseUtil.success(patientInfo);
   }
 

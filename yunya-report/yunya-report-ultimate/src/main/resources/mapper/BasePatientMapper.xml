@@ -348,7 +348,7 @@
                     IFNULL( bp.`name`, '' ),
                     IFNULL( bp.medical_number, '' ),
                     IFNULL( bp.pinyin_name, '' ),
-                IFNULL( bp.mobile, '' )) LIKE concat( concat( '%', #{keyword} ), '%' )
+                IFNULL( bp.mobile, '' )) LIKE concat( concat( '%', #{query.patientKeyWord} ), '%' )
                 LIMIT 0, 10
             ) bp
             LEFT JOIN (
