@@ -6,10 +6,11 @@
       WARNING - @mbg.generated
     -->
     <id column="id" property="id" jdbcType="INTEGER" />
-    <id column="org_id" property="orgId" jdbcType="INTEGER" />
-    <id column="appointment_id" property="appointmentId" jdbcType="INTEGER" />
-    <id column="appoint_date" property="appointDate" jdbcType="DATE" />
-    <id column="dentist_id" property="dentistId" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="appointment_id" property="appointmentId" jdbcType="INTEGER" />
+    <result column="appoint_date" property="appointDate" jdbcType="DATE" />
+    <result column="dentist_id" property="dentistId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
   </resultMap>
 </mapper>
