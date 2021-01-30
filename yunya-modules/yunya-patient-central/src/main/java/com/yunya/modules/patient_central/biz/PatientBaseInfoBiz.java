@@ -431,7 +431,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patient.setLastVisit(treatmentRecord.getDentistName());
       }
     }
-    return new PageInfo<>(patients).getList();
+    return patients;
   }
 
   /**
