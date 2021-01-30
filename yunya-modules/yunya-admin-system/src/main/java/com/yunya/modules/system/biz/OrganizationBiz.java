@@ -206,7 +206,6 @@ public class OrganizationBiz {
     company.setUpdTime(new Date(System.currentTimeMillis()));
     int i = companyMapper.updateByPrimaryKeySelective(company);
     redisUtils.delete(REDIS_KEY_ORG_LIST);
-    redisUtils.delete(RedisConstants.REDIS_KEY_ORG_ID + id);
     // 更新医疗机构扩展信息,并校验医疗机构简称是否重复
     updateOrganizationExtInfo(id, resource, companyType);
     // 发送消息
