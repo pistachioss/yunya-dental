@@ -106,7 +106,7 @@
             IFNULL(pbi.medical_number,''),
             IFNULL(pbi.pinyin_name,''),
             IFNULL(pbi.mobile,''))
-            like concat(concat('%', #{form.condition}), '%') LIMIT 0,10
+            like concat(concat('%', #{form.condition}), '%')
     </select>
 
     <!-- 根据患者id集合查询患者list -->
