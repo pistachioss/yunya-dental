@@ -5,6 +5,7 @@ import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.model.AppointModifyRecordModel;
 import com.yunya.feign.appointment.domain.query.AppointModifyRecordQuery;
 import com.yunya.feign.appointment.vo.AppointModifyRecordVo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -13,11 +14,14 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentModifyRecord;
 import com.yunya.modules.appointment.mapper.AppointmentModifyRecordMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseAppointmentModify;
 
 /**
  * 预约修改记录服务
@@ -29,6 +33,9 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordMapper, AppointmentModifyRecord> {
+
+    @Autowired
+    private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
     /**
      * 新增预约修改记录
@@ -45,7 +52,11 @@ public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordM
         build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         build.setCrtName(BaseContextHandler.getName());
         build.setCrtTime(new Date(System.currentTimeMillis()));
-        return mapper.insertSelective(build);
+        int count = mapper.insertSelective(build);
+        if (count > 0) {
+            rabbitMqServiceFeign.sendMessage(build.getId(), 0, BaseAppointmentModify);
+        }
+        return count;
     }
 
     /**
@@ -67,7 +78,10 @@ public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordM
         modify.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         modify.setCrtName(BaseContextHandler.getName());
         modify.setCrtTime(new Date(System.currentTimeMillis()));
-        mapper.insertSelective(modify);
+        int count = mapper.insertSelective(modify);
+        if (count > 0) {
+            rabbitMqServiceFeign.sendMessage(appointmentForm.getId(), 0, BaseAppointmentModify);
+        }
     }
 
     /**
@@ -82,6 +96,9 @@ public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordM
             throw new ClientServiceException("记录已经存在！", OperationCodeConstants.SAME_DATA_EXIST);
         }
         int result = mapper.updateByPrimaryKeySelective(build);
+        if (result > 0) {
+            rabbitMqServiceFeign.sendMessage(appointmentModifyRecord.getId(), 1, BaseAppointmentModify);
+        }
         return result;
     }
 
@@ -114,7 +131,11 @@ public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordM
         if (recordVo == null){
             throw new ClientServiceException("要删除的数据不存在！",OperationCodeConstants.DATA_NOT_EXIST);
         }
-        return mapper.deleteByPrimaryKey(id);
+        int result = mapper.deleteByPrimaryKey(id);
+        if (result > 0) {
+            rabbitMqServiceFeign.sendMessage(id, 2, BaseAppointmentModify);
+        }
+        return result;
     }
 
 }

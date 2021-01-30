@@ -61,6 +61,8 @@ public class ReceiverMessageController {
 
   @Autowired private BaseEmployeeScheduleBiz baseEmployeeScheduleBiz;
 
+  @Autowired private BaseAppointmentModifyBiz appointmentModifyBiz;
+
   @RabbitHandler
   public void handleMiddleSingle(MessageModel messageModel, Channel channel, Message message)
       throws Exception {
@@ -129,6 +131,9 @@ public class ReceiverMessageController {
           break;
         case BaseEmployeeSchedule:
           baseEmployeeScheduleBiz.operateEmployeeSchedule(messageModel);
+          break;
+        case BaseAppointmentModify:
+          appointmentModifyBiz.operateAppointmentModify(messageModel);
           break;
         default:
           log.info("消息中没有对应的枚举类型[{}]！", messageModel.getMsgCategoryEnum());
