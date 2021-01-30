@@ -77,7 +77,7 @@ public class SysUserPostController {
    * @param queryForm 查询条件
    * @return
    */
-  @ApiOperation("根据条件查询用户信息")
+  @ApiOperation("根据条件查询用户信息(查询可登陆某组织某岗位员工列表)")
   @PostMapping(value = "/employee/list", name = "根据条件查询用户信息")
   public ResponseResult<PageInfo<EmployeeInfoVO>> findEmployeeByExample(
       @RequestBody EmployeeInfoQueryForm queryForm) {
