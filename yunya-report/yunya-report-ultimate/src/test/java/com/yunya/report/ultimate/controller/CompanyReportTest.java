@@ -205,4 +205,13 @@ public class CompanyReportTest {
         companyReportOfDataRecordController.payDetailList(131);
     System.out.println(result);
   }
+
+  @Test
+  public void find10() {
+    CouponDiscountItemsQuery query = new CouponDiscountItemsQuery();
+    query.setOrgId(35);
+//    query.setCategoryIds();
+    ResponseResult<PageInfo<CouponDiscountItemInfoVO>> result = financeController.couponDiscountItems(query);
+    System.out.println(JSONObject.toJSONString(result));
+  }
 }

@@ -499,24 +499,22 @@
         LEFT JOIN (
         SELECT
         btp.org_id,
-        btp.appoint_dentist_id,
-        SUM( btp.appoint_modify_time ) AS appointmentModifyTimes
+        btp.crt_id,
+        count(btp.crt_id) AS appointmentModifyTimes
         FROM
-        base_treatment_process btp
+        base_appointment_modify btp
         <where>
-            and btp.appoint_modify_time > 0
             <if test="query.startDate != null and query.startDate != ''">
-                and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                and DATE_FORMAT( btp.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>
             <if test="query.endDate != null and query.endDate != ''">
-                and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                and DATE_FORMAT( btp.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
             </if>
         </where>
         GROUP BY
         btp.org_id,
-        btp.registered_dentist_id,
-        btp.appoint_dentist_id
-        ) btp3 ON bup.user_id = btp3.appoint_dentist_id
+        btp.crt_id
+        ) btp3 ON bup.user_id = btp3.crt_id
         AND bup.org_id = btp3.org_id
         LEFT JOIN (
         SELECT

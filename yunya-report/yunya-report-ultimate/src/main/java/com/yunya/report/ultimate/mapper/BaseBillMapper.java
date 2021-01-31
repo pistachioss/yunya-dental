@@ -157,4 +157,12 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @return List<BillRecordOfUncheckedVO>
    */
   List<BillRecordOfUncheckedVO> selectUncheckedBillList(@Param("query") BillUnCheckedQuery query);
+
+  /**
+   * 根据条件查询产品优惠项目明细列表
+   * 
+   * @param query
+   * @return
+   */
+  List<CouponDiscountItemInfoVO> selectCouponDiscountItems(@Param("query") CouponDiscountItemsQuery query);
 }

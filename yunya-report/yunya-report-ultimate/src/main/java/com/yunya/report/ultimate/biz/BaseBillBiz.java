@@ -80,13 +80,29 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   }
 
   /**
+   * 根据条件查询产品优惠项目明细列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public PageInfo<CouponDiscountItemInfoVO> couponDiscountItems(
+          CouponDiscountItemsQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    // 查询该账单下所有的使用了产品优惠
+    List<CouponDiscountItemInfoVO> resultList = mapper.selectCouponDiscountItems(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
    * 根据条件查询账单优惠明细列表
    *
    * @param query 查询条件
    * @return
    */
   public PageInfo<BillOfDiscountDetailVO> findBillDiscountDetailList(
-      BillOfDiscountDetailQuery query) {
+          BillOfDiscountDetailQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
@@ -417,5 +433,11 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     }
     List<BillRecordOfUncheckedVO> resultList = mapper.selectUncheckedBillList(query);
     return new PageInfo<>(resultList);
+  }
+
+  public void couponDiscountItemsExport(CouponDiscountItemsQuery query, HttpServletResponse response) throws IOException {
+    List<CouponDiscountItemInfoVO> resultList = mapper.selectCouponDiscountItems(query);
+    ExcelUtil<CouponDiscountItemInfoVO> excelUtil = new ExcelUtil<>(CouponDiscountItemInfoVO.class);
+    excelUtil.exportExcel(response, resultList, "产品优惠项目明细", "产品优惠项目明细");
   }
 }
