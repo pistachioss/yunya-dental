@@ -47,7 +47,7 @@ public interface RemoteTreatmentServiceFeign {
   BaseOralTariffCategory findBaseOralTariffCategoryById(@PathVariable(value = "id") Integer id);
 
   /**
-   * 根据条件查询门诊商品分类列表
+   * 根据条件查询商品分类列表
    *
    * @param queryForm 查询条件
    * @return List<BaseOralTariffCategory>

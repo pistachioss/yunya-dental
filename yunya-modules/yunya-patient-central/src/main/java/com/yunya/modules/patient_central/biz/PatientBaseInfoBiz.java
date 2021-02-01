@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -310,6 +311,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientBaseInfoVo.setSourceName(patientOrigin.getName());
       }
     }
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    String timeStr = sdf.format(patientBaseInfo.getBirthday());
+    patientBaseInfoVo.setBirthday(timeStr);
     // 基本信息
     patientExtendInfoVo.setPatientBaseInfoVo(getTypeName(patientBaseInfoVo));
     // 扩展信息

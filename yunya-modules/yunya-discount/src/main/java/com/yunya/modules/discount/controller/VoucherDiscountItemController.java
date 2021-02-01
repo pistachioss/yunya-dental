@@ -97,6 +97,20 @@ public class VoucherDiscountItemController {
     }
 
     /**
+     * 查询代金券折扣券适用项目(优化后)
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findListAfterOptimization")
+    @ApiOperation("查询代金券折扣券适用项目(优化后)")
+    public ResponseResult findListAfterOptimization(@RequestBody @Valid VoucherDiscountItemQueryForm voucherDiscountItemQueryForm){
+        VoucherDiscountItem voucherDiscountItem = new VoucherDiscountItem();
+        BeanUtils.copyProperties(voucherDiscountItemQueryForm,voucherDiscountItem);
+        return ResponseUtil.success(voucherDiscountItemBiz.findListAfterOptimization(voucherDiscountItem));
+    }
+
+    /**
      * 新增兑换券适用项目
      *
      * @param
