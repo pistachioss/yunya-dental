@@ -27,6 +27,7 @@
             base_bill_pay bbp
             left join base_employee be on bbp.payee_user_id = user_id
         where bbp.bill_id = #{billId}
+        order by bbp.payee_date desc
     </select>
 
     <!-- 根据条件查询账单支付记录列表 -->
