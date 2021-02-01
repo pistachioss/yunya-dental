@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -53,7 +54,8 @@ public class CouponDiscountItemInfoVO implements Serializable {
     private String billNum;
 
     @ApiModelProperty("账单日期")
-    @Excel(name = "账单日期")
+    @Excel(name = "账单日期", dateFormat = "yyyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date billDate;
 
     @ApiModelProperty("患者")
