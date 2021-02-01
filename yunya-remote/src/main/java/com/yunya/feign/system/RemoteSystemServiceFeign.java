@@ -441,7 +441,7 @@ public interface RemoteSystemServiceFeign {
    * @param companyId 组织ID
    * @return MedicalOrganizationInfoVO
    */
-  @RequestMapping(value = "/api//clinicExtInfo/{companyId}", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/clinicExtInfo/{companyId}", method = RequestMethod.GET)
   MedicalOrganizationInfoVO clinicExtInfoByCompanyId(
       @PathVariable(value = "companyId") Integer companyId);
 
