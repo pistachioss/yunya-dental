@@ -65,6 +65,12 @@ public interface RemotePatientCentralServiceFeign {
   @RequestMapping(value = "/api/total/patientInfo/{id}", method = RequestMethod.GET)
   PatientTotalInfoVo findPatientTotalInfo(@PathVariable(value = "id") Integer id);
 
+  /**
+   * 根据患者id查询患者资料
+   *
+   * @param ids 患者ID列表
+   * @return List<PatientTotalInfoVo>
+   */
   @ApiOperation("根据患者id查询患者资料")
   @RequestMapping(value = "/api/total/patientInfoList", method = RequestMethod.POST)
   List<PatientTotalInfoVo> findPatientTotalInfo(@RequestBody List<Integer> ids);
