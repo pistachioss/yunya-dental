@@ -133,7 +133,7 @@ public class PatientBaseInfoController {
   @ApiOperation("根据姓名/病例编号/手机号/姓名拼音模糊查询患者")
   @PostMapping("/likePatient")
   public ResponseResult findPatientByNameAndMobile(
-      @RequestBody PatientLikeFinleQueryForm patientBaseInfoQueryForm) {
+      @RequestBody @Validated PatientLikeFinleQueryForm patientBaseInfoQueryForm) {
     return ResponseUtil.success(
         this.patientBaseInfoBiz.findPatientByNameAndMobile(patientBaseInfoQueryForm));
   }

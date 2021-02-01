@@ -30,7 +30,6 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
-import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
@@ -417,7 +416,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param form 患者模糊查询模板
    * @return List<PatientBaseInfoVo>
    */
-  public PageInfo<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
+  public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
@@ -431,7 +430,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patient.setLastVisit(treatmentRecord.getDentistName());
       }
     }
-    return new PageInfo<>(patients);
+    return patients;
   }
 
   /**
@@ -562,22 +561,22 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
                 .map(PatientTotalInfoVo::getPatientKind)
                 .collect(Collectors.toList());
         if (StringHelper.isNotEmpty(patientKinds)) {
-          List<DepartmentRoom> departmentRoomInfoList =
-              this.remoteSystemServiceFeign.findDepartmentRoomByIds(patientKinds);
+          List<DictionaryItem> dictionaryItems =
+              this.remoteSystemServiceFeign.findDictionaryItemByIds(patientKinds);
           patientTotalInfoVos.forEach(
               patientTotalInfoVo -> {
                 Integer patientKind = patientTotalInfoVo.getPatientKind();
                 if (patientKind != null) {
                   boolean b =
-                      departmentRoomInfoList.stream()
+                          dictionaryItems.stream()
                           .anyMatch(departmentRoom -> departmentRoom.getId().equals(patientKind));
                   if (b) {
-                    DepartmentRoom departmentRoom =
-                        departmentRoomInfoList.stream()
+                    DictionaryItem dictionaryItem =
+                            dictionaryItems.stream()
                             .filter(entity -> entity.getId().equals(patientKind))
                             .findAny()
                             .get();
-                    String name = departmentRoom.getName();
+                    String name = dictionaryItem.getName();
                     if (StringHelper.isNotBlank(name)) {
                       patientTotalInfoVo.setPatientKindName(name);
                     }

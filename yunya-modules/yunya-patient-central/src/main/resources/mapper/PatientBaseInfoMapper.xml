@@ -106,7 +106,7 @@
             IFNULL(pbi.medical_number,''),
             IFNULL(pbi.pinyin_name,''),
             IFNULL(pbi.mobile,''))
-            like concat(concat('%', #{form.condition}), '%')
+            like concat(concat('%', rtrim(#{form.condition})), '%')
     </select>
 
     <!-- 根据患者id集合查询患者list -->
@@ -236,7 +236,7 @@
         from patient_base_info pbio
         where concat(IFNULL(name,''),
         IFNULL(pbio.medical_number,''),IFNULL(pbio.pinyin_name,''),IFNULL(pbio.mobile,'')) like
-        concat(concat('%',#{form.condition}),'%')
+        concat(concat('%',rtrim(#{form.condition})),'%')
         limit 0,10;
     </select>
 
@@ -262,7 +262,7 @@
     <select id="findUserExistsList" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
-        from patient_base_info where name = #{form.name} and mobile = #{form.mobile}
+        from patient_base_info where name = rtrim(#{form.name}) and mobile = rtrim(#{form.mobile})
     </select>
 
     <!-- app端查询手机号是否已经存在 -->
@@ -337,10 +337,10 @@
         left join patient_member_info pmi on pbi.id = pmi.patient_id
         <where>
             <if test="queryForm.medicalNumber!=null and queryForm.medicalNumber!=''">
-                and IFNULL(pbi.medical_number,'') like concat('%',#{queryForm.medicalNumber},'%')
+                and IFNULL(pbi.medical_number,'') like concat('%',rtrim(#{queryForm.medicalNumber}),'%')
             </if>
             <if test="queryForm.search!=null and queryForm.search!=''">
-                and concat(IFNULL(pbi.name,''),IFNULL(pbi.pinyin_name,''),IFNULL(pbi.mobile,'')) like concat('%',#{queryForm.search},'%')
+                and concat(IFNULL(pbi.name,''),IFNULL(pbi.pinyin_name,''),IFNULL(pbi.mobile,'')) like concat('%',rtrim(#{queryForm.search}),'%')
             </if>
         </where>
     </select>
