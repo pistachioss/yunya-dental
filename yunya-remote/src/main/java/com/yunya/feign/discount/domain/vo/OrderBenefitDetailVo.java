@@ -20,4 +20,6 @@ public class OrderBenefitDetailVo {
 	private BigDecimal itemBenefitAmount;
 	@ApiModelProperty(value = "项目使用优惠明细")
 	private List<ItemUseBenefitVo> itemBenefitList;
+	@ApiModelProperty(value = "补入工作量")
+	private BigDecimal supplyWorkload;
 }

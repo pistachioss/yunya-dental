@@ -3,8 +3,6 @@ package com.yunya.feign.discount.domain.vo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -28,4 +26,6 @@ public class PatientItemBenefitVo {
     private BigDecimal itemBenefitAmount;
     @ApiModelProperty(value = "项目使用优惠明细")
     private List<ItemUseBenefitVo> itemBenefitList;
+    @ApiModelProperty(value = "补入工作量")
+    private BigDecimal supplyWorkload;
 }
