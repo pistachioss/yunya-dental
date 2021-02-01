@@ -451,6 +451,6 @@ public interface RemoteSystemServiceFeign {
    * @param ids 字典明细ID列表
    * @return
    */
-  @RequestMapping(value = "/dictionary/ids", method = RequestMethod.POST)
-  public List<DictionaryItem> findDictionaryItemByIds(@RequestBody List<Integer> ids);
+  @RequestMapping(value = "/api/dictionary/ids", method = RequestMethod.POST)
+  List<DictionaryItem> findDictionaryItemByIds(@RequestBody List<Integer> ids);
 }
