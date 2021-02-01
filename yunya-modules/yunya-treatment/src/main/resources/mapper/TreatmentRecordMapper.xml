@@ -429,16 +429,16 @@
     </select>
 
     <!-- 根据预约ID查询患者接诊记录 -->
-    <select id="findTreatmentRecordListByAppointIds" resultType="com.yunya.models.treatment.TreatmentRecord">
+    <select id="findTreatmentRecordListByAppointIds" resultMap="BaseResultMap">
         select tr.* from treatment_record tr
         <where>
           <if test="appointIds != null and appointIds.size() > 0">
-              appointment_id in
+              tr.appointment_id in
               <foreach collection="appointIds" item="appointId" open="(" separator="," close=")">
                   #{appointId}
               </foreach>
           </if>
-          and inservice = true
+          and tr.inservice = true
         </where>
     </select>
 </mapper>

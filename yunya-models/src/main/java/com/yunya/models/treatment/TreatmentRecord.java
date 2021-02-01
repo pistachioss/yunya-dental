@@ -1,6 +1,8 @@
 package com.yunya.models.treatment;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
+import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Column;
@@ -468,5 +470,30 @@ public class TreatmentRecord {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    @Override
+    public String toString() {
+        return "TreatmentRecord{" +
+                "id=" + id +
+                ", orgId=" + orgId +
+                ", patientId=" + patientId +
+                ", appointmentId=" + appointmentId +
+                ", registeredId=" + registeredId +
+                ", dentistId=" + dentistId +
+                ", type=" + type +
+                ", status=" + status +
+                ", treatStartTime=" + treatStartTime +
+                ", treatEndTime=" + treatEndTime +
+                ", medicalRecordCompleted=" + medicalRecordCompleted +
+                ", remarks='" + remarks + '\'' +
+                ", inservice=" + inservice +
+                ", crtId=" + crtId +
+                ", crtName='" + crtName + '\'' +
+                ", crtTime=" + crtTime +
+                ", updId=" + updId +
+                ", updName='" + updName + '\'' +
+                ", updTime=" + updTime +
+                '}';
     }
 }
