@@ -87,4 +87,7 @@
             ,#{item.updId},#{item.updTime})
         </foreach>
     </insert>
+    <select id="findListAfterOptimization" resultType="com.yunya.feign.discount.domain.vo.VouDisAfterOptimizationVO">
+
+    </select>
 </mapper>
