@@ -211,6 +211,11 @@ public class CompanyReportTest {
     CouponDiscountItemsQuery query = new CouponDiscountItemsQuery();
     query.setOrgId(35);
 //    query.setCategoryIds();
+    query.setOrderStartDate("2021-01-20");
+    query.setOrderEndDate("2021-01-31");
+//    query.setCardNumber("ZK0100000001");
+//    query.setCouponName("有效期为两个月的折扣券");
+    query.setCategoryIds(new Integer[]{0,1,2});
     ResponseResult<PageInfo<CouponDiscountItemInfoVO>> result = financeController.couponDiscountItems(query);
     System.out.println(JSONObject.toJSONString(result));
   }

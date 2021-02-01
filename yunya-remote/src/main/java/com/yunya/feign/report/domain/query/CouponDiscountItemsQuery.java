@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -32,15 +32,14 @@ public class CouponDiscountItemsQuery extends PageQuery implements Serializable 
   @ApiModelProperty("卡号")
   private String cardNumber;
 
-  @ApiModelProperty("门诊ID")
+  @ApiModelProperty(value = "门诊ID",required = true)
+  @NotNull(message = "请选择门诊！")
   private Integer orgId;
 
-  @ApiModelProperty(value = "账单开始日期", example = "yyyy-MM-dd", required = true)
-  @NotBlank(message = "账单开始日期不能为空！")
+  @ApiModelProperty(value = "账单开始日期")
   private String orderStartDate;
 
-  @ApiModelProperty(value = "账单结束日期", required = true, example = "yyyy-MM-dd")
-  @NotBlank(message = "账单结束日期不能为空！")
+  @ApiModelProperty(value = "账单结束日期")
   private String orderEndDate;
 
   @ApiModelProperty("项目分类")
