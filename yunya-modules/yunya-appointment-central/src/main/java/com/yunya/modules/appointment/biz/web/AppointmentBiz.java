@@ -1,6 +1,5 @@
 package com.yunya.modules.appointment.biz.web;
 
-import cn.hutool.core.util.ArrayUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -27,6 +26,7 @@ import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.sms.model.AppointmentSmsSendRecordModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
@@ -66,7 +66,6 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -75,8 +74,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.Function;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
@@ -684,10 +682,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     private List<Integer> enableAppointDentistIds(Integer orgId) {
         // 获取可预约的医生
         List<EnableChooseEmployeeRes> enableChooseEmployeeRes = this.clinicEmployeeConfigFeign.enableAppointEmployeeList(orgId);
-        if (StringHelper.isNotEmpty(enableChooseEmployeeRes)) {
-            List<Integer> enableDentistIds = enableChooseEmployeeRes.stream().map(EnableChooseEmployeeRes::getEmployeeId).collect(Collectors.toList());
-            return enableDentistIds;
-        }
+//        EnableEmployeeRes enableEmployeeList = this.clinicEmployeeConfigFeign.getEnableEmployeeList(orgId);
+//        if (null != enableEmployeeList) {
+//            List<EnableChooseEmployeeRes> enableChooseEmployeeRes = enableEmployeeList.getEnableAppointList();
+            if (StringHelper.isNotEmpty(enableChooseEmployeeRes)) {
+                List<Integer> enableDentistIds = enableChooseEmployeeRes.stream().map(EnableChooseEmployeeRes::getEmployeeId).collect(Collectors.toList());
+                return enableDentistIds;
+            }
+//        }
         throw new ClientServiceException(AppointmentError.CLINIC_NOT_EXIST_ENABLE_APPOINT_DENTIST.getMessage(),
                 AppointmentError.CLINIC_NOT_EXIST_ENABLE_APPOINT_DENTIST.getCode());
     }
@@ -700,11 +702,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     private List<AppointmentDimensionVo> dimensionAppointInfo(PatientDimensionByDayQuery query, List<Integer> enableDentistIds) {
         Date startDate = query.getStartDate();
         Date endDate = query.getEndDate();
+        Integer orgId = query.getOrgId();
         // 预约可视图列表
         List<AppointmentDimensionVo> appointmentDimensionVoList = Collections.synchronizedList(new ArrayList<>());
         // 查询当前天有排班的员工列表
         // 获取当天的所有医生的排班（包含有排班和没有排班的医生）
-        List<UserWorkVO> shiftWorkDatas = getEmployeeScheduleList(startDate,endDate,query.getOrgId(),query.getDentistId());
+        List<UserWorkVO> shiftWorkDatas = this.getEmployeeScheduleList(startDate,endDate,query.getOrgId(),query.getDentistId());
         // 没有排班医生
         List<Integer> unScheduleIds = new ArrayList<>();
         // 查询某一天数据会过滤出没有排班员工
@@ -723,15 +726,25 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 }
             }
         }
+
         // 过滤出可预约医生的排班信息
         List<UserWorkVO> filterAppointIds = shiftWorkDatas.stream().filter(
                 userWorkVO -> enableDentistIds.contains(userWorkVO.getCompEmpId())).collect(Collectors.toList());
-        Integer orgId = query.getOrgId();
 
-        // 预约医生ID列表
+        // 所有可预约医生ID列表（可能包含离职员工）
         List<Integer> dentistIdsList = filterAppointIds.stream().map(UserWorkVO::getCompEmpId).collect(Collectors.toList());
+        // 如果医生ID为空则表示查询预约可视图所有医生的预约，则需要过滤出离职还有预约的医生，否则不做操作
+        if (null == query.getDentistId()) {
+            // 过滤出已经离职的但是还有预约的医生ID
+            this.leavePostEmployeeIdHandler(startDate, endDate, orgId, enableDentistIds, dentistIdsList);
+        } else if (this.isLeavePostById(query.getDentistId())) {
+            /* 如果员工离职，则在编辑预约换面预约可视图也要显示 */
+            dentistIdsList.add(query.getDentistId());
+        }
         // 所有预约基础信息
         List<AppointmentDimensionVo> appointmentDimensionCommInfos = mapper.findAppointmentDimensionCommInfo(startDate, endDate, dentistIdsList, orgId);
+        // 处理已经离职的，但是还有预约的医生，也要显示在预约可视图中
+        this.leavePostEmployeeHandler(orgId, appointmentDimensionCommInfos,filterAppointIds);
         // 预约ID列表
         List<Integer> appointIdsList = null;
         // 患者ID列表
@@ -791,6 +804,75 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     }
 
     /**
+     * 当前用户ID是否离职
+     * @param dentistId 医生ID
+     * @return  离职返回true 否则返回false
+     */
+    private boolean isLeavePostById(Integer dentistId) {
+        SysEmployee sysEmployeeById = this.remoteSystemServiceFeign.findSysEmployeeById(dentistId);
+        if (null != sysEmployeeById) {
+            return sysEmployeeById.getWorkStatus() == BusinessConstants.USER_RESIGNATION_STATUS.byteValue();
+        }
+        return true;
+    }
+
+
+    /**
+     * 过滤出已经离职的但是还有预约的医生ID
+     * @param startDate  开始时间
+     * @param endDate   结束日期
+     * @param orgId    组织ID
+     * @param enableDentistIds  所有可预约员工ID
+     * @param dentistIdsList  当前日期有预约的医生ID列表
+     */
+    private void leavePostEmployeeIdHandler(Date startDate, Date endDate, Integer orgId, List<Integer> enableDentistIds, List<Integer> dentistIdsList) {
+
+        List<AppointmentDimensionVo> appointmentDimensionCommInfos = mapper.findAppointmentDimensionCommInfo(startDate, endDate, null, orgId);
+        if (StringHelper.isNotEmpty(appointmentDimensionCommInfos)) {
+            List<Integer> leavePostDentistIds = appointmentDimensionCommInfos.stream().filter(entity -> !enableDentistIds.contains(entity.getDentistId())).map(AppointmentDimensionVo::getDentistId).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(leavePostDentistIds)) {
+                leavePostDentistIds.stream().sequential().collect(Collectors.toCollection(()->dentistIdsList));
+            }
+        }
+    }
+
+    /**
+     * 处理已经离职的，但是还有预约的医生，也要显示在预约可视图中
+     * @param orgId
+     * @param appointmentDimensionCommInfos   当前天所有的预约信息列表
+     * @param hasSechduleAndEnableAppointList  当前天排班的并且可预约的医生Id列表
+     */
+    private void leavePostEmployeeHandler(Integer orgId,List<AppointmentDimensionVo> appointmentDimensionCommInfos, List<UserWorkVO> hasSechduleAndEnableAppointList) {
+
+        // 查询最近离职的100个员工信息,
+        SysUserEmployeeModel employeeQuery = new SysUserEmployeeModel();
+        employeeQuery.setOrgIds(Arrays.asList(orgId));
+        employeeQuery.setWorkStatus(new Byte[]{2});
+//        List<SysUserInfoDetail> sysUserEmployeeInfoList = this.remoteSystemServiceFeign.findSysUserEmployeeInfoList(employeeQuery);
+
+        // 预约医生ID列表
+        List<Integer> dentistIdsList = hasSechduleAndEnableAppointList.stream().map(UserWorkVO::getCompEmpId).collect(Collectors.toList());
+        // 所有有预约的医生，包含离职医生
+        List<Integer> appointIds = appointmentDimensionCommInfos.stream().map(AppointmentDimensionVo::getDentistId).collect(Collectors.toList());
+
+        // 离职员工ID列表
+        List<Integer> leavePostDentistIds = appointIds.stream().filter(id -> !dentistIdsList.contains(id)).collect(Collectors.toList());
+
+        // 离职员工信息列表
+        List<SysUserInfoDetail> leavePostUserInfoList = this.remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(leavePostDentistIds);
+
+        // 将离职员工的信息加入排班表中
+        if (StringHelper.isNotEmpty(leavePostUserInfoList)) {
+            leavePostUserInfoList.forEach(entity->{
+                UserWorkVO userWorkVO = new UserWorkVO();
+                userWorkVO.setName(entity.getName());
+                userWorkVO.setCompEmpId(entity.getUserId());
+                hasSechduleAndEnableAppointList.add(userWorkVO);
+            });
+        }
+    }
+
+    /**
      * 获取指定日期，指定门诊,指定医生的排班信息
      * @param startDate  开始日期
      * @param endDate  结束日期
@@ -810,6 +892,20 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         employeeScheduleQueryForm.setUserId(dentistId);
         EmployeeScheduleResultVO scheduleResultVO = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
         if (scheduleResultVO == null || scheduleResultVO.getCount() <= 0) {
+            // 查看当前员工是否处于离职状态
+            SysEmployee leavePostEmployeeInfo = remoteSystemServiceFeign.findSysEmployeeById(dentistId);
+            if (null != leavePostEmployeeInfo) {
+                Byte workStatus = leavePostEmployeeInfo.getWorkStatus();
+                // 如果员工处于离职状态，则返回离职员工信息，方便后面显示离职员工下的患者预约
+                if (workStatus == BusinessConstants.USER_RESIGNATION_STATUS.byteValue()) {
+                    UserWorkVO userWorkVO = new UserWorkVO();
+                    userWorkVO.setCompEmpId(dentistId);
+                    userWorkVO.setName(leavePostEmployeeInfo.getName());
+                    List<UserWorkVO> leavePostEmployeeList = new ArrayList<>();
+                    leavePostEmployeeList.add(userWorkVO);
+                    return leavePostEmployeeList;
+                }
+            }
             return null;
         }
         // 获取当天的所有医生的排班（包含有排班和没有排班的医生）
@@ -1231,9 +1327,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 判断设备预约是否存在冲突
         if (deviceId != null){
             ResponseResult responseResult = this.deviceConflictInfo(null, deviceId, appointStartTime, appointEndTime);
-            if (null != responseResult) {
-                return responseResult;
-            }
+            return responseResult;
         }
         return null;
     }
@@ -1632,9 +1726,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 判断设备预约是否存在冲突
         if (deviceId != null) {
             ResponseResult responseResult = this.deviceConflictInfo(id, deviceId, appointStartTime, appointEndTime);
-            if (null != responseResult) {
-                return responseResult;
-            }
+            return responseResult;
         }
         return null;
     }
@@ -2387,6 +2479,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                                                                        List<AppointmentDimensionVo> appointmentDimensionCommInfos,
                                                                        List<TreatmentRecord> treatmentRecordListByAppointIds,
                                                                        List<PatientTotalInfoVo> patientTotalInfos){
+
+        log.info("预约列表医生ID:{}",appointmentDimensionCommInfos.stream().map(AppointmentDimensionVo::getDentistId).collect(Collectors.toList()));
         List<AppointmentDimensionVo> appointmentDimensionVoList = new LinkedList<>();
         Integer userId = dentistWorkSchedule.getCompEmpId();
         String dentistName = dentistWorkSchedule.getName();
