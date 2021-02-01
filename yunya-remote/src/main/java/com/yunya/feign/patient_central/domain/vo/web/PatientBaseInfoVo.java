@@ -77,10 +77,16 @@ public class PatientBaseInfoVo implements Serializable {
 
     /**
      * 出生日期
+//     */
+//    @ApiModelProperty("出生日期")
+//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
+//    private Date birthday;
+
+    /**
+     * 出生日期
      */
     @ApiModelProperty("出生日期")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date birthday;
+    private String birthday;
 
     /**
      * 患者来源类型 患者来源分类ID
