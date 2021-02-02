@@ -438,7 +438,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patient.setLastVisitTime(treatmentRecord.getTreatmentDate());
         patient.setLastVisit(treatmentRecord.getDentistName());
       }
-      return patients.stream().filter(entity->!entity.getMedicalNumber().contains("*")).collect(Collectors.toList());
+      return patients.stream().filter(entity->!(null != entity.getMedicalNumber() && entity.getMedicalNumber().contains("*"))).collect(Collectors.toList());
     }
     return patients;
   }
