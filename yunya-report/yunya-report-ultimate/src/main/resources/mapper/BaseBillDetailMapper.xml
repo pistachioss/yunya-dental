@@ -927,14 +927,12 @@
         bbd.item_id AS itemId,
         bti.item_num AS itemNum,
         bti.item_name AS itemName,
-        bbd.coupon_workload as supplyWorkload
+        bbd.coupon_workload AS supplyWorkload
         FROM
         base_bill_detail bbd
         LEFT JOIN base_tariff_info bti ON bbd.item_id = bti.item_id
-        LEFT JOIN base_benefit bb on (bb.order_id=bbd.bill_id and bb.item_id=bti.item_id)
         <where>
-            bbd.item_type=0
-            and bb.coupon_type in (0,1,2,3)
+            and bbd.item_type = 0
             <if test="query.billId != null">
                 and bbd.bill_id = #{query.billId}
             </if>
@@ -942,6 +940,7 @@
                 and bbd.executor_id = #{query.employeeId}
             </if>
         </where>
+        ORDER BY bbd.bill_id DESC
     </select>
 
     <!-- 根据条件查询助手实收工作量明细列表 -->
