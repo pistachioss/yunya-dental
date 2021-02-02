@@ -82,7 +82,7 @@
       </if>
     </where>
     <if test="query.searchId == 3 and query.patientId != null">
-      order by vr.remind_date desc
+      order by vrd.remind_date desc, vrd.remind_time desc
     </if>
   </select>
 
