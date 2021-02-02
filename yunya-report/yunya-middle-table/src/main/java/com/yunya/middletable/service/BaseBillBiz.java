@@ -220,7 +220,6 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
                 BaseBill baseBill = generateBaseBill(orderRecordId);
                 mapper.deleteByPrimaryKey(orderRecordId);
                 baseBillDetailMapper.deleteByBillId(orderRecordId);
-                baseBillDetailMapper.deleteByBillId(orderRecordId);
                 if (null != baseBill) {
                   mapper.insertSelective(baseBill);
                   // 保存账单明细
