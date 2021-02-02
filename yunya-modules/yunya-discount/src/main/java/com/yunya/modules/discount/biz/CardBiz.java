@@ -984,11 +984,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         log.info("订单选择的优惠信息：[{}]", form);
         form.setOrgId(treatmentServiceFeign.findOrderRecordById(form.getOrderId()).getOrgId());
         ResponseResult<List<OrderItemUseBo>> responseResult = choiceBenefitBo(form);
+        log.info("操作人员选择的优惠信息：[{}]", responseResult);
         if (!FALSE.equals(responseResult.getStatus())) {
             return ResponseUtil.error(responseResult.getStatus(), responseResult.getMsg());
         }
         PatientOrderBenefitVo result = transformBenefitInfo(responseResult.getData());
-        log.info("操作人员选择的优惠信息：[{}]", result);
         return ResponseUtil.success(result);
     }
 
