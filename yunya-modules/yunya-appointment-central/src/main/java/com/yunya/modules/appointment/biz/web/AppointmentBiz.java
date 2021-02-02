@@ -682,14 +682,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     private List<Integer> enableAppointDentistIds(Integer orgId) {
         // 获取可预约的医生
         List<EnableChooseEmployeeRes> enableChooseEmployeeRes = this.clinicEmployeeConfigFeign.enableAppointEmployeeList(orgId);
-//        EnableEmployeeRes enableEmployeeList = this.clinicEmployeeConfigFeign.getEnableEmployeeList(orgId);
-//        if (null != enableEmployeeList) {
-//            List<EnableChooseEmployeeRes> enableChooseEmployeeRes = enableEmployeeList.getEnableAppointList();
-            if (StringHelper.isNotEmpty(enableChooseEmployeeRes)) {
-                List<Integer> enableDentistIds = enableChooseEmployeeRes.stream().map(EnableChooseEmployeeRes::getEmployeeId).collect(Collectors.toList());
-                return enableDentistIds;
-            }
-//        }
+        if (StringHelper.isNotEmpty(enableChooseEmployeeRes)) {
+            List<Integer> enableDentistIds = enableChooseEmployeeRes.stream().map(EnableChooseEmployeeRes::getEmployeeId).collect(Collectors.toList());
+            return enableDentistIds;
+        }
         throw new ClientServiceException(AppointmentError.CLINIC_NOT_EXIST_ENABLE_APPOINT_DENTIST.getMessage(),
                 AppointmentError.CLINIC_NOT_EXIST_ENABLE_APPOINT_DENTIST.getCode());
     }
@@ -765,6 +761,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             patientIdsList = new ArrayList<>(new HashSet<>(patientIdsTemp));
         }
 
+        log.info("患者维度预约医生ID==>{}",appointIdsList);
+
         // 查询患者接诊记录
         List<TreatmentRecord> treatmentRecordListByAppointIds;
         if (StringHelper.isNotEmpty(appointIdsList)) {
@@ -772,6 +770,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         } else {
             treatmentRecordListByAppointIds = new ArrayList<>();
         }
+        log.info("批量查询患者就诊记录==>{}",treatmentRecordListByAppointIds);
 
         // 查询患者信息
         List<PatientTotalInfoVo> patientTotalInfos;
@@ -1018,6 +1017,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             } else {
                 assistentInfoList = new ArrayList<>();
             }
+
+            log.info("==>预约ID集合：{}",appointIds);
 
             // 批量获取患者就诊信息
             List<TreatmentRecord> treatmentRecordList = remoteTreatmentServiceFeign.findTreatmentRecordListByAppointIds(appointIds);
@@ -2479,8 +2480,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                                                                        List<AppointmentDimensionVo> appointmentDimensionCommInfos,
                                                                        List<TreatmentRecord> treatmentRecordListByAppointIds,
                                                                        List<PatientTotalInfoVo> patientTotalInfos){
-
-        log.info("预约列表医生ID:{}",appointmentDimensionCommInfos.stream().map(AppointmentDimensionVo::getDentistId).collect(Collectors.toList()));
         List<AppointmentDimensionVo> appointmentDimensionVoList = new LinkedList<>();
         Integer userId = dentistWorkSchedule.getCompEmpId();
         String dentistName = dentistWorkSchedule.getName();
@@ -2541,7 +2540,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             boolean present = treatmentRecordListByAppointIds.stream().anyMatch(record -> record.getAppointmentId() != null && record.getAppointmentId().equals(appointId));
             if (present) {
                 TreatmentRecord treatmentRecord = treatmentRecordListByAppointIds.stream().filter(record -> record.getAppointmentId().equals(appointId)).findAny().get();
-                log.info("==>就诊记录：{}",treatmentRecord);
                 byte splitStatus = 2;
                 // 诊疗状态(0-接诊中;1-已开单;2-接诊完成3-已结账)
                 Byte type = treatmentRecord.getStatus();
@@ -2553,9 +2551,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     appointmentPatientCardVo.setStation((byte) 2);
                 }
             }
+        } else {
+            // 如果没有挂号信息则设置患者就诊状态为 0-待挂号
+            appointmentPatientCardVo.setStation((byte) 0);
         }
-        // 如果没有挂号信息则设置患者就诊状态为 0-待挂号
-        appointmentPatientCardVo.setStation((byte) 0);
     }
 
     /**
