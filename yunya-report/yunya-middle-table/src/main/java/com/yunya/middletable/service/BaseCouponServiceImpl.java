@@ -382,6 +382,10 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 				.map(CouponCommonInfo::getId).collect(toList());
 		List<Integer> discountIds = list.stream().filter(obj -> DISCOUNT.equals(obj.getType().intValue()))
 				.map(CouponCommonInfo::getId).collect(toList());
+		List<Integer> exchangeIds = list.stream().filter(obj -> EXCHANGE.equals(obj.getType().intValue()))
+				.map(CouponCommonInfo::getId).collect(toList());
+		List<Integer> specialIds = list.stream().filter(obj -> SPECIAL_PACKAGE.equals(obj.getType().intValue()))
+				.map(CouponCommonInfo::getId).collect(toList());
 		//充值卡集合
 		List<RechargeCard> rechargeCards = listByCouponIds(rechargeIds, RechargeCard.class, rechargeCardMapper);
 		//代金集合
@@ -389,9 +393,9 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 		//折扣卡集合
 		List<DiscountCoupon> discounts = listByCouponIds(discountIds, DiscountCoupon.class, discountCouponMapper);
 		//兑换券集合
-		List<PackageCoupon> packageCoupons = listByCouponIds(discountIds, PackageCoupon.class, packageCouponMapper);
-		//兑换券集合
-		List<SpecialPackageCoupon> specialPackageCoupons = listByCouponIds(discountIds, SpecialPackageCoupon.class, specialPackageCouponMapper);
+		List<PackageCoupon> packageCoupons = listByCouponIds(exchangeIds, PackageCoupon.class, packageCouponMapper);
+		//套餐券集合
+		List<SpecialPackageCoupon> specialPackageCoupons = listByCouponIds(specialIds, SpecialPackageCoupon.class, specialPackageCouponMapper);
 		if (CollectionUtils.isNotEmpty(rechargeCards)) {
 			Map<Integer, RechargeCard> rechargeMap = rechargeCards.stream().collect(toMap(RechargeCard::getCouponId,
 					Function.identity()));
