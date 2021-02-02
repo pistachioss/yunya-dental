@@ -798,8 +798,8 @@
         orgId,
         billId,
         billNum,
-        DATE_FORMAT(billDate, '%Y-%m-%d') AS billDate,
-        DATE_FORMAT( orderDate, '%Y-%m-%d' ) AS orderDate,
+        billDate,
+        orderDate,
         patientId,
         patientName,
         mobile,
@@ -813,8 +813,8 @@
         ebd.orgId,
         ebd.billId,
         ebd.billNum,
-        ebd.billDate,
-        ebd.orderDate,
+        DATE_FORMAT(ebd.billDate, '%Y-%m-%d') AS billDate,
+        DATE_FORMAT( ebd.orderDate, '%Y-%m-%d' ) AS orderDate,
         ebd.patientId,
         ebd.patientName,
         ebd.pinyinName,
@@ -916,7 +916,7 @@
                 and ewd.billNum like concat('%', #{query.billNum} ,'%')
             </if>
             <if test="query.billDate != null and query.billDate != ''">
-                and DATE_FORMAT(ewd.billDate, '%Y-%m-%d') = #{query.billDate}
+                and ewd.billDate = #{query.billDate}
             </if>
         </where>
         ORDER BY ewd.billDate DESC
