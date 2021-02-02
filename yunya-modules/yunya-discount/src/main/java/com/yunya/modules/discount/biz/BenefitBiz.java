@@ -298,6 +298,7 @@ public class BenefitBiz {
 					BigDecimal supplyWorkTotalLoad = v.stream()
 							.filter(obj -> ONE.equals(obj.getBenefitType()) && obj.getSupplyWorkload() != null)
 							.map(CardBenefit::getSupplyWorkload).reduce(BigDecimal.ZERO, BigDecimal::add);
+					log.info("查询账单优惠明细，开单明细id：{}，计算补入工作量：{}", k, supplyWorkTotalLoad);
 					vo.setOrderDetailId(k);
 					vo.setItemBenefitAmount(itemBenefitAmount);
 					//按照优惠提交顺序排序

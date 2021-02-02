@@ -984,11 +984,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         log.info("订单选择的优惠信息：[{}]", form);
         form.setOrgId(treatmentServiceFeign.findOrderRecordById(form.getOrderId()).getOrgId());
         ResponseResult<List<OrderItemUseBo>> responseResult = choiceBenefitBo(form);
+        log.info("操作人员选择的优惠信息：[{}]", responseResult);
         if (!FALSE.equals(responseResult.getStatus())) {
             return ResponseUtil.error(responseResult.getStatus(), responseResult.getMsg());
         }
         PatientOrderBenefitVo result = transformBenefitInfo(responseResult.getData());
-        log.info("操作人员选择的优惠信息：[{}]", result);
         return ResponseUtil.success(result);
     }
 
@@ -1129,7 +1129,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                         vo.setItemBenefitAmount(benefitAmount);
                         List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(obj.getItemUseBenefitBos(), ItemUseBenefitVo.class);
                         vo.setItemBenefitList(itemUseBenefitVos);
-                        vo.setSupplyWorkload(this.calculateTotalWordLoad(obj.getItemUseBenefitBos(), obj));
+                        vo.setSupplyWorkload(this.calculateTotalWordLoad(obj));
                         return vo;
                     }).collect(toList());
             result.setItemList(itemList);
@@ -1143,9 +1143,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @param itemUseBenefitBo itemUseBenefitBo
      * @param itemBenefitBo    itemBenefitBo
      */
-    private BigDecimal calculateTotalWordLoad(List<ItemUseBenefitBo> itemUseBenefitBos, OrderItemUseBo itemBenefitBo) {
+    private BigDecimal calculateTotalWordLoad(OrderItemUseBo itemBenefitBo) {
         Example example;
         BigDecimal supplyWorkload = BigDecimal.ZERO;
+        List<ItemUseBenefitBo> itemUseBenefitBos = itemBenefitBo.getItemUseBenefitBos();
         for (ItemUseBenefitBo itemUseBenefitBo : itemUseBenefitBos) {
             if (COUPON_TYPE.equals(itemUseBenefitBo.getBenefitType())) {
                 Integer couponType = itemUseBenefitBo.getCouponType();
@@ -1186,6 +1187,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 }
             }
         }
+        log.info("选择优惠，开单明细id：{}，计算补入工作量：{}", itemBenefitBo.getOrderDetailId(), supplyWorkload);
         return supplyWorkload;
     }
 
