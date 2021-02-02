@@ -537,8 +537,8 @@ public class TollBiz {
               if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
                 actualAmount = BigDecimal.ZERO;
               }
-              // TODO: 2020/12/31 从vo中获取补入时长
-              //              couponWorkload = vo.
+              // 获取补入工作量
+              couponWorkload = vo.getSupplyWorkload();
             }
           }
           detailPayRecord.setPrivilegeAmount(privilegeAmount);
@@ -1495,8 +1495,8 @@ public class TollBiz {
             actualAmount = BigDecimal.ZERO;
             privilegeAmount = receivableAmount;
           }
-          // TODO 补入工作量
-          detail.setCouponWorkload(BigDecimal.valueOf(0));
+          // 补入工作量
+          detail.setCouponWorkload(vo.getSupplyWorkload());
         }
       }
       detail.setPrivilegeAmount(privilegeAmount);
