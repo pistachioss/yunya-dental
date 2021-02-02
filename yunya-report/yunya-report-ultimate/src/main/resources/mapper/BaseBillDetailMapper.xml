@@ -798,7 +798,8 @@
         orgId,
         billId,
         billNum,
-        DATE_FORMAT( orderDate, '%Y-%m-%d' ),
+        DATE_FORMAT(billDate, '%Y-%m-%d') AS billDate,
+        DATE_FORMAT( orderDate, '%Y-%m-%d' ) AS orderDate,
         patientId,
         patientName,
         mobile,
@@ -812,6 +813,7 @@
         ebd.orgId,
         ebd.billId,
         ebd.billNum,
+        ebd.billDate,
         ebd.orderDate,
         ebd.patientId,
         ebd.patientName,
@@ -828,6 +830,7 @@
         bbp.org_id AS orgId,
         bbp.bill_id AS billId,
         bbp.bill_num AS billNum,
+        bbp.bill_date AS billDate,
         bbp.order_date AS orderDate,
         bbp.patient_id AS patientId,
         bbp.`name` AS patientName,
@@ -847,6 +850,7 @@
         bb.bill_id,
         bb.bill_num,
         bb.order_date,
+        bb.bill_date,
         bb.order_amount,
         bb.privilege_amount,
         bb.actual_amount,
@@ -888,12 +892,12 @@
             </if>
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( ebd.orderDate, '%Y-%m' ) = #{query.queryDate}
+                    and DATE_FORMAT( ebd.billDate, '%Y-%m' ) = #{query.queryDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( ebd.orderDate, '%Y' ) = #{query.queryDate}
+                    and DATE_FORMAT( ebd.billDate, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
             <if test="query.employeeId != null">
@@ -911,11 +915,11 @@
             <if test="query.billNum != null and query.billNum != ''">
                 and ewd.billNum like concat('%', #{query.billNum} ,'%')
             </if>
-            <if test="query.orderDate != null and query.orderDate != ''">
-                and DATE_FORMAT(ewd.orderDate, '%Y-%m-%d') = #{query.orderDate}
+            <if test="query.billDate != null and query.billDate != ''">
+                and DATE_FORMAT(ewd.billDate, '%Y-%m-%d') = #{query.billDate}
             </if>
         </where>
-        ORDER BY ewd.orderDate DESC
+        ORDER BY ewd.billDate DESC
     </select>
 
     <!-- 根据条件查询员工补入工作量开单明细列表 -->
