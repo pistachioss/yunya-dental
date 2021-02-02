@@ -35,6 +35,7 @@ import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
 import org.apache.commons.httpclient.NameValuePair;
+import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +43,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -294,12 +296,18 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (patientBaseInfo == null) {
       return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "未查询到患者信息", "");
     }
-    // 计算年龄
-    Integer age =
-        DateUtil.differFromDate(
-            patientBaseInfo.getBirthday(), new Date(System.currentTimeMillis()));
-    patientBaseInfo.setAge(age);
     PatientBaseInfoVo patientBaseInfoVo = new PatientBaseInfoVo();
+    Date birthday = patientBaseInfo.getBirthday();
+    if (birthday != null) {
+      // 计算年龄
+      Integer age =
+              DateUtil.differFromDate(
+                      birthday, new Date(System.currentTimeMillis()));
+      patientBaseInfo.setAge(age);
+      String timeStr = new DateTime(birthday).toString("yyyy-MM-dd");
+      patientBaseInfoVo.setBirthday(timeStr);
+    }
+
     BeanUtils.copyProperties(patientBaseInfo, patientBaseInfoVo);
     int originType = 2;
     if (patientBaseInfo.getOriginType() != null && patientBaseInfo.getOriginType() > originType) {
@@ -311,9 +319,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientBaseInfoVo.setSourceName(patientOrigin.getName());
       }
     }
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-    String timeStr = sdf.format(patientBaseInfo.getBirthday());
-    patientBaseInfoVo.setBirthday(timeStr);
     // 基本信息
     patientExtendInfoVo.setPatientBaseInfoVo(getTypeName(patientBaseInfoVo));
     // 扩展信息
@@ -433,6 +438,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patient.setLastVisitTime(treatmentRecord.getTreatmentDate());
         patient.setLastVisit(treatmentRecord.getDentistName());
       }
+      return patients.stream().filter(entity->!entity.getMedicalNumber().contains("*")).collect(Collectors.toList());
     }
     return patients;
   }
