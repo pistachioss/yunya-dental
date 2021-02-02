@@ -1156,7 +1156,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                     example.createCriteria().andEqualTo("couponId", couponId);
                     VoucheCoupon voucheCoupon = voucherMapper.selectOneByExample(example);
                     if (voucheCoupon != null) {
-                        supplyWorkload.add(itemUseBenefitBo.getBenefitAmount().multiply(voucheCoupon.getWorkloadRate()));
+                        supplyWorkload = supplyWorkload.add(itemUseBenefitBo.getBenefitAmount().multiply(voucheCoupon.getWorkloadRate()));
                     }
                 }
                 if (DISCOUNT.equals(couponType)) {
@@ -1164,7 +1164,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                     example.createCriteria().andEqualTo("couponId", couponId);
                     DiscountCoupon discountCoupon = discountCouponMapper.selectOneByExample(example);
                     if (discountCoupon != null) {
-                        supplyWorkload.add(itemUseBenefitBo.getBenefitAmount().multiply(discountCoupon.getWorkloadRate()));
+                        supplyWorkload = supplyWorkload.add(itemUseBenefitBo.getBenefitAmount().multiply(discountCoupon.getWorkloadRate()));
                     }
                 }
                 if (EXCHANGE.equals(couponType)) {
@@ -1173,7 +1173,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                             andEqualTo("type", itemBenefitBo.getType());
                     PackageCouponItem packageCouponItem = packageCouponItemMapper.selectOneByExample(example);
                     if (packageCouponItem != null) {
-                        supplyWorkload.add(BigDecimal.ONE.multiply(packageCouponItem.getWorkloadLoad()));
+                        supplyWorkload = supplyWorkload.add(BigDecimal.ONE.multiply(packageCouponItem.getWorkloadLoad()));
                     }
                 }
                 if (SPECIAL_PACKAGE.equals(couponType)) {
@@ -1182,7 +1182,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                             andEqualTo("type", itemBenefitBo.getType());
                     SpecialPackageCouponItem specialPackageCouponItem = specialPackageCouponItemMapper.selectOneByExample(example);
                     if (specialPackageCouponItem != null) {
-                        supplyWorkload.add(BigDecimal.ONE.multiply(specialPackageCouponItem.getWorkloadLoad()));
+                        supplyWorkload = supplyWorkload.add(BigDecimal.ONE.multiply(specialPackageCouponItem.getWorkloadLoad()));
                     }
                 }
             }
