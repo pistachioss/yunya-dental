@@ -172,8 +172,13 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             double lon1 = Double.parseDouble(longitude);
             double lat1 = Double.parseDouble(latitude);
             attendanceAddressSetVOS = attendanceAddressSetVOS.stream().filter(attendanceAddressSetVO -> {
-                double lon2 = Double.parseDouble(attendanceAddressSetVO.getLongitude());
-                double lat2 = Double.parseDouble(attendanceAddressSetVO.getLatitude());
+                String lonStr2 = attendanceAddressSetVO.getLongitude();
+                String latStr2 = attendanceAddressSetVO.getLatitude();
+                if (StringHelper.isEmpty(lonStr2) || StringHelper.isEmpty(latStr2)) {
+                    return false;
+                }
+                double lon2 = Double.parseDouble(lonStr2);
+                double lat2 = Double.parseDouble(latStr2);
                 double attendanceRange = attendanceAddressSetVO.getAttendanceRange();
                 double distance = distanceByLongNLat(lon1,lat1,lon2,lat2);
                 if (distance-attendanceRange <= 0) {
