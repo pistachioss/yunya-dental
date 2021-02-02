@@ -196,6 +196,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @return  ResponseResult
      */
     public ResponseResult findVisitingRemindByCondition(VisitingRemindQuery query){
+        // 预约档案画面接口为3
+        final Integer SEARCH_ID = 3;
         // 分页
         if (query.getWhetherPage()){
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
@@ -236,9 +238,11 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             String search = query.getSearch();
             String medicalNumber = query.getMedicalNumber();
             String distentName = query.getDistentName();
-            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName)) {
+            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName) && query.getSearchId() < 3) {
                 // 按照时间正序排序
                 searchVisitingRemindVo = this.sort(visitingRemindVos);
+            } else if (null != query.getPatientId() && query.getSearchId().equals(SEARCH_ID)){
+                searchVisitingRemindVo = visitingRemindVos;
             } else {
                 // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容
                 searchVisitingRemindVo = this.searchVisitingRemind(visitingRemindVos, search, medicalNumber, distentName);

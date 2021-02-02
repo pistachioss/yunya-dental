@@ -280,6 +280,8 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @return ResponseResult
      */
     public ResponseResult<PageInfo<VisitingRecordVo>> findVisitingRecordByCondition(VisitingRecordQuery query){
+        // 预约档案画面接口为3
+        final Integer SEARCH_TYPE = 3;
         // 设置分页
         if (query.getWhetherPage()){
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
@@ -315,10 +317,22 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 visitingRecordVoList.add(visitingRecordVo);
             }
 
-            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName)) {
+            log.info("=======================预约随访==============");
+            log.info("<==search:{}",search);
+            log.info("<==medicalNumber:{}",medicalNumber);
+            log.info("<==distentName:{}",distentName);
+            log.info("<==dentistId:{}",query.getDentistId());
+            log.info("<==searchId:{}",query.getSearchId());
+            log.info("==>visitingRecordVoList:{}",visitingRecordVoList);
+
+            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName) && query.getSearchId() < 3) {
                 // 排序
                 searchVisitingRecordVo = this.sort(visitingRecordVoList);
                 visitingRecordVoPageInfo.setList(searchVisitingRecordVo);
+            } else if (null != query.getPatientId()  && SEARCH_TYPE.equals(query.getSearchId())){
+                searchVisitingRecordVo = visitingRecordVoList;
+                // 按照随访日期降序排序
+                visitingRecordVoPageInfo.setList(visitingRecordVoList);
             } else {
                 // 按患者姓名、手机号、病历号、医生名字检索
                 searchVisitingRecordVo = this.searchAndOrder(visitingRecordVoList, search, medicalNumber, distentName);

@@ -333,8 +333,10 @@ public class BillPayDetailRecordBiz
                     remotePatientCentralServiceFeign.memberPaymentRecordDetail(queryParams);
                 paymentRecordVO.setCardNumber(billPayDetailRecord.getRemark());
                 if (null != memberExpendRecord) {
-                  paymentRecordVO.setPrincipalAmount(memberExpendRecord.getExpendPrincipal());
-                  paymentRecordVO.setBonusAmount(memberExpendRecord.getExpendGift());
+                  BigDecimal expendPrincipal = memberExpendRecord.getExpendPrincipal();
+                  BigDecimal expendGift = memberExpendRecord.getExpendGift();
+                  paymentRecordVO.setPrincipalAmount(expendPrincipal == null ? new BigDecimal(0) : expendPrincipal);
+                  paymentRecordVO.setBonusAmount(expendGift == null ? new BigDecimal(0) : expendGift);
                 }
                 break;
               case 0:

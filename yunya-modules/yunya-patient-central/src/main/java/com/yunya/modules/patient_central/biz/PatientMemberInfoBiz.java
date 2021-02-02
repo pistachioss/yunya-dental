@@ -942,7 +942,11 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
     memberExpendRecord.setMemberId(query.getCardId());
     memberExpendRecord.setBillPayRecordId(query.getBillRecordId());
-    return memberExpendRecordMapper.selectOne(memberExpendRecord);
+    MemberExpendRecord result = memberExpendRecordMapper.selectOne(memberExpendRecord);
+    if (result == null) {
+      result = new MemberExpendRecord();
+    }
+    return result;
   }
 
   /**
