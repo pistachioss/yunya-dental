@@ -99,7 +99,7 @@
       <when test="query.searchId == 2 and query.patientId == null">
         order by vr.visiting_date asc
       </when>
-      <when test="query.searchId == 2 and query.patientId != null">
+      <when test="query.searchId == 3 and query.patientId != null">
         order by vr.visiting_date desc
       </when>
     </choose>
