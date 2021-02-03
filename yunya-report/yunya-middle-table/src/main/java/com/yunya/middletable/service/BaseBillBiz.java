@@ -18,6 +18,7 @@ import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderDetailPayRecord;
 import com.yunya.models.treatment.OrderRecord;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -219,7 +220,10 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         importExcelThreadPool.submit(
             () -> {
               Example orderExample = new Example(OrderRecord.class);
-              orderExample.createCriteria().andBetween("updTime", date, date);
+              orderExample
+                  .createCriteria()
+                  .andGreaterThanOrEqualTo("updTime", new DateTime(date).toString("yyyy-MM-dd"))
+                  .andLessThan("updTime", new DateTime(date).plusDays(1).toString("yyyy-MM-dd"));
               List<OrderRecord> orderRecords = orderRecordMapper.selectByExample(orderExample);
               if (StringHelper.isNotEmpty(orderRecords)) {
                 List<BaseBill> baseBills = generateBaseBillList(orderRecords);
