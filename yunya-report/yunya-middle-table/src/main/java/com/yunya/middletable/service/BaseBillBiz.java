@@ -1,12 +1,10 @@
 package com.yunya.middletable.service;
 
-import cn.hutool.core.date.DateField;
-import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUtil;
 import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseBillDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillMapper;
@@ -20,6 +18,7 @@ import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderDetailPayRecord;
 import com.yunya.models.treatment.OrderRecord;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,10 +26,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -215,19 +211,19 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    *
    * @param form 时间段
    */
-  public void pullBillData(PullForm form) throws ParseException {
+  public void pullBillData(PullForm form) {
     String startDate = form.getStartDate();
     String endDate = form.getEndDate();
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    Date start = simpleDateFormat.parse(startDate);
-    Date end = simpleDateFormat.parse(endDate);
-    List<DateTime> dateRanges = DateUtil.rangeToList(start, end, DateField.DAY_OF_WEEK);
+    List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
     if (StringHelper.isNotEmpty(dateRanges)) {
-      for (DateTime date : dateRanges) {
+      for (String date : dateRanges) {
         importExcelThreadPool.submit(
             () -> {
               Example orderExample = new Example(OrderRecord.class);
-              orderExample.createCriteria().andBetween("updTime", date, date);
+              orderExample
+                  .createCriteria()
+                  .andGreaterThanOrEqualTo("updTime", new DateTime(date).toString("yyyy-MM-dd"))
+                  .andLessThan("updTime", new DateTime(date).plusDays(1).toString("yyyy-MM-dd"));
               List<OrderRecord> orderRecords = orderRecordMapper.selectByExample(orderExample);
               if (StringHelper.isNotEmpty(orderRecords)) {
                 List<BaseBill> baseBills = generateBaseBillList(orderRecords);
