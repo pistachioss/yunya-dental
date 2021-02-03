@@ -14,6 +14,7 @@ import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
+import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.feign.employee_attend.vo.UserWorkVO;
 import com.yunya.feign.employee_attend.vo.WorkDayVO;
 import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
@@ -57,6 +58,7 @@ import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
+import com.yunya.modules.employeeattend.form.LeaveInfoForm;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -2336,6 +2338,20 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 将患者信息列表设置到医生维度信息实体中
         assistantPatientInfo.setAppointmentPatientCardVos(assistantPatientCardList);
 
+        // 设置医生或者助手排班信息
+        this.setAppointmentScheduleInfo(assistantDetailInfo,appointmentPatientCardVo,assistantPatientInfo);
+        return assistantPatientInfo;
+    }
+
+    /**
+     *
+     * @param assistantDetailInfo  助手或者医生信息
+     * @param appointmentPatientCardVo 预约患者信息卡，
+     * @param assistantPatientInfo 要注入的助手或医生类
+     */
+    private void setAppointmentScheduleInfo(SysUserInfoDetail assistantDetailInfo,
+                                               AppointmentPatientCardVo appointmentPatientCardVo,
+                                               AppointmentDimensionVo  assistantPatientInfo) {
         // 设置助手排班信息
         EmployeeScheduleQueryForm scheduleQueryForm = new EmployeeScheduleQueryForm();
         scheduleQueryForm.setUserId(assistantDetailInfo.getUserId());
@@ -2354,7 +2370,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 assistantPatientInfo.setDentistScheduleVos(days);
             }
         }
-        return assistantPatientInfo;
+        // 查询医生/助手请假信息
+        LeaveInfoForm leaveInfoFormQuery = new LeaveInfoForm();
+        leaveInfoFormQuery.setUserId(assistantDetailInfo.getUserId());
+        leaveInfoFormQuery.setStartTime(appointDate);
+        leaveInfoFormQuery.setEndTime(appointDate);
+        List<LeaveInfoListVO> leaveInfoList = this.employeeAttendServiceFeign.findList(leaveInfoFormQuery);
+        assistantPatientInfo.setLeaveInfoList(leaveInfoList);
     }
 
     /**
