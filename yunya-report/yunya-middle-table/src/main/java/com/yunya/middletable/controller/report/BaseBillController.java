@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.ParseException;
+
 /**
  * 简介: 中间表账单同步控制器
  *
@@ -49,7 +51,7 @@ public class BaseBillController {
    */
   @ApiOperation("根据时间段批量操作中间表账单")
   @PostMapping(value = "/operate/batch", name = "form")
-  public ResponseResult<T> pullBillData(@RequestBody PullForm form) {
+  public ResponseResult<T> pullBillData(@RequestBody PullForm form) throws ParseException {
     billBiz.pullBillData(form);
     return ResponseUtil.success(null);
   }
