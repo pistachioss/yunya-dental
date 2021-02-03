@@ -41,7 +41,8 @@ public class RemoteClinicEmployeeConfigFactory implements RemoteClinicEmployeeCo
     }
 
     @Override
-    public List<EnableChooseEmployeeRes> enableAppointEmployeeList(Integer orgId) {
+    public List<EnableChooseEmployeeRes> enableAppointEmployeeList(Integer orgId, Boolean isContainLeaver) {
         return null;
     }
+
 }

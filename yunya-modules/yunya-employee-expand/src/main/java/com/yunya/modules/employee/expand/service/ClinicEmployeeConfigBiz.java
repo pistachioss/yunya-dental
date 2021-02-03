@@ -307,7 +307,8 @@ public class ClinicEmployeeConfigBiz
    * @param orgId 组织ID
    * @return List<EnableChooseEmployeeRes>
    */
-  public List<EnableChooseEmployeeRes> findEnableAppointEmployeeList(Integer orgId) {
+  public List<EnableChooseEmployeeRes> findEnableAppointEmployeeList(Integer orgId, Boolean isContainLeaver) {
+    isContainLeaver = isContainLeaver == null ? true : isContainLeaver;
     List<EnableChooseEmployeeRes> resultList = new ArrayList<>();
     // 获取门诊可登陆员工列表
     EmployeeInfoQueryForm query = new EmployeeInfoQueryForm();
@@ -320,30 +321,12 @@ public class ClinicEmployeeConfigBiz
       List<Integer> userIds = employeeList.stream().map(EmployeeInfoVO::getUserId).collect(Collectors.toList());
       List<ClinicEmployeeConfig> clinicEmployeeConfigList = mapper.findBatch(orgId, userIds);
       for (EmployeeInfoVO vo : employeeList) {
-        if (!USER_RESIGNATION_STATUS.equals(vo.getWorkStatus())) {
-          Integer userId = vo.getUserId();
-          EnableChooseEmployeeRes employeeRes = new EnableChooseEmployeeRes();
-          employeeRes.setEmployeeId(vo.getUserId());
-          employeeRes.setEmployeeName(vo.getName());
-          boolean b = clinicEmployeeConfigList.stream().anyMatch(clinicEmployeeConfig -> clinicEmployeeConfig.getEmployeeId().equals(userId));
-          if (b) {
-            ClinicEmployeeConfig employeeConfig = clinicEmployeeConfigList.stream().filter(entity -> entity.getEmployeeId().equals(userId)).findAny().get();
-            Integer enableAppoint = employeeConfig.getEnableAppoint();
-            if (1 == enableAppoint) {
-              Integer assistantEmployeeId = employeeConfig.getAssistantEmployeeId();
-              employeeRes.setAssistantEmployeeId(assistantEmployeeId);
-              if (null != assistantEmployeeId) {
-                assistantEmployeeIds.add(assistantEmployeeId);
-              }
-              Integer clinicDepartmentRoomId = employeeConfig.getClinicDepartmentRoomId();
-              employeeRes.setClinicDepartmentRoomId(clinicDepartmentRoomId);
-              if (null != clinicDepartmentRoomId) {
-                clinicDepartmentRoomIds.add(clinicDepartmentRoomId);
-              }
-              resultList.add(employeeRes);
-            }
-          } else {
-            resultList.add(employeeRes);
+        // 如果isContainLeaver=true则包含离职员工，否则不包含离职员工
+        if (isContainLeaver) {
+          this.setEnableChooseEmployeeRes(vo,clinicEmployeeConfigList,clinicDepartmentRoomIds,assistantEmployeeIds,resultList);
+        } else {
+          if (!USER_RESIGNATION_STATUS.equals(vo.getWorkStatus())) {
+            this.setEnableChooseEmployeeRes(vo,clinicEmployeeConfigList,clinicDepartmentRoomIds,assistantEmployeeIds,resultList);
           }
         }
       }
@@ -351,6 +334,45 @@ public class ClinicEmployeeConfigBiz
       this.setAssistantAndDeptRoom(assistantEmployeeIds,clinicDepartmentRoomIds,resultList);
     }
     return resultList;
+  }
+
+  /**
+   * 设置可约医生信息列表
+   * @param vo 医生信息
+   * @param clinicEmployeeConfigList 员工配置列表
+   * @param clinicDepartmentRoomIds 员工科室列表
+   * @param assistantEmployeeIds  助手ID列表
+   * @param resultList 要注入的可预约医生信息列表
+   */
+  private void setEnableChooseEmployeeRes(EmployeeInfoVO vo,
+                               List<ClinicEmployeeConfig> clinicEmployeeConfigList,
+                               List<Integer> clinicDepartmentRoomIds,
+                               List<Integer> assistantEmployeeIds,
+                               List<EnableChooseEmployeeRes> resultList) {
+    Integer userId = vo.getUserId();
+    EnableChooseEmployeeRes employeeRes = new EnableChooseEmployeeRes();
+    employeeRes.setEmployeeId(vo.getUserId());
+    employeeRes.setEmployeeName(vo.getName());
+    boolean b = clinicEmployeeConfigList.stream().anyMatch(clinicEmployeeConfig -> clinicEmployeeConfig.getEmployeeId().equals(userId));
+    if (b) {
+      ClinicEmployeeConfig employeeConfig = clinicEmployeeConfigList.stream().filter(entity -> entity.getEmployeeId().equals(userId)).findAny().get();
+      Integer enableAppoint = employeeConfig.getEnableAppoint();
+      if (1 == enableAppoint) {
+        Integer assistantEmployeeId = employeeConfig.getAssistantEmployeeId();
+        employeeRes.setAssistantEmployeeId(assistantEmployeeId);
+        if (null != assistantEmployeeId) {
+          assistantEmployeeIds.add(assistantEmployeeId);
+        }
+        Integer clinicDepartmentRoomId = employeeConfig.getClinicDepartmentRoomId();
+        employeeRes.setClinicDepartmentRoomId(clinicDepartmentRoomId);
+        if (null != clinicDepartmentRoomId) {
+          clinicDepartmentRoomIds.add(clinicDepartmentRoomId);
+        }
+        resultList.add(employeeRes);
+      }
+    } else {
+      resultList.add(employeeRes);
+    }
   }
 
   /**

@@ -681,7 +681,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     private List<Integer> enableAppointDentistIds(Integer orgId) {
         // 获取可预约的医生
-        List<EnableChooseEmployeeRes> enableChooseEmployeeRes = this.clinicEmployeeConfigFeign.enableAppointEmployeeList(orgId);
+        List<EnableChooseEmployeeRes> enableChooseEmployeeRes = this.clinicEmployeeConfigFeign.enableAppointEmployeeList(orgId,false);
         if (StringHelper.isNotEmpty(enableChooseEmployeeRes)) {
             List<Integer> enableDentistIds = enableChooseEmployeeRes.stream().map(EnableChooseEmployeeRes::getEmployeeId).collect(Collectors.toList());
             return enableDentistIds;
@@ -847,8 +847,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         SysUserEmployeeModel employeeQuery = new SysUserEmployeeModel();
         employeeQuery.setOrgIds(Arrays.asList(orgId));
         employeeQuery.setWorkStatus(new Byte[]{2});
-//        List<SysUserInfoDetail> sysUserEmployeeInfoList = this.remoteSystemServiceFeign.findSysUserEmployeeInfoList(employeeQuery);
-
         // 预约医生ID列表
         List<Integer> dentistIdsList = hasSechduleAndEnableAppointList.stream().map(UserWorkVO::getCompEmpId).collect(Collectors.toList());
         // 所有有预约的医生，包含离职医生

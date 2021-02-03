@@ -87,8 +87,8 @@ public class ClinicEmployeeApi {
     @ApiOperation("获取门诊可预约员工列表")
     @GetMapping(value = "/api/appoint/employee/list/{orgId}", name = "获取门诊可预约员工列表")
     public List<EnableChooseEmployeeRes> enableAppointEmployeeList(
-            @PathVariable(value = "orgId") Integer orgId) {
+            @PathVariable(value = "orgId") Integer orgId,@RequestParam(value = "isContainLeaver") Boolean isContainLeaver) {
 
-        return clinicEmployeeConfigBiz.findEnableAppointEmployeeList(orgId);
+        return clinicEmployeeConfigBiz.findEnableAppointEmployeeList(orgId,isContainLeaver);
     }
 }
