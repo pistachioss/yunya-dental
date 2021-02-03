@@ -59,4 +59,10 @@ public class AssistantActualWorkloadDetailQuery extends PageQuery implements Ser
   /** 开单结束日期 */
   @ApiModelProperty(value = "开单结束日期", example = "yyyy-MM-dd")
   private String orderEndDate;
+  /** 账单开始日期 */
+  @ApiModelProperty(value = "账单开始日期", example = "yyyy-MM-dd")
+  private String billStartDate;
+  /** 开单结束日期 */
+  @ApiModelProperty(value = "账单结束日期", example = "yyyy-MM-dd")
+  private String billEndDate;
 }

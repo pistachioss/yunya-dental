@@ -953,6 +953,7 @@
         SELECT
         awd.bill_id as billId,
         awd.bill_num as billNum,
+        DATE_FORMAT(awd.bill_date, '%Y-%m-%d') as billDate,
         DATE_FORMAT(awd.order_date, '%Y-%m-%d') as orderDate,
         awd.patient_id as patientId,
         awd.`name` as patientName,
@@ -964,6 +965,7 @@
         SELECT
         btp.bill_id,
         btp.bill_num,
+        btp.bill_date,
         btp.order_date,
         btp.patient_id,
         btp.`name`,
@@ -981,6 +983,7 @@
         bbd.price * bbd.quantity AS originalAmount,
         bbd.discount_amount,
         bbp.bill_num,
+        bbp.bill_date,
         bbp.order_date,
         bbp.patient_id,
         bbp.`name`,
@@ -1001,6 +1004,7 @@
         btp.treatment_id,
         bb.bill_id,
         bb.bill_num,
+        bb.bill_date,
         bb.order_date,
         bb.patient_id,
         bp.`name`,
@@ -1093,6 +1097,12 @@
             </if>
             <if test="query.orderEndDate != null and query.orderEndDate != ''">
                 and DATE_FORMAT(awd.order_date, '%Y-%m-%d') &lt;= #{query.orderEndDate}
+            </if>
+            <if test="query.billStartDate != null and query.billStartDate != ''">
+                and DATE_FORMAT(awd.bill_date, '%Y-%m-%d') &gt;= #{query.billStartDate}
+            </if>
+            <if test="query.billEndDate != null and query.billEndDate != ''">
+                and DATE_FORMAT(awd.bill_date, '%Y-%m-%d') &lt;= #{query.billEndDate}
             </if>
         </where>
         GROUP BY awd.treatment_id
