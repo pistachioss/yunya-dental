@@ -286,6 +286,9 @@
         <foreach collection="userIds" item="userId" open="(" separator="," close=")">
             #{userId}
         </foreach>
+        order by
+        user_info.workStatus asc,
+        user_info.userId desc
     </select>
 
     <!-- 根据条件查询员工详细信息 -->
@@ -438,7 +441,9 @@
                 and user_info.name = #{queryForm.name}
             </if>
         </where>
-        order by user_info.userId desc
+        order by
+        user_info.workStatus asc,
+        user_info.userId desc
     </select>
 
     <!-- 根据条件查询员工组织信息列表 -->

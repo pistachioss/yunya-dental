@@ -124,6 +124,7 @@
                 </foreach>
             </if>
         </where>
+        order by sup.workStatus asc
     </select>
     <!-- 根据组织ID、用户ID查询岗位列表(员工管理-可登录组织列表) -->
     <select id="selectUserPostListByUserId" resultType="com.yunya.modules.system.vo.SysUserPostOrgVO">
