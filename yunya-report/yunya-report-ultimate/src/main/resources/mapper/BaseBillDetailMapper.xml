@@ -1111,7 +1111,13 @@
     <!-- 根据条件查询开单项目数量信息列表 -->
     <select id="selectBillingItemInfoList" resultType="com.yunya.feign.report.domain.vo.BillingItemInfoVO">
         SELECT
-        *
+        itemId,
+        itemType,
+        itemNum,
+        itemName,
+        categoryId,
+        categoryName,
+        totalBillCount
         FROM (
         SELECT
         bbd.itemId,
@@ -1175,7 +1181,10 @@
         GROUP BY
         bbd.itemId,
         bbd.itemType
-        ORDER BY bbd.itemType, bbd.itemId ) bbd
+        ORDER BY
+        bbd.itemType,
+        bbd.itemId
+        ) bbd
         <where>
             <if test="query.categoryIds != null and query.categoryIds.size > 0">
                 and bbd.categoryId in
