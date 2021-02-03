@@ -63,6 +63,8 @@ public enum AppointmentError {
     APPOINTMENT_REGISTRATERED(30,"预约已挂号，不允许进行修改"),
     /** 11031-预约列表为空 */
     APPOINTMENT_LIST_EMPTY(31,"预约列表为空"),
+    /** 11032-预约医生已离职,不可预约 */
+    APPOINTMENT_DENTIST_LEAVE(32,"预约医生已离职,不可预约"),
 
 
     /**---------------------------------------- 外部服务异常提示 ----------------------------------------*/

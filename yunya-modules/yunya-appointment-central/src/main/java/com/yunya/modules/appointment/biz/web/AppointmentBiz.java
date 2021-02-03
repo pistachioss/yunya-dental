@@ -69,6 +69,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -444,6 +445,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return ResponseResult
      */
     public ResponseResult continueUpdateAppointment(AppointmentBaseForm appointmentForm) {
+        // 判断预约医生是否离职，如果离职则不可以编辑预约
+        Integer dentistId = appointmentForm.getDentistId();
+        SysEmployee dentistInfo = this.remoteSystemServiceFeign.findSysEmployeeById(dentistId);
+        if (dentistInfo.getWorkStatus().equals(BusinessConstants.USER_RESIGNATION_STATUS)){
+            return ResponseUtil.fail(AppointmentError.APPOINTMENT_DENTIST_LEAVE.getCode(),
+                    AppointmentError.APPOINTMENT_DENTIST_LEAVE.getMessage(),null);
+        }
+
         // 检查预约是否已经挂号，如果已经挂号，则不允许修改操作
         Integer id = appointmentForm.getId();
         Registered registerQuery = new Registered();
