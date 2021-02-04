@@ -248,7 +248,7 @@
         select
             pbio.id,
             pbio.NAME,
-            pbio.age,
+            TIMESTAMPDIFF(YEAR, pbi.birthday, CURDATE()) AS age,
             pbio.mobile,
             pbio.gender,
             pmio.member_type_id memberTypeId,
