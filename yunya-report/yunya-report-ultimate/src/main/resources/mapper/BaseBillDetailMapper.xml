@@ -505,6 +505,7 @@
         billId,
         billNum,
         DATE_FORMAT(orderDate, '%Y-%m-%d') as orderDate,
+        DATE_FORMAT(billDate, '%Y-%m-%d') as billDate,
         patientId,
         patientName,
         mobile,
@@ -518,6 +519,7 @@
         ebd.orgId,
         ebd.billId,
         ebd.billNum,
+        ebd.billDate,
         ebd.orderDate,
         ebd.patientId,
         ebd.patientName,
@@ -535,6 +537,7 @@
         bbp.bill_id AS billId,
         bbp.bill_num AS billNum,
         bbp.order_date AS orderDate,
+        bbp.bill_date AS billDate,
         bbp.patient_id AS patientId,
         bbp.`name` AS patientName,
         bbp.pinyin_name AS pinyinName,
@@ -551,8 +554,9 @@
         SELECT
         bb.org_id,
         bb.bill_id,
-        bb.bill_num,
         bb.order_date,
+        bb.bill_num,
+        bb.bill_date,
         bb.order_amount,
         bb.privilege_amount,
         bb.actual_amount,
@@ -621,8 +625,11 @@
             <if test="query.orderDate != null and query.orderDate != ''">
                 and DATE_FORMAT(ewd.orderDate, '%Y-%m-%d') = #{query.orderDate}
             </if>
+            <if test="query.billDate != null and query.billDate != ''">
+                and DATE_FORMAT(ewd.billDate, '%Y-%m-%d') = #{query.billDate}
+            </if>
         </where>
-        ORDER BY ewd.orderDate DESC
+        ORDER BY ewd.billDate DESC
     </select>
 
     <!-- 根据条件查询员工工作量开单明细列表 -->

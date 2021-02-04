@@ -24,10 +24,14 @@ public class EmployeePersonalActualWorkloadDetailVO implements Serializable {
   /** 账单ID */
   @ApiModelProperty("账单ID")
   private Integer billId;
+  /**订单日期*/
+  @Excel(name = "订单日期")
+  @ApiModelProperty("订单日期")
+  private String orderDate;
   /** 账单日期 */
   @Excel(name = "账单日期")
   @ApiModelProperty("账单日期")
-  private String orderDate;
+  private String billDate;
   /** 账单编号 */
   @Excel(name = "账单编号")
   @ApiModelProperty("账单编号")
