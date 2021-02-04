@@ -4,11 +4,10 @@ import com.yunya.feign.employee_attend.factory.EmployeeAttendServiceFallBackFact
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
 import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
-
 import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.employee_attend.EmployeeSchedule;
-import com.yunya.modules.employeeattend.form.LeaveInfoForm;
+import com.yunya.models.employee_attend.LeaveInfo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -45,5 +44,5 @@ public interface EmployeeAttendServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api/leave/info/findList",method=RequestMethod.POST)
-  public List<LeaveInfoListVO> findList(@RequestBody @Validated LeaveInfoForm leaveInfoForm);
+  public List<LeaveInfoListVO> findList(@RequestBody @Validated LeaveInfo leaveInfoForm);
 }

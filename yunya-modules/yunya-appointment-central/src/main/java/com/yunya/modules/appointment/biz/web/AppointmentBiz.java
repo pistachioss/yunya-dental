@@ -48,6 +48,7 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentOperateRecord;
+import com.yunya.models.employee_attend.LeaveInfo;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
@@ -58,7 +59,6 @@ import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
-import com.yunya.modules.employeeattend.form.LeaveInfoForm;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -2371,11 +2371,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
         }
         // 查询医生/助手请假信息
-        LeaveInfoForm leaveInfoFormQuery = new LeaveInfoForm();
-        leaveInfoFormQuery.setUserId(assistantDetailInfo.getUserId());
-        leaveInfoFormQuery.setStartTime(appointDate);
-        leaveInfoFormQuery.setEndTime(appointDate);
-        List<LeaveInfoListVO> leaveInfoList = this.employeeAttendServiceFeign.findList(leaveInfoFormQuery);
+        LeaveInfo LeaveInfoQuery = new LeaveInfo();
+        LeaveInfoQuery.setUserId(assistantDetailInfo.getUserId());
+        LeaveInfoQuery.setStartTime(appointDate);
+        LeaveInfoQuery.setEndTime(appointDate);
+        List<LeaveInfoListVO> leaveInfoList = this.employeeAttendServiceFeign.findList(LeaveInfoQuery);
         assistantPatientInfo.setLeaveInfoList(leaveInfoList);
     }
 

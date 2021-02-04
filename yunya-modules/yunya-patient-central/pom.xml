@@ -109,7 +109,7 @@
             <artifactId>wo-sdk</artifactId>
             <version>1.0.18</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/resources/lib/wo-sdk.jar</systemPath>
+            <systemPath>${pom.basedir}/src/main/resources/lib/wo-sdk.jar</systemPath>
         </dependency>
         <!-- http访问 -->
         <dependency>
@@ -155,6 +155,7 @@
                 <version>2.2.5.RELEASE</version>
                 <configuration>
                     <includeSystemScope>true</includeSystemScope>
+                    <executable>true</executable>
                 </configuration>
                 <executions>
                     <execution>
