@@ -42,7 +42,7 @@ public class AppointListQuery implements Serializable {
 
     /** 预约类型（0-初诊/1-复诊） */
     @ApiModelProperty(value = "预约类型（0-初诊/1-复诊）")
-    private Byte appointType;
+    private Byte firstVisit;
 
     /** 患者姓名/手机号/姓名拼音 */
     @ApiModelProperty(value = "患者姓名/手机号/姓名拼音")
