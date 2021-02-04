@@ -392,6 +392,7 @@
             </if>
 
         </where>
+        order by a.appoint_time asc
     </select>
 
     <!-- 根据患者id查询患者所有预约列表 -->
