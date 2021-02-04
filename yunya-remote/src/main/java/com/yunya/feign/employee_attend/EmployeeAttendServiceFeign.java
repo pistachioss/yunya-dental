@@ -2,6 +2,7 @@ package com.yunya.feign.employee_attend;
 
 import com.yunya.feign.employee_attend.factory.EmployeeAttendServiceFallBackFactory;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
+import com.yunya.feign.employee_attend.form.LeaveInfoForm;
 import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
@@ -44,5 +45,5 @@ public interface EmployeeAttendServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api/leave/info/findList",method=RequestMethod.POST)
-  public List<LeaveInfoListVO> findList(@RequestBody @Validated LeaveInfo leaveInfoForm);
+  public List<LeaveInfoListVO> findEmployeeLeaveInfoList(@RequestBody @Validated LeaveInfoForm leaveInfoForm);
 }

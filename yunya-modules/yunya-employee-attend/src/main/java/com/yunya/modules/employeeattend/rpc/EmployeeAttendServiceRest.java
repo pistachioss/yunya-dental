@@ -3,6 +3,7 @@ package com.yunya.modules.employeeattend.rpc;
 import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.models.employee_attend.EmployeeSchedule;
+import com.yunya.modules.employeeattend.biz.LeaveInfoBiz;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoForm;
 import com.yunya.modules.employeeattend.rpc.service.EmployeeScheduleSerivce;
@@ -29,7 +30,7 @@ import java.util.List;
 public class EmployeeAttendServiceRest {
 
   @Autowired private EmployeeScheduleSerivce employeeScheduleSerivce;
-  @Autowired private EmployeeAttendServiceRest leaveInfoBiz;
+  @Autowired private LeaveInfoBiz leaveInfoBiz;
   /**
    * 查看员工排班列表
    * @param employeeScheduleQueryForm
@@ -58,7 +59,8 @@ public class EmployeeAttendServiceRest {
    * @return
    */
   @RequestMapping(value = "/leave/info/findList",method=RequestMethod.POST)
-  public List<LeaveInfoListVO> findList(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+  public List<LeaveInfoListVO> findEmployeeLeaveInfoList(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
     return this.leaveInfoBiz.findList(leaveInfoForm);
   }
+
 }
