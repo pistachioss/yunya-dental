@@ -1,6 +1,7 @@
 package com.yunya.feign.appointment.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.feign.employee_attend.vo.WorkDayVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -51,4 +52,8 @@ public class  AppointmentDimensionVo implements Serializable {
     /** 分解助手信息 */
     @ApiModelProperty(value = "分解助手信息")
     private List<AppointmentDimensionVo> appointmentAssistants;
+
+    /** 员工请假信息 */
+    @ApiModelProperty(value = "员工请假信息")
+    private List<LeaveInfoListVO> leaveInfoList;
 }

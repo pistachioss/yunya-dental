@@ -5,12 +5,17 @@ import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
 import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
 
+import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.employee_attend.EmployeeSchedule;
+import com.yunya.modules.employeeattend.form.LeaveInfoForm;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.List;
 
 @FeignClient(
         name = YunyaServiceNameConstants.YUNYA_EMPLOYEE_ATTEND,
@@ -32,4 +37,13 @@ public interface EmployeeAttendServiceFeign {
    */
   @RequestMapping(value = "/api/employee/attend/findEmInfoById", method = RequestMethod.POST)
   BaseEmployeeScheduleVO findEmInfoById(@RequestBody EmployeeSchedule employeeSchedule);
+
+  /**
+   * 获取请假申请列表
+   *
+   * @param
+   * @return
+   */
+  @RequestMapping(value = "/api/leave/info/findList",method=RequestMethod.POST)
+  public List<LeaveInfoListVO> findList(@RequestBody @Validated LeaveInfoForm leaveInfoForm);
 }
