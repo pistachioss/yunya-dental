@@ -235,7 +235,7 @@
 
     <!-- app端模糊查询 -->
     <select id="appFindPatientByNameAndMobile" resultType="com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo">
-        select pbio.id,pbio.name,pbio.age,pbio.mobile,pbio.gender
+        select pbio.id,pbio.name,TIMESTAMPDIFF(YEAR, pbio.birthday, CURDATE()) AS age,pbio.mobile,pbio.gender
         from patient_base_info pbio
         where concat(IFNULL(name,''),
         IFNULL(pbio.medical_number,''),IFNULL(pbio.pinyin_name,''),IFNULL(pbio.mobile,'')) like
@@ -248,7 +248,7 @@
         select
             pbio.id,
             pbio.NAME,
-            TIMESTAMPDIFF(YEAR, pbi.birthday, CURDATE()) AS age,
+            TIMESTAMPDIFF(YEAR, pbio.birthday, CURDATE()) AS age,
             pbio.mobile,
             pbio.gender,
             pmio.member_type_id memberTypeId,
