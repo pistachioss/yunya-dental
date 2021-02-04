@@ -2,6 +2,7 @@ package com.yunya.feign.employee_attend.factory;
 
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
+import com.yunya.feign.employee_attend.form.LeaveInfoForm;
 import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
@@ -37,7 +38,7 @@ public class EmployeeAttendServiceFallBackFactory implements EmployeeAttendServi
   }
 
   @Override
-  public List<LeaveInfoListVO> findList(LeaveInfo leaveInfoForm) {
+  public List<LeaveInfoListVO> findEmployeeLeaveInfoList(LeaveInfoForm leaveInfoForm) {
     return null;
   }
 }

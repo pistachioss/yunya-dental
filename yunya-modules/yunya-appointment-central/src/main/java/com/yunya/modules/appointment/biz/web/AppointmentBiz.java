@@ -13,6 +13,7 @@ import com.yunya.feign.appointment.domain.query.*;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
+import com.yunya.feign.employee_attend.form.LeaveInfoForm;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.feign.employee_attend.vo.UserWorkVO;
@@ -63,6 +64,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -528,7 +530,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         AppointmentQuery appointmentQuery = new AppointmentQuery();
         appointmentQuery.setAppointDate(query.getAppointDate());
         appointmentQuery.setOrgId(query.getOrgId());
-        appointmentQuery.setAppointType(query.getAppointType());
+        appointmentQuery.setAppointType(query.getFirstVisit());
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }
@@ -581,7 +583,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             });
             // 关键字检索
             collect = this.searchMatchs(appointmentList,
-                    query.getAppointType(),
+                    query.getFirstVisit(),
                     query.getDentistName(),
                     query.getMedicalNumber(),
                     query.getSearch());
@@ -866,12 +868,19 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 离职员工信息列表
         List<SysUserInfoDetail> leavePostUserInfoList = this.remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(leavePostDentistIds);
 
-        // 将离职员工的信息加入排班表中
+        // 将离职员工的信息加入排班表中,为了解决已离职医生的预约显示在预约可视图中
         if (StringHelper.isNotEmpty(leavePostUserInfoList)) {
             leavePostUserInfoList.forEach(entity->{
                 UserWorkVO userWorkVO = new UserWorkVO();
                 userWorkVO.setName(entity.getName());
                 userWorkVO.setCompEmpId(entity.getUserId());
+                // 给离职员工创建空的离职排班
+                List<WorkDayVO> workDayVOS = new ArrayList<>();
+                Date leaveDate = LocalDate.parse(entity.getLeaveTime()).toDate();
+                WorkDayVO workDayVO = new WorkDayVO();
+                workDayVO.setDate(leaveDate);
+                workDayVOS.add(workDayVO);
+                userWorkVO.setDays(workDayVOS);
                 hasSechduleAndEnableAppointList.add(userWorkVO);
             });
         }
@@ -2371,12 +2380,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
         }
         // 查询医生/助手请假信息
-        LeaveInfo LeaveInfoQuery = new LeaveInfo();
-        LeaveInfoQuery.setUserId(assistantDetailInfo.getUserId());
-        LeaveInfoQuery.setStartTime(appointDate);
-        LeaveInfoQuery.setEndTime(appointDate);
-        List<LeaveInfoListVO> leaveInfoList = this.employeeAttendServiceFeign.findList(LeaveInfoQuery);
-        assistantPatientInfo.setLeaveInfoList(leaveInfoList);
+//        LeaveInfoForm LeaveInfoQuery = new LeaveInfoForm();
+//        LeaveInfoQuery.setUserId(assistantDetailInfo.getUserId());
+//        LeaveInfoQuery.setStartTime(appointDate);
+//        LeaveInfoQuery.setEndTime(appointDate);
+//        List<LeaveInfoListVO> leaveInfoList = this.employeeAttendServiceFeign.findEmployeeLeaveInfoList(LeaveInfoQuery);
+//        assistantPatientInfo.setLeaveInfoList(leaveInfoList);
     }
 
     /**
@@ -2394,6 +2403,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         List<AppointmentDimensionVo> appointmentDimensionVoList = new LinkedList<>();
         Integer userId = dentistWorkSchedule.getCompEmpId();
         String dentistName = dentistWorkSchedule.getName();
+        WorkDayVO workDayVO = dentistWorkSchedule.getDays().stream().findFirst().get();
+        Date scheduleDate = workDayVO.getDate();
 
         List<AppointmentDimensionVo> collect = appointmentDimensionCommInfos.stream().filter(appointmentDimensionVo -> appointmentDimensionVo.getDentistId().equals(userId)).collect(Collectors.toList());
         if (StringHelper.isNotEmpty(collect)) {
@@ -2414,6 +2425,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointmentDimensionVoNull.setDentistId(userId);
             appointmentDimensionVoNull.setName(dentistName);
             appointmentDimensionVoNull.setDentistScheduleVos(dentistWorkSchedule.getDays());
+//            // 设置请假信息
+//            LeaveInfoForm leaveInfoQuery = new LeaveInfoForm();
+//            leaveInfoQuery.setUserId(userId);
+//            leaveInfoQuery.setStartTime(scheduleDate);
+//            leaveInfoQuery.setEndTime(scheduleDate);
+//            List<LeaveInfoListVO> employeeLeaveInfoList = this.employeeAttendServiceFeign.findEmployeeLeaveInfoList(leaveInfoQuery);
+//            appointmentDimensionVoNull.setLeaveInfoList(employeeLeaveInfoList);
             appointmentDimensionVoList.add(appointmentDimensionVoNull);
         }
         return appointmentDimensionVoList;
