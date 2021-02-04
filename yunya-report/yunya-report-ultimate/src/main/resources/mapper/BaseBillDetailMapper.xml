@@ -944,7 +944,7 @@
         LEFT JOIN base_tariff_info bti ON bbd.item_id = bti.item_id
         <where>
             and bbd.item_type = 0
-            and bbd.coupon_workload != 0
+            and bbd.coupon_workload > 0
             <if test="query.billId != null">
                 and bbd.bill_id = #{query.billId}
             </if>
