@@ -34,7 +34,7 @@
       like concat(concat('%',#{combination}),'%')
     </select>
 
-    <!-- 患者报表-未复诊预约且未提醒List -->
+    <!-- 患者报表-未复诊预约且未提醒List
     <select id="selectNotSeenList" resultType="com.yunya.feign.report.domain.vo.BasePatientNotSeenVo">
 
         select
@@ -119,7 +119,7 @@
         and DATE_FORMAT(time, "%Y-%m-%d") >= DATE_FORMAT(NOW(), "%Y-%m-%d")
         )
 
-    </select>
+    </select> -->
     <!-- 查询来源类型总数量 -->
     <select id="selectCountOriginType" resultType="java.lang.Integer">
         select count(bp.origin_type)
@@ -375,5 +375,117 @@
                     btp.treatment_id
                 ) btp1 ON btp.treatmentId = btp1.treatment_id
             ) btp ON bp.id = btp.patient_id
+    </select>
+
+    <!-- 末诊后无预约、随访的患者列表 -->
+    <select id="selectNotSeenList" resultType="com.yunya.feign.report.domain.vo.BasePatientNotSeenVo">
+        select
+        treatmentId,
+        patientId,
+        name,
+        mobile,
+        treatType,
+        dentistId,
+        employeeName,
+        lastVisitDate
+        from (
+        SELECT
+            btp.orgId,
+            btp.treatmentId,
+            btp.patientId,
+            btp.treatType,
+            btp.dentistId,
+            btp.employeeName,
+            btp.lastVisitDate,
+            bp.`name` as `name`,
+            bp.mobile as mobile,
+            bp.pinyin_name AS pinyinName,
+            IFNULL( btp1.appointCount, 0 ) AS appointCount,
+            IFNULL( bvr.visitCount, 0 ) AS visitCount
+        FROM
+            (
+            SELECT
+                btp1.org_id AS orgId,
+                btp1.treatment_id AS treatmentId,
+                btp1.patient_id AS patientId,
+                btp1.treat_type AS treatType,
+                btp1.registered_dentist_id AS dentistId,
+                btp1.employee_name AS employeeName,
+                DATE_FORMAT( btp1.treat_start_time, '%Y-%m-%d' ) AS lastVisitDate
+            FROM
+                ( SELECT max( btp.treatment_id ) AS treatmentId FROM base_treatment_process btp WHERE btp.treat_end_time IS NOT NULL GROUP BY btp.patient_id ) btp
+                LEFT JOIN (
+                SELECT
+                    any_value ( btp.org_id ) AS org_id,
+                    any_value ( btp.treatment_id ) AS treatment_id,
+                    any_value ( btp.patient_id ) AS patient_id,
+                    any_value ( btp.registered_dentist_id ) AS registered_dentist_id,
+                    any_value ( btp.treat_start_time ) AS treat_start_time,
+                    any_value ( btp.treat_type ) AS treat_type,
+                    any_value ( be.employee_name ) AS employee_name
+                FROM
+                    base_treatment_process btp
+                    LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+                WHERE
+                    btp.treat_end_time IS NOT NULL
+                GROUP BY
+                    btp.treatment_id
+                ) btp1 ON btp.treatmentId = btp1.treatment_id
+            ) btp
+            LEFT JOIN base_patient bp ON btp.patientId = bp.patient_id
+            LEFT JOIN (
+            SELECT
+                patient_id,
+                count( btp.patient_id ) AS appointCount
+            FROM
+                base_treatment_process btp
+            WHERE
+                btp.appointment_id IS NOT NULL
+                AND DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) > DATE_FORMAT( CURRENT_DATE, '%Y-%m-%d' )
+            GROUP BY
+                patient_id
+            ) btp1 ON btp.patientId = btp1.patient_id
+            LEFT JOIN (
+            SELECT
+                patient_id,
+                count( bvr.patient_id ) AS visitCount
+            FROM
+                base_visit_remind bvr
+            WHERE
+                bvr.type = 0
+                AND DATE_FORMAT( bvr.time, '%Y-%m-%d' ) > DATE_FORMAT( CURRENT_DATE, '%Y-%m-%d' )
+            GROUP BY
+            patient_id
+            ) bvr ON btp.patientId = bvr.patient_id
+        ) btp
+        <where>
+            and btp.appointCount = 0
+            and btp.visitCount = 0
+            <if test="form.orgId != null">
+                and btp.orgId = #{form.orgId}
+            </if>
+            <if test="form.startDate != null and form.startDate != ''">
+                and btp.lastVisitDate &gt;= #{form.startDate}
+            </if>
+            <if test="form.endDate != null and form.endDate != ''">
+                and btp.lastVisitDate &lt;= #{form.endDate}
+            </if>
+            <if test="form.attendingDoctors != null and form.attendingDoctors.size > 0">
+                and btp.dentistId in
+                <foreach collection="form.attendingDoctors" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="form.combination != null and form.combination != ''">
+               and concat(IFNULL(btp.`name`,''),IFNULL(btp.pinyinName,''),IFNULL(btp.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+            <if test="form.treatTypes != null and form.treatTypes.size > 0">
+                and btp.treatType in
+                <foreach collection="form.treatTypes" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>
