@@ -218,6 +218,7 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
     BigDecimal businessGoalCount = mapper.selectBusinessGoalCount(orgId, businessType, dateRange);
     // 查询业务目标完成数量
     BigDecimal businessCompletedCount = BigDecimal.ZERO;
+
     switch (businessType) {
         // 营业收入
       case 0:

@@ -52,7 +52,6 @@
     <!-- 查询预约项目 -->
     <select id="selectAllAppointItemByOrgId" resultMap="AllOrdersMap">
         select
-        citem.org_id as orgId,
         item.id,
         item.name,
         atype.name as typeName,
@@ -61,11 +60,9 @@
         item.duration,
         item.remarks,
         item.inservice
-        from appoint_item item LEFT JOIN
-        clinic_appoint_item  citem
-        ON item.id = citem.appoint_item_id
+        from appoint_item item
         LEFT JOIN appoint_type atype ON	atype.id = item.appoint_type_id
-        where citem.org_id = #{form.orgId} and citem.inservice = 1
+        where item.inservice = 1
         <if test="form.appointItemId != null">
             and citem.id = #{form.appointId}
         </if>
@@ -110,6 +107,7 @@
             </if>
         </where>
     </select>
+
     <!-- 插入实体 -->
     <insert id="insertEntity" parameterType="com.yunya.models.appointment.AppointItem" useGeneratedKeys="true" keyProperty="id">
         insert into appoint_item (appoint_type_id,`name`,duration,remarks,crt_id,crt_name,crt_time,upt_id,upd_name,upd_time)

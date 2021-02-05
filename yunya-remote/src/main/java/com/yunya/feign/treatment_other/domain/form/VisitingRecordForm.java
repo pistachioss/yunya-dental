@@ -64,6 +64,7 @@ public class VisitingRecordForm implements Serializable {
      * 就诊日期
      */
     @ApiModelProperty(value = "就诊日期")
+    @NotNull(message = "就诊日期不能为空!")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @PastOrPresent(message = "就诊日期必须是过去某个或现在日期")
     private Date treatmentDate;
