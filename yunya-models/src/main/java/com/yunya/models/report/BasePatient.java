@@ -7,7 +7,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
 
-@Data
 @Table(name = "base_patient")
 public class BasePatient {
     /**
