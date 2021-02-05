@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseBillDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillMapper;
@@ -17,13 +18,17 @@ import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderDetailPayRecord;
 import com.yunya.models.treatment.OrderRecord;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 
@@ -49,6 +54,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Autowired private BillRecordMapper billRecordMapper;
   /** 中间表账单详情 */
   @Autowired private BaseBillDetailMapper baseBillDetailMapper;
+  /** 多线程 */
+  @Resource(name = "customizeThreadPool")
+  private ExecutorService importExcelThreadPool;
 
   /**
    * 根据消息操作中间表账单
@@ -146,10 +154,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       List<BaseBillDetail> billDetails = generateBaseBillDetail(details);
       if (StringHelper.isNotEmpty(billDetails)) {
         baseBillDetailMapper.deleteByBillId(orderRecordId);
-        billDetails.forEach(
-            billDetail -> {
-              baseBillDetailMapper.insertSelective(billDetail);
-            });
+        billDetails.forEach(billDetail -> baseBillDetailMapper.insertSelective(billDetail));
       }
     }
   }
@@ -209,24 +214,63 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   public void pullBillData(PullForm form) {
     String startDate = form.getStartDate();
     String endDate = form.getEndDate();
-    Example orderExample = new Example(OrderRecord.class);
-    orderExample.createCriteria().andBetween("updTime", startDate, endDate);
-    List<OrderRecord> orderRecords = orderRecordMapper.selectByExample(orderExample);
-    if (StringHelper.isNotEmpty(orderRecords)) {
-      orderRecords.stream()
-          .map(OrderRecord::getId)
-          .forEach(
-              orderRecordId -> {
-                BaseBill baseBill = generateBaseBill(orderRecordId);
-                mapper.deleteByPrimaryKey(orderRecordId);
-                baseBillDetailMapper.deleteByBillId(orderRecordId);
-                baseBillDetailMapper.deleteByBillId(orderRecordId);
-                if (null != baseBill) {
-                  mapper.insertSelective(baseBill);
-                  // 保存账单明细
-                  saveBaseBillDetail(orderRecordId);
+    List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
+    if (StringHelper.isNotEmpty(dateRanges)) {
+      for (String date : dateRanges) {
+        importExcelThreadPool.submit(
+            () -> {
+              Example orderExample = new Example(OrderRecord.class);
+              orderExample
+                  .createCriteria()
+                  .andGreaterThanOrEqualTo("updTime", new DateTime(date).toString("yyyy-MM-dd"))
+                  .andLessThan("updTime", new DateTime(date).plusDays(1).toString("yyyy-MM-dd"));
+              List<OrderRecord> orderRecords = orderRecordMapper.selectByExample(orderExample);
+              if (StringHelper.isNotEmpty(orderRecords)) {
+                List<BaseBill> baseBills = generateBaseBillList(orderRecords);
+                if (StringHelper.isNotEmpty(baseBills)) {
+                  for (BaseBill baseBill : baseBills) {
+                    Integer billId = baseBill.getBillId();
+                    mapper.deleteByPrimaryKey(billId);
+                    baseBillDetailMapper.deleteByBillId(billId);
+                    mapper.insertSelective(baseBill);
+                    // 保存账单明细
+                    saveBaseBillDetail(billId);
+                  }
                 }
-              });
+              }
+            });
+      }
     }
+  }
+
+  /**
+   * 批量生成中间表账单记录
+   *
+   * @param orderRecords 订单记录列表
+   * @return 账单记录列表
+   */
+  private List<BaseBill> generateBaseBillList(List<OrderRecord> orderRecords) {
+    List<BaseBill> baseBills = new ArrayList<>();
+    if (StringHelper.isNotEmpty(orderRecords)) {
+      for (OrderRecord orderRecord : orderRecords) {
+        if (orderRecord.getInservice()) {
+          BaseBill baseBill = new BaseBill();
+          baseBill.setBillId(orderRecord.getId());
+          baseBill.setOrgId(orderRecord.getOrgId());
+          baseBill.setPatientId(orderRecord.getPatientId());
+          baseBill.setTreatmentId(orderRecord.getTreatmentRecordId());
+          baseBill.setOrderNum(orderRecord.getOrderRecordNum());
+          baseBill.setOrderAmount(orderRecord.getTotalAmount());
+          baseBill.setBillerId(orderRecord.getCrtId());
+          baseBill.setOrderDate(orderRecord.getCrtTime());
+          // 设置账单的收费信息
+          if (ORDER_FINISH_STATUS.equals(orderRecord.getStatus())) {
+            setBaseBillChargeValue(orderRecord.getId(), baseBill);
+          }
+          baseBills.add(baseBill);
+        }
+      }
+    }
+    return baseBills;
   }
 }

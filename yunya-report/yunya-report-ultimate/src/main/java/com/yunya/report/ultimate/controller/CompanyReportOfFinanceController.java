@@ -260,6 +260,34 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
+   * 根据条件查询产品优惠项目明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<CouponDiscountItemInfoVO>
+   */
+  @ApiOperation("公司端报表-财务报表-产品优惠项目明细")
+  @PostMapping(value = "/coupon/discount/items", name = "产品优惠项目明细")
+  public ResponseResult<PageInfo<CouponDiscountItemInfoVO>> couponDiscountItems(
+          @RequestBody @Valid CouponDiscountItemsQuery query) {
+    PageInfo<CouponDiscountItemInfoVO> resultList = baseBillBiz.couponDiscountItems(query);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 根据条件查询产品优惠项目明细导出
+   *
+   * @param query 查询条件
+   * @return PageInfo<>
+   */
+  @ApiOperation("公司端报表-财务报表-产品优惠项目明细导出")
+  @PostMapping(value = "/coupon/discount/items/export", name = "产品优惠项目明细导出")
+  public ResponseResult<T> couponDiscountItemsExport(
+          @RequestBody @Valid CouponDiscountItemsQuery query, HttpServletResponse response) throws IOException {
+    baseBillBiz.couponDiscountItemsExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
    * 根据条件导出账单优惠明细列表
    *
    * @param response 响应

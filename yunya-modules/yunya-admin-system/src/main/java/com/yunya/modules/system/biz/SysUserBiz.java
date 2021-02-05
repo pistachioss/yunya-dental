@@ -38,7 +38,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseEmployee;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseUserPost;
@@ -61,6 +60,8 @@ import static com.yunya.framework.common.constant.UserConstant.PW_ENCODER_SALT;
 @Transactional(rollbackFor = Exception.class)
 public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
 
+  /** 验证码过期时长5分钟 */
+  private static final long EXPIRE = 5 * 60;
   /** 消息中间件调用 */
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 用户的员工信息 */
@@ -230,8 +231,9 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       SysEmployee employeeResult = sysEmployeeMapper.selectByUserId(userId);
       SysEmployee sysEmployeeEntity = EntityUtils.build(form, SysEmployee.class);
       sysEmployeeEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(form.getName()));
-      if (!USER_RESIGNATION_STATUS.equals(form.getWorkStatus())) {
+      if (!USER_RESIGNATION_STATUS.equals(form.getWorkStatus()) || 1 == userId) {
         sysEmployeeEntity.setLeaveTime("");
+        sysEmployeeEntity.setWorkStatus((byte) 1);
       }
       sysEmployeeEntity.setId(employeeResult.getId());
       sysEmployeeEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -431,9 +433,9 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     if (redisUtils.hasKey(key)) {
       return ResponseUtil.fail(OBJECT_EDIT_FAIL, "消息已发送, 请稍后再试", null);
     }
-    String messageCode = this.messageCodeGenerator();
+    String messageCode = this.messageCodeGenerator(true, 6);
     // 设置验证码到缓存
-    redisUtils.set(key, messageCode, 60);
+    redisUtils.set(key, messageCode, EXPIRE);
     SmsVerifyCodeModel smsVerifyCodeModel = new SmsVerifyCodeModel();
     smsVerifyCodeModel.setMobile(mobile);
     smsVerifyCodeModel.setVerifyCode(messageCode);
@@ -445,13 +447,13 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   /**
    * 重置密码
    *
+   * @param request 请求
    * @param userId 用户ID
    * @return 返回结果信息
    */
-  public ResponseResult<T> resetPassword(Integer userId) {
-    SysUser entity = new SysUser();
-    entity.setId(userId);
-    SysUser sysUser = mapper.selectOne(entity);
+  public ResponseResult<T> resetPassword(HttpServletRequest request, Integer userId) {
+    String deviceName = ServletUtils.getCurrentDevice(request).getName();
+    SysUser sysUser = mapper.selectByPrimaryKey(userId);
     if (null != sysUser) {
       // 密码加密，加盐，设置默认密码
       sysUser.setPassword(new BCryptPasswordEncoder(PW_ENCODER_SALT).encode(DEFAULT_USER_PASSWORD));
@@ -459,6 +461,15 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysUser.setUpdName(sysUser.getName());
       int i = mapper.updateByPrimaryKey(sysUser);
       if (i > 0) {
+        // 设置redis key
+        String redisKeyUserId = setKey(REDIS_KEY_USER_ID, deviceName, String.valueOf(userId));
+        // 获取被修改用户的token
+        String token = redisUtils.get(redisKeyUserId);
+        if (StringUtils.isNotBlank(token)) {
+          // 移除缓存中被修改用户的信息
+          redisUtils.delete(REDIS_KEY_USER_TOKEN + token);
+          redisUtils.delete(redisKeyUserId);
+        }
         return ResponseUtil.success();
       }
     }
@@ -468,25 +479,32 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   /**
    * 随机生成六位数，并且每位数都不重复
    *
+   * @param numberFlag 是否是数字
+   * @param length 长度
    * @return 返回短信验证码
    */
-  private String messageCodeGenerator() {
-    int[] array = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    Random rand = new Random();
-    for (int i = 10; i > 1; i--) {
-      int index = rand.nextInt(i);
-      int tmp = array[index];
-      array[index] = array[i - 1];
-      array[i - 1] = tmp;
-    }
-    int result = 0;
-    for (int i = 0; i < 6; i++) {
-      result = result * 10 + array[i];
-    }
-    if (String.valueOf(result).length() == 6) {
-      return String.valueOf(result);
-    } else {
-      return String.valueOf(messageCodeGenerator());
-    }
+  private String messageCodeGenerator(boolean numberFlag, int length) {
+    StringBuilder retStr;
+    String strTable = numberFlag ? "1234567890" : "1234567890abcdefghijkmnpqrstuvwxyz";
+    int len = strTable.length();
+    boolean bDone = true;
+    do {
+      retStr = new StringBuilder();
+      int count = 0;
+      for (int i = 0; i < length; i++) {
+        double dblR = Math.random() * len;
+        int intR = (int) Math.floor(dblR);
+        char c = strTable.charAt(intR);
+        if (('0' <= c) && (c <= '9')) {
+          count++;
+        }
+        retStr.append(strTable.charAt(intR));
+      }
+      int firstCount = 2;
+      if (count >= firstCount) {
+        bDone = false;
+      }
+    } while (bDone);
+    return retStr.toString();
   }
 }

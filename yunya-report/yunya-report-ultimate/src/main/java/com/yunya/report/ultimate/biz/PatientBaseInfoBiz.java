@@ -1,5 +1,8 @@
 package com.yunya.report.ultimate.biz;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.report.BasePatient;
@@ -87,10 +90,14 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
   /**
    * 根据条件查询患者信息
    *
-   * @param keyword 关键字
+   * @param query 关键字
    * @return 患者信息列表
    */
-  public List<PatientInfoVO> findPatientInfoByExample(String keyword) {
-    return mapper.selectPatientInfoByExample(keyword);
+  public PageInfo<PatientInfoVO> findPatientInfoByExample(PatientSearchQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<PatientInfoVO> list = mapper.selectPatientInfoByExample(query);
+    return new PageInfo<>(list);
   }
 }

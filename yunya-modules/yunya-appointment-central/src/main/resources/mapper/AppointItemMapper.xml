@@ -82,13 +82,16 @@
         item.name,
         atype.name as typeName,
         item.appoint_type_id as appointTypeId,
-        IFNULL(item.duration,'无') as duration,
-        cai.inservice,
-        cai.remarks
-        FROM
-        clinic_appoint_item cai
-        inner JOIN appoint_item item ON item.id = cai.appoint_item_id
-        inner JOIN appoint_type atype ON atype.id = item.appoint_type_id
+        IFNULL(item.duration,'无') as duration
+        <if test="form.orgId != null">
+            ,cai.inservice,
+            cai.remarks
+        </if>
+        FROM appoint_type atype
+        left join appoint_item item on item.appoint_type_id = atype.id
+        <if test="form.orgId != null">
+            left join clinic_appoint_item cai on cai.appoint_item_id = item.id
+        </if>
         <where>
             <if test="form.appointTypeId != null">
                 atype.id =#{form.appointTypeId}
@@ -102,7 +105,7 @@
             <if test="form.name != null and form.fuzzyQuery == false">
                 and item.name = #{form.name}
             </if>
-            <if test="form.inservice != null">
+            <if test="form.orgId != null and form.inservice != null">
                 and cai.inservice = #{form.inservice}
             </if>
         </where>

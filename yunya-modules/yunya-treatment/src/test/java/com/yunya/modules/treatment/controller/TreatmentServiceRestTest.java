@@ -1,6 +1,9 @@
 package com.yunya.modules.treatment.controller;
 
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO;
+import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.treatment.TreatmentRecord;
@@ -43,6 +46,15 @@ public class TreatmentServiceRestTest {
   @Test
   public void find1() {
     ResponseResult<LastTreatmentInfoVO> result = treatmentRecordController.lastTreatmentInfo(104);
+    System.out.println(result);
+  }
+
+  @Test
+  public void find2() {
+    PatientTreatmentRecordQueryForm query = new PatientTreatmentRecordQueryForm();
+    query.setPatientId(13282);
+    ResponseResult<PageInfo<PatientTreatmentRecordVO>> result =
+        treatmentRecordController.patientTreatmentRecordList(query);
     System.out.println(result);
   }
 }

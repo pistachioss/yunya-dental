@@ -181,4 +181,19 @@
             </if>
         </where>
     </select>
+
+    <select id="selectClinicOralTariffInId" resultType="com.yunya.models.tariff.ClinicOralTariff">
+        select
+            t.id,
+            t.clinic_id as clinicId,
+            t.oral_tariff_id as oralTariffId,
+            t.price,
+            t.inservice
+        from clinic_oral_tariff t
+        where t.clinic_id = #{orgId}
+        and t.oral_tariff_id in
+        <foreach collection="tariffIds" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 </mapper>

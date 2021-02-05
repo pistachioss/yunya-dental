@@ -280,4 +280,9 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   public MedicalOrganizationInfoVO clinicExtInfoByCompanyId(Integer companyId) {
     return null;
   }
+
+  @Override
+  public List<DictionaryItem> findDictionaryItemByIds(List<Integer> ids) {
+    return null;
+  }
 }

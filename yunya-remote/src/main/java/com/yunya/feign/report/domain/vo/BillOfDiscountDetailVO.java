@@ -70,7 +70,7 @@ public class BillOfDiscountDetailVO implements Serializable {
   @ApiModelProperty("实收金额")
   private BigDecimal actualAmount;
   /** 优惠类型 */
-  @Excel(name = "优惠类型", readConverterExp = "0-未使用优惠,1-产品优惠,2-授权折扣")
+  @Excel(name = "优惠类型", readConverterExp = "0=未使用优惠,1=产品优惠,2=授权折扣")
   @ApiModelProperty("优惠类型:0-未使用优惠；1-产品优惠；2-授权折扣")
   private Byte privilegeType;
   /** 收费人ID */

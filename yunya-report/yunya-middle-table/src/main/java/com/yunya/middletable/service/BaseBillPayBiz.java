@@ -3,6 +3,7 @@ package com.yunya.middletable.service;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.MemberExpendRecordMapper;
 import com.yunya.middletable.dao.patient.PrepaidExpendRecordMapper;
@@ -18,12 +19,16 @@ import com.yunya.models.system.AccountItem;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 简介: 中间表收费记录处理业务层
@@ -48,6 +53,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
   /** 预付款消费记录 */
   @Autowired private PrepaidExpendRecordMapper prepaidExpendRecordMapper;
+  /** 线程池 */
+  @Resource(name = "customizeThreadPool")
+  private ExecutorService importExcelThreadPool;
 
   /**
    * 根据消息类型操作（新增/修改/删除）中间表入账方式
@@ -183,21 +191,54 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   public void pullBillPayData(PullForm form) {
     String startDate = form.getStartDate();
     String endDate = form.getEndDate();
-    Example emp = new Example(AccountItem.class);
-    emp.createCriteria().andBetween("updTime", startDate, endDate);
-    List<BillPayRecord> billPayRecords = billPayRecordMapper.selectByExample(emp);
-    if (StringHelper.isNotEmpty(billPayRecords)) {
-      billPayRecords.forEach(
-          billPayRecord -> {
-            Integer billPayRecordId = billPayRecord.getId();
-            mapper.deleteByPrimaryKey(billPayRecordId);
-            baseBillPayDetailMapper.deleteByBillPayId(billPayRecordId);
-            BaseBillPay baseBillPay = generateBaseBillPay(billPayRecordId);
-            if (null != baseBillPay) {
-              mapper.insertSelective(baseBillPay);
-              saveBillPayDetailRecord(billPayRecordId);
-            }
-          });
+    List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
+    if (StringHelper.isNotEmpty(dateRanges)) {
+      for (String date : dateRanges) {
+        importExcelThreadPool.submit(
+            () -> {
+              Example emp = new Example(AccountItem.class);
+              emp.createCriteria()
+                  .andGreaterThanOrEqualTo("updTime", new DateTime(date).toString("yyyy-MM-dd"))
+                  .andLessThan("updTime", new DateTime(date).plusDays(1).toString("yyyy-MM-dd"));
+              List<BillPayRecord> billPayRecords = billPayRecordMapper.selectByExample(emp);
+              if (StringHelper.isNotEmpty(billPayRecords)) {
+                List<BaseBillPay> baseBillPays = generateBaseBillPayList(billPayRecords);
+                if (StringHelper.isNotEmpty(baseBillPays)) {
+                  for (BaseBillPay baseBillPay : baseBillPays) {
+                    Integer billPayBillPayId = baseBillPay.getBillPayId();
+                    mapper.deleteByPrimaryKey(billPayBillPayId);
+                    baseBillPayDetailMapper.deleteByBillPayId(billPayBillPayId);
+                    mapper.insertSelective(baseBillPay);
+                    // 保存收费记录明细
+                    saveBillPayDetailRecord(billPayBillPayId);
+                  }
+                }
+              }
+            });
+      }
     }
+  }
+
+  /**
+   * 构建中间表账单支付记录列表
+   *
+   * @param billPayRecords 账单支付记录
+   * @return 中间表账单支付记录
+   */
+  private List<BaseBillPay> generateBaseBillPayList(List<BillPayRecord> billPayRecords) {
+    List<BaseBillPay> baseBillPays = new ArrayList<>();
+    for (BillPayRecord billPayRecord : billPayRecords) {
+      BaseBillPay baseBillPay = new BaseBillPay();
+      baseBillPay.setBillPayId(billPayRecord.getId());
+      baseBillPay.setBillId(billPayRecord.getOrderRecordId());
+      baseBillPay.setOrgId(billPayRecord.getOrgId());
+      baseBillPay.setTreatmentId(billPayRecord.getTreatmentRecordId());
+      baseBillPay.setPayeeUserId(billPayRecord.getCrtId());
+      baseBillPay.setPayeeDate(billPayRecord.getCrtTime());
+      baseBillPay.setReceivedAmount(billPayRecord.getReceivedAmount());
+      baseBillPay.setStillOweAmount(billPayRecord.getStillOweAmount());
+      baseBillPays.add(baseBillPay);
+    }
+    return baseBillPays;
   }
 }

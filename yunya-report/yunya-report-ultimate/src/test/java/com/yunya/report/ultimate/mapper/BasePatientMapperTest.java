@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.vo.PatientInfoVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +26,9 @@ public class BasePatientMapperTest {
 
   @Test
   public void find() {
-    List<PatientInfoVO> list = patientMapper.selectPatientInfoByExample("wang");
+    PatientSearchQuery query = new PatientSearchQuery();
+    query.setPatientKeyWord("wang");
+    List<PatientInfoVO> list = patientMapper.selectPatientInfoByExample(query);
     System.out.println(list);
   }
 }

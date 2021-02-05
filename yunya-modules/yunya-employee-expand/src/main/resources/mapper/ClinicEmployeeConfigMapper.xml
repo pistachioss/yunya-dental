@@ -17,6 +17,11 @@
         <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
     </resultMap>
 
+    <sql id="baseColumn">
+        id,employee_id,clinic_id,assistant_employee_id,clinic_department_room_id,enable_appoint,enable_registry,enable_download,
+        inservice,crt_id,crt_time,upd_id,upd_time
+    </sql>
+
     <insert id="insertBatch">
         insert into
         `clinic_employee_config`
@@ -196,4 +201,22 @@
     <delete id="deleteEmployeeConfig">
         delete cec.* from clinic_employee_config cec where cec.employee_id = #{employeeId} and cec.clinic_id = #{clinicId}
     </delete>
+
+    <!-- 批量查询 -->
+    <select id="findBatch" resultMap="BaseResultMap">
+        select
+          <include refid="baseColumn"></include>
+        from clinic_employee_config
+        <where>
+            <if test="orgId != null">
+                and clinic_id = #{orgId}
+            </if>
+            <if test="userIds != null and userIds.size() > 0">
+                and employee_id in
+                <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

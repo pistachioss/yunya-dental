@@ -128,7 +128,7 @@ public class AppointmentListItemVo implements Serializable {
 
     /** 预约类型（初/复诊） */
     @ApiModelProperty(value = "预约类型（初/复诊）")
-    private Byte appointType;
+    private Byte firstVisit;
 
     /** 预约状态 */
     @ApiModelProperty(value = "预约状态")

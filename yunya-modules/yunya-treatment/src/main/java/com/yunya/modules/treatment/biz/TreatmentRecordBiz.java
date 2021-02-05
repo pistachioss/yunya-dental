@@ -225,7 +225,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     TreatmentRecordVO resultData = mapper.selectTreatmentInfoById(id);
     if (null != resultData) {
       Integer orgId = resultData.getOrgId();
-      // todo 从缓存中查询组织
+      // 从缓存中查询组织
       OrganizationInfo organizationInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
       if (null != organizationInfo) {
         resultData.setOrgName(organizationInfo.getAbbreviation());
@@ -855,7 +855,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     String name = BaseContextHandler.getName();
     orderRecord.setUpdId(userId);
     orderRecord.setUpdName(name);
-    int i1 = orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
+    orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
     treatmentRecord.setTreatEndTime(new Date(System.currentTimeMillis()));
     treatmentRecord.setStatus((byte) 2);
     treatmentRecord.setUpdId(userId);
@@ -994,21 +994,20 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           vo -> {
-            Integer orgId = vo.getOrgId();
             // 查询组织信息
-            OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+            OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(vo.getOrgId());
             if (null != orgInfo) {
               vo.setOrgName(orgInfo.getAbbreviation());
             }
             Integer dentistId = vo.getDentistId();
-            // todo 从缓存中查询用户
+            // 从缓存中查询用户
             SysEmployee employee = systemServiceFeign.findSysEmployeeById(dentistId);
             if (null != employee) {
               vo.setDentistName(employee.getName());
             }
-            Integer treatmentRecordId = vo.getTreatmentRecordId();
+            // 就诊助手信息
             AssistantMatchingRecord assistantMatchingRecord = new AssistantMatchingRecord();
-            assistantMatchingRecord.setTreatmentRecordId(treatmentRecordId);
+            assistantMatchingRecord.setTreatmentRecordId(vo.getTreatmentRecordId());
             List<AssistantMatchingRecord> assistantMatchingRecords =
                 assistantMatchingRecordMapper.select(assistantMatchingRecord);
             if (StringHelper.isNotEmpty(assistantMatchingRecords)) {
@@ -1209,7 +1208,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
     if (StringHelper.isNotEmpty(treatmentIds)) {
       List<TreatmentRecordExtendVO> treatmentRecordExtendVOS =
-          mapper.selectByIds(treatmentIds.stream().collect(Collectors.toSet()));
+          mapper.selectByIds(new HashSet<>(treatmentIds));
       if (StringHelper.isNotEmpty(treatmentRecordExtendVOS)) {
         List<Integer> regAssistantIds = new ArrayList<>();
         treatmentRecordExtendVOS.forEach(

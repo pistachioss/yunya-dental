@@ -363,17 +363,29 @@ public class TollBiz {
     int i = treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
     // 发送消息同步就诊、账单数据
     if (i > 0) {
-      rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
-      rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
-      Integer appointmentId = treatmentRecord.getAppointmentId();
-      if (null != appointmentId) {
-        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
-      } else {
-        rabbitMqServiceFeign.sendMessage(
-            treatmentRecord.getRegisteredId(), 1, 1, BaseTreatmentProcess);
-      }
+      sendMessageForMiddleTable(orderRecordId, billPayRecordId, treatmentRecord);
     }
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
+  }
+
+  /**
+   * 发送消息同步中间表数据
+   *
+   * @param orderRecordId 订单记录ID
+   * @param billPayRecordId 账单支付记录ID
+   * @param treatmentRecord 就诊记录ID
+   */
+  private void sendMessageForMiddleTable(
+      Integer orderRecordId, Integer billPayRecordId, TreatmentRecord treatmentRecord) {
+    rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+    rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
+    Integer appointmentId = treatmentRecord.getAppointmentId();
+    if (null != appointmentId) {
+      rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+    } else {
+      rabbitMqServiceFeign.sendMessage(
+          treatmentRecord.getRegisteredId(), 1, 1, BaseTreatmentProcess);
+    }
   }
 
   /**
@@ -518,9 +530,15 @@ public class TollBiz {
             Integer orderDetailId = vo.getOrderDetailId();
             if (detailId.equals(orderDetailId)) {
               privilegeAmount = vo.getItemBenefitAmount();
+              if (privilegeAmount.compareTo(actualAmount) > 0) {
+                privilegeAmount = actualAmount;
+              }
               actualAmount = receivableAmount.subtract(privilegeAmount);
-              // TODO: 2020/12/31 从vo中获取补入时长
-              //              couponWorkload = vo.
+              if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
+                actualAmount = BigDecimal.ZERO;
+              }
+              // 获取补入工作量
+              couponWorkload = vo.getSupplyWorkload();
             }
           }
           detailPayRecord.setPrivilegeAmount(privilegeAmount);
@@ -624,7 +642,13 @@ public class TollBiz {
           Integer orderDetailId = discountDetailModel.getOrderDetailId();
           if (detailId.equals(orderDetailId)) {
             actualAmount = discountDetailModel.getActualAmount();
+            if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
+              throw new ClientServiceException("实收金额不能小于0！", PARAMETERS_IS_ILLEGAL);
+            }
             privilegeAmount = receivableAmount.subtract(actualAmount);
+            if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
+              throw new ClientServiceException("授权折扣的实收金额不能大于原价！", PARAMETERS_IS_ILLEGAL);
+            }
           }
         }
         detailPayRecord.setPrivilegeAmount(privilegeAmount);
@@ -709,6 +733,9 @@ public class TollBiz {
     PatientOrderBenefitVo benefitVo = choiceBenefit.getData();
     if (null != benefitVo) {
       privilegeAmount = benefitVo.getBenefitTotalAmount();
+      if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
+        throw new ClientServiceException("收费失败，优惠金额小于0，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
+      }
     }
     return privilegeAmount;
   }
@@ -729,6 +756,9 @@ public class TollBiz {
         BigDecimal receivableAmount = orderDetail.getReceivableAmount();
         BigDecimal actualAmount = detailModel.getActualAmount();
         privilegeAmount = privilegeAmount.add(receivableAmount.subtract(actualAmount));
+        if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
+          throw new ClientServiceException("收费失败，优惠金额小于0，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
+        }
       }
     }
     return privilegeAmount;
@@ -839,7 +869,7 @@ public class TollBiz {
               "==> [params]:discountType={},generalDiscountModel={},accreditDiscountModel{}",
               discountType,
               generalDiscountModel,
-              accreditDiscountModel);
+              null);
           log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
           throw new ClientServiceException("授权折扣异常", PARAMETERS_IS_ILLEGAL);
         }
@@ -1178,17 +1208,18 @@ public class TollBiz {
         // 计算并校验收欠费入账总额
         totalCharge =
             calculateAndCheckReceivedAmount(
-                prepaymentAccounts, memberAccounts, paymentModels, (byte) 1);
+                prepaymentAccounts, memberAccounts, paymentModels, (byte) 0);
         debtAmount = billRecordResult.getDebtAmount();
         checkTotalChargeAndDebtAmount(totalCharge, debtAmount, outstandingAmount);
         debtAmount = debtAmount.subtract(totalCharge);
-        discountType = billRecordResult.getPrivilegeType(); // 避免原来的优惠被覆盖
+        // 避免原来的优惠被覆盖
+        discountType = billRecordResult.getPrivilegeType();
       } else {
         usePrivilege = true;
         // 计算并校验收欠费入账总额
         totalCharge =
             calculateAndCheckReceivedAmount(
-                prepaymentAccounts, memberAccounts, paymentModels, (byte) 2);
+                prepaymentAccounts, memberAccounts, paymentModels, (byte) 1);
         // 账单未使用过优惠，重新使用优惠
         orderRecordId = billRecordResult.getOrderRecordId();
         discountType = saveDiscountDetail(generalDiscount, accreditDiscount, discountType);
@@ -1223,11 +1254,11 @@ public class TollBiz {
       // 保存收费记录
       billRecordId = billRecordResult.getId();
       orderRecordId = billRecordResult.getOrderRecordId();
-      // 更新订单明细收费记录
       if (usePrivilege) {
         // 保存优惠明细
         savePrivilegeDetail(
             discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
+        // 更新订单明细收费记录
         updateOrderDetailPayRecordWithPrivilege(orderRecordId, totalCharge);
       } else {
         updateOrderDetailPayRecordUnPrivilege(orderRecordId, totalCharge);
@@ -1236,7 +1267,7 @@ public class TollBiz {
       // 计算并校验收欠费入账总额
       totalCharge =
           calculateAndCheckReceivedAmount(
-              prepaymentAccounts, memberAccounts, paymentModels, (byte) 2);
+              prepaymentAccounts, memberAccounts, paymentModels, (byte) 1);
       // 调整账单重新收费
       OrderRecord orderRecordResult = checkOrderRecord(treatmentId);
       Integer orderRecordOrgId = orderRecordResult.getOrgId();
@@ -1460,8 +1491,12 @@ public class TollBiz {
         if (detail.getOrderDetailId().equals(orderDetailId)) {
           privilegeAmount = vo.getItemBenefitAmount();
           actualAmount = receivableAmount.subtract(privilegeAmount);
-          // TODO 补入工作量
-          detail.setCouponWorkload(BigDecimal.valueOf(0));
+          if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
+            actualAmount = BigDecimal.ZERO;
+            privilegeAmount = receivableAmount;
+          }
+          // 补入工作量
+          detail.setCouponWorkload(vo.getSupplyWorkload());
         }
       }
       detail.setPrivilegeAmount(privilegeAmount);
@@ -1524,8 +1559,10 @@ public class TollBiz {
       }
       // 只能使用一种优惠
       Byte privilegeType = record.getPrivilegeType();
-      if (0 != privilegeType && (null != generalDiscountModel || null != accreditDiscountModel)) {
-        throw new ClientServiceException("收欠费失败，当前账单已使用优惠，不能继续使用优惠！", PARAMETERS_IS_ILLEGAL);
+      if (null != generalDiscountModel || null != accreditDiscountModel) {
+        if (0 != privilegeType) {
+          throw new ClientServiceException("收欠费失败，当前账单已使用优惠，不能继续使用优惠！", PARAMETERS_IS_ILLEGAL);
+        }
       }
       // todo 校验发票
       return record;
@@ -1549,11 +1586,11 @@ public class TollBiz {
       byte flag) {
     BigDecimal totalCharge =
         calculateTotalCharge(prepaymentAccountModels, memberAccountModels, paymentModels);
-    if (BigDecimal.valueOf(0).compareTo(totalCharge) > 0) {
-      if (flag == 1) {
+    if (BigDecimal.valueOf(0).compareTo(totalCharge) >= 0) {
+      if (flag == 0) {
+        throw new ClientServiceException("收欠费失败，收欠费总额不能小于或等于0！", PARAMETERS_IS_ILLEGAL);
+      } else if (flag == 1) {
         throw new ClientServiceException("收欠费失败，收欠费总额不能小于0！", PARAMETERS_IS_ILLEGAL);
-      } else if (flag == 2) {
-        throw new ClientServiceException("收欠费失败，收欠费总额不能小于等于0！", PARAMETERS_IS_ILLEGAL);
       }
     }
     return totalCharge;

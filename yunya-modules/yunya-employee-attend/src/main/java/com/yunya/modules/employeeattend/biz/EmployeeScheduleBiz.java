@@ -81,6 +81,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         } catch (ParseException e) {
             throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
         }
+
         if (date.before(new Date())) {
             throw new ClientServiceException("今天之前的排班不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
         }
@@ -93,7 +94,6 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             throw new ClientServiceException("当前排班处于申请流程中，不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
         }
         int i = mapper.delete(employeeSchedule);
-        //一会打开
         if (i > 0) {
             rabbitMqServiceFeign.sendMessage(employeeScheduleDeleteForm.getId(), 2, BaseEmployeeSchedule);
         }
@@ -141,14 +141,12 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         //查询当前日期的排班个数 超过两个则不能继续添加排班
         EmployeeSchedule find = new EmployeeSchedule();
         find.setEmployeeId(Integer.valueOf(employeeScheduleForm.getUserId()));
-//        find.setClinicId(employeeScheduleForm.getClinicId());
         find.setWorkDate(date);
         int a = mapper.selectCount(find);
         if (a >= 2) {
             throw new ClientServiceException("每天最多排两个班次", OperationCodeConstants.INSERT_MODEL);
         }
         int i = mapper.insertSelective(employeeSchedule);
-        //一会打开
         if (i > 0) {
             rabbitMqServiceFeign.sendMessage(employeeSchedule.getId(), 0, BaseEmployeeSchedule);
         }

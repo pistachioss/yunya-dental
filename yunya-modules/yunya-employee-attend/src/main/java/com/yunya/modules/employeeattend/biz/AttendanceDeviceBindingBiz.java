@@ -56,7 +56,7 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
     @Autowired
     private RedisUtils redisUtils;
     /** 设备绑定短信验证码过期时间 */
-    private static final long DEVICE_BINDING_AUTH_EXPIRE = 60;
+    private static final long DEVICE_BINDING_AUTH_EXPIRE = 5 * 60;
     /** 设备已绑定 */
     private final static Integer DEVICE_BINDED = 1;
     /** 设备已解绑 */

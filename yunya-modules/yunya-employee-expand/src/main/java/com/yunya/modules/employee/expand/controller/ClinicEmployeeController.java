@@ -69,9 +69,9 @@ public class ClinicEmployeeController {
   @ApiOperation("获取门诊可预约员工列表")
   @GetMapping(value = "/appoint/employee/list/{orgId}", name = "获取门诊可预约员工列表")
   public ResponseResult<List<EnableChooseEmployeeRes>> enableAppointEmployeeList(
-      @PathVariable(value = "orgId") Integer orgId) {
+      @PathVariable(value = "orgId") Integer orgId, Boolean isContainLeaver) {
     List<EnableChooseEmployeeRes> resultList =
-        clinicEmployeeConfigBiz.findEnableAppointEmployeeList(orgId);
+        clinicEmployeeConfigBiz.findEnableAppointEmployeeList(orgId,isContainLeaver);
     return ResponseUtil.success(resultList);
   }
 

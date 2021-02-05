@@ -150,6 +150,7 @@ public class BenefitBiz {
 						cardBenefit.setOrgId(benefitForm.getOrgId());
 						cardBenefit.setOrderId(benefitForm.getOrderId());
 						cardBenefit.setOrderDetailId(itemBenefitBo.getOrderDetailId());
+						cardBenefit.setCouponId(itemUseBenefitBo.getCouponId());
 						cardBenefit.setPatientId(benefitForm.getPatientId());
 						cardBenefit.setCardId(itemUseBenefitBo.getBenefitId());
 						cardBenefit.setItemId(itemBenefitBo.getItemId());
@@ -163,7 +164,7 @@ public class BenefitBiz {
 						cardBenefit.setUpdId(loginUserId);
 						cardBenefit.setSort(itemUseBenefitBo.getId());
 						//计算工作量
-						calculateWordLoad(itemUseBenefitBo, itemBenefitBo, cardBenefit);
+						cardBenefit.setSupplyWorkload(calculateWordLoad(itemUseBenefitBo, itemBenefitBo));
 						list.add(cardBenefit);
 					}
 				}
@@ -294,6 +295,10 @@ public class BenefitBiz {
 				listMap.forEach((k, v) -> {
 					OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
 					BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+					BigDecimal supplyWorkTotalLoad = v.stream()
+							.filter(obj -> ONE.equals(obj.getBenefitType()) && obj.getSupplyWorkload() != null)
+							.map(CardBenefit::getSupplyWorkload).reduce(BigDecimal.ZERO, BigDecimal::add);
+					log.info("查询账单优惠明细，开单明细id：{}，计算补入工作量：{}", k, supplyWorkTotalLoad);
 					vo.setOrderDetailId(k);
 					vo.setItemBenefitAmount(itemBenefitAmount);
 					//按照优惠提交顺序排序
@@ -315,6 +320,7 @@ public class BenefitBiz {
 						return benefitVo;
 					}).collect(toList());
 					vo.setItemBenefitList(itemBenefits);
+					vo.setSupplyWorkload(supplyWorkTotalLoad);
 					resultList.add(vo);
 				});
 			}
@@ -422,20 +428,19 @@ public class BenefitBiz {
 	 *
 	 * @param itemUseBenefitBo itemUseBenefitBo
 	 * @param itemBenefitBo    itemBenefitBo
-	 * @param cardBenefit      cardBenefit
 	 */
-	private void calculateWordLoad(ItemUseBenefitBo itemUseBenefitBo, OrderItemUseBo itemBenefitBo, CardBenefit cardBenefit) {
+	private BigDecimal calculateWordLoad(ItemUseBenefitBo itemUseBenefitBo, OrderItemUseBo itemBenefitBo) {
 		Example example;
+		BigDecimal supplyWorkload = null;
 		if (COUPON_TYPE.equals(itemUseBenefitBo.getBenefitType())) {
 			Integer couponType = itemUseBenefitBo.getCouponType();
 			Integer couponId = itemUseBenefitBo.getCouponId();
-			cardBenefit.setCouponId(couponId);
 			if (VOUCHER.equals(couponType)) {
 				example = new Example(VoucheCoupon.class);
 				example.createCriteria().andEqualTo("couponId", couponId);
 				VoucheCoupon voucheCoupon = voucherMapper.selectOneByExample(example);
 				if (voucheCoupon != null) {
-					cardBenefit.setSupplyWorkload(itemUseBenefitBo.getBenefitAmount().multiply(voucheCoupon.getWorkloadRate()));
+					supplyWorkload = itemUseBenefitBo.getBenefitAmount().multiply(voucheCoupon.getWorkloadRate());
 				}
 			}
 			if (DISCOUNT.equals(couponType)) {
@@ -443,7 +448,7 @@ public class BenefitBiz {
 				example.createCriteria().andEqualTo("couponId", couponId);
 				DiscountCoupon discountCoupon = discountCouponMapper.selectOneByExample(example);
 				if (discountCoupon != null) {
-					cardBenefit.setSupplyWorkload(itemUseBenefitBo.getBenefitAmount().multiply(discountCoupon.getWorkloadRate()));
+					supplyWorkload = itemUseBenefitBo.getBenefitAmount().multiply(discountCoupon.getWorkloadRate());
 				}
 			}
 			if (EXCHANGE.equals(couponType)) {
@@ -452,7 +457,7 @@ public class BenefitBiz {
 						andEqualTo("type", itemBenefitBo.getType());
 				PackageCouponItem packageCouponItem = packageCouponItemMapper.selectOneByExample(example);
 				if (packageCouponItem != null) {
-					cardBenefit.setSupplyWorkload(BigDecimal.ONE.multiply(packageCouponItem.getWorkloadLoad()));
+					supplyWorkload = BigDecimal.ONE.multiply(packageCouponItem.getWorkloadLoad());
 				}
 			}
 			if (SPECIAL_PACKAGE.equals(couponType)) {
@@ -461,10 +466,11 @@ public class BenefitBiz {
 						andEqualTo("type", itemBenefitBo.getType());
 				SpecialPackageCouponItem specialPackageCouponItem = specialPackageCouponItemMapper.selectOneByExample(example);
 				if (specialPackageCouponItem != null) {
-					cardBenefit.setSupplyWorkload(BigDecimal.ONE.multiply(specialPackageCouponItem.getWorkloadLoad()));
+					supplyWorkload = BigDecimal.ONE.multiply(specialPackageCouponItem.getWorkloadLoad());
 				}
 			}
 		}
+		return supplyWorkload;
 	}
 
 	private RestErrorBo checkAuthItem(List<OrderDetail> orderDetails, List<AuthItemBenefitModel> itemBenefits) {

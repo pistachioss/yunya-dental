@@ -1,16 +1,14 @@
 package com.yunya.feign.expand;
 
 import com.yunya.feign.expand.factory.RemoteClinicEmployeeConfigFactory;
+import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.feign.expand.model.response.EnableEmployeeRes;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.expand.ClinicEmployeeConfig;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -68,4 +66,15 @@ public interface RemoteClinicEmployeeConfigFeign {
     @GetMapping("/api/delete/employee/config/{employeeId}/{clinicId}")
     public Integer deleteClinicEmployeeConfig(@PathVariable("employeeId") @Validated @NotNull(message = "员工ID不能为空") Integer employeeId,
                                               @PathVariable("clinicId") @Validated @NotNull(message = "门诊ID不能为空") Integer clinicId);
+
+    /**
+     * 获取门诊可预约员工列表
+     *
+     * @param orgId 组织ID
+     * @return List<EnableChooseEmployeeRes>
+     */
+    @ApiOperation("获取门诊可预约员工列表")
+    @GetMapping(value = "/api/appoint/employee/list/{orgId}", name = "获取门诊可预约员工列表")
+    public List<EnableChooseEmployeeRes> enableAppointEmployeeList(
+            @PathVariable(value = "orgId") Integer orgId, @RequestParam(value = "isContainLeaver") Boolean isContainLeaver);
 }

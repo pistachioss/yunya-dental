@@ -49,4 +49,7 @@ public class EmployeePersonalWorkloadDetailQuery extends PageQuery implements Se
   /** 开单日期 */
   @ApiModelProperty("开单日期")
   private String orderDate;
+  /** 账单日期 */
+  @ApiModelProperty("账单日期")
+  private String billDate;
 }

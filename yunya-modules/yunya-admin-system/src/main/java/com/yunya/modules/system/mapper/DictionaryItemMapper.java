@@ -15,4 +15,11 @@ public interface DictionaryItemMapper extends Mapper<DictionaryItem> {
      * @return
      */
     List<DictionaryItemVO> selectBrandByExample(@Param("queryForm") DictQueryForm queryForm);
+
+    /**
+     * 根据ID查询字典明细列表
+     * @param ids ID列表
+     * @return 返回字典信息列表
+     */
+    List<DictionaryItem> findByIds(@Param("ids") List<Integer> ids);
 }

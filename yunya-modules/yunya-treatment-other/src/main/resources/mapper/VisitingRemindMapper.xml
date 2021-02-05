@@ -81,6 +81,9 @@
         and vrd.dentist_id = #{query.dentistId}
       </if>
     </where>
+    <if test="query.searchId == 3 and query.patientId != null">
+      order by vrd.remind_date desc, vrd.remind_time desc
+    </if>
   </select>
 
 </mapper>

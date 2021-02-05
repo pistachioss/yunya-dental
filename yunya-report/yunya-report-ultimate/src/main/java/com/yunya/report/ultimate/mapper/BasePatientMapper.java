@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
 import com.yunya.feign.report.domain.vo.*;
@@ -109,8 +110,8 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
   /**
    * 根据关键字查询患者信息列表
    *
-   * @param keyword 关键字
+   * @param query 关键字
    * @return List<PatientInfoVO>
    */
-  List<PatientInfoVO> selectPatientInfoByExample(@Param("keyword") String keyword);
+  List<PatientInfoVO> selectPatientInfoByExample(@Param("query") PatientSearchQuery query);
 }

@@ -196,6 +196,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @return  ResponseResult
      */
     public ResponseResult findVisitingRemindByCondition(VisitingRemindQuery query){
+        // 预约档案画面接口为3
+        final Integer SEARCH_ID = 3;
         // 分页
         if (query.getWhetherPage()){
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
@@ -205,70 +207,42 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         // 检索随访提醒内容列表
         List<VisitingRemindVo> searchVisitingRemindVo = null;
         List<VisitingRemind> visitingReminds = mapper.findVisitingRemindByCondition(query);
+        // 获取医生ID集合
         if (!StringHelper.isEmpty(visitingReminds)) {
+            // 获取医生信息列表
+            List<Integer> dentistIds = visitingReminds.stream().map(VisitingRemind::getDentistId).collect(Collectors.toList());
+            List<SysUserInfoDetail> dentistInfoList = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
+            // 获取患者信息列表
+            List<Integer> patientIds = visitingReminds.stream().map(VisitingRemind::getPatientId).collect(Collectors.toList());
+            List<PatientTotalInfoVo> patientTotalInfoVoList = remotePatientCentralServiceFeign.findPatientTotalInfo(patientIds);
+            // 获取患者会员类型
+            List<MemberType> memberTypeList = null;
+            if (StringHelper.isNotEmpty(patientTotalInfoVoList)) {
+                List<Integer> memberTypeIds = patientTotalInfoVoList.stream().map(PatientTotalInfoVo::getMemberTypeId).collect(Collectors.toList());
+                memberTypeList = remoteSystemServiceFeign.findMemberTypeByIds(memberTypeIds);
+            }
+            // 患者欠费总额列表
+            List<DebtAmountModel> debtAmountModelList = null;
+            if(StringHelper.isNotEmpty(patientIds)) {
+                // 获取患者欠费总额列表
+                debtAmountModelList = this.remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
+            }
+            List<MemberType> finalMemberTypeList = memberTypeList;
+            List<DebtAmountModel> finalDebtAmountModelList = debtAmountModelList;
             visitingReminds.forEach(visitingRemind -> {
                 VisitingRemindVo build = EntityUtils.build(visitingRemind, VisitingRemindVo.class);
-                // 设置医生信息
-                Integer dentistId = build.getDentistId();
-                if (dentistId != null){
-                    SysUserInfoDetail userInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
-                    if (userInfoDetail != null){
-                        build.setDentistName(userInfoDetail.getName());
-                    }
-                }
                 // 设置患者信息
-                Integer patientId = build.getPatientId();
-                if (patientId != null){
-                    PatientTotalInfoVo patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
-                    if (patientTotalInfo != null){
-                        build.setPatientName(patientTotalInfo.getName());
-                        build.setAge(patientTotalInfo.getAge());
-                        build.setGender(patientTotalInfo.getGender());
-                        build.setBirthday(patientTotalInfo.getBirthday());
-                        build.setMedicalNumber(patientTotalInfo.getMedicalNumber());
-                        build.setMobile(patientTotalInfo.getMobile());
-                        build.setAllergen(patientTotalInfo.getAllergens());
-                        build.setPatientRemark(patientTotalInfo.getRemarks());
-                        build.setPinyinName(patientTotalInfo.getPinyinName());
-                        build.setPatientKind(patientTotalInfo.getPatientKindName());
-                        // 设置会员图标
-                        Integer memberTypeId = patientTotalInfo.getMemberTypeId();
-                        if (memberTypeId != null){
-                            MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
-                            if (memberType != null){
-                                build.setMemberIcon(memberType.getIcon());
-                            }
-                        }
-                        // 欠费总额
-                        List<Integer> patientIds = new ArrayList<>();
-                        patientIds.add(patientId);
-                        List<DebtAmountModel> debtAmountList = this.remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
-                        if (StringHelper.isNotEmpty(debtAmountList)) {
-                            DebtAmountModel debtAmountModel = debtAmountList.get(0);
-                            build.setArrears(debtAmountModel.getDebtAmount());
-                        }
-                        // 设置初复诊
-                        Registered registered = new Registered();
-                        registered.setPatientId(patientId);
-                        List<Registered> registereds = remoteTreatmentServiceFeign.findRegisteredList(registered);
-                        if (StringHelper.isNotEmpty(registereds)) {
-                            if (registereds.size() > 1) {
-                                build.setFirstVisit((byte) 1);
-                            }else {
-                                build.setFirstVisit((byte) 0);
-                            }
-                        }
-
-                    }
-                }
+                this.setPatientInfo(dentistInfoList,patientTotalInfoVoList,finalMemberTypeList,finalDebtAmountModelList,build);
                 visitingRemindVos.add(build);
             });
             String search = query.getSearch();
             String medicalNumber = query.getMedicalNumber();
             String distentName = query.getDistentName();
-            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName)) {
+            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName) && query.getSearchId() < 3) {
                 // 按照时间正序排序
                 searchVisitingRemindVo = this.sort(visitingRemindVos);
+            } else if (null != query.getPatientId() && query.getSearchId().equals(SEARCH_ID)){
+                searchVisitingRemindVo = visitingRemindVos;
             } else {
                 // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容
                 searchVisitingRemindVo = this.searchVisitingRemind(visitingRemindVos, search, medicalNumber, distentName);
@@ -281,6 +255,77 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             searchVisitingRemindVo = new ArrayList<>();
         }
         return ResponseUtil.success(new PageInfo<>(searchVisitingRemindVo));
+    }
+
+    /**
+     * 设置患者信息
+     * @param dentistInfoList 医生信息列表
+     * @param patientTotalInfoVoList 患者信息列表
+     * @param memberTypeList 会员卡信息
+     * @param debtAmountModelList 患者欠费总额信息列表
+     * @param build 要注入患者信息的类实例
+     */
+    private void setPatientInfo(List<SysUserInfoDetail> dentistInfoList,
+                                List<PatientTotalInfoVo> patientTotalInfoVoList,
+                                List<MemberType> memberTypeList,
+                                List<DebtAmountModel> debtAmountModelList,
+                                VisitingRemindVo build) {
+        // 设置医生信息
+        Integer dentistId = build.getDentistId();
+        if (null != dentistId && StringHelper.isNotEmpty(dentistInfoList)) {
+            boolean b = dentistInfoList.stream().anyMatch(sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(dentistId));
+            if (b) {
+                SysUserInfoDetail userInfoDetail = dentistInfoList.stream().filter(sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(dentistId)).findAny().get();
+                build.setDentistName(userInfoDetail.getName());
+            }
+        }
+        // 设置患者信息
+        Integer patientId = build.getPatientId();
+        if (patientId != null && StringHelper.isNotEmpty(patientTotalInfoVoList)){
+            boolean b = patientTotalInfoVoList.stream().anyMatch(patientTotalInfoVo -> patientTotalInfoVo.getId().equals(patientId));
+            if (b){
+                PatientTotalInfoVo patientTotalInfo = patientTotalInfoVoList.stream().filter(patientTotalInfoVo -> patientTotalInfoVo.getId().equals(patientId)).findAny().get();
+                build.setPatientName(patientTotalInfo.getName());
+                build.setAge(patientTotalInfo.getAge());
+                build.setGender(patientTotalInfo.getGender());
+                build.setBirthday(patientTotalInfo.getBirthday());
+                build.setMedicalNumber(patientTotalInfo.getMedicalNumber());
+                build.setMobile(patientTotalInfo.getMobile());
+                build.setAllergen(patientTotalInfo.getAllergens());
+                build.setPatientRemark(patientTotalInfo.getRemarks());
+                build.setPinyinName(patientTotalInfo.getPinyinName());
+                build.setPatientKind(patientTotalInfo.getPatientKindName());
+                // 设置会员图标
+                Integer memberTypeId = patientTotalInfo.getMemberTypeId();
+                if (memberTypeId != null && StringHelper.isNotEmpty(memberTypeList)){
+                    boolean b1 = memberTypeList.stream().anyMatch(memberType -> memberType.getId().equals(memberTypeId));
+                    if (b1){
+                        MemberType memberType = memberTypeList.stream().filter(memberType1 -> memberType1.getId().equals(memberTypeId)).findAny().get();
+                        build.setMemberIcon(memberType.getIcon());
+                    }
+                }
+                // 欠费总额
+                if (StringHelper.isNotEmpty(debtAmountModelList)) {
+                    boolean b1 = debtAmountModelList.stream().anyMatch(debtAmountModel -> debtAmountModel.getPatientId().equals(patientId));
+                    if (b1) {
+                        DebtAmountModel debtAmountModel = debtAmountModelList.stream().filter(entity -> entity.getPatientId().equals(patientId)).findAny().get();
+                        build.setArrears(debtAmountModel.getDebtAmount());
+                    }
+                }
+                // 设置初复诊
+                Registered registered = new Registered();
+                registered.setPatientId(patientId);
+                List<Registered> registereds = remoteTreatmentServiceFeign.findRegisteredList(registered);
+                if (StringHelper.isNotEmpty(registereds)) {
+                    if (registereds.size() > 1) {
+                        build.setFirstVisit((byte) 1);
+                    }else {
+                        build.setFirstVisit((byte) 0);
+                    }
+                }
+
+            }
+        }
     }
 
     /**

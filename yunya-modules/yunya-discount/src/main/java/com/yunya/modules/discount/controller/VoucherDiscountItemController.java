@@ -73,8 +73,9 @@ public class VoucherDiscountItemController {
             //清除之前的适用项目
             voucherDiscountItemBiz.delete(voucherDiscountItem);
             voucherDiscountItems.forEach(t -> {
-                t.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-                t.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
+                Integer loginId = Integer.parseInt(BaseContextHandler.getUserID());
+                t.setCrtId(loginId);
+                t.setUpdId(loginId);
                 t.setUpdTime(date);
                 t.setCrtTime(date);
             });
@@ -94,6 +95,20 @@ public class VoucherDiscountItemController {
         VoucherDiscountItem voucherDiscountItem = new VoucherDiscountItem();
         BeanUtils.copyProperties(voucherDiscountItemQueryForm,voucherDiscountItem);
         return ResponseUtil.success(voucherDiscountItemBiz.selectList(voucherDiscountItem));
+    }
+
+    /**
+     * 查询代金券折扣券适用项目(优化后)
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findListAfterOptimization")
+    @ApiOperation("查询代金券折扣券适用项目(优化后)")
+    public ResponseResult findListAfterOptimization(@RequestBody @Valid VoucherDiscountItemQueryForm voucherDiscountItemQueryForm){
+        VoucherDiscountItem voucherDiscountItem = new VoucherDiscountItem();
+        BeanUtils.copyProperties(voucherDiscountItemQueryForm,voucherDiscountItem);
+        return ResponseUtil.success(voucherDiscountItemBiz.findListAfterOptimization(voucherDiscountItem));
     }
 
     /**

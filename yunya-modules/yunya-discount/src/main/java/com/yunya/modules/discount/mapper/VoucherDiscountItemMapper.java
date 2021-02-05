@@ -1,5 +1,6 @@
 package com.yunya.modules.discount.mapper;
 
+import com.yunya.feign.discount.domain.vo.VouDisAfterOptimizationVO;
 import com.yunya.models.discount.VoucherDiscountItem;
 import com.yunya.modules.discount.form.PackageCouponItemForm;
 import com.yunya.modules.discount.form.SpecialPackageCouponItemForm;
@@ -15,5 +16,7 @@ public interface VoucherDiscountItemMapper extends Mapper<VoucherDiscountItem> {
     int savePackage(List<PackageCouponItemForm> list);
 
     int saveSpecial(List<SpecialPackageCouponItemForm> list);
+
+    List<VouDisAfterOptimizationVO> findListAfterOptimization(VoucherDiscountItem voucherDiscountItem);
 
 }

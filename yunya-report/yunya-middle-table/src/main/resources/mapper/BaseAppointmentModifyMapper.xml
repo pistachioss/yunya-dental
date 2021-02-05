@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.middletable.dao.report.BaseAppointmentModifyMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseAppointmentModify" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="appointment_id" property="appointmentId" jdbcType="INTEGER" />
+    <result column="appoint_date" property="appointDate" jdbcType="DATE" />
+    <result column="dentist_id" property="dentistId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+  </resultMap>
+</mapper>

@@ -26,6 +26,9 @@ public class AssistantActualWorkloadDetailVO implements Serializable {
   /** 账单编号 */
   @ApiModelProperty("账单编号")
   private String billNum;
+  /** 账单日期 */
+  @ApiModelProperty("账单日期")
+  private String billDate;
   /** 开单日期 */
   @ApiModelProperty("开单日期")
   private String orderDate;

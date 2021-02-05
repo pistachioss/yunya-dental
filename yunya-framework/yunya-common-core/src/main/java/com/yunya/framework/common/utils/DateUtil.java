@@ -274,7 +274,7 @@ public class DateUtil {
    * @return
    */
   public static List<Date> getBetweenDate(Date startDate, Date endDate, int pageNum, int pageSize) {
-    List<Date> result = new ArrayList<Date>();
+    List result = new ArrayList<Date>();
     Calendar tempStart = Calendar.getInstance();
     tempStart.setTime(startDate);
     tempStart.add(Calendar.DAY_OF_YEAR, 1);
@@ -362,7 +362,7 @@ public class DateUtil {
     } else if (count == 0) {
       timeStr = "00:00:00";
     }
-    if (dateStr == null || timeStr == null) {
+    if (dateStr == null) {
       return null;
     }
     return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateStr + " " + timeStr);

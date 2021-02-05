@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.appointment.AppointmentMapper;
 import com.yunya.middletable.dao.appointment.AppointmentModifyRecordMapper;
@@ -17,13 +18,16 @@ import com.yunya.models.report.BaseTreatmentProcess;
 import com.yunya.models.treatment.AssistantMatchingRecord;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 简介: 中间表就诊流程业务处理
@@ -48,6 +52,9 @@ public class BaseTreatmentProcessBiz
   @Autowired private TreatmentRecordMapper treatmentRecordMapper;
   /** 助手配诊 */
   @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
+  /** 多线程 */
+  @Resource(name = "customizeThreadPool")
+  private ExecutorService importExcelThreadPool;
 
   /**
    * 根据消息操作中间表就诊流程信息
@@ -426,64 +433,80 @@ public class BaseTreatmentProcessBiz
    * @param form 拉取时间
    */
   public void pullTreatmentProcessData(PullForm form) {
-    List<BaseTreatmentProcess> treatmentProcesses = Lists.newArrayList();
     String startDate = form.getStartDate();
     String endDate = form.getEndDate();
-    Example appointEmp = new Example(Appointment.class);
-    appointEmp.createCriteria().andBetween("updTime", startDate, endDate);
-    List<Appointment> appointments = appointmentMapper.selectByExample(appointEmp);
-    if (StringHelper.isNotEmpty(appointments)) {
-      appointments.forEach(
-          appointment -> {
-            BaseTreatmentProcess process = new BaseTreatmentProcess();
-            Integer appointmentId = appointment.getId();
-            process.setOrgId(appointment.getOrgId());
-            process.setPatientId(appointment.getPatientId());
-            process.setAppointmentId(appointmentId);
-            process.setAppointDentistId(appointment.getDentistId());
-            process.setAppointStartTime(appointment.getAppointStartTime());
-            process.setAppointDuration(appointment.getAppointDuration());
-            process.setAppointContent(appointment.getAppointContent());
-            // 设置就诊流程预约状态和改约次数
-            setTreatmentProcessAppointmentStatusAndAppointmentModifyTime(
-                appointment, process, appointmentId);
-            // 设置就诊流程挂号信息
-            setTreatmentProcessRegisteredValue(process, appointmentId);
-            // 设置就诊流程就诊信息
-            TreatmentRecord treatmentRecord = new TreatmentRecord();
-            treatmentRecord.setAppointmentId(appointmentId);
-            setTreatmentProcessTreatmentValue(process, treatmentRecord);
-            treatmentProcesses.add(process);
-          });
-    }
-    if (StringHelper.isNotEmpty(treatmentProcesses)) {
-      mapper.batchInsertSelective(treatmentProcesses);
-    }
+    List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
+    if (StringHelper.isNotEmpty(dateRanges)) {
+      for (String date : dateRanges) {
+        importExcelThreadPool.submit(
+            () -> {
+              // 预约-就诊
+              Example appointEmp = new Example(Appointment.class);
+              appointEmp
+                  .createCriteria()
+                  .andGreaterThanOrEqualTo("updTime", new DateTime(date).toString("yyyy-MM-dd"))
+                  .andLessThan("updTime", new DateTime(date).plusDays(1).toString("yyyy-MM-dd"));
+              List<Appointment> appointments = appointmentMapper.selectByExample(appointEmp);
+              if (StringHelper.isNotEmpty(appointments)) {
+                List<BaseTreatmentProcess> treatmentProcesses = Lists.newArrayList();
+                appointments.forEach(
+                    appointment -> {
+                      BaseTreatmentProcess process = new BaseTreatmentProcess();
+                      Integer appointmentId = appointment.getId();
+                      process.setOrgId(appointment.getOrgId());
+                      process.setPatientId(appointment.getPatientId());
+                      process.setAppointmentId(appointmentId);
+                      process.setAppointDentistId(appointment.getDentistId());
+                      process.setAppointStartTime(appointment.getAppointStartTime());
+                      process.setAppointDuration(appointment.getAppointDuration());
+                      process.setAppointContent(appointment.getAppointContent());
+                      // 设置就诊流程预约状态和改约次数
+                      setTreatmentProcessAppointmentStatusAndAppointmentModifyTime(
+                          appointment, process, appointmentId);
+                      // 设置就诊流程挂号信息
+                      setTreatmentProcessRegisteredValue(process, appointmentId);
+                      // 设置就诊流程就诊信息
+                      TreatmentRecord treatmentRecord = new TreatmentRecord();
+                      treatmentRecord.setAppointmentId(appointmentId);
+                      setTreatmentProcessTreatmentValue(process, treatmentRecord);
+                      treatmentProcesses.add(process);
+                    });
+                if (StringHelper.isNotEmpty(treatmentProcesses)) {
+                  mapper.batchInsertSelective(treatmentProcesses);
+                }
 
-    Example registeredEmp = new Example(Registered.class);
-    registeredEmp.createCriteria().andBetween("updTime", startDate, endDate);
-    List<Registered> registeredList = registeredMapper.selectByExample(registeredEmp);
-    List<BaseTreatmentProcess> tempList = Lists.newArrayList();
-    if (StringHelper.isNotEmpty(registeredList)) {
-      registeredList.forEach(
-          registered -> {
-            Integer registeredId = registered.getId();
-            BaseTreatmentProcess entity = new BaseTreatmentProcess();
-            entity.setRegisteredId(registeredId);
-            int count = mapper.selectCount(entity);
-            if (0 >= count) {
-              BaseTreatmentProcess process = generateBaseTreatmentProcess(registered);
-              if (null != process) {
-                TreatmentRecord treatmentRecord = new TreatmentRecord();
-                treatmentRecord.setRegisteredId(registered.getId());
-                setTreatmentProcessTreatmentValue(process, treatmentRecord);
-                tempList.add(process);
+                // 挂号-就诊
+                Example registeredEmp = new Example(Registered.class);
+                registeredEmp
+                    .createCriteria()
+                    .andGreaterThanOrEqualTo("updTime", new DateTime(date).toString("yyyy-MM-dd"))
+                    .andLessThan("updTime", new DateTime(date).plusDays(1).toString("yyyy-MM-dd"));
+                List<Registered> registeredList = registeredMapper.selectByExample(registeredEmp);
+                if (StringHelper.isNotEmpty(registeredList)) {
+                  List<BaseTreatmentProcess> tempList = Lists.newArrayList();
+                  registeredList.forEach(
+                      registered -> {
+                        Integer registeredId = registered.getId();
+                        BaseTreatmentProcess entity = new BaseTreatmentProcess();
+                        entity.setRegisteredId(registeredId);
+                        int count = mapper.selectCount(entity);
+                        if (0 >= count) {
+                          BaseTreatmentProcess process = generateBaseTreatmentProcess(registered);
+                          if (null != process) {
+                            TreatmentRecord treatmentRecord = new TreatmentRecord();
+                            treatmentRecord.setRegisteredId(registered.getId());
+                            setTreatmentProcessTreatmentValue(process, treatmentRecord);
+                            tempList.add(process);
+                          }
+                        }
+                      });
+                  if (StringHelper.isNotEmpty(tempList)) {
+                    mapper.batchInsertSelective(tempList);
+                  }
+                }
               }
-            }
-          });
-    }
-    if (StringHelper.isNotEmpty(tempList)) {
-      mapper.batchInsertSelective(tempList);
+            });
+      }
     }
   }
 
@@ -506,7 +529,7 @@ public class BaseTreatmentProcessBiz
       process.setRegisteredDentistId(registeredResult.getDentistId());
       process.setRegisteredTime(registeredResult.getRegTime());
       process.setRegisteredDate(registeredResult.getCrtTime());
-    } else {// 将挂号信息清空
+    } else { // 将挂号信息清空
       process.setTreatType(null);
       process.setRegisteredId(null);
       process.setTreatStatus(null);

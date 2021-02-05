@@ -95,9 +95,14 @@
     <if test="query.searchId == 1">
       order by vr.crt_time asc
     </if>
-    <if test="query.searchId == 2">
-      order by vr.visiting_date asc
-    </if>
+    <choose>
+      <when test="query.searchId == 2 and query.patientId == null">
+        order by vr.visiting_date asc
+      </when>
+      <when test="query.searchId == 3 and query.patientId != null">
+        order by vr.visiting_date desc
+      </when>
+    </choose>
   </select>
 
   <!-- 根据患者id、时间查询随访列表 -->

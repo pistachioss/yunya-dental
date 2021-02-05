@@ -505,6 +505,7 @@
         billId,
         billNum,
         DATE_FORMAT(orderDate, '%Y-%m-%d') as orderDate,
+        DATE_FORMAT(billDate, '%Y-%m-%d') as billDate,
         patientId,
         patientName,
         mobile,
@@ -518,6 +519,7 @@
         ebd.orgId,
         ebd.billId,
         ebd.billNum,
+        ebd.billDate,
         ebd.orderDate,
         ebd.patientId,
         ebd.patientName,
@@ -535,6 +537,7 @@
         bbp.bill_id AS billId,
         bbp.bill_num AS billNum,
         bbp.order_date AS orderDate,
+        bbp.bill_date AS billDate,
         bbp.patient_id AS patientId,
         bbp.`name` AS patientName,
         bbp.pinyin_name AS pinyinName,
@@ -551,8 +554,9 @@
         SELECT
         bb.org_id,
         bb.bill_id,
-        bb.bill_num,
         bb.order_date,
+        bb.bill_num,
+        bb.bill_date,
         bb.order_amount,
         bb.privilege_amount,
         bb.actual_amount,
@@ -621,8 +625,11 @@
             <if test="query.orderDate != null and query.orderDate != ''">
                 and DATE_FORMAT(ewd.orderDate, '%Y-%m-%d') = #{query.orderDate}
             </if>
+            <if test="query.billDate != null and query.billDate != ''">
+                and DATE_FORMAT(ewd.billDate, '%Y-%m-%d') = #{query.billDate}
+            </if>
         </where>
-        ORDER BY ewd.orderDate DESC
+        ORDER BY ewd.billDate DESC
     </select>
 
     <!-- 根据条件查询员工工作量开单明细列表 -->
@@ -798,7 +805,8 @@
         orgId,
         billId,
         billNum,
-        DATE_FORMAT( orderDate, '%Y-%m-%d' ),
+        billDate,
+        orderDate,
         patientId,
         patientName,
         mobile,
@@ -812,7 +820,8 @@
         ebd.orgId,
         ebd.billId,
         ebd.billNum,
-        ebd.orderDate,
+        DATE_FORMAT(ebd.billDate, '%Y-%m-%d') AS billDate,
+        DATE_FORMAT( ebd.orderDate, '%Y-%m-%d' ) AS orderDate,
         ebd.patientId,
         ebd.patientName,
         ebd.pinyinName,
@@ -828,6 +837,7 @@
         bbp.org_id AS orgId,
         bbp.bill_id AS billId,
         bbp.bill_num AS billNum,
+        bbp.bill_date AS billDate,
         bbp.order_date AS orderDate,
         bbp.patient_id AS patientId,
         bbp.`name` AS patientName,
@@ -847,6 +857,7 @@
         bb.bill_id,
         bb.bill_num,
         bb.order_date,
+        bb.bill_date,
         bb.order_amount,
         bb.privilege_amount,
         bb.actual_amount,
@@ -888,12 +899,12 @@
             </if>
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( ebd.orderDate, '%Y-%m' ) = #{query.queryDate}
+                    and DATE_FORMAT( ebd.billDate, '%Y-%m' ) = #{query.queryDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( ebd.orderDate, '%Y' ) = #{query.queryDate}
+                    and DATE_FORMAT( ebd.billDate, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
             <if test="query.employeeId != null">
@@ -911,11 +922,11 @@
             <if test="query.billNum != null and query.billNum != ''">
                 and ewd.billNum like concat('%', #{query.billNum} ,'%')
             </if>
-            <if test="query.orderDate != null and query.orderDate != ''">
-                and DATE_FORMAT(ewd.orderDate, '%Y-%m-%d') = #{query.orderDate}
+            <if test="query.billDate != null and query.billDate != ''">
+                and ewd.billDate = #{query.billDate}
             </if>
         </where>
-        ORDER BY ewd.orderDate DESC
+        ORDER BY ewd.billDate DESC
     </select>
 
     <!-- 根据条件查询员工补入工作量开单明细列表 -->
@@ -927,14 +938,13 @@
         bbd.item_id AS itemId,
         bti.item_num AS itemNum,
         bti.item_name AS itemName,
-        bbd.coupon_workload as supplyWorkload
+        bbd.coupon_workload AS supplyWorkload
         FROM
         base_bill_detail bbd
         LEFT JOIN base_tariff_info bti ON bbd.item_id = bti.item_id
-        LEFT JOIN base_benefit bb on (bb.order_id=bbd.bill_id and bb.item_id=bti.item_id)
         <where>
-            bbd.item_type=0
-            and bb.coupon_type in (0,1,2,3)
+            and bbd.item_type = 0
+            and bbd.coupon_workload > 0
             <if test="query.billId != null">
                 and bbd.bill_id = #{query.billId}
             </if>
@@ -942,6 +952,7 @@
                 and bbd.executor_id = #{query.employeeId}
             </if>
         </where>
+        ORDER BY bbd.bill_id DESC
     </select>
 
     <!-- 根据条件查询助手实收工作量明细列表 -->
@@ -950,6 +961,7 @@
         SELECT
         awd.bill_id as billId,
         awd.bill_num as billNum,
+        DATE_FORMAT(awd.bill_date, '%Y-%m-%d') as billDate,
         DATE_FORMAT(awd.order_date, '%Y-%m-%d') as orderDate,
         awd.patient_id as patientId,
         awd.`name` as patientName,
@@ -961,6 +973,7 @@
         SELECT
         btp.bill_id,
         btp.bill_num,
+        btp.bill_date,
         btp.order_date,
         btp.patient_id,
         btp.`name`,
@@ -978,6 +991,7 @@
         bbd.price * bbd.quantity AS originalAmount,
         bbd.discount_amount,
         bbp.bill_num,
+        bbp.bill_date,
         bbp.order_date,
         bbp.patient_id,
         bbp.`name`,
@@ -998,6 +1012,7 @@
         btp.treatment_id,
         bb.bill_id,
         bb.bill_num,
+        bb.bill_date,
         bb.order_date,
         bb.patient_id,
         bp.`name`,
@@ -1091,6 +1106,12 @@
             <if test="query.orderEndDate != null and query.orderEndDate != ''">
                 and DATE_FORMAT(awd.order_date, '%Y-%m-%d') &lt;= #{query.orderEndDate}
             </if>
+            <if test="query.billStartDate != null and query.billStartDate != ''">
+                and DATE_FORMAT(awd.bill_date, '%Y-%m-%d') &gt;= #{query.billStartDate}
+            </if>
+            <if test="query.billEndDate != null and query.billEndDate != ''">
+                and DATE_FORMAT(awd.bill_date, '%Y-%m-%d') &lt;= #{query.billEndDate}
+            </if>
         </where>
         GROUP BY awd.treatment_id
     </select>
@@ -1098,7 +1119,13 @@
     <!-- 根据条件查询开单项目数量信息列表 -->
     <select id="selectBillingItemInfoList" resultType="com.yunya.feign.report.domain.vo.BillingItemInfoVO">
         SELECT
-        *
+        itemId,
+        itemType,
+        itemNum,
+        itemName,
+        categoryId,
+        categoryName,
+        totalBillCount
         FROM (
         SELECT
         bbd.itemId,
@@ -1162,7 +1189,10 @@
         GROUP BY
         bbd.itemId,
         bbd.itemType
-        ORDER BY bbd.itemType, bbd.itemId ) bbd
+        ORDER BY
+        bbd.itemType,
+        bbd.itemId
+        ) bbd
         <where>
             <if test="query.categoryIds != null and query.categoryIds.size > 0">
                 and bbd.categoryId in

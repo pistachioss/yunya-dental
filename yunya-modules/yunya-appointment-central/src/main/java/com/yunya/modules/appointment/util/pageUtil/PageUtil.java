@@ -1,7 +1,10 @@
 package com.yunya.modules.appointment.util.pageUtil;
+import cn.hutool.core.util.ArrayUtil;
+import com.google.common.collect.Lists;
 import com.yunya.feign.appointment.vo.AppointmentDimensionVo;
 import com.yunya.modules.appointment.util.pageUtil.model.AssistantPageModel;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,6 +18,7 @@ import java.util.stream.Collectors;
  *         其中 page 为想要的分页页码，默认为1。
  * @param <T> 传入的总列表中元素的类型
  */
+@Slf4j
 public class PageUtil<T> {
 
     private Page page = null;
@@ -92,29 +96,31 @@ public class PageUtil<T> {
             end = start + page.getPageCount();
         }
 
-        // 先对助手分页;---助手分页的时候，每页显示的最大条数 = pageCount - 1(大医生)
-        List<AssistantPageModel> assistantPageModels = assistantVoData.subList(start, end);
-        Map<Integer, List<AssistantPageModel>> collect = assistantPageModels.stream().collect(Collectors.groupingBy(AssistantPageModel::getDistentIndex));
+        if (start < end) {
+            // 先对助手分页;---助手分页的时候，每页显示的最大条数 = pageCount - 1(大医生)
+            List<AssistantPageModel> assistantPageModels = assistantVoData.subList(start, end);
+            Map<Integer, List<AssistantPageModel>> collect = assistantPageModels.stream().collect(Collectors.groupingBy(AssistantPageModel::getDistentIndex));
 
-        for (Map.Entry<Integer,List<AssistantPageModel>> entry : collect.entrySet()) {
-            if (null != obj && !obj.isEmpty()) {
-                AppointmentDimensionVo appointmentDimensionVo = obj.get(entry.getKey());
-                // 获取助手列表
-                List<AssistantPageModel> value = entry.getValue();
-                List<AppointmentDimensionVo> assistantList = new ArrayList<>();
-                // 将AssistantPageModel====>AppointmentDimensionVo
-                for (AssistantPageModel assistantPageModel : value) {
-                    AppointmentDimensionVo assistantVo = assistantPageModel.getAssistantVo();
-                    if (null != assistantVo) {
-                        assistantList.add(assistantVo);
+            for (Map.Entry<Integer, List<AssistantPageModel>> entry : collect.entrySet()) {
+                if (null != obj && !obj.isEmpty()) {
+                    AppointmentDimensionVo appointmentDimensionVo = obj.get(entry.getKey());
+                    // 获取助手列表
+                    List<AssistantPageModel> value = entry.getValue();
+                    List<AppointmentDimensionVo> assistantList = new ArrayList<>();
+                    // 将AssistantPageModel====>AppointmentDimensionVo
+                    for (AssistantPageModel assistantPageModel : value) {
+                        AppointmentDimensionVo assistantVo = assistantPageModel.getAssistantVo();
+                        if (null != assistantVo) {
+                            assistantList.add(assistantVo);
+                        }
                     }
+                    // 对助手的预约患者数排序(降序)
+                    List<AppointmentDimensionVo> orderList = assistantList.stream().sorted(
+                            Comparator.comparing(AppointmentDimensionVo::getPatientNum).reversed()).collect(Collectors.toList());
+                    appointmentDimensionVo.setAppointmentAssistants(orderList);
+                    // 将助手加入分解结果列表中
+                    result.add(appointmentDimensionVo);
                 }
-                // 对助手的预约患者数排序(降序)
-                List<AppointmentDimensionVo> orderList = assistantList.stream().sorted(
-                        Comparator.comparing(AppointmentDimensionVo::getPatientNum).reversed()).collect(Collectors.toList());
-                appointmentDimensionVo.setAppointmentAssistants(orderList);
-                // 将助手加入分解结果列表中
-                result.add(appointmentDimensionVo);
             }
         }
         // 将助手加入到分页对象中
@@ -179,15 +185,17 @@ public class PageUtil<T> {
             int start = (page.getPageNum() - 1) * page.getPageCount();
             // 分页结束位置
             int end = 0;
-            if (start + page.getPageCount() >= total) {
-                end = total;
-            } else {
-                end = start + page.getPageCount();
+            end = Math.min(start + page.getPageCount(), total);
+            // 检查分页参数是否正确，如果在下一页的时候重新设置了页面可显示的行数，则
+            log.info("========【预约列表分页】=======");
+            log.info("==>start:{}",start);
+            log.info("==>end:{}",end);
+            if (start < end) {
+                // 截取分页范围
+                List<AppointmentDimensionVo> appointmentDimensionVos = obj.subList(start, end);
+                // 设置分页列表
+                page.setList(appointmentDimensionVos);
             }
-            // 截取分页范围
-            List<AppointmentDimensionVo> appointmentDimensionVos = obj.subList(start, end);
-            // 设置分页列表
-            page.setList(appointmentDimensionVos);
         } else {
             page.setList(obj);
         }

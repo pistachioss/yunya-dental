@@ -1,6 +1,7 @@
 package com.yunya.feign.expand.factory;
 
 import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
+import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.feign.expand.model.response.EnableEmployeeRes;
 import com.yunya.models.expand.ClinicEmployeeConfig;
 
@@ -38,4 +39,10 @@ public class RemoteClinicEmployeeConfigFactory implements RemoteClinicEmployeeCo
     public Integer deleteClinicEmployeeConfig(@NotNull(message = "员工ID不能为空") Integer employeeId, @NotNull(message = "门诊ID不能为空") Integer clinicId) {
         return null;
     }
+
+    @Override
+    public List<EnableChooseEmployeeRes> enableAppointEmployeeList(Integer orgId, Boolean isContainLeaver) {
+        return null;
+    }
+
 }

@@ -147,6 +147,20 @@ public class SystemServiceRest {
   }
 
   /**
+   * 根据ID查询字典明细
+   *
+   * @param ids 字典明细ID列表
+   * @return
+   */
+  @RequestMapping(value = "/dictionary/ids", method = RequestMethod.POST)
+  public List<DictionaryItem> findDictionaryItemByIds(@RequestBody List<Integer> ids) {
+    if (StringHelper.isNotEmpty(ids)) {
+      return dictionaryItemBiz.findDictionaryItemByIds(ids);
+    }
+    return null;
+  }
+
+  /**
    * 根据条件查询字典明细列表
    *
    * @param model 查询条件

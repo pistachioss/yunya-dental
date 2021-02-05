@@ -126,17 +126,36 @@
         tr.dentist_id AS dentistId,
         tr.type AS firstVisit,
         tr.`status` AS treatmentStatus,
-        tr.appointment_id as appointmentId,
-        tr.registered_id as registeredId,
-        ord.id as orderRecordId,
-        ord.total_amount as originalPrice,
-        br.id as billRecordId,
-        br.actual_receivable_amount as actualReceivableAmount,
-        br.debt_amount as debtAmount
+        tr.appointment_id AS appointmentId,
+        tr.registered_id AS registeredId,
+        ord.id AS orderRecordId,
+        ord.total_amount AS originalPrice,
+        br.id AS billRecordId,
+        br.actual_receivable_amount AS actualReceivableAmount,
+        br.debt_amount AS debtAmount
         FROM
         treatment_record tr
-        LEFT JOIN order_record ord on ord.inservice = 1 and tr.id = ord.treatment_record_id
-        LEFT JOIN bill_record br on br.inservice = 1 and tr.id = br.treatment_record_id
+        LEFT JOIN (
+        SELECT
+        ord.treatment_record_id,
+        ord.id,
+        ord.total_amount
+        FROM
+        order_record ord
+        WHERE
+        ord.inservice = 1
+        ) ord ON tr.id = ord.treatment_record_id
+        LEFT JOIN (
+        SELECT
+        br.treatment_record_id,
+        br.id,
+        br.actual_receivable_amount,
+        br.debt_amount
+        FROM
+        bill_record br
+        WHERE
+        br.inservice = 1
+        ) br ON tr.id = br.treatment_record_id
         <where>
             <if test="queryForm.patientId != null">
                 and tr.patient_id = #{queryForm.patientId}
@@ -410,16 +429,16 @@
     </select>
 
     <!-- 根据预约ID查询患者接诊记录 -->
-    <select id="findTreatmentRecordListByAppointIds" resultType="com.yunya.models.treatment.TreatmentRecord">
+    <select id="findTreatmentRecordListByAppointIds" resultMap="BaseResultMap">
         select tr.* from treatment_record tr
         <where>
           <if test="appointIds != null and appointIds.size() > 0">
-              appointment_id in
+              tr.appointment_id in
               <foreach collection="appointIds" item="appointId" open="(" separator="," close=")">
                   #{appointId}
               </foreach>
           </if>
-          and inservice = true
+          and tr.inservice = true
         </where>
     </select>
 </mapper>

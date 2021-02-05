@@ -1,6 +1,6 @@
 spring:
     datasource:
-        host: rm-bp18uejcrk63u04c9so.mysql.rds.aliyuncs.com
+        host: rm-bp18uejcrk63u04c9.mysql.rds.aliyuncs.com
         port: 3306
         username: sa
         password: Admin001!
@@ -18,6 +18,6 @@ spring:
         password: foobared
 
 wiki:
-    host: yunya.test.utools.club
+    host: ivy2.yunya365.com/api/sms
     notifyUrl: http://${wiki.host}/smsChargeOrder/notifyUrl
     redirectUrl: http://${wiki.host}/smsChargeOrder/redirectUrl

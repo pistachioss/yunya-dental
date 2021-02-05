@@ -28,7 +28,7 @@ public class BaseCouponController {
 			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 		}
 		long end = System.currentTimeMillis();
-		log.info("总时长：[{}]", end - start);
+		log.info("【中间表同步】产品设计总时长：[{}]", end - start);
 		return ResponseUtil.success(end - start);
 	}
 

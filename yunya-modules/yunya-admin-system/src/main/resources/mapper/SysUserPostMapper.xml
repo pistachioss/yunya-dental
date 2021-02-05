@@ -54,19 +54,34 @@
     </select>
     <!-- 根据条件查询员工信息列表 -->
     <select id="selectEmployeeList" resultType="com.yunya.feign.system.vo.EmployeeInfoVO">
-        SELECT DISTINCT
-        sup.user_id AS userId,
-        se.id AS employeeId,
-        se.`name` AS name,
-        se.gender,
-        se.mobile_phone AS mobilePhone,
-        se.work_status AS workStatus,
-        sup.company_id AS orgId,
-        IFNULL( cei.abbreviation, '公司' ) AS orgName,
-        sup.group_id AS postGroupId,
-        pg.`name` AS postGroupName,
-        sup.post_id AS postId,
-        p.`name` AS postName
+        select
+        userId,
+        employeeId,
+        name,
+        gender,
+        mobilePhone,
+        workStatus,
+        orgId,
+        orgName,
+        postGroupId,
+        postGroupName,
+        postId,
+        postName
+        from
+        (
+        SELECT
+        any_value(sup.user_id) AS userId,
+        any_value(se.id) AS employeeId,
+        any_value(se.`name`) AS `name`,
+        any_value(se.gender) AS gender,
+        any_value(se.mobile_phone) AS mobilePhone,
+        any_value(se.work_status) AS workStatus,
+        any_value(sup.company_id) AS orgId,
+        any_value(IFNULL( cei.abbreviation, '公司' )) AS orgName,
+        any_value(sup.group_id) AS postGroupId,
+        any_value(pg.`name`) AS postGroupName,
+        any_value(sup.post_id) AS postId,
+        any_value(p.`name`) AS postName
         FROM
         sys_user_post sup
         LEFT JOIN sys_employee se ON sup.user_id = se.user_id
@@ -99,6 +114,17 @@
                 </foreach>
             </if>
         </where>
+        group by sup.user_id
+        ) sup
+        <where>
+            <if test="queryForm.workStatus != null and queryForm.workStatus.length > 0">
+                and sup.workStatus in
+                <foreach collection="queryForm.workStatus" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by sup.workStatus asc
     </select>
     <!-- 根据组织ID、用户ID查询岗位列表(员工管理-可登录组织列表) -->
     <select id="selectUserPostListByUserId" resultType="com.yunya.modules.system.vo.SysUserPostOrgVO">

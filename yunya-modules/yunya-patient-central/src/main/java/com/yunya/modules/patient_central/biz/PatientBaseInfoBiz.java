@@ -35,13 +35,17 @@ import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
 import org.apache.commons.httpclient.NameValuePair;
+import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 简单介绍:</br> 患者基本信息业务层
@@ -205,8 +209,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientPrepaymentsInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       patientPrepaymentsInfo.setPatientId(patientBaseInfo.getId());
       // 预付款卡号生成规则 开通Y
-      patientPrepaymentsInfo.setPrepaymentNumber(
-          this.patientMemberInfoBiz.generateCardNumber("Y"));
+      patientPrepaymentsInfo.setPrepaymentNumber(this.patientMemberInfoBiz.generateCardNumber("Y"));
       patientPrepaymentsInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientPrepaymentsInfo.setCrtName(BaseContextHandler.getName());
       this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
@@ -293,12 +296,18 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (patientBaseInfo == null) {
       return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "未查询到患者信息", "");
     }
-    // 计算年龄
-    Integer age =
-        DateUtil.differFromDate(
-            patientBaseInfo.getBirthday(), new Date(System.currentTimeMillis()));
-    patientBaseInfo.setAge(age);
     PatientBaseInfoVo patientBaseInfoVo = new PatientBaseInfoVo();
+    Date birthday = patientBaseInfo.getBirthday();
+    if (birthday != null) {
+      // 计算年龄
+      Integer age =
+              DateUtil.differFromDate(
+                      birthday, new Date(System.currentTimeMillis()));
+      patientBaseInfo.setAge(age);
+      String timeStr = new DateTime(birthday).toString("yyyy-MM-dd");
+      patientBaseInfoVo.setBirthday(timeStr);
+    }
+
     BeanUtils.copyProperties(patientBaseInfo, patientBaseInfoVo);
     int originType = 2;
     if (patientBaseInfo.getOriginType() != null && patientBaseInfo.getOriginType() > originType) {
@@ -417,6 +426,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @return List<PatientBaseInfoVo>
    */
   public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
+    if (form.getWhetherPage()) {
+      PageHelper.startPage(form.getPageNum(), form.getPageSize());
+    }
     List<PatientBaseInfoVo> patients = patientBaseInfoMapper.findPatientByNameAndMobile(form);
     // 调用就诊服务查询患者末次就诊记录
     if (StringHelper.isNotEmpty(patients)) {
@@ -426,6 +438,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patient.setLastVisitTime(treatmentRecord.getTreatmentDate());
         patient.setLastVisit(treatmentRecord.getDentistName());
       }
+      return patients.stream().filter(entity->!(null != entity.getMedicalNumber() && entity.getMedicalNumber().contains("*"))).collect(Collectors.toList());
     }
     return patients;
   }
@@ -553,22 +566,36 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (StringHelper.isNotEmpty(ids)) {
       List<PatientTotalInfoVo> patientTotalInfoVos = mapper.selectPatientDataByIds(ids);
       if (StringHelper.isNotEmpty(patientTotalInfoVos)) {
-        patientTotalInfoVos.forEach(
-            patientTotalInfoVo -> {
-              Integer patientKind = patientTotalInfoVo.getPatientKind();
-              if (patientKind != null) {
-                DictionaryItem dictionaryItemById =
-                    remoteSystemServiceFeign.findDictionaryItemById(patientKind);
-                if (dictionaryItemById != null) {
-                  String name = dictionaryItemById.getName();
-                  if (StringHelper.isNotBlank(name)) {
-                    patientTotalInfoVo.setPatientKindName(name);
+        List<Integer> patientKinds =
+            patientTotalInfoVos.stream()
+                .map(PatientTotalInfoVo::getPatientKind)
+                .collect(Collectors.toList());
+        if (StringHelper.isNotEmpty(patientKinds)) {
+          List<DictionaryItem> dictionaryItems =
+              this.remoteSystemServiceFeign.findDictionaryItemByIds(patientKinds);
+          patientTotalInfoVos.forEach(
+              patientTotalInfoVo -> {
+                Integer patientKind = patientTotalInfoVo.getPatientKind();
+                if (patientKind != null) {
+                  boolean b =
+                          dictionaryItems.stream()
+                          .anyMatch(departmentRoom -> departmentRoom.getId().equals(patientKind));
+                  if (b) {
+                    DictionaryItem dictionaryItem =
+                            dictionaryItems.stream()
+                            .filter(entity -> entity.getId().equals(patientKind))
+                            .findAny()
+                            .get();
+                    String name = dictionaryItem.getName();
+                    if (StringHelper.isNotBlank(name)) {
+                      patientTotalInfoVo.setPatientKindName(name);
+                    }
                   }
                 }
-              }
-              // 设置患者扩展信息
-              this.setPatientExtInfo(patientTotalInfoVo.getId(), patientTotalInfoVo);
-            });
+                // 设置患者扩展信息
+                this.setPatientExtInfo(patientTotalInfoVo.getId(), patientTotalInfoVo);
+              });
+        }
       }
       return patientTotalInfoVos;
     }

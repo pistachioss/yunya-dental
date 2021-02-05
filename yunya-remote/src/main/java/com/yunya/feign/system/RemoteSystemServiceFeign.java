@@ -441,7 +441,16 @@ public interface RemoteSystemServiceFeign {
    * @param companyId 组织ID
    * @return MedicalOrganizationInfoVO
    */
-  @RequestMapping(value = "/api//clinicExtInfo/{companyId}", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/clinicExtInfo/{companyId}", method = RequestMethod.GET)
   MedicalOrganizationInfoVO clinicExtInfoByCompanyId(
       @PathVariable(value = "companyId") Integer companyId);
+
+  /**
+   * 根据ID查询字典明细
+   *
+   * @param ids 字典明细ID列表
+   * @return
+   */
+  @RequestMapping(value = "/api/dictionary/ids", method = RequestMethod.POST)
+  List<DictionaryItem> findDictionaryItemByIds(@RequestBody List<Integer> ids);
 }

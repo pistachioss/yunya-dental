@@ -109,7 +109,7 @@ public class TreatmentRecordController {
    */
   @ApiOperation("根据条件查询患者就诊记录列表(患者档案就诊列表)")
   @PostMapping(value = "/patient/list", name = "患者就诊记录列表")
-  public ResponseResult<PageInfo<PatientTreatmentRecordVO>> treatmentRecordBiz(
+  public ResponseResult<PageInfo<PatientTreatmentRecordVO>> patientTreatmentRecordList(
       @RequestBody @Validated PatientTreatmentRecordQueryForm queryForm) {
     PageInfo<PatientTreatmentRecordVO> resultList =
         treatmentRecordBiz.findPatientTreatList(queryForm);

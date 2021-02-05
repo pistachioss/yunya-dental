@@ -1,6 +1,9 @@
 package com.yunya.modules.employee.expand.rpc;
 
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.expand.ClinicEmployeeConfig;
+import com.yunya.modules.employee.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.modules.employee.expand.model.response.EnableEmployeeRes;
 import com.yunya.modules.employee.expand.service.ClinicEmployeeConfigBiz;
 import io.swagger.annotations.Api;
@@ -73,5 +76,19 @@ public class ClinicEmployeeApi {
     public Integer deleteClinicEmployeeConfig(@PathVariable("employeeId") @Validated @NotNull(message = "员工ID不能为空") Integer employeeId,
                                               @PathVariable("clinicId") @Validated @NotNull(message = "门诊ID不能为空") Integer clinicId) {
         return this.clinicEmployeeConfigBiz.deleteClinicEmployeeConfig(employeeId,clinicId);
+    }
+
+    /**
+     * 获取门诊可预约员工列表
+     *
+     * @param orgId 组织ID
+     * @return List<EnableChooseEmployeeRes>
+     */
+    @ApiOperation("获取门诊可预约员工列表")
+    @GetMapping(value = "/api/appoint/employee/list/{orgId}", name = "获取门诊可预约员工列表")
+    public List<EnableChooseEmployeeRes> enableAppointEmployeeList(
+            @PathVariable(value = "orgId") Integer orgId,@RequestParam(value = "isContainLeaver") Boolean isContainLeaver) {
+
+        return clinicEmployeeConfigBiz.findEnableAppointEmployeeList(orgId,isContainLeaver);
     }
 }

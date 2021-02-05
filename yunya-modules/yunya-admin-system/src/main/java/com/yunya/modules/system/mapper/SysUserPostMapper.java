@@ -52,7 +52,7 @@ public interface SysUserPostMapper extends Mapper<SysUserPost> {
       @Param("postId") Integer postId);
 
   /**
-   * 根据条件查询员工信息列表
+   * 根据条件查询员工信息列表(过滤离职员工)
    *
    * @param queryForm 查询条件
    * @return
