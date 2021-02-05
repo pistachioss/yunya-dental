@@ -95,8 +95,6 @@ public class ClinicAppointItemBiz extends BaseBiz<ClinicAppointItemMapper, Clini
         Integer appointItemId = query.getAppointItemId();
         // 门诊可预约项目列表
         List<ClinicAppointItem> clinicAppointItems = mapper.findClinicAppointItemByAppointItemId(appointItemId,query.getInservice());
-        log.info("\r\n=========门诊可预约项目列表=======");
-        log.info("\r\n==>可预约项目配置:{}",clinicAppointItems);
 
         // 查询所有门诊信息列表
         OrganizationModel orgModel = new OrganizationModel();
@@ -129,8 +127,6 @@ public class ClinicAppointItemBiz extends BaseBiz<ClinicAppointItemMapper, Clini
                 });
             }
         }
-        log.info("\r\n=======可预约项目======");
-        log.info("\r\n==>使用门诊列表:{}",clinicAppointItemConfigVos);
         return ResponseUtil.success(new PageInfo<>(clinicAppointItemConfigVos));
     }
 
