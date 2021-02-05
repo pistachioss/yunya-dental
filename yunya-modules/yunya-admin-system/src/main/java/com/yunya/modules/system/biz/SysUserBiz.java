@@ -60,6 +60,8 @@ import static com.yunya.framework.common.constant.UserConstant.PW_ENCODER_SALT;
 @Transactional(rollbackFor = Exception.class)
 public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
 
+  /** 验证码过期时长5分钟 */
+  private static final long EXPIRE = 5 * 60;
   /** 消息中间件调用 */
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 用户的员工信息 */
@@ -433,7 +435,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     }
     String messageCode = this.messageCodeGenerator(true, 6);
     // 设置验证码到缓存
-    redisUtils.set(key, messageCode, 60);
+    redisUtils.set(key, messageCode, EXPIRE);
     SmsVerifyCodeModel smsVerifyCodeModel = new SmsVerifyCodeModel();
     smsVerifyCodeModel.setMobile(mobile);
     smsVerifyCodeModel.setVerifyCode(messageCode);
