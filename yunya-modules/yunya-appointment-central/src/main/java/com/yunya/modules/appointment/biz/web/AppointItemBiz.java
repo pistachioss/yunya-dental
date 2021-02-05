@@ -79,27 +79,6 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
         if (result <= 0){
             return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"添加失败i！",null);
         }
-        // 配置项目使用门诊
-        OrganizationModel model = new OrganizationModel();
-        model.setTypes(new Byte[]{2});
-        List<OrganizationInfoDetail> orgInfoList = this.remoteSystemServiceFeign.findOrgInfoList(model);
-        List<ClinicAppointItem> clinicAppointItems = new ArrayList<>();
-        if (StringHelper.isNotEmpty(orgInfoList)) {
-            Integer id = build.getId();
-            String userID = BaseContextHandler.getUserID();
-            String username = BaseContextHandler.getName();
-            orgInfoList.forEach(organizationInfoDetail -> {
-                ClinicAppointItem clinicAppointItem = new ClinicAppointItem();
-                clinicAppointItem.setAppointItemId(id);
-                clinicAppointItem.setInservice(true);
-                clinicAppointItem.setOrgId(organizationInfoDetail.getId());
-                clinicAppointItem.setCrtId(Integer.valueOf(userID));
-                clinicAppointItem.setCrtName(username);
-                clinicAppointItem.setCrtTime(new Date(System.currentTimeMillis()));
-                clinicAppointItems.add(clinicAppointItem);
-            });
-            clinicAppointItemBiz.insertClinicAppointItem(clinicAppointItems);
-        }
         return ResponseUtil.success();
     }
 
