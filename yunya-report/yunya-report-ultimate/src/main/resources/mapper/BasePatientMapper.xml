@@ -452,7 +452,7 @@
             FROM
                 base_visit_remind bvr
             WHERE
-                bvr.type = 0
+                bvr.type = 1
                 AND DATE_FORMAT( bvr.time, '%Y-%m-%d' ) > DATE_FORMAT( CURRENT_DATE, '%Y-%m-%d' )
             GROUP BY
             patient_id
