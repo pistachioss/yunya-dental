@@ -73,8 +73,9 @@ public class VoucherDiscountItemController {
             //清除之前的适用项目
             voucherDiscountItemBiz.delete(voucherDiscountItem);
             voucherDiscountItems.forEach(t -> {
-                t.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-                t.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
+                Integer loginId = Integer.parseInt(BaseContextHandler.getUserID());
+                t.setCrtId(loginId);
+                t.setUpdId(loginId);
                 t.setUpdTime(date);
                 t.setCrtTime(date);
             });
