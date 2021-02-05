@@ -143,6 +143,15 @@ spring:
             - StripPrefix=3
           metadata:
             title: "结算统计服务"
+        - id: yunya-middle-table
+          uri: lb://yunya-middle-table
+          order: 8300
+          predicates:
+            - Path=/api/report/middle/**
+          filters:
+            - StripPrefix=3
+          metadata:
+            title: "数据同步服务"
         - id: yunya-report-ultimate
           uri: lb://yunya-report-ultimate
           order: 8400
