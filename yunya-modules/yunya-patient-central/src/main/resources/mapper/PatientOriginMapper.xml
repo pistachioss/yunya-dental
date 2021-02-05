@@ -39,7 +39,7 @@
     <select id="findAll" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientOriginInfoVo">
         select
         <include refid="PatientOrigin_Column_List"/>
-        from patient_origin po order by po.crt_time desc
+        from patient_origin po order by po.id asc
     </select>
 
     <!-- 根据患者来源名称查询是否已经存在 -->

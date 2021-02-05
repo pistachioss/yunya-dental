@@ -41,6 +41,12 @@ public class PrepaidReturnRecord {
     private Integer returnWayId;
 
     /**
+     * 退费方式
+     */
+    @Column(name = "return_way_type")
+    private String returnWayType;
+
+    /**
      * 退还本金
      */
     @Column(name = "return_principal_amount")
@@ -62,12 +68,6 @@ public class PrepaidReturnRecord {
      * 是否可用
      */
     private Boolean inservice;
-
-    /**
-     * 退费方式
-     */
-    @Column(name = "return_way_type")
-    private String returnWayType;
 
     /**
      * 创建人id
