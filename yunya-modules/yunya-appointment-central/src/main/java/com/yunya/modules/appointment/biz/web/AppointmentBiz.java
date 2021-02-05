@@ -1656,7 +1656,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 根据患者是否有病历号来判断患者预约类型
         PatientBaseInfo patientBaseInfo = remotePatientCentralServiceFeign.findPatientInfoById(appointment.getPatientId());
         String medicalNumber = patientBaseInfo.getMedicalNumber();
-        if (StringHelper.isEmpty(medicalNumber)){
+        if (StringHelper.isBlank(medicalNumber)){
             // 病历号为空，初诊
             appointment.setAppointType((byte)0);
         } else {

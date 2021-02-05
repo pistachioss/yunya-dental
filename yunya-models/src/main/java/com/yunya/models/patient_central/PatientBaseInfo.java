@@ -557,4 +557,33 @@ public class PatientBaseInfo {
     public void setPersonId(String personId) {
         this.personId = personId;
     }
+
+    @Override
+    public String toString() {
+        return "PatientBaseInfo{" +
+                "id=" + id +
+                ", orgId=" + orgId +
+                ", name='" + name + '\'' +
+                ", faceUrl='" + faceUrl + '\'' +
+                ", pinyinName='" + pinyinName + '\'' +
+                ", woGuid='" + woGuid + '\'' +
+                ", mobile='" + mobile + '\'' +
+                ", mobileOwner=" + mobileOwner +
+                ", medicalNumber='" + medicalNumber + '\'' +
+                ", gender=" + gender +
+                ", age=" + age +
+                ", birthday=" + birthday +
+                ", originType=" + originType +
+                ", originId=" + originId +
+                ", remarks='" + remarks + '\'' +
+                ", inservice=" + inservice +
+                ", crtId=" + crtId +
+                ", crtName='" + crtName + '\'' +
+                ", crtTime=" + crtTime +
+                ", uptId=" + uptId +
+                ", updName='" + updName + '\'' +
+                ", updTime=" + updTime +
+                ", personId='" + personId + '\'' +
+                '}';
+    }
 }
