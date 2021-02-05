@@ -51,8 +51,9 @@ public class CouponAllocateController {
     public ResponseResult saveAllocate(@RequestBody @Valid List<CouponAllocateForm> list) {
         Date date = new Date();
         list.forEach(t -> {
-            t.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-            t.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
+            Integer loginId = Integer.parseInt(BaseContextHandler.getUserID());
+            t.setCrtId(loginId);
+            t.setUpdId(loginId);
             t.setUpdTime(date);
             t.setCrtTime(date);
         });
