@@ -25,4 +25,7 @@ public class EnableChooseEmployeeRes {
     private Integer clinicDepartmentRoomId;
     @ApiModelProperty("门诊科室名称")
     private String clinicDepartmentRoomName;
+    /** 员工在职状态 */
+    @ApiModelProperty("员工在职状态：0-试用期；1-正式；2-离职")
+    private Byte workStatus;
 }
