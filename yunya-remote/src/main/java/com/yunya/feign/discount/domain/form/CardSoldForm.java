@@ -33,7 +33,7 @@ public class CardSoldForm implements Serializable {
     @NotBlank
     private String soldTarget;
     @ApiModelProperty(value = "售出对象手机号", required = true)
-    @Pattern(regexp = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|16[0|1|2|3|5|6|7|8|9]|17[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$", message = "手机号码格式不正确")
+    @Pattern(regexp = "^(13[0-9]|14[0,1,4-9]|15[0-3,5-9]|16[2,5,6,7]|17[0-8]|18[0-9]|19[0-3,5-9])\\d{8}$", message = "手机号码格式不正确")
     @NotBlank
     private String soldPhoneNumber;
     @ApiModelProperty(value = "售出类型（0:售出 1:置换 2:赠送）", required = true)
