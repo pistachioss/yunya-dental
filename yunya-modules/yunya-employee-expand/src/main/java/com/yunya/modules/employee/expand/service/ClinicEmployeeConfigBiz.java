@@ -20,7 +20,6 @@ import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigReq;
 import com.yunya.modules.employee.expand.model.response.ClinicEmployeeConfigRes;
 import com.yunya.modules.employee.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.modules.employee.expand.model.response.EnableEmployeeRes;
-import io.swagger.models.auth.In;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -353,6 +352,7 @@ public class ClinicEmployeeConfigBiz
     EnableChooseEmployeeRes employeeRes = new EnableChooseEmployeeRes();
     employeeRes.setEmployeeId(vo.getUserId());
     employeeRes.setEmployeeName(vo.getName());
+    employeeRes.setWorkStatus(vo.getWorkStatus());
     boolean b = clinicEmployeeConfigList.stream().anyMatch(clinicEmployeeConfig -> clinicEmployeeConfig.getEmployeeId().equals(userId));
     if (b) {
       ClinicEmployeeConfig employeeConfig = clinicEmployeeConfigList.stream().filter(entity -> entity.getEmployeeId().equals(userId)).findAny().get();
@@ -436,6 +436,7 @@ public class ClinicEmployeeConfigBiz
           EnableChooseEmployeeRes employeeRes = new EnableChooseEmployeeRes();
           employeeRes.setEmployeeId(vo.getUserId());
           employeeRes.setEmployeeName(vo.getName());
+          employeeRes.setWorkStatus(vo.getWorkStatus());
           if (null == employeeConfig) {
             resultList.add(employeeRes);
           } else {

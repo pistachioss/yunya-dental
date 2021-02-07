@@ -562,7 +562,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 }
                 cardSecrets.append(new String(Base64.getDecoder().decode(card.getCardPassword())));
             }
-            // TODO: 2020/8/26 发短信
             sendMessage(form, cardNos, cardSecrets);
             return ResponseUtil.success();
         } finally {

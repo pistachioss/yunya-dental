@@ -28,7 +28,7 @@ public class CardSoldForm implements Serializable {
     private List<Integer> cardIds;
     @ApiModelProperty(value = "卡密集合", required = true)
     @NotEmpty
-    private List<Integer> cardSecrets;
+    private List<String> cardSecrets;
     @ApiModelProperty(value = "售出对象", required = true)
     @NotBlank
     private String soldTarget;
