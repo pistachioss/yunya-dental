@@ -117,9 +117,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
       basePatient.setName(patientBaseInfo.getName());
       basePatient.setMobile(patientBaseInfo.getMobile());
       basePatient.setMedicalNumber(patientBaseInfo.getMedicalNumber());
-      if (patientBaseInfo.getBirthday() != null) {
-        basePatient.setBirthday(patientBaseInfo.getBirthday());
-      }
+      basePatient.setBirthday(patientBaseInfo.getBirthday());
       if (patientBaseInfo.getOriginId() != null) {
         basePatient.setOriginType(patientBaseInfo.getOriginType());
         basePatient.setOriginId(patientBaseInfo.getOriginId());
