@@ -582,7 +582,7 @@
         </where>
     </select>
 
-    <!-- 根据条件查询账单收欠费费（本月账单本月非首次收费）详情信息列表 -->
+    <!-- 根据条件查询账单收欠费（本月账单本月非首次收费）详情信息列表 -->
     <select id="selectBillCurrentChargeDebtDetailList"
             resultType="com.yunya.feign.report.domain.vo.StatementBillChargeDetailVO">
         SELECT
@@ -695,7 +695,6 @@
         bb.bill_date
         FROM
         base_bill bb
-        -- 门诊当前时间段内的账单
         <where>
             AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
@@ -734,7 +733,7 @@
         ) bb
         <where>
             AND bbp.payeeOrgId = bb.org_id
-            AND bbp.payeeDate != bb.bill_date -- 收费时间跟账单时间不同则表示收欠费,并且收费日期在查询时间段内
+            AND bbp.payeeDate != bb.bill_date
             AND bbp.billId = bb.bill_id
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -892,7 +891,6 @@
         bb.bill_date
         FROM
         base_bill bb
-        -- 账单日期小于查询开始时间或大于查询结束时间（大于查询结束时间的账单收费不会在查询时间范围内），表示非当月账单
         <where>
             AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
@@ -929,7 +927,6 @@
         bb.bill_id,
         bb.bill_date
         ) bb
-        -- 收费时间跟账单时间不同则表示收欠费,并且收费日期在查询时间段内
         <where>
             AND bbp.payeeOrgId = bb.org_id
             AND bbp.payeeDate != bb.bill_date
@@ -1105,7 +1102,6 @@
         <where>
             AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
-            -- 非本门诊,在查询时间段内的账单
             <if test="query.orgId != null">
                 AND bb.org_id != #{query.orgId}
             </if>
@@ -1139,7 +1135,6 @@
         ) bb
         <where>
             AND bbp.billId = bb.bill_id
-            -- 账单非本门诊，收费在本门诊
             <if test="query.orgId != null">
                 AND bbp.payeeOrgId = #{query.orgId}
             </if>
@@ -1314,7 +1309,6 @@
         <where>
             AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
-            -- 非本门诊,在查询时间段内的账单
             <if test="query.orgId != null">
                 AND bb.org_id != #{query.orgId}
             </if>
@@ -1348,7 +1342,6 @@
         ) bb
         <where>
             AND bbp.billId = bb.bill_id
-            -- 账单非本门诊，收费在本门诊
             <if test="query.orgId != null">
                 AND bbp.payeeOrgId = #{query.orgId}
             </if>
@@ -1523,7 +1516,6 @@
         <where>
             AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
-            -- 本门诊在查询时间段内的账单
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -1557,7 +1549,6 @@
         ) bb
         <where>
             AND bbp.billId = bb.bill_id
-            -- 账单本门诊，收费不在本门诊
             <if test="query.orgId != null">
                 AND bbp.payeeOrgId != #{query.orgId}
             </if>
@@ -1732,7 +1723,6 @@
         <where>
             AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
-            -- 本门诊不在查询时间段内的账单
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -1766,7 +1756,6 @@
         ) bb
         <where>
             AND bbp.billId = bb.bill_id
-            -- 账单本门诊，收费不在本门诊
             <if test="query.orgId != null">
                 AND bbp.payeeOrgId != #{query.orgId}
             </if>
