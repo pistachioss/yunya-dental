@@ -254,7 +254,7 @@ public class TollBiz {
    *
    * @param model 收费参数
    */
-  public void confirmCharge(TollModel model) {
+  public String confirmCharge(TollModel model) {
     Integer orderRecordId = model.getOrderRecordId();
     Byte discountType = model.getDiscountType();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
@@ -366,6 +366,7 @@ public class TollBiz {
       sendMessageForMiddleTable(orderRecordId, billPayRecordId, treatmentRecord);
     }
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
+    return billRecord.getBillNumber();
   }
 
   /**

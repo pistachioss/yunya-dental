@@ -64,9 +64,9 @@ public class TollController {
   @CurrentUser
   @ApiOperation("确认收费")
   @PostMapping("/confirm")
-  public ResponseResult<T> confirmCharge(@RequestBody @Validated TollModel model) {
-    tollBiz.confirmCharge(model);
-    return ResponseUtil.success(null);
+  public ResponseResult<String> confirmCharge(@RequestBody @Validated TollModel model) {
+    String billNum = tollBiz.confirmCharge(model);
+    return ResponseUtil.success(billNum);
   }
 
   /**
