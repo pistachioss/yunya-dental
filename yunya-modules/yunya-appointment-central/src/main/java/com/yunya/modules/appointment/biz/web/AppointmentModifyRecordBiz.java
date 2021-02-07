@@ -80,7 +80,7 @@ public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordM
         modify.setCrtTime(new Date(System.currentTimeMillis()));
         int count = mapper.insertSelective(modify);
         if (count > 0) {
-            rabbitMqServiceFeign.sendMessage(appointmentForm.getId(), 0, BaseAppointmentModify);
+            rabbitMqServiceFeign.sendMessage(modify.getId(), 0, BaseAppointmentModify);
         }
     }
 
@@ -97,7 +97,7 @@ public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordM
         }
         int result = mapper.updateByPrimaryKeySelective(build);
         if (result > 0) {
-            rabbitMqServiceFeign.sendMessage(appointmentModifyRecord.getId(), 1, BaseAppointmentModify);
+            rabbitMqServiceFeign.sendMessage(build.getId(), 1, BaseAppointmentModify);
         }
         return result;
     }
