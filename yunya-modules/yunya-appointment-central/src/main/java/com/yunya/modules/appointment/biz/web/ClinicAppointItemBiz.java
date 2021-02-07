@@ -76,9 +76,12 @@ public class ClinicAppointItemBiz extends BaseBiz<ClinicAppointItemMapper, Clini
      * @return
      */
     public List<ClinicAppointItem> findClinicAppointItemByOrgId(Integer orgId) {
-        ClinicAppointItem entity = new ClinicAppointItem();
-        entity.setOrgId(orgId);
-        return mapper.select(entity);
+        if (orgId != null) {
+            ClinicAppointItem entity = new ClinicAppointItem();
+            entity.setOrgId(orgId);
+            return mapper.select(entity);
+        }
+        return new ArrayList<>();
     }
 
     /**
