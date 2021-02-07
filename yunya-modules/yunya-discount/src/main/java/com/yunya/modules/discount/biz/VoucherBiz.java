@@ -54,6 +54,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
     private RemoteRabbitMqServiceFeign mqServiceFeign;
     @Autowired
     private CouponFileInfoMapper couponFileInfoMapper;
+
     /**
      * 新增
      *
@@ -84,20 +85,18 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         //插入卡券信息
         insertSelective(voucheCoupon);
         //同一种卡券最多添加9999个
-        if(voucheCoupon.getId()<10000){
+        if (voucheCoupon.getId() < 10000) {
             String num = String.format("%04d", voucheCoupon.getId());
             couponCommonInfo.setCouponCode(VOUCHER_TYPE + num);
             //插入卡券编码
             couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
-        }else{
+        } else {
             throw new BaseException("已超过系统允许新增代金券产品的最大数量9999，不允许新增！", INSERT_MODEL);
         }
         mqServiceFeign.sendMessage(couponCommonInfo.getId(), BusinessConstants.ADD, BaseCoupon);
         return couponCommonInfo.getId();
 
     }
-
-
 
 
     /**
@@ -111,8 +110,8 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         CouponAllocate couponAllocate = new CouponAllocate();
         couponAllocate.setCouponId(discountUpdateForm.getId());
         List<CouponAllocate> coList = couponAllocateMapper.select(couponAllocate);
-        for(CouponAllocate fco:coList){
-            if (fco.getAllocateUserId()!=null) {
+        for (CouponAllocate fco : coList) {
+            if (fco.getAllocateUserId() != null) {
                 // 完成分配
                 flag = true;
             }
@@ -151,7 +150,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
             if (couponCommonInfoMapper.select(data).size() >= 1) {
                 data = new CouponCommonInfo();
                 data.setId(discountUpdateForm.getId());
-                if(!couponCommonInfoMapper.selectOne(data).getName().equals(name)){
+                if (!couponCommonInfoMapper.selectOne(data).getName().equals(name)) {
                     throw new BaseException("代金券名称与系统中已有代金券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
@@ -208,11 +207,12 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
 
     /**
      * 根据分类查看列表
+     *
      * @param couponCommonInfoQueryForm
      * @return
      */
-    public  List<CouponCommonInfoVO> findList(CouponCommonInfoQueryForm couponCommonInfoQueryForm){
-        if(couponCommonInfoQueryForm.getEndTime()!=null){
+    public List<CouponCommonInfoVO> findList(CouponCommonInfoQueryForm couponCommonInfoQueryForm) {
+        if (couponCommonInfoQueryForm.getEndTime() != null) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(couponCommonInfoQueryForm.getEndTime());
             calendar.set(Calendar.HOUR_OF_DAY, 23);
@@ -220,16 +220,16 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
             calendar.set(Calendar.SECOND, 59);
             couponCommonInfoQueryForm.setEndTime(calendar.getTime());
         }
-        List<CouponCommonInfoVO>list = mapper.findList(couponCommonInfoQueryForm);
+        List<CouponCommonInfoVO> list = mapper.findList(couponCommonInfoQueryForm);
         CouponFileInfo couponFileInfo = new CouponFileInfo();
         couponFileInfo.setFileType(new Byte("0"));
-        List<CouponFileInfo>fileList = couponFileInfoMapper.select(couponFileInfo);
+        List<CouponFileInfo> fileList = couponFileInfoMapper.select(couponFileInfo);
         Map<String, CouponFileInfo> BaseMap = new HashMap();
         fileList.forEach(z -> BaseMap.put(z.getCouponId() + "", z));
 
-        for(CouponCommonInfoVO couponCommonInfoVO:list){
+        for (CouponCommonInfoVO couponCommonInfoVO : list) {
             CouponFileInfo copy = BaseMap.get(couponCommonInfoVO.getId().toString());
-            if(null!=copy){
+            if (null != copy) {
                 couponCommonInfoVO.setPath(copy.getPath());
             }
         }
@@ -239,10 +239,11 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
 
     /**
      * 获取第三方卡券激活模板接口
+     *
      * @param
      * @return
      */
-    public  List<CouponCommonInfoVO> thirdParty(){
+    public List<CouponCommonInfoVO> thirdParty() {
         return mapper.thirdParty();
     }
 
