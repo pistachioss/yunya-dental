@@ -274,7 +274,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             for (SmsCommonSendRecordModel model : models) {
                 String mobile = model.getMobile();
                 JSONObject param = model.getTemplateParam();
-                if (param.size() != count) {
+                if (param.size() < count) {
                     throw new ClientServiceException("模板参数值缺失", PARAMETERS_IS_ILLEGAL);
                 }
                 StringBuilder builder = parseSmsContent(items, contents, signName, param);
