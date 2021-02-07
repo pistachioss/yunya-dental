@@ -205,11 +205,11 @@
     <select id="selectTariffList" resultMap="categoryInfoMap">
         SELECT
         btc.id as categoryId,
-        btc.NAME as categoryName,
+        btc.`name` as categoryName,
         btc.number as categoryNumber,
         bt.id,
         bt.item_number,
-        bt.name,
+        bt.`name`,
         bt.unit,
         bt.pinyin,
         bt.price
