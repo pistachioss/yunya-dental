@@ -3,6 +3,7 @@ package com.yunya.modules.appointment.biz.web;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.query.AppointItemConfigQuery;
+import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import com.yunya.feign.appointment.vo.ClinicAppointItemConfigVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
@@ -16,10 +17,13 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.models.appointment.AppointItem;
 import com.yunya.models.appointment.ClinicAppointItem;
 import com.yunya.feign.appointment.domain.form.ClinicAppointItemForm;
 import com.yunya.modules.appointment.code.AppointmentError;
+import com.yunya.modules.appointment.mapper.AppointItemMapper;
 import com.yunya.modules.appointment.mapper.ClinicAppointItemMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,11 +40,14 @@ import java.util.stream.Collectors;
  * @update yunya-lihuibin    2020-07-31    新建
  */
 @Service
+@Slf4j
 @Transactional(rollbackFor = Exception.class)
 public class ClinicAppointItemBiz extends BaseBiz<ClinicAppointItemMapper, ClinicAppointItem> {
 
     @Autowired
     private RemoteSystemServiceFeign systemServiceFeign;
+    @Autowired
+    private AppointItemBiz appointItemBiz;
 
 
     /**
@@ -64,6 +71,17 @@ public class ClinicAppointItemBiz extends BaseBiz<ClinicAppointItemMapper, Clini
     }
 
     /**
+     * 根据组织ID获取门诊可以以恶
+     * @param orgId
+     * @return
+     */
+    public List<ClinicAppointItem> findClinicAppointItemByOrgId(Integer orgId) {
+        ClinicAppointItem entity = new ClinicAppointItem();
+        entity.setOrgId(orgId);
+        return mapper.select(entity);
+    }
+
+    /**
      * 根据预约项目id 查询记录
      * @param query
      * @return
@@ -73,24 +91,39 @@ public class ClinicAppointItemBiz extends BaseBiz<ClinicAppointItemMapper, Clini
             PageHelper.startPage(query.getPageNum(),query.getPageNum());
         }
         List<ClinicAppointItemConfigVo> clinicAppointItemConfigVos = new ArrayList<>();
+
         Integer appointItemId = query.getAppointItemId();
         // 门诊可预约项目列表
         List<ClinicAppointItem> clinicAppointItems = mapper.findClinicAppointItemByAppointItemId(appointItemId,query.getInservice());
-        if (StringHelper.isNotEmpty(clinicAppointItems)) {
-            List<Integer> orgIds = clinicAppointItems.stream().map(ClinicAppointItem::getOrgId).collect(Collectors.toList());
-            List<OrganizationInfoDetail> orgInfoList = this.systemServiceFeign.findOrgInfoInIds(orgIds);
-            if (StringHelper.isNotEmpty(orgInfoList)) {
-                clinicAppointItems.forEach(clinicAppointItem -> {
-                    Integer orgId = clinicAppointItem.getOrgId();
-                    // 查询公司信息
-                    boolean b = orgInfoList.stream().anyMatch(entity -> entity.getId().equals(orgId));
+
+        // 查询所有门诊信息列表
+        OrganizationModel orgModel = new OrganizationModel();
+        orgModel.setWhetherPage(false);
+        orgModel.setTypes(new Byte[]{2});
+        List<OrganizationInfoDetail> orgInfoList = this.systemServiceFeign.findOrgInfoList(orgModel);
+        if (StringHelper.isNotEmpty(orgInfoList)) {
+            if (StringHelper.isNotEmpty(clinicAppointItems)) {
+                orgInfoList.forEach(orgInfo -> {
+                    ClinicAppointItemConfigVo clinicAppointItemConfigVo = new ClinicAppointItemConfigVo();
+                    boolean b = clinicAppointItems.stream().anyMatch(entity -> entity.getOrgId().equals(orgInfo.getId()));
                     if (b) {
-                        OrganizationInfoDetail organizationInfo = orgInfoList.stream().filter(entity -> entity.getId().equals(orgId)).findAny().get();
-                        ClinicAppointItemConfigVo clinicAppointItemConfigVo = new ClinicAppointItemConfigVo();
-                        clinicAppointItemConfigVo.setName(organizationInfo.getName());
+                        // 查询公司信息
+                        ClinicAppointItem clinicAppointItem = clinicAppointItems.stream().filter(entity -> entity.getOrgId().equals(orgInfo.getId())).findFirst().get();
+                        clinicAppointItemConfigVo.setName(orgInfo.getName());
                         clinicAppointItemConfigVo.setInservice(clinicAppointItem.getInservice());
-                        clinicAppointItemConfigVos.add(clinicAppointItemConfigVo);
+                    } else {
+                        clinicAppointItemConfigVo.setName(orgInfo.getName());
+                        clinicAppointItemConfigVo.setInservice(true);
                     }
+                    clinicAppointItemConfigVos.add(clinicAppointItemConfigVo);
+                });
+            } else {
+                // 没有配置可预约项目，默认所有门诊启用
+                orgInfoList.forEach(orgInfo->{
+                    ClinicAppointItemConfigVo clinicAppointItemConfigVo = new ClinicAppointItemConfigVo();
+                    clinicAppointItemConfigVo.setName(orgInfo.getName());
+                    clinicAppointItemConfigVo.setInservice(true);
+                    clinicAppointItemConfigVos.add(clinicAppointItemConfigVo);
                 });
             }
         }

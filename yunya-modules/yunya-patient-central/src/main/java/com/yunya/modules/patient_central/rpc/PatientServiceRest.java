@@ -73,15 +73,7 @@ public class PatientServiceRest {
     @ApiOperation("根据患者id查询患者信息")
     @RequestMapping (value = "/findPatientInfoById/{id}",method = RequestMethod.GET)
     public PatientBaseInfo findPatientInfoById(@PathVariable Integer id){
-        String key = RedisConstants.setKey(RedisConstants.PATIENT_BASE_INFO, String.valueOf(id));
-        PatientBaseInfo baseInfo = redisUtils.get(key,PatientBaseInfo.class);
-        if (baseInfo != null) {
-            return baseInfo;
-        } else {
-            PatientBaseInfo patientBaseInfo = patientBaseInfoBiz.selectById(id);
-            redisUtils.set(key,patientBaseInfo,3*3600, TimeUnit.SECONDS);
-            return patientBaseInfo;
-        }
+        return patientBaseInfoBiz.selectById(id);
     }
 
     @ApiOperation("根据患者id集合查询患者list")

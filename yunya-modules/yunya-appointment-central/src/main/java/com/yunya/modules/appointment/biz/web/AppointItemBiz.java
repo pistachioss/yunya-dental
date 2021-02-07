@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 〈一句话功能简述〉<br>
@@ -77,27 +78,6 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
         int result = mapper.insertEntity(build);
         if (result <= 0){
             return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"添加失败i！",null);
-        }
-        // 配置项目使用门诊
-        OrganizationModel model = new OrganizationModel();
-        model.setTypes(new Byte[]{2});
-        List<OrganizationInfoDetail> orgInfoList = this.remoteSystemServiceFeign.findOrgInfoList(model);
-        List<ClinicAppointItem> clinicAppointItems = new ArrayList<>();
-        if (StringHelper.isNotEmpty(orgInfoList)) {
-            Integer id = build.getId();
-            String userID = BaseContextHandler.getUserID();
-            String username = BaseContextHandler.getName();
-            orgInfoList.forEach(organizationInfoDetail -> {
-                ClinicAppointItem clinicAppointItem = new ClinicAppointItem();
-                clinicAppointItem.setAppointItemId(id);
-                clinicAppointItem.setInservice(true);
-                clinicAppointItem.setOrgId(organizationInfoDetail.getId());
-                clinicAppointItem.setCrtId(Integer.valueOf(userID));
-                clinicAppointItem.setCrtName(username);
-                clinicAppointItem.setCrtTime(new Date(System.currentTimeMillis()));
-                clinicAppointItems.add(clinicAppointItem);
-            });
-            clinicAppointItemBiz.insertClinicAppointItem(clinicAppointItems);
         }
         return ResponseUtil.success();
     }
@@ -152,10 +132,20 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
     public List<AppointmentItemEnableModelVo> findAvailableAppItemList(Integer orgId) {
         AppointItemTypeQuery appointOrderTypeQueryForm = new AppointItemTypeQuery();
         appointOrderTypeQueryForm.setOrgId(orgId);
-
         List<AppointmentItemEnableModelVo> ordersModels = mapper.selectAllAppointItemByOrgId(appointOrderTypeQueryForm);
+        // 获取门诊可预约项目配置列表
+        List<ClinicAppointItem> clinicAppointItemConfigList = clinicAppointItemBiz.findClinicAppointItemByOrgId(orgId);
+        if (StringHelper.isNotEmpty(clinicAppointItemConfigList)) {
+            // 该门诊不可预约的项目Id
+            List<Integer> disableAppointItemIds = clinicAppointItemConfigList.stream().filter(config -> config.getInservice().equals(false)).map(ClinicAppointItem::getAppointItemId).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(ordersModels)) {
+                ordersModels.forEach(appointmentItemEnableModelVo -> {
+                    appointmentItemEnableModelVo.getAppointmentItems().removeIf(appointItem->disableAppointItemIds.contains(appointItem.getId()));
+                });
+            }
+        }
         if(ordersModels.isEmpty()){
-            return null;
+            return new ArrayList<>();
         }
         return ordersModels;
     }
@@ -167,6 +157,16 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
      */
     public Integer delAppointItemById(Integer id){
         return mapper.deleteByPrimaryKey(id);
+    }
+
+    /**
+     * 查询所有可用的预约项目
+     * @return 返回可预约项目列表
+     */
+    public List<AppointItem> findList() {
+        AppointItem query = new AppointItem();
+        query.setInservice(true);
+        return mapper.select(query);
     }
 
 }

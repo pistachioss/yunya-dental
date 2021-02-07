@@ -36,14 +36,6 @@ public interface AppointItemMapper extends Mapper<AppointItem> {
     List<AppointmentItemVo> findAppointItemByExample(@Param("form") AppointItemQuery form);
 
     /**
-     * 根据条件查询可预约项目类型(门诊端)
-     *
-     * @param form
-     * @return
-     */
-    List<AppointmentItemVo> findAppointItemList(@Param("form") AppointItemQuery form);
-
-    /**
      * 插入实体
      * @param model 实体
      * @return 返回影响行数

@@ -36,5 +36,5 @@ public class AppointItemConfigQuery implements Serializable {
     private Integer appointItemId;
 
     @ApiModelProperty(value = "是否启用，默认为true;1-启用，0-不启用")
-    private Byte inservice=1;
+    private Byte inservice;
 }
