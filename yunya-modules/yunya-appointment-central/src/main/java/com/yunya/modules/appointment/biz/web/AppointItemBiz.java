@@ -126,12 +126,6 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
             if (StringHelper.isNotEmpty(clinicAppointItemByOrgId)) {
                 List<Integer> disableItemIds = clinicAppointItemByOrgId.stream().filter(entity -> entity.getInservice().equals(false)).map(ClinicAppointItem::getAppointItemId).collect(Collectors.toList());
                 if (StringHelper.isNotEmpty(disableItemIds)) {
-//                    ordersTypes.forEach(entity->{
-//                        Integer id = entity.getId();
-//                        if (disableItemIds.contains(id)) {
-//                            entity.setInservice(false);
-//                        }
-//                    });
                     return ordersTypes.stream().filter(entity->!disableItemIds.contains(entity.getId())).collect(Collectors.toList());
                 }
             }
