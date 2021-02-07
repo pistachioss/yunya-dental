@@ -21,7 +21,7 @@ public class BaseBenefitController {
 	BaseBenefitServiceImpl benefitService;
 
 	@PostMapping("/base/benefit/pull")
-	public ResponseResult pullData(@RequestBody PullForm form) {
+	public ResponseResult pullData(@RequestBody PullForm form) throws InterruptedException {
 		long start = System.currentTimeMillis();
 		RestErrorBo errorBo = benefitService.pullBenefit(form.getStartDate(), form.getEndDate());
 		if (errorBo.getError() != null) {
@@ -33,7 +33,7 @@ public class BaseBenefitController {
 	}
 
 	@PostMapping("/base/benefit/msg/send")
-	public ResponseResult sendMessage(@RequestBody MessageModel model) {
+	public ResponseResult sendMessage(@RequestBody MessageModel model) throws InterruptedException {
 		benefitService.operateBaseBenefit(model);
 		return ResponseUtil.success();
 	}

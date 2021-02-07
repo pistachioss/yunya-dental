@@ -5,10 +5,24 @@ import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.report.domain.bo.BaseCardBo;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.utils.BeanCopierUtils;
-import com.yunya.middletable.dao.discount.*;
+import com.yunya.middletable.dao.discount.CardMapper;
+import com.yunya.middletable.dao.discount.CouponAllocateMapper;
+import com.yunya.middletable.dao.discount.CouponMapper;
+import com.yunya.middletable.dao.discount.DiscountCouponMapper;
+import com.yunya.middletable.dao.discount.PackageCouponMapper;
+import com.yunya.middletable.dao.discount.SalesChannelMapper;
+import com.yunya.middletable.dao.discount.SpecialPackageCouponMapper;
+import com.yunya.middletable.dao.discount.VoucheCouponMapper;
 import com.yunya.middletable.dao.report.BaseCardMapper;
 import com.yunya.middletable.dao.system.AccountItemMapper;
-import com.yunya.models.discount.*;
+import com.yunya.models.discount.Card;
+import com.yunya.models.discount.CouponAllocate;
+import com.yunya.models.discount.CouponCommonInfo;
+import com.yunya.models.discount.DiscountCoupon;
+import com.yunya.models.discount.PackageCoupon;
+import com.yunya.models.discount.SalesChannel;
+import com.yunya.models.discount.SpecialPackageCoupon;
+import com.yunya.models.discount.VoucheCoupon;
 import com.yunya.models.report.BaseCard;
 import com.yunya.models.system.AccountItem;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +37,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -71,7 +91,7 @@ public class BaseCardServiceImpl{
 		operateSingleData(cardId);
 	}
 
-	public void operateBatch(MessageModel model) {
+	public void operateBatch(MessageModel model) throws InterruptedException {
 		Integer cardId = (Integer) model.getParamMap().get("id");
 		LocalDateTime submitDate = LocalDateTime.parse((String)model.getParamMap().get("submitDate"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 //		Integer operateType = model.getOperateType();
@@ -119,7 +139,7 @@ public class BaseCardServiceImpl{
 	/**
 	 * 新增
 	 */
-	private void operateBatchDate(Integer couponId, LocalDateTime submitDate) {
+	private void operateBatchDate(Integer couponId, LocalDateTime submitDate) throws InterruptedException {
 		List<Card> cards = getCards(couponId, submitDate);
 		if (CollectionUtils.isEmpty(cards)) {
 			deleteBaseCards(couponId, submitDate);
@@ -144,20 +164,24 @@ public class BaseCardServiceImpl{
 	 *
 	 * @param list 原数据集合
 	 */
-	private void batchInsert(List<BaseCard> list) {
+	private void batchInsert(List<BaseCard> list) throws InterruptedException {
 		if (CollectionUtils.isNotEmpty(list)) {
 			//分割集合
 			List<List<BaseCard>> partition = Lists.partition(list, cutSlice);
+			CountDownLatch downLatch = new CountDownLatch(partition.size());
 			for (List<BaseCard> baseCards : partition) {
 				//多线程异步插入
 				cardThreadPool.submit(() -> {
 					try {
 						baseCardMapper.insertList(baseCards);
+						downLatch.countDown();
 					} catch (Exception e) {
+						downLatch.countDown();
 						log.error("pull card batchInsert error",e);
 					}
 				});
 			}
+			downLatch.await();
 		}
 	}
 
@@ -256,8 +280,10 @@ public class BaseCardServiceImpl{
 		baseCard.setPayName(accountMap.get(baseCard.getPayId()));
 		baseCard.setChargeStatus(card.getPay());
 		baseCard.setAllocateDate(getAllocateDate(allocates, card.getCouponId(), card.getCrtTime()));
-		//设置有效期
-		baseCard.setActivationDeadline(getActiveDeadline(deadlineBo, card.getCouponId(), card.getActiveDate()));
+		if (card.getActiveDate() != null) {
+			//设置有效期
+			baseCard.setActivationDeadline(getActiveDeadline(deadlineBo, card.getCouponId(), card.getActiveDate()));
+		}
 		if (card.getSaleChannelId() != null) {
 			SalesChannel salesChannel = salesChannelMapper.selectByPrimaryKey(card.getSaleChannelId());
 			if (salesChannel != null) {

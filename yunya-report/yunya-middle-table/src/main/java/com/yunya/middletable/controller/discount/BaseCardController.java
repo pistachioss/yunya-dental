@@ -40,7 +40,7 @@ public class BaseCardController {
 	}
 
 	@PostMapping("/base/card/generate/msg/send")
-	public ResponseResult sendBatchMessage(@RequestBody MessageModel model) {
+	public ResponseResult sendBatchMessage(@RequestBody MessageModel model) throws InterruptedException {
 		cardService.operateBatch(model);
 		return ResponseUtil.success();
 	}

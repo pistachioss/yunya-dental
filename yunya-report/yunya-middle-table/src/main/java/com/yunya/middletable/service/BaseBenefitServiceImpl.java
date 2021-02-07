@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 import static com.yunya.middletable.constant.SynConstant.*;
@@ -54,13 +55,13 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
     @Resource(name = "customizeThreadPool")
     private ExecutorService cardThreadPool;
 
-    public void operateBaseBenefit(MessageModel model) {
+    public void operateBaseBenefit(MessageModel model) throws InterruptedException {
         Integer orderId = (Integer) model.getParamMap().get("id");
 //		Integer operateType = model.getOperateType();
         operateData(orderId);
     }
 
-    public RestErrorBo pullBenefit(String startDateStr, String endDateStr) {
+    public RestErrorBo pullBenefit(String startDateStr, String endDateStr) throws InterruptedException {
         RestErrorBo errorBo = RestErrorBo.getInstance();
         if (!checkPullDate(startDateStr, endDateStr)) {
             return errorBo;
@@ -81,7 +82,7 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
     /**
      * sync
      */
-    private void operateData(Integer orderId) {
+    private void operateData(Integer orderId) throws InterruptedException {
         OrderBenefit orderBenefit = getOrderBenefit(orderId);
         if (orderBenefit == null) {
             deleteBenefit(orderId);
@@ -164,19 +165,23 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
      *
      * @param list 原数据集合
      */
-    private void batchInsert(List<BaseBenefit> list) {
+    private void batchInsert(List<BaseBenefit> list) throws InterruptedException {
         if (CollectionUtils.isNotEmpty(list)) {
             List<List<BaseBenefit>> partition = Lists.partition(list, CUT_SLICE_100);
+            CountDownLatch downLatch = new CountDownLatch(partition.size());
             for (List<BaseBenefit> baseBenefits : partition) {
                 //多线程异步插入
                 cardThreadPool.execute(() -> {
                     try {
                         mapper.insertList(baseBenefits);
+                        downLatch.countDown();
                     } catch (Exception e) {
+                        downLatch.countDown();
                         log.error("pull benefit batchInsert error",e);
                     }
                 });
             }
+            downLatch.await();
         }
     }
 

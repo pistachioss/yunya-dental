@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
@@ -63,7 +64,7 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 
 	private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-	public RestErrorBo operateBaseCouponItem(MessageModel model) {
+	public RestErrorBo operateBaseCouponItem(MessageModel model) throws InterruptedException {
 		Integer couponId = (Integer) model.getParamMap().get("id");
 //		Integer operateType = model.getOperateType();
 		RestErrorBo errorBo = RestErrorBo.getInstance();
@@ -79,7 +80,7 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 	 * @return bo
 	 */
 	@Transactional
-	public RestErrorBo pullCouponItem(String startDateStr, String endDateStr) {
+	public RestErrorBo pullCouponItem(String startDateStr, String endDateStr) throws InterruptedException {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		if (!checkPullDate(startDateStr, endDateStr)) {
 			errorBo.setError(MiddleError.DATE_ERROR);
@@ -106,19 +107,23 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 	 *
 	 * @param list 优惠券项目
 	 */
-	private void batchInsert(List<BaseCouponItem> list) {
+	private void batchInsert(List<BaseCouponItem> list) throws InterruptedException {
 		if (CollectionUtils.isNotEmpty(list)) {
 			List<List<BaseCouponItem>> partition = Lists.partition(list, CUT_SLICE_100);
+			CountDownLatch downLatch = new CountDownLatch(partition.size());
 			for (List<BaseCouponItem> baseItemList : partition) {
 				//多线程异步插入
 				cardThreadPool.execute(() -> {
 					try {
 						mapper.insertList(baseItemList);
+						downLatch.countDown();
 					} catch (Exception e) {
+						downLatch.countDown();
 						log.error("pull couponItem batchInsert error",e);
 					}
 				});
 			}
+			downLatch.await();
 		}
 	}
 
@@ -141,7 +146,7 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 		}
 	}
 
-	private RestErrorBo operateData(Integer couponId) {
+	private RestErrorBo operateData(Integer couponId) throws InterruptedException {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
 		if (coupon == null) {
