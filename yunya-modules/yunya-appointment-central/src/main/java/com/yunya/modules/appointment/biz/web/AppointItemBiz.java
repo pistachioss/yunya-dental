@@ -121,6 +121,16 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
     public List<AppointmentItemVo> findAppointItemByExample(AppointItemQuery form) {
         //通过feign查询预约信息，查询门诊端预约信息
         List<AppointmentItemVo> ordersTypes = mapper.findAppointItemByExample(form);
+        if (StringHelper.isNotEmpty(ordersTypes)) {
+            List<ClinicAppointItem> clinicAppointItemByOrgId = clinicAppointItemBiz.findClinicAppointItemByOrgId(form.getOrgId());
+            if (StringHelper.isNotEmpty(clinicAppointItemByOrgId)) {
+                List<Integer> disableItemIds = clinicAppointItemByOrgId.stream().filter(entity -> entity.getInservice().equals(false)).map(ClinicAppointItem::getAppointItemId).collect(Collectors.toList());
+                if (StringHelper.isNotEmpty(disableItemIds)) {
+                    List<AppointmentItemVo> collect = ordersTypes.stream().filter(entity -> !disableItemIds.contains(entity.getId())).collect(Collectors.toList());
+                    return collect;
+                }
+            }
+        }
         return ordersTypes;
     }
 

@@ -80,30 +80,17 @@
         atype.name as typeName,
         item.appoint_type_id as appointTypeId,
         IFNULL(item.duration,'无') as duration
-        <if test="form.orgId != null">
-            ,cai.inservice,
-            cai.remarks
-        </if>
         FROM appoint_type atype
         left join appoint_item item on item.appoint_type_id = atype.id
-        <if test="form.orgId != null">
-            left join clinic_appoint_item cai on cai.appoint_item_id = item.id
-        </if>
         <where>
             <if test="form.appointTypeId != null">
                 atype.id =#{form.appointTypeId}
-            </if>
-            <if test="form.orgId != null">
-                and cai.org_id = #{form.orgId}
             </if>
             <if test="form.name != null and form.fuzzyQuery == true">
                 and item.name like CONCAT(CONCAT('%', #{form.name}), '%')
             </if>
             <if test="form.name != null and form.fuzzyQuery == false">
                 and item.name = #{form.name}
-            </if>
-            <if test="form.orgId != null and form.inservice != null">
-                and cai.inservice = #{form.inservice}
             </if>
         </where>
     </select>
