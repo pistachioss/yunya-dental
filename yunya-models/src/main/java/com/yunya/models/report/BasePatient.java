@@ -1,6 +1,5 @@
 package com.yunya.models.report;
 
-import lombok.Data;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -509,12 +508,11 @@ public class BasePatient {
         this.totalArrears = totalArrears;
     }
 
-    /**
-     * 获取就诊次数
-     *
-     * @return number_of_visits - 就诊次数
-     */
     public Integer getNumberOfVisits() {
         return numberOfVisits;
+    }
+
+    public void setNumberOfVisits(Integer numberOfVisits) {
+        this.numberOfVisits = numberOfVisits;
     }
 }
