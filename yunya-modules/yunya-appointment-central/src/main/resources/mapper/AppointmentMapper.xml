@@ -37,7 +37,7 @@
     <resultMap id="appointmentDimensionColumn" type="com.yunya.feign.appointment.vo.AppointmentDimensionVo">
         <result column="dentist_id" jdbcType="INTEGER" property="dentistId"/>
         <result column="patientNum" jdbcType="INTEGER" property="patientNum"/>
-<!--        <result column="currentDate" jdbcType="DATE" property="currentDate"/>-->
+        <result column="currentDate" jdbcType="DATE" property="currentDate"/>
         <collection property="appointmentPatientCardVos"
                     ofType="com.yunya.feign.appointment.vo.AppointmentPatientCardVo">
             <id column="id" jdbcType="INTEGER" property="id"/>
@@ -593,6 +593,7 @@
         a.patient_id,
         a.appoint_type,
         a.appoint_content,
+        a.appoint_date as currentDate,
         a.appoint_date,
         a.appoint_time,
         a.appoint_duration,

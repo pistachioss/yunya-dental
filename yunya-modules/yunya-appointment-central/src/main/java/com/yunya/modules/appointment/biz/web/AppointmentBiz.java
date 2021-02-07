@@ -874,11 +874,19 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 UserWorkVO userWorkVO = new UserWorkVO();
                 userWorkVO.setName(entity.getName());
                 userWorkVO.setCompEmpId(entity.getUserId());
+
+                WorkDayVO workDayVO = new WorkDayVO();
+                // 获取离职员工下预约的患者是哪一天的
+                AppointmentDimensionVo appointmentDimensionVo = appointmentDimensionCommInfos.stream().filter(appointInfo -> appointInfo.getDentistId().equals(entity.getUserId())).findFirst().get();
+                Date currentDate = appointmentDimensionVo.getCurrentDate();
                 // 给离职员工创建空的离职排班
                 List<WorkDayVO> workDayVOS = new ArrayList<>();
-                Date leaveDate = LocalDate.parse(entity.getLeaveTime()).toDate();
-                WorkDayVO workDayVO = new WorkDayVO();
-                workDayVO.setDate(leaveDate);
+                if (StringHelper.isBlank(entity.getLeaveTime())) {
+                    workDayVO.setDate(currentDate);
+                } else {
+                    Date leaveDate = LocalDate.parse(entity.getLeaveTime()).toDate();
+                    workDayVO.setDate(leaveDate);
+                }
                 workDayVOS.add(workDayVO);
                 userWorkVO.setDays(workDayVOS);
                 hasSechduleAndEnableAppointList.add(userWorkVO);
