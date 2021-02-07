@@ -14,6 +14,7 @@ import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.patient_central.PatientPrepaymentsInfo;
 import com.yunya.models.report.BasePatient;
 import com.yunya.models.report.BasePatientMember;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,7 +119,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
       basePatient.setMobile(patientBaseInfo.getMobile());
       basePatient.setMedicalNumber(patientBaseInfo.getMedicalNumber());
       if (patientBaseInfo.getBirthday() != null) {
-        basePatient.setBirthday(patientBaseInfo.getBirthday());
+        basePatient.setBirthday(new DateTime(patientBaseInfo.getBirthday()).toDate());
       }
       if (patientBaseInfo.getOriginId() != null) {
         basePatient.setOriginType(patientBaseInfo.getOriginType());
