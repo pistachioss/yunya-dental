@@ -39,6 +39,7 @@
         <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime"/>
         <collection property="billDetail" ofType="com.yunya.feign.treatment.domain.vo.BillDetailPrintInfoVO">
             <id column="id" jdbcType="INTEGER" property="orderDetailId"/>
+            <result column="type" property="type" javaType="TINYINT"/>
             <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL"/>
             <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL"/>
             <result column="actual_receivable" property="actualReceivable" jdbcType="DECIMAL"/>

@@ -39,6 +39,8 @@ public class BillDetailPrintInfoVO implements Serializable {
     private BigDecimal actualReceivable;
     @ApiModelProperty("已收金额")
     private BigDecimal receivedAmount;
+    @ApiModelProperty("开单类型（0-价目表；1-商品；）")
+    private Integer type;
     /** 卡券类型 */
     @ApiModelProperty(value = "优惠券类型（0：代金券 1：折扣券 2：兑换券 3：套餐券 99：会员卡 5：授权折扣）")
     private List<Integer> couponTypes;
