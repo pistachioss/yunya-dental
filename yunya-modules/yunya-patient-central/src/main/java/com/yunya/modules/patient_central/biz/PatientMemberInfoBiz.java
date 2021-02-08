@@ -14,6 +14,7 @@ import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -450,7 +451,11 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     }
 
     if (patientBaseInfo != null) {
+      MedicalOrganizationInfoVO medicalOrganizationInfoVO = remoteSystemServiceFeign.clinicExtInfoByCompanyId(Integer.parseInt(BaseContextHandler.getOrgId()));
       JSONObject templateParam = new JSONObject();
+      templateParam.put(SmsTemplateItemEnum.CLINIC_PHONE.getAction(), medicalOrganizationInfoVO.getTel());
+      templateParam.put(SmsTemplateItemEnum.CLINIC_ADDRESS.getAction(), medicalOrganizationInfoVO.getAddress());
+      templateParam.put(SmsTemplateItemEnum.CLINIC_NAME.getAction(), medicalOrganizationInfoVO.getAbbreviation());
       // 充值
       if (type == 0) {
         // 患者姓名
