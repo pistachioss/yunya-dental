@@ -27,6 +27,13 @@ public class AccreditDiscountDetailModel implements Serializable {
   @NotNull(message = "开单明细记录ID不能为空！")
   private Integer orderDetailId;
 
+  /** 开单数量 */
+  @ApiModelProperty(value = "数量", required = true)
+  @NotNull(message = "开单项目数量不能为空！")
+  @Min(value = 1,message = "数量不能小于0")
+  private Integer quantity;
+
+  /** 实收金额 */
   @ApiModelProperty(value = "实收金额", required = true)
   @NotNull(message = "实收金额不能为空！")
   @Min(value = 0, message = "输入金额不能小于0！")
