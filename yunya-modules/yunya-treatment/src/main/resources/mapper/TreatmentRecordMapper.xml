@@ -63,7 +63,7 @@
         tr.registered_id as registeredId,
         tr.dentist_id as treatDentistId,
         tr.status as treatmentStatus,
-        DATE_FORMAT(tr.crt_time, '%Y-%m-%d') as treatDate,
+        DATE_FORMAT(tr.treat_start_time, '%Y-%m-%d') as treatDate,
         DATE_FORMAT(tr.treat_start_time, '%H:%i') as treatStartTime,
         DATE_FORMAT(tr.treat_end_time, '%H:%i') as treatEndTime,
         tr.medical_record_completed as medicalRecordCompleted
@@ -76,7 +76,7 @@
                 and tr.org_id = #{queryForm.orgId}
             </if>
             <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
-                and DATE_FORMAT(tr.crt_time, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
+                and DATE_FORMAT(tr.treat_start_time, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
             </if>
             <if test="queryForm.treatmentStatus != null and queryForm.treatmentStatus.length > 0">
                 and tr.status in
@@ -105,7 +105,7 @@
             tr.dentist_id as dentistId,
             tr.type as firstVisit,
             tr.status as status,
-            DATE_FORMAT(tr.crt_time, '%Y-%m-%d') as treatDate,
+            DATE_FORMAT(tr.treat_start_time, '%Y-%m-%d') as treatDate,
             DATE_FORMAT(tr.treat_start_time, '%H:%i') as treatStartTime,
             DATE_FORMAT(tr.treat_end_time, '%H:%i') as treatEndTime,
             tr.medical_record_completed as medicalRecordCompleted,
@@ -220,7 +220,7 @@
         FROM(
         SELECT
         tr.id,
-        DATE_FORMAT(tr.crt_time,'%Y-%m-%d') as crt_time
+        DATE_FORMAT(tr.treat_start_time,'%Y-%m-%d') as crt_time
         FROM
         `treatment_record` tr
         <where>
@@ -228,7 +228,7 @@
                 and tr.dentist_id = #{dentistId}
             </if>
             <if test="startDate != null and endDate != null">
-                and date_format(tr.crt_time,'%Y-%m-%d') BETWEEN date_format(#{startDate},'%Y-%m-%d') AND
+                and date_format(tr.treat_start_time,'%Y-%m-%d') BETWEEN date_format(#{startDate},'%Y-%m-%d') AND
                 date_format(#{endDate},'%Y-%m-%d')
             </if>
             <if test="orgId != null">
@@ -250,7 +250,7 @@
         from
             treatment_record tr left join registered r on tr.registered_id = r.id
         where
-                date_format(tr.treat_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d')
+              date_format(tr.treat_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d')
           and tr.inservice = 1
           and tr.status = #{status}
           and tr.org_id = #{orgId}
@@ -285,10 +285,10 @@
             AND tr.type = 0
             AND tr.treat_end_time IS NOT NULL
             <if test="query.dateType == 0">
-                AND DATE_FORMAT(tr.crt_time, '%Y-%m') = #{query.businessDate}
+                AND DATE_FORMAT(tr.treat_start_time, '%Y-%m') = #{query.businessDate}
             </if>
             <if test="query.dateType == 1">
-                AND DATE_FORMAT(tr.crt_time, '%Y') = #{query.businessDate}
+                AND DATE_FORMAT(tr.treat_start_time, '%Y') = #{query.businessDate}
             </if>
             <if test="query.belongIds != null and query.belongIds.length > 0">
                 AND tr.org_id IN
@@ -308,10 +308,10 @@
         <where>
             AND tr.treat_end_time IS NOT NULL
             <if test="query.dateType == 0">
-                AND DATE_FORMAT(tr.crt_time, '%Y-%m') = #{query.businessDate}
+                AND DATE_FORMAT(tr.treat_start_time, '%Y-%m') = #{query.businessDate}
             </if>
             <if test="query.dateType == 1">
-                AND DATE_FORMAT(tr.crt_time, '%Y') = #{query.businessDate}
+                AND DATE_FORMAT(tr.treat_start_time, '%Y') = #{query.businessDate}
             </if>
             <if test="query.belongIds != null and query.belongIds.length > 0">
                 AND tr.org_id IN
@@ -364,10 +364,10 @@
             AND tr.type = 0
             AND tr.treat_end_time IS NOT NULL
             <if test="query.startDate != null and query.startDate != ''">
-                AND DATE_FORMAT(tr.crt_time, '%Y-%m') &gt;= #{query.startDate}
+                AND DATE_FORMAT(tr.treat_start_time, '%Y-%m') &gt;= #{query.startDate}
             </if>
             <if test="query.endDate != null and query.endDate != ''">
-                AND DATE_FORMAT(tr.crt_time, '%%Y-%m') &lt;= #{query.endDate}
+                AND DATE_FORMAT(tr.treat_start_time, '%%Y-%m') &lt;= #{query.endDate}
             </if>
             <if test="query.orgId != null">
                 AND tr.org_id = #{query.orgId}
