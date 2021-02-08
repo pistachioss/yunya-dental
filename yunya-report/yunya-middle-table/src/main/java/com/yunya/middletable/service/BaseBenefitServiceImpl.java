@@ -226,8 +226,6 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
                 //授权折扣优惠
                 if (AUTH_BENEFIT.equals(k)) {
                     List<AuthDiscountBenefit> authBenefits = getBenefitDetail(v, AuthDiscountBenefit.class, authBenefitMapper);
-                    //设置授权人
-					setOperateUserId(authBenefits, v);
 					if (CollectionUtils.isNotEmpty(authBenefits)) {
                         //授权优惠转换
                         List<BaseBenefit> templateList = authTransform(authBenefits);
@@ -238,12 +236,6 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
         }
         return list;
     }
-
-    private void setOperateUserId(List<AuthDiscountBenefit> authBenefits, Set<Integer> v) {
-		List<OrderBenefit> authOrderBenefit = getBenefitDetail(v, OrderBenefit.class, orderBenefitMapper);
-		Map<Integer, Integer> collect = authOrderBenefit.stream().collect(toMap(OrderBenefit::getOrderId, OrderBenefit::getCrtId));
-		authBenefits.forEach(obj -> obj.setCrtId(collect.get(obj.getOrderId())));
-	}
 
     private List<BaseBenefit> cardTransform(List<CardBenefit> cardBenefits) {
         return cardBenefits.stream().map(obj -> {
@@ -262,6 +254,7 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
             benefit.setItemType(obj.getItemType().byteValue());
             benefit.setChoiceBenefitType(AUTH_BENEFIT.getCode());
             benefit.setOperateUserId(obj.getCrtId());
+            benefit.setUseDate(obj.getCrtTime());
             return benefit;
         }).collect(toList());
     }
