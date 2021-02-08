@@ -20,10 +20,11 @@
         <result column="upt_id" property="uptId" jdbcType="INTEGER"/>
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="source_attribute" property="sourceAttribute" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="PatientOrigin_Column_List">
-        po.id id,po.parent_id parentId,po.name name,po.origin_type originType,po.qr_code_path qrCodePath,po.allow_operate allowOperate,po.time_limit timeLimit,po.limit_start_date limitStartDate,
+        po.source_attribute sourceAttribute ,po.id id,po.parent_id parentId,po.name name,po.origin_type originType,po.qr_code_path qrCodePath,po.allow_operate allowOperate,po.time_limit timeLimit,po.limit_start_date limitStartDate,
         po.limit_end_date limitEndDate,po.inservice inservice,po.crt_id crtId,po.crt_name crtName,po.crt_time crtTime,po.upt_id uptId,po.upd_name updName,po.upd_time updTime
     </sql>
 
