@@ -402,8 +402,16 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
             PatientOrigin activity =
                 patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
             if (activity != null) {
-              patientBaseInfoVo.setOriginName(activity.getName());
-              patientBaseInfoVo.setSourceName(activity.getName());
+              if (activity.getSourceAttribute() != null){
+                DictionaryItem dictionaryItemById = remoteSystemServiceFeign.findDictionaryItemById(activity.getSourceAttribute());
+                if (dictionaryItemById != null){
+                  patientBaseInfoVo.setOriginName(dictionaryItemById.getName()+"-"+activity.getName());
+                  patientBaseInfoVo.setSourceName(dictionaryItemById.getName()+"-"+activity.getName());
+                }else {
+                  patientBaseInfoVo.setOriginName(activity.getName());
+                  patientBaseInfoVo.setSourceName(activity.getName());
+                }
+              }
             }
             break;
         }
@@ -418,6 +426,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
     return patientBaseInfoVo;
   }
+
 
   /**
    * 模糊查询患者

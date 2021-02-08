@@ -83,4 +83,10 @@ public class PatientOriginForm implements Serializable {
      */
     @ApiModelProperty(value = "是否启用")
     private Boolean inservice;
+
+    /**
+     * 患者来源属性字典id
+     */
+    @ApiModelProperty(value = "患者来源属性字典id")
+    private Integer sourceAttribute;
 }

@@ -40,6 +40,16 @@ public class PatientOriginInfoVo implements Serializable {
     private Integer originType;
 
     /**
+     * 患者来源属性字典id
+     */
+    private Integer sourceAttribute;
+
+    /**
+     * 患者来源属性名称
+     */
+    private String sourceAttributeName;
+
+    /**
      * 是否允许操作（编辑、删除）
      */
     private Boolean allowOperate;

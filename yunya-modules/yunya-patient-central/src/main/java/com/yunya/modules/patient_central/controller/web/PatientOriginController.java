@@ -1,18 +1,11 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by Fernflower decompiler)
-//
-
 package com.yunya.modules.patient_central.controller.web;
 
-import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.form.PatientOriginForm;
 import com.yunya.feign.patient_central.domain.model.PatientOriginModel;
 import com.yunya.feign.patient_central.domain.query.OriginTypeQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientAndStaffListInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginTreeVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginVo;
-import com.yunya.feign.patient_central.domain.vo.web.PrepaidExpendRecordVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -54,9 +47,8 @@ public class PatientOriginController {
   @CurrentUser
   @ApiOperation("新建患者来源分类")
   @PostMapping("/add")
-  public ResponseResult<PageInfo<PrepaidExpendRecordVo>> add(
-      @RequestBody @Validated PatientOriginModel patientOriginModel) {
-    return this.patientOriginBiz.add(patientOriginModel);
+  public ResponseResult add(@RequestBody @Validated PatientOriginModel patientOriginModel) {
+    return patientOriginBiz.add(patientOriginModel);
   }
 
   /**

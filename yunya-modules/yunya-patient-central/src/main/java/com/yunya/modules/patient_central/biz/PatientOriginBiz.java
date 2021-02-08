@@ -21,6 +21,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientOrigin;
+import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
 import org.springframework.beans.BeanUtils;
@@ -51,6 +52,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
 
   /** 注入患者信息Mapper */
   @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
+
 
   /** 获取患者服务端口号 */
   @Value("${codeUrl.url}")
@@ -117,6 +119,12 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
     if (StringHelper.isNotEmpty(patientOriginInfoVos)){
       patientOriginInfoVos.forEach(
               patientOriginInfoVo -> {
+                if (patientOriginInfoVo.getSourceAttribute() != null){
+                  DictionaryItem dictionaryItemById = remoteSystemServiceFeign.findDictionaryItemById(patientOriginInfoVo.getSourceAttribute());
+                  if (dictionaryItemById != null){
+                    patientOriginInfoVo.setSourceAttributeName(dictionaryItemById.getName());
+                  }
+                }
                 if (patientOriginInfoVo.getParentId() != 0){
                     patientOriginInfoVo.setCodeUrl(getCodeUrl(patientOriginInfoVo));
                 }
@@ -168,6 +176,9 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
             OperationCodeConstants.OBJECT_EDIT_FAIL, "该患者来源不可编辑", patientOrigin);
       }
       patientOrigin.setInservice(patientOriginForm.getInservice());
+      if (patientOriginForm.getSourceAttribute() != null){
+        patientOrigin.setSourceAttribute(patientOriginForm.getSourceAttribute());
+      }
       if (patientOriginForm.getTimeLimit() == null){
         patientOrigin.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientOrigin.setUpdName(BaseContextHandler.getName());
@@ -246,6 +257,12 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       Iterator<PatientOrigin> PatientOriginIterator = PatientOriginInfoList.iterator();
       while (PatientOriginIterator.hasNext()) {
         PatientOrigin origin = PatientOriginIterator.next();
+        if (origin.getSourceAttribute() != null){
+          DictionaryItem dictionaryItem = remoteSystemServiceFeign.findDictionaryItemById(origin.getSourceAttribute());
+          if (dictionaryItem != null){
+            origin.setName(dictionaryItem.getName()+"-"+origin.getName());
+          }
+        }
         if (origin.getTimeLimit() == 1) {
           if (!DateUtil.isEffectiveDate(new Date(), origin.getLimitStartDate(), origin.getLimitEndDate())) {
             PatientOriginIterator.remove(); // 使用迭代器的删除方法删除
@@ -273,7 +290,9 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
    */
   public List<PatientOrigin> findPatientOriginByTypt(OriginTypeQueryForm form) {
     PatientOrigin patientOrigin = new PatientOrigin();
-    patientOrigin.setOriginType(form.getOriginType()); // 根据来源类型
-    return getPatientOriginList(patientOrigin); // 获取符合条件的活动集合
+    // 根据来源类型
+    patientOrigin.setOriginType(form.getOriginType());
+    // 获取符合条件的活动集合
+    return getPatientOriginList(patientOrigin);
   }
 }

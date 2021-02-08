@@ -40,6 +40,16 @@ public class PatientOriginTreeVo extends TreeNode {
     private Integer originType;
 
     /**
+     * 患者来源属性字典id
+     */
+    private Integer sourceAttribute;
+
+    /**
+     * 患者来源属性名称
+     */
+    private String sourceAttributeName;
+
+    /**
      * 二维码地址
      */
     private String codeUrl;
