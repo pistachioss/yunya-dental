@@ -21,7 +21,7 @@ public class BaseCouponItemController {
 	BaseCouponItemServiceImpl itemService;
 
 	@PostMapping("/base/coupon/item/pull")
-	public ResponseResult pullData(@RequestBody PullForm form) {
+	public ResponseResult pullData(@RequestBody PullForm form) throws InterruptedException {
 		long start = System.currentTimeMillis();
 		RestErrorBo errorBo = itemService.pullCouponItem(form.getStartDate(), form.getEndDate());
 		if (errorBo.getError() != null) {
@@ -33,7 +33,7 @@ public class BaseCouponItemController {
 	}
 
 	@PostMapping("/base/coupon/item/msg/send")
-	public ResponseResult sendMessage(@RequestBody MessageModel model) {
+	public ResponseResult sendMessage(@RequestBody MessageModel model) throws InterruptedException {
 		RestErrorBo errorBo = itemService.operateBaseCouponItem(model);
 		if (errorBo.getError() != null) {
 			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());

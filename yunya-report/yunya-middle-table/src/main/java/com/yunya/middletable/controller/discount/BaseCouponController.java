@@ -21,7 +21,7 @@ public class BaseCouponController {
 	BaseCouponServiceImpl couponService;
 
 	@PostMapping("/base/coupon/pull")
-	public ResponseResult pullData(@RequestBody PullForm form) {
+	public ResponseResult pullData(@RequestBody PullForm form) throws InterruptedException {
 		long start = System.currentTimeMillis();
 		RestErrorBo errorBo = couponService.pullCoupon(form.getStartDate(), form.getEndDate());
 		if (errorBo.getError() != null) {

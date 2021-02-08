@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
@@ -87,7 +88,7 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 	 * @return bo
 	 */
 	@Transactional
-	public RestErrorBo pullCoupon(String startDateStr, String endDateStr) {
+	public RestErrorBo pullCoupon(String startDateStr, String endDateStr) throws InterruptedException {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		if (!checkPullDate(startDateStr, endDateStr)) {
 			errorBo.setError(MiddleError.DATE_ERROR);
@@ -263,20 +264,24 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 	 *
 	 * @param list 优惠券
 	 */
-	private void batchInsert(List<BaseCoupon> list) {
+	private void batchInsert(List<BaseCoupon> list) throws InterruptedException {
 		//优惠券基础表需要的其他数据组合
 		if (CollectionUtils.isNotEmpty(list)) {
 			List<List<BaseCoupon>> partition = Lists.partition(list, CUT_SLICE_100);
+			CountDownLatch downLatch = new CountDownLatch(partition.size());
 			for (List<BaseCoupon> couponList : partition) {
 				//多线程异步插入
 				cardThreadPool.execute(() -> {
 					try {
 						mapper.insertList(couponList);
+						downLatch.countDown();
 					} catch (Exception e) {
+						downLatch.countDown();
 						log.error("pull coupon batchInsert error", e);
 					}
 				});
 			}
+			downLatch.await();
 		}
 	}
 
