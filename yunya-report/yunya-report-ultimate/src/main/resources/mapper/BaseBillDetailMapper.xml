@@ -665,6 +665,7 @@
         billId,
         billNum,
         DATE_FORMAT(orderDate, '%Y-%m-%d %H:%i') as orderDate,
+        DATE_FORMAT(billDate, '%Y-%m-%d %H:%i') as billDate,
         DATE_FORMAT(billDate, '%Y-%m-%d %H:%i') as chargeDate,
         patientId,
         patientName,

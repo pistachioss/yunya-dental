@@ -112,6 +112,7 @@
         refundId,
         billNum,
         DATE_FORMAT(orderDate, '%Y-%m-%d') as orderDate,
+        DATE_FORMAT(billDate, '%Y-%m-%d') as billDate,
         DATE_FORMAT(refundDate, '%Y-%m-%d') as refundDate,
         patientId,
         patientName,
@@ -124,6 +125,7 @@
         brd.refund_id as refundId,
         brd.bill_num as billNum,
         brd.order_date as orderDate,
+        brd.bill_date as billDate,
         brd.refund_date as refundDate,
         brd.patient_id as patientId,
         brd.`name` as patientName,
@@ -143,6 +145,7 @@
         brd.refund_id,
         brd.refund_amount,
         bbd.order_date,
+        bbd.bill_date,
         bbd.bill_num,
         bbd.executor_id
         FROM
@@ -152,6 +155,7 @@
         bbd.bill_detail_id,
         bbd.executor_id,
         bb.order_date,
+        bb.bill_date,
         bb.bill_num
         FROM
         base_bill_detail bbd
