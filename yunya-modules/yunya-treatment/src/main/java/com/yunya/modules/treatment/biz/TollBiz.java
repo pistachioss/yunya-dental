@@ -320,7 +320,7 @@ public class TollBiz {
     }
     billPayRecord.setCrtId(userId);
     // 首次收费时间与账单时间保持一致
-    billPayRecord.setCrtTime(new Date(millis));
+    billPayRecord.setCrtTime(billRecord.getCrtTime());
     billPayRecord.setCrtName(name);
     billPayRecordMapper.insertSelective(billPayRecord);
     // 保存订单明细收费记录
