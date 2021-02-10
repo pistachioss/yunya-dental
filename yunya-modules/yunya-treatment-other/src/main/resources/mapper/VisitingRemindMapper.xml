@@ -60,7 +60,10 @@
         and vrd.org_id = #{query.orgId}
       </if>
       <if test="query.remindDate != null and query.searchId == 1">
-        and date_format(vrd.crt_time,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d') and vrd.crt_id = #{query.crtId}
+        and date_format(vrd.crt_time,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
+        <if test="query.crtId != null">
+          and vrd.crt_id = #{query.crtId}
+        </if>
       </if>
       <if test="query.remindDate != null and query.searchId == 2">
         and date_format(vrd.remind_date,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
