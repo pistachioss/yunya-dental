@@ -284,12 +284,12 @@ public class TollBiz {
     Integer orderRecordOrgId = orderRecord.getOrgId();
     String name = BaseContextHandler.getName();
     // 保存账单信息
-    long millis = System.currentTimeMillis();
+    Date billDate = new Date(System.currentTimeMillis());
     BillRecord billRecord =
         generateBillRecord(treatmentRecordId, patientId, orderRecordId, orderRecordOrgId);
     billRecord.setPrivilegeType(discountType);
     if (0 != discountType) {
-      billRecord.setPrivilegeDate(new Date(millis));
+      billRecord.setPrivilegeDate(billDate);
     }
     billRecord.setReceivableAmount(totalAmount);
     billRecord.setPrivilegeAmount(privilegeAmount);
@@ -299,7 +299,7 @@ public class TollBiz {
     billRecord.setInvoice(model.getInvoiceModel().getInvoice());
     billRecord.setInvoiceNumber(model.getInvoiceModel().getInvoiceNumber());
     billRecord.setCrtId(userId);
-    billRecord.setCrtTime(new Date(millis));
+    billRecord.setCrtTime(billDate);
     billRecord.setCrtName(name);
     billRecordBiz.insertSelective(billRecord);
     // 保存账单收费记录
