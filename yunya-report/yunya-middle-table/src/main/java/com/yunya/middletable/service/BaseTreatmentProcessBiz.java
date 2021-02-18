@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.appointment.AppointmentMapper;
@@ -18,15 +19,20 @@ import com.yunya.models.report.BaseTreatmentProcess;
 import com.yunya.models.treatment.AssistantMatchingRecord;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * 简介: 中间表就诊流程业务处理
@@ -36,6 +42,7 @@ import java.util.concurrent.ExecutorService;
  * @description:
  * @since: 1.0.0
  */
+@Slf4j
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class BaseTreatmentProcessBiz
@@ -436,72 +443,104 @@ public class BaseTreatmentProcessBiz
     String endDate = form.getEndDate();
     List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
     if (StringHelper.isNotEmpty(dateRanges)) {
+      CountDownLatch latch = new CountDownLatch(dateRanges.size());
+      List<Future> resultFutures = new ArrayList<>();
       for (String date : dateRanges) {
-        importExcelThreadPool.submit(
-            () -> {
-              // 预约-就诊
-              Appointment appointEmp = new Appointment();
-              appointEmp.setCrtTime(new DateTime(date).toDate());
-              List<Appointment> appointments = appointmentMapper.select(appointEmp);
-              if (StringHelper.isNotEmpty(appointments)) {
-                List<BaseTreatmentProcess> treatmentProcesses = Lists.newArrayList();
-                appointments.forEach(
-                    appointment -> {
-                      BaseTreatmentProcess process = new BaseTreatmentProcess();
-                      Integer appointmentId = appointment.getId();
-                      process.setOrgId(appointment.getOrgId());
-                      process.setPatientId(appointment.getPatientId());
-                      process.setAppointmentId(appointmentId);
-                      process.setAppointDentistId(appointment.getDentistId());
-                      process.setAppointStartTime(appointment.getAppointStartTime());
-                      process.setAppointDuration(appointment.getAppointDuration());
-                      process.setAppointContent(appointment.getAppointContent());
-                      // 设置就诊流程预约状态和改约次数
-                      setTreatmentProcessAppointmentStatusAndAppointmentModifyTime(
-                          appointment, process, appointmentId);
-                      // 设置就诊流程挂号信息
-                      setTreatmentProcessRegisteredValue(process, appointmentId);
-                      // 设置就诊流程就诊信息
-                      TreatmentRecord treatmentRecord = new TreatmentRecord();
-                      treatmentRecord.setAppointmentId(appointmentId);
-                      setTreatmentProcessTreatmentValue(process, treatmentRecord);
-                      treatmentProcesses.add(process);
-                    });
-                if (StringHelper.isNotEmpty(treatmentProcesses)) {
-                  mapper.batchInsertSelective(treatmentProcesses);
-                }
+        resultFutures.add(
+            importExcelThreadPool.submit(
+                () -> {
+                  try {
+                    // 预约-就诊
+                    Appointment appointEmp = new Appointment();
+                    appointEmp.setCrtTime(new DateTime(date).toDate());
+                    List<Appointment> appointments = appointmentMapper.select(appointEmp);
+                    if (StringHelper.isNotEmpty(appointments)) {
+                      List<BaseTreatmentProcess> treatmentProcesses = Lists.newArrayList();
+                      appointments.forEach(
+                          appointment -> {
+                            BaseTreatmentProcess process = new BaseTreatmentProcess();
+                            Integer appointmentId = appointment.getId();
+                            process.setOrgId(appointment.getOrgId());
+                            process.setPatientId(appointment.getPatientId());
+                            process.setAppointmentId(appointmentId);
+                            process.setAppointDentistId(appointment.getDentistId());
+                            process.setAppointStartTime(appointment.getAppointStartTime());
+                            process.setAppointDuration(appointment.getAppointDuration());
+                            process.setAppointContent(appointment.getAppointContent());
+                            // 设置就诊流程预约状态和改约次数
+                            setTreatmentProcessAppointmentStatusAndAppointmentModifyTime(
+                                appointment, process, appointmentId);
+                            // 设置就诊流程挂号信息
+                            setTreatmentProcessRegisteredValue(process, appointmentId);
+                            // 设置就诊流程就诊信息
+                            TreatmentRecord treatmentRecord = new TreatmentRecord();
+                            treatmentRecord.setAppointmentId(appointmentId);
+                            setTreatmentProcessTreatmentValue(process, treatmentRecord);
+                            treatmentProcesses.add(process);
+                          });
+                      if (StringHelper.isNotEmpty(treatmentProcesses)) {
+                        mapper.batchInsertSelective(treatmentProcesses);
+                      }
 
-                // 挂号-就诊
-                Registered registeredEmp = new Registered();
-                registeredEmp.setCrtTime(new DateTime(date).toDate());
-                List<Registered> registeredList = registeredMapper.select(registeredEmp);
-                if (StringHelper.isNotEmpty(registeredList)) {
-                  List<BaseTreatmentProcess> tempList = Lists.newArrayList();
-                  registeredList.forEach(
-                      registered -> {
-                        if (null == registered.getAppointmentId()) {
-                          Integer registeredId = registered.getId();
-                          BaseTreatmentProcess entity = new BaseTreatmentProcess();
-                          entity.setRegisteredId(registeredId);
-                          int count = mapper.selectCount(entity);
-                          if (0 >= count) {
-                            BaseTreatmentProcess process = generateBaseTreatmentProcess(registered);
-                            if (null != process) {
-                              TreatmentRecord treatmentRecord = new TreatmentRecord();
-                              treatmentRecord.setRegisteredId(registered.getId());
-                              setTreatmentProcessTreatmentValue(process, treatmentRecord);
-                              tempList.add(process);
-                            }
-                          }
+                      // 挂号-就诊
+                      Registered registeredEmp = new Registered();
+                      registeredEmp.setCrtTime(new DateTime(date).toDate());
+                      List<Registered> registeredList = registeredMapper.select(registeredEmp);
+                      if (StringHelper.isNotEmpty(registeredList)) {
+                        List<BaseTreatmentProcess> tempList = Lists.newArrayList();
+                        registeredList.forEach(
+                            registered -> {
+                              if (null == registered.getAppointmentId()) {
+                                Integer registeredId = registered.getId();
+                                BaseTreatmentProcess entity = new BaseTreatmentProcess();
+                                entity.setRegisteredId(registeredId);
+                                int count = mapper.selectCount(entity);
+                                if (0 >= count) {
+                                  BaseTreatmentProcess process =
+                                      generateBaseTreatmentProcess(registered);
+                                  if (null != process) {
+                                    TreatmentRecord treatmentRecord = new TreatmentRecord();
+                                    treatmentRecord.setRegisteredId(registered.getId());
+                                    setTreatmentProcessTreatmentValue(process, treatmentRecord);
+                                    tempList.add(process);
+                                  }
+                                }
+                              }
+                            });
+                        if (StringHelper.isNotEmpty(tempList)) {
+                          mapper.batchInsertSelective(tempList);
                         }
-                      });
-                  if (StringHelper.isNotEmpty(tempList)) {
-                    mapper.batchInsertSelective(tempList);
+                      }
+                    }
+                  } finally {
+                    latch.countDown();
                   }
-                }
-              }
-            });
+                }));
       }
+      printExceptionLog(resultFutures, log);
+    }
+  }
+
+  /**
+   * 打印错误信息
+   *
+   * @param resultFutures 异常信息
+   * @param log
+   */
+  static void printExceptionLog(List<Future> resultFutures, Logger log) {
+    if (StringHelper.isNotEmpty(resultFutures)) {
+      resultFutures.forEach(
+          future -> {
+            try {
+              Object o = future.get();
+              if (o instanceof ClientServiceException) {
+                ClientServiceException cexp = (ClientServiceException) o;
+                log.info(cexp.getMessage());
+              }
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
+          });
     }
   }
 

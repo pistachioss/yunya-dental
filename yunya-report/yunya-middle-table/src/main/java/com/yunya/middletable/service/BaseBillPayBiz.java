@@ -26,7 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * 简介: 中间表收费记录处理业务层
@@ -191,27 +193,36 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     String endDate = form.getEndDate();
     List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
     if (StringHelper.isNotEmpty(dateRanges)) {
+      CountDownLatch latch = new CountDownLatch(dateRanges.size());
+      List<Future> resultFutures = new ArrayList<>();
       for (String date : dateRanges) {
-        importExcelThreadPool.submit(
-            () -> {
-              BillPayRecord billPayRecordEmp = new BillPayRecord();
-              billPayRecordEmp.setCrtTime(new DateTime(date).toDate());
-              List<BillPayRecord> billPayRecords = billPayRecordMapper.select(billPayRecordEmp);
-              if (StringHelper.isNotEmpty(billPayRecords)) {
-                List<BaseBillPay> baseBillPays = generateBaseBillPayList(billPayRecords);
-                if (StringHelper.isNotEmpty(baseBillPays)) {
-                  for (BaseBillPay baseBillPay : baseBillPays) {
-                    Integer billPayBillPayId = baseBillPay.getBillPayId();
-                    mapper.deleteByPrimaryKey(billPayBillPayId);
-                    baseBillPayDetailMapper.deleteByBillPayId(billPayBillPayId);
-                    mapper.insertSelective(baseBillPay);
-                    // 保存收费记录明细
-                    saveBillPayDetailRecord(billPayBillPayId);
+        resultFutures.add(
+            importExcelThreadPool.submit(
+                () -> {
+                  try {
+                    BillPayRecord billPayRecordEmp = new BillPayRecord();
+                    billPayRecordEmp.setCrtTime(new DateTime(date).toDate());
+                    List<BillPayRecord> billPayRecords =
+                        billPayRecordMapper.select(billPayRecordEmp);
+                    if (StringHelper.isNotEmpty(billPayRecords)) {
+                      List<BaseBillPay> baseBillPays = generateBaseBillPayList(billPayRecords);
+                      if (StringHelper.isNotEmpty(baseBillPays)) {
+                        for (BaseBillPay baseBillPay : baseBillPays) {
+                          Integer billPayBillPayId = baseBillPay.getBillPayId();
+                          mapper.deleteByPrimaryKey(billPayBillPayId);
+                          baseBillPayDetailMapper.deleteByBillPayId(billPayBillPayId);
+                          mapper.insertSelective(baseBillPay);
+                          // 保存收费记录明细
+                          saveBillPayDetailRecord(billPayBillPayId);
+                        }
+                      }
+                    }
+                  } finally {
+                    latch.countDown();
                   }
-                }
-              }
-            });
+                }));
       }
+      BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
     }
   }
 

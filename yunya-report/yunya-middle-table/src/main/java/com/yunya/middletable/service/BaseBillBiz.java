@@ -18,6 +18,7 @@ import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderDetailPayRecord;
 import com.yunya.models.treatment.OrderRecord;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,9 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 
@@ -39,6 +42,7 @@ import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH
  * @description:
  * @since: 1.0.0
  */
+@Slf4j
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
@@ -215,27 +219,35 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     String endDate = form.getEndDate();
     List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
     if (StringHelper.isNotEmpty(dateRanges)) {
+      CountDownLatch latch = new CountDownLatch(dateRanges.size());
+      List<Future> resultFutures = new ArrayList<>();
       for (String date : dateRanges) {
-        importExcelThreadPool.submit(
-            () -> {
-              OrderRecord orderExample = new OrderRecord();
-              orderExample.setCrtTime(new DateTime(date).toDate());
-              List<OrderRecord> orderRecords = orderRecordMapper.select(orderExample);
-              if (StringHelper.isNotEmpty(orderRecords)) {
-                List<BaseBill> baseBills = generateBaseBillList(orderRecords);
-                if (StringHelper.isNotEmpty(baseBills)) {
-                  for (BaseBill baseBill : baseBills) {
-                    Integer billId = baseBill.getBillId();
-                    mapper.deleteByPrimaryKey(billId);
-                    baseBillDetailMapper.deleteByBillId(billId);
-                    mapper.insertSelective(baseBill);
-                    // 保存账单明细
-                    saveBaseBillDetail(billId);
+        resultFutures.add(
+            importExcelThreadPool.submit(
+                () -> {
+                  try {
+                    OrderRecord orderExample = new OrderRecord();
+                    orderExample.setCrtTime(new DateTime(date).toDate());
+                    List<OrderRecord> orderRecords = orderRecordMapper.select(orderExample);
+                    if (StringHelper.isNotEmpty(orderRecords)) {
+                      List<BaseBill> baseBills = generateBaseBillList(orderRecords);
+                      if (StringHelper.isNotEmpty(baseBills)) {
+                        for (BaseBill baseBill : baseBills) {
+                          Integer billId = baseBill.getBillId();
+                          mapper.deleteByPrimaryKey(billId);
+                          baseBillDetailMapper.deleteByBillId(billId);
+                          mapper.insertSelective(baseBill);
+                          // 保存账单明细
+                          saveBaseBillDetail(billId);
+                        }
+                      }
+                    }
+                  } finally {
+                    latch.countDown();
                   }
-                }
-              }
-            });
+                }));
       }
+      BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
     }
   }
 
