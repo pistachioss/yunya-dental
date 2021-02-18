@@ -218,17 +218,26 @@ public class TollBiz {
                 model -> {
                   List<PrivilegeCouponInfoVO> discountAppliesCoupon =
                       vo.getDiscountAppliesCoupons();
-                  if (vo.getOrderDetailId().equals(model.getOrderDetailId())) {
-                    BigDecimal actualAmount = model.getActualAmount();
-                    vo.setActualAmount(actualAmount);
+                  if (vo.getBillingItemId().equals(model.getBillingItemId())
+                      && vo.getType().equals(model.getType())) {
                     BigDecimal receivableAmount = vo.getReceivableAmount();
-                    // 设置折扣率
-                    if (actualAmount != null
-                        && receivableAmount.compareTo(BigDecimal.valueOf(0)) != 0) {
-                      vo.setDiscountRate(
+                    BigDecimal actualAmount = model.getActualAmount();
+                    // 订单明细ID相同，参数数量大于明细数量表示前端合并了相同项目，实收金额需重新计算
+                    Integer quantity = vo.getQuantity();
+                    Integer modelQuantity = model.getQuantity();
+                    // 优惠单价
+                    BigDecimal discountPrice =
+                        actualAmount.divide(
+                            BigDecimal.valueOf(modelQuantity), 4, RoundingMode.HALF_UP);
+                    actualAmount = discountPrice.multiply(BigDecimal.valueOf(quantity));
+                    vo.setActualAmount(actualAmount);
+                    // 设置折扣率；折扣率 = 实收 / 原价 * 100
+                    if (receivableAmount.compareTo(BigDecimal.valueOf(0)) != 0) {
+                      BigDecimal discountRate =
                           actualAmount
                               .divide(receivableAmount, 4, RoundingMode.HALF_UP)
-                              .multiply(BigDecimal.valueOf(100)));
+                              .multiply(BigDecimal.valueOf(100));
+                      vo.setDiscountRate(discountRate);
                     }
                     // 设置优惠匹配信息
                     if (receivableAmount.compareTo(actualAmount) != 0) {
@@ -640,9 +649,17 @@ public class TollBiz {
         BigDecimal privilegeAmount = BigDecimal.valueOf(0);
         BigDecimal actualAmount = receivableAmount;
         for (AccreditDiscountDetailModel discountDetailModel : discountDetailModels) {
-          Integer orderDetailId = discountDetailModel.getOrderDetailId();
-          if (detailId.equals(orderDetailId)) {
-            actualAmount = discountDetailModel.getActualAmount();
+          if (detail.getBillingItemId().equals(discountDetailModel.getBillingItemId())
+              && detail.getType().equals(discountDetailModel.getType())) {
+            // 折扣单价
+            BigDecimal discountPrice =
+                discountDetailModel
+                    .getActualAmount()
+                    .divide(
+                        BigDecimal.valueOf(discountDetailModel.getQuantity()),
+                        4,
+                        RoundingMode.HALF_UP);
+            actualAmount = discountPrice.multiply(BigDecimal.valueOf(detail.getQuantity()));
             if (BigDecimal.ZERO.compareTo(actualAmount) > 0) {
               throw new ClientServiceException("实收金额不能小于0！", PARAMETERS_IS_ILLEGAL);
             }
@@ -696,7 +713,8 @@ public class TollBiz {
       case 2:
         List<AccreditDiscountDetailModel> accreditDiscountDetailModels =
             accreditDiscountModel.getAccreditDiscountDetailModels();
-        privilegeAmount = calculateAccreditPrivilegeAmount(accreditDiscountDetailModels);
+        privilegeAmount =
+            calculateAccreditPrivilegeAmount(orderRecordId, accreditDiscountDetailModels);
         break;
       default:
         break;
@@ -744,23 +762,23 @@ public class TollBiz {
   /**
    * 计算授权折扣优惠总额
    *
+   * @param orderRecordId 订单记录ID
    * @param accreditDiscountDetailModels 授权折扣明细
    * @return privilegeAmount 优惠总额
    */
   private BigDecimal calculateAccreditPrivilegeAmount(
-      List<AccreditDiscountDetailModel> accreditDiscountDetailModels) {
+      Integer orderRecordId, List<AccreditDiscountDetailModel> accreditDiscountDetailModels) {
     BigDecimal privilegeAmount = BigDecimal.valueOf(0);
+    BigDecimal totalActualAmount = BigDecimal.valueOf(0);
     for (AccreditDiscountDetailModel detailModel : accreditDiscountDetailModels) {
-      Integer orderDetailId = detailModel.getOrderDetailId();
-      OrderDetail orderDetail = orderDetailBiz.selectById(orderDetailId);
-      if (null != orderDetail) {
-        BigDecimal receivableAmount = orderDetail.getReceivableAmount();
-        BigDecimal actualAmount = detailModel.getActualAmount();
-        privilegeAmount = privilegeAmount.add(receivableAmount.subtract(actualAmount));
-        if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
-          throw new ClientServiceException("收费失败，优惠金额小于0，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
-        }
+      totalActualAmount = totalActualAmount.add(detailModel.getActualAmount());
+      if (BigDecimal.ZERO.compareTo(privilegeAmount) > 0) {
+        throw new ClientServiceException("收费失败，优惠金额小于0，请核对优惠信息是否正确！", PARAMETERS_IS_ILLEGAL);
       }
+    }
+    OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
+    if (null != orderRecord) {
+      privilegeAmount = orderRecord.getTotalAmount().subtract(totalActualAmount);
     }
     return privilegeAmount;
   }
@@ -1123,18 +1141,19 @@ public class TollBiz {
     model.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
     model.setAuthorizedId(accreditDiscount.getWarrantId());
     model.setRemark(accreditDiscount.getRemarks());
-    List<AccreditDiscountDetailModel> models = accreditDiscount.getAccreditDiscountDetailModels();
     List<AuthItemBenefitModel> items = Lists.newArrayList();
-    // 构建授权优惠参数列表
-    models.forEach(
+    // 获取开单明细
+    List<OrderDetailChargeVO> detailList = orderDetailBiz.getChargeOrderDetailList(orderRecordId);
+    // 匹配授权折扣
+    matchAccreditDiscountOrderDetailValue(detailList, accreditDiscount);
+    // 构建授权优惠列表
+    detailList.forEach(
         detailModel -> {
-          Integer orderDetailId = detailModel.getOrderDetailId();
           AuthItemBenefitModel benefitModel = new AuthItemBenefitModel();
-          benefitModel.setOrderDetailId(orderDetailId);
-          OrderDetail orderDetail = orderDetailBiz.selectById(orderDetailId);
-          benefitModel.setItemId(orderDetail.getBillingItemId());
-          benefitModel.setType(Integer.valueOf(orderDetail.getType()));
-          BigDecimal receivableAmount = orderDetail.getReceivableAmount();
+          benefitModel.setOrderDetailId(detailModel.getOrderDetailId());
+          benefitModel.setItemId(detailModel.getBillingItemId());
+          benefitModel.setType(Integer.valueOf(detailModel.getType()));
+          BigDecimal receivableAmount = detailModel.getReceivableAmount();
           BigDecimal actualAmount = detailModel.getActualAmount();
           BigDecimal privilegeDiscount = receivableAmount.subtract(actualAmount);
           benefitModel.setBenefitAmount(privilegeDiscount);

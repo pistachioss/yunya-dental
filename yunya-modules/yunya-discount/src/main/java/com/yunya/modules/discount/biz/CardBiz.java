@@ -148,6 +148,7 @@ import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import javax.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
@@ -806,7 +807,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         boolean locked = false;
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         String cardNumber = form.getThirdCardNumber();
-        String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CARD_ACTIVE, cardNumber);
+        String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CARD_ACTIVE, form.getCouponId(),form.getSaleChannelId(),cardNumber);
         String lockVal = String.valueOf(loginUserId);
         log.info("第三方平台卡券激活开始提交：[{}]", cardNumber);
         try {
@@ -820,7 +821,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
             RestErrorBo errorBo;
             //1. 检查卡券
-            errorBo = checkCardForOtherActive(cardNumber);
+            errorBo = checkCardForOtherActive(form);
             if (errorBo.getError() != null) {
                 return ResponseUtil.error(errorBo.getError());
             }
@@ -2189,8 +2190,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return errorBo;
     }
 
-    private RestErrorBo checkCardForOtherActive(String cardNumber) {
+    private RestErrorBo checkCardForOtherActive(OtherCardActiveForm form) {
         RestErrorBo errorBo = RestErrorBo.getInstance();
+        String cardNumber = form.getThirdCardNumber();
         Example example = new Example(Card.class);
         example.createCriteria().andEqualTo("cardNumber", cardNumber);
 //				.andNotEqualTo("orgId", ZERO);
@@ -2200,7 +2202,21 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             errorBo.setError(DiscountError.OTHER_ALLOW_ACTIVE_OWN);
             return errorBo;
         }
+        List<Card> thirdCards = this.getThirdCard(form);
+        if (CollectionUtils.isNotEmpty(thirdCards)) {
+            log.warn("【第三方平台激活失败】第三方平台卡券已激活", cardNumber);
+            errorBo.setError(DiscountError.OTHER_CARD_IS_ACTIVATED);
+            return errorBo;
+        }
         return errorBo;
+    }
+
+    private List<Card> getThirdCard(OtherCardActiveForm form) {
+        Example example = new Example(Card.class);
+        example.createCriteria().andEqualTo("thirdCardNumber", form.getThirdCardNumber())
+                .andEqualTo("couponId", form.getCouponId())
+                .andEqualTo("saleChannelId", form.getSaleChannelId());
+        return mapper.selectByExample(example);
     }
 
     private RestErrorBo checkCardBaseInfo(Integer cardId, Card card, Integer orgId, String orgName) {

@@ -188,7 +188,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           vo -> {
             // 设置订单明细项目属性
             setOrderDetailItemValue(vo);
-            // todo 从缓存中获取用户（员工）信息
+            // 从缓存中获取用户（员工）信息
             Integer executorId = vo.getExecutorId();
             if (null != executorId) {
               SysUserInfoDetail employeeInfo =
