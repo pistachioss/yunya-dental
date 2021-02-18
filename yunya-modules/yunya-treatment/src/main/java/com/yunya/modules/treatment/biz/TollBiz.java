@@ -229,7 +229,8 @@ public class TollBiz {
                     BigDecimal discountPrice =
                         actualAmount.divide(
                             BigDecimal.valueOf(modelQuantity), 4, RoundingMode.HALF_UP);
-                    vo.setActualAmount(discountPrice.multiply(BigDecimal.valueOf(quantity)));
+                    actualAmount = discountPrice.multiply(BigDecimal.valueOf(quantity));
+                    vo.setActualAmount(actualAmount);
                     // 设置折扣率；折扣率 = 实收 / 原价 * 100
                     if (receivableAmount.compareTo(BigDecimal.valueOf(0)) != 0) {
                       BigDecimal discountRate =
