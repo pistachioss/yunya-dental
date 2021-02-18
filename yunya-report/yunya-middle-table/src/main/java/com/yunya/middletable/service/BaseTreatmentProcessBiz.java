@@ -479,7 +479,7 @@ public class BaseTreatmentProcessBiz
                   List<BaseTreatmentProcess> tempList = Lists.newArrayList();
                   registeredList.forEach(
                       registered -> {
-                        if (null != registered.getAppointmentId()) {
+                        if (null == registered.getAppointmentId()) {
                           Integer registeredId = registered.getId();
                           BaseTreatmentProcess entity = new BaseTreatmentProcess();
                           entity.setRegisteredId(registeredId);
