@@ -22,7 +22,6 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -219,12 +218,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       for (String date : dateRanges) {
         importExcelThreadPool.submit(
             () -> {
-              Example orderExample = new Example(OrderRecord.class);
-              orderExample
-                  .createCriteria()
-                  .andGreaterThanOrEqualTo("updTime", new DateTime(date).toString("yyyy-MM-dd"))
-                  .andLessThan("updTime", new DateTime(date).plusDays(1).toString("yyyy-MM-dd"));
-              List<OrderRecord> orderRecords = orderRecordMapper.selectByExample(orderExample);
+              OrderRecord orderExample = new OrderRecord();
+              orderExample.setCrtTime(new DateTime(date).toDate());
+              List<OrderRecord> orderRecords = orderRecordMapper.select(orderExample);
               if (StringHelper.isNotEmpty(orderRecords)) {
                 List<BaseBill> baseBills = generateBaseBillList(orderRecords);
                 if (StringHelper.isNotEmpty(baseBills)) {

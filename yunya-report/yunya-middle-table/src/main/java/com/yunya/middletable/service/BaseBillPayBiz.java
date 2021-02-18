@@ -15,7 +15,6 @@ import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
 import com.yunya.models.report.BaseBillPay;
 import com.yunya.models.report.BaseBillPayDetail;
-import com.yunya.models.system.AccountItem;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,6 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -196,11 +194,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       for (String date : dateRanges) {
         importExcelThreadPool.submit(
             () -> {
-              Example emp = new Example(AccountItem.class);
-              emp.createCriteria()
-                  .andGreaterThanOrEqualTo("updTime", new DateTime(date).toString("yyyy-MM-dd"))
-                  .andLessThan("updTime", new DateTime(date).plusDays(1).toString("yyyy-MM-dd"));
-              List<BillPayRecord> billPayRecords = billPayRecordMapper.selectByExample(emp);
+              BillPayRecord billPayRecordEmp = new BillPayRecord();
+              billPayRecordEmp.setCrtTime(new DateTime(date).toDate());
+              List<BillPayRecord> billPayRecords = billPayRecordMapper.select(billPayRecordEmp);
               if (StringHelper.isNotEmpty(billPayRecords)) {
                 List<BaseBillPay> baseBillPays = generateBaseBillPayList(billPayRecords);
                 if (StringHelper.isNotEmpty(baseBillPays)) {
