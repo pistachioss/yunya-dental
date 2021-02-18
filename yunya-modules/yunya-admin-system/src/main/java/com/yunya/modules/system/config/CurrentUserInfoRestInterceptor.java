@@ -7,6 +7,7 @@ import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.auth.UserAuthException;
 import com.yunya.framework.redis.util.RedisUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.method.HandlerMethod;
@@ -22,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author ace
  * @date 2017/9/10
  */
+@Slf4j
 public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
 
   @Autowired private RedisUtils redisUtils;
@@ -63,6 +65,10 @@ public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
     if (null == userInfo) {
       throw new UserAuthException("您还没有登陆，请先登陆！");
     }
+    log.info("=============系统基础服务=========");
+    log.info("==>path:{}",System.getProperty("user.dir"));
+    log.info("==>用户信息:{}",userInfo);
+    log.info("==============end===============");
     BaseContextHandler.setUsername(userInfo.getUsername());
     BaseContextHandler.setName(userInfo.getName());
     BaseContextHandler.setUserID(userInfo.getId());
