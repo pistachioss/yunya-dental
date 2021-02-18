@@ -486,17 +486,19 @@ public class BaseTreatmentProcessBiz
                   List<BaseTreatmentProcess> tempList = Lists.newArrayList();
                   registeredList.forEach(
                       registered -> {
-                        Integer registeredId = registered.getId();
-                        BaseTreatmentProcess entity = new BaseTreatmentProcess();
-                        entity.setRegisteredId(registeredId);
-                        int count = mapper.selectCount(entity);
-                        if (0 >= count) {
-                          BaseTreatmentProcess process = generateBaseTreatmentProcess(registered);
-                          if (null != process) {
-                            TreatmentRecord treatmentRecord = new TreatmentRecord();
-                            treatmentRecord.setRegisteredId(registered.getId());
-                            setTreatmentProcessTreatmentValue(process, treatmentRecord);
-                            tempList.add(process);
+                        if (null != registered.getAppointmentId()) {
+                          Integer registeredId = registered.getId();
+                          BaseTreatmentProcess entity = new BaseTreatmentProcess();
+                          entity.setRegisteredId(registeredId);
+                          int count = mapper.selectCount(entity);
+                          if (0 >= count) {
+                            BaseTreatmentProcess process = generateBaseTreatmentProcess(registered);
+                            if (null != process) {
+                              TreatmentRecord treatmentRecord = new TreatmentRecord();
+                              treatmentRecord.setRegisteredId(registered.getId());
+                              setTreatmentProcessTreatmentValue(process, treatmentRecord);
+                              tempList.add(process);
+                            }
                           }
                         }
                       });
