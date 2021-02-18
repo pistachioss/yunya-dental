@@ -455,6 +455,7 @@ public class BaseTreatmentProcessBiz
                     Example appointEmp = new Example(Appointment.class);
                     appointEmp
                         .createCriteria()
+                        .andEqualTo("inservice", true)
                         .andBetween(
                             "crtTime",
                             new DateTime(date).toDate(),
@@ -492,6 +493,7 @@ public class BaseTreatmentProcessBiz
                       Example registeredEmp = new Example(Registered.class);
                       registeredEmp
                           .createCriteria()
+                          .andEqualTo("inservice", true)
                           .andBetween(
                               "updTime",
                               new DateTime(date).toDate(),

@@ -204,6 +204,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                     Example billPayRecordEmp = new Example(BillPayRecord.class);
                     billPayRecordEmp
                         .createCriteria()
+                        .andEqualTo("inservice", true)
                         .andBetween(
                             "crtTime",
                             new DateTime(date).toDate(),

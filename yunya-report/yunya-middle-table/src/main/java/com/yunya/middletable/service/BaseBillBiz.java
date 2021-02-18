@@ -230,6 +230,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
                     Example orderExample = new Example(OrderRecord.class);
                     orderExample
                         .createCriteria()
+                        .andEqualTo("inservice", true)
                         .andBetween(
                             "crtTime",
                             new DateTime(date).toDate(),
