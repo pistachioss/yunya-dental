@@ -22,7 +22,6 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -441,12 +440,9 @@ public class BaseTreatmentProcessBiz
         importExcelThreadPool.submit(
             () -> {
               // 预约-就诊
-              Example appointEmp = new Example(Appointment.class);
-              appointEmp
-                  .createCriteria()
-                  .andGreaterThanOrEqualTo("updTime", new DateTime(date).toString("yyyy-MM-dd"))
-                  .andLessThan("updTime", new DateTime(date).plusDays(1).toString("yyyy-MM-dd"));
-              List<Appointment> appointments = appointmentMapper.selectByExample(appointEmp);
+              Appointment appointEmp = new Appointment();
+              appointEmp.setCrtTime(new DateTime(date).toDate());
+              List<Appointment> appointments = appointmentMapper.select(appointEmp);
               if (StringHelper.isNotEmpty(appointments)) {
                 List<BaseTreatmentProcess> treatmentProcesses = Lists.newArrayList();
                 appointments.forEach(
@@ -476,12 +472,9 @@ public class BaseTreatmentProcessBiz
                 }
 
                 // 挂号-就诊
-                Example registeredEmp = new Example(Registered.class);
-                registeredEmp
-                    .createCriteria()
-                    .andGreaterThanOrEqualTo("updTime", new DateTime(date).toString("yyyy-MM-dd"))
-                    .andLessThan("updTime", new DateTime(date).plusDays(1).toString("yyyy-MM-dd"));
-                List<Registered> registeredList = registeredMapper.selectByExample(registeredEmp);
+                Registered registeredEmp = new Registered();
+                registeredEmp.setCrtTime(new DateTime(date).toDate());
+                List<Registered> registeredList = registeredMapper.select(registeredEmp);
                 if (StringHelper.isNotEmpty(registeredList)) {
                   List<BaseTreatmentProcess> tempList = Lists.newArrayList();
                   registeredList.forEach(
