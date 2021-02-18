@@ -22,17 +22,17 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class AccreditDiscountDetailModel implements Serializable {
-  /** 开单明细记录ID */
-  @ApiModelProperty(value = "开单明细记录ID", required = true)
-  @NotNull(message = "开单明细记录ID不能为空！")
-  private Integer orderDetailId;
-
+  /** 开单类型（0-价目表；1-商品；） */
+  @ApiModelProperty("开单类型（0-价目表；1-商品；）")
+  private Byte type;
+  /** 开单项目ID */
+  @ApiModelProperty("开单项目ID")
+  private Integer billingItemId;
   /** 开单数量 */
   @ApiModelProperty(value = "数量", required = true)
   @NotNull(message = "开单项目数量不能为空！")
-  @Min(value = 1,message = "数量不能小于0")
+  @Min(value = 1, message = "数量不能小于0")
   private Integer quantity;
-
   /** 实收金额 */
   @ApiModelProperty(value = "实收金额", required = true)
   @NotNull(message = "实收金额不能为空！")
