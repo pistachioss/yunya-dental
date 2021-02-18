@@ -22,6 +22,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -188,7 +189,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    *
    * @param form 拉取时间
    */
-  public void pullBillPayData(PullForm form) {
+  public void pullBillPayData(PullForm form) throws InterruptedException {
     String startDate = form.getStartDate();
     String endDate = form.getEndDate();
     List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
@@ -200,10 +201,15 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
             importExcelThreadPool.submit(
                 () -> {
                   try {
-                    BillPayRecord billPayRecordEmp = new BillPayRecord();
-                    billPayRecordEmp.setCrtTime(new DateTime(date).toDate());
+                    Example billPayRecordEmp = new Example(BillPayRecord.class);
+                    billPayRecordEmp
+                        .createCriteria()
+                        .andBetween(
+                            "crtTime",
+                            new DateTime(date).toDate(),
+                            new DateTime(date).plusDays(1).toDate());
                     List<BillPayRecord> billPayRecords =
-                        billPayRecordMapper.select(billPayRecordEmp);
+                        billPayRecordMapper.selectByExample(billPayRecordEmp);
                     if (StringHelper.isNotEmpty(billPayRecords)) {
                       List<BaseBillPay> baseBillPays = generateBaseBillPayList(billPayRecords);
                       if (StringHelper.isNotEmpty(baseBillPays)) {
@@ -222,6 +228,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                   }
                 }));
       }
+      latch.await();
       BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
     }
   }

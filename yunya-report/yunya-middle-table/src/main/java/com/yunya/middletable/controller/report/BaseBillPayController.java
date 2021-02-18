@@ -50,7 +50,7 @@ public class BaseBillPayController {
    */
   @ApiOperation("根据时间段批量操作中间表账单收费记录")
   @PostMapping(value = "/operate/batch", name = "根据时间段批量操作中间表账单收费记录")
-  public ResponseResult<T> pullBillPayData(@RequestBody PullForm form) {
+  public ResponseResult<T> pullBillPayData(@RequestBody PullForm form) throws InterruptedException {
     billPayBiz.pullBillPayData(form);
     return ResponseUtil.success(null);
   }

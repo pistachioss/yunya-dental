@@ -23,6 +23,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -214,7 +215,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    *
    * @param form 时间段
    */
-  public void pullBillData(PullForm form) {
+  public void pullBillData(PullForm form) throws InterruptedException {
     String startDate = form.getStartDate();
     String endDate = form.getEndDate();
     List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
@@ -226,9 +227,15 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
             importExcelThreadPool.submit(
                 () -> {
                   try {
-                    OrderRecord orderExample = new OrderRecord();
-                    orderExample.setCrtTime(new DateTime(date).toDate());
-                    List<OrderRecord> orderRecords = orderRecordMapper.select(orderExample);
+                    Example orderExample = new Example(OrderRecord.class);
+                    orderExample
+                        .createCriteria()
+                        .andBetween(
+                            "crtTime",
+                            new DateTime(date).toDate(),
+                            new DateTime(date).plusDays(1).toDate());
+                    List<OrderRecord> orderRecords =
+                        orderRecordMapper.selectByExample(orderExample);
                     if (StringHelper.isNotEmpty(orderRecords)) {
                       List<BaseBill> baseBills = generateBaseBillList(orderRecords);
                       if (StringHelper.isNotEmpty(baseBills)) {
@@ -247,6 +254,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
                   }
                 }));
       }
+      latch.await();
       BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
     }
   }
