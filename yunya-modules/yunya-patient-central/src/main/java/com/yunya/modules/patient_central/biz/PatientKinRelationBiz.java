@@ -70,6 +70,11 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
       patientKinRelation.setCrtName(BaseContextHandler.getName());
       patientKinRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       mapper.insert(patientKinRelation);
+      PatientKinRelation linkedPatient = new PatientKinRelation();
+      BeanUtils.copyProperties(patientKinRelation, linkedPatient);
+      linkedPatient.setPatientId(patientKinRelation.getLinkedPatientId());
+      linkedPatient.setLinkedPatientId(patientKinRelation.getPatientId());
+      mapper.insert(linkedPatient);
     }
     return ResponseUtil.success();
   }
@@ -85,7 +90,11 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
     patientKinRelation.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientKinRelation.setUpdName(BaseContextHandler.getName());
     patientKinRelation.setUpdTime(new Date());
-    patientKinRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     mapper.updateByPrimaryKeySelective(patientKinRelation);
+    PatientKinRelation linkedPatient = new PatientKinRelation();
+    BeanUtils.copyProperties(patientKinRelation, linkedPatient);
+    linkedPatient.setPatientId(patientKinRelation.getLinkedPatientId());
+    linkedPatient.setLinkedPatientId(patientKinRelation.getPatientId());
+    mapper.updateByPrimaryKeySelective(linkedPatient);
   }
 }
