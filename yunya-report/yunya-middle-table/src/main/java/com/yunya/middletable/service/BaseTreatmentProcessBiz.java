@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -438,7 +439,7 @@ public class BaseTreatmentProcessBiz
    *
    * @param form 拉取时间
    */
-  public void pullTreatmentProcessData(PullForm form) {
+  public void pullTreatmentProcessData(PullForm form) throws InterruptedException {
     String startDate = form.getStartDate();
     String endDate = form.getEndDate();
     List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
@@ -451,9 +452,14 @@ public class BaseTreatmentProcessBiz
                 () -> {
                   try {
                     // 预约-就诊
-                    Appointment appointEmp = new Appointment();
-                    appointEmp.setCrtTime(new DateTime(date).toDate());
-                    List<Appointment> appointments = appointmentMapper.select(appointEmp);
+                    Example appointEmp = new Example(Appointment.class);
+                    appointEmp
+                        .createCriteria()
+                        .andBetween(
+                            "updTime",
+                            new DateTime(date).toDate(),
+                            new DateTime(date).plusDays(1).toDate());
+                    List<Appointment> appointments = appointmentMapper.selectByExample(appointEmp);
                     if (StringHelper.isNotEmpty(appointments)) {
                       List<BaseTreatmentProcess> treatmentProcesses = Lists.newArrayList();
                       appointments.forEach(
@@ -483,9 +489,15 @@ public class BaseTreatmentProcessBiz
                       }
 
                       // 挂号-就诊
-                      Registered registeredEmp = new Registered();
-                      registeredEmp.setCrtTime(new DateTime(date).toDate());
-                      List<Registered> registeredList = registeredMapper.select(registeredEmp);
+                      Example registeredEmp = new Example(Registered.class);
+                      registeredEmp
+                          .createCriteria()
+                          .andBetween(
+                              "updTime",
+                              new DateTime(date).toDate(),
+                              new DateTime(date).plusDays(1).toDate());
+                      List<Registered> registeredList =
+                          registeredMapper.selectByExample(registeredEmp);
                       if (StringHelper.isNotEmpty(registeredList)) {
                         List<BaseTreatmentProcess> tempList = Lists.newArrayList();
                         registeredList.forEach(
@@ -517,6 +529,7 @@ public class BaseTreatmentProcessBiz
                   }
                 }));
       }
+      latch.await();
       printExceptionLog(resultFutures, log);
     }
   }

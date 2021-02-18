@@ -39,7 +39,7 @@ public class BaseTreatmentProcessController {
   @ApiOperation("根据消息操作中间表就诊流程")
   @PostMapping(value = "/operate", name = "根据消息操作中间表就诊流程")
   public ResponseResult<T> operateTreatmentProcess(@RequestBody @Validated MessageModel msg) {
-    log.info("根据消息操作中间表就诊流程========> {}",msg);
+    log.info("根据消息操作中间表就诊流程========> {}", msg);
     treatmentProcessBiz.operateTreatmentProcess(msg);
     return ResponseUtil.success(null);
   }
@@ -52,7 +52,8 @@ public class BaseTreatmentProcessController {
    */
   @ApiOperation("根据时间段批量操作中间表就诊流程")
   @PostMapping(value = "/operate/batch", name = "form")
-  public ResponseResult<T> pullTreatmentProcessData(@RequestBody PullForm form) {
+  public ResponseResult<T> pullTreatmentProcessData(@RequestBody PullForm form)
+      throws InterruptedException {
     treatmentProcessBiz.pullTreatmentProcessData(form);
     return ResponseUtil.success(null);
   }
