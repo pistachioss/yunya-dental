@@ -231,7 +231,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
                     orderExample
                         .createCriteria()
                         .andBetween(
-                            "updTime",
+                            "crtTime",
                             new DateTime(date).toDate(),
                             new DateTime(date).plusDays(1).toDate());
                     List<OrderRecord> orderRecords =

@@ -456,7 +456,7 @@ public class BaseTreatmentProcessBiz
                     appointEmp
                         .createCriteria()
                         .andBetween(
-                            "updTime",
+                            "crtTime",
                             new DateTime(date).toDate(),
                             new DateTime(date).plusDays(1).toDate());
                     List<Appointment> appointments = appointmentMapper.selectByExample(appointEmp);

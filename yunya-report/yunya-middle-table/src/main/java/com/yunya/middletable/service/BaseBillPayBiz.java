@@ -205,7 +205,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                     billPayRecordEmp
                         .createCriteria()
                         .andBetween(
-                            "updTime",
+                            "crtTime",
                             new DateTime(date).toDate(),
                             new DateTime(date).plusDays(1).toDate());
                     List<BillPayRecord> billPayRecords =
