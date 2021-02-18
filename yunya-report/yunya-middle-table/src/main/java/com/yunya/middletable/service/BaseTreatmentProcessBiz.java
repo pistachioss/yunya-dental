@@ -188,8 +188,12 @@ public class BaseTreatmentProcessBiz
    */
   private void updateTreatmentProcessByAppointmentId(Integer appointmentId) {
     Appointment appointment = appointmentMapper.selectByPrimaryKey(appointmentId);
+    log.info("====================【APP就诊主页面】============");
+    log.info("==> user.dir:{}",System.getProperty("user.dir"));
+    log.info("==> appointment:{}",appointment);
     if (null != appointment) {
       BaseTreatmentProcess treatmentProcess = mapper.selectOneByAppointmentId(appointmentId);
+      log.info("==> treatmentProcess:{}",treatmentProcess);
       if (null != treatmentProcess) {
         setTreatmentProcessAppointmentValue(treatmentProcess, appointment);
         setTreatmentProcessRegisteredValue(treatmentProcess, appointmentId);
