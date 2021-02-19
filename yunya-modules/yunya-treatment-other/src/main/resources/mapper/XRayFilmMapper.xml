@@ -12,6 +12,7 @@
     <result column="url" property="url" jdbcType="VARCHAR" />
     <result column="photo_name" property="photoName" jdbcType="VARCHAR" />
     <result column="upload_time" property="uploadTime" jdbcType="TIMESTAMP" />
+    <result column="upload_status" property="uploadStatus" jdbcType="INTEGER" />
     <result column="remarks" property="remarks" jdbcType="VARCHAR" />
     <result column="inservice" property="inservice" jdbcType="VARCHAR" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
@@ -35,6 +36,7 @@
       <result column="upload_time" property="uploadTime" jdbcType="TIMESTAMP" />
       <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
       <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+      <result column="upload_status" property="uploadStatus" jdbcType="INTEGER" />
     </collection>
   </resultMap>
 
@@ -48,6 +50,7 @@
     url,
     photo_name as photoName,
     upload_time as uploadTime,
+    upload_status as uploadStatus,
     crt_time as crtTime,
     upd_time as updTime
     FROM
@@ -67,10 +70,10 @@
   <!-- 批量添加图片 -->
   <insert id="addBatch" parameterType="list" keyProperty="id" useGeneratedKeys="true">
     insert into
-    x_ray_film (patient_id,`type`,tooth_no,url,photo_name,crt_id,crt_name)
+    x_ray_film (patient_id,`type`,tooth_no,url,photo_name,crt_id,crt_name, upload_status)
     values
     <foreach collection="list" item="obj" separator=",">
-      (#{obj.patientId},#{obj.type},#{obj.toothNo},#{obj.url},#{obj.photoName},#{obj.crtId},#{obj.crtTime})
+      (#{obj.patientId},#{obj.type},#{obj.toothNo},#{obj.url},#{obj.photoName},#{obj.crtId},#{obj.crtTime},#{obj.uploadStatus})
     </foreach>
   </insert>
 
@@ -84,12 +87,13 @@
         xrf2.url,
         xrf2.photo_name,
         xrf2.upload_time,
+        xrf2.upload_status,
         xrf2.crt_time,
         xrf2.upd_time,
         ( SELECT COUNT( id ) FROM x_ray_film WHERE type = 1 AND patient_id=#{patientId} AND tooth_no = xrf.tooth_no and inservice=true) AS `count`
     FROM
         `x_ray_film` xrf
-        LEFT JOIN ( SELECT id, tooth_no, url, photo_name, upload_time, crt_time, upd_time,patient_id
+        LEFT JOIN ( SELECT id, tooth_no, url, photo_name, upload_time, crt_time, upd_time,patient_id, upload_status
                      FROM x_ray_film
                      WHERE type = 1 and inservice = true and patient_id = #{patientId}
                      <if test="toothNo == null">

@@ -34,6 +34,9 @@ public class XRayFilmVo implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date uploadTime;
 
+    @ApiModelProperty("图片上传状态;0-失败，1-成功")
+    private Boolean uploadStatus;
+
     @ApiModelProperty("创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date crtTime;

@@ -3,6 +3,7 @@ package com.yunya.feign.treatment.domain.vo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.models.auth.In;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -37,7 +38,7 @@ public class DesktopMiniProgramVO implements Serializable {
     @ApiModelProperty("是否为初诊,1-初诊；0-复诊")
     private Integer firstVisit;
     @ApiModelProperty("是否有上传图片")
-    private Boolean hasImg;
+    private Integer uploadStatus;
     @ApiModelProperty("患者手机号")
     private String mobile;
 
