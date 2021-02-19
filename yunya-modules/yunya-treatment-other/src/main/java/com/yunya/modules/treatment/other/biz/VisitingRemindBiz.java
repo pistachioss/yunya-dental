@@ -29,6 +29,7 @@ import com.yunya.models.system.MemberType;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.modules.treatment.other.mapper.VisitingRemindMapper;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -207,6 +208,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         // 检索随访提醒内容列表
         List<VisitingRemindVo> searchVisitingRemindVo = null;
         List<VisitingRemind> visitingReminds = mapper.findVisitingRemindByCondition(query);
+        PageInfo visitingRemindVoPageInfo = new PageInfo(visitingReminds);
         // 获取医生ID集合
         if (!StringHelper.isEmpty(visitingReminds)) {
             // 获取医生信息列表
@@ -254,7 +256,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         if (StringHelper.isEmpty(searchVisitingRemindVo)) {
             searchVisitingRemindVo = new ArrayList<>();
         }
-        return ResponseUtil.success(new PageInfo<>(searchVisitingRemindVo));
+        visitingRemindVoPageInfo.setList(searchVisitingRemindVo);
+        return ResponseUtil.success(visitingRemindVoPageInfo);
     }
 
     /**

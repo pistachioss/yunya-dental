@@ -1488,11 +1488,34 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                   xRayFilmListByPatientIds.stream()
                       .filter(xRayFilm -> xRayFilm.getPatientId().equals(patientId))
                       .collect(Collectors.toList());
-              desktopMiniProgramVO.setHasImg(StringHelper.isNotEmpty(xRayFilms));
+              Integer imgUploadStatus = getImgUploadStatus(xRayFilms);
+              desktopMiniProgramVO.setUploadStatus(imgUploadStatus);
             });
       }
     }
   }
+
+  /**
+   * 获取图片上传状态
+   * @param xRayFilms 上传图片列表
+   * @return 返回状态
+   */
+  private Integer getImgUploadStatus(List<XRayFilm> xRayFilms) {
+    if (StringHelper.isNotEmpty(xRayFilms)) {
+      List<Integer> uploadStatusList = xRayFilms.stream().map(XRayFilm::getUploadStatus).collect(Collectors.toList());
+      if (StringHelper.isNotEmpty(uploadStatusList)) {
+        if (uploadStatusList.contains(1)) {
+          return 1;
+        } else if (!uploadStatusList.contains(1) && !uploadStatusList.contains(0) && uploadStatusList.contains(2)) {
+          return 2;
+        } else {
+          return 0;
+        }
+      }
+    }
+    return 0;
+  }
+
 
   /**
    * 根据条件查询初诊人数完成量

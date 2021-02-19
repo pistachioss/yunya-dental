@@ -39,4 +39,7 @@ public class XRayFilmInfoModel implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private String uploadTime;
 
+    @ApiModelProperty(value = "图片上传状态;0-未上传，1-失败，2-成功")
+    private Integer uploadStatus;
+
 }
