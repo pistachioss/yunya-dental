@@ -30,5 +30,13 @@ public interface BaseUserPostMapper extends Mapper<BaseUserPost> {
   List<EmployeeDiagnosisInfoVO> selectEmployeeDiagnosisInfoList(
       @Param("query") EmployeeDiagnosisQuery query);
 
-  List<AssistantMatchingStatisticsVO> selectAssistantMatchingStatisticsByAssistant(@Param("assistant") String assistant, @Param("query")EmployeeMatchingRecordQuery query);
+  /**
+   * 根据条件查询助手配诊统计列表
+   *
+   * @param assistant 助手
+   * @param query 查询条件
+   * @return List<AssistantMatchingStatisticsVO>
+   */
+  List<AssistantMatchingStatisticsVO> selectAssistantMatchingStatisticsByAssistant(
+      @Param("assistant") String assistant, @Param("query") EmployeeMatchingRecordQuery query);
 }

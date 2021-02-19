@@ -500,7 +500,7 @@
         SELECT
         btp.org_id,
         btp.dentist_id,
-        count(btp.dentist_id) AS appointmentModifyTimes
+        count(btp.appointment_id) AS appointmentModifyTimes
         FROM
         base_appointment_modify btp
         <where>
