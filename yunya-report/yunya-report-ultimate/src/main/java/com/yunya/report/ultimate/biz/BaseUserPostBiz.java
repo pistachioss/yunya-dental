@@ -5,12 +5,12 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.EmployeeDiagnosisQuery;
 import com.yunya.feign.report.domain.query.EmployeeMatchingRecordQuery;
 import com.yunya.feign.report.domain.vo.EmployeeDiagnosisInfoVO;
-import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.vo.AssistantMatchingStatisticsVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
+import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.BaseUserPost;
+import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import com.yunya.report.ultimate.mapper.BaseUserPostMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,8 +29,9 @@ import java.util.List;
  */
 @Service
 public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
-  @Autowired
-  private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
+  /** 组织 */
+  @Autowired private BaseOrganizationMapper organizationMapper;
 
   /**
    * 根据条件查询配诊统计列表
@@ -46,32 +47,43 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
     List<AssistantMatchingStatisticsVO> resultList =
         mapper.selectAssistantMatchingStatisticsByAssistant("assistant_1", query);
     List<AssistantMatchingStatisticsVO> resultList2 =
-            mapper.selectAssistantMatchingStatisticsByAssistant("assistant_2", query);
+        mapper.selectAssistantMatchingStatisticsByAssistant("assistant_2", query);
     List<AssistantMatchingStatisticsVO> resultList3 =
-            mapper.selectAssistantMatchingStatisticsByAssistant("assistant_3", query);
-    if (resultList!=null && !resultList.isEmpty()) {
-      resultList.forEach(assistant1 -> {
-        Integer orgId = assistant1.getOrgId();
-        Integer assistantId = assistant1.getAssistantId();
-        if (resultList2!=null && !resultList2.isEmpty()) {
-          resultList2.forEach(assistant2->{
-            if (assistant2.getAssistantId().equals(assistantId) && orgId.equals(assistant2.getOrgId())) {
-              assistant1.setTreatMatchingActualWorkloadAsAssistant2(assistant2.getTreatMatchingActualWorkloadAsAssistant1());
-              assistant1.setTreatMatchingRefundWorkloadAsAssistant2(assistant2.getTreatMatchingRefundWorkloadAsAssistant1());
-              assistant1.setTreatMatchingTimeAsAssistant2(assistant2.getTreatMatchingTimeAsAssistant1());
+        mapper.selectAssistantMatchingStatisticsByAssistant("assistant_3", query);
+    if (resultList != null && !resultList.isEmpty()) {
+      resultList.forEach(
+          assistant1 -> {
+            Integer orgId = assistant1.getOrgId();
+            Integer assistantId = assistant1.getAssistantId();
+            if (resultList2 != null && !resultList2.isEmpty()) {
+              resultList2.forEach(
+                  assistant2 -> {
+                    if (assistant2.getAssistantId().equals(assistantId)
+                        && orgId.equals(assistant2.getOrgId())) {
+                      assistant1.setTreatMatchingActualWorkloadAsAssistant2(
+                          assistant2.getTreatMatchingActualWorkloadAsAssistant1());
+                      assistant1.setTreatMatchingRefundWorkloadAsAssistant2(
+                          assistant2.getTreatMatchingRefundWorkloadAsAssistant1());
+                      assistant1.setTreatMatchingTimeAsAssistant2(
+                          assistant2.getTreatMatchingTimeAsAssistant1());
+                    }
+                  });
+            }
+            if (resultList3 != null && !resultList3.isEmpty()) {
+              resultList3.forEach(
+                  assistant3 -> {
+                    if (assistant3.getAssistantId().equals(assistantId)
+                        && orgId.equals(assistant3.getOrgId())) {
+                      assistant1.setTreatMatchingActualWorkloadAsAssistant3(
+                          assistant3.getTreatMatchingActualWorkloadAsAssistant1());
+                      assistant1.setTreatMatchingRefundWorkloadAsAssistant3(
+                          assistant3.getTreatMatchingRefundWorkloadAsAssistant1());
+                      assistant1.setTreatMatchingTimeAsAssistant3(
+                          assistant3.getTreatMatchingTimeAsAssistant1());
+                    }
+                  });
             }
           });
-        }
-        if (resultList3!=null && !resultList3.isEmpty()) {
-          resultList3.forEach(assistant3->{
-            if (assistant3.getAssistantId().equals(assistantId) && orgId.equals(assistant3.getOrgId())) {
-              assistant1.setTreatMatchingActualWorkloadAsAssistant3(assistant3.getTreatMatchingActualWorkloadAsAssistant1());
-              assistant1.setTreatMatchingRefundWorkloadAsAssistant3(assistant3.getTreatMatchingRefundWorkloadAsAssistant1());
-              assistant1.setTreatMatchingTimeAsAssistant3(assistant3.getTreatMatchingTimeAsAssistant1());
-            }
-          });
-        }
-      });
     }
     return new PageInfo<>(resultList);
   }
@@ -89,9 +101,12 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
     List<AssistantMatchingStatisticsVO> list = pageInfo.getList();
     ExcelUtil<AssistantMatchingStatisticsVO> excelUtil =
         new ExcelUtil<>(AssistantMatchingStatisticsVO.class);
-    String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(),
-            getAbbreviationById(query.getOrgId()), "助手配诊统计");
-    excelUtil.exportExcel(response, list, "员工配诊记录列表",fileName);
+    String fileName = query.getStartDate() + query.getEndDate() + "助手配诊统计";
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    if (null != organization) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
+    excelUtil.exportExcel(response, list, "员工配诊记录列表", fileName);
   }
 
   /**
@@ -119,13 +134,11 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
       HttpServletResponse response, EmployeeDiagnosisQuery query) throws IOException {
     List<EmployeeDiagnosisInfoVO> resultList = mapper.selectEmployeeDiagnosisInfoList(query);
     ExcelUtil<EmployeeDiagnosisInfoVO> excelUtil = new ExcelUtil<>(EmployeeDiagnosisInfoVO.class);
-    String fileName = excelUtil.getFileName(getAbbreviationById(query.getOrgId()),
-            query.getStartDate(), query.getEndDate(),null,"看诊情况统计");
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "员工看诊情况统计";
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    if (null != organization) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
     excelUtil.exportExcel(response, resultList, "员工看诊情况列表", fileName);
-  }
-
-  public String getAbbreviationById(Integer orgId) {
-    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-    return organizationInfo.getAbbreviation();
   }
 }

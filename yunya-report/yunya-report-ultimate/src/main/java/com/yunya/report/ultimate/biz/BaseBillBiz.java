@@ -5,17 +5,13 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
-import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBill;
-import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
-import com.yunya.report.ultimate.mapper.BaseBillMapper;
-import com.yunya.report.ultimate.mapper.BaseBillPayMapper;
-import com.yunya.report.ultimate.mapper.CurrentMonthBillStatisticsMapper;
+import com.yunya.models.report.BaseOrganization;
+import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,8 +40,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Autowired private CurrentMonthBillStatisticsMapper currentMonthBillStatisticsMapper;
   /** 账单收费记录 */
   @Autowired private BaseBillPayMapper billPayMapper;
-  /** 系统服务调用 */
-  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
+  /** 组织 */
+  @Autowired private BaseOrganizationMapper organizationMapper;
   /** 账单详情 * */
   @Autowired private BaseBillDetailMapper baseBillDetailMapper;
 
@@ -74,8 +70,11 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       throws IOException {
     List<BillOfOrderRecordVO> list = mapper.selectBillRecordOfOrderList(query);
     ExcelUtil<BillOfOrderRecordVO> excelUtil = new ExcelUtil<>(BillOfOrderRecordVO.class);
-    String fileName =
-        excelUtil.getFileName(null, null, getAbbreviationById(query.getOrgId()), "开单记录表");
+    String fileName = "开单记录表";
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    if (null != organization) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
     excelUtil.exportExcel(response, list, "开单记录表", fileName);
   }
 
@@ -85,8 +84,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * @param query 查询条件
    * @return
    */
-  public PageInfo<CouponDiscountItemInfoVO> couponDiscountItems(
-          CouponDiscountItemsQuery query) {
+  public PageInfo<CouponDiscountItemInfoVO> couponDiscountItems(CouponDiscountItemsQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
@@ -102,7 +100,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * @return
    */
   public PageInfo<BillOfDiscountDetailVO> findBillDiscountDetailList(
-          BillOfDiscountDetailQuery query) {
+      BillOfDiscountDetailQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
@@ -155,15 +153,12 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     List<BillRestReceivableAmountVO> resultList = mapper.selectBillReceivableAmountList(query);
     ExcelUtil<BillRestReceivableAmountVO> excelUtil =
         new ExcelUtil<>(BillRestReceivableAmountVO.class);
-    String fileName =
-        excelUtil.getFileName(
-            getAbbreviationById(query.getOrgId()), query.getBillDate(), null, null, "应收账款余额表");
+    String fileName = query.getBillDate() + "应收账款余额表";
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    if (null != organization) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
     excelUtil.exportExcel(response, resultList, "应收账款余额表", fileName);
-  }
-
-  public String getAbbreviationById(Integer orgId) {
-    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-    return organizationInfo.getAbbreviation();
   }
 
   /**
@@ -435,7 +430,15 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     return new PageInfo<>(resultList);
   }
 
-  public void couponDiscountItemsExport(CouponDiscountItemsQuery query, HttpServletResponse response) throws IOException {
+  /**
+   * 产品优惠明细导出
+   *
+   * @param query 查询条件
+   * @param response 响应
+   * @throws IOException
+   */
+  public void couponDiscountItemsExport(
+      CouponDiscountItemsQuery query, HttpServletResponse response) throws IOException {
     List<CouponDiscountItemInfoVO> resultList = mapper.selectCouponDiscountItems(query);
     ExcelUtil<CouponDiscountItemInfoVO> excelUtil = new ExcelUtil<>(CouponDiscountItemInfoVO.class);
     excelUtil.exportExcel(response, resultList, "产品优惠项目明细", "产品优惠项目明细");

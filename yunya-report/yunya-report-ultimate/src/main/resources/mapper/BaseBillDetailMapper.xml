@@ -662,6 +662,7 @@
             resultType="com.yunya.feign.report.domain.vo.EmployeePersonalReceivedWorkloadDetailVO">
         SELECT
         orgId,
+        orgName,
         billId,
         billNum,
         DATE_FORMAT(orderDate, '%Y-%m-%d %H:%i') as orderDate,
@@ -675,6 +676,7 @@
         (
         SELECT
         ebd.orgId,
+        ebd.abbreviation as orgName,
         ebd.billId,
         ebd.billNum,
         ebd.orderDate,
@@ -689,6 +691,7 @@
         (
         SELECT
         bbp.org_id AS orgId,
+        bbp.abbreviation,
         bbp.bill_id AS billId,
         bbp.bill_num AS billNum,
         bbp.order_date AS orderDate,
@@ -703,6 +706,7 @@
         LEFT JOIN (
         SELECT
         bb.org_id,
+        bo.abbreviation,
         bb.bill_id,
         bb.bill_num,
         bb.order_date,
@@ -714,6 +718,7 @@
         FROM
         base_bill bb
         LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+        LEFT JOIN base_organization bo on bb.org_id = bo.org_id
         ) bbp ON bbd.bill_id = bbp.bill_id
         ) ebd
         LEFT JOIN (
