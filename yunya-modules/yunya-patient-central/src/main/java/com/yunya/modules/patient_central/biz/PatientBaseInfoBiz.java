@@ -209,7 +209,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientPrepaymentsInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       patientPrepaymentsInfo.setPatientId(patientBaseInfo.getId());
       // 预付款卡号生成规则 开通Y
-      patientPrepaymentsInfo.setPrepaymentNumber(this.patientMemberInfoBiz.generateCardNumber("Y"));
+      String cardNumberStr = this.patientMemberInfoBiz.generateCardNumber("Y");
+      patientPrepaymentsInfo.setPrepaymentNumber(cardNumberStr);
       patientPrepaymentsInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientPrepaymentsInfo.setCrtName(BaseContextHandler.getName());
       this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);

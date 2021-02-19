@@ -78,6 +78,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   /** redis队列 */
   @Autowired private RedisUtils redisUtils;
 
+  /** 预付款Mapper */
+  @Autowired
+  private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
+
   /** 当前服务上线日期 */
   @Value("${serverInfo.onlineDateTime}")
   private String onlineDateTime;
@@ -241,6 +245,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @return String 卡号
    */
   public String generateCardNumber(String mark) {
+    log.info("==========会员卡号生成==============");
+    log.info("==>开始生成会员卡...");
     String orgId = BaseContextHandler.getOrgId();
     String number = "";
     if (orgId != null) {
@@ -249,18 +255,42 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       } else if ("H".equals(mark)) {
         number = this.mapper.generateCardNumber(Integer.parseInt(orgId), onlineDateTime);
       } else {
+        log.info("==>会员卡生成失败");
         return null;
       }
       String suffix = String.format("%06d", Integer.parseInt(number) + 1);
       // 获取门诊简称
       OrganizationInfo organizationInfo =
-          this.remoteSystemServiceFeign.findOrgInfoByOrgId(
-              Integer.parseInt(BaseContextHandler.getOrgId()));
+              this.remoteSystemServiceFeign.findOrgInfoByOrgId(
+                      Integer.parseInt(BaseContextHandler.getOrgId()));
       if (organizationInfo != null) {
-        return mark + organizationInfo.getClinicNumber() + suffix;
+        String cardNum = mark + organizationInfo.getClinicNumber() + suffix;
+        boolean b = this.checkCardNum(cardNum);
+        if (b) {
+          log.info("==>会员卡生成成功:{}",cardNum);
+          return cardNum;
+        }
+        throw new ClientServiceException("【开卡失败,稍后重试】:" + cardNum + "已经存在",OperationCodeConstants.DATA_EXIST);
       }
     }
+    log.info("==========会员卡生成结束===========");
     return null;
+  }
+
+  /**
+   * 检测生成的卡号是否已经存在，如果存在返回false；否则返回true
+   * @param cardNum 生成的卡号
+   * @return boolean
+   */
+  private boolean checkCardNum(String cardNum) {
+    if (cardNum.startsWith("H")) {
+      PatientMemberInfo patientMemberInfo = this.patientMemberInfoMapper.selectCardNumber(cardNum);
+      return patientMemberInfo == null;
+    } else if (cardNum.startsWith("Y")) {
+      PatientPrepaymentsInfo patientPrepaymentsInfo = this.patientPrepaymentsInfoMapper.selectOneByPrepaymentNumberAndPatientId(cardNum);
+      return patientPrepaymentsInfo == null;
+    }
+    return false;
   }
 
   /**

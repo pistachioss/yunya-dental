@@ -54,7 +54,7 @@
     <!-- 根据门诊id获取病历号后六位 -->
     <select id="generateCardNumber" resultType="java.lang.String">
       select
-          IF(card_number is null,'000000',substr( MAX(card_number), 6, 6 )) as maxnum
+          IF(card_number is null,'000000',substr( MAX(card_number), -6, 6 )) as maxnum
       from patient_member_info
       where
         org_id = #{orgId}
@@ -66,7 +66,7 @@
     <!-- 根据门诊id获取病历号后六位 -->
     <select id="generateCardNumber4Prepay" resultType="java.lang.String">
         select
-            IF(prepayment_number is null,'000000',substr( MAX(prepayment_number), 6, 6 )) as maxnum
+            IF(prepayment_number is null,'000000',substr( MAX(prepayment_number), -6, 6 )) as maxnum
         from patient_prepayments_info
         where
           org_id = #{orgId}
