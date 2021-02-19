@@ -66,16 +66,17 @@ public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordM
      */
     public void saveAppointModify(AppointmentBaseForm appointmentForm, Appointment appointment) {
         // 如果修改的内容未医生或者是预约日期，就将被修改的预约医生、预约时间保存
-        if (appointmentForm.getDentistId().equals(appointmentForm.getDentistId())
-                && appointmentForm.getAppointDate().equals(appointmentForm.getAppointDate())) {
+        if (appointmentForm.getDentistId().equals(appointment.getDentistId())
+                && appointmentForm.getAppointDate().equals(appointment.getAppointDate())) {
             return;
         }
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
         AppointmentModifyRecord modify = new AppointmentModifyRecord();
         modify.setAppointmentId(appointment.getId());
         modify.setOrgId(appointment.getOrgId());
         modify.setDentistId(appointment.getDentistId());
         modify.setAppointDate(appointment.getAppointDate());
-        modify.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        modify.setCrtId(userId);
         modify.setCrtName(BaseContextHandler.getName());
         modify.setCrtTime(new Date(System.currentTimeMillis()));
         int count = mapper.insertSelective(modify);
