@@ -28,12 +28,12 @@ import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * 简介: 中间表就诊流程业务处理
@@ -189,11 +189,11 @@ public class BaseTreatmentProcessBiz
   private void updateTreatmentProcessByAppointmentId(Integer appointmentId) {
     Appointment appointment = appointmentMapper.selectByPrimaryKey(appointmentId);
     log.info("====================【APP就诊主页面】============");
-    log.info("==> user.dir:{}",System.getProperty("user.dir"));
-    log.info("==> appointment:{}",appointment);
+    log.info("==> user.dir:{}", System.getProperty("user.dir"));
+    log.info("==> appointment:{}", appointment);
     if (null != appointment) {
       BaseTreatmentProcess treatmentProcess = mapper.selectOneByAppointmentId(appointmentId);
-      log.info("==> treatmentProcess:{}",treatmentProcess);
+      log.info("==> treatmentProcess:{}", treatmentProcess);
       if (null != treatmentProcess) {
         setTreatmentProcessAppointmentValue(treatmentProcess, appointment);
         setTreatmentProcessRegisteredValue(treatmentProcess, appointmentId);
@@ -449,92 +449,146 @@ public class BaseTreatmentProcessBiz
     List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
     if (StringHelper.isNotEmpty(dateRanges)) {
       CountDownLatch latch = new CountDownLatch(dateRanges.size());
-      List<Future> resultFutures = new ArrayList<>();
-      for (String date : dateRanges) {
-        resultFutures.add(
-            importExcelThreadPool.submit(
-                () -> {
-                  try {
-                    // 预约-就诊
-                    Example appointEmp = new Example(Appointment.class);
-                    appointEmp
-                        .createCriteria()
-                        .andEqualTo("inservice", true)
-                        .andBetween(
-                            "crtTime",
-                            new DateTime(date).toDate(),
-                            new DateTime(date).plusDays(1).toDate());
-                    List<Appointment> appointments = appointmentMapper.selectByExample(appointEmp);
-                    if (StringHelper.isNotEmpty(appointments)) {
-                      List<BaseTreatmentProcess> treatmentProcesses = Lists.newArrayList();
-                      appointments.forEach(
-                          appointment -> {
-                            BaseTreatmentProcess process = new BaseTreatmentProcess();
-                            Integer appointmentId = appointment.getId();
-                            process.setOrgId(appointment.getOrgId());
-                            process.setPatientId(appointment.getPatientId());
-                            process.setAppointmentId(appointmentId);
-                            process.setAppointDentistId(appointment.getDentistId());
-                            process.setAppointStartTime(appointment.getAppointStartTime());
-                            process.setAppointDuration(appointment.getAppointDuration());
-                            process.setAppointContent(appointment.getAppointContent());
-                            // 设置就诊流程预约状态和改约次数
-                            setTreatmentProcessAppointmentStatusAndAppointmentModifyTime(
-                                appointment, process, appointmentId);
-                            // 设置就诊流程挂号信息
-                            setTreatmentProcessRegisteredValue(process, appointmentId);
-                            // 设置就诊流程就诊信息
-                            TreatmentRecord treatmentRecord = new TreatmentRecord();
-                            treatmentRecord.setAppointmentId(appointmentId);
-                            setTreatmentProcessTreatmentValue(process, treatmentRecord);
-                            treatmentProcesses.add(process);
-                          });
-                      if (StringHelper.isNotEmpty(treatmentProcesses)) {
-                        mapper.batchInsertSelective(treatmentProcesses);
-                      }
+      List<Future> resultFutures =
+          dateRanges.stream()
+              .map(
+                  date ->
+                      importExcelThreadPool.submit(
+                          () -> {
+                            try {
+                              // 预约-就诊
+                              Example appointEmp = new Example(Appointment.class);
+                              appointEmp
+                                  .createCriteria()
+                                  .andEqualTo("inservice", true)
+                                  .andBetween(
+                                      "crtTime",
+                                      new DateTime(date).toDate(),
+                                      new DateTime(date).plusDays(1).toDate());
+                              List<Appointment> appointments =
+                                  appointmentMapper.selectByExample(appointEmp);
+                              if (StringHelper.isNotEmpty(appointments)) {
+                                CountDownLatch latch_1 = new CountDownLatch(appointments.size());
+                                List<Future> resultFutures_1;
+                                List<BaseTreatmentProcess> treatmentProcesses =
+                                    Lists.newArrayList();
+                                resultFutures_1 =
+                                    appointments.stream()
+                                        .map(
+                                            appointment ->
+                                                importExcelThreadPool.submit(
+                                                    () -> {
+                                                      try {
+                                                        BaseTreatmentProcess process =
+                                                            new BaseTreatmentProcess();
+                                                        Integer appointmentId = appointment.getId();
+                                                        process.setOrgId(appointment.getOrgId());
+                                                        process.setPatientId(
+                                                            appointment.getPatientId());
+                                                        process.setAppointmentId(appointmentId);
+                                                        process.setAppointDentistId(
+                                                            appointment.getDentistId());
+                                                        process.setAppointStartTime(
+                                                            appointment.getAppointStartTime());
+                                                        process.setAppointDuration(
+                                                            appointment.getAppointDuration());
+                                                        process.setAppointContent(
+                                                            appointment.getAppointContent());
+                                                        // 设置就诊流程预约状态和改约次数
+                                                        setTreatmentProcessAppointmentStatusAndAppointmentModifyTime(
+                                                            appointment, process, appointmentId);
+                                                        // 设置就诊流程挂号信息
+                                                        setTreatmentProcessRegisteredValue(
+                                                            process, appointmentId);
+                                                        // 设置就诊流程就诊信息
+                                                        TreatmentRecord treatmentRecord =
+                                                            new TreatmentRecord();
+                                                        treatmentRecord.setAppointmentId(
+                                                            appointmentId);
+                                                        setTreatmentProcessTreatmentValue(
+                                                            process, treatmentRecord);
+                                                        treatmentProcesses.add(process);
+                                                      } finally {
+                                                        latch_1.countDown();
+                                                      }
+                                                    }))
+                                        .collect(Collectors.toList());
+                                try {
+                                  latch_1.await();
+                                } catch (InterruptedException e) {
+                                  e.printStackTrace();
+                                }
+                                printExceptionLog(resultFutures_1, log);
+                                if (StringHelper.isNotEmpty(treatmentProcesses)) {
+                                  mapper.batchInsertSelective(treatmentProcesses);
+                                }
 
-                      // 挂号-就诊
-                      Example registeredEmp = new Example(Registered.class);
-                      registeredEmp
-                          .createCriteria()
-                          .andEqualTo("inservice", true)
-                          .andBetween(
-                              "updTime",
-                              new DateTime(date).toDate(),
-                              new DateTime(date).plusDays(1).toDate());
-                      List<Registered> registeredList =
-                          registeredMapper.selectByExample(registeredEmp);
-                      if (StringHelper.isNotEmpty(registeredList)) {
-                        List<BaseTreatmentProcess> tempList = Lists.newArrayList();
-                        registeredList.forEach(
-                            registered -> {
-                              if (null == registered.getAppointmentId()) {
-                                Integer registeredId = registered.getId();
-                                BaseTreatmentProcess entity = new BaseTreatmentProcess();
-                                entity.setRegisteredId(registeredId);
-                                int count = mapper.selectCount(entity);
-                                if (0 >= count) {
-                                  BaseTreatmentProcess process =
-                                      generateBaseTreatmentProcess(registered);
-                                  if (null != process) {
-                                    TreatmentRecord treatmentRecord = new TreatmentRecord();
-                                    treatmentRecord.setRegisteredId(registered.getId());
-                                    setTreatmentProcessTreatmentValue(process, treatmentRecord);
-                                    tempList.add(process);
+                                // 挂号-就诊
+                                Example registeredEmp = new Example(Registered.class);
+                                registeredEmp
+                                    .createCriteria()
+                                    .andEqualTo("inservice", true)
+                                    .andBetween(
+                                        "crtTime",
+                                        new DateTime(date).toDate(),
+                                        new DateTime(date).plusDays(1).toDate());
+                                List<Registered> registeredList =
+                                    registeredMapper.selectByExample(registeredEmp);
+                                if (StringHelper.isNotEmpty(registeredList)) {
+                                  CountDownLatch latch_2 = new CountDownLatch(appointments.size());
+                                  List<Future> resultFutures_2;
+                                  List<BaseTreatmentProcess> tempList = Lists.newArrayList();
+                                  resultFutures_2 =
+                                      registeredList.stream()
+                                          .map(
+                                              registered ->
+                                                  importExcelThreadPool.submit(
+                                                      () -> {
+                                                        try {
+                                                          if (null
+                                                              == registered.getAppointmentId()) {
+                                                            Integer registeredId =
+                                                                registered.getId();
+                                                            BaseTreatmentProcess entity =
+                                                                new BaseTreatmentProcess();
+                                                            entity.setRegisteredId(registeredId);
+                                                            int count = mapper.selectCount(entity);
+                                                            if (0 >= count) {
+                                                              BaseTreatmentProcess process =
+                                                                  generateBaseTreatmentProcess(
+                                                                      registered);
+                                                              if (null != process) {
+                                                                TreatmentRecord treatmentRecord =
+                                                                    new TreatmentRecord();
+                                                                treatmentRecord.setRegisteredId(
+                                                                    registered.getId());
+                                                                setTreatmentProcessTreatmentValue(
+                                                                    process, treatmentRecord);
+                                                                tempList.add(process);
+                                                              }
+                                                            }
+                                                          }
+                                                        } finally {
+                                                          latch_2.countDown();
+                                                        }
+                                                      }))
+                                          .collect(Collectors.toList());
+                                  try {
+                                    latch_2.await();
+                                  } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                  }
+                                  printExceptionLog(resultFutures_2, log);
+                                  if (StringHelper.isNotEmpty(tempList)) {
+                                    mapper.batchInsertSelective(tempList);
                                   }
                                 }
                               }
-                            });
-                        if (StringHelper.isNotEmpty(tempList)) {
-                          mapper.batchInsertSelective(tempList);
-                        }
-                      }
-                    }
-                  } finally {
-                    latch.countDown();
-                  }
-                }));
-      }
+                            } finally {
+                              latch.countDown();
+                            }
+                          }))
+              .collect(Collectors.toList());
       latch.await();
       printExceptionLog(resultFutures, log);
     }
