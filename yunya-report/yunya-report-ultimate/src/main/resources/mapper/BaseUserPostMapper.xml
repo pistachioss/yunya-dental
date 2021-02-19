@@ -503,7 +503,7 @@
         </where>
         GROUP BY
         btp.org_id,
-        btp.registered_dentist_id
+        btp.appoint_dentist_id
         ) btp2 ON bup.user_id = btp2.appoint_dentist_id
         AND bup.org_id = btp2.org_id
         LEFT JOIN (
