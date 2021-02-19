@@ -403,7 +403,17 @@
         IFNULL( btp5.visitArrivedTimes, 0 ) AS visitArrivedTimes,
         IFNULL( btp6.totalActualAmount, 0 ) AS totalActualAmount
         FROM
-        ( SELECT bup.org_id, bup.user_id FROM base_user_post bup WHERE bup.group_id = 3 ) bup
+        (
+        SELECT
+        bup.org_id,
+        bup.user_id
+        FROM
+        base_user_post bup
+        WHERE bup.group_id = 3
+        GROUP BY
+        bup.org_id,
+        bup.user_id
+        ) bup
         LEFT JOIN base_employee be ON bup.user_id = be.user_id
         LEFT JOIN (
         SELECT
