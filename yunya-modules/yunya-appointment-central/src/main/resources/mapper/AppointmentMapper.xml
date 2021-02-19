@@ -370,7 +370,8 @@
         IFNULL(a.remarks,'--') as appointRemark,
         a.appoint_type as appointType,
         a.appoint_status as appointStatus,
-        a.confirm_status as confirmStatus
+        a.confirm_status as confirmStatus,
+        DATE_FORMAT(a.crt_time, '%Y-%m-%d') as appointmentCrtTime
         from appointment a
         <where>
             and a.appoint_status = 0

@@ -63,6 +63,9 @@ public class WaitingPatientInfoVO implements Serializable {
   /** 会员图标 */
   @ApiModelProperty("会员图标")
   private String memberIcon;
+  /** 会员卡名 */
+  @ApiModelProperty("会员卡类型名称")
+  private String memberCardName;
   /** 患者备注 */
   @ApiModelProperty("患者备注")
   private String patientRemark;

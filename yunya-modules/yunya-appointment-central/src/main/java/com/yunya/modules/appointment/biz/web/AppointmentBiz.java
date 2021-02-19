@@ -13,9 +13,7 @@ import com.yunya.feign.appointment.domain.query.*;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
-import com.yunya.feign.employee_attend.form.LeaveInfoForm;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
-import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.feign.employee_attend.vo.UserWorkVO;
 import com.yunya.feign.employee_attend.vo.WorkDayVO;
 import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
@@ -49,7 +47,6 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentOperateRecord;
-import com.yunya.models.employee_attend.LeaveInfo;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
@@ -2066,6 +2063,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                         if (StringHelper.isNotEmpty(collect1)) {
                             MemberType memberType = collect1.get(0);
                             patientEntity.setMemberIcon(memberType.getIcon());
+                            patientEntity.setMemberCardName(memberType.getName());
                         }
                     }
                 }
