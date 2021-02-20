@@ -19,6 +19,7 @@ import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
+import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -265,7 +266,7 @@ public class TollBiz {
    *
    * @param model 收费参数
    */
-  public String confirmCharge(TollModel model) {
+  public TollConfirmVO confirmCharge(TollModel model) {
     Integer orderRecordId = model.getOrderRecordId();
     Byte discountType = model.getDiscountType();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
@@ -377,7 +378,10 @@ public class TollBiz {
       sendMessageForMiddleTable(orderRecordId, billPayRecordId, treatmentRecord);
     }
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
-    return billRecord.getBillNumber();
+    TollConfirmVO tollConfirmVO = new TollConfirmVO();
+    tollConfirmVO.setBillNumber( billRecord.getBillNumber());
+    tollConfirmVO.setBillPayRecordId(billPayRecordId);
+    return tollConfirmVO;
   }
 
   /**
@@ -1202,7 +1206,7 @@ public class TollBiz {
    *
    * @param model 收费参数
    */
-  public void collectDebt(TollDebtModel model) {
+  public Integer collectDebt(TollDebtModel model) {
     Integer treatmentId = model.getTreatmentRecordId();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
     AccreditDiscountModel accreditDiscount = model.getAccreditDiscountModel();
@@ -1377,6 +1381,7 @@ public class TollBiz {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     }
+    return billPayRecordId;
   }
 
   /**
