@@ -176,7 +176,9 @@ public class TollBiz {
           }
         }
         vo.setActualAmount(actualAmount);
-        vo.setDiscountAppliesCoupons(discountAppliesCoupon);
+        if (receivableAmount.compareTo(actualAmount) > 0) {
+          vo.setDiscountAppliesCoupons(discountAppliesCoupon);
+        }
       }
     }
   }
