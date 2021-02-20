@@ -36,7 +36,4 @@ public class ToothRootDetailVo implements Serializable {
     @ApiModelProperty(value = "更新时间")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date updTime;
-
-    @ApiModelProperty(value = "图片上传状态;0-未上传，1-失败，2-成功")
-    private Integer uploadStatus;
 }
