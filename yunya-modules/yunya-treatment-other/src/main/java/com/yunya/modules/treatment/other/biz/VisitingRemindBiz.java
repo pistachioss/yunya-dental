@@ -218,10 +218,12 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             List<SysUserInfoDetail> dentistInfoList = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
             // 获取患者信息列表
             List<Integer> patientIds = visitingReminds.stream().map(VisitingRemind::getPatientId).collect(Collectors.toList());
-            log.info("\n===================随访提醒调试信息================");
-            log.info("\n==>患者ID列表:\n{}",patientIds);
-            log.info("\n================================================");
+            log.info("\n\n<==患者信息请求参数:{}\n\n",patientIds);
             List<PatientTotalInfoVo> patientTotalInfoVoList = remotePatientCentralServiceFeign.findPatientTotalInfo(patientIds);
+            log.info("\n\n===================随访提醒调试信息================" +
+                    "\n\n==>患者ID列表:{}" +
+                    "\n\n==>患者信息列表:{}" +
+                    "\n\n================================================\n\n",patientIds,patientTotalInfoVoList);
             // 获取患者会员类型
             List<MemberType> memberTypeList = null;
             if (StringHelper.isNotEmpty(patientTotalInfoVoList)) {
@@ -238,6 +240,11 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             List<DebtAmountModel> finalDebtAmountModelList = debtAmountModelList;
             visitingReminds.forEach(visitingRemind -> {
                 VisitingRemindVo build = EntityUtils.build(visitingRemind, VisitingRemindVo.class);
+                log.info("\n\n===========随访设置患者信息============" +
+                        "\n\n==>源数据:{}" +
+                        "\n\n==>目标数据:{}" +
+                        "\n\n=====================================\n\n",
+                        visitingRemind,build);
                 // 设置患者信息
                 this.setPatientInfo(dentistInfoList,patientTotalInfoVoList,finalMemberTypeList,finalDebtAmountModelList,build);
                 visitingRemindVos.add(build);

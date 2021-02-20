@@ -23,6 +23,7 @@ import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
 import com.yunya.modules.patient_central.biz.PatientPrepaymentRelationBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -45,6 +46,7 @@ import static com.yunya.feign.report.enums.MsgCategoryEnum.BasePatient;
 @Api("患者信息服务接口暴露")
 @RestController
 @RequestMapping("api")
+@Slf4j
 public class PatientServiceRest {
     /** 患者 */
     @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;

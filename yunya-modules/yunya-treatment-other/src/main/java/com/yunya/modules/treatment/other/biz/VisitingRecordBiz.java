@@ -317,13 +317,15 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 visitingRecordVoList.add(visitingRecordVo);
             }
 
-            log.info("=======================预约随访==============");
-            log.info("<==search:{}",search);
-            log.info("<==medicalNumber:{}",medicalNumber);
-            log.info("<==distentName:{}",distentName);
-            log.info("<==dentistId:{}",query.getDentistId());
-            log.info("<==searchId:{}",query.getSearchId());
-            log.info("==>visitingRecordVoList:{}",visitingRecordVoList);
+            log.info("\n\n=======================预约随访==============" +
+                    "\n\n<==search:{}" +
+                    "\n\n<==medicalNumber:{}" +
+                    "\n\n<==distentName:{}" +
+                    "\n\n<==dentistId:{}" +
+                    "\n\n<==searchId:{}" +
+                    "\n\n==>visitingRecordVoList:{}" +
+                    "\n\n=============================================\n\n",
+                    search,medicalNumber,distentName,query.getDentistId(),query.getSearchId(),visitingRecordVos);
 
             if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName) && query.getSearchId() < 3) {
                 // 排序
@@ -373,7 +375,11 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         if (StringHelper.isNotEmpty(visitingRecordVos)) {
             // 过滤出患者基本信息列表
             List<Integer> patientIds = visitingRecordVos.stream().map(VisitingRecordVo::getPatientId).collect(Collectors.toList());
-            return this.remotePatientCentralServiceFeign.findPatientTotalInfo(patientIds);
+            List<PatientTotalInfoVo> patientTotalInfoList = this.remotePatientCentralServiceFeign.findPatientTotalInfo(patientIds);
+            log.info("\n\n====================随访管理获取医生信息列表=============" +
+                    "\n\n==>医生信息列表:{}" +
+                    "\n\n=====================================================\n\n", patientTotalInfoList);
+            return patientTotalInfoList;
         }
         return null;
     }
@@ -484,7 +490,9 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         // 组合患者信息
         Integer patientId = visitingRecordVo.getPatientId();
         if (StringHelper.isNotEmpty(patientTotalInfoList)) {
-            patientTotalInfoList.forEach(patientTotalInfo -> {
+            boolean b1 = patientTotalInfoList.stream().anyMatch(entity -> entity.getId().equals(patientId));
+            if (b1) {
+                PatientTotalInfoVo patientTotalInfo = patientTotalInfoList.stream().filter(entity -> entity.getId().equals(patientId)).findFirst().get();
                 visitingRecordVo.setPatientName(patientTotalInfo.getName());
                 visitingRecordVo.setMobile(patientTotalInfo.getMobile());
                 visitingRecordVo.setGender(patientTotalInfo.getGender());
@@ -512,8 +520,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                         visitingRecordVo.setArrears(debtAmountModel.getDebtAmount());
                     }
                 }
-            });
-
+            }
         }
 
         // 设置医生姓名

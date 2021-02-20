@@ -36,14 +36,14 @@ import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
 import org.apache.commons.httpclient.NameValuePair;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,6 +58,8 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBaseInfo> {
+
+  private static final Logger logger = LoggerFactory.getLogger(PatientBaseInfoBiz.class);
 
   /** 注入redis */
   @Autowired private RedisUtils redisUtils;
@@ -607,6 +609,12 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
               });
         }
       }
+
+      logger.info("\n\n====================患者信息批量查询==============" +
+              "\n\n==>患者信息列表:{}" +
+              "\n\n===============================",
+              patientTotalInfoVos);
+
       return patientTotalInfoVos;
     }
     return new ArrayList<>();
