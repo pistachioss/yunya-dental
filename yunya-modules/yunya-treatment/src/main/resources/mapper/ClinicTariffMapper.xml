@@ -87,7 +87,7 @@
         bt.item_number AS number,
         bt.pinyin,
         bt.unit,
-        IFNULL( ct.inservice, 1 ) AS inservice
+        IFNULL( ct.inservice, bt.inservice ) AS inservice
         FROM
         base_tariff bt
         LEFT JOIN base_tariff_category btc ON bt.tariff_category_id = btc.id

@@ -72,7 +72,7 @@
         bot.english_name AS englishName,
         bot.item_number AS number,
         bot.unit,
-        IFNULL( cot.inservice, 1 ) AS inservice
+        IFNULL( cot.inservice, bot.inservice ) AS inservice
         FROM
         base_oral_tariff bot
         LEFT JOIN base_oral_tariff_category botc ON bot.oral_tariff_category_id = botc.id
