@@ -444,22 +444,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         return null;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * 组合随访记录信息中的患者信息、会员图标信息、医生姓名、就诊信息
      * @param visitingRecordVo 随访记录
