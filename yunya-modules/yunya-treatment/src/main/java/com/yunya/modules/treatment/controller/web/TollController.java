@@ -4,6 +4,7 @@ import com.yunya.feign.treatment.domain.model.TollDebtModel;
 import com.yunya.feign.treatment.domain.model.TollModel;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
+import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
@@ -64,9 +65,9 @@ public class TollController {
   @CurrentUser
   @ApiOperation("确认收费")
   @PostMapping("/confirm")
-  public ResponseResult<String> confirmCharge(@RequestBody @Validated TollModel model) {
-    String billNum = tollBiz.confirmCharge(model);
-    return ResponseUtil.success(billNum);
+  public ResponseResult<TollConfirmVO> confirmCharge(@RequestBody @Validated TollModel model) {
+    TollConfirmVO tollConfirmVO = tollBiz.confirmCharge(model);
+    return ResponseUtil.success(tollConfirmVO);
   }
 
   /**
@@ -99,9 +100,9 @@ public class TollController {
   @CurrentUser
   @ApiOperation("收欠费")
   @PostMapping(value = "/collect/debt", name = "收欠费")
-  public ResponseResult<T> collectDebt(@RequestBody @Validated TollDebtModel model) {
-    tollBiz.collectDebt(model);
-    return ResponseUtil.success(null);
+  public ResponseResult<Integer> collectDebt(@RequestBody @Validated TollDebtModel model) {
+    Integer bllPayId = tollBiz.collectDebt(model);
+    return ResponseUtil.success(bllPayId);
   }
 
   /**

@@ -19,6 +19,7 @@ import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
+import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -176,7 +177,9 @@ public class TollBiz {
           }
         }
         vo.setActualAmount(actualAmount);
-        vo.setDiscountAppliesCoupons(discountAppliesCoupon);
+        if (receivableAmount.compareTo(actualAmount) > 0) {
+          vo.setDiscountAppliesCoupons(discountAppliesCoupon);
+        }
       }
     }
   }
@@ -263,7 +266,7 @@ public class TollBiz {
    *
    * @param model 收费参数
    */
-  public String confirmCharge(TollModel model) {
+  public TollConfirmVO confirmCharge(TollModel model) {
     Integer orderRecordId = model.getOrderRecordId();
     Byte discountType = model.getDiscountType();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
@@ -375,7 +378,10 @@ public class TollBiz {
       sendMessageForMiddleTable(orderRecordId, billPayRecordId, treatmentRecord);
     }
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
-    return billRecord.getBillNumber();
+    TollConfirmVO tollConfirmVO = new TollConfirmVO();
+    tollConfirmVO.setBillNumber( billRecord.getBillNumber());
+    tollConfirmVO.setBillPayRecordId(billPayRecordId);
+    return tollConfirmVO;
   }
 
   /**
@@ -959,39 +965,45 @@ public class TollBiz {
     if (StringHelper.isNotEmpty(prepaymentAccountModels)) {
       prepaymentAccountModels.forEach(
           prepaymentAccountModel -> {
-            BillPayDetailRecord billPayDetailRecord =
-                setBillPayRecordDetailValue(
-                    billPayRecordId,
-                    prepaymentAccountModel.getAccountItemId(),
-                    prepaymentAccountModel.getAmount(),
-                    (byte) 0);
-            billPayDetailRecord.setRemark(prepaymentAccountModel.getPrepaymentNum());
-            billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
+            if (prepaymentAccountModel.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+              BillPayDetailRecord billPayDetailRecord =
+                  setBillPayRecordDetailValue(
+                      billPayRecordId,
+                      prepaymentAccountModel.getAccountItemId(),
+                      prepaymentAccountModel.getAmount(),
+                      (byte) 0);
+              billPayDetailRecord.setRemark(prepaymentAccountModel.getPrepaymentNum());
+              billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
+            }
           });
     }
     if (StringHelper.isNotEmpty(memberAccountModels)) {
       memberAccountModels.forEach(
           memberAccountModel -> {
-            BillPayDetailRecord billPayDetailRecord =
-                setBillPayRecordDetailValue(
-                    billPayRecordId,
-                    memberAccountModel.getAccountItemId(),
-                    memberAccountModel.getAmount(),
-                    (byte) 1);
-            billPayDetailRecord.setRemark(memberAccountModel.getMemberNum());
-            billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
+            if (memberAccountModel.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+              BillPayDetailRecord billPayDetailRecord =
+                  setBillPayRecordDetailValue(
+                      billPayRecordId,
+                      memberAccountModel.getAccountItemId(),
+                      memberAccountModel.getAmount(),
+                      (byte) 1);
+              billPayDetailRecord.setRemark(memberAccountModel.getMemberNum());
+              billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
+            }
           });
     }
     if (StringHelper.isNotEmpty(paymentModels)) {
       paymentModels.forEach(
           paymentModel -> {
-            BillPayDetailRecord billPayDetailRecord =
-                setBillPayRecordDetailValue(
-                    billPayRecordId,
-                    paymentModel.getAccountItemId(),
-                    paymentModel.getAmount(),
-                    (byte) 2);
-            billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
+            if (paymentModel.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+              BillPayDetailRecord billPayDetailRecord =
+                  setBillPayRecordDetailValue(
+                      billPayRecordId,
+                      paymentModel.getAccountItemId(),
+                      paymentModel.getAmount(),
+                      (byte) 2);
+              billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
+            }
           });
     }
   }
@@ -1194,7 +1206,7 @@ public class TollBiz {
    *
    * @param model 收费参数
    */
-  public void collectDebt(TollDebtModel model) {
+  public Integer collectDebt(TollDebtModel model) {
     Integer treatmentId = model.getTreatmentRecordId();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
     AccreditDiscountModel accreditDiscount = model.getAccreditDiscountModel();
@@ -1369,6 +1381,7 @@ public class TollBiz {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     }
+    return billPayRecordId;
   }
 
   /**

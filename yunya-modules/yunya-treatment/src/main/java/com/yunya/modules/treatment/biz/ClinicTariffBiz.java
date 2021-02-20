@@ -97,9 +97,20 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    * @return
    */
   public PageInfo<ClinicTariffVO> findList(ClinicTariffQueryForm queryForm) {
-    return findList(queryForm,false);
+    if (queryForm.getWhetherPage()) {
+      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+    }
+    List<ClinicTariffVO> resultList = mapper.selectClinicTariffList(queryForm);
+    return new PageInfo<>(resultList);
   }
 
+  /**
+   * 根据条件查询门诊价目表
+   *
+   * @param queryForm 查询条件
+   * @param isExport 是否导出
+   * @return
+   */
   public PageInfo<ClinicTariffVO> findList(ClinicTariffQueryForm queryForm, boolean isExport) {
     PageInfo pageInfo;
     if (queryForm.getWhetherPage()) {
@@ -113,7 +124,8 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     pageInfo = new PageInfo(baseTariffs);
     List<ClinicTariffVO> resultList = Lists.newArrayList();
     if (StringHelper.isNotEmpty(baseTariffs)) {
-      List<Integer> tariffIds = baseTariffs.stream().map(BaseTariffVO::getId).collect(Collectors.toList());
+      List<Integer> tariffIds =
+          baseTariffs.stream().map(BaseTariffVO::getId).collect(Collectors.toList());
       List<ClinicTariff> clinicTariffs = mapper.selectClinicTariffInId(orgId, tariffIds);
       baseTariffs.forEach(
           baseTariff -> {
@@ -131,13 +143,14 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
             vo.setPrice(baseTariff.getPrice());
             vo.setInservice(baseTariff.getInservice());
             if (StringHelper.isNotEmpty(clinicTariffs)) {
-              clinicTariffs.forEach(clinicTariff -> {
-                if (clinicTariff.getTariffId().equals(tariffId)) {
-                  vo.setId(clinicTariff.getId());
-                  vo.setPrice(clinicTariff.getPrice());
-                  vo.setInservice(clinicTariff.getInservice());
-                }
-              });
+              clinicTariffs.forEach(
+                  clinicTariff -> {
+                    if (clinicTariff.getTariffId().equals(tariffId)) {
+                      vo.setId(clinicTariff.getId());
+                      vo.setPrice(clinicTariff.getPrice());
+                      vo.setInservice(clinicTariff.getInservice());
+                    }
+                  });
             }
             resultList.add(vo);
           });
@@ -183,20 +196,20 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
           clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
       if (null != memberPriceResult) {
         memberTypeId = memberPriceResult.getMemberTypeId();
-        memberPrice = memberPriceResult.getDiscountPrice().setScale(2,BigDecimal.ROUND_HALF_UP);
+        memberPrice = memberPriceResult.getDiscountPrice().setScale(2, BigDecimal.ROUND_HALF_UP);
       } else {
         memberTypeId = memberType.getId();
         memberPrice =
-                (tariffVO
-                .getPrice()
-                .multiply(BigDecimal.valueOf(memberType.getRate()))
-                .divide(BigDecimal.valueOf(100), 2))
-                .setScale(2,BigDecimal.ROUND_HALF_UP);
+            (tariffVO
+                    .getPrice()
+                    .multiply(BigDecimal.valueOf(memberType.getRate()))
+                    .divide(BigDecimal.valueOf(100), 2))
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
       }
       memberPrices.put(memberTypeId, memberPrice);
     }
     // 设置价格精度小数点后两位四舍五入，没有在上个方法中设置精度是为了保证会员价计算精确
-    tariffVO.setPrice(tariffVO.getPrice().setScale(2,BigDecimal.ROUND_HALF_UP));
+    tariffVO.setPrice(tariffVO.getPrice().setScale(2, BigDecimal.ROUND_HALF_UP));
     tariffVO.setMemberPrices(memberPrices);
   }
 
@@ -312,7 +325,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     if (StringHelper.isEmpty(memberUniteDiscountForms)) {
       throw new ClientServiceException("统一设置门诊价目表折扣失败,当前未选择任何会员卡类型", PARAMETERS_IS_ILLEGAL);
     }
-      // 检查是否有相同会员卡折扣
+    // 检查是否有相同会员卡折扣
     checkMemberUniteDiscountForms(memberUniteDiscountForms);
     // 设置门诊价目表会员折扣价
     Integer orgId = form.getOrgId();
@@ -381,8 +394,8 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    */
   public void exportClinicTariffList(HttpServletResponse response, ClinicTariffQueryForm queryForm)
       throws IOException {
-      List<ClinicTariffVO> resultList = findList(queryForm, true).getList();
-//    List<BaseTariffVO> resultList = mapper.selectClinicTariffExportList(queryForm);
+    List<ClinicTariffVO> resultList = findList(queryForm, true).getList();
+    //    List<BaseTariffVO> resultList = mapper.selectClinicTariffExportList(queryForm);
     Integer orgId = queryForm.getOrgId();
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
     String abbreviation = null;
@@ -413,10 +426,10 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
 
   /**
    * 批量插入数据
+   *
    * @param list
    */
   public int insertEntities(List<ClinicTariff> list) {
-   return mapper.insertEntities(list);
+    return mapper.insertEntities(list);
   }
-
 }

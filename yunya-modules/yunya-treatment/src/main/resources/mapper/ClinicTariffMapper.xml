@@ -63,9 +63,7 @@
     </select>
     <!-- 根据条件查询门诊价目表信息列表 -->
     <select id="selectClinicTariffList" resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffVO">
-        select
-        ct.id,
-        ct.orgId,
+        SELECT
         ct.tariffCategoryId,
         ct.tariffCategoryName,
         ct.tariffCategoryNumber,
@@ -76,52 +74,41 @@
         ct.unit,
         ct.price,
         ct.inservice
-        from
+        FROM
         (
-        select
-        ct.id,
-        ct.clinic_id as orgId,
-        btbtc.tariffCategoryId,
-        btbtc.tariffCategoryName,
-        btbtc.tariffCategoryNumber,
-        btbtc.tariffId,
-        btbtc.`name`,
-        btbtc.pinyin,
-        btbtc.englishName,
-        btbtc.`number`,
-        btbtc.unit,
+        SELECT
+        btc.id AS tariffCategoryId,
+        btc.`name` AS tariffCategoryName,
+        btc.number AS tariffCategoryNumber,
+        bt.id AS tariffId,
+        bt.`name`,
+        IFNULL( ct.price, bt.price ) AS price,
+        bt.english_name AS englishName,
+        bt.item_number AS number,
+        bt.pinyin,
+        bt.unit,
+        IFNULL( ct.inservice, bt.inservice ) AS inservice
+        FROM
+        base_tariff bt
+        LEFT JOIN base_tariff_category btc ON bt.tariff_category_id = btc.id
+        LEFT JOIN (
+        SELECT
+        ct.clinic_id,
+        ct.tariff_id,
         ct.price,
         ct.inservice
-        from
+        FROM
         clinic_tariff ct
-        left join (
-        select
-        bt.id as tariffId,
-        btc.id as tariffCategoryId,
-        btc.`name` as tariffCategoryName,
-        btc.number as tariffCategoryNumber,
-        bt.item_number as number,
-        bt.`name`,
-        bt.pinyin,
-        bt.english_name as englishName,
-        unit
-        from
-        base_tariff bt
-        left join base_tariff_category btc on bt.tariff_category_id = btc.id
-        ) btbtc on ct.tariff_id = btbtc.tariffId
+        <where>
+        <if test="queryForm.orgId != null">
+            and ct.clinic_id = #{queryForm.orgId}
+        </if>
+        </where>
+        ) ct ON bt.id = ct.tariff_id
         ) ct
         <where>
-            <if test="queryForm.id != null">
-                and ct.id = #{queryForm.id}
-            </if>
-            <if test="queryForm.orgId != null">
-                and ct.orgId = #{queryForm.orgId}
-            </if>
             <if test="queryForm.tariffCategoryId != null">
                 and ct.tariffCategoryId = #{queryForm.tariffCategoryId}
-            </if>
-            <if test="queryForm.tariffId != null">
-                and ct.tariffId = #{queryForm.tariffId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
                 and CONCAT(IFNULL( ct.name, '' ), IFNULL( ct.pinyin, '' ), IFNULL( ct.number, '' )) like concat('%',

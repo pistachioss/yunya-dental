@@ -95,10 +95,21 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
    * @return
    */
   public PageInfo<ClinicOralTariffVO> findList(ClinicOralTariffQueryForm queryForm) {
-    return findList(queryForm, false);
+    if (queryForm.getWhetherPage()) {
+      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+    }
+    List<ClinicOralTariffVO> resultList = mapper.selectClinicOralTariffList(queryForm);
+    return new PageInfo<>(resultList);
   }
 
-  public PageInfo<ClinicOralTariffVO> findList(ClinicOralTariffQueryForm queryForm, boolean isExport) {
+    /**
+     * 根据条件查询门诊商品列表
+     * @param queryForm 查询条件
+     * @param isExport 是否导出
+     * @return
+     */
+  public PageInfo<ClinicOralTariffVO> findList(
+      ClinicOralTariffQueryForm queryForm, boolean isExport) {
     PageInfo pageInfo;
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
@@ -111,8 +122,10 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     pageInfo = new PageInfo(baseOralTariffs);
     List<ClinicOralTariffVO> resultList = Lists.newArrayList();
     if (StringHelper.isNotEmpty(baseOralTariffs)) {
-      List<Integer> tariffIds = baseOralTariffs.stream().map(BaseOralTariffVO::getId).collect(Collectors.toList());
-      List<ClinicOralTariff> clinicOralTariffs = mapper.selectClinicOralTariffInId(orgId, tariffIds);
+      List<Integer> tariffIds =
+          baseOralTariffs.stream().map(BaseOralTariffVO::getId).collect(Collectors.toList());
+      List<ClinicOralTariff> clinicOralTariffs =
+          mapper.selectClinicOralTariffInId(orgId, tariffIds);
       baseOralTariffs.forEach(
           baseOralTariff -> {
             Integer tariffId = baseOralTariff.getId();
@@ -126,16 +139,18 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
             vo.setEnglishName(baseOralTariff.getEnglishName());
             vo.setNumber(baseOralTariff.getItemNumber());
             vo.setUnit(baseOralTariff.getUnit());
-            vo.setPrice(baseOralTariff.getPrice().setScale(2,BigDecimal.ROUND_HALF_UP));
+            vo.setPrice(baseOralTariff.getPrice().setScale(2, BigDecimal.ROUND_HALF_UP));
             vo.setInservice(baseOralTariff.getInservice());
             if (StringHelper.isNotEmpty(clinicOralTariffs)) {
-              clinicOralTariffs.forEach(clinicOralTariff -> {
-                if (clinicOralTariff.getOralTariffId().equals(tariffId)) {
-                  vo.setId(clinicOralTariff.getId());
-                  vo.setPrice(clinicOralTariff.getPrice().setScale(2, BigDecimal.ROUND_HALF_UP));
-                  vo.setInservice(clinicOralTariff.getInservice());
-                }
-              });
+              clinicOralTariffs.forEach(
+                  clinicOralTariff -> {
+                    if (clinicOralTariff.getOralTariffId().equals(tariffId)) {
+                      vo.setId(clinicOralTariff.getId());
+                      vo.setPrice(
+                          clinicOralTariff.getPrice().setScale(2, BigDecimal.ROUND_HALF_UP));
+                      vo.setInservice(clinicOralTariff.getInservice());
+                    }
+                  });
             }
             resultList.add(vo);
           });
@@ -185,12 +200,12 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
       } else {
         memberTypeId = memberType.getId();
         memberPrice =
-                (tariffVO
+            (tariffVO
                 .getPrice()
                 .multiply(BigDecimal.valueOf(memberType.getRate()))
                 .divide(BigDecimal.valueOf(100), 2));
       }
-      memberPrices.put(memberTypeId, memberPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
+      memberPrices.put(memberTypeId, memberPrice.setScale(2, BigDecimal.ROUND_HALF_UP));
     }
     tariffVO.setMemberPrices(memberPrices);
   }
@@ -380,9 +395,9 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
    */
   public void exportClinicOralTariffList(
       HttpServletResponse response, ClinicOralTariffQueryForm queryForm) throws IOException {
-      queryForm.setWhetherPage(false);
-      List<ClinicOralTariffVO> resultList = findList(queryForm, true).getList();
-//    List<BaseOralTariffVO> resultList = mapper.selectClinicOralTariffExportList(queryForm);
+    queryForm.setWhetherPage(false);
+    List<ClinicOralTariffVO> resultList = findList(queryForm, true).getList();
+    //    List<BaseOralTariffVO> resultList = mapper.selectClinicOralTariffExportList(queryForm);
     Integer orgId = queryForm.getOrgId();
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
     String abbreviation = null;

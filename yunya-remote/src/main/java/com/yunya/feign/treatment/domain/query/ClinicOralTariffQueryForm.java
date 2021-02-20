@@ -39,12 +39,6 @@ public class ClinicOralTariffQueryForm implements Serializable {
   @ApiModelProperty(value = "商品分类ID")
   private Integer oralTariffCategoryId;
 
-  @ApiModelProperty("基础商品项目ID")
-  private Integer oralTariffId;
-
-  @ApiModelProperty("门诊商品项目ID")
-  private Integer id;
-
   @ApiModelProperty("商品项目名称/商品项目编号/拼音缩写")
   private String keyWord;
 
