@@ -48,63 +48,51 @@
     </select>
     <!-- 根据条件查询门诊商品项目信息列表 -->
     <select id="selectClinicOralTariffList" resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO">
-        select
-        cot.id,
-        cot.orgId,
-        cot.oralTariffCategoryId,
-        cot.oralTariffCategoryName,
-        cot.oralTariffCategoryNumber,
-        cot.oralTariffId,
-        cot.`name`,
-        cot.englishName,
-        cot.`number`,
-        cot.unit,
-        cot.price,
-        cot.inservice
-        from
+        SELECT
+        oralTariffCategoryId,
+        oraltariffCategoryName,
+        oraltariffCategoryNumber,
+        oraltariffId,
+        `name`,
+        price,
+        englishName,
+        number,
+        unit,
+        inservice
+        FROM
         (
-        select
-        cot.id,
-        cot.clinic_id as orgId,
-        botbotc.oralTariffCategoryId,
-        botbotc.oralTariffCategoryName,
-        botbotc.oralTariffCategoryNumber,
-        botbotc.oralTariffId,
-        botbotc.`name`,
-        botbotc.pinyin,
-        botbotc.englishName,
-        botbotc.`number`,
-        botbotc.unit,
+        SELECT
+        botc.id AS oralTariffCategoryId,
+        botc.`name` AS oraltariffCategoryName,
+        botc.number AS oraltariffCategoryNumber,
+        bot.id AS oraltariffId,
+        bot.`name`,
+        IFNULL( cot.price, bot.price ) AS price,
+        bot.english_name AS englishName,
+        bot.item_number AS number,
+        bot.unit,
+        IFNULL( cot.inservice, 1 ) AS inservice
+        FROM
+        base_oral_tariff bot
+        LEFT JOIN base_oral_tariff_category botc ON bot.oral_tariff_category_id = botc.id
+        LEFT JOIN (
+        SELECT
+        cot.clinic_id,
+        cot.oral_tariff_id,
         cot.price,
         cot.inservice
-        from clinic_oral_tariff cot
-        left join (
-        select
-        bot.id as oralTariffId,
-        botc.id as oralTariffCategoryId,
-        botc.`name` as oralTariffCategoryName,
-        botc.number as oralTariffCategoryNumber,
-        bot.item_number as number,
-        bot.`name`,
-        bot.pinyin,
-        bot.english_name as englishName,
-        bot.unit
-        from base_oral_tariff bot
-        left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
-        ) botbotc on cot.oral_tariff_id = botbotc.oralTariffId
+        FROM
+        clinic_oral_tariff cot
+        <where>
+            <if test="queryForm.orgId != null">
+                and cot.clinic_id = #{queryForm.orgId}
+            </if>
+        </where>
+         ) cot ON bot.id = cot.oral_tariff_id
         ) cot
         <where>
-            <if test="queryForm.id != null">
-                and cot.id = #{queryForm.id}
-            </if>
-            <if test="queryForm.orgId != null">
-                and cot.orgId = #{queryForm.orgId}
-            </if>
             <if test="queryForm.oralTariffCategoryId != null">
                 and cot.oralTariffCategoryId = #{queryForm.oralTariffCategoryId}
-            </if>
-            <if test="queryForm.oralTariffId != null">
-                and cot.oralTariffId = #{queryForm.oralTariffId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord !=''">
                 and CONCAT(IFNULL( cot.name, '' ), IFNULL( cot.pinyin, '' ), IFNULL( cot.number, '' )) like concat('%',
