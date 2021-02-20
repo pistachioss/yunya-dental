@@ -62,6 +62,7 @@ import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,8 +71,10 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -880,8 +883,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 if (StringHelper.isBlank(entity.getLeaveTime())) {
                     workDayVO.setDate(currentDate);
                 } else {
-                    Date leaveDate = LocalDate.parse(entity.getLeaveTime()).toDate();
-                    workDayVO.setDate(leaveDate);
+                    try {
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                        Date leaveDate = dateFormat.parse(entity.getLeaveTime());
+                        workDayVO.setDate(leaveDate);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
                 }
                 workDayVOS.add(workDayVO);
                 userWorkVO.setDays(workDayVOS);
@@ -909,19 +917,28 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         employeeScheduleQueryForm.setClinicId(orgId);
         employeeScheduleQueryForm.setUserId(dentistId);
         EmployeeScheduleResultVO scheduleResultVO = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
+
         if (scheduleResultVO == null || scheduleResultVO.getCount() <= 0) {
             // 查看当前员工是否处于离职状态
-            SysEmployee leavePostEmployeeInfo = remoteSystemServiceFeign.findSysEmployeeById(dentistId);
-            if (null != leavePostEmployeeInfo) {
-                Byte workStatus = leavePostEmployeeInfo.getWorkStatus();
+            SysEmployee sysEmployeeInfo = remoteSystemServiceFeign.findSysEmployeeById(dentistId);
+            if (null != sysEmployeeInfo) {
+                Byte workStatus = sysEmployeeInfo.getWorkStatus();
                 // 如果员工处于离职状态，则返回离职员工信息，方便后面显示离职员工下的患者预约
                 if (workStatus == BusinessConstants.USER_RESIGNATION_STATUS.byteValue()) {
                     UserWorkVO userWorkVO = new UserWorkVO();
                     userWorkVO.setCompEmpId(dentistId);
-                    userWorkVO.setName(leavePostEmployeeInfo.getName());
+                    userWorkVO.setName(sysEmployeeInfo.getName());
                     List<UserWorkVO> leavePostEmployeeList = new ArrayList<>();
                     leavePostEmployeeList.add(userWorkVO);
                     return leavePostEmployeeList;
+                } else {
+                    // 预约的医生被调到其他门诊，但是在该门诊还会查到医生在该门诊的预约信息
+                    UserWorkVO userWorkVO = new UserWorkVO();
+                    userWorkVO.setCompEmpId(dentistId);
+                    userWorkVO.setName(sysEmployeeInfo.getName());
+                    List<UserWorkVO> sysEmployeeList = new ArrayList<>();
+                    sysEmployeeList.add(userWorkVO);
+                    return sysEmployeeList;
                 }
             }
             return null;

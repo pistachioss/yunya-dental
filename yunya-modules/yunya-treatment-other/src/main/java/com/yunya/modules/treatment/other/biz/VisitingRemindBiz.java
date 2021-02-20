@@ -29,6 +29,7 @@ import com.yunya.models.system.MemberType;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.modules.treatment.other.mapper.VisitingRemindMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,7 @@ import java.util.stream.Collectors;
  **/
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRemind> {
 
     /** 注入redis缓冲服务 */
@@ -216,6 +218,9 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             List<SysUserInfoDetail> dentistInfoList = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
             // 获取患者信息列表
             List<Integer> patientIds = visitingReminds.stream().map(VisitingRemind::getPatientId).collect(Collectors.toList());
+            log.info("\n===================随访提醒调试信息================");
+            log.info("\n==>患者ID列表:\n{}",patientIds);
+            log.info("\n================================================");
             List<PatientTotalInfoVo> patientTotalInfoVoList = remotePatientCentralServiceFeign.findPatientTotalInfo(patientIds);
             // 获取患者会员类型
             List<MemberType> memberTypeList = null;
