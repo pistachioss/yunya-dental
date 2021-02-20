@@ -70,7 +70,6 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
                 xRayFilm.setToothNo(xRayFilmModel.getToothNo());
                 xRayFilm.setType(xRayFilmModel.getType());
                 xRayFilm.setUrl(xRayFilmModel.getUrl());
-                xRayFilm.setUploadStatus(xRayFilmModel.getUploadStatus());
                 if (null != xRayFilmModel.getUploadTime()) {
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                     Date parse = null;

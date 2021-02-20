@@ -46,12 +46,6 @@ public class XRayFilm {
     private Date uploadTime;
 
     /**
-     * 图片上传状态;0-未上传，1-失败，2-成功
-     */
-    @Column(name = "upload_status")
-    private Integer uploadStatus;
-
-    /**
      * 备注
      */
     private String remarks;
@@ -363,21 +357,5 @@ public class XRayFilm {
      */
     public void setToothNo(Integer toothNo) {
         this.toothNo = toothNo;
-    }
-
-    /**
-     * 获取图片上传状态;0-未上传，1-失败，2-成功
-     * @return 图片上传状态;0-未上传，1-失败，2-成功
-     */
-    public Integer getUploadStatus() {
-        return uploadStatus;
-    }
-
-    /**
-     * 设置图片上传状态;0-未上传，1-失败，2-成功
-     * @param uploadStatus 图片上传状态;0-未上传，1-失败，2-成功
-     */
-    public void setUploadStatus(Integer uploadStatus) {
-        this.uploadStatus = uploadStatus;
     }
 }
