@@ -58,6 +58,9 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
    * @return ResponseResult
    */
   public ResponseResult add(PatientKinRelationModel patientKinRelationModel) {
+    if (patientKinRelationModel.getPatientId().equals(patientKinRelationModel.getLinkedPatientId())){
+      return ResponseUtil.fail(OperationCodeConstants.OPERATION_NOT_ALLOW, "不可添加自己", null);
+    }
     PatientKinRelation patientKinRelation = new PatientKinRelation();
     BeanUtils.copyProperties(patientKinRelationModel, patientKinRelation);
     PatientKinRelation patientKinRelationvo =

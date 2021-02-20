@@ -18,3 +18,11 @@ spring:
         host: 192.168.100.79
         port: 6379
         password: foobared
+
+## 防止服务调用超时报错
+feign:
+    client:
+        config:
+            default:
+                connectTimeout: 20000
+                readTimeout: 20000
