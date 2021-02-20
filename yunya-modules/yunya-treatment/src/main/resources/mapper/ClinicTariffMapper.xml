@@ -85,6 +85,7 @@
         IFNULL( ct.price, bt.price ) AS price,
         bt.english_name AS englishName,
         bt.item_number AS number,
+        bt.pinyin,
         bt.unit,
         IFNULL( ct.inservice, 1 ) AS inservice
         FROM

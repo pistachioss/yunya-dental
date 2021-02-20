@@ -67,6 +67,7 @@
         botc.number AS oraltariffCategoryNumber,
         bot.id AS oraltariffId,
         bot.`name`,
+        bot.pinyin,
         IFNULL( cot.price, bot.price ) AS price,
         bot.english_name AS englishName,
         bot.item_number AS number,
