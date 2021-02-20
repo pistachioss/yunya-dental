@@ -99,7 +99,6 @@ public class PatientKinRelationController {
     if (patientKinRelation != null){
       patientKinRelationBiz.delete(patientKinRelation);
       PatientKinRelation kinRelationPatient = new PatientKinRelation();
-      BeanUtils.copyProperties(patientKinRelation,kinRelationPatient);
       kinRelationPatient.setPatientId(patientKinRelation.getLinkedPatientId());
       kinRelationPatient.setLinkedPatientId(patientKinRelation.getPatientId());
       patientKinRelationBiz.delete(kinRelationPatient);

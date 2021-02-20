@@ -87,6 +87,8 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
     return patientDataVo;
   }
 
+
+
   /**
    * 根据条件查询患者信息
    *
