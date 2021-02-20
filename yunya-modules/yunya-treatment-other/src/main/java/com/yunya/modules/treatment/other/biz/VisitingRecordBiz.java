@@ -317,16 +317,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 visitingRecordVoList.add(visitingRecordVo);
             }
 
-            log.info("\n\n=======================预约随访==============" +
-                    "\n\n<==search:{}" +
-                    "\n\n<==medicalNumber:{}" +
-                    "\n\n<==distentName:{}" +
-                    "\n\n<==dentistId:{}" +
-                    "\n\n<==searchId:{}" +
-                    "\n\n==>visitingRecordVoList:{}" +
-                    "\n\n=============================================\n\n",
-                    search,medicalNumber,distentName,query.getDentistId(),query.getSearchId(),visitingRecordVos);
-
             if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName) && query.getSearchId() < 3) {
                 // 排序
                 searchVisitingRecordVo = this.sort(visitingRecordVoList);

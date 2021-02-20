@@ -610,11 +610,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         }
       }
 
-      logger.info("\n\n====================患者信息批量查询==============" +
-              "\n\n==>患者信息列表:{}" +
-              "\n\n===============================",
-              patientTotalInfoVos);
-
       return patientTotalInfoVos;
     }
     return new ArrayList<>();
