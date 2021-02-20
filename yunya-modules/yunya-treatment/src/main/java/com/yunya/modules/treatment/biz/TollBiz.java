@@ -959,39 +959,45 @@ public class TollBiz {
     if (StringHelper.isNotEmpty(prepaymentAccountModels)) {
       prepaymentAccountModels.forEach(
           prepaymentAccountModel -> {
-            BillPayDetailRecord billPayDetailRecord =
-                setBillPayRecordDetailValue(
-                    billPayRecordId,
-                    prepaymentAccountModel.getAccountItemId(),
-                    prepaymentAccountModel.getAmount(),
-                    (byte) 0);
-            billPayDetailRecord.setRemark(prepaymentAccountModel.getPrepaymentNum());
-            billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
+            if (prepaymentAccountModel.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+              BillPayDetailRecord billPayDetailRecord =
+                  setBillPayRecordDetailValue(
+                      billPayRecordId,
+                      prepaymentAccountModel.getAccountItemId(),
+                      prepaymentAccountModel.getAmount(),
+                      (byte) 0);
+              billPayDetailRecord.setRemark(prepaymentAccountModel.getPrepaymentNum());
+              billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
+            }
           });
     }
     if (StringHelper.isNotEmpty(memberAccountModels)) {
       memberAccountModels.forEach(
           memberAccountModel -> {
-            BillPayDetailRecord billPayDetailRecord =
-                setBillPayRecordDetailValue(
-                    billPayRecordId,
-                    memberAccountModel.getAccountItemId(),
-                    memberAccountModel.getAmount(),
-                    (byte) 1);
-            billPayDetailRecord.setRemark(memberAccountModel.getMemberNum());
-            billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
+            if (memberAccountModel.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+              BillPayDetailRecord billPayDetailRecord =
+                  setBillPayRecordDetailValue(
+                      billPayRecordId,
+                      memberAccountModel.getAccountItemId(),
+                      memberAccountModel.getAmount(),
+                      (byte) 1);
+              billPayDetailRecord.setRemark(memberAccountModel.getMemberNum());
+              billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
+            }
           });
     }
     if (StringHelper.isNotEmpty(paymentModels)) {
       paymentModels.forEach(
           paymentModel -> {
-            BillPayDetailRecord billPayDetailRecord =
-                setBillPayRecordDetailValue(
-                    billPayRecordId,
-                    paymentModel.getAccountItemId(),
-                    paymentModel.getAmount(),
-                    (byte) 2);
-            billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
+            if (paymentModel.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+              BillPayDetailRecord billPayDetailRecord =
+                  setBillPayRecordDetailValue(
+                      billPayRecordId,
+                      paymentModel.getAccountItemId(),
+                      paymentModel.getAmount(),
+                      (byte) 2);
+              billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
+            }
           });
     }
   }
