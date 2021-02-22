@@ -7,6 +7,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @program: yunya-dental
@@ -35,4 +36,7 @@ public class BillPrintInfoVO implements Serializable {
     private String crtTime;
     @ApiModelProperty("账单明细打印列表")
     List<BillDetailPrintInfoVO> billDetail;
+    @ApiModelProperty("支付方式以及金额列表")
+    private List<Map>billPayTypeList;
+
 }
