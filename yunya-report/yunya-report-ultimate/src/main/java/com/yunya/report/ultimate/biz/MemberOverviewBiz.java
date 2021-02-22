@@ -11,17 +11,14 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BasePatientMember;
-import com.yunya.report.ultimate.mapper.BasePatientMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMemberMapper;
 import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,15 +35,12 @@ import java.util.Map;
 @Transactional(rollbackFor = Exception.class)
 public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePatientMember> {
 
-  @Autowired private MemberOccurLogBiz memberOccurLogBiz;
-
-  @Autowired private BasePatientMapper basePatientMapper;
 
   /**
    * 会员卡概况查询
    *
    * @param form 概况查询form
-   * @return List<MemberOverviewVo>
+   * @return 会员卡概况信息
    */
   public PageInfo<BasePatientMemberOverviewVo> patientOverviewList(MemberOverviewQueryForm form) {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
@@ -64,8 +58,8 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
   /**
    * 导出患者会员卡/预付款概况记录列表
    *
-   * @param response
-   * @param form
+   * @param response 导出响应
+   * @param form 条件
    */
   public void exportPatientOverviewList(HttpServletResponse response, MemberOverviewQueryForm form)
       throws IOException {
@@ -91,11 +85,11 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
   /**
    * 会员卡概况
    *
-   * @return Map<String,Object>
+   * @return 会员卡概况信息
    */
   public Map<String, Object> memberList() {
     Map<String, Object> map = new HashMap<String, Object>(16);
-    Integer sumAmount = 0;
+    int sumAmount = 0;
     BigDecimal sumPrincipalAmount = new BigDecimal(0);
     BigDecimal sumBonusAmount = new BigDecimal(0);
     List<BaseMemberOverviewVo> baseMemberOverviewVos = mapper.memberOverviewList();
@@ -110,7 +104,6 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
         sumBonusAmount = sumBonusAmount.add(baseMemberOverviewVo.getBonusAmount());
       }
     }
-    ;
     map.put("baseMemberOverviewVoList", baseMemberOverviewVos);
     map.put("sumAmount", sumAmount);
     map.put("sumPrincipalAmount", sumPrincipalAmount);

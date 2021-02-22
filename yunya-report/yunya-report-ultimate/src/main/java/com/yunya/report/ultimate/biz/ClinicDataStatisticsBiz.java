@@ -10,9 +10,9 @@ import com.yunya.feign.report.domain.query.PatientFirstTreatOriginQuery;
 import com.yunya.feign.report.domain.query.VisitAndRemindCompletedInfoQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.utils.StringHelper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,21 +29,21 @@ import java.util.List;
 public class ClinicDataStatisticsBiz {
 
   /** 组织 */
-  @Autowired private BaseOrganizationBiz organizationBiz;
+  @Resource private BaseOrganizationBiz organizationBiz;
   /** 账单 */
-  @Autowired private BaseBillBiz billBiz;
+  @Resource private BaseBillBiz billBiz;
   /** 账单收费 */
-  @Autowired private BaseBillPayBiz billPayBiz;
+  @Resource private BaseBillPayBiz billPayBiz;
   /** 账单明细 */
-  @Autowired private BaseBillDetailBiz billDetailBiz;
+  @Resource private BaseBillDetailBiz billDetailBiz;
   /** 会员信息 */
-  @Autowired private BasePatientMemberBiz memberBiz;
+  @Resource private BasePatientMemberBiz memberBiz;
   /** 就诊 */
-  @Autowired private BaseTreatmentProcessBiz treatmentProcessBiz;
+  @Resource private BaseTreatmentProcessBiz treatmentProcessBiz;
   /** 随访提醒 */
-  @Autowired private BaseVisitRemindBiz visitRemindBiz;
+  @Resource private BaseVisitRemindBiz visitRemindBiz;
   /** 诊所基础信息 */
-  @Autowired private RemoteClinicBaseServiceFeign clinicBaseServiceFeign;
+  @Resource private RemoteClinicBaseServiceFeign clinicBaseServiceFeign;
 
   /**
    * 根据条件查询门诊数据统计

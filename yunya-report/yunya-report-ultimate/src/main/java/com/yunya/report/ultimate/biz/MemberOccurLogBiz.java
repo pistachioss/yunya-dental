@@ -14,20 +14,16 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.BasePatientMemberOccurLog;
 import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
-import com.yunya.report.ultimate.mapper.BasePatientMapper;
-import com.yunya.report.ultimate.mapper.BasePatientMemberMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMemberOccurLogMapper;
 import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
@@ -45,16 +41,7 @@ import static com.yunya.framework.common.constant.BusinessConstants.*;
 public class MemberOccurLogBiz
     extends BaseBiz<BasePatientMemberOccurLogMapper, BasePatientMemberOccurLog> {
 
-  @Autowired private BaseOrganizationMapper baseOrganizationMapper;
-
-  /** 患者Mapper */
-  @Autowired private BasePatientMapper basePatientMapper;
-
-  /** 患者会员卡信息 */
-  @Autowired private BasePatientMemberMapper basePatientMemberMapper;
-
-  /** 注入服务 */
-  @Autowired MemberOccurLogBiz memberOccurLogBiz;
+  @Resource private BaseOrganizationMapper baseOrganizationMapper;
 
   /**
    * 会员卡充值查询
@@ -78,8 +65,8 @@ public class MemberOccurLogBiz
   /**
    * 导出会员充值列表
    *
-   * @param response
-   * @param form
+   * @param response 导出响应
+   * @param form 条件
    */
   public void exportMemberRechargeList(HttpServletResponse response, MemberQueryForm form)
       throws IOException {
@@ -111,7 +98,7 @@ public class MemberOccurLogBiz
    * 会员卡消费查询
    *
    * @param form 会员卡消费查询Form
-   * @return
+   * @return 会员卡消费记录
    */
   public PageInfo<BaseMemberExpendLogVo> memberExpendList(MemberQueryForm form) {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
@@ -129,8 +116,8 @@ public class MemberOccurLogBiz
   /**
    * 导出会员消费列表
    *
-   * @param response
-   * @param form
+   * @param response 导出响应
+   * @param form 条件
    */
   public void exportMemberExpendList(HttpServletResponse response, MemberQueryForm form)
       throws IOException {
@@ -162,7 +149,7 @@ public class MemberOccurLogBiz
    * 会员卡退费查询
    *
    * @param form 会员卡退费查询Form
-   * @return List<MemberReturnLogBizVo>
+   * @return 会员卡退费记录
    */
   public PageInfo<BaseMemberReturnLogVo> memberReturnList(MemberQueryForm form) {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
@@ -179,8 +166,8 @@ public class MemberOccurLogBiz
   /**
    * 导出会员退费列表
    *
-   * @param response
-   * @param form
+   * @param response 导出响应
+   * @param form 条件
    */
   public void exportMemberReturnList(HttpServletResponse response, MemberQueryForm form)
       throws IOException {
@@ -212,7 +199,7 @@ public class MemberOccurLogBiz
    * 预付款充值查询
    *
    * @param form 预付款充值form
-   * @return List<PrepaidRechargeLogBizVo>
+   * @return 预付款充值记录
    */
   public PageInfo<BasePrepaidRechargeLogVo> prepaidRechargeList(PrepaidQueryForm form) {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
@@ -229,8 +216,8 @@ public class MemberOccurLogBiz
   /**
    * 导出预付款充值列表
    *
-   * @param response
-   * @param form
+   * @param response 导出响应
+   * @param form 条件
    */
   public void exportPrepaidRechargeList(HttpServletResponse response, PrepaidQueryForm form)
       throws  IOException {
@@ -312,7 +299,7 @@ public class MemberOccurLogBiz
    * 预付款退款查询
    *
    * @param form 预付款退款form
-   * @return List<PrepaidReturnLogBizVo>
+   * @return 预付款退款记录
    */
   public PageInfo<BasePrepaidReturnLogVo> prepaidReturnList(PrepaidQueryForm form) {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
@@ -371,7 +358,7 @@ public class MemberOccurLogBiz
    * 查询会员or预付款余额结存信息列表
    *
    * @param form 条件
-   * @return List<BaseMemberBalanceInfoVo>
+   * @return 查询会员or预付款余额结存信息列表
    */
   public PageInfo<BaseMemberBalanceInfoVo> memberBalanceList(MemberQueryForm form) {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
@@ -393,7 +380,6 @@ public class MemberOccurLogBiz
    *
    * @param response 导出响应
    * @param form 条件
-   * @return PageInfo<BaseMemberBalanceInfoVo>
    */
   public void exportMemberBalanceList(HttpServletResponse response, MemberQueryForm form)
       throws IOException {
@@ -425,7 +411,7 @@ public class MemberOccurLogBiz
    * 根据条件查询患者储值卡（会员卡/预付款卡）充值记录信息列表
    *
    * @param query 查询条件
-   * @return PageInfo<StatementPatientCardRechargeDetailVO>
+   * @return 患者储值卡（会员卡/预付款卡）充值记录信息列表
    */
   public PageInfo<StatementPatientCardRechargeDetailVO> findPatientCardRechargeDetailList(
       StatementPatientCardRechargeDetailInfoQuery query) {
@@ -506,7 +492,7 @@ public class MemberOccurLogBiz
    * 根据条件查询患者储值卡（会员卡、预付款）退费明细记录列表
    *
    * @param query 查询条件
-   * @return PageInfo<StatementPatientCardRefundDetailVO>
+   * @return 患者储值卡（会员卡、预付款）退费明细记录列表
    */
   public PageInfo<StatementPatientCardRefundDetailVO> findPatientCardRefundDetailList(
       StatementPatientCardRefundDetailQuery query) {

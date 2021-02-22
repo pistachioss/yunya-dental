@@ -24,10 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.text.ParseException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 简介:患者报表业务层
@@ -55,25 +53,23 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
   /**
    * 查询末诊医生列表
    *
-   * @return List<BaseEmployee>
+   * @return 末诊医生列表
    */
   public List<BaseEmployee> employeeList(Integer orgId) {
-    List<BaseEmployee> baseEmployees = baseEmployeeMapper.selectByOrgId(orgId);
-    return baseEmployees;
+    return baseEmployeeMapper.selectByOrgId(orgId);
   }
 
   /**
    * 患者报表-未复诊预约且未提醒List
    *
    * @param form 条件
-   * @return List<BaseBasePatientNotSeenVo>
+   * @return 未复诊预约且未提醒集合
    */
-  public PageInfo<BasePatientNotSeenVo> notSeenList(PatientReportQueryForm form)
-      throws ParseException {
-    if (StringHelper.isNotEmpty(form.getEndDate())){
-            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
-            form.setEndDate(endDate);
-        }
+  public PageInfo<BasePatientNotSeenVo> notSeenList(PatientReportQueryForm form) {
+    if (StringHelper.isNotEmpty(form.getEndDate())) {
+      String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+      form.setEndDate(endDate);
+    }
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
@@ -84,15 +80,15 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
   /**
    * 导出未复诊预约且未提醒记录列表
    *
-   * @param response
-   * @param form
+   * @param response 导出响应
+   * @param form 条件
    */
   public void exportNotSeenList(HttpServletResponse response, PatientReportQueryForm form)
-      throws ParseException, IOException {
-    if (StringHelper.isNotEmpty(form.getEndDate())){
-            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
-            form.setEndDate(endDate);
-        }
+      throws IOException {
+    if (StringHelper.isNotEmpty(form.getEndDate())) {
+      String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+      form.setEndDate(endDate);
+    }
     List<BasePatientNotSeenVo> basePatientNotSeenVoList = mapper.selectNotSeenList(form);
     ExcelUtil<BasePatientNotSeenVo> excelUtil = new ExcelUtil<>(BasePatientNotSeenVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
@@ -113,35 +109,34 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
 
   /**
    * 欠费查询
-   * @param form
-   * @return
-   * @throws ParseException
+   *
+   * @param form 条件
+   * @return 欠费查询记录
    */
-  public ArrearsStatisticsVo findArrears(ArrearsQueryForm form) throws ParseException {
+  public ArrearsStatisticsVo findArrears(ArrearsQueryForm form) {
     ArrearsStatisticsVo arrearsStatisticsVo = new ArrearsStatisticsVo();
     ArrearsStatisticsVo arrearsStatistics = baseBillMapper.selectArrears(form.getOrgId());
-    if (arrearsStatistics != null){
-     BeanUtils.copyProperties(arrearsStatistics,arrearsStatisticsVo);
+    if (arrearsStatistics != null) {
+      BeanUtils.copyProperties(arrearsStatistics, arrearsStatisticsVo);
     }
     PageInfo<ArrearsVo> arrears = arrears(form);
-    if (arrears != null){
+    if (arrears != null) {
       arrearsStatisticsVo.setArrearsVoList(arrears);
     }
     return arrearsStatisticsVo;
   }
 
   /**
-   * 欠费查询
+   * 欠费明细查询
    *
    * @param form 欠费查询form
-   * @return List<ArrearsVo>
+   * @return 欠费查询记录
    */
-  public PageInfo<ArrearsVo> arrears(ArrearsQueryForm form) throws ParseException {
-
-    if (StringHelper.isNotEmpty(form.getEndDate())){
-            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
-            form.setEndDate(endDate);
-        }
+  public PageInfo<ArrearsVo> arrears(ArrearsQueryForm form) {
+    if (StringHelper.isNotEmpty(form.getEndDate())) {
+      String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+      form.setEndDate(endDate);
+    }
     List<Integer> patientIds = null;
     if (StringHelper.isNotEmpty(form.getCombination())) {
       patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
@@ -154,60 +149,17 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
   }
 
   /**
-   * 欠费合计
-   * @param form 条件
-   * @return Map<Object, Object>
-   * @throws ParseException
-   */
-  public Map<Object, Object> arrearsStatistics(ArrearsQueryForm form) throws ParseException {
-    Map map = new HashMap();
-    List<ArrearsVo> arrearsVoListvo1 = null;
-    List<ArrearsVo> arrearsVoListvo2 = null;
-    if (StringHelper.isNotEmpty(form.getEndDate())){
-            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
-            form.setEndDate(endDate);
-        }
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
-    List<ArrearsVo> arrearsVoList = baseBillMapper.arrears(form, patientIds);
-
-    arrearsVoListvo1 =
-        arrearsVoList.stream()
-            .collect(
-                Collectors.collectingAndThen(
-                    Collectors.toCollection(
-                        () -> new TreeSet<>(Comparator.comparing(ArrearsVo::getName))),
-                    ArrayList::new));
-
-    arrearsVoListvo2 =
-        arrearsVoList.stream().filter(e -> e.getDebtAmount() != null).collect(Collectors.toList());
-    BigDecimal debtAmount =
-        arrearsVoListvo2.stream()
-            // 将user对象的age取出来map为Bigdecimal
-            .map(ArrearsVo::getDebtAmount)
-            // 使用reduce()聚合函数,实现累加器
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-    map.put("numberPatient", arrearsVoListvo1.size());
-    map.put("arrearsVoList", arrearsVoList.size());
-    map.put("debtAmount", debtAmount);
-    return map;
-  }
-
-  /**
    * 导出欠费查询记录列表
    *
-   * @param response
-   * @param form
+   * @param response 导出响应
+   * @param form 条件
    */
   public void exportArrearsList(HttpServletResponse response, ArrearsQueryForm form)
-      throws ParseException, IOException {
-    if (StringHelper.isNotEmpty(form.getEndDate())){
-            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
-            form.setEndDate(endDate);
-        }
+      throws IOException {
+    if (StringHelper.isNotEmpty(form.getEndDate())) {
+      String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+      form.setEndDate(endDate);
+    }
     List<Integer> patientIds = null;
     if (StringHelper.isNotEmpty(form.getCombination())) {
       patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
@@ -215,7 +167,8 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     List<ArrearsVo> arrearsVoList = baseBillMapper.arrears(form, patientIds);
     ExcelUtil<ArrearsVo> excelUtil = new ExcelUtil<>(ArrearsVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
-      BaseOrganization baseOrganizationv = baseOrganizationMapper.selectByPrimaryKey(form.getOrgId());
+      BaseOrganization baseOrganizationv =
+          baseOrganizationMapper.selectByPrimaryKey(form.getOrgId());
       if (baseOrganizationv != null) {
         excelUtil.exportExcel(
             response, arrearsVoList, "账单欠费统计表", baseOrganizationv.getAbbreviation() + "账单欠费统计表");
@@ -229,13 +182,13 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
    * 就诊患者分析
    *
    * @param form 就诊患者分析查询条件
-   * @return
+   * @return 就诊患者分析信息
    */
-  public AnalysisVo analysis(PatientAnalysisQueryForm form) throws ParseException {
-    if (StringHelper.isNotEmpty(form.getEndDate())){
-            String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
-            form.setEndDate(endDate);
-        }
+  public AnalysisVo analysis(PatientAnalysisQueryForm form) {
+    if (StringHelper.isNotEmpty(form.getEndDate())) {
+      String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+      form.setEndDate(endDate);
+    }
     AnalysisVo analysisVo = new AnalysisVo();
     // 来源类型比例
     Integer countOriginType = mapper.selectCountOriginType(form);
