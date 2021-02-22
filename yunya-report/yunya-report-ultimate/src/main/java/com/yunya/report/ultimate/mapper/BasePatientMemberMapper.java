@@ -18,11 +18,10 @@ public interface BasePatientMemberMapper extends Mapper<BasePatientMember> {
    * 查询会员卡概况
    *
    * @param form 查询会员卡概况form
-   * @param patientIds 患者ids
    * @return List<MemberOverviewVo>
    */
   List<BasePatientMemberOverviewVo> selectMemberOverviewList(
-      @Param("form") MemberOverviewQueryForm form, @Param("patientIds") List<Integer> patientIds);
+      @Param("form") MemberOverviewQueryForm form);
 
   /**
    * 会员卡概况

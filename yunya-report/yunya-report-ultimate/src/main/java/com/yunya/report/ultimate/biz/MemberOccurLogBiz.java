@@ -62,23 +62,16 @@ public class MemberOccurLogBiz
    * @param form 会员卡充值查询Form
    * @return List<MemberRechargeLogBizVo>
    */
-  public PageInfo<BaseMemberRechargeLogVo> memberRechargeList(MemberQueryForm form)
-      throws ParseException {
+  public PageInfo<BaseMemberRechargeLogVo> memberRechargeList(MemberQueryForm form) {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BaseMemberRechargeLogVo> memberRechargeLogBizVos = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    if (patientIds == null || patientIds.size() > 0) {
-      memberRechargeLogBizVos = mapper.selectMemberRechargeList(form, patientIds);
-    }
+
+    List<BaseMemberRechargeLogVo> memberRechargeLogBizVos = mapper.selectMemberRechargeList(form);
     return new PageInfo<>(memberRechargeLogBizVos);
   }
 
@@ -94,14 +87,7 @@ public class MemberOccurLogBiz
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BaseMemberRechargeLogVo> memberRechargeLogBizVos = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
-    if (patientIds == null || patientIds.size() > 0) {
-      memberRechargeLogBizVos = mapper.selectMemberRechargeList(form, patientIds);
-    }
+    List<BaseMemberRechargeLogVo> memberRechargeLogBizVos = mapper.selectMemberRechargeList(form);
     ExcelUtil<BaseMemberRechargeLogVo> excelUtil = new ExcelUtil<>(BaseMemberRechargeLogVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
       BaseOrganization baseOrganization = new BaseOrganization();
@@ -127,23 +113,16 @@ public class MemberOccurLogBiz
    * @param form 会员卡消费查询Form
    * @return
    */
-  public PageInfo<BaseMemberExpendLogVo> memberExpendList(MemberQueryForm form)
-      throws ParseException {
+  public PageInfo<BaseMemberExpendLogVo> memberExpendList(MemberQueryForm form) {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BaseMemberExpendLogVo> baseMemberExpendLogVos = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
+
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    if (patientIds == null || patientIds.size() > 0) {
-      baseMemberExpendLogVos = mapper.selectMemberExpendtList(form, patientIds);
-    }
+    List<BaseMemberExpendLogVo> baseMemberExpendLogVos = mapper.selectMemberExpendtList(form);
     return new PageInfo<>(baseMemberExpendLogVos);
   }
 
@@ -154,19 +133,12 @@ public class MemberOccurLogBiz
    * @param form
    */
   public void exportMemberExpendList(HttpServletResponse response, MemberQueryForm form)
-      throws ParseException, IOException {
+      throws IOException {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BaseMemberExpendLogVo> baseMemberExpendLogVos = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
-    if (patientIds == null || patientIds.size() > 0) {
-      baseMemberExpendLogVos = mapper.selectMemberExpendtList(form, patientIds);
-    }
+    List<BaseMemberExpendLogVo>  baseMemberExpendLogVos = mapper.selectMemberExpendtList(form);
     ExcelUtil<BaseMemberExpendLogVo> excelUtil = new ExcelUtil<>(BaseMemberExpendLogVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
       BaseOrganization baseOrganization = new BaseOrganization();
@@ -192,23 +164,15 @@ public class MemberOccurLogBiz
    * @param form 会员卡退费查询Form
    * @return List<MemberReturnLogBizVo>
    */
-  public PageInfo<BaseMemberReturnLogVo> memberReturnList(MemberQueryForm form)
-      throws ParseException {
+  public PageInfo<BaseMemberReturnLogVo> memberReturnList(MemberQueryForm form) {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BaseMemberReturnLogVo> baseMemberReturnLogVos = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    if (patientIds == null || patientIds.size() > 0) {
-      baseMemberReturnLogVos = mapper.selectMemberReturnList(form, patientIds);
-    }
+    List<BaseMemberReturnLogVo> baseMemberReturnLogVos = mapper.selectMemberReturnList(form);
     return new PageInfo<>(baseMemberReturnLogVos);
   }
 
@@ -219,19 +183,12 @@ public class MemberOccurLogBiz
    * @param form
    */
   public void exportMemberReturnList(HttpServletResponse response, MemberQueryForm form)
-      throws ParseException, IOException {
+      throws IOException {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BaseMemberReturnLogVo> baseMemberReturnLogVos = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
-    if (patientIds == null || patientIds.size() > 0) {
-      baseMemberReturnLogVos = mapper.selectMemberReturnList(form, patientIds);
-    }
+    List<BaseMemberReturnLogVo> baseMemberReturnLogVos = mapper.selectMemberReturnList(form);
     ExcelUtil<BaseMemberReturnLogVo> excelUtil = new ExcelUtil<>(BaseMemberReturnLogVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
       BaseOrganization baseOrganization = new BaseOrganization();
@@ -257,23 +214,15 @@ public class MemberOccurLogBiz
    * @param form 预付款充值form
    * @return List<PrepaidRechargeLogBizVo>
    */
-  public PageInfo<BasePrepaidRechargeLogVo> prepaidRechargeList(PrepaidQueryForm form)
-      throws ParseException {
+  public PageInfo<BasePrepaidRechargeLogVo> prepaidRechargeList(PrepaidQueryForm form) {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    if (patientIds == null || patientIds.size() > 0) {
-      basePrepaidRechargeLogVoList = mapper.selectPrepaidRechargeList(form, patientIds);
-    }
+    List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList = mapper.selectPrepaidRechargeList(form);
     return new PageInfo<>(basePrepaidRechargeLogVoList);
   }
 
@@ -284,19 +233,12 @@ public class MemberOccurLogBiz
    * @param form
    */
   public void exportPrepaidRechargeList(HttpServletResponse response, PrepaidQueryForm form)
-      throws ParseException, IOException {
+      throws  IOException {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
-    if (patientIds == null || patientIds.size() > 0) {
-      basePrepaidRechargeLogVoList = mapper.selectPrepaidRechargeList(form, patientIds);
-    }
+    List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList = mapper.selectPrepaidRechargeList(form);
     ExcelUtil<BasePrepaidRechargeLogVo> excelUtil = new ExcelUtil<>(BasePrepaidRechargeLogVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
       BaseOrganization baseOrganization = new BaseOrganization();
@@ -322,46 +264,31 @@ public class MemberOccurLogBiz
    * @param form 预付款消费form
    * @return List<PrepaidExpendLogBizVo>
    */
-  public PageInfo<BasePrepaidExpendLogVo> prepaidExpendList(PrepaidQueryForm form)
-      throws ParseException {
+  public PageInfo<BasePrepaidExpendLogVo> prepaidExpendList(PrepaidQueryForm form) {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BasePrepaidExpendLogVo> basePrepaidExpendLogVoList = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    if (patientIds == null || patientIds.size() > 0) {
-      basePrepaidExpendLogVoList = mapper.selectPrepaidExpendList(form, patientIds);
-    }
+    List<BasePrepaidExpendLogVo> basePrepaidExpendLogVoList = mapper.selectPrepaidExpendList(form);
     return new PageInfo<>(basePrepaidExpendLogVoList);
   }
 
   /**
    * 导出预付款消费列表
    *
-   * @param response
-   * @param form
+   * @param response 导出响应
+   * @param form 条件
    */
   public void exportPrepaidExpendList(HttpServletResponse response, PrepaidQueryForm form)
-      throws ParseException, IOException {
+      throws IOException {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BasePrepaidExpendLogVo> basePrepaidExpendLogVoList = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
-    if (patientIds == null || patientIds.size() > 0) {
-      basePrepaidExpendLogVoList = mapper.selectPrepaidExpendList(form, patientIds);
-    }
+    List<BasePrepaidExpendLogVo> basePrepaidExpendLogVoList = mapper.selectPrepaidExpendList(form);
     ExcelUtil<BasePrepaidExpendLogVo> excelUtil = new ExcelUtil<>(BasePrepaidExpendLogVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
       BaseOrganization baseOrganization = new BaseOrganization();
@@ -387,46 +314,31 @@ public class MemberOccurLogBiz
    * @param form 预付款退款form
    * @return List<PrepaidReturnLogBizVo>
    */
-  public PageInfo<BasePrepaidReturnLogVo> prepaidReturnList(PrepaidQueryForm form)
-      throws ParseException {
+  public PageInfo<BasePrepaidReturnLogVo> prepaidReturnList(PrepaidQueryForm form) {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BasePrepaidReturnLogVo> basePrepaidReturnLogVoList = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    if (patientIds == null || patientIds.size() > 0) {
-      basePrepaidReturnLogVoList = mapper.selectPrepaidReturnList(form, patientIds);
-    }
+    List<BasePrepaidReturnLogVo> basePrepaidReturnLogVoList = mapper.selectPrepaidReturnList(form);
     return new PageInfo<>(basePrepaidReturnLogVoList);
   }
 
   /**
    * 导出预付款退款列表
    *
-   * @param response
-   * @param form
+   * @param response 导出响应
+   * @param form 条件
    */
   public void exportPrepaidReturnList(HttpServletResponse response, PrepaidQueryForm form)
-      throws ParseException, IOException {
+      throws IOException {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BasePrepaidReturnLogVo> basePrepaidReturnLogVoList = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
-    if (patientIds == null || patientIds.size() > 0) {
-      basePrepaidReturnLogVoList = mapper.selectPrepaidReturnList(form, patientIds);
-    }
+    List<BasePrepaidReturnLogVo> basePrepaidReturnLogVoList = mapper.selectPrepaidReturnList(form);
     ExcelUtil<BasePrepaidReturnLogVo> excelUtil = new ExcelUtil<>(BasePrepaidReturnLogVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
       BaseOrganization baseOrganization = new BaseOrganization();
@@ -452,8 +364,7 @@ public class MemberOccurLogBiz
    * @return List<BaseOrganization>
    */
   public List<BaseOrganization> orgList() {
-    List<BaseOrganization> baseOrganizations = baseOrganizationMapper.selectAll();
-    return baseOrganizations;
+    return baseOrganizationMapper.selectAll();
   }
 
   /**
@@ -462,23 +373,15 @@ public class MemberOccurLogBiz
    * @param form 条件
    * @return List<BaseMemberBalanceInfoVo>
    */
-  public PageInfo<BaseMemberBalanceInfoVo> memberBalanceList(MemberQueryForm form)
-      throws ParseException {
+  public PageInfo<BaseMemberBalanceInfoVo> memberBalanceList(MemberQueryForm form) {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<Integer> patientIds = null;
-    List<BaseMemberBalanceInfoVo> basePrepaidReturnLogVoList = new ArrayList<>();
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    if (patientIds == null || patientIds.size() > 0) {
-      basePrepaidReturnLogVoList = mapper.selectMemberBalanceList(form, patientIds);
-    }
+    List<BaseMemberBalanceInfoVo> basePrepaidReturnLogVoList = mapper.selectMemberBalanceList(form);
     return new PageInfo<>(basePrepaidReturnLogVoList);
   }
   /*
@@ -488,27 +391,19 @@ public class MemberOccurLogBiz
   /**
    * 导出会员余/预付款余额结存信息记录列表
    *
-   * @param response
-   * @param form
+   * @param response 导出响应
+   * @param form 条件
    * @return PageInfo<BaseMemberBalanceInfoVo>
    */
   public void exportMemberBalanceList(HttpServletResponse response, MemberQueryForm form)
-      throws ParseException, IOException {
+      throws IOException {
     String endDate = form.getEndDate();
     String formEndDate = form.getEndDate();
     if (StringHelper.isNotEmpty(endDate)) {
       endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<Integer> patientIds = null;
-    List<BaseMemberBalanceInfoVo> resultList = new ArrayList<>();
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
-    if (patientIds == null || patientIds.size() > 0) {
-      resultList = mapper.selectMemberBalanceList(form, patientIds);
-    }
-
+    List<BaseMemberBalanceInfoVo> resultList = mapper.selectMemberBalanceList(form);
     if (form.getType() == 0) {
       ExcelUtil<ExcelBaseMemberBalanceInfoVo> excelUtil =
           new ExcelUtil<>(ExcelBaseMemberBalanceInfoVo.class);

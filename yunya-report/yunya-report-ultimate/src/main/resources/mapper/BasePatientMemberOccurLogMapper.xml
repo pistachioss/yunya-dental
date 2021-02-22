@@ -81,17 +81,15 @@
                 </foreach>
             </if>
 
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(bpt.`name`,''),IFNULL(bpt.pinyin_name,''),IFNULL(bpt.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+
         </where>
         group by bpmol.occur_date desc
         ) t1
-        <where>
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                AND t1.patientId in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-        </where>
+
     </select>
 
     <!-- 查询会员卡消费记录列表 -->
@@ -143,17 +141,14 @@
                     #{levelIds}
                 </foreach>
             </if>
+
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(bpt.`name`,''),IFNULL(bpt.pinyin_name,''),IFNULL(bpt.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
         </where>
         group by bpmol.occur_date desc
         ) t1
-        <where>
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                AND t1.patientId in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-        </where>
     </select>
 
     <!-- 查询会员卡退费记录列表 -->
@@ -203,17 +198,14 @@
                 <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') >=  DATE_FORMAT(#{form.startDate}, '%Y-%m-%d')   ]]>
                 <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') <  DATE_FORMAT(#{form.endDate}, '%Y-%m-%d')   ]]>
             </if>
+
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(bpt.`name`,''),IFNULL(bpt.pinyin_name,''),IFNULL(bpt.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
         </where>
         group by bpmol.occur_date desc
         ) t1
-        <where>
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                AND t1.patientId in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-        </where>
     </select>
 
     <!-- 查询预付款充值记录列表 -->
@@ -267,17 +259,14 @@
                 </foreach>
             </if>
 
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(bpt.`name`,''),IFNULL(bpt.pinyin_name,''),IFNULL(bpt.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+
         </where>
         group by bpmol.occur_date desc
         ) t1
-        <where>
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                AND t1.patientId in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-        </where>
     </select>
 
     <!-- 查询预付款消费记录列表 -->
@@ -320,16 +309,13 @@
                 <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') <  DATE_FORMAT(#{form.endDate}, '%Y-%m-%d')   ]]>
             </if>
 
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(bpt.`name`,''),IFNULL(bpt.pinyin_name,''),IFNULL(bpt.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+
         </where>
         group by bpmol.occur_date desc) t1
-        <where>
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                AND t1.patientId in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-        </where>
     </select>
 
     <!-- 查询预付款退费记录列表 -->
@@ -371,16 +357,13 @@
                 <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') <  DATE_FORMAT(#{form.endDate}, '%Y-%m-%d')   ]]>
             </if>
 
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(bpt.`name`,''),IFNULL(bpt.pinyin_name,''),IFNULL(bpt.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+
         </where>
         group by bpmol.occur_date desc) t1
-        <where>
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                AND t1.patientId in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-        </where>
     </select>
 
     <!-- 查询会员or预付款余额结存信息列表 -->
@@ -570,17 +553,14 @@
                 </foreach>
             </if>
 
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(bp.`name`,''),IFNULL(bp.pinyin_name,''),IFNULL(bp.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+
         </where>
         ORDER BY currentRechargeBonus DESC
         ) t1
-        <where>
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                and t1.patientId in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-        </where>
     </select>
 
     <!-- 根据条件查询患者储值卡（会员卡、预付款卡）充值记录详情 -->
