@@ -188,6 +188,7 @@ public class BaseTreatmentProcessBiz
         .filter(
             baseTreatmentProcessVO -> {
               return null != baseTreatmentProcessVO.getAppointmentId()
+                  && null != baseTreatmentProcessVO.getAppointStatus()  // 兼容一代数据
                   && baseTreatmentProcessVO.getAppointStatus() < 2
                   && baseTreatmentProcessVO.getRegisteredId() == null;
             })
