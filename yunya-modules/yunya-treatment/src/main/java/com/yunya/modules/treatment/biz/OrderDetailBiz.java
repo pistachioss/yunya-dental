@@ -9,6 +9,7 @@ import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.treatment.domain.form.BillPrintInfoForm;
 import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
 import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
@@ -22,10 +23,12 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.clinic_base.SpecialistProject;
+import com.yunya.models.system.AccountItem;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.ClinicOralTariff;
 import com.yunya.models.tariff.ClinicTariff;
+import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
@@ -38,7 +41,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
@@ -75,6 +80,10 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   @Autowired private BillPayRecordMapper billPayRecordMapper;
   /** 优惠 */
   @Autowired private RemoteDiscountFeign discountFeign;
+  /** 支付方式 */
+  @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
+
+
 
   /**
    * 根据账单（开单）记录ID查询商品开单详情列表
@@ -437,11 +446,12 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   /**
    * 打印账单信息
    *
-   * @param patientId 患者ID
-   * @param billNumber 账单编号
+   *
    * @return 返回账单信息
    */
-  public BillPrintInfoVO billPrintInfo(Integer patientId, String billNumber) {
+  public BillPrintInfoVO billPrintInfo(BillPrintInfoForm billPrintInfoForm) {
+    Integer patientId = billPrintInfoForm.getPatientId();
+    String billNumber = billPrintInfoForm.getBillNumber();
     BillPrintInfoVO billPrintInfoVO = mapper.billPrintInfo(patientId, billNumber);
     if (billPrintInfoVO != null) {
       Integer orderRecordId = billPrintInfoVO.getOrderRecordId();
@@ -470,6 +480,27 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                   billDetailPrintInfoVO.setCouponTypes(couponTypes);
                 }
               });
+      //支付方式以及金额
+      BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
+      billPayDetailRecord.setBillPayRecordId(billPrintInfoForm.getBillPayId());
+      List<BillPayDetailRecord>payList = billPayDetailRecordBiz.selectList(billPayDetailRecord);
+      List<AccountItem> aiList = systemServiceFeign.findAccountItemList(new AccountItem());
+      Map<String, AccountItem> clinicMap = new HashMap(16);
+      aiList.forEach(z -> clinicMap.put(z.getId() + "", z));
+      List<Map>mapList = new ArrayList<>();
+      for(BillPayDetailRecord bpdr:payList){
+          Map map = new HashMap();
+          if(bpdr.getType().equals(0)){
+              map.put("type","预付款");
+          }else if(bpdr.getType().equals(0)){
+              map.put("type","会员卡");
+          }else{
+              map.put("type",clinicMap.get(bpdr.getAccountItemId()+"").getName());
+          }
+          map.put("amount",bpdr.getAmount());
+          mapList.add(map);
+      }
+        billPrintInfoVO.setBillPayTypeList(mapList);
     }
     return billPrintInfoVO;
   }

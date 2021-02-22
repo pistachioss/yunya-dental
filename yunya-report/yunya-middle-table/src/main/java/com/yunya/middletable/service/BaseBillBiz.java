@@ -109,9 +109,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       baseBill.setBillerId(orderRecord.getCrtId());
       baseBill.setOrderDate(orderRecord.getCrtTime());
       // 设置账单的收费信息
-      if (ORDER_FINISH_STATUS.equals(orderRecord.getStatus())) {
-        setBaseBillChargeValue(orderRecordId, baseBill);
-      }
+      setBaseBillChargeValue(orderRecord, baseBill);
       return baseBill;
     }
     return null;
@@ -120,26 +118,33 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   /**
    * 设置中间表收费汇总信息
    *
-   * @param orderRecordId 订单ID
+   * @param orderRecord 订单
    * @param baseBill 中间表账单
    */
-  private void setBaseBillChargeValue(Integer orderRecordId, BaseBill baseBill) {
+  private void setBaseBillChargeValue(OrderRecord orderRecord, BaseBill baseBill) {
     BillRecord bill = new BillRecord();
-    bill.setOrderRecordId(orderRecordId);
-    bill.setInservice(true);
-    BillRecord billRecord = billRecordMapper.selectOne(bill);
-    if (null != billRecord) {
-      BigDecimal debtAmount = billRecord.getDebtAmount();
-      baseBill.setBillStatus(debtAmount.compareTo(BigDecimal.valueOf(0)) > 0 ? (byte) 0 : (byte) 1);
-      baseBill.setPrivilegeType(billRecord.getPrivilegeType());
-      baseBill.setPrivilegeAmount(billRecord.getPrivilegeAmount());
-      baseBill.setPrivilegeDate(billRecord.getPrivilegeDate());
-      baseBill.setBillDate(billRecord.getCrtTime());
-      baseBill.setBillNum(billRecord.getBillNumber());
-      baseBill.setActualAmount(billRecord.getActualReceivableAmount());
-      baseBill.setReceivedAmount(billRecord.getReceivedAmount());
-      baseBill.setDebtAmount(debtAmount);
-      baseBill.setCheckerId(billRecord.getCrtId());
+    if (ORDER_FINISH_STATUS.equals(orderRecord.getStatus())) {
+      bill.setOrderRecordId(orderRecord.getId());
+      bill.setInservice(true);
+      BillRecord billRecord = billRecordMapper.selectOne(bill);
+      if (null != billRecord) {
+        BigDecimal debtAmount = billRecord.getDebtAmount();
+        baseBill.setBillStatus(
+            debtAmount.compareTo(BigDecimal.valueOf(0)) > 0 ? (byte) 0 : (byte) 1);
+        baseBill.setPrivilegeType(billRecord.getPrivilegeType());
+        baseBill.setPrivilegeAmount(billRecord.getPrivilegeAmount());
+        baseBill.setPrivilegeDate(billRecord.getPrivilegeDate());
+        baseBill.setBillDate(billRecord.getCrtTime());
+        baseBill.setBillNum(billRecord.getBillNumber());
+        baseBill.setActualAmount(billRecord.getActualReceivableAmount());
+        baseBill.setReceivedAmount(billRecord.getReceivedAmount());
+        baseBill.setDebtAmount(debtAmount);
+        baseBill.setCheckerId(billRecord.getCrtId());
+      }
+    } else {
+      BigDecimal totalAmount = orderRecord.getTotalAmount();
+      baseBill.setActualAmount(totalAmount);
+      baseBill.setDebtAmount(totalAmount);
     }
   }
 
@@ -281,9 +286,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           baseBill.setBillerId(orderRecord.getCrtId());
           baseBill.setOrderDate(orderRecord.getCrtTime());
           // 设置账单的收费信息
-          if (ORDER_FINISH_STATUS.equals(orderRecord.getStatus())) {
-            setBaseBillChargeValue(orderRecord.getId(), baseBill);
-          }
+          setBaseBillChargeValue(orderRecord, baseBill);
           baseBills.add(baseBill);
         }
       }

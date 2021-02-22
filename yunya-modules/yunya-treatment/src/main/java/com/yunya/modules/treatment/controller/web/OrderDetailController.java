@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.controller.web;
 
 import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
+import com.yunya.feign.treatment.domain.form.BillPrintInfoForm;
 import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
 import com.yunya.feign.treatment.domain.vo.BillPrintInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
@@ -9,7 +10,6 @@ import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.modules.treatment.biz.OrderDetailBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -113,19 +112,18 @@ public class OrderDetailController {
 
   /**
    * 打印账单信息
-   * @param patientId 患者ID
-   * @param billNumber 账单编号
    * @return 返回账单信息
    */
   @ApiOperation("打印账单信息")
-  @GetMapping("/bill/print/{patientId}/{billNumber}")
-  public ResponseResult<BillPrintInfoVO> billPrintInfo(@PathVariable("patientId") Integer patientId,
-                                                       @PathVariable("billNumber") String billNumber) {
-    BillPrintInfoVO billPrintInfoVO = orderDetailBiz.billPrintInfo(patientId,billNumber);
+  @PostMapping("/bill/print")
+  public ResponseResult<BillPrintInfoVO> billPrintInfo(
+          @RequestBody @Validated BillPrintInfoForm billPrintInfoForm
+          ){
+  BillPrintInfoVO billPrintInfoVO = orderDetailBiz.billPrintInfo(billPrintInfoForm);
     if (billPrintInfoVO == null) {
       log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓账单打印异常信息↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-      log.info("==> path:/details/bill/print/{}/{}",patientId,billNumber);
-      log.info("==> param:patientId={},billNumber={}",patientId,billNumber);
+      log.info("==> path:/details/bill/print/{}/{}",billPrintInfoForm.getPatientId(),billPrintInfoForm.getBillNumber());
+      log.info("==> param:patientId={},billNumber={}",billPrintInfoForm.getPatientId(),billPrintInfoForm.getBillNumber());
       log.info("==> Msg:没有查询到账单信息");
       log.info("==> status:{}",OperationCodeConstants.DATA_NOT_EXIST);
       log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
