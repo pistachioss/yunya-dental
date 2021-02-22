@@ -1206,7 +1206,7 @@ public class TollBiz {
    *
    * @param model 收费参数
    */
-  public Integer collectDebt(TollDebtModel model) {
+  public TollConfirmVO collectDebt(TollDebtModel model) {
     Integer treatmentId = model.getTreatmentRecordId();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
     AccreditDiscountModel accreditDiscount = model.getAccreditDiscountModel();
@@ -1381,7 +1381,11 @@ public class TollBiz {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     }
-    return billPayRecordId;
+    TollConfirmVO tollConfirmVO = new TollConfirmVO();
+    String billNUmber = billRecordResult.getBillNumber();
+    tollConfirmVO.setBillNumber(billNUmber);
+    tollConfirmVO.setBillPayRecordId(billPayRecordId);
+    return tollConfirmVO;
   }
 
   /**
