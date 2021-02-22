@@ -47,6 +47,7 @@
     <!-- 欠费查询 -->
     <select id="arrears" resultType="com.yunya.feign.report.domain.vo.ArrearsVo">
         select
+        DISTINCT
         bb.bill_id billId,
         be.employee_name employeeName,
         DATE_FORMAT(bb.order_date, '%Y-%m-%d %H:%i:%s') orderDate,

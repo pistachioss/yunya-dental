@@ -46,6 +46,11 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
   List<BillRestReceivableAmountVO> selectBillReceivableAmountList(
       @Param("query") BillOfReceivableQuery query);
 
+  /**
+   * 欠费查询
+   * @param orgId 门诊id
+   * @return ArrearsStatisticsVo
+   */
   ArrearsStatisticsVo selectArrears(@Param("orgId") Integer orgId);
 
   /**
