@@ -61,7 +61,7 @@ public class MemberOccurLogController {
      */
     @ApiOperation("查询会员充值列表")
     @PostMapping("/recharge/list")
-    public ResponseResult<PageInfo<BaseMemberRechargeLogVo>> memberRechargeList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
+    public ResponseResult<PageInfo<BaseMemberRechargeLogVo>> memberRechargeList(@RequestBody MemberQueryForm memberQueryForm) {
         PageInfo<BaseMemberRechargeLogVo> baseMemberRechargeLogVos = memberOccurLogBiz.memberRechargeList(memberQueryForm);
         if (StringHelper.isNotNull(baseMemberRechargeLogVos)){
             return ResponseUtil.success(baseMemberRechargeLogVos);
@@ -78,7 +78,7 @@ public class MemberOccurLogController {
      */
     @ApiOperation("导出会员充值列表")
     @PostMapping(value = "/recharge/export", name = "公司端-数据记录-会员卡充值记录-导出")
-    public ResponseResult<T> exportMemberRechargeList(HttpServletResponse response, @RequestBody @Validated MemberQueryForm memberQueryForm) throws IOException, ParseException {
+    public ResponseResult<T> exportMemberRechargeList(HttpServletResponse response, @RequestBody @Validated MemberQueryForm memberQueryForm) throws IOException {
         memberOccurLogBiz.exportMemberRechargeList(response,memberQueryForm);
         return ResponseUtil.success(null);
     }
@@ -91,7 +91,7 @@ public class MemberOccurLogController {
      */
     @ApiOperation("查询会员消费列表")
     @PostMapping("/expend/list")
-    public ResponseResult<PageInfo<BaseMemberExpendLogVo>> memberExpendList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
+    public ResponseResult<PageInfo<BaseMemberExpendLogVo>> memberExpendList(@RequestBody MemberQueryForm memberQueryForm) {
         PageInfo<BaseMemberExpendLogVo> baseMemberExpendLogVos = memberOccurLogBiz.memberExpendList(memberQueryForm);
         if (StringHelper.isNotNull(baseMemberExpendLogVos)){
             return ResponseUtil.success(baseMemberExpendLogVos);
@@ -108,7 +108,7 @@ public class MemberOccurLogController {
      */
     @ApiOperation("导出会员消费列表")
     @PostMapping(value = "/expend/export", name = "公司端-数据记录-会员卡消费记录-导出")
-    public ResponseResult<T> exportMemberExpendList(HttpServletResponse response, @RequestBody @Validated MemberQueryForm memberQueryForm) throws IOException, ParseException {
+    public ResponseResult<T> exportMemberExpendList(HttpServletResponse response, @RequestBody @Validated MemberQueryForm memberQueryForm) throws IOException {
         memberOccurLogBiz.exportMemberExpendList(response,memberQueryForm);
         return ResponseUtil.success(null);
     }
@@ -122,7 +122,7 @@ public class MemberOccurLogController {
      */
     @ApiOperation("查询会员退费列表")
     @PostMapping("/return/list")
-    public ResponseResult<PageInfo<BaseMemberReturnLogVo>> memberReturnList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
+    public ResponseResult<PageInfo<BaseMemberReturnLogVo>> memberReturnList(@RequestBody MemberQueryForm memberQueryForm)  {
         PageInfo<BaseMemberReturnLogVo> baseMemberReturnLogVos = memberOccurLogBiz.memberReturnList(memberQueryForm);
         if (StringHelper.isNotNull(baseMemberReturnLogVos)){
             return ResponseUtil.success(baseMemberReturnLogVos);
@@ -139,7 +139,7 @@ public class MemberOccurLogController {
      */
     @ApiOperation("导出会员退费列表")
     @PostMapping(value = "/return/export", name = "公司端-数据记录-会员退费列表-导出")
-    public ResponseResult<T> exportMemberReturnList(HttpServletResponse response, @RequestBody @Validated MemberQueryForm memberQueryForm) throws IOException, ParseException {
+    public ResponseResult<T> exportMemberReturnList(HttpServletResponse response, @RequestBody @Validated MemberQueryForm memberQueryForm) throws IOException {
         memberOccurLogBiz.exportMemberReturnList(response,memberQueryForm);
         return ResponseUtil.success(null);
     }

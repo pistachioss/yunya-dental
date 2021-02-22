@@ -28,8 +28,8 @@
         sum(bpm.principal_amount + bpm.bonus_amount) principalAmount,
         bpm.bonus_amount bonusAmount
         from base_patient bp
-        join base_patient_member bpm on bp.patient_id = bpm.patient_id
-        join base_organization bo on bo.org_id = bp.org_id
+        left join base_patient_member bpm on bp.patient_id = bpm.patient_id
+        left join base_organization bo on bo.org_id = bp.org_id
         <where>
             bpm.type = #{form.type}
             <if test="form.memberLevelId != null">
@@ -48,17 +48,14 @@
                 and DATE_FORMAT(bpm.card_opening_date, "%Y-%m-%d") &lt; DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
             </if>
 
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(bp.`name`,''),IFNULL(bp.pinyin_name,''),IFNULL(bp.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+
         </where>
         group by bpm.card_number desc
         ) t1
-        <where>
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                AND t1.patientId in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-        </where>
     </select>
 
     <!-- 查询会员卡状态 -->
