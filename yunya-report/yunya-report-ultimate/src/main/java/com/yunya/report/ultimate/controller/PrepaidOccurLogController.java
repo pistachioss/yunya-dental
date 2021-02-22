@@ -14,16 +14,15 @@ import com.yunya.report.ultimate.biz.MemberOccurLogBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -40,7 +39,7 @@ import java.util.List;
 public class PrepaidOccurLogController {
 
     /** 注入服务 */
-    @Autowired
+    @Resource
     MemberOccurLogBiz memberOccurLogBiz;
 
     /**
@@ -60,12 +59,12 @@ public class PrepaidOccurLogController {
      */
     @ApiOperation("查询预付款充值列表")
     @PostMapping("/recharge/list")
-    public ResponseResult<PageInfo<BasePrepaidRechargeLogVo>> prepaidRechargeList(@RequestBody PrepaidQueryForm prepaidQueryForm) throws ParseException {
+    public ResponseResult<PageInfo<BasePrepaidRechargeLogVo>> prepaidRechargeList(@RequestBody PrepaidQueryForm prepaidQueryForm) {
         PageInfo<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVos = memberOccurLogBiz.prepaidRechargeList(prepaidQueryForm);
         if (StringHelper.isNotNull(basePrepaidRechargeLogVos)){
             return ResponseUtil.success(basePrepaidRechargeLogVos);
         }
-        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",basePrepaidRechargeLogVos);
+        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据", null);
     }
 
     /**
@@ -73,11 +72,11 @@ public class PrepaidOccurLogController {
      *
      * @param response 响应
      * @param prepaidQueryForm 查询条件
-     * @return
+     * @return 预付款充值列表
      */
     @ApiOperation("导出预付款充值列表")
     @PostMapping(value = "/recharge/export", name = "公司端-数据记录-预付款充值列表-导出")
-    public ResponseResult<T> exportPrepaidRechargeList(HttpServletResponse response, @RequestBody @Validated PrepaidQueryForm prepaidQueryForm) throws IOException, ParseException {
+    public ResponseResult<T> exportPrepaidRechargeList(HttpServletResponse response, @RequestBody @Validated PrepaidQueryForm prepaidQueryForm) throws IOException {
         memberOccurLogBiz.exportPrepaidRechargeList(response,prepaidQueryForm);
         return ResponseUtil.success(null);
     }
@@ -85,16 +84,16 @@ public class PrepaidOccurLogController {
     /**
      * 查询预付款消费列表
      * @param prepaidQueryForm 预付款卡消费form
-     * @return List<MemberExpendLogBizVo>
+     * @return 预付款消费列表
      */
     @ApiOperation("查询预付款消费列表")
     @PostMapping("/expend/list")
-    public ResponseResult<PageInfo<BasePrepaidExpendLogVo>> prepaidExpendList(@RequestBody PrepaidQueryForm prepaidQueryForm) throws ParseException{
+    public ResponseResult<PageInfo<BasePrepaidExpendLogVo>> prepaidExpendList(@RequestBody PrepaidQueryForm prepaidQueryForm){
         PageInfo<BasePrepaidExpendLogVo> basePrepaidExpendLogVos = memberOccurLogBiz.prepaidExpendList(prepaidQueryForm);
         if (StringHelper.isNotNull(basePrepaidExpendLogVos)){
             return ResponseUtil.success(basePrepaidExpendLogVos);
         }
-        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",basePrepaidExpendLogVos);
+        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据", null);
     }
 
     /**
@@ -102,11 +101,11 @@ public class PrepaidOccurLogController {
      *
      * @param response 响应
      * @param prepaidQueryForm 查询条件
-     * @return
+     * @return 预付款消费列表
      */
     @ApiOperation("导出预付款消费列表")
     @PostMapping(value = "/expend/export", name = "公司端-数据记录-预付款消费列表-导出")
-    public ResponseResult<T> exportPrepaidExpendList(HttpServletResponse response, @RequestBody @Validated PrepaidQueryForm prepaidQueryForm) throws IOException, ParseException {
+    public ResponseResult<T> exportPrepaidExpendList(HttpServletResponse response, @RequestBody @Validated PrepaidQueryForm prepaidQueryForm) throws IOException {
         memberOccurLogBiz.exportPrepaidExpendList(response,prepaidQueryForm);
         return ResponseUtil.success(null);
     }
@@ -115,17 +114,16 @@ public class PrepaidOccurLogController {
     /**
      * 查询预付款退费列表
      * @param prepaidQueryForm 预付款卡退费form
-     * @return List<MemberRechargeLogBizVo>
-     * @throws ParseException
+     * @return 预付款退费列表
      */
     @ApiOperation("查询预付款退费列表")
     @PostMapping("/return/list")
-    public ResponseResult<PageInfo<BasePrepaidReturnLogVo>> prepaidReturnList(@RequestBody PrepaidQueryForm prepaidQueryForm) throws ParseException {
+    public ResponseResult<PageInfo<BasePrepaidReturnLogVo>> prepaidReturnList(@RequestBody PrepaidQueryForm prepaidQueryForm) {
         PageInfo<BasePrepaidReturnLogVo> basePrepaidReturnLogVos = memberOccurLogBiz.prepaidReturnList(prepaidQueryForm);
         if (StringHelper.isNotNull(basePrepaidReturnLogVos)){
             return ResponseUtil.success(basePrepaidReturnLogVos);
         }
-        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",basePrepaidReturnLogVos);
+        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据", null);
     }
 
     /**
@@ -133,11 +131,11 @@ public class PrepaidOccurLogController {
      *
      * @param response 响应
      * @param prepaidQueryForm 查询条件
-     * @return
+     * @return 预付款退费列表
      */
     @ApiOperation("导出预付款退费列表")
     @PostMapping(value = "/return/export", name = "公司端-数据记录-预付款退费列表-导出")
-    public ResponseResult<T> exportPrepaidReturnList(HttpServletResponse response, @RequestBody @Validated PrepaidQueryForm prepaidQueryForm) throws IOException, ParseException {
+    public ResponseResult<T> exportPrepaidReturnList(HttpServletResponse response, @RequestBody @Validated PrepaidQueryForm prepaidQueryForm) throws IOException {
         memberOccurLogBiz.exportPrepaidReturnList(response,prepaidQueryForm);
         return ResponseUtil.success(null);
     }

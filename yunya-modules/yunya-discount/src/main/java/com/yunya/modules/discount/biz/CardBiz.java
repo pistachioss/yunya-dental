@@ -74,7 +74,9 @@ import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -107,6 +109,7 @@ import com.yunya.models.discount.SpecialPackageCouponItem;
 import com.yunya.models.discount.VoucheCoupon;
 import com.yunya.models.discount.VoucherDiscountItem;
 import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.system.AccountItem;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
@@ -156,16 +159,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -243,6 +237,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private RemoteRabbitMqServiceFeign mqServiceFeign;
     @Autowired
     private RemoteSmsServiceFeign remoteSmsServiceFeign;
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Value("${cardSold.selfChannel}")
     private String selfChannel;
     /**
@@ -488,11 +484,36 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     }
 
     public PageInfo<CardSalePageVo> getCardSalePage(CardSaleQuery query) {
+        CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
+        couponCommonInfo.setId(query.getCouponId());
+        couponCommonInfo = couponMapper.selectOne(couponCommonInfo);
         Page<Card> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
         mapper.listCardInfosByParam(query.getCardNumber(), query.getSoldTypeList(), query.getCardStatsList(), query.getPhoneNumber(),
                 query.getCouponId(), query.getOrgId());
+
+        //支付方式
+        List<AccountItem> aiList = systemServiceFeign.findAccountItemList(new AccountItem());
+        Map<String, AccountItem> AccMap = new HashMap(16);
+        aiList.forEach(z -> AccMap.put(z.getId() + "", z));
+        //门诊信息
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setWhetherPage(false);
+        List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        Map<String, OrganizationInfoDetail> clinicMap = new HashMap();
+        clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
+
         //实体转换为pageVo
         List<CardSalePageVo> list = page.getResult().stream().map(this::cardConvertPageVo).collect(toList());
+        for(CardSalePageVo cardSalePageVo:list){
+            cardSalePageVo.setCardName(couponCommonInfo.getName());
+            cardSalePageVo.setSoldAmount(couponCommonInfo.getSoldAmount());
+            cardSalePageVo.setOrgName(clinicMap.get(query.getOrgId()+"").getName());
+            cardSalePageVo.setOrgAddress(clinicMap.get(query.getOrgId()+"").getAddress());
+            cardSalePageVo.setOrgIphone(clinicMap.get(query.getOrgId()+"").getTel());
+            if(cardSalePageVo.getPayId()!=null){
+                cardSalePageVo.setSoldType(AccMap.get(cardSalePageVo.getPayId()+"").getName());
+            }
+        }
         PageInfo<CardSalePageVo> pageInfo = new PageInfo<>(list);
         pageInfo.setTotal(page.getTotal());
         pageInfo.setPageNum(page.getPageNum());
@@ -1140,7 +1161,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     /**
      * 计算项目总工作量
      *
-     * @param itemUseBenefitBo itemUseBenefitBo
      * @param itemBenefitBo    itemBenefitBo
      */
     private BigDecimal calculateTotalWordLoad(OrderItemUseBo itemBenefitBo) {

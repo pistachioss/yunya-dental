@@ -13,16 +13,15 @@ import com.yunya.report.ultimate.biz.MemberOverviewBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -39,11 +38,11 @@ import java.util.Map;
 @RequestMapping("overview")
 public class MemberOverviewController {
     /** 服务注入 */
-    @Autowired
+    @Resource
     MemberOverviewBiz memberOverviewBiz;
 
     /** 会员卡操作Biz */
-    @Autowired
+    @Resource
     MemberOccurLogBiz memberOccurLogBiz;
 
     /**
@@ -60,16 +59,16 @@ public class MemberOverviewController {
     /**
      * 查询患者会员卡/预付款概况
      * @param memberOverviewQueryForm 患者会员卡概况form
-     * @return List<MemberOverviewVo>
+     * @return 患者会员卡/预付款概况
      */
     @ApiOperation("会员卡/预付款概况")
     @PostMapping("/patientOverview/list")
-    public ResponseResult<PageInfo<BasePatientMemberOverviewVo>> patientOverviewList(@RequestBody MemberOverviewQueryForm memberOverviewQueryForm) throws ParseException {
+    public ResponseResult<PageInfo<BasePatientMemberOverviewVo>> patientOverviewList(@RequestBody MemberOverviewQueryForm memberOverviewQueryForm)  {
         PageInfo<BasePatientMemberOverviewVo> basePatientMemberOverviewVos = memberOverviewBiz.patientOverviewList(memberOverviewQueryForm);
         if (StringHelper.isNotNull(basePatientMemberOverviewVos)){
             return ResponseUtil.success(basePatientMemberOverviewVos);
         }
-        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",basePatientMemberOverviewVos);
+        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据", null);
     }
 
     /**
@@ -77,11 +76,11 @@ public class MemberOverviewController {
      *
      * @param response 响应
      * @param memberOverviewQueryForm 查询条件
-     * @return
+     * @return 患者会员卡/预付款概况记录列表
      */
     @ApiOperation("导出患者会员卡/预付款概况记录列表")
     @PostMapping(value = "/patientOverview/export", name = "公司端-运营报表-会员卡概况-导出患者会员卡/预付款概况记录列表")
-    public ResponseResult<T> exportPatientOverviewList(HttpServletResponse response, @RequestBody @Validated MemberOverviewQueryForm memberOverviewQueryForm) throws IOException, ParseException {
+    public ResponseResult<T> exportPatientOverviewList(HttpServletResponse response, @RequestBody @Validated MemberOverviewQueryForm memberOverviewQueryForm) throws IOException {
         memberOverviewBiz.exportPatientOverviewList(response,memberOverviewQueryForm);
         return ResponseUtil.success(null);
     }

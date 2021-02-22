@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -44,7 +43,7 @@ public class PatientReportController {
   /**
    * 末次接诊医生
    *
-   * @return List<BaseOrganization>
+   * @return 末次接诊医生
    */
   @ApiOperation("末次接诊医生")
   @GetMapping("/employee/list/{orgId}")
@@ -56,34 +55,34 @@ public class PatientReportController {
    * 未复诊预约且未提醒
    *
    * @param patientReportQueryForm 未复诊预约且未提醒form
-   * @return List<BasePatientNotSeenVo>
+   * @return 未复诊预约且未提醒集合
    */
   @ApiOperation("未复诊预约且未提醒")
   @PostMapping("/notSeen/List")
   public ResponseResult<PageInfo<BasePatientNotSeenVo>> notSeenList(
-      @RequestBody PatientReportQueryForm patientReportQueryForm) throws ParseException {
+      @RequestBody PatientReportQueryForm patientReportQueryForm) {
     PageInfo<BasePatientNotSeenVo> basePatientNotSeenVoList =
         patientReportBiz.notSeenList(patientReportQueryForm);
     if (StringHelper.isNotNull(basePatientNotSeenVoList)) {
       return ResponseUtil.success(basePatientNotSeenVoList);
     }
     return ResponseUtil.fail(
-        OperationCodeConstants.RETURN_VALUE_ISNULL, "暂无相关数据", basePatientNotSeenVoList);
+        OperationCodeConstants.RETURN_VALUE_ISNULL, "暂无相关数据", null);
   }
 
   /**
    * 导出未复诊预约且未提醒记录列表
    *
-   * @param response 响应
+   * @param response 导出响应
    * @param patientReportQueryForm 查询条件
-   * @return
+   * @return 未复诊预约且未提醒记录列表
    */
   @ApiOperation("导出未复诊预约且未提醒记录列表")
   @PostMapping(value = "/notSeen/export", name = "公司端-运营报表-患者报表-导出")
   public ResponseResult<T> exportNotSeenList(
       HttpServletResponse response,
       @RequestBody @Validated PatientReportQueryForm patientReportQueryForm)
-      throws IOException, ParseException {
+      throws IOException {
     patientReportBiz.exportNotSeenList(response, patientReportQueryForm);
     return ResponseUtil.success(null);
   }
@@ -96,13 +95,12 @@ public class PatientReportController {
    */
   @ApiOperation("欠费查询")
   @PostMapping("/arrears")
-  public ResponseResult<ArrearsStatisticsVo> arrears(@RequestBody ArrearsQueryForm arrearsQueryForm)
-      throws ParseException {
+  public ResponseResult<ArrearsStatisticsVo> arrears(@RequestBody ArrearsQueryForm arrearsQueryForm) {
     ArrearsStatisticsVo arrears = patientReportBiz.findArrears(arrearsQueryForm);
     if (StringHelper.isNotNull(arrears)) {
       return ResponseUtil.success(arrears);
     }
-    return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "暂无相关数据", arrears);
+    return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "暂无相关数据", null);
   }
 
   /**
@@ -110,13 +108,13 @@ public class PatientReportController {
    *
    * @param response 响应
    * @param arrearsQueryForm 查询条件
-   * @return
+   * @return 欠费查询记录列表
    */
   @ApiOperation("导出欠费查询记录列表")
   @PostMapping(value = "/arrears/export", name = "公司端-运营报表-患者报表-导出")
   public ResponseResult<T> exportArrearsList(
       HttpServletResponse response, @RequestBody @Validated ArrearsQueryForm arrearsQueryForm)
-      throws IOException, ParseException {
+      throws IOException {
     patientReportBiz.exportArrearsList(response, arrearsQueryForm);
     return ResponseUtil.success(null);
   }
@@ -131,7 +129,7 @@ public class PatientReportController {
   @ApiOperation("就诊患者分析")
   @PostMapping("/analysis")
   public ResponseResult<AnalysisVo> analysis(
-      @RequestBody PatientAnalysisQueryForm patientAnalysisQueryForm) throws ParseException {
+      @RequestBody PatientAnalysisQueryForm patientAnalysisQueryForm) {
     return ResponseUtil.success(patientReportBiz.analysis(patientAnalysisQueryForm));
   }
 }

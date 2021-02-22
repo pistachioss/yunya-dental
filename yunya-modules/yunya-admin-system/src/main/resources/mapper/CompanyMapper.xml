@@ -103,7 +103,9 @@
         when 1 then '大区'
         when 2 then ccb.abbreviation
         else '其他' end as abbreviation,
-        ccb.brandName
+        ccb.brandName,
+        ccb.tel,
+        ccb.address
         FROM
         (
         SELECT
@@ -115,7 +117,9 @@
         c.order_num as orderNum,
         cb.abbreviation,
         cb.clinic_number AS clinicNumber,
-        cb.brandName
+        cb.brandName,
+        cb.tel,
+        cb.address
         FROM
         company c
         LEFT JOIN (
@@ -123,6 +127,8 @@
         cei.company_id,
         cei.abbreviation,
         cei.clinic_number,
+        cei.tel,
+        cei.address,
         (
         SELECT
         GROUP_CONCAT( b.`name` )

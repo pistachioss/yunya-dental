@@ -239,4 +239,5 @@ public class PatientBaseInfoController {
     System.out.println(picturesCallbackInfoModel.toString());
     return ResponseUtil.success();
   }
+
 }

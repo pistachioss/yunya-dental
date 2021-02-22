@@ -12,16 +12,15 @@ import com.yunya.report.ultimate.biz.MemberOccurLogBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -38,7 +37,7 @@ import java.util.List;
 public class MemberBalanceBalanceController {
 
     /** 注入服务 */
-    @Autowired
+    @Resource
     MemberOccurLogBiz memberOccurLogBiz;
 
 
@@ -59,7 +58,7 @@ public class MemberBalanceBalanceController {
      */
     @ApiOperation("会员余/预付款余额结存信息列表")
     @PostMapping("/balance/list")
-    public ResponseResult<PageInfo<BaseMemberBalanceInfoVo>> memberBalanceList(@RequestBody @Validated MemberQueryForm memberQueryForm) throws ParseException {
+    public ResponseResult<PageInfo<BaseMemberBalanceInfoVo>> memberBalanceList(@RequestBody @Validated MemberQueryForm memberQueryForm) {
         PageInfo<BaseMemberBalanceInfoVo> baseMemberBalanceInfoVos = memberOccurLogBiz.memberBalanceList(memberQueryForm);
         if (StringHelper.isNotNull(baseMemberBalanceInfoVos)){
             return ResponseUtil.success(baseMemberBalanceInfoVos);
@@ -73,11 +72,11 @@ public class MemberBalanceBalanceController {
      *
      * @param response 响应
      * @param memberQueryForm 查询条件
-     * @return
+     * @return 就诊配诊记录列表
      */
     @ApiOperation("导出会员余/预付款余额结存信息记录列表")
     @PostMapping(value = "/export", name = "公司端-财务报表-余额结存-导出会员卡/预付款记录列表")
-    public ResponseResult<T> exportMemberBalanceList(HttpServletResponse response, @RequestBody @Validated MemberQueryForm memberQueryForm) throws IOException, ParseException {
+    public ResponseResult<T> exportMemberBalanceList(HttpServletResponse response, @RequestBody @Validated MemberQueryForm memberQueryForm) throws IOException {
         memberOccurLogBiz.exportMemberBalanceList(response,memberQueryForm);
         return ResponseUtil.success(null);
     }

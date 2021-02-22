@@ -253,6 +253,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 searchVisitingRemindVo = this.searchVisitingRemind(visitingRemindVos, search, medicalNumber, distentName);
                 // 按照时间正序排序
                 searchVisitingRemindVo = this.sort(searchVisitingRemindVo);
+                // 设置分页插件总数量=条件检索出来的结果数量
+                visitingRemindVoPageInfo.setTotal(searchVisitingRemindVo.size());
             }
         }
         // 如果 searchVisitingRemindVo 为空

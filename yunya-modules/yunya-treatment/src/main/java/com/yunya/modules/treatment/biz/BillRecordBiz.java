@@ -101,6 +101,11 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @return resultData 账单详情信息
    */
   public BillDetailGroupVO findOrderDetailAndBillDetail(Integer orderRecordId) {
+    BillRecord billRecord  = new BillRecord();
+    billRecord.setOrderRecordId(orderRecordId);
+    billRecord.setInservice(true);
+    billRecord = mapper.selectOne(billRecord);
+
     OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
     if (orderRecord == null) {
       throw new ClientServiceException("订单记录不存在", PARAMETERS_IS_ILLEGAL);
@@ -124,6 +129,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
             List<BillPayDetailRecordVO> billPayDetailRecords =
                 billPayDetailRecordBiz.findBillPayDetailRecordByBillPayRecordId(billPayRecordId);
             billPayRecord.setBillPayDetailRecords(billPayDetailRecords);
+            billPayRecord.setBillNumber(billPayRecord.getBillNumber());
           });
     } else {
       billPayRecords = new ArrayList<>();
