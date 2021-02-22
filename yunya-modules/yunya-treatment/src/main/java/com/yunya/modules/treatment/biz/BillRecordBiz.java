@@ -104,7 +104,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     BillRecord billRecord  = new BillRecord();
     billRecord.setOrderRecordId(orderRecordId);
     billRecord.setInservice(true);
-    billRecord = mapper.selectOne(billRecord);
+    BillRecord billRecordAll = mapper.selectOne(billRecord);
 
     OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
     if (orderRecord == null) {
@@ -129,7 +129,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
             List<BillPayDetailRecordVO> billPayDetailRecords =
                 billPayDetailRecordBiz.findBillPayDetailRecordByBillPayRecordId(billPayRecordId);
             billPayRecord.setBillPayDetailRecords(billPayDetailRecords);
-            billPayRecord.setBillNumber(billPayRecord.getBillNumber());
+            billPayRecord.setBillNumber( billRecordAll.getBillNumber());
           });
     } else {
       billPayRecords = new ArrayList<>();
