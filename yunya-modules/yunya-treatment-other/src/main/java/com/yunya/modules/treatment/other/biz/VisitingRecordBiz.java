@@ -331,12 +331,14 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 // 将检索结果列表排序
                 searchVisitingRecordVo = this.sort(searchVisitingRecordVo);
                 visitingRecordVoPageInfo.setList(searchVisitingRecordVo);
+                // 设置分页插件总总数量=条件检索出来的结果数量
+                visitingRecordVoPageInfo.setTotal(searchVisitingRecordVo.size());
             }
 
             // 设置分页参数
             int size = searchVisitingRecordVo.size();
             if (size == 0) {
-                visitingRecordVoPageInfo.setTotal(size);
+                visitingRecordVoPageInfo.setTotal(0);
             }
             long total = visitingRecordVoPageInfo.getTotal();
             Integer pageSize = query.getPageSize();
