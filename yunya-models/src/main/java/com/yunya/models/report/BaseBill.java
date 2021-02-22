@@ -272,9 +272,9 @@ public class BaseBill {
     }
 
     /**
-     * 设置优惠类型（0-普通优惠；1-授权折扣）
+     * 设置优惠类型（0-未使用优惠；1-一般优惠；2-授权折扣）
      *
-     * @param privilegeType 优惠类型（0-普通优惠；1-授权折扣）
+     * @param privilegeType 优惠类型（0-未使用优惠；1-一般优惠；2-授权折扣）
      */
     public void setPrivilegeType(Byte privilegeType) {
         this.privilegeType = privilegeType;
