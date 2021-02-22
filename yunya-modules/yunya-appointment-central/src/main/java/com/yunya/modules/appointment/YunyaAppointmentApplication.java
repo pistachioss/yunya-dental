@@ -1,5 +1,7 @@
 package com.yunya.modules.appointment;
 
+import com.alibaba.nacos.api.annotation.NacosProperties;
+import com.alibaba.nacos.api.config.annotation.NacosConfigurationProperties;
 import com.yunya.feign.EnableYunyaFeignClients;
 import com.yunya.framework.swagger.EnableCustomSwagger2;
 import org.springframework.boot.SpringApplication;
