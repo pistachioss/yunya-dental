@@ -185,7 +185,10 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     }
 
     BeanUtils.copyProperties(model, entity);
-    entity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(name));
+    String firstLettersLo = HanyuPinyinHelper.getFirstLettersLo(name);
+    String pinyinString = HanyuPinyinHelper.getPinyinString(name);
+    String pinyin = Joiner.on(",").join(firstLettersLo, pinyinString);
+    entity.setPinyin(pinyin);
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setCrtName(BaseContextHandler.getName());
     int i = mapper.insertSelective(entity);
@@ -286,7 +289,10 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       throw new ClientServiceException("修改失败，价目表编号前3位与价目表分类编号前3位不同！", PARAMETERS_IS_ILLEGAL);
     }
     BeanUtils.copyProperties(form, entity);
-    entity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(name));
+    String firstLettersLo = HanyuPinyinHelper.getFirstLettersLo(name);
+    String pinyinString = HanyuPinyinHelper.getPinyinString(name);
+    String pinyin = Joiner.on(",").join(firstLettersLo, pinyinString);
+    entity.setPinyin(pinyin);
     entity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setUpdName(BaseContextHandler.getName());
     entity.setUpdTime(new Date(System.currentTimeMillis()));
@@ -1058,7 +1064,10 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     BaseTariff itemResult = mapper.selectOne(itemEntity);
     if (null == itemResult) {
       // 新增价目表
-      itemEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(itemName));
+      String firstLettersLo = HanyuPinyinHelper.getFirstLettersLo(itemName);
+      String pinyinString = HanyuPinyinHelper.getPinyinString(itemName);
+      String pinyin = Joiner.on(",").join(firstLettersLo, pinyinString);
+      itemEntity.setPinyin(pinyin);
       itemEntity.setEnglishName(englishName);
       itemEntity.setPrice(price);
       itemEntity.setUnit(unit);
@@ -1100,7 +1109,10 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     if (null != itemResult) {
       // 更新价目表
       itemEntity.setId(itemResult.getId());
-      itemEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(itemName));
+      String firstLettersLo = HanyuPinyinHelper.getFirstLettersLo(itemName);
+      String pinyinString = HanyuPinyinHelper.getPinyinString(itemName);
+      String pinyin = Joiner.on(",").join(firstLettersLo, pinyinString);
+      itemEntity.setPinyin(pinyin);
       itemEntity.setEnglishName(englishName);
       itemEntity.setPrice(price);
       itemEntity.setUnit(unit);

@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -23,7 +24,10 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.models.tariff.*;
+import com.yunya.models.tariff.BaseOralTariff;
+import com.yunya.models.tariff.BaseOralTariffCategory;
+import com.yunya.models.tariff.BaseOralTariffHistory;
+import com.yunya.models.tariff.ClinicOralTariff;
 import com.yunya.modules.treatment.mapper.BaseOralTariffCategoryMapper;
 import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -126,11 +130,12 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<BaseOralTariffVO> resultList = mapper.selectBaseOralTariffList(queryForm);
-    resultList.forEach(baseOralTariffVO -> {
-      BigDecimal price = baseOralTariffVO.getPrice();
-      BigDecimal bigDecimal = price.setScale(2, BigDecimal.ROUND_HALF_UP);
-      baseOralTariffVO.setPrice(bigDecimal);
-    });
+    resultList.forEach(
+        baseOralTariffVO -> {
+          BigDecimal price = baseOralTariffVO.getPrice();
+          BigDecimal bigDecimal = price.setScale(2, BigDecimal.ROUND_HALF_UP);
+          baseOralTariffVO.setPrice(bigDecimal);
+        });
     return new PageInfo<>(resultList);
   }
 
@@ -174,7 +179,10 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     String crtName = BaseContextHandler.getName();
 
     BeanUtils.copyProperties(model, entity);
-    entity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(name));
+    String firstLettersLo = HanyuPinyinHelper.getFirstLettersLo(name);
+    String pinyinString = HanyuPinyinHelper.getPinyinString(name);
+    String pinyin = Joiner.on(",").join(firstLettersLo, pinyinString);
+    entity.setPinyin(pinyin);
     entity.setCrtId(crtId);
     entity.setCrtName(crtName);
     int i = mapper.insertSelective(entity);
@@ -283,7 +291,10 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     }
 
     BeanUtils.copyProperties(form, entity);
-    entity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(name));
+    String firstLettersLo = HanyuPinyinHelper.getFirstLettersLo(name);
+    String pinyinString = HanyuPinyinHelper.getPinyinString(name);
+    String pinyin = Joiner.on(",").join(firstLettersLo, pinyinString);
+    entity.setPinyin(pinyin);
     entity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setUpdName(BaseContextHandler.getName());
     entity.setId(id);
@@ -966,7 +977,10 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     BaseOralTariff itemResult = mapper.selectOne(itemEntity);
     if (null == itemResult) {
       // 新增商品表
-      itemEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(itemName));
+      String firstLettersLo = HanyuPinyinHelper.getFirstLettersLo(itemName);
+      String pinyinString = HanyuPinyinHelper.getPinyinString(itemName);
+      String pinyin = Joiner.on(",").join(firstLettersLo, pinyinString);
+      itemEntity.setPinyin(pinyin);
       itemEntity.setEnglishName(englishName);
       itemEntity.setPrice(price);
       itemEntity.setUnit(unit);
@@ -1008,7 +1022,10 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     if (null != itemResult) {
       // 更新商品表
       itemEntity.setId(itemResult.getId());
-      itemEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(itemName));
+      String firstLettersLo = HanyuPinyinHelper.getFirstLettersLo(itemName);
+      String pinyinString = HanyuPinyinHelper.getPinyinString(itemName);
+      String pinyin = Joiner.on(",").join(firstLettersLo, pinyinString);
+      itemEntity.setPinyin(pinyin);
       itemEntity.setEnglishName(englishName);
       itemEntity.setPrice(price);
       itemEntity.setUnit(unit);
