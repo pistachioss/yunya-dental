@@ -63,7 +63,7 @@
         IFNULL(bb.debt_amount,0) debtAmount
         from base_bill bb
         join base_patient bp on bp.patient_id = bb.patient_id
-        join base_treatment_process btpr on btpr.patient_id = bp.patient_id
+        JOIN base_treatment_process btpr ON btpr.treatment_id = bb.treatment_id
         join base_employee be on btpr.registered_dentist_id = be.user_id
         <where>
             bb.debt_amount > 0
