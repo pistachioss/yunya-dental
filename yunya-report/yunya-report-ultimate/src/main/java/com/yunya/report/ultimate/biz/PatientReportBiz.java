@@ -137,14 +137,10 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    List<ArrearsVo> arrearsVoList = baseBillMapper.arrears(form, patientIds);
+    List<ArrearsVo> arrearsVoList = baseBillMapper.arrears(form);
     return new PageInfo<>(arrearsVoList);
   }
 
@@ -160,11 +156,7 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
-    List<ArrearsVo> arrearsVoList = baseBillMapper.arrears(form, patientIds);
+    List<ArrearsVo> arrearsVoList = baseBillMapper.arrears(form);
     ExcelUtil<ArrearsVo> excelUtil = new ExcelUtil<>(ArrearsVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
       BaseOrganization baseOrganizationv =
