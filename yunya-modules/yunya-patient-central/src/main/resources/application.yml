@@ -9,7 +9,7 @@ codeUrl:
 
 # 自定义服务上线日期属性,用于解决兼容一代系统患者病历编号，二代系统上线之后，所有新添加的患者按照二代病历编号生成规则生成
 serverInfo:
-  onlineDateTime: "2021-02-01 09:00:00"
+  onlineDateTime: "2021-03-01 06:00:00"
 
 
 logging:
