@@ -36,14 +36,14 @@
         received_amount
         )
         VALUES
-        <foreach collection="baseBills" item="item" separator=",">
+        <foreach collection="baseBillDetails" item="item" separator=",">
             (#{item.billDetailId}, #{item.orgId}, #{item.billId},
             #{item.discountAmount}, #{item.couponWorkload}, #{item.executorId},
             #{item.itemId}, #{item.itemType}, #{item.sourceType},
             #{item.quantity}, #{item.price}, #{item.receivedAmount})
         </foreach>
     </insert>
-    
+
     <!-- 根据账单ID删除账单明细 -->
     <delete id="deleteByBillId">
         delete from base_bill_detail where bill_id = #{billId}
