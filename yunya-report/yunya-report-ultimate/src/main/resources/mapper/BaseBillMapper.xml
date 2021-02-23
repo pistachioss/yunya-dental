@@ -5,28 +5,28 @@
         <!--
           WARNING - @mbg.generated
         -->
-        <result column="bill_id" property="billId" jdbcType="INTEGER" />
-        <result column="org_id" property="orgId" jdbcType="INTEGER" />
-        <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-        <result column="treatment_id" property="treatmentId" jdbcType="INTEGER" />
-        <result column="bill_status" property="billStatus" jdbcType="TINYINT" />
-        <result column="order_num" property="orderNum" jdbcType="VARCHAR" />
-        <result column="order_amount" property="orderAmount" jdbcType="DECIMAL" />
-        <result column="order_date" property="orderDate" jdbcType="TIMESTAMP" />
-        <result column="biller_id" property="billerId" jdbcType="INTEGER" />
-        <result column="privilege_type" property="privilegeType" jdbcType="TINYINT" />
-        <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
-        <result column="privilege_date" property="privilegeDate" jdbcType="TIMESTAMP" />
+        <result column="bill_id" property="billId" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="treatment_id" property="treatmentId" jdbcType="INTEGER"/>
+        <result column="bill_status" property="billStatus" jdbcType="TINYINT"/>
+        <result column="order_num" property="orderNum" jdbcType="VARCHAR"/>
+        <result column="order_amount" property="orderAmount" jdbcType="DECIMAL"/>
+        <result column="order_date" property="orderDate" jdbcType="TIMESTAMP"/>
+        <result column="biller_id" property="billerId" jdbcType="INTEGER"/>
+        <result column="privilege_type" property="privilegeType" jdbcType="TINYINT"/>
+        <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL"/>
+        <result column="privilege_date" property="privilegeDate" jdbcType="TIMESTAMP"/>
         <result column="bill_date" property="billDate" jdbcType="TIMESTAMP"/>
-        <result column="bill_num" property="billNum" jdbcType="VARCHAR" />
-        <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
-        <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
-        <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL" />
-        <result column="checker_id" property="checkerId" jdbcType="INTEGER" />
+        <result column="bill_num" property="billNum" jdbcType="VARCHAR"/>
+        <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL"/>
+        <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
+        <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL"/>
+        <result column="checker_id" property="checkerId" jdbcType="INTEGER"/>
     </resultMap>
 
     <resultMap id="BillDiscountDetail" type="com.yunya.feign.report.domain.vo.BillDiscountVO">
-<!--        <result property="operateUserName" column="operateUserName" jdbcType="VARCHAR"/>-->
+        <!--        <result property="operateUserName" column="operateUserName" jdbcType="VARCHAR"/>-->
         <result property="billId" column="billId" jdbcType="INTEGER"/>
         <collection property="billDiscountDetail" ofType="com.yunya.feign.report.domain.vo.BillDiscountDetailInifoVO">
             <result property="itemId" column="itemId" jdbcType="INTEGER"/>
@@ -46,47 +46,75 @@
 
     <!-- 欠费查询 -->
     <select id="arrears" resultType="com.yunya.feign.report.domain.vo.ArrearsVo">
-        select * from (
         select
-        DISTINCT
-        bb.bill_id billId,
-        be.employee_name employeeName,
-        DATE_FORMAT(bb.order_date, '%Y-%m-%d %H:%i:%s') orderDate,
-        bb.order_num orderNum,
-        bp.name,
-        bp.pinyin_name pinyinName,
+        billId,
+        regDentistId,
+        employeeName,
+        orderDate,
+        orderNum,
+        billDate,
+        billNum,
+        patientId,
+        originalPrice,
+        privilegeAmount,
+        actualAmount,
+        receivedAmount,
+        debtAmount
+        from (
+        SELECT
+        bill_id AS billId,
+        btp.registered_dentist_id AS regDentistId,
+        btp.employee_name AS employeeName,
+        bb.order_date AS orderDate,
+        bb.order_num AS orderNum,
+        bb.bill_date AS billDate,
+        bb.bill_num AS billNum,
+        bb.patient_id AS patientId,
+        bp.`name`,
+        bp.pinyin_name AS pinyinName,
         bp.mobile,
-        IFNULL(bb.privilege_amount + bb.actual_amount,0) originalPrice,
-        IFNULL(bb.privilege_amount,0) privilegeAmount,
-        IFNULL(bb.actual_amount,0) actualAmount,
-        IFNULL(bb.received_amount,0) receivedAmount,
-        IFNULL(bb.debt_amount,0) debtAmount
-        from base_bill bb
-        join base_patient bp on bp.patient_id = bb.patient_id
-        JOIN base_treatment_process btpr ON btpr.treatment_id = bb.treatment_id
-        join base_employee be on btpr.registered_dentist_id = be.user_id
+        bb.order_amount AS originalPrice,
+        bb.privilege_amount AS privilegeAmount,
+        bb.actual_amount AS actualAmount,
+        bb.received_amount AS receivedAmount,
+        bb.debt_amount AS debtAmount
+        FROM
+        base_bill bb
+        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+        LEFT JOIN (
+        SELECT
+        btp.org_id,
+        btp.treatment_id,
+        btp.registered_dentist_id,
+        be.employee_name
+        FROM
+        base_treatment_process btp
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+        WHERE
+        btp.treat_end_time IS NOT NULL
+        ) btp ON bb.treatment_id = btp.treatment_id
+        AND bb.org_id = btp.org_id
         <where>
             bb.debt_amount > 0
-            <if test="form.orgId != null and form.orgId != ''">
+            <if test="form.orgId != null">
                 AND bb.org_id = #{form.orgId}
             </if>
-
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
                 and DATE_FORMAT(bb.order_date, "%Y-%m-%d") &gt;= DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
                 and DATE_FORMAT(bb.order_date, "%Y-%m-%d") &lt; DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
             </if>
+        </where>
+        ) t
 
+        <where>
             <if test="form.registeredDentistIds != null and form.registeredDentistIds.size() > 0 ">
-                AND btpr.registered_dentist_id in
+                AND t.regDentistId in
                 <foreach collection="form.registeredDentistIds" item="registeredDentistId" index="index" open="("
                          close=")" separator=",">
                     #{registeredDentistId}
                 </foreach>
             </if>
-        </where>
-        order by bb.order_date asc
-        ) t
-        <where>
+
             <if test="form.combination != null and form.combination != ''">
                 and concat(IFNULL(t.`name`,''),IFNULL(t.pinyinName,''),IFNULL(t.mobile,'')) like
                 concat(concat('%',#{form.combination}),'%')
@@ -220,8 +248,8 @@
         LEFT JOIN ( SELECT btp.registered_dentist_id, btp.treatment_id, be.employee_name FROM base_treatment_process btp
         LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id ) btp ON bb.treatment_id = btp.treatment_id
         LEFT JOIN (SELECT bb.order_id as bill_id,bb.operate_user_id as payee_user_id,be.employee_name FROM
-            (select order_id,operate_user_id from base_benefit group by order_id,operate_user_id) bb
-            LEFT JOIN base_employee be ON bb.operate_user_id = be.user_id ) bbp ON bb.bill_id = bbp.bill_id
+        (select order_id,operate_user_id from base_benefit group by order_id,operate_user_id) bb
+        LEFT JOIN base_employee be ON bb.operate_user_id = be.user_id ) bbp ON bb.bill_id = bbp.bill_id
         ) bpr
         <where>
             <if test="query.keyWord != null and query.keyWord != ''">
@@ -522,7 +550,7 @@
         SELECT
         any_value(btp.dentistId) as dentistId,
         any_value(btp.dentistName) as dentistName,
-        any_value(bb.bill_id) as  bill_id,
+        any_value(bb.bill_id) as bill_id,
         any_value(bb.debt_amount) as debt_amount
         FROM
         ( SELECT bb.bill_id, bb.treatment_id, bb.debt_amount FROM base_bill bb WHERE bb.debt_amount > 0 ) bb
@@ -801,7 +829,7 @@
         base_treatment_process btp
         LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
         WHERE
-          btp.treat_end_time IS NOT NULL
+        btp.treat_end_time IS NOT NULL
         ) btp ON bb.treatment_id = btp.treatment_id
         LEFT JOIN (
         SELECT
@@ -851,45 +879,45 @@
     <!-- 根据条件查询未结账订单列表 -->
     <select id="selectUncheckedBillList" resultType="com.yunya.feign.report.domain.vo.BillRecordOfUncheckedVO">
         SELECT
-            id,
-            orgId,
-            orgName,
-            orderRecordNum,
-            totalAmount,
-            crtTime,
-            patientId,
-            patientName,
-            patientMobile,
-            treatmentRecordId,
-            treatmentStatus,
-            crtId,
-            crtName
+        id,
+        orgId,
+        orgName,
+        orderRecordNum,
+        totalAmount,
+        crtTime,
+        patientId,
+        patientName,
+        patientMobile,
+        treatmentRecordId,
+        treatmentStatus,
+        crtId,
+        crtName
         FROM
-            (
-            SELECT
-                bb.bill_id AS id,
-                bb.org_id AS orgId,
-                bo.abbreviation AS orgName,
-                bb.order_num AS orderRecordNum,
-                bb.order_amount AS totalAmount,
-                DATE_FORMAT( bb.order_date, '%Y-%m-%d' ) AS crtTime,
-                bb.patient_id AS patientId,
-                bp.`name` AS patientName,
-                bp.mobile AS patientMobile,
-                bp.pinyin_name AS pinyinName,
-                bb.treatment_id AS treatmentRecordId,
-                btp.treat_status AS treatmentStatus,
-                bb.biller_id AS crtId,
-                be.employee_name AS crtName
-            FROM
-                base_bill bb
-                LEFT JOIN base_treatment_process btp ON bb.treatment_id = btp.treatment_id
-                LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
-                LEFT JOIN base_organization bo ON bb.org_id = bo.org_id
-            LEFT JOIN base_employee be ON bb.bill_id = be.user_id
-            WHERE
-            bb.bill_num IS NULL
-            AND bb.bill_date IS NULL
+        (
+        SELECT
+        bb.bill_id AS id,
+        bb.org_id AS orgId,
+        bo.abbreviation AS orgName,
+        bb.order_num AS orderRecordNum,
+        bb.order_amount AS totalAmount,
+        DATE_FORMAT( bb.order_date, '%Y-%m-%d' ) AS crtTime,
+        bb.patient_id AS patientId,
+        bp.`name` AS patientName,
+        bp.mobile AS patientMobile,
+        bp.pinyin_name AS pinyinName,
+        bb.treatment_id AS treatmentRecordId,
+        btp.treat_status AS treatmentStatus,
+        bb.biller_id AS crtId,
+        be.employee_name AS crtName
+        FROM
+        base_bill bb
+        LEFT JOIN base_treatment_process btp ON bb.treatment_id = btp.treatment_id
+        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+        LEFT JOIN base_organization bo ON bb.org_id = bo.org_id
+        LEFT JOIN base_employee be ON bb.bill_id = be.user_id
+        WHERE
+        bb.bill_num IS NULL
+        AND bb.bill_date IS NULL
         ) bb
         <where>
             <if test="query.orderRecordNum != null and query.orderRecordNum != ''">
@@ -910,40 +938,40 @@
 
     <select id="selectCouponDiscountItems" resultType="com.yunya.feign.report.domain.vo.CouponDiscountItemInfoVO">
         SELECT
-            bri.item_num AS itemNum,
-            bri.item_name AS itemName,
-            bri.category_name AS categoryName,
-            bbf.benefitAmount,
-            bbf.quantity,
-            bc.coupon_name AS couponName,
-            case
-                when bc.coupon_type=0 then '代金券'
-                when bc.coupon_type=1 then '折扣券'
-                when bc.coupon_type=2 then '兑换券'
-                when bc.coupon_type=3 then '套餐券'
-            end AS couponType,
-            bb.bill_num AS billNum,
-            bb.bill_date AS billDate,
-            bbf.quantity * bbd.price AS originPrice,
-            bp. NAME AS patientName,
-            bp.mobile AS patientMobile,
-            bbd.price AS price,
-            be.employee_name AS executor,
-            bcd.card_number AS cardNumber,
-            bcd.sale_channel_name AS saleChannelName
+        bri.item_num AS itemNum,
+        bri.item_name AS itemName,
+        bri.category_name AS categoryName,
+        bbf.benefitAmount,
+        bbf.quantity,
+        bc.coupon_name AS couponName,
+        case
+        when bc.coupon_type=0 then '代金券'
+        when bc.coupon_type=1 then '折扣券'
+        when bc.coupon_type=2 then '兑换券'
+        when bc.coupon_type=3 then '套餐券'
+        end AS couponType,
+        bb.bill_num AS billNum,
+        bb.bill_date AS billDate,
+        bbf.quantity * bbd.price AS originPrice,
+        bp. NAME AS patientName,
+        bp.mobile AS patientMobile,
+        bbd.price AS price,
+        be.employee_name AS executor,
+        bcd.card_number AS cardNumber,
+        bcd.sale_channel_name AS saleChannelName
         FROM(SELECT
-                bbf.org_id as orgId,
-                bbf.coupon_id AS couponId,
-                bbf.order_id AS orderId,
-                bbf.card_id AS cardId,
-                bbf.item_id AS itemId,
-                bbf.item_type AS itemType,
-                sum(ifnull(bbf.benefit_amount,0)) benefitAmount,
-                count(1) AS quantity,
-                bbf.order_detail_id AS orderDetailId
-            FROM base_benefit bbf
-            WHERE bbf.choice_benefit_type = 0 and bbf.coupon_type in (0,1,2,3)
-            GROUP BY bbf.org_id,bbf.order_id,bbf.coupon_id,bbf.order_detail_id,bbf.card_id,bbf.item_id,bbf.item_type
+        bbf.org_id as orgId,
+        bbf.coupon_id AS couponId,
+        bbf.order_id AS orderId,
+        bbf.card_id AS cardId,
+        bbf.item_id AS itemId,
+        bbf.item_type AS itemType,
+        sum(ifnull(bbf.benefit_amount,0)) benefitAmount,
+        count(1) AS quantity,
+        bbf.order_detail_id AS orderDetailId
+        FROM base_benefit bbf
+        WHERE bbf.choice_benefit_type = 0 and bbf.coupon_type in (0,1,2,3)
+        GROUP BY bbf.org_id,bbf.order_id,bbf.coupon_id,bbf.order_detail_id,bbf.card_id,bbf.item_id,bbf.item_type
         ) bbf
         LEFT JOIN base_bill bb ON bb.bill_id = bbf.orderId
         LEFT JOIN base_bill_detail bbd ON bbd.bill_detail_id = bbf.orderDetailId
@@ -951,7 +979,7 @@
         LEFT JOIN base_patient bp ON bp.patient_id = bb.patient_id
         LEFT JOIN base_employee be ON bbd.executor_id = be.user_id
         LEFT JOIN base_card bcd ON bbf.cardId = bcd.card_id
-        LEFT JOIN base_tariff_info bri ON (bri.item_id = bbf.itemId	AND bri.item_type = bbf.itemType)
+        LEFT JOIN base_tariff_info bri ON (bri.item_id = bbf.itemId AND bri.item_type = bbf.itemType)
         <where>
             bb.bill_num is not null
             <if test="query.orgId != null">
@@ -974,7 +1002,8 @@
                 and bcd.card_number = #{query.cardNumber}
             </if>
             <if test="query.orderStartDate!=null and query.orderEndDate!=null">
-                and DATE_FORMAT(bb.bill_date,'%Y-%m-%d') between DATE_FORMAT(#{query.orderStartDate},'%Y-%m-%d') and DATE_FORMAT(#{query.orderEndDate},'%Y-%m-%d')
+                and DATE_FORMAT(bb.bill_date,'%Y-%m-%d') between DATE_FORMAT(#{query.orderStartDate},'%Y-%m-%d') and
+                DATE_FORMAT(#{query.orderEndDate},'%Y-%m-%d')
             </if>
         </where>
         order by bb.bill_id desc
