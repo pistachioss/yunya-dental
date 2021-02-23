@@ -122,6 +122,7 @@
         GROUP BY
         e.org_id,
         e.user_id
+        ORDER BY treatMatchingTimeAsAssistant1 DESC
     </select>
 
     <!-- 根据条件查询配诊统计列表 -->

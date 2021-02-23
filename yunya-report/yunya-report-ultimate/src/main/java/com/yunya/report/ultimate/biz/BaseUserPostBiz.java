@@ -7,6 +7,7 @@ import com.yunya.feign.report.domain.query.EmployeeMatchingRecordQuery;
 import com.yunya.feign.report.domain.vo.EmployeeDiagnosisInfoVO;
 import com.yunya.feign.treatment.domain.vo.AssistantMatchingStatisticsVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.BaseUserPost;
@@ -50,12 +51,12 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
         mapper.selectAssistantMatchingStatisticsByAssistant("assistant_2", query);
     List<AssistantMatchingStatisticsVO> resultList3 =
         mapper.selectAssistantMatchingStatisticsByAssistant("assistant_3", query);
-    if (resultList != null && !resultList.isEmpty()) {
+    if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           assistant1 -> {
             Integer orgId = assistant1.getOrgId();
             Integer assistantId = assistant1.getAssistantId();
-            if (resultList2 != null && !resultList2.isEmpty()) {
+            if (StringHelper.isNotEmpty(resultList2)) {
               resultList2.forEach(
                   assistant2 -> {
                     if (assistant2.getAssistantId().equals(assistantId)
@@ -69,7 +70,7 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
                     }
                   });
             }
-            if (resultList3 != null && !resultList3.isEmpty()) {
+            if (StringHelper.isNotEmpty(resultList3)) {
               resultList3.forEach(
                   assistant3 -> {
                     if (assistant3.getAssistantId().equals(assistantId)
