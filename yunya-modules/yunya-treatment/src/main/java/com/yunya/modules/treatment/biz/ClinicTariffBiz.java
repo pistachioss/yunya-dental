@@ -101,6 +101,17 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<ClinicTariffVO> resultList = mapper.selectClinicTariffList(queryForm);
+    if (StringHelper.isNotEmpty(resultList)) {
+      List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
+      if (StringHelper.isNotEmpty(memberTypes)) {
+        resultList.forEach(
+            tariffVO -> {
+              Map<Integer, Object> memberPrices = new HashMap<>(16);
+              // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
+              setClinicTariffMemberPrice(memberPrices, memberTypes, queryForm.getOrgId(), tariffVO);
+            });
+      }
+    }
     return new PageInfo<>(resultList);
   }
 
