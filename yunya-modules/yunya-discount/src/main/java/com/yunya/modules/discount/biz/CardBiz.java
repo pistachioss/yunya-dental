@@ -74,7 +74,9 @@ import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -235,6 +237,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private RemoteRabbitMqServiceFeign mqServiceFeign;
     @Autowired
     private RemoteSmsServiceFeign remoteSmsServiceFeign;
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Value("${cardSold.selfChannel}")
     private String selfChannel;
     /**
@@ -489,16 +493,25 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
         //支付方式
         List<AccountItem> aiList = systemServiceFeign.findAccountItemList(new AccountItem());
-        Map<String, AccountItem> clinicMap = new HashMap(16);
-        aiList.forEach(z -> clinicMap.put(z.getId() + "", z));
+        Map<String, AccountItem> AccMap = new HashMap(16);
+        aiList.forEach(z -> AccMap.put(z.getId() + "", z));
+        //门诊信息
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setWhetherPage(false);
+        List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        Map<String, OrganizationInfoDetail> clinicMap = new HashMap();
+        clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
 
         //实体转换为pageVo
         List<CardSalePageVo> list = page.getResult().stream().map(this::cardConvertPageVo).collect(toList());
         for(CardSalePageVo cardSalePageVo:list){
             cardSalePageVo.setCardName(couponCommonInfo.getName());
             cardSalePageVo.setSoldAmount(couponCommonInfo.getSoldAmount());
+            cardSalePageVo.setOrgName(clinicMap.get(query.getOrgId()+"").getName());
+            cardSalePageVo.setOrgAddress(clinicMap.get(query.getOrgId()+"").getAddress());
+            cardSalePageVo.setOrgIphone(clinicMap.get(query.getOrgId()+"").getTel());
             if(cardSalePageVo.getPayId()!=null){
-                cardSalePageVo.setSoldType(clinicMap.get(cardSalePageVo.getPayId()+"").getName());
+                cardSalePageVo.setSoldType(AccMap.get(cardSalePageVo.getPayId()+"").getName());
             }
         }
         PageInfo<CardSalePageVo> pageInfo = new PageInfo<>(list);

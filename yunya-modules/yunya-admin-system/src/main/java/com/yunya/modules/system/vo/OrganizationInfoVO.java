@@ -34,4 +34,12 @@ public class OrganizationInfoVO implements Serializable {
   private String abbreviation;
   /** 组织品牌 */
   private String brandName;
+  /**
+   * 电话
+   */
+  private String tel;
+  /**
+   * 地址
+   */
+  private String address;
 }

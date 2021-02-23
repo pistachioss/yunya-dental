@@ -43,5 +43,11 @@ public class CardSalePageVo implements Serializable {
     private String soldType;
     @ApiModelProperty("支付方式Id")
     private Integer payId;
+    @ApiModelProperty("门诊名称")
+    private String orgName;
+    @ApiModelProperty("门诊地址")
+    private String orgAddress;
+    @ApiModelProperty("门诊电话")
+    private String orgIphone;
 
 }
