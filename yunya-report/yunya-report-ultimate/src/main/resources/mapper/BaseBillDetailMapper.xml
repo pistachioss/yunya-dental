@@ -284,6 +284,7 @@
                 </foreach>
             </if>
         </where>
+        ORDER BY bup.actualWorkload asc
     </select>
 
     <!-- 根据条件查询员工工作量列表（运营报表） -->
