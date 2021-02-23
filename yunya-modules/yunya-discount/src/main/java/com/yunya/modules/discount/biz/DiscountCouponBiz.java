@@ -83,7 +83,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
         //插入卡券信息
         insertSelective(discountCoupon);
         //同一种卡券最多添加9999个
-        if(discountCoupon.getId()<10000){
+        if(selectCount(new DiscountCoupon())<10000){
         String num = String.format("%04d", discountCoupon.getId());
         couponCommonInfo.setCouponCode(DISCOUNT_COUPON_TYPE + num);
         //插入卡券编码

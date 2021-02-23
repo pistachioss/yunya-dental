@@ -85,7 +85,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         //插入卡券信息
         insertSelective(voucheCoupon);
         //同一种卡券最多添加9999个
-        if (voucheCoupon.getId() < 10000) {
+        if (selectCount(new VoucheCoupon()) < 10000) {
             String num = String.format("%04d", voucheCoupon.getId());
             couponCommonInfo.setCouponCode(VOUCHER_TYPE + num);
             //插入卡券编码
