@@ -245,14 +245,27 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
                     if (StringHelper.isNotEmpty(orderRecords)) {
                       List<BaseBill> baseBills = generateBaseBillList(orderRecords);
                       if (StringHelper.isNotEmpty(baseBills)) {
-                        for (BaseBill baseBill : baseBills) {
+                        Example baseBillEmp = new Example(BaseBill.class);
+                        baseBillEmp
+                            .createCriteria()
+                            .andBetween(
+                                "orderDate",
+                                new DateTime(date).toDate(),
+                                new DateTime(date).plusDays(1).toDate());
+                        mapper.deleteByExample(baseBillEmp);
+                        mapper.batchInsertSelective(baseBills);
+
+                        // 批量生成并保存中间表开单明细
+                        generateAndSaveBaseBillDetailByOrderDate(date);
+
+                        /*for (BaseBill baseBill : baseBills) {
                           Integer billId = baseBill.getBillId();
                           mapper.deleteByPrimaryKey(billId);
                           baseBillDetailMapper.deleteByBillId(billId);
                           mapper.insertSelective(baseBill);
                           // 保存账单明细
                           saveBaseBillDetail(billId);
-                        }
+                        }*/
                       }
                     }
                   } finally {
@@ -263,6 +276,76 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       latch.await();
       BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
     }
+  }
+
+  /**
+   * 根据日期批量生成中间表开单明细并保存
+   *
+   * @param date 查询日期
+   */
+  private void generateAndSaveBaseBillDetailByOrderDate(String date) {
+    Example orderDetailEmp = new Example(OrderDetail.class);
+    orderDetailEmp
+        .createCriteria()
+        .andEqualTo("inservice", true)
+        .andBetween(
+            "crtTime", new DateTime(date).toDate(), new DateTime(date).plusDays(1).toDate());
+    List<OrderDetail> details = orderDetailMapper.selectByExample(orderDetailEmp);
+    if (StringHelper.isNotEmpty(details)) {
+      List<BaseBillDetail> baseBillDetails = generateBaseBillDetailByOrderDetail(details);
+
+      // 订单明细收费记录
+      Example orderDetailPayRecordEmp = new Example(OrderDetailPayRecord.class);
+      orderDetailPayRecordEmp
+          .createCriteria()
+          .andEqualTo("inservice", true)
+          .andBetween(
+              "crtTime", new DateTime(date).toDate(), new DateTime(date).plusDays(1).toDate());
+      List<OrderDetailPayRecord> orderDetailPayRecords =
+          orderDetailPayRecordMapper.selectByExample(orderDetailPayRecordEmp);
+      if (StringHelper.isNotEmpty(baseBillDetails)) {
+        for (BaseBillDetail baseBillDetail : baseBillDetails) {
+          for (OrderDetailPayRecord orderDetailPayRecord : orderDetailPayRecords) {
+            Integer billDetailId = baseBillDetail.getBillDetailId();
+            Integer orderDetailId = orderDetailPayRecord.getOrderDetailId();
+            if (billDetailId.equals(orderDetailId)) {
+              baseBillDetail.setDiscountAmount(orderDetailPayRecord.getPrivilegeAmount());
+              baseBillDetail.setCouponWorkload(orderDetailPayRecord.getCouponWorkload());
+              baseBillDetail.setReceivedAmount(orderDetailPayRecord.getReceivedAmount());
+            }
+          }
+        }
+
+        for (BaseBillDetail baseBillDetail : baseBillDetails) {
+          baseBillDetailMapper.deleteByPrimaryKey(baseBillDetail.getBillDetailId());
+        }
+        baseBillDetailMapper.batchInsertSelective(baseBillDetails);
+      }
+    }
+  }
+
+  /**
+   * 构建中间表订单明细列表
+   *
+   * @param details 订单列表
+   * @return
+   */
+  private List<BaseBillDetail> generateBaseBillDetailByOrderDetail(List<OrderDetail> details) {
+    List<BaseBillDetail> billDetails = new ArrayList<>();
+    for (OrderDetail detail : details) {
+      BaseBillDetail baseBillDetail = new BaseBillDetail();
+      baseBillDetail.setBillDetailId(detail.getId());
+      baseBillDetail.setOrgId(detail.getOrgId());
+      baseBillDetail.setBillId(detail.getOrderRecordId());
+      baseBillDetail.setExecutorId(detail.getExecutorId());
+      baseBillDetail.setItemId(detail.getBillingItemId());
+      baseBillDetail.setItemType(detail.getType());
+      baseBillDetail.setSourceType(detail.getSourceType());
+      baseBillDetail.setQuantity(detail.getQuantity());
+      baseBillDetail.setPrice(detail.getPrice());
+      billDetails.add(baseBillDetail);
+    }
+    return billDetails;
   }
 
   /**

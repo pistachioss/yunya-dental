@@ -18,6 +18,32 @@
         <result column="price" property="price" jdbcType="DECIMAL"/>
         <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
     </resultMap>
+
+    <!-- 批量插入中间表订单明细 -->
+    <insert id="batchInsertSelective">
+        INSERT INTO base_bill_detail (
+        bill_detail_id,
+        org_id,
+        bill_id,
+        discount_amount,
+        coupon_workload,
+        executor_id,
+        item_id,
+        item_type,
+        source_type,
+        quantity,
+        price,
+        received_amount
+        )
+        VALUES
+        <foreach collection="baseBills" item="item" separator=",">
+            (#{item.billDetailId}, #{item.orgId}, #{item.billId},
+            #{item.discountAmount}, #{item.couponWorkload}, #{item.executorId},
+            #{item.itemId}, #{item.itemType}, #{item.sourceType},
+            #{item.quantity}, #{item.price}, #{item.receivedAmount})
+        </foreach>
+    </insert>
+    
     <!-- 根据账单ID删除账单明细 -->
     <delete id="deleteByBillId">
         delete from base_bill_detail where bill_id = #{billId}
