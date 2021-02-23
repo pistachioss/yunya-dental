@@ -4,6 +4,7 @@ import io.swagger.annotations.*;
 import lombok.*;
 
 import java.io.*;
+import java.math.BigDecimal;
 
 /**
  * @author xiangyang
@@ -33,4 +34,20 @@ public class CardSalePageVo implements Serializable {
     private String payStatus;
     @ApiModelProperty(value = "线上/线下")
     private String soldWayName;
+
+    @ApiModelProperty("卡券名称")
+    private String cardName;
+    @ApiModelProperty("售出金额")
+    private BigDecimal soldAmount;
+    @ApiModelProperty("支付方式")
+    private String soldType;
+    @ApiModelProperty("支付方式Id")
+    private Integer payId;
+    @ApiModelProperty("门诊名称")
+    private String orgName;
+    @ApiModelProperty("门诊地址")
+    private String orgAddress;
+    @ApiModelProperty("门诊电话")
+    private String orgIphone;
+
 }

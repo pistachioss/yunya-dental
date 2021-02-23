@@ -47,4 +47,6 @@ public class BillPayRecordVO implements Serializable {
   private BigDecimal stillOweAmount;
   /** 付款明细 */
   private List<BillPayDetailRecordVO> billPayDetailRecords;
+  @ApiModelProperty("账单编号（ZD+门诊ID+时间戳）")
+  private String billNumber;
 }

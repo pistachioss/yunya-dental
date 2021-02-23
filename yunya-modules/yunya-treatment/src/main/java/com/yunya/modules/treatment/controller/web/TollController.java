@@ -100,9 +100,9 @@ public class TollController {
   @CurrentUser
   @ApiOperation("收欠费")
   @PostMapping(value = "/collect/debt", name = "收欠费")
-  public ResponseResult<Integer> collectDebt(@RequestBody @Validated TollDebtModel model) {
-    Integer bllPayId = tollBiz.collectDebt(model);
-    return ResponseUtil.success(bllPayId);
+  public ResponseResult<TollConfirmVO> collectDebt(@RequestBody @Validated TollDebtModel model) {
+    TollConfirmVO tollConfirmVO = tollBiz.collectDebt(model);
+    return ResponseUtil.success(tollConfirmVO);
   }
 
   /**

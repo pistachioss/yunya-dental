@@ -35,7 +35,7 @@ public class EmployeeWorkloadCostController {
    * 保存员工工作量消耗成本
    *
    * @param model 参数模型
-   * @return
+   * @return 保存员工工作量消耗成本
    */
   @CurrentUser
   @ApiOperation("保存或更新员工工作量消耗成本")

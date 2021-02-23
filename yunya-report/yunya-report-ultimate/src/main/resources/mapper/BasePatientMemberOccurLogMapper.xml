@@ -39,7 +39,8 @@
         bpmol.occur_log_id occurLogId,
         DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') occurDate,
         bpt.patient_id patientId,
-        bpt.NAME,
+        bpt.name,
+        bpt.pinyin_name pinyinName,
         bpt.mobile,
         bpm.member_level_id memberLevelId,
         bpm.member_level_name memberLevelName,
@@ -80,16 +81,15 @@
                     #{levelIds}
                 </foreach>
             </if>
-
-            <if test="form.combination != null and form.combination != ''">
-                and concat(IFNULL(bpt.`name`,''),IFNULL(bpt.pinyin_name,''),IFNULL(bpt.mobile,'')) like
-                concat(concat('%',#{form.combination}),'%')
-            </if>
-
         </where>
         group by bpmol.occur_date desc
         ) t1
-
+        <where>
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(t1.`name`,''),IFNULL(t1.pinyinName,''),IFNULL(t1.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+        </where>
     </select>
 
     <!-- 查询会员卡消费记录列表 -->
@@ -101,7 +101,8 @@
         DATE_FORMAT(bb.order_date, '%Y-%m-%d') orderDate,
         bb.order_num orderNum,
         bpt.patient_id patientId,
-        bpt.NAME,
+        bpt.name,
+        bpt.pinyin_name pinyinName,
         bpt.mobile,
         ( SELECT bp.NAME FROM base_patient bp join base_patient_member bpm on bp.patient_id = bpm.patient_id where bpm.card_id = bpmol.card_id ) masterCardName,
         bpm.card_number cardNumber,
@@ -141,14 +142,15 @@
                     #{levelIds}
                 </foreach>
             </if>
-
-            <if test="form.combination != null and form.combination != ''">
-                and concat(IFNULL(bpt.`name`,''),IFNULL(bpt.pinyin_name,''),IFNULL(bpt.mobile,'')) like
-                concat(concat('%',#{form.combination}),'%')
-            </if>
         </where>
         group by bpmol.occur_date desc
         ) t1
+        <where>
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(t1.`name`,''),IFNULL(t1.pinyinName,''),IFNULL(t1.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+        </where>
     </select>
 
     <!-- 查询会员卡退费记录列表 -->
@@ -158,7 +160,8 @@
         bpmol.occur_log_id occurLogId,
         DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') occurDate,
         bpt.patient_id patientId,
-        bpt.NAME,
+        bpt.name,
+        bpt.pinyin_name pinyinName,
         bpt.mobile,
         bpm.card_number cardNumber,
         bpm.member_level_id memberLevelId,
@@ -198,14 +201,15 @@
                 <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') >=  DATE_FORMAT(#{form.startDate}, '%Y-%m-%d')   ]]>
                 <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') <  DATE_FORMAT(#{form.endDate}, '%Y-%m-%d')   ]]>
             </if>
-
-            <if test="form.combination != null and form.combination != ''">
-                and concat(IFNULL(bpt.`name`,''),IFNULL(bpt.pinyin_name,''),IFNULL(bpt.mobile,'')) like
-                concat(concat('%',#{form.combination}),'%')
-            </if>
         </where>
         group by bpmol.occur_date desc
         ) t1
+        <where>
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(t1.`name`,''),IFNULL(t1.pinyinName,''),IFNULL(t1.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+        </where>
     </select>
 
     <!-- 查询预付款充值记录列表 -->
@@ -215,7 +219,8 @@
         bpmol.occur_log_id occurLogId,
         DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') occurDate,
         bpt.patient_id patientId,
-        bpt.NAME,
+        bpt.name,
+        bpt.pinyin_name pinyinName,
         bpt.mobile,
         bpm.card_number cardNumber,
         IFNULL(bpmol.principal_amount,0) principalAmount,
@@ -258,15 +263,15 @@
                     #{rechargeMethod}
                 </foreach>
             </if>
-
-            <if test="form.combination != null and form.combination != ''">
-                and concat(IFNULL(bpt.`name`,''),IFNULL(bpt.pinyin_name,''),IFNULL(bpt.mobile,'')) like
-                concat(concat('%',#{form.combination}),'%')
-            </if>
-
         </where>
         group by bpmol.occur_date desc
         ) t1
+        <where>
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(t1.`name`,''),IFNULL(t1.pinyinName,''),IFNULL(t1.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+        </where>
     </select>
 
     <!-- 查询预付款消费记录列表 -->
@@ -278,7 +283,8 @@
         DATE_FORMAT(bb.order_date, '%Y-%m-%d') orderDate,
         bb.order_num orderNum,
         bpt.patient_id patientId,
-        bpt.NAME,
+        bpt.name,
+        bpt.pinyin_name pinyinName,
         bpt.mobile,
         ( SELECT bp.NAME FROM base_patient bp join base_patient_member bpm on bp.patient_id = bpm.patient_id where bpm.card_id = bpmol.card_id ) masterCardName,
         bpm.card_number cardNumber,
@@ -309,13 +315,15 @@
                 <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') <  DATE_FORMAT(#{form.endDate}, '%Y-%m-%d')   ]]>
             </if>
 
+        </where>
+        group by bpmol.occur_date desc)
+            t1
+        <where>
             <if test="form.combination != null and form.combination != ''">
-                and concat(IFNULL(bpt.`name`,''),IFNULL(bpt.pinyin_name,''),IFNULL(bpt.mobile,'')) like
+                and concat(IFNULL(t1.`name`,''),IFNULL(t1.pinyinName,''),IFNULL(t1.mobile,'')) like
                 concat(concat('%',#{form.combination}),'%')
             </if>
-
         </where>
-        group by bpmol.occur_date desc) t1
     </select>
 
     <!-- 查询预付款退费记录列表 -->
@@ -325,7 +333,8 @@
         bpmol.occur_log_id occurLogId,
         DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') occurDate,
         bpt.patient_id patientId,
-        bpt.NAME,
+        bpt.name,
+        bpt.pinyin_name pinyinName,
         bpt.mobile,
         bpm.card_number cardNumber,
         IFNULL(bpmol.principal_amount,0) principalAmount,
@@ -363,7 +372,14 @@
             </if>
 
         </where>
-        group by bpmol.occur_date desc) t1
+        group by bpmol.occur_date desc)
+            t1
+        <where>
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(t1.`name`,''),IFNULL(t1.pinyinName,''),IFNULL(t1.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+        </where>
     </select>
 
     <!-- 查询会员or预付款余额结存信息列表 -->
@@ -371,7 +387,8 @@
         select t1.* from (
         SELECT DISTINCT
         bp. patient_id patientId,
-        bp.NAME,
+        bp.name,
+        bp.pinyin_name pinyinName,
         bp.mobile,
         bpm.card_number cardNumber,
         bpm.member_level_name memberLevelName,
@@ -553,14 +570,16 @@
                 </foreach>
             </if>
 
-            <if test="form.combination != null and form.combination != ''">
-                and concat(IFNULL(bp.`name`,''),IFNULL(bp.pinyin_name,''),IFNULL(bp.mobile,'')) like
-                concat(concat('%',#{form.combination}),'%')
-            </if>
-
         </where>
         ORDER BY currentRechargeBonus DESC
         ) t1
+
+        <where>
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(t1.`name`,''),IFNULL(t1.pinyinName,''),IFNULL(t1.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+        </where>
     </select>
 
     <!-- 根据条件查询患者储值卡（会员卡、预付款卡）充值记录详情 -->

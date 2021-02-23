@@ -95,9 +95,15 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
     patientKinRelation.setUpdTime(new Date());
     mapper.updateByPrimaryKeySelective(patientKinRelation);
     PatientKinRelation linkedPatient = new PatientKinRelation();
-    BeanUtils.copyProperties(patientKinRelation, linkedPatient);
     linkedPatient.setPatientId(patientKinRelation.getLinkedPatientId());
     linkedPatient.setLinkedPatientId(patientKinRelation.getPatientId());
-    mapper.updateByPrimaryKeySelective(linkedPatient);
+    PatientKinRelation kinRelation = mapper.selectOne(linkedPatient);
+    if (kinRelation != null){
+      kinRelation.setKinshipId(patientKinRelation.getKinshipId());
+      kinRelation.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      kinRelation.setUpdName(BaseContextHandler.getName());
+      kinRelation.setUpdTime(new Date());
+      mapper.updateByPrimaryKeySelective(linkedPatient);
+    }
   }
 }

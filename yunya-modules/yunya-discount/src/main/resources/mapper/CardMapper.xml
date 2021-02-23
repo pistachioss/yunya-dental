@@ -138,7 +138,8 @@
             `sold_type`,
             `status`,
             `is_pay`,
-            `sold_way`
+            `sold_way`,
+            `pay_id`
         from `card`
         where `coupon_id` = #{couponId}
             and `org_id` = #{orgId}

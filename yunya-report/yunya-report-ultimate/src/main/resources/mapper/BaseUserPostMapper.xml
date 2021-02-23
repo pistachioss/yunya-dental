@@ -25,9 +25,10 @@
         e.employee_name as assistantName,
         SUM(
         IF(
-            TIMESTAMPDIFF(MINUTE, btp.treat_start_time, btp.treat_end_time)=0,
-            1,
-            IFNULL(TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_end_time,'%H:%i'), DATE_FORMAT(btp.treat_start_time,'%H:%i')))/60,0)
+        TIMESTAMPDIFF(MINUTE, btp.treat_start_time, btp.treat_end_time)=0,
+        1,
+        IFNULL(TIME_TO_SEC(TIMEDIFF(DATE_FORMAT(btp.treat_end_time,'%H:%i'),
+        DATE_FORMAT(btp.treat_start_time,'%H:%i')))/60,0)
         )) AS treatMatchingTimeAsAssistant1,
         sum(
         IFNULL( btp.actualWorkload, 0 )) AS treatMatchingActualWorkloadAsAssistant1,
@@ -68,14 +69,16 @@
         bbd.discount_amount
         FROM
         base_bill_detail bbd
-        LEFT JOIN (select bb.treatment_id,bb.bill_id,bb.bill_date from base_bill bb where bb.bill_date is not null) bb ON bbd.bill_id = bb.bill_id
+        LEFT JOIN (select bb.treatment_id,bb.bill_id,bb.bill_date from base_bill bb where bb.bill_date is not null) bb
+        ON bbd.bill_id = bb.bill_id
         WHERE
         bbd.executor_id IS NOT NULL
         ) bbd
         GROUP BY
         bbd.treatment_id
         ) bbd ON btp.treatment_id = bbd.treatment_id
-        LEFT JOIN ( SELECT br.treatment_id, SUM( br.refund_amount ) AS refundWorkload FROM base_refund br GROUP BY br.treatment_id ) bf ON btp.treatment_id = bf.treatment_id
+        LEFT JOIN ( SELECT br.treatment_id, SUM( br.refund_amount ) AS refundWorkload FROM base_refund br GROUP BY
+        br.treatment_id ) bf ON btp.treatment_id = bf.treatment_id
         <where>
             AND btp.treat_end_time IS NOT NULL
             AND ${assistant} IS NOT NULL
@@ -122,6 +125,7 @@
         GROUP BY
         e.org_id,
         e.user_id
+        ORDER BY treatMatchingTimeAsAssistant1 DESC
     </select>
 
     <!-- 根据条件查询配诊统计列表 -->
@@ -132,19 +136,22 @@
         e.user_id as assistantId,
         e.employee_name as assistantName,
         SUM(
-        IF(TIMESTAMPDIFF(MINUTE, btp.treat_start_time, btp.treat_end_time)=0,1,IFNULL(TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time),0))) AS treatMatchingTimeAsAssistant1,
+        IF(TIMESTAMPDIFF(MINUTE, btp.treat_start_time, btp.treat_end_time)=0,1,IFNULL(TIMESTAMPDIFF( MINUTE,
+        btp.treat_start_time, btp.treat_end_time),0))) AS treatMatchingTimeAsAssistant1,
         sum(
         IFNULL( btp.actualWorkload, 0 )) AS treatMatchingActualWorkloadAsAssistant1,
         SUM(
         IFNULL( btp.refundWorkload, 0 )) AS treatMatchingRefundWorkloadAsAssistant1,
         SUM(
-        IF(TIMESTAMPDIFF( MINUTE, btp1.treat_start_time, btp1.treat_end_time)=0,1,IFNULL(TIMESTAMPDIFF( MINUTE, btp1.treat_start_time, btp1.treat_end_time),0))) AS treatMatchingTimeAsAssistant2,
+        IF(TIMESTAMPDIFF( MINUTE, btp1.treat_start_time, btp1.treat_end_time)=0,1,IFNULL(TIMESTAMPDIFF( MINUTE,
+        btp1.treat_start_time, btp1.treat_end_time),0))) AS treatMatchingTimeAsAssistant2,
         SUM(
         IFNULL( btp1.actualWorkload, 0 )) AS treatMatchingActualWorkloadAsAssistant2,
         SUM(
         IFNULL( btp1.refundWorkload, 0 )) AS treatMatchingRefundWorkloadAsAssistant2,
         SUM(
-        IF(TIMESTAMPDIFF( MINUTE, btp2.treat_start_time, btp2.treat_end_time)=0,1,IFNULL(TIMESTAMPDIFF( MINUTE, btp2.treat_start_time, btp2.treat_end_time),0))) AS treatMatchingTimeAsAssistant3,
+        IF(TIMESTAMPDIFF( MINUTE, btp2.treat_start_time, btp2.treat_end_time)=0,1,IFNULL(TIMESTAMPDIFF( MINUTE,
+        btp2.treat_start_time, btp2.treat_end_time),0))) AS treatMatchingTimeAsAssistant3,
         SUM(
         IFNULL( btp2.actualWorkload, 0 )) AS treatMatchingActualWorkloadAsAssistant3,
         SUM( IFNULL( btp2.refundWorkload, 0 ) ) AS treatMatchingRefundWorkloadAsAssistant3
@@ -190,7 +197,8 @@
         GROUP BY
         bbd.treatment_id
         ) bbd ON btp.treatment_id = bbd.treatment_id
-        LEFT JOIN ( SELECT br.treatment_id, SUM( br.refund_amount ) AS refundWorkload FROM base_refund br GROUP BY br.treatment_id ) bf ON btp.treatment_id = bf.treatment_id
+        LEFT JOIN ( SELECT br.treatment_id, SUM( br.refund_amount ) AS refundWorkload FROM base_refund br GROUP BY
+        br.treatment_id ) bf ON btp.treatment_id = bf.treatment_id
         <where>
             AND btp.treat_end_time IS NOT NULL
             AND btp.assistant_1 IS NOT NULL
@@ -253,7 +261,8 @@
         GROUP BY
         bbd.treatment_id
         ) bbd ON btp.treatment_id = bbd.treatment_id
-        LEFT JOIN ( SELECT br.treatment_id, SUM( br.refund_amount ) AS refundWorkload FROM base_refund br GROUP BY br.treatment_id ) bf ON btp.treatment_id = bf.treatment_id
+        LEFT JOIN ( SELECT br.treatment_id, SUM( br.refund_amount ) AS refundWorkload FROM base_refund br GROUP BY
+        br.treatment_id ) bf ON btp.treatment_id = bf.treatment_id
         <where>
             and btp.treat_end_time IS NOT NULL
             and btp.assistant_1 IS NOT NULL
@@ -316,7 +325,8 @@
         GROUP BY
         bbd.treatment_id
         ) bbd ON btp.treatment_id = bbd.treatment_id
-        LEFT JOIN ( SELECT br.treatment_id, SUM( br.refund_amount ) AS refundWorkload FROM base_refund br GROUP BY br.treatment_id ) bf ON btp.treatment_id = bf.treatment_id
+        LEFT JOIN ( SELECT br.treatment_id, SUM( br.refund_amount ) AS refundWorkload FROM base_refund br GROUP BY
+        br.treatment_id ) bf ON btp.treatment_id = bf.treatment_id
         <where>
             and btp.treat_end_time IS NOT NULL
             and btp.assistant_1 IS NOT NULL
@@ -495,7 +505,7 @@
         <where>
             and btp.appoint_status != 2
             <if test="query.startDate != null and query.startDate != ''">
-                and DATE_FORMAT(  btp.appoint_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>
             <if test="query.endDate != null and query.endDate != ''">
                 and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}

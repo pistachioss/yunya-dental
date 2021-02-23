@@ -46,6 +46,7 @@
 
     <!-- 欠费查询 -->
     <select id="arrears" resultType="com.yunya.feign.report.domain.vo.ArrearsVo">
+        select * from (
         select
         DISTINCT
         bb.bill_id billId,
@@ -53,6 +54,7 @@
         DATE_FORMAT(bb.order_date, '%Y-%m-%d %H:%i:%s') orderDate,
         bb.order_num orderNum,
         bp.name,
+        bp.pinyin_name pinyinName,
         bp.mobile,
         IFNULL(bb.privilege_amount + bb.actual_amount,0) originalPrice,
         IFNULL(bb.privilege_amount,0) privilegeAmount,
@@ -81,16 +83,15 @@
                     #{registeredDentistId}
                 </foreach>
             </if>
-
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                AND bp.patient_id in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-
         </where>
         order by bb.order_date asc
+        ) t
+        <where>
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(t.`name`,''),IFNULL(t.pinyinName,''),IFNULL(t.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+        </where>
     </select>
 
     <!-- 根据条件查询开单记录列表 -->
@@ -843,7 +844,7 @@
         FROM base_benefit bb
         LEFT JOIN base_card bc ON bc.card_id = bb.card_id
         LEFT JOIN base_coupon bcpon ON bcpon.coupon_id = bc.coupon_id
-        LEFT JOIN base_patient_member bpm ON bpm.member_level_id = bb.card_id
+        LEFT JOIN (select member_level_id,member_level_name from base_patient_member group by member_level_id,member_level_name) bpm ON bpm.member_level_id = bb.card_id
         WHERE bb.order_id = #{billId}
     </select>
 

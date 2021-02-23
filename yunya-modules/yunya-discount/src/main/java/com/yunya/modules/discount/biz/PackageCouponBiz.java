@@ -69,7 +69,7 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
         //插入卡券信息
         insertSelective(packageCoupon);
         //同一种卡券最多添加9999个
-        if(packageCoupon.getId()<10000){
+        if(selectCount(new PackageCoupon())<10000){
         String num = String.format("%04d", packageCoupon.getId());
         couponCommonInfo.setCouponCode(PACKAGE_COUPON_TYPE + num);
             //插入卡券编码

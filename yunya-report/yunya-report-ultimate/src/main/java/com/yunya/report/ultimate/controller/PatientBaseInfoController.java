@@ -12,8 +12,6 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 /**
  * 简介:
  *
@@ -34,7 +32,7 @@ public class PatientBaseInfoController {
    * 根据关键字搜索患者信息
    *
    * @param query 查询条件
-   * @return
+   * @return 患者信息
    */
   @ApiOperation("根据条件搜索患者信息")
   @PostMapping(value = "/full/search", name = "根据条件搜索患者信息")
@@ -48,7 +46,7 @@ public class PatientBaseInfoController {
    * 查询患者资料信息
    *
    * @param patientId 患者id
-   * @return BasePatient
+   * @return 患者资料信息
    */
   @ApiOperation("查询患者资料就诊信息")
   @GetMapping("/patientInfo/{patientId}")

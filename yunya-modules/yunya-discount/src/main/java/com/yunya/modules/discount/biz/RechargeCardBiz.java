@@ -72,7 +72,7 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
         //插入卡券信息
         insertSelective(rechargeCard);
         //同一种卡券最多添加9999个
-        if(rechargeCard.getId()<10000){
+        if(selectCount(new RechargeCard())<10000){
         String num = String.format("%04d", rechargeCard.getId());
         couponCommonInfo.setCouponCode(RECHARGE_CARD_TYPE + num);
         //插入卡券编码

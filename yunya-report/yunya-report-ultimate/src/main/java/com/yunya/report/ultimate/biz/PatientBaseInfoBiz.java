@@ -9,7 +9,6 @@ import com.yunya.models.report.BasePatient;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMapper;
 import com.yunya.report.ultimate.mapper.BaseTreatmentProcessMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,13 +30,13 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
 
   @Resource private BaseTreatmentProcessMapper baseTreatmentProcessMapper;
 
-  @Autowired private BaseBillMapper billMapper;
+  @Resource private BaseBillMapper billMapper;
 
   /**
    * 查询患者预约信息
    *
    * @param patientId 患者id
-   * @return PatientDataVo
+   * @return 患者预约信息
    */
   public PatientDataVo patientDataVo(Integer patientId) {
     PatientDataVo patientDataVo = new PatientDataVo();
