@@ -463,6 +463,7 @@
                 </foreach>
             </if>
         </where>
+        ORDER BY bup.actualWorkload desc
     </select>
 
     <!-- 根据条件查询项目分类收入汇总列表 -->
