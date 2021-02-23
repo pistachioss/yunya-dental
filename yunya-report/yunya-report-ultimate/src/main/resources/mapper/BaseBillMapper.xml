@@ -46,6 +46,7 @@
 
     <!-- 欠费查询 -->
     <select id="arrears" resultType="com.yunya.feign.report.domain.vo.ArrearsVo">
+        select * from (
         select
         DISTINCT
         bb.bill_id billId,
@@ -53,6 +54,7 @@
         DATE_FORMAT(bb.order_date, '%Y-%m-%d %H:%i:%s') orderDate,
         bb.order_num orderNum,
         bp.name,
+        bp.pinyin_name pinyinName,
         bp.mobile,
         IFNULL(bb.privilege_amount + bb.actual_amount,0) originalPrice,
         IFNULL(bb.privilege_amount,0) privilegeAmount,
@@ -81,13 +83,15 @@
                     #{registeredDentistId}
                 </foreach>
             </if>
-
+        </where>
+        order by bb.order_date asc
+        ) t
+        <where>
             <if test="form.combination != null and form.combination != ''">
-                and concat(IFNULL(bb.`name`,''),IFNULL(bb.pinyin_name,''),IFNULL(bb.mobile,'')) like
+                and concat(IFNULL(t.`name`,''),IFNULL(t.pinyinName,''),IFNULL(t.mobile,'')) like
                 concat(concat('%',#{form.combination}),'%')
             </if>
         </where>
-        order by bb.order_date asc
     </select>
 
     <!-- 根据条件查询开单记录列表 -->
