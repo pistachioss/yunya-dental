@@ -358,20 +358,18 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     List<BaseBill> baseBills = new ArrayList<>();
     if (StringHelper.isNotEmpty(orderRecords)) {
       for (OrderRecord orderRecord : orderRecords) {
-        if (orderRecord.getInservice()) {
-          BaseBill baseBill = new BaseBill();
-          baseBill.setBillId(orderRecord.getId());
-          baseBill.setOrgId(orderRecord.getOrgId());
-          baseBill.setPatientId(orderRecord.getPatientId());
-          baseBill.setTreatmentId(orderRecord.getTreatmentRecordId());
-          baseBill.setOrderNum(orderRecord.getOrderRecordNum());
-          baseBill.setOrderAmount(orderRecord.getTotalAmount());
-          baseBill.setBillerId(orderRecord.getCrtId());
-          baseBill.setOrderDate(orderRecord.getCrtTime());
-          // 设置账单的收费信息
-          setBaseBillChargeValue(orderRecord, baseBill);
-          baseBills.add(baseBill);
-        }
+        BaseBill baseBill = new BaseBill();
+        baseBill.setBillId(orderRecord.getId());
+        baseBill.setOrgId(orderRecord.getOrgId());
+        baseBill.setPatientId(orderRecord.getPatientId());
+        baseBill.setTreatmentId(orderRecord.getTreatmentRecordId());
+        baseBill.setOrderNum(orderRecord.getOrderRecordNum());
+        baseBill.setOrderAmount(orderRecord.getTotalAmount());
+        baseBill.setBillerId(orderRecord.getCrtId());
+        baseBill.setOrderDate(orderRecord.getCrtTime());
+        // 设置账单的收费信息
+        setBaseBillChargeValue(orderRecord, baseBill);
+        baseBills.add(baseBill);
       }
     }
     return baseBills;
