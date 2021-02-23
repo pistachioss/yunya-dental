@@ -22,11 +22,10 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * 欠费查询
    *
    * @param form 欠费查询
-   * @param patientIds 患者id
    * @return List<ArrearsVo>
    */
   List<ArrearsVo> arrears(
-      @Param("form") ArrearsQueryForm form, @Param("patientIds") List<Integer> patientIds);
+      @Param("form") ArrearsQueryForm form);
 
   /**
    * 根据条件查询账单优惠明细列表

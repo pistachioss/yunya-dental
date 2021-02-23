@@ -82,13 +82,10 @@
                 </foreach>
             </if>
 
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                AND bp.patient_id in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(bb.`name`,''),IFNULL(bb.pinyin_name,''),IFNULL(bb.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
             </if>
-
         </where>
         order by bb.order_date asc
     </select>
