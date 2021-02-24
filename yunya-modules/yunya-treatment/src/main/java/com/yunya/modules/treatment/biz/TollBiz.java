@@ -1222,6 +1222,7 @@ public class TollBiz {
     InvoiceModel invoiceModel = model.getInvoiceModel();
     byte discountType = 0;
     Integer billRecordId;
+    String billNUmber;
     Integer patientId;
     Integer orderRecordId;
     BigDecimal debtAmount;
@@ -1285,6 +1286,7 @@ public class TollBiz {
       billRecordBiz.updateSelectiveById(billRecordResult);
       // 保存收费记录
       billRecordId = billRecordResult.getId();
+      billNUmber = billRecordResult.getBillNumber();
       orderRecordId = billRecordResult.getOrderRecordId();
       if (usePrivilege) {
         // 保存优惠明细
@@ -1336,6 +1338,7 @@ public class TollBiz {
       billRecord.setUpdName(name);
       billRecordBiz.insertSelective(billRecord);
       billRecordId = billRecord.getId();
+      billNUmber = billRecord.getBillNumber();
       // 更新订单为已收费
       orderRecordResult.setStatus((byte) 2);
       orderRecordBiz.updateSelectiveById(orderRecordResult);
@@ -1382,7 +1385,6 @@ public class TollBiz {
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     }
     TollConfirmVO tollConfirmVO = new TollConfirmVO();
-    String billNUmber = billRecordResult.getBillNumber();
     tollConfirmVO.setBillNumber(billNUmber);
     tollConfirmVO.setBillPayRecordId(billPayRecordId);
     return tollConfirmVO;
