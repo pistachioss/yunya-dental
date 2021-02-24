@@ -99,15 +99,28 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<ClinicOralTariffVO> resultList = mapper.selectClinicOralTariffList(queryForm);
+    if (StringHelper.isNotEmpty(resultList)) {
+      List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
+      if (StringHelper.isNotEmpty(memberTypes)) {
+        resultList.forEach(
+            tariffVO -> {
+              Map<Integer, Object> memberPrices = new HashMap<>(16);
+              // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
+              setClinicOralTariffMemberPrice(
+                  memberPrices, memberTypes, queryForm.getOrgId(), tariffVO);
+            });
+      }
+    }
     return new PageInfo<>(resultList);
   }
 
-    /**
-     * 根据条件查询门诊商品列表
-     * @param queryForm 查询条件
-     * @param isExport 是否导出
-     * @return
-     */
+  /**
+   * 根据条件查询门诊商品列表
+   *
+   * @param queryForm 查询条件
+   * @param isExport 是否导出
+   * @return
+   */
   public PageInfo<ClinicOralTariffVO> findList(
       ClinicOralTariffQueryForm queryForm, boolean isExport) {
     PageInfo pageInfo;
