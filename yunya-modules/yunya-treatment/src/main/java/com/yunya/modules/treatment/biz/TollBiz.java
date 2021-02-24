@@ -379,7 +379,7 @@ public class TollBiz {
     }
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
     TollConfirmVO tollConfirmVO = new TollConfirmVO();
-    tollConfirmVO.setBillNumber( billRecord.getBillNumber());
+    tollConfirmVO.setBillNumber(billRecord.getBillNumber());
     tollConfirmVO.setBillPayRecordId(billPayRecordId);
     return tollConfirmVO;
   }
@@ -1623,13 +1623,19 @@ public class TollBiz {
       byte flag) {
     BigDecimal totalCharge =
         calculateTotalCharge(prepaymentAccountModels, memberAccountModels, paymentModels);
-    if (BigDecimal.valueOf(0).compareTo(totalCharge) >= 0) {
-      if (flag == 0) {
-        throw new ClientServiceException("收欠费失败，收欠费总额不能小于或等于0！", PARAMETERS_IS_ILLEGAL);
-      } else if (flag == 1) {
-        throw new ClientServiceException("收欠费失败，收欠费总额不能小于0！", PARAMETERS_IS_ILLEGAL);
-      }
+    switch (flag) {
+      case 0:
+        if (BigDecimal.valueOf(0).compareTo(totalCharge) >= 0) {
+          throw new ClientServiceException("收欠费失败，收欠费总额不能小于或等于0！", PARAMETERS_IS_ILLEGAL);
+        }
+        break;
+      case 1:
+        if (BigDecimal.valueOf(0).compareTo(totalCharge) > 0) {
+          throw new ClientServiceException("收欠费失败，收欠费总额不能小于0！", PARAMETERS_IS_ILLEGAL);
+        }
+        break;
     }
+
     return totalCharge;
   }
 
