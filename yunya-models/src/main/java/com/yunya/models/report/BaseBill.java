@@ -1,11 +1,14 @@
 package com.yunya.models.report;
 
+import lombok.EqualsAndHashCode;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
 
+@EqualsAndHashCode
 @Table(name = "base_bill")
 public class BaseBill {
     /**

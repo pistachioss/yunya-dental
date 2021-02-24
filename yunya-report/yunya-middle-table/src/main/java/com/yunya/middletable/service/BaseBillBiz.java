@@ -28,7 +28,9 @@ import tk.mybatis.mapper.entity.Example;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -108,6 +110,12 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       baseBill.setOrderAmount(orderRecord.getTotalAmount());
       baseBill.setBillerId(orderRecord.getCrtId());
       baseBill.setOrderDate(orderRecord.getCrtTime());
+      baseBill.setBillStatus((byte) 0);
+      baseBill.setPrivilegeType((byte) 0);
+      baseBill.setPrivilegeAmount(new BigDecimal("0"));
+      baseBill.setActualAmount(new BigDecimal("0"));
+      baseBill.setReceivedAmount(new BigDecimal("0"));
+      baseBill.setDebtAmount(new BigDecimal("0"));
       // 设置账单的收费信息
       setBaseBillChargeValue(orderRecord, baseBill);
       return baseBill;
@@ -141,10 +149,6 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         baseBill.setDebtAmount(debtAmount);
         baseBill.setCheckerId(billRecord.getCrtId());
       }
-    } else {
-      BigDecimal totalAmount = orderRecord.getTotalAmount();
-      baseBill.setActualAmount(totalAmount);
-      baseBill.setDebtAmount(totalAmount);
     }
   }
 
@@ -203,6 +207,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     baseBillDetail.setSourceType(detail.getSourceType());
     baseBillDetail.setQuantity(detail.getQuantity());
     baseBillDetail.setPrice(detail.getPrice());
+    baseBillDetail.setDiscountAmount(new BigDecimal("0"));
+    baseBillDetail.setCouponWorkload(new BigDecimal("0"));
+    baseBillDetail.setReceivedAmount(new BigDecimal("0"));
     OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
     detailPayRecord.setOrderDetailId(detailId);
     detailPayRecord.setInservice(true);
@@ -243,7 +250,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
                     List<OrderRecord> orderRecords =
                         orderRecordMapper.selectByExample(orderExample);
                     if (StringHelper.isNotEmpty(orderRecords)) {
-                      List<BaseBill> baseBills = generateBaseBillList(orderRecords);
+                      Set<BaseBill> baseBills = generateBaseBillList(orderRecords);
                       if (StringHelper.isNotEmpty(baseBills)) {
                         Example baseBillEmp = new Example(BaseBill.class);
                         baseBillEmp
@@ -343,6 +350,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       baseBillDetail.setSourceType(detail.getSourceType());
       baseBillDetail.setQuantity(detail.getQuantity());
       baseBillDetail.setPrice(detail.getPrice());
+      baseBillDetail.setDiscountAmount(new BigDecimal("0"));
+      baseBillDetail.setCouponWorkload(new BigDecimal("0"));
+      baseBillDetail.setReceivedAmount(new BigDecimal("0"));
       billDetails.add(baseBillDetail);
     }
     return billDetails;
@@ -354,8 +364,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * @param orderRecords 订单记录列表
    * @return 账单记录列表
    */
-  private List<BaseBill> generateBaseBillList(List<OrderRecord> orderRecords) {
-    List<BaseBill> baseBills = new ArrayList<>();
+  private Set<BaseBill> generateBaseBillList(List<OrderRecord> orderRecords) {
+    Set<BaseBill> baseBills = new LinkedHashSet<>();
     if (StringHelper.isNotEmpty(orderRecords)) {
       for (OrderRecord orderRecord : orderRecords) {
         BaseBill baseBill = new BaseBill();
@@ -367,6 +377,12 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         baseBill.setOrderAmount(orderRecord.getTotalAmount());
         baseBill.setBillerId(orderRecord.getCrtId());
         baseBill.setOrderDate(orderRecord.getCrtTime());
+        baseBill.setBillStatus((byte) 0);
+        baseBill.setPrivilegeType((byte) 0);
+        baseBill.setPrivilegeAmount(new BigDecimal("0"));
+        baseBill.setActualAmount(new BigDecimal("0"));
+        baseBill.setReceivedAmount(new BigDecimal("0"));
+        baseBill.setDebtAmount(new BigDecimal("0"));
         // 设置账单的收费信息
         setBaseBillChargeValue(orderRecord, baseBill);
         baseBills.add(baseBill);

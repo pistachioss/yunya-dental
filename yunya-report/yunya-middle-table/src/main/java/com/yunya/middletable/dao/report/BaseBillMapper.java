@@ -4,7 +4,7 @@ import com.yunya.models.report.BaseBill;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
-import java.util.List;
+import java.util.Set;
 
 public interface BaseBillMapper extends Mapper<BaseBill> {
 
@@ -13,5 +13,5 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    *
    * @param baseBills 账单列表
    */
-  void batchInsertSelective(@Param("baseBills") List<BaseBill> baseBills);
+  void batchInsertSelective(@Param("baseBills") Set<BaseBill> baseBills);
 }
