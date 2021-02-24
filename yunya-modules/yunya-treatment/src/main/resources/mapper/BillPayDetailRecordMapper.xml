@@ -122,7 +122,8 @@
             IFNULL(SUM(amount), 0)
         FROM bill_pay_detail_record bpdr
         WHERE
-            bill_record_id = #{billRecordId}
+            inservice = 1
+            and bill_record_id = #{billRecordId}
             and account_item_id = #{accountItemId}
     </select>
 </mapper>
