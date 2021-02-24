@@ -1,5 +1,6 @@
 package com.yunya.feign.employee_attend.model;
 
+import com.yunya.framework.common.constant.BusinessConstants;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -35,7 +36,7 @@ public class AttendanceDeviceBindingModel {
     /** 绑定打卡账号 */
     @ApiModelProperty(value = "绑定打卡账号", required = true)
     @NotBlank(message = "绑定打卡账号不能为空")
-    @Pattern(regexp = "^1(3([0-35-9]\\d|4[1-8])|4[14-9]\\d|5([0-35689]\\d|7[1-79])|66\\d|7[2-35-8]\\d|8\\d{2}|9[13589]\\d)\\d{7}$")
+    @Pattern(regexp = BusinessConstants.MOBILE_REGEXP, message = "手机号格式有误")
     private String mobile;
 
     /** 验证码 */
