@@ -64,6 +64,7 @@
     <!-- 根据条件查询门诊价目表信息列表 -->
     <select id="selectClinicTariffList" resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffVO">
         SELECT
+        #{queryForm.orgId} as orgId,
         ct.tariffCategoryId,
         ct.tariffCategoryName,
         ct.tariffCategoryNumber,

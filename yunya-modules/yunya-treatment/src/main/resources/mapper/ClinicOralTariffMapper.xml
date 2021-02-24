@@ -49,6 +49,7 @@
     <!-- 根据条件查询门诊商品项目信息列表 -->
     <select id="selectClinicOralTariffList" resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO">
         SELECT
+        #{queryForm.orgId} as orgId,
         oralTariffCategoryId,
         oraltariffCategoryName,
         oraltariffCategoryNumber,
