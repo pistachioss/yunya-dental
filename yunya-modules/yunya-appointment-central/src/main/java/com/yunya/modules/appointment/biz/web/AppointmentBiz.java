@@ -61,8 +61,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,10 +69,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -144,7 +140,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
     @Resource(name = "poolExecutor")
     private ExecutorService poolExecutor;
-
     /**
      * 添加预约（检查预约是否冲突）
      * @param form  预约参数封装
@@ -1674,19 +1669,27 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointment.setAppointPeriod(start + "-" + end);
 
         // 设置预约类型(0-初诊；1-复诊)
-        // 根据患者是否有病历号来判断患者预约类型
-        PatientBaseInfo patientBaseInfo = remotePatientCentralServiceFeign.findPatientInfoById(appointment.getPatientId());
-        String medicalNumber = patientBaseInfo.getMedicalNumber();
-        log.info("=========================【预约初复诊判断】=====================");
-        log.info("==>患者信息:{}",patientBaseInfo.toString());
-        log.info("============================end==============================");
-        if (StringHelper.isBlank(medicalNumber)){
-            // 病历号为空，初诊
-            appointment.setAppointType((byte)0);
-        } else {
-            // 病历号不为空，复诊
-            appointment.setAppointType((byte)1);
+//        // 根据患者是否有病历号来判断患者预约类型
+//        PatientBaseInfo patientBaseInfo = remotePatientCentralServiceFeign.findPatientInfoById(appointment.getPatientId());
+//        String medicalNumber = patientBaseInfo.getMedicalNumber();
+//        log.info("=========================【预约初复诊判断】=====================");
+//        log.info("==>患者信息:{}",patientBaseInfo.toString());
+//        log.info("============================end==============================");
+//        if (StringHelper.isBlank(medicalNumber)){
+//            // 病历号为空，初诊
+//            appointment.setAppointType((byte)0);
+//        } else {
+//            // 病历号不为空，复诊
+//            appointment.setAppointType((byte)1);
+//        }
+        TreatmentRecord treatmentRecord = new TreatmentRecord();
+        treatmentRecord.setPatientId(appointment.getPatientId());
+        List<TreatmentRecord> treatmentRecords = remoteTreatmentServiceFeign.findTreatmentRecordList(treatmentRecord);
+        byte appointType = 0;
+        if (treatmentRecords!=null && treatmentRecords.size()>= 1) {
+            appointType = 1;
         }
+        appointment.setAppointType(appointType);
         appointment.setInservice(true);
         // 设置预约状态 0-预约未到，1-履约，2，取消预约，3-失约
         appointment.setAppointStatus((byte)0);
