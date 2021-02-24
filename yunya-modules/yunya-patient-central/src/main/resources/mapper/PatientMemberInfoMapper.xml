@@ -57,10 +57,8 @@
           IF(card_number is null,'000000',substr( MAX(card_number), -6, 6 )) as maxnum
       from patient_member_info
       where
-        org_id = #{orgId}
-        <if test="onlineDateTime != null and onlineDateTime != ''">
-            and date_format(crt_time, '%Y-%m-%d %H:%i:%s') &gt;= date_format(#{onlineDateTime},'%Y-%m-%d %H:%i:%s')
-        </if>
+        left(prepayment_number,1)='H'
+        and org_id = #{orgId}
     </select>
 
     <!-- 根据门诊id获取病历号后六位 -->
@@ -69,10 +67,8 @@
             IF(prepayment_number is null,'000000',substr( MAX(prepayment_number), -6, 6 )) as maxnum
         from patient_prepayments_info
         where
-          org_id = #{orgId}
-          <if test="onlineDateTime != null and onlineDateTime != ''">
-              and date_format(crt_time, '%Y-%m-%d %H:%i:%s') &gt;= date_format(#{onlineDateTime},'%Y-%m-%d %H:%i:%s')
-          </if>
+          left(prepayment_number,1)='Y'
+          and org_id = #{orgId}
     </select>
 
     <!-- 根据会员卡号查询 -->
