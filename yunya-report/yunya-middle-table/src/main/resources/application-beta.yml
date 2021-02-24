@@ -1,3 +1,9 @@
+## 数据源连接
+myjdbc:
+    host: community.yunya365.com
+    port: 3306
+    username: sa
+    password: Admin001!
 
 ## 数据库列表
 mydb:
