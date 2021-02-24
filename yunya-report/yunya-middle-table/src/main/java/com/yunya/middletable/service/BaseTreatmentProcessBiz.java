@@ -461,9 +461,12 @@ public class BaseTreatmentProcessBiz
                     appointEmp
                         .createCriteria()
                         .andEqualTo("inservice", true)
-                        .andCondition("crtTime >= " + new DateTime(date).toString("yyyy-MM-dd"))
                         .andCondition(
-                            "crtTime < " + new DateTime(date).plusDays(1).toString("yyyy-MM-dd"));
+                            "crtTime >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
+                        .andCondition(
+                            "crtTime < '"
+                                + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
+                                + "'");
                     List<Appointment> appointments = appointmentMapper.selectByExample(appointEmp);
 
                     if (appointments.size() > 10000) {
@@ -482,9 +485,12 @@ public class BaseTreatmentProcessBiz
                     registeredEmp
                         .createCriteria()
                         .andEqualTo("inservice", true)
-                        .andCondition("crtTime >= " + new DateTime(date).toString("yyyy-MM-dd"))
                         .andCondition(
-                            "crtTime < " + new DateTime(date).plusDays(1).toString("yyyy-MM-dd"));
+                            "crtTime >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
+                        .andCondition(
+                            "crtTime < '"
+                                + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
+                                + "'");
                     List<Registered> registeredList =
                         registeredMapper.selectByExample(registeredEmp);
                     if (registeredList.size() > 10000) {
