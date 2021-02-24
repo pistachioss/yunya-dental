@@ -243,10 +243,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
                     orderExample
                         .createCriteria()
                         .andEqualTo("inservice", true)
-                        .andBetween(
-                            "crtTime",
-                            new DateTime(date + " 00:00:00").toDate(),
-                            new DateTime(date + " 23:59:59").toDate());
+                        .andCondition("crtTime >= " + new DateTime(date).toDate())
+                        .andCondition("crtTime < " + new DateTime(date).plusDays(1).toDate());
                     List<OrderRecord> orderRecords =
                         orderRecordMapper.selectByExample(orderExample);
                     if (StringHelper.isNotEmpty(orderRecords)) {
@@ -255,10 +253,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
                         Example baseBillEmp = new Example(BaseBill.class);
                         baseBillEmp
                             .createCriteria()
-                            .andBetween(
-                                "orderDate",
-                                new DateTime(date + " 00:00:00").toDate(),
-                                new DateTime(date + " 23:59:59").toDate());
+                            .andCondition("crtTime >= " + new DateTime(date).toDate())
+                            .andCondition("crtTime < " + new DateTime(date).plusDays(1).toDate());
                         mapper.deleteByExample(baseBillEmp);
                         mapper.batchInsertSelective(baseBills);
 
@@ -296,9 +292,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         .createCriteria()
         .andEqualTo("inservice", true)
         .andBetween(
-            "crtTime",
-            new DateTime(date + " 00:00:00").toDate(),
-            new DateTime(date + " 23:59:59").toDate());
+            "crtTime", new DateTime(date).toDate(), new DateTime(date).plusDays(1).toDate());
     List<OrderDetail> details = orderDetailMapper.selectByExample(orderDetailEmp);
     if (StringHelper.isNotEmpty(details)) {
       List<BaseBillDetail> baseBillDetails = generateBaseBillDetailByOrderDetail(details);
@@ -308,10 +302,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       orderDetailPayRecordEmp
           .createCriteria()
           .andEqualTo("inservice", true)
-          .andBetween(
-              "crtTime",
-              new DateTime(date + " 00:00:00").toDate(),
-              new DateTime(date + " 23:59:59").toDate());
+          .andCondition("crtTime >= " + new DateTime(date).toDate())
+          .andCondition("crtTime < " + new DateTime(date).plusDays(1).toDate());
       List<OrderDetailPayRecord> orderDetailPayRecords =
           orderDetailPayRecordMapper.selectByExample(orderDetailPayRecordEmp);
       if (StringHelper.isNotEmpty(baseBillDetails)) {
