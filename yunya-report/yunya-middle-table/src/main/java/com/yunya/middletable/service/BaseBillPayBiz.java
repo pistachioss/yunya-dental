@@ -207,8 +207,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                         .andEqualTo("inservice", true)
                         .andBetween(
                             "crtTime",
-                            new DateTime(date).toDate(),
-                            new DateTime(date).plusDays(1).toDate());
+                            new DateTime(date + " 00:00:00").toDate(),
+                            new DateTime(date + " 23:59:59").toDate());
                     List<BillPayRecord> billPayRecords =
                         billPayRecordMapper.selectByExample(billPayRecordEmp);
                     if (StringHelper.isNotEmpty(billPayRecords)) {
