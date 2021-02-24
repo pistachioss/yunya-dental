@@ -462,9 +462,9 @@ public class BaseTreatmentProcessBiz
                         .createCriteria()
                         .andEqualTo("inservice", true)
                         .andCondition(
-                            "crtTime >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
+                            "crt_time >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
                         .andCondition(
-                            "crtTime < '"
+                            "crt_time < '"
                                 + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
                                 + "'");
                     List<Appointment> appointments = appointmentMapper.selectByExample(appointEmp);
@@ -486,9 +486,9 @@ public class BaseTreatmentProcessBiz
                         .createCriteria()
                         .andEqualTo("inservice", true)
                         .andCondition(
-                            "crtTime >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
+                            "crt_time >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
                         .andCondition(
-                            "crtTime < '"
+                            "crt_time < '"
                                 + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
                                 + "'");
                     List<Registered> registeredList =

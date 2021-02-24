@@ -206,9 +206,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                         .createCriteria()
                         .andEqualTo("inservice", true)
                         .andCondition(
-                            "crtTime >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
+                            "crt_time >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
                         .andCondition(
-                            "crtTime < '"
+                            "crt_time < '"
                                 + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
                                 + "'");
                     List<BillPayRecord> billPayRecords =
