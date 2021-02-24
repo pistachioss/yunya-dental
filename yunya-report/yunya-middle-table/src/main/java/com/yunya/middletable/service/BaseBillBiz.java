@@ -258,9 +258,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
                         baseBillEmp
                             .createCriteria()
                             .andCondition(
-                                "crtTime >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
+                                "orderDate >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
                             .andCondition(
-                                "crtTime < '"
+                                "orderDate < '"
                                     + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
                                     + "'");
                         mapper.deleteByExample(baseBillEmp);
