@@ -1625,17 +1625,14 @@ public class TollBiz {
       byte flag) {
     BigDecimal totalCharge =
         calculateTotalCharge(prepaymentAccountModels, memberAccountModels, paymentModels);
-    switch (flag) {
-      case 0:
-        if (BigDecimal.valueOf(0).compareTo(totalCharge) >= 0) {
-          throw new ClientServiceException("收欠费失败，收欠费总额不能小于或等于0！", PARAMETERS_IS_ILLEGAL);
-        }
-        break;
-      case 1:
-        if (BigDecimal.valueOf(0).compareTo(totalCharge) > 0) {
-          throw new ClientServiceException("收欠费失败，收欠费总额不能小于0！", PARAMETERS_IS_ILLEGAL);
-        }
-        break;
+    if (flag == 0) {
+      if (BigDecimal.valueOf(0).compareTo(totalCharge) >= 0) {
+        throw new ClientServiceException("收欠费失败，收欠费总额不能小于或等于0！", PARAMETERS_IS_ILLEGAL);
+      }
+    } else if (flag == 1) {
+      if (BigDecimal.valueOf(0).compareTo(totalCharge) > 0) {
+        throw new ClientServiceException("收欠费失败，收欠费总额不能小于0！", PARAMETERS_IS_ILLEGAL);
+      }
     }
 
     return totalCharge;
