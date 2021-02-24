@@ -93,15 +93,13 @@
          ) cot ON bot.id = cot.oral_tariff_id
         ) cot
         <where>
+            and cot.inservice = 1
             <if test="queryForm.oralTariffCategoryId != null">
                 and cot.oralTariffCategoryId = #{queryForm.oralTariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord !=''">
                 and CONCAT(IFNULL( cot.name, '' ), IFNULL( cot.pinyin, '' ), IFNULL( cot.number, '' )) like concat('%',
                 #{queryForm.keyWord}, '%')
-            </if>
-            <if test="queryForm.inservice != null">
-                and cot.inservice = #{queryForm.inservice}
             </if>
         </where>
     </select>

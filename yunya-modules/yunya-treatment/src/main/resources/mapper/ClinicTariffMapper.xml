@@ -108,15 +108,13 @@
         ) ct ON bt.id = ct.tariff_id
         ) ct
         <where>
+            and ct.inservice = 1
             <if test="queryForm.tariffCategoryId != null">
                 and ct.tariffCategoryId = #{queryForm.tariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
                 and CONCAT(IFNULL( ct.name, '' ), IFNULL( ct.pinyin, '' ), IFNULL( ct.number, '' )) like concat('%',
                 #{queryForm.keyWord}, '%')
-            </if>
-            <if test="queryForm.inservice != null">
-                and ct.inservice = #{queryForm.inservice}
             </if>
         </where>
     </select>
