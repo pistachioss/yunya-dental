@@ -573,9 +573,6 @@
             <if test="queryForm.orgId != null">
                 and a.org_id = #{queryForm.orgId}
             </if>
-            <if test="queryForm.dentistId != null">
-                and a.dentist_id = #{queryForm.dentistId}
-            </if>
             and a.appoint_status = 0
             <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
                 and DATE_FORMAT(a.appoint_date, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
