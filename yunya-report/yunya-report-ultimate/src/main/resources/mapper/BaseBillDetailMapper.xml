@@ -631,7 +631,7 @@
                 and DATE_FORMAT(ewd.billDate, '%Y-%m-%d') = #{query.billDate}
             </if>
         </where>
-        ORDER BY ewd.billDate DESC
+        ORDER BY ewd.billDate, ewd.billNum DESC
     </select>
 
     <!-- 根据条件查询员工工作量开单明细列表 -->
@@ -780,7 +780,7 @@
                 and DATE_FORMAT(ewd.orderDate, '%Y-%m-%d') = #{query.orderDate}
             </if>
         </where>
-        ORDER BY ewd.orderDate DESC
+        ORDER BY ewd.orderDate, ewd.billNum DESC
     </select>
 
     <!-- 根据条件查询员工已收工作量明细列表 -->
@@ -935,7 +935,7 @@
                 and ewd.billDate = #{query.billDate}
             </if>
         </where>
-        ORDER BY ewd.billDate DESC
+        ORDER BY ewd.billDate, ewd.billNum DESC
     </select>
 
     <!-- 根据条件查询员工补入工作量开单明细列表 -->
