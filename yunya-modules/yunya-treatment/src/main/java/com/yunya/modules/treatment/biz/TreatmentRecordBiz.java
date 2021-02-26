@@ -144,7 +144,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     entity.setPatientId(patientId);
     PatientBaseInfo patientBaseInfo = patientServiceFeign.findPatientInfoById(patientId);
     if (null != patientBaseInfo) {
-      //      String medicalNumber = patientBaseInfo.getMedicalNumber();
       int num = mapper.countByPatientId(patientBaseInfo.getId());
       if (num > 0) {
         entity.setType((byte) 1);
@@ -582,7 +581,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           }
           vo.setRegDate(new DateTime(registered.getCrtTime()).toString("yyyy-MM-dd"));
           vo.setRegTime(new DateTime(registered.getRegTime()).toString("HH:mm"));
-          vo.setFirstVisit(registered.getFirstVisit());
         }
       }
     }
