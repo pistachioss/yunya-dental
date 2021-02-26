@@ -33,5 +33,6 @@
           and dt.inservice = #{queryForm.inservice}
         </if>
       </where>
+      order by dt.id asc
     </select>
 </mapper>
