@@ -46,6 +46,7 @@
             and di.inservice = #{queryForm.inservice}
           </if>
         </where>
+        order by di.id asc
     </select>
 
     <!-- 根据ID查询字典明细列表 -->
@@ -61,5 +62,6 @@
                 </foreach>
             </if>
         </where>
+        order by id asc
     </select>
 </mapper>
