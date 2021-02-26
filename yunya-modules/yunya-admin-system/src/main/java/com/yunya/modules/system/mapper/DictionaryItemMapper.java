@@ -14,7 +14,7 @@ public interface DictionaryItemMapper extends Mapper<DictionaryItem> {
      * @param queryForm 参数封装
      * @return
      */
-    List<DictionaryItemVO> selectBrandByExample(@Param("queryForm") DictQueryForm queryForm);
+    List<DictionaryItemVO> selectDictionaryByExample(@Param("queryForm") DictQueryForm queryForm);
 
     /**
      * 根据ID查询字典明细列表

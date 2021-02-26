@@ -19,8 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.Date;
 import java.util.List;
@@ -110,7 +108,7 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
-    List<DictionaryItemVO> resultList = mapper.selectBrandByExample(queryForm);
+    List<DictionaryItemVO> resultList = mapper.selectDictionaryByExample(queryForm);
     return new PageInfo<>(resultList);
   }
 
