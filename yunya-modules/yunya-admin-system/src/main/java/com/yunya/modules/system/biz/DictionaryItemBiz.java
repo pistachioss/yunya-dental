@@ -18,7 +18,6 @@ import com.yunya.modules.system.vo.DictionaryItemVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Date;
 import java.util.List;
@@ -127,7 +126,7 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
    * @param ids 字典明细ID列表
    * @return 字典信息列表
    */
-  public List<DictionaryItem> findDictionaryItemByIds(@RequestBody List<Integer> ids) {
+  public List<DictionaryItem> findDictionaryItemByIds(List<Integer> ids) {
     if (StringHelper.isNotEmpty(ids)) {
       return mapper.findByIds(ids);
     }
