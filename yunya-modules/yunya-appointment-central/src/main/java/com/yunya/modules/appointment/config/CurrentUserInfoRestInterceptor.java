@@ -64,7 +64,10 @@ public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
     if (null == userInfo) {
       throw new UserAuthException("您还没有登陆，请先登陆！");
     }
-    BaseContextHandler.setOrgId(String.valueOf(userInfo.getCurrentOrgId()));
+     Integer currentOrgId = userInfo.getCurrentOrgId();
+    if (currentOrgId != null) {
+      BaseContextHandler.setOrgId(currentOrgId.toString());
+    }
     BaseContextHandler.setUsername(userInfo.getUsername());
     BaseContextHandler.setName(userInfo.getName());
     BaseContextHandler.setUserID(userInfo.getId());

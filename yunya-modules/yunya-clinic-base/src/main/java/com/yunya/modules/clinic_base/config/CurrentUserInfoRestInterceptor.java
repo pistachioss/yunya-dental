@@ -8,7 +8,6 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.auth.UserAuthException;
 import com.yunya.framework.redis.util.RedisUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -68,7 +67,10 @@ public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
     BaseContextHandler.setUsername(userInfo.getUsername());
     BaseContextHandler.setName(userInfo.getName());
     BaseContextHandler.setUserID(userInfo.getId());
-    BaseContextHandler.setOrgId(String.valueOf(userInfo.getCurrentOrgId()));
+     Integer currentOrgId = userInfo.getCurrentOrgId();
+    if (currentOrgId != null) {
+      BaseContextHandler.setOrgId(currentOrgId.toString());
+    }
     return super.preHandle(request, response, handler);
   }
 
