@@ -158,7 +158,7 @@ public class BillPayDetailRecordBiz
     String redisKey = LOCK_BILL_PAY_RECORD + billPayRecordId;
     String redisValue = redisUtils.get(redisKey);
     if (StringHelper.isNotBlank(redisValue)) {
-      throw new ClientServiceException("调整账单入账方式失败，当前收费记录正在被操作，请稍后再试！", DATA_NOT_EXIST);
+      throw new ClientServiceException("调整账单入账方式失败，当前收费记录正在被操作，请稍后再试！", PARAMETERS_IS_ILLEGAL);
     }
     BillPayDetailRecord entity = new BillPayDetailRecord();
     entity.setBillPayRecordId(billPayRecordId);
@@ -169,6 +169,7 @@ public class BillPayDetailRecordBiz
     if (paymentModels.size() == billPayDetailRecords.size()) {
       compareParamsAndData(billPayRecordId, paymentModels);
     }
+    // 校验调整后的入账方式有没有使用会员卡或预付款，计算调整收费总额
     BigDecimal totalAmount = calculateAndCheckPaymentModel(paymentModels);
     BillPayRecord billPayRecord = billPayRecordMapper.selectByPrimaryKey(billPayRecordId);
     BigDecimal receivedAmount = billPayRecord.getReceivedAmount();
@@ -176,7 +177,7 @@ public class BillPayDetailRecordBiz
       throw new ClientServiceException(
           "调整账单入账方式失败，本次调整后的入账明细总额与调整前的入账明细总额不相等！", PARAMETERS_IS_ILLEGAL);
     }
-    redisUtils.set(redisKey, billPayRecordId, 5);
+    redisUtils.set(redisKey, billPayRecordId, 30);
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
@@ -194,7 +195,7 @@ public class BillPayDetailRecordBiz
     exceptionHandleRecord.setRemark(form.getRemark());
     exceptionHandleRecord.setCrtId(userId);
     exceptionHandleRecord.setCrtName(name);
-    // 上一次修改账单记录ID
+    // 上一次调整入账方式异常记录ID
     Integer preExceptionHandleRecordId =
         billExceptionHandleRecordMapper.selectPreExceptionHandleRecordId(billPayRecordId, (byte) 0);
     exceptionHandleRecord.setPreExceptionHandleRecordId(preExceptionHandleRecordId);
@@ -298,7 +299,7 @@ public class BillPayDetailRecordBiz
         String accountItemName = item.getName();
         if (ACCOUNT_ITEM_OF_MEMBER.equals(accountItemName)
             || ACCOUNT_ITEM_OF_PREPARE.equals(accountItemName)) {
-          throw new ClientServiceException("调整账单入账方式失败，调整入账方式不能使用会员卡或预付款!", PARAMETERS_IS_ILLEGAL);
+          throw new ClientServiceException("调整账单入账方式失败，调整后入账方式不能使用会员卡或预付款!", PARAMETERS_IS_ILLEGAL);
         }
       }
       amount = amount.add(model.getAmount());
@@ -335,8 +336,10 @@ public class BillPayDetailRecordBiz
                 if (null != memberExpendRecord) {
                   BigDecimal expendPrincipal = memberExpendRecord.getExpendPrincipal();
                   BigDecimal expendGift = memberExpendRecord.getExpendGift();
-                  paymentRecordVO.setPrincipalAmount(expendPrincipal == null ? new BigDecimal(0) : expendPrincipal);
-                  paymentRecordVO.setBonusAmount(expendGift == null ? new BigDecimal(0) : expendGift);
+                  paymentRecordVO.setPrincipalAmount(
+                      expendPrincipal == null ? new BigDecimal(0) : expendPrincipal);
+                  paymentRecordVO.setBonusAmount(
+                      expendGift == null ? new BigDecimal(0) : expendGift);
                 }
                 break;
               case 0:

@@ -87,12 +87,15 @@ public class BillExceptionHandleDetailRecordBiz
       List<BillPayDetailRecordVO> billPayDetailRecords =
           billPayDetailRecordMapper.selectBillPayDetailRecord(handledRecordId, null);
       if (StringHelper.isNotEmpty(billPayDetailRecords)) {
-          BillPayDetailRecordVO record = billPayDetailRecords.get(0);
-          AccountItem accountItem = systemServiceFeign.findAccountItemById(record.getAccountItemId());
-          if (null != accountItem) {
-            record.setAccountItemName(accountItem.getName());
-          }
-          afterAdjustPayList.add(record);
+        billPayDetailRecords.forEach(
+            record -> {
+              AccountItem accountItem =
+                  systemServiceFeign.findAccountItemById(record.getAccountItemId());
+              if (null != accountItem) {
+                record.setAccountItemName(accountItem.getName());
+              }
+              afterAdjustPayList.add(record);
+            });
       }
     } else {
       // 取当前异常处理记录ID对应的异常处理记录列表，查询每条异常明细对应的收费方式作为调增后的收费方式列表
@@ -140,7 +143,10 @@ public class BillExceptionHandleDetailRecordBiz
         if (StringHelper.isNotBlank(detailRecordRemark)) {
           String[] ids = detailRecordRemark.split(",");
           Arrays.stream(ids)
-              .map(id -> billPayDetailRecordMapper.selectPreBillPayDetailRecord(Integer.valueOf(id), null))
+              .map(
+                  id ->
+                      billPayDetailRecordMapper.selectPreBillPayDetailRecord(
+                          Integer.valueOf(id), null))
               .filter(Objects::nonNull)
               .forEachOrdered(
                   vo -> {
@@ -200,9 +206,9 @@ public class BillExceptionHandleDetailRecordBiz
    * @return
    */
   public Map<String, Object> findBillOrderDetailAdjustDetails(
-          Integer handledRecordId,
-          Integer billExceptionHandleRecordId,
-          Integer nextExceptionHandleRecordId) {
+      Integer handledRecordId,
+      Integer billExceptionHandleRecordId,
+      Integer nextExceptionHandleRecordId) {
     Map<String, Object> resultMap = new HashMap<>(16);
     List<OrderDetailChargeVO> beforeAdjustBillDetail;
     List<OrderDetailChargeVO> afterAdjustBillDetail = Lists.newArrayList();
