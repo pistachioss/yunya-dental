@@ -54,7 +54,7 @@
         base_bill bb
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL -- 账单日期、账单编号不为空，则已收费
+            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -87,7 +87,7 @@
         WHERE
         bbp.org_id = bb.org_id
         AND bbp.bill_id = bb.bill_id
-        AND bbp.payee_date = bb.bill_date -- 收费日期与账单日期相同则是首次收费
+        AND bbp.payee_date = bb.bill_date
         ) bbp
         WHERE
         bbpd.bill_pay_id = bbp.bill_pay_id
@@ -162,7 +162,7 @@
         <where>
             AND bbp.org_id = bb.org_id
             AND bbp.bill_id = bb.bill_id
-            AND bbp.payee_date != bb.bill_date -- 表示非首次收费
+            AND bbp.payee_date != bb.bill_date
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
@@ -262,7 +262,7 @@
         <where>
             AND bbp.org_id = bb.org_id
             AND bbp.bill_id = bb.bill_id
-            AND bbp.payee_date != bb.bill_date -- 账单ID相同，收费日期与账单日期不同表示收欠费
+            AND bbp.payee_date != bb.bill_date
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
@@ -318,9 +318,9 @@
         FROM
         base_patient_member_occur_log bpmol
         <where>
-            AND bpmol.type = 0 -- 会员卡
-            AND bpmol.recharge_card_number IS NULL -- 非充值卡充值
-            AND bpmol.occur_type = 1 -- 充值
+            AND bpmol.type = 0
+            AND bpmol.recharge_card_number IS NULL
+            AND bpmol.occur_type = 1
             <if test="query.orgId != null">
                 AND bpmol.org_id = #{query.orgId}
             </if>
@@ -376,9 +376,9 @@
         FROM
         base_patient_member_occur_log bpmol
         <where>
-            AND bpmol.type = 1 -- 预付款
-            AND bpmol.recharge_card_number IS NULL -- 非充值卡充值
-            AND bpmol.occur_type = 1 -- 充值
+            AND bpmol.type = 1
+            AND bpmol.recharge_card_number IS NULL
+            AND bpmol.occur_type = 1
             <if test="query.orgId != null">
                 AND bpmol.org_id = #{query.orgId}
             </if>
@@ -507,7 +507,7 @@
             AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
-                AND bb.org_id != #{query.orgId} -- 不是本门诊账单
+                AND bb.org_id != #{query.orgId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -538,7 +538,7 @@
         <where>
             AND bbp.bill_id = bb.bill_id
             <if test="query.orgId != null">
-                AND bbp.org_id = #{query.orgId} -- 账单非本门诊，收费在本门诊
+                AND bbp.org_id = #{query.orgId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -606,7 +606,7 @@
             AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
-                AND bb.org_id != #{query.orgId} -- 非本门诊账单
+                AND bb.org_id != #{query.orgId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -628,7 +628,7 @@
         <where>
             AND bbp.bill_id = bb.bill_id
             <if test="query.orgId != null">
-                AND bbp.org_id = #{query.orgId} -- 收费在本门诊
+                AND bbp.org_id = #{query.orgId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -697,7 +697,7 @@
             AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
-                AND bb.org_id = #{query.orgId} -- 本门诊账单
+                AND bb.org_id = #{query.orgId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -795,7 +795,7 @@
             AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
-                AND bb.org_id = #{query.orgId} -- 本门诊账单
+                AND bb.org_id = #{query.orgId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -872,8 +872,8 @@
         FROM
         base_patient_member_occur_log bpmol
         <where>
-            AND bpmol.type = 0 -- 会员卡
-            AND bpmol.occur_type = 3 -- 退费
+            AND bpmol.type = 0
+            AND bpmol.occur_type = 3
             <if test="query.orgId != null">
                 AND bpmol.org_id = #{query.orgId}
             </if>
@@ -929,8 +929,8 @@
         FROM
         base_patient_member_occur_log bpmol
         <where>
-            AND bpmol.type = 1 -- 预付款
-            AND bpmol.occur_type = 3 -- 退费
+            AND bpmol.type = 1
+            AND bpmol.occur_type = 3
             <if test="query.orgId != null">
                 AND bpmol.org_id = #{query.orgId}
             </if>
@@ -1028,7 +1028,7 @@
         ) bb
         <where>
             AND bbp.bill_id = bb.bill_id
-            AND bbp.org_id != bb.org_id -- 收费不在本门诊
+            AND bbp.org_id != bb.org_id
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
@@ -1117,7 +1117,7 @@
         ) bb
         <where>
             AND bbp.bill_id = bb.bill_id
-            AND bbp.org_id != bb.org_id -- 收费不在本门诊
+            AND bbp.org_id != bb.org_id
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
@@ -1570,7 +1570,7 @@
         <where>
             AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
-                AND bb.org_id != #{query.orgId} -- 不是本门诊账单
+                AND bb.org_id != #{query.orgId}
             </if>
             <if test="query.isCurMonth!=null and query.isCurMonth==1">
                 <if test="query.dateType == 0">
@@ -1667,7 +1667,7 @@
         <where>
             AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
-                AND bb.org_id != #{query.orgId} -- 不是本门诊账单
+                AND bb.org_id != #{query.orgId}
             </if>
             <if test="query.isCurMonth!=null and query.isCurMonth==1">
                 <if test="query.dateType == 0">
@@ -1789,7 +1789,7 @@
             <if test="query.isCurMonth!=null and query.isCurMonth==0">
                 <if test="query.dateType == 0">
                     <if test="query.startDate != null and query.startDate != ''">
-                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt; #{query.startDate} -- 非本月账单
+                        AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt; #{query.startDate}
                     </if>
                 </if>
                 <if test="query.dateType == 1">
