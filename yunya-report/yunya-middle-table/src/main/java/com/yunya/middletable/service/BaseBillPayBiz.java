@@ -90,21 +90,21 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    *
    * @param billPayRecordId 收费记录ID
    */
-  private void saveBillPayDetailRecord(Integer billPayRecordId) {
+  public void saveBillPayDetailRecord(Integer billPayRecordId) {
     BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
     billPayDetailRecord.setBillPayRecordId(billPayRecordId);
     billPayDetailRecord.setInservice(true);
     List<BillPayDetailRecord> billPayDetailRecords =
         billPayDetailRecordMapper.select(billPayDetailRecord);
     if (StringHelper.isNotEmpty(billPayDetailRecords)) {
-      BaseBillPayDetail baseBillPayDetail = new BaseBillPayDetail();
-      baseBillPayDetail.setBillPayId(billPayRecordId);
-      baseBillPayDetailMapper.delete(baseBillPayDetail);
+      BaseBillPayDetail billPayDetail = new BaseBillPayDetail();
+      billPayDetail.setBillPayId(billPayRecordId);
+      baseBillPayDetailMapper.delete(billPayDetail);
       log.info("BaseBillPayBiz_saveBillPayDetailRecord_收费记录明细列表---:{}", billPayDetailRecords);
       billPayDetailRecords.forEach(
           payDetailRecord -> {
-            Integer payDetailRecordId = payDetailRecord.getId();
-            baseBillPayDetail.setBillPayDetailRecordId(payDetailRecordId);
+            BaseBillPayDetail baseBillPayDetail = new BaseBillPayDetail();
+            baseBillPayDetail.setBillPayDetailRecordId(payDetailRecord.getId());
             baseBillPayDetail.setBillId(payDetailRecord.getOrderRecordId());
             baseBillPayDetail.setBillPayId(payDetailRecord.getBillPayRecordId());
             Byte type = payDetailRecord.getType();
