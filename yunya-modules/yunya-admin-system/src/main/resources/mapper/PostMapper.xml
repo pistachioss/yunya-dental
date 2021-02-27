@@ -46,6 +46,6 @@
                 and p.inservice = #{form.inservice}
             </if>
         </where>
-        order by p.crt_time desc
+        order by p.post_group_id, p.id asc
     </select>
 </mapper>
