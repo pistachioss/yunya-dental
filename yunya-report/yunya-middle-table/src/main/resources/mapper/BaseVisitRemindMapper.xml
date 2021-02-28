@@ -17,6 +17,6 @@
 
   <!-- 根据 操作id和类型进行删除 -->
     <delete id="deleteByPrimaryKeyAndType">
-      delete from base_visit_remind where id = #{id} and type = #{type}
+      delete from base_visit_remind where record_id = #{id} and type = #{type}
     </delete>
 </mapper>
