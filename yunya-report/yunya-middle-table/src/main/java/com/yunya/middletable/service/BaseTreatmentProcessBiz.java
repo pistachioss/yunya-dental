@@ -578,7 +578,7 @@ public class BaseTreatmentProcessBiz
    * @param resultFutures 异常信息
    * @param log
    */
-  static void printExceptionLog(List<Future> resultFutures, Logger log) {
+  public static void printExceptionLog(List<Future> resultFutures, Logger log) {
     if (StringHelper.isNotEmpty(resultFutures)) {
       resultFutures.forEach(
           future -> {

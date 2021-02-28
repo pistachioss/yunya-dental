@@ -9,18 +9,25 @@ import com.yunya.middletable.dao.patient.PatientOriginMapper;
 import com.yunya.middletable.dao.patient.PatientPrepaymentsInfoMapper;
 import com.yunya.middletable.dao.report.BasePatientMapper;
 import com.yunya.middletable.dao.report.BasePatientMemberMapper;
+import com.yunya.middletable.service.BaseTreatmentProcessBiz;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.patient_central.PatientPrepaymentsInfo;
 import com.yunya.models.report.BasePatient;
 import com.yunya.models.report.BasePatientMember;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * 简介: 报表服务患者信息同步
@@ -30,6 +37,7 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
+@Slf4j
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
@@ -43,6 +51,10 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
   @Autowired private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
 
   @Autowired private BasePatientMemberMapper basePatientMemberMapper;
+
+  /** 多线程 */
+  @Resource(name = "customizeThreadPool")
+  private ExecutorService importExcelThreadPool;
 
   /**
    * 患者信息操作
@@ -132,7 +144,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
           basePatient.setOriginTypeName(origin.getName());
         }
       }
-      if (patientBaseInfo.getFaceUrl() != null){
+      if (patientBaseInfo.getFaceUrl() != null) {
         basePatient.setFaceUrl(patientBaseInfo.getFaceUrl());
       }
       basePatient.setGender(patientBaseInfo.getGender());
@@ -148,20 +160,32 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
    *
    * @param form 拉取时间
    */
-  public void pullPatientData(PullForm form) {
+  public void pullPatientData(PullForm form) throws InterruptedException {
     String startDate = form.getStartDate();
     String endDate = form.getEndDate();
     Example emp = new Example(PatientBaseInfo.class);
     emp.createCriteria().andBetween("updTime", startDate, endDate);
     List<PatientBaseInfo> patientBaseInfos = patientBaseInfoMapper.selectByExample(emp);
     if (StringHelper.isNotEmpty(patientBaseInfos)) {
-      patientBaseInfos.forEach(
-          patientBaseInfo -> {
-            Integer patientId = patientBaseInfo.getId();
-            mapper.deleteByPrimaryKey(patientId);
-            BasePatient patient = setPatientBaseInfo(patientId);
-            mapper.insertSelective(patient);
-          });
+      CountDownLatch latch = new CountDownLatch(patientBaseInfos.size());
+      List<Future> resultFutures = new ArrayList<>();
+      resultFutures.add(
+          importExcelThreadPool.submit(
+              () -> {
+                try {
+                  patientBaseInfos.forEach(
+                      patientBaseInfo -> {
+                        Integer patientId = patientBaseInfo.getId();
+                        mapper.deleteByPrimaryKey(patientId);
+                        BasePatient patient = setPatientBaseInfo(patientId);
+                        mapper.insertSelective(patient);
+                      });
+                } finally {
+                  latch.countDown();
+                }
+              }));
+      latch.await();
+      BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
     }
   }
 
