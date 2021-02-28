@@ -12,7 +12,6 @@ import com.yunya.models.patient_central.*;
 import com.yunya.models.report.BasePatientMember;
 import com.yunya.models.report.BasePatientMemberOccurLog;
 import com.yunya.models.system.AccountItem;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
@@ -323,8 +322,8 @@ public class BasePatientMemberOccurLogBiz
       PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOne(memberInfo);
       if (StringHelper.isNotNull(patientMemberInfo)) {
         basePatientMemberOccurLog.setCardId(patientMemberInfo.getId());
+        basePatientMemberOccurLog.setPatientId(patientMemberInfo.getPatientId());
       }
-      basePatientMemberOccurLog.setPatientId(patientMemberInfo.getPatientId());
       basePatientMemberOccurLog.setType((byte) type.intValue());
       basePatientMemberOccurLog.setOccurType((byte) occurType.intValue());
       basePatientMemberOccurLog.setPrincipalAmount(memberRechargeRecord.getRechargePrincipal());
