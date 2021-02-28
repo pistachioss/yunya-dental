@@ -46,7 +46,7 @@ public class BasePatientController {
    */
   @ApiOperation("根据时间段批量操作中间表员工信息")
   @PostMapping(value = "/batch", name = "PatientBaseInfoBiz")
-  public ResponseResult<T> pullPatientData(@RequestBody PullForm form) {
+  public ResponseResult<T> pullPatientData(@RequestBody PullForm form) throws InterruptedException {
     basePatientBiz.pullPatientData(form);
     return ResponseUtil.success();
   }
