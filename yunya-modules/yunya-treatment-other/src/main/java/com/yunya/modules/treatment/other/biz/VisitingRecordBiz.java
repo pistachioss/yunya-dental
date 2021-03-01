@@ -280,6 +280,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @return ResponseResult
      */
     public ResponseResult<PageInfo<VisitingRecordVo>> findVisitingRecordByCondition(VisitingRecordQuery query){
+        query.setInservice(true);
         // 预约档案画面接口为3
         final Integer SEARCH_TYPE = 3;
         // 设置分页

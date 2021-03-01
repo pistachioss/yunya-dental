@@ -30,7 +30,6 @@ import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.modules.treatment.other.mapper.VisitingRemindMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -199,6 +198,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @return  ResponseResult
      */
     public ResponseResult findVisitingRemindByCondition(VisitingRemindQuery query){
+        query.setInservice(true);
         // 预约档案画面接口为3
         final Integer SEARCH_ID = 3;
         // 分页
