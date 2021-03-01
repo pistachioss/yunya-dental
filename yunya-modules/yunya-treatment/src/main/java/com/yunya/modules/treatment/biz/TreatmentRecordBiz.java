@@ -47,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -73,35 +74,35 @@ import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_TREAT
 public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, TreatmentRecord> {
 
   /** 缓存 */
-  @Autowired private RedisUtils redisUtils;
+  @Resource private RedisUtils redisUtils;
   /** 患者服务调用 */
-  @Autowired private RemotePatientCentralServiceFeign patientServiceFeign;
+  @Resource private RemotePatientCentralServiceFeign patientServiceFeign;
   /** 预约服务调用 */
-  @Autowired private RemoteAppointmentFeign appointmentFeign;
+  @Resource private RemoteAppointmentFeign appointmentFeign;
   /** 消息中间件调用 */
-  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+  @Resource private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 系统服务调用 */
-  @Autowired private RemoteSystemServiceFeign systemServiceFeign;
+  @Resource private RemoteSystemServiceFeign systemServiceFeign;
   /** 就诊其他信息服务调用 */
-  @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
+  @Resource private RemoteTreatmentOtherFeign treatmentOtherFeign;
   /** 基础价目表 */
-  @Autowired private BaseTariffBiz baseTariffBiz;
+  @Resource private BaseTariffBiz baseTariffBiz;
   /** 挂号 */
-  @Autowired private RegisteredMapper registeredMapper;
+  @Resource private RegisteredMapper registeredMapper;
   /** 开单 */
-  @Autowired private OrderRecordMapper orderRecordMapper;
+  @Resource private OrderRecordMapper orderRecordMapper;
   /** 开单明细 */
-  @Autowired private OrderDetailMapper orderDetailMapper;
+  @Resource private OrderDetailMapper orderDetailMapper;
   /** 账单记录 */
-  @Autowired private BillRecordMapper billRecordMapper;
+  @Resource private BillRecordMapper billRecordMapper;
   /** 就诊关联助手 */
-  @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
+  @Resource private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
   /** 随访提醒，图片影像 */
-  @Autowired private RemoteTreatmentOtherFeign remoteTreatmentOther;
+  @Resource private RemoteTreatmentOtherFeign remoteTreatmentOther;
   /** 挂号服务 */
-  @Autowired private RegisteredBiz registeredBiz;
+  @Resource private RegisteredBiz registeredBiz;
 
-  @Autowired private RemoteMiddleTableServiceFeign remoteMiddleTableServiceFeign;
+  @Resource private RemoteMiddleTableServiceFeign remoteMiddleTableServiceFeign;
 
   /**
    * 开始接诊
@@ -109,6 +110,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param model 挂号ID
    */
   public void startTreatment(TreatmentModel model) {
+    int number = 0;
+    String medicalNumber = null;
+    PatientBaseInfo patient = null;
     Integer regId = model.getRegId();
     Byte postType = model.getPostType();
     Registered regResult = registeredMapper.selectByPrimaryKey(regId);
@@ -150,7 +154,13 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       } else {
         entity.setType((byte) 0);
         // 患者初诊，初始化病历号
-        String medicalNumber = generateMedicalRecordNumber(orgId);
+        do{
+          number++;
+          medicalNumber = generateMedicalRecordNumber(orgId,number);
+          PatientBaseInfo patientInfo = new PatientBaseInfo();
+          patientInfo.setMedicalNumber(medicalNumber);
+          patient = patientServiceFeign.findPatientInfo(patientInfo);
+        } while (patient != null);
         patientBaseInfo.setMedicalNumber(medicalNumber);
         patientServiceFeign.updatePatientInfo(patientBaseInfo);
       }
@@ -195,9 +205,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param orgId 组织ID
    * @return
    */
-  private String generateMedicalRecordNumber(Integer orgId) {
+  private String generateMedicalRecordNumber(Integer orgId,Integer num) {
     String number = patientServiceFeign.findMedicalNumberByOrgId(orgId);
-    String suffix = String.format("%06d", Integer.parseInt(number) + 1);
+    String suffix = String.format("%06d", Integer.parseInt(number) + num);
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
     return String.format("%03d", Integer.parseInt(orgInfo.getClinicNumber()))
         + new DateTime().toString("yyMMdd")
