@@ -580,6 +580,7 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
+        order by bbp.payeeDate, bbp.billNum desc
     </select>
 
     <!-- 根据条件查询账单收欠费（本月账单本月非首次收费）详情信息列表 -->
@@ -776,6 +777,7 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
+        order by bbp.payeeDate, bbp.billNum desc
     </select>
 
     <!-- 根据条件查询账单收欠费（非本月账单本月非首次收费）详情信息列表 -->
@@ -972,6 +974,7 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
+        order by bbp.payeeDate, bbp.billNum desc
     </select>
 
     <!-- 根据条件查询门诊代收（当月）账单详情列表 -->
@@ -1179,6 +1182,7 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
+        order by bbp.payeeDate, bbp.billNum desc
     </select>
 
     <!-- 根据条件查询门诊代收（非当月）账单详情列表 -->
@@ -1386,6 +1390,7 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
+        order by bbp.payeeDate, bbp.billNum desc
     </select>
 
     <!-- 根据条件查询门诊被代收账单（当月）明细列表 -->
@@ -1593,6 +1598,7 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
+        order by bbp.payeeDate, bbp.billNum desc
     </select>
 
     <!-- 根据条件查询门诊被代收账单（非当月）明细列表 -->
@@ -1800,6 +1806,7 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
+        order by bbp.payeeDate, bbp.billNum desc
     </select>
 
 </mapper>
