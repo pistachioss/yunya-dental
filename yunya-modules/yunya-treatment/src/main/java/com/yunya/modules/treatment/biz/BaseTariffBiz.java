@@ -1277,7 +1277,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     }
     String emr = form.getEmr();
     String attention = form.getAttention();
-    StringBuilder fellowUp = new StringBuilder();
+    String fellowUp = "";
     List<Integer> fellowUps = form.getFellowUps();
     if (StringHelper.isBlank(emr)) {
       emr = "";
@@ -1286,11 +1286,15 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       attention = "";
     }
     if (StringHelper.isNotEmpty(fellowUps)) {
-      fellowUps.forEach(integer -> fellowUp.append(integer).append(","));
+      fellowUp =
+          fellowUps.stream()
+              .filter(Objects::nonNull)
+              .map(integer -> integer + ",")
+              .collect(Collectors.joining());
     }
     resultData.setEmr(emr);
     resultData.setAttention(attention);
-    resultData.setFellowUp(fellowUp.toString().substring(0, fellowUp.length() - 1));
+    resultData.setFellowUp(fellowUp.substring(0, fellowUp.length() - 1));
     mapper.updateByPrimaryKeySelective(resultData);
   }
 
