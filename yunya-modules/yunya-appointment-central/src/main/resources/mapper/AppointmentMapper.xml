@@ -211,8 +211,8 @@
             <if test="query.confirmStatus != null">
                 and a.confirmStatus = #{query.confirmStatus}
             </if>
-
         </where>
+        order by a.appoint_start_time asc
     </select>
 
     <!-- 添加预约 -->
