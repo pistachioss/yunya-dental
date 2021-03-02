@@ -1,6 +1,5 @@
 package com.yunya.middletable.controller.discount;
 
-import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
@@ -23,10 +22,10 @@ public class BaseBenefitController {
 	@PostMapping("/base/benefit/pull")
 	public ResponseResult pullData(@RequestBody PullForm form) throws InterruptedException {
 		long start = System.currentTimeMillis();
-		RestErrorBo errorBo = benefitService.pullBenefit(form.getStartDate(), form.getEndDate());
-		if (errorBo.getError() != null) {
-			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
-		}
+//		RestErrorBo errorBo = benefitService.pullBenefit(form.getStartDate(), form.getEndDate());
+//		if (errorBo.getError() != null) {
+//			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+//		}
 		long end = System.currentTimeMillis();
 		log.info("【中间表同步】卡券优惠总时长：[{}]", end - start);
 		return ResponseUtil.success(end - start);
