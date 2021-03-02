@@ -23,10 +23,10 @@ public class BaseCouponItemController {
 	@PostMapping("/base/coupon/item/pull")
 	public ResponseResult pullData(@RequestBody PullForm form) throws InterruptedException {
 		long start = System.currentTimeMillis();
-		RestErrorBo errorBo = itemService.pullCouponItem(form.getStartDate(), form.getEndDate());
-		if (errorBo.getError() != null) {
-			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
-		}
+//		RestErrorBo errorBo = itemService.pullCouponItem(form.getStartDate(), form.getEndDate());
+//		if (errorBo.getError() != null) {
+//			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+//		}
 		long end = System.currentTimeMillis();
 		log.info("【中间表同步】产品项目总时长：[{}]", end - start);
 		return ResponseUtil.success(end - start);

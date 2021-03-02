@@ -164,6 +164,7 @@
         a.crt_time as crtTime
         from appointment a
         <where>
+            a.appoint_status &lt;&gt; 2
             <if test="query.orgId != null">
                 and a.org_id = #{query.orgId}
             </if>
