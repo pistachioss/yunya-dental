@@ -164,6 +164,9 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
     CashReceiptOrRefundQuery query = new CashReceiptOrRefundQuery();
     query.setPayId(payId);
     query.setOrgId(orgId);
+    if (null != startDate) {
+      startDate = new DateTime(startDate).plusDays(1).toDate();
+    }
     query.setStartDate(startDate);
     query.setEndDate(endDate);
     // 账单的现金收款
