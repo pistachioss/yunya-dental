@@ -12,6 +12,7 @@ import com.yunya.models.patient_central.*;
 import com.yunya.models.report.BasePatientMember;
 import com.yunya.models.report.BasePatientMemberOccurLog;
 import com.yunya.models.system.AccountItem;
+import org.apache.ibatis.annotations.Case;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
@@ -261,7 +262,7 @@ public class BasePatientMemberOccurLogBiz
   }
 
   /**
-   * 会员-获取操作集合List 1.充值 2.消费 3.退费 4.撤销
+   * 会员-获取操作集合List 1.充值 2.消费 3.退费 4.撤销 5.账单退费
    *
    * @param form 拉取时间和type
    * @return List<MemberRechargeRecord>
@@ -273,7 +274,7 @@ public class BasePatientMemberOccurLogBiz
       List<MemberRechargeRecord> memberRechargeRecordList =
           memberRechargeRecordMapper.selectByExample(example);
       if (StringHelper.isNotEmpty(memberRechargeRecordList)) {
-        return memberRechargeRecordList;
+          return memberRechargeRecordList;
       }
       return null;
     }
@@ -495,15 +496,16 @@ public class BasePatientMemberOccurLogBiz
    * @param form 拉取时间
    * @param type 会员类型
    */
-  private void pullPrepaymentRecharge(PullForm form, Integer type,Integer occurType,Integer rechargeType) {
+  private void  pullPrepaymentRecharge(PullForm form, Integer type,Integer occurType,Integer rechargeType) {
+
     List<PrepaidRechargeRecord> prepaidRechargeRecordList =
         (List<PrepaidRechargeRecord>) getPrepaymentInfoLog(form, occurType,rechargeType);
     if (StringHelper.isNotEmpty(prepaidRechargeRecordList)) {
       prepaidRechargeRecordList.forEach(
           prepaidRechargeRecord -> {
             Integer id = prepaidRechargeRecord.getId();
-            mapper.deleteByPrimaryKeyAndtype(id, type, 1);
-            BasePatientMemberOccurLog memberOccurLog = getPrepaidRechargeRecord(id, type, 1);
+            mapper.deleteByPrimaryKeyAndtype(id, type, occurType);
+            BasePatientMemberOccurLog  memberOccurLog = getPrepaidRechargeRecord(id, type, occurType);
             if (memberOccurLog != null) {
               mapper.insertSelective(memberOccurLog);
             }
@@ -557,7 +559,7 @@ public class BasePatientMemberOccurLogBiz
   }
 
   /**
-   * 预付款-获取操作集合List 1.充值 2.消费 3.退费 4.撤销
+   * 预付款-获取操作集合List 1.充值 2.消费 3.退费 4.撤销 4.账单退费
    *
    * @param form 拉取时间和type
    * @return List<MemberRechargeRecord>
