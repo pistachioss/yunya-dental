@@ -635,6 +635,7 @@ public class PatientPrepaymentRelationBiz
     prepaidExpendRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
     prepaidExpendRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
     prepaidExpendRecord.setUpdName(BaseContextHandler.getName());
+    prepaidExpendRecord.setType(0);
     prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
     // 发送消息 预付款消费
     sendPrepaidLogMessages(prepaidExpendRecord.getId(), 0, 1, 2);

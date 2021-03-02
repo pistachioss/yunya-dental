@@ -1058,6 +1058,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointmentDimensionVos.forEach(appointmentDimensionVo -> {
                 // 组合患者预约维度信息（预约患者信息+医生排班信息）
                 AppointmentDimensionVo appointmentDimensionItem = this.combinationDentistDimensionVo(query.getOrgId(), appointmentDimensionVo,appointmentSplits,assistentInfoList,treatmentRecordList);
+                Integer patientNum = appointmentDimensionItem.getPatientNum();
+                if (patientNum == null) {
+                    appointmentDimensionItem.setPatientNum(0);
+                }
                 // 最后将分解之后的整个大医生+助手放入到视图模型中
                 appointmentDentistDimensionVoList.add(appointmentDimensionItem);
             });
