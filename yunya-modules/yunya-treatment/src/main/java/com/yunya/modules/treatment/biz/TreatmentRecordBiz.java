@@ -120,7 +120,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     Integer dentistId = regResult.getDentistId();
     if (postType != 0) {
       if (!dentistId.equals(userId)) {
-        throw new ClientServiceException("接诊失败，当前挂号医生与接诊医生不是同一个人！", PARAMETERS_IS_ILLEGAL);
+        throw new ClientServiceException("接诊失败，当前接诊医生与挂号医生不一致！", PARAMETERS_IS_ILLEGAL);
       }
     }
     String treatingKey = REDIS_KEY_TREATMENT_ING + regId;
