@@ -141,7 +141,7 @@
                  FROM
                      bill_record br
                          LEFT JOIN order_detail od ON od.treatment_record_id = br.treatment_record_id AND od.order_record_id = br.order_record_id
-                         LEFT JOIN order_detail_pay_record odpr ON odpr.treatment_record_id = br.treatment_record_id and odpr.order_record_id = br.order_record_id and odpr.order_detail_id = od.id and odpr.bill_record_id = br.id
+                         LEFT JOIN order_detail_pay_record odpr ON odpr.inservice = 1 and odpr.treatment_record_id = br.treatment_record_id and odpr.order_record_id = br.order_record_id and odpr.order_detail_id = od.id and odpr.bill_record_id = br.id
                  WHERE
                      br.patient_id = #{patientId} and br.bill_number=#{billNumber}) a
                  LEFT JOIN base_tariff bt on bt.id = a.billing_item_id
