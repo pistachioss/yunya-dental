@@ -72,7 +72,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         BeanUtils.copyProperties(customerRegistrationModel, patientBaseInfo);
         if (patientBaseInfo.getOriginId() != null) {
             PatientOrigin patientOrigin =
-                    this.patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
+                    this.patientOriginMapper.selectOriginType(0,patientBaseInfo.getOriginType());
             if (patientOrigin == null) {
                 throw new ClientServiceException("该患者来源不存在", DATA_NOT_EXIST);
             }
