@@ -358,17 +358,17 @@
         LEFT JOIN vacation_set vs ON t.vacation_id = vs.id
         LEFT JOIN leave_schedule ls ON ls.leave_id = t.id
         <where>
-            <if test="id!= null">
-                and t.id in
-                <foreach collection="userIds" item="id" open="(" separator="," close=")">
-                    #{id}
+            <if test="userIds != null and userIds.size() > 0">
+                and t.user_id in
+                <foreach collection="userIds" item="userid" open="(" separator="," close=")">
+                    #{userid}
                 </foreach>
             </if>
-            <if test="userId!= null">
-                and t.user_id = #{userId}
+            <if test="id!= null">
+                and t.id = #{id}
             </if>
             <if test="startTime != null ">
-                and t.crt_time >= #{startTime} and t.crt_time &lt;= #{endTime}
+                and t.crt_time >= #{startTime} and t.crt_time &lt; DATE_ADD(#{endTime}, INTERVAL '1' DAY)
             </if>
         </where>
         GROUP BY
