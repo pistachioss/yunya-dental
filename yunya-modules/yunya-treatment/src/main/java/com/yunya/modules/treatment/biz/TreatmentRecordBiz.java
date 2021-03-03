@@ -43,7 +43,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -110,14 +109,12 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param model 挂号ID
    */
   public void startTreatment(TreatmentModel model) {
-    int number = 0;
-    String medicalNumber = null;
-    PatientBaseInfo patient = null;
+    String medicalNumber;
     Integer regId = model.getRegId();
     Byte postType = model.getPostType();
     Registered regResult = registeredMapper.selectByPrimaryKey(regId);
     if (null == regResult || !regResult.getInservice()) {
-      throw new ClientServiceException("接诊失败，您当前未选择接诊患者或传入参数有误！", QUERY_RESULT_INVALID);
+      throw new ClientServiceException("接诊失败，您当前未选择接诊患者！", QUERY_RESULT_INVALID);
     }
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     Integer dentistId = regResult.getDentistId();
@@ -154,13 +151,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       } else {
         entity.setType((byte) 0);
         // 患者初诊，初始化病历号
-        do{
-          number++;
-          medicalNumber = generateMedicalRecordNumber(orgId,number);
-          PatientBaseInfo patientInfo = new PatientBaseInfo();
-          patientInfo.setMedicalNumber(medicalNumber);
-          patient = patientServiceFeign.findPatientInfo(patientInfo);
-        } while (patient != null);
+        medicalNumber = generateMedicalRecordNumber(orgId);
         patientBaseInfo.setMedicalNumber(medicalNumber);
         patientServiceFeign.updatePatientInfo(patientBaseInfo);
       }
@@ -189,7 +180,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     regResult.setUpdId(userId);
     regResult.setUpdName(name);
     registeredMapper.updateByPrimaryKeySelective(regResult);
-    // todo 发送消息更新患者数据
+    // 发送消息更新患者数据
     if (i > 0) {
       if (null != appointmentId) {
         rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
@@ -205,9 +196,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param orgId 组织ID
    * @return
    */
-  private String generateMedicalRecordNumber(Integer orgId,Integer num) {
+  private String generateMedicalRecordNumber(Integer orgId) {
     String number = patientServiceFeign.findMedicalNumberByOrgId(orgId);
-    String suffix = String.format("%06d", Integer.parseInt(number) + num);
+    String suffix = String.format("%06d", Integer.parseInt(number) + 1);
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
     return String.format("%03d", Integer.parseInt(orgInfo.getClinicNumber()))
         + new DateTime().toString("yyMMdd")

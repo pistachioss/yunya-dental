@@ -7,6 +7,7 @@ import com.yunya.feign.treatment.domain.query.TreatmentCountQuery;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.TreatmentRecordBiz;
@@ -44,6 +45,7 @@ public class TreatmentRecordController {
    * @param model 接诊信息
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("开始接诊")
   @PostMapping("/start")
