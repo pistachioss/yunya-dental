@@ -96,9 +96,17 @@ public class LeaveInfoListVO {
      */
     @ApiModelProperty(value = "审批状态 0 审批中 1通过 2拒绝 3撤回")
     private Integer approvalStatus;
+
+    /**
+     * 创建时间
+     */
     @ApiModelProperty(value = "创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date crtTime;
+
+    /**
+     * 请假时长(分钟)
+     */
     @ApiModelProperty("请假时长(分钟)")
     private Integer leaveTime;
 

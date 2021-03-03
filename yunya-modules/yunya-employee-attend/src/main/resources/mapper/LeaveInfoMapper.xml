@@ -306,7 +306,7 @@
             <if test="userId!= null">
                 and t.user_id = #{userId}
             </if>
-            <if test="startTime != null ">
+            <if test="startTime != null and endTime != null">
                 and t.crt_time >= #{startTime} and t.crt_time &lt;= #{endTime}
             </if>
         </where>
@@ -320,6 +320,68 @@
         </where>
         order by a.crtTime desc
     </select>
+
+    <select id="selectLeaveByIds" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoListVO">
+        select
+        DISTINCT a.* from
+        (SELECT DISTINCT
+        t.id,
+        t.user_id AS userId,
+        t.vacation_id AS vacationId,
+        t.company_id AS companyId,
+        vs.vacation_name AS vacationName,
+        t.start_time AS startTime,
+        t.end_time AS endTime,
+        t.leave_reason AS leaveReason,
+        t.leave_picture AS leavePicture,
+        t.approval_criteria_id AS approvalCriteriaId,
+        t.approval_status AS approvalStatus,
+        t.crt_time AS crtTime,
+        t.refuse_reason AS refuseReason,
+        vs.vacation_status AS vacationStatus,
+        IFNULL(
+        sum(
+        TIMESTAMPDIFF(
+        MINUTE,
+        ls.start_time,
+        ls.end_time
+        )
+        ),
+        TIMESTAMPDIFF(
+        MINUTE,
+        t.start_time,
+        DATE_ADD(t.end_time, INTERVAL '1' DAY)
+        ) / 3
+        ) AS leaveTime
+        FROM
+        leave_info t
+        LEFT JOIN vacation_set vs ON t.vacation_id = vs.id
+        LEFT JOIN leave_schedule ls ON ls.leave_id = t.id
+        <where>
+            <if test="userIds != null and userIds.size() > 0">
+                and t.user_id in
+                <foreach collection="userIds" item="userid" open="(" separator="," close=")">
+                    #{userid}
+                </foreach>
+            </if>
+            <if test="id!= null">
+                and t.id = #{id}
+            </if>
+            <if test="startTime != null and endTime != null">
+                and t.crt_time >= #{startTime} and t.crt_time &lt; DATE_ADD(#{endTime}, INTERVAL '1' DAY)
+            </if>
+        </where>
+        GROUP BY
+        t.id) a
+        LEFT JOIN copy_info ci ON ci.apply_id = a.id and ci.apply_type = 0
+        <where>
+            <if test="copyId !=null and copyId != '' ">
+                and ci.user_id = #{copyId}
+            </if>
+        </where>
+        order by a.crtTime desc
+    </select>
+
     <select id="findApproval" resultType="com.yunya.feign.employee_attend.vo.ApprovalInfoVO">
     SELECT
 	ai.leave_id leaveId,

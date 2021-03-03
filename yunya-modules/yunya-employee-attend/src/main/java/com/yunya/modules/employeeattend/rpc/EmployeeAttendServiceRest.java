@@ -2,6 +2,9 @@ package com.yunya.modules.employeeattend.rpc;
 
 import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
+import com.yunya.framework.common.annation.RepeatSubmit;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.modules.employeeattend.biz.LeaveInfoBiz;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
@@ -9,12 +12,10 @@ import com.yunya.modules.employeeattend.form.LeaveInfoForm;
 import com.yunya.modules.employeeattend.rpc.service.EmployeeScheduleSerivce;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleResultVO;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -61,6 +62,18 @@ public class EmployeeAttendServiceRest {
   @RequestMapping(value = "/leave/info/findList",method=RequestMethod.POST)
   public List<LeaveInfoListVO> findEmployeeLeaveInfoList(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
     return this.leaveInfoBiz.findList(leaveInfoForm);
+  }
+
+  /**
+   * 根据申请人ID集合获取请假申请列表
+   *
+   * @param
+   * @return
+   */
+  @ApiOperation("获取请假申请列表")
+  @RequestMapping(value = "/leave_info/findListByIds",method = RequestMethod.POST)
+  public List<LeaveInfoListVO> findListByIds(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+    return leaveInfoBiz.findListByDateAndIds(leaveInfoForm);
   }
 
 }

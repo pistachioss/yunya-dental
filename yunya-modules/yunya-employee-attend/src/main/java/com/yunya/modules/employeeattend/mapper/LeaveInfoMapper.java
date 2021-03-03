@@ -65,6 +65,8 @@ public interface LeaveInfoMapper extends Mapper<LeaveInfo> {
 
     List<LeaveInfoListVO>selectLeave(LeaveInfoForm leaveInfoForm);
 
+    List<LeaveInfoListVO>selectLeaveByIds(LeaveInfoForm leaveInfoForm);
+
     /**
      * 根据请假ID获取审批信息
      * @param leaveInfoForm

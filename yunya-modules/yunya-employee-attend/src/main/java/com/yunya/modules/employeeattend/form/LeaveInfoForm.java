@@ -90,6 +90,9 @@ public class LeaveInfoForm {
     @ApiModelProperty("抄送人Id集合")
     private List<Integer> copyList;
 
+    @ApiModelProperty("申请人ID集合，仅为预约功能使用")
+    private List<Integer>userIds;
+
     /**
      * 创建人
      */

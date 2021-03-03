@@ -133,6 +133,21 @@ public class LeaveInfoController {
     }
 
     /**
+     * 根据申请人ID集合获取请假申请列表
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findListByIds")
+    @ApiOperation("获取请假申请列表")
+    @RepeatSubmit
+    public ResponseResult<List<LeaveInfoListVO>> findListByIds(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+        return ResponseUtil.success(leaveInfoBiz.findListByDateAndIds(leaveInfoForm));
+    }
+
+
+
+    /**
      * 根据请假ID获取审批信息
      *
      * @param
