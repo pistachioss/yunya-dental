@@ -4,6 +4,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
@@ -294,6 +296,15 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         String search = query.getSearch();
         String medicalNumber = query.getMedicalNumber();
         String distentName = query.getDistentName();
+        if (StringHelper.isNotBlank(search)) {
+            PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
+            patientLikeQuery.setCondition(search);
+            List<PatientBaseInfoVo> patientByNameAndMobile = remotePatientCentralServiceFeign.findPatientByNameAndMobile(patientLikeQuery);
+            if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
+                List<Integer> collect = patientByNameAndMobile.stream().map(PatientBaseInfoVo::getId).collect(Collectors.toList());
+                query.setPatientIds(collect);
+            }
+        }
         List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
         PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
         if (StringHelper.isNotEmpty(visitingRecordVos)){
