@@ -468,7 +468,7 @@
                 and btp.lastVisitDate &gt;= #{form.startDate}
             </if>
             <if test="form.endDate != null and form.endDate != ''">
-                and btp.lastVisitDate &lt;= #{form.endDate}
+                and btp.lastVisitDate &lt; #{form.endDate}
             </if>
             <if test="form.attendingDoctors != null and form.attendingDoctors.size > 0">
                 and btp.dentistId in
