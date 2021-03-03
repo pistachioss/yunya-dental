@@ -244,7 +244,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     // 完善患者扩展信息
     BeanUtils.copyProperties(patientExtendInfoModel.getPatientExpInfoModel(), patientExpInfo);
     // 如果用户没有扩展信息就添加扩展信息 如果有就修改
-    if (patientExpInfo.getId() == null) {
+    PatientExpInfoVo patientExpInfoVo = patientExpInfoMapper.selectByPatientId(patientExpInfo.getPatientId());
+    if (patientExpInfoVo == null) {
       patientExpInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientExpInfo.setCrtName(BaseContextHandler.getName());
       // 添加扩展信息
@@ -322,7 +323,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     // 基本信息
     patientExtendInfoVo.setPatientBaseInfoVo(getTypeName(patientBaseInfoVo));
     // 扩展信息
-    PatientExpInfoVo patientExpInfoVo = patientExpInfoMapper.selectIdByPatientId(id);
+    PatientExpInfoVo patientExpInfoVo = patientExpInfoMapper.selectByPatientId(id);
     if (patientExpInfoVo != null) {
       if (patientExpInfoVo.getPatientKind() != null) {
         DictionaryItem item =

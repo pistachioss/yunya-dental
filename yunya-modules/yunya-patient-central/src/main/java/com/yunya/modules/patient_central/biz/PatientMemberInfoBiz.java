@@ -115,6 +115,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    */
   public MemberRelationVo findMemberBindingRelation(PatientMemberRelationQueryForm form) {
     MemberRelationVo memberRelationVO = new MemberRelationVo();
+
+
     form.setBindType(0);
     memberRelationVO.setMemberRelationList(
         this.patientMemberInfoMapper.findMemberBindingRelation(form));

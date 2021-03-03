@@ -16,5 +16,6 @@ public interface PatientExpInfoMapper extends Mapper<PatientExpInfo> {
      * @param id 患者id
      * @return PatientExpInfo
      */
-    PatientExpInfoVo selectIdByPatientId(@Param ("id") Integer id);
+    PatientExpInfoVo selectByPatientId(@Param ("patientId") Integer id);
+
 }
