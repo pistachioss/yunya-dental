@@ -100,7 +100,7 @@ hystrix:
 
 jwt:
   token-header: Authorization
-  expire: 14400
+  expire: 86400
   rsa-secret: xx1WET12^%3^(WE45
 
 logging:

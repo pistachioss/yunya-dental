@@ -18,6 +18,6 @@ public class UserConstant {
   public static final String JWT_KEY_NAME = "name";
   /** jwt当前访问设备类型 */
   public static final String JWT_KEY_DEVICE_TYPE = "deviceType";
-  /** jwt用户申请token时间(ms) */
+  /** jwt用户申请token时间(s) */
   public static final String JWT_APPLY_TOKEN_TIME = "applyTokenTime";
 }
