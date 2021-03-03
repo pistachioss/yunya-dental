@@ -27,6 +27,9 @@ public class LeaveInfoForm {
     @ApiModelProperty("user_id")
     private Integer userId;
 
+    @ApiModelProperty("用户ID集合")
+    private List<Integer> userIds;
+
     @ApiModelProperty("最高层级审批级别的审批人ID")
     private Integer approvalNowPeopleId;
 

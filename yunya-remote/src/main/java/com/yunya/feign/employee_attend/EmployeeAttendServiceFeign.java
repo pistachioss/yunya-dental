@@ -7,8 +7,10 @@ import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.models.employee_attend.LeaveInfo;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,4 +48,14 @@ public interface EmployeeAttendServiceFeign {
    */
   @RequestMapping(value = "/api/leave/info/findList",method=RequestMethod.POST)
   public List<LeaveInfoListVO> findEmployeeLeaveInfoList(@RequestBody @Validated LeaveInfoForm leaveInfoForm);
+
+  /**
+   * 根据申请人ID集合获取请假申请列表
+   *
+   * @param
+   * @return
+   */
+  @ApiOperation("获取请假申请列表")
+  @RequestMapping(value = "api/leave_info/findListByIds",method = RequestMethod.POST)
+  public List<LeaveInfoListVO> findListByIds(@RequestBody @Validated LeaveInfoForm leaveInfoForm);
 }

@@ -55,5 +55,5 @@ public class  AppointmentDimensionVo implements Serializable {
 
     /** 员工请假信息 */
     @ApiModelProperty(value = "员工请假信息")
-    private List<LeaveInfoListVO> leaveInfoList;
+    private LeaveInfoListVO leaveInfo;
 }

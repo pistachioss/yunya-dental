@@ -6,6 +6,7 @@ import com.yunya.feign.employee_attend.form.LeaveInfoForm;
 import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.models.employee_attend.LeaveInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,11 @@ public class EmployeeAttendServiceFallBackFactory implements EmployeeAttendServi
 
   @Override
   public List<LeaveInfoListVO> findEmployeeLeaveInfoList(LeaveInfoForm leaveInfoForm) {
+    return null;
+  }
+
+  @Override
+  public List<LeaveInfoListVO> findListByIds(LeaveInfoForm leaveInfoForm) {
     return null;
   }
 }

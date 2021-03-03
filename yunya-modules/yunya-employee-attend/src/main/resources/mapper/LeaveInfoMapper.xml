@@ -306,7 +306,7 @@
             <if test="userId!= null">
                 and t.user_id = #{userId}
             </if>
-            <if test="startTime != null ">
+            <if test="startTime != null and endTime != null">
                 and t.crt_time >= #{startTime} and t.crt_time &lt;= #{endTime}
             </if>
         </where>
@@ -367,7 +367,7 @@
             <if test="id!= null">
                 and t.id = #{id}
             </if>
-            <if test="startTime != null ">
+            <if test="startTime != null and endTime != null">
                 and t.crt_time >= #{startTime} and t.crt_time &lt; DATE_ADD(#{endTime}, INTERVAL '1' DAY)
             </if>
         </where>
