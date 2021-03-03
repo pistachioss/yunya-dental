@@ -34,7 +34,6 @@ import com.yunya.modules.patient_central.mapper.*;
 import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -82,9 +81,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   @Autowired
   private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
 
-  /** 当前服务上线日期 */
-  @Value("${serverInfo.onlineDateTime}")
-  private String onlineDateTime;
 
   /**
    * 根据患者id查询会员基本信息
@@ -251,9 +247,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     String number = "";
     if (orgId != null) {
       if ("Y".equals(mark)) {
-        number = this.mapper.generateCardNumber4Prepay(Integer.parseInt(orgId), onlineDateTime);
+        number = this.mapper.generateCardNumber4Prepay(Integer.parseInt(orgId));
       } else if ("H".equals(mark)) {
-        number = this.mapper.generateCardNumber(Integer.parseInt(orgId), onlineDateTime);
+        number = this.mapper.generateCardNumber(Integer.parseInt(orgId));
       } else {
         log.info("==>会员卡生成失败");
         return null;
