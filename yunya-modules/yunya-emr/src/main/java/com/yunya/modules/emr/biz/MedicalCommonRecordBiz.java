@@ -306,6 +306,8 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         //助手修改病历通过时，审核表中同步插入一条数据
         if (re > 0 && medicalcopy.getStatus() == 2) {
             medicalRecordHistoryBiz.insertMedicalHistory(medicalcopy);
+            //修改就诊记录病历书写状态
+            remoteTreatmentServiceFeign.updateTreatmentRecord(medicalcopy.getTreatmentId());
         }
         //插入常用词条使用频率
         if (medicalCommonRecordForm.getMedicalGeneralNumList() != null && medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {
