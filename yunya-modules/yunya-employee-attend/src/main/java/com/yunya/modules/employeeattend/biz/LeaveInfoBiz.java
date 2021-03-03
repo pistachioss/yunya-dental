@@ -368,7 +368,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     public List<LeaveInfoListVO> findListByDateAndIds(LeaveInfoForm leaveInfoForm) {
 //        LeaveInfo leaveInfo = new LeaveInfo();
 //        BeanUtils.copyProperties(leaveInfoForm, leaveInfo);
-        List<LeaveInfoListVO> reList = mapper.selectLeave(leaveInfoForm);
+        List<LeaveInfoListVO> reList = mapper.selectLeaveByIds(leaveInfoForm);
         if (reList.size() > 0) {
             //获取用户信息
             SysUserEmployeeModel model = new SysUserEmployeeModel();
