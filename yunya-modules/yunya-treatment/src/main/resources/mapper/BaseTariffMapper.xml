@@ -164,9 +164,9 @@
         btc.`name` as tariffCategoryName,
         btc.number as tariffCategoryNumber,
         bt.english_name as englishName,
-        ifnull( bt.emr, '--' ) as emr,
-        ifnull( bt.attention, '--' ) as attention,
-        ifnull( bt.fellow_up, '--' ) as fellowUp
+        ifnull( bt.emr, '' ) as emr,
+        ifnull( bt.attention, '' ) as attention,
+        ifnull( bt.fellow_up, '' ) as fellowUp
         from
         base_tariff bt
         left join base_tariff_category btc on bt.tariff_category_id = btc.id
