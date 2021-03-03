@@ -209,11 +209,6 @@
         WHERE org_id = #{orgId}
         AND LEFT ( medical_number, 1 )= 0
         AND LENGTH(medical_number) = 15
-        <trim>
-            <if test="onlineDateTime != null and onlineDateTime != ''">
-                AND date_format(crt_time,'%Y-%m-%d %H:%i:%s') &gt;= date_format(#{onlineDateTime},'%Y-%m-%d %H:%i:%s')
-            </if>
-        </trim>
     </select>
 
     <!-- 根据患者id查询患者信息 -->

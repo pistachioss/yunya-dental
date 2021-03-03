@@ -106,9 +106,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   /** 就诊服务 */
   @Autowired private RemoteTreatmentServiceFeign treatmentServiceFeign;
 
-  @Value("${serverInfo.onlineDateTime}")
-  private String onlineDateTime;
-
   /** 获取患者服务端口号 */
   @Value("${codeUrl.url}")
   private String servePrort;
@@ -765,7 +762,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @return String
    */
   public String findMedicalNumberByOrgId(Integer orgId) {
-    return mapper.findMedicalNumberByOrgId(orgId, onlineDateTime);
+    return mapper.findMedicalNumberByOrgId(orgId);
   }
 
   /**
