@@ -360,7 +360,7 @@
         <where>
             <if test="id!= null">
                 and t.id in
-                <foreach collection="userids" item="id" open="(" separator="," close=")">
+                <foreach collection="userIds" item="id" open="(" separator="," close=")">
                     #{id}
                 </foreach>
             </if>
