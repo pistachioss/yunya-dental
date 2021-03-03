@@ -207,9 +207,11 @@
         FROM
         patient_base_info
         WHERE org_id = #{orgId}
+        AND LEFT ( medical_number, 1 )= 0
+        AND LENGTH(medical_number) = 15
         <trim>
             <if test="onlineDateTime != null and onlineDateTime != ''">
-                and date_format(crt_time,'%Y-%m-%d %H:%i:%s') &gt;= date_format(#{onlineDateTime},'%Y-%m-%d %H:%i:%s')
+                AND date_format(crt_time,'%Y-%m-%d %H:%i:%s') &gt;= date_format(#{onlineDateTime},'%Y-%m-%d %H:%i:%s')
             </if>
         </trim>
     </select>
