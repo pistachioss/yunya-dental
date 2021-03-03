@@ -44,11 +44,10 @@ public class SameUrlDataInterceptor extends RepeatSubmitInterceptor {
    *
    * @param request 请求
    * @return
-   * @throws Exception
    */
   @SuppressWarnings("unchecked")
   @Override
-  public boolean isRepeatSubmit(HttpServletRequest request) throws Exception {
+  public boolean isRepeatSubmit(HttpServletRequest request) {
     // 本次参数及系统时间
     String nowParams = JSONUtil.toJsonPrettyStr(request.getParameterMap());
     Map<String, Object> nowDataMap = new HashMap<>(16);
