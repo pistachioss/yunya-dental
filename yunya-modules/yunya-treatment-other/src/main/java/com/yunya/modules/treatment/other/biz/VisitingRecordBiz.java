@@ -137,6 +137,9 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 build.setCrtId(currentUserId);
                 build.setCrtName(BaseContextHandler.getName());
                 build.setCrtTime(new Date(System.currentTimeMillis()));
+                build.setUptId(currentUserId);
+                build.setUpdName(BaseContextHandler.getName());
+                build.setUpdTime(new Date(System.currentTimeMillis()));
                 int result = mapper.insertSelective(build);
                 if (result <= 0){
                     return ResponseUtil.fail(TreatmentOtherError.INSERT_VISITING_RECORD_ERR.getCode(),

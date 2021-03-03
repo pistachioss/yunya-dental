@@ -94,6 +94,9 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         build.setCrtName(BaseContextHandler.getName());
         build.setCrtTime(new Date(System.currentTimeMillis()));
+        build.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+        build.setUpdName(BaseContextHandler.getName());
+        build.setUpdTime(new Date(System.currentTimeMillis()));
         int result = mapper.insertSelective(build);
         if (result <= 0) {
             return ResponseUtil.success("数据插入失败！");
