@@ -83,8 +83,6 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   /** 支付方式 */
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
 
-
-
   /**
    * 根据账单（开单）记录ID查询商品开单详情列表
    *
@@ -446,7 +444,6 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   /**
    * 打印账单信息
    *
-   *
    * @return 返回账单信息
    */
   public BillPrintInfoVO billPrintInfo(BillPrintInfoForm billPrintInfoForm) {
@@ -480,27 +477,28 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                   billDetailPrintInfoVO.setCouponTypes(couponTypes);
                 }
               });
-      //支付方式以及金额
+      // 支付方式以及金额
       BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
       billPayDetailRecord.setBillPayRecordId(billPrintInfoForm.getBillPayId());
-      List<BillPayDetailRecord>payList = billPayDetailRecordBiz.selectList(billPayDetailRecord);
+      billPayDetailRecord.setInservice(true);
+      List<BillPayDetailRecord> payList = billPayDetailRecordBiz.selectList(billPayDetailRecord);
       List<AccountItem> aiList = systemServiceFeign.findAccountItemList(new AccountItem());
       Map<String, AccountItem> clinicMap = new HashMap(16);
       aiList.forEach(z -> clinicMap.put(z.getId() + "", z));
-      List<Map>mapList = new ArrayList<>();
-      for(BillPayDetailRecord bpdr:payList){
-          Map map = new HashMap();
-          if(bpdr.getType().equals(0)){
-              map.put("type","预付款");
-          }else if(bpdr.getType().equals(0)){
-              map.put("type","会员卡");
-          }else{
-              map.put("type",clinicMap.get(bpdr.getAccountItemId()+"").getName());
-          }
-          map.put("amount",bpdr.getAmount());
-          mapList.add(map);
+      List<Map> mapList = new ArrayList<>();
+      for (BillPayDetailRecord bpdr : payList) {
+        Map map = new HashMap();
+        if (bpdr.getType().equals(0)) {
+          map.put("type", "预付款");
+        } else if (bpdr.getType().equals(0)) {
+          map.put("type", "会员卡");
+        } else {
+          map.put("type", clinicMap.get(bpdr.getAccountItemId() + "").getName());
+        }
+        map.put("amount", bpdr.getAmount());
+        mapList.add(map);
       }
-        billPrintInfoVO.setBillPayTypeList(mapList);
+      billPrintInfoVO.setBillPayTypeList(mapList);
     }
     return billPrintInfoVO;
   }
