@@ -1192,7 +1192,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Map<Integer, List<AttendancePunchRecordVO>> punchRecordMap = new HashMap<>(attendancePunchRecordVOS.size());
         Map<Integer, List<AttendancePunchRecordVO>> workOvertimeRecordMap = new HashMap<>(attendancePunchRecordVOS.size());
         Map<Integer, List<AttendancePunchRecordVO>> fieldRecordMap = new HashMap<>(attendancePunchRecordVOS.size());
-        List<Date> remDups = new ArrayList<>(attendancePunchRecordVOS.size());
+        Map<Date, List<Integer>> remDups = new HashMap<>(attendancePunchRecordVOS.size());
         attendancePunchRecordVOS.forEach(record->{
             Integer esId = record.getEsId();
             Byte source = record.getSource();
@@ -1238,10 +1238,19 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 if (record.getPunchStatus().equals(AttendanceStatusEnum.INVALID_PUNCH.getCode())) {//无效卡
                     incrNum(invalidNumMap,userId,orgId);
                 } else {//已打卡且不是无效卡的
-                    if (!remDups.contains(record.getPunchDate())) {
+                    Date punchDate = record.getPunchDate();
+                    List<Integer> ids = remDups.get(punchDate);
+                    if (ids == null) {
+                        ids = new ArrayList<>(16);
                         incrNum(attendancNumMap, userId, orgId);
-                        remDups.add(record.getPunchDate());
+                        ids.add(userId);
+                    } else {
+                        if (!ids.contains(userId)) {
+                            incrNum(attendancNumMap, userId, orgId);
+                            ids.add(userId);
+                        }
                     }
+                    remDups.put(punchDate, ids);
                 }
             } else {
                 isFullMap.put(userId, orgId, false);
