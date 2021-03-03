@@ -32,7 +32,8 @@ public abstract class RepeatSubmitInterceptor extends HandlerInterceptorAdapter 
       RepeatSubmit annotation = method.getAnnotation(RepeatSubmit.class);
       if (annotation != null) {
         if (this.isRepeatSubmit(request)) {
-          ResponseResult responseResult = ResponseUtil.fail(REPEAT_SUBMIT, "提交过于频繁，建议稍等片刻", null);
+          ResponseResult responseResult =
+              ResponseUtil.fail(REPEAT_SUBMIT, "提交过于频繁，让手指休息片刻吧！", null);
           ServletUtils.renderString(response, JSONUtil.toJsonPrettyStr(responseResult));
           return false;
         }
