@@ -10,6 +10,7 @@ import javax.validation.constraints.Min;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -80,4 +81,7 @@ public class VisitingRecordQuery implements Serializable {
     /** 模糊匹配患者病历号 */
     @ApiModelProperty(value = "模糊匹配患者病历号")
     private String likeMedicalNumber;
+    /** 批量查询患者ID */
+    @ApiModelProperty(value = "批量查询患者ID")
+    private List<Integer> patientIds;
 }

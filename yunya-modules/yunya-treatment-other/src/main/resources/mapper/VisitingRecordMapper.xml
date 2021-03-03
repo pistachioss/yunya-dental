@@ -75,6 +75,12 @@
       <if test="query.patientId != null">
         and vr.patient_id = #{query.patientId}
       </if>
+      <if test="query.patientIds != null and query.patientIds.size() > 0">
+        and vr.patient_id in
+        <foreach collection="query.patientIds" item="id" open="(" separator="," close=")">
+          #{id}
+        </foreach>
+      </if>
       <if test="query.dentistId != null">
         and vr.dentist_id = #{query.dentistId}
       </if>

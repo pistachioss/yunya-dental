@@ -10,6 +10,7 @@ import javax.validation.constraints.Min;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -85,4 +86,8 @@ public class VisitingRemindQuery implements Serializable {
     /** 创建人ID */
     @ApiModelProperty(value = "创建人ID")
     private Integer crtId;
+
+    /** 患者ID列表 */
+    @ApiModelProperty(value = "患者ID列表")
+    private List<Integer> patientIds;
 }

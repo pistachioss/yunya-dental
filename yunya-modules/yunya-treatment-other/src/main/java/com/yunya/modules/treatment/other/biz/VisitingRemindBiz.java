@@ -3,6 +3,8 @@ package com.yunya.modules.treatment.other.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
@@ -209,6 +211,19 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         List<VisitingRemindVo> visitingRemindVos = new ArrayList<>();
         // 检索随访提醒内容列表
         List<VisitingRemindVo> searchVisitingRemindVo = null;
+
+        String search = query.getSearch();
+        if (StringHelper.isNotBlank(search)) {
+            PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
+            patientLikeQuery.setCondition(search);
+            // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容
+            List<PatientBaseInfoVo> patientByNameAndMobile = remotePatientCentralServiceFeign.findPatientByNameAndMobile(patientLikeQuery);
+            if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
+                List<Integer> collect = patientByNameAndMobile.stream().map(PatientBaseInfoVo::getId).collect(Collectors.toList());
+                query.setPatientIds(collect);
+            }
+        }
+
         List<VisitingRemind> visitingReminds = mapper.findVisitingRemindByCondition(query);
         PageInfo visitingRemindVoPageInfo = new PageInfo(visitingReminds);
         // 获取医生ID集合
@@ -240,7 +255,6 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 this.setPatientInfo(dentistInfoList,patientTotalInfoVoList,finalMemberTypeList,finalDebtAmountModelList,build);
                 visitingRemindVos.add(build);
             });
-            String search = query.getSearch();
             String medicalNumber = query.getMedicalNumber();
             String distentName = query.getDistentName();
             if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName) && query.getSearchId() < 3) {
@@ -249,10 +263,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             } else if (null != query.getPatientId() && query.getSearchId().equals(SEARCH_ID)){
                 searchVisitingRemindVo = visitingRemindVos;
             } else {
-                // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容
-                searchVisitingRemindVo = this.searchVisitingRemind(visitingRemindVos, search, medicalNumber, distentName);
                 // 按照时间正序排序
-                searchVisitingRemindVo = this.sort(searchVisitingRemindVo);
+                searchVisitingRemindVo = this.sort(visitingRemindVos);
                 // 设置分页插件总数量=条件检索出来的结果数量
                 visitingRemindVoPageInfo.setTotal(searchVisitingRemindVo.size());
             }
