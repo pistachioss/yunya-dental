@@ -65,4 +65,12 @@ public interface PatientOriginMapper extends Mapper<PatientOrigin> {
      * @return PatientOrigin
      */
     PatientOrigin getTypeName(@Param("originType") Integer originType);
+
+    /**
+     * 查询患者来源
+     * @param parentId 患者来源父ID（顶级为0）
+     * @param originType 患者来源类型 1.员工 2.老患者 3.活动 4.合作商
+     * @return 患者来源信息
+     */
+    PatientOrigin selectOriginType(@Param("parentId") int parentId, @Param("originType") Integer originType);
 }
