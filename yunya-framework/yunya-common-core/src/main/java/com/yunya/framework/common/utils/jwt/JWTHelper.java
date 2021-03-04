@@ -98,7 +98,7 @@ public class JWTHelper {
             .claim(UserConstant.JWT_KEY_DEVICE_TYPE, jwtInfo.getDeviceType())
             .claim(UserConstant.JWT_APPLY_TOKEN_TIME,now.toDate().getTime())
             // 过期时间 expire * 3600*8 保证刷新reflush_token(续期token) > token(接口请求)
-            .setExpiration(now.plusSeconds(expire+3600*8).toDate())
+            .setExpiration(now.plusSeconds(UserConstant.EXPIRE_TIME_SECOND+3600*8).toDate())
             // 设置token申请时间
             // 加密
             .signWith(SignatureAlgorithm.RS256, RSA_KEY_HELPER.getPrivateKey(priKey))
