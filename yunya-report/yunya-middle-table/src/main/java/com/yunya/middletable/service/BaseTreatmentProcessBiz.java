@@ -363,7 +363,7 @@ public class BaseTreatmentProcessBiz
     treatmentProcess.setAppointStartTime(appointment.getAppointStartTime());
     treatmentProcess.setAppointDuration(appointment.getAppointDuration());
     treatmentProcess.setAppointContent(appointment.getAppointContent());
-    treatmentProcess.setAppointmentCrtTime(appointment.getCrtTime());
+    treatmentProcess.setAppointmentCrtTime(appointment.getUpdTime());
   }
 
   /**
