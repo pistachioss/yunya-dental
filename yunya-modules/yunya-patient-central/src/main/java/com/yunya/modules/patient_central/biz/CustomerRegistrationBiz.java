@@ -65,22 +65,24 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      */
     public PatientBaseInfoVo addPatient(CustomerRegistrationModel customerRegistrationModel) {
         PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
+        int type = 2;
         BeanUtils.copyProperties(customerRegistrationModel, patientBaseInfo);
         if (patientBaseInfo.getOriginId() != null) {
-            PatientOrigin patientOrigin =
-                    this.patientOriginMapper.selectOriginType(0,patientBaseInfo.getOriginType());
-            if (patientOrigin == null) {
-                throw new ClientServiceException("该患者来源不存在", DATA_NOT_EXIST);
-            }
-            if (patientOrigin.getTimeLimit().intValue()==1) {
-                Date curDate = DateUtil.getCurrentDate();
-                Date startDate = DateUtil.toDate(patientOrigin.getLimitStartDate());
-                Date endDate = DateUtil.toDate(patientOrigin.getLimitEndDate());
-                if (curDate.before(startDate) || curDate.after(endDate)) {
-                    throw new ClientServiceException("该患者来源已过期", PARAMETERS_IS_ILLEGAL);
+            if (patientBaseInfo.getOriginType() > type){
+                PatientOrigin patientOrigin =
+                        this.patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
+                if (patientOrigin == null) {
+                    throw new ClientServiceException("该患者来源不存在", DATA_NOT_EXIST);
+                }
+                if (patientOrigin.getTimeLimit() ==1) {
+                    Date curDate = DateUtil.getCurrentDate();
+                    Date startDate = DateUtil.toDate(patientOrigin.getLimitStartDate());
+                    Date endDate = DateUtil.toDate(patientOrigin.getLimitEndDate());
+                    if (curDate.before(startDate) || curDate.after(endDate)) {
+                        throw new ClientServiceException("该患者来源已过期", PARAMETERS_IS_ILLEGAL);
+                    }
                 }
             }
-            patientBaseInfo.setOriginType(patientOrigin.getOriginType());
         }
 
         OrganizationModel organizationModel = new OrganizationModel();
