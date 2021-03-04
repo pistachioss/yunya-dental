@@ -15,17 +15,18 @@
         <result column="appoint_status" property="appointStatus" jdbcType="TINYINT"/>
         <result column="appoint_dentist_id" property="appointDentistId" jdbcType="INTEGER"/>
         <result column="appoint_start_time" property="appointStartTime" jdbcType="TIMESTAMP"/>
+        <result column="appointment_crt_time" property="appointmentCrtTime" jdbcType="TIMESTAMP"/>
         <result column="appoint_duration" property="appointDuration" jdbcType="INTEGER"/>
         <result column="appoint_modify_time" property="appointModifyTime" jdbcType="INTEGER"/>
         <result column="appoint_content" property="appointContent" jdbcType="VARCHAR"/>
         <result column="registered_dentist_id" property="registeredDentistId" jdbcType="INTEGER"/>
         <result column="registered_time" property="registeredTime" jdbcType="TIME"/>
-        <result column="registered_date" property="registeredDate" jdbcType="TIME"/>
+        <result column="registered_date" property="registeredDate" jdbcType="TIMESTAMP"/>
         <result column="treat_start_time" property="treatStartTime" jdbcType="TIMESTAMP"/>
         <result column="treat_end_time" property="treatEndTime" jdbcType="TIMESTAMP"/>
-        <result column="assistant_1" property="assistant1" jdbcType="INTEGER" />
-        <result column="assistant_2" property="assistant2" jdbcType="INTEGER" />
-        <result column="assistant_3" property="assistant3" jdbcType="INTEGER" />
+        <result column="assistant_1" property="assistant1" jdbcType="INTEGER"/>
+        <result column="assistant_2" property="assistant2" jdbcType="INTEGER"/>
+        <result column="assistant_3" property="assistant3" jdbcType="INTEGER"/>
     </resultMap>
     <!-- 批量插入就诊流程 -->
     <insert id="batchInsertSelective">
@@ -41,6 +42,7 @@
         appoint_dentist_id,
         appoint_start_time,
         appoint_duration,
+        appointment_crt_time,
         appoint_modify_time,
         appoint_content,
         registered_dentist_id,
@@ -57,7 +59,7 @@
             (#{item.appointmentId}, #{item.registeredId}, #{item.treatmentId},
             #{item.orgId}, #{item.patientId}, #{item.treatStatus},
             #{item.treatType}, #{item.appointStatus}, #{item.appointDentistId},
-            #{item.appointStartTime}, #{item.appointDuration}, #{item.appointModifyTime},
+            #{item.appointStartTime}, #{item.appointDuration}, #{item.appointmentCrtTime}, #{item.appointModifyTime},
             #{item.appointContent}, #{item.registeredDentistId}, #{item.registeredTime},#{item.registeredDate},
             #{item.treatStartTime}, #{item.treatEndTime}, #{item.assistant1},
             #{item.assistant2}, #{item.assistant3})
@@ -122,6 +124,9 @@
             </if>
             <if test="treatmentProcess.appointDuration != null">
                 appoint_duration = #{treatmentProcess.appointDuration},
+            </if>
+            <if test="treatmentProcess.appointmentCrtTime != null">
+                appointment_crt_time = #{treatmentProcess.appointmentCrtTime},
             </if>
             <if test="treatmentProcess.appointContent != null and treatmentProcess.appointContent != ''">
                 appoint_content = #{treatmentProcess.appointContent},

@@ -18,6 +18,7 @@
         <result column="appoint_duration" property="appointDuration" jdbcType="INTEGER"/>
         <result column="appoint_modify_time" property="appointModifyTime" jdbcType="INTEGER"/>
         <result column="appoint_content" property="appointContent" jdbcType="VARCHAR"/>
+        <result column="appointment_crt_time" property="appointmentCrtTime" jdbcType="TIMESTAMP"/>
         <result column="registered_dentist_id" property="registeredDentistId" jdbcType="INTEGER"/>
         <result column="registered_time" property="registeredTime" jdbcType="TIME"/>
         <result column="registered_date" property="registeredDate" jdbcType="TIMESTAMP"/>
@@ -30,8 +31,8 @@
 
     <sql id="BaseResultFields">
         appointment_id,registered_id,treatment_id,org_id,patient_id,treat_status,treat_type,appoint_status,
-        appoint_dentist_id,appoint_start_time,appoint_duration,appoint_modify_time,appoint_content,registered_dentist_id,
-        registered_time,treat_start_time,treat_end_time,assistant_1,assistant_2,assistant_3,registered_date
+        appoint_dentist_id,appoint_start_time,appoint_duration,appoint_modify_time,appoint_content,appointment_crt_time,
+        registered_dentist_id,registered_time,treat_start_time,treat_end_time,assistant_1,assistant_2,assistant_3,registered_date
     </sql>
 
     <!-- 根据条件查询就诊列表 -->

@@ -363,6 +363,7 @@ public class BaseTreatmentProcessBiz
     treatmentProcess.setAppointStartTime(appointment.getAppointStartTime());
     treatmentProcess.setAppointDuration(appointment.getAppointDuration());
     treatmentProcess.setAppointContent(appointment.getAppointContent());
+    treatmentProcess.setAppointmentCrtTime(appointment.getCrtTime());
   }
 
   /**
@@ -529,6 +530,7 @@ public class BaseTreatmentProcessBiz
         process.setAppointStartTime(appointment.getAppointStartTime());
         process.setAppointDuration(appointment.getAppointDuration());
         process.setAppointContent(appointment.getAppointContent());
+        process.setAppointmentCrtTime(appointment.getCrtTime());
         // 设置就诊流程预约状态和改约次数
         setTreatmentProcessAppointmentStatusAndAppointmentModifyTime(
             appointment, process, appointmentId);
