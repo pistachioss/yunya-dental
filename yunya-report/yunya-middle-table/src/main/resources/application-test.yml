@@ -13,6 +13,7 @@ mydb:
     discount: test_yunya_discount
     treatment: test_yunya_treatment
     employee-expand: test_yunya_employee_expand
+    employee-attend: test_yunya_employee_attend
     appointment: test_yunya_appointment_central
     treatment-other: test_yunya_treatment_other
 
