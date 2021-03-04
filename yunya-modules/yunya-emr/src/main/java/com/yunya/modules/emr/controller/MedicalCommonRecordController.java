@@ -14,6 +14,7 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -55,6 +56,7 @@ public class MedicalCommonRecordController {
   @PostMapping("/create")
   @ApiOperation("新增数据")
   @CurrentUser
+  @RepeatSubmit
   public ResponseResult create(@RequestBody @Valid MedicalCommonRecordModel model) {
     model.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     model.setCrtTime(new Date());
