@@ -10,6 +10,7 @@ import com.yunya.middletable.dao.treatment_other.VisitingRemindMapper;
 import com.yunya.models.report.BaseVisitRemind;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.VisitingRemind;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,10 +59,10 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         }
         break;
       case 2:
-          BaseVisitRemind baseVisitRemind = new BaseVisitRemind();
-          baseVisitRemind.setRecordId(id);
-          baseVisitRemind.setType(type.byteValue());
-          mapper.delete(baseVisitRemind);
+        BaseVisitRemind baseVisitRemind = new BaseVisitRemind();
+        baseVisitRemind.setRecordId(id);
+        baseVisitRemind.setType(type.byteValue());
+        mapper.delete(baseVisitRemind);
         break;
       default:
         break;
@@ -80,7 +81,11 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
       String startDate = form.getStartDate();
       String endDate = form.getEndDate();
       Example emp = new Example(VisitingRecord.class);
-      emp.createCriteria().andBetween("updTime", startDate, endDate);
+      emp.createCriteria()
+          .andEqualTo("inservice", true)
+          .andCondition("crt_time >= '" + new DateTime(startDate).toString("yyyy-MM-dd") + "'")
+          .andCondition(
+              "crt_time < '" + new DateTime(endDate).plusDays(1).toString("yyyy-MM-dd") + "'");
       List<VisitingRecord> visitingRecordList = visitingRecordMapper.selectByExample(emp);
       if (StringHelper.isNotEmpty(visitingRecordList)) {
         visitingRecordList.forEach(
@@ -100,7 +105,11 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
       String startDate = form.getStartDate();
       String endDate = form.getEndDate();
       Example emp = new Example(VisitingRemind.class);
-      emp.createCriteria().andBetween("updTime", startDate, endDate);
+      emp.createCriteria()
+          .andEqualTo("inservice", true)
+          .andCondition("crt_time >= '" + new DateTime(startDate).toString("yyyy-MM-dd") + "'")
+          .andCondition(
+              "crt_time < '" + new DateTime(endDate).plusDays(1).toString("yyyy-MM-dd") + "'");
       List<VisitingRecord> visitingRecordList = visitingRecordMapper.selectByExample(emp);
       if (StringHelper.isNotEmpty(visitingRecordList)) {
         visitingRecordList.forEach(
@@ -159,12 +168,12 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
     return null;
   }
 
-  public Object getVisitingInfo(Integer id, Integer type){
-    if (type == 0){
+  public Object getVisitingInfo(Integer id, Integer type) {
+    if (type == 0) {
       VisitingRecord visitingRecord = visitingRecordMapper.selectByPrimaryKey(id);
       return visitingRecord;
     }
-    if (type == 1){
+    if (type == 1) {
       VisitingRemind visitingRemind = visitingRemindMapper.selectByPrimaryKey(id);
       return visitingRemind;
     }
