@@ -4,8 +4,7 @@ myjdbc:
     port: 3306
     username: sa
     password: Admin001!
-    jdbc-url-ext: useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai&useSSL=false
-
+    
 ## 数据库列表
 mydb:
     report: dev_yunya_report
