@@ -382,6 +382,7 @@
                 and sup.group_id in
                 <foreach collection="queryForm.postGroupIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
+
                 </foreach>
             </if>
             <if test="queryForm.postIds != null and queryForm.postIds.size > 0">
