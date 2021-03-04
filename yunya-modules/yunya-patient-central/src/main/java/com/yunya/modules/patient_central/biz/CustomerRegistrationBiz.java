@@ -118,7 +118,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
             patientPrepaymentsInfo.setPatientId(patientBaseInfo.getId());
             // 预付款卡号生成规则 开通Y
             patientPrepaymentsInfo.setPrepaymentNumber(
-                    this.generateCardNumber("Y"));
+                    this.generateCardNumber("Y",patientBaseInfo.getOrgId()));
             patientPrepaymentsInfo.setCrtId(1);
             patientPrepaymentsInfo.setCrtName("管理员");
             this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
@@ -134,12 +134,12 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      * @param mark 会员号标识 H：会员卡，Y：预付款
      * @return String 卡号
      */
-    public String generateCardNumber(String mark) {
+    public String generateCardNumber(String mark, Integer orgId) {
     String number = this.patientMemberInfoMapper.generateCardNumber4Prepay(35);
         String suffix = String.format("%06d", Integer.parseInt(number) + 1);
         // 获取门诊简称
         OrganizationInfo organizationInfo =
-                this.remoteSystemServiceFeign.findOrgInfoByOrgId(35);
+                this.remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
         if (organizationInfo != null) {
             return mark + organizationInfo.getClinicNumber() + suffix;
         }
