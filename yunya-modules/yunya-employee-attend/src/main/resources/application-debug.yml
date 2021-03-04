@@ -5,7 +5,7 @@ spring:
     port: 3306
     username: sa
     password: Admin001!
-    name: dev_yunya-employee-attend
+    name: dev_yunya_employee_attend
 
   cloud:
     nacos:

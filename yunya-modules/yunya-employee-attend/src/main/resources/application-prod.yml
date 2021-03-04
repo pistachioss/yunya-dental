@@ -6,7 +6,7 @@ spring:
     port: 3306
     username: sa
     password: Admin001!
-    name: yunya-employee-attend
+    name: yunya_employee_attend
 # 注册中心
   cloud:
     nacos:
