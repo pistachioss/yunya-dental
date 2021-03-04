@@ -147,11 +147,13 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         if (visitingRemind == null) {
             return ResponseUtil.success("修改的记录不存在！");
         }
+        String orgId = BaseContextHandler.getOrgId();
         String updateLock = redisUtils.get(RedisConstants.LOCK_VISITING_REMIND);
         if (StringHelper.isEmpty(updateLock)){
             try{
                 redisUtils.setLock(RedisConstants.LOCK_VISITING_REMIND,String.valueOf(id), BusinessConstants.MEDICAL_APPLY_LOCK_SEC,TimeUnit.SECONDS);
                 VisitingRemind build = EntityUtils.build(form, VisitingRemind.class);
+                build.setOrgId(Integer.valueOf(orgId));
                 build.setCrtId(visitingRemind.getCrtId());
                 build.setCrtName(visitingRemind.getCrtName());
                 build.setCrtTime(visitingRemind.getCrtTime());
