@@ -1307,10 +1307,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       if (null != sysUser) {
         lastTreatmentInfo.setDentistName(sysUser.getName());
       }
+      return lastTreatmentInfo;
     } else {
       return new LastTreatmentInfoVO();
     }
-    return lastTreatmentInfo;
   }
 
   /**

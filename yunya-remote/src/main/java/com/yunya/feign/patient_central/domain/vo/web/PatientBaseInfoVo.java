@@ -1,13 +1,11 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 简单介绍:</br> 返回患者信息模型
@@ -122,8 +120,7 @@ public class PatientBaseInfoVo implements Serializable {
      * 末诊时间
      */
     @ApiModelProperty("末诊时间")
-    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
-    private Date lastVisitTime;
+    private String lastVisitTime;
 
     /**
      * 末诊医生

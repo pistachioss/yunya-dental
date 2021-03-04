@@ -7,7 +7,6 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
-import com.yunya.framework.common.constant.UserConstant;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -40,6 +39,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static com.yunya.framework.common.constant.BusinessConstants.DEFAULT_PARENT_ID;
+import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_USER_ID;
+import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_USER_TOKEN;
+import static com.yunya.framework.common.constant.UserConstant.EXPIRE_TIME_SECOND;
 
 /**
  * 简单介绍:</br> 系统菜单业务层
@@ -183,7 +187,7 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
         trees.add(node);
       }
     }
-    return TreeUtil.buildByRecursive(trees, BusinessConstants.DEFAULT_PARENT_ID);
+    return TreeUtil.buildByRecursive(trees, DEFAULT_PARENT_ID);
   }
 
   /**
@@ -217,7 +221,7 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
         trees.add(node);
       }
     }
-    return TreeUtil.buildByRecursive(trees, BusinessConstants.DEFAULT_PARENT_ID);
+    return TreeUtil.buildByRecursive(trees, DEFAULT_PARENT_ID);
   }
 
   /**
@@ -226,20 +230,22 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
    * @param resourceForm 参数封装
    * @return
    */
-  public List<SysMenu> getUserMenuResourceList(UserResourceForm resourceForm, HttpServletRequest request) {
+  public List<SysMenu> getUserMenuResourceList(
+      UserResourceForm resourceForm, HttpServletRequest request) {
     // 获取request 设备信息
     String deviceName = ServletUtils.getCurrentDevice(request).getName();
 
     Integer orgId = resourceForm.getOrgId();
     Integer userId = resourceForm.getUserId();
     // 将用户登陆的组织ID设置到用户信息，并存入到redis中
-    String token = redisUtils.get(RedisConstants.setKey(RedisConstants.REDIS_KEY_USER_ID,deviceName,String.valueOf(userId)));
+    String token =
+        redisUtils.get(
+            RedisConstants.setKey(REDIS_KEY_USER_ID, deviceName, String.valueOf(userId)));
     if (StringUtils.isNotBlank(token)) {
-      UserInfo userInfo =
-          redisUtils.get(RedisConstants.REDIS_KEY_USER_TOKEN + token, UserInfo.class);
+      UserInfo userInfo = redisUtils.get(REDIS_KEY_USER_TOKEN + token, UserInfo.class);
       userInfo.setCurrentOrgId(orgId);
-      redisUtils.delete(RedisConstants.REDIS_KEY_USER_TOKEN + token);
-      redisUtils.set(RedisConstants.REDIS_KEY_USER_TOKEN + token, userInfo, UserConstant.EXPIRE_TIME_SECOND, TimeUnit.SECONDS);
+      redisUtils.delete(REDIS_KEY_USER_TOKEN + token);
+      redisUtils.set(REDIS_KEY_USER_TOKEN + token, userInfo, EXPIRE_TIME_SECOND, TimeUnit.SECONDS);
     }
     // 查询用户在该组织下的所有岗位列表
     List<PostVO> posts = sysUserPostBiz.findUserPostList(orgId, userId);

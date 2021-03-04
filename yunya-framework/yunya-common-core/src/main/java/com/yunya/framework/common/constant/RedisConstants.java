@@ -88,7 +88,7 @@ public class RedisConstants implements Serializable {
   public static final String LOCK_SUBMIT_BENEFIT = "lock:submit:benefit";
 
   /**-----------------------------------------------------------------------------*/
-  public static final String lock_cashier_pay = "LOCK:CASHIER:PAY";
+  public static final String LOCK_CASHIER_PAY = "LOCK:CASHIER:PAY";
 
   /** ---------------------------用户短信验证码----------------------------------------------- */
   public static final String FORGET_PWD_AUTHORIZATION = "forget_pwd_authorization_";
