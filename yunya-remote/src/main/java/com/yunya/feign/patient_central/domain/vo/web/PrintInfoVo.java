@@ -26,7 +26,7 @@ public class PrintInfoVo implements Serializable {
     private String memberTypeName;
     @ApiModelProperty(value = "末诊日期")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date lastTreatmentDate;
+    private String lastTreatmentDate;
     @ApiModelProperty(value = "病历记录详情")
     private List<PatientMedicalRecordDetailVo> medicalRecordDetails;
 }
