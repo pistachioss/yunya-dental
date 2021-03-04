@@ -121,7 +121,7 @@ public class AccessGatewayFilter implements GlobalFilter {
       jwtInfo = userAuthUtil.getInfoFromToken(authToken);
     } catch (Exception e) {
       log.error("用户Token过期异常", e);
-      return setUnauthorizedResponse(serverWebExchange, "登录失效，请重新登录");
+      return setUnauthorizedResponse(serverWebExchange, "登录失效，请重新登陆");
     }
 
     // 获取该用户在redis中存储的的token
@@ -129,17 +129,17 @@ public class AccessGatewayFilter implements GlobalFilter {
     String redisToken = valueOperations.get(currentUserIdKey);
     if (StringUtils.isBlank(redisToken)) {
       log.info("登录失效，请重新登录系统后重试");
-      return setUnauthorizedResponse(serverWebExchange, "登录失效，请重新登录系统后重试");
+      return setUnauthorizedResponse(serverWebExchange, "登陆失效，请重新登陆系统后重试");
     } else if (!authToken.equals(redisToken)) {
       log.info("账号已经在其他设备上登录");
-      return setUnauthorizedResponse(serverWebExchange, "账号已经在其他设备上登录");
+      return setUnauthorizedResponse(serverWebExchange, "账号已经在其他设备上登陆");
     }
 
     // 获取redis中存储的用户信息
     String userInfoStr = valueOperations.get(RedisConstants.REDIS_KEY_USER_TOKEN + redisToken);
     if (StringUtils.isBlank(userInfoStr)) {
       log.info("token校验失败");
-      return setUnauthorizedResponse(serverWebExchange, "token校验失败");
+      return setUnauthorizedResponse(serverWebExchange, "登陆失效，请重新登陆！");
     }
 
     // 将token设置到请求头和线程局部变量RouteLocatorBuilder
