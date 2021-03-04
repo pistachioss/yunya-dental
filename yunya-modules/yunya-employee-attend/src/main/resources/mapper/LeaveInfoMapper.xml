@@ -368,7 +368,7 @@
                 and t.id = #{id}
             </if>
             <if test="startTime != null and endTime != null">
-                and t.crt_time >= #{startTime} and t.crt_time &lt; DATE_ADD(#{endTime}, INTERVAL '1' DAY)
+                and t.start_time >= #{startTime} and t.start_time &lt; DATE_ADD(#{endTime}, INTERVAL '1' DAY)
             </if>
         </where>
         GROUP BY

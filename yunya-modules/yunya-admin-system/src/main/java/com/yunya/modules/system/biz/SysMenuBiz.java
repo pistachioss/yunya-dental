@@ -7,6 +7,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
+import com.yunya.framework.common.constant.UserConstant;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -238,7 +239,7 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
           redisUtils.get(RedisConstants.REDIS_KEY_USER_TOKEN + token, UserInfo.class);
       userInfo.setCurrentOrgId(orgId);
       redisUtils.delete(RedisConstants.REDIS_KEY_USER_TOKEN + token);
-      redisUtils.set(RedisConstants.REDIS_KEY_USER_TOKEN + token, userInfo, 14400, TimeUnit.SECONDS);
+      redisUtils.set(RedisConstants.REDIS_KEY_USER_TOKEN + token, userInfo, UserConstant.EXPIRE_TIME_SECOND, TimeUnit.SECONDS);
     }
     // 查询用户在该组织下的所有岗位列表
     List<PostVO> posts = sysUserPostBiz.findUserPostList(orgId, userId);

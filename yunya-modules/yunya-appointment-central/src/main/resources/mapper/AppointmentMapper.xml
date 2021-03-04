@@ -248,7 +248,7 @@
         from appointment
         where not (DATE_FORMAT(appoint_end_time,'%d %b %Y %T') &lt;= DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
         or DATE_FORMAT(appoint_start_time,'%d %b %Y %T') &gt;= DATE_FORMAT(#{appointEndTime},'%d %b %Y %T'))
-        and patient_id = #{patientId} and inservice = 1) apt
+        and patient_id = #{patientId} and inservice = 1 and appoint_status in (0,1)) apt
         where apt.id not in (#{id})
     </select>
 
@@ -264,7 +264,7 @@
         from appointment
         where not (DATE_FORMAT(appoint_end_time,'%d %b %Y %T') &lt;= DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
         or DATE_FORMAT(appoint_start_time,'%d %b %Y %T') &gt;= DATE_FORMAT(#{appointEndTime},'%d %b %Y %T'))
-        and dentist_id = #{dentistId} and inservice = 1 and appoint_status in (0,1,2)
+        and dentist_id = #{dentistId} and inservice = 1 and appoint_status in (0,1)
         ) apt
         where apt.id not in (#{id})
     </select>
@@ -281,7 +281,7 @@
         from appointment
         where not (DATE_FORMAT(appoint_end_time,'%d %b %Y %T') &lt;= DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
         or DATE_FORMAT(appoint_start_time,'%d %b %Y %T') &gt;= DATE_FORMAT(#{appointEndTime},'%d %b %Y %T'))
-        and assistant_id = #{assistantId} and inservice = 1 and appoint_status in (0,1,2)
+        and assistant_id = #{assistantId} and inservice = 1 and appoint_status in (0,1)
         ) apt
         where apt.id not in (#{id})
     </select>
@@ -298,7 +298,7 @@
         from appointment
         where not (DATE_FORMAT(appoint_end_time,'%d %b %Y %T') &lt;= DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
         or DATE_FORMAT(appoint_start_time,'%d %b %Y %T') &gt;= DATE_FORMAT(#{appointEndTime},'%d %b %Y %T'))
-        and clinic_device_item_id = #{deviceId} and inservice = 1
+        and clinic_device_item_id = #{deviceId} and inservice = 1 and appoint_status in (0,1)
         ) apt
         where apt.id not in (#{id})
     </select>
