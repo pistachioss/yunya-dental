@@ -79,6 +79,12 @@ public class BaseTreatmentProcess {
     private String appointContent;
 
     /**
+     * 预约创建时间
+     */
+    @Column(name = "appointment_crt_time")
+    private Date appointmentCrtTime;
+
+    /**
      * 改约次数
      */
     @Column(name = "appoint_modify_time")
@@ -364,6 +370,24 @@ public class BaseTreatmentProcess {
      */
     public void setAppointModifyTime(Integer appointModifyTime) {
         this.appointModifyTime = appointModifyTime;
+    }
+
+    /**
+     * 获取预约创建时间
+     *
+     * @return appointmentCrtTime - 预约创建时间
+     */
+    public Date getAppointmentCrtTime() {
+        return appointmentCrtTime;
+    }
+
+    /**
+     * 设置预约创建时间
+     *
+     * @param appointmentCrtTime 预约创建时间
+     */
+    public void setAppointmentCrtTime(Date appointmentCrtTime) {
+        this.appointmentCrtTime = appointmentCrtTime;
     }
 
     /**
