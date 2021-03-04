@@ -49,7 +49,7 @@
         <result column="upd_id" property="updId" jdbcType="INTEGER"/>
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
-        <result column="last_treatment_date" property="lastTreatmentDate" jdbcType="TIMESTAMP"/>
+        <result column="last_treatment_date" property="lastTreatmentDate" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!-- 根据条件查询就诊中患者信息列表 -->
