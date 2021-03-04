@@ -29,8 +29,7 @@ public class VisitingRemindForm implements Serializable {
     /**
      * 诊所ID
      */
-    @ApiModelProperty(value = "诊所ID", required = true)
-    @NotNull(message = "诊所ID不能为空！")
+    @ApiModelProperty(value = "诊所ID")
     private Integer orgId;
 
     /**
