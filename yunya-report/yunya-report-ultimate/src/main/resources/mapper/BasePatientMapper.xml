@@ -354,7 +354,7 @@
                 base_treatment_process btp
             WHERE
                 btp.appointment_id IS NOT NULL
-                AND DATE_FORMAT( btp.appoint_crt_time, '%Y-%m-%d' ) > DATE_FORMAT( CURRENT_DATE, '%Y-%m-%d' )
+                AND DATE_FORMAT( btp.appointment_crt_time, '%Y-%m-%d' ) > DATE_FORMAT( CURRENT_DATE, '%Y-%m-%d' )
             GROUP BY
                 patient_id
             ) btp1 ON btp.patientId = btp1.patient_id
