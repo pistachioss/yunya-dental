@@ -56,21 +56,22 @@ public class UserAuthServiceImpl implements UserAuthService {
    * @return String（token）
    */
   @Override
-  public UserAuthResponse login(JwtRequestFrom paramForm, HttpServletRequest request) throws Exception {
+  public UserAuthResponse login(JwtRequestFrom paramForm, HttpServletRequest request)
+      throws Exception {
     String deviceName = ServletUtils.getCurrentDevice(request).getName();
     // 调用远程服务获取用户信息
     FrontUserInfoVO userInfo = systemServiceFeign.validate(paramForm);
     checkUserInfo(userInfo);
     String userId = userInfo.getId();
     if (!StringUtils.isEmpty(userId)) {
-      String tokenStr = redisUtils.get(RedisConstants.setKey(USER_ID,deviceName,userId));
+      String tokenStr = redisUtils.get(RedisConstants.setKey(USER_ID, deviceName, userId));
       if (StringHelper.isBlank(tokenStr)) {
-        String token = this.setTokenInfoInCache(userInfo,userId,deviceName);
+        String token = this.setTokenInfoInCache(userInfo, userId, deviceName);
         return new UserAuthResponse(token, userInfo);
       } else {
         redisUtils.delete(USER_TOKEN + tokenStr);
-        redisUtils.delete(RedisConstants.setKey(USER_ID,deviceName,userId));
-        String token = this.setTokenInfoInCache(userInfo,userId,deviceName);
+        redisUtils.delete(RedisConstants.setKey(USER_ID, deviceName, userId));
+        String token = this.setTokenInfoInCache(userInfo, userId, deviceName);
         return new UserAuthResponse(token, userInfo);
       }
     }
@@ -112,7 +113,11 @@ public class UserAuthServiceImpl implements UserAuthService {
     // 获取token过期时间
     long expireTime = jwtTokenUtil.getExpireTime(refreshToken);
     redisUtils.set(USER_TOKEN + refreshToken, userInfo, expireTime, TimeUnit.MILLISECONDS);
-    redisUtils.set(RedisConstants.setKey(USER_ID,deviceType,userInfo.getId()), refreshToken, expireTime, TimeUnit.MILLISECONDS);
+    redisUtils.set(
+        RedisConstants.setKey(USER_ID, deviceType, userInfo.getId()),
+        refreshToken,
+        expireTime,
+        TimeUnit.MILLISECONDS);
     return new UserAuthResponse(refreshToken, userInfo);
   }
 
@@ -133,35 +138,42 @@ public class UserAuthServiceImpl implements UserAuthService {
    * @param token token
    */
   @Override
-  public void logout(String token,String deviceName) {
+  public void logout(String token, String deviceName) {
     // 从缓存中获取用户
     FrontUserInfoVO userInfo = redisUtils.get(USER_TOKEN + token, FrontUserInfoVO.class);
     if (null != userInfo) {
       // todo 记录登出信息
       // 从缓存中移除用户的token、用户信息
-      redisUtils.delete(RedisConstants.setKey(USER_ID,deviceName,userInfo.getId()));
+      redisUtils.delete(RedisConstants.setKey(USER_ID, deviceName, userInfo.getId()));
       redisUtils.delete(USER_TOKEN + token);
     }
   }
 
   /**
    * 将token信息设置到redis缓冲中
-   * @param userInfo  用户信息
-   * @param userId    用户ID
-   * @param deviceName 当前访问设备类型 Computer(电脑) Mobile(移动设备) Tablet(平板) Game console(游戏机) Digital media receiver(数字媒体设备) Wearable computer(嵌入式设备) Unknown(未知)
+   *
+   * @param userInfo 用户信息
+   * @param userId 用户ID
+   * @param deviceName 当前访问设备类型 Computer(电脑) Mobile(移动设备) Tablet(平板) Game console(游戏机) Digital media
+   *     receiver(数字媒体设备) Wearable computer(嵌入式设备) Unknown(未知)
    * @throws Exception 异常
    * @return 返回生成的token
    */
-  public String setTokenInfoInCache(FrontUserInfoVO userInfo,String userId, String deviceName) throws Exception {
+  public String setTokenInfoInCache(FrontUserInfoVO userInfo, String userId, String deviceName)
+      throws Exception {
     // todo 记录登陆信息
     String token =
-            jwtTokenUtil.generateToken(
-                    new JWTInfo(userInfo.getUsername(), userId, userInfo.getName(),deviceName));
+        jwtTokenUtil.generateToken(
+            new JWTInfo(userInfo.getUsername(), userId, userInfo.getName(), deviceName));
     // 获取token的过期时间
     long expireTime = jwtTokenUtil.getExpireTime(token);
     // 缓存用户信息、用户token
     redisUtils.set(USER_TOKEN + token, userInfo, expireTime, TimeUnit.MILLISECONDS);
-    redisUtils.set(RedisConstants.setKey(USER_ID,deviceName,userId), token, expireTime, TimeUnit.MILLISECONDS);
+    redisUtils.set(
+        RedisConstants.setKey(USER_ID, deviceName, userId),
+        token,
+        expireTime,
+        TimeUnit.MILLISECONDS);
     return token;
   }
 }
