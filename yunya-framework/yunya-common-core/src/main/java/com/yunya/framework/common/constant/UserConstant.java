@@ -20,4 +20,6 @@ public class UserConstant {
   public static final String JWT_KEY_DEVICE_TYPE = "deviceType";
   /** jwt用户申请token时间(s) */
   public static final String JWT_APPLY_TOKEN_TIME = "applyTokenTime";
+  /** token过期时间（秒/s） */
+  public static final Integer EXPIRE_TIME_SECOND = 24*3600;
 }
