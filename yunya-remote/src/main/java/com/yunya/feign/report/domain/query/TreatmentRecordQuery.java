@@ -31,6 +31,9 @@ public class TreatmentRecordQuery extends PageQuery implements Serializable {
   /** 患者关键字（患者姓名/姓名拼音/手机号） */
   @ApiModelProperty("患者关键字（患者姓名/姓名拼音/手机号）")
   private String keyWord;
+  /** 初复诊 */
+  @ApiModelProperty("初/复诊（0-初诊；1-复诊）")
+  private Byte treatType;
   /** 查询就诊开始时间 */
   @ApiModelProperty(value = "就诊开始时间", example = "yyyy-MM-dd", required = true)
   @NotBlank(message = "开始时间不能为空！")

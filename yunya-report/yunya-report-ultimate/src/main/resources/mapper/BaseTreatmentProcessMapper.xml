@@ -94,6 +94,9 @@
                 and concat(ifnull(tr.patientName, ''), ifnull(tr.pinyinName, ''), ifnull(tr.mobile, '')) like
                 concat('%', #{query.keyWord}, '%')
             </if>
+            <if test="query.treatType != null">
+                and tr.treatType = #{query.treatType}
+            </if>
             <if test="query.treatStartDate != null and query.treatStartDate != ''">
                 and tr.treatDate &gt;= #{query.treatStartDate}
             </if>
