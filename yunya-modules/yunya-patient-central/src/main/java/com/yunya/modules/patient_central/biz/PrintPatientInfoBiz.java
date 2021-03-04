@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PrintInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -85,6 +86,9 @@ public class PrintPatientInfoBiz {
                 });
                 printInfoVo.setMedicalRecordDetails(medicalRecordDetails);
             }
+        } else {
+            LastTreatmentInfoVO lastTreatmentRecord = this.treatmentServiceFeign.findLastTreatmentRecord(patientId);
+            printInfoVo.setLastTreatmentDate(lastTreatmentRecord.getTreatmentDate());
         }
         return printInfoVo;
     }
