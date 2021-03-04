@@ -26,15 +26,15 @@ myjdbc:
 
 ## 数据库列表
 mydb:
-    report: yunya_report
-    system: yunya_system
-    patient: yunya_patient_central
-    discount: yunya_discount
-    treatment: yunya_treatment
-    employee-expand: yunya_employee_expand
-    employee-attend: yunya_employee_attend
-    appointment: yunya_appointment_central
-    treatment-other: yunya_treatment_other
+    report: dev_yunya_report
+    system: dev_yunya_system
+    patient: dev_yunya_patient_central
+    discount: dev_yunya_discount
+    treatment: dev_yunya_treatment
+    employee-expand: dev_yunya_employee_expand
+    employee-attend: dev_yunya_employee_attend
+    appointment: dev_yunya_appointment_central
+    treatment-other: dev_yunya_treatment_other
 
 ## 多数据源配置
 spring:

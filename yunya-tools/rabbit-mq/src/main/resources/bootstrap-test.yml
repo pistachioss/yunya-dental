@@ -1,0 +1,10 @@
+spring:
+  cloud:
+    nacos:
+      config:
+        server-addr: 172.16.17.177:8848
+  rabbitmq:
+    host: 172.16.17.177
+    port: 5672
+    username: admin
+    password: admin

@@ -15,7 +15,7 @@ spring:
     port: 3306
     username: sa
     password: Admin001!
-    name: yunya_clinc_base
+    name: dev_yunya_clinc_base
     url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.name}?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false
     driver-class-name: com.mysql.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource

@@ -1,20 +1,21 @@
+# 开发环境，nacos连215开发环境
 spring:
-    datasource:
-        host: rm-bp18uejcrk63u04c9.mysql.rds.aliyuncs.com
-        port: 3306
-        username: sa
-        password: Admin001!
-        name: yunya_system
+  datasource:
+    host: 192.168.31.90
+    port: 3306
+    username: sa
+    password: Admin001!
+    name: dev_yunya_system
 
-    cloud:
-        nacos:
-            discovery:
-                server-addr: 192.168.100.80:8848
-            config:
-                server-addr: 192.168.100.80:8848
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.31.215:8848
+      config:
+        server-addr: 192.168.31.215:8848
 
-    redis:
-        database: 2
-        host: 192.168.100.79
-        port: 6379
-        password: foobared
+  redis:
+    database: 2
+    host: 192.168.31.90
+    port: 6379
+    password: foobared

@@ -20,6 +20,11 @@ spring:
         server-addr: 192.168.31.215:8848
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
+    host: 192.168.31.90
+    port: 3306
+    username: sa
+    password: Admin001!
+    name: dev_yunya-employee-attend
     url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.name}?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false&serverTimezone=CST
   main:
     allow-bean-definition-overriding: true

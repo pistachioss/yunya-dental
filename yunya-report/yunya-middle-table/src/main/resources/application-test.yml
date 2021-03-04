@@ -1,0 +1,35 @@
+## 测试环境，数据源连接
+myjdbc:
+    host: community.yunya365.com
+    port: 3306
+    username: sa
+    password: Admin001!
+
+## 数据库列表
+mydb:
+    report: test_yunya_report
+    system: test_yunya_system
+    patient: test_yunya_patient_central
+    discount: test_yunya_discount
+    treatment: test_yunya_treatment
+    employee-expand: test_yunya_employee_expand
+    appointment: test_yunya_appointment_central
+    treatment-other: test_yunya_treatment_other
+
+spring:
+    cloud:
+        nacos:
+            discovery:
+                server-addr: 172.16.17.177:8848
+            config:
+                server-addr: 172.16.17.177:8848
+    redis:
+        database: 2
+        host: 172.16.17.177
+        port: 6379
+        password: foobared
+    rabbitmq:
+        host: 172.16.17.177
+        port: 5672
+        username: admin
+        password: admin

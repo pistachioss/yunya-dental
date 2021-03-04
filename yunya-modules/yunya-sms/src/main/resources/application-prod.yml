@@ -1,0 +1,28 @@
+# 勿动
+# 数据库连接
+spring:
+  datasource:
+    host: rm-bp18uejcrk63u04c9.mysql.rds.aliyuncs.com
+    port: 3306
+    username: sa
+    password: Admin001!
+    name: yunya_sms
+# 注册中心
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.100.80:8848
+      config:
+        server-addr: 192.168.100.80:8848
+# 缓存
+  redis:
+    database: 2
+    host: 192.168.100.79
+    port: 6379
+    password: foobared
+
+# 日志打印级别
+logging:
+  level:
+    # tk.mybatis: DEBUG
+    com.yunya.auth: error

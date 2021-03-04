@@ -2,4 +2,4 @@ spring:
     cloud:
         nacos:
             config:
-                server-addr: 192.168.100.80:8848
+                server-addr: 192.168.31.215:8848

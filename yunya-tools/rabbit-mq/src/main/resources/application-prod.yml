@@ -1,0 +1,18 @@
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.100.80:8848
+      config:
+        server-addr: 192.168.100.80:8848
+
+  rabbitmq:
+    host: 192.168.100.79
+    port: 5672
+    username: admin
+    password: admin
+# 日志打印级别
+logging:
+  level:
+    # tk.mybatis: DEBUG
+    com.yunya.auth: error
