@@ -1,12 +1,10 @@
 package com.yunya.feign.treatment.domain.vo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * @program: yunya-dental
@@ -31,6 +29,5 @@ public class LastTreatmentInfoVO implements Serializable {
   private String dentistName;
   /** 末诊日期 */
   @ApiModelProperty(name = "dentistId", value = "末次就诊日期")
-  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-  private Date treatmentDate;
+  private String treatmentDate;
 }
