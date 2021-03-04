@@ -221,6 +221,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         if (StringHelper.isNotBlank(search)) {
             PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
             patientLikeQuery.setCondition(search);
+            patientLikeQuery.setWhetherPage(false);
             // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容
             List<PatientBaseInfoVo> patientByNameAndMobile = remotePatientCentralServiceFeign.findPatientByNameAndMobile(patientLikeQuery);
             if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
