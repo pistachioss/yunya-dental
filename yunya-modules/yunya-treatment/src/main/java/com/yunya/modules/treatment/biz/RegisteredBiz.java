@@ -105,14 +105,14 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
       entity.setOrgId(appointmentOrgId);
       int i = mapper.insertSelective(entity);
       if (i > 0) {
-//        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
       }
       redisUtils.delete(regKey);
     } else {
       buildRegistered(model, entity);
       int i = mapper.insertSelective(entity);
       if (i > 0) {
-//        rabbitMqServiceFeign.sendMessage(entity.getId(), 1, 0, BaseTreatmentProcess);
+        rabbitMqServiceFeign.sendMessage(entity.getId(), 1, 0, BaseTreatmentProcess);
       }
     }
     return entity.getId();
