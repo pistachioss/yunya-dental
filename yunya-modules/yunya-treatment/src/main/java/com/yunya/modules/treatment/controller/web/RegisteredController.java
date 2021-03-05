@@ -2,8 +2,10 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.form.ReferredForm;
+import com.yunya.feign.treatment.domain.form.ReferredInfoForm;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
 import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
+import com.yunya.feign.treatment.domain.vo.ReferredInfoVO;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -14,6 +16,8 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 简介: 患者挂号控制器
@@ -61,6 +65,35 @@ public class RegisteredController {
   public ResponseResult referred(@RequestBody @Validated ReferredForm referredForm) {
     return ResponseUtil.success( registeredBiz.referred(referredForm));
   }
+
+  /**
+   * 门诊端转诊记录
+   *
+   * @param
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("门诊端转诊记录")
+  @PostMapping("/referredInfo")
+  public ResponseResult<PageInfo<ReferredInfoVO>> referredInfo(@RequestBody @Validated ReferredInfoForm referredForm) {
+    List<ReferredInfoVO> relist = registeredBiz.referredInfo(referredForm);
+    if (referredForm.getWhetherPage()) {
+      Integer pageNum = referredForm.getPageNum();
+      Integer pageSize = referredForm.getPageSize();
+      int total = relist.size();
+      PageInfo<ReferredInfoVO> pageInfo = new PageInfo<>();
+      pageInfo.setPageNum(pageNum);
+      pageInfo.setPageSize(pageSize);
+      pageInfo.setTotal(total);
+      List<ReferredInfoVO> list =
+              relist.subList(
+                      pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+      pageInfo.setList(list);
+      return ResponseUtil.success(pageInfo);
+    }
+    return ResponseUtil.success(new PageInfo<>(relist));
+  }
+
 
   /**
    * 根据挂号ID取消患者挂号
