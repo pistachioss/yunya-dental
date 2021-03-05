@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -45,7 +46,7 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
    * @param patientId 患者ID
    * @return
    */
-  PatientBillStatistics selectPatientBillStatistics(@Param("patientId") Integer patientId);
+  PatientBillStatistics selectPatientBillStatistics(@Param("patientId") Integer patientId, @Param("payIds") Collection<Integer> payIds);
 
   /**
    * 根据患者ID查询患者账单统计数据列表

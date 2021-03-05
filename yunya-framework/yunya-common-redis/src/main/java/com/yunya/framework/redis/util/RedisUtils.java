@@ -1,15 +1,20 @@
 package com.yunya.framework.redis.util;
 
-import com.alibaba.fastjson.*;
-import lombok.extern.slf4j.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.data.redis.connection.*;
-import org.springframework.data.redis.core.*;
-import org.springframework.data.redis.core.types.*;
-import org.springframework.stereotype.*;
+import com.alibaba.fastjson.JSON;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisStringCommands;
+import org.springframework.data.redis.connection.ReturnType;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.types.Expiration;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -126,6 +131,20 @@ public class RedisUtils {
     return value == null ? null : fromJson(value, clazz);
   }
 
+
+  /**
+   * 返回指定类型结果列表
+   *
+   * @param key 键
+   * @param clazz 类型class
+   * @return
+   * @author zmr
+   */
+  public <T> List<T> getJSONArray(String key, Class<T> clazz) {
+    String value = valueOperations.get(key);
+    return value == null ? null : fromJSONArray(value, clazz);
+  }
+
   /**
    * 删除缓存
    *
@@ -164,6 +183,18 @@ public class RedisUtils {
    */
   private <T> T fromJson(String json, Class<T> clazz) {
     return JSON.parseObject(json, clazz);
+  }
+
+  /**
+   * JSON数据，转成List<T>
+   *
+   * @param json
+   * @param clazz
+   * @param <T>
+   * @return
+   */
+  private <T> List<T> fromJSONArray(String json, Class<T> clazz) {
+    return JSON.parseArray(json, clazz);
   }
 
   /**

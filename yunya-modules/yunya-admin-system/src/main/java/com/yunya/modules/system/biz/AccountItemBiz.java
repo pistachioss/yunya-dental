@@ -6,8 +6,10 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.vo.AccountItemVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.AccountType;
 import com.yunya.models.system.ClinicAccountItem;
@@ -48,6 +50,8 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
   @Autowired private AccountTypeMapper accountTypeMapper;
   /** 消息中间件 */
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+  /** 缓存 */
+  @Autowired private RedisUtils redisUtils;
 
   /**
    * 根据ID查询入账方式
@@ -100,6 +104,7 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
     entity.setType(type);
     entity.setAccountTypeId(model.getAccountTypeId());
     int i = mapper.insertSelective(entity);
+    clearAccountItemList();
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(entity.getId(), 0, BaseAccountItem);
     }
@@ -134,6 +139,7 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
     resultData.setUpdTime(new Date(System.currentTimeMillis()));
     resultData.setId(id);
     int i = mapper.updateByPrimaryKeySelective(resultData);
+    clearAccountItemList();
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(id, 1, BaseAccountItem);
     }
@@ -153,8 +159,17 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
           "删除失败，ID为" + id + "'的入账方式已被门诊关联，不允许删除！", OperationCodeConstants.DELETE_NOT_ALLOW);
     }
     int i = mapper.deleteByPrimaryKey(id);
+    clearAccountItemList();
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(id, 2, BaseAccountItem);
     }
+  }
+
+  /**
+   * 清除缓存中的入账方式列表
+   *
+   */
+  private void clearAccountItemList() {
+    redisUtils.delete(RedisConstants.REDIS_KEY_ACCOUNT_ITEM_LIST);
   }
 }

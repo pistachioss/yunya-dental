@@ -42,8 +42,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Autowired private BaseBillPayMapper billPayMapper;
   /** 组织 */
   @Autowired private BaseOrganizationMapper organizationMapper;
-  /** 账单详情 * */
-  @Autowired private BaseBillDetailMapper baseBillDetailMapper;
+  /** 账单详情 */
+  @Autowired private BaseBillDetailBiz baseBillDetailBiz;
 
   /**
    * 根据条件查询开单列表
@@ -168,6 +168,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * @return BillDataStatisticsVO
    */
   public BillDataStatisticsVO findClinicBillDataStatistic(DataStatisticsQuery query) {
+    query.setPayIds(baseBillDetailBiz.getFreePaymentIds());
     BillDataStatisticsVO resultData = mapper.selectClinicBillDataStatistic(query);
     return resultData;
   }
@@ -285,7 +286,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     BillDiscountVO billDiscountVOs = new BillDiscountVO();
     List<BillDiscountDetailInifoVO> billDiscountDetails = Lists.newArrayList();
     // 查询账单详情列表
-    List<BaseBillDetailVO> baseBillDetails = baseBillDetailMapper.selectBillDetailByBillId(billId);
+    List<BaseBillDetailVO> baseBillDetails = baseBillDetailBiz.selectBillDetailByBillId(billId);
     Map<Integer, BaseBillDetailVO> details =
         baseBillDetails.stream()
             .collect(Collectors.toMap(BaseBillDetailVO::getBillDetailId, (vo) -> vo));

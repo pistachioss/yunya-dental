@@ -11,6 +11,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * 简介: 运营分析数据总览查询参数
@@ -41,4 +42,7 @@ public class DataStatisticsQuery extends PageQuery implements Serializable {
   @ApiModelProperty(value = "结束时间", required = true)
   @NotBlank(message = "结束时间不能为空！")
   private String endDate;
+  /** 入账方式id列表 */
+  @ApiModelProperty(value = "入账方式id列表")
+  private Collection<Integer> payIds;
 }

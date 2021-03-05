@@ -1,8 +1,11 @@
 package com.yunya.modules.patient_central;
 
+import com.alibaba.fastjson.JSONObject;
+import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsInfoVo;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import com.yunya.modules.patient_central.controller.web.PatientPrepaymentRelationController;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +28,7 @@ import java.util.List;
 public class PatientPrepaymentRelationControllerTest {
   /***/
   @Autowired private PatientPrepaymentRelationController prepaymentRelationController;
-
+  @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;
   @Test
   public void find() {
     PrepaidExpendRecordQueryForm query = new PrepaidExpendRecordQueryForm();
@@ -41,4 +44,12 @@ public class PatientPrepaymentRelationControllerTest {
         prepaymentRelationController.balancePayment(93459);
     System.out.println(result);
   }
+
+  @Test
+  public void test() {
+    String str = "{\"id\":null,\"woGuid\":null,\"name\":\"crazyman\",\"mobile\":\"13867185421\",\"faceUrl\":null,\"originType\":null,\"originId\":null,\"sourceId\":null,\"mobileOwner\":123,\"birthday\":null,\"age\":0,\"gender\":0,\"remarks\":null}";
+    PatientBaseInfoModel patientBaseInfoModel = JSONObject.parseObject(str,PatientBaseInfoModel.class);
+    patientBaseInfoBiz.addPatient(patientBaseInfoModel);
+  }
+
 }

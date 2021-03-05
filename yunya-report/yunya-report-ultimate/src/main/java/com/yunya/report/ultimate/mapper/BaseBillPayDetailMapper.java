@@ -5,6 +5,7 @@ import com.yunya.models.report.BaseBillPayDetail;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface BaseBillPayDetailMapper extends Mapper<BaseBillPayDetail> {
@@ -16,4 +17,13 @@ public interface BaseBillPayDetailMapper extends Mapper<BaseBillPayDetail> {
    * @return List<StatementPaymentVO>
    */
   List<StatementPaymentVO> selectBillPayDetailList(@Param("billPayId") Integer billPayId);
+
+  /**
+   * 根据billId分组，统计免单支付总额
+   *
+   * @param billIds
+   * @param payIds
+   * @return
+   */
+  List<BaseBillPayDetail> sumPayDetailList(@Param("billIds") Collection<Integer> billIds, @Param("payIds") Collection<Integer> payIds);
 }
