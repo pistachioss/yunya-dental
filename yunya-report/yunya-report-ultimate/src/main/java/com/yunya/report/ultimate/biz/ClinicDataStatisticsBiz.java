@@ -65,6 +65,7 @@ public class ClinicDataStatisticsBiz {
     resultData.setTollDataStatistics(clinicTollDataStatistic);
     // 门诊工作量总览
     WorkloadStatisticsVO clinicWorkloadStatistic = billDetailBiz.findClinicWorkloadStatistic(query);
+    clinicWorkloadStatistic.setTotalFreePaymentAmount(clinicBillDataStatistic.getTotalFreePaymentAmount());
     resultData.setWorkloadStatistic(clinicWorkloadStatistic);
     // 门诊会员数据总览
     MemberDataStatisticVO clinicMemberDataStatistic =

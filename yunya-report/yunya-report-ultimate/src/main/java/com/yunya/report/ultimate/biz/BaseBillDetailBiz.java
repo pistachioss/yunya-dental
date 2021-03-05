@@ -166,30 +166,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   private void assemblyFreepayment(List<? extends EmployeeWorkloadOfOperationVO> resultList) {
     Map<Integer, BigDecimal> userIds = resultList.stream().collect(Collectors.toMap(EmployeeWorkloadOfOperationVO::getEmployeeId,v->BigDecimal.ZERO));
     List<BaseBillDetail> details = mapper.selectBillDetailByExecutorIds(userIds.keySet());
-    Map<Integer, BigDecimal> total = new HashMap<>(16);//每个账单的执行实收总额
-    Set<Integer> billIds = new HashSet<>();
-    details.forEach(detail -> {
-      Integer billId = detail.getBillId();
-      BigDecimal sum = total.get(billId);
-      if (sum == null) {
-        sum = BigDecimal.ZERO;
-      }
-      total.put(billId, sum.add(detail.getReceivedAmount()));
-      billIds.add(billId);
-    });
-
+    Set<Integer> billIds = computePercentage(details);
     List<BaseBillPayDetail> freePayments = baseBillPayDetailMapper.sumPayDetailList(billIds, getFreePaymentIds());
     Map<Integer, BigDecimal> freePaymentMap = freePayments.stream().collect(Collectors.toMap(BaseBillPayDetail::getBillId, BaseBillPayDetail::getPrincipalAmount));
     details.forEach(detail -> {
       Integer executorId = detail.getExecutorId();
       if (userIds.containsKey(executorId)) {
         Integer billId = detail.getBillId();
-        BigDecimal sum = total.get(billId);
-        BigDecimal amount = detail.getReceivedAmount()
-                .divide(sum, 2, BigDecimal.ROUND_HALF_UP)
-                .multiply(freePaymentMap.get(billId));
-        BigDecimal frees = userIds.get(executorId);
-        userIds.put(executorId, amount.add(frees));
+        BigDecimal amount =detail.getDiscountAmount().multiply(freePaymentMap.get(billId));
+        userIds.put(executorId, amount.add(userIds.get(executorId)));
       }
     });
     resultList.forEach(vo -> {
@@ -591,28 +576,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       Map<Integer, BigDecimal> billIdMap = resultList.stream().collect(Collectors.toMap(EmployeeFreepaymentWorkloadDetailVO::getBillId,v->BigDecimal.ZERO));
       Set<Integer> billIds = billIdMap.keySet();
       List<BaseBillDetail> details = mapper.selectBillDetailByBillIds(billIds);
-      Map<Integer, BigDecimal> total = new HashMap<>(16);//每个账单的执行实收总额
-      details.forEach(detail -> {
-        Integer billId = detail.getBillId();
-        BigDecimal sum = total.get(billId);
-        if (sum == null) {
-          sum = BigDecimal.ZERO;
-        }
-        total.put(billId, sum.add(detail.getReceivedAmount()));
-      });
-
+      computePercentage(details);
       List<BaseBillPayDetail> freePayments = baseBillPayDetailMapper.sumPayDetailList(billIds, getFreePaymentIds());
       Map<Integer, BigDecimal> freePaymentMap = freePayments.stream().collect(Collectors.toMap(BaseBillPayDetail::getBillId, BaseBillPayDetail::getPrincipalAmount));
       details.forEach(detail -> {
         Integer executorId = detail.getExecutorId();
         if (query.getEmployeeId().equals(executorId)) {
           Integer billId = detail.getBillId();
-          BigDecimal sum = total.get(billId);
-          BigDecimal amount = detail.getReceivedAmount()
-                  .divide(sum, 2, BigDecimal.ROUND_HALF_UP)
-                  .multiply(freePaymentMap.get(billId));
-          BigDecimal frees = billIdMap.get(billId);
-          billIdMap.put(billId, amount.add(frees));
+          BigDecimal amount = detail.getDiscountAmount().multiply(freePaymentMap.get(billId));
+          billIdMap.put(billId, amount.add(billIdMap.get(billId)));
         }
       });
       resultList.forEach(vo -> {
@@ -621,6 +593,41 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       });
     }
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 计算每个账单的执行实收的各项占比
+   *
+   * @param details
+   * @return
+   */
+  private Set<Integer> computePercentage(List<BaseBillDetail> details) {
+    Set<Integer> billIds = new HashSet<>();
+    //每个账单的执行实收总额
+    Map<Integer, BigDecimal[]> total = new HashMap<>(16);
+    details.forEach(detail -> {
+      Integer billId = detail.getBillId();
+      BigDecimal[] sum = total.get(billId);
+      if (sum == null) {
+        sum = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+      }
+      sum[0] = sum[0].add(detail.getReceivedAmount());
+      total.put(billId, sum);
+      billIds.add(billId);
+    });
+    details.forEach(detail -> {
+      BigDecimal receivedAmount = detail.getReceivedAmount();
+      Integer billId = detail.getBillId();
+      BigDecimal[] sum = total.get(billId);
+      sum[1] = sum[1].add(receivedAmount);
+      BigDecimal amount = receivedAmount.divide(sum[0], 2, BigDecimal.ROUND_HALF_UP);
+      if (sum[0].compareTo(sum[1]) == 0) {//最后一个占比项目
+        amount = BigDecimal.ONE.subtract(sum[2]);
+      }
+      sum[2] = sum[2].add(amount);
+      detail.setDiscountAmount(amount);
+    });
+    return billIds;
   }
 
   /**
@@ -663,10 +670,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (StringHelper.isNotEmpty(resultList)) {
       List<Integer> billIds = Arrays.asList(query.getBillId());
       List<BaseBillDetail> details = mapper.selectBillDetailByBillIds(billIds);
-      BigDecimal total = BigDecimal.ZERO;//账单的执行实收总额
-      for (BaseBillDetail detail : details) {
-        total = total.add(detail.getReceivedAmount());
-      }
+      computePercentage(details);
 
       List<BaseBillPayDetail> freePayments = baseBillPayDetailMapper.sumPayDetailList(billIds, getFreePaymentIds());
       BigDecimal freePayment = freePayments.get(0).getPrincipalAmount();
@@ -676,10 +680,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         Integer itemId = detail.getItemId();
         Byte itemType = detail.getItemType();
         if (query.getEmployeeId().equals(executorId)) {
-          BigDecimal amount = detail.getReceivedAmount()
-                  .divide(total, 2, BigDecimal.ROUND_HALF_UP)
-                  .multiply(freePayment);
-          amounts.put(itemId+","+itemType, amount);
+          amounts.put(itemId+","+itemType, detail.getDiscountAmount().multiply(freePayment));
         }
       }
       resultList.forEach(vo -> {
