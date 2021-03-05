@@ -91,7 +91,7 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    * @return 返回实体列表
    */
   List<DesktopMiniProgramVO> desktopTreatingList(
-      @Param("status") Byte status,
+      @Param("status") Byte[] status,
       @Param("currentDate") String currentDate,
       @Param("orgId") Integer orgId);
 

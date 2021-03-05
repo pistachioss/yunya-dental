@@ -8,6 +8,7 @@ import lombok.ToString;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * 简介: 患者就诊记录列表查询参数模型
@@ -50,4 +51,7 @@ public class PatientTreatmentRecordQueryForm implements Serializable {
   /** 挂号ID */
   @ApiModelProperty("挂号ID")
   private Integer[] registeredId;
+  /** 入账方式id列表 */
+  @ApiModelProperty("入账方式id列表")
+  private Collection<Integer> payIds;
 }

@@ -29,6 +29,9 @@ public class BillDataStatisticsVO implements Serializable {
   /** 实收金额合计 */
   @ApiModelProperty("实收金额合计")
   private BigDecimal totalActualReceiveAmount;
+  /** 免单支付合计 */
+  @ApiModelProperty("免单支付合计")
+  private BigDecimal totalFreePaymentAmount;
   /** 欠费金额合计 */
   @ApiModelProperty("欠费金额合计")
   private BigDecimal totalDebtAmount;

@@ -16,9 +16,13 @@ import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.system.AccountItem;
 import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.*;
 import org.joda.time.DateTime;
@@ -28,9 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseRefund;
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
@@ -80,6 +82,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   @Autowired private TreatmentRecordMapper treatmentRecordMapper;
   /** 账单 */
   @Autowired private OrderRecordMapper orderRecordMapper;
+  /** 缓存 */
+  @Autowired private RedisUtils redisUtils;
 
   /**
    * 生成账单编号
@@ -529,8 +533,34 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @return
    */
   public PatientBillStatistics statisticsBill(Integer patientId) {
-    PatientBillStatistics patientBillStatistics = mapper.selectPatientBillStatistics(patientId);
+    PatientBillStatistics patientBillStatistics = mapper.selectPatientBillStatistics(patientId, getFreePaymentIds());
     return patientBillStatistics;
+  }
+
+  /**
+   * 获取免单支付的支付id列表
+   * @return
+   */
+  protected Set<Integer> getFreePaymentIds() {
+    Set<Integer> payIds = new HashSet<>();
+    List<AccountItem> accountItems = redisUtils.getJSONArray(RedisConstants.REDIS_KEY_ACCOUNT_ITEM_LIST, AccountItem.class);
+    if (StringHelper.isEmpty(accountItems)) {
+      AccountItem model = new AccountItem();
+      model.setAccountTypeId(BusinessConstants.FREE_PAYMENT_ID);
+      model.setInservice(true);
+      accountItems = systemServiceFeign.findAccountItemList(model);
+      redisUtils.set(RedisConstants.REDIS_KEY_ACCOUNT_ITEM_LIST, accountItems);
+    }
+    accountItems.forEach(item -> {
+      Integer acountTypeId = item.getAccountTypeId();
+      if (BusinessConstants.FREE_PAYMENT_ID.equals(acountTypeId)) {
+        payIds.add(item.getId());
+      }
+    });
+    if (StringHelper.isEmpty(payIds)) {
+      payIds.add(-1);
+    }
+    return payIds;
   }
 
   /**

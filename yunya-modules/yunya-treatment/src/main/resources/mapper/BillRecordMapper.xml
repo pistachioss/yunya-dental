@@ -101,8 +101,21 @@
         ifnull(sum(br.privilege_amount), 0) as billTotalPrivilegePrice,
         ifnull(sum(br.actual_receivable_amount), 0) as billTotalActualPrice,
         ifnull(sum(br.received_amount), 0) as billTotalReceivedPrice,
-        ifnull(sum(br.debt_amount), 0) as billTotalArrears
+        ifnull(sum(br.debt_amount), 0) as billTotalArrears,
+        ifnull(sum(bpd.amount), 0) as freePaymentPrice
         from bill_record br
+        left join (
+            select bill_record_id,sum(amount) amount from bill_pay_detail_record
+            where patient_id = #{patientId}
+            and inservice=true
+            <if test="payIds!=null and payIds.size()>0">
+                and account_item_id in
+                <foreach collection="payIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+		    group by bill_record_id
+        ) bpd on br.id=bpd.bill_record_id
         where br.patient_id = #{patientId} and inservice = true
     </select>
 

@@ -1612,4 +1612,87 @@
         LEFT JOIN base_employee be ON be.user_id = bbd.executor_id
         WHERE bbd.bill_id = #{billId}
     </select>
+
+    <select id="selectBillDetailByExecutorIds" resultType="com.yunya.models.report.BaseBillDetail">
+        select
+            t.bill_id as billId,
+            t.executor_id as executorId,
+            t.received_amount as receivedAmount
+        from base_bill_detail t
+        <where>
+            t.received_amount>0
+            and t.executor_id>0
+            and EXISTS (
+                select bill_id from base_bill_detail bd where t.bill_id=bd.bill_id and bd.executor_id in
+                <foreach collection="executorIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            )
+        </where>
+    </select>
+
+    <select id="selectBillDetailByBillIds" resultType="com.yunya.models.report.BaseBillDetail">
+        select
+        t.bill_id as billId,
+        t.executor_id as executorId,
+        t.received_amount as receivedAmount,
+        t.item_type AS itemType,
+        t.item_id AS itemId
+        from base_bill_detail t
+        <where>
+            t.received_amount>0
+            and t.executor_id>0
+            and bill_id in
+            <foreach collection="billIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+    <!-- 根据条件查询员工个人已收工作量明细列表 -->
+    <select id="selectEmployeeFreepaymentWorkloadDetailList"
+            resultType="com.yunya.feign.report.domain.vo.EmployeeFreepaymentWorkloadDetailVO">
+        SELECT
+        bb.bill_id AS billId,
+        bb.bill_num AS billNum,
+        bb.bill_date AS chargeDate,
+        bb.order_date AS orderDate,
+        bb.bill_date AS billDate,
+        bp.`name` AS patientName,
+        bp.mobile
+        FROM base_bill bb
+        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+        <where>
+            <if test="query.orgId != null">
+                and bb.org_id=#{query.orgId}
+            </if>
+            <if test="query.employeeId != null">
+                and EXISTS (
+                    select bill_id from base_bill_detail bbd
+                    where bb.bill_id=bbd.bill_id and bbd.executor_id=#{query.employeeId}
+                )
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( bb.order_date, '%Y-%m' ) = #{query.queryDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( bb.order_date, '%Y' ) = #{query.queryDate}
+                </if>
+            </if>
+            <if test="query.keyword != null and query.keyword != ''">
+                and concat(IFNULL(bp.patient_name, ''), IFNULL(bp.pinyin_name, ''), IFNULL(bp.mobile, '')) Like
+                concat('%', #{query.keyword}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and bb.bill_num like concat('', #{query.billNum} ,'%')
+            </if>
+            <if test="query.orderDate != null and query.orderDate != ''">
+                and DATE_FORMAT(ewd.order_date, '%Y-%m-%d') = #{query.orderDate}
+            </if>
+        </where>
+        ORDER BY bb.order_date, bb.bill_num DESC
+    </select>
 </mapper>

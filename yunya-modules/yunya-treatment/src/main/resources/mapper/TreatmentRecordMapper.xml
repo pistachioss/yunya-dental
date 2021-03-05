@@ -132,7 +132,8 @@
         ord.total_amount AS originalPrice,
         br.id AS billRecordId,
         br.actual_receivable_amount AS actualReceivableAmount,
-        br.debt_amount AS debtAmount
+        br.debt_amount AS debtAmount,
+        br.freePaymentPrice
         FROM
         treatment_record tr
         LEFT JOIN (
@@ -150,9 +151,25 @@
         br.treatment_record_id,
         br.id,
         br.actual_receivable_amount,
-        br.debt_amount
-        FROM
-        bill_record br
+        br.debt_amount,
+        ifnull(bpd.amount, 0) as freePaymentPrice
+        from bill_record br
+        left join (
+            select bill_record_id,sum(amount) amount from bill_pay_detail_record
+            <where>
+                inservice=true
+                <if test="queryForm.patientId != null">
+                    and patient_id = #{queryForm.patientId}
+                </if>
+                <if test="queryForm.payIds!=null and queryForm.payIds.size()>0">
+                    and account_item_id in
+                    <foreach collection="queryForm.payIds" item="id" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                </if>
+            </where>
+            group by bill_record_id
+        ) bpd on br.id=bpd.bill_record_id
         WHERE
         br.inservice = 1
         ) br ON tr.id = br.treatment_record_id
@@ -253,6 +270,12 @@
               date_format(tr.treat_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d')
           and tr.inservice = 1
           and tr.status = #{status}
+          <if test="status != null and status.length > 0">
+              and tr.status in
+              <foreach collection="status" index="idx" item="itemStat" open="(" separator="," close=")">
+                  #{itemStat}
+              </foreach>
+          </if>
           and tr.org_id = #{orgId}
     </select>
 
