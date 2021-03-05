@@ -1381,10 +1381,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<DesktopMiniProgramVO> desktopMiniProgramVOS = null;
-    if (aByte.intValue() == 0) {
-      desktopMiniProgramVOS = mapper.desktopTreatingList(aByte, currentDate, orgId);
-    } else if (aByte.intValue() == 1 || aByte.intValue() == 2) {
-      desktopMiniProgramVOS = mapper.desktopTreatingList((byte) 2, currentDate, orgId);
+    if (aByte.intValue() == 0 || aByte.intValue() == 1) {
+      desktopMiniProgramVOS = mapper.desktopTreatingList(new Byte[]{0,1}, currentDate, orgId);
+    } else if (aByte.intValue() == 2) {
+      desktopMiniProgramVOS = mapper.desktopTreatingList(new Byte[]{2}, currentDate, orgId);
     } else if (aByte.intValue() == 3) {
       desktopMiniProgramVOS = billRecordMapper.desktopBillingList(currentDate, orgId);
     }
@@ -1408,7 +1408,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (treatmentStatusArr.length != 1) {
       ResponseUtil.fail(PARAMETERS_IS_ILLEGAL, "PC照片影像小程序只允许查询单状态查询", null);
     }
-    Byte aByte = treatmentStatusArr[0];
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
