@@ -50,6 +50,7 @@
                 and org_id = #{orgId}
             </if>
         </where>
+        order by crt_time desc
     </select>
     <select id="referredReport" resultType="com.yunya.feign.treatment.domain.vo.ReferredRrportVO">
     SELECT
@@ -87,6 +88,7 @@
         GROUP BY
         user_id,
         referred_id
+        order by crt_time desc
   </select>
 
 </mapper>
