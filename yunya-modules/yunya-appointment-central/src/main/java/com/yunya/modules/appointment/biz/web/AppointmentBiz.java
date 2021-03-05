@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.biz.web;
 
+import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -63,12 +64,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -1994,6 +1997,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param queryForm 查询参数封装
      */
     private PageInfo<AppointmentUnDonePatientInfoVO> findUnComingAppointmentListFromDB(AppointmentCurrentListQuery queryForm) {
+        String currentDate = queryForm.getCurrentDate();
         if (queryForm.getWhetherPage()) {
             PageHelper.startPage(queryForm.getPageNum(),queryForm.getPageSize());
         }
@@ -2015,6 +2019,16 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             });
             // 设置患者信息
             setPatientInfo(resultList, patientIds,appointIds,dentistIds,assistentIds,deptRoomIds);
+        }
+
+        // 如果查询日期在当前日期之后，则按照预约确认排序
+        if (StringHelper.isNotBlank(currentDate)) {
+            LocalDate findDate = LocalDate.parse(queryForm.getCurrentDate());
+            LocalDate now = LocalDate.now();
+            if (findDate.isAfter(now)) {
+                resultList = resultList.stream().
+                        sorted(Comparator.comparing(AppointmentUnDonePatientInfoVO::getConfirmStatus)).collect(Collectors.toList());
+            }
         }
         // 设置redis缓冲
         /*if (StringHelper.isNotEmpty(resultList)) {
