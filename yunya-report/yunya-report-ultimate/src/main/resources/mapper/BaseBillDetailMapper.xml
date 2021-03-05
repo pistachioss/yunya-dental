@@ -1356,21 +1356,24 @@
         SELECT
         IFNULL(SUM( bbd.totalClinicActualReceiveWorkload ), 0) AS totalClinicActualReceiveWorkload,
         IFNULL(SUM( bbd.totalClinicReceivedWorkload ), 0) AS totalClinicReceivedWorkload,
-        IFNULL(SUM( bbd.totalClinicReceivedNotWorkload ), 0) AS totalClinicReceivedNotWorkload
+        IFNULL(SUM( bbd.totalClinicReceivedNotWorkload ), 0) AS totalClinicReceivedNotWorkload,
+        IFNULL(SUM( bbd.totalClinicCouponWorkload ), 0) AS totalClinicCouponWorkload
         FROM
         (
         SELECT
         bo.org_id,
         IFNULL( bbd.totalClinicActualReceiveWorkload, 0 ) AS totalClinicActualReceiveWorkload,
         IFNULL( bbd.totalClinicReceivedWorkload, 0 ) AS totalClinicReceivedWorkload,
-        IFNULL( bbd1.totalClinicReceivedNotWorkload, 0 ) AS totalClinicReceivedNotWorkload
+        IFNULL( bbd1.totalClinicReceivedNotWorkload, 0 ) AS totalClinicReceivedNotWorkload,
+        IFNULL( bbd.totalClinicCouponWorkload, 0 ) AS totalClinicCouponWorkload
         FROM
         base_organization bo
         LEFT JOIN (
         SELECT
         bbd.org_id,
         SUM( bbd.totalAmount - bbd.discount_amount ) AS totalClinicActualReceiveWorkload,
-        SUM( bbd.received_amount ) AS totalClinicReceivedWorkload
+        SUM( bbd.received_amount ) AS totalClinicReceivedWorkload,
+        SUM( bbd.coupon_workload ) AS totalClinicCouponWorkload
         FROM
         (
         SELECT
@@ -1378,7 +1381,8 @@
         bb.bill_date,
         bbd.received_amount,
         bbd.price * bbd.quantity AS totalAmount,
-        bbd.discount_amount
+        bbd.discount_amount,
+        bbd.coupon_workload
         FROM
         base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id

@@ -29,4 +29,10 @@ public class WorkloadStatisticsVO implements Serializable {
   /** 门诊已收非工作量合计 */
   @ApiModelProperty("门诊已收非工作量合计")
   private BigDecimal totalClinicReceivedNotWorkload;
+  /** 免单支付合计 */
+  @ApiModelProperty("免单支付合计")
+  private BigDecimal totalFreePaymentAmount;
+  /** 门诊补入工作量合计 */
+  @ApiModelProperty("门诊补入工作量合计")
+  private BigDecimal totalClinicCouponWorkload;
 }
