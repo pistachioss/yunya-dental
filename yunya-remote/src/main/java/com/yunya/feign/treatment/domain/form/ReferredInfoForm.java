@@ -45,7 +45,6 @@ public class ReferredInfoForm extends PageQuery implements Serializable {
     private List<Integer> patIds;
 
     @ApiModelProperty("门诊ID")
-    @NotNull(message = "门诊Id不能为空")
     private Integer orgId;
 
 
