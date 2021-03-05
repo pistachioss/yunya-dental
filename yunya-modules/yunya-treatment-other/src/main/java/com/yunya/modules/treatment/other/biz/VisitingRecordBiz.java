@@ -300,6 +300,9 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         String medicalNumber = query.getMedicalNumber();
         String distentName = query.getDistentName();
         if (StringHelper.isNotBlank(search)) {
+            if (!search.matches(BusinessConstants.NAME_REGEXP) && !search.matches(BusinessConstants.MOBILE_REGEXP)) {
+                return  ResponseUtil.success(new PageInfo(new ArrayList<>()));
+            }
             PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
             patientLikeQuery.setCondition(search);
             patientLikeQuery.setWhetherPage(false);
