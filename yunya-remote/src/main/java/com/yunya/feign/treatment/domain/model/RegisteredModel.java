@@ -21,6 +21,8 @@ import java.io.Serializable;
 @ToString
 public class RegisteredModel implements Serializable {
 
+  private Integer id;
+
   /** 患者id */
   @ApiModelProperty(value = "患者id", required = true)
   @NotNull(message = "患者id不能为空！")

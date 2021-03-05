@@ -14,7 +14,7 @@
         </plugin>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://192.168.31.90:3306/yunya_treatment?useUnicode=true"
+                        connectionURL="jdbc:mysql://192.168.31.90:3306/dev_yunya_treatment?useUnicode=true"
                         userId="sa"
                         password="Admin001!">
         </jdbcConnection>
@@ -26,6 +26,6 @@
         <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
                              type="XMLMAPPER"/>
 
-        <table tableName="order_detail_pay_record" domainObjectName="OrderDetailPayRecord"/>
+        <table tableName="referral_records_info" domainObjectName="ReferralRecordsInfo"/>
     </context>
 </generatorConfiguration>

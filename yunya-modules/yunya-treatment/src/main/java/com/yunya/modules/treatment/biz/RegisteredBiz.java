@@ -8,6 +8,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.treatment.domain.form.ReferredForm;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
 import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
@@ -22,8 +23,10 @@ import com.yunya.models.appointment.Appointment;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
+import com.yunya.models.treatment.ReferralRecordsInfo;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.modules.treatment.mapper.ReferralRecordsInfoMapper;
 import com.yunya.modules.treatment.mapper.RegisteredMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import org.springframework.beans.BeanUtils;
@@ -66,13 +69,15 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
   @Autowired private RedisUtils redisUtils;
   /** 账单记录 */
   @Autowired private BillRecordBiz billRecordBiz;
+  /** 转诊记录 */
+  @Autowired private ReferralRecordsInfoMapper referralRecordsInfoMapper;
 
   /**
    * 新增患者挂号
    *
    * @param model 挂号信息
    */
-  public void save(RegisteredModel model) {
+  public Integer save(RegisteredModel model) {
     Registered entity = new Registered();
     Integer appointmentId = model.getAppointmentId();
     if (null != appointmentId) {
@@ -100,24 +105,35 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
       entity.setOrgId(appointmentOrgId);
       int i = mapper.insertSelective(entity);
       if (i > 0) {
-        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+//        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
       }
       redisUtils.delete(regKey);
     } else {
       buildRegistered(model, entity);
       int i = mapper.insertSelective(entity);
       if (i > 0) {
-        rabbitMqServiceFeign.sendMessage(entity.getId(), 1, 0, BaseTreatmentProcess);
+//        rabbitMqServiceFeign.sendMessage(entity.getId(), 1, 0, BaseTreatmentProcess);
       }
     }
+    return entity.getId();
   }
 
-  /**
-   * 构建挂号模型
-   *
-   * @param model 参数模型
-   * @param entity 挂号
-   */
+  public int referred(ReferredForm referredForm) {
+    RegisteredModel model = new RegisteredModel();
+    model.setPatientId(referredForm.getPatientId());
+    model.setDentistId(referredForm.getReferredId());
+    model.setDeptRoomId(referredForm.getReferredDepId());
+    //转诊（重新挂号）
+    Integer reid = save(model);
+    ReferralRecordsInfo referralRecordsInfo = new ReferralRecordsInfo();
+    BeanUtils.copyProperties(referredForm,referralRecordsInfo);
+    referralRecordsInfo.setReferredRegisteredId(reid);
+    referralRecordsInfo.setCrtId(Integer.valueOf(BaseContextHandler.getOrgId()));
+    referralRecordsInfo.setCrtTime(new Date());
+    return referralRecordsInfoMapper.insertSelective(referralRecordsInfo);
+  }
+
+
   private void buildRegistered(RegisteredModel model, Registered entity) {
     BeanUtils.copyProperties(model, entity);
     Integer patientId = model.getPatientId();

@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.treatment.domain.form.ReferredForm;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
 import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
@@ -46,6 +47,19 @@ public class RegisteredController {
   public ResponseResult<T> add(@RequestBody @Validated RegisteredModel model) {
     registeredBiz.save(model);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 转诊
+   *
+   * @param
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("转诊")
+  @PostMapping("/referred")
+  public ResponseResult referred(@RequestBody @Validated ReferredForm referredForm) {
+    return ResponseUtil.success( registeredBiz.referred(referredForm));
   }
 
   /**
