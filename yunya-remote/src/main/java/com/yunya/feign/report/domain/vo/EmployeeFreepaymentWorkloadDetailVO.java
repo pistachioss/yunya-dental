@@ -35,7 +35,7 @@ public class EmployeeFreepaymentWorkloadDetailVO implements Serializable {
   @ApiModelProperty("账单编号")
   private String billNum;
   /** 账单日期 */
-  @Excel(name = "订单日期", dateFormat = "yyyy-MM-dd HH:mm")
+//  @Excel(name = "订单日期", dateFormat = "yyyy-MM-dd HH:mm")
   @ApiModelProperty("订单日期")
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
   private String orderDate;
