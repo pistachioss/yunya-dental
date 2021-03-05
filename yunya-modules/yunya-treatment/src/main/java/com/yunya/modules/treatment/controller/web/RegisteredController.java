@@ -3,9 +3,11 @@ package com.yunya.modules.treatment.controller.web;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.form.ReferredForm;
 import com.yunya.feign.treatment.domain.form.ReferredInfoForm;
+import com.yunya.feign.treatment.domain.form.ReferredRrportForm;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
 import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
 import com.yunya.feign.treatment.domain.vo.ReferredInfoVO;
+import com.yunya.feign.treatment.domain.vo.ReferredRrportVO;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -91,6 +93,34 @@ public class RegisteredController {
       pageInfo.setList(list);
       return ResponseUtil.success(pageInfo);
     }
+    return ResponseUtil.success(new PageInfo<>(relist));
+  }
+
+  /**
+   * 转诊报表
+   *
+   * @param
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("转诊报表")
+  @PostMapping("/referredReport")
+  public ResponseResult<PageInfo<ReferredRrportVO>> referredReport(@RequestBody @Validated ReferredRrportForm referredRrportForm) {
+      List<ReferredRrportVO> relist = registeredBiz.referredReport(referredRrportForm);
+      if (referredRrportForm.getWhetherPage()) {
+          Integer pageNum = referredRrportForm.getPageNum();
+          Integer pageSize = referredRrportForm.getPageSize();
+          int total = relist.size();
+          PageInfo<ReferredRrportVO> pageInfo = new PageInfo<>();
+          pageInfo.setPageNum(pageNum);
+          pageInfo.setPageSize(pageSize);
+          pageInfo.setTotal(total);
+          List<ReferredRrportVO> list =
+                  relist.subList(
+                          pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+          pageInfo.setList(list);
+          return ResponseUtil.success(pageInfo);
+      }
     return ResponseUtil.success(new PageInfo<>(relist));
   }
 
