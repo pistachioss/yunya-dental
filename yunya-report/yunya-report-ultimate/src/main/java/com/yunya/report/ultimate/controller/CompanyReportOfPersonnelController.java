@@ -338,4 +338,50 @@ public class CompanyReportOfPersonnelController {
     PageInfo<AssistantRefundDetailVO> pageInfo = refundBiz.findAssistantRefundDetailList(query);
     return ResponseUtil.success(pageInfo);
   }
+
+  /**
+   * 根据条件查询员工个人免单支付工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeFreepaymentWorkloadDetailVO>
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-免单支付工作量明细")
+  @PostMapping(value = "/employee/workload/freepayment/list", name = "根据条件查询员工免单支付工作量明细列表")
+  public ResponseResult<PageInfo<EmployeeFreepaymentWorkloadDetailVO>> findEmployeePersonalFreepaymentWorkloadDetailList(
+          @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query) {
+    PageInfo<EmployeeFreepaymentWorkloadDetailVO> pageInfo =
+            billDetailBiz.findEmployeeFreepaymentWorkloadDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出员工个人免单支付工作量明细列表导出
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return void
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-免单支付工作量明细-导出")
+  @PostMapping(value = "/employee/workload/freepayment/export", name = "根据条件导出员工个人免单支付工作量明细列表")
+  public ResponseResult<T> exportEmployeeFreePaymentWorkloadDetailList(HttpServletResponse response,
+          @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query)
+          throws IOException {
+    billDetailBiz.exportEmployeeFreepaymentdWorkloadDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工免单支付工作量明细中项目列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeOrderDetailWorkloadVO> 分页列表
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-免单支付工作量明细-查看项目明细")
+  @PostMapping(value = "/employee/workload/freepayment/detail", name = "公司端报表-人事报表-员工工作量-免单支付工作量明细-查看项目详情")
+  public ResponseResult<PageInfo<EmployeeReceivedDetailWorkloadVO>> freePaymentOrderDetailList(
+          @RequestBody @Validated EmployeeWorkloadDetailQuery query) {
+    PageInfo<EmployeeReceivedDetailWorkloadVO> pageInfo =
+            billDetailBiz.findFreePaymentDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
 }

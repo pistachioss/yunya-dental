@@ -6,6 +6,7 @@ import com.yunya.models.report.BaseBillDetail;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
@@ -160,4 +161,23 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return
    */
   List<BaseBillDetailVO> selectBillDetailByBillId(@Param("billId") Integer billId);
+
+  /**
+   * 根据执行人id查询账单详情列表
+   *
+   * @param executorIds
+   * @return
+   */
+  List<BaseBillDetail> selectBillDetailByExecutorIds(@Param("executorIds") Collection<Integer> executorIds);
+
+
+  /**
+   * 根据账单id查询账单详情列表
+   *
+   * @param billIds
+   * @return
+   */
+  List<BaseBillDetail> selectBillDetailByBillIds(@Param("billIds") Collection<Integer> billIds);
+
+  List<EmployeeFreepaymentWorkloadDetailVO> selectEmployeeFreepaymentWorkloadDetailList(@Param("query") EmployeePersonalWorkloadDetailQuery query);
 }

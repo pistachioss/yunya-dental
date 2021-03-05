@@ -40,6 +40,10 @@ public class EmployeeWorkloadOfOperationVO implements Serializable {
   @Excel(name = "已收工作量（元）")
   @ApiModelProperty("已收工作量（元）")
   private BigDecimal receivedWorkload;
+  /** 免单支付工作量（元） */
+  @Excel(name = "免单支付工作量（元）")
+  @ApiModelProperty("免单支付工作量（元）")
+  private BigDecimal freePaymentWorkload;
   /** 补入工作量（元） */
   @Excel(name = "补入工作量（元）")
   @ApiModelProperty("补入工作量（元）")

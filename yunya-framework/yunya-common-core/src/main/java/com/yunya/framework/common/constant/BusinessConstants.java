@@ -52,7 +52,8 @@ public class BusinessConstants {
   public static final String ACCOUNT_ITEM_OF_WECHAT = "微信";
   /** 银行账户支付方式名称 */
   public static final String ACCOUNT_ITEM_OF_BANK = "银行账户";
-
+  /** 免单支付分类id */
+  public static final Integer FREE_PAYMENT_ID = 11;
   /*************************** 岗位组系统初始化参数 ***********************/
   /** 医生岗位组 */
   public static final Integer DENTIST_GROUP_ID = 3;

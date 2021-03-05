@@ -102,6 +102,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Resource private RegisteredBiz registeredBiz;
 
   @Resource private RemoteMiddleTableServiceFeign remoteMiddleTableServiceFeign;
+  /** 账单 */
+  @Resource private BillRecordBiz billRecordBiz;
 
   /**
    * 开始接诊
@@ -764,7 +766,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     vo.setTreatDentistName(null != treatDentistInfo ? treatDentistInfo.getName() : "--");
     Integer patientId = vo.getPatientId();
     // 查询患者欠费总额
-    PatientBillStatistics billStatistics = billRecordMapper.selectPatientBillStatistics(patientId);
+    PatientBillStatistics billStatistics = billRecordMapper.selectPatientBillStatistics(patientId, Arrays.asList(-1));
     vo.setArrears(billStatistics.getBillTotalArrears());
   }
 
@@ -989,6 +991,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
+    queryForm.setPayIds(billRecordBiz.getFreePaymentIds());
     List<PatientTreatmentRecordVO> resultList = mapper.selectPatientTreatmentRecordList(queryForm);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(

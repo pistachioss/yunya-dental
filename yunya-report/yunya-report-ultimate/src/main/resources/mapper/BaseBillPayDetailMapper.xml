@@ -41,4 +41,27 @@
             bai.account_type_id,
             bai.account_item_id
     </select>
+
+    <select id="sumPayDetailList" resultType="com.yunya.models.report.BaseBillPayDetail">
+        select
+            t.bill_id as billId,
+            IFNULL(SUM(t.principal_amount), 0) AS principalAmount
+        from base_bill_pay_detail t
+        <where>
+            t.type = 2
+            <if test="payIds!=null and payIds.size()>0">
+                and t.account_item_id in
+                <foreach item="item" index="index" collection="payIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="billIds!=null and billIds.size()>0">
+                and t.bill_id in
+                <foreach item="item" index="index" collection="billIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by t.bill_id
+    </select>
 </mapper>

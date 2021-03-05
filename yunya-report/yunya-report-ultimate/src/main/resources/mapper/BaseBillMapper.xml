@@ -390,7 +390,8 @@
         IFNULL(SUM( bb.totalOriginalAmount ), 0 ) AS totalOriginalAmount,
         IFNULL(SUM( bb.totalActualReceiveAmount ), 0) AS totalActualReceiveAmount,
         IFNULL(SUM( bb.totalDiscountAmount ), 0 ) AS totalDiscountAmount,
-        IFNULL(SUM( bb.totalDebtAmount ), 0 ) AS totalDebtAmount
+        IFNULL(SUM( bb.totalDebtAmount ), 0 ) AS totalDebtAmount,
+        IFNULL(SUM(bb.totalFreePaymentAmount), 0) AS totalFreePaymentAmount
         FROM
         (
         SELECT
@@ -398,9 +399,23 @@
         SUM( any_value(bb.order_amount) ) AS totalOriginalAmount,
         SUM( any_value(bb.privilege_amount) ) AS totalDiscountAmount,
         SUM( any_value(bb.actual_amount) ) AS totalActualReceiveAmount,
-        SUM( any_value(bb.debt_amount) ) AS totalDebtAmount
+        SUM( any_value(bb.debt_amount) ) AS totalDebtAmount,
+        SUM( any_value(bbpd.amount) ) AS totalFreePaymentAmount
         FROM
         base_bill bb
+        left join (
+            select bill_id,IFNULL(SUM(principal_amount),0) amount from base_bill_pay_detail
+            <where>
+                type = 2
+                <if test="query.payIds!=null and query.payIds.size()>0">
+                    and account_item_id in
+                    <foreach collection="query.payIds" item="id" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                </if>
+            </where>
+            group by bill_id
+        ) bbpd on bbpd.bill_id=bb.bill_id
         <where>
             AND bb.bill_num IS NOT NULL
             AND bb.bill_date IS NOT NULL

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -27,10 +28,11 @@ public class BaseBillMapperTest {
   @Test
   public void find() {
     DataStatisticsQuery query = new DataStatisticsQuery();
-    query.setOrgIds(new Integer[] {35, 42});
+    query.setOrgIds(new Integer[] {26});
     query.setDateType((byte) 0);
-    query.setStartDate("2020-07-01");
-    query.setEndDate("2020-12-12");
+    query.setStartDate("2020-03-01");
+    query.setEndDate("2020-03-01");
+    query.setPayIds(Arrays.asList(23,26));
     BillDataStatisticsVO vo = billMapper.selectClinicBillDataStatistic(query);
     System.out.println(vo);
   }
