@@ -216,9 +216,11 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         List<VisitingRemindVo> visitingRemindVos = new ArrayList<>();
         // 检索随访提醒内容列表
         List<VisitingRemindVo> searchVisitingRemindVo = null;
-
         String search = query.getSearch();
         if (StringHelper.isNotBlank(search)) {
+            if (!search.matches(BusinessConstants.NAME_REGEXP) && !search.matches(BusinessConstants.MOBILE_REGEXP)) {
+                return  ResponseUtil.success(new PageInfo(new ArrayList<>()));
+            }
             PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
             patientLikeQuery.setCondition(search);
             patientLikeQuery.setWhetherPage(false);

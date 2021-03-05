@@ -15,10 +15,12 @@ import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.form.ReferredForm;
 import com.yunya.feign.treatment.domain.form.ReferredInfoForm;
+import com.yunya.feign.treatment.domain.form.ReferredRrportForm;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
 import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
 import com.yunya.feign.treatment.domain.vo.ReferredInfoVO;
+import com.yunya.feign.treatment.domain.vo.ReferredRrportVO;
 import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -43,6 +45,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -177,7 +180,6 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
         Map<String, PatientTotalInfoVo> patMap = new HashMap();
         patList.forEach(z -> patMap.put(z.getId() + "", z));
 
-
         //转诊记录包含的员工信息
         SysUserEmployeeModel model = new SysUserEmployeeModel();
         model.setWhetherPage(false);
@@ -210,6 +212,39 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
         return reList;
     }
 
+    public List<ReferredRrportVO> referredReport(ReferredRrportForm referredRrportForm){
+
+        //转诊报表记录集合
+        List<ReferredRrportVO> reList = referralRecordsInfoMapper.referredReport(referredRrportForm);
+        //转诊报表记录包含的员工信息
+        SysUserEmployeeModel model = new SysUserEmployeeModel();
+        model.setWhetherPage(false);
+        List<Integer>userList = reList.stream().map(p -> p.getUserId()).collect(Collectors.toList());
+        List<Integer>refList = reList.stream().map(p -> p.getReferredId()).collect(Collectors.toList());
+        List<Integer>emList = new ArrayList<>();
+        emList.addAll(userList);
+        emList.addAll(refList);
+        model.setUserIds(emList);
+        List<SysUserInfoDetail> employees = systemServiceFeign.findSysUserEmployeeInfoList(model);
+        Map<String, SysUserInfoDetail> employeesMap = new HashMap(16);
+        employees.forEach(z -> employeesMap.put(z.getUserId() + "", z));
+
+        //科室信息
+        List<DepartmentRoom> detList = systemServiceFeign.findDepartmentRoomList(new DepartmentRoom());
+        Map<String, DepartmentRoom> detMap = new HashMap(16);
+        detList.forEach(z -> detMap.put(z.getId() + "", z));
+
+        if (StringHelper.isNotEmpty(reList)) {
+            reList.forEach(
+                    vo -> {
+                        vo.setDepName(detMap.get(vo.getDepId()+"").getName());
+                        vo.setReferredDepName(detMap.get(vo.getReferredDepId()+"").getName());
+                        vo.setUserName(employeesMap.get(vo.getUserId()+"").getName());
+                        vo.setReferredName(employeesMap.get(vo.getReferredId()+"").getName());
+                    });
+        }
+    return reList;
+    }
 
     private void buildRegistered(RegisteredModel model, Registered entity) {
         BeanUtils.copyProperties(model, entity);
