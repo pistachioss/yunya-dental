@@ -269,7 +269,6 @@
         where
               date_format(tr.treat_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d')
           and tr.inservice = 1
-          and tr.status = #{status}
           <if test="status != null and status.length > 0">
               and tr.status in
               <foreach collection="status" index="idx" item="itemStat" open="(" separator="," close=")">
