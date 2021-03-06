@@ -225,8 +225,27 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void clinicIsAcceptedNotThisMonth(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> clinicIsAcceptedNotThisMonth =
+    List<StatementPaymentVO> clinicIsAcceptedNotThisMonthResult =
         findClinicIsAcceptedPaymentInfoNotThisMonth(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> clinicIsAcceptedNotThisMonth = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : clinicIsAcceptedNotThisMonthResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        clinicIsAcceptedNotThisMonth.add(vo);
+      }
+    }
     clinicIsAcceptedNotThisMonth = reBuildStatementsPaymentList(clinicIsAcceptedNotThisMonth);
     ClinicInboundAndOutboundVO clinicIsAcceptedNotThisMonthVO = new ClinicInboundAndOutboundVO();
     clinicIsAcceptedNotThisMonthVO.setType((byte) 14);
@@ -243,8 +262,27 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void clinicIsAcceptedThisMonth(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> clinicIsAcceptedThisMonth =
+    List<StatementPaymentVO> clinicIsAcceptedThisMonthResult =
         findClinicIsAcceptedPaymentInfoThisMonth(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> clinicIsAcceptedThisMonth = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : clinicIsAcceptedThisMonthResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        clinicIsAcceptedThisMonth.add(vo);
+      }
+    }
     clinicIsAcceptedThisMonth = reBuildStatementsPaymentList(clinicIsAcceptedThisMonth);
     ClinicInboundAndOutboundVO clinicIsAcceptedThisMonthVO = new ClinicInboundAndOutboundVO();
     clinicIsAcceptedThisMonthVO.setType((byte) 13);
@@ -261,7 +299,26 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void prepaidRefund(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> prepaidRefund = findPrepaidRefundPaymentInfo(query);
+    List<StatementPaymentVO> prepaidRefundResult = findPrepaidRefundPaymentInfo(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> prepaidRefund = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : prepaidRefundResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        prepaidRefund.add(vo);
+      }
+    }
     prepaidRefund = reBuildStatementsPaymentList(prepaidRefund);
     ClinicInboundAndOutboundVO prepaidRefundVO = new ClinicInboundAndOutboundVO();
     prepaidRefundVO.setType((byte) 11);
@@ -278,7 +335,26 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void memberRefund(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> memberRefund = findMemberRefundPaymentInfo(query);
+    List<StatementPaymentVO> memberRefundResult = findMemberRefundPaymentInfo(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> memberRefund = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : memberRefundResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        memberRefund.add(vo);
+      }
+    }
     memberRefund = reBuildStatementsPaymentList(memberRefund);
     ClinicInboundAndOutboundVO memberRefundVO = new ClinicInboundAndOutboundVO();
     memberRefundVO.setType((byte) 10);
@@ -295,7 +371,27 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void billRefundNotThisMonth(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> billRefundNotThisMonth = findBillRefundPaymentInfoNotThisMonth(query);
+    List<StatementPaymentVO> billRefundNotThisMonthResult =
+        findBillRefundPaymentInfoNotThisMonth(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> billRefundNotThisMonth = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : billRefundNotThisMonthResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        billRefundNotThisMonth.add(vo);
+      }
+    }
     billRefundNotThisMonth = reBuildStatementsPaymentList(billRefundNotThisMonth);
     ClinicInboundAndOutboundVO billRefundNotThisMonthVO = new ClinicInboundAndOutboundVO();
     billRefundNotThisMonthVO.setType((byte) 9);
@@ -312,7 +408,26 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void billRefundThisMonth(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> billRefundThisMonth = findBillRefundPaymentInfoThisMonth(query);
+    List<StatementPaymentVO> billRefundThisMonthResult = findBillRefundPaymentInfoThisMonth(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> billRefundThisMonth = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : billRefundThisMonthResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        billRefundThisMonth.add(vo);
+      }
+    }
     billRefundThisMonth = reBuildStatementsPaymentList(billRefundThisMonth);
     ClinicInboundAndOutboundVO billRefundThisMonthVO = new ClinicInboundAndOutboundVO();
     billRefundThisMonthVO.setType((byte) 8);
@@ -329,8 +444,27 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void clinicCollectionNotThisMonth(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> clinicCollectionNotThisMonth =
+    List<StatementPaymentVO> clinicCollectionNotThisMonthResult =
         findClinicCollectionPaymentInfoNotThisMonth(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> clinicCollectionNotThisMonth = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : clinicCollectionNotThisMonthResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        clinicCollectionNotThisMonth.add(vo);
+      }
+    }
     clinicCollectionNotThisMonth = reBuildStatementsPaymentList(clinicCollectionNotThisMonth);
     ClinicInboundAndOutboundVO clinicCollectionNotThisMonthVO = new ClinicInboundAndOutboundVO();
     clinicCollectionNotThisMonthVO.setType((byte) 7);
@@ -347,8 +481,27 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void clinicCollectionThisMonth(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> clinicCollectionThisMonth =
+    List<StatementPaymentVO> clinicCollectionThisMonthResult =
         findClinicCollectionPaymentInfoThisMonth(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> clinicCollectionThisMonth = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : clinicCollectionThisMonthResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        clinicCollectionThisMonth.add(vo);
+      }
+    }
     clinicCollectionThisMonth = reBuildStatementsPaymentList(clinicCollectionThisMonth);
     ClinicInboundAndOutboundVO clinicCollectionThisMonthVO = new ClinicInboundAndOutboundVO();
     clinicCollectionThisMonthVO.setType((byte) 6);
@@ -365,7 +518,26 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void productSold(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> productSold = findProductSoldPaymentInfo(query);
+    List<StatementPaymentVO> productSoldResult = findProductSoldPaymentInfo(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> productSold = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : productSoldResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        productSold.add(vo);
+      }
+    }
     productSold = reBuildStatementsPaymentList(productSold);
     ClinicInboundAndOutboundVO productSoldVO = new ClinicInboundAndOutboundVO();
     productSoldVO.setType((byte) 5);
@@ -382,7 +554,26 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void prePaidCharge(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> prePaidCharge = findPrePaidChargePaymentInfo(query);
+    List<StatementPaymentVO> prePaidChargeResult = findPrePaidChargePaymentInfo(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> prePaidCharge = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : prePaidChargeResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        prePaidCharge.add(vo);
+      }
+    }
     prePaidCharge = reBuildStatementsPaymentList(prePaidCharge);
     ClinicInboundAndOutboundVO prePaidChargeVO = new ClinicInboundAndOutboundVO();
     prePaidChargeVO.setType((byte) 4);
@@ -399,7 +590,26 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void memberCharge(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> memberCharge = findMemberChargePaymentInfo(query);
+    List<StatementPaymentVO> memberChargeResult = findMemberChargePaymentInfo(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> memberCharge = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : memberChargeResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        memberCharge.add(vo);
+      }
+    }
     memberCharge = reBuildStatementsPaymentList(memberCharge);
     ClinicInboundAndOutboundVO memberChargeVO = new ClinicInboundAndOutboundVO();
     memberChargeVO.setType((byte) 3);
@@ -416,8 +626,27 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void collectArrearsNotThisMonth(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> collectArrearsNotThisMonth =
+    List<StatementPaymentVO> collectArrearsNotThisMonthResult =
         findCollectArrearsPaymentInfoNotThisMonth(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> collectArrearsNotThisMonth = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : collectArrearsNotThisMonthResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        collectArrearsNotThisMonth.add(vo);
+      }
+    }
     collectArrearsNotThisMonth = reBuildStatementsPaymentList(collectArrearsNotThisMonth);
     ClinicInboundAndOutboundVO collectArrearsNotThisMonthVO = new ClinicInboundAndOutboundVO();
     collectArrearsNotThisMonthVO.setType((byte) 2);
@@ -434,8 +663,27 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    */
   private void collectArrearsThisMonth(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> collectArrearsThisMonth =
+    List<StatementPaymentVO> collectArrearsThisMonthResult =
         findCollectArrearsPaymentInfoThisMonth(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> collectArrearsThisMonth = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : collectArrearsThisMonthResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        collectArrearsThisMonth.add(vo);
+      }
+    }
     collectArrearsThisMonth = reBuildStatementsPaymentList(collectArrearsThisMonth);
     ClinicInboundAndOutboundVO collectArrearsOfThisMonthVO = new ClinicInboundAndOutboundVO();
     collectArrearsOfThisMonthVO.setType((byte) 1);
@@ -450,9 +698,28 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @param resultList 结果集
    */
-  private void billChargeThisMonth(
+  public void billChargeThisMonth(
       InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
-    List<StatementPaymentVO> billChargeThisMonth = findBillChargePaymentInfoThisMonth(query);
+    List<StatementPaymentVO> billChargeThisMonthResult = findBillChargePaymentInfoThisMonth(query);
+    List<BaseAccountItemVO> paymentList = findAllPaymentList();
+    List<StatementPaymentVO> billChargeThisMonth = new ArrayList<>();
+    if (StringHelper.isNotEmpty(paymentList)) {
+      for (BaseAccountItemVO accountItem : paymentList) {
+        StatementPaymentVO vo = new StatementPaymentVO();
+        Integer accountItemId = accountItem.getAccountItemId();
+        vo.setAccountItemId(accountItemId);
+        vo.setAccountItemName(accountItem.getAccountItemName());
+        vo.setTotalAmount(BigDecimal.ZERO);
+        vo.setBonusAmount(BigDecimal.ZERO);
+        for (StatementPaymentVO statementPayment : billChargeThisMonthResult) {
+          if (accountItemId.equals(statementPayment.getAccountItemId())) {
+            vo.setTotalAmount(statementPayment.getTotalAmount());
+            vo.setBonusAmount(statementPayment.getBonusAmount());
+          }
+        }
+        billChargeThisMonth.add(vo);
+      }
+    }
     billChargeThisMonth = reBuildStatementsPaymentList(billChargeThisMonth);
     ClinicInboundAndOutboundVO billChargeVO = new ClinicInboundAndOutboundVO();
     billChargeVO.setType((byte) 0);
