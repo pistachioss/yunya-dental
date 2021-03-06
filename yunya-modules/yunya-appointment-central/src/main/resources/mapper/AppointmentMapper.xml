@@ -392,9 +392,10 @@
             <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
                 and DATE_FORMAT(a.appoint_date, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
             </if>
-
         </where>
-        order by appointTime asc
+        order by
+        IF( #{queryForm.currentDate} > CURRENT_DATE, confirm_status, appointTime ) ASC,
+        appointTime ASC
     </select>
 
     <!-- 根据患者id查询患者所有预约列表 -->
