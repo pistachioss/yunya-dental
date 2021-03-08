@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * 简介：短信自动发送事件数据模型
@@ -19,30 +18,10 @@ import java.util.List;
 @ApiModel("短信自动发送事件数据模型")
 @Data
 @ToString
-public class SmsAutoEventSendRecordModel implements Serializable {
-    /**
-     * 组织ID
-     */
-    @ApiModelProperty("组织ID")
-    private Integer orgId;
-    /**
-     * 员工id
-     */
-    @ApiModelProperty("员工id")
-    private Integer userId;
-    /**
-     * 员工姓名
-     */
-    @ApiModelProperty("员工姓名")
-    private String name;
+public class SmsAutoEventSendRecordModel extends SmsModel implements Serializable {
     /**
      * 自动发送事件
      */
     @ApiModelProperty("自动发送事件")
     private String eventCode;
-    /**
-     * 短信参数
-     */
-    @ApiModelProperty("短信参数")
-    private List<? extends SmsCommonSendRecordModel> models;
 }

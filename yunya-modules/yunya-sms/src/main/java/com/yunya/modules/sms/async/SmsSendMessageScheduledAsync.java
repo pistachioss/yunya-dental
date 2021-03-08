@@ -2,6 +2,7 @@ package com.yunya.modules.sms.async;
 
 import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
+import com.yunya.feign.sms.model.SmsTemplateIdRecordModel;
 import com.yunya.feign.sms.model.SmsVerifyCodeModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
@@ -38,8 +39,6 @@ import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGI
 public class SmsSendMessageScheduledAsync {
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
-    // 缓存1天
-    private static final long EXPIRE = 86400;
     @Autowired
     private SmsSendRecordBiz smsSendRecordBiz;
     @Autowired
@@ -55,7 +54,7 @@ public class SmsSendMessageScheduledAsync {
      */
     @Async("customizeExecutor")
     @Scheduled(cron = "*/5 * * * * ?")
-    public void smsSendMessageAsync() {
+    public void smsSendMessageAsyncByEventCode() {
         List<JSONObject> orgInfos = getOrganizationList();
         if (StringHelper.isEmpty(orgInfos)) {
             return;
@@ -74,6 +73,29 @@ public class SmsSendMessageScheduledAsync {
                 log.error("smsSendMessageAsync error", e);
             }
         }));
+    }
+
+    /**
+     * 每隔5秒执行一次：
+     * 消费redis队列的短信数据
+     */
+    @Async("customizeExecutor")
+    @Scheduled(cron = "*/5 * * * * ?")
+    public void smsSendMessageAsyncByTemplateId() {
+        SmsTemplateIdRecordModel smsTemplateIdRecordModel = redisUtils.rPop(
+                RedisConstants.SMS_SEND_MESSAGE_QUEUE, SmsTemplateIdRecordModel.class);
+        if (smsTemplateIdRecordModel == null) {
+            return;
+        }
+        log.info("开始处理短信：{}", JSONObject.toJSONString(smsTemplateIdRecordModel));
+        threadPoolExecutor.submit(()->{
+            try {
+                smsSendRecordBiz.batchSendByTemplateId(smsTemplateIdRecordModel);
+                log.info("处理短信完成");
+            } catch (Exception e) {
+                log.error("smsSendMessageAsync error", e);
+            }
+        });
     }
 
     /**
@@ -108,7 +130,7 @@ public class SmsSendMessageScheduledAsync {
             model.setWhetherPage(false);
             List<OrganizationInfoDetail> orgInfoList = remoteSystemServiceFeign.findOrgInfoList(model);
             orgInfos = orgInfoList.stream().map(this::toJSONObject).collect(Collectors.toList());
-            redisUtils.set(RedisConstants.REDIS_KEY_ORG_LIST, orgInfos, EXPIRE);
+            redisUtils.set(RedisConstants.REDIS_KEY_ORG_LIST, orgInfos);
         }
         return orgInfos;
     }
