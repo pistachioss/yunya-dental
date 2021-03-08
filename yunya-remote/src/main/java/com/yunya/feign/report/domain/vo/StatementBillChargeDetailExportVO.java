@@ -137,6 +137,14 @@ public class StatementBillChargeDetailExportVO implements Serializable {
   @Excel(name = "风石", scale = 2)
   @ApiModelProperty("风石")
   private BigDecimal fengShiAmount;
+  /** 本次免单支付 */
+  @Excel(name = "本次免单支付", scale = 2)
+  @ApiModelProperty("本次免单支付")
+  private BigDecimal thisWaiverAmount;
+  /** 艾维员工免单 */
+  @Excel(name = "艾维员工免单", scale = 2)
+  @ApiModelProperty("艾维员工免单")
+  private BigDecimal employeeWaiverAmount;
   /** 收费人姓名 */
   @Excel(name = "收费人")
   @ApiModelProperty("收费人姓名")

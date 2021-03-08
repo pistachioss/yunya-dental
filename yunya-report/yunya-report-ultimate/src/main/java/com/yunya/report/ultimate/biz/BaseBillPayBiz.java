@@ -521,6 +521,12 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
               case "风石":
                 chargeDetailExport.setFengShiAmount(totalAmount);
                 break;
+              case "本次免单支付":
+                chargeDetailExport.setThisWaiverAmount(totalAmount);
+                break;
+              case "艾维员工免单":
+                chargeDetailExport.setEmployeeWaiverAmount(totalAmount);
+                break;
               default:
                 break;
             }
