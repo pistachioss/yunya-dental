@@ -37,6 +37,8 @@ public class EmployeeWorkloadCostBiz
     EmployeeWorkloadCost result = mapper.selectOne(employeeWorkloadCost);
     employeeWorkloadCost.setProcessingFee(model.getProcessingFee());
     employeeWorkloadCost.setMaterialFee(model.getMaterialFee());
+    employeeWorkloadCost.setBaseWorkload(model.getBaseWorkload());
+    employeeWorkloadCost.setOrthodonticsFee(model.getOrthodonticsFee());
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     if (result != null) {
       employeeWorkloadCost.setId(result.getId());

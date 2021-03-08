@@ -6,6 +6,9 @@ import com.yunya.models.report.BaseVisitRemind;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.Collection;
+import java.util.List;
+
 public interface BaseVisitRemindMapper extends Mapper<BaseVisitRemind> {
 
   /**
@@ -16,4 +19,14 @@ public interface BaseVisitRemindMapper extends Mapper<BaseVisitRemind> {
    */
   VisitAndRemindCompletedInfoVO selectVisitAndRemindCompletedInfo(
      @Param("query") VisitAndRemindCompletedInfoQuery query);
+
+  /**
+   * 根据patientId查询随访提醒列表
+   *
+   * @param patientIds
+   * @param type
+   * @param orgId
+   * @return
+   */
+  List<BaseVisitRemind> findVisitRemindListInPatientId(Collection<Integer> patientIds, Integer type, Integer orgId);
 }

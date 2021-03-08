@@ -35,6 +35,14 @@ public class EmployeeWorkloadCostModel implements Serializable {
   @ApiModelProperty("加工费")
   @Min(value = 0, message = "不能输入小于0的金额！")
   private BigDecimal processingFee;
+  /** 正畸加工费 */
+  @ApiModelProperty("正畸加工费")
+  @Min(value = 0, message = "不能输入小于0的金额！")
+  private BigDecimal orthodonticsFee;
+  /** 基本工作量 */
+  @ApiModelProperty("基本工作量")
+  @Min(value = 0, message = "不能输入小于0的金额！")
+  private BigDecimal baseWorkload;
   /** 大额材料费 */
   @ApiModelProperty("大额材料费")
   @Min(value = 0, message = "不能输入小于0的金额！")

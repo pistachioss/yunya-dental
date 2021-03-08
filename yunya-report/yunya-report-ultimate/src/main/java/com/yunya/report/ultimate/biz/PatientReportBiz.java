@@ -12,10 +12,7 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.BasePatient;
-import com.yunya.report.ultimate.mapper.BaseBillMapper;
-import com.yunya.report.ultimate.mapper.BaseEmployeeMapper;
-import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
-import com.yunya.report.ultimate.mapper.BasePatientMapper;
+import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -42,8 +39,8 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
   /** 员工Mapper */
   @Resource private BaseEmployeeMapper baseEmployeeMapper;
 
-  /** 患者Mapper */
-  @Resource private BasePatientMapper basePatientMapper;
+  /** 随访提醒Mapper */
+  @Resource private BaseVisitRemindMapper baseVisitRemindMapper;
 
   /** 订单mapper */
   @Resource private BaseBillMapper baseBillMapper;
@@ -74,8 +71,36 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
     List<BasePatientNotSeenVo> basePatientNotSeenVoList = mapper.selectNotSeenList(form);
+
+    // 下次提醒
+//    if (StringHelper.isNotEmpty(basePatientNotSeenVoList)) {
+//      assemblyNextRemind(basePatientNotSeenVoList, form.getOrgId());
+//    }
     return new PageInfo<>(basePatientNotSeenVoList);
   }
+
+  /**
+   * 查询并装配下次提醒
+   *
+   * @param basePatientNotSeenVoList
+   * @param orgId
+   */
+//  private void assemblyNextRemind(List<BasePatientNotSeenVo> basePatientNotSeenVoList, Integer orgId) {
+//    Map<Integer, Date> patientMap = basePatientNotSeenVoList.stream().collect(Collectors.toMap(BasePatientNotSeenVo::getPatientId,BasePatientNotSeenVo::getLastVisitDate));
+//    List<BaseVisitRemind> baseVisitReminds = baseVisitRemindMapper.findVisitRemindListInPatientId(patientMap.keySet(), 1, orgId);
+//    basePatientNotSeenVoList.forEach(vo->{
+//      Date date = vo.getLastVisitDate();
+//      baseVisitReminds.forEach(remind->{
+//        Date time = remind.getTime();
+//        if (vo.getPatientId().equals(remind.getPatientId())
+//                && time.compareTo(date)>=0) {
+//          vo.setNoticeTime(time);
+//          vo.setNoticeContent(remind.getContent());
+//          return;
+//        }
+//      });
+//    });
+//  }
 
   /**
    * 导出未复诊预约且未提醒记录列表
@@ -85,11 +110,9 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
    */
   public void exportNotSeenList(HttpServletResponse response, PatientReportQueryForm form)
       throws IOException {
-    if (StringHelper.isNotEmpty(form.getEndDate())) {
-      String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
-      form.setEndDate(endDate);
-    }
-    List<BasePatientNotSeenVo> basePatientNotSeenVoList = mapper.selectNotSeenList(form);
+    form.setWhetherPage(false);
+    PageInfo<BasePatientNotSeenVo> pageInfo = notSeenList(form);
+    List<BasePatientNotSeenVo> basePatientNotSeenVoList = pageInfo.getList();
     ExcelUtil<BasePatientNotSeenVo> excelUtil = new ExcelUtil<>(BasePatientNotSeenVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
       BaseOrganization baseOrganization = new BaseOrganization();

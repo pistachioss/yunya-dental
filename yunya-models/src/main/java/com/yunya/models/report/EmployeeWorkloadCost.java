@@ -36,6 +36,18 @@ public class EmployeeWorkloadCost {
     private BigDecimal processingFee;
 
     /**
+     * 正畸加工费
+     */
+    @Column(name = "orthodontics_fee")
+    private BigDecimal orthodonticsFee;
+
+    /**
+     * 基本工作量
+     */
+    @Column(name = "base_workload")
+    private BigDecimal baseWorkload;
+
+    /**
      * 材料费
      */
     @Column(name = "material_fee")
@@ -167,6 +179,22 @@ public class EmployeeWorkloadCost {
      */
     public void setMaterialFee(BigDecimal materialFee) {
         this.materialFee = materialFee;
+    }
+
+    public BigDecimal getBaseWorkload() {
+        return baseWorkload;
+    }
+
+    public BigDecimal getOrthodonticsFee() {
+        return orthodonticsFee;
+    }
+
+    public void setBaseWorkload(BigDecimal baseWorkload) {
+        this.baseWorkload = baseWorkload;
+    }
+
+    public void setOrthodonticsFee(BigDecimal orthodonticsFee) {
+        this.orthodonticsFee = orthodonticsFee;
     }
 
     /**

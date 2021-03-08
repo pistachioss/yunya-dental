@@ -3,6 +3,7 @@ package com.yunya.middletable.service.treatment_other;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseVisitRemindMapper;
 import com.yunya.middletable.dao.treatment_other.VisitingRecordMapper;
@@ -11,11 +12,15 @@ import com.yunya.models.report.BaseVisitRemind;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.VisitingRemind;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -29,6 +34,7 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisitRemind> {
+  private Logger log = LoggerFactory.getLogger(BaseVisitRemindBiz.class);
 
   /** 随访mapper */
   @Autowired VisitingRecordMapper visitingRecordMapper;
@@ -142,7 +148,13 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         baseVisitRemind.setPatientId(visitingRecord.getPatientId());
         baseVisitRemind.setType((byte) type.intValue());
         baseVisitRemind.setUserId(visitingRecord.getCrtId());
-        baseVisitRemind.setTime(visitingRecord.getVisitingDate());
+        Date time = null;
+        try {
+          time = DateUtil.timeToDate(visitingRecord.getVisitingDate(),visitingRecord.getVisitingTime());
+        } catch (ParseException e) {
+          log.error("时间转换错误", e);
+        }
+        baseVisitRemind.setTime(time);
         baseVisitRemind.setContent(visitingRecord.getReason());
         baseVisitRemind.setCrtTime(visitingRecord.getCrtTime());
         return baseVisitRemind;
@@ -158,7 +170,13 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         baseVisitRemind.setPatientId(visitingRemind.getPatientId());
         baseVisitRemind.setType((byte) type.intValue());
         baseVisitRemind.setUserId(visitingRemind.getCrtId());
-        baseVisitRemind.setTime(visitingRemind.getRemindDate());
+        Date time = null;
+        try {
+          time = DateUtil.timeToDate(visitingRemind.getRemindDate(),visitingRemind.getRemindTime());
+        } catch (ParseException e) {
+          log.error("时间转换错误", e);
+        }
+        baseVisitRemind.setTime(time);
         baseVisitRemind.setContent(visitingRemind.getRemindContent());
         baseVisitRemind.setCrtTime(visitingRemind.getCrtTime());
         return baseVisitRemind;
