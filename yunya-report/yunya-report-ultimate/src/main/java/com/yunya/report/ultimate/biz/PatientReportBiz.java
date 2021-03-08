@@ -12,7 +12,6 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.BasePatient;
-import com.yunya.models.report.BaseVisitRemind;
 import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
@@ -23,10 +22,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 简介:患者报表业务层
@@ -77,9 +73,9 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     List<BasePatientNotSeenVo> basePatientNotSeenVoList = mapper.selectNotSeenList(form);
 
     // 下次提醒
-    if (StringHelper.isNotEmpty(basePatientNotSeenVoList)) {
-      assemblyNextRemind(basePatientNotSeenVoList, form.getOrgId());
-    }
+//    if (StringHelper.isNotEmpty(basePatientNotSeenVoList)) {
+//      assemblyNextRemind(basePatientNotSeenVoList, form.getOrgId());
+//    }
     return new PageInfo<>(basePatientNotSeenVoList);
   }
 
@@ -89,22 +85,22 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
    * @param basePatientNotSeenVoList
    * @param orgId
    */
-  private void assemblyNextRemind(List<BasePatientNotSeenVo> basePatientNotSeenVoList, Integer orgId) {
-    Map<Integer, Date> patientMap = basePatientNotSeenVoList.stream().collect(Collectors.toMap(BasePatientNotSeenVo::getPatientId,BasePatientNotSeenVo::getLastVisitDate));
-    List<BaseVisitRemind> baseVisitReminds = baseVisitRemindMapper.findVisitRemindListInPatientId(patientMap.keySet(), 1, orgId);
-    basePatientNotSeenVoList.forEach(vo->{
-      Date date = vo.getLastVisitDate();
-      baseVisitReminds.forEach(remind->{
-        Date time = remind.getTime();
-        if (vo.getPatientId().equals(remind.getPatientId())
-                && time.compareTo(date)>=0) {
-          vo.setNoticeTime(time);
-          vo.setNoticeContent(remind.getContent());
-          return;
-        }
-      });
-    });
-  }
+//  private void assemblyNextRemind(List<BasePatientNotSeenVo> basePatientNotSeenVoList, Integer orgId) {
+//    Map<Integer, Date> patientMap = basePatientNotSeenVoList.stream().collect(Collectors.toMap(BasePatientNotSeenVo::getPatientId,BasePatientNotSeenVo::getLastVisitDate));
+//    List<BaseVisitRemind> baseVisitReminds = baseVisitRemindMapper.findVisitRemindListInPatientId(patientMap.keySet(), 1, orgId);
+//    basePatientNotSeenVoList.forEach(vo->{
+//      Date date = vo.getLastVisitDate();
+//      baseVisitReminds.forEach(remind->{
+//        Date time = remind.getTime();
+//        if (vo.getPatientId().equals(remind.getPatientId())
+//                && time.compareTo(date)>=0) {
+//          vo.setNoticeTime(time);
+//          vo.setNoticeContent(remind.getContent());
+//          return;
+//        }
+//      });
+//    });
+//  }
 
   /**
    * 导出未复诊预约且未提醒记录列表

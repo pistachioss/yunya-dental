@@ -344,6 +344,11 @@
         FROM
         base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+        <where>
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+        </where>
         ) bbd
         <where>
             and bbd.executor_id IS NOT NULL
@@ -378,6 +383,11 @@
         FROM
         base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+        <where>
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+        </where>
         ) bbd
         <where>
             and bbd.executor_id IS NOT NULL
