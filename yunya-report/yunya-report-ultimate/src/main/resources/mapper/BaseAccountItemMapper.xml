@@ -29,8 +29,8 @@
     <select id="selectBillChargePaymentInfoThisMonth"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
         IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
@@ -100,8 +100,8 @@
     <select id="selectCollectArrearsPaymentInfoThisMonth"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
         IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
@@ -198,8 +198,8 @@
     <select id="selectCollectArrearsPaymentInfoNotThisMonth"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
         IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
@@ -296,8 +296,8 @@
     <select id="selectMemberChargePaymentInfo"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount,
         IFNULL( SUM( bpmol.bonus_amount ), 0 ) AS bonusAmount
         FROM
@@ -354,8 +354,8 @@
     <select id="selectPaidChargePaymentInfo"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount,
         IFNULL( SUM( bpmol.bonus_amount ), 0 ) AS bonusAmount
         FROM
@@ -412,8 +412,8 @@
     <select id="selectProductSoldPaymentInfo"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( bc.sold_amount ), 0 ) AS totalAmount,
         0 AS bonusAmount
         FROM
@@ -472,8 +472,8 @@
     <select id="selectClinicCollectionPaymentInfoThisMonth"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
         IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
@@ -571,8 +571,8 @@
     <select id="selectClinicCollectionPaymentInfoNotThisMonth"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
         IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
@@ -660,8 +660,8 @@
     <select id="selectBillRefundPaymentInfoThisMonth"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( brpd.principal_amount ), 0 ) AS totalAmount,
         IFNULL( SUM( brpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
@@ -756,8 +756,8 @@
     <select id="selectBillRefundPaymentInfoNotThisMonth"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( brpd.principal_amount ), 0 ) AS totalAmount,
         IFNULL( SUM( brpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
@@ -843,8 +843,8 @@
     <select id="selectMemberRefundPaymentInfo"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount,
         IFNULL( SUM( bpmol.bonus_amount ), 0 ) AS bonusAmount
         FROM
@@ -900,8 +900,8 @@
     <select id="selectPrepaidRefundPaymentInfo"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount,
         IFNULL( SUM( bpmol.bonus_amount ), 0 ) AS bonusAmount
         FROM
@@ -957,8 +957,8 @@
     <select id="selectClinicIsAcceptedPaymentInfoThisMonth"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
         IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
@@ -1053,8 +1053,8 @@
     <select id="selectClinicIsAcceptedPaymentInfoNotThisMonth"
             resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
-        bai.account_item_id,
-        bai.account_item_name,
+        bai.account_item_id as accountItemId,
+        bai.account_item_name as accountItemName,
         IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount,
         IFNULL( SUM( bbpd.bonus_amount ), 0 ) AS bonusAmount
         FROM
