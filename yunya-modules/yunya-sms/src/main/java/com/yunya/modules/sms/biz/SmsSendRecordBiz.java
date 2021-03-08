@@ -217,6 +217,14 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 model.getModels());
     }
 
+    public ResponseResult<T> batchSendByTemplateId(SmsTemplateIdRecordModel model) {
+        return batchSendByTemplateId(model.getTemplateId(),
+                model.getUserId(),
+                model.getName(),
+                model.getOrgId(),
+                model.getModels());
+    }
+
     /**
      * 通过模板id来发送短信
      *
@@ -659,7 +667,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                     } else if (SmsTemplateItemEnum.APPOINTMENT_DOCTOR.getCode().equals(code)) {// 预约医生姓名
                         object.put(key, model.getDentistName());
                     } else if (SmsTemplateItemEnum.APPOINTMENT.getCode().equals(code)) { // 预约时间
-                        String code7 = model.getAppointDate() + model.getAppointTime();
+                        String code7 = model.getAppointDate() + " " + model.getAppointTime();
                         object.put(key, code7);
                     } else if (SmsTemplateItemEnum.APPELLATION.getCode().equals(code)) { // 先生/女士/小朋友
                         Integer age = model.getAge();
@@ -699,8 +707,15 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 model.setTemplateParam(object);
             }
         }
-        batchSendByTemplateId(templateId, Integer.parseInt(BaseContextHandler.getUserID()),
-                BaseContextHandler.getName(), orgId, models);
+//        batchSendByTemplateId(templateId, Integer.parseInt(BaseContextHandler.getUserID()),
+//                BaseContextHandler.getName(), orgId, models);
+        SmsTemplateIdRecordModel smsModel = new SmsTemplateIdRecordModel();
+        smsModel.setTemplateId(templateId);
+        smsModel.setName(BaseContextHandler.getName());
+        smsModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
+        smsModel.setOrgId(orgId);
+        smsModel.setModels(models);
+        redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE, smsModel);
         return ResponseUtil.success(null);
     }
 
