@@ -814,7 +814,7 @@ public class TollBiz {
     checkOrderRecordStatus(status);
     String resultRecordId = redisUtils.get(LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
     if (StringHelper.isNotBlank(resultRecordId)) {
-      throw new ClientServiceException("收费失败，当前账单已解锁！", PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("收费失败，当前账单已解锁！请联系开单人员提交账单！", PARAMETERS_IS_ILLEGAL);
     }
     // 校验优惠参数
     checkPrivilegeParam(discountType, generalDiscountModel, accreditDiscountModel);
