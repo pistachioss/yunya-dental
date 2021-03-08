@@ -118,6 +118,7 @@
         receivedWorkload,
         refundWorkload,
         processingFee,
+        orthodonticsFee,
         largeMaterialCost
         FROM
         (
@@ -125,7 +126,7 @@
         bup.org_id,
         bup.user_id AS employeeId,
         be.employee_name AS employeeName,
-        IFNULL(be.work_amount, 0) AS baseWorkload,
+        IFNULL(ewc.baseWorkload, 0) AS baseWorkload,
         IFNULL(be.bonus_coefficient, 0) AS bonusCoefficient,
         GROUP_CONCAT( DISTINCT bup.post_name SEPARATOR ',' ) AS postNames,
         IFNULL( bbd.actualWorkload, 0 ) AS actualWorkload,
@@ -133,6 +134,7 @@
         IFNULL( bbd1.receivedWorkload, 0 ) AS receivedWorkload,
         IFNULL( brd.refundWorkload, 0 ) AS refundWorkload,
         IFNULL( ewc.processingFee, 0 ) AS processingFee,
+        IFNULL( ewc.orthodonticsFee, 0 ) AS orthodonticsFee,
         IFNULL( ewc.largeMaterialCost, 0 ) AS largeMaterialCost
         FROM
         base_user_post bup
@@ -249,6 +251,8 @@
         SELECT
         ewc.org_id,
         SUM( ewc.processing_fee ) AS processingFee,
+        SUM( ewc.orthodontics_fee ) AS orthodonticsFee,
+        SUM( ewc.base_workload ) AS baseWorkload,
         SUM( ewc.material_fee ) AS largeMaterialCost,
         ewc.user_id
         FROM
@@ -299,6 +303,8 @@
         receivedWorkload,
         refundWorkload,
         processingFee,
+        orthodonticsFee,
+        baseWorkload,
         largeMaterialCost
         FROM
         (
@@ -312,6 +318,8 @@
         ifnull( bbd1.receivedWorkload, 0 ) AS receivedWorkload,
         ifnull( brd.refundWorkload, 0 ) AS refundWorkload,
         ifnull( ewc.processingFee, 0 ) AS processingFee,
+        ifnull( ewc.orthodonticsFee, 0 ) AS orthodonticsFee,
+        ifnull( ewc.baseWorkload, 0 ) AS baseWorkload,
         ifnull( ewc.largeMaterialCost, 0 ) AS largeMaterialCost
         FROM
         base_user_post bup
@@ -428,6 +436,8 @@
         SELECT
         ewc.org_id,
         SUM( ewc.processing_fee ) AS processingFee,
+        SUM( ewc.orthodontics_fee ) AS orthodonticsFee,
+        SUM( ewc.base_workload ) AS baseWorkload,
         SUM( ewc.material_fee ) AS largeMaterialCost,
         ewc.user_id
         FROM

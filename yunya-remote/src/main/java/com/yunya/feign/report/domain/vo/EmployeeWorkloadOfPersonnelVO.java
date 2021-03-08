@@ -21,10 +21,6 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class EmployeeWorkloadOfPersonnelVO extends EmployeeWorkloadOfOperationVO implements Serializable {
-  /** 基本工作量（元） */
-  @Excel(name = "基本工作量（元）")
-  @ApiModelProperty("基本工作量（元）")
-  private BigDecimal baseWorkload;
   /** 奖金系数 */
   @Excel(name = "奖金系数")
   @ApiModelProperty("奖金系数")

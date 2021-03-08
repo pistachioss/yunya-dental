@@ -107,6 +107,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             BigDecimal refundWorkload = vo.getRefundWorkload();
             // 加工费
             BigDecimal processingFee = vo.getProcessingFee();
+            // 正畸加工费
+            BigDecimal orthodonticsFee = vo.getOrthodonticsFee();
             // 大额材料费
             BigDecimal largeMaterialCost = vo.getLargeMaterialCost();
             // 基础工作量
@@ -118,6 +120,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                     .add(supplementWorkload)
                     .subtract(refundWorkload)
                     .subtract(processingFee)
+                    .subtract(orthodonticsFee)
                     .subtract(largeMaterialCost)
                     .subtract(baseWorkload);
             vo.setActualBonusBase(actualBonusBase);
@@ -173,7 +176,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       Integer executorId = detail.getExecutorId();
       if (userIds.containsKey(executorId)) {
         Integer billId = detail.getBillId();
-        BigDecimal amount =detail.getDiscountAmount().multiply(freePaymentMap.get(billId));
+        BigDecimal free = freePaymentMap.get(billId);
+        BigDecimal amount =detail.getDiscountAmount().multiply(free==null?BigDecimal.ZERO:free);
         userIds.put(executorId, amount.add(userIds.get(executorId)));
       }
     });
@@ -583,7 +587,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         Integer executorId = detail.getExecutorId();
         if (query.getEmployeeId().equals(executorId)) {
           Integer billId = detail.getBillId();
-          BigDecimal amount = detail.getDiscountAmount().multiply(freePaymentMap.get(billId));
+          BigDecimal free = freePaymentMap.get(billId);
+          BigDecimal amount = detail.getDiscountAmount().multiply(free==null?BigDecimal.ZERO:free);
           billIdMap.put(billId, amount.add(billIdMap.get(billId)));
         }
       });
@@ -671,16 +676,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       List<Integer> billIds = Arrays.asList(query.getBillId());
       List<BaseBillDetail> details = mapper.selectBillDetailByBillIds(billIds);
       computePercentage(details);
-
       List<BaseBillPayDetail> freePayments = baseBillPayDetailMapper.sumPayDetailList(billIds, getFreePaymentIds());
-      BigDecimal freePayment = freePayments.get(0).getPrincipalAmount();
+      BigDecimal free = freePayments.get(0).getPrincipalAmount();
       Map<String, BigDecimal> amounts = new HashMap<>(16);
       for (BaseBillDetail detail : details) {
         Integer executorId = detail.getExecutorId();
         Integer itemId = detail.getItemId();
         Byte itemType = detail.getItemType();
         if (query.getEmployeeId().equals(executorId)) {
-          amounts.put(itemId+","+itemType, detail.getDiscountAmount().multiply(freePayment));
+          amounts.put(itemId+","+itemType, detail.getDiscountAmount().multiply(free==null?BigDecimal.ZERO:free));
         }
       }
       resultList.forEach(vo -> {

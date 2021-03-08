@@ -56,6 +56,14 @@ public class EmployeeWorkloadOfOperationVO implements Serializable {
   @Excel(name = "加工费（元）")
   @ApiModelProperty("加工费（元）")
   private BigDecimal processingFee;
+  /** 正畸加工费（元） */
+  @Excel(name = "正畸加工费（元）")
+  @ApiModelProperty("正畸加工费（元）")
+  private BigDecimal orthodonticsFee;
+  /** 基本工作量（元） */
+  @Excel(name = "基本工作量（元）")
+  @ApiModelProperty("基本工作量（元）")
+  private BigDecimal baseWorkload;
   /** 大额材料费（元） */
   @Excel(name = "大额材料费（元）")
   @ApiModelProperty("大额材料费（元）")

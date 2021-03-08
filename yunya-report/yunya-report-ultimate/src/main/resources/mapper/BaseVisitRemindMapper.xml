@@ -64,4 +64,27 @@
         </where>
         ) bvr1
     </select>
+
+    <select id="findVisitRemindListInPatientId" resultType="com.yunya.models.report.BaseVisitRemind">
+        select
+            t.patient_id as patientId,
+            t.time,
+            t.content
+        from base_visit_remind t
+        <where>
+            <if test="type != null">
+                and t.type = #{type}
+            </if>
+            <if test="orgId != null">
+                and t.org_id = #{orgId}
+            </if>
+            <if test="patientIds!=null and patientIds.size()>0">
+                and t.patient_id in
+                <foreach collection="patientIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by time desc
+    </select>
 </mapper>
