@@ -406,48 +406,59 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         List<StatementPaymentVO> statementPaymentResult = new ArrayList<>();
         List<StatementPaymentVO> statementPayments =
             billPayDetailMapper.selectBillPayDetailList(vo.getBillPayId());
-        if (StringHelper.isNotEmpty(statementPayments)) {
-          for (StatementPaymentVO payment : statementPayments) {
-            String accountItemName = payment.getAccountItemName();
-            // 将支付方式名称为：会员卡或预付款的支付港式拆分为-会员卡本金/赠金；预付款本金/赠金
-            switch (accountItemName) {
-              case ACCOUNT_ITEM_OF_MEMBER:
-                Integer memberCardAccountItemId = payment.getAccountItemId();
-                BigDecimal memberCardTotalAmount = payment.getTotalAmount();
-                BigDecimal memberCardBonusAmount = payment.getBonusAmount();
-                StatementPaymentVO memberCardPrinciple = new StatementPaymentVO();
-                memberCardPrinciple.setAccountItemId(memberCardAccountItemId);
-                memberCardPrinciple.setAccountItemName("会员卡本金");
-                memberCardPrinciple.setTotalAmount(memberCardTotalAmount);
-                statementPaymentResult.add(0, memberCardPrinciple);
-                StatementPaymentVO memberCardBonus = new StatementPaymentVO();
-                memberCardBonus.setAccountItemId(memberCardAccountItemId);
-                memberCardBonus.setAccountItemName("会员卡赠金");
-                memberCardBonus.setTotalAmount(memberCardBonusAmount);
-                statementPaymentResult.add(1, memberCardBonus);
-                break;
-              case ACCOUNT_ITEM_OF_PREPARE:
-                Integer prePaidCardAccountItemId = payment.getAccountItemId();
-                BigDecimal prePaidCardTotalAmount = payment.getTotalAmount();
-                BigDecimal prePaidCardBonusAmount = payment.getBonusAmount();
-                StatementPaymentVO prePaidCardPrinciple = new StatementPaymentVO();
-                prePaidCardPrinciple.setAccountItemId(prePaidCardAccountItemId);
-                prePaidCardPrinciple.setAccountItemName("预付款本金");
-                prePaidCardPrinciple.setTotalAmount(prePaidCardTotalAmount);
-                statementPaymentResult.add(2, prePaidCardPrinciple);
-                StatementPaymentVO prepaidCardBonus = new StatementPaymentVO();
-                prepaidCardBonus.setAccountItemId(prePaidCardAccountItemId);
-                prepaidCardBonus.setAccountItemName("预付款赠金");
-                prepaidCardBonus.setTotalAmount(prePaidCardBonusAmount);
-                statementPaymentResult.add(3, prepaidCardBonus);
-                break;
-              default:
-                statementPaymentResult.add(payment);
-                break;
-            }
-          }
-        }
+        setStatementPaymentValue(statementPaymentResult, statementPayments);
         vo.setStatementPayments(statementPaymentResult);
+      }
+    }
+  }
+
+  /**
+   * 设置对账单会员卡、预付款本金、赠金
+   *
+   * @param statementPaymentResult 原对账单列表
+   * @param statementPayments 对账单结果
+   */
+  static void setStatementPaymentValue(
+      List<StatementPaymentVO> statementPaymentResult, List<StatementPaymentVO> statementPayments) {
+    if (StringHelper.isNotEmpty(statementPayments)) {
+      for (StatementPaymentVO payment : statementPayments) {
+        String accountItemName = payment.getAccountItemName();
+        // 将支付方式名称为：会员卡或预付款的支付港式拆分为-会员卡本金/赠金；预付款本金/赠金
+        switch (accountItemName) {
+          case ACCOUNT_ITEM_OF_MEMBER:
+            Integer memberCardAccountItemId = payment.getAccountItemId();
+            BigDecimal memberCardTotalAmount = payment.getTotalAmount();
+            BigDecimal memberCardBonusAmount = payment.getBonusAmount();
+            StatementPaymentVO memberCardPrinciple = new StatementPaymentVO();
+            memberCardPrinciple.setAccountItemId(memberCardAccountItemId);
+            memberCardPrinciple.setAccountItemName("会员卡本金");
+            memberCardPrinciple.setTotalAmount(memberCardTotalAmount);
+            statementPaymentResult.add(0, memberCardPrinciple);
+            StatementPaymentVO memberCardBonus = new StatementPaymentVO();
+            memberCardBonus.setAccountItemId(memberCardAccountItemId);
+            memberCardBonus.setAccountItemName("会员卡赠金");
+            memberCardBonus.setTotalAmount(memberCardBonusAmount);
+            statementPaymentResult.add(1, memberCardBonus);
+            break;
+          case ACCOUNT_ITEM_OF_PREPARE:
+            Integer prePaidCardAccountItemId = payment.getAccountItemId();
+            BigDecimal prePaidCardTotalAmount = payment.getTotalAmount();
+            BigDecimal prePaidCardBonusAmount = payment.getBonusAmount();
+            StatementPaymentVO prePaidCardPrinciple = new StatementPaymentVO();
+            prePaidCardPrinciple.setAccountItemId(prePaidCardAccountItemId);
+            prePaidCardPrinciple.setAccountItemName("预付款本金");
+            prePaidCardPrinciple.setTotalAmount(prePaidCardTotalAmount);
+            statementPaymentResult.add(2, prePaidCardPrinciple);
+            StatementPaymentVO prepaidCardBonus = new StatementPaymentVO();
+            prepaidCardBonus.setAccountItemId(prePaidCardAccountItemId);
+            prepaidCardBonus.setAccountItemName("预付款赠金");
+            prepaidCardBonus.setTotalAmount(prePaidCardBonusAmount);
+            statementPaymentResult.add(3, prepaidCardBonus);
+            break;
+          default:
+            statementPaymentResult.add(payment);
+            break;
+        }
       }
     }
   }
