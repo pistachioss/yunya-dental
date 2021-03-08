@@ -177,7 +177,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
         //转诊记录包含的患者信息
         List<PatientTotalInfoVo>patList =
                 remotePatientCentralServiceFeign.findPatientTotalInfo(reList.stream().map(p -> p.getPatientId()).collect(Collectors.toList()));
-        Map<String, PatientTotalInfoVo> patMap = new HashMap();
+        Map<String, PatientTotalInfoVo> patMap = new HashMap(16);
         patList.forEach(z -> patMap.put(z.getId() + "", z));
 
         //转诊记录包含的员工信息
@@ -299,7 +299,6 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
      * 根据条件查询候诊中患者信息列表
      *
      * @param queryForm 查询条件
-     * @return
      */
     public PageInfo<WaitingPatientInfoVO> findRegisteredList(RegisteredQueryForm queryForm) {
         if (queryForm.getWhetherPage()) {
