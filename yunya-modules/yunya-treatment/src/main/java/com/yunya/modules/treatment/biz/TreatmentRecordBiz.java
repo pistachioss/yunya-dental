@@ -418,7 +418,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
               vo.setNextAppointment(nextAppointsVo.getCount());
             }
           }
-          // 设置后续随访数量
+          // 设置后续随访、提醒数量
           if (StringHelper.isNotEmpty(nextVisitingRecordVos)) {
             List<NextVisitingRecordVo> nextVisitingRecords =
                 nextVisitingRecordVos.stream()
@@ -428,7 +428,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     .collect(Collectors.toList());
             if (StringHelper.isNotEmpty(nextVisitingRecords)) {
               NextVisitingRecordVo nextVisitingRecordVo = nextVisitingRecords.get(0);
-              vo.setNextInterview(nextVisitingRecordVo.getCount());
+              vo.setNextInterview(nextVisitingRecordVo.getVisitRecordCount());
+              vo.setNextVisitRemind(nextVisitingRecordVo.getVisitRemindCount());
             }
           }
           // 设置会员类型
@@ -766,7 +767,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     vo.setTreatDentistName(null != treatDentistInfo ? treatDentistInfo.getName() : "--");
     Integer patientId = vo.getPatientId();
     // 查询患者欠费总额
-    PatientBillStatistics billStatistics = billRecordMapper.selectPatientBillStatistics(patientId, Arrays.asList(-1));
+    PatientBillStatistics billStatistics =
+        billRecordMapper.selectPatientBillStatistics(patientId, Arrays.asList(-1));
     vo.setArrears(billStatistics.getBillTotalArrears());
   }
 
@@ -1385,9 +1387,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     }
     List<DesktopMiniProgramVO> desktopMiniProgramVOS = null;
     if (aByte.intValue() == 0 || aByte.intValue() == 1) {
-      desktopMiniProgramVOS = mapper.desktopTreatingList(new Byte[]{0,1}, currentDate, orgId);
+      desktopMiniProgramVOS = mapper.desktopTreatingList(new Byte[] {0, 1}, currentDate, orgId);
     } else if (aByte.intValue() == 2) {
-      desktopMiniProgramVOS = mapper.desktopTreatingList(new Byte[]{2}, currentDate, orgId);
+      desktopMiniProgramVOS = mapper.desktopTreatingList(new Byte[] {2}, currentDate, orgId);
     } else if (aByte.intValue() == 3) {
       desktopMiniProgramVOS = billRecordMapper.desktopBillingList(currentDate, orgId);
     }
