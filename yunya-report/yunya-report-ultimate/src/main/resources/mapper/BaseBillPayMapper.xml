@@ -134,11 +134,11 @@
     <select id="selectClinicTollDataStatistic"
             resultType="com.yunya.feign.report.domain.vo.TollDataStatisticsVO">
         SELECT
-        bbp.totalReceivedDebtAmount,
-        bbp1.totalReceivedAmount,
-        br.totalBillRefundAmount,
-        bbp2.totalClinicCollectionAmount,
-        bbp3.totalClinicCollectedAmount
+        IFNULL(bbp.totalReceivedDebtAmount, 0) AS totalReceivedDebtAmount,
+        IFNULL(bbp1.totalReceivedAmount, 0) AS totalReceivedAmount,
+        IFNULL(br.totalBillRefundAmount, 0) AS totalBillRefundAmount,
+        IFNULL(bbp2.totalClinicCollectionAmount, 0) AS totalClinicCollectionAmount,
+        IFNULL(bbp3.totalClinicCollectedAmount, 0) AS totalClinicCollectedAmount
         FROM
         (
         SELECT
@@ -304,18 +304,18 @@
                 </if>
             </if>
             AND bbp.bill_id NOT IN (
-                SELECT
-                bb.bill_id
-                FROM base_bill bb
-                <where>
-                    <if test="query.orgIds != null and query.orgIds.length > 0">
-                        and bb.org_id in
-                        <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
-                            #{item}
-                        </foreach>
-                    </if>
-                </where>
-               )
+            SELECT
+            bb.bill_id
+            FROM base_bill bb
+            <where>
+                <if test="query.orgIds != null and query.orgIds.length > 0">
+                    and bb.org_id in
+                    <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+            )
         </where>
         ) bbp
         ) bbp2,
@@ -360,19 +360,19 @@
                 </if>
             </if>
             AND bbp.bill_id IN (
-                SELECT
-                bb.bill_id
-                FROM
-                base_bill bb
-                <where>
-                    <if test="query.orgIds != null and query.orgIds.length > 0">
-                        and bb.org_id IN
-                        <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
-                            #{item}
-                        </foreach>
-                    </if>
-                </where>
-                )
+            SELECT
+            bb.bill_id
+            FROM
+            base_bill bb
+            <where>
+                <if test="query.orgIds != null and query.orgIds.length > 0">
+                    and bb.org_id IN
+                    <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+            )
         </where>
         ) bbp
         ) bbp3
@@ -515,8 +515,7 @@
         btp.registered_dentist_id,
         be.employee_name
         ) btp ON bbp.treatment_id = btp.treatment_id
-        ) bbp,
-        (
+        ) bbp INNER JOIN (
         SELECT
         bb.org_id,
         bb.bill_id,
@@ -558,12 +557,9 @@
         bb.org_id,
         bb.bill_id,
         bb.bill_date
-        ) bb
-        <where>
-            AND bbp.billId = bb.bill_id
-            AND bbp.payeeDate = bb.bill_date
-            AND bbp.billOrgId = bb.org_id
-        </where>
+        ) bb ON bbp.billId = bb.bill_id
+        AND bbp.payeeDate = bb.bill_date
+        AND bbp.billOrgId = bb.org_id
         ) bbp
         <where>
             <if test="query.patientKeyword != null and query.patientKeyword != ''">
@@ -688,8 +684,36 @@
         btp.registered_dentist_id,
         be.employee_name
         ) btp ON bbp.treatment_id = btp.treatment_id
-        ) bbp,
-        (
+        <where>
+            <if test="query.orgId != null">
+                AND bbp.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bbp INNER JOIN (
         SELECT
         bb.org_id,
         bb.bill_id,
@@ -731,36 +755,9 @@
         bb.org_id,
         bb.bill_id,
         bb.bill_date
-        ) bb
-        <where>
-            AND bbp.payeeOrgId = bb.org_id
-            AND bbp.payeeDate != bb.bill_date
-            AND bbp.billId = bb.bill_id
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
+        ) bb ON bbp.payeeOrgId = bb.org_id
+        AND bbp.payeeDate != bb.bill_date
+        AND bbp.billId = bb.bill_id
         ) bbp
         <where>
             <if test="query.patientKeyword != null and query.patientKeyword != ''">
@@ -885,7 +882,36 @@
         btp.registered_dentist_id,
         be.employee_name
         ) btp ON bbp.treatment_id = btp.treatment_id
-        ) bbp,
+        <where>
+            <if test="query.orgId != null">
+                AND bbp.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bbp INNER JOIN
         (
         SELECT
         bb.org_id,
@@ -928,36 +954,9 @@
         bb.org_id,
         bb.bill_id,
         bb.bill_date
-        ) bb
-        <where>
-            AND bbp.payeeOrgId = bb.org_id
-            AND bbp.payeeDate != bb.bill_date
-            AND bbp.billId = bb.bill_id
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
+        ) bb ON bbp.payeeOrgId = bb.org_id
+        AND bbp.payeeDate != bb.bill_date
+        AND bbp.billId = bb.bill_id
         ) bbp
         <where>
             <if test="query.patientKeyword != null and query.patientKeyword != ''">
@@ -1096,7 +1095,36 @@
         btp.registered_dentist_id,
         be.employee_name
         ) btp ON bbp.treatment_id = btp.treatment_id
-        ) bbp,
+        <where>
+            <if test="query.orgId != null">
+                AND bbp.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bbp INNER JOIN
         (
         SELECT
         bb.bill_id
@@ -1135,37 +1163,7 @@
         </where>
         GROUP BY
         bb.bill_id
-        ) bb
-        <where>
-            AND bbp.billId = bb.bill_id
-            <if test="query.orgId != null">
-                AND bbp.payeeOrgId = #{query.orgId}
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
+        ) bb ON bbp.billId = bb.bill_id
         ) bbp
         <where>
             <if test="query.patientKeyword != null and query.patientKeyword != ''">
@@ -1304,8 +1302,36 @@
         btp.registered_dentist_id,
         be.employee_name
         ) btp ON bbp.treatment_id = btp.treatment_id
-        ) bbp,
-        (
+        <where>
+            <if test="query.orgId != null">
+                AND bbp.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bbp INNER JOIN (
         SELECT
         bb.bill_id
         FROM
@@ -1343,37 +1369,7 @@
         </where>
         GROUP BY
         bb.bill_id
-        ) bb
-        <where>
-            AND bbp.billId = bb.bill_id
-            <if test="query.orgId != null">
-                AND bbp.payeeOrgId = #{query.orgId}
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
+        ) bb ON bbp.billId = bb.bill_id
         ) bbp
         <where>
             <if test="query.patientKeyword != null and query.patientKeyword != ''">
@@ -1512,8 +1508,36 @@
         btp.registered_dentist_id,
         be.employee_name
         ) btp ON bbp.treatment_id = btp.treatment_id
-        ) bbp,
-        (
+        <where>
+            <if test="query.orgId != null">
+                AND bbp.org_id != #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bbp INNER JOIN (
         SELECT
         bb.bill_id
         FROM
@@ -1551,37 +1575,7 @@
         </where>
         GROUP BY
         bb.bill_id
-        ) bb
-        <where>
-            AND bbp.billId = bb.bill_id
-            <if test="query.orgId != null">
-                AND bbp.payeeOrgId != #{query.orgId}
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
+        ) bb ON bbp.billId = bb.bill_id
         ) bbp
         <where>
             <if test="query.patientKeyword != null and query.patientKeyword != ''">
@@ -1720,8 +1714,36 @@
         btp.registered_dentist_id,
         be.employee_name
         ) btp ON bbp.treatment_id = btp.treatment_id
-        ) bbp,
-        (
+        <where>
+            <if test="query.orgId != null">
+                AND bbp.org_id != #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bbp INNER JOIN (
         SELECT
         bb.bill_id
         FROM
@@ -1759,37 +1781,7 @@
         </where>
         GROUP BY
         bb.bill_id
-        ) bb
-        <where>
-            AND bbp.billId = bb.bill_id
-            <if test="query.orgId != null">
-                AND bbp.payeeOrgId != #{query.orgId}
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payeeDate, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
+        ) bb ON bbp.billId = bb.bill_id
         ) bbp
         <where>
             <if test="query.patientKeyword != null and query.patientKeyword != ''">
@@ -1808,5 +1800,4 @@
         </where>
         order by bbp.payeeDate, bbp.billNum desc
     </select>
-
 </mapper>

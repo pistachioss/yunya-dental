@@ -2270,7 +2270,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                                     assistantPatientInfo.setPatientNum(++patientNum);
 
                                     // 将助手信息放入助手预约信息列表中
-                                    assistantAppointList.add(assistantPatientInfo);
+                                    if (!assistantAppointList.contains(assistantPatientInfo)) {
+                                        assistantAppointList.add(assistantPatientInfo);
+                                    }
                                 }
                             }
                         }
