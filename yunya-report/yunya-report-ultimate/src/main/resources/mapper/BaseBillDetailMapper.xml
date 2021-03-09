@@ -470,7 +470,7 @@
         ) ewc ON bup.user_id = ewc.user_id AND bup.org_id = ewc.org_id
         <where>
             <if test="query.workStatus!=null and query.workStatus.size()>0">
-                be.work_status in
+                and be.work_status in
                 <foreach collection="query.workStatus" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>

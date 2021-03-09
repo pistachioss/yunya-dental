@@ -608,6 +608,14 @@
         btp.registered_dentist_id
         ) btp6 ON bup.user_id = btp6.registered_dentist_id
         AND bup.org_id = btp6.org_id
+        <where>
+            <if test="query.workStatus!=null and query.workStatus.size()>0">
+                and be.work_status in
+                <foreach collection="query.workStatus" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
         ) edi
         <where>
             <if test="query.orgId != null">
