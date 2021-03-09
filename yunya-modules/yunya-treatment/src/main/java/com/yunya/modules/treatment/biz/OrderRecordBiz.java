@@ -158,9 +158,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
               detail.setOrderRecordId(orderRecordId);
               orderDetailBiz.insertSelective(detail);
             });
-      }
-      if (result > 0) {
-        rabbitMqServiceFeign.sendMessage(orderRecordId, 0, BaseBill);
+        if (result > 0) {
+          rabbitMqServiceFeign.sendMessage(orderRecordId, 0, BaseBill);
+        }
       }
     } else {
       orderResult.setTotalAmount(totalAmount);
@@ -177,9 +177,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
               detail.setOrderRecordId(orderRecordId);
               orderDetailBiz.insertSelective(detail);
             });
-      }
-      if (result > 0) {
-        rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+        if (result > 0) {
+          rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+        }
       }
     }
     Integer assistantId1 = model.getAssistantId1();
