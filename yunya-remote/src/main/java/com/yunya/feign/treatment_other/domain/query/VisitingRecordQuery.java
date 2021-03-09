@@ -42,7 +42,7 @@ public class VisitingRecordQuery implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date searchEndTime;
     /** 检索类型：1-按随访创建时间检索；2-按随访执行时间检索，默认按随访执行时间检索 */
-    @ApiModelProperty(value = "检索类型：1-按随访创建时间检索；2-按随访执行时间检索，默认按随访执行时间检索", required = true)
+    @ApiModelProperty(value = "检索类型：1-按随访创建时间检索；2-按随访执行时间检索，默认按随访执行时间检索；3-患者档案检索", required = true)
     private Integer searchId = 2;
     /** 门诊id */
     @ApiModelProperty(value = "门诊id")
@@ -50,6 +50,11 @@ public class VisitingRecordQuery implements Serializable {
     /** 医生id */
     @ApiModelProperty(value = "医生id(用户岗位只有医生的时候必传，其他情况不传)", notes = "权限控制")
     private Integer dentistId;
+
+    /** 按医生ID集合批量查询 */
+    @ApiModelProperty(value = "按医生ID集合批量查询",hidden = true)
+    private List<Integer> dentistIds;
+
     /** 患者id */
     @ApiModelProperty(value = "患者id(患者档案中查询需要传入)")
     private Integer patientId;

@@ -415,7 +415,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     .collect(Collectors.toList());
             if (StringHelper.isNotEmpty(nextAppoints)) {
               NextAppointsVo nextAppointsVo = nextAppoints.get(0);
-              vo.setNextAppointment(nextAppointsVo.getCount());
+              vo.setNextAppointment(
+                  null != nextAppointsVo.getCount() ? nextAppointsVo.getCount() : 0);
             }
           }
           // 设置后续随访、提醒数量
