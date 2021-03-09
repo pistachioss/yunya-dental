@@ -162,6 +162,9 @@ public class TreatmentPatientInfoVO implements Serializable {
   /** 后续预约 */
   @ApiModelProperty("后续预约")
   private Integer nextAppointment;
+  /** 后续提醒 */
+  @ApiModelProperty("后续提醒")
+  private Integer nextVisitRemind;
   /** 后续随访 */
   @ApiModelProperty("后续随访")
   private Integer nextInterview;
@@ -187,6 +190,7 @@ public class TreatmentPatientInfoVO implements Serializable {
   /** 结账时间 */
   @ApiModelProperty("结账时间")
   private String checkOutTime;
+
   @ApiModelProperty("账单编号")
   private String billNumber;
 }

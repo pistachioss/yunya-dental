@@ -177,21 +177,47 @@
     and date_format(visiting_date,'%Y-%m-%d') &gt; date_format(#{regDate},'%Y-%m-%d')
   </select>
 
-  <!-- 根据患者ID集合查询患者后续随访信息列表 -->
+  <!-- 根据患者ID集合查询患者后续随访数量、后续提醒数量信息列表 -->
   <select id="countNextVisitingListByIds" resultType="com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo">
-    select
-           count(patient_id) as `count`,
-           patient_id as patientId
-    from visiting_record
-    where
-        patient_id in
+    SELECT
+    main.patientId,
+    main.visitRecordCount,
+    main.visitRemindCount
+    FROM
+    ( SELECT
+    vr.patient_id AS patientId,
+    ifnull( count( vr.patient_id ), 0 ) AS visitRecordCount,
+    0 AS visitRemindCount
+    FROM
+    visiting_record vr
+    WHERE
+    vr.`status` = 0
+    AND vr.inservice = 1
+    AND date_format( vr.visiting_date, '%Y-%m-%d' ) > date_format(#{currentDate}, '%Y-%m-%d')
+    GROUP BY
+    vr.patient_id UNION ALL
+    SELECT
+    vm.patient_id AS patientId,
+    0 AS visitRecordCount,
+    ifnull( count( vm.patient_id ), 0 ) AS visitRemindCount
+    FROM
+    visiting_remind vm
+    WHERE
+    vm.`status` = 0
+    AND vm.inservice = 1
+    AND date_format( vm.remind_date, '%Y-%m-%d' ) > date_format(#{currentDate}, '%Y-%m-%d')
+    GROUP BY
+    vm.patient_id
+    ) main
+    <where>
+      AND main.patientId in
+      <if test="patientIds != null and patientIds.size > 0">
         <foreach collection="patientIds" item="patientId" open="(" separator="," close=")">
           #{patientId}
         </foreach>
-        and status = 0 and inservice = 1
-        and date_format(visiting_date,'%Y-%m-%d') &gt; date_format(#{regDate},'%Y-%m-%d')
-    group by
-        patient_id
+      </if>
+    </where>
+    ORDER BY main.patientId
   </select>
 
   <select id="countVisiting" resultType="com.yunya.feign.treatment_other.domain.vo.VisitingStatusCountVO">
