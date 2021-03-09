@@ -86,9 +86,21 @@
       <if test="query.crtId != null">
         and vrd.crt_id = #{query.crtId}
       </if>
-      <if test="query.dentistId != null">
-        and vrd.dentist_id = #{query.dentistId}
-      </if>
+      <choose>
+        <when test="query.searchId == 3">
+          <if test="query.dentistIds != null">
+            and vrd.dentist_id in
+            <foreach collection="query.dentistIds" item="dentistId" open="(" separator="," close=")">
+              #{dentistId}
+            </foreach>
+          </if>
+        </when>
+        <otherwise>
+          <if test="query.dentistId != null">
+            and vrd.dentist_id = #{query.dentistId}
+          </if>
+        </otherwise>
+      </choose>
     </where>
     <if test="query.searchId == 3 and query.patientId != null">
       order by vrd.remind_date desc, vrd.remind_time desc

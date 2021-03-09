@@ -9,6 +9,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
@@ -206,6 +207,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      */
     public ResponseResult findVisitingRemindByCondition(VisitingRemindQuery query){
         query.setInservice(true);
+        String medicalNumber = query.getMedicalNumber();
+        String distentName = query.getDistentName();
         // 预约档案画面接口为3
         final Integer SEARCH_ID = 3;
         // 分页
@@ -232,7 +235,23 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             }
         }
 
+        // 根据医生名字查询患者提醒记录
+        if (StringHelper.isNotBlank(distentName)) {
+            SysUserEmployeeModel userQuery = new SysUserEmployeeModel();
+            userQuery.setWhetherPage(false);
+            userQuery.setName(query.getDistentName());
+            List<SysUserInfoDetail> sysUserEmployeeInfoList = remoteSystemServiceFeign.findSysUserEmployeeInfoList(userQuery);
+            if (StringHelper.isNotEmpty(sysUserEmployeeInfoList)) {
+                List<Integer> collect = sysUserEmployeeInfoList.stream().map(SysUserInfoDetail::getUserId).collect(Collectors.toList());
+                query.setDentistIds(collect);
+            } else {
+                return ResponseUtil.success(new PageInfo<>(new ArrayList<>()));
+            }
+        }
+
+
         List<VisitingRemind> visitingReminds = mapper.findVisitingRemindByCondition(query);
+
         PageInfo visitingRemindVoPageInfo = new PageInfo(visitingReminds);
         // 获取医生ID集合
         if (!StringHelper.isEmpty(visitingReminds)) {
@@ -263,8 +282,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 this.setPatientInfo(dentistInfoList,patientTotalInfoVoList,finalMemberTypeList,finalDebtAmountModelList,build);
                 visitingRemindVos.add(build);
             });
-            String medicalNumber = query.getMedicalNumber();
-            String distentName = query.getDistentName();
+
             if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName) && query.getSearchId() < 3) {
                 // 按照时间正序排序
                 searchVisitingRemindVo = this.sort(visitingRemindVos);
@@ -284,6 +302,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         visitingRemindVoPageInfo.setList(searchVisitingRemindVo);
         return ResponseUtil.success(visitingRemindVoPageInfo);
     }
+
 
     /**
      * 设置患者信息

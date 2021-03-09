@@ -10,6 +10,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
@@ -312,6 +313,21 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 query.setPatientIds(collect);
             }
         }
+
+        // 按医生名字查询记录
+        if (StringHelper.isNotBlank(distentName)) {
+            SysUserEmployeeModel userQuery = new SysUserEmployeeModel();
+            userQuery.setWhetherPage(false);
+            userQuery.setName(distentName);
+            List<SysUserInfoDetail> sysUserEmployeeInfoList = remoteSystemServiceFeign.findSysUserEmployeeInfoList(userQuery);
+            if (StringHelper.isNotEmpty(sysUserEmployeeInfoList)) {
+                List<Integer> collect = sysUserEmployeeInfoList.stream().map(SysUserInfoDetail::getUserId).collect(Collectors.toList());
+                query.setDentistIds(collect);
+            } else {
+                return ResponseUtil.success(new PageInfo<>(new ArrayList<>()));
+            }
+        }
+
         List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
         PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
         if (StringHelper.isNotEmpty(visitingRecordVos)){

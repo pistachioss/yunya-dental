@@ -33,7 +33,7 @@ public class VisitingRemindQuery implements Serializable {
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
 
-    @ApiModelProperty(value = "检索类型：1-按随访创建时间检索；2-按随访执行时间检索，默认按随访执行时间检索", required = true)
+    @ApiModelProperty(value = "检索类型：1-按随访创建时间检索；2-按随访执行时间检索，默认按随访执行时间检索;3-患者档案检索", required = true)
     private Integer searchId = 2;
 
     @ApiModelProperty(value = "检索开始时间(患者档案检索用)")
@@ -47,6 +47,10 @@ public class VisitingRemindQuery implements Serializable {
     /** 医生id */
     @ApiModelProperty(value = "医生id(用户岗位只有医生的时候必传，其他情况不传)", notes = "权限控制")
     private Integer dentistId;
+
+    /** 按医生ID集合批量查询 */
+    @ApiModelProperty(value = "按医生ID集合批量查询",hidden = true)
+    private List<Integer> dentistIds;
 
     /** 门诊id */
     @ApiModelProperty(value = "门诊id")

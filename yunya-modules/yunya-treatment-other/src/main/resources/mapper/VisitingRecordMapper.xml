@@ -81,9 +81,21 @@
           #{id}
         </foreach>
       </if>
-      <if test="query.dentistId != null">
-        and vr.dentist_id = #{query.dentistId}
-      </if>
+      <choose>
+        <when test="query.searchId == 3">
+          <if test="query.dentistIds != null">
+            and vr.dentist_id in
+            <foreach collection="query.dentistIds" item="dentistId" open="(" separator="," close=")">
+              #{dentistId}
+            </foreach>
+          </if>
+        </when>
+        <otherwise>
+          <if test="query.dentistId != null">
+            and vr.dentist_id = #{query.dentistId}
+          </if>
+        </otherwise>
+      </choose>
       <if test="query.executorId != null">
         and vr.executor_id = #{query.executorId}
       </if>
