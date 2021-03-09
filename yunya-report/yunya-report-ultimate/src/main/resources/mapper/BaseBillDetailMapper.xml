@@ -161,6 +161,9 @@
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         ) bbd
         <where>
+            <if test="query.orgId != null">
+                and bbd.org_id = #{query.orgId}
+            </if>
             and bbd.executor_id IS NOT NULL
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
@@ -195,6 +198,9 @@
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         ) bbd
         <where>
+            <if test="query.orgId != null">
+                and bbd.org_id = #{query.orgId}
+            </if>
             and bbd.executor_id IS NOT NULL
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
@@ -273,6 +279,14 @@
         ewc.user_id,
         ewc.org_id
         ) ewc ON bup.user_id = ewc.user_id AND bup.org_id = ewc.org_id
+        <where>
+            <if test="query.workStatus!=null and query.workStatus.size()>0">
+                and be.work_status in
+                <foreach collection="query.workStatus" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
         GROUP BY
         bup.user_id,
         bup.org_id
