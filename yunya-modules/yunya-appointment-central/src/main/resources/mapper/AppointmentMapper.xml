@@ -522,7 +522,7 @@
     <select id="countNextAppoints" resultType="com.yunya.feign.appointment.vo.NextAppointsVo">
         select
         patient_id as patientId,
-        count(id) as `count`,
+        ifnull(count(id), 0) as `count`,
         group_concat(distinct id order by id desc) as id,
         group_concat(distinct assistant_id order by id desc) as assistantId,
         group_concat(distinct dept_room_id order by id desc) as deptRoomId,

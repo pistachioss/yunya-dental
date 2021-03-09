@@ -23,6 +23,7 @@ import com.yunya.modules.employeeattend.enums.*;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.mapper.AttendancePunchRecordMapper;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
+import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -313,14 +314,9 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      * @param result
      */
     private void setCurItemInfo(List<AttendancePunchRecordVO> attendancePunchRecordVOS, AttendancePunchInfoVO result) {
-        Date now = null;
-        try {
-            now = DateUtil.dateTo19700101(new Date(System.currentTimeMillis()));
-        } catch (ParseException e) {
-            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
-        }
+        Date now = DateTime.now().toDate();
         AttendancePunchRecordVO punchItem = attendancePunchRecordVOS.get(0);
-        Date startTime = punchItem.getStartTime();
+        Date startTime = extendSecond(punchItem, 59);
         Byte isPunch = punchItem.getIsPunch();
         Byte punchStatus = punchItem.getPunchStatus();
         if (!AttendanceStatusEnum.INVALID_PUNCH.getCode().equals(punchStatus)) {
@@ -352,6 +348,27 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         result.setStartTime(punchItem.getStartTime());
         result.setEndTime(punchItem.getEndTime());
         result.setName(punchItem.getName());
+    }
+
+    /**
+     * 扩展秒
+     * @param punchItem
+     * @param second
+     * @return
+     */
+    private Date extendSecond(AttendancePunchRecordVO punchItem, int second) {
+        Date now = DateTime.now().toDate();
+        Date startTime;
+        try {
+            Date date = punchItem.getStartTime();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.add(Calendar.SECOND, second);
+            startTime = DateUtil.timeToDate(now,calendar.getTime());
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+        }
+        return startTime;
     }
 
     /**

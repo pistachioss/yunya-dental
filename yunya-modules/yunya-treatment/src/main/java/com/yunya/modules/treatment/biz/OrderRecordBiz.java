@@ -158,9 +158,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
               detail.setOrderRecordId(orderRecordId);
               orderDetailBiz.insertSelective(detail);
             });
-      }
-      if (result > 0) {
-        rabbitMqServiceFeign.sendMessage(orderRecordId, 0, BaseBill);
+        if (result > 0) {
+          rabbitMqServiceFeign.sendMessage(orderRecordId, 0, BaseBill);
+        }
       }
     } else {
       orderResult.setTotalAmount(totalAmount);
@@ -177,9 +177,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
               detail.setOrderRecordId(orderRecordId);
               orderDetailBiz.insertSelective(detail);
             });
-      }
-      if (result > 0) {
-        rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+        if (result > 0) {
+          rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+        }
       }
     }
     Integer assistantId1 = model.getAssistantId1();
@@ -258,9 +258,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       Integer assistantId3) {
     AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
     matchingRecord.setTreatmentRecordId(treatmentRecordId);
+    matchingRecord.setOrderRecordId(orderRecordId);
     if (null != assistantId1) {
       matchingRecord.setType((byte) 0);
-      addAssistantMatchingRecord(assistantId1, orderRecordId, matchingRecord);
+      addAssistantMatchingRecord(assistantId1, matchingRecord);
     } else {
       matchingRecord.setType((byte) 0);
       matchingRecordBiz.delete(matchingRecord);
@@ -271,7 +272,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
         throw new ClientServiceException("开单失败，助手2与助手1不能是同一个人！", PARAMETERS_IS_ILLEGAL);
       }
       matchingRecord.setType((byte) 1);
-      addAssistantMatchingRecord(assistantId2, orderRecordId, matchingRecord);
+      addAssistantMatchingRecord(assistantId2, matchingRecord);
     } else {
       matchingRecord.setType((byte) 1);
       matchingRecordBiz.delete(matchingRecord);
@@ -282,7 +283,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
         throw new ClientServiceException("开单失败，巡回与助手1或助手2不能是同一个人！", PARAMETERS_IS_ILLEGAL);
       }
       matchingRecord.setType((byte) 2);
-      addAssistantMatchingRecord(assistantId3, orderRecordId, matchingRecord);
+      addAssistantMatchingRecord(assistantId3, matchingRecord);
     } else {
       matchingRecord.setType((byte) 2);
       matchingRecordBiz.delete(matchingRecord);
@@ -293,14 +294,12 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * 添加助手匹配记录
    *
    * @param assistantId 助手ID
-   * @param orderRecordId 订单记录ID
    * @param matchingRecord 匹配记录
    */
   private void addAssistantMatchingRecord(
-      Integer assistantId, Integer orderRecordId, AssistantMatchingRecord matchingRecord) {
+      Integer assistantId, AssistantMatchingRecord matchingRecord) {
     AssistantMatchingRecord matchingResult = matchingRecordBiz.selectOne(matchingRecord);
     if (null == matchingResult) {
-      matchingRecord.setOrderRecordId(orderRecordId);
       matchingRecord.setAssistantId(assistantId);
       matchingRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
       matchingRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -413,13 +412,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       treatmentRecordBiz.saveOrderDetailVisitRecord(visitingRecordList);
     }
 
-    BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
-    orderRecord.setTotalAmount(totalAmount);
-    orderRecord.setStatus((byte) 1);
-    orderRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-    orderRecord.setUpdName(BaseContextHandler.getName());
-    int result = mapper.updateByPrimaryKeySelective(orderRecord);
-
     // 修改助手配诊
     saveAssistantMatchingRecord(
         treatmentRecordId,
@@ -427,11 +419,19 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
         form.getAssistantId1(),
         form.getAssistantId2(),
         form.getAssistantId3());
-    redisUtils.delete(LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
+
+    BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
+    orderRecord.setTotalAmount(totalAmount);
+    orderRecord.setStatus((byte) 1);
+    orderRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    orderRecord.setUpdName(BaseContextHandler.getName());
+    int result = mapper.updateByPrimaryKeySelective(orderRecord);
 
     // 发送消息同步账单
     if (result > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+      redisUtils.delete(LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
+
       TreatmentRecord treatmentRecord = treatmentRecordBiz.selectById(treatmentRecordId);
       // 发送消息更新中间表就诊流程
       Integer appointmentId = treatmentRecord.getAppointmentId();

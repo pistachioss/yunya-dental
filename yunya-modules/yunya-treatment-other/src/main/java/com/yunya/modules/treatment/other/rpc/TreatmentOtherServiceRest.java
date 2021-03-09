@@ -23,94 +23,101 @@ import java.util.List;
  * @description: 就诊扩展外部服务调用接口
  * @author: LHB
  * @create: 2020-08-25 19:48
- **/
+ */
 @Api(tags = "就诊扩展外部服务调用接口")
 @RestController
 @Slf4j
 @RequestMapping("api/treatment/other")
 public class TreatmentOtherServiceRest {
-    /** 随访管理服务 */
-    @Autowired
-    private VisitingRecordBiz visitingRecordBiz;
-    /** mapper */
-    @Autowired
-    private VisitingRecordMapper visitingRecordMapper;
-    @Autowired
-    private XRayFilmBiz xRayFilmBiz;
+  /** 随访管理服务 */
+  @Autowired private VisitingRecordBiz visitingRecordBiz;
+  /** mapper */
+  @Autowired private VisitingRecordMapper visitingRecordMapper;
 
-    /**
-     * 插入随访记录
-     * @param visitingRecords 表单
-     */
-    @ApiOperation(value = "插入随访记录")
-    @RequestMapping(value = "/visiting/record/add",method = RequestMethod.POST)
-    public void insertVisitingRecordRest(@RequestBody List<VisitingRecord> visitingRecords){
-        if (StringHelper.isNotEmpty(visitingRecords)) {
-            log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓插入随访记录Feign调用↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-            log.info("==> visitingRecords:{}",visitingRecords);
-            log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
-            visitingRecordBiz.insertEntity(visitingRecords);
-        }
+  @Autowired private XRayFilmBiz xRayFilmBiz;
+
+  /**
+   * 插入随访记录
+   *
+   * @param visitingRecords 表单
+   */
+  @ApiOperation(value = "插入随访记录")
+  @RequestMapping(value = "/visiting/record/add", method = RequestMethod.POST)
+  public void insertVisitingRecordRest(@RequestBody List<VisitingRecord> visitingRecords) {
+    if (StringHelper.isNotEmpty(visitingRecords)) {
+      log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓插入随访记录Feign调用↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+      log.info("==> visitingRecords:{}", visitingRecords);
+      log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
+      visitingRecordBiz.insertEntity(visitingRecords);
     }
+  }
 
-    /**
-     * 根据条件查询随访记录
-     * @param query 查询条件
-     * @return List<VisitingRecordVo>
-     */
-    @ApiOperation(value = "根据条件查询随访记录")
-    @RequestMapping(value = "/visiting/record/find", method = RequestMethod.POST)
-    public List<VisitingRecordVo> findVisitingRecordByConditionRest(@RequestBody VisitingRecordQuery query) {
-        return visitingRecordBiz.findVisitingRecordByConditionRest(query);
+  /**
+   * 根据条件查询随访记录
+   *
+   * @param query 查询条件
+   * @return List<VisitingRecordVo>
+   */
+  @ApiOperation(value = "根据条件查询随访记录")
+  @RequestMapping(value = "/visiting/record/find", method = RequestMethod.POST)
+  public List<VisitingRecordVo> findVisitingRecordByConditionRest(
+      @RequestBody VisitingRecordQuery query) {
+    return visitingRecordBiz.findVisitingRecordByConditionRest(query);
+  }
+
+  /**
+   * 根据就诊记录ID删除随访
+   *
+   * @param treatmentId 就诊记录ID
+   */
+  @ApiOperation(value = "根据就诊记录ID删除随访")
+  @RequestMapping(value = "/visiting/record/delete/{treatmentId}", method = RequestMethod.DELETE)
+  public void deleteVisitingRecordByTreatmentIdRest(
+      @PathVariable(value = "treatmentId") Integer treatmentId) {
+    visitingRecordBiz.deleteVisitingRecordByTreatmentId(treatmentId);
+  }
+
+  /**
+   * 统计后续随访个数
+   *
+   * @param patientId 患者ID
+   * @return 返回统计个数
+   */
+  @ApiOperation(value = "统计后续随访个数")
+  @RequestMapping(value = "/visiting/count/{patientId}/{regDate}", method = RequestMethod.GET)
+  Integer countNextVisiting(
+      @PathVariable(value = "patientId") Integer patientId,
+      @PathVariable(value = "regDate") String regDate) {
+    return this.visitingRecordMapper.countNextVisiting(patientId, regDate);
+  }
+
+  /**
+   * 根据患者ID集合和当前时间查询患者照片集合
+   *
+   * @param patientIds 患者ID列表
+   * @param currentDate 当前日期
+   * @return 返回图片信息
+   */
+  @ApiOperation(value = "根据患者ID集合和当前时间查询患者照片集合")
+  @RequestMapping(value = "/xray/film/list/{currentDate}", method = RequestMethod.POST)
+  List<XRayFilm> findXRayFilmListByPatientIds(
+      @RequestBody List<Integer> patientIds, @PathVariable("currentDate") String currentDate) {
+    return xRayFilmBiz.findXRayFilmListByPatientIds(patientIds, currentDate);
+  }
+
+  /**
+   * 根据患者ID查询后续随访、后续提醒集合列表
+   *
+   * @param patientIds 患者ID
+   * @return 返回数据列表
+   */
+  @ApiOperation(value = "根据患者ID查询后续随访集合列表")
+  @RequestMapping(value = "/visiting/count/{regDate}", method = RequestMethod.POST)
+  List<NextVisitingRecordVo> countNextVisitingListByIds(
+      @RequestBody List<Integer> patientIds, @PathVariable(value = "regDate") String regDate) {
+    if (StringHelper.isNotEmpty(patientIds)) {
+      return this.visitingRecordMapper.countNextVisitingListByIds(patientIds, regDate);
     }
-
-    /**
-     * 根据就诊记录ID删除随访
-     * @param treatmentId 就诊记录ID
-     */
-    @ApiOperation(value = "根据就诊记录ID删除随访")
-    @RequestMapping(value = "/visiting/record/delete/{treatmentId}", method = RequestMethod.DELETE)
-    public void deleteVisitingRecordByTreatmentIdRest(@PathVariable(value = "treatmentId") Integer treatmentId) {
-        visitingRecordBiz.deleteVisitingRecordByTreatmentId(treatmentId);
-    }
-
-    /**
-     * 统计后续随访个数
-     * @param patientId 患者ID
-     * @return 返回统计个数
-     */
-    @ApiOperation(value = "统计后续随访个数")
-    @RequestMapping(value = "/visiting/count/{patientId}/{regDate}",method = RequestMethod.GET)
-    Integer countNextVisiting(@PathVariable(value = "patientId") Integer patientId,@PathVariable(value = "regDate") String regDate){
-        return this.visitingRecordMapper.countNextVisiting(patientId,regDate);
-    }
-
-    /**
-     * 根据患者ID集合和当前时间查询患者照片集合
-     * @param patientIds  患者ID列表
-     * @param currentDate  当前日期
-     * @return 返回图片信息
-     */
-    @ApiOperation(value = "根据患者ID集合和当前时间查询患者照片集合")
-    @RequestMapping(value = "/xray/film/list/{currentDate}",method = RequestMethod.POST)
-    List<XRayFilm> findXRayFilmListByPatientIds(@RequestBody List<Integer> patientIds,
-                                                @PathVariable("currentDate") String currentDate){
-        return xRayFilmBiz.findXRayFilmListByPatientIds(patientIds,currentDate);
-    }
-
-    /**
-     * 根据患者ID查询后续随访集合列表
-     * @param patientIds 患者ID
-     * @return 返回数据列表
-     */
-    @ApiOperation(value = "根据患者ID查询后续随访集合列表")
-    @RequestMapping(value = "/visiting/count/{regDate}",method = RequestMethod.POST)
-    List<NextVisitingRecordVo> countNextVisitingListByIds(@RequestBody List<Integer> patientIds,
-                                                          @PathVariable(value = "regDate") String regDate){
-        if (StringHelper.isNotEmpty(patientIds)) {
-            return this.visitingRecordMapper.countNextVisitingListByIds(patientIds,regDate);
-        }
-        return new ArrayList<>();
-    }
-
+    return new ArrayList<>();
+  }
 }
