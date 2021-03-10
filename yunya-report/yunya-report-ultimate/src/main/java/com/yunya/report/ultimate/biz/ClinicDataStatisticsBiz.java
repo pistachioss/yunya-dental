@@ -65,7 +65,7 @@ public class ClinicDataStatisticsBiz {
     resultData.setTollDataStatistics(clinicTollDataStatistic);
     // 门诊工作量总览
     WorkloadStatisticsVO clinicWorkloadStatistic = billDetailBiz.findClinicWorkloadStatistic(query);
-    clinicWorkloadStatistic.setTotalFreePaymentAmount(clinicBillDataStatistic.getTotalFreePaymentAmount());
+    computeWorkload(clinicBillDataStatistic.getTotalFreePaymentAmount(), clinicTollDataStatistic.getTotalBillRefundAmount(), clinicWorkloadStatistic);
     resultData.setWorkloadStatistic(clinicWorkloadStatistic);
     // 门诊会员数据总览
     MemberDataStatisticVO clinicMemberDataStatistic =
@@ -76,6 +76,35 @@ public class ClinicDataStatisticsBiz {
         memberBiz.findClinicPrepaymentsDataStatistic(query);
     resultData.setPrepaymentsDataStatistic(clinicPrepaymentsDataStatistic);
     return resultData;
+  }
+
+  /**
+   * 计算工作量汇总
+   *
+   * @param totalFreePaymentAmount
+   * @param totalBillRefundAmount
+   * @param clinicWorkloadStatistic
+   */
+  private void computeWorkload(BigDecimal totalFreePaymentAmount, BigDecimal totalBillRefundAmount, WorkloadStatisticsVO clinicWorkloadStatistic) {
+    //工作量合计 = （门诊已收工作量合计 - 其中含免单支付工作量合计+门诊补入工作量合计）+（被代收门诊已收工作量合计 - 被代收其中含免单支付工作量 + 被代收门诊补入工作量合计）
+    BigDecimal totalClinicReceivedWorkload = clinicWorkloadStatistic.getTotalClinicReceivedWorkload(); //门诊已收工作量合计
+    BigDecimal totalClinicCouponWorkload = clinicWorkloadStatistic.getTotalClinicCouponWorkload();// 门诊补入工作量合计
+    BigDecimal totalClinicedFreePaymentAmount = BigDecimal.ZERO; //被代收其中含免单支付工作量合计
+    BigDecimal totalClinicedCouponWorkload = BigDecimal.ZERO; //被代收门诊补入工作量合
+    BigDecimal totalClinicedReceivedWorkload = BigDecimal.ZERO; //
+    BigDecimal totalWorkload = totalClinicReceivedWorkload.subtract(totalFreePaymentAmount).add(totalClinicCouponWorkload)
+            .add(totalClinicedReceivedWorkload).subtract(totalClinicedFreePaymentAmount).add(totalClinicedCouponWorkload);
+    BigDecimal totalClinicedNotWorkload = BigDecimal.ZERO;//被代收门诊非工作量合计
+
+    //完成工作量合计 = 工作量 - 账单退费合计
+    clinicWorkloadStatistic.setTotalWorkloadComplete(totalWorkload.subtract(totalBillRefundAmount));
+    clinicWorkloadStatistic.setTotalWorkload(totalWorkload);
+    clinicWorkloadStatistic.setTotalBillRefundAmount(totalBillRefundAmount);
+    clinicWorkloadStatistic.setTotalFreePaymentAmount(totalFreePaymentAmount);
+    clinicWorkloadStatistic.setTotalClinicedReceivedWorkload(totalClinicedReceivedWorkload);
+    clinicWorkloadStatistic.setTotalClinicedFreePaymentAmount(totalClinicedFreePaymentAmount);
+    clinicWorkloadStatistic.setTotalClinicedCouponWorkload(totalClinicedCouponWorkload);
+    clinicWorkloadStatistic.setTotalClinicedNotWorkload(totalClinicedNotWorkload);
   }
 
   /**

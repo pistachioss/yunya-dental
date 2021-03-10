@@ -9,6 +9,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * 简介: 员工配诊统计列表查询参数
@@ -39,4 +40,7 @@ public class EmployeeMatchingRecordQuery extends PageQuery implements Serializab
   private String endDate;
   /** 助手列表 */
   private Integer[] assistantIds;
+  /**就职状态列表：0-试用；1-正式；2-离职；3-实习*/
+  @ApiModelProperty("就职状态列表：0-试用；1-正式；2-离职；3-实习")
+  private Collection<Integer> workStatus;
 }

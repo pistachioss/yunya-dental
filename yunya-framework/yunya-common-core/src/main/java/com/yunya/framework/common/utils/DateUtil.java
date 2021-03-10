@@ -21,7 +21,8 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TR
  * @create 2019-08-11 10:26
  */
 public class DateUtil {
-
+  /** 最大秒*/
+  public static final int MAX_SECOND = 59;
   private static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
 
   private DateUtil() {}

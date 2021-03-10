@@ -43,8 +43,15 @@
         FROM
         base_user_post bup
         LEFT JOIN base_employee be ON bup.user_id = be.user_id
-        WHERE
-        bup.group_id = 4
+        <where>
+            bup.group_id = 4
+            <if test="query.workStatus!=null and query.workStatus.size()>0">
+                and be.work_status in
+                <foreach collection="query.workStatus" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
         ) e
         LEFT JOIN (
         SELECT
@@ -608,6 +615,14 @@
         btp.registered_dentist_id
         ) btp6 ON bup.user_id = btp6.registered_dentist_id
         AND bup.org_id = btp6.org_id
+        <where>
+            <if test="query.workStatus!=null and query.workStatus.size()>0">
+                and be.work_status in
+                <foreach collection="query.workStatus" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
         ) edi
         <where>
             <if test="query.orgId != null">

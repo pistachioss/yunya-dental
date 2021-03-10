@@ -10,6 +10,7 @@ import lombok.ToString;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * 简介: 员工看诊情况查询参数
@@ -39,4 +40,7 @@ public class EmployeeDiagnosisQuery extends PageQuery implements Serializable {
   /** 医生ID列表 */
   @ApiModelProperty("医生ID列表")
   private Integer[] dentistIds;
+  /**就职状态列表：0-试用；1-正式；2-离职；3-实习*/
+  @ApiModelProperty("就职状态列表：0-试用；1-正式；2-离职；3-实习")
+  private Collection<Integer> workStatus;
 }
