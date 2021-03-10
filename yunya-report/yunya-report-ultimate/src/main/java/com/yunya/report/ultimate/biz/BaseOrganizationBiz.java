@@ -118,7 +118,7 @@ public class BaseOrganizationBiz extends BaseBiz<BaseOrganizationMapper, BaseOrg
     } else {
       list.add(new PatientDataStatisticsVO(true));
     }
-    if (query.getSource()==0 && notSummarize) {
+    if (notSummarize && query.getSource()==0) {
       list.add(summary(list));
     }
     pageInfo.setList(list);
