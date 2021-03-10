@@ -1,13 +1,12 @@
 package com.yunya.report.ultimate.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.bo.ClinicDataStatisticsInfoVO;
 import com.yunya.feign.report.domain.query.*;
-import com.yunya.feign.report.domain.vo.EmployeeWorkloadOfOperationVO;
-import com.yunya.feign.report.domain.vo.OperationDataComplexInfoVO;
-import com.yunya.feign.report.domain.vo.PatientFirstTreatOriginInfoVO;
-import com.yunya.feign.report.domain.vo.VisitAndRemindCompletedInfoVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.report.ultimate.biz.BaseOrganizationBiz;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +29,7 @@ public class CompanyReportOfOperationControllerTest {
 
   @Autowired private CompanyReportOfOperationController companyReportOfOperationController;
   @Autowired private DiscountController discountController;
+  @Autowired private BaseOrganizationBiz organizationBiz;
 
   @Test
   public void findList() {
@@ -87,5 +87,22 @@ public class CompanyReportOfOperationControllerTest {
     ResponseResult<PatientFirstTreatOriginInfoVO> result =
         companyReportOfOperationController.firstTreatPatientOrigin(query);
     System.out.println(result);
+  }
+
+  @Test
+  public void find4() {
+    String param = "{\"orgIds\":[26,27,36],\"dateType\":1,\"startDate\":\"2021-03\",\"endDate\":\"2021-03\"}";
+    DataStatisticsQuery query = JSONObject.parseObject(param,DataStatisticsQuery.class);
+    ResponseResult<PageInfo<PatientDataStatisticsVO>> result = companyReportOfOperationController.operationalAnalysisPatientDataList(query);
+    System.out.println(JSONObject.toJSON(result));
+  }
+
+  @Test
+  public void find5() {
+    String param = "{\"orgIds\":[26,27,36],\"dateType\":1,\"startDate\":\"2021-03\",\"endDate\":\"2021-03\"}";
+    DataStatisticsQuery query = JSONObject.parseObject(param,DataStatisticsQuery.class);
+    PatientDataStatisticsVO result =
+            organizationBiz.findClinicPatientDataStatistic(query);
+    System.out.println(JSONObject.toJSON(result));
   }
 }

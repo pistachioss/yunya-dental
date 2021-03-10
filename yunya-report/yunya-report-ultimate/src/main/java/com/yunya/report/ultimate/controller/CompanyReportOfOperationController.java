@@ -252,4 +252,47 @@ public class CompanyReportOfOperationController {
         clinicDataStatisticsBiz.findOperationDataComplexInfo(query);
     return ResponseUtil.success(resultList);
   }
+
+  /**
+   * 根据条件查询运营报表的患者数据
+   *
+   * @param query 查询条件
+   * @return PageInfo<PatientDataStatisticsVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-患者数据")
+  @PostMapping(value = "/analysis/patient/data/list", name = "根据条件查询运营报表的患者数据")
+  public ResponseResult<PageInfo<PatientDataStatisticsVO>> operationalAnalysisPatientDataList(
+          @RequestBody @Validated DataStatisticsQuery query) {
+    PageInfo<PatientDataStatisticsVO> result = clinicDataStatisticsBiz.findClinicPatientDataList(query);
+    return ResponseUtil.success(result);
+  }
+
+  /**
+   * 根据条件查询运营报表的患者数据导出
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-患者数据导出")
+  @PostMapping(value = "/analysis/patient/data/export", name = "根据条件查询运营报表的患者数据导出")
+  public ResponseResult<T> operationalAnalysisPatientDataExport(
+          HttpServletResponse response, @RequestBody @Validated DataStatisticsQuery query)throws IOException {
+    clinicDataStatisticsBiz.ClinicPatientDataExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+
+  /**
+   * 根据条件查询运营报表的业务目标
+   *
+   * @param query 查询条件
+   * @return PageInfo<PatientDataStatisticsVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-业务目标")
+  @PostMapping(value = "/analysis/business/goal/list", name = "根据条件查询运营报表的业务目标")
+  public ResponseResult<PageInfo<PatientDataStatisticsVO>> findAnalysisBusinessGoalList(
+          @RequestBody @Validated DataStatisticsQuery query) {
+    PageInfo<PatientDataStatisticsVO> result = clinicDataStatisticsBiz.findAnalysisBusinessGoalList(query);
+    return ResponseUtil.success(result);
+  }
 }

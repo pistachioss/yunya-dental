@@ -163,12 +163,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   List<BaseBillDetailVO> selectBillDetailByBillId(@Param("billId") Integer billId);
 
   /**
-   * 根据执行人id查询账单详情列表
+   * 根据条件查询账单详情列表
    *
-   * @param executorIds
+   * @param query
    * @return
    */
-  List<BaseBillDetail> selectBillDetailByExecutorIds(@Param("executorIds") Collection<Integer> executorIds);
+  List<BaseBillDetail> selectBillDetailByQuery(@Param("query") EmployeeWorkloadQuery query);
 
 
   /**

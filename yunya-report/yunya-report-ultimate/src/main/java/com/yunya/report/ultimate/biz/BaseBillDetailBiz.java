@@ -135,7 +135,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             vo.setReceivedBonusBase(receivedBonusBase);
             vo.setReceivedBonus(receivedBonusBase.multiply(bonusCoefficient));
           });
-      assemblyFreepayment(resultList);
+      assemblyFreepayment(resultList, query);
     }
     return new PageInfo<>(resultList);
   }
@@ -156,7 +156,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
 
     // 免单支付工作量
     if (StringHelper.isNotEmpty(resultList)) {
-      assemblyFreepayment(resultList);
+      assemblyFreepayment(resultList, query);
     }
     return new PageInfo<>(resultList);
   }
@@ -165,10 +165,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * 查询并装配员工执行的免单支付总额
    *
    * @param resultList
+   * @param query
    */
-  private void assemblyFreepayment(List<? extends EmployeeWorkloadOfOperationVO> resultList) {
+  private void assemblyFreepayment(List<? extends EmployeeWorkloadOfOperationVO> resultList, EmployeeWorkloadQuery query) {
     Map<Integer, BigDecimal> userIds = resultList.stream().collect(Collectors.toMap(EmployeeWorkloadOfOperationVO::getEmployeeId,v->BigDecimal.ZERO));
-    List<BaseBillDetail> details = mapper.selectBillDetailByExecutorIds(userIds.keySet());
+    List<BaseBillDetail> details = mapper.selectBillDetailByQuery(query);
+    details = details.stream().filter(vo->userIds.containsKey(vo.getExecutorId())).collect(Collectors.toList());
     Set<Integer> billIds = computePercentage(details);
     List<BaseBillPayDetail> freePayments = baseBillPayDetailMapper.sumPayDetailList(billIds, getFreePaymentIds());
     Map<Integer, BigDecimal> freePaymentMap = freePayments.stream().collect(Collectors.toMap(BaseBillPayDetail::getBillId, BaseBillPayDetail::getPrincipalAmount));
