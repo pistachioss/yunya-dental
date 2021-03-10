@@ -110,7 +110,8 @@ public class BaseBillDetailMapperTest {
     CurrentMonthBillInfoQuery query = new CurrentMonthBillInfoQuery();
     query.setOrgId(35);
     query.setCurrentMonth("2020-12");
-    List<CurrentMonthBillPayRecordVO> vos = baseBillDetailMapper.selectCurrentMonthBillPayRecord(query);
+    List<CurrentMonthBillPayRecordVO> vos =
+        baseBillDetailMapper.selectCurrentMonthBillPayRecord(query);
     System.out.println(vos);
   }
 
@@ -120,6 +121,32 @@ public class BaseBillDetailMapperTest {
     query.setOrgId(35);
     query.setQueryDate("2020-12");
     List<CategoryInfoIncomeVO> vos = baseBillDetailMapper.selectCategoryIncomeList(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find4() {
+    EmployeeWorkloadQuery query = new EmployeeWorkloadQuery();
+    query.setOrgId(26);
+    query.setDateType((byte) 0);
+    query.setQueryDate("2021-02");
+    query.setEmployeeIds(new Integer[] {341, 541});
+    query.setWorkStatus(new Integer[] {0, 1});
+    List<EmployeeWorkloadOfPersonnelVO> vos =
+        baseBillDetailMapper.selectEmployeeWorkloadListOfPersonnel(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find5() {
+    EmployeeWorkloadQuery query = new EmployeeWorkloadQuery();
+    query.setOrgId(26);
+    query.setDateType((byte) 0);
+    query.setQueryDate("2021-02");
+    query.setEmployeeIds(new Integer[] {341, 541});
+    query.setWorkStatus(new Integer[] {0, 1});
+    List<EmployeeWorkloadOfOperationVO> vos =
+        baseBillDetailMapper.selectEmployeeWorkloadListOfOperation(query);
     System.out.println(vos);
   }
 }

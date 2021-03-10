@@ -32,6 +32,9 @@ public class EmployeeWorkloadOfOperationVO implements Serializable {
   @Excel(name = "员工")
   @ApiModelProperty("员工姓名")
   private String employeeName;
+  /** 在职状态 */
+  @ApiModelProperty("在职状态（0-试用；1-转正；2-离职）")
+  private Byte workStatus;
   /** 实收工作量（元） */
   @Excel(name = "实收工作量（元）")
   @ApiModelProperty("实收工作量（元）")
