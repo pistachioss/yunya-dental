@@ -14,7 +14,7 @@
         </plugin>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://192.168.31.90:3306/yunya_system?useUnicode=true"
+                        connectionURL="jdbc:mysql://192.168.31.90:3306/dev_yunya_system?useUnicode=true"
                         userId="sa"
                         password="Admin001!">
         </jdbcConnection>
@@ -43,7 +43,8 @@
         <table tableName="sys_post_element" domainObjectName="SysPostElement"/>
         <table tableName="account_item" domainObjectName="AccountItem"/>
         <table tableName="clinic_account" domainObjectName="ClinicAccount"/>
-        -->
         <table tableName="equipment_info" domainObjectName="EquipmentInfo"/>
+        -->
+        <table tableName="app_version" domainObjectName="AppVersion"/>
     </context>
 </generatorConfiguration>
