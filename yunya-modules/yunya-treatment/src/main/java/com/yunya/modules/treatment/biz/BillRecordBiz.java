@@ -20,15 +20,19 @@ import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.*;
+import org.apache.poi.ss.formula.functions.T;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -628,5 +632,31 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    */
   public BigDecimal findBusinessIncomeCompletedCount(BusinessGoalCompletedInfoQuery query) {
     return mapper.selectBusinessIncomeCompletedCount(query);
+  }
+
+  /**
+   * 患者档案-账单详情-编辑备注提交
+   * @param orderDetails 账单明细
+   * @return Integer
+   */
+  public ResponseResult<T> editRemarks(List<OrderDetailChargeVO> orderDetails) {
+    if (StringHelper.isEmpty(orderDetails)) {
+      return ResponseUtil.success("账单详情不能为空！",null);
+    }
+    String userID = BaseContextHandler.getUserID();
+    String name = BaseContextHandler.getName();
+    orderDetails.forEach(entity->{
+      String remarks = entity.getRemarks();
+      if (StringHelper.isNotBlank(remarks)) {
+        OrderDetail orderDetail = new OrderDetail();
+        orderDetail.setId(entity.getOrderDetailId());
+        orderDetail.setRemarks(remarks);
+        orderDetail.setUpdId(Integer.valueOf(userID));
+        orderDetail.setUpdTime(new Date(System.currentTimeMillis()));
+        orderDetail.setUptName(name);
+        orderDetailBiz.updateOrderDetail(orderDetail);
+      }
+    });
+    return ResponseUtil.success();
   }
 }
