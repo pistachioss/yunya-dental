@@ -1,19 +1,20 @@
 package com.yunya.modules.system.controller;
 
 import com.yunya.feign.system.form.AppVersionCheckForm;
-import com.yunya.feign.system.form.AppVersionForm;
+import com.yunya.feign.system.form.AppVersionAddForm;
+import com.yunya.feign.system.form.AppVersionEditForm;
 import com.yunya.feign.system.vo.AppVersionVO;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.models.system.AppVersion;
 import com.yunya.modules.system.biz.AppVersionBiz;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -30,8 +31,21 @@ public class AppVersionController {
 
     @ApiOperation("新增版本信息")
     @PostMapping("add")
-    public ResponseResult<AppVersionForm> add(@RequestBody AppVersionForm form) {
+    public ResponseResult<AppVersionAddForm> add(@RequestBody AppVersionAddForm form) {
         return this.appVersionBiz.addAppVersion(form);
+    }
+
+    @ApiOperation("根据OSName查询版本信息")
+    @GetMapping("/find/all/{osName}")
+    public ResponseResult<List<AppVersion>> findVersionList(@PathVariable("osName")
+                                                            @NotNull(message = "系统名称不能为空") String osName) {
+        return this.appVersionBiz.findVersionList(osName);
+    }
+
+    @ApiOperation("编辑APP版本信息")
+    @PutMapping("/edit")
+    public ResponseResult editAppVersion(@RequestBody AppVersionEditForm form) {
+        return this.appVersionBiz.editAppVersion(form);
     }
 
     @ApiOperation("检测程序是否更新")

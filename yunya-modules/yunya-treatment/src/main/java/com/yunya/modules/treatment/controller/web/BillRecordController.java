@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.yunya.feign.treatment.domain.model.BillRefundModel;
 import com.yunya.feign.treatment.domain.vo.BillDetailGroupVO;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.PatientBillStatistics;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
@@ -15,6 +16,8 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 简介: 账单详情信息控制器
@@ -51,6 +54,22 @@ public class BillRecordController {
     BillDetailGroupVO resultList = billRecordBiz.findOrderDetailAndBillDetail(orderRecordId);
     return ResponseUtil.success(resultList);
   }
+
+
+  /**
+   * 患者档案-账单详情-编辑备注提交
+   * @param orderDetails 账单明细
+   * @return
+   */
+  @ApiOperation("患者档案-账单详情-编辑备注提交")
+  @PostMapping(value = "/edit/remarks",name = "患者档案-账单详情-编辑备注提交")
+  @CurrentUser
+  public ResponseResult<T> editRemarks(@RequestBody List<OrderDetailChargeVO> orderDetails) {
+    return billRecordBiz.editRemarks(orderDetails);
+  }
+
+
+
 
   /**
    * 账单退费

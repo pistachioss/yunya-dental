@@ -39,7 +39,7 @@
   </sql>
 
   <!-- 添加APP版本信息 -->
-  <insert id="addAppVersion" parameterType="com.yunya.feign.system.form.AppVersionForm">
+  <insert id="addAppVersion" parameterType="com.yunya.feign.system.form.AppVersionAddForm">
     insert into app_version (os_name,release_version,alpha_version,beta_version,force_update,download_url,update_content,crt_name,crt_time,
                              update_name)
            values (#{form.osName},#{form.releaseVersion},#{form.alphaVersion},#{form.betaVersion},#{form.forceUpdate},#{form.downloadUrl},
