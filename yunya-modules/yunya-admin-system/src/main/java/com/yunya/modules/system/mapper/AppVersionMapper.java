@@ -1,7 +1,7 @@
 package com.yunya.modules.system.mapper;
 
 import com.yunya.feign.system.form.AppVersionCheckForm;
-import com.yunya.feign.system.form.AppVersionForm;
+import com.yunya.feign.system.form.AppVersionAddForm;
 import com.yunya.feign.system.vo.AppVersionVO;
 import com.yunya.models.system.AppVersion;
 import org.apache.ibatis.annotations.Param;
@@ -14,7 +14,7 @@ public interface AppVersionMapper extends Mapper<AppVersion> {
      * @param form
      * @return
      */
-    int addAppVersion(@Param("form") AppVersionForm form);
+    int addAppVersion(@Param("form") AppVersionAddForm form);
 
     /**
      * 获取最新发布的APP版本信息

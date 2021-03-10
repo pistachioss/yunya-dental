@@ -566,4 +566,13 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   public Integer findSpecialistProjectCompletedCount(SpecialistProjectCompletedCountQuery query) {
     return mapper.selectSpecialistProjectCompletedCount(query);
   }
+
+  /**
+   * 更新账单详情
+   * @param orderDetail
+   * @return
+   */
+  public Integer updateOrderDetail(OrderDetail orderDetail) {
+    return mapper.updateByPrimaryKeySelective(orderDetail);
+  }
 }

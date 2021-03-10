@@ -1,7 +1,9 @@
 package com.yunya.modules.system.biz;
 
+import cn.hutool.core.bean.BeanUtil;
+import com.yunya.feign.system.form.AppVersionAddForm;
 import com.yunya.feign.system.form.AppVersionCheckForm;
-import com.yunya.feign.system.form.AppVersionForm;
+import com.yunya.feign.system.form.AppVersionEditForm;
 import com.yunya.feign.system.vo.AppVersionVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.model.ResponseResult;
@@ -11,6 +13,8 @@ import com.yunya.models.system.AppVersion;
 import com.yunya.modules.system.mapper.AppVersionMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -26,7 +30,7 @@ public class AppVersionBiz extends BaseBiz<AppVersionMapper, AppVersion> {
      * @param form 新增表单信息
      * @return ResponseResult
      */
-    public ResponseResult<AppVersionForm> addAppVersion(AppVersionForm form) {
+    public ResponseResult<AppVersionAddForm> addAppVersion(AppVersionAddForm form) {
         int i = this.mapper.addAppVersion(form);
         if (i > 0) {
             return ResponseUtil.success();
@@ -54,6 +58,36 @@ public class AppVersionBiz extends BaseBiz<AppVersionMapper, AppVersion> {
             }
         }
         return ResponseUtil.success();
+    }
+
+    /**
+     * 根据系统名称查询版本信息列表
+     * @param osName 系统名称
+     * @return 信息列表
+     */
+    public ResponseResult<List<AppVersion>> findVersionList(String osName) {
+        if (StringHelper.isNotBlank(osName)) {
+            AppVersion query = new AppVersion();
+            query.setOsName(osName);
+            List<AppVersion> select = this.mapper.select(query);
+            return ResponseUtil.success(select);
+        }
+        return ResponseUtil.success();
+    }
+
+    /**
+     * 更新APP版本信息
+     * @param form 表单
+     * @return ResponseResult
+     */
+    public ResponseResult editAppVersion(AppVersionEditForm form) {
+        AppVersion editForm = new AppVersion();
+        BeanUtil.copyProperties(form,editForm);
+        int updateByPrimaryKeySelective = this.mapper.updateByPrimaryKeySelective(editForm);
+        if (updateByPrimaryKeySelective > 0) {
+            return ResponseUtil.success();
+        }
+        return ResponseUtil.success("更新失败",null);
     }
 
     /**
