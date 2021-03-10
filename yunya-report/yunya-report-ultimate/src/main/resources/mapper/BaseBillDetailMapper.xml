@@ -396,21 +396,20 @@
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
-        </where>
-        ) bbd
-        <where>
-            and bbd.executor_id IS NOT NULL
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bbd.order_date, '%Y-%m' ) = #{query.queryDate}
+                    and DATE_FORMAT( bb.order_date, '%Y-%m' ) = #{query.queryDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bbd.order_date, '%Y' ) = #{query.queryDate}
+                    and DATE_FORMAT( bb.order_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
         </where>
+        ) bbd
+        WHERE
+        bbd.executor_id IS NOT NULL
         GROUP BY
         bbd.org_id,
         bbd.executor_id
@@ -435,21 +434,20 @@
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
-        </where>
-        ) bbd
-        <where>
-            and bbd.executor_id IS NOT NULL
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bbd.bill_date, '%Y-%m' ) = #{query.queryDate}
+                    and DATE_FORMAT( bb.bill_date, '%Y-%m' ) = #{query.queryDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bbd.bill_date, '%Y' ) = #{query.queryDate}
+                    and DATE_FORMAT( bb.bill_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
         </where>
+        ) bbd
+        WHERE
+        bbd.executor_id IS NOT NULL
         GROUP BY
         bbd.org_id,
         bbd.executor_id
