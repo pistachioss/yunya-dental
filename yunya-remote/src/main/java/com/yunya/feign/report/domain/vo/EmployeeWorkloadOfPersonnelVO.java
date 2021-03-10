@@ -4,6 +4,7 @@ import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.io.Serializable;
@@ -20,6 +21,7 @@ import java.math.BigDecimal;
 @ApiModel("员工工作量VO模型")
 @Data
 @ToString
+@EqualsAndHashCode(callSuper = true)
 public class EmployeeWorkloadOfPersonnelVO extends EmployeeWorkloadOfOperationVO implements Serializable {
   /** 奖金系数 */
   @Excel(name = "奖金系数")

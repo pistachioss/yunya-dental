@@ -23,7 +23,6 @@ import com.yunya.modules.employeeattend.enums.*;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.mapper.AttendancePunchRecordMapper;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
-import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -314,21 +313,26 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      * @param result
      */
     private void setCurItemInfo(List<AttendancePunchRecordVO> attendancePunchRecordVOS, AttendancePunchInfoVO result) {
-        Date now = DateTime.now().toDate();
+        Date time = null;
+        try {
+            time = DateUtil.dateTo19700101(new Date());
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+        }
         AttendancePunchRecordVO punchItem = attendancePunchRecordVOS.get(0);
-        Date startTime = extendSecond(punchItem, 59);
         Byte isPunch = punchItem.getIsPunch();
         Byte punchStatus = punchItem.getPunchStatus();
         if (!AttendanceStatusEnum.INVALID_PUNCH.getCode().equals(punchStatus)) {
             if (isPunch.equals(AttendanceIsPunchEnum.UNPUNCH.getCode())) {
-                if (now.after(startTime)) {
+                Date startTime = extendSecond(punchItem.getStartTime(),DateUtil.MAX_SECOND);
+                if (time.after(startTime)) {
                     punchStatus = AttendanceStatusEnum.LATER_PUNCH.getCode();//迟到打卡
                 } else {
                     punchStatus = AttendanceStatusEnum.ONDUTY_PUNCH.getCode();//上班打卡
                 }
             } else {
                 punchItem = attendancePunchRecordVOS.get(attendancePunchRecordVOS.size()-1);
-                if (now.before(punchItem.getEndTime())) {
+                if (time.before(punchItem.getEndTime())) {
                     punchStatus = AttendanceStatusEnum.EARLY_PUNCH.getCode();//早退打卡
                 } else {
                     punchStatus = AttendanceStatusEnum.OFFDUTY_PUNCH.getCode();//下班打卡
@@ -352,23 +356,15 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
 
     /**
      * 扩展秒
-     * @param punchItem
+     * @param date
      * @param second
      * @return
      */
-    private Date extendSecond(AttendancePunchRecordVO punchItem, int second) {
-        Date now = DateTime.now().toDate();
-        Date startTime;
-        try {
-            Date date = punchItem.getStartTime();
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(date);
-            calendar.add(Calendar.SECOND, second);
-            startTime = DateUtil.timeToDate(now,calendar.getTime());
-        } catch (ParseException e) {
-            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
-        }
-        return startTime;
+    private Date extendSecond(Date date, int second) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.SECOND, second);
+        return calendar.getTime();
     }
 
     /**
@@ -459,7 +455,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
             }
             if (punchType.equals(AttendanceTypeEnum.ONDUTY.getCode())) {//上班卡
-                if (time.after(dbPunchRecord.getStartTime())) {
+                Date startTime = extendSecond(dbPunchRecord.getStartTime(),DateUtil.MAX_SECOND);
+                if (time.after(startTime)) {
                     punchStatus = AttendanceStatusEnum.LATER_PUNCH.getCode();//迟到打卡
                 } else {
                     punchStatus = AttendanceStatusEnum.ONDUTY_PUNCH.getCode();//上班打卡
