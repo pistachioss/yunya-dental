@@ -1,5 +1,7 @@
 package com.yunya.report.ultimate.biz;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.RemoteClinicBaseServiceFeign;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.BusinessGoalCompletedInfoVO;
@@ -10,9 +12,12 @@ import com.yunya.feign.report.domain.query.PatientFirstTreatOriginQuery;
 import com.yunya.feign.report.domain.query.VisitAndRemindCompletedInfoQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -226,5 +231,43 @@ public class ClinicDataStatisticsBiz {
     remind.setCompletedPercentage(remindCompletedInfo.getCompletedPercentage());
     resultList.add(4, remind);
     return resultList;
+  }
+
+
+  /**
+   * 根据条件查询门诊患者数据
+   *
+   * @param query 查询条件
+   * @return PatientDataStatisticsVO
+   */
+  public PageInfo<PatientDataStatisticsVO> findClinicPatientDataList(DataStatisticsQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    return organizationBiz.findClinicPatientDataList(query, true);
+  }
+
+  /**
+   * 根据条件查询门诊患者数据导出
+   *
+   * @param query 查询条件
+   * @return PatientDataStatisticsVO
+   */
+  public void ClinicPatientDataExport(DataStatisticsQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<PatientDataStatisticsVO> resultList = findClinicPatientDataList(query).getList();
+    ExcelUtil<PatientDataStatisticsVO> excelUtil = new ExcelUtil<>(PatientDataStatisticsVO.class);
+    String fileName = excelUtil.getFileName(query.getStartDate(),query.getEndDate(),"","患者数据报表");
+    excelUtil.exportExcel(response, resultList, "患者数据报表", fileName);
+  }
+
+  /**
+   * 根据条件查询运营报表的业务目标
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<PatientDataStatisticsVO> findAnalysisBusinessGoalList(DataStatisticsQuery query) {
+    return null;
   }
 }

@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -20,40 +21,99 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class PatientDataStatisticsVO implements Serializable {
+
+  public PatientDataStatisticsVO() {
+
+  }
+
+  public PatientDataStatisticsVO(boolean needInit) {
+    if (needInit) {
+      orgId = -1;
+      abbreviation = "";
+      firstVisitPerNum = 0;
+      appointPerNum = 0;
+      repeatVisitsPerNum = 0;
+      appointPerTimes = 0;
+      appointModifyPerTimes = 0;
+      treatPerTimes = 0;
+      perCapitaConsumption = BigDecimal.ZERO;
+      averageConsumption = BigDecimal.ZERO;
+      appointCancelPerTimes = 0;
+      appointMissedPerTimes = 0;
+      treatPerNum = 0;
+      repeatVisitsPerTimes = 0;
+      totalActualAmount = BigDecimal.ZERO;
+    }
+    new PatientDataStatisticsVO();
+  }
+
+  /** 门诊id */
+  @ApiModelProperty("门诊id")
+  private Integer orgId;
+
+  /** 门诊名称*/
+  @Excel(name = "门诊")
+  @ApiModelProperty("门诊")
+  private String abbreviation;
+
   /** 初诊人数 */
+  @Excel(name = "初诊人数")
   @ApiModelProperty("初诊人数")
   private Integer firstVisitPerNum;
+
+  /** 预约人数 */
+  @Excel(name = "预约人数")
+  @ApiModelProperty("预约人数")
+  private Integer appointPerNum;
+
   /** 复诊人数 */
+  @Excel(name = "复诊人数")
   @ApiModelProperty("复诊人数")
   private Integer repeatVisitsPerNum;
+
+  /** 预约人次 */
+  @Excel(name = "预约人次")
+  @ApiModelProperty("预约人次")
+  private Integer appointPerTimes;
+
+  /** 改约人次 */
+  @Excel(name = "改约人次")
+  @ApiModelProperty("改约人次")
+  private Integer appointModifyPerTimes;
+
+  /** 就诊人次 */
+  @Excel(name = "就诊人次")
+  @ApiModelProperty("就诊人次")
+  private Integer treatPerTimes;
+
+  /** 人均消费 */
+  @Excel(name = "人均消费")
+  @ApiModelProperty("人均消费")
+  private BigDecimal perCapitaConsumption;
+
+  /** 次均消费 */
+  @Excel(name = "次均消费")
+  @ApiModelProperty("次均消费")
+  private BigDecimal averageConsumption;
+
+  /** 取消预约人次 */
+  @Excel(name = "取消预约人次")
+  @ApiModelProperty("取消预约人次")
+  private Integer appointCancelPerTimes;
+
+  /** 失约人次 */
+  @Excel(name = "失约人次")
+  @ApiModelProperty("失约人次")
+  private Integer appointMissedPerTimes;
+
   /** 就诊人数 */
   @ApiModelProperty("就诊人数")
   private Integer treatPerNum;
-  /** 预约人数 */
-  @ApiModelProperty("预约人数")
-  private Integer appointPerNum;
+
   /** 复诊人次 */
   @ApiModelProperty("复诊人次")
   private Integer repeatVisitsPerTimes;
-  /** 就诊人次 */
-  @ApiModelProperty("就诊人次")
-  private Integer treatPerTimes;
-  /** 预约人次 */
-  @ApiModelProperty("预约人次")
-  private Integer appointPerTimes;
-  /** 改约人次 */
-  @ApiModelProperty("改约人次")
-  private Integer appointModifyPerTimes;
-  /** 取消预约人次 */
-  @ApiModelProperty("取消预约人次")
-  private Integer appointCancelPerTimes;
-  /** 失约人次 */
-  @ApiModelProperty("失约人次")
-  private Integer appointMissedPerTimes;
-  /** 人均消费 */
-  @ApiModelProperty("人均消费")
-  private BigDecimal perCapitaConsumption;
-  /** 次均消费 */
-  @ApiModelProperty("次均消费")
-  private BigDecimal averageConsumption;
+
+  /** 实收合计 */
+  private BigDecimal totalActualAmount;
 }

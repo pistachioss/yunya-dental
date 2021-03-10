@@ -1695,21 +1695,30 @@
         WHERE bbd.bill_id = #{billId}
     </select>
 
-    <select id="selectBillDetailByExecutorIds" resultType="com.yunya.models.report.BaseBillDetail">
+    <select id="selectBillDetailByQuery" resultType="com.yunya.models.report.BaseBillDetail">
         select
-        t.bill_id as billId,
-        t.executor_id as executorId,
-        t.received_amount as receivedAmount
+            t.bill_id as billId,
+            t.executor_id as executorId,
+            t.received_amount as receivedAmount
         from base_bill_detail t
+        left join base_bill bbd on t.bill_id=bbd.bill_id
         <where>
             t.received_amount>0
             and t.executor_id>0
-            and EXISTS (
-            select bill_id from base_bill_detail bd where t.bill_id=bd.bill_id and bd.executor_id in
-            <foreach collection="executorIds" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-            )
+            <if test="query.orgId != null">
+                and t.org_id = #{query.orgId}
+                and bbd.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( bbd.bill_date, '%Y-%m' ) = #{query.queryDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( bbd.bill_date, '%Y' ) = #{query.queryDate}
+                </if>
+            </if>
         </where>
     </select>
 

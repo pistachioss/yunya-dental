@@ -6,6 +6,8 @@ import com.yunya.models.report.BaseOrganization;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.List;
+
 public interface BaseOrganizationMapper extends Mapper<BaseOrganization> {
 
   /**
@@ -14,6 +16,6 @@ public interface BaseOrganizationMapper extends Mapper<BaseOrganization> {
    * @param query 查询条件
    * @return PatientDataStatisticsVO
    */
-  PatientDataStatisticsVO selectClinicPatientDataStatistic(
+  List<PatientDataStatisticsVO> selectClinicPatientDataStatistic(
       @Param("query") DataStatisticsQuery query);
 }

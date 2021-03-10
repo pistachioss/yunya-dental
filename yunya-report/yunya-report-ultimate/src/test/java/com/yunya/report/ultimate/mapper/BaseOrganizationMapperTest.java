@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
+
 /**
  * 简介: 门诊相关测试
  *
@@ -29,7 +31,7 @@ public class BaseOrganizationMapperTest {
     query.setDateType((byte) 0);
     query.setStartDate("2020-07-01");
     query.setEndDate("2020-12-12");
-    PatientDataStatisticsVO vo = organizationMapper.selectClinicPatientDataStatistic(query);
+    List<PatientDataStatisticsVO> vo = organizationMapper.selectClinicPatientDataStatistic(query);
     System.out.println(vo);
   }
 }
