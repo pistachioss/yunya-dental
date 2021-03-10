@@ -28,13 +28,13 @@
     <result column="download_url" property="downloadUrl" jdbcType="VARCHAR" />
     <result column="update_content" property="updateContent" jdbcType="VARCHAR" />
     <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="crt_name" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="update_name" property="updateName" jdbcType="VARCHAR" />
     <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
   <sql id="baseColumns">
-    id,os_name,release_version,alpha_version,beta_version,force_update,download_url,update_content,crt_name,crt_name,
+    id,os_name,release_version,alpha_version,beta_version,force_update,download_url,update_content,crt_name,crt_time,
     update_name,update_time
   </sql>
 

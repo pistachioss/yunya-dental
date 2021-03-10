@@ -68,7 +68,7 @@ public class AppVersionBiz extends BaseBiz<AppVersionMapper, AppVersion> {
         }
         Integer[] applicationVersionIntArr = this.paseVersion(applicationVersion);
         Integer[] releaseVersionIntArr = this.paseVersion(releaseVersion);
-        for (int i = 0; i < releaseVersion.length(); i++) {
+        for (int i = 0; i < 3; i++) {
             if (releaseVersionIntArr[i] > applicationVersionIntArr[i]) {
                return true;
             }
@@ -83,7 +83,7 @@ public class AppVersionBiz extends BaseBiz<AppVersionMapper, AppVersion> {
      */
     private Integer[] paseVersion(String versionStr) {
         if (StringHelper.isNotBlank(versionStr)) {
-            String[] versionStrs = versionStr.split(".");
+            String[] versionStrs = versionStr.split("\\.");
             if (versionStrs != null && versionStrs.length > 0) {
                 Integer[] versionArrs = new Integer[versionStrs.length];
                 for (int i = 0; i < versionStrs.length; i++) {
