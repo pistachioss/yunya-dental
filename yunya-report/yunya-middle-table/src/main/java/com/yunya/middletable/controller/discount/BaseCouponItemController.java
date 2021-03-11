@@ -6,6 +6,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.BaseCouponItemServiceImpl;
+import com.yunya.middletable.service.discount.BaseCouponItemServiceNewImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,14 +20,13 @@ public class BaseCouponItemController {
 
 	@Resource
 	BaseCouponItemServiceImpl itemService;
+	@Resource
+	BaseCouponItemServiceNewImpl itemService1;
 
 	@PostMapping("/base/coupon/item/pull")
 	public ResponseResult pullData(@RequestBody PullForm form) throws InterruptedException {
 		long start = System.currentTimeMillis();
-//		RestErrorBo errorBo = itemService.pullCouponItem(form.getStartDate(), form.getEndDate());
-//		if (errorBo.getError() != null) {
-//			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
-//		}
+		itemService1.pullCouponItem(form.getStartDate(), form.getEndDate());
 		long end = System.currentTimeMillis();
 		log.info("【中间表同步】产品项目总时长：[{}]", end - start);
 		return ResponseUtil.success(end - start);

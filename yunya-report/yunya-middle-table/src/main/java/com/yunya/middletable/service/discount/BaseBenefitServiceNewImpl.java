@@ -1,9 +1,9 @@
-package com.yunya.middletable.service;
+package com.yunya.middletable.service.discount;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.middletable.dao.discount.AuthDiscountBenefitMapper;
 import com.yunya.middletable.dao.discount.CardBenefitMapper;
@@ -21,6 +21,7 @@ import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -42,7 +43,7 @@ import static java.util.stream.Collectors.*;
  */
 @Slf4j
 @Service
-public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenefit> {
+public class BaseBenefitServiceNewImpl extends BaseBiz<BaseBenefitMapper, BaseBenefit> {
     private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     @Resource
     private CardBenefitMapper cardBenefitMapper;
@@ -53,10 +54,21 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
     @Resource(name = "customizeThreadPool")
     private ExecutorService cardThreadPool;
 
-    public void operateBaseBenefit(MessageModel model) throws InterruptedException {
-        Integer orderId = (Integer) model.getParamMap().get("id");
-//		Integer operateType = model.getOperateType();
-        operateData(orderId);
+
+    public void pullBenefit(String startDateStr, String endDateStr) throws InterruptedException {
+        if (!checkPullDate(startDateStr, endDateStr)) {
+            throw new BaseException("结束时间不能小于开始时间", 500);
+        }
+        //查询源数据
+        List<BaseBenefit> originData = getOriginDataByDate(startDateStr, endDateStr);
+        if (CollectionUtils.isNotEmpty(originData)) {
+            List<Integer> orderIds = originData.stream().map(BaseBenefit::getOrderId).collect(toList());
+            List<BaseBenefit> existData = getExistByOrderIds(orderIds);
+            //批量删除
+            batchDelete(getDeleteBenefit(originData, existData));
+            //批量新增
+            batchInsert(getAddBenefit(originData, existData));
+        }
     }
 
     /**
@@ -157,7 +169,7 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
                         downLatch.countDown();
                     } catch (Exception e) {
                         downLatch.countDown();
-                        log.error("pull benefit batchInsert error",e);
+                        log.error("pull benefit batchInsert error", e);
                     }
                 });
             }
@@ -176,6 +188,51 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
             example.createCriteria().andEqualTo("orderId", ids);
             mapper.deleteByExample(example);
         }
+    }
+
+    /**
+     * 通过时间段查询原始数据
+     *
+     * @param startDateStr 开始时间
+     * @param endDateStr   结束时间
+     * @return list
+     */
+    private List<BaseBenefit> getOriginDataByDate(String startDateStr, String endDateStr) {
+        //查询订单总信息
+        List<OrderBenefit> orderBenefits = getOrderBenefitByDate(startDateStr, endDateStr);
+        List<BaseBenefit> list = Lists.newArrayList();
+        if (CollectionUtils.isNotEmpty(orderBenefits)) {
+            //查询订单优惠汇总信息
+            Map<Integer, Set<Integer>> orderBenefitMap = orderBenefits.stream().collect(groupingBy(obj -> obj.getBenefitType().intValue(),
+                    mapping(OrderBenefit::getOrderId, toSet())));
+            orderBenefitMap.forEach((k, v) -> {
+                //产品优惠
+                if (CARD_BENEFIT.equals(k)) {
+                    List<CardBenefit> cardBenefits = getBenefitDetail(v, CardBenefit.class, cardBenefitMapper);
+                    //卡券优惠转换
+                    List<BaseBenefit> templateList = cardTransform(cardBenefits);
+                    if (CollectionUtils.isNotEmpty(templateList)) {
+                        list.addAll(templateList);
+                    }
+                }
+                //授权折扣优惠
+                if (AUTH_BENEFIT.equals(k)) {
+                    List<AuthDiscountBenefit> authBenefits = getBenefitDetail(v, AuthDiscountBenefit.class, authBenefitMapper);
+                    if (CollectionUtils.isNotEmpty(authBenefits)) {
+                        //授权优惠转换
+                        List<BaseBenefit> templateList = authTransform(authBenefits);
+                        list.addAll(templateList);
+                    }
+                }
+            });
+        }
+        return list;
+    }
+
+    private void setOperateUserId(List<AuthDiscountBenefit> authBenefits, Set<Integer> v) {
+        List<OrderBenefit> authOrderBenefit = getBenefitDetail(v, OrderBenefit.class, orderBenefitMapper);
+        Map<Integer, Integer> collect = authOrderBenefit.stream().collect(toMap(OrderBenefit::getOrderId, OrderBenefit::getCrtId));
+        authBenefits.forEach(obj -> obj.setCrtId(collect.get(obj.getOrderId())));
     }
 
     private List<BaseBenefit> cardTransform(List<CardBenefit> cardBenefits) {
@@ -218,18 +275,25 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
         };
     }
 
+    private List<OrderBenefit> getOrderBenefitByDate(String startDateStr, String endDateStr) {
+        Example example = new Example(OrderBenefit.class);
+        example.createCriteria().andGreaterThanOrEqualTo("updTime", startDateStr)
+                .andLessThan("updTime", endDateStr)
+                .andEqualTo("isDeleted", FALSE.getCode());
+        return orderBenefitMapper.selectByExample(example);
+    }
 
     private <T> List<T> getBenefitDetail(Set<Integer> orderIds, Class<?> clazz, Mapper<T> mapper) {
         Example example = new Example(clazz);
         example.createCriteria().andIn("orderId", orderIds)
-                .andEqualTo("deleted", FALSE.getCode());
+                .andEqualTo("isDeleted", FALSE.getCode());
         return mapper.selectByExample(example);
     }
 
     private OrderBenefit getOrderBenefit(Integer orderId) {
         Example example = new Example(OrderBenefit.class);
         example.createCriteria().andEqualTo("orderId", orderId)
-                .andEqualTo("deleted", FALSE.getCode());
+                .andEqualTo("isDeleted", FALSE.getCode());
         return orderBenefitMapper.selectOneByExample(example);
     }
 
@@ -239,4 +303,16 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
         return mapper.selectByExample(example);
     }
 
+    /**
+     * 校验参数
+     *
+     * @param startDateStr 开始时间
+     * @param endDateStr   结束时间
+     * @return boolean
+     */
+    private boolean checkPullDate(String startDateStr, String endDateStr) {
+        LocalDate startDate = LocalDate.parse(startDateStr, df);
+        LocalDate endDate = LocalDate.parse(endDateStr, df);
+        return endDate.compareTo(startDate) > 0;
+    }
 }

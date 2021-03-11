@@ -1,10 +1,10 @@
-package com.yunya.middletable.service;
+package com.yunya.middletable.service.discount;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.yunya.feign.emr.domain.bo.RestErrorBo;
-import com.yunya.feign.report.domain.model.MessageModel;
+import com.yunya.feign.report.domain.bo.BaseCouponItemBo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.middletable.dao.discount.CouponMapper;
 import com.yunya.middletable.dao.discount.PackageCouponItemMapper;
@@ -25,6 +25,7 @@ import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -46,7 +47,7 @@ import static java.util.stream.Collectors.*;
  */
 @Slf4j
 @Service
-public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, BaseCouponItem> {
+public class BaseCouponItemServiceNewImpl extends BaseBiz<BaseCouponItemMapper, BaseCouponItem> {
 	@Resource
 	private CouponMapper couponMapper;
 	@Resource
@@ -60,12 +61,33 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 
 	private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-	public RestErrorBo operateBaseCouponItem(MessageModel model) throws InterruptedException {
-		Integer couponId = (Integer) model.getParamMap().get("id");
-//		Integer operateType = model.getOperateType();
-		RestErrorBo errorBo = RestErrorBo.getInstance();
-		operateData(couponId);
-		return errorBo;
+	/**
+	 * 通过时间段批量拉去基础数据
+	 *
+	 * @param startDateStr 开始时间
+	 * @param endDateStr   结束时间
+	 * @return bo
+	 */
+	public void pullCouponItem(String startDateStr, String endDateStr) throws InterruptedException {
+		long start = System.currentTimeMillis();
+		if (!checkPullDate(startDateStr, endDateStr)) {
+			throw new BaseException("结束时间不能小于开始时间", 500);
+		}
+		//查询原始数据
+		List<BaseCouponItem> list = getOriginDataByDate(startDateStr, endDateStr);
+		if (CollectionUtils.isNotEmpty(list)) {
+			List<Integer> couponIds = list.stream().map(BaseCouponItem::getCouponId).collect(toList());
+			//查询已存在的基础数据
+			List<BaseCouponItem> existItems = getExistBaseCouponItem(couponIds);
+			//批量插入
+			batchInsert(getAddItem(list, existItems));
+			//批量更新
+			batchUpdateBase(getUpdateItem(list, existItems));
+			//批量删除
+			batchDeleteBase(getDeleteItems(list, existItems));
+		}
+		long end = System.currentTimeMillis();
+		log.info("【中间表同步】产品项目时长：[{}]分钟", (end - start) / 60000);
 	}
 
 	/**
@@ -110,29 +132,6 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 		if (CollectionUtils.isNotEmpty(list)) {
 			mapper.deleteList(list);
 		}
-	}
-
-	private RestErrorBo operateData(Integer couponId) throws InterruptedException {
-		RestErrorBo errorBo = RestErrorBo.getInstance();
-		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
-		if (coupon == null) {
-			deleteByCouponId(couponId);
-		} else {
-			//查询报表中的优惠券项目
-			List<BaseCouponItem> baseItems = getBaseItems(couponId);
-			if (CollectionUtils.isEmpty(baseItems)) {
-				batchInsert(getOriginItems(coupon));
-			} else {
-				List<BaseCouponItem> baseCouponItems = getOriginItems(coupon);
-				//需要新增的优惠券项目
-				batchInsert(getAddItem(baseCouponItems, baseItems));
-				//需要更新的优惠券项目
-				batchUpdateBase(getUpdateItem(baseCouponItems, baseItems));
-				//查找需要删除的优惠券项目
-				batchDeleteBase(getDeleteItems(baseCouponItems, baseItems));
-			}
-		}
-		return errorBo;
 	}
 
 	private List<BaseCouponItem> getOriginItems(CouponCommonInfo coupon) {
@@ -244,6 +243,75 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 		return deleteItems;
 	}
 
+//	private Predicate<BaseCouponItem> notContainsKey(Map<String, BaseCouponItem> itemMap, Map<String, BaseCouponItem> nullItemMap) {
+//		return (obj) -> {
+//			if (obj.getItemId() != null) {
+//				String key = Joiner.on(":").join(obj.getCouponId(), obj.getItemId(), obj.getType());
+//				return itemMap.get(key) == null;
+//			}
+//			String key = Joiner.on(":").join(obj.getCouponId(), obj.getType());
+//			return nullItemMap.get(key) == null;
+//		};
+//	}
+
+	private List<BaseCouponItem> getExistBaseCouponItem(List<Integer> couponIds) {
+		Example example = new Example(BaseCouponItem.class);
+		example.createCriteria().andIn("couponId", couponIds);
+		return mapper.selectByExample(example);
+	}
+
+	/**
+	 * 对象转换为报表数据格式
+	 *
+	 * @param itemBo 业务bo
+	 * @return list
+	 */
+	private List<BaseCouponItem> getTransformEntity(BaseCouponItemBo itemBo) {
+		List<VoucherDiscountItem> voucherDiscountItems = itemBo.getVoucherDiscountItems();
+		List<PackageCouponItem> exchangeItems = itemBo.getExchangeItems();
+		List<SpecialPackageCouponItem> packageItems = itemBo.getPackageItems();
+		List<BaseCouponItem> list = Lists.newArrayListWithCapacity(voucherDiscountItems.size() + exchangeItems.size()
+				+ packageItems.size());
+		if (CollectionUtils.isNotEmpty(voucherDiscountItems)) {
+			List<BaseCouponItem> voucherList = voucherDiscountItems.stream().map(obj -> {
+				BaseCouponItem item = new BaseCouponItem();
+				item.setCouponId(obj.getCouponId());
+				item.setType(obj.getType());
+				item.setChoiceRangType(obj.getChoiceRangType().intValue());
+				item.setItemId(obj.getItemId());
+				return item;
+			}).collect(toList());
+			list.addAll(voucherList);
+		}
+		if (CollectionUtils.isNotEmpty(exchangeItems)) {
+			List<BaseCouponItem> exchangeList = exchangeItems.stream().map(obj -> {
+				BaseCouponItem item = new BaseCouponItem();
+				item.setCouponId(obj.getCouponId());
+				item.setItemId(obj.getItemId());
+				item.setType(obj.getType());
+				item.setSaleUnitPrice(obj.getSaleUnitPrice());
+				item.setQuantity(obj.getCount());
+				item.setWorkloadLoad(obj.getWorkloadLoad());
+				return item;
+			}).collect(toList());
+			list.addAll(exchangeList);
+		}
+		if (CollectionUtils.isNotEmpty(packageItems)) {
+			List<BaseCouponItem> packageList = packageItems.stream().map(obj -> {
+				BaseCouponItem item = new BaseCouponItem();
+				item.setItemId(obj.getItemId());
+				item.setCouponId(obj.getCouponId());
+				item.setType(obj.getType());
+				item.setSaleUnitPrice(obj.getPackageUnitPrice());
+				item.setQuantity(obj.getCount());
+				item.setWorkloadLoad(obj.getWorkloadLoad());
+				return item;
+			}).collect(toList());
+			list.addAll(packageList);
+		}
+		return list;
+	}
+
 	/**
 	 * 删除
 	 *
@@ -255,10 +323,58 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 		mapper.deleteByExample(example);
 	}
 
+	/**
+	 * 通过时间段查询原始数据
+	 *
+	 * @param startDateStr 开始时间
+	 * @param endDateStr   结束时间
+	 * @return BaseCouponItemBo
+	 */
+	private List<BaseCouponItem> getOriginDataByDate(String startDateStr, String endDateStr) {
+		BaseCouponItemBo itemBo = BaseCouponItemBo.getInstance();
+		List<VoucherDiscountItem> voucherDiscountItems = getCouponItem(startDateStr, endDateStr, VoucherDiscountItem.class, voucherDiscountItemMapper);
+		log.info("本次查询代金折扣优惠券数据量：[{}]", voucherDiscountItems.size());
+		List<PackageCouponItem> exchangeItems = getCouponItem(startDateStr, endDateStr, PackageCouponItem.class, packageCouponItemMapper);
+		log.info("本次查询兑换优惠券数据量：[{}]", exchangeItems.size());
+		List<SpecialPackageCouponItem> packageItems = getCouponItem(startDateStr, endDateStr, SpecialPackageCouponItem.class, specialPackageCouponItemMapper);
+		log.info("本次查询套餐优惠券数据量：[{}]", packageItems.size());
+		if (CollectionUtils.isNotEmpty(voucherDiscountItems)) {
+			itemBo.setVoucherDiscountItems(voucherDiscountItems);
+		}
+		if (CollectionUtils.isNotEmpty(exchangeItems)) {
+			itemBo.setExchangeItems(exchangeItems);
+		}
+		if (CollectionUtils.isNotEmpty(packageItems)) {
+			itemBo.setPackageItems(packageItems);
+		}
+		//原始数据转换
+		return getTransformEntity(itemBo);
+	}
+
+	private List getCouponItem(String startDateStr, String endDateStr, Class<?> clazz, Mapper mapper) {
+		Example example = new Example(clazz);
+		example.createCriteria().andGreaterThanOrEqualTo("updTime", startDateStr)
+				.andLessThan("updTime", endDateStr);
+		return mapper.selectByExample(example);
+	}
+
 	private List listCouponItems(Integer couponId, Class<?> clazz, Mapper mapper) {
 		Example example = new Example(clazz);
 		example.createCriteria().andEqualTo("couponId", couponId);
 		return mapper.selectByExample(example);
+	}
+
+	/**
+	 * 校验参数
+	 *
+	 * @param startDateStr 开始时间
+	 * @param endDateStr   结束时间
+	 * @return boolean
+	 */
+	private boolean checkPullDate(String startDateStr, String endDateStr) {
+		LocalDate startDate = LocalDate.parse(startDateStr, df);
+		LocalDate endDate = LocalDate.parse(endDateStr, df);
+		return endDate.compareTo(startDate) > 0;
 	}
 
 	private List<BaseCouponItem> getBaseItems(Integer couponId) {
