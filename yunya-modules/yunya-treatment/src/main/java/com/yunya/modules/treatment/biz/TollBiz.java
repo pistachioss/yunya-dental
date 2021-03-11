@@ -1341,7 +1341,6 @@ public class TollBiz {
       billNUmber = billRecord.getBillNumber();
       // 更新订单为已收费
       orderRecordResult.setStatus((byte) 2);
-      orderRecordBiz.updateSelectiveById(orderRecordResult);
       // 保存订单明细收费记录
       saveOrderDetailPayRecord(
           totalCharge,
@@ -1353,6 +1352,8 @@ public class TollBiz {
       savePrivilegeDetail(
           discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
     }
+    rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+    log.info("发送中间表账单记录同步消息{}", "订单记录ID：-------》》》" + orderRecordId);
     BillPayRecord billPayRecord = new BillPayRecord();
     billPayRecord.setOrgId(orgId);
     billPayRecord.setPatientId(patientId);
@@ -1366,7 +1367,7 @@ public class TollBiz {
     billPayRecord.setCrtTime(new Date(currentTimeMillis));
     billPayRecord.setUpdId(userId);
     billPayRecord.setUpdName(name);
-    int i = billPayRecordMapper.insertSelective(billPayRecord);
+    billPayRecordMapper.insertSelective(billPayRecord);
     // 保存收费记录入账明细
     Integer billPayRecordId = billPayRecord.getId();
     if (StringHelper.isNotEmpty(prepaymentAccounts)) {
@@ -1380,10 +1381,8 @@ public class TollBiz {
     // 保存收费记录支付方式明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, paymentModels);
     // 发送消息同步账单，账单收费
-    if (i > 0) {
-      rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
-      rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
-    }
+    rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
+    log.info("发送中间表账单收费记录同步消息{}", "收费记录ID：-------》》》" + billPayRecordId);
     TollConfirmVO tollConfirmVO = new TollConfirmVO();
     tollConfirmVO.setBillNumber(billNUmber);
     tollConfirmVO.setBillPayRecordId(billPayRecordId);
