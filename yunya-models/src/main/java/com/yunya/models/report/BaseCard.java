@@ -28,6 +28,11 @@ public class BaseCard {
      */
     @Column(name = "card_number")
     private String cardNumber;
+    /**
+     * 卡密
+     */
+    @Column(name = "card_password")
+    private String cardPassword;
 
     /**
      * 分配组织ID

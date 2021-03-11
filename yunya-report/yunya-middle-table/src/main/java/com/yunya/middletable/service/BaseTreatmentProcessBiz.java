@@ -338,6 +338,7 @@ public class BaseTreatmentProcessBiz
   private void setTreatmentProcessRegisteredValue(
       BaseTreatmentProcess treatmentProcess, Registered registered) {
     treatmentProcess.setRegisteredId(registered.getId());
+    treatmentProcess.setOrgId(registered.getOrgId());
     treatmentProcess.setTreatStatus((byte) 0);
     treatmentProcess.setTreatType(registered.getFirstVisit());
     treatmentProcess.setRegisteredDentistId(registered.getDentistId());
@@ -610,6 +611,7 @@ public class BaseTreatmentProcessBiz
     registered.setInservice(true);
     Registered registeredResult = registeredMapper.selectOne(registered);
     if (null != registeredResult) {
+      process.setOrgId(registeredResult.getOrgId());
       process.setTreatType(registeredResult.getFirstVisit());
       process.setRegisteredId(registeredResult.getId());
       process.setTreatStatus((byte) 0);

@@ -2677,8 +2677,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     }
 
     @Override
-    public void insertSelective(AttendancePunchRecord entity) {
-        mapper.insertSelective(entity);
+    public int insertSelective(AttendancePunchRecord entity) {
+       return mapper.insertSelective(entity);
     }
 
     /**

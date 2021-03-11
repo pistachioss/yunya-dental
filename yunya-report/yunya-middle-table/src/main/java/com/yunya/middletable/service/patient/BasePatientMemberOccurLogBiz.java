@@ -134,8 +134,8 @@ public class BasePatientMemberOccurLogBiz
   }
 
   /**
-   *
    * 获取会员操作记录
+   *
    * @param msg 消息
    * @return BasePatientMemberOccurLog
    */

@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.BaseBenefitServiceImpl;
+import com.yunya.middletable.service.discount.BaseBenefitServiceNewImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,14 +19,13 @@ public class BaseBenefitController {
 
 	@Resource
 	BaseBenefitServiceImpl benefitService;
+	@Resource
+	BaseBenefitServiceNewImpl benefitService1;
 
 	@PostMapping("/base/benefit/pull")
 	public ResponseResult pullData(@RequestBody PullForm form) throws InterruptedException {
 		long start = System.currentTimeMillis();
-//		RestErrorBo errorBo = benefitService.pullBenefit(form.getStartDate(), form.getEndDate());
-//		if (errorBo.getError() != null) {
-//			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
-//		}
+		benefitService1.pullBenefit(form.getStartDate(), form.getEndDate());
 		long end = System.currentTimeMillis();
 		log.info("【中间表同步】卡券优惠总时长：[{}]", end - start);
 		return ResponseUtil.success(end - start);

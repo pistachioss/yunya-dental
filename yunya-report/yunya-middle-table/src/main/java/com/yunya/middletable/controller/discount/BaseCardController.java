@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.BaseCardServiceImpl;
+import com.yunya.middletable.service.discount.BaseCardServiceNewImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,15 +19,14 @@ import java.util.concurrent.ExecutionException;
 public class BaseCardController {
 
 	@Resource
+	BaseCardServiceNewImpl cardService1;
+	@Resource
 	BaseCardServiceImpl cardService;
 
 	@PostMapping("/base/card/pull")
 	public ResponseResult pullData(@RequestBody PullForm form) throws ExecutionException, InterruptedException {
 		long start = System.currentTimeMillis();
-//		RestErrorBo errorBo = cardService.pullCard(form.getStartDate(), form.getEndDate());
-//		if (errorBo.getError() != null) {
-//			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
-//		}
+		cardService1.pullCard(form.getStartDate(), form.getEndDate());
 		long end = System.currentTimeMillis();
 		log.info("【中间表同步】卡券总时长：[{}]", end - start);
 		return ResponseUtil.success(end - start);

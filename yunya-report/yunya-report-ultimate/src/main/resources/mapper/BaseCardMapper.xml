@@ -8,6 +8,7 @@
         <result column="card_id" property="cardId" jdbcType="INTEGER"/>
         <result column="coupon_id" property="couponId" jdbcType="INTEGER"/>
         <result column="card_number" property="cardNumber" jdbcType="VARCHAR"/>
+        <result column="card_password" property="cardPassword" jdbcType="VARCHAR"/>
         <result column="allocate_org_id" property="allocateOrgId" jdbcType="INTEGER"/>
         <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
         <result column="active_user_id" property="activeUserId" jdbcType="INTEGER"/>
@@ -35,6 +36,7 @@
         select
         date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
         `bc`.`card_number`,
+        `bc`.`card_password`,
         (select
         `abbreviation`
         from `base_organization`
@@ -142,6 +144,7 @@
         select
         date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
         `bc`.`card_number`,
+        `bc`.`card_password`,
         (select
         `abbreviation`
         from `base_organization`
