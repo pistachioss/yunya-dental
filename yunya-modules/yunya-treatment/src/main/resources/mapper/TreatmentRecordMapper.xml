@@ -284,17 +284,24 @@
         tr.id,
         tr.dentist_id as dentistId,
         tr.patient_id as patientId,
-        r.first_visit as firstVisit
+        r.first_visit as firstVisit,
+        date_format(tr.treat_start_time,'%Y-%m-%d %h:%i') as treatStartTime
         from
         treatment_record tr left join registered r on tr.registered_id = r.id
-        where
-        date_format(tr.treat_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d')
-        and tr.inservice = 1
-        and tr.org_id = #{orgId}
-        and tr.patient_id in
-        <foreach collection="patientIds" item="patientId" open="(" separator="," close=")">
-            #{patientId}
-        </foreach>
+        <where>
+            <if test="search == null and search == ''">
+                date_format(tr.treat_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d')
+            </if>
+            and tr.inservice = 1
+            and tr.org_id = #{orgId}
+            and tr.patient_id in
+            <foreach collection="patientIds" item="patientId" open="(" separator="," close=")">
+                #{patientId}
+            </foreach>
+        </where>
+        <if test="search != null and search != ''">
+            order by treat_start_time desc limit 1
+        </if>
     </select>
 
     <!-- 查询完成初诊人数 -->

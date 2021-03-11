@@ -1430,7 +1430,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           });
       List<DesktopMiniProgramVO> desktopMiniProgramVOS =
           mapper.desktopTreatingListItem(
-              patientIds, queryForm.getCurrentDate(), queryForm.getOrgId());
+              patientIds, queryForm.getCurrentDate(), queryForm.getOrgId(),queryForm.getSearch());
       this.setDesktopMiniProgramVOInfo(desktopMiniProgramVOS, queryForm.getCurrentDate());
       return new PageInfo<>(desktopMiniProgramVOS);
     }
