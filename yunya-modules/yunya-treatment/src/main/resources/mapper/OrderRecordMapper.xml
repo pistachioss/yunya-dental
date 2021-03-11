@@ -39,20 +39,6 @@
     <!-- 订单处理查询（门诊端-订单处理） -->
     <select id="selectOrderProcess" resultType="com.yunya.feign.treatment.domain.vo.OrderProcessVO">
         SELECT
-        id,
-        orderrecordnum,
-        crttime,
-        orgid,
-        patientid,
-        treatmentrecordid,
-        treatmentstatus,
-        status,
-        totalamount,
-        crtid,
-        crtname
-        FROM
-        (
-        SELECT
         ord.id AS id,
         ord.order_record_num AS orderRecordNum,
         date_format( ord.crt_time, '%Y-%m-%d' ) AS crtTime,
@@ -66,7 +52,7 @@
         ord.crt_name AS crtName
         FROM
         order_record ord
-        LEFT JOIN treatment_record tr ON ord.treatment_record_id = tr.id
+        INNER JOIN treatment_record tr ON tr.`status` != 3 AND ord.treatment_record_id = tr.id
         <where>
             AND ord.status = 1
             <if test="orderRecordNum != null and orderRecordNum != ''">
@@ -79,11 +65,8 @@
                 </foreach>
             </if>
         </where>
-        ) ord
-        WHERE
-        ord.treatmentStatus = 2
         ORDER BY
-        ord.crtTime DESC
+        ord.crt_time DESC
     </select>
 
     <!-- 根据订单ID集合查询订单记录信息列表 -->
