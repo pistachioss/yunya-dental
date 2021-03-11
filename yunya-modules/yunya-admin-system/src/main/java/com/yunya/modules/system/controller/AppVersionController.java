@@ -8,6 +8,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.system.AppVersion;
 import com.yunya.modules.system.biz.AppVersionBiz;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,7 @@ public class AppVersionController {
 
     @ApiOperation("根据OSName查询版本信息")
     @GetMapping("/find/all/{osName}")
+    @ApiImplicitParam(name = "osName",value = "系统名称",dataTypeClass = String.class,allowableValues = "IOS,Android",required = true)
     public ResponseResult<List<AppVersion>> findVersionList(@PathVariable("osName")
                                                             @NotNull(message = "系统名称不能为空") String osName) {
         return this.appVersionBiz.findVersionList(osName);
