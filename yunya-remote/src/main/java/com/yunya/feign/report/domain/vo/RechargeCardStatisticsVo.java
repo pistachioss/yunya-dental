@@ -18,6 +18,9 @@ public class RechargeCardStatisticsVo {
 	@ApiModelProperty(value = "卡号")
 	@ExcelProperty("卡号")
 	private String cardNumber;
+	@ApiModelProperty(value = "卡密")
+	@ExcelProperty("卡密")
+	private String cardPassword;
 	@ApiModelProperty(value = "分配对象")
 	@ExcelProperty("分配对象")
 	private String allocateOrgName;
