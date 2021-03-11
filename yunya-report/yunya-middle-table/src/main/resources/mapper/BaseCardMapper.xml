@@ -8,6 +8,7 @@
         <result column="card_id" property="cardId" jdbcType="INTEGER"/>
         <result column="coupon_id" property="couponId" jdbcType="INTEGER"/>
         <result column="card_number" property="cardNumber" jdbcType="VARCHAR"/>
+        <result column="card_password" property="cardPassword" jdbcType="VARCHAR"/>
         <result column="allocate_org_id" property="allocateOrgId" jdbcType="INTEGER"/>
         <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
         <result column="active_user_id" property="activeUserId" jdbcType="INTEGER"/>
@@ -34,12 +35,12 @@
     <insert id="insertList" parameterType="List">
         insert into
         `base_card`
-        (`card_id`, `coupon_id`, `card_number`, `allocate_org_id`, `patient_id`,`active_user_id`, `active_org_id`
+        (`card_id`, `coupon_id`, `card_number`,`card_password`, `allocate_org_id`, `patient_id`,`active_user_id`, `active_org_id`
          , `seller_user_id`, `allocate_date`, `status`, `generate_date`, `sold_date`, `sold_target`, `sold_phone_number`
          ,`sold_type`, `sold_way`, `pay_id`, `pay_name`, `charge_status`, `active_date`, `activation_deadline`, `first_use_date`)
         values
         <foreach collection="list" item="item" separator=",">
-            (#{item.cardId}, #{item.couponId}, #{item.cardNumber}, #{item.allocateOrgId}, #{item.patientId}
+            (#{item.cardId}, #{item.couponId}, #{item.cardNumber},#{item.cardPassword}, #{item.allocateOrgId}, #{item.patientId}
             , #{item.activeUserId}, #{item.activeOrgId}, #{item.sellerUserId}, #{item.allocateDate}, #{item.status}
             , #{item.generateDate}, #{item.soldDate}, #{item.soldTarget}, #{item.soldPhoneNumber}, #{item.soldType}
             , #{item.soldWay}, #{item.payId}, #{item.payName}, #{item.chargeStatus}, #{item.activeDate}, #{item.activationDeadline}
@@ -202,6 +203,7 @@
             `card_id`,
             `coupon_id`,
             `card_number`,
+            `card_password`,
             `allocate_org_id`,
             `patient_id`,
             `active_user_id`,
