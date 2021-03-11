@@ -97,12 +97,13 @@ public class AppVersionBiz extends BaseBiz<AppVersionMapper, AppVersion> {
      * @return true-执行更新；false-不执行更新
      */
     private Boolean checkVersion(String applicationVersion,String releaseVersion) {
+        final int lENGTH = 3;
         if (StringHelper.isEmpty(applicationVersion) || StringHelper.isEmpty(releaseVersion)) {
             return null;
         }
         Integer[] applicationVersionIntArr = this.paseVersion(applicationVersion);
         Integer[] releaseVersionIntArr = this.paseVersion(releaseVersion);
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < lENGTH; i++) {
             if (releaseVersionIntArr[i] > applicationVersionIntArr[i]) {
                return true;
             }
