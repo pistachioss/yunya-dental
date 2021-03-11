@@ -106,7 +106,8 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
   List<DesktopMiniProgramVO> desktopTreatingListItem(
       @Param("patientIds") List<Integer> patientIds,
       @Param("currentDate") String currentDate,
-      @Param("orgId") Integer orgId);
+      @Param("orgId") Integer orgId,
+      @Param("search") String search);
 
   /**
    * 查询完成初诊人数
