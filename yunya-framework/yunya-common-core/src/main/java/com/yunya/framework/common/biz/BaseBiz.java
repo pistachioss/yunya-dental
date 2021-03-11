@@ -81,65 +81,71 @@ public abstract class BaseBiz<M extends Mapper<T>, T> {
    * 插入实体对象(全部字段)
    *
    * @param entity 实体对象
+   * @return int
    */
-  public void insert(T entity) {
+  public int insert(T entity) {
     EntityUtils.setCreatAndUpdatInfo(entity);
-    mapper.insert(entity);
+    return mapper.insert(entity);
   }
 
   /**
    * 插入实体对象(不为空字段)
    *
    * @param entity 实体对象
+   * @return int
    */
-  public void insertSelective(T entity) {
+  public int insertSelective(T entity) {
     EntityUtils.setCreatAndUpdatInfo(entity);
-    mapper.insertSelective(entity);
+    return mapper.insertSelective(entity);
   }
 
   /**
    * 根据实体对象删除
    *
    * @param entity 实体对象
+   * @return int
    */
-  public void delete(T entity) {
-    mapper.delete(entity);
+  public int delete(T entity) {
+    return mapper.delete(entity);
   }
 
   /**
    * 根据实体对象ID删除
    *
    * @param id 实体对象ID
+   * @return int
    */
-  public void deleteById(Object id) {
-    mapper.deleteByPrimaryKey(id);
+  public int deleteById(Object id) {
+    return mapper.deleteByPrimaryKey(id);
   }
 
   /**
    * 根据实体对象ID更新（全部字段）
    *
    * @param entity 实体对象
+   * @return int
    */
-  public void updateById(T entity) {
+  public int updateById(T entity) {
     EntityUtils.setUpdatedInfo(entity);
-    mapper.updateByPrimaryKey(entity);
+    return mapper.updateByPrimaryKey(entity);
   }
 
   /**
    * 根据实体对象ID更新（不为空字段）
    *
    * @param entity 实体对象
+   * @return int
    */
-  public void updateSelectiveById(T entity) {
+  public int updateSelectiveById(T entity) {
     EntityUtils.setUpdatedInfo(entity);
-    mapper.updateByPrimaryKeySelective(entity);
+    return mapper.updateByPrimaryKeySelective(entity);
   }
 
   /**
    * 根据对象查询列表
    *
    * @param tableObj 表对象
-   * @return
+   * @return list
    */
   public List<T> selectByObj(Object tableObj) {
     Example example = parseObjToExample(tableObj);
