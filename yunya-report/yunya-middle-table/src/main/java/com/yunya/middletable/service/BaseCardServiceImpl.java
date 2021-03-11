@@ -1,7 +1,6 @@
 package com.yunya.middletable.service;
 
 import com.google.common.collect.Lists;
-import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.report.domain.bo.BaseCardBo;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.utils.BeanCopierUtils;
@@ -33,7 +32,6 @@ import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -44,9 +42,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.function.Function;
 
 import static com.yunya.middletable.enums.CouponTypeEnum.*;
@@ -96,23 +92,6 @@ public class BaseCardServiceImpl{
 		LocalDateTime submitDate = LocalDateTime.parse((String)model.getParamMap().get("submitDate"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 //		Integer operateType = model.getOperateType();
 		operateBatchDate(cardId, submitDate);
-	}
-
-	public RestErrorBo pullCard(String startDateStr, String endDateStr) throws ExecutionException, InterruptedException {
-		RestErrorBo errorBo = RestErrorBo.getInstance();
-		if (!checkPullDate(startDateStr, endDateStr)) {
-			return errorBo;
-		}
-		List<BaseCard> originData = getOriginDataByDate(startDateStr, endDateStr);
-		if (CollectionUtils.isNotEmpty(originData)) {
-			List<Integer> cardIds = originData.stream().map(BaseCard::getCardId).collect(toList());
-			List<BaseCard> existData = getExistData(cardIds);
-			//批量新增
-			batchInsert(getAddCards(originData, existData));
-			//批量更新
-			batchUpdate(getUpdateCards(originData, existData));
-		}
-		return errorBo;
 	}
 
 	/**
@@ -234,25 +213,6 @@ public class BaseCardServiceImpl{
 		return updateCards;
 	}
 
-	/**
-	 * 通过时间段查询原始数据
-	 *
-	 * @param startDateStr 开始时间
-	 * @param endDateStr   结束时间
-	 * @return list
-	 */
-	private List<BaseCard> getOriginDataByDate(String startDateStr, String endDateStr) {
-		long start = System.currentTimeMillis();
-		List<Card> originCards = getCardsByDate(startDateStr, endDateStr);
-		long end = System.currentTimeMillis();
-		log.info("查询源数据时长：[{}]", end - start);
-		List<BaseCard> list = Lists.newArrayList();
-		if (CollectionUtils.isNotEmpty(originCards)) {
-			list = getOriginData(originCards);
-		}
-		return list;
-	}
-
 	private List<BaseCard> getOriginData(List<Card> originCards) {
 		//查询优惠券分配信息
 		Set<Integer> couponIds = originCards.stream().map(Card::getCouponId).collect(toSet());
@@ -309,13 +269,6 @@ public class BaseCardServiceImpl{
 			}
 			return null;
 		};
-	}
-
-	private List<Card> getCardsByDate(String startDateStr, String endDateStr) {
-		Example example = new Example(Card.class);
-		example.createCriteria().andGreaterThanOrEqualTo("updTime", startDateStr)
-				.andLessThan("updTime", endDateStr);
-		return cardMapper.selectByExample(example);
 	}
 
 	private List<CouponAllocate> getCouponAllocate(List<Integer> couponIds) {
@@ -418,12 +371,6 @@ public class BaseCardServiceImpl{
 		return mapper.selectByExample(example);
 	}
 
-	private List<BaseCard> getExistByCardIds(List<Integer> cardIds) {
-		Example example = new Example(BaseCard.class);
-		example.createCriteria().andIn("cardId", cardIds);
-		return baseCardMapper.selectByExample(example);
-	}
-
 	private List<CouponCommonInfo> getCouponCommons(List<Integer> couponIds) {
 		Example example = new Example(CouponCommonInfo.class);
 		example.createCriteria().andIn("id", couponIds);
@@ -449,40 +396,5 @@ public class BaseCardServiceImpl{
 		example.createCriteria().andEqualTo("couponId", couponId)
 				.andEqualTo("generateDate", submitDate);
 		baseCardMapper.deleteByExample(example);
-	}
-
-	/**
-	 * 校验参数
-	 *
-	 * @param startDateStr 开始时间
-	 * @param endDateStr   结束时间
-	 * @return boolean
-	 */
-	private boolean checkPullDate(String startDateStr, String endDateStr) {
-		LocalDate startDate = LocalDate.parse(startDateStr, df);
-		LocalDate endDate = LocalDate.parse(endDateStr, df);
-		return endDate.compareTo(startDate) > 0;
-	}
-
-	/**
-	 * 查询卡券已存在数据
-	 * @param cardIds 卡券ids
-	 * @return list
-	 * @throws ExecutionException ex
-	 * @throws InterruptedException ex
-	 */
-	private List<BaseCard> getExistData(List<Integer> cardIds) throws ExecutionException, InterruptedException {
-		List<List<Integer>> partition = Lists.partition(cardIds, cutSlice);
-		long start = System.currentTimeMillis();
-		//多线程异步查询结果
-		List<Future<List<BaseCard>>> futures = partition.stream().map(list -> cardThreadPool.submit(() ->
-				baseCardMapper.getExistData(list))).collect(toList());
-		List<BaseCard> existData = Lists.newArrayList();
-		for (Future<List<BaseCard>> future : futures) {
-			existData.addAll(future.get());
-		}
-		long end = System.currentTimeMillis();
-		log.info("查询卡券存在数据时长：[{}]", end - start);
-		return existData;
 	}
 }
