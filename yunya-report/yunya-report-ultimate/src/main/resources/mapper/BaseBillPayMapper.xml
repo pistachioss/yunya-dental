@@ -427,7 +427,7 @@
         patientName,
         patientMobile,
         regDentistId,
-        regDentistName
+        regDentistName,
         originalAmount,
         privilegeAmount,
         actualAmount,
@@ -556,7 +556,7 @@
         patientName,
         patientMobile,
         regDentistId,
-        regDentistName
+        regDentistName,
         originalAmount,
         privilegeAmount,
         actualAmount,
@@ -727,7 +727,7 @@
         patientName,
         patientMobile,
         regDentistId,
-        regDentistName
+        regDentistName,
         originalAmount,
         privilegeAmount,
         actualAmount,
@@ -889,7 +889,7 @@
         patientName,
         patientMobile,
         regDentistId,
-        regDentistName
+        regDentistName,
         originalAmount,
         privilegeAmount,
         actualAmount,
@@ -1058,7 +1058,7 @@
         patientName,
         patientMobile,
         regDentistId,
-        regDentistName
+        regDentistName,
         originalAmount,
         privilegeAmount,
         actualAmount,
@@ -1218,7 +1218,7 @@
         patientName,
         patientMobile,
         regDentistId,
-        regDentistName
+        regDentistName,
         originalAmount,
         privilegeAmount,
         actualAmount,
@@ -1387,7 +1387,7 @@
         patientName,
         patientMobile,
         regDentistId,
-        regDentistName
+        regDentistName,
         originalAmount,
         privilegeAmount,
         actualAmount,
