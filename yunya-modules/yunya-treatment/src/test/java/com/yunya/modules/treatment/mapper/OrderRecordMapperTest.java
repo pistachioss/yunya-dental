@@ -25,7 +25,7 @@ public class OrderRecordMapperTest {
 
   @Test
   public void find() {
-    List<OrderProcessVO> vos = orderRecordMapper.selectOrderProcess("", new Integer[] {25, 26});
+    List<OrderProcessVO> vos = orderRecordMapper.selectOrderProcess("", new Integer[] {});
     System.out.println(vos);
   }
 }

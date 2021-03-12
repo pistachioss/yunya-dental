@@ -114,8 +114,8 @@ public class BaseTreatmentProcessBiz
       case 1:
         Registered registered = registeredMapper.selectByPrimaryKey(dataId);
         treatmentProcess = generateBaseTreatmentProcess(registered);
+        mapper.deleteByRegisteredId(dataId);
         if (null != treatmentProcess) {
-          mapper.deleteByRegisteredId(dataId);
           mapper.insertSelective(treatmentProcess);
         }
         break;
@@ -209,6 +209,7 @@ public class BaseTreatmentProcessBiz
         TreatmentRecord treatmentRecord = new TreatmentRecord();
         treatmentRecord.setAppointmentId(appointmentId);
         setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
+        log.info("=============开始插入中间表就诊记录（更新预约）============{}", treatmentProcess);
         mapper.insertSelective(treatmentProcess);
       }
     } else {
@@ -238,6 +239,7 @@ public class BaseTreatmentProcessBiz
           TreatmentRecord treatmentRecord = new TreatmentRecord();
           treatmentRecord.setRegisteredId(registeredId);
           setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
+          log.info("=============开始插入中间表就诊记录(更新挂号)=============={}", treatmentProcess);
           mapper.insertSelective(treatmentProcess);
         }
       } else {
@@ -287,6 +289,7 @@ public class BaseTreatmentProcessBiz
         default:
           break;
       }
+      treatmentProcess.setOrgId(treatmentRecordResult.getOrgId());
       treatmentProcess.setTreatStartTime(treatmentRecordResult.getTreatStartTime());
       treatmentProcess.setTreatEndTime(treatmentRecordResult.getTreatEndTime());
       setBaseTreatmentProcessAssistantValue(treatmentRecordResult.getId(), treatmentProcess);
