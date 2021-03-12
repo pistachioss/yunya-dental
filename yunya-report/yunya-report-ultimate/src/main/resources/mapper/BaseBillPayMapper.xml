@@ -427,7 +427,7 @@
         patientName,
         patientMobile,
         regDentistId,
-        regDentistName,
+        regDentistName
         originalAmount,
         privilegeAmount,
         actualAmount,
@@ -437,253 +437,56 @@
         payeeName
         FROM (
         SELECT
-        billPayId,
-        DATE_FORMAT(payeeDate, '%Y-%m-%d') AS payeeDate,
-        payeeOrgId,
-        payeeOrgName,
-        billId,
-        billNum,
-        billOrgId,
-        billOrgName,
-        DATE_FORMAT(billDate, '%Y-%m-%d') AS billDate,
-        patientId,
-        patientName,
-        pinyin_name AS pinyinName,
-        patientMobile,
-        regDentistId,
-        regDentistName,
-        originalAmount,
-        privilegeAmount,
-        actualAmount,
-        totalReceivedAmount,
-        receivedAmount,
-        payeeId,
-        payeeName
-        FROM
-        (
-        SELECT
-        bbp.bill_pay_id AS billPayId,
-        bbp.payee_date AS payeeDate,
-        bbp.org_id AS payeeOrgId,
-        bo.abbreviation AS payeeOrgName,
-        bbp.bill_id AS billId,
-        bb.bill_num AS billNum,
-        bbp.org_id AS billOrgId,
-        bo.abbreviation as billOrgName,
-        bb.bill_date AS billDate,
-        btp.patientId,
-        btp.patientName,
-        btp.patientMobile,
-        btp.pinyin_name,
-        btp.regDentistId,
-        btp.regDentistName,
-        bb.order_amount AS originalAmount,
-        bb.privilege_amount AS privilegeAmount,
-        bb.actual_amount AS actualAmount,
-        bb.received_amount AS totalReceivedAmount,
-        bbp.received_amount AS receivedAmount,
-        bbp.payee_user_id AS payeeId,
-        be.employee_name AS payeeName
-        FROM
-        base_bill_pay bbp
-        LEFT JOIN base_bill bb ON bbp.bill_id = bb.bill_id
-        LEFT JOIN base_organization bo on bbp.org_id = bo.org_id
-        LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
-        LEFT JOIN (
-        SELECT
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id AS patientId,
-        bp.`name` AS patientName,
-        bp.mobile AS patientMobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id AS regDentistId,
-        be.employee_name AS regDentistName
-        FROM
-        base_treatment_process btp
-        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
-        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-        WHERE
-        btp.treat_end_time IS NOT NULL
-        GROUP BY
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id,
-        be.employee_name
-        ) btp ON bbp.treatment_id = btp.treatment_id
-        ) bbp INNER JOIN (
-        SELECT
-        bb.org_id,
-        bb.bill_id,
-        bb.bill_date
-        FROM
-        base_bill bb
-        <where>
-            AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
-            <if test="query.orgId != null">
-                AND bb.org_id = #{query.orgId}
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
-        GROUP BY
-        bb.org_id,
-        bb.bill_id,
-        bb.bill_date
-        ) bb ON bbp.billId = bb.bill_id
-        AND bbp.payeeDate = bb.bill_date
-        AND bbp.billOrgId = bb.org_id
-        ) bbp
-        <where>
-            <if test="query.patientKeyword != null and query.patientKeyword != ''">
-                AND concat(IFNULL(bbp.patientName, ''),IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) like
-                concat('%', #{query.patientKeyword}, '%')
-            </if>
-            <if test="query.billNum != null and query.billNum != ''">
-                AND bbp.billNum LIKE concat('%', #{query.billNum}, '%')
-            </if>
-            <if test="query.chargeStartDate != null and query.chargeStartDate != ''">
-                AND bbp.payeeDate &gt;= #{query.chargeStartDate}
-            </if>
-            <if test="query.chargeEndDate != null and query.chargeEndDate != ''">
-                AND bbp.payeeDate &lt;= #{query.chargeEndDate}
-            </if>
-        </where>
-        order by bbp.payeeDate, bbp.billNum desc
-    </select>
-
-    <!-- 根据条件查询账单收欠费（本月账单本月非首次收费）详情信息列表 -->
-    <select id="selectBillCurrentChargeDebtDetailList"
-            resultType="com.yunya.feign.report.domain.vo.StatementBillChargeDetailVO">
-        SELECT
-        billPayId,
-        payeeDate,
-        payeeOrgId,
-        payeeOrgName,
-        billId,
-        billNum,
-        billDate,
-        billOrgId,
-        billOrgName,
-        patientId,
-        patientName,
-        patientMobile,
-        regDentistId,
-        regDentistName,
-        originalAmount,
-        privilegeAmount,
-        actualAmount,
-        totalReceivedAmount,
-        receivedAmount,
-        payeeId,
-        payeeName
-        FROM (
-        SELECT
-        billPayId,
-        DATE_FORMAT(payeeDate, '%Y-%m-%d') AS payeeDate,
-        payeeOrgId,
-        payeeOrgName,
-        billId,
-        billNum,
-        billOrgId,
-        billOrgName,
-        DATE_FORMAT(billDate, '%Y-%m-%d') AS billDate,
-        patientId,
-        patientName,
-        pinyin_name AS pinyinName,
-        patientMobile,
-        regDentistId,
-        regDentistName,
-        originalAmount,
-        privilegeAmount,
-        actualAmount,
-        totalReceivedAmount,
-        receivedAmount,
-        payeeId,
-        payeeName
-        FROM
-        (
-        SELECT
-        bbp.bill_pay_id AS billPayId,
-        bbp.payee_date AS payeeDate,
-        bbp.org_id AS payeeOrgId,
-        bo.abbreviation AS payeeOrgName,
-        bbp.bill_id AS billId,
-        bb.bill_num AS billNum,
-        bb.bill_date AS billDate,
-        bb.org_id AS billOrgId,
+        bbp.billPayId,
+        bbp.payeeDate,
+        bbp.payeeOrgId,
+        bbp.payeeOrgName,
+        bbp.payeeId,
+        bbp.payeeName,
+        bbp.receivedAmount,
+        bbp.billId,
+        bbp.billOrgId,
         bo.abbreviation AS billOrgName,
-        btp.patientId,
-        btp.patientName,
-        btp.patientMobile,
-        btp.pinyin_name,
-        btp.regDentistId,
-        btp.regDentistName,
+        bbp.billNum,
+        bbp.originalAmount,
+        bbp.billDate,
+        bbp.privilegeAmount,
+        bbp.actualAmount,
+        bbp.totalReceivedAmount,
+        bbp.regDentistId,
+        be.employee_name AS regDentistName,
+        bbp.patientId,
+        bp.`name` AS patientName,
+        bp.mobile AS patientMobile,
+        bp.pinyin_name AS pinyinName
+        FROM
+        (
+        SELECT
+        bbp.bill_pay_id AS billPayId,
+        bbp.bill_id AS billId,
+        bbp.org_id AS payeeOrgId,
+        bo.abbreviation AS payeeOrgName,
+        DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') AS payeeDate,
+        bbp.payee_user_id AS payeeId,
+        be.employee_name AS payeeName,
+        bbp.received_amount AS receivedAmount,
+        bb.org_id AS billOrgId,
+        bb.bill_num AS billNum,
         bb.order_amount AS originalAmount,
+        DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
         bb.privilege_amount AS privilegeAmount,
         bb.actual_amount AS actualAmount,
         bb.received_amount AS totalReceivedAmount,
-        bbp.received_amount AS receivedAmount,
-        bbp.payee_user_id AS payeeId,
-        be.employee_name AS payeeName
+        btp.registered_dentist_id AS regDentistId,
+        btp.patient_id AS patientId
         FROM
         base_bill_pay bbp
-        LEFT JOIN base_bill bb ON bbp.bill_id = bb.bill_id
-        LEFT JOIN base_organization bo on bbp.org_id = bo.org_id
-        LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
-        LEFT JOIN (
-        SELECT
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id AS patientId,
-        bp.`name` AS patientName,
-        bp.mobile AS patientMobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id AS regDentistId,
-        be.employee_name AS regDentistName
-        FROM
-        base_treatment_process btp
-        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
-        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-        WHERE
-        btp.treat_end_time IS NOT NULL
-        GROUP BY
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id,
-        be.employee_name
-        ) btp ON bbp.treatment_id = btp.treatment_id
+        INNER JOIN base_organization bo ON bbp.org_id = bo.org_id
+        INNER JOIN base_bill bb ON bbp.org_id = bb.org_id
+        AND bbp.bill_id = bb.bill_id
+        AND bbp.payee_date = bb.bill_date
+        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
         <where>
             <if test="query.orgId != null">
                 AND bbp.org_id = #{query.orgId}
@@ -713,15 +516,114 @@
                 </if>
             </if>
         </where>
-        ) bbp INNER JOIN (
+        ) bbp
+        LEFT JOIN base_patient bp ON bbp.patientId = bp.patient_id
+        LEFT JOIN base_organization bo on bbp.billOrgId = bo.org_id
+        LEFT JOIN base_employee be on bbp.regDentistId = be.user_id
+        ) bbp
+        <where>
+            <if test="query.patientKeyword != null and query.patientKeyword != ''">
+                AND concat(IFNULL(bbp.patientName, ''),IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) like
+                concat('%', #{query.patientKeyword}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                AND bbp.billNum LIKE concat('%', #{query.billNum}, '%')
+            </if>
+            <if test="query.chargeStartDate != null and query.chargeStartDate != ''">
+                AND bbp.payeeDate &gt;= #{query.chargeStartDate}
+            </if>
+            <if test="query.chargeEndDate != null and query.chargeEndDate != ''">
+                AND bbp.payeeDate &lt;= #{query.chargeEndDate}
+            </if>
+        </where>
+        ORDER BY bbp.payeeDate, bbp.billNum DESC
+    </select>
+
+    <!-- 根据条件查询账单收欠费（本月账单本月非首次收费）详情信息列表 -->
+    <select id="selectBillCurrentChargeDebtDetailList"
+            resultType="com.yunya.feign.report.domain.vo.StatementBillChargeDetailVO">
+        SELECT
+        billPayId,
+        payeeDate,
+        payeeOrgId,
+        payeeOrgName,
+        billId,
+        billNum,
+        billOrgId,
+        billOrgName,
+        billDate,
+        patientId,
+        patientName,
+        patientMobile,
+        regDentistId,
+        regDentistName
+        originalAmount,
+        privilegeAmount,
+        actualAmount,
+        totalReceivedAmount,
+        receivedAmount,
+        payeeId,
+        payeeName
+        FROM (
+        SELECT
+        bbp.billPayId,
+        bbp.payeeDate,
+        bbp.payeeOrgId,
+        bbp.payeeOrgName,
+        bbp.payeeId,
+        bbp.payeeName,
+        bbp.receivedAmount,
+        bbp.billId,
+        bbp.billOrgId,
+        bo.abbreviation AS billOrgName,
+        bbp.billNum,
+        bbp.originalAmount,
+        bbp.billDate,
+        bbp.privilegeAmount,
+        bbp.actualAmount,
+        bbp.totalReceivedAmount,
+        bbp.regDentistId,
+        be.employee_name AS regDentistName,
+        bbp.patientId,
+        bp.`name` AS patientName,
+        bp.mobile AS patientMobile,
+        bp.pinyin_name AS pinyinName
+        FROM
+        (
+        SELECT
+        bbp.bill_pay_id AS billPayId,
+        bbp.bill_id AS billId,
+        bbp.org_id AS payeeOrgId,
+        bo.abbreviation AS payeeOrgName,
+        DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') AS payeeDate,
+        bbp.payee_user_id AS payeeId,
+        be.employee_name AS payeeName,
+        bbp.received_amount AS receivedAmount,
+        bb.org_id AS billOrgId,
+        bb.bill_num AS billNum,
+        bb.order_amount AS originalAmount,
+        DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
+        bb.privilege_amount AS privilegeAmount,
+        bb.actual_amount AS actualAmount,
+        bb.received_amount AS totalReceivedAmount,
+        btp.registered_dentist_id AS regDentistId,
+        btp.patient_id AS patientId
+        FROM
+        base_bill_pay bbp
+        INNER JOIN base_organization bo ON bbp.org_id = bo.org_id
+        INNER JOIN (
         SELECT
         bb.org_id,
         bb.bill_id,
-        bb.bill_date
+        bb.bill_num,
+        bb.order_amount,
+        bb.bill_date,
+        bb.privilege_amount,
+        bb.actual_amount,
+        bb.received_amount
         FROM
         base_bill bb
         <where>
-            AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
@@ -751,13 +653,44 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bb.org_id,
-        bb.bill_id,
-        bb.bill_date
-        ) bb ON bbp.payeeOrgId = bb.org_id
-        AND bbp.payeeDate != bb.bill_date
-        AND bbp.billId = bb.bill_id
+        ) bb ON bbp.org_id = bb.org_id
+        AND bbp.bill_id = bb.bill_id
+        AND bbp.payee_date != bb.bill_date
+        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
+        <where>
+            <if test="query.orgId != null">
+                AND bbp.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bbp
+        LEFT JOIN base_patient bp ON bbp.patientId = bp.patient_id
+        LEFT JOIN base_organization bo on bbp.billOrgId = bo.org_id
+        LEFT JOIN base_employee be on bbp.regDentistId = be.user_id
         ) bbp
         <where>
             <if test="query.patientKeyword != null and query.patientKeyword != ''">
@@ -774,7 +707,7 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
-        order by bbp.payeeDate, bbp.billNum desc
+        ORDER BY bbp.payeeDate, bbp.billNum DESC
     </select>
 
     <!-- 根据条件查询账单收欠费（非本月账单本月非首次收费）详情信息列表 -->
@@ -794,7 +727,7 @@
         patientName,
         patientMobile,
         regDentistId,
-        regDentistName,
+        regDentistName
         originalAmount,
         privilegeAmount,
         actualAmount,
@@ -804,84 +737,89 @@
         payeeName
         FROM (
         SELECT
-        billPayId,
-        DATE_FORMAT(payeeDate, '%Y-%m-%d') AS payeeDate,
-        payeeOrgId,
-        payeeOrgName,
-        billId,
-        billNum,
-        billOrgId,
-        billOrgName,
-        DATE_FORMAT(billDate, '%Y-%m-%d') AS billDate,
-        patientId,
-        patientName,
-        pinyin_name AS pinyinName,
-        patientMobile,
-        regDentistId,
-        regDentistName,
-        originalAmount,
-        privilegeAmount,
-        actualAmount,
-        totalReceivedAmount,
-        receivedAmount,
-        payeeId,
-        payeeName
+        bbp.billPayId,
+        bbp.payeeDate,
+        bbp.payeeOrgId,
+        bbp.payeeOrgName,
+        bbp.payeeId,
+        bbp.payeeName,
+        bbp.receivedAmount,
+        bbp.billId,
+        bbp.billOrgId,
+        bo.abbreviation AS billOrgName,
+        bbp.billNum,
+        bbp.originalAmount,
+        bbp.billDate,
+        bbp.privilegeAmount,
+        bbp.actualAmount,
+        bbp.totalReceivedAmount,
+        bbp.regDentistId,
+        be.employee_name AS regDentistName,
+        bbp.patientId,
+        bp.`name` AS patientName,
+        bp.mobile AS patientMobile,
+        bp.pinyin_name AS pinyinName
         FROM
         (
         SELECT
-        bb.org_id AS billOrgId,
-        bo.abbreviation AS billOrgName,
         bbp.bill_pay_id AS billPayId,
-        bbp.payee_date AS payeeDate,
+        bbp.bill_id AS billId,
         bbp.org_id AS payeeOrgId,
         bo.abbreviation AS payeeOrgName,
-        bbp.bill_id AS billId,
+        DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') AS payeeDate,
+        bbp.payee_user_id AS payeeId,
+        be.employee_name AS payeeName,
+        bbp.received_amount AS receivedAmount,
+        bb.org_id AS billOrgId,
         bb.bill_num AS billNum,
-        bb.bill_date AS billDate,
-        btp.patientId,
-        btp.patientName,
-        btp.patientMobile,
-        btp.pinyin_name,
-        btp.regDentistId,
-        btp.regDentistName,
         bb.order_amount AS originalAmount,
+        DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
         bb.privilege_amount AS privilegeAmount,
         bb.actual_amount AS actualAmount,
         bb.received_amount AS totalReceivedAmount,
-        bbp.received_amount AS receivedAmount,
-        bbp.payee_user_id AS payeeId,
-        be.employee_name AS payeeName
+        btp.registered_dentist_id AS regDentistId,
+        btp.patient_id AS patientId
         FROM
         base_bill_pay bbp
-        LEFT JOIN base_bill bb ON bbp.bill_id = bb.bill_id
-        LEFT JOIN base_organization bo on bbp.org_id = bo.org_id
-        LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
-        LEFT JOIN (
+        INNER JOIN base_organization bo ON bbp.org_id = bo.org_id
+        INNER JOIN (
         SELECT
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id AS patientId,
-        bp.`name` AS patientName,
-        bp.mobile AS patientMobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id AS regDentistId,
-        be.employee_name AS regDentistName
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_num,
+        bb.order_amount,
+        bb.bill_date,
+        bb.privilege_amount,
+        bb.actual_amount,
+        bb.received_amount
         FROM
-        base_treatment_process btp
-        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
-        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-        WHERE
-        btp.treat_end_time IS NOT NULL
-        GROUP BY
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id,
-        be.employee_name
-        ) btp ON bbp.treatment_id = btp.treatment_id
+        base_bill bb
+        <where>
+            AND bb.bill_num IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt; #{query.startDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt; #{query.startDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt; #{query.startDate}
+                </if>
+            </if>
+        </where>
+        ) bb ON bbp.org_id = bb.org_id
+        AND bbp.bill_id = bb.bill_id
+        AND bbp.payee_date != bb.bill_date
+        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
         <where>
             <if test="query.orgId != null">
                 AND bbp.org_id = #{query.orgId}
@@ -911,56 +849,14 @@
                 </if>
             </if>
         </where>
-        ) bbp INNER JOIN
-        (
-        SELECT
-        bb.org_id,
-        bb.bill_id,
-        bb.bill_date
-        FROM
-        base_bill bb
-        <where>
-            AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
-            <if test="query.orgId != null">
-                AND bb.org_id = #{query.orgId}
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt; #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    OR DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt; #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt; #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    OR DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt; #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt; #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    OR DATE_FORMAT( bb.bill_date, '%Y' ) &gt; #{query.endDate}
-                </if>
-            </if>
-        </where>
-        GROUP BY
-        bb.org_id,
-        bb.bill_id,
-        bb.bill_date
-        ) bb ON bbp.payeeOrgId = bb.org_id
-        AND bbp.payeeDate != bb.bill_date
-        AND bbp.billId = bb.bill_id
+        ) bbp
+        LEFT JOIN base_patient bp ON bbp.patientId = bp.patient_id
+        LEFT JOIN base_organization bo on bbp.billOrgId = bo.org_id
+        LEFT JOIN base_employee be on bbp.regDentistId = be.user_id
         ) bbp
         <where>
             <if test="query.patientKeyword != null and query.patientKeyword != ''">
-                AND concat(IFNULL(bbp.patientName, ''), IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) LIKE
+                AND concat(IFNULL(bbp.patientName, ''),IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) like
                 concat('%', #{query.patientKeyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
@@ -973,7 +869,7 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
-        order by bbp.payeeDate, bbp.billNum desc
+        ORDER BY bbp.payeeDate, bbp.billNum DESC
     </select>
 
     <!-- 根据条件查询门诊代收（当月）账单详情列表 -->
@@ -993,7 +889,7 @@
         patientName,
         patientMobile,
         regDentistId,
-        regDentistName,
+        regDentistName
         originalAmount,
         privilegeAmount,
         actualAmount,
@@ -1003,135 +899,64 @@
         payeeName
         FROM (
         SELECT
-        billPayId,
-        DATE_FORMAT(payeeDate, '%Y-%m-%d') AS payeeDate,
-        payeeOrgId,
-        payeeOrgName,
-        billId,
-        billNum,
-        billOrgId,
-        billOrgName,
-        DATE_FORMAT(billDate, '%Y-%m-%d') AS billDate,
-        patientId,
-        patientName,
-        pinyin_name AS pinyinName,
-        patientMobile,
-        regDentistId,
-        regDentistName,
-        originalAmount,
-        privilegeAmount,
-        actualAmount,
-        totalReceivedAmount,
-        receivedAmount,
-        payeeId,
-        payeeName
+        bbp.billPayId,
+        bbp.payeeDate,
+        bbp.payeeOrgId,
+        bbp.payeeOrgName,
+        bbp.payeeId,
+        bbp.payeeName,
+        bbp.receivedAmount,
+        bbp.billId,
+        bbp.billOrgId,
+        bo.abbreviation AS billOrgName,
+        bbp.billNum,
+        bbp.originalAmount,
+        bbp.billDate,
+        bbp.privilegeAmount,
+        bbp.actualAmount,
+        bbp.totalReceivedAmount,
+        bbp.regDentistId,
+        be.employee_name AS regDentistName,
+        bbp.patientId,
+        bp.`name` AS patientName,
+        bp.mobile AS patientMobile,
+        bp.pinyin_name AS pinyinName
         FROM
         (
         SELECT
         bbp.bill_pay_id AS billPayId,
-        bbp.payee_date AS payeeDate,
+        bbp.bill_id AS billId,
         bbp.org_id AS payeeOrgId,
         bo.abbreviation AS payeeOrgName,
-        bbp.bill_id AS billId,
+        DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') AS payeeDate,
+        bbp.payee_user_id AS payeeId,
+        be.employee_name AS payeeName,
+        bbp.received_amount AS receivedAmount,
         bb.org_id AS billOrgId,
-        bb.orgName AS billOrgName,
         bb.bill_num AS billNum,
-        bb.bill_date AS billDate,
-        btp.patientId,
-        btp.patientName,
-        btp.patientMobile,
-        btp.pinyin_name,
-        btp.regDentistId,
-        btp.regDentistName,
         bb.order_amount AS originalAmount,
+        DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
         bb.privilege_amount AS privilegeAmount,
         bb.actual_amount AS actualAmount,
         bb.received_amount AS totalReceivedAmount,
-        bbp.received_amount AS receivedAmount,
-        bbp.payee_user_id AS payeeId,
-        be.employee_name AS payeeName
+        btp.registered_dentist_id AS regDentistId,
+        btp.patient_id AS patientId
         FROM
         base_bill_pay bbp
-        LEFT JOIN (
+        INNER JOIN base_organization bo ON bbp.org_id = bo.org_id
+        INNER JOIN (
         SELECT
-        bb.bill_id,
         bb.org_id,
-        bo.abbreviation as orgName,
+        bb.bill_id,
         bb.bill_num,
-        bb.bill_date,
         bb.order_amount,
+        bb.bill_date,
         bb.privilege_amount,
         bb.actual_amount,
         bb.received_amount
         FROM
         base_bill bb
-        LEFT JOIN base_organization bo on bb.org_id = bo.org_id
-        ) bb ON bbp.bill_id = bb.bill_id
-        LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
-        LEFT JOIN base_organization bo on bbp.org_id = bo.org_id
-        LEFT JOIN (
-        SELECT
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id AS patientId,
-        bp.`name` AS patientName,
-        bp.mobile AS patientMobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id AS regDentistId,
-        be.employee_name AS regDentistName
-        FROM
-        base_treatment_process btp
-        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
-        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-        WHERE
-        btp.treat_end_time IS NOT NULL
-        GROUP BY
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id,
-        be.employee_name
-        ) btp ON bbp.treatment_id = btp.treatment_id
         <where>
-            <if test="query.orgId != null">
-                AND bbp.org_id = #{query.orgId}
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
-        ) bbp INNER JOIN
-        (
-        SELECT
-        bb.bill_id
-        FROM
-        base_bill bb
-        <where>
-            AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id != #{query.orgId}
@@ -1161,13 +986,46 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
-        ) bb ON bbp.billId = bb.bill_id
+        ) bb ON bbp.bill_id = bb.bill_id
+        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
+        <where>
+            <if test="query.orgId != null">
+                AND bbp.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bbp
+        LEFT JOIN base_patient bp ON bbp.patientId = bp.patient_id
+        LEFT JOIN base_organization bo on bbp.billOrgId = bo.org_id
+        LEFT JOIN base_employee be on bbp.regDentistId = be.user_id
         ) bbp
         <where>
             <if test="query.patientKeyword != null and query.patientKeyword != ''">
-                AND concat(IFNULL(bbp.patientName, ''), IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) LIKE
+                AND concat(IFNULL(bbp.patientName, ''),IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) like
                 concat('%', #{query.patientKeyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
@@ -1180,7 +1038,7 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
-        order by bbp.payeeDate, bbp.billNum desc
+        ORDER BY bbp.payeeDate, bbp.billNum DESC
     </select>
 
     <!-- 根据条件查询门诊代收（非当月）账单详情列表 -->
@@ -1200,7 +1058,7 @@
         patientName,
         patientMobile,
         regDentistId,
-        regDentistName,
+        regDentistName
         originalAmount,
         privilegeAmount,
         actualAmount,
@@ -1210,98 +1068,87 @@
         payeeName
         FROM (
         SELECT
-        billPayId,
-        DATE_FORMAT(payeeDate, '%Y-%m-%d') AS payeeDate,
-        payeeOrgId,
-        payeeOrgName,
-        billId,
-        billNum,
-        billOrgId,
-        billOrgName,
-        DATE_FORMAT(billDate, '%Y-%m-%d') AS billDate,
-        patientId,
-        patientName,
-        pinyin_name AS pinyinName,
-        patientMobile,
-        regDentistId,
-        regDentistName,
-        originalAmount,
-        privilegeAmount,
-        actualAmount,
-        totalReceivedAmount,
-        receivedAmount,
-        payeeId,
-        payeeName
+        bbp.billPayId,
+        bbp.payeeDate,
+        bbp.payeeOrgId,
+        bbp.payeeOrgName,
+        bbp.payeeId,
+        bbp.payeeName,
+        bbp.receivedAmount,
+        bbp.billId,
+        bbp.billOrgId,
+        bo.abbreviation AS billOrgName,
+        bbp.billNum,
+        bbp.originalAmount,
+        bbp.billDate,
+        bbp.privilegeAmount,
+        bbp.actualAmount,
+        bbp.totalReceivedAmount,
+        bbp.regDentistId,
+        be.employee_name AS regDentistName,
+        bbp.patientId,
+        bp.`name` AS patientName,
+        bp.mobile AS patientMobile,
+        bp.pinyin_name AS pinyinName
         FROM
         (
         SELECT
         bbp.bill_pay_id AS billPayId,
-        bbp.payee_date AS payeeDate,
+        bbp.bill_id AS billId,
         bbp.org_id AS payeeOrgId,
         bo.abbreviation AS payeeOrgName,
-        bbp.bill_id AS billId,
+        DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') AS payeeDate,
+        bbp.payee_user_id AS payeeId,
+        be.employee_name AS payeeName,
+        bbp.received_amount AS receivedAmount,
         bb.org_id AS billOrgId,
-        bb.orgName AS billOrgName,
         bb.bill_num AS billNum,
-        bb.bill_date AS billDate,
-        btp.patientId,
-        btp.patientName,
-        btp.patientMobile,
-        btp.pinyin_name,
-        btp.regDentistId,
-        btp.regDentistName,
         bb.order_amount AS originalAmount,
+        DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
         bb.privilege_amount AS privilegeAmount,
         bb.actual_amount AS actualAmount,
         bb.received_amount AS totalReceivedAmount,
-        bbp.received_amount AS receivedAmount,
-        bbp.payee_user_id AS payeeId,
-        be.employee_name AS payeeName
+        btp.registered_dentist_id AS regDentistId,
+        btp.patient_id AS patientId
         FROM
         base_bill_pay bbp
-        LEFT JOIN (
+        INNER JOIN base_organization bo ON bbp.org_id = bo.org_id
+        INNER JOIN (
         SELECT
-        bb.bill_id,
         bb.org_id,
-        bo.abbreviation as orgName,
+        bb.bill_id,
         bb.bill_num,
-        bb.bill_date,
         bb.order_amount,
+        bb.bill_date,
         bb.privilege_amount,
         bb.actual_amount,
         bb.received_amount
         FROM
         base_bill bb
-        LEFT JOIN base_organization bo on bb.org_id = bo.org_id
+        <where>
+            AND bb.bill_num IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id != #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt; #{query.startDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt; #{query.startDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt; #{query.startDate}
+                </if>
+            </if>
+        </where>
         ) bb ON bbp.bill_id = bb.bill_id
-        LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
-        LEFT JOIN base_organization bo on bbp.org_id = bo.org_id
-        LEFT JOIN (
-        SELECT
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id AS patientId,
-        bp.`name` AS patientName,
-        bp.mobile AS patientMobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id AS regDentistId,
-        be.employee_name AS regDentistName
-        FROM
-        base_treatment_process btp
-        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
-        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-        WHERE
-        btp.treat_end_time IS NOT NULL
-        GROUP BY
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id,
-        be.employee_name
-        ) btp ON bbp.treatment_id = btp.treatment_id
+        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
         <where>
             <if test="query.orgId != null">
                 AND bbp.org_id = #{query.orgId}
@@ -1331,49 +1178,14 @@
                 </if>
             </if>
         </where>
-        ) bbp INNER JOIN (
-        SELECT
-        bb.bill_id
-        FROM
-        base_bill bb
-        <where>
-            AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
-            <if test="query.orgId != null">
-                AND bb.org_id != #{query.orgId}
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt; #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    OR DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt; #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt; #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    OR DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt; #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt; #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    OR DATE_FORMAT( bb.bill_date, '%Y' ) &gt; #{query.endDate}
-                </if>
-            </if>
-        </where>
-        GROUP BY
-        bb.bill_id
-        ) bb ON bbp.billId = bb.bill_id
+        ) bbp
+        LEFT JOIN base_patient bp ON bbp.patientId = bp.patient_id
+        LEFT JOIN base_organization bo on bbp.billOrgId = bo.org_id
+        LEFT JOIN base_employee be on bbp.regDentistId = be.user_id
         ) bbp
         <where>
             <if test="query.patientKeyword != null and query.patientKeyword != ''">
-                AND concat(IFNULL(bbp.patientName, ''), IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) LIKE
+                AND concat(IFNULL(bbp.patientName, ''),IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) like
                 concat('%', #{query.patientKeyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
@@ -1386,7 +1198,7 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
-        order by bbp.payeeDate, bbp.billNum desc
+        ORDER BY bbp.payeeDate, bbp.billNum DESC
     </select>
 
     <!-- 根据条件查询门诊被代收账单（当月）明细列表 -->
@@ -1406,7 +1218,7 @@
         patientName,
         patientMobile,
         regDentistId,
-        regDentistName,
+        regDentistName
         originalAmount,
         privilegeAmount,
         actualAmount,
@@ -1416,134 +1228,64 @@
         payeeName
         FROM (
         SELECT
-        billPayId,
-        DATE_FORMAT(payeeDate, '%Y-%m-%d') AS payeeDate,
-        payeeOrgId,
-        payeeOrgName,
-        billId,
-        billNum,
-        billOrgId,
-        billOrgName,
-        DATE_FORMAT(billDate, '%Y-%m-%d') AS billDate,
-        patientId,
-        patientName,
-        pinyin_name AS pinyinName,
-        patientMobile,
-        regDentistId,
-        regDentistName,
-        originalAmount,
-        privilegeAmount,
-        actualAmount,
-        totalReceivedAmount,
-        receivedAmount,
-        payeeId,
-        payeeName
+        bbp.billPayId,
+        bbp.payeeDate,
+        bbp.payeeOrgId,
+        bbp.payeeOrgName,
+        bbp.payeeId,
+        bbp.payeeName,
+        bbp.receivedAmount,
+        bbp.billId,
+        bbp.billOrgId,
+        bo.abbreviation AS billOrgName,
+        bbp.billNum,
+        bbp.originalAmount,
+        bbp.billDate,
+        bbp.privilegeAmount,
+        bbp.actualAmount,
+        bbp.totalReceivedAmount,
+        bbp.regDentistId,
+        be.employee_name AS regDentistName,
+        bbp.patientId,
+        bp.`name` AS patientName,
+        bp.mobile AS patientMobile,
+        bp.pinyin_name AS pinyinName
         FROM
         (
         SELECT
         bbp.bill_pay_id AS billPayId,
-        bbp.payee_date AS payeeDate,
+        bbp.bill_id AS billId,
         bbp.org_id AS payeeOrgId,
         bo.abbreviation AS payeeOrgName,
-        bbp.bill_id AS billId,
+        DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') AS payeeDate,
+        bbp.payee_user_id AS payeeId,
+        be.employee_name AS payeeName,
+        bbp.received_amount AS receivedAmount,
         bb.org_id AS billOrgId,
-        bb.orgName AS billOrgName,
         bb.bill_num AS billNum,
-        bb.bill_date AS billDate,
-        btp.patientId,
-        btp.patientName,
-        btp.patientMobile,
-        btp.pinyin_name,
-        btp.regDentistId,
-        btp.regDentistName,
         bb.order_amount AS originalAmount,
+        DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
         bb.privilege_amount AS privilegeAmount,
         bb.actual_amount AS actualAmount,
         bb.received_amount AS totalReceivedAmount,
-        bbp.received_amount AS receivedAmount,
-        bbp.payee_user_id AS payeeId,
-        be.employee_name AS payeeName
+        btp.registered_dentist_id AS regDentistId,
+        btp.patient_id AS patientId
         FROM
         base_bill_pay bbp
-        LEFT JOIN (
+        INNER JOIN base_organization bo ON bbp.org_id = bo.org_id
+        INNER JOIN (
         SELECT
-        bb.bill_id,
         bb.org_id,
-        bo.abbreviation as orgName,
+        bb.bill_id,
         bb.bill_num,
-        bb.bill_date,
         bb.order_amount,
+        bb.bill_date,
         bb.privilege_amount,
         bb.actual_amount,
         bb.received_amount
         FROM
         base_bill bb
-        LEFT JOIN base_organization bo on bb.org_id = bo.org_id
-        ) bb ON bbp.bill_id = bb.bill_id
-        LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
-        LEFT JOIN base_organization bo on bbp.org_id = bo.org_id
-        LEFT JOIN (
-        SELECT
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id AS patientId,
-        bp.`name` AS patientName,
-        bp.mobile AS patientMobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id AS regDentistId,
-        be.employee_name AS regDentistName
-        FROM
-        base_treatment_process btp
-        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
-        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-        WHERE
-        btp.treat_end_time IS NOT NULL
-        GROUP BY
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id,
-        be.employee_name
-        ) btp ON bbp.treatment_id = btp.treatment_id
         <where>
-            <if test="query.orgId != null">
-                AND bbp.org_id != #{query.orgId}
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
-        ) bbp INNER JOIN (
-        SELECT
-        bb.bill_id
-        FROM
-        base_bill bb
-        <where>
-            AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
@@ -1573,147 +1315,9 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bb.bill_id
-        ) bb ON bbp.billId = bb.bill_id
-        ) bbp
-        <where>
-            <if test="query.patientKeyword != null and query.patientKeyword != ''">
-                AND concat(IFNULL(bbp.patientName, ''), IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) LIKE
-                concat('%', #{query.patientKeyword}, '%')
-            </if>
-            <if test="query.billNum != null and query.billNum != ''">
-                AND bbp.billNum LIKE concat('%', #{query.billNum}, '%')
-            </if>
-            <if test="query.chargeStartDate != null and query.chargeStartDate != ''">
-                AND bbp.payeeDate &gt;= #{query.chargeStartDate}
-            </if>
-            <if test="query.chargeEndDate != null and query.chargeEndDate != ''">
-                AND bbp.payeeDate &lt;= #{query.chargeEndDate}
-            </if>
-        </where>
-        order by bbp.payeeDate, bbp.billNum desc
-    </select>
-
-    <!-- 根据条件查询门诊被代收账单（非当月）明细列表 -->
-    <select id="selectOtherBillIsAcceptedDetailList"
-            resultType="com.yunya.feign.report.domain.vo.StatementBillChargeDetailVO">
-        SELECT
-        billPayId,
-        payeeDate,
-        payeeOrgId,
-        payeeOrgName,
-        billId,
-        billNum,
-        billOrgId,
-        billOrgName,
-        billDate,
-        patientId,
-        patientName,
-        patientMobile,
-        regDentistId,
-        regDentistName,
-        originalAmount,
-        privilegeAmount,
-        actualAmount,
-        totalReceivedAmount,
-        receivedAmount,
-        payeeId,
-        payeeName
-        FROM (
-        SELECT
-        billPayId,
-        DATE_FORMAT(payeeDate, '%Y-%m-%d') AS payeeDate,
-        payeeOrgId,
-        payeeOrgName,
-        billId,
-        billNum,
-        billOrgId,
-        billOrgName,
-        DATE_FORMAT(billDate, '%Y-%m-%d') AS billDate,
-        patientId,
-        patientName,
-        pinyin_name AS pinyinName,
-        patientMobile,
-        regDentistId,
-        regDentistName,
-        originalAmount,
-        privilegeAmount,
-        actualAmount,
-        totalReceivedAmount,
-        receivedAmount,
-        payeeId,
-        payeeName
-        FROM
-        (
-        SELECT
-        bbp.bill_pay_id AS billPayId,
-        bbp.payee_date AS payeeDate,
-        bbp.org_id AS payeeOrgId,
-        bo.abbreviation AS payeeOrgName,
-        bbp.bill_id AS billId,
-        bb.org_id AS billOrgId,
-        bb.orgName AS billOrgName,
-        bb.bill_num AS billNum,
-        bb.bill_date AS billDate,
-        btp.patientId,
-        btp.patientName,
-        btp.patientMobile,
-        btp.pinyin_name,
-        btp.regDentistId,
-        btp.regDentistName,
-        bb.order_amount AS originalAmount,
-        bb.privilege_amount AS privilegeAmount,
-        bb.actual_amount AS actualAmount,
-        bb.received_amount AS totalReceivedAmount,
-        bbp.received_amount AS receivedAmount,
-        bbp.payee_user_id AS payeeId,
-        be.employee_name AS payeeName
-        FROM
-        base_bill_pay bbp
-        LEFT JOIN (
-        SELECT
-        bb.bill_id,
-        bb.org_id,
-        bo.abbreviation as orgName,
-        bb.bill_num,
-        bb.bill_date,
-        bb.order_amount,
-        bb.privilege_amount,
-        bb.actual_amount,
-        bb.received_amount
-        FROM
-        base_bill bb
-        LEFT JOIN base_organization bo on bb.org_id = bo.org_id
         ) bb ON bbp.bill_id = bb.bill_id
-        LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
-        LEFT JOIN base_organization bo on bbp.org_id = bo.org_id
-        LEFT JOIN (
-        SELECT
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id AS patientId,
-        bp.`name` AS patientName,
-        bp.mobile AS patientMobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id AS regDentistId,
-        be.employee_name AS regDentistName
-        FROM
-        base_treatment_process btp
-        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
-        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-        WHERE
-        btp.treat_end_time IS NOT NULL
-        GROUP BY
-        btp.org_id,
-        btp.treatment_id,
-        btp.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.pinyin_name,
-        btp.registered_dentist_id,
-        be.employee_name
-        ) btp ON bbp.treatment_id = btp.treatment_id
+        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
         <where>
             <if test="query.orgId != null">
                 AND bbp.org_id != #{query.orgId}
@@ -1743,49 +1347,14 @@
                 </if>
             </if>
         </where>
-        ) bbp INNER JOIN (
-        SELECT
-        bb.bill_id
-        FROM
-        base_bill bb
-        <where>
-            AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
-            <if test="query.orgId != null">
-                AND bb.org_id = #{query.orgId}
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt; #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    OR DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt; #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt; #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    OR DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt; #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt; #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    OR DATE_FORMAT( bb.bill_date, '%Y' ) &gt; #{query.endDate}
-                </if>
-            </if>
-        </where>
-        GROUP BY
-        bb.bill_id
-        ) bb ON bbp.billId = bb.bill_id
+        ) bbp
+        LEFT JOIN base_patient bp ON bbp.patientId = bp.patient_id
+        LEFT JOIN base_organization bo ON bbp.billOrgId = bo.org_id
+        LEFT JOIN base_employee be ON bbp.regDentistId = be.user_id
         ) bbp
         <where>
             <if test="query.patientKeyword != null and query.patientKeyword != ''">
-                AND concat(IFNULL(bbp.patientName, ''), IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) LIKE
+                AND concat(IFNULL(bbp.patientName, ''),IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) like
                 concat('%', #{query.patientKeyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
@@ -1798,6 +1367,166 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
-        order by bbp.payeeDate, bbp.billNum desc
+        ORDER BY bbp.payeeDate, bbp.billNum DESC
+    </select>
+
+    <!-- 根据条件查询门诊被代收账单（非当月）明细列表 -->
+    <select id="selectOtherBillIsAcceptedDetailList"
+            resultType="com.yunya.feign.report.domain.vo.StatementBillChargeDetailVO">
+        SELECT
+        billPayId,
+        payeeDate,
+        payeeOrgId,
+        payeeOrgName,
+        billId,
+        billNum,
+        billOrgId,
+        billOrgName,
+        billDate,
+        patientId,
+        patientName,
+        patientMobile,
+        regDentistId,
+        regDentistName
+        originalAmount,
+        privilegeAmount,
+        actualAmount,
+        totalReceivedAmount,
+        receivedAmount,
+        payeeId,
+        payeeName
+        FROM (
+        SELECT
+        bbp.billPayId,
+        bbp.payeeDate,
+        bbp.payeeOrgId,
+        bbp.payeeOrgName,
+        bbp.payeeId,
+        bbp.payeeName,
+        bbp.receivedAmount,
+        bbp.billId,
+        bbp.billOrgId,
+        bo.abbreviation AS billOrgName,
+        bbp.billNum,
+        bbp.originalAmount,
+        bbp.billDate,
+        bbp.privilegeAmount,
+        bbp.actualAmount,
+        bbp.totalReceivedAmount,
+        bbp.regDentistId,
+        be.employee_name AS regDentistName,
+        bbp.patientId,
+        bp.`name` AS patientName,
+        bp.mobile AS patientMobile,
+        bp.pinyin_name AS pinyinName
+        FROM
+        (
+        SELECT
+        bbp.bill_pay_id AS billPayId,
+        bbp.bill_id AS billId,
+        bbp.org_id AS payeeOrgId,
+        bo.abbreviation AS payeeOrgName,
+        DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') AS payeeDate,
+        bbp.payee_user_id AS payeeId,
+        be.employee_name AS payeeName,
+        bbp.received_amount AS receivedAmount,
+        bb.org_id AS billOrgId,
+        bb.bill_num AS billNum,
+        bb.order_amount AS originalAmount,
+        DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
+        bb.privilege_amount AS privilegeAmount,
+        bb.actual_amount AS actualAmount,
+        bb.received_amount AS totalReceivedAmount,
+        btp.registered_dentist_id AS regDentistId,
+        btp.patient_id AS patientId
+        FROM
+        base_bill_pay bbp
+        INNER JOIN base_organization bo ON bbp.org_id = bo.org_id
+        INNER JOIN (
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_num,
+        bb.order_amount,
+        bb.bill_date,
+        bb.privilege_amount,
+        bb.actual_amount,
+        bb.received_amount
+        FROM
+        base_bill bb
+        <where>
+            AND bb.bill_num IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt; #{query.startDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt; #{query.startDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt; #{query.startDate}
+                </if>
+            </if>
+        </where>
+        ) bb ON bbp.bill_id = bb.bill_id
+        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
+        <where>
+            <if test="query.orgId != null">
+                AND bbp.org_id != #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt; #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bbp
+        LEFT JOIN base_patient bp ON bbp.patientId = bp.patient_id
+        LEFT JOIN base_organization bo ON bbp.billOrgId = bo.org_id
+        LEFT JOIN base_employee be ON bbp.regDentistId = be.user_id
+        ) bbp
+        <where>
+            <if test="query.patientKeyword != null and query.patientKeyword != ''">
+                AND concat(IFNULL(bbp.patientName, ''),IFNULL(bbp.pinyinName, ''), IFNULL(bbp.patientMobile, '')) like
+                concat('%', #{query.patientKeyword}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                AND bbp.billNum LIKE concat('%', #{query.billNum}, '%')
+            </if>
+            <if test="query.chargeStartDate != null and query.chargeStartDate != ''">
+                AND bbp.payeeDate &gt;= #{query.chargeStartDate}
+            </if>
+            <if test="query.chargeEndDate != null and query.chargeEndDate != ''">
+                AND bbp.payeeDate &lt;= #{query.chargeEndDate}
+            </if>
+        </where>
+        ORDER BY bbp.payeeDate, bbp.billNum DESC
     </select>
 </mapper>
