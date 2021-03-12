@@ -79,11 +79,6 @@ public class RegisteredController {
   @PostMapping("/referredInfo")
   public ResponseResult<PageInfo<ReferredInfoVO>> referredInfo(@RequestBody @Validated ReferredInfoForm referredForm) {
     List<ReferredInfoVO> relist = registeredBiz.referredInfo(referredForm);
-    relist.forEach(
-            vo->{
-              vo.setTime(vo.getCrtTime());
-            }
-    );
     if (referredForm.getWhetherPage()) {
       Integer pageNum = referredForm.getPageNum();
       Integer pageSize = referredForm.getPageSize();
@@ -128,8 +123,6 @@ public class RegisteredController {
       }
     return ResponseUtil.success(new PageInfo<>(relist));
   }
-
-
 
 
   /**
