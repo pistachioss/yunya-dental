@@ -191,9 +191,6 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
         //转诊记录包含的员工信息
         SysUserEmployeeModel model = new SysUserEmployeeModel();
         model.setWhetherPage(false);
-        if (referredForm.getUserStatus().length > 0) {
-            model.setWorkStatus(referredForm.getUserStatus());
-        }
         List<Integer> userList = reList.stream().map(p -> p.getUserId()).collect(Collectors.toList());
         List<Integer> refList = reList.stream().map(p -> p.getReferredId()).collect(Collectors.toList());
         List<Integer> emList = new ArrayList<>();
