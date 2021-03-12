@@ -211,8 +211,12 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
                     vo -> {
                         vo.setPatientName(patMap.get(vo.getPatientId() + "").getName());
                         vo.setTelephone(patMap.get(vo.getPatientId() + "").getMobile());
-                        vo.setDepName(detMap.get(vo.getDepId() + "").getName());
-                        vo.setReferredDepName(detMap.get(vo.getReferredDepId() + "").getName());
+                        if (vo.getDepId() != null) {
+                            vo.setDepName(detMap.get(vo.getDepId() + "").getName());
+                        }
+                        if (vo.getReferredDepId() != null) {
+                            vo.setReferredDepName(detMap.get(vo.getReferredDepId() + "").getName());
+                        }
                         vo.setUserName(employeesMap.get(vo.getUserId() + "").getName());
                         vo.setReferredName(employeesMap.get(vo.getReferredId() + "").getName());
                     });
