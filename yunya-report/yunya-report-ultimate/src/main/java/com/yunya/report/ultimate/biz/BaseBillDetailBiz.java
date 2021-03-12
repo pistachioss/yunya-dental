@@ -4,11 +4,9 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
-import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.report.BaseBillDetail;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
@@ -40,10 +38,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   @Autowired private BaseOrganizationMapper organizationMapper;
   /** 账单收费明细 */
   @Autowired private BaseBillPayDetailMapper baseBillPayDetailMapper;
-  /** 缓存 */
-  @Autowired private RedisUtils redisUtils;
-  /** 系统 */
-  @Autowired private RemoteSystemServiceFeign systemServiceFeign;
 
   /**
    * 根据条件查询账单收入详情列表
