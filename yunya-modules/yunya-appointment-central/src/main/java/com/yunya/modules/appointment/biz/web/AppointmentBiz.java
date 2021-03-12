@@ -2442,12 +2442,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
         }
         // 查询医生/助手请假信息
-//        LeaveInfoForm LeaveInfoQuery = new LeaveInfoForm();
-//        LeaveInfoQuery.setUserId(assistantDetailInfo.getUserId());
-//        LeaveInfoQuery.setStartTime(appointDate);
-//        LeaveInfoQuery.setEndTime(appointDate);
-//        List<LeaveInfoListVO> leaveInfoList = this.employeeAttendServiceFeign.findEmployeeLeaveInfoList(LeaveInfoQuery);
-//        assistantPatientInfo.setLeaveInfoList(leaveInfoList);
+        LeaveInfoForm LeaveInfoQuery = new LeaveInfoForm();
+        LeaveInfoQuery.setUserId(assistantDetailInfo.getUserId());
+        LeaveInfoQuery.setStartTime(appointDate);
+        LeaveInfoQuery.setEndTime(appointDate);
+        List<LeaveInfoListVO> leaveInfoList = this.employeeAttendServiceFeign.findEmployeeLeaveInfoList(LeaveInfoQuery);
+        assistantPatientInfo.setLeaveInfos(leaveInfoList);
     }
 
     /**
@@ -2504,16 +2504,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     private void setEmployeeLeaveInfo(AppointmentDimensionVo appoint ,List<LeaveInfoListVO> employeeLeaveInfos) {
         if (StringHelper.isNotEmpty(employeeLeaveInfos)) {
-            Integer dentistId = appoint.getDentistId();
-            boolean present = employeeLeaveInfos.stream().anyMatch(entity -> entity.getUserId().equals(dentistId));
-            if (present) {
-                LeaveInfoListVO leaveInfoListVO = employeeLeaveInfos.stream().filter(entity -> entity.getUserId().equals(dentistId)).findFirst().get();
-                appoint.setLeaveInfo(leaveInfoListVO);
-            } else {
-                appoint.setLeaveInfo(new LeaveInfoListVO());
-            }
+            appoint.setLeaveInfos(employeeLeaveInfos);
         } else {
-            appoint.setLeaveInfo(new LeaveInfoListVO());
+            appoint.setLeaveInfos(new ArrayList<>());
         }
     }
 
