@@ -44,8 +44,13 @@ public class ReferredInfoForm extends PageQuery implements Serializable {
     @ApiModelProperty("患者id集合(此字段后端使用 前端不用管)")
     private List<Integer> patIds;
 
+
+
     @ApiModelProperty("门诊ID")
     private Integer orgId;
+
+    @ApiModelProperty("员工就职状态")
+    private Byte[]userStatus;
 
 
 }

@@ -38,8 +38,13 @@ public class ReferredRrportForm extends PageQuery implements Serializable {
     @ApiModelProperty("转诊医生id集合")
     private List<Integer> userIds;
 
+    @ApiModelProperty("转诊医生id集合(此字段后端使用 前端不用管)")
+    private List<Integer> userIdsAfter;
+
     @ApiModelProperty("被转诊医生id集合")
     private List<Integer> referredIds;
 
+    @ApiModelProperty("员工就职状态")
+    private Byte[]userStatus;
 
 }
