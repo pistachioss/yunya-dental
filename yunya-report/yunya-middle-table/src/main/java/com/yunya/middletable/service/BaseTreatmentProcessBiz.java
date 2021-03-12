@@ -209,6 +209,7 @@ public class BaseTreatmentProcessBiz
         TreatmentRecord treatmentRecord = new TreatmentRecord();
         treatmentRecord.setAppointmentId(appointmentId);
         setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
+        log.info("=============开始插入中间表就诊记录（更新预约）============{}", treatmentProcess);
         mapper.insertSelective(treatmentProcess);
       }
     } else {
@@ -238,6 +239,7 @@ public class BaseTreatmentProcessBiz
           TreatmentRecord treatmentRecord = new TreatmentRecord();
           treatmentRecord.setRegisteredId(registeredId);
           setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
+          log.info("=============开始插入中间表就诊记录(更新挂号)=============={}", treatmentProcess);
           mapper.insertSelective(treatmentProcess);
         }
       } else {
