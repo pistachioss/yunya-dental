@@ -114,8 +114,8 @@ public class BaseTreatmentProcessBiz
       case 1:
         Registered registered = registeredMapper.selectByPrimaryKey(dataId);
         treatmentProcess = generateBaseTreatmentProcess(registered);
+        mapper.deleteByRegisteredId(dataId);
         if (null != treatmentProcess) {
-          mapper.deleteByRegisteredId(dataId);
           mapper.insertSelective(treatmentProcess);
         }
         break;
@@ -287,6 +287,7 @@ public class BaseTreatmentProcessBiz
         default:
           break;
       }
+      treatmentProcess.setOrgId(treatmentRecordResult.getOrgId());
       treatmentProcess.setTreatStartTime(treatmentRecordResult.getTreatStartTime());
       treatmentProcess.setTreatEndTime(treatmentRecordResult.getTreatEndTime());
       setBaseTreatmentProcessAssistantValue(treatmentRecordResult.getId(), treatmentProcess);
