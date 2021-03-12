@@ -90,7 +90,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    *
    * @param billPayRecordId 收费记录ID
    */
-  public void saveBillPayDetailRecord(Integer billPayRecordId) {
+  private void saveBillPayDetailRecord(Integer billPayRecordId) {
     BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
     billPayDetailRecord.setBillPayRecordId(billPayRecordId);
     billPayDetailRecord.setInservice(true);
