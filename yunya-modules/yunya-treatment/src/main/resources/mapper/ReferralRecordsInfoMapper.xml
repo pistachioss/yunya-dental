@@ -63,9 +63,9 @@
     FROM
 	referral_records_info
         <where>
-            <if test="userIds != null and userIds.size() > 0">
+            <if test="userIds.size() > 0 || userStatus.length>0">
                 and user_id in
-                <foreach collection="userIds" item="userid" open="(" separator="," close=")">
+                <foreach collection="userIdsAfter" item="userid" open="(" separator="," close=")">
                     #{userid}
                 </foreach>
             </if>
