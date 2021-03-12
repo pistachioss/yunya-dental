@@ -54,8 +54,7 @@ import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
-import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESSING_STATUS;
-import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESS_ORDER_STATUS;
+import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_TREATMENT_ING;
 
@@ -102,8 +101,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Resource private RegisteredBiz registeredBiz;
 
   @Resource private RemoteMiddleTableServiceFeign remoteMiddleTableServiceFeign;
-  /** 账单 */
-  @Resource private BillRecordBiz billRecordBiz;
 
   /**
    * 开始接诊
@@ -994,7 +991,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
-    queryForm.setPayIds(billRecordBiz.getFreePaymentIds());
+    queryForm.setPayIds(FREE_PAYMENT_ID);
     List<PatientTreatmentRecordVO> resultList = mapper.selectPatientTreatmentRecordList(queryForm);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(

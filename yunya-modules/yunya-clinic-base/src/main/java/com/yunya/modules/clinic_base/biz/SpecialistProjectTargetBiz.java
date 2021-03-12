@@ -304,7 +304,7 @@ public class SpecialistProjectTargetBiz
         projectCompletedInfo.setSpecialistProjectGoalCount(specialistProjectGoalCount);
         String[] tariffIds = specialistProject.getTariffIds().split(",");
         Integer specialistProjectCompletedCount =
-            getSpecialistProjectCompletedCount(orgId, startDate, endDate, tariffIds);
+            getSpecialistProjectCompletedCount(orgId, startDate, endDate, Arrays.asList(tariffIds));
         projectCompletedInfo.setSpecialistProjectCompletedCount(specialistProjectCompletedCount);
         if (null != specialistProjectCompletedCount) {
           if (null != specialistProjectGoalCount && 0 != specialistProjectGoalCount) {
@@ -330,7 +330,7 @@ public class SpecialistProjectTargetBiz
    * @return Integer
    */
   private Integer getSpecialistProjectCompletedCount(
-      Integer orgId, String startDate, String endDate, String[] tariffIds) {
+      Integer orgId, String startDate, String endDate, Collection<String> tariffIds) {
     SpecialistProjectCompletedCountQuery specialistProjectCompletedQuery =
         new SpecialistProjectCompletedCountQuery();
     specialistProjectCompletedQuery.setOrgId(orgId);

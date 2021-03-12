@@ -8,6 +8,7 @@ import lombok.ToString;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 简介: 业务目标完成情况查询参数模型
@@ -37,4 +38,15 @@ public class BusinessGoalCompletedInfoQuery implements Serializable {
   @ApiModelProperty(value = "查询结束时间", required = true, example = "yyyy-MM")
   @NotBlank(message = "查询结束时间不能为空！")
   private String endDate;
+  /** 组织id列表 */
+  @ApiModelProperty(value = "组织id列表")
+  private Integer[] orgIds;
+  @ApiModelProperty(value = "查询日期方式")
+  private Byte dateType;
+  /** 日期列表*/
+  @ApiModelProperty(value = "日期列表")
+  private List<String> dateRange;
+  /** 业务目标类型列表 */
+  @ApiModelProperty(value = "业务目标类型列表", example = "0-营业收入；1-工作量；2-初诊人数；3-就诊人次")
+  private Byte[] businessTypes;
 }

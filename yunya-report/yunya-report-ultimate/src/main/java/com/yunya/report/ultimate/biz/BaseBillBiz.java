@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
+
 /**
  * 简介: 账单报表业务层
  *
@@ -168,7 +170,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * @return BillDataStatisticsVO
    */
   public BillDataStatisticsVO findClinicBillDataStatistic(DataStatisticsQuery query) {
-    query.setPayIds(baseBillDetailBiz.getFreePaymentIds());
+    query.setPayIds(FREE_PAYMENT_ID);
     BillDataStatisticsVO resultData = mapper.selectClinicBillDataStatistic(query);
     return resultData;
   }

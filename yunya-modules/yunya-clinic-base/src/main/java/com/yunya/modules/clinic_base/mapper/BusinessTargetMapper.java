@@ -1,7 +1,9 @@
 package com.yunya.modules.clinic_base.mapper;
 
+import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.query.BusinessTargetQuery;
 import com.yunya.feign.clinic_base.domain.query.BusinessWorkGoalQuery;
+import com.yunya.feign.clinic_base.domain.vo.BusinessGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.BusinessWorkGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
 import com.yunya.models.clinic_base.BusinessTarget;
@@ -41,4 +43,6 @@ public interface BusinessTargetMapper extends Mapper<BusinessTarget> {
       @Param("orgId") Integer orgId,
       @Param("businessType") Byte businessType,
       @Param("dateRange") List<String> dateRange);
+
+  List<BusinessGoalVO> selectBusinessGoalList(@Param("query") BusinessGoalCompletedInfoQuery query);
 }

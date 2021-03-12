@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.vo.BaseBillPayDetailVO;
 import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import com.yunya.models.report.BaseBillPayDetail;
 import org.apache.ibatis.annotations.Param;
@@ -21,9 +22,14 @@ public interface BaseBillPayDetailMapper extends Mapper<BaseBillPayDetail> {
   /**
    * 根据billId分组，统计免单支付总额
    *
-   * @param billIds
-   * @param payIds
+   * @param billIds 账单id列表
+   * @param billPayIds 账单收费id列表
+   * @param orgId 收费门诊id（注意）
+   * @param payIds 入账方式
    * @return
    */
-  List<BaseBillPayDetail> sumPayDetailList(@Param("billIds") Collection<Integer> billIds, @Param("payIds") Collection<Integer> payIds);
+  List<BaseBillPayDetailVO> sumPayDetailList(@Param("billIds") Collection<Integer> billIds,
+                                             @Param("billPayIds") Collection<Integer> billPayIds,
+                                             @Param("orgId") Integer orgId,
+                                             @Param("payIds") Collection<Integer> payIds);
 }

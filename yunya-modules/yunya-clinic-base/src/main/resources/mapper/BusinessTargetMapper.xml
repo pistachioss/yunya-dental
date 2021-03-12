@@ -170,12 +170,11 @@
             t.businessDate
     </select>
 
-    <!-- 根据条件查询业务目标数量 -->
     <select id="selectBusinessGoalCount" resultType="java.math.BigDecimal">
         SELECT
-            IFNULL(SUM( bt.business_goal ), 0)
+        IFNULL(SUM( bt.business_goal ), 0)
         FROM
-            business_target bt
+        business_target bt
         <where>
             AND bt.belong_type = 0
             <if test="businessType != null">
@@ -191,5 +190,48 @@
                 </foreach>
             </if>
         </where>
+    </select>
+
+
+    <!-- 根据条件查询业务目标数量 -->
+    <select id="selectBusinessGoalList" resultType="com.yunya.feign.clinic_base.domain.vo.BusinessGoalVO">
+        SELECT
+        belong_id as belongId,
+        business_type as businessType,
+        IFNULL(SUM( bt.business_goal ), 0) businessGoal
+        FROM
+        business_target bt
+        <where>
+            AND bt.belong_type = 0
+            <if test="query.businessTypes!=null and query.businessTypes.length>0">
+                AND bt.business_type in
+                <foreach collection="query.businessTypes" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                AND bt.belong_id in
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.dateType != 2">
+                <if test="query.dateRange!=null and query.dateRange.size()> 0">
+                    AND bt.business_date IN
+                    <foreach collection="query.dateRange" index="index" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.dateRange!=null and query.dateRange.size()> 0">
+                    AND bt.business_year IN
+                    <foreach collection="query.dateRange" index="index" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </if>
+        </where>
+        group by belong_id
     </select>
 </mapper>

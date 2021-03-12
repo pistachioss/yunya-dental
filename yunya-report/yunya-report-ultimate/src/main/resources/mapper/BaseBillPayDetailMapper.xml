@@ -42,11 +42,13 @@
             bai.account_item_id
     </select>
 
-    <select id="sumPayDetailList" resultType="com.yunya.models.report.BaseBillPayDetail">
+    <select id="sumPayDetailList" resultType="com.yunya.feign.report.domain.vo.BaseBillPayDetailVO">
         select
+            t.bill_pay_id as billPayId,
             t.bill_id as billId,
             IFNULL(SUM(t.principal_amount), 0) AS principalAmount
         from base_bill_pay_detail t
+        left join base_bill_pay bbp on bbp.bill_id=t.bill_id
         <where>
             t.type = 2
             <if test="payIds!=null and payIds.size()>0">
@@ -61,7 +63,16 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="billPayIds!=null and billPayIds.size()>0">
+                and t.bill_pay_id in
+                <foreach item="item" index="index" collection="billPayIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="orgId != null">
+                and bbp.org_id = #{orgId}
+            </if>
         </where>
-        group by t.bill_id
+        group by t.bill_pay_id,t.bill_id
     </select>
 </mapper>

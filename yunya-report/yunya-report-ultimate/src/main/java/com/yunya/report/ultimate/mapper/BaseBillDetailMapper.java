@@ -84,6 +84,15 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") EmployeeWorkloadDetailQuery query);
 
   /**
+   * 根据条件查询员工已收工作量明细列表
+   *
+   * @param query 查询参数
+   * @return List<EmployeeReceivedDetailWorkloadVO>
+   */
+  List<EmployeeReceivedDetailWorkloadVO> selectEmployeeFreePaymentDetailList(
+          @Param("query") EmployeeFreePaymentWorkloadDetailQuery query);
+
+  /**
    * 根据条件查询员工补入工作量明细列表
    *
    * @param query 查询条件
@@ -179,5 +188,11 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<BaseBillDetail> selectBillDetailByBillIds(@Param("billIds") Collection<Integer> billIds);
 
-  List<EmployeeFreepaymentWorkloadDetailVO> selectEmployeeFreepaymentWorkloadDetailList(@Param("query") EmployeePersonalWorkloadDetailQuery query);
+  List<EmployeeFreepaymentWorkloadDetailVO> selectEmployeeFreepaymentWorkloadDetailList(
+          @Param("query") EmployeePersonalWorkloadDetailQuery query,
+          @Param("payIds") Collection<Integer> payIds);
+
+  List<OperationDataBusinessGoalVO> selectWorkloadCompletedList(@Param("query") DataStatisticsQuery query);
+
+  List<PersonalWorkloadVO> selectPersonalWorkloadList(@Param("query") EmployeeWorkloadQuery query);
 }
