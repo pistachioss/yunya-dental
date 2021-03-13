@@ -378,4 +378,13 @@ public interface RemoteTreatmentServiceFeign {
    */
   @RequestMapping(value = "/rpc/treatment/by/appointIds", method = RequestMethod.POST)
   public List<TreatmentRecord> findTreatmentRecordListByAppointIds(@RequestBody List<Integer> appointIds);
+
+  /**
+   * 根据条件查询专科项目完成数量
+   *
+   * @param query 查询条件
+   * @return Integer
+   */
+  @RequestMapping(value = "/rpc/tariff/specialist/completeds", method = RequestMethod.POST)
+  List<OrderDetail> findSpecialistProjectCompletedList(SpecialistProjectCompletedCountQuery query);
 }

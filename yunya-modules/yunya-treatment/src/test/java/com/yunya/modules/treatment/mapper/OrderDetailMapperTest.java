@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -55,7 +56,7 @@ public class OrderDetailMapperTest {
   public void find2() {
     SpecialistProjectCompletedCountQuery query = new SpecialistProjectCompletedCountQuery();
     query.setOrgId(35);
-    query.setTariffIds(new String[] {"565"});
+    query.setTariffIds(Arrays.asList("565"));
     query.setStartDate("2020-10");
     query.setEndDate("2020-12");
     Integer count = orderDetailMapper.selectSpecialistProjectCompletedCount(query);

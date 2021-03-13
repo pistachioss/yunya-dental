@@ -5,12 +5,14 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.RemoteClinicBaseServiceFeign;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.BusinessGoalCompletedInfoVO;
+import com.yunya.feign.clinic_base.domain.vo.BusinessGoalVO;
 import com.yunya.feign.report.domain.bo.ClinicDataStatisticsInfoVO;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.OperationDataComplexQuery;
 import com.yunya.feign.report.domain.query.PatientFirstTreatOriginQuery;
 import com.yunya.feign.report.domain.query.VisitAndRemindCompletedInfoQuery;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import org.springframework.stereotype.Service;
@@ -20,7 +22,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 简介: 门诊数据统计业务层
@@ -267,7 +271,111 @@ public class ClinicDataStatisticsBiz {
    * @param query
    * @return
    */
-  public PageInfo<PatientDataStatisticsVO> findAnalysisBusinessGoalList(DataStatisticsQuery query) {
-    return null;
+  public PageInfo<OperationDataBusinessGoalVO> findAnalysisBusinessGoalList(DataStatisticsQuery query) {
+    //目标
+    Map<Integer, BigDecimal[]> goalMap = getBusinessGoalMap(query);
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<OperationDataBusinessGoalVO> result = billDetailBiz.selectWorkloadCompletedList(query);
+    result.forEach(vo->{
+      Integer orgId = vo.getOrgId();
+      String workload = vo.getWorkload();
+      BigDecimal workloadGoal = BigDecimal.ZERO;
+      BigDecimal firstVisitGoal = BigDecimal.ZERO;
+      BigDecimal[] goals = goalMap.get(orgId);
+      if (goals != null) {
+        workloadGoal = goals[0];
+        firstVisitGoal = goals[1];
+      }
+      String firstVisit = vo.getFirstVisit();//患者总人数或患者完成数
+      vo.setWorkload(computeRatio(workload, workloadGoal));
+      vo.setFirstVisit(computeRatio(firstVisit, firstVisitGoal));
+      vo.setIntroduction(computeRatio(vo.getIntroduction(), Integer.parseInt(firstVisit)));
+      vo.setFollowUp(computeRatio(vo.getFollowUp(),vo.getFollowUpTotal()));
+      vo.setNotice(computeRatio(vo.getNotice(),vo.getNoticeTotal()));
+    });
+    return new PageInfo<>(result);
+  }
+
+  /**
+   * 根据条件查询运营报表的业务目标导出
+   *
+   * @param query 查询条件
+   * @return PageInfo<PatientDataStatisticsVO>
+   */
+  public void analysisBusinessGoalExport(DataStatisticsQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<OperationDataBusinessGoalVO> resultList = findAnalysisBusinessGoalList(query).getList();
+    ExcelUtil<OperationDataBusinessGoalVO> excelUtil = new ExcelUtil<>(OperationDataBusinessGoalVO.class);
+    String fileName = excelUtil.getFileName(query.getStartDate(),query.getEndDate(),"","业务目标报表");
+    excelUtil.exportExcel(response, resultList, "业务目标报表", fileName);
+  }
+
+  /**
+   * 查询业务目标，并按门诊分组
+   *
+   * @param query
+   * @return
+   */
+  private Map<Integer, BigDecimal[]> getBusinessGoalMap(DataStatisticsQuery query) {
+    Map<Integer, BigDecimal[]> goalMap = new HashMap<>(16);
+    BusinessGoalCompletedInfoQuery goalQuery = new BusinessGoalCompletedInfoQuery();
+    List<String> dateRange = DateUtil.sliceUpDateRange(query.getStartDate(), query.getEndDate());
+    goalQuery.setStartDate(query.getStartDate());
+    goalQuery.setEndDate(query.getEndDate());
+    goalQuery.setBusinessType((byte) 2);
+    goalQuery.setOrgId(-1);
+    goalQuery.setDateType(query.getDateType());
+    goalQuery.setDateRange(dateRange);
+    goalQuery.setBusinessTypes(new Byte[]{2,3});
+    goalQuery.setOrgIds(query.getOrgIds());
+    List<BusinessGoalVO> goalVOS = clinicBaseServiceFeign.businessGoalList(goalQuery);
+    goalVOS.forEach(vo->{
+      Integer orgId = vo.getBelongId();
+      BigDecimal[] goals = goalMap.get(orgId);
+      if (goals == null) {
+        goals = new BigDecimal[]{BigDecimal.ZERO,BigDecimal.ZERO};
+      }
+      if (vo.getBusinessType() == 2) {// 工作量目标
+        goals[0] = vo.getBusinessGoal();
+      } else if (vo.getBusinessType() == 3) {// 初诊目标
+        goals[0] = vo.getBusinessGoal();
+      }
+      goalMap.put(orgId, goals);
+    });
+    return goalMap;
+  }
+
+  /**
+   * 计算并转换
+   *
+   * @param dividend 被除数
+   * @param divisor 除数
+   * @return
+   */
+  public String computeRatio(String dividend, Integer divisor) {
+    BigDecimal ratio = BigDecimal.ZERO;
+    if (divisor != 0) {
+      ratio = new BigDecimal(dividend).divide(new BigDecimal(divisor),2,BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+    }
+    return divisor + "/" + dividend + "/" + ratio + "%";
+  }
+
+  /**
+   * 计算并转换
+   *
+   * @param dividendStr 被除数
+   * @param divisor 除数
+   * @return
+   */
+  public String computeRatio(String dividendStr, BigDecimal divisor) {
+    BigDecimal dividend = new BigDecimal(dividendStr).setScale(2);
+    divisor = divisor.setScale(2);
+    BigDecimal ratio = BigDecimal.ZERO;
+    if (divisor.compareTo(BigDecimal.ZERO) != 0) {
+      ratio = dividend.divide(divisor,2,BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+    }
+    return divisor + "/" + dividend + "/" + ratio + "%";
   }
 }

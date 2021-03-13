@@ -281,7 +281,6 @@ public class CompanyReportOfOperationController {
     return ResponseUtil.success(null);
   }
 
-
   /**
    * 根据条件查询运营报表的业务目标
    *
@@ -290,9 +289,23 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-运营分析-业务目标")
   @PostMapping(value = "/analysis/business/goal/list", name = "根据条件查询运营报表的业务目标")
-  public ResponseResult<PageInfo<PatientDataStatisticsVO>> findAnalysisBusinessGoalList(
+  public ResponseResult<PageInfo<OperationDataBusinessGoalVO>> findAnalysisBusinessGoalList(
           @RequestBody @Validated DataStatisticsQuery query) {
-    PageInfo<PatientDataStatisticsVO> result = clinicDataStatisticsBiz.findAnalysisBusinessGoalList(query);
+    PageInfo<OperationDataBusinessGoalVO> result = clinicDataStatisticsBiz.findAnalysisBusinessGoalList(query);
     return ResponseUtil.success(result);
+  }
+
+  /**
+   * 根据条件查询运营报表的业务目标导出
+   *
+   * @param query 查询条件
+   * @return PageInfo<PatientDataStatisticsVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-业务目标导出")
+  @PostMapping(value = "/analysis/business/goal/export", name = "根据条件查询运营报表的业务目标导出")
+  public ResponseResult<PageInfo<OperationDataBusinessGoalVO>> findAnalysisBusinessGoalExport(
+          HttpServletResponse response, @RequestBody @Validated DataStatisticsQuery query) throws IOException  {
+    clinicDataStatisticsBiz.analysisBusinessGoalExport(query, response);
+    return ResponseUtil.success(null);
   }
 }

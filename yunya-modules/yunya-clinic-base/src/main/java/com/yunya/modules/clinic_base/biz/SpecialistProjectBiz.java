@@ -10,22 +10,26 @@ import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectNameVO;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectTargetVO;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.models.clinic_base.SpecialistBusinessTarget;
 import com.yunya.models.clinic_base.SpecialistProject;
+import com.yunya.modules.clinic_base.mapper.SpecialistBusinessTargetMapper;
 import com.yunya.modules.clinic_base.mapper.SpecialistProjectMapper;
-import org.apache.poi.ss.formula.functions.Count;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
@@ -43,6 +47,8 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
 
   /** 价目表服务 */
   @Autowired private RemoteTreatmentServiceFeign treatmentServiceFeign;
+  /** 专科项目目标*/
+  @Autowired private SpecialistBusinessTargetMapper specialistProjectTargetMapper;
 
   /**
    * 根据条件查询专科项目列表
@@ -160,5 +166,38 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
        tariffSpecialistPercentage = treatmentServiceFeign.findTariffSpecialistPercentage(specialistProjectReportModel);
     }
     return tariffSpecialistPercentage;
+  }
+
+  public List<SpecialistProjectTargetVO> specialProjectAndGoalsList(Byte dateType, List<String> dateRange, Integer[] orgIds) {
+    List<SpecialistProject> specialistProjects = mapper.selectListAll();
+    Map<Integer, Map<Integer, Integer>> targetMap = new HashMap<>(16);
+    for (Integer orgId : orgIds) {
+      List<SpecialistBusinessTarget> targets = specialistProjectTargetMapper.selectSpecialistProjectGoalList(dateType, dateRange, orgId);
+      targets.forEach(vo->{
+        Integer projectId = vo.getSpecialistProjectId();
+        Integer belongId = vo.getBelongId();
+        Map<Integer, Integer> map = targetMap.get(projectId);
+        if (map == null) {
+          map = new HashMap<>(16);
+        }
+        Integer goal = map.get(belongId);
+        if (goal == null) {
+          goal = 0;
+        }
+        goal += vo.getBusinessGoal().intValue();
+        map.put(belongId, goal);
+        targetMap.put(projectId, map);
+      });
+    }
+    List<SpecialistProjectTargetVO> result = new ArrayList<>();
+    specialistProjects.forEach(vo->{
+      SpecialistProjectTargetVO targetVO = new SpecialistProjectTargetVO();
+      targetVO.setId(vo.getId());
+      targetVO.setName(vo.getName());
+      targetVO.setTariffIds(vo.getTariffIds());
+      targetVO.setTargetMap(targetMap.get(vo.getId()));
+      result.add(targetVO);
+    });
+    return result;
   }
 }

@@ -97,4 +97,6 @@ public interface OrderDetailMapper extends Mapper<OrderDetail> {
    */
   Integer selectSpecialistProjectCompletedCount(
       @Param("query") SpecialistProjectCompletedCountQuery query);
+
+  List<OrderDetail> selectSpecialistProjectCompletedList(@Param("query") SpecialistProjectCompletedCountQuery query);
 }

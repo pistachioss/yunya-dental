@@ -1,13 +1,19 @@
 package com.yunya.modules.treatment.biz;
 
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.yunya.feign.clinic_base.RemoteClinicBaseServiceFeign;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectTargetVO;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
+import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
+import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.form.BillPrintInfoForm;
 import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
@@ -18,9 +24,12 @@ import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.clinic_base.SpecialistProject;
 import com.yunya.models.system.AccountItem;
@@ -39,11 +48,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
@@ -82,6 +90,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   @Autowired private RemoteDiscountFeign discountFeign;
   /** 支付方式 */
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
+  /** 门诊基础服务*/
+  @Autowired private RemoteClinicBaseServiceFeign remoteClinicBaseServiceFeign;
 
   /**
    * 根据账单（开单）记录ID查询商品开单详情列表
@@ -574,5 +584,111 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    */
   public Integer updateOrderDetail(OrderDetail orderDetail) {
     return mapper.updateByPrimaryKeySelective(orderDetail);
+  }
+
+  public PageInfo<SpecialistProjectCompletedInfoVO> specialistProjectTargetCompletedList(DataStatisticsQuery query) {
+    //专科项目 + 门诊为主数据
+    List<SpecialistProjectCompletedInfoVO> resultList = new ArrayList<>();
+    String startDate = query.getStartDate();
+    String endDate = query.getEndDate();
+    List<String> dateRange = DateUtil.sliceUpDateRange(startDate, endDate);
+    List<SpecialistProjectTargetVO> specialistProjects = remoteClinicBaseServiceFeign.specialProjectAndGoalsList(query.getDateType(), dateRange, query.getOrgIds());
+    if (StringHelper.isNotEmpty(specialistProjects)) {
+      List<OrganizationInfoDetail> orgs = getOrganizationList(query.getOrgIds());
+      Set<String> tids = new HashSet<>();
+      specialistProjects.forEach(vo->{
+        String[] tariffIds = vo.getTariffIds().split(",");
+        for (String tariffId : tariffIds) {
+          tids.add(tariffId);
+        }
+      });
+      orgs.forEach(vo->{
+        Integer orgId = vo.getId();
+        List<OrderDetail> list = getSpecialistProjectCompletedList(orgId, startDate, endDate, tids);
+        for (SpecialistProjectTargetVO specialistProject : specialistProjects) {
+          SpecialistProjectCompletedInfoVO resultVO = new SpecialistProjectCompletedInfoVO();
+          List<String> tariffIds = Arrays.asList(specialistProject.getTariffIds().split(","));
+          Map<Integer, Integer> targets = specialistProject.getTargetMap();
+          Integer completed = 0;
+          if (StringHelper.isNotEmpty(list)) {
+            for (OrderDetail detail : list) {
+              if (tariffIds.contains(detail.getBillingItemId()+"")) {
+                completed += detail.getQuantity();
+              }
+            }
+          }
+          Integer goal = 0;
+          if (targets != null) {
+            goal = targets.get(orgId);
+          }
+          resultVO.setOrgId(orgId);
+          resultVO.setSpecialistProjectGoalCount(goal);
+          resultVO.setSpecialistProjectId(specialistProject.getId());
+          resultVO.setSpecialistProjectName(specialistProject.getName());
+          resultVO.setSpecialistProjectCompletedCount(completed);
+          resultVO.setAbbreviation(vo.getAbbreviation());
+          resultList.add(resultVO);
+        }
+      });
+      // 分页
+      if (query.getWhetherPage()) {
+        return doPage(query.getPageNum(), query.getPageSize(), resultList);
+      }
+    }
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 手动分页
+   *
+   * @param pageNum
+   * @param pageSize
+   * @param resultList
+   * @return
+   */
+  private PageInfo<SpecialistProjectCompletedInfoVO> doPage(Integer pageNum, Integer pageSize, List<SpecialistProjectCompletedInfoVO> resultList) {
+    int total = resultList.size();
+    PageInfo<SpecialistProjectCompletedInfoVO> pageInfo = new PageInfo<>();
+    pageInfo.setPageNum(pageNum);
+    pageInfo.setPageSize(pageSize);
+    pageInfo.setTotal(total);
+    List<SpecialistProjectCompletedInfoVO> list =
+            resultList.subList(pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+    pageInfo.setList(list);
+    return pageInfo;
+  }
+
+  private List<OrderDetail> getSpecialistProjectCompletedList(
+          Integer orgId, String startDate, String endDate, Collection<String> tariffIds) {
+    SpecialistProjectCompletedCountQuery specialistProjectCompletedQuery =
+            new SpecialistProjectCompletedCountQuery();
+    specialistProjectCompletedQuery.setOrgId(orgId);
+    specialistProjectCompletedQuery.setTariffIds(tariffIds);
+    specialistProjectCompletedQuery.setStartDate(startDate);
+    specialistProjectCompletedQuery.setEndDate(endDate);
+    return mapper.selectSpecialistProjectCompletedList(
+            specialistProjectCompletedQuery);
+  }
+
+
+  /**
+   * 查询组织信息列表
+   * @return
+   */
+  private List<OrganizationInfoDetail> getOrganizationList(Integer[] orgIds) {
+    List<OrganizationInfoDetail> orgInfos = redisUtils.getJSONArray(RedisConstants.REDIS_KEY_ORG_LIST, OrganizationInfoDetail.class);
+    if (StringHelper.isEmpty(orgInfos)) {
+      orgInfos = systemServiceFeign.findOrgInfoInIds(Arrays.asList(orgIds));
+      redisUtils.set(RedisConstants.REDIS_KEY_ORG_LIST, orgInfos);
+    }
+    return orgInfos.stream().filter(vo->"2".equals(vo.getType())).collect(Collectors.toList());
+  }
+
+  public void specialistProjectTargetCompletedExport(DataStatisticsQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<SpecialistProjectCompletedInfoVO> resultList = specialistProjectTargetCompletedList(query).getList();
+    ExcelUtil<SpecialistProjectCompletedInfoVO> excelUtil = new ExcelUtil<>(SpecialistProjectCompletedInfoVO.class);
+    String fileName = excelUtil.getFileName(query.getStartDate(),query.getEndDate(),"","专科数量目标报表");
+    excelUtil.exportExcel(response, resultList, "专科数量目标报表", fileName);
   }
 }

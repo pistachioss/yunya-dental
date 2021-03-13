@@ -23,6 +23,10 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class EmployeeWorkloadCostModel implements Serializable {
+  /** 组织id*/
+  @ApiModelProperty(value = "组织id")
+  @NotNull(message = "组织id不能为空！")
+  private Integer orgId;
   /** 员工ID */
   @ApiModelProperty(value = "员工(用户)ID", required = true)
   @NotNull(message = "员工(用户)ID不能为空！")

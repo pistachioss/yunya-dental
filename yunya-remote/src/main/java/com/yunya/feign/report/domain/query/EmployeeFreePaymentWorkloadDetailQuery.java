@@ -22,13 +22,23 @@ import java.io.Serializable;
 @Data
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class EmployeeWorkloadDetailQuery extends PageQuery implements Serializable {
+public class EmployeeFreePaymentWorkloadDetailQuery extends PageQuery implements Serializable {
   /** 账单ID */
   @ApiModelProperty(value = "账单ID", required = true)
   @NotNull(message = "账单ID不能为空！")
   private Integer billId;
-  /** 员工ID */
-  @ApiModelProperty(value = "员工ID")
-  @NotNull(message = "员工ID不能为空！")
+
+  /** 账单收费ID */
+  @ApiModelProperty(value = "账单收费ID", required = true)
+  @NotNull(message = "账单收费ID不能为空！")
+  private Integer billPayId;
+
+  @ApiModelProperty("员工id")
+  @NotNull(message = "员工id不能为空！")
   private Integer employeeId;
+
+  /** 组织ID */
+  @ApiModelProperty(value = "组织ID")
+  @NotNull(message = "组织ID不能为空！")
+  private Integer orgId;
 }

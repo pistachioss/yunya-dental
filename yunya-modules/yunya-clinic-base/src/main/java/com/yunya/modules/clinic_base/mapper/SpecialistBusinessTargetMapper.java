@@ -46,4 +46,8 @@ public interface SpecialistBusinessTargetMapper extends Mapper<SpecialistBusines
       @Param("orgId") Integer orgId,
       @Param("specialistProjectId") Integer specialistProjectId,
       @Param("dateRange") List<String> dateRange);
+
+  List<SpecialistBusinessTarget> selectSpecialistProjectGoalList(@Param("dateType") Byte dateType,
+                                                                 @Param("dateRange") List<String> dateRange,
+                                                                 @Param("orgId") Integer orgId);
 }

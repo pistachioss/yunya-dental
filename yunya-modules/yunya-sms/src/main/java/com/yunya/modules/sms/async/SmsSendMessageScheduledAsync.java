@@ -22,7 +22,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGID;
 
@@ -55,13 +54,13 @@ public class SmsSendMessageScheduledAsync {
     @Async("customizeExecutor")
     @Scheduled(cron = "*/5 * * * * ?")
     public void smsSendMessageAsyncByEventCode() {
-        List<JSONObject> orgInfos = getOrganizationList();
+        List<OrganizationInfoDetail> orgInfos = getOrganizationList();
         if (StringHelper.isEmpty(orgInfos)) {
             return;
         }
         orgInfos.forEach(orgInfo-> threadPoolExecutor.submit(()->{
             SmsAutoEventSendRecordModel smsAutoEventSendRecordModel = redisUtils.rPop(
-                    RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgInfo.getInteger("orgId"), SmsAutoEventSendRecordModel.class);
+                    RedisConstants.SMS_SEND_MESSAGE_QUEUE + orgInfo.getId(), SmsAutoEventSendRecordModel.class);
             if (smsAutoEventSendRecordModel == null) {
                 return;
             }
@@ -123,29 +122,18 @@ public class SmsSendMessageScheduledAsync {
      * 查询组织信息列表
      * @return
      */
-    private List<JSONObject> getOrganizationList() {
-        List<JSONObject> orgInfos = redisUtils.get(RedisConstants.REDIS_KEY_ORG_LIST, List.class);
+    /**
+     * 查询组织信息列表
+     * @return
+     */
+    private List<OrganizationInfoDetail> getOrganizationList() {
+        List<OrganizationInfoDetail> orgInfos = redisUtils.getJSONArray(RedisConstants.REDIS_KEY_ORG_LIST, OrganizationInfoDetail.class);
         if (StringHelper.isEmpty(orgInfos)) {
             OrganizationModel model = new OrganizationModel();
             model.setWhetherPage(false);
-            List<OrganizationInfoDetail> orgInfoList = remoteSystemServiceFeign.findOrgInfoList(model);
-            orgInfos = orgInfoList.stream().map(this::toJSONObject).collect(Collectors.toList());
+            orgInfos = remoteSystemServiceFeign.findOrgInfoList(model);
             redisUtils.set(RedisConstants.REDIS_KEY_ORG_LIST, orgInfos);
         }
         return orgInfos;
-    }
-
-    private JSONObject toJSONObject(OrganizationInfoDetail orgInfo) {
-        JSONObject obj = new JSONObject();
-        obj.put("orgId", orgInfo.getId());
-        obj.put("type", orgInfo.getType());
-        obj.put("abbreviation", orgInfo.getAbbreviation());
-        obj.put("brandName", orgInfo.getBrandName());
-        obj.put("clinicNumber", orgInfo.getClinicNumber());
-        obj.put("creditCode", orgInfo.getCreditCode());
-        obj.put("orderNum", orgInfo.getOrderNum());
-        obj.put("parentId", orgInfo.getParentId());
-        obj.put("name", orgInfo.getName());
-        return obj;
     }
 }

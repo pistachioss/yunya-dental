@@ -60,9 +60,25 @@ public class WorkloadStatisticsVO implements Serializable {
   @ApiModelProperty("被代收门诊补入工作量合计")
   private BigDecimal totalClinicedCouponWorkload;
 
+  /** 收欠费门诊已收工作量合计 */
+  @ApiModelProperty("收欠费门诊已收工作量合计")
+  private BigDecimal totalClinicArrearsReceivedWorkload;
+
+  /** 收欠费门诊补入工作量合计 */
+  @ApiModelProperty("收欠费门诊补入工作量合计")
+  private BigDecimal totalClinicArrearsCouponWorkload;
+
+  /** 收欠费其中含免单支付工作量合计 */
+  @ApiModelProperty("收欠费其中含免单支付工作量合计")
+  private BigDecimal totalClinicFreePaymentWorkload;
+
   /** 门诊已收非工作量合计 */
   @ApiModelProperty("门诊已收非工作量合计")
   private BigDecimal totalClinicReceivedNotWorkload;
+
+  /** 收欠费门诊已收非工作量合计 */
+  @ApiModelProperty("收欠费门诊已收非工作量合计")
+  private BigDecimal totalClinicArrearsReceivedNotWorkload;
 
   /** 被代收门诊非工作量合计 */
   @ApiModelProperty("被代收门诊非工作量合计")

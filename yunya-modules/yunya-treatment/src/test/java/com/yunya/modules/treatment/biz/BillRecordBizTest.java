@@ -2,6 +2,8 @@ package com.yunya.modules.treatment.biz;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.DataStatisticsQuery;
+import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.PatientBillStatistics;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
@@ -24,6 +26,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class BillRecordBizTest {
   @Autowired BillRecordBiz billRecordBiz;
   @Autowired private TreatmentRecordBiz treatmentRecordBiz;
+  @Autowired private OrderDetailBiz orderDetailBiz;
 
   @Test
   public void getNum() {
@@ -43,6 +46,14 @@ public class BillRecordBizTest {
     PatientTreatmentRecordQueryForm queryForm = JSONObject.parseObject(param,PatientTreatmentRecordQueryForm.class);
     PageInfo<PatientTreatmentRecordVO> resultList =
             treatmentRecordBiz.findPatientTreatList(queryForm);
+    System.out.println(JSONObject.toJSON(resultList));
+  }
+
+  @Test
+  public void test2() {
+    String param = "{\"orgIds\":[26,27,28,29],\"dateType\":1,\"startDate\":\"2021-02\",\"endDate\":\"2021-02\"}";
+    DataStatisticsQuery query = JSONObject.parseObject(param, DataStatisticsQuery.class);
+    PageInfo<SpecialistProjectCompletedInfoVO> resultList = orderDetailBiz.specialistProjectTargetCompletedList(query);
     System.out.println(JSONObject.toJSON(resultList));
   }
 }

@@ -68,36 +68,44 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
     /**
      * 消息中间件
      */
-    @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+    @Autowired
+    private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
     /**
      * 系统服务调用
      */
-    @Autowired private RemoteSystemServiceFeign systemServiceFeign;
+    @Autowired
+    private RemoteSystemServiceFeign systemServiceFeign;
 
     /**
      * 患者服务调用
      */
-    @Autowired private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
+    @Autowired
+    private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
     /**
      * 预约服务调用
      */
-    @Autowired private RemoteAppointmentFeign appointmentFeign;
+    @Autowired
+    private RemoteAppointmentFeign appointmentFeign;
     /**
      * 就诊记录
      */
-    @Autowired private TreatmentRecordMapper treatmentRecordMapper;
+    @Autowired
+    private TreatmentRecordMapper treatmentRecordMapper;
     /**
      * 缓存
      */
-    @Autowired private RedisUtils redisUtils;
+    @Autowired
+    private RedisUtils redisUtils;
     /**
      * 账单记录
      */
-    @Autowired private BillRecordBiz billRecordBiz;
+    @Autowired
+    private BillRecordBiz billRecordBiz;
     /**
      * 转诊记录
      */
-    @Autowired private ReferralRecordsInfoMapper referralRecordsInfoMapper;
+    @Autowired
+    private ReferralRecordsInfoMapper referralRecordsInfoMapper;
 
     /**
      * 新增患者挂号
@@ -162,7 +170,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
 
     public List<ReferredInfoVO> referredInfo(ReferredInfoForm referredForm) {
         //根据名称或者手机号条件查询患者信息
-        if(!referredForm.getUserName().isEmpty()){
+        if (!referredForm.getUserName().isEmpty()) {
             PatientLikeFinleQueryForm patientLikeFinleQueryForm = new PatientLikeFinleQueryForm();
             patientLikeFinleQueryForm.setCondition(referredForm.getUserName());
             //患者集合
@@ -175,7 +183,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
         //转诊记录集合
         List<ReferredInfoVO> reList = referralRecordsInfoMapper.referredInfo(referredForm);
         //转诊记录包含的患者信息
-        List<PatientTotalInfoVo>patList =
+        List<PatientTotalInfoVo> patList =
                 remotePatientCentralServiceFeign.findPatientTotalInfo(reList.stream().map(p -> p.getPatientId()).collect(Collectors.toList()));
         Map<String, PatientTotalInfoVo> patMap = new HashMap(16);
         patList.forEach(z -> patMap.put(z.getId() + "", z));
@@ -183,9 +191,9 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
         //转诊记录包含的员工信息
         SysUserEmployeeModel model = new SysUserEmployeeModel();
         model.setWhetherPage(false);
-        List<Integer>userList = reList.stream().map(p -> p.getUserId()).collect(Collectors.toList());
-        List<Integer>refList = reList.stream().map(p -> p.getReferredId()).collect(Collectors.toList());
-        List<Integer>emList = new ArrayList<>();
+        List<Integer> userList = reList.stream().map(p -> p.getUserId()).collect(Collectors.toList());
+        List<Integer> refList = reList.stream().map(p -> p.getReferredId()).collect(Collectors.toList());
+        List<Integer> emList = new ArrayList<>();
         emList.addAll(userList);
         emList.addAll(refList);
         model.setUserIds(emList);
@@ -201,33 +209,50 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
         if (StringHelper.isNotEmpty(reList)) {
             reList.forEach(
                     vo -> {
-                      vo.setPatientName(patMap.get(vo.getPatientId()+"").getName());
-                      vo.setTelephone(patMap.get(vo.getPatientId()+"").getMobile());
-                      vo.setDepName(detMap.get(vo.getDepId()+"").getName());
-                      vo.setReferredDepName(detMap.get(vo.getReferredDepId()+"").getName());
-                      vo.setUserName(employeesMap.get(vo.getUserId()+"").getName());
-                      vo.setReferredName(employeesMap.get(vo.getReferredId()+"").getName());
+                        vo.setPatientName(patMap.get(vo.getPatientId() + "").getName());
+                        vo.setTelephone(patMap.get(vo.getPatientId() + "").getMobile());
+                        if (vo.getDepId() != null) {
+                            vo.setDepName(detMap.get(vo.getDepId() + "").getName());
+                        }
+                        if (vo.getReferredDepId() != null) {
+                            vo.setReferredDepName(detMap.get(vo.getReferredDepId() + "").getName());
+                        }
+                        vo.setUserName(employeesMap.get(vo.getUserId() + "").getName());
+                        vo.setReferredName(employeesMap.get(vo.getReferredId() + "").getName());
                     });
         }
         return reList;
     }
 
-    public List<ReferredRrportVO> referredReport(ReferredRrportForm referredRrportForm){
+    public List<ReferredRrportVO> referredReport(ReferredRrportForm referredRrportForm) {
 
-        //转诊报表记录集合
-        List<ReferredRrportVO> reList = referralRecordsInfoMapper.referredReport(referredRrportForm);
         //转诊报表记录包含的员工信息
         SysUserEmployeeModel model = new SysUserEmployeeModel();
         model.setWhetherPage(false);
-        List<Integer>userList = reList.stream().map(p -> p.getUserId()).collect(Collectors.toList());
-        List<Integer>refList = reList.stream().map(p -> p.getReferredId()).collect(Collectors.toList());
-        List<Integer>emList = new ArrayList<>();
-        emList.addAll(userList);
-        emList.addAll(refList);
-        model.setUserIds(emList);
         List<SysUserInfoDetail> employees = systemServiceFeign.findSysUserEmployeeInfoList(model);
         Map<String, SysUserInfoDetail> employeesMap = new HashMap(16);
         employees.forEach(z -> employeesMap.put(z.getUserId() + "", z));
+
+        if (referredRrportForm.getUserStatus().length > 0) {
+            model.setWorkStatus(referredRrportForm.getUserStatus());
+        }
+//        List<Integer>userList = reList.stream().map(p -> p.getUserId()).collect(Collectors.toList());
+//        List<Integer>refList = reList.stream().map(p -> p.getReferredId()).collect(Collectors.toList());
+        //        emList.addAll(userList);
+//        emList.addAll(refList);
+        List<Integer> emList = new ArrayList<>();
+        emList.addAll(referredRrportForm.getUserIds());
+        model.setUserIds(emList);
+        List<SysUserInfoDetail> employeesTwo = systemServiceFeign.findSysUserEmployeeInfoList(model);
+
+        List<Integer> employList = employeesTwo.stream().map(p -> p.getUserId()).collect(Collectors.toList());
+        List<ReferredRrportVO> reList = new ArrayList<>();
+        if(employList.size()==0){
+            return reList;
+        }
+        referredRrportForm.setUserIdsAfter(employList);
+        //转诊报表记录集合
+        reList = referralRecordsInfoMapper.referredReport(referredRrportForm);
 
         //科室信息
         List<DepartmentRoom> detList = systemServiceFeign.findDepartmentRoomList(new DepartmentRoom());
@@ -237,13 +262,17 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
         if (StringHelper.isNotEmpty(reList)) {
             reList.forEach(
                     vo -> {
-                        vo.setDepName(detMap.get(vo.getDepId()+"").getName());
-                        vo.setReferredDepName(detMap.get(vo.getReferredDepId()+"").getName());
-                        vo.setUserName(employeesMap.get(vo.getUserId()+"").getName());
-                        vo.setReferredName(employeesMap.get(vo.getReferredId()+"").getName());
+                        if (vo.getDepId() != null) {
+                            vo.setDepName(detMap.get(vo.getDepId() + "").getName());
+                        }
+                        if (vo.getReferredDepId() != null) {
+                            vo.setReferredDepName(detMap.get(vo.getReferredDepId() + "").getName());
+                        }
+                        vo.setUserName(employeesMap.get(vo.getUserId() + "").getName());
+                        vo.setReferredName(employeesMap.get(vo.getReferredId() + "").getName());
                     });
         }
-    return reList;
+        return reList;
     }
 
     private void buildRegistered(RegisteredModel model, Registered entity) {

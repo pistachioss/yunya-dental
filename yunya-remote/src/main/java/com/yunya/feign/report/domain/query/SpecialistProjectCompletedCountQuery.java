@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * 简介: 专科项目完成数量查询参数模型
@@ -24,7 +25,7 @@ public class SpecialistProjectCompletedCountQuery implements Serializable {
   private Integer orgId;
   /** 价目表ID列表 */
   @ApiModelProperty(value = "价目表ID列表", required = true)
-  private String[] tariffIds;
+  private Collection<String> tariffIds;
   /** 开始时间 */
   @ApiModelProperty(value = "开始时间", required = true)
   private String startDate;

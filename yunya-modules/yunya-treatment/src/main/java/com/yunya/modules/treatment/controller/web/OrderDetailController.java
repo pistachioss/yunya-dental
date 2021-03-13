@@ -1,7 +1,10 @@
 package com.yunya.modules.treatment.controller.web;
 
-import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.DataStatisticsQuery;
+import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.treatment.domain.form.BillPrintInfoForm;
+import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
 import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
 import com.yunya.feign.treatment.domain.vo.BillPrintInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
@@ -19,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -130,5 +135,36 @@ public class OrderDetailController {
       return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"没有查询到账单信息",null);
     }
     return ResponseUtil.success(billPrintInfoVO);
+  }
+
+  /**
+   * 根据条件查询专科数量目标
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-专科数量目标")
+  @PostMapping(value = "/specialist/completed/list", name = "根据条件查询专科数量目标")
+  public ResponseResult<PageInfo<SpecialistProjectCompletedInfoVO>>
+  specialistProjectTargetCompletedList(
+          @RequestBody @Validated DataStatisticsQuery query) {
+    PageInfo<SpecialistProjectCompletedInfoVO> resultList =
+            orderDetailBiz.specialistProjectTargetCompletedList(query);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 根据条件查询专科数量目标导出
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-专科数量目标导出")
+  @PostMapping(value = "/specialist/completed/export", name = "根据条件查询专科数量目标导出")
+  public ResponseResult<PageInfo<SpecialistProjectCompletedInfoVO>>
+  specialistProjectTargetCompletedExport(
+          HttpServletResponse response, @RequestBody @Validated DataStatisticsQuery query) throws IOException {
+    orderDetailBiz.specialistProjectTargetCompletedExport(query, response);
+    return ResponseUtil.success(null);
   }
 }

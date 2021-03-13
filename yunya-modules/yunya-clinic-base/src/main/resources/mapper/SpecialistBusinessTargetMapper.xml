@@ -75,6 +75,38 @@
     </select>
 
     <!-- 根据条件查询门诊专科项目目标数量 -->
+    <select id="selectSpecialistProjectGoalList" resultType="com.yunya.models.clinic_base.SpecialistBusinessTarget">
+        SELECT
+        belong_id as belongId,
+        specialist_project_id as speciallistProjectId,
+        IFNULL(SUM( IFNULL(sbt.business_goal, 0)), 0) as businessGoal
+        FROM
+        specialist_business_target sbt
+        <where>
+            AND sbt.belong_type = 0
+            <if test="orgId != null">
+                AND sbt.belong_id = #{orgId}
+            </if>
+            <if test="dateType != 2">
+                <if test="dateRange!=null and dateRange.size()> 0">
+                    AND sbt.business_date IN
+                    <foreach collection="dateRange" index="index" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </if>
+            <if test="dateType == 2">
+                <if test="dateRange!=null and dateRange.size()> 0">
+                    AND sbt.business_year IN
+                    <foreach collection="dateRange" index="index" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </if>
+        </where>
+        group by belong_id, specialist_project_id
+    </select>
+
     <select id="selectSpecialistProjectGoalCount" resultType="java.lang.Integer">
         SELECT
         IFNULL(SUM( IFNULL(sbt.business_goal, 0)), 0)

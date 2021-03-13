@@ -1,5 +1,8 @@
 package com.yunya.framework.common.constant;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * 简介: 业务相关常量
  *
@@ -52,8 +55,8 @@ public class BusinessConstants {
   public static final String ACCOUNT_ITEM_OF_WECHAT = "微信";
   /** 银行账户支付方式名称 */
   public static final String ACCOUNT_ITEM_OF_BANK = "银行账户";
-  /** 免单支付分类id */
-  public static final Integer FREE_PAYMENT_ID = 11;
+  /** 免单支付入账方式id */
+  public static final List<Integer> FREE_PAYMENT_ID = Arrays.asList(23,26);
   /*************************** 岗位组系统初始化参数 ***********************/
   /** 医生岗位组 */
   public static final Integer DENTIST_GROUP_ID = 3;

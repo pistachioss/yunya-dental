@@ -7,9 +7,7 @@ import com.yunya.feign.clinic_base.domain.model.TargetOfMonthModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.query.BusinessTargetQuery;
 import com.yunya.feign.clinic_base.domain.query.BusinessWorkGoalQuery;
-import com.yunya.feign.clinic_base.domain.vo.BusinessGoalCompletedInfoVO;
-import com.yunya.feign.clinic_base.domain.vo.BusinessWorkGoalVO;
-import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
+import com.yunya.feign.clinic_base.domain.vo.*;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.vo.BusinessCompletedWorkGoalVO;
@@ -250,5 +248,9 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
       }
     }
     return resultData;
+  }
+
+  public List<BusinessGoalVO> findBusinessGoalList(BusinessGoalCompletedInfoQuery query) {
+    return mapper.selectBusinessGoalList(query);
   }
 }

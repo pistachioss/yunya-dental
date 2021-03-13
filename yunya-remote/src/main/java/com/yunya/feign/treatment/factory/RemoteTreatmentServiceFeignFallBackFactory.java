@@ -217,4 +217,9 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   public List<TreatmentRecord> findTreatmentRecordListByAppointIds(List<Integer> appointIds) {
     return null;
   }
+
+  @Override
+  public List<OrderDetail> findSpecialistProjectCompletedList(SpecialistProjectCompletedCountQuery query) {
+    return null;
+  }
 }

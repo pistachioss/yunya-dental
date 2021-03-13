@@ -31,7 +31,7 @@ public class EmployeeWorkloadCostBiz
     EmployeeWorkloadCost employeeWorkloadCost = new EmployeeWorkloadCost();
     DateTime dateTime = new DateTime(model.getEntryMonth(), "yyyy-MM");
     Integer employeeId = model.getEmployeeId();
-    employeeWorkloadCost.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+    employeeWorkloadCost.setOrgId(model.getOrgId());
     employeeWorkloadCost.setEntryMonth(dateTime);
     employeeWorkloadCost.setUserId(employeeId);
     EmployeeWorkloadCost result = mapper.selectOne(employeeWorkloadCost);

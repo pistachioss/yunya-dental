@@ -21,6 +21,8 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class EmployeeWorkloadOfOperationVO implements Serializable {
+  @ApiModelProperty("组织ID")
+  private Integer orgId;
   /** 员工ID */
   @ApiModelProperty("员工ID")
   private Integer employeeId;

@@ -3,6 +3,10 @@ package com.yunya.feign.clinic_base.factory;
 import com.yunya.feign.clinic_base.RemoteClinicBaseServiceFeign;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.BusinessGoalCompletedInfoVO;
+import com.yunya.feign.clinic_base.domain.vo.BusinessGoalVO;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectTargetVO;
+
+import java.util.List;
 
 /**
  * 简介:
@@ -17,5 +21,15 @@ public class RemoteClinicBaseServiceFactory implements RemoteClinicBaseServiceFe
     @Override
     public BusinessGoalCompletedInfoVO businessGoalCompletedInfo(BusinessGoalCompletedInfoQuery query) {
     return null;
+    }
+
+    @Override
+    public List<BusinessGoalVO> businessGoalList(BusinessGoalCompletedInfoQuery query) {
+        return null;
+    }
+
+    @Override
+    public List<SpecialistProjectTargetVO> specialProjectAndGoalsList(Byte dateType, List<String> dateRange, Integer[] orgIds) {
+        return null;
     }
 }
