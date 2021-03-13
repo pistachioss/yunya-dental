@@ -60,6 +60,7 @@ import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
+import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -2262,7 +2263,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                                 appointmentPatientCardVo.setAppointTime(appointmentSplitVo.getSplitStartTime());
                             } else {
                                 // 设置医生维度大医生下的预约助手相关信息（助手排班、助手分解到的患者信息）
-                                AppointmentDimensionVo assistantPatientInfo = this.setAppointAssistantInfo(appointmentPatientCardVo, appointmentSplitVo,assistentInfoList,treatmentRecordList);
+                                AppointmentDimensionVo assistantPatientInfo = this.setAppointAssistantInfo(orgId,appointmentPatientCardVo, appointmentSplitVo,assistentInfoList,treatmentRecordList);
                                 // 设置预约助手下的患者数量，每循环一次加1；
                                 if(null != assistantPatientInfo) {
                                     Integer patientNum = assistantPatientInfo.getPatientNum();
@@ -2366,7 +2367,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param treatmentRecordList 就诊记录列表
      * @return 医生维度视图模型
      */
-    private AppointmentDimensionVo setAppointAssistantInfo(AppointmentPatientCardVo appointmentPatientCardVo,
+    private AppointmentDimensionVo setAppointAssistantInfo(Integer orgId, AppointmentPatientCardVo appointmentPatientCardVo,
                                                            AppointmentSplitVo appointmentSplitVo,
                                                            List<SysUserInfoDetail> assistentInfoList,
                                                            List<TreatmentRecord> treatmentRecordList) {
@@ -2410,7 +2411,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         assistantPatientInfo.setAppointmentPatientCardVos(assistantPatientCardList);
 
         // 设置医生或者助手排班信息
-        this.setAppointmentScheduleInfo(assistantDetailInfo,appointmentPatientCardVo,assistantPatientInfo);
+        this.setAppointmentScheduleInfo(orgId,assistantDetailInfo,appointmentPatientCardVo,assistantPatientInfo);
         return assistantPatientInfo;
     }
 
@@ -2420,7 +2421,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param appointmentPatientCardVo 预约患者信息卡，
      * @param assistantPatientInfo 要注入的助手或医生类
      */
-    private void setAppointmentScheduleInfo(SysUserInfoDetail assistantDetailInfo,
+    private void setAppointmentScheduleInfo(Integer orgId,SysUserInfoDetail assistantDetailInfo,
                                                AppointmentPatientCardVo appointmentPatientCardVo,
                                                AppointmentDimensionVo  assistantPatientInfo) {
         // 设置助手排班信息
@@ -2432,6 +2433,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         String format = dateFormat.format(appointDate);
         scheduleQueryForm.setStartDate(format);
         scheduleQueryForm.setEndDate(format);
+        scheduleQueryForm.setClinicId(orgId);
         // 查询助手排班信息，查询预约当天助手排班 TODO 前端页面没有实现，暂时不优化
         EmployeeScheduleResultVO employeeScheduleResultVO = this.employeeAttendServiceFeign.findList(scheduleQueryForm);
         if (employeeScheduleResultVO.getCount() > 0) {
@@ -2442,11 +2444,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
         }
         // 查询医生/助手请假信息
-        LeaveInfoForm LeaveInfoQuery = new LeaveInfoForm();
-        LeaveInfoQuery.setUserId(assistantDetailInfo.getUserId());
-        LeaveInfoQuery.setStartTime(appointDate);
-        LeaveInfoQuery.setEndTime(appointDate);
-        List<LeaveInfoListVO> leaveInfoList = this.employeeAttendServiceFeign.findEmployeeLeaveInfoList(LeaveInfoQuery);
+        LeaveInfoForm leaveInfoQuery = new LeaveInfoForm();
+        leaveInfoQuery.setUserId(assistantDetailInfo.getUserId());
+        leaveInfoQuery.setStartTime(appointDate);
+        leaveInfoQuery.setEndTime(appointDate);
+        List<LeaveInfoListVO> leaveInfoList = this.employeeAttendServiceFeign.findEmployeeLeaveInfoList(leaveInfoQuery);
         assistantPatientInfo.setLeaveInfos(leaveInfoList);
     }
 

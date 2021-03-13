@@ -210,6 +210,7 @@ public class AppointmentController {
    */
   @ApiOperation(value = "根据排班开始结束日期/门诊id/医生id查询医生维度预约可视图")
   @PostMapping("/find/dentist/dimension")
+  @CurrentUser
   public ResponseResult<Page<AppointmentDimensionVo>> findAppointmentDentistDimensionByExample(
       @RequestBody PatientDimensionByDayQuery query){
     return appointmentBiz.findAppointmentDentistDimensionByExample(query);
