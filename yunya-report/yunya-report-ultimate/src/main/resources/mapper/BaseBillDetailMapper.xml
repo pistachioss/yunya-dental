@@ -1802,7 +1802,7 @@
                 )
             </if>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(IFNULL(bp.patient_name, ''), IFNULL(bp.pinyin_name, ''), IFNULL(bp.mobile, '')) Like
+                and concat(IFNULL(bp.name, ''), IFNULL(bp.pinyin_name, ''), IFNULL(bp.mobile, '')) Like
                 concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
