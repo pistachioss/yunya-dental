@@ -702,7 +702,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-   * 根据条件导出员工个人已收工作量明细列表
+   * 根据条件导出员工免单支付工作量明细列表
    *
    * @param response http响应
    * @param query 查询条件
@@ -713,14 +713,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     PageInfo<EmployeeFreepaymentWorkloadDetailVO> pageInfo =
             findEmployeeFreepaymentWorkloadDetailList(query);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
-    String fileName = query.getQueryDate() + "已收工作量统计明细表";
-    if (null != organization) {
-      fileName = organization.getAbbreviation();
-    }
     List<EmployeeFreepaymentWorkloadDetailVO> resultList = pageInfo.getList();
     ExcelUtil<EmployeeFreepaymentWorkloadDetailVO> excelUtil =
             new ExcelUtil<>(EmployeeFreepaymentWorkloadDetailVO.class);
-    excelUtil.exportExcel(response, resultList, "员工个人免单支付工作量明细列表", fileName);
+    String fileName = excelUtil.getFileName(query.getQueryDate(),null,organization.getAbbreviation(),"免单支付工作量明细");
+    excelUtil.exportExcel(response, resultList, "免单支付工作量明细", fileName);
   }
 
   /**
