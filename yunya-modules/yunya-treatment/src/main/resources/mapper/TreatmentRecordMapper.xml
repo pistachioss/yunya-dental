@@ -66,7 +66,10 @@
         DATE_FORMAT(tr.treat_start_time, '%Y-%m-%d') as treatDate,
         DATE_FORMAT(tr.treat_start_time, '%H:%i') as treatStartTime,
         DATE_FORMAT(tr.treat_end_time, '%H:%i') as treatEndTime,
-        tr.medical_record_completed as medicalRecordCompleted
+        tr.medical_record_completed as medicalRecordCompleted,
+        0 as nextAppointment,
+        0 as nextVisitRemind,
+        0 as nextInterview
         from treatment_record tr
         <where>
             <if test="queryForm.id != null">
