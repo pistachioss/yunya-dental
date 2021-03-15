@@ -116,7 +116,7 @@ public class TreatmentOtherServiceRest {
    */
   @ApiOperation(value = "根据患者ID查询后续随访集合列表")
   @RequestMapping(value = "/visiting/count/{regDate}", method = RequestMethod.POST)
-  List<NextVisitingRecordVo> countNextVisitingListByIds(
+  public List<NextVisitingRecordVo> countNextVisitingListByIds(
       @RequestBody List<Integer> patientIds, @PathVariable(value = "regDate") String regDate) {
     List<NextVisitingRecordVo> resultList = new ArrayList<>();
     if (StringHelper.isNotEmpty(patientIds)) {
@@ -131,9 +131,9 @@ public class TreatmentOtherServiceRest {
           visitingRecordMapper.countNextVisitingListByIds(patientIds, regDate);
       if (StringHelper.isNotEmpty(visitRecordResult)) {
         for (NextVisitingRecordVo vo : visitRecordResult) {
-          for (Integer patientId : patientIds) {
-            if (vo.getPatientId().equals(patientId)) {
-              vo.setVisitRecordCount(vo.getVisitRemindCount());
+          for (NextVisitingRecordVo visitingRecordVo : resultList) {
+            if (vo.getPatientId().equals(visitingRecordVo.getPatientId())) {
+              visitingRecordVo.setVisitRecordCount(vo.getVisitRecordCount());
             }
           }
         }
@@ -142,9 +142,9 @@ public class TreatmentOtherServiceRest {
           visitingRemindMapper.countNextVisitingListByIds(patientIds, regDate);
       if (StringHelper.isNotEmpty(visitRemindResult)) {
         for (NextVisitingRecordVo vo : visitRemindResult) {
-          for (Integer patientId : patientIds) {
-            if (vo.getPatientId().equals(patientId)) {
-              vo.setVisitRemindCount(vo.getVisitRemindCount());
+          for (NextVisitingRecordVo visitingRecordVo : resultList) {
+            if (vo.getPatientId().equals(visitingRecordVo.getPatientId())) {
+              visitingRecordVo.setVisitRemindCount(vo.getVisitRemindCount());
             }
           }
         }
