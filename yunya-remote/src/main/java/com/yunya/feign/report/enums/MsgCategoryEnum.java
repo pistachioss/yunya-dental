@@ -22,6 +22,7 @@ public enum MsgCategoryEnum {
     BaseBillPayDetail,
     BaseEmployee,
     BasePatientMember,
+    BasePatientOrigin,
     BaseRefund,
     BaseVisitRemind,
     BaseAppointmentModify,

@@ -7,12 +7,13 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.patient.BasePatientMemberBiz;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
 
 /**
  * 简介: 报表中间表患者会员信息/预付款信息控制器
@@ -26,7 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("member")
 public class BasePatientMemberController {
   /** 注入服务 */
-  @Autowired private BasePatientMemberBiz basePatientMemberBiz;
+  @Resource
+  private BasePatientMemberBiz basePatientMemberBiz;
 
   @PostMapping("/operate")
   public ResponseResult<T> operate(@RequestBody @Validated MessageModel model) {
