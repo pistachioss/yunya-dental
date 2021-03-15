@@ -22,14 +22,20 @@ public interface BaseBillPayDetailMapper extends Mapper<BaseBillPayDetail> {
   /**
    * 根据billId分组，统计免单支付总额
    *
-   * @param billIds 账单id列表
    * @param billPayIds 账单收费id列表
-   * @param orgId 收费门诊id（注意）
    * @param payIds 入账方式
    * @return
    */
-  List<BaseBillPayDetailVO> sumPayDetailList(@Param("billIds") Collection<Integer> billIds,
-                                             @Param("billPayIds") Collection<Integer> billPayIds,
-                                             @Param("orgId") Integer orgId,
+  List<BaseBillPayDetailVO> sumPayDetailListByBillPayIds(@Param("billPayIds") Collection<Integer> billPayIds,
                                              @Param("payIds") Collection<Integer> payIds);
+
+  /**
+   * 根据billId分组，统计免单支付总额
+   *
+   * @param billIds 账单id列表
+   * @param payIds 入账方式
+   * @return
+   */
+  List<BaseBillPayDetailVO> sumPayDetailListByBillIds(@Param("billIds") Collection<Integer> billIds,
+                                               @Param("payIds") Collection<Integer> payIds);
 }
