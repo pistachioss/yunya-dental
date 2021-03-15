@@ -106,9 +106,9 @@ public class ClinicDataStatisticsBiz {
     BigDecimal totalClinicedNotWorkload = BigDecimal.ZERO;//被代收门诊非工作量合计
 
     //完成工作量合计 = 工作量 - 账单退费合计
-    clinicWorkloadStatistic.setTotalWorkloadComplete(totalWorkload.subtract(totalBillRefundAmount));
-    clinicWorkloadStatistic.setTotalWorkload(totalWorkload);
-    clinicWorkloadStatistic.setTotalBillRefundAmount(totalBillRefundAmount);
+    //clinicWorkloadStatistic.setTotalWorkloadComplete(totalWorkload.subtract(totalBillRefundAmount));
+    //clinicWorkloadStatistic.setTotalWorkload(totalWorkload);
+//    clinicWorkloadStatistic.setTotalBillRefundAmount(totalBillRefundAmount);
     clinicWorkloadStatistic.setTotalFreePaymentAmount(totalFreePaymentAmount);
     clinicWorkloadStatistic.setTotalClinicedReceivedWorkload(totalClinicedReceivedWorkload);
     clinicWorkloadStatistic.setTotalClinicedFreePaymentAmount(totalClinicedFreePaymentAmount);
