@@ -36,11 +36,10 @@ public class VisitingRecordMapperTest {
   @Test
   public void find() {
     ArrayList<Integer> integers = new ArrayList<>();
-    integers.add(21683);
-    integers.add(21688);
-    integers.add(21699);
+    integers.add(78307);
+    integers.add(78309);
     List<NextVisitingRecordVo> vos =
-        visitingRecordMapper.countNextVisitingListByIds(integers, "2021-03-01");
+        visitingRecordMapper.countNextVisitingListByIds(integers, "2021-03-15");
     System.out.println(vos);
   }
 }
