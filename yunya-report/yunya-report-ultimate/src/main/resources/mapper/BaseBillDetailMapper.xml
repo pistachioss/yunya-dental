@@ -167,6 +167,12 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="query.postIds!=null and query.postIds.length>0">
+                and bup.post_id in
+                <foreach collection="query.postIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         GROUP BY
         bup.org_id,
