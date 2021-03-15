@@ -33,9 +33,9 @@ public interface VisitingRemindMapper extends Mapper<VisitingRemind> {
    * 查询患者后续提醒
    *
    * @param patientIds 患者ID列表
-   * @param regDate 查询日期
+   * @param currentDate 查询日期
    * @return
    */
   List<NextVisitingRecordVo> countNextVisitingListByIds(
-      @Param("patientIds") List<Integer> patientIds, @Param("regDate") String regDate);
+      @Param("patientIds") List<Integer> patientIds, @Param("currentDate") String currentDate);
 }
