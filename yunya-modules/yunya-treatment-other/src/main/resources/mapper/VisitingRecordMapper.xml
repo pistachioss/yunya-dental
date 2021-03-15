@@ -201,14 +201,15 @@
     <!-- 根据患者ID集合查询患者后续随访数量、后续提醒数量信息列表 -->
     <select id="countNextVisitingListByIds" resultType="com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo">
         SELECT
-        vr.patient_id AS patientId,
-        vr.visitRecordCount,
-        vm.visitRemindCount
+        main.patientId,
+        main.visitRecordCount,
+        main.visitRemindCount
         FROM
         (
         SELECT
-        vr.patient_id,
-        IFNULL( COUNT( vr.patient_id ), 0 ) AS visitRecordCount
+        vr.patient_id AS patientId,
+        COUNT( vr.patient_id ) AS visitRecordCount,
+        0 AS visitRemindCount
         FROM
         visiting_record vr
         WHERE
@@ -221,12 +222,12 @@
                 #{patientId}
             </foreach>
         </if>
-        GROUP BY vr.patient_id
-        ) vr
-        INNER JOIN (
+        GROUP BY
+        vr.patient_id UNION ALL
         SELECT
-        vm.patient_id,
-        IFNULL( COUNT( vm.patient_id ), 0 ) AS visitRemindCount
+        vm.patient_id AS patientId,
+        0 AS visitRecordCount,
+        COUNT( vm.patient_id ) AS visitRemindCount
         FROM
         visiting_remind vm
         WHERE
@@ -239,8 +240,10 @@
                 #{patientId}
             </foreach>
         </if>
-        GROUP BY vm.patient_id
-        ) vm ON vr.patient_id = vm.patient_id
+        GROUP BY
+        vm.patient_id
+        ) main
+        GROUP BY main.patientId
     </select>
 
     <select id="countVisiting" resultType="com.yunya.feign.treatment_other.domain.vo.VisitingStatusCountVO">

@@ -37,7 +37,7 @@ public class VisitingRecordMapperTest {
   public void find() {
     ArrayList<Integer> integers = new ArrayList<>();
     integers.add(78307);
-    integers.add(78309);
+    integers.add(79777);
     List<NextVisitingRecordVo> vos =
         visitingRecordMapper.countNextVisitingListByIds(integers, "2021-03-15");
     System.out.println(vos);
