@@ -8,6 +8,8 @@ import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginTreeVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginVo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -53,6 +55,9 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
   /** 注入患者信息Mapper */
   @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
 
+  /** 注入服务 */
+  @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
+
 
   /** 获取患者服务端口号 */
   @Value("${codeUrl.url}")
@@ -93,6 +98,8 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       patientOrigin.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientOrigin.setCrtName(BaseContextHandler.getName());
       mapper.insertSelective(patientOrigin);
+      remoteRabbitMqServiceFeign.sendMessage(
+              patientOrigin.getId(), 0, MsgCategoryEnum.BasePatientMember);
     }
     return ResponseUtil.success();
   }
@@ -198,6 +205,8 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       patientOrigin.setUpdName(BaseContextHandler.getName());
       patientOrigin.setUpdTime(new Date());
       mapper.updateByPrimaryKey(patientOrigin);
+      remoteRabbitMqServiceFeign.sendMessage(
+              patientOrigin.getId(), 1, MsgCategoryEnum.BasePatientMember);
     } else {
       return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST, "未找到患者来源", patientOrigin);
     }
@@ -219,6 +228,8 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
           OperationCodeConstants.DELETE_NOT_ALLOW, "该患者来源已被患者关联，不允许删除！", patientOriginv);
     }
     mapper.deleteByPrimaryKey(id);
+    remoteRabbitMqServiceFeign.sendMessage(
+            id, 2, MsgCategoryEnum.BasePatientMember);
     return ResponseUtil.success();
   }
 

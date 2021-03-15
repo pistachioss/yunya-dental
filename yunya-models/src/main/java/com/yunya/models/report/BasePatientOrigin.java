@@ -14,6 +14,7 @@ public class BasePatientOrigin {
     /**
      * 患者来源ID
      */
+    @Id
     @Column(name = "id")
     private Integer id;
 

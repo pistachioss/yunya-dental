@@ -3,10 +3,7 @@ package com.yunya.middletable.handle;
 import com.rabbitmq.client.Channel;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.middletable.service.*;
-import com.yunya.middletable.service.patient.BasePatientBiz;
-import com.yunya.middletable.service.patient.BasePatientMemberBiz;
-import com.yunya.middletable.service.patient.BasePatientMemberOccurLogBiz;
-import com.yunya.middletable.service.patient.BasePatientMemberRelationBiz;
+import com.yunya.middletable.service.patient.*;
 import com.yunya.middletable.service.treatment_other.BaseEmployeeScheduleBiz;
 import com.yunya.middletable.service.treatment_other.BaseVisitRemindBiz;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +59,8 @@ public class ReceiverMessageController {
   @Autowired private BaseEmployeeScheduleBiz baseEmployeeScheduleBiz;
 
   @Autowired private BaseAppointmentModifyBiz appointmentModifyBiz;
+
+  @Autowired private BasePatientOriginBiz basePatientOriginBiz;
 
   @RabbitHandler
   public void handleMiddleSingle(MessageModel messageModel, Channel channel, Message message)
@@ -134,6 +133,8 @@ public class ReceiverMessageController {
           break;
         case BaseAppointmentModify:
           appointmentModifyBiz.operateAppointmentModify(messageModel);
+        case BasePatientOrigin:
+          basePatientOriginBiz.operate(messageModel);
           break;
         default:
           log.info("消息中没有对应的枚举类型[{}]！", messageModel.getMsgCategoryEnum());

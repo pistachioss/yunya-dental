@@ -4,7 +4,7 @@ import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.middletable.service.patient.BasePatientMemberOccurLogBiz;
+import com.yunya.middletable.service.patient.BasePatientOriginBiz;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
@@ -16,36 +16,41 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 
 /**
- * 简介: 报表中间表患者会员/预付款操作日志信息控制器
+ * 简介：患者来源中间表同步
  *
  * @author: WY
- * @date: 2020/10/16 16:40
- * @description:
+ * @date: 2020/10/15 13:20
+ * @description: 患者来源中间表同步-控制层
  * @since: 1.0.0
  */
+
 @RestController
-@RequestMapping("occurlog")
-public class BasePatientMemberOccurLogController {
+@RequestMapping("patientOrigin")
+public class BasePatientOriginController {
   /** 注入服务 */
   @Resource
-  private BasePatientMemberOccurLogBiz basePatientMemberOccurLogBiz;
+  private BasePatientOriginBiz basePatientOriginBiz;
 
+  /**
+   * 操作中间表患者来源
+   * @param model 条件模型
+   */
   @PostMapping("/operate")
   public ResponseResult<T> operate(@RequestBody @Validated MessageModel model) {
-    basePatientMemberOccurLogBiz.operate(model);
-    return ResponseUtil.success(null);
+    basePatientOriginBiz.operate(model);
+    return ResponseUtil.success();
   }
 
   /**
-   * 根据条件拉取员工数据并更新中间表
-   *
+   * 根据条件拉取患者数据并更新中间表
    * @param form 拉取时间
-   * @return
    */
-  @ApiOperation("根据时间段批量操作中间表员工信息")
-  @PostMapping(value = "/batch", name = "PatientMemberInfoBiz")
-  public ResponseResult<T> pullOccurLogData(@RequestBody PullForm form) {
-    basePatientMemberOccurLogBiz.pullOccurLogData(form);
-    return ResponseUtil.success(null);
+  @ApiOperation("批量同步患者来源")
+  @PostMapping(value = "/batch", name = "PatientBaseInfoBiz")
+  public ResponseResult<T> pullPatientData(@RequestBody PullForm form) throws InterruptedException {
+    basePatientOriginBiz.pullPatientData(form);
+    return ResponseUtil.success();
   }
+
+
 }
