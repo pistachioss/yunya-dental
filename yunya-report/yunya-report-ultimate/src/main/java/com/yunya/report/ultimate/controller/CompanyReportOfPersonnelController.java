@@ -414,4 +414,18 @@ public class CompanyReportOfPersonnelController {
     PageInfo<PersonalWorkloadVO> pageInfo = billDetailBiz.personalWorkloadList(query);
     return ResponseUtil.success(pageInfo);
   }
+
+  /**
+   * 根据条件查询个人工作量列表导出
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeWorkloadOfOperationVO>
+   */
+  @ApiOperation("门诊端个人中心-个人报表-个人工作量导出")
+  @PostMapping(value = "/personal/workload/export", name = "根据条件查询个人工作量列表导出")
+  public ResponseResult<T> personalWorkloadExport(HttpServletResponse response,
+          @RequestBody @Validated EmployeeWorkloadQuery query) throws IOException {
+    billDetailBiz.personalWorkloadExport(query, response);
+    return ResponseUtil.success(null);
+  }
 }

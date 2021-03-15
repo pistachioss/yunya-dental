@@ -10,6 +10,7 @@ import lombok.ToString;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * 简介: 员工工作量查询参数模型
@@ -45,4 +46,7 @@ public class EmployeeWorkloadQuery extends PageQuery implements Serializable {
   /** 就职状态列表：0-试用；1-正式；2-离职；3-实习 */
   @ApiModelProperty("就职状态列表：0-试用；1-正式；2-离职；3-实习")
   private Integer[] workStatus;
+  /** 账单ID列表 */
+  @ApiModelProperty("账单ID列表")
+  private Collection<Integer> billIds;
 }

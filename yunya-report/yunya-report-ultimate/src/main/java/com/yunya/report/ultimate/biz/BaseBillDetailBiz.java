@@ -10,6 +10,7 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBillDetail;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
+import com.yunya.report.ultimate.mapper.BaseBillMapper;
 import com.yunya.report.ultimate.mapper.BaseBillPayDetailMapper;
 import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   @Autowired private BaseOrganizationMapper organizationMapper;
   /** 账单收费明细 */
   @Autowired private BaseBillPayDetailMapper baseBillPayDetailMapper;
+  /** 账单*/
+  @Autowired private BaseBillMapper baseBillMapper;
 
   /**
    * 根据条件查询账单收入详情列表
@@ -162,40 +165,42 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   private void assemblyFreepayment(List<? extends EmployeeWorkloadOfOperationVO> resultList, EmployeeWorkloadQuery query) {
     Integer orgId = query.getOrgId();
-    Map<String, BigDecimal> userIds = new HashMap<>(16);
-    if (orgId != null) {
-      resultList.forEach(vo->{
-        Integer employeeId = vo.getEmployeeId();
-        if (orgId == null) {
-          userIds.put(employeeId+","+vo.getOrgId(),BigDecimal.ZERO);
-        } else {
-          userIds.put(employeeId+","+orgId,BigDecimal.ZERO);
-        }
-      });
-    }
-    assemblyFreepayment(userIds, query);
+    Map<String, BigDecimal> userOrgs = new HashMap<>(16);
+    Set<Integer> userIds = new HashSet<>();
     resultList.forEach(vo->{
-      BigDecimal free = userIds.get(vo.getEmployeeId()+","+vo.getOrgId());
+      Integer employeeId = vo.getEmployeeId();
+      if (orgId == null) {
+        userOrgs.put(employeeId+","+vo.getOrgId(),BigDecimal.ZERO);
+      } else {
+        userOrgs.put(employeeId+","+orgId,BigDecimal.ZERO);
+      }
+      userIds.add(employeeId);
+    });
+    query.setEmployeeIds(userIds.toArray(new Integer[0]));
+    assemblyFreepayment(userOrgs, query);
+    resultList.forEach(vo->{
+      BigDecimal free = userOrgs.get(vo.getEmployeeId()+","+vo.getOrgId());
       vo.setFreePaymentWorkload(free==null?BigDecimal.ZERO:free);
     });
   }
 
   private void assemblyFreepayment(EmployeeWorkloadQuery query, List<PersonalWorkloadVO> resultList) {
     Integer orgId = query.getOrgId();
-    Map<String, BigDecimal> userIds = new HashMap<>(16);
-    if (orgId != null) {
-      resultList.forEach(vo->{
-        Integer employeeId = vo.getEmployeeId();
-        if (orgId == null) {
-          userIds.put(employeeId+","+vo.getOrgId(),BigDecimal.ZERO);
-        } else {
-          userIds.put(employeeId+","+orgId,BigDecimal.ZERO);
-        }
-      });
-    }
-    assemblyFreepayment(userIds, query);
+    Map<String, BigDecimal> userOrgs = new HashMap<>(16);
+    Set<Integer> userIds = new HashSet<>();
     resultList.forEach(vo->{
-      BigDecimal free = userIds.get(vo.getEmployeeId()+","+vo.getOrgId());
+      Integer employeeId = vo.getEmployeeId();
+      if (orgId == null) {
+        userOrgs.put(employeeId+","+vo.getOrgId(),BigDecimal.ZERO);
+      } else {
+        userOrgs.put(employeeId+","+orgId,BigDecimal.ZERO);
+      }
+      userIds.add(employeeId);
+    });
+    query.setEmployeeIds(userIds.toArray(new Integer[0]));
+    assemblyFreepayment(userOrgs, query);
+    resultList.forEach(vo->{
+      BigDecimal free = userOrgs.get(vo.getEmployeeId()+","+vo.getOrgId());
       vo.setFreePaymentWorkload(free==null?BigDecimal.ZERO:free);
     });
   }
@@ -787,15 +792,37 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return
    */
   public PageInfo<PersonalWorkloadVO> personalWorkloadList(EmployeeWorkloadQuery query) {
+    List<Integer> billIds = baseBillMapper.distinctBillIdByOrderDate(query);
+    if (StringHelper.isEmpty(billIds)) {
+      return new PageInfo<>(new ArrayList<>());
+    }
+    query.setBillIds(billIds);
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<PersonalWorkloadVO> resultList = mapper.selectPersonalWorkloadList(query);
-
     // 免单支付工作量
     if (StringHelper.isNotEmpty(resultList)) {
       assemblyFreepayment(query, resultList);
     }
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件查询个人工作量列表导出
+   *
+   * @param query
+   * @return
+   */
+  public void personalWorkloadExport(EmployeeWorkloadQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<PersonalWorkloadVO> pageInfo =
+            personalWorkloadList(query);
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    List<PersonalWorkloadVO> resultList = pageInfo.getList();
+    ExcelUtil<PersonalWorkloadVO> excelUtil =
+            new ExcelUtil<>(PersonalWorkloadVO.class);
+    String fileName = excelUtil.getFileName(query.getQueryDate(),null,organization.getAbbreviation(),"员工工作量统计");
+    excelUtil.exportExcel(response, resultList, "员工工作量统计", fileName);
   }
 }

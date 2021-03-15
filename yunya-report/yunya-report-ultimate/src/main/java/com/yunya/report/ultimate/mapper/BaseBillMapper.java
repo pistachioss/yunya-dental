@@ -169,4 +169,6 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @return
    */
   List<CouponDiscountItemInfoVO> selectCouponDiscountItems(@Param("query") CouponDiscountItemsQuery query);
+
+  List<Integer> distinctBillIdByOrderDate(@Param("query") EmployeeWorkloadQuery query);
 }
