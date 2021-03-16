@@ -76,7 +76,9 @@ public class BaseAppointmentModifyBiz extends BaseBiz<BaseAppointmentModifyMappe
    * @return BaseAppointmentModify
    */
   private BaseAppointmentModify generateBaseAppointmentModify(Integer id) {
-    AppointmentModifyRecord appointmentModifyRecord = appointmentModifyRecordMapper.selectByPrimaryKey(id);
+    AppointmentModifyRecord record = new AppointmentModifyRecord();
+    record.setId(id);
+    AppointmentModifyRecord appointmentModifyRecord = appointmentModifyRecordMapper.selectOne(record);
     return null != appointmentModifyRecord ? setBaseAppointmentModifyValue(id, appointmentModifyRecord) : null;
   }
 
