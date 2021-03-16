@@ -29,7 +29,8 @@ import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientOriginLogMapper;
 import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +38,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -49,11 +54,11 @@ import java.util.concurrent.ExecutorService;
  * @description: 患者来源管理业务层
  * @since: 1.0.0
  */
-@Slf4j
+
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin> {
-
+  private Logger log = LoggerFactory.getLogger(PatientOriginBiz.class);
   /** 注入患者来源Mapper */
   @Autowired private PatientOriginMapper patientOriginMapper;
 
