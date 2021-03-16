@@ -190,6 +190,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
   List<EmployeeFreepaymentWorkloadDetailVO> selectEmployeeFreepaymentWorkloadDetailList(
           @Param("query") EmployeePersonalWorkloadDetailQuery query,
+          @Param("billIds") Collection<Integer> billIds,
           @Param("payIds") Collection<Integer> payIds);
 
   List<OperationDataBusinessGoalVO> selectWorkloadCompletedList(@Param("query") DataStatisticsQuery query);

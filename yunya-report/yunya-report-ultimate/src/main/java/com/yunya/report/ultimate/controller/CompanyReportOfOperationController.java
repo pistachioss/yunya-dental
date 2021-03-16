@@ -308,4 +308,18 @@ public class CompanyReportOfOperationController {
     clinicDataStatisticsBiz.analysisBusinessGoalExport(query, response);
     return ResponseUtil.success(null);
   }
+
+  /**
+   * 根据条件查询个人开单数量及金额列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillingItemInfoVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-个人开单数量及金额")
+  @PostMapping(value = "/bill/item/list", name = "根据条件查询个人开单数量及金额列表")
+  public ResponseResult<PageInfo<BillingItemInfoVO>> billItemStatisticsList(
+          @RequestBody @Validated BillingItemStatisticsQuery query) {
+    PageInfo<BillingItemInfoVO> pageInfo = billDetailBiz.findBillingItemInfoVOList(query);
+    return ResponseUtil.success(pageInfo);
+  }
 }

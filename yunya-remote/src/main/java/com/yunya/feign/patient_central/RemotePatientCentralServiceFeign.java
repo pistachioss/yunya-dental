@@ -26,7 +26,7 @@ import java.util.List;
 @FeignClient(
     name = YunyaServiceNameConstants.YUNYA_PATIENT,
     fallbackFactory = RemotePatientCentralServiceFallBackFactory.class)
-public interface RemotePatientCentralServiceFeign {
+    public interface RemotePatientCentralServiceFeign {
 
   /**
    * 患者信息模糊查询暴露接口

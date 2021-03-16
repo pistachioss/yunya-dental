@@ -1,5 +1,7 @@
 package com.yunya.feign.treatment.domain.vo;
 
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -69,10 +71,15 @@ public class ReferredInfoVO {
     @ApiModelProperty("备注")
     private String remark;
 
+    @ExcelProperty("转诊时间 （只有时分）")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm", timezone = "GMT+8")
+    private Date time;
+
     @ApiModelProperty("创建人ID")
     private Integer crtId;
 
     @ApiModelProperty("创建时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date crtTime;
 
     @ApiModelProperty("修改人ID")

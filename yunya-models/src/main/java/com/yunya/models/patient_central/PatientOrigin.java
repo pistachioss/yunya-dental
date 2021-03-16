@@ -13,6 +13,7 @@ public class PatientOrigin {
      * 患者来源ID
      */
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**

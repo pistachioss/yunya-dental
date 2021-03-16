@@ -167,6 +167,12 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="query.postIds!=null and query.postIds.length>0">
+                and bup.post_id in
+                <foreach collection="query.postIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         GROUP BY
         bup.org_id,
@@ -361,6 +367,7 @@
         SELECT
         bup.org_id,
         bup.user_id AS employeeId,
+        bup.post_id AS postId,
         be.employee_name AS employeeName,
         be.work_status AS workStatus,
         GROUP_CONCAT( DISTINCT bup.post_name SEPARATOR ',' ) AS postNames,
@@ -540,6 +547,12 @@
             <if test="query.workStatus!=null and query.workStatus.length > 0">
                 and bup.workStatus in
                 <foreach collection="query.workStatus" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.postIds!=null and query.postIds.length>0">
+                and bup.postId in
+                <foreach collection="query.postIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
@@ -891,24 +904,25 @@
     <!-- 根据条件查询员工已收工作量明细列表 -->
     <select id="selectEmployeeFreePaymentDetailList"
             resultType="com.yunya.feign.report.domain.vo.EmployeeReceivedDetailWorkloadVO">
-        SELECT
-        bbd.bill_id as billId,
-        bbd.bill_detail_id AS orderDetailId,
-        bbd.item_type AS itemType,
-        bbd.item_id AS itemId,
-        bti.item_num AS itemNum,
-        bti.item_name AS itemName,
-        bbd.received_amount as receivedWorkload
-        FROM
-        base_bill_detail bbd
-        LEFT JOIN base_tariff_info bti ON bbd.item_type = bti.item_type
-        AND bbd.item_id = bti.item_id
-        <where>
-            and bbd.received_amount > 0
-            <if test="query.billId != null">
-                and bbd.bill_id = #{query.billId}
-            </if>
-        </where>
+        SELECT * FROM(
+            SELECT
+            bbd.bill_id as billId,
+            bbd.bill_detail_id AS orderDetailId,
+            bbd.item_type AS itemType,
+            bbd.item_id AS itemId,
+            bti.item_num AS itemNum,
+            bti.item_name AS itemName,
+            IFNULL(bbd.price * bbd.quantity - bbd.discount_amount, 0) as receivedAmount
+            FROM
+            base_bill_detail bbd
+            LEFT JOIN base_tariff_info bti ON bbd.item_type = bti.item_type
+            AND bbd.item_id = bti.item_id
+            <where>
+                <if test="query.billId != null">
+                    and bbd.bill_id = #{query.billId}
+                </if>
+            </where>
+        ) t where t.receivedAmount>0
     </select>
 
     <!-- 根据条件查询员工补入工作量明细列表 -->
@@ -1726,11 +1740,10 @@
             t.org_id as orgId,
             t.bill_id as billId,
             t.executor_id as executorId,
-            t.received_amount as receivedAmount
+            IFNULL(t.price * t.quantity - t.discount_amount, 0) as receivedAmount
         from base_bill_detail t
         left join base_bill bbd on t.bill_id=bbd.bill_id
         <where>
-            t.received_amount>0
             and t.executor_id>0
             <if test="query.orgId != null">
                 and t.org_id = #{query.orgId}
@@ -1746,6 +1759,12 @@
                     and DATE_FORMAT( bbd.bill_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
+            <if test="query.employeeIds!=null and query.employeeIds.length>0">
+                and t.executor_id in
+                <foreach collection="query.employeeIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
@@ -1753,12 +1772,11 @@
         select
         t.bill_id as billId,
         t.executor_id as executorId,
-        t.received_amount as receivedAmount,
+        IFNULL(t.price * t.quantity - t.discount_amount, 0) as receivedAmount,
         t.item_type AS itemType,
         t.item_id AS itemId
         from base_bill_detail t
         <where>
-            t.received_amount>0
             and bill_id in
             <foreach collection="billIds" item="item" open="(" separator="," close=")">
                 #{item}
@@ -1795,11 +1813,11 @@
             <if test="query.orgId != null">
                 and bbp.org_id = #{query.orgId}
             </if>
-            <if test="query.employeeId != null">
-                and EXISTS (
-                select bill_id from base_bill_detail bbd
-                where bb.bill_id=bbd.bill_id and bbd.executor_id=#{query.employeeId}
-                )
+            <if test="billIds!=null and billIds.size()>0">
+                and bbp.bill_id in
+                <foreach collection="billIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.keyword != null and query.keyword != ''">
                 and concat(IFNULL(bp.name, ''), IFNULL(bp.pinyin_name, ''), IFNULL(bp.mobile, '')) Like
@@ -2020,15 +2038,13 @@
         LEFT JOIN (
         SELECT
         bbd.org_id,
-        bbd.order_date,
         bbd.executor_id,
         SUM( bbd.coupon_workload ) AS supplementWorkload,
         SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS actualWorkload
         FROM
         (
         SELECT
-        bb.org_id,
-        bb.order_date,
+        bbd.org_id,
         bbd.executor_id,
         bbd.coupon_workload,
         bbd.discount_amount,
@@ -2036,20 +2052,15 @@
         bbd.quantity
         FROM
         base_bill_detail bbd
-        INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         <where>
             <if test="query.orgId != null">
-                and bb.org_id = #{query.orgId}
+                and bbd.org_id = #{query.orgId}
             </if>
-            <if test="query.dateType == 0">
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bb.order_date, '%Y-%m' ) = #{query.queryDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bb.order_date, '%Y' ) = #{query.queryDate}
-                </if>
+            <if test="query.billIds!=null and query.billIds.size()>0">
+                and bbd.bill_id in
+                <foreach collection="query.billIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
         ) bbd
@@ -2068,8 +2079,7 @@
         FROM
         (
         SELECT
-        bb.org_id,
-        bb.bill_date,
+        bbd.org_id,
         bbd.executor_id,
         bbd.received_amount
         FROM
@@ -2079,15 +2089,11 @@
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
-            <if test="query.dateType == 0">
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y-%m' ) = #{query.queryDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y' ) = #{query.queryDate}
-                </if>
+            <if test="billIds!=null and billIds.size()>0">
+                and bbd.bill_id in
+                <foreach collection="billIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
         ) bbd
@@ -2188,5 +2194,19 @@
             </if>
         </where>
         ORDER BY bup.actualWorkload desc
+    </select>
+
+    <select id="distinctBillIdsInExecutorIds" resultType="java.lang.Integer">
+        select
+            distinct bbd.bill_id as billId
+        from base_bill_detail bbd
+        <where>
+            <if test="executorIds!=null and executorIds.size()>0">
+                and bbd.executor_id in
+                <foreach collection="executorIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>

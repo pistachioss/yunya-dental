@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.other.mapper;
 
 import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
+import com.yunya.modules.treatment.other.rpc.TreatmentOtherServiceRest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,8 @@ import java.util.List;
 public class VisitingRecordMapperTest {
   @Autowired private VisitingRecordMapper visitingRecordMapper;
 
+  @Autowired private TreatmentOtherServiceRest treatmentOtherServiceRest;
+
   @Test
   public void findVisitingRecordByIdTest() {
     VisitingRecordVo visitingRecordVo = visitingRecordMapper.findVisitingRecordById(3);
@@ -36,11 +39,19 @@ public class VisitingRecordMapperTest {
   @Test
   public void find() {
     ArrayList<Integer> integers = new ArrayList<>();
-    integers.add(21683);
-    integers.add(21688);
-    integers.add(21699);
+    integers.add(78307);
+    integers.add(79777);
     List<NextVisitingRecordVo> vos =
-        visitingRecordMapper.countNextVisitingListByIds(integers, "2021-03-01");
+        visitingRecordMapper.countNextVisitingListByIds(integers, "2021-03-15");
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find1() {
+    ArrayList<Integer> integers = new ArrayList<>();
+    integers.add(106714);
+    List<NextVisitingRecordVo> vos =
+        treatmentOtherServiceRest.countNextVisitingListByIds(integers, "2021-03-15");
     System.out.println(vos);
   }
 }

@@ -9,6 +9,7 @@ import com.yunya.models.treatment_other.XRayFilm;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import com.yunya.modules.treatment.other.biz.XRayFilmBiz;
 import com.yunya.modules.treatment.other.mapper.VisitingRecordMapper;
+import com.yunya.modules.treatment.other.mapper.VisitingRemindMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +32,10 @@ import java.util.List;
 public class TreatmentOtherServiceRest {
   /** 随访管理服务 */
   @Autowired private VisitingRecordBiz visitingRecordBiz;
-  /** mapper */
+  /** 随访 */
   @Autowired private VisitingRecordMapper visitingRecordMapper;
+  /** 提醒 */
+  @Autowired private VisitingRemindMapper visitingRemindMapper;
 
   @Autowired private XRayFilmBiz xRayFilmBiz;
 
@@ -113,11 +116,40 @@ public class TreatmentOtherServiceRest {
    */
   @ApiOperation(value = "根据患者ID查询后续随访集合列表")
   @RequestMapping(value = "/visiting/count/{regDate}", method = RequestMethod.POST)
-  List<NextVisitingRecordVo> countNextVisitingListByIds(
+  public List<NextVisitingRecordVo> countNextVisitingListByIds(
       @RequestBody List<Integer> patientIds, @PathVariable(value = "regDate") String regDate) {
+    List<NextVisitingRecordVo> resultList = new ArrayList<>();
     if (StringHelper.isNotEmpty(patientIds)) {
-      return this.visitingRecordMapper.countNextVisitingListByIds(patientIds, regDate);
+      for (Integer patientId : patientIds) {
+        NextVisitingRecordVo vo = new NextVisitingRecordVo();
+        vo.setPatientId(patientId);
+        vo.setVisitRecordCount(0);
+        vo.setVisitRemindCount(0);
+        resultList.add(vo);
+      }
+      List<NextVisitingRecordVo> visitRecordResult =
+          visitingRecordMapper.countNextVisitingListByIds(patientIds, regDate);
+      if (StringHelper.isNotEmpty(visitRecordResult)) {
+        for (NextVisitingRecordVo vo : visitRecordResult) {
+          for (NextVisitingRecordVo visitingRecordVo : resultList) {
+            if (vo.getPatientId().equals(visitingRecordVo.getPatientId())) {
+              visitingRecordVo.setVisitRecordCount(vo.getVisitRecordCount());
+            }
+          }
+        }
+      }
+      List<NextVisitingRecordVo> visitRemindResult =
+          visitingRemindMapper.countNextVisitingListByIds(patientIds, regDate);
+      if (StringHelper.isNotEmpty(visitRemindResult)) {
+        for (NextVisitingRecordVo vo : visitRemindResult) {
+          for (NextVisitingRecordVo visitingRecordVo : resultList) {
+            if (vo.getPatientId().equals(visitingRecordVo.getPatientId())) {
+              visitingRecordVo.setVisitRemindCount(vo.getVisitRemindCount());
+            }
+          }
+        }
+      }
     }
-    return new ArrayList<>();
+    return resultList;
   }
 }

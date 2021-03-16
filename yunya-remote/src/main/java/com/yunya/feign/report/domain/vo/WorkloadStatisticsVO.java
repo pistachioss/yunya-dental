@@ -20,36 +20,27 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class WorkloadStatisticsVO implements Serializable {
-  /** 门诊实收工作量合计 */
-  @ApiModelProperty("门诊实收工作量合计")
-  private BigDecimal totalClinicActualReceiveWorkload;
-
-  /** 完成工作量合计 */
-  @ApiModelProperty("完成工作量合计")
-  private BigDecimal totalWorkloadComplete;
-
+  /** 实际工作量合计(已收工作量合计 - 退费工作量合计) */
+  @ApiModelProperty("实际工作量合计")
+  private BigDecimal totalClinicActualWorkload;
   /** 工作量合计 */
-  @ApiModelProperty("工作量合计")
-  private BigDecimal totalWorkload;
-
+  @ApiModelProperty("已收工作量合计")
+  private BigDecimal totalReceivedWorkload;
   /** 账单退费合计 */
-  @ApiModelProperty("账单退费合计")
-  private BigDecimal totalBillRefundAmount;
+  @ApiModelProperty("账单退费工作量合计")
+  private BigDecimal totalBillRefundWorkload;
 
   /** 门诊已收工作量合计 */
-  @ApiModelProperty("门诊已收工作量合计")
+  @ApiModelProperty("门诊已收工作量合计（首次收费）")
   private BigDecimal totalClinicReceivedWorkload;
-
   /** 其中含免单支付工作量合计 */
-  @ApiModelProperty("其中含免单支付工作量合计")
+  @ApiModelProperty("其中含免单支付工作量合计（首次收费）")
   private BigDecimal totalFreePaymentAmount;
-
   /** 门诊补入工作量合计 */
-  @ApiModelProperty("门诊补入工作量合计")
+  @ApiModelProperty("门诊补入工作量合计（首次收费）")
   private BigDecimal totalClinicCouponWorkload;
-
-  /** 被代收门诊已收工作量合计 */
-  @ApiModelProperty("被代收门诊已收工作量合计")
+  /** (被代收)门诊已收工作量合计 */
+  @ApiModelProperty("(被代收)门诊已收工作量合计")
   private BigDecimal totalClinicedReceivedWorkload;
 
   /** 被代收其中含免单支付工作量合计 */
