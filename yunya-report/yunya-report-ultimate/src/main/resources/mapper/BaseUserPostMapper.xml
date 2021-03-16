@@ -600,7 +600,7 @@
         FROM
         base_treatment_process btp
         LEFT JOIN (
-            select IFNULL(bbd.price*bbd.quantity-bbd.discount_amount,0) as actualAmount,bb.treatment_id
+            select IFNULL(bbd.price*bbd.quantity-bbd.discount_amount,0) as actualAmount,bbd.executor_id,bb.treatment_id
             from base_bill_detail bbd
             left join base_bill bb on bb.bill_id=bbd.bill_id
             <where>
@@ -611,7 +611,7 @@
                     </foreach>
                 </if>
             </where>
-        ) bb ON btp.treatment_id = bb.treatment_id
+        ) bb ON btp.treatment_id = bb.treatment_id and bb.executor_id=btp.registered_dentist_id
         <where>
             and btp.treat_end_time IS NOT NULL
             <if test="query.startDate != null and query.startDate != ''">
