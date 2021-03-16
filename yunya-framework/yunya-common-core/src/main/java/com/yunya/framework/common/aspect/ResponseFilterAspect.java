@@ -41,9 +41,9 @@ public class ResponseFilterAspect {
         sb.append("\n==> 【Response返回值】: " + responseResult.toString());
         sb.append("\n\n----------------------end-------------------------------\n\n");
         log.info("{}",sb.toString());
-        Object[] args = ret.getArgs();
-        Object o = this.reflectFieldValue(args, AUDIT, true);
-        this.setFieldValue((MethodSignature) ret.getSignature(),responseResult,AUDIT,o);
+//        Object[] args = ret.getArgs();
+//        Object o = this.reflectFieldValue(args, AUDIT, true);
+//        this.setFieldValue((MethodSignature) ret.getSignature(),responseResult,AUDIT,o);
 
 
     }
