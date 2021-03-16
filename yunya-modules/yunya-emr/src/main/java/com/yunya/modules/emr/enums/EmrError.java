@@ -22,7 +22,8 @@ public enum EmrError implements RestError {
     MEDICAL_STATUS_ERROR(30017,"电子病例审核状态异常"),
     CHANGE_PENDING_NOT_REPEAT_SUBMIT(30018, "该条就诊记录的病历新增申请处于待审核状态，请勿重复申请！"),
     DEADLINE_BEYOND_NOW(30019, "选择的允许变更截止时间不能早于操作当天时间"),
-    CHANGE_PASS_NOT_REPEAT_SUBMIT(30020, "该条就诊记录的病历新增申请已审核通过，请勿重复申请！"),
+    ADD_CHANGE_PASS_NOT_REPEAT_SUBMIT(30020, "该条就诊记录的病历新增申请已审核通过，请勿重复申请！"),
+    UPDATE_CHANGE_PASS_REPEAT_SUBMIT(30021, "该条就诊记录的病历修改申请已审核通过，请勿重复申请！"),
     ;
     private final Integer code;
     private final String message;
