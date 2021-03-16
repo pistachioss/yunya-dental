@@ -596,10 +596,22 @@
         SELECT
         btp.registered_dentist_id,
         btp.org_id,
-        IFNULL( bb.actual_amount, 0 ) AS actualAmount
+        IFNULL( bb.actualAmount, 0 ) AS actualAmount
         FROM
         base_treatment_process btp
-        LEFT JOIN base_bill bb ON btp.treatment_id = bb.treatment_id
+        LEFT JOIN (
+            select IFNULL(bbd.price*bbd.quantity-bbd.discount_amount,0) as actualAmount,bb.treatment_id
+            from base_bill_detail bbd
+            left join base_bill bb on bb.bill_id=bbd.bill_id
+            <where>
+                <if test="query.dentistIds != null and query.dentistIds.length > 0">
+                    and bbd.executor_id in
+                    <foreach collection="query.dentistIds" index="index" item="item" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+        ) bb ON btp.treatment_id = bb.treatment_id
         <where>
             and btp.treat_end_time IS NOT NULL
             <if test="query.startDate != null and query.startDate != ''">
