@@ -562,9 +562,6 @@ public class BaseTreatmentProcessBiz
     query.setUserId(Integer.valueOf(BaseContextHandler.getUserID()));
     List<FirstVisitPersonalVO>list = mapper.firstVisitRecordPersonalList(query);
     ExcelUtil<FirstVisitPersonalVO> excelUtil = new ExcelUtil<>(FirstVisitPersonalVO.class);
-//    BaseOrganization baseOrganization = new BaseOrganization();
-//    baseOrganization.setOrgId(query.getOrgId());
-//    String orgName = baseOrganizationMapper.selectOne(baseOrganization).getAbbreviation();
     String fileName =
             excelUtil.getFileName(
                     query.getStartDate(),

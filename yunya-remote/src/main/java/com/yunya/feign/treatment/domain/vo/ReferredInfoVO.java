@@ -2,6 +2,7 @@ package com.yunya.feign.treatment.domain.vo;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -33,21 +34,25 @@ public class ReferredInfoVO {
     private Integer patientId;
 
     @ApiModelProperty("患者名称")
+    @Excel(name = "患者名称")
     private String patientName;
 
     @ApiModelProperty("患者手机号")
+    @Excel(name = "患者手机号")
     private String telephone;
 
     @ApiModelProperty("转诊人id")
     private Integer userId;
 
     @ApiModelProperty("转诊人名称")
+    @Excel(name = "转诊人名称")
     private String userName;
 
     @ApiModelProperty("转诊人的科室ID")
     private Integer depId;
 
     @ApiModelProperty("转诊人的科室名称")
+    @Excel(name = "转诊人的科室名称")
     private String depName;
 
     @ApiModelProperty("转诊人挂号id")
@@ -57,30 +62,33 @@ public class ReferredInfoVO {
     private Integer referredId;
 
     @ApiModelProperty("被转诊人名称")
+    @Excel(name = "被转诊人名称")
     private String referredName;
 
     @ApiModelProperty("被转诊人的科室ID")
     private Integer referredDepId;
 
     @ApiModelProperty("被转诊人的科室名称")
+    @Excel(name = "被转诊人的科室名称")
     private String referredDepName;
 
     @ApiModelProperty("被转诊人挂号id")
     private Integer referredRegisteredId;
 
     @ApiModelProperty("备注")
+    @Excel(name = "备注")
     private String remark;
 
     @ExcelProperty("转诊时间 （只有时分）")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm", timezone = "GMT+8")
-    private Date time;
+    @Excel(name = "转诊时间")
+    private String time;
 
     @ApiModelProperty("创建人ID")
     private Integer crtId;
 
     @ApiModelProperty("创建时间")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date crtTime;
+    @Excel(name = "转诊日期")
+    private String crtTime;
 
     @ApiModelProperty("修改人ID")
     private Integer updId;
