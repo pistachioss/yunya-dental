@@ -118,6 +118,11 @@ public class PatientBaseInfoController {
     return this.patientBaseInfoBiz.findPatientData(id);
   }
 
+  /**
+   * 根据患者id查询患者资料
+   * @param id 患者id
+   * @return 患者资料
+   */
   @ApiOperation("根据患者id查询患者资料")
   @RequestMapping (value = "/total/patientInfo/{id}", method = RequestMethod.GET)
   public PatientTotalInfoVo findPatientTotalInfo(@PathVariable(value = "id") Integer id){

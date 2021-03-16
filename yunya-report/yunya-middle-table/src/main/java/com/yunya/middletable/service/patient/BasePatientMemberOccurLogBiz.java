@@ -219,8 +219,8 @@ public class BasePatientMemberOccurLogBiz
   /**
    * 会员-批量拉取-消费记录
    *
-   * @param form
-   * @param type
+   * @param form 条件
+   * @param type 类型
    */
   public void pullMemberExpendRecord(PullForm form, Integer type, Integer occurType) {
     List<MemberExpendRecord> memberExpendRecordList =

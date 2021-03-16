@@ -123,4 +123,17 @@ public class PatientOriginController {
   public ResponseResult<List<PatientOriginVo>> findoriginalType() {
     return ResponseUtil.success(this.patientOriginBiz.originalType());
   }
+
+
+  /**
+   * 迁移患者信息来源到患者来源变更日志表
+   * @return void
+   */
+  @ApiOperation("迁移患者信息来源到患者来源变更日志表")
+  @GetMapping("/move/origin")
+  public ResponseResult<List<PatientOriginVo>> moveOrigin() throws InterruptedException {
+    this.patientOriginBiz.moveOrigin();
+    return ResponseUtil.success();
+  }
+
 }
