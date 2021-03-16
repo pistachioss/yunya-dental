@@ -143,6 +143,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     Integer patientId = regResult.getPatientId();
     entity.setPatientId(patientId);
     PatientBaseInfo patientBaseInfo = patientServiceFeign.findPatientInfoById(patientId);
+    String name = BaseContextHandler.getName();
     if (null != patientBaseInfo) {
       int num = mapper.countByPatientId(patientBaseInfo.getId());
       if (num > 0) {
@@ -153,10 +154,11 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         medicalNumber = generateMedicalRecordNumber(orgId);
         patientBaseInfo.setMedicalNumber(medicalNumber);
         patientBaseInfo.setOrgId(orgId);
+        patientBaseInfo.setUptId(userId);
+        patientBaseInfo.setUpdName(name);
         patientServiceFeign.updatePatientInfo(patientBaseInfo);
       }
     }
-    String name = BaseContextHandler.getName();
     entity.setTreatStartTime(new Date(System.currentTimeMillis()));
     entity.setCrtId(userId);
     entity.setCrtName(name);
