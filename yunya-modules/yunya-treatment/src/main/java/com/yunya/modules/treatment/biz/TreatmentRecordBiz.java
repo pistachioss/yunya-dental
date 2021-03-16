@@ -152,6 +152,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         // 患者初诊，初始化病历号
         medicalNumber = generateMedicalRecordNumber(orgId);
         patientBaseInfo.setMedicalNumber(medicalNumber);
+        patientBaseInfo.setOrgId(orgId);
         patientServiceFeign.updatePatientInfo(patientBaseInfo);
       }
     }
