@@ -604,4 +604,35 @@
         </where>
         order by btp.treat_start_time
     </select>
+    <select id="firstVisitRecordPersonalList" resultType="com.yunya.feign.report.domain.vo.FirstVisitPersonalVO">
+        SELECT
+        btp.org_id as orgId,
+        btp.registered_dentist_id as registeredDentistId,
+        bo.abbreviation as orgName,
+        be.employee_name as registeredDentistName,
+        count(*) as count
+        FROM
+        base_treatment_process btp
+        left join base_employee be on btp.registered_dentist_id = be.user_id
+        left join base_organization bo on btp.org_id = bo.org_id
+        <where>
+            btp.treat_status IN (3, 4)
+            and btp.treat_type = 0
+            <if test="orgId != null">
+                AND btp.org_id = #{orgId}
+            </if>
+            <if test="userId != null">
+                AND btp.registered_dentist_id = #{userId}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &lt;= #{endDate}
+            </if>
+        </where>
+        GROUP BY
+        btp.registered_dentist_id,btp.org_id
+        order by btp.treat_start_time
+    </select>
 </mapper>

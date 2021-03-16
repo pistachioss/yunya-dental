@@ -744,8 +744,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       principalAmount = patientMemberInfo.getPrincipalAmount();
       patientMemberInfo.setPrincipalAmount(
           patientMemberInfo.getPrincipalAmount().subtract(model.getExpendTotal()));
-      costPrincipal = principalAmount.subtract(patientMemberInfo.getPrincipalAmount()); // 消费金额
-      memberExpendRecord.setExpendPrincipal(costPrincipal); // 获取消费本金
+      // 消费金额
+      costPrincipal = principalAmount.subtract(patientMemberInfo.getPrincipalAmount());
+      // 获取消费本金
+      memberExpendRecord.setExpendPrincipal(costPrincipal);
     }
     patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
     // 添加消费记录

@@ -18,6 +18,7 @@ import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -535,5 +536,38 @@ public class BaseTreatmentProcessBiz
                     orgName,
                     "初诊统计明细表");
     excelUtil.exportExcel(response, list, "初诊统计明细表", fileName);
+  }
+
+  /**
+   * 根据条件查询个人初诊记录报表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public PageInfo<FirstVisitPersonalVO> firstVisitRecordPersonalList(FirstVisitPersonalQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    query.setUserId(Integer.valueOf(BaseContextHandler.getUserID()));
+    List<FirstVisitPersonalVO>list = mapper.firstVisitRecordPersonalList(query);
+    return new PageInfo<>(list);
+  }
+  /**
+   * 根据条件导出个人初诊记录报表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public void exportFirstVisitRecordPersonalList(HttpServletResponse response,FirstVisitPersonalQuery query) throws IOException{
+    query.setUserId(Integer.valueOf(BaseContextHandler.getUserID()));
+    List<FirstVisitPersonalVO>list = mapper.firstVisitRecordPersonalList(query);
+    ExcelUtil<FirstVisitPersonalVO> excelUtil = new ExcelUtil<>(FirstVisitPersonalVO.class);
+    String fileName =
+            excelUtil.getFileName(
+                    query.getStartDate(),
+                    query.getEndDate(),
+                    BaseContextHandler.getUsername(),
+                    "个人初诊统计表");
+    excelUtil.exportExcel(response, list, "个人初诊统计表", fileName);
   }
 }

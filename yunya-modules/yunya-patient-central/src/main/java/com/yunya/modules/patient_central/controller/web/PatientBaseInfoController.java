@@ -118,6 +118,11 @@ public class PatientBaseInfoController {
     return this.patientBaseInfoBiz.findPatientData(id);
   }
 
+  /**
+   * 根据患者id查询患者资料
+   * @param id 患者id
+   * @return 患者资料
+   */
   @ApiOperation("根据患者id查询患者资料")
   @RequestMapping (value = "/total/patientInfo/{id}", method = RequestMethod.GET)
   public PatientTotalInfoVo findPatientTotalInfo(@PathVariable(value = "id") Integer id){
@@ -188,6 +193,11 @@ public class PatientBaseInfoController {
     return ResponseUtil.success(this.patientBaseInfoBiz.findPatientVisitInfo(id));
   }
 
+  /**
+   * 操作标签记录
+   * @param patientLabelRecordModelList 标签信息
+   * @return void
+   */
   @CurrentUser
   @ApiOperation(value = "操作标签记录")
   @PostMapping(value = "/operatingLabel")
@@ -197,6 +207,11 @@ public class PatientBaseInfoController {
     return ResponseUtil.success();
   }
 
+  /**
+   * 查询标签操作记录
+   * @param form 条件
+   * @return 标签操作记录
+   */
   @CurrentUser
   @ApiOperation(value = "查询标签操作记录")
   @PostMapping(value = "/labelList")
@@ -205,10 +220,6 @@ public class PatientBaseInfoController {
     PageInfo<PatientLabelRecordVo> patientLabelRecordList = patientBaseInfoBiz.labelList(form);
     return ResponseUtil.success(patientLabelRecordList);
   }
-
-
-  /*
-  * */
 
   /**
    * 拍照回调

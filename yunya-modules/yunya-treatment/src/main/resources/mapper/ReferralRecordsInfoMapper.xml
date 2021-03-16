@@ -23,9 +23,9 @@
 
     <select id="referredInfo" resultType="com.yunya.feign.treatment.domain.vo.ReferredInfoVO">
         select id as id,org_id as orgId,patient_id as patientId,user_id as userId,dep_id as depId,registered_id as
-        registeredId,referred_id as referredId,
+        registeredId,referred_id as referredId,DATE_FORMAT(crt_time, '%H:%i') as time,
         referred_dep_id as referredDepId,referred_registered_id as referredRegisteredId,remark as remark
-        ,crt_id as crtId,crt_time as crtTime,upd_id as updId,upd_time as updTime
+        ,crt_id as crtId, DATE_FORMAT(crt_time, '%Y-%m-%d') as crtTime,upd_id as updId,upd_time as updTime
         from referral_records_info
         <where>
             <if test="userIds != null and userIds.size() > 0">
