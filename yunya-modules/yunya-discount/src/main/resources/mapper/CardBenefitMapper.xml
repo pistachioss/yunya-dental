@@ -101,4 +101,13 @@
              left join `coupon_common_info` `cci` on `cci`.`id` = `temp`.`coupon_id`
         group by `temp`.`coupon_id`, `temp`.`benefit_type`
     </select>
+
+    <select id="countCardUsed" resultType="integer">
+        select
+            count(*)
+        from `card_benefit`
+        where `card_id` = #{cardId}
+          and `benefit_type` = 1
+          and `is_deleted` = 0
+    </select>
 </mapper>

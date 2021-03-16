@@ -151,7 +151,6 @@ import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import javax.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
@@ -159,7 +158,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -504,14 +513,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
         //实体转换为pageVo
         List<CardSalePageVo> list = page.getResult().stream().map(this::cardConvertPageVo).collect(toList());
-        for(CardSalePageVo cardSalePageVo:list){
+        for (CardSalePageVo cardSalePageVo : list) {
             cardSalePageVo.setCardName(couponCommonInfo.getName());
             cardSalePageVo.setSoldAmount(couponCommonInfo.getSoldAmount());
-            cardSalePageVo.setOrgName(clinicMap.get(query.getOrgId()+"").getName());
-            cardSalePageVo.setOrgAddress(clinicMap.get(query.getOrgId()+"").getAddress());
-            cardSalePageVo.setOrgIphone(clinicMap.get(query.getOrgId()+"").getTel());
-            if(cardSalePageVo.getPayId()!=null){
-                cardSalePageVo.setSoldType(AccMap.get(cardSalePageVo.getPayId()+"").getName());
+            cardSalePageVo.setOrgName(clinicMap.get(query.getOrgId() + "").getName());
+            cardSalePageVo.setOrgAddress(clinicMap.get(query.getOrgId() + "").getAddress());
+            cardSalePageVo.setOrgIphone(clinicMap.get(query.getOrgId() + "").getTel());
+            if (cardSalePageVo.getPayId() != null) {
+                cardSalePageVo.setSoldType(AccMap.get(cardSalePageVo.getPayId() + "").getName());
             }
         }
         PageInfo<CardSalePageVo> pageInfo = new PageInfo<>(list);
@@ -828,7 +837,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         boolean locked = false;
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         String cardNumber = form.getThirdCardNumber();
-        String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CARD_ACTIVE, form.getCouponId(),form.getSaleChannelId(),cardNumber);
+        String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CARD_ACTIVE, form.getCouponId(), form.getSaleChannelId(), cardNumber);
         String lockVal = String.valueOf(loginUserId);
         log.info("第三方平台卡券激活开始提交：[{}]", cardNumber);
         try {
@@ -887,11 +896,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             log.warn("卡券[{}]已全部使用", cardId);
             return ResponseUtil.error(DiscountError.CARD_ALL_USED);
         }
-        //配置共享人不能是自己
-        List<String> shareIds = Lists.newArrayList(Splitter.on(",").trimResults().omitEmptyStrings().split(form.getSharerIdStr()));
-        if (shareIds.contains(String.valueOf(patientId))) {
-            log.warn("【配置共享人失败】：共享人不能是患者自己");
-            return ResponseUtil.error(DiscountError.SHARER_NOT_ALLOW_OWNER);
+        if (StringUtils.isNotBlank(form.getSharerIdStr())) {
+            //配置共享人不能是自己
+            List<String> shareIds = Lists.newArrayList(Splitter.on(",").trimResults().omitEmptyStrings().split(form.getSharerIdStr()));
+            if (shareIds.contains(String.valueOf(patientId))) {
+                log.warn("【配置共享人失败】：共享人不能是患者自己");
+                return ResponseUtil.error(DiscountError.SHARER_NOT_ALLOW_OWNER);
+            }
         }
         //2. 校验优惠券
         CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(card.getCouponId());
@@ -935,6 +946,45 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return null;
     }
 
+    public List<PatientCardSharerVo> getConfiguredSharer(Integer patientId, Integer couponId) {
+        int countCoupon = 0;
+        String sharer = null;
+        List<PatientCardSharerVo> list = Lists.newArrayList();
+        //查询患者是否有改产品的卡券
+        countCoupon = mapper.countPatientCoupon(patientId, couponId);
+        if (countCoupon != 0) {
+            sharer = mapper.getRecentCard(patientId, couponId);
+            this.buildSharer(sharer, list);
+        } else {
+            //查询患者是否有激活的卡券
+            countCoupon = mapper.countPatientCoupon(patientId, null);
+            if (countCoupon != 0) {
+                sharer = mapper.getRecentCard(patientId, null);
+                this.buildSharer(sharer, list);
+            }
+        }
+        return list;
+    }
+
+    private void buildSharer(String sharer, List<PatientCardSharerVo> list) {
+        if (StringUtils.isNotBlank(sharer)) {
+            //共享人id
+            List<Integer> sharerIds = Arrays.stream(sharer.split(",")).map(Integer::parseInt).collect(toList());
+            //查询患者信息
+            List<PatientBaseInfoVo> patients = patientFeign.findPatientInfoByIds(sharerIds);
+            Map<Integer, PatientBaseInfoVo> patientMap = patients.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity()));
+            PatientCardSharerVo vo;
+            for (Integer sharerId : sharerIds) {
+                PatientBaseInfoVo patientInfo = patientMap.get(sharerId);
+                vo = new PatientCardSharerVo();
+                vo.setSharerId(sharerId);
+                vo.setSharerName(patientInfo == null ? null : patientInfo.getName());
+                vo.setSharerPhoneNumber(patientInfo == null ? null : patientInfo.getMobile());
+                list.add(vo);
+            }
+        }
+    }
+
     public PageInfo<PatientCardBaseVo> getPatientCardPage(Integer patientId, PatientCardQuery query) {
         Page<PatientCardBo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
         mapper.listPatientCardsByParam(patientId, query.getCouponName(), query.getCouponTypeList(), query.getQueryType());
@@ -945,6 +995,27 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         pageInfo.setTotal(page.getTotal());
         pageInfo.setPageNum(page.getPageNum());
         return pageInfo;
+    }
+
+    public RestErrorBo removeCard(Integer patientId, Integer cardId) {
+        RestErrorBo errorBo = RestErrorBo.getInstance();
+        errorBo.setError(DiscountError.SUCCESS);
+        Card card = mapper.selectByPrimaryKey(cardId);
+        if (card == null) {
+            errorBo.setError(DiscountError.CARD_NOT_EXIST);
+            return errorBo;
+        }
+        if (!patientId.equals(card.getPatientId())) {
+            errorBo.setError(DiscountError.OTHER_CARD_NOT_ALLOW_DELETE);
+            return errorBo;
+        }
+        int useCount = cardBenefitMapper.countCardUsed(cardId);
+        if (useCount > 0) {
+            errorBo.setError(DiscountError.CARD_IS_USED);
+            return errorBo;
+        }
+        mapper.deleteByPrimaryKey(cardId);
+        return errorBo;
     }
 
     /**
@@ -1012,6 +1083,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         PatientOrderBenefitVo result = transformBenefitInfo(responseResult.getData());
         return ResponseUtil.success(result);
     }
+
 
     /**
      * 计算订单项目的优惠
@@ -1161,7 +1233,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     /**
      * 计算项目总工作量
      *
-     * @param itemBenefitBo    itemBenefitBo
+     * @param itemBenefitBo itemBenefitBo
      */
     private BigDecimal calculateTotalWordLoad(OrderItemUseBo itemBenefitBo) {
         Example example;
@@ -2054,6 +2126,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         insertOtherCard.setCouponAllocateId(0);
         insertOtherCard.setPatientId(patientId);
         insertOtherCard.setStatus(ACTIVATED.getCode());
+        insertOtherCard.setSharer(form.getSharerIdStr());
         insertOtherCard.setCrtId(loginUserId);
         insertOtherCard.setUpdId(loginUserId);
         insertOtherCard.setActiveDate(LocalDateTime.now());

@@ -27,4 +27,6 @@ public class OtherCardActiveForm implements Serializable {
     private String soldTarget;
     @ApiModelProperty(value = "售出对象手机号")
     private String soldPhoneNumber;
+    @ApiModelProperty(value = "共享人", example = "1,2,3", required = true)
+    private String sharerIdStr;
 }

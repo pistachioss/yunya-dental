@@ -71,4 +71,11 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
      * @return BigDecimal
      */
     BigDecimal selectCardSaleCashReceipt(@Param("query") CashReceiptOrRefundQuery query);
+
+    /**
+     * 查询患者该产品最新一次绑定的卡券
+     */
+    String getRecentCard(@Param("patientId") Integer patientId, @Param("couponId") Integer couponId);
+
+    int countPatientCoupon(@Param("patientId") Integer patientId, @Param("couponId") Integer couponId);
 }
