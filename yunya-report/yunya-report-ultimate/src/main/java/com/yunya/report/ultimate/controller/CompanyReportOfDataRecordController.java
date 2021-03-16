@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillBiz;
@@ -237,7 +238,7 @@ public class CompanyReportOfDataRecordController {
   }
 
   /**
-   * 公司端-员工报表-初诊统计-查看明细-导出
+   * 公司端-员工报表-初诊统计-导出
    *
    * @param response http响应
    * @param query 查询条件
@@ -299,4 +300,35 @@ public class CompanyReportOfDataRecordController {
     return ResponseUtil.success(null);
   }
 
+
+  /**
+   * 门诊端-个人中心-个人报表-个人初诊报表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("门诊端-个人中心-个人报表-个人初诊报表")
+  @PostMapping(value = "/firstVisit/personalList", name = "门诊端-个人中心-个人报表-个人初诊报表")
+  @CurrentUser
+  public ResponseResult<PageInfo<FirstVisitPersonalVO>> firstVisitRecordPersonalList(
+          @RequestBody @Validated FirstVisitPersonalQuery query) {
+    PageInfo<FirstVisitPersonalVO> list =
+            treatmentProcessBiz.firstVisitRecordPersonalList(query);
+    return ResponseUtil.success(list);
+  }
+
+  /**
+   * 门诊端-个人中心-个人报表-个人初诊报表-导出
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("门诊端-个人中心-个人报表-个人初诊报表-导出")
+  @PostMapping(value = "/firstVisit/personalList/export", name = "门诊端-个人中心-个人报表-个人初诊报表-导出")
+  @CurrentUser
+  public ResponseResult<T> exportFirstVisitRecordPersonalList(
+          HttpServletResponse response, @RequestBody @Validated FirstVisitPersonalQuery query) throws IOException{
+            treatmentProcessBiz.exportFirstVisitRecordPersonalList(response,query);
+    return ResponseUtil.success(null);
+  }
 }
