@@ -1,6 +1,8 @@
 package com.yunya.modules.patient_central.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +19,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author xiangyang
  * @date 2020/8/19
  */
-@Slf4j
+
 @Component
 public class ThreadPoolManager {
+    private Logger log = LoggerFactory.getLogger(ThreadPoolManager.class);
     /**
      * 根据cpu的数量动态的配置核心线程数和最大线程数
      */
