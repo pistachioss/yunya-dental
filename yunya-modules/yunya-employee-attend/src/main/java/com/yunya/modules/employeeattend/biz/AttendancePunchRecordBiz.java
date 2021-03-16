@@ -3675,6 +3675,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         recordQueryForm.setSource((byte) 0);
         recordQueryForm.setPunchType(AttendanceTypeEnum.ONDUTY.getCode());
         List<AttendancePunchRecordVO> masterRecordVOS = findAttendancePunchRecordListGroupByDate(recordQueryForm);
+        if (StringHelper.isEmpty(masterRecordVOS)) {
+            recordQueryForm.setPunchType(AttendanceTypeEnum.OFFDUTY.getCode());
+            masterRecordVOS = findAttendancePunchRecordListGroupByDate(recordQueryForm);
+        }
         PageInfo pageInfo = new PageInfo(masterRecordVOS);
         List<Integer> notInIds = new ArrayList<>(masterRecordVOS.size());
         masterRecordVOS.forEach(masterRecordVO->notInIds.add(masterRecordVO.getId()));
