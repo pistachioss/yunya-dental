@@ -176,6 +176,19 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     mapper.insertPatientInfo(patientBaseInfo);
     PatientBaseInfoVo patientBaseInfoVo =
         this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
+    if (patientBaseInfoVo != null){
+      PatientOriginLog patientOriginLog = new PatientOriginLog();
+      patientOriginLog.setPatientId(patientBaseInfoVo.getId());
+      patientOriginLog.setOriginType(patientBaseInfoVo.getOriginType());
+      patientOriginLog.setOriginId(patientBaseInfoVo.getOriginId());
+      /*patientOriginLog.setInservice(patientBaseInfoVo.geti);
+      patientOriginLog.setCrtId();
+      patientOriginLog.setCrtName();
+      patientOriginLog.setCrtTime();
+      patientOriginLog.setUptId();
+      patientOriginLog.setUpdName();
+      patientOriginLog.setUpdTime();*/
+    }
     // 创建预付款 并发送消息
     this.addPatientPrepaymentsInfo(patientBaseInfo);
     sendMessages(patientBaseInfo.getId(), 0);

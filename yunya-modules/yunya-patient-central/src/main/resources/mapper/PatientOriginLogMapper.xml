@@ -21,19 +21,33 @@
 
   <!-- 批量插入 患者来源关系 -->
   <insert id="insertList">
-    insert into patient_base_info (patient_id,origin_type,origin_id,inservice,crt_id,crt_name,crt_time,upt_id,upd_name,upd_time)
+    insert into patient_origin_log (
+      patient_id,
+      origin_type,
+      origin_id,
+      inservice,
+      crt_id,
+      crt_name,
+      crt_time,
+      upt_id,
+      upd_name,
+      upd_time
+    )
     values
-    <foreach collection="list" item="patientBaseInfo" separator=",">
-      #{patientBaseInfo.patientId},
-      #{patientBaseInfo.originType},
-      #{patientBaseInfo.originId},
-      #{patientBaseInfo.inservice},
-      #{patientBaseInfo.crtId},
-      #{patientBaseInfo.crtName},
-      #{patientBaseInfo.crtTime},
-      #{patientBaseInfo.uptId},
-      #{patientBaseInfo.updName},
-      #{patientBaseInfo.updTime}
+    <foreach collection="list" item="patientOriginLog" separator=",">
+     (
+      #{patientOriginLog.patientId},
+      #{patientOriginLog.originType},
+      #{patientOriginLog.originId},
+      #{patientOriginLog.inservice},
+      #{patientOriginLog.crtId},
+      #{patientOriginLog.crtName},
+      #{patientOriginLog.crtTime},
+      #{patientOriginLog.uptId},
+      #{patientOriginLog.updName},
+      #{patientOriginLog.updTime}
+      )
+
     </foreach>
   </insert>
 </mapper>

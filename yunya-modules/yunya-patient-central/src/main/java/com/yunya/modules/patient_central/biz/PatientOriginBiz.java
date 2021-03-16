@@ -357,12 +357,12 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
               patientOriginLogMapper.insertList(patientOriginLogList);
               countDownLatch.countDown();
             } catch (Exception e) {
-              System.out.println("患者来源迁移入库异常" + e);
+              log.info("患者来源迁移入库异常",e);
             }
           });
       }
-      countDownLatch.wait();
+      countDownLatch.await();
       long end = System.currentTimeMillis();
-      System.out.println("患者信息患者来源信息迁移入库成功,时长：[{"+(end - start) / 1000+"}]秒");
+      log.info("患者信息患者来源信息迁移入库成功，时长：[{}]秒", (end - start) / 1000);
     }
 }
