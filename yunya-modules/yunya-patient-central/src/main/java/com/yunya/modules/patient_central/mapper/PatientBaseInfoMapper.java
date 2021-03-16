@@ -205,4 +205,10 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @return
    */
   List<PatientTotalInfoVo> findPatientTotalInfo(@Param("queryForm") PatientBaseInfoQueryForm queryForm);
+
+  /**
+   * 查询OriginId不为空的患者信息
+   * @return List<PatientBaseInfo>
+   */
+  List<PatientBaseInfo> selectOriginByOriginIdNotNull();
 }

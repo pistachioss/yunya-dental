@@ -40,5 +40,8 @@ public class DesktopMiniProgramVO implements Serializable {
     private Boolean hasImg;
     @ApiModelProperty("患者手机号")
     private String mobile;
+    @ApiModelProperty("性别(0-男；1-女)")
+    /** 性别(0-男；1-女) */
+    private Byte gender;
 
 }

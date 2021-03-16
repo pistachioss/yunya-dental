@@ -8,6 +8,7 @@ import com.yunya.framework.common.model.*;
  */
 
 public enum DiscountError implements RestError {
+    SUCCESS(0, "success"),
     CARD_IS_GENERATED(1, "产品已生成卡券"),
     FAIL_TO_GENERATE(2, "卡券生成失败"),
     COUPON_NOT_ALLOCATE(3, "优惠券未分配，请先分配再生成"),
@@ -67,6 +68,8 @@ public enum DiscountError implements RestError {
     BENEFIT_PACKAGE_ITEM_EMPTY(58,"套餐券项目为空,请添加项目后再保存"),
     CARD_ALL_USED(59, "卡券已全部使用"),
     OTHER_CARD_IS_ACTIVATED(60, "第三方平台卡券已激活"),
+    OTHER_CARD_NOT_ALLOW_DELETE(61, "患者不允许删除共有产品"),
+    CARD_IS_USED(62, "该卡券已被使用，不允许删除"),
     ;
     private Integer code;
     private String value;
@@ -77,6 +80,9 @@ public enum DiscountError implements RestError {
     }
     @Override
     public Integer getCode() {
+        if (code.equals(0)) {
+            return code;
+        }
         return PreFixCode.DISCOUNT.getCode() * 1000 + code;
     }
 

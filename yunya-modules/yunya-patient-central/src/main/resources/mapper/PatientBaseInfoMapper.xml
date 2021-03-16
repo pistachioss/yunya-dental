@@ -344,5 +344,10 @@
             </if>
         </where>
     </select>
+
+    <!-- 查询OriginId不为空的患者信息 -->
+    <select id="selectOriginByOriginIdNotNull" resultType="com.yunya.models.patient_central.PatientBaseInfo">
+        SELECT id,origin_type,origin_id,crt_id,crt_name,crt_time,upt_id,upd_name,upd_time,inservice from patient_base_info where origin_id is not null
+    </select>
 </mapper>
 

@@ -220,4 +220,83 @@ public class CompanyReportOfDataRecordController {
     treatmentProcessBiz.exportTreatmentMatchingRecord(response, query);
     return ResponseUtil.success(null);
   }
+
+  /**
+   * 公司端-员工报表-初诊统计
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端-员工报表-初诊统计")
+  @PostMapping(value = "/firstVisit/list", name = "公司端-员工报表-初诊统计")
+  public ResponseResult<PageInfo<FirstVisitVO>> firstVisitRecord(
+          @RequestBody @Validated FirstVisitQuery query) {
+    PageInfo<FirstVisitVO> list =
+            treatmentProcessBiz.firstVisitRecord(query);
+    return ResponseUtil.success(list);
+  }
+
+  /**
+   * 公司端-员工报表-初诊统计-查看明细-导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端-员工报表-初诊统计-导出")
+  @PostMapping(value = "/firstVisit/list/export", name = "公司端-员工报表-初诊统计-导出")
+  public ResponseResult<T> exportFirstVisitRecord(
+          HttpServletResponse response, @RequestBody @Validated FirstVisitQuery query)
+          throws IOException {
+    treatmentProcessBiz.exportFirstVisitRecord(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 公司端-员工报表-初诊统计-查询合计
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端-员工报表-初诊统计-患者数量合计")
+  @PostMapping(value = "/firstVisit/count", name = "公司端-员工报表-初诊统计-患者数量合计")
+  public ResponseResult<Integer> firstVisitRecordCount(
+          @RequestBody @Validated FirstVisitQuery query) {
+    Integer count =
+            treatmentProcessBiz.firstVisitRecordCount(query);
+    return ResponseUtil.success(count);
+  }
+
+
+  /**
+   * 公司端-员工报表-初诊统计-查看明细
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端-员工报表-初诊统计-查看明细")
+  @PostMapping(value = "/firstVisit/detail", name = "公司端-员工报表-初诊统计-查看明细")
+  public ResponseResult<PageInfo<FirstVisitDetailVO>> firstVisitRecordDetail(
+          @RequestBody @Validated FirstVisitDetailQuery query) {
+    PageInfo<FirstVisitDetailVO> list =
+            treatmentProcessBiz.firstVisitRecordDetail(query);
+    return ResponseUtil.success(list);
+  }
+
+  /**
+   * 公司端-员工报表-初诊统计-查看明细-导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端-员工报表-初诊统计-查看明细-导出")
+  @PostMapping(value = "/firstVisit/detail/export", name = "公司端-员工报表-初诊统计-查看明细-导出")
+  public ResponseResult<T> exportFirstVisitRecordDetail(
+          HttpServletResponse response, @RequestBody @Validated FirstVisitDetailQuery query)
+          throws IOException {
+    treatmentProcessBiz.exportFirstVisitRecordDetail(response, query);
+    return ResponseUtil.success(null);
+  }
+
 }
