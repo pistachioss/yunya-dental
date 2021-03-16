@@ -11,15 +11,21 @@ import com.yunya.framework.common.model.*;
  */
 public class ResponseUtil {
 
-  private static final Boolean PASS = true;
+  private static Boolean ADUIT = true;
   private static final Integer SUCCESS_STATUS = 0;
   private static final String SUCCESS_MSG = "success";
-
-  private static final Boolean NOT_PASS = false;
   private static final Integer ERROR_STATUS = 500;
   private static final String ERROR_MSG = "error";
   private static final Integer RESULT = 1;
   private static final Boolean SUCCESS = true;
+
+  /**
+   * APP端设置审核状态
+   * @param b
+   */
+  public static void setPass(Boolean b) {
+    ResponseUtil.ADUIT = b;
+  }
 
 
   /**
@@ -28,7 +34,7 @@ public class ResponseUtil {
    * @return
    */
   public static ResponseResult fail(Integer status, String msg, Object data) {
-    return result(status, msg, data, PASS);
+    return result(status, msg, data, ResponseUtil.ADUIT);
   }
 
   /**
@@ -39,7 +45,7 @@ public class ResponseUtil {
    * @return
    */
   public static ResponseResult error(Integer status, String msg) {
-    return result(status, msg, null, null);
+    return result(status, msg, null, ResponseUtil.ADUIT);
   }
 
   /**
@@ -48,7 +54,7 @@ public class ResponseUtil {
    * @return
    */
   public static ResponseResult success() {
-    return result(SUCCESS_STATUS, SUCCESS_MSG, null, PASS);
+    return result(SUCCESS_STATUS, SUCCESS_MSG, null, ResponseUtil.ADUIT);
   }
 
 
@@ -60,7 +66,7 @@ public class ResponseUtil {
    * @return
    */
   public static <T> ResponseResult<T> success(T data) {
-    return result(SUCCESS_STATUS, SUCCESS_MSG, data, PASS);
+    return result(SUCCESS_STATUS, SUCCESS_MSG, data, ResponseUtil.ADUIT);
   }
 
 
@@ -72,7 +78,7 @@ public class ResponseUtil {
    */
 
   public static ResponseResult success (String msg, Object data){
-    return result(SUCCESS_STATUS, msg, data,PASS);
+    return result(SUCCESS_STATUS, msg, data,ResponseUtil.ADUIT);
   }
 
   /**
@@ -83,7 +89,7 @@ public class ResponseUtil {
    */
 
   public static ResponseResult error (String msg, Object data){
-    return result(ERROR_STATUS, msg, data,NOT_PASS);
+    return result(ERROR_STATUS, msg, data,ResponseUtil.ADUIT);
   }
 
   /**
@@ -93,7 +99,7 @@ public class ResponseUtil {
    * @return ResponseResult
    */
   public static ResponseResult error (RestError error, Object...param){
-    return result(error.getCode(), String.format(error.getMessage(), param), null, NOT_PASS);
+    return result(error.getCode(), String.format(error.getMessage(), param), null, ResponseUtil.ADUIT);
   }
 
 
