@@ -626,4 +626,28 @@
             </if>
         </where>
     </select>
+
+    <select id="getRecentCard" resultType="string">
+        select
+            `sharer`
+        from `card`
+        where `patient_id` = #{patientId}
+            <if test="couponId != null">
+                and `coupon_id` = #{couponId}
+            </if>
+            and isnull(`active_date`) = 0
+        order by `active_date` desc
+        limit 1
+    </select>
+
+    <select id="countPatientCoupon" resultType="integer">
+        select
+            count(*)
+        from `card`
+        where `patient_id` = #{patientId}
+            <if test="couponId != null">
+                and `coupon_id` = #{couponId}
+            </if>
+            and isnull(`active_date`) = 0
+    </select>
 </mapper>

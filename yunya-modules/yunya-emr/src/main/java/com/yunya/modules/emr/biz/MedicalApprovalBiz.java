@@ -76,26 +76,7 @@ import static com.yunya.modules.emr.enums.ApplyTypeEnum.UPDATE;
 import static com.yunya.modules.emr.enums.ApproveStatusEnum.APPROVE_PENDING;
 import static com.yunya.modules.emr.enums.ApproveStatusEnum.AUDIT_PASS;
 import static com.yunya.modules.emr.enums.ApproveStatusEnum.AUDIT_REJECT;
-import static com.yunya.modules.emr.enums.EmrError.APPLY_APPROVE_PENDING;
-import static com.yunya.modules.emr.enums.EmrError.APPROVE_RECORD_NOT_EXIST;
-import static com.yunya.modules.emr.enums.EmrError.AUDIT_IS_PASS;
-import static com.yunya.modules.emr.enums.EmrError.AUDIT_PENDING;
-import static com.yunya.modules.emr.enums.EmrError.CHANGE_APPLY_REJECTED;
-import static com.yunya.modules.emr.enums.EmrError.CHANGE_PASS_NOT_REPEAT_SUBMIT;
-import static com.yunya.modules.emr.enums.EmrError.CHANGE_PENDING_NOT_REPEAT_SUBMIT;
-import static com.yunya.modules.emr.enums.EmrError.DATA_IS_EXISTED;
-import static com.yunya.modules.emr.enums.EmrError.DEADLINE_BEYOND_NOW;
-import static com.yunya.modules.emr.enums.EmrError.KEY_IS_LOCKED;
-import static com.yunya.modules.emr.enums.EmrError.MEDICAL_ALREADY_AUDITED;
-import static com.yunya.modules.emr.enums.EmrError.MEDICAL_IS_EXIST;
-import static com.yunya.modules.emr.enums.EmrError.MEDICAL_STATUS_ERROR;
-import static com.yunya.modules.emr.enums.EmrError.MODIFY_APPLY_TIMEOUT;
-import static com.yunya.modules.emr.enums.EmrError.NORMAL_MEDICAL_NO_PERMISSION;
-import static com.yunya.modules.emr.enums.EmrError.NOT_NEED_APPLY;
-import static com.yunya.modules.emr.enums.EmrError.NO_AUTH_MODIFY_MED;
-import static com.yunya.modules.emr.enums.EmrError.NO_PERMISSION_OPERATION;
-import static com.yunya.modules.emr.enums.EmrError.REJECTED_NO_NEED_APPLY;
-import static com.yunya.modules.emr.enums.EmrError.TREATMENT_NOT_EXIST;
+import static com.yunya.modules.emr.enums.EmrError.*;
 import static com.yunya.modules.emr.enums.EventTypeEnum.DRAFT_AUDIT;
 import static com.yunya.modules.emr.enums.EventTypeEnum.MEDICAL_CHANGE_AUDIT;
 import static com.yunya.modules.emr.enums.TrueFalseEnum.*;
@@ -316,7 +297,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 }
                 if (applyCount.getPassCount() > 0) {
                     log.warn("【申请变更新增失败】：该病历已申请过修改且处于审核通过状态，请勿重复申请！");
-                    return ResponseUtil.error(CHANGE_PASS_NOT_REPEAT_SUBMIT);
+                    return ResponseUtil.error(ADD_CHANGE_PASS_NOT_REPEAT_SUBMIT);
                 }
             }
             //4. 检查变更审批
@@ -380,7 +361,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 }
                 if (applyCount.getPassCount() > 0) {
                     log.warn("【申请变更修改失败】：该病历已申请过修改且处于审核通过状态，请勿重复申请！");
-                    return ResponseUtil.error(CHANGE_PASS_NOT_REPEAT_SUBMIT);
+                    return ResponseUtil.error(UPDATE_CHANGE_PASS_REPEAT_SUBMIT);
                 }
             }
             //4. 检查病历审批
