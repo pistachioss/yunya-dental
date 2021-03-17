@@ -263,7 +263,7 @@ public class DiscountController {
 
 	@ApiOperation(value = "公司端/门诊端-报表统计-市场报表-产品激活报表")
 	@PostMapping("/coupon/activation/page")
-	public ResponseResult<PageInfo<OnceCardUseVo>> getUseRecord(@RequestBody CouponActiveQuery query) {
-		return ResponseUtil.success();
+	public ResponseResult<PageInfo<CouponActiveVo>> getUseRecord(@RequestBody CouponActiveQuery query) {
+		return ResponseUtil.success(discountBiz.getCouponPage(query));
 	}
 }

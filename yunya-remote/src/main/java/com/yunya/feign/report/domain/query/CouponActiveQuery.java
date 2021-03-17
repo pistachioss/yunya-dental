@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.query;
 
+import com.yunya.framework.common.model.PageQuery;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,7 +14,7 @@ import java.util.List;
  **/
 @ApiModel(value = "公司端/门诊端-产品激活报表参数")
 @Data
-public class CouponActiveQuery {
+public class CouponActiveQuery extends PageQuery {
     @ApiModelProperty(value = "产品名称")
     private String couponName;
     @ApiModelProperty(value = "销售渠道")

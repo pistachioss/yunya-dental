@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.vo.CouponActiveVo;
 import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponUsedVo;
@@ -32,4 +33,7 @@ public interface BaseCouponMapper extends Mapper<BaseCoupon> {
 	 * 查询充值卡充值统计
 	 */
 	List<RechargeVo> listRechargeByParam(@Param("couponName") String couponName, @Param("couponCategoryIds") List<Integer> couponCategoryIds);
+
+	List<CouponActiveVo> listCouponActive(@Param("couponName") String couponName, @Param("soldChannelIds") List<Integer> soldChannelIds,
+										  @Param("activeOrgIds") List<Integer> activeOrgIds);
 }

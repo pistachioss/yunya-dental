@@ -402,4 +402,10 @@ public class DiscountBiz {
                 query.getCouponName(), query.getCardNumber(), query.getPatientKeyword(), query.getCouponTypes(),
                 query.getSaleChannelIds());
     }
+
+    public PageInfo<CouponActiveVo> getCouponPage(CouponActiveQuery query) {
+        Page<CouponActiveVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        couponMapper.listCouponActive(query.getCouponName(), query.getSoldChannelIds(), query.getActiveOrgIds());
+        return new PageInfo<>(page);
+    }
 }
