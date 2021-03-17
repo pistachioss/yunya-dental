@@ -12,6 +12,7 @@ import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.modules.treatment.biz.RegisteredBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +20,8 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -95,6 +98,27 @@ public class RegisteredController {
     }
     return ResponseUtil.success(new PageInfo<>(relist));
   }
+  /**
+   * 导出门诊端转诊记录
+   *
+   * @param
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("导出门诊端转诊记录")
+  @PostMapping("/referredInfo/export")
+  public ResponseResult<T> exportReferredInfo(HttpServletResponse response,@RequestBody @Validated ReferredInfoForm referredForm) throws IOException {
+    List<ReferredInfoVO> relist = registeredBiz.referredInfo(referredForm);
+    ExcelUtil<ReferredInfoVO> excelUtil = new ExcelUtil<>(ReferredInfoVO.class);
+    String fileName =
+            excelUtil.getFileName(
+                    null,
+                    null,
+                    null,
+                    "转诊统计");
+    excelUtil.exportExcel(response, relist, "转诊统计", fileName);
+    return ResponseUtil.success(null);
+  }
 
   /**
    * 转诊报表
@@ -124,7 +148,27 @@ public class RegisteredController {
     return ResponseUtil.success(new PageInfo<>(relist));
   }
 
-
+  /**
+   * 导出转诊报表
+   *
+   * @param
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("导出转诊报表")
+  @PostMapping("/referredReport/export")
+  public ResponseResult<T> exportReferredReport(HttpServletResponse response,@RequestBody @Validated ReferredRrportForm referredRrportForm) throws IOException {
+    List<ReferredRrportVO> relist = registeredBiz.referredReport(referredRrportForm);
+    ExcelUtil<ReferredRrportVO> excelUtil = new ExcelUtil<>(ReferredRrportVO.class);
+    String fileName =
+            excelUtil.getFileName(
+                    null,
+                    null,
+                    null,
+                    "转诊报表");
+    excelUtil.exportExcel(response, relist, "转诊报表", fileName);
+    return ResponseUtil.success(null);
+  }
   /**
    * 根据挂号ID取消患者挂号
    *

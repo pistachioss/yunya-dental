@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientOriginLogMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientOriginLog">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="patient_id" jdbcType="INTEGER" property="patientId" />
+    <result column="origin_type" jdbcType="INTEGER" property="originType" />
+    <result column="origin_id" jdbcType="INTEGER" property="originId" />
+    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
+    <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+    <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="upt_id" jdbcType="INTEGER" property="uptId" />
+    <result column="upd_name" jdbcType="VARCHAR" property="updName" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
+  </resultMap>
+
+  <!-- 批量插入 患者来源关系 -->
+  <insert id="insertList">
+    insert into patient_origin_log (
+      patient_id,
+      origin_type,
+      origin_id,
+      inservice,
+      crt_id,
+      crt_name,
+      crt_time,
+      upt_id,
+      upd_name,
+      upd_time
+    )
+    values
+    <foreach collection="list" item="patientOriginLog" separator=",">
+     (
+      #{patientOriginLog.patientId},
+      #{patientOriginLog.originType},
+      #{patientOriginLog.originId},
+      #{patientOriginLog.inservice},
+      #{patientOriginLog.crtId},
+      #{patientOriginLog.crtName},
+      #{patientOriginLog.crtTime},
+      #{patientOriginLog.uptId},
+      #{patientOriginLog.updName},
+      #{patientOriginLog.updTime}
+      )
+
+    </foreach>
+  </insert>
+</mapper>

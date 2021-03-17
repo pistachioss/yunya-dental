@@ -26,4 +26,6 @@ public interface CardBenefitMapper extends tk.mybatis.mapper.common.Mapper<CardB
      * 查询账单的优惠券使用详情
      */
     List<BillUsedCouponBo> getBillCoupons(@Param("orderId") Integer orderId);
+
+    int countCardUsed(@Param("cardId") Integer cardId);
 }
