@@ -9,10 +9,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBillDetail;
 import com.yunya.models.report.BaseOrganization;
-import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
-import com.yunya.report.ultimate.mapper.BaseBillMapper;
-import com.yunya.report.ultimate.mapper.BaseBillPayDetailMapper;
-import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
+import com.yunya.report.ultimate.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -824,5 +821,76 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             new ExcelUtil<>(PersonalWorkloadVO.class);
     String fileName = excelUtil.getFileName(query.getQueryDate(),null,organization.getAbbreviation(),"员工工作量统计");
     excelUtil.exportExcel(response, resultList, "员工工作量统计", fileName);
+  }
+
+  /**
+   * 根据条件查询个人开单数量及金额列表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<BillItemStatisticsVO> billItemStatistics(BillItemInfoQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BillItemStatisticsVO> resultList = mapper.billItemStatistics(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件查询个人开单数量及金额列表导出
+   *
+   * @param query
+   * @return
+   */
+  public void billItemStatisticsExport(BillItemInfoQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<BillItemStatisticsVO> pageInfo =
+            billItemStatistics(query);
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    List<BillItemStatisticsVO> resultList = pageInfo.getList();
+    ExcelUtil<BillItemStatisticsVO> excelUtil =
+            new ExcelUtil<>(BillItemStatisticsVO.class);
+    String fileName = excelUtil.getFileName(organization.getAbbreviation(), query.getStartDate(),query.getEndDate(),"开单项目数量统计表");
+    excelUtil.exportExcel(response, resultList, "开单项目数量统计表", fileName);
+  }
+
+  /**
+   * 根据条件查询开单数量及金额统计明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillingItemDetailVO>
+   */
+  public PageInfo<BillItemStatisticsDetailVO> billItemStatiticsDetail(BillItemDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BillItemStatisticsDetailVO> resultList = mapper.billItemStatisticsDetail(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件查询开单数量及金额统计明细列表导出
+   *
+   * @param query 查询条件
+   * @param response
+   * @return PageInfo<BillingItemDetailVO>
+   */
+  public void billItemStatiticsDetailExport(BillItemDetailQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<BillItemStatisticsDetailVO> pageInfo =
+            billItemStatiticsDetail(query);
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    List<BillItemStatisticsDetailVO> resultList = pageInfo.getList();
+    ExcelUtil<BillItemStatisticsDetailVO> excelUtil = new ExcelUtil<>(BillItemStatisticsDetailVO.class);
+    String sDate = query.getBillStartDate();
+    String eDate = query.getBillEndDate();
+    if (StringHelper.isEmpty(sDate) || StringHelper.isEmpty(eDate)) {
+      sDate = query.getStartDate();
+      eDate = query.getEndDate();
+    }
+    String fileName = excelUtil.getFileName(sDate, eDate,organization.getAbbreviation()
+            ,"开单项目数量统计表");
+    excelUtil.exportExcel(response, resultList, "开单项目数量统计表", fileName);
   }
 }

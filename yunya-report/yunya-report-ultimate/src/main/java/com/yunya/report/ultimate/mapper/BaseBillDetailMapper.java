@@ -196,4 +196,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   List<OperationDataBusinessGoalVO> selectWorkloadCompletedList(@Param("query") DataStatisticsQuery query);
 
   List<PersonalWorkloadVO> selectPersonalWorkloadList(@Param("query") EmployeeWorkloadQuery query);
+
+  List<BillItemStatisticsVO> billItemStatistics(@Param("query") BillItemInfoQuery query);
+
+  List<BillItemStatisticsDetailVO> billItemStatisticsDetail(@Param("query") BillItemDetailQuery query);
 }
