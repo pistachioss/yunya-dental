@@ -31,6 +31,8 @@ public class FirstVisitDetailVO {
     @ApiModelProperty("初诊日期")
     @Excel(name = "初诊日期")
     private String firstVisitTime;
+    @ApiModelProperty("患者ID")
+    private Integer patientId;
     @ApiModelProperty("患者姓名")
     @Excel(name = "患者姓名")
     private String patientName;

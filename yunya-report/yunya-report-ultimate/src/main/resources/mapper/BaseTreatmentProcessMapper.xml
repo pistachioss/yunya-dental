@@ -490,7 +490,7 @@
         AND btp.treat_end_time IS NOT NULL ) btp3
     </select>
     <select id="firstVisitRecord" resultType="com.yunya.feign.report.domain.vo.FirstVisitVO">
-    SELECT
+    SELECT distinct
 	btp.registered_dentist_id as registeredDentistId,
 	be.employee_name as registeredDentistName,
 	count(*) as count
@@ -559,9 +559,10 @@
         </where>
     </select>
     <select id="firstVisitRecordDetail" resultType="com.yunya.feign.report.domain.vo.FirstVisitDetailVO">
-    SELECT
+    SELECT distinct
 	bo.abbreviation AS orgName,
     DATE_FORMAT(btp.treat_start_time, '%Y-%m-%d') AS firstVisitTime,
+    btp.patient_id as patientId,
 	bp.`name` AS patientName,
 	bp.mobile,
 	bp.origin_type_name AS originTypeName,
@@ -605,7 +606,7 @@
         order by btp.treat_start_time
     </select>
     <select id="firstVisitRecordPersonalList" resultType="com.yunya.feign.report.domain.vo.FirstVisitPersonalVO">
-        SELECT
+        SELECT distinct
         btp.org_id as orgId,
         btp.registered_dentist_id as registeredDentistId,
         bo.abbreviation as orgName,
