@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.biz;
 
 import com.yunya.feign.report.domain.vo.ItemCategoryInfoVO;
+import com.yunya.feign.report.domain.vo.ItemInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.report.BaseTariffInfo;
 import com.yunya.report.ultimate.mapper.BaseTariffInfoMapper;
@@ -29,6 +30,19 @@ public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffI
    * @return List<ItemCategoryInfoVO>
    */
   public List<ItemCategoryInfoVO> findItemCategoryList() {
-    return tariffInfoMapper.selectItemCategoryList();
+    return findItemCategoryList(null);
+  }
+
+  public List<ItemCategoryInfoVO> findItemCategoryList(Byte itemType) {
+    return tariffInfoMapper.selectItemCategoryList(itemType);
+  }
+
+  /**
+   * 根据项目分类ID查询全部项目列表
+   *
+   * @return List<ItemInfoVO>
+   */
+  public List<ItemInfoVO> findItemListByCategoryId(Integer categoryId) {
+    return tariffInfoMapper.selectItemListByCategoryId(categoryId);
   }
 }

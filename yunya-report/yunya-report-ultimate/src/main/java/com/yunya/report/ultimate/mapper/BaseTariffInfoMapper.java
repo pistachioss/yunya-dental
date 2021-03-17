@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.vo.ItemCategoryInfoVO;
+import com.yunya.feign.report.domain.vo.ItemInfoVO;
 import com.yunya.models.report.BaseTariffInfo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -31,7 +32,15 @@ public interface BaseTariffInfoMapper extends Mapper<BaseTariffInfo> {
   /**
    * 获取全部开单项目分类列表
    *
+   * @param itemType
    * @return List<ItemCategoryInfoVO>
    */
-  List<ItemCategoryInfoVO> selectItemCategoryList();
+  List<ItemCategoryInfoVO> selectItemCategoryList(@Param("itemType") Byte itemType);
+
+  /**
+   * 根据项目分类ID查询全部项目列表
+   *
+   * @return List<ItemInfoVO>
+   */
+  List<ItemInfoVO> selectItemListByCategoryId(@Param("categoryId") Integer categoryId);
 }

@@ -23,4 +23,6 @@ public class CouponCommonInfoVO {
     private String pName;
 
     private String path;
+
+    private Boolean isShare;
 }

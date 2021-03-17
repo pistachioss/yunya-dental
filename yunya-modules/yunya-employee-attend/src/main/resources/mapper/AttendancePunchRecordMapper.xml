@@ -96,6 +96,12 @@
           #{item}
         </foreach>
       </if>
+      <if test="queryForm.punchDates!=null and queryForm.punchDates.size()>0">
+        and t.punch_date in
+        <foreach collection="queryForm.punchDates" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
     </where>
   </select>
 
@@ -277,6 +283,61 @@
                 </foreach>
             </if>
         </where>
+        order by t.punch_date asc
+    </select>
+
+    <select id="attendancePunchRecordListGroupByDate" resultType="com.yunya.feign.employee_attend.vo.AttendancePunchRecordVO">
+        select
+        t.punch_date as punchDate
+        from attendance_punch_record t
+        <where>
+            <if test="queryForm.userId != null" >
+                and t.user_id = #{queryForm.userId}
+            </if>
+            <if test="queryForm.orgId != null" >
+                and t.org_id = #{queryForm.orgId}
+            </if>
+            <if test="queryForm.punchDate != null" >
+                and t.punch_date = DATE_FORMAT(#{queryForm.punchDate},'%Y-%m-%d')
+            </if>
+            <if test="queryForm.notEqualsPunchDate != null" >
+                and t.punch_date &lt;&gt; DATE_FORMAT(#{queryForm.notEqualsPunchDate},'%Y-%m-%d')
+            </if>
+            <if test="queryForm.betweenDate!=null and queryForm.andDate!=null" >
+                and t.punch_date between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
+            </if>
+            <if test="queryForm.source!=null">
+                and t.source = #{queryForm.source}
+            </if>
+            <if test="queryForm.sources!=null">
+                and t.source not in
+                <foreach collection="queryForm.sources" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="queryForm.punchStatus!=null">
+                and t.punch_status = #{queryForm.punchStatus}
+            </if>
+            <if test="queryForm.isPunch!=null">
+                and t.is_punch = #{queryForm.isPunch}
+            </if>
+            <if test="queryForm.notEqualPunchStatus != null">
+                and t.punch_status &lt;&gt; #{queryForm.notEqualPunchStatus}
+            </if>
+            <if test="queryForm.punchStatusList!=null and queryForm.punchStatusList.length>0">
+                and t.punch_status in
+                <foreach collection="queryForm.punchStatusList" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="queryForm.notInIds!=null and queryForm.notInIds.size()>0">
+                and t.id not in
+                <foreach collection="queryForm.notInIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by t.punch_date
         order by t.punch_date asc
     </select>
 </mapper>

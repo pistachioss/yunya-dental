@@ -559,20 +559,36 @@
         </where>
     </select>
     <select id="firstVisitRecordDetail" resultType="com.yunya.feign.report.domain.vo.FirstVisitDetailVO">
-    SELECT distinct
-	bo.abbreviation AS orgName,
-    DATE_FORMAT(btp.treat_start_time, '%Y-%m-%d') AS firstVisitTime,
-    btp.patient_id as patientId,
-	bp.`name` AS patientName,
-	bp.mobile,
-	bp.origin_type_name AS originTypeName,
-	bpo.`name` AS originName
-    FROM
-	base_treatment_process btp
-    LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-    LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
-    LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
-    LEFT JOIN base_patient_origin bpo ON bp.origin_id = bpo.id
+        SELECT distinct
+        bo.abbreviation AS orgName,
+        DATE_FORMAT(btp.treat_start_time, '%Y-%m-%d') AS firstVisitTime,
+        btp.patient_id as patientId,
+        bp.`name` AS patientName,
+        bp.mobile,
+        bp.origin_type_name AS originTypeName,
+        bpo.`name` AS originName,
+        ntp.appoint_content as nextAppointContent,
+        DATE_FORMAT(ntp.appoint_start_time, '%Y-%m-%d') as nextAppointmentTime,
+        vtp.content as nextRemindcontent,
+        DATE_FORMAT(vtp.time, '%Y-%m-%d') as nextRemindTime
+        FROM
+        base_treatment_process btp
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+        LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+        LEFT JOIN base_patient_origin bpo ON bp.origin_id = bpo.id
+        LEFT JOIN (SELECT DISTINCT
+        patient_id,appoint_content,appoint_start_time
+        FROM
+        base_treatment_process
+        where appoint_start_time > NOW() and (patient_id,appoint_start_time) in(
+        select patient_id,min(appoint_start_time)FROM
+        base_treatment_process
+        where appoint_start_time > NOW()  GROUP BY patient_id)) ntp on btp.patient_id = ntp.patient_id
+        LEFT JOIN (
+        select DISTINCT patient_id,content,time FROM base_visit_remind
+        where time > NOW() and type = 1 and (patient_id,time) in
+        (select patient_id,min(time) FROM base_visit_remind where time > NOW() and type = 1  GROUP BY patient_id)) vtp on btp.patient_id = vtp.patient_id
         <where>
             btp.treat_status IN (3, 4)
             and btp.treat_type = 0

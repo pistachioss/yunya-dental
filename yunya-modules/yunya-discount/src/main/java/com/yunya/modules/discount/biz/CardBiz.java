@@ -860,7 +860,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             if (errorBo.getError() != null) {
                 return ResponseUtil.error(errorBo.getError());
             }
-            //3. 第三方平台卡券激活
+            //3.校验产品是否可以共享
+            errorBo = this.checkCouponShare(form.getCouponId(), form.getSharerIdStr());
+            if (errorBo.getError() != null) {
+                return ResponseUtil.error(errorBo.getError());
+            }
+            //4. 第三方平台卡券激活
             Card activeCard = insertOtherActiveCard(patientId, form, loginUserId);
             mqServiceFeign.sendMessage(activeCard.getId(), ADD, BaseCardSingle);
             log.info("【第三方激活发送消息成功】：卡券id[{}]", activeCard.getId());
@@ -2199,6 +2204,20 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             log.warn("优惠券{}已过期", couponInfo.getName());
             errorBo.setError(error);
             return errorBo;
+        }
+        return errorBo;
+    }
+
+    private RestErrorBo checkCouponShare(Integer couponId, String sharerIdStr) {
+        RestErrorBo errorBo = RestErrorBo.getInstance();
+        if (StringUtils.isNotBlank(sharerIdStr)) {
+            CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
+            //优惠券是否与人共享使用
+            Boolean shareStatus = getShareStatus(couponInfo.getType().intValue(), couponId);
+            if (!shareStatus ) {
+                log.warn("{}不能与他人共享", couponInfo.getName());
+                errorBo.setError(DiscountError.COUPON_NOT_ALLOW_SHARE);
+            }
         }
         return errorBo;
     }

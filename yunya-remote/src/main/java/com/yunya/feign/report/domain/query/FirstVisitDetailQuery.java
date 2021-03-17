@@ -29,7 +29,6 @@ public class FirstVisitDetailQuery extends PageQuery implements Serializable {
 
     /** 门诊ID */
     @ApiModelProperty(value = "门诊ID", required = true)
-    @NotNull(message = "请选择需要查询的诊所！")
     private Integer orgId;
 
     /** 查询初诊开始时间 */

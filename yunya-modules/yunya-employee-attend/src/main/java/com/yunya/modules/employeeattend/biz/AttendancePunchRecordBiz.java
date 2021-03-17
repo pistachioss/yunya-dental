@@ -2704,7 +2704,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Map<Date, List<EmployeeScheduleVO>> employeeScheduleMap = getEmployeeScheduleMapGroupByDate(userId, orgId, betweenDate, andDate);
         // 打卡
         Map<Integer, List<AttendancePunchRecordVO>> punchRecords = new HashMap<>();
-        Map<Date, List<AttendancePunchRecordVO>> punchRecordMap = getPunchRecordMapGroupByDate(userId, null, betweenDate, andDate, null, punchRecords);
+        Map<Date, List<AttendancePunchRecordVO>> punchRecordMap = getPunchRecordMapGroupByDate(userId, null, betweenDate, andDate, null, null, punchRecords);
         // 手动补入时长
         Map<Date, AttendanceManualMakeupVO> manualMakeupMap = getManualMakeupMapGroupByDate(userId, orgId, MakeupTypeEnum.WORKDATE.getCode(), betweenDate, andDate);
         // 请假
@@ -3383,11 +3383,15 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      * @return
      */
     private Map<Date, List<AttendancePunchRecordVO>> getPunchRecordMapGroupByDate(Integer userId, Integer orgId, Date betweenDate, Date andDate) {
-        return getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, null, null);
+        return getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, null, null, null);
+    }
+
+    private Map<Date, List<AttendancePunchRecordVO>> getPunchRecordMapGroupByDate(Integer userId, Integer orgId, Date betweenDate, Date andDate, List<Date> punchDates) {
+        return getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, null, punchDates,null);
     }
 
     private Map<Date, List<AttendancePunchRecordVO>> getPunchRecordMapGroupByDate(Integer userId, Integer orgId, Date betweenDate, Date andDate,
-                              List<Integer> notInIds, Map<Integer, List<AttendancePunchRecordVO>> punchRecords) {
+                              List<Integer> notInIds, List<Date> punchDates, Map<Integer, List<AttendancePunchRecordVO>> punchRecords) {
         AttendancePunchRecordQueryForm recordQueryForm = new AttendancePunchRecordQueryForm();
         recordQueryForm.setBetweenDate(betweenDate);
         recordQueryForm.setAndDate(andDate);
@@ -3395,6 +3399,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         recordQueryForm.setOrgId(orgId);
         recordQueryForm.setNotInIds(notInIds);
         recordQueryForm.setWhetherPage(false);
+        recordQueryForm.setPunchDates(punchDates);
         List<AttendancePunchRecordVO> attendancePunchRecordVOS = findAttendancePunchRecordList(recordQueryForm);
         Map<Date, List<AttendancePunchRecordVO>> attendancePunchRecordMap = new HashMap<>(16);
         attendancePunchRecordVOS.forEach(attendancePunchRecordVO -> {
@@ -3405,9 +3410,9 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             }
             list.add(attendancePunchRecordVO);
             attendancePunchRecordMap.put(date, list);
-            Integer esId = attendancePunchRecordVO.getEsId();
             if (punchRecords!=null && AttendanceSourceEnum.WORK_SCHEDULE.getCode().equals(attendancePunchRecordVO.getSource())
                 && AttendanceIsInScopeEnum.BELONG.getCode().equals(attendancePunchRecordVO.getIsInScope())) {
+                Integer esId = attendancePunchRecordVO.getEsId();
                 List<AttendancePunchRecordVO> recordVOS = punchRecords.get(esId);
                 if (recordVOS == null) {
                     recordVOS = new ArrayList<>();
@@ -3673,20 +3678,14 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         recordQueryForm.setNotEqualsPunchDate(new Date(System.currentTimeMillis()));
         recordQueryForm.setIsPunch(AttendanceIsPunchEnum.UNPUNCH.getCode());
         recordQueryForm.setSource((byte) 0);
-        recordQueryForm.setPunchType(AttendanceTypeEnum.ONDUTY.getCode());
-        List<AttendancePunchRecordVO> masterRecordVOS = findAttendancePunchRecordListGroupByDate(recordQueryForm);
-        if (StringHelper.isEmpty(masterRecordVOS)) {
-            recordQueryForm.setPunchType(AttendanceTypeEnum.OFFDUTY.getCode());
-            masterRecordVOS = findAttendancePunchRecordListGroupByDate(recordQueryForm);
-        }
+        List<AttendancePunchRecordVO> masterRecordVOS = attendancePunchRecordListGroupByDate(recordQueryForm);
         PageInfo pageInfo = new PageInfo(masterRecordVOS);
-        List<Integer> notInIds = new ArrayList<>(masterRecordVOS.size());
-        masterRecordVOS.forEach(masterRecordVO->notInIds.add(masterRecordVO.getId()));
-        Map<Date, List<AttendancePunchRecordVO>> slaveRecordMap = getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, notInIds, null);
+        List<Date> dates = masterRecordVOS.stream().map(AttendancePunchRecordVO::getPunchDate).collect(Collectors.toList());
+        Map<Date, List<AttendancePunchRecordVO>> slaveRecordMap = getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, dates);
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         List<AttendanceUnpunchCountVO> result = new ArrayList<>(masterRecordVOS.size());
-        masterRecordVOS.forEach(punchRecord->{
-            Date date = punchRecord.getPunchDate();
+        masterRecordVOS.forEach(vo->{
+            Date date = vo.getPunchDate();
             AttendanceUnpunchCountVO unpunchCountVO = new AttendanceUnpunchCountVO();
             StringBuilder employeeScheduleName = new StringBuilder();
             List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleMap.get(date);
@@ -3695,13 +3694,9 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     putEmployeeScheduleName(employeeScheduleVO, employeeScheduleName, sdf);
                 }
             }
-            int count = 1;
-            Date onPunchTime = punchRecord.getPunchTime();
+            int count = 0;
+            Date onPunchTime = null;
             Date offPunchTime = null;
-            if (punchRecord.getPunchType().equals(AttendanceTypeEnum.OFFDUTY.getCode())) {
-                onPunchTime = null;
-                offPunchTime = punchRecord.getPunchTime();
-            }
             List<AttendancePunchRecordVO> list = slaveRecordMap.get(date);
             if (list != null && !list.isEmpty()) {
                 for (AttendancePunchRecordVO slaveRecord : list) {
@@ -3752,12 +3747,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         recordQueryForm.setAndDate(andDate);
         recordQueryForm.setIsPunch(AttendanceIsPunchEnum.PUNCHED.getCode());
         recordQueryForm.setPunchStatus(AttendanceStatusEnum.INVALID_PUNCH.getCode());
-        recordQueryForm.setPunchType(AttendanceTypeEnum.ONDUTY.getCode());
-        List<AttendancePunchRecordVO> masterRecordVOS = findAttendancePunchRecordListGroupByDate(recordQueryForm);
+        List<AttendancePunchRecordVO> masterRecordVOS = attendancePunchRecordListGroupByDate(recordQueryForm);
         PageInfo pageInfo = new PageInfo<>(masterRecordVOS);
-        List<Integer> notInIds = new ArrayList<>(masterRecordVOS.size());
-        masterRecordVOS.forEach(masterRecordVO->notInIds.add(masterRecordVO.getId()));
-        Map<Date, List<AttendancePunchRecordVO>> slaveRecordMap = getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, notInIds, null);
+        List<Date> dates = masterRecordVOS.stream().map(AttendancePunchRecordVO::getPunchDate).collect(Collectors.toList());
+        Map<Date, List<AttendancePunchRecordVO>> slaveRecordMap = getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, dates);
         List<AttendanceInvalidCountVO> result = new ArrayList<>(masterRecordVOS.size());
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         masterRecordVOS.forEach(punchRecord->{
@@ -3770,14 +3763,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     putEmployeeScheduleName(employeeScheduleVO, employeeScheduleName, sdf);
                 }
             }
-            StringBuilder punchAddress = new StringBuilder(punchRecord.getPunchAddress());
-            int count = 1;
-            Date onPunchTime = punchRecord.getPunchTime();
+            StringBuilder punchAddress = new StringBuilder();
+            int count = 0;
+            Date onPunchTime = null;
             Date offPunchTime = null;
-            if (punchRecord.getPunchType().equals(AttendanceTypeEnum.OFFDUTY.getCode())) {
-                onPunchTime = null;
-                offPunchTime = punchRecord.getPunchTime();
-            }
             List<AttendancePunchRecordVO> list = slaveRecordMap.get(date);
             if (list!=null && !list.isEmpty()) {
                 for (AttendancePunchRecordVO slaveRecord : list) {
@@ -3813,10 +3802,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      * @param queryForm 查询参数
      * @return
      */
-    private List<AttendancePunchRecordVO> findAttendancePunchRecordListGroupByDate(AttendancePunchRecordQueryForm queryForm) {
+    private List<AttendancePunchRecordVO> attendancePunchRecordListGroupByDate(AttendancePunchRecordQueryForm queryForm) {
         if (queryForm.getWhetherPage()) {
             PageHelper.startPage(queryForm.getPageNum(),queryForm.getPageSize());
         }
-        return mapper.findAttendancePunchRecordListGroupByDate(queryForm);
+        return mapper.attendancePunchRecordListGroupByDate(queryForm);
     }
 }
