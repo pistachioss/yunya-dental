@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillBiz;
@@ -218,6 +219,116 @@ public class CompanyReportOfDataRecordController {
       HttpServletResponse response, @RequestBody @Validated TreatmentMatchingRecordQuery query)
       throws IOException {
     treatmentProcessBiz.exportTreatmentMatchingRecord(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 公司端-员工报表-初诊统计
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端-员工报表-初诊统计")
+  @PostMapping(value = "/firstVisit/list", name = "公司端-员工报表-初诊统计")
+  public ResponseResult<PageInfo<FirstVisitVO>> firstVisitRecord(
+          @RequestBody @Validated FirstVisitQuery query) {
+    PageInfo<FirstVisitVO> list =
+            treatmentProcessBiz.firstVisitRecord(query);
+    return ResponseUtil.success(list);
+  }
+
+  /**
+   * 公司端-员工报表-初诊统计-导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端-员工报表-初诊统计-导出")
+  @PostMapping(value = "/firstVisit/list/export", name = "公司端-员工报表-初诊统计-导出")
+  public ResponseResult<T> exportFirstVisitRecord(
+          HttpServletResponse response, @RequestBody @Validated FirstVisitQuery query)
+          throws IOException {
+    treatmentProcessBiz.exportFirstVisitRecord(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 公司端-员工报表-初诊统计-查询合计
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端-员工报表-初诊统计-患者数量合计")
+  @PostMapping(value = "/firstVisit/count", name = "公司端-员工报表-初诊统计-患者数量合计")
+  public ResponseResult<Integer> firstVisitRecordCount(
+          @RequestBody @Validated FirstVisitQuery query) {
+    Integer count =
+            treatmentProcessBiz.firstVisitRecordCount(query);
+    return ResponseUtil.success(count);
+  }
+
+
+  /**
+   * 公司端-员工报表-初诊统计-查看明细
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端-员工报表-初诊统计-查看明细")
+  @PostMapping(value = "/firstVisit/detail", name = "公司端-员工报表-初诊统计-查看明细")
+  public ResponseResult<PageInfo<FirstVisitDetailVO>> firstVisitRecordDetail(
+          @RequestBody @Validated FirstVisitDetailQuery query) {
+    PageInfo<FirstVisitDetailVO> list =
+            treatmentProcessBiz.firstVisitRecordDetail(query);
+    return ResponseUtil.success(list);
+  }
+
+  /**
+   * 公司端-员工报表-初诊统计-查看明细-导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端-员工报表-初诊统计-查看明细-导出")
+  @PostMapping(value = "/firstVisit/detail/export", name = "公司端-员工报表-初诊统计-查看明细-导出")
+  public ResponseResult<T> exportFirstVisitRecordDetail(
+          HttpServletResponse response, @RequestBody @Validated FirstVisitDetailQuery query)
+          throws IOException {
+    treatmentProcessBiz.exportFirstVisitRecordDetail(response, query);
+    return ResponseUtil.success(null);
+  }
+
+
+  /**
+   * 门诊端-个人中心-个人报表-个人初诊报表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("门诊端-个人中心-个人报表-个人初诊报表")
+  @PostMapping(value = "/firstVisit/personalList", name = "门诊端-个人中心-个人报表-个人初诊报表")
+  @CurrentUser
+  public ResponseResult<PageInfo<FirstVisitPersonalVO>> firstVisitRecordPersonalList(
+          @RequestBody @Validated FirstVisitPersonalQuery query) {
+    PageInfo<FirstVisitPersonalVO> list =
+            treatmentProcessBiz.firstVisitRecordPersonalList(query);
+    return ResponseUtil.success(list);
+  }
+
+  /**
+   * 门诊端-个人中心-个人报表-个人初诊报表-导出
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("门诊端-个人中心-个人报表-个人初诊报表-导出")
+  @PostMapping(value = "/firstVisit/personalList/export", name = "门诊端-个人中心-个人报表-个人初诊报表-导出")
+  @CurrentUser
+  public ResponseResult<T> exportFirstVisitRecordPersonalList(
+          HttpServletResponse response, @RequestBody @Validated FirstVisitPersonalQuery query) throws IOException{
+            treatmentProcessBiz.exportFirstVisitRecordPersonalList(response,query);
     return ResponseUtil.success(null);
   }
 }

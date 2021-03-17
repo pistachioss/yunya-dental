@@ -4,6 +4,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
@@ -16,13 +18,16 @@ import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.appointment.Appointment;
+import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.BaseTreatmentProcess;
+import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import com.yunya.report.ultimate.mapper.BaseTreatmentProcessMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,6 +57,7 @@ public class BaseTreatmentProcessBiz
   @Autowired private RemoteAppointmentFeign remoteAppointmentFeign;
   @Autowired private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
   @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
+  @Autowired private BaseOrganizationMapper baseOrganizationMapper;
 
   /**
    * 根据条件查询就诊记录报表
@@ -448,5 +454,120 @@ public class BaseTreatmentProcessBiz
     resultData.setFirstTreatTotalCount(totalCount);
     resultData.setPatientFirstTreatOrigins(firstTreatOrigins);
     return resultData;
+  }
+
+  /**
+   * 根据条件查询初诊记录报表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public PageInfo<FirstVisitVO> firstVisitRecord(FirstVisitQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<FirstVisitVO> resultList = mapper.firstVisitRecord(query);
+    return new PageInfo<>(resultList);
+  }
+
+
+  /**
+   * 根据条件导出初诊记录报表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public void exportFirstVisitRecord(HttpServletResponse response,FirstVisitQuery query) throws IOException{
+    List<FirstVisitVO>list = mapper.firstVisitRecord(query);
+    ExcelUtil<FirstVisitVO> excelUtil = new ExcelUtil<>(FirstVisitVO.class);
+    BaseOrganization baseOrganization = new BaseOrganization();
+    baseOrganization.setOrgId(query.getOrgId());
+    String orgName = baseOrganizationMapper.selectOne(baseOrganization).getAbbreviation();
+    String fileName =
+            excelUtil.getFileName(
+                    query.getStartDate(),
+                    query.getEndDate(),
+                    orgName,
+                    "初诊统计表");
+    excelUtil.exportExcel(response, list, "初诊统计", fileName);
+  }
+
+
+  /**
+   * 根据条件查询初诊记录报表患者合计数量
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public Integer firstVisitRecordCount(FirstVisitQuery query) {
+    Integer count = mapper.firstVisitRecordCount(query);
+    return count;
+  }
+  /**
+   * 根据条件查询初诊记录报表查看明细
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public PageInfo<FirstVisitDetailVO> firstVisitRecordDetail(FirstVisitDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<FirstVisitDetailVO>list = mapper.firstVisitRecordDetail(query);
+    return new PageInfo<>(list);
+  }
+
+  /**
+   * 根据条件导出初诊记录报表查看明细
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public void exportFirstVisitRecordDetail(HttpServletResponse response,FirstVisitDetailQuery query) throws IOException{
+    List<FirstVisitDetailVO>list = mapper.firstVisitRecordDetail(query);
+    ExcelUtil<FirstVisitDetailVO> excelUtil = new ExcelUtil<>(FirstVisitDetailVO.class);
+    BaseOrganization baseOrganization = new BaseOrganization();
+    baseOrganization.setOrgId(query.getOrgId());
+    String orgName = baseOrganizationMapper.selectOne(baseOrganization).getAbbreviation();
+    String fileName =
+            excelUtil.getFileName(
+                    query.getStartDate(),
+                    query.getEndDate(),
+                    orgName,
+                    "初诊统计明细表");
+    excelUtil.exportExcel(response, list, "初诊统计明细表", fileName);
+  }
+
+  /**
+   * 根据条件查询个人初诊记录报表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public PageInfo<FirstVisitPersonalVO> firstVisitRecordPersonalList(FirstVisitPersonalQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    query.setUserId(Integer.valueOf(BaseContextHandler.getUserID()));
+    List<FirstVisitPersonalVO>list = mapper.firstVisitRecordPersonalList(query);
+    return new PageInfo<>(list);
+  }
+  /**
+   * 根据条件导出个人初诊记录报表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public void exportFirstVisitRecordPersonalList(HttpServletResponse response,FirstVisitPersonalQuery query) throws IOException{
+    query.setUserId(Integer.valueOf(BaseContextHandler.getUserID()));
+    List<FirstVisitPersonalVO>list = mapper.firstVisitRecordPersonalList(query);
+    ExcelUtil<FirstVisitPersonalVO> excelUtil = new ExcelUtil<>(FirstVisitPersonalVO.class);
+    String fileName =
+            excelUtil.getFileName(
+                    query.getStartDate(),
+                    query.getEndDate(),
+                    BaseContextHandler.getUsername(),
+                    "个人初诊统计表");
+    excelUtil.exportExcel(response, list, "个人初诊统计表", fileName);
   }
 }

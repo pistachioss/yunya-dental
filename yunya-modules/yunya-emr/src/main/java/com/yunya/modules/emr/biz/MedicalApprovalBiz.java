@@ -1120,9 +1120,15 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                     //数据构建最终结构
                     treatmentIds.forEach(treatmentId -> {
                         //构建就诊映射 <treatmentId, MedicalTreatmentBo>
-                        treTreatmentBoMap.put(treatmentId, treatmentMap.get(treatmentId));
+                        MedicalTreatmentBo medicalTreatmentBo = treatmentMap.get(treatmentId);
+                        treTreatmentBoMap.put(treatmentId, medicalTreatmentBo);
                         //构建患者映射 <treatmentId, PatientBaseInfoVo>
-                        trePatientInfoMap.put(treatmentId, patientMap.get(treatmentMap.get(treatmentId).getPatientId()));
+                        PatientBaseInfoVo patientBaseInfoVo = null;
+                        if (medicalTreatmentBo != null) {
+                            Integer patientId = medicalTreatmentBo.getPatientId();
+                            patientBaseInfoVo = patientMap.get(patientId);
+                        }
+                        trePatientInfoMap.put(treatmentId, patientBaseInfoVo);
                     });
                     pageBo.setTrePatientInfoMap(trePatientInfoMap);
                     pageBo.setTreTreatmentBoMap(treTreatmentBoMap);

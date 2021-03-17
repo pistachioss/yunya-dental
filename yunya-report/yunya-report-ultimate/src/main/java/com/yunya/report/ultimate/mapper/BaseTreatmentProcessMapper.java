@@ -100,4 +100,33 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    * @return PatientAppointmentInfoVO 预约相关信息
    */
   PatientAppointmentInfoVO selectPatientAppointmentInfo(@Param("patientId") Integer patientId);
+
+  /**
+   * 查询初诊报表
+   *
+   * @param
+   * @return
+   */
+  List<FirstVisitVO> firstVisitRecord(FirstVisitQuery query);
+  /**
+   * 查询初诊报表患者数量合计
+   *
+   * @param
+   * @return
+   */
+  Integer firstVisitRecordCount(FirstVisitQuery query);
+
+  /**
+   * 查询初诊报表查看明细
+   * @param query
+   * @return
+   */
+  List<FirstVisitDetailVO> firstVisitRecordDetail(FirstVisitDetailQuery query);
+
+  /**
+   * 查询个人初诊报表查看明细
+   * @param query
+   * @return
+   */
+  List<FirstVisitPersonalVO> firstVisitRecordPersonalList(FirstVisitPersonalQuery query);
 }

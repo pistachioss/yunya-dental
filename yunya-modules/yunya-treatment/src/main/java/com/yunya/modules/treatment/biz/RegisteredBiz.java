@@ -219,7 +219,6 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
                         }
                         vo.setUserName(employeesMap.get(vo.getUserId() + "").getName());
                         vo.setReferredName(employeesMap.get(vo.getReferredId() + "").getName());
-                        vo.setTime(vo.getCrtTime());
                     });
         }
         return reList;

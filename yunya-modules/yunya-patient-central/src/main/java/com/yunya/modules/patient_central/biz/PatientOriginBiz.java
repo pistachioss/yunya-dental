@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.google.common.collect.Lists;
 import com.yunya.feign.patient_central.domain.form.PatientOriginForm;
 import com.yunya.feign.patient_central.domain.model.PatientOriginModel;
 import com.yunya.feign.patient_central.domain.query.OriginTypeQueryForm;
@@ -23,16 +24,27 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientOrigin;
+import com.yunya.models.patient_central.PatientOriginLog;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
+import com.yunya.modules.patient_central.mapper.PatientOriginLogMapper;
 import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 简单介绍:</br> 患者来源业务层
@@ -42,10 +54,11 @@ import java.util.*;
  * @description: 患者来源管理业务层
  * @since: 1.0.0
  */
+
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin> {
-
+  private Logger log = LoggerFactory.getLogger(PatientOriginBiz.class);
   /** 注入患者来源Mapper */
   @Autowired private PatientOriginMapper patientOriginMapper;
 
@@ -58,10 +71,17 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
   /** 注入服务 */
   @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
 
-
   /** 获取患者服务端口号 */
   @Value("${codeUrl.url}")
   private String servePrort;
+
+  /** 多线程 */
+  @Resource(name = "customizeThreadPool")
+  private ExecutorService importExcelThreadPool;
+
+  @Resource
+  private PatientOriginLogMapper patientOriginLogMapper;
+
 
   /**
    * 患者原来添加
@@ -306,4 +326,43 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
     // 获取符合条件的活动集合
     return getPatientOriginList(patientOrigin);
   }
+
+  /**
+   * 迁移患者信息来源到患者来源变更日志表
+   */
+    public void moveOrigin() throws InterruptedException {
+      List<PatientOriginLog> insertPatientOriginLogList = new ArrayList<>();
+      List<PatientBaseInfo> patientBaseInfoList = patientBaseInfoMapper.selectOriginByOriginIdNotNull();
+      for (PatientBaseInfo patientBaseInfo : patientBaseInfoList ) {
+        PatientOriginLog patientOriginLog = new PatientOriginLog();
+        patientOriginLog.setPatientId(patientBaseInfo.getId());
+        patientOriginLog.setOriginType(patientBaseInfo.getOriginType());
+        patientOriginLog.setOriginId(patientBaseInfo.getOriginId());
+        patientOriginLog.setInservice(patientBaseInfo.getInservice());
+        patientOriginLog.setCrtId(patientBaseInfo.getCrtId());
+        patientOriginLog.setCrtName(patientBaseInfo.getCrtName());
+        patientOriginLog.setCrtTime(patientBaseInfo.getCrtTime());
+        patientOriginLog.setUptId(patientBaseInfo.getUptId());
+        patientOriginLog.setUpdName(patientBaseInfo.getUpdName());
+        patientOriginLog.setUpdTime(patientBaseInfo.getUpdTime());
+        insertPatientOriginLogList.add(patientOriginLog);
+      }
+      List<List<PatientOriginLog>> partitionLists = Lists.partition(insertPatientOriginLogList, 100);
+      CountDownLatch countDownLatch = new CountDownLatch(partitionLists.size());
+      long start = System.currentTimeMillis();
+      for (List<PatientOriginLog> patientOriginLogList : partitionLists) {
+      importExcelThreadPool.execute(
+          () -> {
+            try {
+              patientOriginLogMapper.insertList(patientOriginLogList);
+              countDownLatch.countDown();
+            } catch (Exception e) {
+              log.info("患者来源迁移入库异常",e);
+            }
+          });
+      }
+      countDownLatch.await();
+      long end = System.currentTimeMillis();
+      log.info("患者信息患者来源信息迁移入库成功，时长：[{}]秒", (end - start) / 1000);
+    }
 }

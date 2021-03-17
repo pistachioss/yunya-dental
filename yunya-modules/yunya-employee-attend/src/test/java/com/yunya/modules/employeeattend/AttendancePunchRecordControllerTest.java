@@ -1,9 +1,12 @@
 package com.yunya.modules.employeeattend;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.AttendancePunchRecordForm;
 import com.yunya.feign.employee_attend.form.AttendancePunchRecordQueryForm;
 import com.yunya.feign.employee_attend.form.AttendanceStatisticsQueryForm;
+import com.yunya.feign.employee_attend.vo.AttendanceInvalidCountVO;
+import com.yunya.feign.employee_attend.vo.AttendanceUnpunchCountVO;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
@@ -107,6 +110,24 @@ public class AttendancePunchRecordControllerTest {
     public void testSearch() {
         ScheduleForm queryForm = new ScheduleForm();
         ResponseResult result = baseScheduleController.search(queryForm);
+        System.out.println(JSONObject.toJSON(result));
+    }
+
+    @Test
+    public void testUnpunchCount() {
+        String param = "{\"userName\":\"张芳萍\",\"orgId\":34,\"num\":5,\"date\":\"2021-03\",\"userId\":600,\"orgName\":\"杭州艾维雅文口腔门诊部有限公司\",\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+//        String param = "{\"userName\":\"邱诗惠\",\"orgId\":26,\"num\":1,\"date\":\"2021-03\",\"userId\":647,\"orgName\":\"古墩路口腔门诊部\",\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+        AttendanceStatisticsQueryForm query = JSONObject.parseObject(param,AttendanceStatisticsQueryForm.class);
+        ResponseResult<PageInfo<AttendanceUnpunchCountVO>> result =attendancePunchRecordController.statisticsPunchRecordByUnpunchCount(query);
+        System.out.println(JSONObject.toJSON(result));
+    }
+
+    @Test
+    public void testInvalidCount() {
+        String param = "{\"userName\":\"周佳芸\",\"orgId\":28,\"num\":2,\"date\":\"2021-03\",\"userId\":311,\"orgName\":\"杭州艾维乾元口腔门诊部有限公司\",\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+//        String param = "{\"userName\":\"邱诗惠\",\"orgId\":26,\"num\":1,\"date\":\"2021-03\",\"userId\":647,\"orgName\":\"古墩路口腔门诊部\",\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+        AttendanceStatisticsQueryForm query = JSONObject.parseObject(param,AttendanceStatisticsQueryForm.class);
+        ResponseResult<PageInfo<AttendanceInvalidCountVO>> result =attendancePunchRecordController.statisticsPunchRecordByInvalidCount(query);
         System.out.println(JSONObject.toJSON(result));
     }
 }

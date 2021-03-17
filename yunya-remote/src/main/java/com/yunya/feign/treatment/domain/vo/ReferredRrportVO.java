@@ -1,5 +1,7 @@
 package com.yunya.feign.treatment.domain.vo;
 
+import com.yunya.framework.common.annation.Excel;
+import com.yunya.framework.common.annation.Excels;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -26,26 +28,31 @@ public class ReferredRrportVO {
     private Integer userId;
 
     @ApiModelProperty("转诊人名称")
+    @Excel(name = "转诊人名称")
     private String userName;
 
     @ApiModelProperty("转诊人的科室ID")
     private Integer depId;
 
     @ApiModelProperty("转诊人的科室名称")
+    @Excel(name = "转诊人的科室名称")
     private String depName;
 
     @ApiModelProperty("被转诊人id")
     private Integer referredId;
 
     @ApiModelProperty("被转诊人名称")
+    @Excel(name = "被转诊人名称")
     private String referredName;
 
     @ApiModelProperty("被转诊人的科室ID")
     private Integer referredDepId;
 
     @ApiModelProperty("被转诊人的科室名称")
+    @Excel(name = "被转诊人的科室名称")
     private String referredDepName;
 
     @ApiModelProperty("转诊数量")
+    @Excel(name = "转诊数量")
     private Integer count;
 }
