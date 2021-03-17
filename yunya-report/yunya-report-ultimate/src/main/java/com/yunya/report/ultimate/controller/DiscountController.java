@@ -22,7 +22,7 @@ import java.util.List;
  * @author xiangyang
  * @date 2020/10/26
  */
-@Api(tags = {"公司端-优惠券、卡券报表接口"})
+@Api(tags = {"产品、卡券报表接口"})
 @Slf4j
 @RestController
 public class DiscountController {
@@ -261,4 +261,9 @@ public class DiscountController {
 		return ResponseUtil.success(multiCardUsePage);
 	}
 
+	@ApiOperation(value = "公司端/门诊端-报表统计-市场报表-产品激活报表")
+	@PostMapping("/coupon/activation/page")
+	public ResponseResult<PageInfo<OnceCardUseVo>> getUseRecord(@RequestBody CouponActiveQuery query) {
+		return ResponseUtil.success();
+	}
 }
