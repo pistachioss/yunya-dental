@@ -28,12 +28,32 @@
             category_name AS categoryName
         FROM
             base_tariff_info
+        <where>
+            <if test="itemType != null">
+                item_type = #{itemType}
+            </if>
+        </where>
         GROUP BY
             category_id,
             item_type,
             category_name
         ORDER BY
             item_type
+    </select>
+
+    <select id="selectItemListByCategoryId" resultType="com.yunya.feign.report.domain.vo.ItemInfoVO">
+        SELECT
+            item_id AS itemId,
+            item_type AS itemType,
+            item_name AS itemName,
+            item_num as itemNum
+        FROM
+        base_tariff_info
+        <where>
+            <if test="categoryId != null">
+                category_id = #{categoryId}
+            </if>
+        </where>
     </select>
 
     <!-- 根据联合主键删除 -->

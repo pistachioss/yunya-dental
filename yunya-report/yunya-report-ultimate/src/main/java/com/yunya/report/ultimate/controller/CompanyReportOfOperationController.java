@@ -119,6 +119,32 @@ public class CompanyReportOfOperationController {
   }
 
   /**
+   * 根据项目类型（价目/商品）查询项目分类列表
+   *
+   * @return List<ItemCategoryInfoVO>
+   */
+  @ApiOperation("根据项目类型（价目/商品）查询项目分类列表")
+  @GetMapping(value = "/item/category/{itemType}", name = "根据项目类型（价目/商品）查询项目分类列表")
+  public ResponseResult<List<ItemCategoryInfoVO>> itemCategoryList(@PathVariable(value = "itemType") Byte itemType) {
+    List<ItemCategoryInfoVO> categoryList = tariffInfoBiz.findItemCategoryList(itemType);
+    return ResponseUtil.success(categoryList);
+  }
+
+
+  /**
+   * 根据项目分类ID查询全部项目列表
+   *
+   * @return List<ItemInfoVO>
+   */
+  @ApiOperation("根据项目分类ID查询全部项目列表")
+  @GetMapping(value = "/item/list/{categoryId}", name = "根据项目分类ID查询全部项目列表")
+  public ResponseResult<List<ItemInfoVO>> itemListByCategoryId(@PathVariable(value = "categoryId") Integer categoryId) {
+    List<ItemInfoVO> categoryList = tariffInfoBiz.findItemListByCategoryId(categoryId);
+    return ResponseUtil.success(categoryList);
+  }
+
+
+  /**
    * 根据条件查询开单项目数量列表
    *
    * @param query 查询条件
