@@ -316,10 +316,52 @@ public class CompanyReportOfOperationController {
    * @return PageInfo<BillingItemInfoVO>
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-个人开单数量及金额")
-  @PostMapping(value = "/bill/item/list", name = "根据条件查询个人开单数量及金额列表")
-  public ResponseResult<PageInfo<BillingItemInfoVO>> billItemStatisticsList(
-          @RequestBody @Validated BillingItemStatisticsQuery query) {
-    PageInfo<BillingItemInfoVO> pageInfo = billDetailBiz.findBillingItemInfoVOList(query);
+  @PostMapping(value = "/billItem/statistics/list", name = "根据条件查询个人开单数量及金额列表")
+  public ResponseResult<PageInfo<BillItemStatisticsVO>> billItemStatistics(
+          @RequestBody @Validated BillItemInfoQuery query) {
+    PageInfo<BillItemStatisticsVO> pageInfo = billDetailBiz.billItemStatistics(query);
     return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询个人开单数量及金额列表导出
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillingItemInfoVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-个人开单数量及金额导出")
+  @PostMapping(value = "/billItem/statistics/list/export", name = "根据条件查询个人开单数量及金额列表导出")
+  public ResponseResult<T> billItemStatistics(HttpServletResponse response,
+          @RequestBody @Validated BillItemInfoQuery query) throws IOException {
+    billDetailBiz.billItemStatisticsExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询开单数量及金额统计明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillingItemDetailVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-开单项目数量-开单数量及金额明细")
+  @PostMapping(value = "/billItem/statistics/detail", name = "根据条件查询开单数量及金额统计明细列表")
+  public ResponseResult<PageInfo<BillItemStatisticsDetailVO>> billItemStatiticsDetail(
+          @RequestBody @Validated BillItemDetailQuery query) {
+    PageInfo<BillItemStatisticsDetailVO> pageInfo = billDetailBiz.billItemStatiticsDetail(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询开单数量及金额统计明细列表导出
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillingItemDetailVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-开单项目数量-开单数量及金额明细导出")
+  @PostMapping(value = "/billItem/statistics/detail/export", name = "根据条件查询开单数量及金额统计明细列表导出")
+  public ResponseResult<T> billItemStatiticsDetailExport(HttpServletResponse response,
+          @RequestBody @Validated BillItemDetailQuery query) throws IOException {
+    billDetailBiz.billItemStatiticsDetailExport(query, response);
+    return ResponseUtil.success(null);
   }
 }
