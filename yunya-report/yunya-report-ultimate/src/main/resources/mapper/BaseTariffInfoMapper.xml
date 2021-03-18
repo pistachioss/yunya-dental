@@ -50,8 +50,11 @@
         FROM
         base_tariff_info
         <where>
+            <if test="itemType != null">
+                and item_type = #{itemType}
+            </if>
             <if test="categoryId != null">
-                category_id = #{categoryId}
+                and category_id = #{categoryId}
             </if>
         </where>
     </select>

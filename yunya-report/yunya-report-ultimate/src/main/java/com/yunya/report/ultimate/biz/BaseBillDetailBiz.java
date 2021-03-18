@@ -833,6 +833,17 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
+    Collection<Integer[]> items = query.getCategoryItems();
+    if (StringHelper.isNotEmpty(items)) {
+      Set<Integer> categoryIds = new HashSet<>();
+      Set<Integer> itemIds = new HashSet<>();
+      items.forEach(vo->{
+        categoryIds.add(vo[0]);
+        itemIds.add(vo[1]);
+      });
+      query.setCategoryIds(categoryIds);
+      query.setItemIds(itemIds);
+    }
     List<BillItemStatisticsVO> resultList = mapper.billItemStatistics(query);
     return new PageInfo<>(resultList);
   }
