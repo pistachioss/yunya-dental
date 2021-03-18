@@ -403,9 +403,16 @@ public class DiscountBiz {
                 query.getSaleChannelIds());
     }
 
-    public PageInfo<CouponActiveVo> getCouponPage(CouponActiveQuery query) {
+    public PageInfo<CouponActiveVo> getCouponActivePage(CouponActiveQuery query) {
         Page<CouponActiveVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
         couponMapper.listCouponActive(query.getCouponName(), query.getSoldChannelIds(), query.getActiveOrgIds());
+        return new PageInfo<>(page);
+    }
+
+    public PageInfo<CardActiveVo> getCardActivePage(Integer couponId, Integer saleChannelId, CouponDetailActiveQuery query){
+        Page<CardActiveVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        cardMapper.listCardActive(query.getPatientKeyword(), query.getActiveOrgIds(), query.getActiveStartDate(),query.getActiveEndDate(),
+                couponId, saleChannelId);
         return new PageInfo<>(page);
     }
 }
