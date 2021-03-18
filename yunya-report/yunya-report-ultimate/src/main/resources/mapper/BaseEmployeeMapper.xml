@@ -1,24 +1,46 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.report.ultimate.mapper.BaseEmployeeMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseEmployee" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <result column="user_id" property="userId" jdbcType="INTEGER" />
-    <result column="employee_name" property="employeeName" jdbcType="VARCHAR" />
-    <result column="gender" property="gender" jdbcType="TINYINT" />
-    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
-    <result column="work_status" property="workStatus" jdbcType="TINYINT" />
-    <result column="title" property="title" jdbcType="VARCHAR" />
-    <result column="post_level" property="postLevel" jdbcType="VARCHAR" />
-    <result column="bonus_coefficient" property="bonusCoefficient" jdbcType="DOUBLE" />
-    <result column="work_amount" property="workAmount" jdbcType="DOUBLE" />
-    <result column="work_number" property="workNumber" jdbcType="VARCHAR" />
-  </resultMap>
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseEmployeeMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseEmployee">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="user_id" property="userId" jdbcType="INTEGER"/>
+        <result column="employee_name" property="employeeName" jdbcType="VARCHAR"/>
+        <result column="gender" property="gender" jdbcType="TINYINT"/>
+        <result column="mobile" property="mobile" jdbcType="VARCHAR"/>
+        <result column="work_status" property="workStatus" jdbcType="TINYINT"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="post_level" property="postLevel" jdbcType="VARCHAR"/>
+        <result column="bonus_coefficient" property="bonusCoefficient" jdbcType="DOUBLE"/>
+        <result column="work_amount" property="workAmount" jdbcType="DOUBLE"/>
+        <result column="work_number" property="workNumber" jdbcType="VARCHAR"/>
+    </resultMap>
 
     <select id="selectByOrgId" resultType="com.yunya.models.report.BaseEmployee">
       select distinct be.* from base_employee be join base_user_post bup on be.user_id =  bup.user_id
       where bup.org_id = #{orgId}  and bup.post_name = '医生'
+    </select>
+    <!-- 根据ID列表查询用户信息 -->
+    <select id="selectUserInfoByIds" resultType="com.yunya.feign.system.vo.SysUserInfoDetail">
+        SELECT
+            be.user_id AS userId,
+            be.employee_name AS name,
+            be.mobile AS username,
+            be.mobile AS mobilePhone,
+            be.gender AS gender,
+            be.work_status AS workStatus,
+            be.title AS title,
+            be.post_level AS postLevel
+        FROM
+        base_employee be
+        <where>
+            <if test="userIds != null and userIds.size > 0">
+                AND be.user_id IN
+                <foreach collection="userIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>
