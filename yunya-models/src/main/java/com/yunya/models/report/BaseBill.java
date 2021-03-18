@@ -74,6 +74,12 @@ public class BaseBill {
     private Byte privilegeType;
 
     /**
+     * 优惠使用组织ID
+     */
+    @Column(name = "privilege_org_id")
+    private Integer privilegeOrgId;
+
+    /**
      * 优惠总额
      */
     @Column(name = "privilege_amount")
@@ -281,6 +287,24 @@ public class BaseBill {
      */
     public void setPrivilegeType(Byte privilegeType) {
         this.privilegeType = privilegeType;
+    }
+
+    /**
+     * 获取优惠使用组织ID
+     *
+     * @return privilegeOrgId - 优惠使用组织ID
+     */
+    public Integer getPrivilegeOrgId() {
+        return privilegeOrgId;
+    }
+
+    /**
+     * 设置优惠使用组织ID
+     *
+     * @param privilegeOrgId - 优惠使用组织ID
+     */
+    public void setPrivilegeOrgId(Integer privilegeOrgId) {
+        this.privilegeOrgId = privilegeOrgId;
     }
 
     /**
