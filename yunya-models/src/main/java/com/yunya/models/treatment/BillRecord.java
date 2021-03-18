@@ -59,6 +59,12 @@ public class BillRecord {
     private Byte privilegeType;
 
     /**
+     * 优惠使用门诊
+     * */
+    @Column(name = "privilege_org_id")
+    private Integer privilegeOrgId;
+
+    /**
      * 本单优惠总额
      */
     @Column(name = "privilege_amount")
@@ -282,6 +288,24 @@ public class BillRecord {
      */
     public void setPrivilegeType(Byte privilegeType) {
         this.privilegeType = privilegeType;
+    }
+
+    /**
+     * 获取优惠使用门诊
+     *
+     * @return privilegeOrgId - 优惠使用门诊
+     */
+    public Integer getPrivilegeOrgId() {
+        return privilegeOrgId;
+    }
+
+    /**
+     * 设置优惠使用门诊
+     *
+     * @param privilegeOrgId - 优惠使用门诊
+     */
+    public void setPrivilegeOrgId(Integer privilegeOrgId) {
+        this.privilegeOrgId = privilegeOrgId;
     }
 
     /**
