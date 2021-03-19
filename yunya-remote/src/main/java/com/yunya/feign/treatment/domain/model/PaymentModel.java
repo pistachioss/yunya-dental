@@ -32,4 +32,10 @@ public class PaymentModel implements Serializable {
   @NotNull(message = "入账金额不能为空！")
   @Min(value = 0, message = "输入金额不能小于0！")
   private BigDecimal amount;
+
+  /**
+   * 备注
+   */
+  @ApiModelProperty(value = "备注")
+  private String remarks;
 }
