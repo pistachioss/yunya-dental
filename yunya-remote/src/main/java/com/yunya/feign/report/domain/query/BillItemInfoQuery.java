@@ -42,18 +42,19 @@ public class BillItemInfoQuery extends PageQuery implements Serializable {
     @NotBlank(message = "查询结束时间不能为空！")
     private String endDate;
     /** 项目分类ID列表 */
-    @ApiModelProperty(value = "项目分类ID列表")
     private Collection<Integer> categoryIds;
     /** 项目类型（0-价目表；1-商品） */
     @ApiModelProperty(value = "项目类型（0-价目表；1-商品）", required = true)
     private Integer itemType;
     /** 项目ID列表 */
-    @ApiModelProperty(value = "项目ID列表")
     private Collection<Integer> itemIds;
-    /** 执行人ID列表*/
-    @ApiModelProperty(value = "执行人ID列表")
+    /** 员工ID列表*/
+    @ApiModelProperty(value = "员工ID列表")
     private Collection<Integer> employeeIds;
     /** 就职状态列表*/
     @ApiModelProperty(value = "就职状态列表")
     private Collection<Integer> workStatus;
+    /** 分类及项目列表 */
+    @ApiModelProperty(value = "分类及项目列表")
+    private Collection<Integer[]> categoryItems;
 }

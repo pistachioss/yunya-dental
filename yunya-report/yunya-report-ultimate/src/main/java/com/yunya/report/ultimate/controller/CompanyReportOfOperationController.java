@@ -137,9 +137,9 @@ public class CompanyReportOfOperationController {
    * @return List<ItemInfoVO>
    */
   @ApiOperation("根据项目分类ID查询全部项目列表")
-  @GetMapping(value = "/item/list/{categoryId}", name = "根据项目分类ID查询全部项目列表")
-  public ResponseResult<List<ItemInfoVO>> itemListByCategoryId(@PathVariable(value = "categoryId") Integer categoryId) {
-    List<ItemInfoVO> categoryList = tariffInfoBiz.findItemListByCategoryId(categoryId);
+  @GetMapping(value = "/item/list/{itemType}/{categoryId}", name = "根据项目分类ID查询全部项目列表")
+  public ResponseResult<List<ItemInfoVO>> itemListByCategoryId(@PathVariable(value = "itemType") Integer itemType, @PathVariable(value = "categoryId") Integer categoryId) {
+    List<ItemInfoVO> categoryList = tariffInfoBiz.findItemListByCategoryId(itemType, categoryId);
     return ResponseUtil.success(categoryList);
   }
 
