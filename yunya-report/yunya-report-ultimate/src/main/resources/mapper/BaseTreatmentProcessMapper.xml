@@ -567,7 +567,7 @@
         bp.mobile,
         bp.origin_type_name AS originTypeName,
 
-        case when bp.origin_type = 1 then betwo.name
+        case when bp.origin_type = 1 then betwo.employee_name
              when bp.origin_type = 2 then bptwo.name
              ELSE bpo.`name` END
              AS originName,
@@ -579,9 +579,9 @@
         FROM
         base_treatment_process btp
         LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-        LEFT JOIN base_employee betwo ON bp.origin_id = bee.user_id
-        LEFT JOIN base_patient bptwo ON bp.origin_id = bptwo.patient_id
         LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+        LEFT JOIN base_employee betwo ON bp.origin_id = betwo.user_id
+        LEFT JOIN base_patient bptwo ON bp.origin_id = bptwo.patient_id
         LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
         LEFT JOIN base_patient_origin bpo ON bp.origin_id = bpo.id
         LEFT JOIN (SELECT DISTINCT
