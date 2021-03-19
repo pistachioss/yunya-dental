@@ -124,9 +124,9 @@ public class CompanyReportOfOperationController {
    * @return List<ItemCategoryInfoVO>
    */
   @ApiOperation("根据项目类型（价目/商品）查询项目分类列表")
-  @GetMapping(value = "/item/category/{itemType}", name = "根据项目类型（价目/商品）查询项目分类列表")
-  public ResponseResult<List<ItemCategoryInfoVO>> itemCategoryList(@PathVariable(value = "itemType") Byte itemType) {
-    List<ItemCategoryInfoVO> categoryList = tariffInfoBiz.findItemCategoryList(itemType);
+  @PostMapping(value = "/item/categoryList", name = "根据项目类型（价目/商品）查询项目分类列表")
+  public ResponseResult<List<ItemCategoryInfoVO>> itemCategoryList(@RequestBody @Validated CategoryQuery query) {
+    List<ItemCategoryInfoVO> categoryList = tariffInfoBiz.findItemCategoryList(query.getItemType());
     return ResponseUtil.success(categoryList);
   }
 
@@ -137,9 +137,9 @@ public class CompanyReportOfOperationController {
    * @return List<ItemInfoVO>
    */
   @ApiOperation("根据项目分类ID查询全部项目列表")
-  @GetMapping(value = "/item/list/{itemType}/{categoryId}", name = "根据项目分类ID查询全部项目列表")
-  public ResponseResult<List<ItemInfoVO>> itemListByCategoryId(@PathVariable(value = "itemType") Integer itemType, @PathVariable(value = "categoryId") Integer categoryId) {
-    List<ItemInfoVO> categoryList = tariffInfoBiz.findItemListByCategoryId(itemType, categoryId);
+  @PostMapping(value = "/item/itemList", name = "根据项目分类ID查询全部项目列表")
+  public ResponseResult<List<ItemInfoVO>> itemListByCategoryId(@RequestBody @Validated CategoryQuery query) {
+    List<ItemInfoVO> categoryList = tariffInfoBiz.findItemListByCategoryId(query.getItemType(), query.getCategoryId());
     return ResponseUtil.success(categoryList);
   }
 

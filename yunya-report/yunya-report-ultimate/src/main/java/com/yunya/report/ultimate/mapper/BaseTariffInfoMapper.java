@@ -35,7 +35,7 @@ public interface BaseTariffInfoMapper extends Mapper<BaseTariffInfo> {
    * @param itemType
    * @return List<ItemCategoryInfoVO>
    */
-  List<ItemCategoryInfoVO> selectItemCategoryList(@Param("itemType") Byte itemType);
+  List<ItemCategoryInfoVO> selectItemCategoryList(@Param("itemType") Integer itemType);
 
   /**
    * 根据项目分类ID查询全部项目列表

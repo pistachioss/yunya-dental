@@ -33,7 +33,7 @@ public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffI
     return findItemCategoryList(null);
   }
 
-  public List<ItemCategoryInfoVO> findItemCategoryList(Byte itemType) {
+  public List<ItemCategoryInfoVO> findItemCategoryList(Integer itemType) {
     return tariffInfoMapper.selectItemCategoryList(itemType);
   }
 
