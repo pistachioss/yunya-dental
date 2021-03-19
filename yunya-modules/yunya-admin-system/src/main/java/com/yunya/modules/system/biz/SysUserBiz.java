@@ -231,7 +231,11 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       SysEmployee employeeResult = sysEmployeeMapper.selectByUserId(userId);
       SysEmployee sysEmployeeEntity = EntityUtils.build(form, SysEmployee.class);
       sysEmployeeEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(form.getName()));
-      if (!USER_RESIGNATION_STATUS.equals(form.getWorkStatus()) || 1 == userId) {
+      if (!USER_RESIGNATION_STATUS.equals(form.getWorkStatus())) {
+        sysEmployeeEntity.setLeaveTime("");
+        sysEmployeeEntity.setWorkStatus(form.getWorkStatus());
+      }
+      if (1 == userId) {
         sysEmployeeEntity.setLeaveTime("");
         sysEmployeeEntity.setWorkStatus((byte) 1);
       }

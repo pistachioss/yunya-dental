@@ -2506,7 +2506,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     private void setEmployeeLeaveInfo(AppointmentDimensionVo appoint ,List<LeaveInfoListVO> employeeLeaveInfos) {
         if (StringHelper.isNotEmpty(employeeLeaveInfos)) {
-            appoint.setLeaveInfos(employeeLeaveInfos);
+            Integer dentistId = appoint.getDentistId();
+            List<LeaveInfoListVO> collect = employeeLeaveInfos.stream().filter(
+                    entity -> entity.getUserId().equals(dentistId)).collect(Collectors.toList());
+            appoint.setLeaveInfos(collect);
         } else {
             appoint.setLeaveInfos(new ArrayList<>());
         }

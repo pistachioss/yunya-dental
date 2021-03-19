@@ -1,6 +1,5 @@
 package com.yunya.modules.treatment.biz;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
@@ -11,7 +10,6 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
-import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.form.ReferredForm;
 import com.yunya.feign.treatment.domain.form.ReferredInfoForm;
@@ -38,14 +36,11 @@ import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.mapper.ReferralRecordsInfoMapper;
 import com.yunya.modules.treatment.mapper.RegisteredMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 

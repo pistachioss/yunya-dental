@@ -4,13 +4,9 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
-import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
-import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentInfo4ListVO;
@@ -27,6 +23,8 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.BaseTreatmentProcess;
+import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.report.ultimate.mapper.BaseEmployeeMapper;
 import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import com.yunya.report.ultimate.mapper.BaseTreatmentProcessMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +50,11 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class BaseTreatmentProcessBiz
     extends BaseBiz<BaseTreatmentProcessMapper, BaseTreatmentProcess> {
+  /** 组织信息 */
+  @Autowired private BaseOrganizationMapper organizationMapper;
+  /** 用户信息 */
+  @Autowired private BaseEmployeeMapper employeeMapper;
 
-  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
   @Autowired private RemoteAppointmentFeign remoteAppointmentFeign;
   @Autowired private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
   @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
@@ -83,8 +84,11 @@ public class BaseTreatmentProcessBiz
       throws IOException {
     List<TreatmentRecordReportVO> list = mapper.selectTreatmentRecordReportVOList(query);
     ExcelUtil<TreatmentRecordReportVO> excelUtil = new ExcelUtil<>(TreatmentRecordReportVO.class);
-    String fileName =
-        excelUtil.getFileName(null, null, getAbbreviationById(query.getOrgId()), "就诊记录明细");
+    String fileName = "就诊记录明细";
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    if (organization != null) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
     excelUtil.exportExcel(response, list, "患者就诊记录", fileName);
   }
 
@@ -114,20 +118,12 @@ public class BaseTreatmentProcessBiz
     List<TreatmentMatchingRecordVO> list = mapper.selectTreatmentMatchingRecord(query);
     ExcelUtil<TreatmentMatchingRecordVO> excelUtil =
         new ExcelUtil<>(TreatmentMatchingRecordVO.class);
-    String fileName =
-        excelUtil.getFileName(null, null, getAbbreviationById(query.getOrgId()), "配诊记录表");
+    String fileName = "配诊记录表";
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    if (organization != null) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
     excelUtil.exportExcel(response, list, "配诊记录表", fileName);
-  }
-
-  /**
-   * 获取文件名
-   *
-   * @param orgId
-   * @return
-   */
-  private String getAbbreviationById(Integer orgId) {
-    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-    return organizationInfo.getAbbreviation();
   }
 
   /**
@@ -192,12 +188,11 @@ public class BaseTreatmentProcessBiz
     List<Integer> appointIds = new ArrayList<>();
     baseTreatmentProcessVOS.stream()
         .filter(
-            baseTreatmentProcessVO -> {
-              return null != baseTreatmentProcessVO.getAppointmentId()
-                  && null != baseTreatmentProcessVO.getAppointStatus()  // 兼容一代数据
-                  && baseTreatmentProcessVO.getAppointStatus() < 2
-                  && baseTreatmentProcessVO.getRegisteredId() == null;
-            })
+            baseTreatmentProcessVO ->
+                null != baseTreatmentProcessVO.getAppointmentId()
+                    && null != baseTreatmentProcessVO.getAppointStatus() // 兼容一代数据
+                    && baseTreatmentProcessVO.getAppointStatus() < 2
+                    && baseTreatmentProcessVO.getRegisteredId() == null)
         .forEach(
             baseTreatmentProcessVO -> {
               appointIds.add(baseTreatmentProcessVO.getAppointmentId());
@@ -212,13 +207,11 @@ public class BaseTreatmentProcessBiz
       List<SysUserInfoDetail> assistantInfos = null;
       if (StringHelper.isNotEmpty(appointmentListByIds)) {
         appointmentListByIds.forEach(
-            appointment -> {
-              assistantIds.add(appointment.getAssistantId());
-            });
+            appointment -> assistantIds.add(appointment.getAssistantId()));
         // 查询预约助手信息
         if (StringHelper.isNotEmpty(assistantIds)) {
           assistantInfos =
-              this.remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(assistantIds);
+              this.employeeMapper.selectUserInfoByIds(assistantIds);
         }
       }
       for (BaseTreatmentProcessVO appointmentUnDonePatientInfoVO : baseTreatmentProcessVOS) {
@@ -292,10 +285,9 @@ public class BaseTreatmentProcessBiz
     List<Integer> registerIds = new ArrayList<>();
     baseTreatmentProcessVOS.stream()
         .filter(
-            baseTreatmentProcessVO -> {
-              return null != baseTreatmentProcessVO.getRegisteredId()
-                  && baseTreatmentProcessVO.getTreatStatus() == 0;
-            })
+            baseTreatmentProcessVO ->
+                null != baseTreatmentProcessVO.getRegisteredId()
+                    && baseTreatmentProcessVO.getTreatStatus() == 0)
         .forEach(
             baseTreatmentProcessVO -> {
               registerIds.add(baseTreatmentProcessVO.getRegisteredId());
@@ -351,15 +343,14 @@ public class BaseTreatmentProcessBiz
             });
     if (StringHelper.isNotEmpty(treatmentIds)) {
       List<TreatmentRecordExtendVO> treatmentRecordExtendVOS =
-          remoteTreatmentServiceFeign.findTreatmentRecordByIds(
-              treatmentIds.stream().collect(Collectors.toSet()));
+          remoteTreatmentServiceFeign.findTreatmentRecordByIds(new HashSet<>(treatmentIds));
       // 去重
       treatmentRecordExtendVOS =
           treatmentRecordExtendVOS.stream()
               .collect(
                   Collectors.collectingAndThen(
                       Collectors.toCollection(
-                          () -> new TreeSet<>(Comparator.comparing(item -> item.getId()))),
+                          () -> new TreeSet<>(Comparator.comparing(TreatmentRecord::getId))),
                       ArrayList::new));
       // 获取就诊记录ID
       List<Integer> registeredIds =
