@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -12,13 +13,16 @@ import java.util.List;
  * @author: xy
  * @date 2021/3/17 14:27
  **/
-@ApiModel(value = "公司端/门诊端-产品激活报表参数")
+@ApiModel(value = "公司端/门诊端-产品激活明细参数")
 @Data
-public class CouponActiveQuery extends PageQuery {
+public class CouponDetailActiveQuery extends PageQuery {
     @ApiModelProperty(value = "产品名称")
-    private String couponName;
-    @ApiModelProperty(value = "销售渠道")
-    private List<Integer> soldChannelIds;
+    private String patientKeyword;
     @ApiModelProperty(value = "激活门诊")
     private List<Integer> activeOrgIds;
+    @ApiModelProperty(value = "激活开始日期")
+    private LocalDate activeStartDate;
+    @ApiModelProperty(value = "激活结束日期")
+    private LocalDate activeEndDate;
+
 }

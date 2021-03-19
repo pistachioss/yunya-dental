@@ -643,4 +643,38 @@
             FROM base_card bc
             WHERE bc.card_id = #{cardId}
     </select>
+
+    <select id="listCardActive" resultType="com.yunya.feign.report.domain.vo.CardActiveVo">
+        select
+            `bp`.`name`                                                    as `patientName`,
+            `bc`.`card_number`,
+            date_format(`bc`.`active_date`, '%Y-%m-%d')                    as `activeDate`,
+            (select
+                 `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`active_org_id`)                        as `activeOrgName`,
+            (select
+                 `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`active_user_id`)                      as `operateUser`,
+            IF(`bc`.`status` in (3, 4), '是', '否') as `used`
+        from `base_card` `bc`
+            left join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+            inner join `base_patient` `bp` on `bp`.`patient_id` = `bc`.`patient_id`
+        where `bc`.`coupon_id` = #{couponId}
+            and `bc`.`sale_channel_id` = #{saleChannelId}
+            <if test="patientKeyword != null and patientKeyword != ''">
+                and bp.name like concat('%', #{patientKeyword}, '%')
+            </if>
+            <if test="activeStartDate != null and activeEndDate != null">
+                and (DATE_FORMAT(`bc`.`active_date`,'%Y-%m-%d') between DATE_FORMAT(#{activeStartDate},'%Y-%m-%d') and DATE_FORMAT(#{activeEndDate},'%Y-%m-%d'))
+            </if>
+            <if test="activeOrgIds != null and activeOrgIds.size() > 0">
+                and `bc`.`active_org_id` in
+                <foreach collection="activeOrgIds" item="item" open="(" separator="," close=")">
+                     #{item}
+                </foreach>
+            </if>
+        order by `bc`.`active_date` desc
+    </select>
 </mapper>
