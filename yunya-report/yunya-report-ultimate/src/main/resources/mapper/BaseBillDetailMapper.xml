@@ -2315,17 +2315,20 @@
             DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
             bb.bill_num AS billNum,
             bbd.quantity,
-            bo.employee_name as regDentistName,
+            bem.employee_name as regDentistName,
             be.employee_name as executorName,
             IFNULL(bbd.price*bbd.quantity-bbd.discount_amount,0) amount,
             bp.name AS patientName,
-            bp.mobile
+            bp.patient_id as patientId,
+            bp.mobile,
+            bo.abbreviation
         FROM
             base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         LEFT JOIN base_treatment_process btp ON bb.treatment_id=btp.treatment_id
         LEFT JOIN base_patient bp ON bb.patient_id=bp.patient_id
-        LEFT JOIN base_employee bo ON btp.registered_dentist_id = bo.user_id
+        LEFT JOIN base_organization bo ON bo.org_id=bbd.org_id
+        LEFT JOIN base_employee bem ON btp.registered_dentist_id = bem.user_id
         LEFT JOIN base_employee be ON bbd.executor_id = be.user_id
         <where>
             AND bb.bill_date IS NOT NULL

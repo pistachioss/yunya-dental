@@ -26,8 +26,7 @@ import java.util.Collection;
 @EqualsAndHashCode(callSuper = true)
 public class BillItemDetailQuery extends PageQuery implements Serializable {
   /** 门诊ID */
-  @ApiModelProperty(value = "门诊ID", required = true)
-  @NotNull(message = "门诊ID不能为空！")
+  @ApiModelProperty(value = "门诊ID")
   private Integer orgId;
   /** 时间类型 */
   @ApiModelProperty(value = "时间类型:0-日；1-月；2-年", required = true)
