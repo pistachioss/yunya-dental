@@ -101,12 +101,15 @@
         CURDATE()) AS age
         FROM
         patient_base_info pbi
-        where
+        WHERE
             concat(IFNULL(pbi.`name`,''),
             IFNULL(pbi.medical_number,''),
             IFNULL(pbi.pinyin_name,''),
             IFNULL(pbi.mobile,''))
             like concat(concat('%', rtrim(#{form.condition})), '%')
+        ORDER BY
+        ABS(
+        LENGTH( pbi.`name` ) - LENGTH( #{form.condition} ))
     </select>
 
     <!-- 根据患者id集合查询患者list -->
