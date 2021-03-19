@@ -37,13 +37,13 @@
         `base_card`
         (`card_id`, `coupon_id`, `card_number`,`card_password`, `allocate_org_id`, `patient_id`,`active_user_id`, `active_org_id`
          , `seller_user_id`, `allocate_date`, `status`, `generate_date`, `sold_date`, `sold_target`, `sold_phone_number`
-         ,`sold_type`, `sold_way`, `pay_id`, `pay_name`, `charge_status`, `active_date`, `activation_deadline`, `first_use_date`)
+         ,`sold_type`, `sold_way`, `pay_id`, `pay_name`, `sale_channel_id`, `sale_channel_name`, `charge_status`, `active_date`, `activation_deadline`, `first_use_date`)
         values
         <foreach collection="list" item="item" separator=",">
             (#{item.cardId}, #{item.couponId}, #{item.cardNumber},#{item.cardPassword}, #{item.allocateOrgId}, #{item.patientId}
             , #{item.activeUserId}, #{item.activeOrgId}, #{item.sellerUserId}, #{item.allocateDate}, #{item.status}
             , #{item.generateDate}, #{item.soldDate}, #{item.soldTarget}, #{item.soldPhoneNumber}, #{item.soldType}
-            , #{item.soldWay}, #{item.payId}, #{item.payName}, #{item.chargeStatus}, #{item.activeDate}, #{item.activationDeadline}
+            , #{item.soldWay}, #{item.payId}, #{item.payName}, #{item.saleChannelId},#{item.saleChannelName},#{item.chargeStatus}, #{item.activeDate}, #{item.activationDeadline}
             , #{item.firstUseDate})
         </foreach>
     </insert>
@@ -200,29 +200,7 @@
 
     <select id="getExistData" resultMap="BaseResultMap">
         select
-            `card_id`,
-            `coupon_id`,
-            `card_number`,
-            `card_password`,
-            `allocate_org_id`,
-            `patient_id`,
-            `active_user_id`,
-            `active_org_id`,
-            `seller_user_id`,
-            `allocate_date`,
-            `status`,
-            `generate_date`,
-            `sold_date`,
-            `sold_target`,
-            `sold_phone_number`,
-            `sold_type`,
-            `sold_way`,
-            `pay_id`,
-            `pay_name`,
-            `charge_status`,
-            `active_date`,
-            `activation_deadline`,
-            `first_use_date`
+            *
         from
             `base_card`
         where `card_id` in
