@@ -263,7 +263,15 @@ public class DiscountController {
 
 	@ApiOperation(value = "公司端/门诊端-报表统计-市场报表-产品激活报表")
 	@PostMapping("/coupon/activation/page")
-	public ResponseResult<PageInfo<OnceCardUseVo>> getUseRecord(@RequestBody CouponActiveQuery query) {
-		return ResponseUtil.success();
+	public ResponseResult<PageInfo<CouponActiveVo>> getCouponActivation(@RequestBody CouponActiveQuery query) {
+		return ResponseUtil.success(discountBiz.getCouponActivePage(query));
+	}
+
+	@ApiOperation(value = "公司端/门诊端-报表统计-市场报表-产品激活明细")
+	@PostMapping("/coupon/{couponId}/card/channel/{saleChannelId}/activation/page")
+	public ResponseResult<PageInfo<CardActiveVo>> getCouponActivationDetail(@PathVariable(value = "couponId") Integer couponId,
+																			  @PathVariable(value = "saleChannelId") Integer saleChannelId,
+																			  @RequestBody CouponDetailActiveQuery query) {
+		return ResponseUtil.success(discountBiz.getCardActivePage(couponId, saleChannelId, query));
 	}
 }
