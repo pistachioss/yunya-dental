@@ -592,16 +592,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     resultData.setTotalClinicArrearsReceivedWorkload(workloadInfo.getArrearsReceivedWorkload());
     resultData.setTotalClinicArrearsCouponWorkload(workloadInfo.getArrearsCouponWorkload());
     resultData.setTotalClinicArrearsFreePaymentWorkload(workloadInfo.getArrearsFreePayWorkload());
-    resultData.setTotalClinicReceivedNotWorkload(
-        workloadInfo.getFirstReceivedAmount().subtract(workloadInfo.getFirstReceivedWorkload()));
-    resultData.setTotalClinicArrearsReceivedNotWorkload(
-        workloadInfo
-            .getArrearsReceivedAmount()
-            .subtract(workloadInfo.getArrearsReceivedWorkload()));
-    resultData.setTotalBeCollectedNotWorkload(
-        workloadInfo
-            .getBeCollectedReceivedAmount()
-            .subtract(workloadInfo.getBeCollectedReceivedWorkload()));
+    resultData.setTotalClinicReceivedNotWorkload(workloadInfo.getFirstReceivedNotWorkload());
+    resultData.setTotalClinicArrearsReceivedNotWorkload(workloadInfo.getArrearsNotWorkload());
+    resultData.setTotalBeCollectedNotWorkload(workloadInfo.getBeCollectedNotWorkload());
     return resultData;
   }
 
@@ -1019,5 +1012,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public List<BaseBillDetailToWorkloadVO> findBillDetailForWorkload(Integer billId) {
     return mapper.selectBillDetailForWorkload(billId);
+  }
+
+  /**
+   * 根据订单ID查询订单明细非工作量
+   *
+   * @param billId 订单ID
+   * @return list
+   */
+  public List<BaseBillDetailToWorkloadVO> findBillDetailForNotWorkload(Integer billId) {
+    return mapper.selectBillDetailForNotWorkload(billId);
   }
 }

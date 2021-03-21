@@ -26,8 +26,7 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.*;
 
-import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
-import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
+import static com.yunya.framework.common.constant.BusinessConstants.*;
 
 /**
  * 简介: 账单收费记录业务层
@@ -60,15 +59,19 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     BigDecimal firstReceivedWorkload = BigDecimal.ZERO;
     BigDecimal firstFreePayWorkload = BigDecimal.ZERO;
     BigDecimal firstCouponWorkload = BigDecimal.ZERO;
+    BigDecimal firstReceivedNotWorkload = BigDecimal.ZERO;
     BigDecimal beCollectedReceivedAmount = BigDecimal.ZERO;
     BigDecimal beCollectedReceivedWorkload = BigDecimal.ZERO;
     BigDecimal beCollectedFreePayWorkload = BigDecimal.ZERO;
     BigDecimal beCollectedCouponWorkload = BigDecimal.ZERO;
+    BigDecimal beCollectedReceivedNotWorkload = BigDecimal.ZERO;
     BigDecimal arrearsReceivedAmount = BigDecimal.ZERO;
     BigDecimal arrearsReceivedWorkload = BigDecimal.ZERO;
     BigDecimal arrearsFreePayWorkload = BigDecimal.ZERO;
     BigDecimal arrearsCouponWorkload = BigDecimal.ZERO;
     BigDecimal totalRefundWorkload = BigDecimal.ZERO;
+    BigDecimal arrearsReceivedNotWorkload = BigDecimal.ZERO;
+
     List<BillIdAndBillPayIdVO> vos = mapper.selectBillIdsAndBillPayIds(query);
     if (StringHelper.isNotEmpty(vos)) {
       Set<Integer> billIds = new HashSet<>();
@@ -85,8 +88,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         Integer billPayId = vo.getBillPayId();
         BigDecimal receivedAmount = vo.getReceivedAmount();
         // 开单明细工作量列表
-        List<BaseBillDetailToWorkloadVO> billDetailToWorkloadVOS =
+        List<BaseBillDetailToWorkloadVO> detailForWorkloads =
             billDetailBiz.findBillDetailForWorkload(billId);
+        List<BaseBillDetailToWorkloadVO> detailForNotWorkloads =
+            billDetailBiz.findBillDetailForNotWorkload(billId);
         // 收费使用免单金额
         BigDecimal freePayAmount = billPayDetailMapper.selectFreePayAmount(billPayId);
         if (billOrgId.equals(payeeOrgId)) {
@@ -94,42 +99,53 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
             firstReceivedAmount = firstReceivedAmount.add(receivedAmount);
             firstReceivedWorkload =
                 calculateReceivedWorkload(
-                    firstReceivedWorkload, receivedAmount, actualAmount, billDetailToWorkloadVOS);
+                    firstReceivedWorkload, receivedAmount, actualAmount, detailForWorkloads);
             firstFreePayWorkload =
                 calculateFreePayWorkload(
-                    firstFreePayWorkload, actualAmount, freePayAmount, billDetailToWorkloadVOS);
+                    firstFreePayWorkload, freePayAmount, actualAmount, detailForWorkloads);
+            firstReceivedNotWorkload =
+                calculateReceivedNotWorkload(
+                    firstReceivedNotWorkload, receivedAmount, actualAmount, detailForNotWorkloads);
           } else {
             arrearsReceivedAmount = arrearsReceivedAmount.add(receivedAmount);
             arrearsReceivedWorkload =
                 calculateReceivedWorkload(
-                    arrearsReceivedWorkload, receivedAmount, actualAmount, billDetailToWorkloadVOS);
+                    arrearsReceivedWorkload, receivedAmount, actualAmount, detailForWorkloads);
             arrearsFreePayWorkload =
                 calculateFreePayWorkload(
-                    arrearsFreePayWorkload, actualAmount, freePayAmount, billDetailToWorkloadVOS);
+                    arrearsFreePayWorkload, freePayAmount, actualAmount, detailForWorkloads);
+            arrearsReceivedNotWorkload =
+                calculateReceivedNotWorkload(
+                    arrearsReceivedNotWorkload,
+                    receivedAmount,
+                    actualAmount,
+                    detailForNotWorkloads);
           }
         } else {
           beCollectedReceivedAmount = beCollectedReceivedAmount.add(receivedAmount);
           beCollectedReceivedWorkload =
               calculateReceivedWorkload(
-                  beCollectedReceivedWorkload,
-                  receivedAmount,
-                  actualAmount,
-                  billDetailToWorkloadVOS);
+                  beCollectedReceivedWorkload, receivedAmount, actualAmount, detailForWorkloads);
           beCollectedFreePayWorkload =
               calculateFreePayWorkload(
-                  beCollectedFreePayWorkload, actualAmount, freePayAmount, billDetailToWorkloadVOS);
+                  beCollectedFreePayWorkload, freePayAmount, actualAmount, detailForWorkloads);
+          beCollectedReceivedNotWorkload =
+              calculateReceivedNotWorkload(
+                  beCollectedReceivedNotWorkload,
+                  receivedAmount,
+                  actualAmount,
+                  detailForNotWorkloads);
         }
         if (billOrgId.equals(privilegeOrgId)) {
           if (billDate.equals(privilegeDate)) {
-            firstCouponWorkload =
-                calculateCouponWorkload(firstCouponWorkload, billDetailToWorkloadVOS);
+            firstCouponWorkload = calculateCouponWorkload(firstCouponWorkload, detailForWorkloads);
           } else {
             arrearsCouponWorkload =
-                calculateCouponWorkload(arrearsCouponWorkload, billDetailToWorkloadVOS);
+                calculateCouponWorkload(arrearsCouponWorkload, detailForWorkloads);
           }
         } else {
           beCollectedCouponWorkload =
-              calculateCouponWorkload(beCollectedCouponWorkload, billDetailToWorkloadVOS);
+              calculateCouponWorkload(beCollectedCouponWorkload, detailForWorkloads);
         }
       }
       totalRefundWorkload = refundDetailMapper.selectTotalRefundWorkload(billIds);
@@ -151,6 +167,34 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   }
 
   /**
+   * 计算费工作量
+   *
+   * @param receivedNotWorkload
+   * @param receivedAmount
+   * @param actualAmount
+   * @param detailForNotWorkloads
+   * @return
+   */
+  private BigDecimal calculateReceivedNotWorkload(
+      BigDecimal receivedNotWorkload,
+      BigDecimal receivedAmount,
+      BigDecimal actualAmount,
+      List<BaseBillDetailToWorkloadVO> detailForNotWorkloads) {
+    if (actualAmount.compareTo(BigDecimal.ZERO) > 0) {
+      if (StringHelper.isNotEmpty(detailForNotWorkloads)) {
+        for (BaseBillDetailToWorkloadVO vo : detailForNotWorkloads) {
+          receivedNotWorkload =
+              receivedNotWorkload.add(
+                  vo.getBillDetailWorkload()
+                      .divide(actualAmount, 4, BigDecimal.ROUND_HALF_UP)
+                      .multiply(receivedAmount));
+        }
+      }
+    }
+    return receivedNotWorkload;
+  }
+
+  /**
    * 计算首次收费补入工作量
    *
    * @param firstCouponWorkload 首次收费补入工作量
@@ -166,32 +210,32 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   }
 
   /**
-   * 计算首次收费免单工作量合计
+   * 计算收费免单工作量合计
    *
-   * @param firstFreePayWorkload 首次收费免单工作量
+   * @param freePayWorkload 收费免单工作量
    * @param freePayAmount 收费免单金额
    * @param actualAmount 实收总和
-   * @param billDetailToWorkloads 首次收费订单工作量明细
-   * @return BigDecimal - 首次收费免单工作量
+   * @param billDetailToWorkloads 收费订单工作量明细
+   * @return BigDecimal - 收费免单工作量
    */
   private BigDecimal calculateFreePayWorkload(
-      BigDecimal firstFreePayWorkload,
+      BigDecimal freePayWorkload,
       BigDecimal freePayAmount,
       BigDecimal actualAmount,
       List<BaseBillDetailToWorkloadVO> billDetailToWorkloads) {
     if (actualAmount.compareTo(BigDecimal.ZERO) > 0) {
       for (BaseBillDetailToWorkloadVO vo : billDetailToWorkloads) {
         BigDecimal billDetailWorkload = vo.getBillDetailWorkload();
-        if (billDetailWorkload.compareTo(BigDecimal.ZERO) > 0) {
-          firstFreePayWorkload =
-              firstFreePayWorkload.add(
+        if (freePayAmount.compareTo(BigDecimal.ZERO) > 0) {
+          freePayWorkload =
+              freePayWorkload.add(
                   billDetailWorkload
                       .divide(actualAmount, 4, BigDecimal.ROUND_HALF_UP)
                       .multiply(freePayAmount));
         }
       }
     }
-    return firstFreePayWorkload;
+    return freePayWorkload;
   }
 
   /**

@@ -112,6 +112,6 @@
         base_bill_pay_detail bbpd
         where
           bbpd.account_item_id IN ( 23, 26 )
-          AND  bbpd.bill_pay_id = #{billPayId}
+          AND bbpd.bill_pay_id = #{billPayId}
     </select>
 </mapper>

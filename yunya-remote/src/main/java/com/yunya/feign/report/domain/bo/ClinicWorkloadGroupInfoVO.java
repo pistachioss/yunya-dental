@@ -59,4 +59,13 @@ public class ClinicWorkloadGroupInfoVO implements Serializable {
   /** 退费工作量总和 */
   @ApiModelProperty("退费工作量总和")
   private BigDecimal totalRefundWorkload;
+  /** 首次收费非工作量 */
+  @ApiModelProperty("首次收费非工作量")
+  private BigDecimal firstReceivedNotWorkload;
+  /** 收欠费费工作量 */
+  @ApiModelProperty("收欠费费工作量")
+  private BigDecimal arrearsNotWorkload;
+  /** 被代收非工作量 */
+  @ApiModelProperty("被代收非工作量")
+  private BigDecimal beCollectedNotWorkload;
 }

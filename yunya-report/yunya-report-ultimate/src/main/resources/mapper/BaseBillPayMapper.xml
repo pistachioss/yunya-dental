@@ -1746,16 +1746,16 @@
     <!-- 根据条件查询收费记录ID、订单ID列表 -->
     <select id="selectBillIdsAndBillPayIds" resultType="com.yunya.feign.report.domain.vo.BillIdAndBillPayIdVO">
         SELECT
-        billPayId,
-        receivedAmount,
-        payeeOrgId,
-        payeeDate,
-        billOrgId,
-        billId,
-        billDate,
-        actualAmount,
-        privilegeOrgId,
-        privilegeDate
+        bbp.billPayId,
+        bbp.receivedAmount,
+        bbp.payeeOrgId,
+        bbp.payeeDate,
+        bbp.billOrgId,
+        bbp.billId,
+        bbp.billDate,
+        bbp.actualAmount,
+        bbp.privilegeOrgId,
+        bbp.privilegeDate
         FROM
         (
         SELECT

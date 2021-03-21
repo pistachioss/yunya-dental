@@ -2440,4 +2440,17 @@
             bbd.executor_id IS NOT NULL
             AND bbd.bill_id = #{billId}
     </select>
+    <!-- 根据订单ID查询计算非工作量订单明细 -->
+    <select id="selectBillDetailForNotWorkload"
+            resultType="com.yunya.feign.report.domain.vo.BaseBillDetailToWorkloadVO">
+         SELECT
+            bbd.bill_detail_id AS billDetailId,
+            IFNULL(( bbd.price * bbd.quantity ) - bbd.discount_amount , 0) AS billDetailWorkload,
+            bbd.coupon_workload AS billDetailCouponWorkload
+        FROM
+            base_bill_detail bbd
+        WHERE
+            bbd.executor_id IS NULL
+            AND bbd.bill_id = #{billId}
+    </select>
 </mapper>

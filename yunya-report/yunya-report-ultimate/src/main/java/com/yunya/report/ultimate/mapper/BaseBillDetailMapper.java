@@ -251,4 +251,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return list
    */
   List<BaseBillDetailToWorkloadVO> selectBillDetailForWorkload(@Param("billId") Integer billId);
+
+  /**
+   * 根据订单ID查询计算非工作量订单明细
+   *
+   * @param billId 订单ID
+   * @return list
+   */
+  List<BaseBillDetailToWorkloadVO> selectBillDetailForNotWorkload(@Param("billId") Integer billId);
 }
