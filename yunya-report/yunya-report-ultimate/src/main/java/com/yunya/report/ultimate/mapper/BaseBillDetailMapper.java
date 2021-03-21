@@ -6,8 +6,10 @@ import com.yunya.models.report.BaseBillDetail;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
@@ -90,7 +92,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return List<EmployeeReceivedDetailWorkloadVO>
    */
   List<EmployeeReceivedDetailWorkloadVO> selectEmployeeFreePaymentDetailList(
-          @Param("query") EmployeeFreePaymentWorkloadDetailQuery query);
+      @Param("query") EmployeeFreePaymentWorkloadDetailQuery query);
 
   /**
    * 根据条件查询员工补入工作量明细列表
@@ -179,7 +181,6 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<BaseBillDetail> selectBillDetailByQuery(@Param("query") EmployeeWorkloadQuery query);
 
-
   /**
    * 根据账单id查询账单详情列表
    *
@@ -189,15 +190,65 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   List<BaseBillDetail> selectBillDetailByBillIds(@Param("billIds") Collection<Integer> billIds);
 
   List<EmployeeFreepaymentWorkloadDetailVO> selectEmployeeFreepaymentWorkloadDetailList(
-          @Param("query") EmployeePersonalWorkloadDetailQuery query,
-          @Param("billIds") Collection<Integer> billIds,
-          @Param("payIds") Collection<Integer> payIds);
+      @Param("query") EmployeePersonalWorkloadDetailQuery query,
+      @Param("billIds") Collection<Integer> billIds,
+      @Param("payIds") Collection<Integer> payIds);
 
-  List<OperationDataBusinessGoalVO> selectWorkloadCompletedList(@Param("query") DataStatisticsQuery query);
+  /**
+   * 运营综合信息
+   *
+   * @param query 查询条件
+   * @return
+   */
+  List<OperationDataBusinessGoalVO> selectWorkloadCompletedList(
+      @Param("query") DataStatisticsQuery query);
 
+  /**
+   * 个人工作量列表
+   *
+   * @param query 查询条件
+   * @return
+   */
   List<PersonalWorkloadVO> selectPersonalWorkloadList(@Param("query") EmployeeWorkloadQuery query);
 
+  /**
+   * 开单项目统计
+   *
+   * @param query 查询条件
+   * @return
+   */
   List<BillItemStatisticsVO> billItemStatistics(@Param("query") BillItemInfoQuery query);
 
-  List<BillItemStatisticsDetailVO> billItemStatisticsDetail(@Param("query") BillItemDetailQuery query);
+  /**
+   * 开单明细统计
+   *
+   * @param query 查询条件
+   * @return
+   */
+  List<BillItemStatisticsDetailVO> billItemStatisticsDetail(
+      @Param("query") BillItemDetailQuery query);
+
+  /**
+   * 根据订单ID列表查询工作量总和
+   *
+   * @param billIds 订单ID列表
+   * @return BigDecimal
+   */
+  BigDecimal selectTotalWorkload(@Param("billIds") Set<Integer> billIds);
+
+  /**
+   * 根据条件查询补入工作量总和
+   *
+   * @param billIds 订单ID列表
+   * @return BigDecimal
+   */
+  BigDecimal selectTotalCouponWorkload(@Param("billIds") Set<Integer> billIds);
+
+  /**
+   * 根据订单ID查询计算工作量订单明细
+   *
+   * @param billId 订单ID
+   * @return list
+   */
+  List<BaseBillDetailToWorkloadVO> selectBillDetailForWorkload(@Param("billId") Integer billId);
 }

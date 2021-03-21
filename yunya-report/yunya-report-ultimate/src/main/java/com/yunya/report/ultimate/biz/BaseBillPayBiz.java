@@ -2,6 +2,7 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.bo.ClinicWorkloadGroupInfoVO;
 import com.yunya.feign.report.domain.query.BillPayRecordQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.StatementBillChargeDetailInfoQuery;
@@ -14,6 +15,7 @@ import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.BaseBillPayDetailMapper;
 import com.yunya.report.ultimate.mapper.BaseBillPayMapper;
 import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
+import com.yunya.report.ultimate.mapper.BaseRefundDetailMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,8 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
@@ -38,11 +39,183 @@ import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM
  */
 @Service
 public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
-
+  /** 开单明细 */
+  @Autowired private BaseBillDetailBiz billDetailBiz;
   /** 收费记录明细 */
   @Autowired private BaseBillPayDetailMapper billPayDetailMapper;
   /** 组织 */
   @Autowired private BaseOrganizationMapper organizationMapper;
+  /** 退费订单明细 */
+  @Autowired private BaseRefundDetailMapper refundDetailMapper;
+
+  /**
+   * 构建门诊工作量相关信息
+   *
+   * @param query 查询条件
+   * @return 门诊工作量
+   */
+  public ClinicWorkloadGroupInfoVO generateClinicWorkloadInfo(DataStatisticsQuery query) {
+    ClinicWorkloadGroupInfoVO resultData = new ClinicWorkloadGroupInfoVO();
+    BigDecimal firstReceivedAmount = BigDecimal.ZERO;
+    BigDecimal firstReceivedWorkload = BigDecimal.ZERO;
+    BigDecimal firstFreePayWorkload = BigDecimal.ZERO;
+    BigDecimal firstCouponWorkload = BigDecimal.ZERO;
+    BigDecimal beCollectedReceivedAmount = BigDecimal.ZERO;
+    BigDecimal beCollectedReceivedWorkload = BigDecimal.ZERO;
+    BigDecimal beCollectedFreePayWorkload = BigDecimal.ZERO;
+    BigDecimal beCollectedCouponWorkload = BigDecimal.ZERO;
+    BigDecimal arrearsReceivedAmount = BigDecimal.ZERO;
+    BigDecimal arrearsReceivedWorkload = BigDecimal.ZERO;
+    BigDecimal arrearsFreePayWorkload = BigDecimal.ZERO;
+    BigDecimal arrearsCouponWorkload = BigDecimal.ZERO;
+    BigDecimal totalRefundWorkload = BigDecimal.ZERO;
+    List<BillIdAndBillPayIdVO> vos = mapper.selectBillIdsAndBillPayIds(query);
+    if (StringHelper.isNotEmpty(vos)) {
+      Set<Integer> billIds = new HashSet<>();
+      for (BillIdAndBillPayIdVO vo : vos) {
+        Integer billId = vo.getBillId();
+        billIds.add(billId);
+        Integer billOrgId = vo.getBillOrgId();
+        Date billDate = vo.getBillDate();
+        BigDecimal actualAmount = vo.getActualAmount();
+        Integer privilegeOrgId = vo.getPrivilegeOrgId();
+        Date privilegeDate = vo.getPrivilegeDate();
+        Integer payeeOrgId = vo.getPayeeOrgId();
+        Date payeeDate = vo.getPayeeDate();
+        Integer billPayId = vo.getBillPayId();
+        BigDecimal receivedAmount = vo.getReceivedAmount();
+        // 开单明细工作量列表
+        List<BaseBillDetailToWorkloadVO> billDetailToWorkloadVOS =
+            billDetailBiz.findBillDetailForWorkload(billId);
+        // 收费使用免单金额
+        BigDecimal freePayAmount = billPayDetailMapper.selectFreePayAmount(billPayId);
+        if (billOrgId.equals(payeeOrgId)) {
+          if (billDate.equals(payeeDate)) {
+            firstReceivedAmount = firstReceivedAmount.add(receivedAmount);
+            firstReceivedWorkload =
+                calculateReceivedWorkload(
+                    firstReceivedWorkload, receivedAmount, actualAmount, billDetailToWorkloadVOS);
+            firstFreePayWorkload =
+                calculateFreePayWorkload(
+                    firstFreePayWorkload, freePayAmount, actualAmount, billDetailToWorkloadVOS);
+          } else {
+            arrearsReceivedAmount = arrearsReceivedAmount.add(receivedAmount);
+            arrearsReceivedWorkload =
+                calculateReceivedWorkload(
+                    arrearsReceivedWorkload, receivedAmount, actualAmount, billDetailToWorkloadVOS);
+            arrearsFreePayWorkload =
+                calculateFreePayWorkload(
+                    arrearsFreePayWorkload, freePayAmount, actualAmount, billDetailToWorkloadVOS);
+          }
+        } else {
+          beCollectedReceivedAmount = beCollectedReceivedAmount.add(receivedAmount);
+          beCollectedReceivedWorkload =
+              calculateReceivedWorkload(
+                  beCollectedReceivedWorkload,
+                  receivedAmount,
+                  actualAmount,
+                  billDetailToWorkloadVOS);
+          beCollectedFreePayWorkload =
+              calculateFreePayWorkload(
+                  beCollectedFreePayWorkload, freePayAmount, actualAmount, billDetailToWorkloadVOS);
+        }
+        if (billOrgId.equals(privilegeOrgId)) {
+          if (billDate.equals(privilegeDate)) {
+            firstCouponWorkload =
+                calculateCouponWorkload(firstCouponWorkload, billDetailToWorkloadVOS);
+          } else {
+            arrearsCouponWorkload =
+                calculateCouponWorkload(arrearsCouponWorkload, billDetailToWorkloadVOS);
+          }
+        } else {
+          beCollectedCouponWorkload =
+              calculateCouponWorkload(beCollectedCouponWorkload, billDetailToWorkloadVOS);
+        }
+      }
+      totalRefundWorkload = refundDetailMapper.selectTotalRefundWorkload(billIds);
+    }
+    resultData.setFirstReceivedAmount(firstReceivedAmount);
+    resultData.setFirstReceivedWorkload(firstReceivedWorkload);
+    resultData.setFirstFreePayWorkload(firstFreePayWorkload);
+    resultData.setFirstCouponWorkload(firstCouponWorkload);
+    resultData.setBeCollectedReceivedAmount(beCollectedReceivedAmount);
+    resultData.setBeCollectedReceivedWorkload(beCollectedReceivedWorkload);
+    resultData.setBeCollectedFreePayWorkload(beCollectedFreePayWorkload);
+    resultData.setBeCollectedCouponWorkload(beCollectedCouponWorkload);
+    resultData.setArrearsReceivedAmount(arrearsReceivedAmount);
+    resultData.setArrearsReceivedWorkload(arrearsReceivedWorkload);
+    resultData.setArrearsFreePayWorkload(arrearsFreePayWorkload);
+    resultData.setArrearsCouponWorkload(arrearsCouponWorkload);
+    resultData.setTotalRefundWorkload(totalRefundWorkload);
+    return resultData;
+  }
+
+  /**
+   * 计算首次收费补入工作量
+   *
+   * @param firstCouponWorkload 首次收费补入工作量
+   * @param billDetailToWorkloads 订单明细
+   * @return BigDecimal - 首次收费补入工作量
+   */
+  private BigDecimal calculateCouponWorkload(
+      BigDecimal firstCouponWorkload, List<BaseBillDetailToWorkloadVO> billDetailToWorkloads) {
+    for (BaseBillDetailToWorkloadVO vo : billDetailToWorkloads) {
+      firstCouponWorkload = firstCouponWorkload.add(vo.getBillDetailCouponWorkload());
+    }
+    return firstCouponWorkload;
+  }
+
+  /**
+   * 计算首次收费免单工作量合计
+   *
+   * @param firstFreePayWorkload 首次收费免单工作量
+   * @param actualAmount 实收总和
+   * @param firstFreePayAmount 首次收费免单金额
+   * @param billDetailToWorkloads 首次收费订单工作量明细
+   * @return BigDecimal - 首次收费免单工作量
+   */
+  private BigDecimal calculateFreePayWorkload(
+      BigDecimal firstFreePayWorkload,
+      BigDecimal actualAmount,
+      BigDecimal firstFreePayAmount,
+      List<BaseBillDetailToWorkloadVO> billDetailToWorkloads) {
+    if (actualAmount.compareTo(BigDecimal.ZERO) > 0) {
+      for (BaseBillDetailToWorkloadVO vo : billDetailToWorkloads) {
+        firstFreePayWorkload =
+            firstFreePayWorkload.add(
+                vo.getBillDetailWorkload()
+                    .divide(actualAmount, 4, BigDecimal.ROUND_HALF_UP)
+                    .multiply(firstFreePayAmount));
+      }
+    }
+    return firstFreePayWorkload;
+  }
+
+  /**
+   * 计算首次收费工作量
+   *
+   * @param firstReceivedWorkload 首次收费工作量
+   * @param receivedAmount 首次收费金额
+   * @param actualAmount 实收工作量
+   * @param billDetailToWorkloads 开单明细工作量列表
+   * @return BigDecimal - 首次收费工作量合计
+   */
+  private BigDecimal calculateReceivedWorkload(
+      BigDecimal firstReceivedWorkload,
+      BigDecimal receivedAmount,
+      BigDecimal actualAmount,
+      List<BaseBillDetailToWorkloadVO> billDetailToWorkloads) {
+    if (actualAmount.compareTo(BigDecimal.ZERO) > 0) {
+      for (BaseBillDetailToWorkloadVO vo : billDetailToWorkloads) {
+        firstReceivedWorkload =
+            firstReceivedWorkload.add(
+                vo.getBillDetailWorkload()
+                    .divide(actualAmount, 4, BigDecimal.ROUND_HALF_UP)
+                    .multiply(receivedAmount));
+      }
+    }
+    return firstReceivedWorkload;
+  }
 
   /**
    * 根据账单ID（开单记录ID）查询收费记录列表

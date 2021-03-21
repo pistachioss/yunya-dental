@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.yunya.feign.report.domain.bo.ClinicBillAndPayGroupInfoVO;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -19,10 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
@@ -45,7 +43,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   /** 组织 */
   @Autowired private BaseOrganizationMapper organizationMapper;
   /** 账单详情 */
-  @Autowired private BaseBillDetailBiz baseBillDetailBiz;
+  @Autowired private BaseBillDetailMapper billDetailMapper;
 
   /**
    * 根据条件查询开单列表
@@ -288,7 +286,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     BillDiscountVO billDiscountVOs = new BillDiscountVO();
     List<BillDiscountDetailInifoVO> billDiscountDetails = Lists.newArrayList();
     // 查询账单详情列表
-    List<BaseBillDetailVO> baseBillDetails = baseBillDetailBiz.selectBillDetailByBillId(billId);
+    List<BaseBillDetailVO> baseBillDetails = billDetailMapper.selectBillDetailByBillId(billId);
     Map<Integer, BaseBillDetailVO> details =
         baseBillDetails.stream()
             .collect(Collectors.toMap(BaseBillDetailVO::getBillDetailId, (vo) -> vo));
@@ -445,5 +443,38 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     List<CouponDiscountItemInfoVO> resultList = mapper.selectCouponDiscountItems(query);
     ExcelUtil<CouponDiscountItemInfoVO> excelUtil = new ExcelUtil<>(CouponDiscountItemInfoVO.class);
     excelUtil.exportExcel(response, resultList, "产品优惠项目明细", "产品优惠项目明细");
+  }
+
+  /**
+   * 根据条件查询门诊账单和支付信息
+   *
+   * @param query 查询条件
+   * @return ClinicBillAndPayGroupInfoVO
+   */
+  public ClinicBillAndPayGroupInfoVO findBillAndPayGroupInfo(DataStatisticsQuery query) {
+    ClinicBillAndPayGroupInfoVO resultData = new ClinicBillAndPayGroupInfoVO();
+    resultData.setTotalBillCouponWorkload(new BigDecimal("0"));
+    resultData.setTotalBillFreePayAmount(new BigDecimal("0"));
+    resultData.setTotalClinicReceivedWorkload(new BigDecimal("0"));
+
+    // 查询所属本门诊收费记录ID列表
+    List<BillIdAndBillPayIdVO> ids = billPayMapper.selectBillIdsAndBillPayIds(query);
+    if (StringHelper.isNotEmpty(ids)) {
+      Set<Integer> billIds = new HashSet<>();
+      Set<Integer> billPayIds = new HashSet<>();
+      for (BillIdAndBillPayIdVO vo : ids) {
+        billIds.add(vo.getBillId());
+        billPayIds.add(vo.getBillPayId());
+      }
+      if (StringHelper.isNotEmpty(billIds)) {
+        // 根据订单ID查询补入工作量总和
+        BigDecimal totalCouponWorkload = billDetailMapper.selectTotalCouponWorkload(billIds);
+        resultData.setTotalBillCouponWorkload(totalCouponWorkload);
+      }
+      if (StringHelper.isNotEmpty(billPayIds)) {
+
+      }
+    }
+    return resultData;
   }
 }

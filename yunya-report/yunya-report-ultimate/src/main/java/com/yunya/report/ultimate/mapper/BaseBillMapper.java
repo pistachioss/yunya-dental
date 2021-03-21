@@ -6,7 +6,9 @@ import com.yunya.models.report.BaseBill;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 public interface BaseBillMapper extends Mapper<BaseBill> {
 
@@ -24,8 +26,7 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @param form 欠费查询
    * @return List<ArrearsVo>
    */
-  List<ArrearsVo> arrears(
-      @Param("form") ArrearsQueryForm form);
+  List<ArrearsVo> arrears(@Param("form") ArrearsQueryForm form);
 
   /**
    * 根据条件查询账单优惠明细列表
@@ -47,6 +48,7 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
 
   /**
    * 欠费查询
+   *
    * @param orgId 门诊id
    * @return ArrearsStatisticsVo
    */
@@ -164,11 +166,26 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
 
   /**
    * 根据条件查询产品优惠项目明细列表
-   * 
-   * @param query
+   *
+   * @param query 查询条件
    * @return
    */
-  List<CouponDiscountItemInfoVO> selectCouponDiscountItems(@Param("query") CouponDiscountItemsQuery query);
+  List<CouponDiscountItemInfoVO> selectCouponDiscountItems(
+      @Param("query") CouponDiscountItemsQuery query);
 
+  /**
+   * 根据订单日期去重订单ID
+   *
+   * @param query 查询条件
+   * @return list
+   */
   List<Integer> distinctBillIdByOrderDate(@Param("query") EmployeeWorkloadQuery query);
+
+  /**
+   * 查询账单列表实收金额总和
+   *
+   * @param billIds 订单ID列表
+   * @return BigDecimal
+   */
+  BigDecimal selectTotalActualReceivableAmount(@Param("billIds") Set<Integer> billIds);
 }

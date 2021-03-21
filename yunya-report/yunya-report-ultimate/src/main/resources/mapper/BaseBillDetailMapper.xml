@@ -905,23 +905,23 @@
     <select id="selectEmployeeFreePaymentDetailList"
             resultType="com.yunya.feign.report.domain.vo.EmployeeReceivedDetailWorkloadVO">
         SELECT * FROM(
-            SELECT
-            bbd.bill_id as billId,
-            bbd.bill_detail_id AS orderDetailId,
-            bbd.item_type AS itemType,
-            bbd.item_id AS itemId,
-            bti.item_num AS itemNum,
-            bti.item_name AS itemName,
-            IFNULL(bbd.price * bbd.quantity - bbd.discount_amount, 0) as receivedAmount
-            FROM
-            base_bill_detail bbd
-            LEFT JOIN base_tariff_info bti ON bbd.item_type = bti.item_type
-            AND bbd.item_id = bti.item_id
-            <where>
-                <if test="query.billId != null">
-                    and bbd.bill_id = #{query.billId}
-                </if>
-            </where>
+        SELECT
+        bbd.bill_id as billId,
+        bbd.bill_detail_id AS orderDetailId,
+        bbd.item_type AS itemType,
+        bbd.item_id AS itemId,
+        bti.item_num AS itemNum,
+        bti.item_name AS itemName,
+        IFNULL(bbd.price * bbd.quantity - bbd.discount_amount, 0) as receivedAmount
+        FROM
+        base_bill_detail bbd
+        LEFT JOIN base_tariff_info bti ON bbd.item_type = bti.item_type
+        AND bbd.item_id = bti.item_id
+        <where>
+            <if test="query.billId != null">
+                and bbd.bill_id = #{query.billId}
+            </if>
+        </where>
         ) t where t.receivedAmount>0
     </select>
 
@@ -1737,10 +1737,10 @@
 
     <select id="selectBillDetailByQuery" resultType="com.yunya.models.report.BaseBillDetail">
         select
-            t.org_id as orgId,
-            t.bill_id as billId,
-            t.executor_id as executorId,
-            IFNULL(t.price * t.quantity - t.discount_amount, 0) as receivedAmount
+        t.org_id as orgId,
+        t.bill_id as billId,
+        t.executor_id as executorId,
+        IFNULL(t.price * t.quantity - t.discount_amount, 0) as receivedAmount
         from base_bill_detail t
         left join base_bill bbd on t.bill_id=bbd.bill_id
         <where>
@@ -1845,154 +1845,156 @@
         sum(notice) notice,
         sum(noticeTotal) noticeTotal
         from (
-            select
-            bo.abbreviation,
-            bo.org_id AS orgId,
-            ifnull(SUM(bbd.workload),0) as workload,
-            0 as firstVisit,
-            0 as introduction,
-            0 as followUp,
-            0 as followUpTotal,
-            0 as notice,
-            0 as noticeTotal
-            from base_organization bo
-            left join (
-            select IFNULL(SUM(bbd.quantity * bbd.price - bbd.discount_amount + bbd.coupon_workload),0) as workload, bbd.org_id from base_bill_detail bbd
-            left join base_bill bb on bbd.bill_id=bb.bill_id
-            <where>
-                <if test="query.orgIds!=null and query.orgIds.length>0">
-                    and bb.org_id in
-                    <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
+        select
+        bo.abbreviation,
+        bo.org_id AS orgId,
+        ifnull(SUM(bbd.workload),0) as workload,
+        0 as firstVisit,
+        0 as introduction,
+        0 as followUp,
+        0 as followUpTotal,
+        0 as notice,
+        0 as noticeTotal
+        from base_organization bo
+        left join (
+        select IFNULL(SUM(bbd.quantity * bbd.price - bbd.discount_amount + bbd.coupon_workload),0) as workload,
+        bbd.org_id from base_bill_detail bbd
+        left join base_bill bb on bbd.bill_id=bb.bill_id
+        <where>
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                and bb.org_id in
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
                 </if>
-                <if test="query.dateType == 0">
-                    <if test="query.startDate != null and query.startDate != ''">
-                        and DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
-                    </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
                 </if>
-                <if test="query.dateType == 1">
-                    <if test="query.startDate != null and query.startDate != ''">
-                        and DATE_FORMAT( bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT( bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
-                    </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
                 </if>
-                <if test="query.dateType == 2">
-                    <if test="query.startDate != null and query.startDate != ''">
-                        and DATE_FORMAT( bb.bill_date, '%Y') &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        and DATE_FORMAT( bb.bill_date, '%Y') &lt;= #{query.endDate}
-                    </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
                 </if>
-            </where>
-                group by bbd.org_id
-            ) bbd on bbd.org_id=bo.org_id
-            <where>
-                bo.org_type = 2
-                <if test="query.orgIds!=null and query.orgIds.length>0">
-                    and bo.org_id in
-                    <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bb.bill_date, '%Y') &gt;= #{query.startDate}
                 </if>
-            </where>
-            group by bo.org_id,bo.abbreviation
-            UNION
-                select
-                null as abbreviation,
-                btp.org_id as orgId,
-                0 as workload,
-                COUNT( DISTINCT btp.patient_id ) AS firstVisit,
-                COUNT(distinct bp.patient_id ) AS introduction,
-                0 as followUp,
-                0 as followUpTotal,
-                0 as notice,
-                0 as noticeTotal
-                from base_treatment_process btp
-                LEFT JOIN (select patient_id from base_patient where origin_type_name = '老患者介绍' group by origin_type) bp ON btp.patient_id = bp.patient_id
-                <where>
-                    btp.treat_type = 0
-                    AND btp.treat_end_time IS NOT NULL
-                    <if test="query.startDate != null and query.startDate != ''">
-                        AND DATE_FORMAT(btp.treat_start_time, '%Y-%m') &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        AND DATE_FORMAT(btp.treat_start_time, '%%Y-%m') &lt;= #{query.endDate}
-                    </if>
-                    <if test="query.orgIds!=null and query.orgIds.length>0">
-                        and btp.org_id in
-                        <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
-                            #{item}
-                        </foreach>
-                    </if>
-                </where>
-                group by btp.org_id
-            UNION
-                SELECT
-                null as abbreviation,
-                bvr.org_id as orgId,
-                0 as workload,
-                0 as firstVisit,
-                0 as introduction,
-                IFNULL(SUM(case when bvr.time IS NOT NULL then 1 else 0 end),0) as followUp,
-                COUNT( record_id ) AS followUpTotal,
-                0 as notice,
-                0 as noticeTotal
-                FROM
-                base_visit_remind bvr
-                <where>
-                    AND bvr.time IS NOT NULL
-                    AND bvr.type =0
-                    <if test="query.orgIds!=null and query.orgIds.length>0">
-                        and bvr.org_id in
-                        <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
-                            #{item}
-                        </foreach>
-                    </if>
-                    <if test="query.startDate != null and query.startDate != ''">
-                        AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &lt;= #{query.endDate}
-                    </if>
-                </where>
-                group by bvr.org_id
-            UNION
-                SELECT
-                null as abbreviation,
-                bvr.org_id as orgId,
-                0 as workload,
-                0 as firstVisit,
-                0 as introduction,
-                0 as followUp,
-                0 as followUpTotal,
-                IFNULL(SUM(case when bvr.time IS NOT NULL then 1 else 0 end),0) as notice,
-                COUNT( record_id ) AS noticeTotal
-                FROM
-                base_visit_remind bvr
-                <where>
-                    AND bvr.time IS NOT NULL
-                    AND bvr.type =1
-                    <if test="query.orgIds!=null and query.orgIds.length>0">
-                        and bvr.org_id in
-                        <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
-                            #{item}
-                        </foreach>
-                    </if>
-                    <if test="query.startDate != null and query.startDate != ''">
-                        AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &gt;= #{query.startDate}
-                    </if>
-                    <if test="query.endDate != null and query.endDate != ''">
-                        AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &lt;= #{query.endDate}
-                    </if>
-                </where>
-                group by bvr.org_id
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bb.bill_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        group by bbd.org_id
+        ) bbd on bbd.org_id=bo.org_id
+        <where>
+            bo.org_type = 2
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                and bo.org_id IN
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by bo.org_id,bo.abbreviation
+        UNION
+        select
+        null as abbreviation,
+        btp.org_id as orgId,
+        0 as workload,
+        COUNT( DISTINCT btp.patient_id ) AS firstVisit,
+        COUNT(distinct bp.patient_id ) AS introduction,
+        0 as followUp,
+        0 as followUpTotal,
+        0 as notice,
+        0 as noticeTotal
+        from base_treatment_process btp
+        LEFT JOIN (select patient_id from base_patient where origin_type_name = '老患者介绍' group by origin_type) bp ON
+        btp.patient_id = bp.patient_id
+        <where>
+            btp.treat_type = 0
+            AND btp.treat_end_time IS NOT NULL
+            <if test="query.startDate != null and query.startDate != ''">
+                AND DATE_FORMAT(btp.treat_start_time, '%Y-%m') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                AND DATE_FORMAT(btp.treat_start_time, '%%Y-%m') &lt;= #{query.endDate}
+            </if>
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                and btp.org_id IN
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by btp.org_id
+        UNION
+        SELECT
+        null as abbreviation,
+        bvr.org_id as orgId,
+        0 as workload,
+        0 as firstVisit,
+        0 as introduction,
+        IFNULL(SUM(case when bvr.time IS NOT NULL then 1 else 0 end),0) as followUp,
+        COUNT( record_id ) AS followUpTotal,
+        0 as notice,
+        0 as noticeTotal
+        FROM
+        base_visit_remind bvr
+        <where>
+            AND bvr.time IS NOT NULL
+            AND bvr.type =0
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                and bvr.org_id in
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &lt;= #{query.endDate}
+            </if>
+        </where>
+        group by bvr.org_id
+        UNION
+        SELECT
+        null as abbreviation,
+        bvr.org_id as orgId,
+        0 as workload,
+        0 as firstVisit,
+        0 as introduction,
+        0 as followUp,
+        0 as followUpTotal,
+        IFNULL(SUM(case when bvr.time IS NOT NULL then 1 else 0 end),0) as notice,
+        COUNT( record_id ) AS noticeTotal
+        FROM
+        base_visit_remind bvr
+        <where>
+            AND bvr.time IS NOT NULL
+            AND bvr.type =1
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                and bvr.org_id IN
+                <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &lt;= #{query.endDate}
+            </if>
+        </where>
+        group by bvr.org_id
         ) t group by orgId
     </select>
 
@@ -2090,7 +2092,7 @@
                 and bb.org_id = #{query.orgId}
             </if>
             <if test="billIds!=null and billIds.size()>0">
-                and bbd.bill_id in
+                and bbd.bill_id IN
                 <foreach collection="billIds" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
@@ -2198,7 +2200,7 @@
 
     <select id="distinctBillIdsInExecutorIds" resultType="java.lang.Integer">
         select
-            distinct bbd.bill_id as billId
+        distinct bbd.bill_id as billId
         from base_bill_detail bbd
         <where>
             <if test="executorIds!=null and executorIds.size()>0">
@@ -2209,7 +2211,6 @@
             </if>
         </where>
     </select>
-
     <!-- 根据条件查询开单项目数量及金额列表 -->
     <select id="billItemStatistics" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsVO">
         select
@@ -2223,76 +2224,77 @@
         bti.category_name as categoryName,
         bo.employee_name as employeeName
         from (
-            SELECT
-            bbd.item_id AS itemId,
-            bbd.item_type AS itemType,
-            bbd.registered_dentist_id as employeeId,
-            IFNULL(SUM(bbd.quantity),0) as quantity,
-            IFNULL(SUM(bbd.price*bbd.quantity-bbd.discount_amount),0) as amount
-            FROM
-            (
-                select bbd.item_id,bbd.item_type,btp.registered_dentist_id,bbd.quantity,bbd.price,bbd.discount_amount from base_bill_detail bbd
-                LEFT JOIN base_bill bb on bb.bill_id=bbd.bill_id
-                LEFT JOIN base_treatment_process btp on btp.treatment_id=bb.treatment_id
-                <where>
-                    bbd.source_type = 0
-                    and btp.treat_end_time IS NOT NULL
-                    AND bb.bill_date IS NOT NULL
-                    <if test="query.itemIds!=null and query.itemIds.size()>0">
-                        and bbd.item_id in
-                        <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
-                            #{item}
-                        </foreach>
-                    </if>
-                    <if test="query.itemType != null">
-                        and bbd.item_type=#{query.itemType}
-                    </if>
-                    <if test="query.orgId != null">
-                        and btp.org_id = #{query.orgId}
-                        and bbd.org_id = #{query.orgId}
-                        and bb.org_id = #{query.orgId}
-                    </if>
-                    <if test="query.employeeIds!=null and query.employeeIds.size()>0">
-                        AND btp.registered_dentist_id in
-                        <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
-                            #{item}
-                        </foreach>
-                    </if>
-                    <if test="query.dateType == 0">
-                        <if test="query.startDate != null and query.startDate != ''">
-                            and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
-                        </if>
-                        <if test="query.endDate != null and query.endDate != ''">
-                            and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
-                        </if>
-                    </if>
-                    <if test="query.dateType == 1">
-                        <if test="query.startDate != null and query.startDate != ''">
-                            and DATE_FORMAT(bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
-                        </if>
-                        <if test="query.endDate != null and query.endDate != ''">
-                            and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
-                        </if>
-                    </if>
-                    <if test="query.dateType == 2">
-                        <if test="query.startDate != null and query.startDate != ''">
-                            and DATE_FORMAT(bb.bill_date, '%Y') &gt;= #{query.startDate}
-                        </if>
-                        <if test="query.endDate != null and query.endDate != ''">
-                            and DATE_FORMAT(bb.bill_date, '%Y') &lt;= #{query.endDate}
-                        </if>
-                    </if>
-                </where>
-            ) bbd
-            GROUP BY
-            bbd.registered_dentist_id,
-            bbd.item_id,
-            bbd.item_type
-            ORDER BY
-            bbd.item_id,
-            bbd.item_type
+        SELECT
+        bbd.item_id AS itemId,
+        bbd.item_type AS itemType,
+        bbd.registered_dentist_id as employeeId,
+        IFNULL(SUM(bbd.quantity),0) as quantity,
+        IFNULL(SUM(bbd.price*bbd.quantity-bbd.discount_amount),0) as amount
+        FROM
+        (
+        select bbd.item_id,bbd.item_type,btp.registered_dentist_id,bbd.quantity,bbd.price,bbd.discount_amount from
+        base_bill_detail bbd
+        LEFT JOIN base_bill bb on bb.bill_id=bbd.bill_id
+        LEFT JOIN base_treatment_process btp on btp.treatment_id=bb.treatment_id
+        <where>
+            bbd.source_type = 0
+            and btp.treat_end_time IS NOT NULL
+            AND bb.bill_date IS NOT NULL
+            <if test="query.itemIds!=null and query.itemIds.size()>0">
+                and bbd.item_id IN
+                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.itemType != null">
+                and bbd.item_type=#{query.itemType}
+            </if>
+            <if test="query.orgId != null">
+                and btp.org_id = #{query.orgId}
+                and bbd.org_id = #{query.orgId}
+                and bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.employeeIds!=null and query.employeeIds.size()>0">
+                AND btp.registered_dentist_id IN
+                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
         ) bbd
-        LEFT JOIN base_tariff_info bti ON bbd.itemId = bti.item_id	AND bbd.itemType = bti.item_type
+        GROUP BY
+        bbd.registered_dentist_id,
+        bbd.item_id,
+        bbd.item_type
+        ORDER BY
+        bbd.item_id,
+        bbd.item_type
+        ) bbd
+        LEFT JOIN base_tariff_info bti ON bbd.itemId = bti.item_id AND bbd.itemType = bti.item_type
         LEFT JOIN base_employee bo ON bo.user_id = bbd.employeeId
         <where>
             <if test="query.categoryIds!=null and query.categoryIds.size()>0">
@@ -2312,18 +2314,18 @@
 
     <select id="billItemStatisticsDetail" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsDetailVO">
         SELECT
-            DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
-            bb.bill_num AS billNum,
-            bbd.quantity,
-            bem.employee_name as regDentistName,
-            be.employee_name as executorName,
-            IFNULL(bbd.price*bbd.quantity-bbd.discount_amount,0) amount,
-            bp.name AS patientName,
-            bp.patient_id as patientId,
-            bp.mobile,
-            bo.abbreviation
+        DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
+        bb.bill_num AS billNum,
+        bbd.quantity,
+        bem.employee_name as regDentistName,
+        be.employee_name as executorName,
+        IFNULL(bbd.price*bbd.quantity-bbd.discount_amount,0) amount,
+        bp.name AS patientName,
+        bp.patient_id as patientId,
+        bp.mobile,
+        bo.abbreviation
         FROM
-            base_bill_detail bbd
+        base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         LEFT JOIN base_treatment_process btp ON bb.treatment_id=btp.treatment_id
         LEFT JOIN base_patient bp ON bb.patient_id=bp.patient_id
@@ -2344,7 +2346,8 @@
                 </foreach>
             </if>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(IFNULL(bp.name, ''), IFNULL(bp.pinyin_name, ''), IFNULL(bp.mobile, '')) like concat('%',#{query.keyword}, '%')
+                and concat(IFNULL(bp.name, ''), IFNULL(bp.pinyin_name, ''), IFNULL(bp.mobile, '')) like
+                concat('%',#{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
                 and bb.bill_num like concat('%', #{query.billNum}, '%')
@@ -2390,5 +2393,51 @@
             </if>
         </where>
         order by bb.bill_date desc
+    </select>
+    <!-- 查询订单实收工作量总和 -->
+    <select id="selectTotalWorkload" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL( SUM(( bbd.price * bbd.quantity ) - bbd.discount_amount ), 0 ) AS totalWorkload
+        FROM
+        base_bill_detail bbd
+        <where>
+            AND bbd.executor_id IS NOT NULL
+            <if test="billIds != null and billIds.size > 0">
+                AND bbd.bill_id IN
+                <foreach collection="billIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <!-- 查询订补入工作量总和 -->
+    <select id="selectTotalCouponWorkload" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL( SUM(( bbd.coupon_workload ) ), 0 ) AS totalCouponWorkload
+        FROM
+        base_bill_detail bbd
+        <where>
+            AND bbd.executor_id IS NOT NULL
+            AND bbd.coupon_workload > 0
+            <if test="billIds != null and billIds.size > 0">
+                AND bbd.bill_id IN
+                <foreach collection="billIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <!-- 根据订单ID查询计算工作量订单明细 -->
+    <select id="selectBillDetailForWorkload"
+            resultType="com.yunya.feign.report.domain.vo.BaseBillDetailToWorkloadVO">
+        SELECT
+            bbd.bill_detail_id AS billDetailId,
+            IFNULL(( bbd.price * bbd.quantity ) - bbd.discount_amount , 0) AS billDetailWorkload,
+            bbd.coupon_workload AS billDetailCouponWorkload
+        FROM
+            base_bill_detail bbd
+        WHERE
+            bbd.executor_id IS NOT NULL
+            AND bbd.bill_id = #{billId}
     </select>
 </mapper>

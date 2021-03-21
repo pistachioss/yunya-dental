@@ -15,6 +15,7 @@
         <result column="order_date" property="orderDate" jdbcType="TIMESTAMP"/>
         <result column="biller_id" property="billerId" jdbcType="INTEGER"/>
         <result column="privilege_type" property="privilegeType" jdbcType="TINYINT"/>
+        <result column="privilege_org_id" property="privilegeOrgId" jdbcType="INTEGER"/>
         <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL"/>
         <result column="privilege_date" property="privilegeDate" jdbcType="TIMESTAMP"/>
         <result column="bill_date" property="billDate" jdbcType="TIMESTAMP"/>
@@ -404,17 +405,17 @@
         FROM
         base_bill bb
         left join (
-            select bill_id,IFNULL(SUM(principal_amount),0) amount from base_bill_pay_detail
-            <where>
-                type = 2
-                <if test="query.payIds!=null and query.payIds.size()>0">
-                    and account_item_id in
-                    <foreach collection="query.payIds" item="id" open="(" separator="," close=")">
-                        #{id}
-                    </foreach>
-                </if>
-            </where>
-            group by bill_id
+        select bill_id,IFNULL(SUM(principal_amount),0) amount from base_bill_pay_detail
+        <where>
+            type = 2
+            <if test="query.payIds!=null and query.payIds.size()>0">
+                and account_item_id in
+                <foreach collection="query.payIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        group by bill_id
         ) bbpd on bbpd.bill_id=bb.bill_id
         <where>
             AND bb.bill_num IS NOT NULL
@@ -1025,10 +1026,10 @@
         </where>
         order by bb.bill_id desc
     </select>
-
+    <!-- 查询订单列表 -->
     <select id="distinctBillIdByOrderDate" resultType="java.lang.Integer">
         select
-            distinct bb.bill_id as billId
+        distinct bb.bill_id as billId
         from base_bill bb
         <where>
             <if test="query.dateType == 0">
@@ -1040,6 +1041,20 @@
                 <if test="query.queryDate != null and query.queryDate != ''">
                     and DATE_FORMAT( bb.order_date, '%Y' ) = #{query.queryDate}
                 </if>
+            </if>
+        </where>
+    </select>
+    <!-- 查询账单列表实收金额总和 -->
+    <select id="selectTotalActualReceivableAmount" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM(bb.actual_amount) ,0) AS totalActualReceivableAmount
+        FROM base_bill bb
+        <where>
+            <if test="billIds != null and billIds.size > 0">
+                AND bb.bill_id IN
+                <foreach collection="billIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -145,5 +146,16 @@ public class BaseBillPayMapperTest {
     List<StatementBillChargeDetailVO> vos =
         billPayMapper.selectOtherBillIsAcceptedDetailList(query);
     System.out.println(vos);
+  }
+
+  @Test
+  public void find8() {
+    DataStatisticsQuery query = new DataStatisticsQuery();
+    query.setOrgIds(new Integer[] {26});
+    query.setDateType((byte) 0);
+    query.setStartDate("2021-03-01");
+    query.setEndDate("2021-03-15");
+    BigDecimal bigDecimal = billPayMapper.selectTotalReceivedAmount(query);
+    System.out.println(bigDecimal);
   }
 }

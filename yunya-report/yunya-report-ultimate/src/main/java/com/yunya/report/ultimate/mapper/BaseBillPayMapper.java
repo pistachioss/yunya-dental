@@ -4,10 +4,7 @@ import com.yunya.feign.report.domain.query.BillPayRecordQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.StatementBillChargeDetailInfoQuery;
 import com.yunya.feign.report.domain.query.StatementStatisticQuery;
-import com.yunya.feign.report.domain.vo.BaseBillPayVO;
-import com.yunya.feign.report.domain.vo.BillOfPayRecordVO;
-import com.yunya.feign.report.domain.vo.StatementBillChargeDetailVO;
-import com.yunya.feign.report.domain.vo.TollDataStatisticsVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseBillPay;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -111,4 +108,69 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    */
   List<StatementBillChargeDetailVO> selectOtherBillIsAcceptedDetailList(
       @Param("query") StatementBillChargeDetailInfoQuery query);
+
+  /**
+   * 根据条件查询门诊全部已收金额（本门诊账单）
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  BigDecimal selectTotalReceivedAmount(@Param("query") DataStatisticsQuery query);
+
+  /**
+   * 根据条件查询门诊首次收费总额（本门诊账单）
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  BigDecimal selectClinicFirstReceivedAmount(@Param("query") DataStatisticsQuery query);
+
+  /**
+   * 根据条件查询本门诊收欠费收费总额（本门诊账单）
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  BigDecimal selectClinicArrearsReceivedAmount(@Param("query") DataStatisticsQuery query);
+
+  /**
+   * 根据条件查询门诊被代收收费总额（本门诊账单）
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  BigDecimal selectClinicBeCollectedReceivedAmount(@Param("query") DataStatisticsQuery query);
+
+  /**
+   * 根据条件查询收费记录ID、订单ID列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<BillIdAndBillPayIdVO> selectBillIdsAndBillPayIds(@Param("query") DataStatisticsQuery query);
+
+  /**
+   * 根据条件查询账单首次收费收费收费记录ID列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<BillIdAndBillPayIdVO> selectBillFirstPayIdList(@Param("query") DataStatisticsQuery query);
+
+  /**
+   * 根据条件查询账单收欠费收费收费记录ID列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<BillIdAndBillPayIdVO> selectBillArrearsPayIdList(@Param("query") DataStatisticsQuery query);
+
+  /**
+   * 根据条件查询账单被代收收费收费记录ID列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<BillIdAndBillPayIdVO> selectBillBeCollectedPayIdList(
+      @Param("query") DataStatisticsQuery query);
 }

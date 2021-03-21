@@ -1,13 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.report.ultimate.mapper.BaseRefundDetailMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseRefundDetail" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <result column="refund_detail_id" property="refundDetailId" jdbcType="INTEGER" />
-    <result column="refund_id" property="refundId" jdbcType="INTEGER" />
-    <result column="bill_detail_id" property="billDetailId" jdbcType="INTEGER" />
-    <result column="refund_amount" property="refundAmount" jdbcType="DECIMAL" />
-  </resultMap>
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseRefundDetailMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseRefundDetail">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="refund_detail_id" property="refundDetailId" jdbcType="INTEGER"/>
+        <result column="refund_id" property="refundId" jdbcType="INTEGER"/>
+        <result column="bill_detail_id" property="billDetailId" jdbcType="INTEGER"/>
+        <result column="refund_amount" property="refundAmount" jdbcType="DECIMAL"/>
+    </resultMap>
+    <!-- 退费工作量总和 -->
+    <select id="selectTotalRefundWorkload" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL( SUM( brd.refund_amount ), 0 ) AS totalRefundWorkload
+        FROM (
+        SELECT
+        br.bill_id,
+        brd.refund_amount,
+        bbd.executor_id
+        FROM
+        base_refund_detail brd
+        INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
+        INNER JOIN base_refund br ON brd.refund_id = br.refund_id
+        ) brd
+        <where>
+            AND brd.executor_id IS NOT NULL
+            <if test="billIds != null and billIds.size > 0">
+                AND brd.bill_id IN
+                <foreach collection="billIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

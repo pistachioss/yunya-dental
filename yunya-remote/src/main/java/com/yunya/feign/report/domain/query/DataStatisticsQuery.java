@@ -42,6 +42,7 @@ public class DataStatisticsQuery extends PageQuery implements Serializable {
   @ApiModelProperty(value = "结束时间", required = true)
   @NotBlank(message = "结束时间不能为空！")
   private String endDate;
+  /** 查询来源 */
   @ApiModelProperty(value = "查询来源：0-公司端，1-门诊端")
   private Integer source;
   /** 入账方式id列表 */
