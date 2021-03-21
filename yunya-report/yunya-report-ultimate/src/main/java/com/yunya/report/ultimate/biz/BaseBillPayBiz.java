@@ -97,7 +97,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                     firstReceivedWorkload, receivedAmount, actualAmount, billDetailToWorkloadVOS);
             firstFreePayWorkload =
                 calculateFreePayWorkload(
-                    firstFreePayWorkload, freePayAmount, actualAmount, billDetailToWorkloadVOS);
+                    firstFreePayWorkload, actualAmount, freePayAmount, billDetailToWorkloadVOS);
           } else {
             arrearsReceivedAmount = arrearsReceivedAmount.add(receivedAmount);
             arrearsReceivedWorkload =
@@ -105,7 +105,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                     arrearsReceivedWorkload, receivedAmount, actualAmount, billDetailToWorkloadVOS);
             arrearsFreePayWorkload =
                 calculateFreePayWorkload(
-                    arrearsFreePayWorkload, freePayAmount, actualAmount, billDetailToWorkloadVOS);
+                    arrearsFreePayWorkload, actualAmount, freePayAmount, billDetailToWorkloadVOS);
           }
         } else {
           beCollectedReceivedAmount = beCollectedReceivedAmount.add(receivedAmount);
@@ -117,7 +117,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                   billDetailToWorkloadVOS);
           beCollectedFreePayWorkload =
               calculateFreePayWorkload(
-                  beCollectedFreePayWorkload, freePayAmount, actualAmount, billDetailToWorkloadVOS);
+                  beCollectedFreePayWorkload, actualAmount, freePayAmount, billDetailToWorkloadVOS);
         }
         if (billOrgId.equals(privilegeOrgId)) {
           if (billDate.equals(privilegeDate)) {
@@ -169,15 +169,15 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    * 计算首次收费免单工作量合计
    *
    * @param firstFreePayWorkload 首次收费免单工作量
+   * @param freePayAmount 收费免单金额
    * @param actualAmount 实收总和
-   * @param firstFreePayAmount 首次收费免单金额
    * @param billDetailToWorkloads 首次收费订单工作量明细
    * @return BigDecimal - 首次收费免单工作量
    */
   private BigDecimal calculateFreePayWorkload(
       BigDecimal firstFreePayWorkload,
+      BigDecimal freePayAmount,
       BigDecimal actualAmount,
-      BigDecimal firstFreePayAmount,
       List<BaseBillDetailToWorkloadVO> billDetailToWorkloads) {
     if (actualAmount.compareTo(BigDecimal.ZERO) > 0) {
       for (BaseBillDetailToWorkloadVO vo : billDetailToWorkloads) {
@@ -187,7 +187,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
               firstFreePayWorkload.add(
                   billDetailWorkload
                       .divide(actualAmount, 4, BigDecimal.ROUND_HALF_UP)
-                      .multiply(firstFreePayAmount));
+                      .multiply(freePayAmount));
         }
       }
     }
