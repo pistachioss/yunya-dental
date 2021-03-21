@@ -181,11 +181,14 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       List<BaseBillDetailToWorkloadVO> billDetailToWorkloads) {
     if (actualAmount.compareTo(BigDecimal.ZERO) > 0) {
       for (BaseBillDetailToWorkloadVO vo : billDetailToWorkloads) {
-        firstFreePayWorkload =
-            firstFreePayWorkload.add(
-                vo.getBillDetailWorkload()
-                    .divide(actualAmount, 4, BigDecimal.ROUND_HALF_UP)
-                    .multiply(firstFreePayAmount));
+        BigDecimal billDetailWorkload = vo.getBillDetailWorkload();
+        if (billDetailWorkload.compareTo(BigDecimal.ZERO) > 0) {
+          firstFreePayWorkload =
+              firstFreePayWorkload.add(
+                  billDetailWorkload
+                      .divide(actualAmount, 4, BigDecimal.ROUND_HALF_UP)
+                      .multiply(firstFreePayAmount));
+        }
       }
     }
     return firstFreePayWorkload;
