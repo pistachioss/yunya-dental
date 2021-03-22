@@ -146,6 +146,10 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
             workDayData.setName( ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName());
             workDayData.setDate(employeeScheduleVO.getWorkDate());
             workDayData.setCompClinId(employeeScheduleVO.getClinicId());
+            OrganizationInfoDetail oid = clinicMap.get(employeeScheduleVO.getClinicId()+"");
+            if(oid!=null){
+              workDayData.setComName(oid.getName());
+            }
             num = num+1;
           }
           if(workDayData.getId()!=null){
