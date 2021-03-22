@@ -70,11 +70,11 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
             List<BaseBenefit> baseBenefits = Lists.newArrayList();
             if (CARD_BENEFIT.equals(orderBenefit.getBenefitType())) {
                 List<CardBenefit> originData = getBenefitDetail(Sets.newHashSet(orderId), CardBenefit.class, cardBenefitMapper);
-                baseBenefits = cardTransform(originData);
+                baseBenefits = cardTransform(originData, orderBenefit.getRemark());
             }
             if (AUTH_BENEFIT.equals(orderBenefit.getBenefitType())) {
                 List<AuthDiscountBenefit> originData = getBenefitDetail(Collections.singleton(orderId), AuthDiscountBenefit.class, authBenefitMapper);
-                baseBenefits = authTransform(originData);
+                baseBenefits = authTransform(originData, orderBenefit.getRemark());
             }
             List<BaseBenefit> existBenefits = getExistByOrderIds(Collections.singletonList(orderId));
 
@@ -178,24 +178,26 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
         }
     }
 
-    private List<BaseBenefit> cardTransform(List<CardBenefit> cardBenefits) {
+    private List<BaseBenefit> cardTransform(List<CardBenefit> cardBenefits, String remark) {
         return cardBenefits.stream().map(obj -> {
             BaseBenefit benefit = BeanCopierUtils.generalCopyBean(obj, BaseBenefit.class, getBenefitConvert());
             benefit.setItemType(obj.getItemType().byteValue());
             benefit.setChoiceBenefitType(CARD_BENEFIT.getCode());
             benefit.setOperateUserId(obj.getCrtId());
             benefit.setUseDate(obj.getCrtTime());
+            benefit.setRemark(remark);
             return benefit;
         }).collect(toList());
     }
 
-    private List<BaseBenefit> authTransform(List<AuthDiscountBenefit> authBenefits) {
+    private List<BaseBenefit> authTransform(List<AuthDiscountBenefit> authBenefits, String remark) {
         return authBenefits.stream().map(obj -> {
             BaseBenefit benefit = BeanCopierUtils.generalCopyBean(obj, BaseBenefit.class, getBenefitConvert());
             benefit.setItemType(obj.getItemType().byteValue());
             benefit.setChoiceBenefitType(AUTH_BENEFIT.getCode());
             benefit.setOperateUserId(obj.getCrtId());
             benefit.setUseDate(obj.getCrtTime());
+            benefit.setRemark(remark);
             return benefit;
         }).collect(toList());
     }

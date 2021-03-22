@@ -22,7 +22,6 @@ import java.math.BigDecimal;
 @ToString
 public class BillItemStatisticsDetailVO implements Serializable {
   /** 门诊*/
-  @Excel(name = "门诊")
   @ApiModelProperty("门诊")
   private String abbreviation;
 

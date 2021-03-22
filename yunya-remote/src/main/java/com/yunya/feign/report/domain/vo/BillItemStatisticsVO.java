@@ -29,6 +29,15 @@ public class BillItemStatisticsVO implements Serializable {
   @ApiModelProperty("项目类型：0-价目表；1-商品")
   private Byte itemType;
 
+  /** 门诊ID*/
+  @ApiModelProperty("门诊ID")
+  private Integer orgId;
+
+  /** 门诊*/
+  @Excel(name = "门诊")
+  @ApiModelProperty("门诊")
+  private String abbreviation;
+
   /** 项目编号 */
   @Excel(name = "项目编号")
   @ApiModelProperty("项目编号")

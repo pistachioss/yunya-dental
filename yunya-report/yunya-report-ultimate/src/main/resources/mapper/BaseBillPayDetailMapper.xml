@@ -114,4 +114,103 @@
           bbpd.account_item_id IN ( 23, 26 )
           AND bbpd.bill_pay_id = #{billPayId}
     </select>
+
+    <select id="billDiscountAndFreePaymentList" resultType="com.yunya.feign.report.domain.vo.BillDiscountAndFreePaymentVO">
+        SELECT * FROM (
+            SELECT
+                bbp.payee_date as payeeDate,
+                be.employee_name as payeeUser,
+                bb.bill_date as billDate,
+                bo.abbreviation,
+                emp.employee_name as employeeName,
+                bb.bill_num as billNum,
+                bbpd.principal_amount as amount,
+                bbpd.card_num as remark,
+                '/' as discountUser,
+                CASE
+                WHEN bbpd.account_item_id=23 then '本次免单支付'
+                WHEN bbpd.account_item_id=26 then '艾维员工免单'
+                end as discountFree
+            FROM base_bill_pay_detail bbpd
+            LEFT JOIN base_bill bb ON bb.bill_id=bbpd.bill_id
+            LEFT JOIN base_bill_pay bbp ON bbp.bill_pay_id=bbpd.bill_pay_id
+            LEFT JOIN base_employee be ON be.user_id=bbp.payee_user_id
+            LEFT JOIN base_treatment_process btp ON btp.treatment_id=bb.treatment_id
+            LEFT JOIN base_employee emp ON emp.user_id=btp.registered_dentist_id
+            LEFT JOIN base_organization bo ON bo.org_id=bbp.org_id
+            <where>
+                <if test="query.accountType == null">
+                    and bbpd.account_item_id in (23,26)
+                </if>
+                <if test="query.accountType != null">
+                    bbpd.account_item_id = #{query.accountType}
+                </if>
+                <if test="query.orgIds!=null and query.orgIds.size()>0">
+                    and bbp.org_id in
+                    <foreach item="item" index="index" collection="query.orgIds" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                    and DATE_FORMAT(bbp.payee_date,'%Y-%m-%d') between #{query.startDate} and #{query.endDate}
+                </if>
+                <if test="query.employeeIds!=null and query.employeeIds.size()>0">
+                    and btp.registered_dentist_id in
+                    <foreach item="item" index="index" collection="query.employeeIds" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+            UNION
+            SELECT
+                bbp.payee_date as payeeDate,
+                be.employee_name as payeeUser,
+                bb.bill_date as billDate,
+                bo.abbreviation,
+                emp.employee_name as employeeName,
+                bb.bill_num as billNum,
+                bbf.principal_amount as amount,
+                bbf.remark,
+                bep.employee_name as discountUser,
+                '授权折扣' as discountFree
+            FROM (
+                select order_id as bill_id,sum(benefit_amount) as principal_amount, remark, operate_user_id
+                from base_benefit
+                <where>
+                    choice_benefit_type=1
+                    <if test="query.accountType==23 or query.accountType==26">
+                        and order_id = -1
+                        and org_id = -1
+                    </if>
+                </where>
+                group by order_id,remark,operate_user_id
+
+            ) bbf
+            LEFT JOIN base_bill bb ON bb.bill_id=bbf.bill_id
+            LEFT JOIN base_bill_pay bbp ON bbp.bill_id=bbf.bill_id
+            LEFT JOIN base_employee be ON be.user_id=bbp.payee_user_id
+            LEFT JOIN base_treatment_process btp ON btp.treatment_id=bb.treatment_id
+            LEFT JOIN base_employee emp ON emp.user_id=btp.registered_dentist_id
+            LEFT JOIN base_employee bep ON bep.user_id=bbf.operate_user_id
+            LEFT JOIN base_organization bo ON bo.org_id=bbp.org_id
+            <where>
+                <if test="query.orgIds!=null and query.orgIds.size()>0">
+                    and bbp.org_id in
+                    <foreach item="item" index="index" collection="query.orgIds" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                    and DATE_FORMAT(bbp.payee_date,'%Y-%m-%d') between #{query.startDate} and #{query.endDate}
+                </if>
+                <if test="query.employeeIds!=null and query.employeeIds.size()>0">
+                    and btp.registered_dentist_id in
+                    <foreach item="item" index="index" collection="query.employeeIds" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+        ) t
+        order by t.payeeDate desc,t.billNum desc
+    </select>
 </mapper>

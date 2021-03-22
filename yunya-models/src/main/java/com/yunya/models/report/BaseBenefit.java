@@ -101,4 +101,10 @@ public class BaseBenefit {
      */
     @Column(name = "use_date")
     private LocalDateTime useDate;
+
+    /**
+     * 备注
+     */
+    @Column(name = "remark")
+    private String remark;
 }

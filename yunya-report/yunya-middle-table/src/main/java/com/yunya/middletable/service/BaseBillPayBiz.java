@@ -154,6 +154,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                 break;
               default:
                 baseBillPayDetail.setPrincipalAmount(payDetailRecord.getAmount());
+                baseBillPayDetail.setCardNum(payDetailRecord.getRemark());//备注
                 break;
             }
             baseBillPayDetailMapper.insertSelective(baseBillPayDetail);

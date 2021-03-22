@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.bo.ClinicWorkloadGroupInfoVO;
+import com.yunya.feign.report.domain.query.BillDiscountAndFreePaymentQuery;
 import com.yunya.feign.report.domain.query.BillPayRecordQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.StatementBillChargeDetailInfoQuery;
@@ -26,7 +27,8 @@ import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.*;
 
-import static com.yunya.framework.common.constant.BusinessConstants.*;
+import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
+import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
 
 /**
  * 简介: 账单收费记录业务层
@@ -767,5 +769,36 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       }
     }
     return chargeDetailExports;
+  }
+
+  /**
+   * 根据条件查询折扣&免单列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillDiscountAndFreePaymentVO>
+   */
+  public PageInfo<BillDiscountAndFreePaymentVO> billDiscountAndFreePaymentList(BillDiscountAndFreePaymentQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BillDiscountAndFreePaymentVO> list = billPayDetailMapper.billDiscountAndFreePaymentList(query);
+    return new PageInfo<>(list);
+  }
+
+  /**
+   * 根据条件查询折扣&免单列表
+   *
+   * @param query 查询条件
+   * @param response
+   */
+  public void billDiscountAndFreePaymentExport(BillDiscountAndFreePaymentQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<BillDiscountAndFreePaymentVO> pageInfo = billDiscountAndFreePaymentList(query);
+    List<BillDiscountAndFreePaymentVO> resultList = pageInfo.getList();
+    ExcelUtil<BillDiscountAndFreePaymentVO> excelUtil =
+            new ExcelUtil<>(BillDiscountAndFreePaymentVO.class);
+    String fileName =
+            excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "折扣&免单报表");
+    excelUtil.exportExcel(response, resultList, "折扣&免单报表", fileName);
   }
 }

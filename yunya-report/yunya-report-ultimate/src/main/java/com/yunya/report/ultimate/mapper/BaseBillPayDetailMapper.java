@@ -1,6 +1,8 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.BillDiscountAndFreePaymentQuery;
 import com.yunya.feign.report.domain.vo.BaseBillPayDetailVO;
+import com.yunya.feign.report.domain.vo.BillDiscountAndFreePaymentVO;
 import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import com.yunya.models.report.BaseBillPayDetail;
 import org.apache.ibatis.annotations.Param;
@@ -57,4 +59,12 @@ public interface BaseBillPayDetailMapper extends Mapper<BaseBillPayDetail> {
    * @return BigDecimal
    */
   BigDecimal selectFreePayAmount(@Param("billPayId") Integer billPayId);
+
+  /**
+   * 根据条件查询折扣&免单列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillDiscountAndFreePaymentVO>
+   */
+  List<BillDiscountAndFreePaymentVO> billDiscountAndFreePaymentList(@Param("query") BillDiscountAndFreePaymentQuery query);
 }
