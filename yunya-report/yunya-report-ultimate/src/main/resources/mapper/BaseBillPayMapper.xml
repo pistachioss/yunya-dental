@@ -1800,6 +1800,7 @@
         </where>
         ) bbp
         <where>
+            AND bbp.billDate IS NOT NULL
             <if test="query.orgIds != null and query.orgIds.length > 0">
                 AND bbp.billOrgId IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
