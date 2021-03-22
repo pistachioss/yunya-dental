@@ -32,6 +32,7 @@ public class WorkDayVO {
    */
   @ApiModelProperty("班次名")
   private String name;
+
   /**
    * 时间段
    */
