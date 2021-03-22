@@ -588,7 +588,7 @@
         patient_id,appoint_content,appoint_start_time
         FROM
         base_treatment_process
-        where appoint_start_time > NOW() and (patient_id,appoint_start_time) in(
+        where appoint_start_time > NOW() and appoint_status in (0,1) and (patient_id,appoint_start_time) in(
         select patient_id,min(appoint_start_time)FROM
         base_treatment_process
         where appoint_start_time > NOW()  GROUP BY patient_id)) ntp on btp.patient_id = ntp.patient_id
