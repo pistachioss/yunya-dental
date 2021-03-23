@@ -7,6 +7,7 @@ import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.PatientBillStatistics;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
+import com.yunya.framework.common.context.BaseContextHandler;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ public class BillRecordBizTest {
   @Autowired BillRecordBiz billRecordBiz;
   @Autowired private TreatmentRecordBiz treatmentRecordBiz;
   @Autowired private OrderDetailBiz orderDetailBiz;
+  @Autowired BillPayRecordBiz billPayRecordBiz;
 
   @Test
   public void getNum() {
@@ -55,5 +57,13 @@ public class BillRecordBizTest {
     DataStatisticsQuery query = JSONObject.parseObject(param, DataStatisticsQuery.class);
     PageInfo<SpecialistProjectCompletedInfoVO> resultList = orderDetailBiz.specialistProjectTargetCompletedList(query);
     System.out.println(JSONObject.toJSON(resultList));
+  }
+
+  @Test
+  public void testRevoke() {
+    BaseContextHandler.setOrgId("26");
+    BaseContextHandler.setUserID("635");
+    BaseContextHandler.setName("测试-chenlin");
+    billPayRecordBiz.revoke(280587);
   }
 }

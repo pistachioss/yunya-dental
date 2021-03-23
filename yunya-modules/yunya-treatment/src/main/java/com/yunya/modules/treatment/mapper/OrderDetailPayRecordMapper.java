@@ -5,6 +5,7 @@ import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public interface OrderDetailPayRecordMapper extends Mapper<OrderDetailPayRecord> {
 
@@ -15,4 +16,10 @@ public interface OrderDetailPayRecordMapper extends Mapper<OrderDetailPayRecord>
    * @return BigDecimal
    */
   BigDecimal selectNoDiscountAmount(@Param("billRecordId") Integer billRecordId);
+
+  /**
+   * 根据主键id更新received_amount值
+   * @param list
+   */
+  void uptReceivedAmountById(@Param("list") List<OrderDetailPayRecord> list);
 }

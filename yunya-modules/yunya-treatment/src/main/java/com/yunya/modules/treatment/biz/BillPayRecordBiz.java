@@ -56,6 +56,8 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
   @Autowired private BillExceptionHandleRecordMapper billExceptionHandleRecordMapper;
   /** 账单异常处理详情 */
   @Autowired private BillExceptionHandleDetailRecordMapper billExceptionHandleDetailRecordMapper;
+  /** 订单明细收费*/
+  @Autowired private OrderDetailPayRecordBiz orderDetailPayRecordBiz;
 
   /**
    * 根据账单收费记录ID撤销账单收费记录
@@ -85,6 +87,11 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     billPayRecord.setUpdId(userId);
     billPayRecord.setUpdName(name);
     int result = mapper.updateByPrimaryKeySelective(billPayRecord);
+    if (receivedAmount.compareTo(BigDecimal.ZERO)>0) {
+      orderDetailPayRecordBiz.updateReceivedAmount(billRecordId, receivedAmount);
+    }
+    // 删除账单收费记录
+    rabbitMqServiceFeign.sendMessage(billPayRecordId, 2, BaseBillPay);
 
     BillPayDetailRecord billPayDetail = new BillPayDetailRecord();
     billPayDetail.setBillPayRecordId(billPayRecordId);
@@ -117,8 +124,6 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
     // 发送消息同步中间表账单相关数据
     if (result > 0) {
-      // 删除账单收费记录
-      rabbitMqServiceFeign.sendMessage(billPayRecordId, 2, BaseBillPay);
       // 更新账单记录
       rabbitMqServiceFeign.sendMessage(billRecord.getOrderRecordId(), 1, BaseBill);
     }
