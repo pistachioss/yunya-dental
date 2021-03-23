@@ -538,6 +538,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     String orderRecordNumber = generateOrderRecordNumber(billRecordOrgId);
     orderRecord.setOrderRecordNum(orderRecordNumber);
     orderRecord.setTotalAmount(totalAmount);
+    orderRecord.setStatus((byte) 1);
     orderRecord.setInservice(true);
     orderRecord.setCrtId(userId);
     orderRecord.setCrtName(name);

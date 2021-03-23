@@ -1015,7 +1015,11 @@ public class TollBiz {
    * @param remarks 备注
    */
   private BillPayDetailRecord setBillPayRecordDetailValue(
-      Integer billPayRecordId, Integer accountItemId, BigDecimal amount, Byte type,String remarks) {
+      Integer billPayRecordId,
+      Integer accountItemId,
+      BigDecimal amount,
+      Byte type,
+      String remarks) {
     BillPayRecord billPayRecord = billPayRecordMapper.selectByPrimaryKey(billPayRecordId);
     BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
     Integer patientId = billPayRecord.getPatientId();
@@ -1353,6 +1357,7 @@ public class TollBiz {
           accreditDiscount);
       savePrivilegeDetail(
           discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
+      orderRecordBiz.updateSelectiveById(orderRecordResult);
     }
     rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
     log.info("发送中间表账单记录同步消息{}", "订单记录ID：-------》》》" + orderRecordId);
