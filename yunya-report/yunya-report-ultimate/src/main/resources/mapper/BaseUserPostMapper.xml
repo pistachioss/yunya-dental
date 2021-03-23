@@ -650,5 +650,7 @@
         GROUP BY
         edi.orgId,
         edi.employeeId
+        ORDER BY
+        edi.totalTreatmentTime, treatVisitsTimes
     </select>
 </mapper>
