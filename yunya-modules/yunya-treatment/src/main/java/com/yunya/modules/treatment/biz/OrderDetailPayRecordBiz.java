@@ -50,12 +50,13 @@ public class OrderDetailPayRecordBiz
         receivedAmount = receivedAmount.subtract(amount);
         if (receivedAmount.compareTo(BigDecimal.ZERO) <= 0) {//receivedAmount已经用完了
           vo.setReceivedAmount(receivedAmount.abs());
+          mapper.updateByPrimaryKeySelective(vo);
           break;
         } else {
           vo.setReceivedAmount(BigDecimal.ZERO);
+          mapper.updateByPrimaryKeySelective(vo);
         }
       }
-      mapper.uptReceivedAmountById(list);
     }
   }
 }

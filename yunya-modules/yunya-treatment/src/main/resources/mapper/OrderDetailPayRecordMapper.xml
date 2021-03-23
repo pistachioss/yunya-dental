@@ -36,12 +36,4 @@
             odpr.bill_record_id = #{billRecordId}
             AND odpr.privilege_amount = 0
     </select>
-
-    <update id="uptReceivedAmountById">
-        <foreach close="" collection="list" item="item" open="" separator=";">
-            update order_detail_pay_record
-            set received_amount=#{item.receivedAmount}
-            where id = #{item.id}
-        </foreach>
-    </update>
 </mapper>
