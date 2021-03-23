@@ -75,5 +75,15 @@ public class EmployeeAttendServiceRest {
   public List<LeaveInfoListVO> findListByIds(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
     return leaveInfoBiz.findListByDateAndIds(leaveInfoForm);
   }
-
+  /**
+   * 根据申请人ID集合获取请假申请列表(后端需求用)
+   *
+   * @param
+   * @return
+   */
+  @ApiOperation("获取请假申请列表")
+  @RequestMapping(value = "/leave_info/back/findListByIds",method = RequestMethod.POST)
+  public List<LeaveInfoListVO> backFindListByIds(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+    return leaveInfoBiz.backFindListByIds(leaveInfoForm);
+  }
 }

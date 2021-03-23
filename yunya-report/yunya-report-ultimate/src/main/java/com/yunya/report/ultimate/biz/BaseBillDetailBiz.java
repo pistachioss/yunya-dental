@@ -694,7 +694,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             vo.setEmployeeId(employeeId);
           });
     }
-    long t5 = System.currentTimeMillis();
     return new PageInfo<>(resultList);
   }
 
