@@ -523,8 +523,12 @@
                 and t.id = #{id}
             </if>
             <if test="startTime != null and endTime != null">
-                and (t.start_time &lt;= #{startTime} and t.end_time>= #{startTime})
-                or (t.end_time &lt;= #{endTime} and t.end_time>= #{endTime})
+                and (
+                (t.start_time &lt;= #{startTime} and t.end_time >= #{startTime})
+                or (t.start_time &lt;=  #{endTime} and t.end_time >= #{endTime})
+                or (t.start_time >= #{startTime} and t.start_time &lt;=  #{endTime})
+                or (t.end_time>= #{startTime} and t.end_time &lt;= #{endTime})
+                )
             </if>
         </where>
         GROUP BY
