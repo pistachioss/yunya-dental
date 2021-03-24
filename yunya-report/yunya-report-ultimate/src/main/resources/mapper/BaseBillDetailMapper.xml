@@ -2421,6 +2421,24 @@
         </where>
         GROUP BY bbd.bill_id
     </select>
+    <!-- 根据订单ID列表查询非工作量总和 -->
+    <select id="selectBillTotalNotWorkload" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
+        SELECT
+        bbd.bill_id AS billId,
+        SUM(( bbd.price * bbd.quantity ) - bbd.discount_amount ) AS billTotalNotWorkload
+        FROM
+        base_bill_detail bbd
+        <where>
+            AND bbd.executor_id IS NULL
+            <if test="billIds != null and billIds.size > 0">
+                AND bbd.bill_id IN
+                <foreach collection="billIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY bbd.bill_id
+    </select>
     <!-- 查询订补入工作量总和 -->
     <select id="selectTotalCouponWorkload" resultType="java.math.BigDecimal">
         SELECT
@@ -2464,4 +2482,5 @@
             bbd.executor_id IS NULL
             AND bbd.bill_id = #{billId}
     </select>
+
 </mapper>

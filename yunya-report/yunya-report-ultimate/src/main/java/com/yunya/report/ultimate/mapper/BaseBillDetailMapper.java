@@ -245,6 +245,14 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   List<BillRecordWorkloadVO> selectBillTotalWorkload(@Param("billIds") Set<Integer> billIds);
 
   /**
+   * 根据订单ID列表查询非工作量总和
+   *
+   * @param billIds 订单ID列表
+   * @return BigDecimal
+   */
+  List<BillRecordWorkloadVO> selectBillTotalNotWorkload(@Param("billIds") Set<Integer> billIds);
+
+  /**
    * 根据订单ID查询计算工作量订单明细
    *
    * @param billId 订单ID
