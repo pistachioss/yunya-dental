@@ -36,19 +36,21 @@ public class OrderDetailPayRecordBiz
 
   /**
    * 更新订单明细收费的已收金额
-   * @param billRecordId
-   * @param receivedAmount
+   *
+   * @param billRecordId 账单记录ID
+   * @param receivedAmount 撤销收费金额
    */
   public void updateReceivedAmount(Integer billRecordId, BigDecimal receivedAmount) {
     OrderDetailPayRecord entity = new OrderDetailPayRecord();
     entity.setBillRecordId(billRecordId);
     List<OrderDetailPayRecord> list = mapper.select(entity);
     if (StringHelper.isNotEmpty(list)) {
-      list = list.stream().sorted((v1, v2)-> v2.getId()-v1.getId()).collect(Collectors.toList());
+      list = list.stream().sorted((v1, v2) -> v2.getId() - v1.getId()).collect(Collectors.toList());
       for (OrderDetailPayRecord vo : list) {
         BigDecimal amount = vo.getReceivedAmount();
         receivedAmount = receivedAmount.subtract(amount);
-        if (receivedAmount.compareTo(BigDecimal.ZERO) <= 0) {//receivedAmount已经用完了
+        if (receivedAmount.compareTo(BigDecimal.ZERO) <= 0) {
+          // receivedAmount已经用完了
           vo.setReceivedAmount(receivedAmount.abs());
           mapper.updateByPrimaryKeySelective(vo);
           break;
