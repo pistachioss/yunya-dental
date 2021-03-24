@@ -828,7 +828,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         query.setStartTime(startDate);
         query.setEndTime(endDate);
         query.setUserIds(ids);
-        List<LeaveInfoListVO> listByIds = this.employeeAttendServiceFeign.findListByIds(query);
+        List<LeaveInfoListVO> listByIds = this.employeeAttendServiceFeign.backFindListByIds(query);
         return listByIds;
     }
 
