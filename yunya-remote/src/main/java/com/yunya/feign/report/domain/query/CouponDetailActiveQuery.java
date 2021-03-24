@@ -16,7 +16,7 @@ import java.util.List;
 @ApiModel(value = "公司端/门诊端-产品激活明细参数")
 @Data
 public class CouponDetailActiveQuery extends PageQuery {
-    @ApiModelProperty(value = "产品名称")
+    @ApiModelProperty(value = "患者关键字")
     private String patientKeyword;
     @ApiModelProperty(value = "激活门诊")
     private List<Integer> activeOrgIds;
