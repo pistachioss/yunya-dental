@@ -28,6 +28,9 @@ public class CouponActiveVo {
 	@ApiModelProperty(value = "产品名称")
 	@ExcelProperty(value = "产品名称")
 	private String couponName;
+	@ApiModelProperty(value = "激活门诊ID")
+	@ExcelIgnore
+	private String orgId;
 	@ApiModelProperty(value = "激活门诊")
 	@ExcelProperty(value = "激活门诊")
 	private String orgName;

@@ -168,6 +168,7 @@
             `bc`.`coupon_id`,
             `bc`.`coupon_name`,
             `bo`.`abbreviation` as `orgName`,
+            `bo`.`org_id`,
             case
                 when `bc`.`coupon_type` = 0 then '代金券'
                 when `bc`.`coupon_type` = 1 then '折扣券'
