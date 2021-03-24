@@ -1772,7 +1772,7 @@
         FROM
         base_bill_pay bbp
         INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
-        AND bb.bill_date IS NOT NULL
+        AND bb.bill_num IS NOT NULL
         <where>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">

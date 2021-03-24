@@ -404,22 +404,25 @@
         SUM( any_value(bbpd.amount) ) AS totalFreePaymentAmount
         FROM
         base_bill bb
-        left join (
-        select bill_id,IFNULL(SUM(principal_amount),0) amount from base_bill_pay_detail
+        INNER JOIN (
+        SELECT
+        bill_id,
+        IFNULL(SUM(principal_amount), 0) amount
+        FROM base_bill_pay_detail
         <where>
             type = 2
             <if test="query.payIds!=null and query.payIds.size()>0">
-                and account_item_id in
+                AND account_item_id IN
                 <foreach collection="query.payIds" item="id" open="(" separator="," close=")">
                     #{id}
                 </foreach>
             </if>
         </where>
-        group by bill_id
-        ) bbpd on bbpd.bill_id=bb.bill_id
+        GROUP BY
+        bill_id
+        ) bbpd ON bbpd.bill_id=bb.bill_id
         <where>
             AND bb.bill_num IS NOT NULL
-            AND bb.bill_date IS NOT NULL
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     and DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
