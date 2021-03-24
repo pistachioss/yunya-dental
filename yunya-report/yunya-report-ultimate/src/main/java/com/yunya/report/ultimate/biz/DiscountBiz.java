@@ -415,4 +415,15 @@ public class DiscountBiz {
                 couponId, saleChannelId);
         return new PageInfo<>(page);
     }
+
+    public List<CouponActiveVo> listCouponActive(CouponActiveQuery query) {
+        return couponMapper.listCouponActive(query.getCouponName()
+                , query.getSoldChannelIds(), query.getActiveOrgIds());
+    }
+
+    public List<CardActiveVo> listCardActive(Integer couponId, Integer saleChannelId, CouponDetailActiveQuery query){
+        return cardMapper.listCardActive(query.getPatientKeyword()
+                , query.getActiveOrgIds(), query.getActiveStartDate(),query.getActiveEndDate(),
+                couponId, saleChannelId);
+    }
 }
