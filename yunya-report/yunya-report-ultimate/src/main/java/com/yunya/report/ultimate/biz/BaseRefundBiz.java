@@ -274,4 +274,14 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
       }
     }
   }
+
+  /**
+   * 根据条件查询退费工作量
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public BigDecimal findTotalRefundWorkload(DataStatisticsQuery query) {
+    return mapper.selectTotalRefundWorkload(query);
+  }
 }

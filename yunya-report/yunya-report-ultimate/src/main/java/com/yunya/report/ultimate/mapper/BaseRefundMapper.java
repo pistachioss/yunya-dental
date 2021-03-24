@@ -6,6 +6,7 @@ import com.yunya.models.report.BaseRefund;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface BaseRefundMapper extends Mapper<BaseRefund> {
@@ -16,7 +17,8 @@ public interface BaseRefundMapper extends Mapper<BaseRefund> {
    * @param query 查询条件
    * @return List<BillOfRefundRecordVO>
    */
-  List<BillOfRefundRecordInfoVO> selectBillRefundRecord(@Param("query") BillRefundRecordQuery query);
+  List<BillOfRefundRecordInfoVO> selectBillRefundRecord(
+      @Param("query") BillRefundRecordQuery query);
 
   /**
    * 根据条件查询员工退费工作量明细列表
@@ -62,4 +64,12 @@ public interface BaseRefundMapper extends Mapper<BaseRefund> {
    */
   List<StatementBillRefundDetailVO> selectOtherBillRefundDetailList(
       @Param("query") StatementBillRefundDetailInfoQuery query);
+
+  /**
+   * 根据条件查询退费工作量
+   *
+   * @param query 查询条件
+   * @return BigDecimal
+   */
+  BigDecimal selectTotalRefundWorkload(@Param("query") DataStatisticsQuery query);
 }

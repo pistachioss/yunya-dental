@@ -229,20 +229,20 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") BillItemDetailQuery query);
 
   /**
-   * 根据订单ID列表查询工作量总和
-   *
-   * @param billIds 订单ID列表
-   * @return BigDecimal
-   */
-  BigDecimal selectTotalWorkload(@Param("billIds") Set<Integer> billIds);
-
-  /**
    * 根据条件查询补入工作量总和
    *
    * @param billIds 订单ID列表
    * @return BigDecimal
    */
   BigDecimal selectTotalCouponWorkload(@Param("billIds") Set<Integer> billIds);
+
+  /**
+   * 根据订单ID列表查询工作量总和
+   *
+   * @param billIds 订单ID列表
+   * @return BigDecimal
+   */
+  List<BillRecordWorkloadVO> selectBillTotalWorkload(@Param("billIds") Set<Integer> billIds);
 
   /**
    * 根据订单ID查询计算工作量订单明细

@@ -26,8 +26,8 @@ public class BaseBillPayBizTest {
     DataStatisticsQuery query = new DataStatisticsQuery();
     query.setDateType((byte) 0);
     query.setOrgIds(new Integer[] {26});
-    query.setStartDate("2021-03-01");
-    query.setEndDate("2021-03-20");
+    query.setStartDate("2021-03-02");
+    query.setEndDate("2021-03-02");
     ClinicWorkloadGroupInfoVO vo = billPayBiz.generateClinicWorkloadInfo(query);
     System.out.println(vo);
   }

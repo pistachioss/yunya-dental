@@ -1004,6 +1004,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
+   * 根据订单ID列表查询订单工作量
+   *
+   * @param billIds 订单ID列表
+   * @return list
+   */
+  public List<BillRecordWorkloadVO> findBillWorkloadInfoByBillIds(Set<Integer> billIds) {
+    return mapper.selectBillTotalWorkload(billIds);
+  }
+
+  /**
    * 根据订单ID查询订单明细工作量
    *
    * @param billId 订单ID

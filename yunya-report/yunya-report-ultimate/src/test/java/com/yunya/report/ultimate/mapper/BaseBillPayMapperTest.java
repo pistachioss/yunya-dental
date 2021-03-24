@@ -2,6 +2,7 @@ package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.StatementBillChargeDetailInfoQuery;
+import com.yunya.feign.report.domain.vo.BillIdAndBillPayIdVO;
 import com.yunya.feign.report.domain.vo.StatementBillChargeDetailVO;
 import com.yunya.feign.report.domain.vo.TollDataStatisticsVO;
 import org.junit.Test;
@@ -157,5 +158,16 @@ public class BaseBillPayMapperTest {
     query.setEndDate("2021-03-15");
     BigDecimal bigDecimal = billPayMapper.selectTotalReceivedAmount(query);
     System.out.println(bigDecimal);
+  }
+
+  @Test
+  public void find9() {
+    DataStatisticsQuery query = new DataStatisticsQuery();
+    query.setOrgIds(new Integer[] {26});
+    query.setDateType((byte) 0);
+    query.setStartDate("2021-03-01");
+    query.setEndDate("2021-03-21");
+    List<BillIdAndBillPayIdVO> vos = billPayMapper.selectBillIdsAndBillPayIds(query);
+    System.out.println(vos);
   }
 }

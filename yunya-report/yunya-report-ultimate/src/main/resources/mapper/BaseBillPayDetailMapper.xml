@@ -89,9 +89,11 @@
         group by t.bill_pay_id,t.bill_id
     </select>
     <!-- 查询收费记录的免单总额 -->
-    <select id="selectTotalFreePayAmount" resultType="java.math.BigDecimal">
+    <select id="selectTotalFreePayAmount" resultType="com.yunya.feign.report.domain.vo.BillPayFreePayAmountVO">
         SELECT
-        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalFreePayAmount
+        bbpd.bill_pay_id AS billPayId,
+        bbpd.bill_id AS billId,
+        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS freePayAmount
         FROM
         base_bill_pay_detail bbpd
         <where>
@@ -103,6 +105,8 @@
                 </foreach>
             </if>
         </where>
+        GROUP BY
+        bbpd.bill_pay_id
     </select>
     <!-- 根据收费记录ID查询免单支付金额 -->
     <select id="selectFreePayAmount" resultType="java.math.BigDecimal">
