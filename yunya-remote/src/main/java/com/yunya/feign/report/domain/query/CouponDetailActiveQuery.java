@@ -1,0 +1,28 @@
+package com.yunya.feign.report.domain.query;
+
+import com.yunya.framework.common.model.PageQuery;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+
+import java.time.LocalDate;
+import java.util.List;
+
+/**
+ * @description:
+ * @author: xy
+ * @date 2021/3/17 14:27
+ **/
+@ApiModel(value = "公司端/门诊端-产品激活明细参数")
+@Data
+public class CouponDetailActiveQuery extends PageQuery {
+    @ApiModelProperty(value = "患者关键字")
+    private String patientKeyword;
+    @ApiModelProperty(value = "激活门诊")
+    private List<Integer> activeOrgIds;
+    @ApiModelProperty(value = "激活开始日期")
+    private LocalDate activeStartDate;
+    @ApiModelProperty(value = "激活结束日期")
+    private LocalDate activeEndDate;
+
+}

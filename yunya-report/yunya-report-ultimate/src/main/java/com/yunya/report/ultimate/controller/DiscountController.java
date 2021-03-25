@@ -2,15 +2,54 @@ package com.yunya.report.ultimate.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.*;
-import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.report.domain.query.CardSoldRecordQuery;
+import com.yunya.feign.report.domain.query.CardSoldStatisticsQuery;
+import com.yunya.feign.report.domain.query.CardStatisticsQuery;
+import com.yunya.feign.report.domain.query.CardUsedDetailQuery;
+import com.yunya.feign.report.domain.query.CardUsedRecordQuery;
+import com.yunya.feign.report.domain.query.CardUsedStatisticsQuery;
+import com.yunya.feign.report.domain.query.CouponActiveDetailQuery;
+import com.yunya.feign.report.domain.query.CouponActiveQuery;
+import com.yunya.feign.report.domain.query.CouponDetailActiveQuery;
+import com.yunya.feign.report.domain.query.CouponSoldDetailQuery;
+import com.yunya.feign.report.domain.query.CouponSoldStatisticsQuery;
+import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
+import com.yunya.feign.report.domain.query.CouponUsedDetailQuery;
+import com.yunya.feign.report.domain.query.CouponUsedQuery;
+import com.yunya.feign.report.domain.query.MultiCardUseQuery;
+import com.yunya.feign.report.domain.query.OnceCardUseQuery;
+import com.yunya.feign.report.domain.query.RechargeCardStatisticsQuery;
+import com.yunya.feign.report.domain.query.RechargeDetailQuery;
+import com.yunya.feign.report.domain.query.RechargeQuery;
+import com.yunya.feign.report.domain.vo.CardActiveVo;
+import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
+import com.yunya.feign.report.domain.vo.CardStatisticsVo;
+import com.yunya.feign.report.domain.vo.CardUsedDetailVo;
+import com.yunya.feign.report.domain.vo.CardUsedRecordVo;
+import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
+import com.yunya.feign.report.domain.vo.CouponActiveDetailVo;
+import com.yunya.feign.report.domain.vo.CouponActiveVo;
+import com.yunya.feign.report.domain.vo.CouponSoldDetailVo;
+import com.yunya.feign.report.domain.vo.CouponSoldRecordVo;
+import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
+import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
+import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
+import com.yunya.feign.report.domain.vo.CouponUsedVo;
+import com.yunya.feign.report.domain.vo.MultiCardUseVo;
+import com.yunya.feign.report.domain.vo.OnceCardUseVo;
+import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
+import com.yunya.feign.report.domain.vo.RechargeDetailVo;
+import com.yunya.feign.report.domain.vo.RechargeVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.DiscountBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -22,7 +61,7 @@ import java.util.List;
  * @author xiangyang
  * @date 2020/10/26
  */
-@Api(tags = {"公司端-优惠券、卡券报表接口"})
+@Api(tags = {"产品、卡券报表接口"})
 @Slf4j
 @RestController
 public class DiscountController {
@@ -261,4 +300,36 @@ public class DiscountController {
 		return ResponseUtil.success(multiCardUsePage);
 	}
 
+	@ApiOperation(value = "公司端/门诊端-报表统计-市场报表-产品激活报表")
+	@PostMapping("/coupon/activation/page")
+	public ResponseResult<PageInfo<CouponActiveVo>> getCouponActivation(@RequestBody CouponActiveQuery query) {
+		return ResponseUtil.success(discountBiz.getCouponActivePage(query));
+	}
+
+	@ApiOperation(value = "公司端/门诊端-报表统计-市场报表-产品激活明细")
+	@PostMapping("/coupon/{couponId}/card/channel/{saleChannelId}/activation/page")
+	public ResponseResult<PageInfo<CardActiveVo>> getCouponActivationDetail(@PathVariable(value = "couponId") Integer couponId,
+																			  @PathVariable(value = "saleChannelId") Integer saleChannelId,
+																			  @RequestBody CouponDetailActiveQuery query) {
+		return ResponseUtil.success(discountBiz.getCardActivePage(couponId, saleChannelId, query));
+	}
+
+	@ApiOperation(value = "公司端/门诊端-报表统计-市场报表-产品激活报表-导出")
+	@PostMapping("/coupon/activation/export")
+	public void exportCouponActivation(HttpServletResponse response, @RequestBody CouponActiveQuery query) throws IOException {
+		discountBiz.buildResponse(response, "产品激活报表");
+		EasyExcel.write(response.getOutputStream(), CouponActiveVo.class)
+				.sheet("sheet").doWrite(discountBiz.listCouponActive(query));
+
+	}
+
+	@ApiOperation(value = "公司端/门诊端-报表统计-市场报表-产品激活明细-导出")
+	@PostMapping("/coupon/{couponId}/card/channel/{saleChannelId}/activation/export")
+	public void exportCouponActivationDetail(HttpServletResponse response, @PathVariable(value = "couponId") Integer couponId,
+																			@PathVariable(value = "saleChannelId") Integer saleChannelId,
+																			@RequestBody CouponDetailActiveQuery query) throws IOException {
+		discountBiz.buildResponse(response, "产品激活明细");
+		EasyExcel.write(response.getOutputStream(), CardActiveVo.class)
+				.sheet("sheet").doWrite(discountBiz.listCardActive(couponId, saleChannelId, query));
+	}
 }

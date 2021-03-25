@@ -67,23 +67,14 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static com.yunya.framework.common.constant.BusinessConstants.HOUR_GAP;
-import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_APPLY_LOCK_SEC;
-import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_AUDIT_PENDING_STATUS;
-import static com.yunya.framework.common.constant.BusinessConstants.NORMAL_MEDICAL_STATUS;
+import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.modules.emr.enums.ApplyTypeEnum.ADD;
 import static com.yunya.modules.emr.enums.ApplyTypeEnum.UPDATE;
-import static com.yunya.modules.emr.enums.ApproveStatusEnum.APPROVE_PENDING;
-import static com.yunya.modules.emr.enums.ApproveStatusEnum.AUDIT_PASS;
-import static com.yunya.modules.emr.enums.ApproveStatusEnum.AUDIT_REJECT;
+import static com.yunya.modules.emr.enums.ApproveStatusEnum.*;
 import static com.yunya.modules.emr.enums.EmrError.*;
-import static com.yunya.modules.emr.enums.EventTypeEnum.DRAFT_AUDIT;
-import static com.yunya.modules.emr.enums.EventTypeEnum.MEDICAL_CHANGE_AUDIT;
+import static com.yunya.modules.emr.enums.EventTypeEnum.*;
 import static com.yunya.modules.emr.enums.TrueFalseEnum.*;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.*;
 
 /**
  * @author xiangyang
@@ -219,7 +210,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                     log.warn("【修改草稿病例申请失败】：草稿病例[{}]已超过拒绝审批时间24h", eventId);
                     return ResponseUtil.error(MODIFY_APPLY_TIMEOUT);
                 }
-             //5. 检查变更病例
+                //5. 检查变更病例
             } else {
                 ApprovalRecord newestDraft = mapper.findNewestDraft(eventId);
                 //待审核草稿不能申请变更
@@ -289,7 +280,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 return ResponseUtil.error(MEDICAL_IS_EXIST);
             }
             //检查变更申请记录，申请未通过时，不可多次重复申请变更
-            ChangeCountBo  applyCount = mapper.countMedicalChange(eventId, ADD.getCode());
+            ChangeCountBo applyCount = mapper.countMedicalChange(eventId, ADD.getCode());
             if (applyCount != null) {
                 if (applyCount.getPendingCount() > 0) {
                     log.warn("【申请变更新增失败】：该病历已申请过修改且处于待审核状态，请勿重复申请！");
@@ -353,7 +344,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 return ResponseUtil.error(AUDIT_PENDING);
             }
             //检查变更申请记录，申请未通过时，不可多次重复申请变更
-            ChangeCountBo  applyCount = mapper.countMedicalChange(eventId, UPDATE.getCode());
+            ChangeCountBo applyCount = mapper.countMedicalChange(eventId, UPDATE.getCode());
             if (applyCount != null) {
                 if (applyCount.getPendingCount() > 0) {
                     log.warn("【申请变更修改失败】：该病历已申请过修改且处于待审核状态，请勿重复申请！");
@@ -396,7 +387,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
-                redisUtils.unlock(lockKey,lockVal);
+                redisUtils.unlock(lockKey, lockVal);
             }
         }
     }
@@ -550,7 +541,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         Page<ApprovalRecord> page = new Page<>();
         //关键字模糊查询条件为空，先查审批相关信息
         if (StringUtils.isBlank(keyword)) {
-             page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+            page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
             //根据病例提交时间查询审批数据
             list = mapper.listMedicalByParam(null, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
             if (CollectionUtils.isNotEmpty(list)) {
@@ -661,7 +652,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     /**
      * 查询登录人草稿审批的患者ids
      *
-     * @param list        源数据
+     * @param list 源数据
      * @return 患者ids
      */
     public AuditMedicalBo getDraftPatientIdsByApplyType(List<ApprovalRecord> list) {
@@ -691,12 +682,12 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
      * 根据查询关键字获取电子病例ids集合
      *
      * @param auditMedicalBo 包含患者，就诊信息的bo
-     * @param loginUserId  登录人
-     * @param keyword      关键字
+     * @param loginUserId    登录人
+     * @param keyword        关键字
      * @return list
      */
     private List<Integer> getQueryMedicalIdsAndSetBo(AuditMedicalBo auditMedicalBo, Integer loginUserId, String keyword
-                                , ApprovePageBo approveBo) {
+            , ApprovePageBo approveBo) {
         List<Integer> patientIds = Lists.newArrayList(auditMedicalBo.getPatientIds());
         List<Integer> medicalIds = Lists.newArrayList();
         //调用患者接口服务，查询条件下的所有患者信息
@@ -987,7 +978,8 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     }
 
     /**
-     *  查询截止时间是否已经超时
+     * 查询截止时间是否已经超时
+     *
      * @param record record
      * @return boolean
      */
@@ -1031,7 +1023,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         RestErrorBo errorBo = RestErrorBo.getInstance();
         //检查登录人权限
         if (!checkPostPermission(loginUserId) || medicalCommonRecord == null ||
-                            !loginUserId.equals(medicalCommonRecord.getCrtId())) {
+                !loginUserId.equals(medicalCommonRecord.getCrtId())) {
             log.warn("无权限操作，操作人:[{}]", loginUserId);
             errorBo.setError(NO_PERMISSION_OPERATION);
             return errorBo;
@@ -1050,12 +1042,12 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             if (CollectionUtils.isNotEmpty(filterPatientList)) {
                 Map<Integer, PatientBaseInfoVo> patientMap = filterPatientList.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity()));
                 //构建患者映射
-                auditMedicalBo.getPatientMap().forEach((k,v) -> patientInfoMap.put(k, patientMap.get(v)));
+                auditMedicalBo.getPatientMap().forEach((k, v) -> patientInfoMap.put(k, patientMap.get(v)));
             }
             //获取就诊相关信息
             Map<Integer, MedicalTreatmentBo> treatmentMap = buildTreatmentMap(auditMedicalBo.getTreatmentIds());
             //构建就诊映射
-            auditMedicalBo.getTreatmentMap().forEach((k,v) -> treatmentInfoMap.put(k, treatmentMap.get(v)));
+            auditMedicalBo.getTreatmentMap().forEach((k, v) -> treatmentInfoMap.put(k, treatmentMap.get(v)));
             //构建bo
             pageBo.assignMember(patientInfoMap, treatmentInfoMap);
         }
@@ -1063,6 +1055,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
 
     /**
      * 构建就诊信息历映射
+     *
      * @param treatmentIds 就诊ids
      * @return map
      */
@@ -1142,14 +1135,15 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
 
     /**
      * 申请变更带参数查询查询
-     * @param list 源审批list
-     * @param applyType 变更类型
-     * @param keyword 关键字
+     *
+     * @param list        源审批list
+     * @param applyType   变更类型
+     * @param keyword     关键字
      * @param loginUserId 登录人
-     * @param pageBo bo
+     * @param pageBo      bo
      */
     private List<Integer> buildChangeMapOfKeyword(List<ApprovalRecord> list, Integer applyType, String keyword,
-                                         Integer loginUserId, ApproveChangePageBo pageBo) {
+                                                  Integer loginUserId, ApproveChangePageBo pageBo) {
         List<Integer> eventIds = Lists.newArrayList();
         //根据审批查询结果，生成申请类型映射
         Map<Integer, List<ApprovalRecord>> eventMap = list.stream().collect(groupingBy(ApprovalRecord::getApplyType));
@@ -1173,7 +1167,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                             .collect(toMap(MedicalTreatmentBo::getTreatmentId, Function.identity()));
                     //构建患者映射 <treatmentId, PatientBaseInfoVo>
                     Map<Integer, PatientBaseInfoVo> trePatientMap = Maps.newHashMap();
-                    treatmentMap.forEach((k,v) -> {
+                    treatmentMap.forEach((k, v) -> {
                         trePatientMap.put(k, patientMap.get(v.getPatientId()));
                     });
                     pageBo.setTrePatientInfoMap(trePatientMap);
@@ -1205,6 +1199,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
 
     /**
      * 就诊时间是否在当前时间之内
+     *
      * @param treatDate treatDate
      * @return bolean
      */
@@ -1243,5 +1238,18 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         approvalRecord.setId(id);
         approvalRecord.setUpdTime(LocalDateTime.now());
         mapper.updateByPrimaryKeySelective(approvalRecord);
+    }
+
+    /**
+     * 修改医生的申请新增病例的修改时间
+     *
+     * @param treatId
+     */
+    public void updateDocApplyChangeTime(Integer treatId) {
+        ApprovalRecord treatmentRecord = mapper.findTreatmentRecord(treatId);
+        if (treatmentRecord != null) {
+            log.info("医生申请变更新增病例，就诊id：{}", treatId);
+            this.updateChangeTime(treatmentRecord.getId());
+        }
     }
 }

@@ -833,12 +833,15 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (StringHelper.isNotEmpty(extInfos)) {
       for (PatientExtInfo extInfo : extInfos) {
         Byte type = extInfo.getType();
-        // 查询标签字典名称
-        DictionaryItem item =
-            remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
-        if (type == 0 && null != item) {
-          labels.append(item.getName());
-          labels.append("、");
+        Integer dictItemId = extInfo.getDictItemId();
+        if (dictItemId != null) {
+          // 查询标签字典名称
+          DictionaryItem item =
+                  remoteSystemServiceFeign.findDictionaryItemById(dictItemId);
+          if (type == 0 && null != item) {
+            labels.append(item.getName());
+            labels.append("、");
+          }
         }
       }
     }

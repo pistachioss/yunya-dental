@@ -162,4 +162,52 @@
         group by `bc`.`coupon_id`,`bc`.`crt_time`
         order by `bc`.`crt_time` desc
     </select>
+
+    <select id="listCouponActive" resultType="com.yunya.feign.report.domain.vo.CouponActiveVo">
+        select
+            `bc`.`coupon_id`,
+            `bc`.`coupon_name`,
+            `bo`.`abbreviation` as `orgName`,
+            `bo`.`org_id`,
+            case
+                when `bc`.`coupon_type` = 0 then '代金券'
+                when `bc`.`coupon_type` = 1 then '折扣券'
+                when `bc`.`coupon_type` = 2 then '兑换券'
+                when `bc`.`coupon_type` = 3 then '套餐券'
+                when `bc`.`coupon_type` = 4 then '充值卡'
+                else null
+                end as `couponTypeName`,
+            `temp`.`sale_channel_id`,
+            `temp`.`sale_channel_name`,
+            `temp`.`count` as `activatedQuantity`
+        from `base_coupon` `bc`
+             inner join (select
+                             `coupon_id`,
+                             `sale_channel_id`,
+                             `sale_channel_name`,
+                             active_org_id,
+                             count(*) as `count`
+                         from `base_card`
+                         where isnull(`sale_channel_id`) = 0
+                            <if test="soldChannelIds != null and soldChannelIds.size() > 0">
+                                and sale_channel_id in
+                                <foreach collection="soldChannelIds" item="item" open="(" separator="," close=")">
+                                    #{item}
+                                </foreach>
+                            </if>
+                            <if test="activeOrgIds != null and activeOrgIds.size() > 0">
+                                and active_org_id in
+                                <foreach collection="activeOrgIds" item="item" open="(" separator="," close=")">
+                                    #{item}
+                                </foreach>
+                            </if>
+                         group by `coupon_id`, `sale_channel_id`) `temp` on `bc`.`coupon_id` = `temp`.`coupon_id`
+             inner join `base_organization` `bo` on `bo`.`org_id` = `temp`.`active_org_id`
+        <where>
+            <if test="couponName !=null and couponName != ''">
+                `bc`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+        </where>
+        order by `bc`.`coupon_id`
+    </select>
 </mapper>

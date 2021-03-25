@@ -20,18 +20,19 @@
         <result column="choice_benefit_type" property="choiceBenefitType" jdbcType="TINYINT"/>
         <result column="operate_user_id" property="operateUserId" jdbcType="INTEGER"/>
         <result column="use_date" property="useDate" jdbcType="TIMESTAMP"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
     </resultMap>
 
     <insert id="insertList" parameterType="List">
         insert into
         `base_benefit`
         (`org_id`, `coupon_id`, `card_id`, `order_id`, `order_detail_id`, `patient_id`, `item_id`, `item_type`,
-        `benefit_type`, `coupon_type`,  `item_index`, `benefit_amount`, `choice_benefit_type`, `operate_user_id`, `use_date`)
+        `benefit_type`, `coupon_type`,  `item_index`, `benefit_amount`, `choice_benefit_type`, `operate_user_id`, `use_date`, `remark`)
         values
         <foreach collection="list" item="item" separator=",">
             (#{item.orgId}, #{item.couponId}, #{item.cardId}, #{item.orderId}, #{item.orderDetailId}, #{item.patientId},
             #{item.itemId}, #{item.itemType}, #{item.benefitType}, #{item.couponType}, #{item.itemIndex},
-            #{item.benefitAmount}, #{item.choiceBenefitType}, #{item.operateUserId}, #{item.useDate})
+            #{item.benefitAmount}, #{item.choiceBenefitType}, #{item.operateUserId}, #{item.useDate}, #{item.remark})
         </foreach>
     </insert>
 

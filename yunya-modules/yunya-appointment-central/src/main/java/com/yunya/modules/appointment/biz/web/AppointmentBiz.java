@@ -828,7 +828,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         query.setStartTime(startDate);
         query.setEndTime(endDate);
         query.setUserIds(ids);
-        List<LeaveInfoListVO> listByIds = this.employeeAttendServiceFeign.findListByIds(query);
+        // 审批状态 0 审批中 1通过 2拒绝 3撤回
+        query.setApprovalStatus(1);
+        List<LeaveInfoListVO> listByIds = this.employeeAttendServiceFeign.backFindListByIds(query);
         return listByIds;
     }
 
@@ -2506,7 +2508,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     private void setEmployeeLeaveInfo(AppointmentDimensionVo appoint ,List<LeaveInfoListVO> employeeLeaveInfos) {
         if (StringHelper.isNotEmpty(employeeLeaveInfos)) {
-            appoint.setLeaveInfos(employeeLeaveInfos);
+            Integer dentistId = appoint.getDentistId();
+            List<LeaveInfoListVO> collect = employeeLeaveInfos.stream().filter(
+                    entity -> entity.getUserId().equals(dentistId)).collect(Collectors.toList());
+            appoint.setLeaveInfos(collect);
         } else {
             appoint.setLeaveInfos(new ArrayList<>());
         }

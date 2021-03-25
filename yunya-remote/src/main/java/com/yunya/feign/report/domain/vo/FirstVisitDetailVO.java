@@ -45,4 +45,16 @@ public class FirstVisitDetailVO {
     @ApiModelProperty("患者来源")
     @Excel(name = "患者来源")
     private String originName;
+    @ApiModelProperty("下次预约时间")
+    @Excel(name = "下次预约时间")
+    private String nextAppointmentTime;
+    @ApiModelProperty("预约内容")
+    @Excel(name = "预约内容")
+    private String nextAppointContent;
+    @ApiModelProperty("下次提醒时间")
+    @Excel(name = "下次提醒时间")
+    private String nextRemindTime;
+    @ApiModelProperty("下次提醒内容")
+    @Excel(name = "提醒内容")
+    private String nextRemindcontent;
 }

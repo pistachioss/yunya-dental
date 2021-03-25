@@ -46,11 +46,11 @@ public class BaseBillDetailMapperTest {
   @Test
   public void findActualDetailList() {
     EmployeePersonalWorkloadDetailQuery query = new EmployeePersonalWorkloadDetailQuery();
-    query.setOrgId(35);
+    query.setOrgId(26);
     query.setDateType((byte) 0);
-    query.setQueryDate("2020-12");
-    query.setEmployeeId(526);
-    query.setKeyword("三七");
+    query.setQueryDate("2021-03");
+    query.setEmployeeId(341);
+    //query.setKeyword("三七");
     List<EmployeePersonalActualWorkloadDetailVO> vos =
         baseBillDetailMapper.selectEmployeePersonalActualWorkloadDetailList(query);
     System.out.println(vos);

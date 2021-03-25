@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 简介: 开单项目分类信息VO
@@ -28,4 +29,7 @@ public class ItemCategoryInfoVO implements Serializable {
   /** 项目分类名称 */
   @ApiModelProperty("分类名称")
   private String categoryName;
+  /** 项目列表*/
+  @ApiModelProperty("项目列表")
+  private List<ItemInfoVO> itemInfoVOS;
 }

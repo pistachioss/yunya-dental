@@ -402,4 +402,28 @@ public class DiscountBiz {
                 query.getCouponName(), query.getCardNumber(), query.getPatientKeyword(), query.getCouponTypes(),
                 query.getSaleChannelIds());
     }
+
+    public PageInfo<CouponActiveVo> getCouponActivePage(CouponActiveQuery query) {
+        Page<CouponActiveVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        couponMapper.listCouponActive(query.getCouponName(), query.getSoldChannelIds(), query.getActiveOrgIds());
+        return new PageInfo<>(page);
+    }
+
+    public PageInfo<CardActiveVo> getCardActivePage(Integer couponId, Integer saleChannelId, CouponDetailActiveQuery query){
+        Page<CardActiveVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        cardMapper.listCardActive(query.getPatientKeyword(), query.getActiveOrgIds(), query.getActiveStartDate(),query.getActiveEndDate(),
+                couponId, saleChannelId);
+        return new PageInfo<>(page);
+    }
+
+    public List<CouponActiveVo> listCouponActive(CouponActiveQuery query) {
+        return couponMapper.listCouponActive(query.getCouponName()
+                , query.getSoldChannelIds(), query.getActiveOrgIds());
+    }
+
+    public List<CardActiveVo> listCardActive(Integer couponId, Integer saleChannelId, CouponDetailActiveQuery query){
+        return cardMapper.listCardActive(query.getPatientKeyword()
+                , query.getActiveOrgIds(), query.getActiveStartDate(),query.getActiveEndDate(),
+                couponId, saleChannelId);
+    }
 }

@@ -20,6 +20,7 @@
         <result column="choice_benefit_type" property="choiceBenefitType" jdbcType="TINYINT"/>
         <result column="operate_user_id" property="operateUserId" jdbcType="INTEGER"/>
         <result column="use_date" property="useDate" jdbcType="TIMESTAMP"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
     </resultMap>
 
     <select id="listCardUsedByParam" resultType="com.yunya.feign.report.domain.vo.CardUsedStatisticsVo">

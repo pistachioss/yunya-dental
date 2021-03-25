@@ -47,4 +47,9 @@ public class EmployeeAttendServiceFallBackFactory implements EmployeeAttendServi
   public List<LeaveInfoListVO> findListByIds(LeaveInfoForm leaveInfoForm) {
     return null;
   }
+
+  @Override
+  public List<LeaveInfoListVO> backFindListByIds(LeaveInfoForm leaveInfoForm) {
+    return null;
+  }
 }

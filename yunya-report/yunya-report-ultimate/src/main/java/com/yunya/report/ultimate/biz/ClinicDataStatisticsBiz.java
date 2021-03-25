@@ -74,7 +74,6 @@ public class ClinicDataStatisticsBiz {
     resultData.setTollDataStatistics(clinicTollDataStatistic);
     // 门诊工作量总览
     WorkloadStatisticsVO clinicWorkloadStatistic = billDetailBiz.findClinicWorkloadStatistic(query);
-    computeWorkload(clinicBillDataStatistic.getTotalFreePaymentAmount(), clinicTollDataStatistic.getTotalBillRefundAmount(), clinicWorkloadStatistic);
     resultData.setWorkloadStatistic(clinicWorkloadStatistic);
     // 门诊会员数据总览
     MemberDataStatisticVO clinicMemberDataStatistic =
@@ -85,35 +84,6 @@ public class ClinicDataStatisticsBiz {
         memberBiz.findClinicPrepaymentsDataStatistic(query);
     resultData.setPrepaymentsDataStatistic(clinicPrepaymentsDataStatistic);
     return resultData;
-  }
-
-  /**
-   * 计算工作量汇总
-   *
-   * @param totalFreePaymentAmount
-   * @param totalBillRefundAmount
-   * @param clinicWorkloadStatistic
-   */
-  private void computeWorkload(BigDecimal totalFreePaymentAmount, BigDecimal totalBillRefundAmount, WorkloadStatisticsVO clinicWorkloadStatistic) {
-    //工作量合计 = （门诊已收工作量合计 - 其中含免单支付工作量合计+门诊补入工作量合计）+（被代收门诊已收工作量合计 - 被代收其中含免单支付工作量 + 被代收门诊补入工作量合计）
-    BigDecimal totalClinicReceivedWorkload = clinicWorkloadStatistic.getTotalClinicReceivedWorkload(); //门诊已收工作量合计
-    BigDecimal totalClinicCouponWorkload = clinicWorkloadStatistic.getTotalClinicCouponWorkload();// 门诊补入工作量合计
-    BigDecimal totalClinicedFreePaymentAmount = BigDecimal.ZERO; //被代收其中含免单支付工作量合计
-    BigDecimal totalClinicedCouponWorkload = BigDecimal.ZERO; //被代收门诊补入工作量合
-    BigDecimal totalClinicedReceivedWorkload = BigDecimal.ZERO; //
-    BigDecimal totalWorkload = totalClinicReceivedWorkload.subtract(totalFreePaymentAmount).add(totalClinicCouponWorkload)
-            .add(totalClinicedReceivedWorkload).subtract(totalClinicedFreePaymentAmount).add(totalClinicedCouponWorkload);
-    BigDecimal totalClinicedNotWorkload = BigDecimal.ZERO;//被代收门诊非工作量合计
-
-    //完成工作量合计 = 工作量 - 账单退费合计
-    //clinicWorkloadStatistic.setTotalWorkloadComplete(totalWorkload.subtract(totalBillRefundAmount));
-    //clinicWorkloadStatistic.setTotalWorkload(totalWorkload);
-//    clinicWorkloadStatistic.setTotalBillRefundAmount(totalBillRefundAmount);
-    clinicWorkloadStatistic.setTotalFreePaymentAmount(totalFreePaymentAmount);
-    clinicWorkloadStatistic.setTotalClinicedReceivedWorkload(totalClinicedReceivedWorkload);
-    clinicWorkloadStatistic.setTotalClinicedFreePaymentAmount(totalClinicedFreePaymentAmount);
-    clinicWorkloadStatistic.setTotalClinicedCouponWorkload(totalClinicedCouponWorkload);
-    clinicWorkloadStatistic.setTotalClinicedNotWorkload(totalClinicedNotWorkload);
   }
 
   /**
@@ -237,7 +207,6 @@ public class ClinicDataStatisticsBiz {
     return resultList;
   }
 
-
   /**
    * 根据条件查询门诊患者数据
    *
@@ -257,11 +226,12 @@ public class ClinicDataStatisticsBiz {
    * @param query 查询条件
    * @return PatientDataStatisticsVO
    */
-  public void ClinicPatientDataExport(DataStatisticsQuery query, HttpServletResponse response) throws IOException {
+  public void ClinicPatientDataExport(DataStatisticsQuery query, HttpServletResponse response)
+      throws IOException {
     query.setWhetherPage(false);
     List<PatientDataStatisticsVO> resultList = findClinicPatientDataList(query).getList();
     ExcelUtil<PatientDataStatisticsVO> excelUtil = new ExcelUtil<>(PatientDataStatisticsVO.class);
-    String fileName = excelUtil.getFileName(query.getStartDate(),query.getEndDate(),"","患者数据报表");
+    String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "患者数据报表");
     excelUtil.exportExcel(response, resultList, "患者数据报表", fileName);
   }
 
@@ -271,30 +241,32 @@ public class ClinicDataStatisticsBiz {
    * @param query
    * @return
    */
-  public PageInfo<OperationDataBusinessGoalVO> findAnalysisBusinessGoalList(DataStatisticsQuery query) {
-    //目标
+  public PageInfo<OperationDataBusinessGoalVO> findAnalysisBusinessGoalList(
+      DataStatisticsQuery query) {
+    // 目标
     Map<Integer, BigDecimal[]> goalMap = getBusinessGoalMap(query);
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<OperationDataBusinessGoalVO> result = billDetailBiz.selectWorkloadCompletedList(query);
-    result.forEach(vo->{
-      Integer orgId = vo.getOrgId();
-      String workload = vo.getWorkload();
-      BigDecimal workloadGoal = BigDecimal.ZERO;
-      BigDecimal firstVisitGoal = BigDecimal.ZERO;
-      BigDecimal[] goals = goalMap.get(orgId);
-      if (goals != null) {
-        workloadGoal = goals[0];
-        firstVisitGoal = goals[1];
-      }
-      String firstVisit = vo.getFirstVisit();//患者总人数或患者完成数
-      vo.setWorkload(computeRatio(workload, workloadGoal));
-      vo.setFirstVisit(computeRatio(firstVisit, firstVisitGoal));
-      vo.setIntroduction(computeRatio(vo.getIntroduction(), Integer.parseInt(firstVisit)));
-      vo.setFollowUp(computeRatio(vo.getFollowUp(),vo.getFollowUpTotal()));
-      vo.setNotice(computeRatio(vo.getNotice(),vo.getNoticeTotal()));
-    });
+    result.forEach(
+        vo -> {
+          Integer orgId = vo.getOrgId();
+          String workload = vo.getWorkload();
+          BigDecimal workloadGoal = BigDecimal.ZERO;
+          BigDecimal firstVisitGoal = BigDecimal.ZERO;
+          BigDecimal[] goals = goalMap.get(orgId);
+          if (goals != null) {
+            workloadGoal = goals[0];
+            firstVisitGoal = goals[1];
+          }
+          String firstVisit = vo.getFirstVisit(); // 患者总人数或患者完成数
+          vo.setWorkload(computeRatio(workload, workloadGoal));
+          vo.setFirstVisit(computeRatio(firstVisit, firstVisitGoal));
+          vo.setIntroduction(computeRatio(vo.getIntroduction(), Integer.parseInt(firstVisit)));
+          vo.setFollowUp(computeRatio(vo.getFollowUp(), vo.getFollowUpTotal()));
+          vo.setNotice(computeRatio(vo.getNotice(), vo.getNoticeTotal()));
+        });
     return new PageInfo<>(result);
   }
 
@@ -304,11 +276,13 @@ public class ClinicDataStatisticsBiz {
    * @param query 查询条件
    * @return PageInfo<PatientDataStatisticsVO>
    */
-  public void analysisBusinessGoalExport(DataStatisticsQuery query, HttpServletResponse response) throws IOException {
+  public void analysisBusinessGoalExport(DataStatisticsQuery query, HttpServletResponse response)
+      throws IOException {
     query.setWhetherPage(false);
     List<OperationDataBusinessGoalVO> resultList = findAnalysisBusinessGoalList(query).getList();
-    ExcelUtil<OperationDataBusinessGoalVO> excelUtil = new ExcelUtil<>(OperationDataBusinessGoalVO.class);
-    String fileName = excelUtil.getFileName(query.getStartDate(),query.getEndDate(),"","业务目标报表");
+    ExcelUtil<OperationDataBusinessGoalVO> excelUtil =
+        new ExcelUtil<>(OperationDataBusinessGoalVO.class);
+    String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "业务目标报表");
     excelUtil.exportExcel(response, resultList, "业务目标报表", fileName);
   }
 
@@ -328,22 +302,23 @@ public class ClinicDataStatisticsBiz {
     goalQuery.setOrgId(-1);
     goalQuery.setDateType(query.getDateType());
     goalQuery.setDateRange(dateRange);
-    goalQuery.setBusinessTypes(new Byte[]{2,3});
+    goalQuery.setBusinessTypes(new Byte[] {2, 3});
     goalQuery.setOrgIds(query.getOrgIds());
     List<BusinessGoalVO> goalVOS = clinicBaseServiceFeign.businessGoalList(goalQuery);
-    goalVOS.forEach(vo->{
-      Integer orgId = vo.getBelongId();
-      BigDecimal[] goals = goalMap.get(orgId);
-      if (goals == null) {
-        goals = new BigDecimal[]{BigDecimal.ZERO,BigDecimal.ZERO};
-      }
-      if (vo.getBusinessType() == 2) {// 工作量目标
-        goals[0] = vo.getBusinessGoal();
-      } else if (vo.getBusinessType() == 3) {// 初诊目标
-        goals[0] = vo.getBusinessGoal();
-      }
-      goalMap.put(orgId, goals);
-    });
+    goalVOS.forEach(
+        vo -> {
+          Integer orgId = vo.getBelongId();
+          BigDecimal[] goals = goalMap.get(orgId);
+          if (goals == null) {
+            goals = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO};
+          }
+          if (vo.getBusinessType() == 2) { // 工作量目标
+            goals[0] = vo.getBusinessGoal();
+          } else if (vo.getBusinessType() == 3) { // 初诊目标
+            goals[0] = vo.getBusinessGoal();
+          }
+          goalMap.put(orgId, goals);
+        });
     return goalMap;
   }
 
@@ -357,7 +332,10 @@ public class ClinicDataStatisticsBiz {
   public String computeRatio(String dividend, Integer divisor) {
     BigDecimal ratio = BigDecimal.ZERO;
     if (divisor != 0) {
-      ratio = new BigDecimal(dividend).divide(new BigDecimal(divisor),2,BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+      ratio =
+          new BigDecimal(dividend)
+              .divide(new BigDecimal(divisor), 2, BigDecimal.ROUND_HALF_UP)
+              .multiply(new BigDecimal(100));
     }
     return divisor + "/" + dividend + "/" + ratio + "%";
   }
@@ -374,7 +352,7 @@ public class ClinicDataStatisticsBiz {
     divisor = divisor.setScale(2);
     BigDecimal ratio = BigDecimal.ZERO;
     if (divisor.compareTo(BigDecimal.ZERO) != 0) {
-      ratio = dividend.divide(divisor,2,BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+      ratio = dividend.divide(divisor, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
     }
     return divisor + "/" + dividend + "/" + ratio + "%";
   }

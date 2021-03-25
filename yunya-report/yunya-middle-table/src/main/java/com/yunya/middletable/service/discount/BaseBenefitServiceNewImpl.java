@@ -279,21 +279,21 @@ public class BaseBenefitServiceNewImpl extends BaseBiz<BaseBenefitMapper, BaseBe
         Example example = new Example(OrderBenefit.class);
         example.createCriteria().andGreaterThanOrEqualTo("updTime", startDateStr)
                 .andLessThan("updTime", endDateStr)
-                .andEqualTo("isDeleted", FALSE.getCode());
+                .andEqualTo("deleted", FALSE.getCode());
         return orderBenefitMapper.selectByExample(example);
     }
 
     private <T> List<T> getBenefitDetail(Set<Integer> orderIds, Class<?> clazz, Mapper<T> mapper) {
         Example example = new Example(clazz);
         example.createCriteria().andIn("orderId", orderIds)
-                .andEqualTo("isDeleted", FALSE.getCode());
+                .andEqualTo("deleted", FALSE.getCode());
         return mapper.selectByExample(example);
     }
 
     private OrderBenefit getOrderBenefit(Integer orderId) {
         Example example = new Example(OrderBenefit.class);
         example.createCriteria().andEqualTo("orderId", orderId)
-                .andEqualTo("isDeleted", FALSE.getCode());
+                .andEqualTo("deleted", FALSE.getCode());
         return orderBenefitMapper.selectOneByExample(example);
     }
 

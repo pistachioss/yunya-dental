@@ -259,12 +259,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
     matchingRecord.setTreatmentRecordId(treatmentRecordId);
     matchingRecord.setOrderRecordId(orderRecordId);
+    matchingRecordBiz.delete(matchingRecord);
     if (null != assistantId1) {
       matchingRecord.setType((byte) 0);
       addAssistantMatchingRecord(assistantId1, matchingRecord);
-    } else {
-      matchingRecord.setType((byte) 0);
-      matchingRecordBiz.delete(matchingRecord);
     }
 
     if (null != assistantId2) {
@@ -273,9 +271,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       }
       matchingRecord.setType((byte) 1);
       addAssistantMatchingRecord(assistantId2, matchingRecord);
-    } else {
-      matchingRecord.setType((byte) 1);
-      matchingRecordBiz.delete(matchingRecord);
     }
 
     if (null != assistantId3) {
@@ -284,9 +279,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       }
       matchingRecord.setType((byte) 2);
       addAssistantMatchingRecord(assistantId3, matchingRecord);
-    } else {
-      matchingRecord.setType((byte) 2);
-      matchingRecordBiz.delete(matchingRecord);
     }
   }
 
@@ -546,6 +538,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     String orderRecordNumber = generateOrderRecordNumber(billRecordOrgId);
     orderRecord.setOrderRecordNum(orderRecordNumber);
     orderRecord.setTotalAmount(totalAmount);
+    orderRecord.setStatus((byte) 1);
     orderRecord.setInservice(true);
     orderRecord.setCrtId(userId);
     orderRecord.setCrtName(name);

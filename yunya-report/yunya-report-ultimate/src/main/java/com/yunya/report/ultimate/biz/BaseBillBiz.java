@@ -45,7 +45,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   /** 组织 */
   @Autowired private BaseOrganizationMapper organizationMapper;
   /** 账单详情 */
-  @Autowired private BaseBillDetailBiz baseBillDetailBiz;
+  @Autowired private BaseBillDetailMapper billDetailMapper;
 
   /**
    * 根据条件查询开单列表
@@ -288,7 +288,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     BillDiscountVO billDiscountVOs = new BillDiscountVO();
     List<BillDiscountDetailInifoVO> billDiscountDetails = Lists.newArrayList();
     // 查询账单详情列表
-    List<BaseBillDetailVO> baseBillDetails = baseBillDetailBiz.selectBillDetailByBillId(billId);
+    List<BaseBillDetailVO> baseBillDetails = billDetailMapper.selectBillDetailByBillId(billId);
     Map<Integer, BaseBillDetailVO> details =
         baseBillDetails.stream()
             .collect(Collectors.toMap(BaseBillDetailVO::getBillDetailId, (vo) -> vo));

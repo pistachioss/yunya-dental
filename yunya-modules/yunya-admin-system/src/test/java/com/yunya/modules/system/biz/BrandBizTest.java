@@ -1,8 +1,11 @@
 package com.yunya.modules.system.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.model.PageQueryParams;
 import com.yunya.models.system.Brand;
+import com.yunya.modules.system.domain.query.OrganizationQueryForm;
+import com.yunya.modules.system.vo.OrganizationInfoVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,7 @@ import java.util.Map;
 public class BrandBizTest {
 
   @Autowired private BrandBiz brandBiz;
+  @Autowired private OrganizationBiz organizationBiz;
 
   /** 根据条件查询 */
   @Test
@@ -37,5 +41,13 @@ public class BrandBizTest {
     query.setPageSize(3);
     PageInfo<Brand> info = brandBiz.selectByQuery(query);
     System.out.println(info);
+  }
+
+  @Test
+  public void testOrgList() {
+    String param = "{\"types\":[0,2],\"whetherPage\":false}";
+    OrganizationQueryForm queryForm = JSONObject.parseObject(param, OrganizationQueryForm.class);
+    PageInfo<OrganizationInfoVO> result = organizationBiz.findList(queryForm);
+    System.out.println(JSONObject.toJSON(result));
   }
 }

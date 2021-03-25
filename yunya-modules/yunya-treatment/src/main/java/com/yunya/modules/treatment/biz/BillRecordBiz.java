@@ -620,15 +620,13 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     String name = BaseContextHandler.getName();
     orderDetails.forEach(entity->{
       String remarks = entity.getRemarks();
-      if (StringHelper.isNotBlank(remarks)) {
-        OrderDetail orderDetail = new OrderDetail();
-        orderDetail.setId(entity.getOrderDetailId());
-        orderDetail.setRemarks(remarks);
-        orderDetail.setUpdId(Integer.valueOf(userID));
-        orderDetail.setUpdTime(new Date(System.currentTimeMillis()));
-        orderDetail.setUptName(name);
-        orderDetailBiz.updateOrderDetail(orderDetail);
-      }
+      OrderDetail orderDetail = new OrderDetail();
+      orderDetail.setId(entity.getOrderDetailId());
+      orderDetail.setRemarks(remarks);
+      orderDetail.setUpdId(Integer.valueOf(userID));
+      orderDetail.setUpdTime(new Date(System.currentTimeMillis()));
+      orderDetail.setUptName(name);
+      orderDetailBiz.updateOrderDetail(orderDetail);
     });
     return ResponseUtil.success();
   }

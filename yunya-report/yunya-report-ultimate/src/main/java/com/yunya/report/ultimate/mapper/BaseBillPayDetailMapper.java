@@ -1,13 +1,18 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.BillDiscountAndFreePaymentQuery;
 import com.yunya.feign.report.domain.vo.BaseBillPayDetailVO;
+import com.yunya.feign.report.domain.vo.BillDiscountAndFreePaymentVO;
+import com.yunya.feign.report.domain.vo.BillPayFreePayAmountVO;
 import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import com.yunya.models.report.BaseBillPayDetail;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface BaseBillPayDetailMapper extends Mapper<BaseBillPayDetail> {
 
@@ -26,8 +31,9 @@ public interface BaseBillPayDetailMapper extends Mapper<BaseBillPayDetail> {
    * @param payIds 入账方式
    * @return
    */
-  List<BaseBillPayDetailVO> sumPayDetailListByBillPayIds(@Param("billPayIds") Collection<Integer> billPayIds,
-                                             @Param("payIds") Collection<Integer> payIds);
+  List<BaseBillPayDetailVO> sumPayDetailListByBillPayIds(
+      @Param("billPayIds") Collection<Integer> billPayIds,
+      @Param("payIds") Collection<Integer> payIds);
 
   /**
    * 根据billId分组，统计免单支付总额
@@ -36,6 +42,32 @@ public interface BaseBillPayDetailMapper extends Mapper<BaseBillPayDetail> {
    * @param payIds 入账方式
    * @return
    */
-  List<BaseBillPayDetailVO> sumPayDetailListByBillIds(@Param("billIds") Collection<Integer> billIds,
-                                               @Param("payIds") Collection<Integer> payIds);
+  List<BaseBillPayDetailVO> sumPayDetailListByBillIds(
+      @Param("billIds") Collection<Integer> billIds, @Param("payIds") Collection<Integer> payIds);
+
+  /**
+   * 查询支付记录免单总额
+   *
+   * @param billPayIds 支付记录ID
+   * @return BigDecimal
+   */
+  List<BillPayFreePayAmountVO> selectTotalFreePayAmount(
+      @Param("billPayIds") Set<Integer> billPayIds);
+
+  /**
+   * 免单支付金额
+   *
+   * @param billPayId 支付记录ID
+   * @return BigDecimal
+   */
+  BigDecimal selectFreePayAmount(@Param("billPayId") Integer billPayId);
+
+  /**
+   * 根据条件查询折扣&免单列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillDiscountAndFreePaymentVO>
+   */
+  List<BillDiscountAndFreePaymentVO> billDiscountAndFreePaymentList(
+      @Param("query") BillDiscountAndFreePaymentQuery query);
 }

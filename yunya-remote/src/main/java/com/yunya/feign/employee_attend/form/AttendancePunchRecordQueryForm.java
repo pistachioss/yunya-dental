@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -110,4 +111,8 @@ public class AttendancePunchRecordQueryForm implements Serializable {
     /** 不等于打卡日期 */
     @ApiModelProperty(value = "不等于打卡日期")
     private Date notEqualsPunchDate;
+
+    /** 打卡日期列表 */
+    @ApiModelProperty(value = "打卡日期列表")
+    private Collection<Date> punchDates;
 }

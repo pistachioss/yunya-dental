@@ -339,8 +339,17 @@
                 FROM
                     base_treatment_process btp
                     LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-                WHERE
-                    btp.treat_end_time IS NOT NULL
+                <where>
+                    <if test="form.orgId != null">
+                        and btp.org_id = #{form.orgId}
+                    </if>
+                    <if test="form.startDate != null and form.startDate != ''">
+                        and btp.treat_end_time &gt;= #{form.startDate}
+                    </if>
+                    <if test="form.endDate != null and form.endDate != ''">
+                        and btp.treat_end_time &lt; #{form.endDate}
+                    </if>
+                </where>
                 GROUP BY
                     btp.treatment_id
                 ) btp1 ON btp.treatmentId = btp1.treatment_id

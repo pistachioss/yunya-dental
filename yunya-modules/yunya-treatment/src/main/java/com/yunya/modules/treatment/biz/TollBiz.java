@@ -302,6 +302,7 @@ public class TollBiz {
     billRecord.setPrivilegeType(discountType);
     if (0 != discountType) {
       billRecord.setPrivilegeDate(billDate);
+      billRecord.setPrivilegeOrgId(orgId);
     }
     billRecord.setReceivableAmount(totalAmount);
     billRecord.setPrivilegeAmount(privilegeAmount);
@@ -965,7 +966,8 @@ public class TollBiz {
                       billPayRecordId,
                       prepaymentAccountModel.getAccountItemId(),
                       prepaymentAccountModel.getAmount(),
-                      (byte) 0);
+                      (byte) 0,
+                      null);
               billPayDetailRecord.setRemark(prepaymentAccountModel.getPrepaymentNum());
               billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
             }
@@ -980,7 +982,8 @@ public class TollBiz {
                       billPayRecordId,
                       memberAccountModel.getAccountItemId(),
                       memberAccountModel.getAmount(),
-                      (byte) 1);
+                      (byte) 1,
+                      null);
               billPayDetailRecord.setRemark(memberAccountModel.getMemberNum());
               billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
             }
@@ -995,7 +998,8 @@ public class TollBiz {
                       billPayRecordId,
                       paymentModel.getAccountItemId(),
                       paymentModel.getAmount(),
-                      (byte) 2);
+                      (byte) 2,
+                      paymentModel.getRemarks());
               billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
             }
           });
@@ -1008,9 +1012,14 @@ public class TollBiz {
    * @param billPayRecordId 账单支付记录
    * @param accountItemId 支付方式ID
    * @param amount 支付金额
+   * @param remarks 备注
    */
   private BillPayDetailRecord setBillPayRecordDetailValue(
-      Integer billPayRecordId, Integer accountItemId, BigDecimal amount, Byte type) {
+      Integer billPayRecordId,
+      Integer accountItemId,
+      BigDecimal amount,
+      Byte type,
+      String remarks) {
     BillPayRecord billPayRecord = billPayRecordMapper.selectByPrimaryKey(billPayRecordId);
     BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
     Integer patientId = billPayRecord.getPatientId();
@@ -1026,6 +1035,7 @@ public class TollBiz {
     billPayDetailRecord.setAccountItemId(accountItemId);
     billPayDetailRecord.setAmount(amount);
     billPayDetailRecord.setType(type);
+    billPayDetailRecord.setRemark(remarks);
     billPayDetailRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     billPayDetailRecord.setCrtName(BaseContextHandler.getName());
     return billPayDetailRecord;
@@ -1262,6 +1272,7 @@ public class TollBiz {
       billRecordResult.setPrivilegeType(discountType);
       if (0 != discountType && billRecordResult.getPrivilegeDate() == null) {
         billRecordResult.setPrivilegeDate(new Date(System.currentTimeMillis()));
+        billRecordResult.setPrivilegeOrgId(orgId);
       }
       // 设置优惠总额
       billRecordResult.setPrivilegeAmount(privilegeAmount);
@@ -1315,6 +1326,7 @@ public class TollBiz {
       billRecord.setPrivilegeAmount(privilegeAmount);
       if (0 != discountType) {
         billRecord.setPrivilegeDate(new Date(currentTimeMillis));
+        billRecord.setPrivilegeOrgId(orgId);
       }
       BigDecimal actualReceivableAmount = totalAmount.subtract(privilegeAmount);
       billRecord.setActualReceivableAmount(actualReceivableAmount);
@@ -1345,6 +1357,7 @@ public class TollBiz {
           accreditDiscount);
       savePrivilegeDetail(
           discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
+      orderRecordBiz.updateSelectiveById(orderRecordResult);
     }
     rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
     log.info("发送中间表账单记录同步消息{}", "订单记录ID：-------》》》" + orderRecordId);

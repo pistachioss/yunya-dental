@@ -40,5 +40,5 @@ public interface AttendancePunchRecordMapper extends Mapper<AttendancePunchRecor
      * @param queryForm 查询参数
      * @return
      */
-    List<AttendancePunchRecordVO> findAttendancePunchRecordListGroupByDate(@Param("queryForm") AttendancePunchRecordQueryForm queryForm);
+    List<AttendancePunchRecordVO> attendancePunchRecordListGroupByDate(@Param("queryForm") AttendancePunchRecordQueryForm queryForm);
 }

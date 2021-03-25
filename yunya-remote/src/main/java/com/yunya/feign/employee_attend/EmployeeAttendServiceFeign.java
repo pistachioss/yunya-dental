@@ -58,4 +58,14 @@ public interface EmployeeAttendServiceFeign {
   @ApiOperation("获取请假申请列表")
   @RequestMapping(value = "api/leave_info/findListByIds",method = RequestMethod.POST)
   public List<LeaveInfoListVO> findListByIds(@RequestBody @Validated LeaveInfoForm leaveInfoForm);
+
+  /**
+   * 根据申请人ID集合获取请假申请列表(后端使用)
+   *
+   * @param
+   * @return
+   */
+  @ApiOperation("获取请假申请列表")
+  @RequestMapping(value = "api/leave_info/back/findListByIds",method = RequestMethod.POST)
+  public List<LeaveInfoListVO> backFindListByIds(@RequestBody @Validated LeaveInfoForm leaveInfoForm);
 }
