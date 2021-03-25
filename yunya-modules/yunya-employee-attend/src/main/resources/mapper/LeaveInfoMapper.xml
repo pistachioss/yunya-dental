@@ -522,7 +522,7 @@
             <if test="id!= null">
                 and t.id = #{id}
             </if>
-            <if test="approvalStatus!= null and approvalStatus ！=''">
+            <if test="approvalStatus!= null and approvalStatus !=''">
                 and t.approval_status = #{approvalStatus}
             </if>
             <if test="startTime != null and endTime != null">
