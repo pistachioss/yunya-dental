@@ -1,5 +1,9 @@
 package com.yunya.feign.report.enums;
 
+/**
+ * @author xzd
+ */
+
 public enum MsgCategoryEnum {
     BaseBenefit,
     BaseCardSingle,
@@ -23,6 +27,7 @@ public enum MsgCategoryEnum {
     BaseEmployee,
     BasePatientMember,
     BasePatientOrigin,
+    BasePatientOriginLog,
     BaseRefund,
     BaseVisitRemind,
     BaseAppointmentModify,

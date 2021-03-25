@@ -36,6 +36,7 @@ import static com.yunya.framework.common.constant.BusinessConstants.*;
  * @description:
  * @since: 1.0.0
  */
+
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class MemberOccurLogBiz

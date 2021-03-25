@@ -1,4 +1,4 @@
-package com.yunya.middletable.dao.report;
+package com.yunya.report.ultimate.mapper;
 
 import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.report.BasePatientOrigin;
@@ -14,15 +14,5 @@ import java.util.List;
 @Repository
 public interface BasePatientOriginMapper extends Mapper<BasePatientOrigin> {
 
-    /**
-     * 批量删除
-     * @param patientOrigins 患者来源
-     */
-     void deleteList(@Param("list") List<PatientOrigin> patientOrigins);
 
-    /**
-     * 批量插入
-     * @param patientOrigins 患者来源
-     */
-    void insertList(@Param("list") List<PatientOrigin> patientOrigins);
 }

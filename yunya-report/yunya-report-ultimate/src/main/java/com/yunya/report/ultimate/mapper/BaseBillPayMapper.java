@@ -1,5 +1,8 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
+import com.yunya.feign.patient_central.domain.query.ReceiverkLoadQuery;
+import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.query.BillPayRecordQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.StatementBillChargeDetailInfoQuery;
@@ -111,4 +114,21 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    */
   List<StatementBillChargeDetailVO> selectOtherBillIsAcceptedDetailList(
       @Param("query") StatementBillChargeDetailInfoQuery query);
+
+  /**
+   * 查询订单支付记录
+   * @param billIdList 账单id集合
+   * @param query 条件
+   * @param typeList 支付方式类型
+   * @return 账单支付记录集合
+   */
+    List<BaseBillPay> findBaseBillPayInfoList(@Param("list") List<Integer> billIdList,@Param("query") PatientOriginEmployeeQuery query,@Param("typeList") List<Integer> typeList);
+
+  /**
+   * 根据订单id查询支付记录
+   * @param baseBillIdList 订单id集合
+   * @param query 支付时间条件
+   * @return 支付记录
+   */
+  List<BaseBillPay> selectBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query);
 }

@@ -1529,4 +1529,50 @@
         </where>
         ORDER BY bbp.payeeDate, bbp.billNum DESC
     </select>
+
+    <!-- 查询订单支付记录 -->
+    <select id="findBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
+        select bbp.* from base_bill_pay bbp
+        join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
+        where 1 = 1
+        <if test="typeList != null">
+            and bbpd.type in
+            <foreach collection="typeList" item="type" open="(" separator="," close=")">
+                #{type}
+            </foreach>
+        </if>
+
+        <if test="query.startDate != null">
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+        </if>
+
+        <if test="query.endDate != null" >
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+        </if>
+
+        <if test="list.size() > 0">
+            and bbpd.bill_id in
+            <foreach collection="list" item="billId" open="(" separator="," close=")">
+                 #{billId}
+            </foreach>
+        </if>
+    </select>
+
+    <!-- 根据订单id查询支付记录 -->
+    <select id="selectBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
+        select * from base_bill_pay where bill_id in
+        <if test=" billIdList != null">
+            <foreach collection="billIdList" item="billId" open="(" separator="," close=")" >
+                #{billId}
+            </foreach>
+        </if>
+
+        <if test="query.startDate != null">
+            and DATE_FORMAT( payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+        </if>
+
+        <if test="query.endDate != null" >
+            and DATE_FORMAT( payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+        </if>
+    </select>
 </mapper>

@@ -1,15 +1,14 @@
-package com.yunya.models.patient_central;
+package com.yunya.models.report;
 
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "patient_origin_log")
-public class PatientOriginLog {
+@Table(name = "base_patient_origin_log")
+public class BasePatientOriginLog {
     /**
      * 主键id
      */
     @Id
-    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**

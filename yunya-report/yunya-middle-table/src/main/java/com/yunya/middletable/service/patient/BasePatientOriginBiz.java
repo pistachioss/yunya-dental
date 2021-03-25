@@ -1,12 +1,12 @@
 package com.yunya.middletable.service.patient;
 
+import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.PatientOriginMapper;
 import com.yunya.middletable.dao.report.BasePatientOriginMapper;
-import com.yunya.middletable.service.BaseTreatmentProcessBiz;
 import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.report.BasePatientOrigin;
 import lombok.extern.slf4j.Slf4j;
@@ -16,11 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 /**
  * 简介:患者来源中间表同步
@@ -93,27 +91,27 @@ public class BasePatientOriginBiz extends BaseBiz<BasePatientOriginMapper, BaseP
         String endDate = form.getEndDate();
         Example emp = new Example(PatientOrigin.class);
         emp.createCriteria().andBetween("updTime",startDate,endDate);
-        List<PatientOrigin> patientOriginList = patientOriginMapper.selectByExample(emp);
-        if (StringHelper.isNotNull(patientOriginList)){
-            CountDownLatch latch = new CountDownLatch(patientOriginList.size());
-            List<Future> resultFutures = new ArrayList<>();
-            resultFutures.add(importExcelThreadPool.submit(
-                    () -> {
-                        try{
-                            patientOriginList.forEach(
-                                    patientOrigin -> {
-                                        BasePatientOrigin basePatientOrigin = getBasePatientOrigin(patientOrigin);
-                                        mapper.delete(basePatientOrigin);
-                                        mapper.insertSelective(basePatientOrigin);
-                                    }
-                            );
-                        }finally{
-                            latch.countDown();
-                        }
+        List<PatientOrigin> patientOriginLists = patientOriginMapper.selectByExample(emp);
+        if (StringHelper.isNotNull(patientOriginLists)){
+            CountDownLatch countDownLatch = new CountDownLatch(patientOriginLists.size());
+            List<List<PatientOrigin>> patientOriginList = Lists.partition(patientOriginLists, 100);
+            long start = System.currentTimeMillis();
+            for (List<PatientOrigin> patientOrigins : patientOriginList) {
+                // 多线程执行
+                importExcelThreadPool.execute(() ->{
+                    try{
+                        mapper.deleteList(patientOrigins);
+                        mapper.insertList(patientOrigins);
+                    }catch (Exception e){
+                        log.info("患者来源中间表时间段数据同步入库异常",e);
+                    }finally{
+                        countDownLatch.countDown();
                     }
-            ));
-            latch.await();
-            BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
+                });
+            }
+            countDownLatch.await();
+            long end = System.currentTimeMillis();
+            log.info("患者来源中间表时间段数据同步入库成功,时长[{}]",(end - start) /1000);
         }
     }
 }
