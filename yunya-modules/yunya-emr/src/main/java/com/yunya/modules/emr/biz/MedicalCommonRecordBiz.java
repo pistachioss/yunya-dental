@@ -99,6 +99,8 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         //主治医生新增病历时，历史表中同步插入一条数据
         if (result > 0 && medicalCommonRecord.getStatus() == 0) {
             medicalRecordHistoryBiz.insertMedicalHistory(medicalCommonRecord);
+            //更新医生的申请变更时间
+            medicalApprovalBiz.updateDocApplyChangeTime(medicalCommonRecord.getTreatmentId());
         }
         //助手新增病历时，审核表中同步插入一条数据
         if (result > 0 && medicalCommonRecord.getStatus() == 1) {
