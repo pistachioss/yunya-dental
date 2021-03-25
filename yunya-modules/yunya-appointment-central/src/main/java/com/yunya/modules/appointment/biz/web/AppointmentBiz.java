@@ -828,6 +828,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         query.setStartTime(startDate);
         query.setEndTime(endDate);
         query.setUserIds(ids);
+        // 审批状态 0 审批中 1通过 2拒绝 3撤回
+        query.setApprovalStatus(1);
         List<LeaveInfoListVO> listByIds = this.employeeAttendServiceFeign.backFindListByIds(query);
         return listByIds;
     }
