@@ -2164,20 +2164,7 @@
         </where>
         ORDER BY bup.actualWorkload desc
     </select>
-
-    <select id="distinctBillIdsInExecutorIds" resultType="java.lang.Integer">
-        select
-        distinct bbd.bill_id as billId
-        from base_bill_detail bbd
-        <where>
-            <if test="executorIds!=null and executorIds.size()>0">
-                and bbd.executor_id in
-                <foreach collection="executorIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
-    </select>
+    
     <!-- 根据条件查询开单项目数量及金额列表 -->
     <select id="billItemStatistics" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsVO">
         select
