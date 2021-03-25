@@ -1020,6 +1020,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             return errorBo;
         }
         mapper.deleteByPrimaryKey(cardId);
+        mqServiceFeign.sendMessage(cardId, DELETE, BaseCardSingle);
+        log.info("【卡券删除发送消息成功】：卡券id[{}]", cardId);
         return errorBo;
     }
 
