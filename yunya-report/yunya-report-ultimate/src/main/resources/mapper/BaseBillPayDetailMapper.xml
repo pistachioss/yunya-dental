@@ -143,10 +143,10 @@
             LEFT JOIN base_employee emp ON emp.user_id=btp.registered_dentist_id
             LEFT JOIN base_organization bo ON bo.org_id=bbp.org_id
             <where>
-                <if test="query.accountType == null">
+                <if test="query.accountType == 0">
                     and bbpd.account_item_id in (23,26)
                 </if>
-                <if test="query.accountType != null">
+                <if test="query.accountType > 0">
                     bbpd.account_item_id = #{query.accountType}
                 </if>
                 <if test="query.orgIds!=null and query.orgIds.size()>0">
@@ -155,8 +155,8 @@
                         #{item}
                     </foreach>
                 </if>
-                <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
-                    and DATE_FORMAT(bbp.payee_date,'%Y-%m-%d') between #{query.startDate} and #{query.endDate}
+                <if test="query.startDate!=null and query.startDate!=''">
+                    and DATE_FORMAT(bbp.payee_date,'%Y-%m-%d') = #{query.startDate}
                 </if>
                 <if test="query.employeeIds!=null and query.employeeIds.size()>0">
                     and btp.registered_dentist_id in
@@ -204,8 +204,8 @@
                         #{item}
                     </foreach>
                 </if>
-                <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
-                    and DATE_FORMAT(bbp.payee_date,'%Y-%m-%d') between #{query.startDate} and #{query.endDate}
+                <if test="query.startDate!=null and query.startDate!=''">
+                    and DATE_FORMAT(bbp.payee_date,'%Y-%m-%d') = #{query.startDate}
                 </if>
                 <if test="query.employeeIds!=null and query.employeeIds.size()>0">
                     and btp.registered_dentist_id in
