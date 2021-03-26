@@ -21,6 +21,7 @@
         <result column="operate_user_id" property="operateUserId" jdbcType="INTEGER"/>
         <result column="use_date" property="useDate" jdbcType="TIMESTAMP"/>
         <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="authorized_id" property="authorizedId" jdbcType="INTEGER"/>
     </resultMap>
 
     <select id="listCardUsedByParam" resultType="com.yunya.feign.report.domain.vo.CardUsedStatisticsVo">

@@ -178,7 +178,7 @@
                 bep.employee_name as discountUser,
                 '授权折扣' as discountFree
             FROM (
-                select order_id as bill_id,sum(benefit_amount) as principal_amount, remark, operate_user_id
+                select order_id as bill_id,sum(benefit_amount) as principal_amount, remark, authorized_id
                 from base_benefit
                 <where>
                     choice_benefit_type=1
@@ -187,15 +187,14 @@
                         and org_id = -1
                     </if>
                 </where>
-                group by order_id,remark,operate_user_id
-
+                group by order_id,remark,authorized_id
             ) bbf
             LEFT JOIN base_bill bb ON bb.bill_id=bbf.bill_id
             LEFT JOIN base_bill_pay bbp ON bbp.bill_id=bbf.bill_id
             LEFT JOIN base_employee be ON be.user_id=bbp.payee_user_id
             LEFT JOIN base_treatment_process btp ON btp.treatment_id=bb.treatment_id
             LEFT JOIN base_employee emp ON emp.user_id=btp.registered_dentist_id
-            LEFT JOIN base_employee bep ON bep.user_id=bbf.operate_user_id
+            LEFT JOIN base_employee bep ON bep.user_id=bbf.authorized_id
             LEFT JOIN base_organization bo ON bo.org_id=bbp.org_id
             <where>
                 <if test="query.orgIds!=null and query.orgIds.size()>0">

@@ -70,11 +70,11 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
             List<BaseBenefit> baseBenefits = Lists.newArrayList();
             if (CARD_BENEFIT.equals(orderBenefit.getBenefitType())) {
                 List<CardBenefit> originData = getBenefitDetail(Sets.newHashSet(orderId), CardBenefit.class, cardBenefitMapper);
-                baseBenefits = cardTransform(originData, orderBenefit.getRemark());
+                baseBenefits = cardTransform(originData, orderBenefit.getRemark(), orderBenefit.getAuthorizedId());
             }
             if (AUTH_BENEFIT.equals(orderBenefit.getBenefitType())) {
                 List<AuthDiscountBenefit> originData = getBenefitDetail(Collections.singleton(orderId), AuthDiscountBenefit.class, authBenefitMapper);
-                baseBenefits = authTransform(originData, orderBenefit.getRemark());
+                baseBenefits = authTransform(originData, orderBenefit.getRemark(), orderBenefit.getAuthorizedId());
             }
             List<BaseBenefit> existBenefits = getExistByOrderIds(Collections.singletonList(orderId));
 
@@ -178,7 +178,7 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
         }
     }
 
-    private List<BaseBenefit> cardTransform(List<CardBenefit> cardBenefits, String remark) {
+    private List<BaseBenefit> cardTransform(List<CardBenefit> cardBenefits, String remark, Integer authorizedId) {
         return cardBenefits.stream().map(obj -> {
             BaseBenefit benefit = BeanCopierUtils.generalCopyBean(obj, BaseBenefit.class, getBenefitConvert());
             benefit.setItemType(obj.getItemType().byteValue());
@@ -186,11 +186,12 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
             benefit.setOperateUserId(obj.getCrtId());
             benefit.setUseDate(obj.getCrtTime());
             benefit.setRemark(remark);
+            benefit.setAuthorizedId(authorizedId);
             return benefit;
         }).collect(toList());
     }
 
-    private List<BaseBenefit> authTransform(List<AuthDiscountBenefit> authBenefits, String remark) {
+    private List<BaseBenefit> authTransform(List<AuthDiscountBenefit> authBenefits, String remark, Integer authorizedId) {
         return authBenefits.stream().map(obj -> {
             BaseBenefit benefit = BeanCopierUtils.generalCopyBean(obj, BaseBenefit.class, getBenefitConvert());
             benefit.setItemType(obj.getItemType().byteValue());
@@ -198,6 +199,7 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
             benefit.setOperateUserId(obj.getCrtId());
             benefit.setUseDate(obj.getCrtTime());
             benefit.setRemark(remark);
+            benefit.setAuthorizedId(authorizedId);
             return benefit;
         }).collect(toList());
     }
