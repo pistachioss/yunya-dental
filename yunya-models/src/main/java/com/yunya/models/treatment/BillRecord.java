@@ -77,6 +77,12 @@ public class BillRecord {
     private Date privilegeDate;
 
     /**
+     * 是否首次收费使用优惠
+     */
+    @Column(name = "first_privilege")
+    private Boolean firstPrivilege;
+
+    /**
      * 实际应收金额
      */
     @Column(name = "actual_receivable_amount")
@@ -342,6 +348,24 @@ public class BillRecord {
      */
     public void setPrivilegeDate(Date privilegeDate) {
         this.privilegeDate = privilegeDate;
+    }
+
+    /**
+     * 获取是否首次收费使用优惠
+     *
+     * @return firstPrivilege - 是否首次收费使用优惠
+     */
+    public Boolean getFirstPrivilege() {
+        return firstPrivilege;
+    }
+
+    /**
+     * 设置是否首次收费使用优惠
+     *
+     * @param firstPrivilege - 是否首次收费使用优惠
+     */
+    public void setFirstPrivilege(Boolean firstPrivilege) {
+        this.firstPrivilege = firstPrivilege;
     }
 
     /**
