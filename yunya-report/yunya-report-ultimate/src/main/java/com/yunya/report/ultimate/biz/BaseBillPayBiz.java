@@ -93,7 +93,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         Date billDate = vo.getBillDate();
         BigDecimal actualAmount = vo.getActualAmount();
         Integer privilegeOrgId = vo.getPrivilegeOrgId();
-        Date privilegeDate = vo.getPrivilegeDate();
+        Boolean firstPrivilege = vo.getFirstPrivilege();
         Integer payeeOrgId = vo.getPayeeOrgId();
         Date payeeDate = vo.getPayeeDate();
         Integer billPayId = vo.getBillPayId();
@@ -150,7 +150,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                   totalNotWorkload);
         }
         if (billOrgId.equals(privilegeOrgId)) {
-          if (billDate.equals(privilegeDate)) {
+          if (firstPrivilege) {
             firstCouponWorkload = calculateCouponWorkload(firstCouponWorkload, workloadVO);
           } else {
             arrearsCouponWorkload = calculateCouponWorkload(arrearsCouponWorkload, workloadVO);

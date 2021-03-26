@@ -1755,7 +1755,8 @@
         bbp.billDate,
         bbp.actualAmount,
         bbp.privilegeOrgId,
-        bbp.privilegeDate
+        bbp.privilegeDate,
+        bbp.firstPrivilege
         FROM
         (
         SELECT
@@ -1768,7 +1769,8 @@
         bb.bill_date AS billDate,
         bb.actual_amount AS actualAmount,
         bb.privilege_org_id AS privilegeOrgId,
-        bb.privilege_date AS privilegeDate
+        bb.privilege_date AS privilegeDate,
+        bb.first_privilege AS firstPrivilege
         FROM
         base_bill_pay bbp
         INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
