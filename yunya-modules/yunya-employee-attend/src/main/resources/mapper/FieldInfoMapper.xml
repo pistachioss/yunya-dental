@@ -71,6 +71,12 @@
             <if test="startTime != null ">
                 and fi.crt_time >= #{startTime} and fi.crt_time &lt;= #{endTime}
             </if>
+            <if test="userList!=null and userList.size()>0">
+                and fi.user_id in
+                <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         order by fi.crt_time desc
     </select>

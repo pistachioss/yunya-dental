@@ -79,6 +79,9 @@ public class WorkOvertimeInfoForm {
     @ApiModelProperty("拒绝条件")
     private String refuseReason;
 
+    @ApiModelProperty(value = "申请人Id列表 后端使用")
+    private List<Integer>userList;
+
     /**
      * 创建人
      */
