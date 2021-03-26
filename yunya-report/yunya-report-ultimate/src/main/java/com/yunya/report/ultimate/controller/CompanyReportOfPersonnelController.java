@@ -347,10 +347,11 @@ public class CompanyReportOfPersonnelController {
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-免单支付工作量明细")
   @PostMapping(value = "/employee/workload/freepayment/list", name = "根据条件查询员工免单支付工作量明细列表")
-  public ResponseResult<PageInfo<EmployeeFreepaymentWorkloadDetailVO>> findEmployeePersonalFreepaymentWorkloadDetailList(
+  public ResponseResult<PageInfo<EmployeeFreepaymentWorkloadDetailVO>>
+      findEmployeePersonalFreepaymentWorkloadDetailList(
           @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query) {
     PageInfo<EmployeeFreepaymentWorkloadDetailVO> pageInfo =
-            billDetailBiz.findEmployeeFreepaymentWorkloadDetailList(query);
+        billDetailBiz.findEmployeeFreepaymentWorkloadDetailList(query);
     return ResponseUtil.success(pageInfo);
   }
 
@@ -363,9 +364,10 @@ public class CompanyReportOfPersonnelController {
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-免单支付工作量明细-导出")
   @PostMapping(value = "/employee/workload/freepayment/export", name = "根据条件导出员工个人免单支付工作量明细列表")
-  public ResponseResult<T> exportEmployeeFreePaymentWorkloadDetailList(HttpServletResponse response,
-          @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query)
-          throws IOException {
+  public ResponseResult<T> exportEmployeeFreePaymentWorkloadDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query)
+      throws IOException {
     billDetailBiz.exportEmployeeFreepaymentdWorkloadDetailList(response, query);
     return ResponseUtil.success(null);
   }
@@ -377,14 +379,15 @@ public class CompanyReportOfPersonnelController {
    * @return PageInfo<EmployeeOrderDetailWorkloadVO> 分页列表
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-免单支付工作量明细-查看项目明细")
-  @PostMapping(value = "/employee/workload/freepayment/detail", name = "公司端报表-人事报表-员工工作量-免单支付工作量明细-查看项目详情")
+  @PostMapping(
+      value = "/employee/workload/freepayment/detail",
+      name = "公司端报表-人事报表-员工工作量-免单支付工作量明细-查看项目详情")
   public ResponseResult<PageInfo<EmployeeReceivedDetailWorkloadVO>> freePaymentOrderDetailList(
-          @RequestBody @Validated EmployeeFreePaymentWorkloadDetailQuery query) {
+      @RequestBody @Validated EmployeeFreePaymentWorkloadDetailQuery query) {
     PageInfo<EmployeeReceivedDetailWorkloadVO> pageInfo =
-            billDetailBiz.findFreePaymentDetailList(query);
+        billDetailBiz.findFreePaymentDetailList(query);
     return ResponseUtil.success(pageInfo);
   }
-
 
   /**
    * 根据条件查询员工开单项目实收金额及数量列表
@@ -395,9 +398,9 @@ public class CompanyReportOfPersonnelController {
   @ApiOperation("公司端报表-人事报表-开单项目实收金额及数量")
   @PostMapping(value = "/employee/billItem/list", name = "根据条件查询开单项目实收金额及数量列表")
   public ResponseResult<PageInfo<EmployeeFreepaymentWorkloadDetailVO>> findEmployeeBillItemList(
-          @RequestBody @Validated EmployeeBillItemQuery query) {
-//    PageInfo<EmployeeFreepaymentWorkloadDetailVO> pageInfo =
-//            billDetailBiz.findEmployeeBillItemList(query);
+      @RequestBody @Validated EmployeeBillItemQuery query) {
+    //    PageInfo<EmployeeFreepaymentWorkloadDetailVO> pageInfo =
+    //            billDetailBiz.findEmployeeBillItemList(query);
     return ResponseUtil.success(null);
   }
 
@@ -410,7 +413,7 @@ public class CompanyReportOfPersonnelController {
   @ApiOperation("门诊端个人中心-个人报表-个人工作量")
   @PostMapping(value = "/personal/workload/list", name = "根据条件查询个人工作量列表")
   public ResponseResult<PageInfo<PersonalWorkloadVO>> personalWorkloadList(
-          @RequestBody @Validated EmployeeWorkloadQuery query) {
+      @RequestBody @Validated EmployeeWorkloadQuery query) {
     PageInfo<PersonalWorkloadVO> pageInfo = billDetailBiz.personalWorkloadList(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -423,8 +426,9 @@ public class CompanyReportOfPersonnelController {
    */
   @ApiOperation("门诊端个人中心-个人报表-个人工作量导出")
   @PostMapping(value = "/personal/workload/export", name = "根据条件查询个人工作量列表导出")
-  public ResponseResult<T> personalWorkloadExport(HttpServletResponse response,
-          @RequestBody @Validated EmployeeWorkloadQuery query) throws IOException {
+  public ResponseResult<T> personalWorkloadExport(
+      HttpServletResponse response, @RequestBody @Validated EmployeeWorkloadQuery query)
+      throws IOException {
     billDetailBiz.personalWorkloadExport(query, response);
     return ResponseUtil.success(null);
   }
