@@ -1,7 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
-import com.yunya.feign.patient_central.domain.vo.web.BaseBillDetailBizVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
@@ -14,8 +13,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * @author YK
+ */
 public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
-
   /**
    * 根据条件查询账单项目收入明细列表
    *
