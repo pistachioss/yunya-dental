@@ -109,7 +109,7 @@
     <select id="selectEmployeeWorkloadListOfPersonnel"
             resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadOfPersonnelVO">
         SELECT
-        orgId ,
+        orgId,
         employeeId,
         employeeName,
         workStatus,
@@ -123,8 +123,7 @@
         processingFee,
         orthodonticsFee,
         largeMaterialCost
-        FROM
-        (
+        FROM (
         SELECT
         bup.org_id AS orgId,
         bup.user_id AS employeeId,
@@ -140,8 +139,7 @@
         IFNULL( ewc.processingFee, 0 ) AS processingFee,
         IFNULL( ewc.orthodonticsFee, 0 ) AS orthodonticsFee,
         IFNULL( ewc.largeMaterialCost, 0 ) AS largeMaterialCost
-        FROM
-        (
+        FROM (
         SELECT
         bup.org_id,
         bup.user_id,
@@ -270,7 +268,8 @@
         CONVERT(sum((bbd.billWorkload / bbp.actualAmount) * bbp.receivedAmount
         ), DECIMAL(19, 4)) AS receivedWorkload
         FROM (
-        SELECT bbp.received_amount AS receivedAmount,
+        SELECT
+        bbp.received_amount AS receivedAmount,
         bbp.bill_id AS billId,
         bb.actual_amount AS actualAmount
         FROM base_bill_pay bbp
@@ -309,7 +308,9 @@
         bbd.bill_id,
         bbd.executor_id
         ) bbd ON bbp.billId = bbd.bill_id
-        GROUP BY bbd.org_id,bbd.executor_id
+        GROUP BY
+        bbd.org_id,
+        bbd.executor_id
         ) bbd2 ON bup.org_id = bbd2.org_id AND bup.user_id = bbd2.executor_id
         LEFT JOIN (
         SELECT
@@ -384,9 +385,6 @@
         ewc.org_id,
         ewc.user_id
         ) ewc ON bup.org_id = ewc.org_id AND bup.user_id = ewc.user_id
-        GROUP BY
-        bup.org_id,
-        bup.user_id
         ) bup
         ORDER BY
         bup.actualWorkload DESC
@@ -440,24 +438,27 @@
                 and bup.org_id = #{query.orgId}
             </if>
             <if test="query.employeeIds != null and query.employeeIds.length > 0">
-                and bup.employeeId in
+                and bup.user_id in
                 <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
             <if test="query.workStatus!=null and query.workStatus.length > 0">
-                and bup.workStatus in
-                <foreach collection="query.workStatus" item="item" open="(" separator="," close=")">
+                and be.work_status in
+                <foreach collection="query.workStatus" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
             <if test="query.postIds!=null and query.postIds.length>0">
-                and bup.postId in
+                and bup.post_id in
                 <foreach collection="query.postIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
         </where>
+        GROUP BY
+        bup.org_id,
+        bup.user_id
         ) bup
         LEFT JOIN (
         SELECT
@@ -668,12 +669,9 @@
         ewc.org_id
         ) ewc ON bup.user_id = ewc.user_id
         AND bup.org_id = ewc.org_id
-        GROUP BY
-        bup.user_id,
-        bup.org_id
         ) bup
         ORDER BY
-        bup.actualWorkload DESC;
+        bup.actualWorkload DESC
     </select>
 
     <!-- 根据条件查询项目分类收入汇总列表 -->
