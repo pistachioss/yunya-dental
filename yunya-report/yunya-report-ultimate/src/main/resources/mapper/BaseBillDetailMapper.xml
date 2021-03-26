@@ -291,7 +291,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY bbp.bill_pay_id
         ) bbp
         INNER JOIN (
         SELECT bbd.bill_id,
@@ -577,8 +576,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
         INNER JOIN (
         SELECT
