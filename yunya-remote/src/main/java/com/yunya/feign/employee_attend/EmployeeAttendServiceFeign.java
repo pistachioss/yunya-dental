@@ -75,7 +75,7 @@ public interface EmployeeAttendServiceFeign {
    * @param
    * @return
    */
-  @ApiOperation("获取请假申请列表")
+  @ApiOperation("获取加班申请列表")
   @RequestMapping(value = "api/work_overtime_info/findList",method = RequestMethod.POST)
   public List<WorkOvertimeInfoListVO> workFindList(@RequestBody @Validated WorkOvertimeInfoForm workOvertimeInfoForm);
 
