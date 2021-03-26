@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseRefund;
@@ -72,4 +73,12 @@ public interface BaseRefundMapper extends Mapper<BaseRefund> {
    * @return BigDecimal
    */
   BigDecimal selectTotalRefundWorkload(@Param("query") DataStatisticsQuery query);
+
+  /**
+   * 根据推荐人id和退费时间查询患者退款总金额
+   * @param originId 推荐人id
+   * @param query 条件
+   * @return 退款总金额
+   */
+    BigDecimal findRefundAmount(@Param("originId") String originId,@Param("query") PatientOriginEmployeeQuery query);
 }

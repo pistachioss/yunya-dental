@@ -1,5 +1,8 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
+import com.yunya.feign.patient_central.domain.query.ReceiverkLoadQuery;
+import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseBill;
@@ -180,6 +183,20 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @return list
    */
   List<Integer> distinctBillIdByOrderDate(@Param("query") EmployeeWorkloadQuery query);
+
+  /**
+   * 查询患者消费的订单号
+   * @param query 条件
+   * @return 订单号集合
+   */
+    List<Integer> findBillIdList(@Param("query") PatientOriginEmployeeQuery query);
+
+  /**
+   * 根据推荐人id和支付记录时间查询订单id
+   * @param query 条件
+   * @return 已收工作量信息
+   */
+  List<Integer> findBaseBillIdList(@Param("query") ReceiverkLoadQuery query);
 
   /**
    * 查询账单列表实收金额总和

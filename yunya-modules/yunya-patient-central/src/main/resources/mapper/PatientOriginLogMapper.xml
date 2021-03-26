@@ -25,7 +25,6 @@
       patient_id,
       origin_type,
       origin_id,
-      inservice,
       crt_id,
       crt_name,
       crt_time,
@@ -39,7 +38,6 @@
       #{patientOriginLog.patientId},
       #{patientOriginLog.originType},
       #{patientOriginLog.originId},
-      #{patientOriginLog.inservice},
       #{patientOriginLog.crtId},
       #{patientOriginLog.crtName},
       #{patientOriginLog.crtTime},
@@ -50,4 +48,9 @@
 
     </foreach>
   </insert>
+
+    <!-- 根据患者id查询患者来源推荐关系 -->
+    <select id="selectByPatientId" resultType="com.yunya.models.patient_central.PatientOriginLog">
+        select * from patient_origin_log where patientId = #{patientId} and inservice = 1
+    </select>
 </mapper>

@@ -861,7 +861,28 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     ExcelUtil<BillDiscountAndFreePaymentVO> excelUtil =
         new ExcelUtil<>(BillDiscountAndFreePaymentVO.class);
     String fileName =
-        excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "折扣&免单报表");
+        excelUtil.getFileName(query.getStartDate(), "", "", "折扣&免单报表");
     excelUtil.exportExcel(response, resultList, "折扣&免单报表", fileName);
+  }
+
+  public List<BillDiscountAndFreePaymentItemVO> billDiscountAndFreePaymentItems() {
+    List<BillDiscountAndFreePaymentItemVO> result = new ArrayList<>();
+    BillDiscountAndFreePaymentItemVO item = new BillDiscountAndFreePaymentItemVO();
+    item.setAccountType(0);
+    item.setName("全部");
+    result.add(item);
+    item = new BillDiscountAndFreePaymentItemVO();
+    item.setAccountType(23);
+    item.setName("本次免单支付");
+    result.add(item);
+    item = new BillDiscountAndFreePaymentItemVO();
+    item.setAccountType(26);
+    item.setName("艾维员工免单");
+    result.add(item);
+    item = new BillDiscountAndFreePaymentItemVO();
+    item.setAccountType(999);
+    item.setName("授权折扣");
+    result.add(item);
+    return result;
   }
 }

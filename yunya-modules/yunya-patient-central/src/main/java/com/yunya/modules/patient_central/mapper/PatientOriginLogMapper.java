@@ -8,8 +8,15 @@ import java.util.List;
 
 public interface PatientOriginLogMapper extends Mapper<PatientOriginLog> {
     /**
-     * 批量插入 患者来源关系
-     * @param patientOriginLogList 患者来源关系
+     * 批量插入 患者来源推荐关系
+     * @param patientOriginLogList 患者来源推荐关系
      */
     void insertList(@Param("list") List<PatientOriginLog> patientOriginLogList);
+
+    /**
+     * 根据患者id查询患者来源推荐关系
+     * @param id 患者id
+     * @return 患者来源推荐关系
+     */
+    PatientOriginLog selectByPatientId(@Param("patientId") Integer id);
 }

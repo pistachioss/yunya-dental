@@ -664,6 +664,33 @@
             </if>
         </where>
     </select>
+
+    <!-- 根据推荐人id和退费时间查询患者退款总金额 -->
+    <select id="findRefundAmount" resultType="java.math.BigDecimal">
+        SELECT TRUNCATE
+            ( sum( refund_amount ), 2 )
+        FROM
+            base_refund br
+            JOIN (
+                SELECT DISTINCT
+                    log.patient_id
+                FROM
+                    base_patient_origin_log log
+                    JOIN base_bill bb ON log.patient_id = bb.patient_id
+                    JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
+                WHERE
+                    log.origin_id = #{originId}
+                    AND log.inservice = 1
+            ) t ON br.patient_id = t.patient_id
+        <if test="query.startDate != null">
+            and DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+        </if>
+
+        <if test="query.endDate != null" >
+            and DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+        </if>
+
+    </select>
     <!-- 根据条件查询退费工作量 -->
     <select id="selectTotalRefundWorkload" resultType="java.math.BigDecimal">
         SELECT

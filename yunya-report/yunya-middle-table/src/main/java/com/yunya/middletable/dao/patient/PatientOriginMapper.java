@@ -7,7 +7,6 @@ import tk.mybatis.mapper.common.Mapper;
 /**
  * @author WY
  */
-@Repository
 public interface PatientOriginMapper extends Mapper<PatientOrigin> {
 
 }

@@ -338,7 +338,6 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
         patientOriginLog.setPatientId(patientBaseInfo.getId());
         patientOriginLog.setOriginType(patientBaseInfo.getOriginType());
         patientOriginLog.setOriginId(patientBaseInfo.getOriginId());
-        patientOriginLog.setInservice(patientBaseInfo.getInservice());
         patientOriginLog.setCrtId(patientBaseInfo.getCrtId());
         patientOriginLog.setCrtName(patientBaseInfo.getCrtName());
         patientOriginLog.setCrtTime(patientBaseInfo.getCrtTime());

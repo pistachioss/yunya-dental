@@ -24,10 +24,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.HanyuPinyinHelper;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.*;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
@@ -106,6 +103,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   /** 就诊服务 */
   @Autowired private RemoteTreatmentServiceFeign treatmentServiceFeign;
 
+  /** 患者来源绑定关系 */
+  @Autowired private PatientOriginLogMapper patientOriginLogMapper;
+
   /** 获取患者服务端口号 */
   @Value("${codeUrl.url}")
   private String servePrort;
@@ -176,18 +176,21 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     mapper.insertPatientInfo(patientBaseInfo);
     PatientBaseInfoVo patientBaseInfoVo =
         this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
-    if (patientBaseInfoVo != null){
+    if (patientBaseInfoVo.getOriginId() != null) {
       PatientOriginLog patientOriginLog = new PatientOriginLog();
       patientOriginLog.setPatientId(patientBaseInfoVo.getId());
-      patientOriginLog.setOriginType(patientBaseInfoVo.getOriginType());
-      patientOriginLog.setOriginId(patientBaseInfoVo.getOriginId());
-      /*patientOriginLog.setInservice(patientBaseInfoVo.geti);
-      patientOriginLog.setCrtId();
-      patientOriginLog.setCrtName();
-      patientOriginLog.setCrtTime();
-      patientOriginLog.setUptId();
-      patientOriginLog.setUpdName();
-      patientOriginLog.setUpdTime();*/
+      patientOriginLog.setOriginType(patientBaseInfo.getOriginType());
+      patientOriginLog.setOriginId(patientBaseInfo.getOriginId());
+      patientOriginLog.setInservice(patientBaseInfo.getInservice());
+      patientOriginLog.setCrtId(patientBaseInfo.getCrtId());
+      patientOriginLog.setCrtName(patientBaseInfo.getCrtName());
+      patientOriginLog.setCrtTime(patientBaseInfo.getCrtTime());
+      patientOriginLog.setUptId(patientBaseInfo.getUptId());
+      patientOriginLog.setUpdName(patientBaseInfo.getUpdName());
+      patientOriginLog.setUpdTime(patientBaseInfo.getUpdTime());
+      patientOriginLogMapper.insertSelective(patientOriginLog);
+      remoteRabbitMqServiceFeign.sendMessage(
+              patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
     }
     // 创建预付款 并发送消息
     this.addPatientPrepaymentsInfo(patientBaseInfo);
@@ -250,6 +253,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientBaseInfo.setOriginId(patientExtendInfoModel.getPatientBaseInfoModel().getSourceId());
       }
     }
+    // 添加患者来源推荐关系
+    addPatientOrigin(patientBaseInfo);
+
     // 完善患者基本信息  对补全信息进行更新
     this.mapper.updateByPrimaryKeySelective(patientBaseInfo);
     sendMessages(patientBaseInfo.getId(), 1);
@@ -257,7 +263,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     // 完善患者扩展信息
     BeanUtils.copyProperties(patientExtendInfoModel.getPatientExpInfoModel(), patientExpInfo);
     // 如果用户没有扩展信息就添加扩展信息 如果有就修改
-    PatientExpInfoVo patientExpInfoVo = patientExpInfoMapper.selectByPatientId(patientExpInfo.getPatientId());
+    PatientExpInfoVo patientExpInfoVo =
+        patientExpInfoMapper.selectByPatientId(patientExpInfo.getPatientId());
     if (patientExpInfoVo == null) {
       patientExpInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientExpInfo.setCrtName(BaseContextHandler.getName());
@@ -299,6 +306,71 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   }
 
   /**
+   * 添加患者来源推荐关系
+   * @param patientBaseInfo 患者信息
+   */
+  public void addPatientOrigin(PatientBaseInfo patientBaseInfo) {
+    if (patientBaseInfo.getOriginId() != null) {
+      PatientOriginLog patientOriginLog =
+          patientOriginLogMapper.selectByPatientId(patientBaseInfo.getId());
+      PatientOriginLog insertPatientOriginLog = new PatientOriginLog();
+      if (patientOriginLog != null) {
+        if (!patientBaseInfo.getOriginId().equals(patientOriginLog.getOriginId())) {
+          insertPatientOriginLog.setPatientId(patientBaseInfo.getId());
+          insertPatientOriginLog.setOriginType(patientBaseInfo.getOriginType());
+          insertPatientOriginLog.setOriginId(patientBaseInfo.getOriginId());
+          insertPatientOriginLog.setInservice(patientBaseInfo.getInservice());
+          insertPatientOriginLog.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+          insertPatientOriginLog.setCrtName(BaseContextHandler.getName());
+          insertPatientOriginLog.setCrtTime(new Date());
+          insertPatientOriginLog.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+          insertPatientOriginLog.setUpdName(BaseContextHandler.getName());
+          insertPatientOriginLog.setUpdTime(new Date());
+
+          // 修改推荐关系状态 并发送消息
+          patientOriginLog.setInservice(false);
+          patientOriginLogMapper.updateByPrimaryKey(patientOriginLog);
+          sendMemberRelationMessages(patientOriginLog.getId(),1);
+          // 添加推荐关系 并发送消息
+          patientOriginLogMapper.insertSelective(insertPatientOriginLog);
+          remoteRabbitMqServiceFeign.sendMessage(
+                  insertPatientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
+        }
+      } else {
+        insertPatientOriginLog.setPatientId(patientBaseInfo.getId());
+        insertPatientOriginLog.setOriginType(patientBaseInfo.getOriginType());
+        insertPatientOriginLog.setOriginId(patientBaseInfo.getOriginId());
+        insertPatientOriginLog.setInservice(patientBaseInfo.getInservice());
+        insertPatientOriginLog.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        insertPatientOriginLog.setCrtName(BaseContextHandler.getName());
+        insertPatientOriginLog.setCrtTime(new Date());
+        insertPatientOriginLog.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        insertPatientOriginLog.setUpdName(BaseContextHandler.getName());
+        insertPatientOriginLog.setUpdTime(new Date());
+        patientOriginLogMapper.insertSelective(insertPatientOriginLog);
+        remoteRabbitMqServiceFeign.sendMessage(
+                insertPatientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
+      }
+    }
+  }
+
+  /**
+   * 会员关联消息 参数模板
+   *
+   * @param id 操作
+   * @param OperateType 操作类型
+   */
+  public void sendMemberRelationMessages(Integer id, Integer OperateType) {
+    MessageModel messageModel = new MessageModel();
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("id", id);
+    messageModel.setParamMap(map);
+    messageModel.setOperateType(OperateType);
+    messageModel.setMsgCategoryEnum(MsgCategoryEnum.BasePatientOriginLog);
+    remoteRabbitMqServiceFeign.sendMessage(messageModel);
+  }
+
+  /**
    * 根据患者id查询患者资料
    *
    * @param id 患者id
@@ -314,9 +386,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     Date birthday = patientBaseInfo.getBirthday();
     if (birthday != null) {
       // 计算年龄
-      Integer age =
-              DateUtil.differFromDate(
-                      birthday, new Date(System.currentTimeMillis()));
+      Integer age = DateUtil.differFromDate(birthday, new Date(System.currentTimeMillis()));
       patientBaseInfo.setAge(age);
       String timeStr = new DateTime(birthday).toString("yyyy-MM-dd");
       patientBaseInfoVo.setBirthday(timeStr);
@@ -416,12 +486,15 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
             PatientOrigin activity =
                 patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
             if (activity != null) {
-              if (activity.getSourceAttribute() != null){
-                DictionaryItem dictionaryItemById = remoteSystemServiceFeign.findDictionaryItemById(activity.getSourceAttribute());
-                if (dictionaryItemById != null){
-                  patientBaseInfoVo.setOriginName(dictionaryItemById.getName()+"-"+activity.getName());
-                  patientBaseInfoVo.setSourceName(dictionaryItemById.getName()+"-"+activity.getName());
-                }else {
+              if (activity.getSourceAttribute() != null) {
+                DictionaryItem dictionaryItemById =
+                    remoteSystemServiceFeign.findDictionaryItemById(activity.getSourceAttribute());
+                if (dictionaryItemById != null) {
+                  patientBaseInfoVo.setOriginName(
+                      dictionaryItemById.getName() + "-" + activity.getName());
+                  patientBaseInfoVo.setSourceName(
+                      dictionaryItemById.getName() + "-" + activity.getName());
+                } else {
                   patientBaseInfoVo.setOriginName(activity.getName());
                   patientBaseInfoVo.setSourceName(activity.getName());
                 }
@@ -440,7 +513,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
     return patientBaseInfoVo;
   }
-
 
   /**
    * 模糊查询患者
@@ -461,7 +533,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patient.setLastVisitTime(treatmentRecord.getTreatmentDate());
         patient.setLastVisit(treatmentRecord.getDentistName());
       }
-      return patients.stream().filter(entity->!(null != entity.getMedicalNumber() && entity.getMedicalNumber().contains("*"))).collect(Collectors.toList());
+      return patients.stream()
+          .filter(
+              entity ->
+                  !(null != entity.getMedicalNumber() && entity.getMedicalNumber().contains("*")))
+          .collect(Collectors.toList());
     }
     return patients;
   }
@@ -601,11 +677,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
                 Integer patientKind = patientTotalInfoVo.getPatientKind();
                 if (patientKind != null) {
                   boolean b =
-                          dictionaryItems.stream()
+                      dictionaryItems.stream()
                           .anyMatch(departmentRoom -> departmentRoom.getId().equals(patientKind));
                   if (b) {
                     DictionaryItem dictionaryItem =
-                            dictionaryItems.stream()
+                        dictionaryItems.stream()
                             .filter(entity -> entity.getId().equals(patientKind))
                             .findAny()
                             .get();
@@ -947,6 +1023,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       }
       PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
       BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
+      // 添加患者来源推荐关系
+      addPatientOrigin(patientBaseInfo);
       patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
     }
   }

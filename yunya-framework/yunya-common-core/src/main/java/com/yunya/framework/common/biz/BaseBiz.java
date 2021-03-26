@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Map;
@@ -235,4 +236,5 @@ public abstract class BaseBiz<M extends Mapper<T>, T> {
     }
     return example;
   }
+
 }

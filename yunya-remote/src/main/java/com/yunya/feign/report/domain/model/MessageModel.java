@@ -28,7 +28,7 @@ public class MessageModel implements Serializable {
   private Integer operateType;
 
   @ApiModelProperty(value = "操作对象，用消息分类代表，一个中间表可有多个分类", required = true)
-  @NotNull(message = "消息操作对象不能为空！")
+  // @NotNull(message = "消息操作对象不能为空！")
   private MsgCategoryEnum msgCategoryEnum;
 
   @ApiModelProperty(value = "消息识别ID，不必传，调用消息服务时自动生成")

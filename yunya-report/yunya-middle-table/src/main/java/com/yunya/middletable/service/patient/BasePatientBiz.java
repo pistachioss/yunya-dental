@@ -213,4 +213,6 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     }
     return null;
   }
+
+
 }

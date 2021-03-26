@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.middletable.dao.report.BasePatientOriginMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.BasePatientOrigin" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="parent_id" property="parentId" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="origin_type" property="originType" jdbcType="INTEGER" />
+    <result column="source_attribute" property="sourceAttribute" jdbcType="INTEGER" />
+    <result column="qr_code_path" property="qrCodePath" jdbcType="VARCHAR" />
+    <result column="allow_operate" property="allowOperate" jdbcType="BIT" />
+    <result column="time_limit" property="timeLimit" jdbcType="TINYINT" />
+    <result column="limit_start_date" property="limitStartDate" jdbcType="DATE" />
+    <result column="limit_end_date" property="limitEndDate" jdbcType="DATE" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <!-- 批量删除 -->
+  <delete id="deleteList" >
+    delete from base_patient_origin where id in
+    <foreach collection="list" item="BasePatientOrigin" open="(" separator="," close=")">
+      #{BasePatientOrigin.id}
+    </foreach>
+  </delete>
+
+  <!-- 批量插入 -->
+  <insert id="insertList">
+     insert into base_patient_origin
+     (
+      id,
+      parent_id,
+      name,
+      origin_type,
+      source_attribute,
+      qr_code_path,
+      allow_operate,
+      time_limit,
+      limit_start_date,
+      limit_end_date,
+      inservice,
+      crt_id,
+      crt_name,
+      crt_time,
+      upt_id,
+      upd_name,
+      upd_time
+     )
+     values
+     <foreach collection="list" item="BasePatientOrigin" separator=",">
+       (
+       #{BasePatientOrigin.id},
+       #{BasePatientOrigin.parentId},
+       #{BasePatientOrigin.name},
+       #{BasePatientOrigin.originType},
+       #{BasePatientOrigin.sourceAttribute},
+       #{BasePatientOrigin.qrCodePath},
+       #{BasePatientOrigin.allowOperate},
+       #{BasePatientOrigin.timeLimit},
+       #{BasePatientOrigin.limitStartDate},
+       #{BasePatientOrigin.limitEndDate},
+       #{BasePatientOrigin.inservice},
+       #{BasePatientOrigin.crtId},
+       #{BasePatientOrigin.crtName},
+       #{BasePatientOrigin.crtTime},
+       #{BasePatientOrigin.uptId},
+       #{BasePatientOrigin.updName},
+       #{BasePatientOrigin.updTime}
+       )
+     </foreach>
+  </insert>
+</mapper>

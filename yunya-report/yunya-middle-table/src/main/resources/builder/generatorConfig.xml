@@ -14,7 +14,7 @@
         </plugin>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://192.168.31.90:3306/yunya_report?useUnicode=true"
+                        connectionURL="jdbc:mysql://192.168.31.90:3306/dev_yunya_report?useUnicode=true"
                         userId="sa"
                         password="Admin001!">
         </jdbcConnection>
@@ -42,7 +42,7 @@
 <!--        <table tableName="base_patient_member_relation" domainObjectName="BasePatientMemberRelation"/>-->
 <!--        <table tableName="base_refund" domainObjectName="BaseRefund"/>-->
 <!--        <table tableName="base_refund_detail" domainObjectName="BaseRefundDetail"/>-->
-        <table tableName="base_bill_pay_detail" domainObjectName="BaseBillPayDetail"/>
+        <table tableName="base_patient_origin" domainObjectName="BasePatientOrigin"/>
 <!--        <table tableName="base_treatment_process" domainObjectName="BaseTreatmentProcess"/>-->
 <!--        <table tableName="base_user_post" domainObjectName="BaseUserPost"/>-->
 <!--        <table tableName="base_visit_remind" domainObjectName="BaseVisitRemind"/>-->

@@ -831,13 +831,25 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询折扣&免单列表
+   * 根据条件查询折扣&免单项目列表
+   *
+   * @return List<BillDiscountAndFreePaymentVO>
+   */
+  @ApiOperation("公司端报表-财务报表-折扣&免单项目列表")
+  @PostMapping(value = "/bill/discountAndFreePayment/Items", name = "根据条件查询折扣&免单项目列表")
+  public ResponseResult<List<BillDiscountAndFreePaymentItemVO>> billDiscountAndFreePaymentItems() {
+    List<BillDiscountAndFreePaymentItemVO> result = billPayBiz.billDiscountAndFreePaymentItems();
+    return ResponseUtil.success(result);
+  }
+
+  /**
+   * 根据条件查询折扣&免单报表导出
    *
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-折扣&免单报表")
-  @PostMapping(value = "/bill/discountAndFreePayment/export", name = "根据条件查询折扣&免单列表")
+  @ApiOperation("公司端报表-财务报表-折扣&免单报表导出")
+  @PostMapping(value = "/bill/discountAndFreePayment/export", name = "根据条件查询折扣&免单报表导出")
   public ResponseResult<T> billDiscountAndFreePaymentExport(HttpServletResponse response,
           @RequestBody @Validated BillDiscountAndFreePaymentQuery query) throws IOException {
     billPayBiz.billDiscountAndFreePaymentExport(query, response);

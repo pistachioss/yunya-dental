@@ -4,7 +4,7 @@ myjdbc:
     port: 3306
     username: sa
     password: Admin001!
-    
+
 ## 数据库列表
 mydb:
     report: dev_yunya_report

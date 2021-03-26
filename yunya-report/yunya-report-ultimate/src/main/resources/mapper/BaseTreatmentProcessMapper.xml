@@ -591,7 +591,7 @@
         where appoint_start_time > NOW() and appoint_status in (0,1) and (patient_id,appoint_start_time) in(
         select patient_id,min(appoint_start_time)FROM
         base_treatment_process
-        where appoint_start_time > NOW()  GROUP BY patient_id)) ntp on btp.patient_id = ntp.patient_id
+        where appoint_start_time > NOW()  and appoint_status in (0,1)   GROUP BY patient_id)) ntp on btp.patient_id = ntp.patient_id
         LEFT JOIN (
         select DISTINCT patient_id,content,time FROM base_visit_remind
         where time > NOW() and type = 1 and (patient_id,time) in
