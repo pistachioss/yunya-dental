@@ -527,15 +527,15 @@
         SELECT
         btp.org_id,
         btp.dentist_id,
-        count(btp.appointment_id) AS appointmentModifyTimes
+        count(btp.id) AS appointmentModifyTimes
         FROM
         base_appointment_modify btp
         <where>
             <if test="query.startDate != null and query.startDate != ''">
-                and DATE_FORMAT( btp.crt_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                and DATE_FORMAT( btp.appoint_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>
             <if test="query.endDate != null and query.endDate != ''">
-                and DATE_FORMAT( btp.crt_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                and DATE_FORMAT( btp.appoint_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
             </if>
         </where>
         GROUP BY
