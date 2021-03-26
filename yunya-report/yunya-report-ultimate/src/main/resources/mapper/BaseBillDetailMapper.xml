@@ -427,9 +427,40 @@
         ifnull( ewc.orthodonticsFee, 0 ) AS orthodonticsFee,
         ifnull( ewc.baseWorkload, 0 ) AS baseWorkload,
         ifnull( ewc.largeMaterialCost, 0 ) AS largeMaterialCost
+        FROM (
+        SELECT
+        bup.org_id,
+        bup.user_id,
+        be.employee_name,
+        be.work_status,
+        GROUP_CONCAT( DISTINCT bup.post_name SEPARATOR ',' ) AS post_names
         FROM
         base_user_post bup
         INNER JOIN base_employee be ON bup.user_id = be.user_id
+        <where>
+            <if test="query.orgId != null">
+                and bup.org_id = #{query.orgId}
+            </if>
+            <if test="query.employeeIds != null and query.employeeIds.length > 0">
+                and bup.employeeId in
+                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.workStatus!=null and query.workStatus.length > 0">
+                and bup.workStatus in
+                <foreach collection="query.workStatus" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.postIds!=null and query.postIds.length>0">
+                and bup.postId in
+                <foreach collection="query.postIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ) bup
         LEFT JOIN (
         SELECT
         bbd.org_id,
@@ -645,29 +676,6 @@
         bup.user_id,
         bup.org_id
         ) bup
-        <where>
-            <if test="query.orgId != null">
-                and bup.org_id = #{query.orgId}
-            </if>
-            <if test="query.employeeIds != null and query.employeeIds.length > 0">
-                and bup.employeeId in
-                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="query.workStatus!=null and query.workStatus.length > 0">
-                and bup.workStatus in
-                <foreach collection="query.workStatus" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="query.postIds!=null and query.postIds.length>0">
-                and bup.postId in
-                <foreach collection="query.postIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
         ORDER BY
         bup.actualWorkload DESC;
     </select>
