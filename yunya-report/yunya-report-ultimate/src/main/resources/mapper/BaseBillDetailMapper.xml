@@ -396,7 +396,7 @@
     <select id="selectEmployeeWorkloadListOfOperation"
             resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadOfOperationVO">
         SELECT
-        org_id AS orgId,
+        orgId,
         employeeId,
         employeeName,
         workStatus,
@@ -412,12 +412,11 @@
         FROM
         (
         SELECT
-        bup.org_id,
+        bup.org_id AS orgId,
         bup.user_id AS employeeId,
-        bup.post_id AS postId,
-        be.employee_name AS employeeName,
-        be.work_status AS workStatus,
-        GROUP_CONCAT( DISTINCT bup.post_name SEPARATOR ',' ) AS postNames,
+        bup.employee_name AS employeeName,
+        bup.work_status AS workStatus,
+        bup.post_names AS postNames,
         IFNULL( bbd.actualWorkload, 0 ) AS actualWorkload,
         ifnull( bbd1.supplementWorkload, 0 ) AS supplementWorkload,
         ifnull( bbd2.receivedWorkload, 0 ) AS receivedWorkload,
