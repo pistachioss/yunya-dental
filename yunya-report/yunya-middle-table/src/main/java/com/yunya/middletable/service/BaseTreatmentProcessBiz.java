@@ -105,8 +105,8 @@ public class BaseTreatmentProcessBiz
       case 0:
         Appointment appointment = appointmentMapper.selectByPrimaryKey(dataId);
         treatmentProcess = generateBaseTreatmentProcess(appointment);
+        mapper.deleteByAppointmentId(dataId);
         if (null != treatmentProcess) {
-          mapper.deleteByAppointmentId(dataId);
           mapper.insertSelective(treatmentProcess);
         }
         break;
