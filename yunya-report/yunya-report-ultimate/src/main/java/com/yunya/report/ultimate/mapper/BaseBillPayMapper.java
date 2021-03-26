@@ -190,7 +190,8 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    * 根据订单id查询支付记录
    * @param baseBillIdList 订单id集合
    * @param query 支付时间条件
+   * @param typeList 支付方式
    * @return 支付记录
    */
-  List<BaseBillPay> selectBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query);
+  List<BaseBillPay> selectBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query,@Param("typeList") List<Integer> typeList);
 }

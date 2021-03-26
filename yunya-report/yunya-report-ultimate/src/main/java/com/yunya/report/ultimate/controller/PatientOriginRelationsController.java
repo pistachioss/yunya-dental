@@ -88,8 +88,8 @@ public class PatientOriginRelationsController {
      * @param query 查询条件
      * @return 已收工作量明细列表分页列表查询
      */
-    @ApiModelProperty("员工推荐-已收工作量明细列表")
-    @PostMapping(value = "/workloadBreakdown",name = "公司端-人力资源-员工推荐-已收工作量明细列表")
+    @ApiModelProperty("员工推荐-各项明细列表")
+    @PostMapping(value = "/workloadBreakdown",name = "公司端-人力资源-员工推荐-各项明细列表 type区分")
     public ResponseResult<PageInfo<ReceivedWorkloadDetailsVo>> workloadBreakdown(@RequestBody ReceiverkLoadQuery query){
         List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = patientOriginRelationsBiz.finlereceiverkLoad(query);
         if (query.getWhetherPage()) {

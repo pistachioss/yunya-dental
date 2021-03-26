@@ -52,5 +52,11 @@ public class ReceiverkLoadQuery implements Serializable {
     @ApiModelProperty(value ="患者姓名或手机号",required = false)
     private String condition;
 
+    /**
+     * 是否为免单支付
+     */
+    @ApiModelProperty(value ="1:(查询已收工作量合计明细),2:(其中面单支付工作量合计明细),3:(退费金额合计),4:(补入工作量合计)",required = true)
+    private Integer type;
+
 
 }

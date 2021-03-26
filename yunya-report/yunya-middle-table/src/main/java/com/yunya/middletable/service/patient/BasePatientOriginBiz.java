@@ -93,8 +93,8 @@ public class BasePatientOriginBiz extends BaseBiz<BasePatientOriginMapper, BaseP
         emp.createCriteria().andBetween("updTime",startDate,endDate);
         List<PatientOrigin> patientOriginLists = patientOriginMapper.selectByExample(emp);
         if (StringHelper.isNotNull(patientOriginLists)){
-            CountDownLatch countDownLatch = new CountDownLatch(patientOriginLists.size());
             List<List<PatientOrigin>> patientOriginList = Lists.partition(patientOriginLists, 100);
+            CountDownLatch countDownLatch = new CountDownLatch(patientOriginLists.size());
             long start = System.currentTimeMillis();
             for (List<PatientOrigin> patientOrigins : patientOriginList) {
                 // 多线程执行
