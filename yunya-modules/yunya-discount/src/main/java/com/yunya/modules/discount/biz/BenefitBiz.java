@@ -372,7 +372,7 @@ public class BenefitBiz {
 			updateOrderBenefit(cardBenefit, orderId, CardBenefit.class, cardBenefitMapper);
 			//更新卡券状态
 			Set<Card> updateCards = updateRevokeCardStatus(revokeCards);
-			updateCards.forEach(obj -> cardThreadPool.execute(() -> mqServiceFeign.sendMessage(obj.getId(), UPDATE, BaseCardSingle)));
+			updateCards.forEach(obj -> mqServiceFeign.sendMessage(obj.getId(), UPDATE, BaseCardSingle));
 			log.info("【订单撤销卡券优惠，更新卡券发送消息成功】：卡券ids：{}", updateCards.stream().map(Card::getId).collect(toList()));
 		}
 		//更新授权
