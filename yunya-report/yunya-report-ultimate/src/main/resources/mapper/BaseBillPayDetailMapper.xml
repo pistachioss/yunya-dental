@@ -143,7 +143,7 @@
             LEFT JOIN base_employee emp ON emp.user_id=btp.registered_dentist_id
             LEFT JOIN base_organization bo ON bo.org_id=bbp.org_id
             <where>
-                <if test="query.accountType == 0">
+                <if test="query.accountType==null or query.accountType==0">
                     and bbpd.account_item_id in (23,26)
                 </if>
                 <if test="query.accountType > 0">
