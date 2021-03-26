@@ -2,10 +2,10 @@ package com.yunya.feign.employee_attend;
 
 import com.yunya.feign.employee_attend.factory.EmployeeAttendServiceFallBackFactory;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
+import com.yunya.feign.employee_attend.form.FieldInfoForm;
 import com.yunya.feign.employee_attend.form.LeaveInfoForm;
-import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
-import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
-import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
+import com.yunya.feign.employee_attend.form.WorkOvertimeInfoForm;
+import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.employee_attend.EmployeeSchedule;
@@ -68,4 +68,24 @@ public interface EmployeeAttendServiceFeign {
   @ApiOperation("获取请假申请列表")
   @RequestMapping(value = "api/leave_info/back/findListByIds",method = RequestMethod.POST)
   public List<LeaveInfoListVO> backFindListByIds(@RequestBody @Validated LeaveInfoForm leaveInfoForm);
+
+  /**
+   * 获取加班列表
+   *
+   * @param
+   * @return
+   */
+  @ApiOperation("获取请假申请列表")
+  @RequestMapping(value = "api/work_overtime_info/findList",method = RequestMethod.POST)
+  public List<WorkOvertimeInfoListVO> workFindList(@RequestBody @Validated WorkOvertimeInfoForm workOvertimeInfoForm);
+
+  /**
+   * 获取外勤列表
+   *
+   * @param
+   * @return
+   */
+  @ApiOperation("获取外勤申请列表")
+  @RequestMapping(value = "api/field_info/findList",method = RequestMethod.POST)
+  public List<FieldInfoListVO> fieldFindList(@RequestBody @Validated FieldInfoForm fieldInfoForm);
 }

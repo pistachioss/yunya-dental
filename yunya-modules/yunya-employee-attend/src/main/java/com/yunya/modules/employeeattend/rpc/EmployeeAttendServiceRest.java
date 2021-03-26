@@ -1,14 +1,20 @@
 package com.yunya.modules.employeeattend.rpc;
 
 import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
+import com.yunya.feign.employee_attend.vo.FieldInfoListVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
+import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.employee_attend.EmployeeSchedule;
+import com.yunya.modules.employeeattend.biz.FieldInfoBiz;
 import com.yunya.modules.employeeattend.biz.LeaveInfoBiz;
+import com.yunya.modules.employeeattend.biz.WorkOvertimeInfoBiz;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
+import com.yunya.modules.employeeattend.form.FieldInfoForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoForm;
+import com.yunya.modules.employeeattend.form.WorkOvertimeInfoForm;
 import com.yunya.modules.employeeattend.rpc.service.EmployeeScheduleSerivce;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleResultVO;
 import io.swagger.annotations.Api;
@@ -32,6 +38,9 @@ public class EmployeeAttendServiceRest {
 
   @Autowired private EmployeeScheduleSerivce employeeScheduleSerivce;
   @Autowired private LeaveInfoBiz leaveInfoBiz;
+  @Autowired private WorkOvertimeInfoBiz workOvertimeInfoBiz;
+  @Autowired private FieldInfoBiz fieldInfoBiz;
+
   /**
    * 查看员工排班列表
    * @param employeeScheduleQueryForm
@@ -85,5 +94,28 @@ public class EmployeeAttendServiceRest {
   @RequestMapping(value = "/leave_info/back/findListByIds",method = RequestMethod.POST)
   public List<LeaveInfoListVO> backFindListByIds(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
     return leaveInfoBiz.backFindListByIds(leaveInfoForm);
+  }
+  /**
+   * 根据条件获取加班列表
+   *
+   * @param
+   * @return
+   */
+  @ApiOperation("根据条件获取加班列表")
+  @RequestMapping(value = "/work_overtime_info/findList",method = RequestMethod.POST)
+  public List<WorkOvertimeInfoListVO> workFindList(@RequestBody @Validated WorkOvertimeInfoForm workOvertimeInfoForm) {
+    return workOvertimeInfoBiz.findList(workOvertimeInfoForm);
+  }
+
+  /**
+   * 根据条件获取外勤列表
+   *
+   * @param
+   * @return
+   */
+  @ApiOperation("根据条件获取外勤列表")
+  @RequestMapping(value = "/field_info/findList",method = RequestMethod.POST)
+  public List<FieldInfoListVO> fieldFindList(@RequestBody @Validated FieldInfoForm fieldInfoForm) {
+    return fieldInfoBiz.findList(fieldInfoForm);
   }
 }
