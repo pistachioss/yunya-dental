@@ -30,7 +30,7 @@
         IFNULL( bb.totalActualAmount, 0 ) AS totalActualAmount
         FROM
         base_organization bo
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
         btp.org_id,
         COUNT( DISTINCT btp.patient_id ) AS firstVisitPerNum
@@ -40,40 +40,40 @@
             AND btp.treat_end_time IS NOT NULL
             AND btp.treat_type = 0
             <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND btp.org_id in
+                AND btp.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 2">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y') &lt;= #{query.endDate}
                 </if>
             </if>
         </where>
         GROUP BY
         btp.org_id
         ) btp ON bo.org_id = btp.org_id
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
         btp.org_id,
         COUNT( DISTINCT btp.patient_id ) AS repeatVisitsPerNum,
@@ -84,40 +84,40 @@
             AND btp.treat_end_time IS NOT NULL
             AND btp.treat_type = 1
             <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND btp.org_id in
+                AND btp.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 2">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y') &lt;= #{query.endDate}
                 </if>
             </if>
         </where>
         GROUP BY
         btp.org_id
         ) btp1 ON bo.org_id = btp1.org_id
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
         btp.org_id,
         COUNT( DISTINCT btp.patient_id ) AS treatPerNum,
@@ -127,40 +127,40 @@
         <where>
             AND btp.treat_end_time IS NOT NULL
             <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND btp.org_id in
+                AND btp.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 2">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.treat_start_time, '%Y') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y') &lt;= #{query.endDate}
                 </if>
             </if>
         </where>
         GROUP BY
         btp.org_id
         ) btp2 ON bo.org_id = btp2.org_id
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
         btp.org_id,
         COUNT( DISTINCT btp.patient_id ) AS appointPerNum,
@@ -171,40 +171,40 @@
             AND btp.appointment_id IS NOT NULL
             AND btp.appoint_status != 2
             <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND btp.org_id in
+                AND btp.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 2">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.appoint_start_time, '%Y') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.appoint_start_time, '%Y') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.appoint_start_time, '%Y') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.appoint_start_time, '%Y') &lt;= #{query.endDate}
                 </if>
             </if>
         </where>
         GROUP BY
         btp.org_id
         ) btp3 ON bo.org_id = btp3.org_id
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
         btp.org_id,
         SUM( btp.appoint_modify_time ) AS appointModifyPerTimes
@@ -214,40 +214,40 @@
             AND btp.appointment_id IS NOT NULL
             AND btp.appoint_modify_time > 0
             <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND btp.org_id in
+                AND btp.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.appointment_crt_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.appointment_crt_time, '%Y-%m-%d') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.appointment_crt_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.appointment_crt_time, '%Y-%m-%d') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.appointment_crt_time, '%Y-%m') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.appointment_crt_time, '%Y-%m') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.appointment_crt_time, '%Y-%m') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.appointment_crt_time, '%Y-%m') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 2">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.appointment_crt_time, '%Y') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.appointment_crt_time, '%Y') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.appointment_crt_time, '%Y') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.appointment_crt_time, '%Y') &lt;= #{query.endDate}
                 </if>
             </if>
         </where>
         GROUP BY
         btp.org_id
         ) btp4 ON bo.org_id = btp4.org_id
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
         btp.org_id,
         COUNT( btp.appointment_id ) AS appointCancelPerTimes
@@ -257,40 +257,40 @@
             AND btp.appointment_id IS NOT NULL
             AND btp.appoint_status = 2
             <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND btp.org_id in
+                AND btp.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.appointment_crt_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.appointment_crt_time, '%Y-%m-%d') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.appointment_crt_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.appointment_crt_time, '%Y-%m-%d') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.appointment_crt_time, '%Y-%m') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.appointment_crt_time, '%Y-%m') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.appointment_crt_time, '%Y-%m') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.appointment_crt_time, '%Y-%m') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 2">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.appointment_crt_time, '%Y') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.appointment_crt_time, '%Y') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.appointment_crt_time, '%Y') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.appointment_crt_time, '%Y') &lt;= #{query.endDate}
                 </if>
             </if>
         </where>
         GROUP BY
         btp.org_id
         ) btp5 ON bo.org_id = btp5.org_id
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
         btp.org_id,
         COUNT( appointment_id ) AS appointMissedPerTimes
@@ -301,40 +301,40 @@
             AND btp.registered_id IS NULL
             AND CURRENT_DATE > btp.appoint_start_time
             <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND btp.org_id in
+                AND btp.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 2">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( btp.appoint_start_time, '%Y') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( btp.appoint_start_time, '%Y') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( btp.appoint_start_time, '%Y') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( btp.appoint_start_time, '%Y') &lt;= #{query.endDate}
                 </if>
             </if>
         </where>
         GROUP BY
         btp.org_id
         ) btp6 ON bo.org_id = btp6.org_id
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
         bb.org_id,
         SUM( bb.actual_amount ) AS totalActualAmount
@@ -350,26 +350,26 @@
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 2">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y') &gt;= #{query.startDate}
+                    AND DATE_FORMAT( bb.bill_date, '%Y') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bb.bill_date, '%Y') &lt;= #{query.endDate}
+                    AND DATE_FORMAT( bb.bill_date, '%Y') &lt;= #{query.endDate}
                 </if>
             </if>
         </where>
@@ -378,12 +378,13 @@
         ) bb ON bo.org_id = bb.org_id
         <where>
             <if test="query.orgIds != null and query.orgIds.length > 0">
-                and bo.org_id in
+                AND bo.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
         </where>
-        GROUP BY bo.org_id
+        GROUP BY
+        bo.org_id
     </select>
 </mapper>

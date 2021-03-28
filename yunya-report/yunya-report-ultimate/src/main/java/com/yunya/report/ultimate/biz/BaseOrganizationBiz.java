@@ -35,7 +35,7 @@ public class BaseOrganizationBiz extends BaseBiz<BaseOrganizationMapper, BaseOrg
    */
   public PatientDataStatisticsVO findClinicPatientDataStatistic(DataStatisticsQuery query) {
     query.setWhetherPage(false);
-    return findClinicPatientDataList(query,false).getList().get(0);
+    return findClinicPatientDataList(query, false).getList().get(0);
   }
 
   /**
@@ -45,7 +45,8 @@ public class BaseOrganizationBiz extends BaseBiz<BaseOrganizationMapper, BaseOrg
    * @return PatientDataStatisticsVO
    * @return notSummarize 是否不进行汇总
    */
-  public PageInfo<PatientDataStatisticsVO> findClinicPatientDataList(DataStatisticsQuery query, boolean notSummarize) {
+  public PageInfo<PatientDataStatisticsVO> findClinicPatientDataList(
+      DataStatisticsQuery query, boolean notSummarize) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
@@ -84,41 +85,54 @@ public class BaseOrganizationBiz extends BaseBiz<BaseOrganizationMapper, BaseOrg
         appointMissedPerTimes = patientDataStatisticsVO.getAppointMissedPerTimes();
         totalActualAmount = patientDataStatisticsVO.getTotalActualAmount();
       }
-      patientDataStatisticsVO.setFirstVisitPerNum(firstVisitPerNum + resultDatum.getFirstVisitPerNum());
-      patientDataStatisticsVO.setRepeatVisitsPerNum(repeatVisitsPerNum + resultDatum.getRepeatVisitsPerNum());
-      patientDataStatisticsVO.setRepeatVisitsPerTimes(repeatVisitsPerTimes + resultDatum.getRepeatVisitsPerTimes());
+      patientDataStatisticsVO.setFirstVisitPerNum(
+          firstVisitPerNum + resultDatum.getFirstVisitPerNum());
+      patientDataStatisticsVO.setRepeatVisitsPerNum(
+          repeatVisitsPerNum + resultDatum.getRepeatVisitsPerNum());
+      patientDataStatisticsVO.setRepeatVisitsPerTimes(
+          repeatVisitsPerTimes + resultDatum.getRepeatVisitsPerTimes());
       patientDataStatisticsVO.setTreatPerNum(treatPerNum + resultDatum.getTreatPerNum());
       patientDataStatisticsVO.setTreatPerTimes(treatPerTimes + resultDatum.getTreatPerTimes());
       patientDataStatisticsVO.setAppointPerNum(appointPerNum + resultDatum.getAppointPerNum());
-      patientDataStatisticsVO.setAppointPerTimes(appointPerTimes + resultDatum.getAppointPerTimes());
-      patientDataStatisticsVO.setAppointModifyPerTimes(appointModifyPerTimes + resultDatum.getAppointModifyPerTimes());
-      patientDataStatisticsVO.setAppointCancelPerTimes(appointCancelPerTimes + resultDatum.getAppointCancelPerTimes());
-      patientDataStatisticsVO.setAppointMissedPerTimes(appointMissedPerTimes + resultDatum.getAppointMissedPerTimes());
-      patientDataStatisticsVO.setTotalActualAmount(totalActualAmount.add(resultDatum.getTotalActualAmount()));
+      patientDataStatisticsVO.setAppointPerTimes(
+          appointPerTimes + resultDatum.getAppointPerTimes());
+      patientDataStatisticsVO.setAppointModifyPerTimes(
+          appointModifyPerTimes + resultDatum.getAppointModifyPerTimes());
+      patientDataStatisticsVO.setAppointCancelPerTimes(
+          appointCancelPerTimes + resultDatum.getAppointCancelPerTimes());
+      patientDataStatisticsVO.setAppointMissedPerTimes(
+          appointMissedPerTimes + resultDatum.getAppointMissedPerTimes());
+      patientDataStatisticsVO.setTotalActualAmount(
+          totalActualAmount.add(resultDatum.getTotalActualAmount()));
       patientMap.put(orgId, patientDataStatisticsVO);
     }
     List<PatientDataStatisticsVO> list = new ArrayList<>();
     if (StringHelper.isNotEmpty(patientMap)) {
-      patientMap.forEach((id, patientDataStatisticsVO)->{
-        BigDecimal averageConsumption = BigDecimal.ZERO;
-        BigDecimal perCapitaConsumption = BigDecimal.ZERO;
-        Integer treatPerNum = patientDataStatisticsVO.getTreatPerNum();
-        Integer treatPerTimes = patientDataStatisticsVO.getTreatPerTimes();
-        BigDecimal totalActualAmount = patientDataStatisticsVO.getTotalActualAmount();
-        if (treatPerTimes != 0) {
-          averageConsumption = totalActualAmount.divide(BigDecimal.valueOf(treatPerTimes), 2, BigDecimal.ROUND_HALF_UP);
-        }
-        if (treatPerNum != 0) {
-          perCapitaConsumption = totalActualAmount.divide(BigDecimal.valueOf(treatPerNum), 2, BigDecimal.ROUND_HALF_UP);
-        }
-        patientDataStatisticsVO.setAverageConsumption(averageConsumption);
-        patientDataStatisticsVO.setPerCapitaConsumption(perCapitaConsumption);
-        list.add(patientDataStatisticsVO);
-      });
+      patientMap.forEach(
+          (id, patientDataStatisticsVO) -> {
+            BigDecimal averageConsumption = BigDecimal.ZERO;
+            BigDecimal perCapitaConsumption = BigDecimal.ZERO;
+            Integer treatPerNum = patientDataStatisticsVO.getTreatPerNum();
+            Integer treatPerTimes = patientDataStatisticsVO.getTreatPerTimes();
+            BigDecimal totalActualAmount = patientDataStatisticsVO.getTotalActualAmount();
+            if (treatPerTimes != 0) {
+              averageConsumption =
+                  totalActualAmount.divide(
+                      BigDecimal.valueOf(treatPerTimes), 2, BigDecimal.ROUND_HALF_UP);
+            }
+            if (treatPerNum != 0) {
+              perCapitaConsumption =
+                  totalActualAmount.divide(
+                      BigDecimal.valueOf(treatPerNum), 2, BigDecimal.ROUND_HALF_UP);
+            }
+            patientDataStatisticsVO.setAverageConsumption(averageConsumption);
+            patientDataStatisticsVO.setPerCapitaConsumption(perCapitaConsumption);
+            list.add(patientDataStatisticsVO);
+          });
     } else {
       list.add(new PatientDataStatisticsVO(true));
     }
-    if (notSummarize && query.getSource()==0) {
+    if (notSummarize && query.getSource() == 0) {
       list.add(summary(list));
     }
     pageInfo.setList(list);
