@@ -741,132 +741,102 @@
         orgId,
         billId,
         billNum,
-        DATE_FORMAT(orderDate, '%Y-%m-%d') as orderDate,
-        DATE_FORMAT(billDate, '%Y-%m-%d') as billDate,
+        billDate,
+        originalAmount,
+        discountAmount,
+        actualAmount,
         patientId,
         patientName,
         mobile,
-        totalOriginalAmount,
-        privilegeAmount,
-        actualAmount,
-        ewd.actualWorkload,
+        actualWorkload,
         executorId
         FROM (
         SELECT
-        ebd.orgId,
-        ebd.billId,
-        ebd.billNum,
-        ebd.billDate,
-        ebd.orderDate,
-        ebd.patientId,
-        ebd.patientName,
-        ebd.pinyinName,
-        ebd.mobile,
-        SUM( ebd.originalAmount ) AS totalOriginalAmount,
-        ebd.privilegeAmount,
-        ebd.actualAmount,
-        IFNULL( ew.actualWorkload, 0 ) as actualWorkload,
-        ebd.executorId
+        bb.orgId,
+        bb.billId,
+        bb.billNum,
+        bb.billDate,
+        bb.originalAmount,
+        bb.discountAmount,
+        bb.actualAmount,
+        bb.patientId,
+        bb.patientName,
+        bb.pinyinName,
+        bb.mobile,
+        bbd.actualWorkload,
+        bbd.executorId
         FROM
         (
         SELECT
-        bbp.org_id AS orgId,
-        bbp.bill_id AS billId,
-        bbp.bill_num AS billNum,
-        bbp.order_date AS orderDate,
-        bbp.bill_date AS billDate,
-        bbp.patient_id AS patientId,
-        bbp.`name` AS patientName,
-        bbp.pinyin_name AS pinyinName,
-        bbp.mobile,
-        bbp.order_amount AS totalOriginalAmount,
-        bbp.privilege_amount AS privilegeAmount,
-        bbp.actual_amount AS actualAmount,
-        bbd.price * bbd.quantity AS originalAmount,
-        bbd.discount_amount AS discountAmount,
-        bbd.executor_id AS executorId
+        bbd.bill_id,
+        bbd.executor_id as executorId,
+        SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS actualWorkload
         FROM
         base_bill_detail bbd
-        LEFT JOIN (
+        <where>
+            AND bbd.executor_id IS NOT NULL
+            <if test="query.orgId != null">
+                AND bbd.org_id = #{query.orgId}
+            </if>
+            <if test="query.employeeId != null">
+                AND bbd.executor_id = #{query.employeeId}
+            </if>
+        </where>
+        GROUP BY
+        bbd.bill_id,
+        bbd.executor_id
+        ) bbd
+        INNER JOIN (
         SELECT
-        bb.org_id,
-        bb.bill_id,
-        bb.order_date,
-        bb.bill_num,
-        bb.bill_date,
-        bb.order_amount,
-        bb.privilege_amount,
-        bb.actual_amount,
-        bb.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.pinyin_name
+        bb.org_id as orgId,
+        bb.bill_id AS billId,
+        bb.bill_num AS billNum,
+        bb.bill_date AS billDate,
+        bb.order_amount AS originalAmount,
+        bb.privilege_amount AS discountAmount,
+        bb.actual_amount AS actualAmount,
+        bb.patient_id AS patientId,
+        bp.`name` AS patientName,
+        bp.pinyin_name AS pinyinName,
+        bp.mobile AS mobile
         FROM
         base_bill bb
         LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
-        ) bbp ON bbd.bill_id = bbp.bill_id
-        ) ebd
-        LEFT JOIN (
-        SELECT
-        SUM( ew.originalAmount - ew.discountAmount ) AS actualWorkload,
-        ew.billId,
-        ew.executorId
-        FROM
-        (
-        SELECT
-        bbd.bill_id AS billId,
-        bbd.price * bbd.quantity AS originalAmount,
-        bbd.discount_amount AS discountAmount,
-        bbd.executor_id AS executorId
-        FROM
-        base_bill_detail bbd
-        WHERE
-        bbd.executor_id IS NOT NULL
-        GROUP BY
-        bbd.bill_detail_id
-        ) ew
-        GROUP BY
-        ew.billId,
-        ew.executorId
-        ) ew ON ebd.executorId = ew.executorId
-        AND ebd.billId = ew.billId
         <where>
             <if test="query.orgId != null">
-                and ebd.orgId = #{query.orgId}
+                AND bb.org_id = #{query.orgId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( ebd.orderDate, '%Y-%m' ) = #{query.queryDate}
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) = #{query.queryDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( ebd.orderDate, '%Y' ) = #{query.queryDate}
+                    AND DATE_FORMAT( bb.bill_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
-            <if test="query.employeeId != null">
-                and ebd.executorId = #{query.employeeId}
-            </if>
         </where>
-        GROUP BY
-        ebd.billId
-        ) ewd
+        ) bb ON bbd.bill_id = bb.billId
+        ) bbd
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(IFNULL(ewd.patientName, ''), IFNULL(ewd.pinyinName, ''), IFNULL(ewd.mobile, '')) Like
+                AND concat(IFNULL(bbd.patientName, ''), IFNULL(bbd.pinyinName, ''), IFNULL(bbd.mobile, '')) Like
                 concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
-                and ewd.billNum like concat('%', #{query.billNum} ,'%')
+                AND bbd.billNum LIKE concat('%', #{query.billNum} ,'%')
             </if>
             <if test="query.orderDate != null and query.orderDate != ''">
-                and DATE_FORMAT(ewd.orderDate, '%Y-%m-%d') = #{query.orderDate}
+                AND DATE_FORMAT(bbd.orderDate, '%Y-%m-%d') = #{query.orderDate}
             </if>
             <if test="query.billDate != null and query.billDate != ''">
-                and DATE_FORMAT(ewd.billDate, '%Y-%m-%d') = #{query.billDate}
+                AND DATE_FORMAT(bbd.billDate, '%Y-%m-%d') = #{query.billDate}
             </if>
         </where>
-        ORDER BY ewd.billDate, ewd.billNum DESC
+        ORDER BY
+        bbd.billDate DESC,
+        bbd.billNum DESC
     </select>
 
     <!-- 根据条件查询员工工作量开单明细列表 -->
@@ -1998,7 +1968,8 @@
         0 as noticeTotal
         from base_organization bo
         left join (
-        select IFNULL(SUM(bbd.quantity * bbd.price - bbd.discount_amount + bbd.coupon_workload),0) as workload, bbd.org_id from base_bill_detail bbd
+        select IFNULL(SUM(bbd.quantity * bbd.price - bbd.discount_amount + bbd.coupon_workload),0) as workload,
+        bbd.org_id from base_bill_detail bbd
         left join base_bill bb on bbd.bill_id=bb.bill_id
         <where>
             <if test="query.orgIds!=null and query.orgIds.length>0">
@@ -2056,7 +2027,8 @@
         0 as notice,
         0 as noticeTotal
         from base_treatment_process btp
-        LEFT JOIN (select patient_id from base_patient where origin_type_name = '老患者介绍' group by origin_type) bp ON btp.patient_id = bp.patient_id
+        LEFT JOIN (select patient_id from base_patient where origin_type_name = '老患者介绍' group by origin_type) bp ON
+        btp.patient_id = bp.patient_id
         <where>
             btp.treat_type = 0
             AND btp.treat_end_time IS NOT NULL
@@ -2358,7 +2330,7 @@
         from base_bill_detail bbd
         join (
         select bb.bill_id from base_bill bb join (
-        select patient_id from base_patient_origin_log where origin_id = #{originId}  and inservice = 1
+        select patient_id from base_patient_origin_log where origin_id = #{originId} and inservice = 1
         ) t on t.patient_id = bb.patient_id
         where
         privilege_date is not null
@@ -2366,7 +2338,7 @@
             and DATE_FORMAT( privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
+        <if test="query.endDate != null">
             and DATE_FORMAT( privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
         ) t on t.bill_id = bbd.bill_id
