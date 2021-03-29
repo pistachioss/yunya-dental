@@ -19,44 +19,43 @@
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
   <select id="findEmployeeVoLists" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientOriginEmployeeVo">
-    SELECT
-        log.origin_id originId,
-        ee.employee_name referrerName,
-        case
-            when ee.work_status = 0 then '试用'
-            when ee.work_status = 1 then '正式'
-            when ee.work_status = 2 then '离职'
-            when ee.work_status = 3 then '实习'
-            else ''
-            end workStatus,
-        count( log.origin_id ) patientNumber
-    FROM
-        base_patient_origin_log log
-        join base_employee ee on log.origin_id = ee.user_id
-        join base_user_post bup on bup.user_id = ee.user_id
-    <where>
-        log.origin_type = 1
-        and log.inservice = 1
-      <if test="query.workStatus != null">
-        and work_status = #{query.workStatus}
-      </if>
+      select * from (
+          SELECT
+              DISTINCT
+              ee.user_id  originId,
+              ee.employee_name referrerName,
+              CASE
 
-      <if test="query.referrerName != null">
-        and concat( IFNULL( ee.`employee_name`, '' ))
-        LIKE concat( concat( '%', #{query.referrerName} ), '%' )
-      </if>
+              WHEN ee.work_status = 0 THEN
+              '试用'
+              WHEN ee.work_status = 1 THEN
+              '正式'
+              WHEN ee.work_status = 2 THEN
+              '离职'
+              WHEN ee.work_status = 3 THEN
+              '实习' ELSE ''
+              END workStatus,
+              (select count(1) from base_patient_origin_log where origin_type = 1
+              AND inservice = 1 and origin_id = ee.user_id  ) patientNumber
 
-      <if test="query.orgIds != null">
-          and bup.org_id in
-          <foreach collection="query.orgIds" item="orgId" open="(" separator="," close=")">
-              #{orgId}
-          </foreach>
-      </if>
+          FROM base_employee ee
+          JOIN base_user_post bup ON bup.user_id = ee.user_id
+          WHERE
+              ee.work_status = 1
+              <if test="query.orgIds != null">
+                  and bup.org_id in
+                  <foreach collection="query.orgIds" item="orgId" open="(" separator="," close=")">
+                      #{orgId}
+                  </foreach>
+              </if>
 
-    </where>
+              <if test="query.referrerName != null">
+                  and concat( IFNULL( ee.`employee_name`, '' ))
+                  LIKE concat( concat( '%', #{query.referrerName} ), '%' )
+              </if>
 
-    GROUP BY
-        log.origin_id
+      ) t where t.patientNumber > 0
+
   </select>
 
     <!-- 查询订单项目实收计算 -->

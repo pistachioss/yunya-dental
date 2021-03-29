@@ -142,7 +142,7 @@ public class BaseBillDetailMapperTest {
     EmployeeWorkloadQuery query = new EmployeeWorkloadQuery();
     query.setOrgId(26);
     query.setDateType((byte) 0);
-    query.setQueryDate("2021-02");
+    query.setQueryDate("2021-03");
     query.setEmployeeIds(new Integer[] {341, 541});
     query.setWorkStatus(new Integer[] {0, 1});
     List<EmployeeWorkloadOfOperationVO> vos =
