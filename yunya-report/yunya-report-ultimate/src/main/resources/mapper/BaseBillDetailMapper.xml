@@ -741,35 +741,34 @@
         orgId,
         billId,
         billNum,
-        billDate,
-        originalAmount,
-        discountAmount,
+        DATE_FORMAT(orderDate, '%Y-%m-%d') AS orderDate,
+        DATE_FORMAT(billDate, '%Y-%m-%d') AS billDate,
+        totalOriginalAmount,
+        privilegeAmount,
         actualAmount,
         patientId,
         patientName,
         mobile,
-        actualWorkload,
-        executorId
+        actualWorkload
         FROM (
         SELECT
         bb.orgId,
         bb.billId,
         bb.billNum,
         bb.billDate,
-        bb.originalAmount,
-        bb.discountAmount,
+        bb.orderDate,
+        bb.totalOriginalAmount,
+        bb.privilegeAmount,
         bb.actualAmount,
         bb.patientId,
         bb.patientName,
         bb.pinyinName,
         bb.mobile,
-        bbd.actualWorkload,
-        bbd.executorId
+        bbd.actualWorkload
         FROM
         (
         SELECT
         bbd.bill_id,
-        bbd.executor_id as executorId,
         SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS actualWorkload
         FROM
         base_bill_detail bbd
@@ -792,8 +791,9 @@
         bb.bill_id AS billId,
         bb.bill_num AS billNum,
         bb.bill_date AS billDate,
-        bb.order_amount AS originalAmount,
-        bb.privilege_amount AS discountAmount,
+        bb.order_date AS orderDate,
+        bb.order_amount AS totalOriginalAmount,
+        bb.privilege_amount AS privilegeAmount,
         bb.actual_amount AS actualAmount,
         bb.patient_id AS patientId,
         bp.`name` AS patientName,
