@@ -35,9 +35,11 @@ public class WorkOvertimeInfoForm {
     private Date workDate;
 
     @ApiModelProperty("申请要加班的开始日期 后端使用")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date startWorkDate;
 
     @ApiModelProperty("申请要加班的结束日期 后端使用")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date endWorkDate;
 
     @ApiModelProperty("开始时间")

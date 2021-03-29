@@ -43,9 +43,11 @@ public class FieldInfoForm {
     private Date endTime;
 
     @ApiModelProperty("申请要外勤的开始日期 后端使用")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date startWorkDate;
 
     @ApiModelProperty("申请要外勤的结束日期 后端使用")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date endWorkDate;
 
     /** 门诊id */
