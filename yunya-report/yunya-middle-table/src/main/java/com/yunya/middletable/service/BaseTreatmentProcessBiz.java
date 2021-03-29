@@ -289,6 +289,7 @@ public class BaseTreatmentProcessBiz
         default:
           break;
       }
+      treatmentProcess.setTreatType(treatmentRecordResult.getType());
       treatmentProcess.setOrgId(treatmentRecordResult.getOrgId());
       treatmentProcess.setTreatStartTime(treatmentRecordResult.getTreatStartTime());
       treatmentProcess.setTreatEndTime(treatmentRecordResult.getTreatEndTime());
