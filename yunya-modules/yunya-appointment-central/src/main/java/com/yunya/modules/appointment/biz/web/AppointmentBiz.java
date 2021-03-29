@@ -830,8 +830,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     private List<FieldInfoListVO> findFieldList(List<Integer> dentistIdsList,Date startDate, Date endDate) {
         FieldInfoForm fieldQuery = new FieldInfoForm();
         fieldQuery.setUserList(dentistIdsList);
-        fieldQuery.setStartTime(startDate);
-        fieldQuery.setEndTime(endDate);
+        fieldQuery.setStartWorkDate(startDate);
+        fieldQuery.setEndWorkDate(endDate);
         fieldQuery.setApprovalStatus(1);
         List<FieldInfoListVO> fieldInfoListVOS = this.employeeAttendServiceFeign.fieldFindList(fieldQuery);
         return fieldInfoListVOS;
@@ -866,8 +866,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 查询员工加班信息
         WorkOvertimeInfoForm workOverTime = new WorkOvertimeInfoForm();
         workOverTime.setCompanyId(orgId);
-        workOverTime.setStartTime(startDate);
-        workOverTime.setEndTime(endDate);
+        workOverTime.setStartWorkDate(startDate);
+        workOverTime.setEndWorkDate(endDate);
         workOverTime.setApprovalStatus(1);
         List<WorkOvertimeInfoListVO> workOvertimeInfoListVOS = this.employeeAttendServiceFeign.workFindList(workOverTime);
         return workOvertimeInfoListVOS;
@@ -2768,7 +2768,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             EmpScheduleVo empScheduleVo = null;
             for (WorkOvertimeInfoListVO workOvertime: workOvertimes) {
                 empScheduleVo = new EmpScheduleVo();
-                this.setEmpSchedule(item,workOvertime.getUserId(),workOvertime.getUserName(),empScheduleVo);
+                this.setEmpSchedule(workOvertime,workOvertime.getUserId(),workOvertime.getUserName(),empScheduleVo);
                 empScheduleVos.add(empScheduleVo);
             }
         }
@@ -2784,9 +2784,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (StringHelper.isNotEmpty(workDayVOS)) {
             EmpScheduleVo empScheduleVo = null;
             for (WorkDayVO workDay : workDayVOS) {
-                empScheduleVo = new EmpScheduleVo();
-                this.setEmpSchedule(workDay,appointment.getDentistId(),appointment.getName(),empScheduleVo);
-                empScheduleVos.add(empScheduleVo);
+                if (null != workDay.getId()) {
+                    empScheduleVo = new EmpScheduleVo();
+                    this.setEmpSchedule(workDay, appointment.getDentistId(), appointment.getName(), empScheduleVo);
+                    empScheduleVos.add(empScheduleVo);
+                }
             }
         }
         appointment.setDentistScheduleVos(empScheduleVos);
@@ -2810,8 +2812,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     empScheduleVos.add(empScheduleVo);
                 }
             }
+            appoint.setDentistScheduleVos(empScheduleVos);
         }
-        appoint.setDentistScheduleVos(empScheduleVos);
     }
 
 
