@@ -45,15 +45,19 @@ public class  AppointmentDimensionVo implements Serializable {
     @ApiModelProperty(value = "预约可视图患者卡片")
     private List<AppointmentPatientCardVo> appointmentPatientCardVos;
 
+//    /** 医生排班表卡片模型 */
+//    @ApiModelProperty(value = "医生排班表卡片")
+//    private List<WorkDayVO> dentistScheduleVos;
+
     /** 医生排班表卡片模型 */
     @ApiModelProperty(value = "医生排班表卡片")
-    private List<WorkDayVO> dentistScheduleVos;
+    private List<EmpScheduleVo> dentistScheduleVos;
 
     /** 分解助手信息 */
     @ApiModelProperty(value = "分解助手信息")
     private List<AppointmentDimensionVo> appointmentAssistants;
 
-    /** 员工请假信息 */
-    @ApiModelProperty(value = "员工请假信息")
-    private List<LeaveInfoListVO> leaveInfos;
+//    /** 员工请假信息 */
+//    @ApiModelProperty(value = "员工请假信息")
+//    private List<EmpScheduleVo> leaveInfos;
 }
