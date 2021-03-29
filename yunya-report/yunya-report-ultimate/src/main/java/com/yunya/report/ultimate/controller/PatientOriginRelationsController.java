@@ -44,7 +44,7 @@ public class PatientOriginRelationsController {
      * @param query 查询条件
      * @return 员工推荐推荐分页列表信息
      */
-    @ApiModelProperty("员工推荐")
+    @ApiOperation("员工推荐")
     @PostMapping(value = "/employeeReferral",name = "公司端-人力资源-员工推荐")
     public ResponseResult<PageInfo<PatientOriginEmployeeVo>> employeeReferral(@RequestBody PatientOriginEmployeeQuery query){
        List<PatientOriginEmployeeVo> patientOriginEmployeeVoList = patientOriginRelationsBiz.finleEmployeeReferral(query);
@@ -88,7 +88,7 @@ public class PatientOriginRelationsController {
      * @param query 查询条件
      * @return 已收工作量明细列表分页列表查询
      */
-    @ApiModelProperty("员工推荐-各项明细列表")
+    @ApiOperation("员工推荐-各项明细列表")
     @PostMapping(value = "/workloadBreakdown",name = "公司端-人力资源-员工推荐-各项明细列表 type区分")
     public ResponseResult<PageInfo<ReceivedWorkloadDetailsVo>> workloadBreakdown(@RequestBody ReceiverkLoadQuery query){
         List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = patientOriginRelationsBiz.finlereceiverkLoad(query);
