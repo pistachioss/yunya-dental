@@ -651,6 +651,6 @@
         edi.orgId,
         edi.employeeId
         ORDER BY
-        edi.totalTreatmentTime, treatVisitsTimes
+        edi.totalTreatmentTime DESC, treatVisitsTimes DESC
     </select>
 </mapper>
