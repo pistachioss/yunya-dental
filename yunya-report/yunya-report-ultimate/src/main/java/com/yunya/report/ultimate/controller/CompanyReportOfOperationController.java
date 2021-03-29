@@ -397,4 +397,43 @@ public class CompanyReportOfOperationController {
     billDetailBiz.billItemStatiticsDetailExport(query, response);
     return ResponseUtil.success(null);
   }
+
+  /**
+   * 根据条件查询产品使用报表
+   *
+   * @param query
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-产品使用报表")
+  @PostMapping(value = "coupon/executored/list", name = "根据条件查询产品使用报表")
+  public ResponseResult<PageInfo<CouponExecutoredVO>> couponExecutoredList(CouponExecutoredQuery query) {
+    PageInfo<CouponExecutoredVO> pageInfo = billDetailBiz.couponExecutoredList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询产品使用报表导出
+   *
+   * @param query
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-产品使用报表导出")
+  @PostMapping(value = "coupon/executored/export", name = "根据条件查询产品使用报表导出")
+  public ResponseResult<T> couponExecutoredExport(HttpServletResponse response, CouponExecutoredQuery query) throws IOException {
+    billDetailBiz.couponExecutoredExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询产品使用报表明细
+   *
+   * @param query
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-产品使用报表明细")
+  @PostMapping(value = "coupon/executored/detail", name = "根据条件查询产品使用报表明细")
+  public ResponseResult<PageInfo<CouponExecutoredDetailVO>> couponExecutoredDetails(CouponExecutoredDetailQuery query) {
+    PageInfo<CouponExecutoredDetailVO> pageInfo = billDetailBiz.couponExecutoredDetails(query);
+    return ResponseUtil.success(pageInfo);
+  }
 }
