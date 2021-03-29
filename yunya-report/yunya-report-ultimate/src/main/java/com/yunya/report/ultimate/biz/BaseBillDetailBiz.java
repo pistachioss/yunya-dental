@@ -1042,4 +1042,47 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   public List<BaseBillDetailToWorkloadVO> findBillDetailForNotWorkload(Integer billId) {
     return mapper.selectBillDetailForNotWorkload(billId);
   }
+
+  /**
+   * 根据条件查询产品使用报表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<CouponExecutoredVO> couponExecutoredList(CouponExecutoredQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<CouponExecutoredVO> list = mapper.couponExecutoredList(query);
+    return new PageInfo<>(list);
+  }
+
+  /**
+   * 根据条件查询产品使用报表导出
+   *
+   * @param query
+   * @return
+   */
+  public void couponExecutoredExport(CouponExecutoredQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<CouponExecutoredVO> pageInfo = couponExecutoredList(query);
+    List<CouponExecutoredVO> resultList = pageInfo.getList();
+    ExcelUtil<CouponExecutoredVO> excelUtil = new ExcelUtil<>(CouponExecutoredVO.class);
+    String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "产品使用报表");
+    excelUtil.exportExcel(response, resultList, "产品使用报表", fileName);
+  }
+
+  /**
+   * 根据条件查询产品使用报表明细
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<CouponExecutoredDetailVO> couponExecutoredDetails(CouponExecutoredDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<CouponExecutoredDetailVO> list = mapper.couponExecutoredDetails(query);
+    return new PageInfo<>(list);
+  }
 }

@@ -2659,5 +2659,108 @@
             AND bbd.bill_id = #{billId}
     </select>
 
+    <select id="couponExecutoredList" resultType="com.yunya.feign.report.domain.vo.CouponExecutoredVO">
+        SELECT
+            bb.org_id AS orgId,
+            bo.abbreviation,
+            bb.executor_id AS executorId,
+            be.employee_name AS executorName,
+            bb.coupon_id AS couponId,
+            bc.coupon_name AS couponName,
+            bb.item_type AS itemType,
+            bb.item_id AS itemId,
+            bti.item_name AS itemName,
+            bb.num
+        FROM (
+            SELECT bb.org_id,bb.coupon_id,bb.item_type,bb.item_id,SUM(bb.num) num, bbd.executor_id FROM (
+                SELECT org_id,coupon_id,order_detail_id,item_type,item_id,COUNT(item_index) num FROM base_benefit
+                <where>
+                 benefit_type = 1
+                 AND choice_benefit_type = 0
+                 <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                     AND DATE_FORMAT(use_date, '%Y-%m-%d') between #{query.startDate} and #{query.endDate}
+                 </if>
+                 <if test="query.orgIds!=null and query.orgIds.size()>0">
+                     AND org_id IN
+                     <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                         #{item}
+                     </foreach>
+                 </if>
+                 <if test="query.couponIds!=null and query.couponIds.size()>0">
+                     AND coupon_id IN
+                     <foreach collection="query.couponIds" index="index" item="item" open="(" separator="," close=")">
+                         #{item}
+                     </foreach>
+                 </if>
+                </where>
+                group by org_id,coupon_id,order_detail_id,item_type,item_id
+            ) bb
+            LEFT JOIN base_bill_detail bbd ON bb.order_detail_id = bbd.bill_detail_id
+            group by bb.org_id,bb.coupon_id,bbd.executor_id,bb.order_detail_id,bb.item_type,bb.item_id
+        ) bb
+        LEFT JOIN base_coupon bc ON bc.coupon_id=bb.coupon_id
+        LEFT JOIN base_tariff_info bti ON (bti.item_type=bb.item_type AND bti.item_id=bb.item_id)
+        LEFT JOIN base_organization bo ON bo.org_id=bb.org_id
+        LEFT JOIN base_employee be ON be.user_id=bb.executor_id
+        <where>
+            <if test="query.executorName!=null and query.executorName!=''">
+                AND be.employee_name like concat('%', #{query.executorName}, '%')
+            </if>
+            <if test="query.workStatus != null">
+                AND be.work_status = #{query.workStatus}
+            </if>
+        </where>
+    </select>
 
+    <select id="couponExecutoredDetails" resultType="com.yunya.feign.report.domain.vo.CouponExecutoredDetailVO">
+        SELECT
+        bo.abbreviation,
+        be.employee_name AS executorName,
+        bill.bill_num AS billNum,
+        bc.coupon_name AS couponName,
+        bti.item_name AS itemName,
+        bb.num,
+        bp.name AS patientName,
+        bp.mobile,
+        bb.use_date AS useDate
+        FROM (
+            SELECT org_id,coupon_id,order_detail_id,item_type,item_id,patient_id,use_date,COUNT(item_index) num FROM base_benefit
+            <where>
+                benefit_type = 1
+                AND choice_benefit_type = 0
+                <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                    AND DATE_FORMAT(use_date, '%Y-%m-%d') between #{query.startDate} and #{query.endDate}
+                </if>
+                <if test="query.orgId != null">
+                    AND org_id = #{query.orgId}
+                </if>
+                <if test="query.couponId != null">
+                    AND coupon_id = #{query.couponId}
+                </if>
+                <if test="query.itemType != null">
+                    AND item_type = #{query.itemType}
+                </if>
+                <if test="query.itemId != null">
+                    AND item_id = #{query.itemId}
+                </if>
+            </where>
+            group by org_id,patient_id,coupon_id,order_detail_id,item_type,item_id,use_date
+        ) bb
+        LEFT JOIN base_bill_detail bbd ON bb.order_detail_id = bbd.bill_detail_id
+        LEFT JOIN base_bill bill ON bbd.bill_id = bill.bill_id
+        LEFT JOIN base_coupon bc ON bc.coupon_id=bb.coupon_id
+        LEFT JOIN base_tariff_info bti ON (bti.item_type=bb.item_type AND bti.item_id=bb.item_id)
+        LEFT JOIN base_organization bo ON bo.org_id=bb.org_id
+        LEFT JOIN base_employee be ON be.user_id=bbd.executor_id
+        LEFT JOIN base_patient bp ON bp.patient_id=bb.patient_id
+        <where>
+            <if test="query.executorId != null">
+                AND bbd.executor_id = #{query.executorId}
+            </if>
+            <if test="query.keyword!=null and query.keyword!=''">
+                AND concat(IFNULL(bp.name,''),IFNULL(bp.pinyin_name,''),IFNULL(bp.mobile,'')) like
+                concat('%',#{query.keyword},'%')
+            </if>
+        </where>
+    </select>
 </mapper>

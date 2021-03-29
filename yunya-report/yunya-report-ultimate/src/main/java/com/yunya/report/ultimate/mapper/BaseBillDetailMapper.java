@@ -288,4 +288,20 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return list
    */
   List<BaseBillDetailToWorkloadVO> selectBillDetailForNotWorkload(@Param("billId") Integer billId);
+
+  /**
+   * 根据查询条件产品使用报表
+   *
+   * @param query
+   * @return
+   */
+  List<CouponExecutoredVO> couponExecutoredList(@Param("query") CouponExecutoredQuery query);
+
+  /**
+   * 根据条件查询产品使用报表明细
+   *
+   * @param query
+   * @return
+   */
+  List<CouponExecutoredDetailVO> couponExecutoredDetails(@Param("query") CouponExecutoredDetailQuery query);
 }
