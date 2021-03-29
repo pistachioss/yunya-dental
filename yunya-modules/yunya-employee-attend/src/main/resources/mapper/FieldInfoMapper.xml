@@ -71,6 +71,9 @@
             <if test="startTime != null ">
                 and fi.crt_time >= #{startTime} and fi.crt_time &lt;= #{endTime}
             </if>
+            <if test="startWorkDate != null and endWorkDate != null">
+                and fi.start_time >= date_format(#{startWorkDate},'%Y-%m-%d') and fi.start_time &lt; date_format(DATE_ADD(#{endWorkDate}, INTERVAL '1' DAY),'%Y-%m-%d')
+            </if>
             <if test="userList!=null and userList.size()>0">
                 and fi.user_id in
                 <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
