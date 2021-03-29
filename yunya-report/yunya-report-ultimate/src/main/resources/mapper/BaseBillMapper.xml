@@ -1063,7 +1063,7 @@
         </where>
     </select>
 
-    <!-- 查询所有订单号集合 -->
+    <!-- 查询员工患者消费的订单号 -->
     <select id="findBillIdList" resultType="java.lang.Integer">
         select distinct bbp.bill_id
         from base_patient_origin_log log
@@ -1088,6 +1088,29 @@
         on t.origin_id = log.origin_id
     </select>
 
+
+    <!-- 查询活动患者消费的订单号 -->
+    <select id="findActivityBillIdList" resultType="java.lang.Integer">
+        select distinct bbp.bill_id
+        from base_patient_origin_log log
+        join base_bill bb on log.patient_id = bb.patient_id
+        join base_bill_pay bbp on bbp.bill_id = bb.bill_id
+        join (
+        select bpo.id
+        from base_patient_origin bpo
+        join base_patient_origin_log log
+        on bpo.id = log.origin_id
+        where
+        log.origin_type = 3
+        and log.inservice = 1
+        <if test="query.activityName != null">
+            and concat( IFNULL(  bpo.`name`, '' ))
+            LIKE concat( concat( '%', #{query.activityName} ), '%' )
+        </if>
+        GROUP BY bpo.id
+        ) t on t.id = log.origin_id
+    </select>
+
     <!-- 根据推荐人id和支付记录时间查询已收工作量信息 -->
     <select id="findBaseBillIdList"
             resultType="java.lang.Integer">
@@ -1106,6 +1129,9 @@
             JOIN base_patient bp on bp.patient_id = log.patient_id
             WHERE
             log.origin_id = #{query.originId}
+            <if test="query.condition != null">
+                and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition} ), '%' )
+            </if>
             AND log.inservice = 1
         ) t ON bb.patient_id = t.patient_id
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
@@ -1119,9 +1145,7 @@
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.condition != null">
-            and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition} ), '%' )
-        </if>
+
 
         <if test="typeList != null">
             and bbpd.type in
@@ -1160,12 +1184,12 @@
                 bbd.bill_detail_id,
                 bb.bill_id billId,
                 bb.patient_id patientId,
-                DATE_FORMAT( log.crt_time, '%Y-%m-%d') relatedTime,
+                DATE_FORMAT( log.crt_time, '%Y-%m-%d %H:%i') relatedTime,
                 bp.`name`,
                 bp.mobile,
-                DATE_FORMAT( bp.first_visit_date, '%Y-%m-%d') firstVisitDate,
-                DATE_FORMAT( bp.last_visit_date, '%Y-%m-%d') lastVisitDate,
-                DATE_FORMAT( bb.order_date, '%Y-%m-%d') orderDate,
+                DATE_FORMAT( bp.first_visit_date, '%Y-%m-%d %H:%i') firstVisitDate,
+                DATE_FORMAT( bp.last_visit_date, '%Y-%m-%d %H:%i') lastVisitDate,
+                DATE_FORMAT( bb.order_date, '%Y-%m-%d %H:%i') orderDate,
                 bo.abbreviation abbreviation,
                 be.employee_name employeeName,
                 bti.item_name itemName,

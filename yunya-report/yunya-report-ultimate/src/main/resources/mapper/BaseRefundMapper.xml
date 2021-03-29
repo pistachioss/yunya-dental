@@ -682,12 +682,12 @@
                     log.origin_id = #{originId}
                     AND log.inservice = 1
             ) t ON br.patient_id = t.patient_id
-        <if test="query.startDate != null">
-            and DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+        <if test="startDate != null">
+            and DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
-            and DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+        <if test="endDate != null" >
+            and DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{endDate}, '%Y-%m-%d' )
         </if>
 
     </select>
@@ -775,12 +775,12 @@
         SELECT
 				bb.bill_id billId,
 				bb.patient_id patientId,
-				DATE_FORMAT( log.crt_time, '%Y-%m-%d') relatedTime,
+				DATE_FORMAT( log.crt_time, '%Y-%m-%d %H:%i') relatedTime,
 				bp.`name`,
 				bp.mobile,
-				DATE_FORMAT( bp.first_visit_date, '%Y-%m-%d') firstVisitDate,
-				DATE_FORMAT( bp.last_visit_date, '%Y-%m-%d') lastVisitDate,
-				DATE_FORMAT( bb.order_date, '%Y-%m-%d') orderDate,
+				DATE_FORMAT( bp.first_visit_date, '%Y-%m-%d %H:%i') firstVisitDate,
+				DATE_FORMAT( bp.last_visit_date, '%Y-%m-%d %H:%i') lastVisitDate,
+				DATE_FORMAT( bb.order_date, '%Y-%m-%d %H:%i') orderDate,
 				bo.abbreviation abbreviation,
 				be.employee_name employeeName,
 				bti.item_name itemName,

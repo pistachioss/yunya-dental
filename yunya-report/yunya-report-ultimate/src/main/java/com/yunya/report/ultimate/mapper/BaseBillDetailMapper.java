@@ -219,10 +219,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   /**
    * 根据推荐人id和优惠时间 查询患者补入工作量总合
    * @param originId 推荐人id
-   * @param query 条件
+   * @param startDate 开始时间
+   * @param endDate 结束时间
    * @return 补入工作量
    */
-    BigDecimal findMakeUpWorkload(@Param("originId") String originId,@Param("query") PatientOriginEmployeeQuery query);
+    BigDecimal findMakeUpWorkload(@Param("originId") Integer originId,@Param("startDate") String startDate,@Param("endDate") String endDate);
+
 
   /**
    * 根据订单id查询项目实收金额
