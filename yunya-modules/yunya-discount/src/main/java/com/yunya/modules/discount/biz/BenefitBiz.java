@@ -164,7 +164,7 @@ public class BenefitBiz {
 						cardBenefit.setUpdId(loginUserId);
 						cardBenefit.setSort(itemUseBenefitBo.getId());
 						//计算工作量
-						cardBenefit.setSupplyWorkload(calculateWordLoad(itemUseBenefitBo, itemBenefitBo));
+						cardBenefit.setSupplyWorkload(calculateWordLoad(itemBenefitBo));
 						list.add(cardBenefit);
 					}
 				}
@@ -426,50 +426,57 @@ public class BenefitBiz {
 	/**
 	 * 计算工作量
 	 *
-	 * @param itemUseBenefitBo itemUseBenefitBo
 	 * @param itemBenefitBo    itemBenefitBo
 	 */
-	private BigDecimal calculateWordLoad(ItemUseBenefitBo itemUseBenefitBo, OrderItemUseBo itemBenefitBo) {
+	private BigDecimal calculateWordLoad(OrderItemUseBo itemBenefitBo) {
 		Example example;
-		BigDecimal supplyWorkload = null;
-		if (COUPON_TYPE.equals(itemUseBenefitBo.getBenefitType())) {
-			Integer couponType = itemUseBenefitBo.getCouponType();
-			Integer couponId = itemUseBenefitBo.getCouponId();
-			if (VOUCHER.equals(couponType)) {
-				example = new Example(VoucheCoupon.class);
-				example.createCriteria().andEqualTo("couponId", couponId);
-				VoucheCoupon voucheCoupon = voucherMapper.selectOneByExample(example);
-				if (voucheCoupon != null) {
-					supplyWorkload = itemUseBenefitBo.getBenefitAmount().multiply(voucheCoupon.getWorkloadRate());
+		BigDecimal supplyWorkload = BigDecimal.ZERO;
+		List<ItemUseBenefitBo> itemUseBenefitBos = itemBenefitBo.getItemUseBenefitBos();
+		for (ItemUseBenefitBo itemUseBenefitBo : itemUseBenefitBos) {
+			if (COUPON_TYPE.equals(itemUseBenefitBo.getBenefitType())) {
+				Integer couponType = itemUseBenefitBo.getCouponType();
+				Integer couponId = itemUseBenefitBo.getCouponId();
+				if (VOUCHER.equals(couponType)) {
+					example = new Example(VoucheCoupon.class);
+					example.createCriteria().andEqualTo("couponId", couponId);
+					VoucheCoupon voucheCoupon = voucherMapper.selectOneByExample(example);
+					if (voucheCoupon != null) {
+						supplyWorkload = supplyWorkload.add(itemUseBenefitBo.getBenefitAmount()
+								.multiply(voucheCoupon.getWorkloadRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP)))
+								.setScale(2, BigDecimal.ROUND_HALF_UP);
+					}
 				}
-			}
-			if (DISCOUNT.equals(couponType)) {
-				example = new Example(DiscountCoupon.class);
-				example.createCriteria().andEqualTo("couponId", couponId);
-				DiscountCoupon discountCoupon = discountCouponMapper.selectOneByExample(example);
-				if (discountCoupon != null) {
-					supplyWorkload = itemUseBenefitBo.getBenefitAmount().multiply(discountCoupon.getWorkloadRate());
+				if (DISCOUNT.equals(couponType)) {
+					example = new Example(DiscountCoupon.class);
+					example.createCriteria().andEqualTo("couponId", couponId);
+					DiscountCoupon discountCoupon = discountCouponMapper.selectOneByExample(example);
+					if (discountCoupon != null) {
+						supplyWorkload = supplyWorkload.add(itemUseBenefitBo.getBenefitAmount()
+								.multiply(discountCoupon.getWorkloadRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP)))
+								.setScale(2, BigDecimal.ROUND_HALF_UP);
+					}
 				}
-			}
-			if (EXCHANGE.equals(couponType)) {
-				example = new Example(PackageCouponItem.class);
-				example.createCriteria().andEqualTo("couponId", couponId).andEqualTo("itemId", itemBenefitBo.getItemId()).
-						andEqualTo("type", itemBenefitBo.getType());
-				PackageCouponItem packageCouponItem = packageCouponItemMapper.selectOneByExample(example);
-				if (packageCouponItem != null) {
-					supplyWorkload = BigDecimal.ONE.multiply(packageCouponItem.getWorkloadLoad());
+				if (EXCHANGE.equals(couponType)) {
+					example = new Example(PackageCouponItem.class);
+					example.createCriteria().andEqualTo("couponId", couponId).andEqualTo("itemId", itemBenefitBo.getItemId()).
+							andEqualTo("type", itemBenefitBo.getType());
+					PackageCouponItem packageCouponItem = packageCouponItemMapper.selectOneByExample(example);
+					if (packageCouponItem != null) {
+						supplyWorkload = supplyWorkload.add(packageCouponItem.getWorkloadLoad());
+					}
 				}
-			}
-			if (SPECIAL_PACKAGE.equals(couponType)) {
-				example = new Example(SpecialPackageCouponItem.class);
-				example.createCriteria().andEqualTo("couponId", couponId).andEqualTo("itemId", itemBenefitBo.getItemId()).
-						andEqualTo("type", itemBenefitBo.getType());
-				SpecialPackageCouponItem specialPackageCouponItem = specialPackageCouponItemMapper.selectOneByExample(example);
-				if (specialPackageCouponItem != null) {
-					supplyWorkload = BigDecimal.ONE.multiply(specialPackageCouponItem.getWorkloadLoad());
+				if (SPECIAL_PACKAGE.equals(couponType)) {
+					example = new Example(SpecialPackageCouponItem.class);
+					example.createCriteria().andEqualTo("couponId", couponId).andEqualTo("itemId", itemBenefitBo.getItemId()).
+							andEqualTo("type", itemBenefitBo.getType());
+					SpecialPackageCouponItem specialPackageCouponItem = specialPackageCouponItemMapper.selectOneByExample(example);
+					if (specialPackageCouponItem != null) {
+						supplyWorkload = supplyWorkload.add(specialPackageCouponItem.getWorkloadLoad());
+					}
 				}
 			}
 		}
+		log.info("保存优惠，开单明细id：{}，计算补入工作量：{}", itemBenefitBo.getOrderDetailId(), supplyWorkload);
 		return supplyWorkload;
 	}
 

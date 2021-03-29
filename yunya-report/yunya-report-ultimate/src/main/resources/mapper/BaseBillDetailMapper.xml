@@ -265,20 +265,42 @@
         SELECT
         bbd.org_id,
         bbd.executor_id,
-        CONVERT(sum((bbd.billWorkload / bbp.actualAmount) * bbp.receivedAmount
-        ), DECIMAL(19, 4)) AS receivedWorkload
-        FROM (
+        SUM(
+        CONVERT (
+        bbd.billWorkload / bbd.actualAmount * bbd.receivedAmount,
+        DECIMAL ( 19, 6 ))) AS receivedWorkload
+        FROM
+        (
+        SELECT
+        bbp.billId,
+        bbp.actualAmount,
+        bbp.receivedAmount,
+        bbd.billWorkload,
+        bbd.org_id,
+        bbd.executor_id
+        FROM
+        (
         SELECT
         bbp.received_amount AS receivedAmount,
         bbp.bill_id AS billId,
         bb.actual_amount AS actualAmount
-        FROM base_bill_pay bbp
-        INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
+        FROM
+        base_bill_pay bbp
+        INNER JOIN (
+        SELECT
+        bb.bill_id,
+        bb.actual_amount
+        FROM
+        base_bill bb
         <where>
-            AND bbp.received_amount > 0
+            bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
+        </where>
+        ) bb ON bbp.bill_id = bb.bill_id
+        <where>
+            AND bbp.received_amount > 0
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
                     and DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
@@ -291,12 +313,14 @@
             </if>
         </where>
         ) bbp
-        INNER JOIN (
-        SELECT bbd.bill_id,
+        LEFT JOIN (
+        SELECT
         bbd.org_id,
+        bbd.bill_id,
         bbd.executor_id,
-        SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS billWorkload
-        FROM base_bill_detail bbd
+        SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS billWorkload
+        FROM
+        base_bill_detail bbd
         <where>
             AND bbd.executor_id IS NOT NULL
             <if test="query.orgId != null">
@@ -308,9 +332,10 @@
         bbd.bill_id,
         bbd.executor_id
         ) bbd ON bbp.billId = bbd.bill_id
+        ) bbd
         GROUP BY
-        bbd.org_id,
-        bbd.executor_id
+        bbd.executor_id,
+        bbd.org_id
         ) bbd2 ON bup.org_id = bbd2.org_id AND bup.user_id = bbd2.executor_id
         LEFT JOIN (
         SELECT
@@ -548,9 +573,19 @@
         SELECT
         bbd.org_id,
         bbd.executor_id,
+        SUM(
         CONVERT (
-        sum(( bbd.billWorkload / bbp.actualAmount ) * bbp.receivedAmount ),
-        DECIMAL ( 19, 4 )) AS receivedWorkload
+        bbd.billWorkload / bbd.actualAmount * bbd.receivedAmount,
+        DECIMAL ( 19, 6 ))) AS receivedWorkload
+        FROM
+        (
+        SELECT
+        bbp.billId,
+        bbp.actualAmount,
+        bbp.receivedAmount,
+        bbd.billWorkload,
+        bbd.org_id,
+        bbd.executor_id
         FROM
         (
         SELECT
@@ -559,12 +594,21 @@
         bb.actual_amount AS actualAmount
         FROM
         base_bill_pay bbp
-        INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
+        INNER JOIN (
+        SELECT
+        bb.bill_id,
+        bb.actual_amount
+        FROM
+        base_bill bb
+        <where>
+            bb.bill_num IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id = #{query.orgId}
+            </if>
+        </where>
+        ) bb ON bbp.bill_id = bb.bill_id
         <where>
             AND bbp.received_amount > 0
-            <if test="query.orgId != null">
-                and bb.org_id = #{query.orgId}
-            </if>
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
                     and DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
@@ -577,18 +621,18 @@
             </if>
         </where>
         ) bbp
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
-        bbd.bill_id,
         bbd.org_id,
+        bbd.bill_id,
         bbd.executor_id,
         SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS billWorkload
         FROM
         base_bill_detail bbd
         <where>
-            and bbd.executor_id IS NOT NULL
+            AND bbd.executor_id IS NOT NULL
             <if test="query.orgId != null">
-                and bbd.org_id = #{query.orgId}
+                AND bbd.org_id = #{query.orgId}
             </if>
         </where>
         GROUP BY
@@ -596,9 +640,10 @@
         bbd.bill_id,
         bbd.executor_id
         ) bbd ON bbp.billId = bbd.bill_id
+        ) bbd
         GROUP BY
-        bbd.org_id,
-        bbd.executor_id
+        bbd.executor_id,
+        bbd.org_id
         ) bbd2 ON bup.org_id = bbd2.org_id
         AND bup.user_id = bbd2.executor_id
         LEFT JOIN (
@@ -714,132 +759,102 @@
         orgId,
         billId,
         billNum,
-        DATE_FORMAT(orderDate, '%Y-%m-%d') as orderDate,
-        DATE_FORMAT(billDate, '%Y-%m-%d') as billDate,
-        patientId,
-        patientName,
-        mobile,
+        DATE_FORMAT(orderDate, '%Y-%m-%d') AS orderDate,
+        DATE_FORMAT(billDate, '%Y-%m-%d') AS billDate,
         totalOriginalAmount,
         privilegeAmount,
         actualAmount,
-        ewd.actualWorkload,
-        executorId
+        patientId,
+        patientName,
+        mobile,
+        actualWorkload
         FROM (
         SELECT
-        ebd.orgId,
-        ebd.billId,
-        ebd.billNum,
-        ebd.billDate,
-        ebd.orderDate,
-        ebd.patientId,
-        ebd.patientName,
-        ebd.pinyinName,
-        ebd.mobile,
-        SUM( ebd.originalAmount ) AS totalOriginalAmount,
-        ebd.privilegeAmount,
-        ebd.actualAmount,
-        IFNULL( ew.actualWorkload, 0 ) as actualWorkload,
-        ebd.executorId
+        bb.orgId,
+        bb.billId,
+        bb.billNum,
+        bb.billDate,
+        bb.orderDate,
+        bb.totalOriginalAmount,
+        bb.privilegeAmount,
+        bb.actualAmount,
+        bb.patientId,
+        bb.patientName,
+        bb.pinyinName,
+        bb.mobile,
+        bbd.actualWorkload
         FROM
         (
         SELECT
-        bbp.org_id AS orgId,
-        bbp.bill_id AS billId,
-        bbp.bill_num AS billNum,
-        bbp.order_date AS orderDate,
-        bbp.bill_date AS billDate,
-        bbp.patient_id AS patientId,
-        bbp.`name` AS patientName,
-        bbp.pinyin_name AS pinyinName,
-        bbp.mobile,
-        bbp.order_amount AS totalOriginalAmount,
-        bbp.privilege_amount AS privilegeAmount,
-        bbp.actual_amount AS actualAmount,
-        bbd.price * bbd.quantity AS originalAmount,
-        bbd.discount_amount AS discountAmount,
-        bbd.executor_id AS executorId
+        bbd.bill_id,
+        SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS actualWorkload
         FROM
         base_bill_detail bbd
-        LEFT JOIN (
+        <where>
+            AND bbd.executor_id IS NOT NULL
+            <if test="query.orgId != null">
+                AND bbd.org_id = #{query.orgId}
+            </if>
+            <if test="query.employeeId != null">
+                AND bbd.executor_id = #{query.employeeId}
+            </if>
+        </where>
+        GROUP BY
+        bbd.bill_id,
+        bbd.executor_id
+        ) bbd
+        INNER JOIN (
         SELECT
-        bb.org_id,
-        bb.bill_id,
-        bb.order_date,
-        bb.bill_num,
-        bb.bill_date,
-        bb.order_amount,
-        bb.privilege_amount,
-        bb.actual_amount,
-        bb.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.pinyin_name
+        bb.org_id as orgId,
+        bb.bill_id AS billId,
+        bb.bill_num AS billNum,
+        bb.bill_date AS billDate,
+        bb.order_date AS orderDate,
+        bb.order_amount AS totalOriginalAmount,
+        bb.privilege_amount AS privilegeAmount,
+        bb.actual_amount AS actualAmount,
+        bb.patient_id AS patientId,
+        bp.`name` AS patientName,
+        bp.pinyin_name AS pinyinName,
+        bp.mobile AS mobile
         FROM
         base_bill bb
         LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
-        ) bbp ON bbd.bill_id = bbp.bill_id
-        ) ebd
-        LEFT JOIN (
-        SELECT
-        SUM( ew.originalAmount - ew.discountAmount ) AS actualWorkload,
-        ew.billId,
-        ew.executorId
-        FROM
-        (
-        SELECT
-        bbd.bill_id AS billId,
-        bbd.price * bbd.quantity AS originalAmount,
-        bbd.discount_amount AS discountAmount,
-        bbd.executor_id AS executorId
-        FROM
-        base_bill_detail bbd
-        WHERE
-        bbd.executor_id IS NOT NULL
-        GROUP BY
-        bbd.bill_detail_id
-        ) ew
-        GROUP BY
-        ew.billId,
-        ew.executorId
-        ) ew ON ebd.executorId = ew.executorId
-        AND ebd.billId = ew.billId
         <where>
             <if test="query.orgId != null">
-                and ebd.orgId = #{query.orgId}
+                AND bb.org_id = #{query.orgId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( ebd.orderDate, '%Y-%m' ) = #{query.queryDate}
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) = #{query.queryDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( ebd.orderDate, '%Y' ) = #{query.queryDate}
+                    AND DATE_FORMAT( bb.bill_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
-            <if test="query.employeeId != null">
-                and ebd.executorId = #{query.employeeId}
-            </if>
         </where>
-        GROUP BY
-        ebd.billId
-        ) ewd
+        ) bb ON bbd.bill_id = bb.billId
+        ) bbd
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(IFNULL(ewd.patientName, ''), IFNULL(ewd.pinyinName, ''), IFNULL(ewd.mobile, '')) Like
+                AND concat(IFNULL(bbd.patientName, ''), IFNULL(bbd.pinyinName, ''), IFNULL(bbd.mobile, '')) Like
                 concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
-                and ewd.billNum like concat('%', #{query.billNum} ,'%')
+                AND bbd.billNum LIKE concat('%', #{query.billNum} ,'%')
             </if>
             <if test="query.orderDate != null and query.orderDate != ''">
-                and DATE_FORMAT(ewd.orderDate, '%Y-%m-%d') = #{query.orderDate}
+                AND DATE_FORMAT(bbd.orderDate, '%Y-%m-%d') = #{query.orderDate}
             </if>
             <if test="query.billDate != null and query.billDate != ''">
-                and DATE_FORMAT(ewd.billDate, '%Y-%m-%d') = #{query.billDate}
+                AND DATE_FORMAT(bbd.billDate, '%Y-%m-%d') = #{query.billDate}
             </if>
         </where>
-        ORDER BY ewd.billDate, ewd.billNum DESC
+        ORDER BY
+        bbd.billDate DESC,
+        bbd.billNum DESC
     </select>
 
     <!-- 根据条件查询员工工作量开单明细列表 -->
@@ -1971,7 +1986,8 @@
         0 as noticeTotal
         from base_organization bo
         left join (
-        select IFNULL(SUM(bbd.quantity * bbd.price - bbd.discount_amount + bbd.coupon_workload),0) as workload, bbd.org_id from base_bill_detail bbd
+        select IFNULL(SUM(bbd.quantity * bbd.price - bbd.discount_amount + bbd.coupon_workload),0) as workload,
+        bbd.org_id from base_bill_detail bbd
         left join base_bill bb on bbd.bill_id=bb.bill_id
         <where>
             <if test="query.orgIds!=null and query.orgIds.length>0">
@@ -2029,7 +2045,8 @@
         0 as notice,
         0 as noticeTotal
         from base_treatment_process btp
-        LEFT JOIN (select patient_id from base_patient where origin_type_name = '老患者介绍' group by origin_type) bp ON btp.patient_id = bp.patient_id
+        LEFT JOIN (select patient_id from base_patient where origin_type_name = '老患者介绍' group by origin_type) bp ON
+        btp.patient_id = bp.patient_id
         <where>
             btp.treat_type = 0
             AND btp.treat_end_time IS NOT NULL
@@ -2331,7 +2348,7 @@
         from base_bill_detail bbd
         join (
         select bb.bill_id from base_bill bb join (
-        select patient_id from base_patient_origin_log where origin_id = #{originId}  and inservice = 1
+        select patient_id from base_patient_origin_log where origin_id = #{originId} and inservice = 1
         ) t on t.patient_id = bb.patient_id
         where
         privilege_date is not null
@@ -2660,5 +2677,109 @@
             AND bbd.bill_id = #{billId}
     </select>
 
+    <select id="couponExecutoredList" resultType="com.yunya.feign.report.domain.vo.CouponExecutoredVO">
+        SELECT
+        bb.org_id AS orgId,
+        bo.abbreviation,
+        bb.executor_id AS executorId,
+        be.employee_name AS executorName,
+        bb.coupon_id AS couponId,
+        bc.coupon_name AS couponName,
+        bb.item_type AS itemType,
+        bb.item_id AS itemId,
+        bti.item_name AS itemName,
+        bb.num
+        FROM (
+        SELECT bb.org_id,bb.coupon_id,bb.item_type,bb.item_id,SUM(bb.num) num, bbd.executor_id FROM (
+        SELECT org_id,coupon_id,order_detail_id,item_type,item_id,COUNT(item_index) num FROM base_benefit
+        <where>
+            benefit_type = 1
+            AND choice_benefit_type = 0
+            <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                AND DATE_FORMAT(use_date, '%Y-%m-%d') between #{query.startDate} and #{query.endDate}
+            </if>
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
+                AND org_id IN
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.couponIds!=null and query.couponIds.size()>0">
+                AND coupon_id IN
+                <foreach collection="query.couponIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by org_id,coupon_id,order_detail_id,item_type,item_id
+        ) bb
+        LEFT JOIN base_bill_detail bbd ON bb.order_detail_id = bbd.bill_detail_id
+        group by bb.org_id,bb.coupon_id,bbd.executor_id,bb.order_detail_id,bb.item_type,bb.item_id
+        ) bb
+        LEFT JOIN base_coupon bc ON bc.coupon_id=bb.coupon_id
+        LEFT JOIN base_tariff_info bti ON (bti.item_type=bb.item_type AND bti.item_id=bb.item_id)
+        LEFT JOIN base_organization bo ON bo.org_id=bb.org_id
+        LEFT JOIN base_employee be ON be.user_id=bb.executor_id
+        <where>
+            <if test="query.executorName!=null and query.executorName!=''">
+                AND be.employee_name like concat('%', #{query.executorName}, '%')
+            </if>
+            <if test="query.workStatus != null">
+                AND be.work_status = #{query.workStatus}
+            </if>
+        </where>
+    </select>
 
+    <select id="couponExecutoredDetails" resultType="com.yunya.feign.report.domain.vo.CouponExecutoredDetailVO">
+        SELECT
+        bo.abbreviation,
+        be.employee_name AS executorName,
+        bill.bill_num AS billNum,
+        bc.coupon_name AS couponName,
+        bti.item_name AS itemName,
+        bb.num,
+        bp.name AS patientName,
+        bp.mobile,
+        bb.use_date AS useDate
+        FROM (
+        SELECT org_id,coupon_id,order_detail_id,item_type,item_id,patient_id,use_date,COUNT(item_index) num FROM
+        base_benefit
+        <where>
+            benefit_type = 1
+            AND choice_benefit_type = 0
+            <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                AND DATE_FORMAT(use_date, '%Y-%m-%d') between #{query.startDate} and #{query.endDate}
+            </if>
+            <if test="query.orgId != null">
+                AND org_id = #{query.orgId}
+            </if>
+            <if test="query.couponId != null">
+                AND coupon_id = #{query.couponId}
+            </if>
+            <if test="query.itemType != null">
+                AND item_type = #{query.itemType}
+            </if>
+            <if test="query.itemId != null">
+                AND item_id = #{query.itemId}
+            </if>
+        </where>
+        group by org_id,patient_id,coupon_id,order_detail_id,item_type,item_id,use_date
+        ) bb
+        LEFT JOIN base_bill_detail bbd ON bb.order_detail_id = bbd.bill_detail_id
+        LEFT JOIN base_bill bill ON bbd.bill_id = bill.bill_id
+        LEFT JOIN base_coupon bc ON bc.coupon_id=bb.coupon_id
+        LEFT JOIN base_tariff_info bti ON (bti.item_type=bb.item_type AND bti.item_id=bb.item_id)
+        LEFT JOIN base_organization bo ON bo.org_id=bb.org_id
+        LEFT JOIN base_employee be ON be.user_id=bbd.executor_id
+        LEFT JOIN base_patient bp ON bp.patient_id=bb.patient_id
+        <where>
+            <if test="query.executorId != null">
+                AND bbd.executor_id = #{query.executorId}
+            </if>
+            <if test="query.keyword!=null and query.keyword!=''">
+                AND concat(IFNULL(bp.name,''),IFNULL(bp.pinyin_name,''),IFNULL(bp.mobile,'')) like
+                concat('%',#{query.keyword},'%')
+            </if>
+        </where>
+    </select>
 </mapper>
