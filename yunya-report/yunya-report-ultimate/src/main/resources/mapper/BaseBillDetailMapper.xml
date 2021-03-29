@@ -265,14 +265,27 @@
         SELECT
         bbd.org_id,
         bbd.executor_id,
-        CONVERT(sum((bbd.billWorkload / bbp.actualAmount) * bbp.receivedAmount
-        ), DECIMAL(19, 4)) AS receivedWorkload
-        FROM (
+        SUM(
+        CONVERT (
+        bbd.billWorkload / bbd.actualAmount * bbd.receivedAmount,
+        DECIMAL ( 19, 6 ))) AS receivedWorkload
+        FROM
+        (
+        SELECT
+        bbp.billId,
+        bbp.actualAmount,
+        bbp.receivedAmount,
+        bbd.billWorkload,
+        bbd.org_id,
+        bbd.executor_id
+        FROM
+        (
         SELECT
         bbp.received_amount AS receivedAmount,
         bbp.bill_id AS billId,
         bb.actual_amount AS actualAmount
-        FROM base_bill_pay bbp
+        FROM
+        base_bill_pay bbp
         INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
         <where>
             AND bbp.received_amount > 0
@@ -291,12 +304,14 @@
             </if>
         </where>
         ) bbp
-        INNER JOIN (
-        SELECT bbd.bill_id,
+        LEFT JOIN (
+        SELECT
         bbd.org_id,
+        bbd.bill_id,
         bbd.executor_id,
-        SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS billWorkload
-        FROM base_bill_detail bbd
+        SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS billWorkload
+        FROM
+        base_bill_detail bbd
         <where>
             AND bbd.executor_id IS NOT NULL
             <if test="query.orgId != null">
@@ -308,9 +323,10 @@
         bbd.bill_id,
         bbd.executor_id
         ) bbd ON bbp.billId = bbd.bill_id
+        ) bbd
         GROUP BY
-        bbd.org_id,
-        bbd.executor_id
+        bbd.executor_id,
+        bbd.org_id
         ) bbd2 ON bup.org_id = bbd2.org_id AND bup.user_id = bbd2.executor_id
         LEFT JOIN (
         SELECT
@@ -548,9 +564,19 @@
         SELECT
         bbd.org_id,
         bbd.executor_id,
+        SUM(
         CONVERT (
-        sum(( bbd.billWorkload / bbp.actualAmount ) * bbp.receivedAmount ),
-        DECIMAL ( 19, 4 )) AS receivedWorkload
+        bbd.billWorkload / bbd.actualAmount * bbd.receivedAmount,
+        DECIMAL ( 19, 6 ))) AS receivedWorkload
+        FROM
+        (
+        SELECT
+        bbp.billId,
+        bbp.actualAmount,
+        bbp.receivedAmount,
+        bbd.billWorkload,
+        bbd.org_id,
+        bbd.executor_id
         FROM
         (
         SELECT
@@ -563,7 +589,7 @@
         <where>
             AND bbp.received_amount > 0
             <if test="query.orgId != null">
-                and bb.org_id = #{query.orgId}
+                AND bb.org_id = #{query.orgId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
@@ -577,18 +603,18 @@
             </if>
         </where>
         ) bbp
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
-        bbd.bill_id,
         bbd.org_id,
+        bbd.bill_id,
         bbd.executor_id,
         SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS billWorkload
         FROM
         base_bill_detail bbd
         <where>
-            and bbd.executor_id IS NOT NULL
+            AND bbd.executor_id IS NOT NULL
             <if test="query.orgId != null">
-                and bbd.org_id = #{query.orgId}
+                AND bbd.org_id = #{query.orgId}
             </if>
         </where>
         GROUP BY
@@ -596,9 +622,10 @@
         bbd.bill_id,
         bbd.executor_id
         ) bbd ON bbp.billId = bbd.bill_id
+        ) bbd
         GROUP BY
-        bbd.org_id,
-        bbd.executor_id
+        bbd.executor_id,
+        bbd.org_id
         ) bbd2 ON bup.org_id = bbd2.org_id
         AND bup.user_id = bbd2.executor_id
         LEFT JOIN (
