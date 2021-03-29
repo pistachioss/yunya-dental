@@ -125,11 +125,11 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("根据项目类型（价目/商品）查询项目分类列表")
   @PostMapping(value = "/item/categoryList", name = "根据项目类型（价目/商品）查询项目分类列表")
-  public ResponseResult<List<ItemCategoryInfoVO>> itemCategoryList(@RequestBody @Validated CategoryQuery query) {
+  public ResponseResult<List<ItemCategoryInfoVO>> itemCategoryList(
+      @RequestBody @Validated CategoryQuery query) {
     List<ItemCategoryInfoVO> categoryList = tariffInfoBiz.findItemCategoryList(query.getItemType());
     return ResponseUtil.success(categoryList);
   }
-
 
   /**
    * 根据项目分类ID查询全部项目列表
@@ -138,11 +138,12 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("根据项目分类ID查询全部项目列表")
   @PostMapping(value = "/item/itemList", name = "根据项目分类ID查询全部项目列表")
-  public ResponseResult<List<ItemInfoVO>> itemListByCategoryId(@RequestBody @Validated CategoryQuery query) {
-    List<ItemInfoVO> categoryList = tariffInfoBiz.findItemListByCategoryId(query.getItemType(), query.getCategoryId());
+  public ResponseResult<List<ItemInfoVO>> itemListByCategoryId(
+      @RequestBody @Validated CategoryQuery query) {
+    List<ItemInfoVO> categoryList =
+        tariffInfoBiz.findItemListByCategoryId(query.getItemType(), query.getCategoryId());
     return ResponseUtil.success(categoryList);
   }
-
 
   /**
    * 根据条件查询开单项目数量列表
@@ -288,8 +289,9 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-运营分析-患者数据")
   @PostMapping(value = "/analysis/patient/data/list", name = "根据条件查询运营报表的患者数据")
   public ResponseResult<PageInfo<PatientDataStatisticsVO>> operationalAnalysisPatientDataList(
-          @RequestBody @Validated DataStatisticsQuery query) {
-    PageInfo<PatientDataStatisticsVO> result = clinicDataStatisticsBiz.findClinicPatientDataList(query);
+      @RequestBody @Validated DataStatisticsQuery query) {
+    PageInfo<PatientDataStatisticsVO> result =
+        clinicDataStatisticsBiz.findClinicPatientDataList(query);
     return ResponseUtil.success(result);
   }
 
@@ -302,7 +304,8 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-运营分析-患者数据导出")
   @PostMapping(value = "/analysis/patient/data/export", name = "根据条件查询运营报表的患者数据导出")
   public ResponseResult<T> operationalAnalysisPatientDataExport(
-          HttpServletResponse response, @RequestBody @Validated DataStatisticsQuery query)throws IOException {
+      HttpServletResponse response, @RequestBody @Validated DataStatisticsQuery query)
+      throws IOException {
     clinicDataStatisticsBiz.ClinicPatientDataExport(query, response);
     return ResponseUtil.success(null);
   }
@@ -316,8 +319,9 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-运营分析-业务目标")
   @PostMapping(value = "/analysis/business/goal/list", name = "根据条件查询运营报表的业务目标")
   public ResponseResult<PageInfo<OperationDataBusinessGoalVO>> findAnalysisBusinessGoalList(
-          @RequestBody @Validated DataStatisticsQuery query) {
-    PageInfo<OperationDataBusinessGoalVO> result = clinicDataStatisticsBiz.findAnalysisBusinessGoalList(query);
+      @RequestBody @Validated DataStatisticsQuery query) {
+    PageInfo<OperationDataBusinessGoalVO> result =
+        clinicDataStatisticsBiz.findAnalysisBusinessGoalList(query);
     return ResponseUtil.success(result);
   }
 
@@ -330,7 +334,8 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-运营分析-业务目标导出")
   @PostMapping(value = "/analysis/business/goal/export", name = "根据条件查询运营报表的业务目标导出")
   public ResponseResult<PageInfo<OperationDataBusinessGoalVO>> findAnalysisBusinessGoalExport(
-          HttpServletResponse response, @RequestBody @Validated DataStatisticsQuery query) throws IOException  {
+      HttpServletResponse response, @RequestBody @Validated DataStatisticsQuery query)
+      throws IOException {
     clinicDataStatisticsBiz.analysisBusinessGoalExport(query, response);
     return ResponseUtil.success(null);
   }
@@ -344,7 +349,7 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-个人开单数量及金额")
   @PostMapping(value = "/billItem/statistics/list", name = "根据条件查询个人开单数量及金额列表")
   public ResponseResult<PageInfo<BillItemStatisticsVO>> billItemStatistics(
-          @RequestBody @Validated BillItemInfoQuery query) {
+      @RequestBody @Validated BillItemInfoQuery query) {
     PageInfo<BillItemStatisticsVO> pageInfo = billDetailBiz.billItemStatistics(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -357,8 +362,9 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-个人开单数量及金额导出")
   @PostMapping(value = "/billItem/statistics/list/export", name = "根据条件查询个人开单数量及金额列表导出")
-  public ResponseResult<T> billItemStatistics(HttpServletResponse response,
-          @RequestBody @Validated BillItemInfoQuery query) throws IOException {
+  public ResponseResult<T> billItemStatistics(
+      HttpServletResponse response, @RequestBody @Validated BillItemInfoQuery query)
+      throws IOException {
     billDetailBiz.billItemStatisticsExport(query, response);
     return ResponseUtil.success(null);
   }
@@ -372,7 +378,7 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-开单项目数量-开单数量及金额明细")
   @PostMapping(value = "/billItem/statistics/detail", name = "根据条件查询开单数量及金额统计明细列表")
   public ResponseResult<PageInfo<BillItemStatisticsDetailVO>> billItemStatiticsDetail(
-          @RequestBody @Validated BillItemDetailQuery query) {
+      @RequestBody @Validated BillItemDetailQuery query) {
     PageInfo<BillItemStatisticsDetailVO> pageInfo = billDetailBiz.billItemStatiticsDetail(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -385,8 +391,9 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-开单项目数量-开单数量及金额明细导出")
   @PostMapping(value = "/billItem/statistics/detail/export", name = "根据条件查询开单数量及金额统计明细列表导出")
-  public ResponseResult<T> billItemStatiticsDetailExport(HttpServletResponse response,
-          @RequestBody @Validated BillItemDetailQuery query) throws IOException {
+  public ResponseResult<T> billItemStatiticsDetailExport(
+      HttpServletResponse response, @RequestBody @Validated BillItemDetailQuery query)
+      throws IOException {
     billDetailBiz.billItemStatiticsDetailExport(query, response);
     return ResponseUtil.success(null);
   }

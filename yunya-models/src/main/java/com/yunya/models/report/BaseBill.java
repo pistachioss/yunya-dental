@@ -80,6 +80,12 @@ public class BaseBill {
     private Integer privilegeOrgId;
 
     /**
+     * 是否首次收费使用优惠
+     */
+    @Column(name = "first_privilege")
+    private Boolean firstPrivilege;
+
+    /**
      * 优惠总额
      */
     @Column(name = "privilege_amount")
@@ -305,6 +311,24 @@ public class BaseBill {
      */
     public void setPrivilegeOrgId(Integer privilegeOrgId) {
         this.privilegeOrgId = privilegeOrgId;
+    }
+
+    /**
+     * 获取是否首次收费使用优惠
+     *
+     * @return firstPrivilege - 是否首次收费使用优惠
+     */
+    public Boolean getFirstPrivilege() {
+        return firstPrivilege;
+    }
+
+    /**
+     * 设置是否首次收费使用优惠
+     *
+     * @param firstPrivilege 是否首次收费使用优惠
+     */
+    public void setFirstPrivilege(Boolean firstPrivilege) {
+        this.firstPrivilege = firstPrivilege;
     }
 
     /**

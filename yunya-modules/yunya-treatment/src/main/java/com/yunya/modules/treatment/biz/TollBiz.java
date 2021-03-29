@@ -301,6 +301,7 @@ public class TollBiz {
         generateBillRecord(treatmentRecordId, patientId, orderRecordId, orderRecordOrgId);
     billRecord.setPrivilegeType(discountType);
     if (0 != discountType) {
+      billRecord.setFirstPrivilege(true);
       billRecord.setPrivilegeDate(billDate);
       billRecord.setPrivilegeOrgId(orgId);
     }
@@ -1271,6 +1272,7 @@ public class TollBiz {
       }
       billRecordResult.setPrivilegeType(discountType);
       if (0 != discountType && billRecordResult.getPrivilegeDate() == null) {
+        billRecordResult.setFirstPrivilege(false);
         billRecordResult.setPrivilegeDate(new Date(System.currentTimeMillis()));
         billRecordResult.setPrivilegeOrgId(orgId);
       }
@@ -1325,6 +1327,7 @@ public class TollBiz {
       billRecord.setPrivilegeType(discountType);
       billRecord.setPrivilegeAmount(privilegeAmount);
       if (0 != discountType) {
+        billRecord.setFirstPrivilege(true);
         billRecord.setPrivilegeDate(new Date(currentTimeMillis));
         billRecord.setPrivilegeOrgId(orgId);
       }

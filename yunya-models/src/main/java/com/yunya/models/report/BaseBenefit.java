@@ -107,4 +107,10 @@ public class BaseBenefit {
      */
     @Column(name = "remark")
     private String remark;
+
+    /**
+     * 授权人
+     */
+    @Column(name = "authorized_id")
+    private Integer authorizedId;
 }

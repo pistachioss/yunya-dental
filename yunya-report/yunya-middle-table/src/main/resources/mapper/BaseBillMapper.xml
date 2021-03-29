@@ -16,6 +16,7 @@
         <result column="biller_id" property="billerId" jdbcType="INTEGER"/>
         <result column="privilege_type" property="privilegeType" jdbcType="TINYINT"/>
         <result column="privilege_org_id" property="privilegeOrgId" jdbcType="INTEGER"/>
+        <result column="first_privilege" property="firstPrivilege" jdbcType="BIT"/>
         <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL"/>
         <result column="privilege_date" property="privilegeDate" jdbcType="TIMESTAMP"/>
         <result column="bill_date" property="billDate" jdbcType="TIMESTAMP"/>
@@ -39,6 +40,7 @@
         biller_id,
         privilege_type,
         privilege_org_id,
+        first_privilege,
         privilege_amount,
         privilege_date,
         bill_date,
@@ -53,9 +55,10 @@
             (#{item.billId}, #{item.orgId}, #{item.patientId},
             #{item.treatmentId}, #{item.billStatus}, #{item.orderNum},
             #{item.orderAmount}, #{item.orderDate}, #{item.billerId},
-            #{item.privilegeType},#{privilegeOrgId}, #{item.privilegeAmount}, #{item.privilegeDate},
-            #{item.billDate}, #{item.billNum}, #{item.actualAmount},
-            #{item.receivedAmount}, #{item.debtAmount}, #{item.checkerId})
+            #{item.privilegeType}, #{privilegeOrgId}, #{item.privilegeAmount},
+            #{item.firstPrivilege}, #{item.privilegeDate}, #{item.billDate},
+            #{item.billNum}, #{item.actualAmount}, #{item.receivedAmount},
+            #{item.debtAmount}, #{item.checkerId})
         </foreach>
     </insert>
 </mapper>

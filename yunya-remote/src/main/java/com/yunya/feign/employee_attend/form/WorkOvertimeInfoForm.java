@@ -1,11 +1,9 @@
-package com.yunya.modules.employeeattend.form;
+package com.yunya.feign.employee_attend.form;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.Getter;
 
-import javax.persistence.Column;
 import java.util.Date;
 import java.util.List;
 
@@ -83,6 +81,7 @@ public class WorkOvertimeInfoForm {
 
     @ApiModelProperty(value = "申请人Id列表 后端使用")
     private List<Integer>userList;
+
     /**
      * 创建人
      */
