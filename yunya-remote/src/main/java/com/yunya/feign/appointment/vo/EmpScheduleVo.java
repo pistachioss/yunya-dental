@@ -1,13 +1,10 @@
 package com.yunya.feign.appointment.vo;
 
-import com.yunya.framework.common.utils.StringHelper;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -36,28 +33,4 @@ public class EmpScheduleVo implements Serializable {
     private String endDate;
     @ApiModelProperty("排班班次/加班班次/请假详情")
     private String name;
-
-
-
-
-
-
-
-
-
-
-
-
-
-//    @ApiModelProperty("排班明细表")
-//    private List<EmpSchedultDetailVo> empSchedultDetailVos;
-//
-//    public void add(EmpSchedultDetailVo empSchedultDetailVo) {
-//        synchronized (this) {
-//            if (StringHelper.isEmpty(empSchedultDetailVos)) {
-//                empSchedultDetailVos = new ArrayList<>();
-//            }
-//            empSchedultDetailVos.add(empSchedultDetailVo);
-//        }
-//    }
 }
