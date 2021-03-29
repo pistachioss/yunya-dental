@@ -1,6 +1,5 @@
 package com.yunya.modules.appointment.biz.web;
 
-import cn.hutool.core.date.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -14,11 +13,10 @@ import com.yunya.feign.appointment.domain.query.*;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
+import com.yunya.feign.employee_attend.form.FieldInfoForm;
 import com.yunya.feign.employee_attend.form.LeaveInfoForm;
-import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
-import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
-import com.yunya.feign.employee_attend.vo.UserWorkVO;
-import com.yunya.feign.employee_attend.vo.WorkDayVO;
+import com.yunya.feign.employee_attend.form.WorkOvertimeInfoForm;
+import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
 import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
@@ -50,6 +48,7 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentOperateRecord;
+import com.yunya.models.employee_attend.WorkOvertimeInfo;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
@@ -60,19 +59,19 @@ import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
-import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.cglib.core.Local;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -793,11 +792,16 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
         // 查询员工请假信息
         List<LeaveInfoListVO> employeeLeaveInfos = this.findEmployeeLeaveInfos(dentistIdsList, query.getStartDate(), query.getEndDate());
+        // 查询员工加班信息
+        List<WorkOvertimeInfoListVO> employeeWorkOvertimes = this.findEmployeeWorkOvertimes(orgId, query.getStartDate(), query.getEndDate());
+        // 查询员工外勤信息
+        List<FieldInfoListVO> fieldList = this.findFieldList(dentistIdsList, query.getStartDate(), query.getEndDate());
 
         for (UserWorkVO userWorkVO : filterAppointIds) {
             // 组合预约医生和患者信息（患者维度）
             List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(userWorkVO,
-                    appointmentDimensionCommInfos,treatmentRecordListByAppointIds,patientTotalInfos,employeeLeaveInfos);
+                    appointmentDimensionCommInfos,treatmentRecordListByAppointIds,
+                    patientTotalInfos,employeeLeaveInfos,employeeWorkOvertimes,fieldList);
             // 将预约信息放入预约可视图列表
             if (StringHelper.isNotEmpty(dimensionVoList)) {
                 dimensionVoList.forEach(dimensionVo -> {
@@ -817,6 +821,23 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     }
 
     /**
+     * 批量查询员工外勤信息
+     * @param dentistIdsList  员工ID
+     * @param startDate  外勤开始时间
+     * @param endDate  外勤结束时间
+     * @return
+     */
+    private List<FieldInfoListVO> findFieldList(List<Integer> dentistIdsList,Date startDate, Date endDate) {
+        FieldInfoForm fieldQuery = new FieldInfoForm();
+        fieldQuery.setUserList(dentistIdsList);
+        fieldQuery.setStartTime(startDate);
+        fieldQuery.setEndTime(endDate);
+        fieldQuery.setApprovalStatus(1);
+        List<FieldInfoListVO> fieldInfoListVOS = this.employeeAttendServiceFeign.fieldFindList(fieldQuery);
+        return fieldInfoListVOS;
+    }
+
+    /**
      * 批量查询员工请假信息列表
      * @param ids 员工ID
      * @param startDate 开始时间
@@ -832,6 +853,170 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         query.setApprovalStatus(1);
         List<LeaveInfoListVO> listByIds = this.employeeAttendServiceFeign.backFindListByIds(query);
         return listByIds;
+    }
+
+    /**
+     * 批量查询员工请假信息列表
+     * @param orgId 门诊ID
+     * @param startDate 开始时间
+     * @param endDate  结束时间
+     * @return 员工请假信息列表
+     */
+    private List<WorkOvertimeInfoListVO> findEmployeeWorkOvertimes(Integer orgId,Date startDate, Date endDate) {
+        // 查询员工加班信息
+        WorkOvertimeInfoForm workOverTime = new WorkOvertimeInfoForm();
+        workOverTime.setCompanyId(orgId);
+        workOverTime.setStartTime(startDate);
+        workOverTime.setEndTime(endDate);
+        workOverTime.setApprovalStatus(1);
+        List<WorkOvertimeInfoListVO> workOvertimeInfoListVOS = this.employeeAttendServiceFeign.workFindList(workOverTime);
+        return workOvertimeInfoListVOS;
+    }
+
+    /**
+     * 构建员工排班信息
+     * @param obj  源对象
+     * @param userId  用户ID
+     * @param empScheduleVo 排班实例对象
+     */
+    private void setEmpSchedule(Object obj, Integer userId, String userName, EmpScheduleVo empScheduleVo) {
+        if (obj instanceof WorkDayVO) {
+            WorkDayVO wdv = (WorkDayVO) obj;
+            this.buildEmpScheduleInfoFromWorkDayVO(empScheduleVo,wdv,userId,userName);
+        } else if (obj instanceof LeaveInfoListVO) {
+            LeaveInfoListVO leaveInfoListVO = (LeaveInfoListVO) obj;
+            // 请假信息entity转化为员工排班entity
+            this.buildEmpScheduleInfoFromLeaveInfoList(empScheduleVo, leaveInfoListVO);
+        } else if (obj instanceof WorkOvertimeInfoListVO) {
+            WorkOvertimeInfoListVO workOvertimeInfos = (WorkOvertimeInfoListVO) obj;
+            // 加班信息转化为排班信息
+            this.buildEmpScheduleInfoFromWorkOvertime(empScheduleVo,workOvertimeInfos);
+        } else if (obj instanceof FieldInfoListVO) {
+            FieldInfoListVO fieldInfoVO = (FieldInfoListVO) obj;
+            // 外勤信息转化为排班信息
+            this.buildEmpScheduleInfoFromFieldInfo(empScheduleVo,fieldInfoVO,userId,userName);
+        }
+    }
+
+    /**
+     * 外勤信息转化为排班信息
+     * FieldInfoVO ---> EmpScheduleVo
+     * @param empScheduleVo  员工排班请假信息对象实例
+     * @param fieldInfoVO 员工外勤信息
+     * @param userId  用户ID
+     * @param userName  用户名称
+     */
+    private void buildEmpScheduleInfoFromFieldInfo(EmpScheduleVo empScheduleVo, FieldInfoListVO fieldInfoVO, Integer userId, String userName) {
+        String dateTimePattern = "yyyy-MM-dd HH:mm";
+        empScheduleVo.setUserId(userId);
+        empScheduleVo.setUserName(userName);
+        empScheduleVo.setType(4);
+        empScheduleVo.setCompanyId(fieldInfoVO.getCompanyId());
+        empScheduleVo.setComName(fieldInfoVO.getCompanyName());
+        String startTime = LocalDateTime.fromDateFields(fieldInfoVO.getStartTime()).toString(dateTimePattern);
+        String endTime = LocalDateTime.fromDateFields(fieldInfoVO.getEndTime()).toString(dateTimePattern);
+        empScheduleVo.setStartDate(startTime);
+        empScheduleVo.setEndDate(endTime);
+        empScheduleVo.setName(fieldInfoVO.getFieldAddress());
+    }
+
+    /**
+     * 加班信息转化为排班信息
+     * WorkOvertimeInfoListVO ---> EmpScheduleVo
+     * @param empScheduleVo
+     * @param workOvertimeInfos
+     */
+    private void buildEmpScheduleInfoFromWorkOvertime(EmpScheduleVo empScheduleVo,WorkOvertimeInfoListVO workOvertimeInfos) {
+        String datePattern = "yyyy-MM-dd";
+        String timePattern = "HH:mm";
+        empScheduleVo.setUserId(workOvertimeInfos.getUserId());
+        empScheduleVo.setUserName(workOvertimeInfos.getUserName());
+        empScheduleVo.setCompanyId(workOvertimeInfos.getCompanyId());
+        empScheduleVo.setComName(workOvertimeInfos.getCompanyName());
+        empScheduleVo.setType(3);
+        String workDate = LocalDate.fromDateFields(workOvertimeInfos.getWorkDate()).toString(datePattern);
+        String workStartTime = LocalDateTime.fromDateFields(workOvertimeInfos.getStartTime()).toString(timePattern);
+        String workEndTime = LocalDateTime.fromDateFields(workOvertimeInfos.getEndTime()).toString(timePattern);
+        empScheduleVo.setStartDate(workDate + " " + workStartTime);
+        empScheduleVo.setEndDate(workDate + " " + workEndTime);
+        empScheduleVo.setName(workOvertimeInfos.getName());
+    }
+
+    /**
+     * 请假信息entity转化为员工排班entity
+     * LeaveInfoListVO ---> EmpScheduleVo
+     * @param empScheduleVo  员工排班请假信息对象实例
+     * @param leaveInfoListVO 员工请假信息对象
+     */
+    private void buildEmpScheduleInfoFromLeaveInfoList(EmpScheduleVo empScheduleVo, LeaveInfoListVO leaveInfoListVO) {
+        String dataPatterStr = "yyyy-MM-dd HH:mm";
+        empScheduleVo.setUserId(leaveInfoListVO.getUserId());
+        empScheduleVo.setType(2);
+        empScheduleVo.setUserName(leaveInfoListVO.getUserName());
+        Integer vacationStatus = leaveInfoListVO.getVacationStatus();
+        if (vacationStatus == 0) {
+            empScheduleVo.setStatus("班次");
+        } else if (vacationStatus == 1) {
+            empScheduleVo.setStatus("天");
+        }
+
+        empScheduleVo.setCompanyId(leaveInfoListVO.getCompanyId());
+        String startTime = LocalDateTime.fromDateFields(leaveInfoListVO.getStartTime()).toString(dataPatterStr);
+        String endTime = LocalDateTime.fromDateFields(leaveInfoListVO.getEndTime()).toString(dataPatterStr);
+        empScheduleVo.setStartDate(startTime);
+        empScheduleVo.setEndDate(endTime);
+        empScheduleVo.setName(leaveInfoListVO.getLeaveReason());
+    }
+
+    /**
+     * WorkDayVO ---> EmpScheduleVo
+     * @param empScheduleVo  员工排班请假信息对象实例
+     * @param userWorkVO   员工排班信息对象
+     * @param userId  员工ID
+     * @param userName  员工名字
+     */
+    private void buildEmpScheduleInfoFromUserWorkVO(EmpScheduleVo empScheduleVo, UserWorkVO userWorkVO, Integer userId, String userName) {
+        empScheduleVo.setUserId(userId);
+        empScheduleVo.setUserName(userName);
+        List<WorkDayVO> days = userWorkVO.getDays();
+        if (StringHelper.isNotEmpty(days)) {
+            for (WorkDayVO uwd: days) {
+                empScheduleVo.setName(uwd.getName());
+                empScheduleVo.setComName(uwd.getComName());
+                empScheduleVo.setType(1);
+                empScheduleVo.setStatus(uwd.getType());
+                empScheduleVo.setCompanyId(uwd.getCompClinId());
+                if (StringHelper.isNotBlank(uwd.getStime()) && uwd.getDate() != null) {
+                    String[] times = uwd.getStime().split("-");
+                    String dataStr = LocalDate.fromDateFields(uwd.getDate()).toString("yyyy-MM-dd");
+                    empScheduleVo.setStartDate(dataStr + " " + times[0]);
+                    empScheduleVo.setEndDate(dataStr + " " + times[1]);
+                }
+            }
+        }
+    }
+
+    /**
+     * WorkDayVO ---> EmpScheduleVo
+     * @param empScheduleVo  员工排班请假信息对象实例
+     * @param wdv   员工排班信息对象
+     * @param userId  员工ID
+     * @param userName  员工名字
+     */
+    private void buildEmpScheduleInfoFromWorkDayVO(EmpScheduleVo empScheduleVo, WorkDayVO wdv, Integer userId, String userName) {
+        empScheduleVo.setUserId(userId);
+        empScheduleVo.setUserName(userName);
+        empScheduleVo.setType(1);
+        empScheduleVo.setStatus(wdv.getType());
+        empScheduleVo.setName(wdv.getName());
+        empScheduleVo.setComName(wdv.getComName());
+        empScheduleVo.setCompanyId(wdv.getCompClinId());
+        if (StringHelper.isNotBlank(wdv.getStime()) && wdv.getDate() != null) {
+            String[] times = wdv.getStime().split("-");
+            String dataStr = LocalDate.fromDateFields(wdv.getDate()).toString("yyyy-MM-dd");
+            empScheduleVo.setStartDate(dataStr + " " + times[0]);
+            empScheduleVo.setEndDate(dataStr + " " + times[1]);
+        }
     }
 
 
@@ -2442,7 +2627,16 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             List<UserWorkVO> shiftWorkDatas = employeeScheduleResultVO.getShiftWorkDatas();
             if (!StringHelper.isEmpty(shiftWorkDatas)) {
                 List<WorkDayVO> days = shiftWorkDatas.get(0).getDays();
-                assistantPatientInfo.setDentistScheduleVos(days);
+                List<EmpScheduleVo> empScheduleVos = new ArrayList<>();
+                if (StringHelper.isNotEmpty(days)) {
+                    EmpScheduleVo empSchedule = null;
+                    for (WorkDayVO entity : days) {
+                        empSchedule = new EmpScheduleVo();
+                        setEmpSchedule(entity,assistantPatientInfo.getDentistId(),assistantPatientInfo.getName(),empSchedule);
+                        empScheduleVos.add(empSchedule);
+                    }
+                }
+                assistantPatientInfo.setDentistScheduleVos(empScheduleVos);
             }
         }
         // 查询医生/助手请假信息
@@ -2451,7 +2645,16 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         leaveInfoQuery.setStartTime(appointDate);
         leaveInfoQuery.setEndTime(appointDate);
         List<LeaveInfoListVO> leaveInfoList = this.employeeAttendServiceFeign.findEmployeeLeaveInfoList(leaveInfoQuery);
-        assistantPatientInfo.setLeaveInfos(leaveInfoList);
+        EmpScheduleVo empSchedule = null;
+        List<EmpScheduleVo> empScheduleVos = new ArrayList<>();
+        if (StringHelper.isNotEmpty(leaveInfoList)) {
+            for (LeaveInfoListVO entity : leaveInfoList) {
+                empSchedule = new EmpScheduleVo();
+                setEmpSchedule(entity,entity.getUserId(),entity.getUserName(),empSchedule);
+                empScheduleVos.add(empSchedule);
+            }
+        }
+        assistantPatientInfo.setDentistScheduleVos(empScheduleVos);
     }
 
     /**
@@ -2466,12 +2669,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                                                                        List<AppointmentDimensionVo> appointmentDimensionCommInfos,
                                                                        List<TreatmentRecord> treatmentRecordListByAppointIds,
                                                                        List<PatientTotalInfoVo> patientTotalInfos,
-                                                                       List<LeaveInfoListVO> employeeLeaveInfos){
+                                                                       List<LeaveInfoListVO> employeeLeaveInfos,
+                                                                       List<WorkOvertimeInfoListVO> employeeWorkOvertimes,
+                                                                       List<FieldInfoListVO> fieldList){
         List<AppointmentDimensionVo> appointmentDimensionVoList = new LinkedList<>();
         Integer userId = dentistWorkSchedule.getCompEmpId();
         String dentistName = dentistWorkSchedule.getName();
-        WorkDayVO workDayVO = dentistWorkSchedule.getDays().stream().findFirst().get();
-        Date scheduleDate = workDayVO.getDate();
 
         List<AppointmentDimensionVo> collect = appointmentDimensionCommInfos.stream().filter(appointmentDimensionVo -> appointmentDimensionVo.getDentistId().equals(userId)).collect(Collectors.toList());
         if (StringHelper.isNotEmpty(collect)) {
@@ -2482,10 +2685,24 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 appointmentPatientCardVos.forEach(appointmentPatientCardVo -> {
                     this.setPatientBaseInfo(appointmentPatientCardVo,patientTotalInfos,treatmentRecordListByAppointIds);
                 });
-                // 设置医生排班信息
-                item.setDentistScheduleVos(dentistWorkSchedule.getDays());
+                List<EmpScheduleVo> empScheduleVos = new ArrayList<>();
+                List<WorkDayVO> days = dentistWorkSchedule.getDays();
+                // 设置排班
+                if (StringHelper.isNotEmpty(days)) {
+                    this.setEmpScheduleList(item,empScheduleVos,days);
+                }
                 // 设置请假信息
-                this.setEmployeeLeaveInfo(item,employeeLeaveInfos);
+                if (StringHelper.isNotEmpty(employeeLeaveInfos)) {
+                    this.setEmployeeLeaveInfo(item,empScheduleVos,employeeLeaveInfos);
+                }
+                // 设置加班信息
+                if (StringHelper.isNotEmpty(employeeWorkOvertimes)) {
+                    this.setWorkOvertime(item,employeeWorkOvertimes,empScheduleVos);
+                }
+                // 设置外勤信息
+                if (StringHelper.isNotEmpty(fieldList)) {
+                    this.setFieldInfo(item,fieldList,empScheduleVos);
+                }
                 appointmentDimensionVoList.add(item);
             });
         } else {
@@ -2493,12 +2710,86 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             AppointmentDimensionVo appointmentDimensionVoNull = new AppointmentDimensionVo();
             appointmentDimensionVoNull.setDentistId(userId);
             appointmentDimensionVoNull.setName(dentistName);
-            appointmentDimensionVoNull.setDentistScheduleVos(dentistWorkSchedule.getDays());
+            List<EmpScheduleVo> empScheduleVos = new ArrayList<>();
+            List<WorkDayVO> days = dentistWorkSchedule.getDays();
+            // 设置排班
+            if (StringHelper.isNotEmpty(days)) {
+                this.setEmpScheduleList(appointmentDimensionVoNull,empScheduleVos,days);
+            }
+
             // 设置请假信息
-            this.setEmployeeLeaveInfo(appointmentDimensionVoNull,employeeLeaveInfos);
+            if (StringHelper.isNotEmpty(employeeLeaveInfos)) {
+                this.setEmployeeLeaveInfo(appointmentDimensionVoNull,empScheduleVos,employeeLeaveInfos);
+            }
+            // 设置加班信息
+            if (StringHelper.isNotEmpty(employeeWorkOvertimes)) {
+                this.setWorkOvertime(appointmentDimensionVoNull,employeeWorkOvertimes,empScheduleVos);
+            }
+            // 设置外勤信息
+            if (StringHelper.isNotEmpty(fieldList)) {
+                this.setFieldInfo(appointmentDimensionVoNull,fieldList,empScheduleVos);
+            }
             appointmentDimensionVoList.add(appointmentDimensionVoNull);
         }
         return appointmentDimensionVoList;
+    }
+
+    /**
+     * 设置员工外勤信息
+     * @param item  预约可视图对象
+     * @param fieldList  外勤信息列表
+     * @param empScheduleVos 源排班实例对象列表
+     */
+    private void setFieldInfo(AppointmentDimensionVo item,List<FieldInfoListVO> fieldList, List<EmpScheduleVo> empScheduleVos) {
+        Integer dentistId = item.getDentistId();
+        boolean b = fieldList.stream().anyMatch(entity -> entity.getUserId().equals(dentistId));
+        if (b) {
+            List<FieldInfoListVO> collect = fieldList.stream().filter(entity -> entity.getUserId().equals(dentistId)).collect(Collectors.toList());
+            EmpScheduleVo empScheduleVo = null;
+            for (FieldInfoListVO fieldInfo : collect) {
+                empScheduleVo = new EmpScheduleVo();
+                this.setEmpSchedule(fieldInfo,dentistId,item.getName(),empScheduleVo);
+                empScheduleVos.add(empScheduleVo);
+            }
+        }
+    }
+
+    /**
+     * 设置员工加班信息
+     * @param item  预约可视图对象
+     * @param employeeWorkOvertimes  加班信息列表
+     * @param empScheduleVos 源排班实例对象列表
+     */
+    private void setWorkOvertime(AppointmentDimensionVo item, List<WorkOvertimeInfoListVO> employeeWorkOvertimes, List<EmpScheduleVo> empScheduleVos) {
+        Integer dentistId = item.getDentistId();
+        boolean b = employeeWorkOvertimes.stream().anyMatch(entity -> entity.getUserId().equals(dentistId));
+        if (b) {
+            List<WorkOvertimeInfoListVO> workOvertimes = employeeWorkOvertimes.stream().filter(entity -> entity.getUserId().equals(dentistId)).collect(Collectors.toList());
+            EmpScheduleVo empScheduleVo = null;
+            for (WorkOvertimeInfoListVO workOvertime: workOvertimes) {
+                empScheduleVo = new EmpScheduleVo();
+                this.setEmpSchedule(item,workOvertime.getUserId(),workOvertime.getUserName(),empScheduleVo);
+                empScheduleVos.add(empScheduleVo);
+            }
+        }
+    }
+
+    /**
+     * 注入员工排班，请假信息
+     * @param appointment
+     * @param empScheduleVos
+     * @param workDayVOS
+     */
+    private void setEmpScheduleList(AppointmentDimensionVo appointment, List<EmpScheduleVo> empScheduleVos, List<WorkDayVO> workDayVOS) {
+        if (StringHelper.isNotEmpty(workDayVOS)) {
+            EmpScheduleVo empScheduleVo = null;
+            for (WorkDayVO workDay : workDayVOS) {
+                empScheduleVo = new EmpScheduleVo();
+                this.setEmpSchedule(workDay,appointment.getDentistId(),appointment.getName(),empScheduleVo);
+                empScheduleVos.add(empScheduleVo);
+            }
+        }
+        appointment.setDentistScheduleVos(empScheduleVos);
     }
 
     /**
@@ -2506,15 +2797,21 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param appoint 医生预约信息
      * @param employeeLeaveInfos 员工请假信息列表
      */
-    private void setEmployeeLeaveInfo(AppointmentDimensionVo appoint ,List<LeaveInfoListVO> employeeLeaveInfos) {
+    private void setEmployeeLeaveInfo(AppointmentDimensionVo appoint,List<EmpScheduleVo> empScheduleVos, List<LeaveInfoListVO> employeeLeaveInfos) {
         if (StringHelper.isNotEmpty(employeeLeaveInfos)) {
+            EmpScheduleVo empScheduleVo = null;
             Integer dentistId = appoint.getDentistId();
-            List<LeaveInfoListVO> collect = employeeLeaveInfos.stream().filter(
-                    entity -> entity.getUserId().equals(dentistId)).collect(Collectors.toList());
-            appoint.setLeaveInfos(collect);
-        } else {
-            appoint.setLeaveInfos(new ArrayList<>());
+            boolean b = employeeLeaveInfos.stream().anyMatch(entity -> entity.getUserId().equals(dentistId));
+            if (b) {
+                List<LeaveInfoListVO> collect = employeeLeaveInfos.stream().filter(entity -> entity.getUserId().equals(dentistId)).collect(Collectors.toList());
+                for (LeaveInfoListVO leaveInfo : collect) {
+                    empScheduleVo = new EmpScheduleVo();
+                    this.setEmpSchedule(leaveInfo, dentistId, appoint.getName(), empScheduleVo);
+                    empScheduleVos.add(empScheduleVo);
+                }
+            }
         }
+        appoint.setDentistScheduleVos(empScheduleVos);
     }
 
 
