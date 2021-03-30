@@ -516,10 +516,10 @@
             </foreach>
         </if>
         <if test="startDate != null and startDate != ''">
-            AND DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &gt;= #{startDate}
+            AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{startDate}
         </if>
         <if test="endDate != null and endDate != ''">
-            AND DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &lt;= #{endDate}
+            AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{endDate}
         </if>
     </where>
     GROUP BY
@@ -551,10 +551,10 @@
                 </foreach>
             </if>
             <if test="startDate != null and startDate != ''">
-                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &gt;= #{startDate}
+                AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{startDate}
             </if>
             <if test="endDate != null and endDate != ''">
-                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &lt;= #{endDate}
+                AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{endDate}
             </if>
         </where>
     </select>
@@ -615,10 +615,10 @@
                 </foreach>
             </if>
             <if test="startDate != null and startDate != ''">
-                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &gt;= #{startDate}
+                AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{startDate}
             </if>
             <if test="endDate != null and endDate != ''">
-                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &lt;= #{endDate}
+                AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{endDate}
             </if>
             AND concat(IFNULL(bp.`name`,''),
             IFNULL(bp.medical_number,''),
@@ -649,10 +649,10 @@
                 AND btp.registered_dentist_id = #{userId}
             </if>
             <if test="startDate != null and startDate != ''">
-                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &gt;= #{startDate}
+                AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{startDate}
             </if>
             <if test="endDate != null and endDate != ''">
-                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &lt;= #{endDate}
+                AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{endDate}
             </if>
         </where>
         GROUP BY
