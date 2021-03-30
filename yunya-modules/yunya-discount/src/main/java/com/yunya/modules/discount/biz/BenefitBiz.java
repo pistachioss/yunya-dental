@@ -82,590 +82,591 @@ import static java.util.stream.Collectors.*;
 @Slf4j
 public class BenefitBiz {
 
-	@Resource
-	private CardBiz cardBiz;
-	@Resource
-	private CardBenefitMapper cardBenefitMapper;
-	@Resource
-	private OrderBenefitMapper orderBenefitMapper;
-	@Resource
-	private AuthDiscountBenefitMapper authDiscountBenefitMapper;
-	@Resource
-	private VoucheCouponMapper voucherMapper;
-	@Resource
-	private DiscountCouponMapper discountCouponMapper;
-	@Resource
-	private PackageCouponItemMapper packageCouponItemMapper;
-	@Resource
-	private SpecialPackageCouponItemMapper specialPackageCouponItemMapper;
-	@Resource
-	private CouponCommonInfoMapper couponMapper;
-	@Resource
-	private CardMapper cardMapper;
-	@Resource
-	private RemoteSystemServiceFeign systemServiceFeign;
-	@Resource
-	private RemoteTreatmentServiceFeign treatmentServiceFeign;
-	@Resource
-	private RemoteRabbitMqServiceFeign mqServiceFeign;
-	@Resource(name = "customizeThreadPool")
-	private ExecutorService cardThreadPool;
+    private static final Integer AUTH_BENEFIT_TYPE = 2;
+    @Resource
+    private CardBiz cardBiz;
+    @Resource
+    private CardBenefitMapper cardBenefitMapper;
+    @Resource
+    private OrderBenefitMapper orderBenefitMapper;
+    @Resource
+    private AuthDiscountBenefitMapper authDiscountBenefitMapper;
+    @Resource
+    private VoucheCouponMapper voucherMapper;
+    @Resource
+    private DiscountCouponMapper discountCouponMapper;
+    @Resource
+    private PackageCouponItemMapper packageCouponItemMapper;
+    @Resource
+    private SpecialPackageCouponItemMapper specialPackageCouponItemMapper;
+    @Resource
+    private CouponCommonInfoMapper couponMapper;
+    @Resource
+    private CardMapper cardMapper;
+    @Resource
+    private RemoteSystemServiceFeign systemServiceFeign;
+    @Resource
+    private RemoteTreatmentServiceFeign treatmentServiceFeign;
+    @Resource
+    private RemoteRabbitMqServiceFeign mqServiceFeign;
+    @Resource(name = "customizeThreadPool")
+    private ExecutorService cardThreadPool;
 
-	private static final Integer AUTH_BENEFIT_TYPE = 2;
+    /**
+     * 收费 - 卡券保存优惠
+     *
+     * @param model model
+     * @return ResponseResult
+     */
+    @Transactional
+    public ResponseResult<PatientOrderBenefitVo> saveCardBenefit(PatientOrderBenefitModel model) {
+        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+        Integer orderId = model.getOrderId();
+        try {
+            //校验是否使用过优惠
+            int count = countOrder(orderId);
+            if (count != 0) {
+                return ResponseUtil.error(DiscountError.ORDER_HAS_BENEFIT);
+            }
+            log.info("收费时选择的优惠券信息：[{}]", model);
+            //设置门诊为开单门诊（重置组织id）
+            this.setOrderField(model);
+            PatientChooseBenefitForm benefitForm = benefitTransformToForm(model);
+            //查询订单项目对应的优惠
+            ResponseResult result = cardBiz.choiceBenefitBo(benefitForm);
+            log.info("收费时选择的优惠券信息匹配优惠：{}", result);
+            if (!FALSE.getCode().equals(result.getStatus())) {
+                return result;
+            }
+            List<OrderItemUseBo> data = (List<OrderItemUseBo>) result.getData();
+            List<CardBenefit> list = Lists.newArrayList();
+            CardBenefit cardBenefit;
+            for (OrderItemUseBo itemBenefitBo : data) {
+                List<ItemUseBenefitBo> itemUseBenefitBos = itemBenefitBo.getItemUseBenefitBos();
+                if (CollectionUtils.isNotEmpty(itemUseBenefitBos)) {
+                    for (ItemUseBenefitBo itemUseBenefitBo : itemUseBenefitBos) {
+                        cardBenefit = new CardBenefit();
+                        cardBenefit.setOrgId(benefitForm.getOrgId());
+                        cardBenefit.setOrderId(benefitForm.getOrderId());
+                        cardBenefit.setOrderDetailId(itemBenefitBo.getOrderDetailId());
+                        cardBenefit.setCouponId(itemUseBenefitBo.getCouponId());
+                        cardBenefit.setPatientId(benefitForm.getPatientId());
+                        cardBenefit.setCardId(itemUseBenefitBo.getBenefitId());
+                        cardBenefit.setItemId(itemBenefitBo.getItemId());
+                        cardBenefit.setItemType(itemBenefitBo.getType());
+                        cardBenefit.setCouponType(itemUseBenefitBo.getCouponType());
+                        cardBenefit.setBenefitType(itemUseBenefitBo.getBenefitType());
+                        cardBenefit.setItemIndex(itemUseBenefitBo.getItemIndex());
+                        cardBenefit.setBenefitAmount(itemUseBenefitBo.getBenefitAmount());
+                        cardBenefit.setOperateType(CHARGE.getCode());
+                        cardBenefit.setCrtId(loginUserId);
+                        cardBenefit.setUpdId(loginUserId);
+                        cardBenefit.setSort(itemUseBenefitBo.getId());
+                        //计算工作量
+                        cardBenefit.setSupplyWorkload(calculateWordLoad(itemUseBenefitBo,itemBenefitBo));
+                        list.add(cardBenefit);
+                    }
+                }
+            }
+            if (CollectionUtils.isNotEmpty(list)) {
+                BigDecimal totalBenefitAmount = data.stream()
+                        .filter(obj -> obj.getBenefitAmount() != null).map(OrderItemUseBo::getBenefitAmount)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                OrderBenefit orderBenefit = new OrderBenefit();
+                orderBenefit.setOrderId(orderId);
+                orderBenefit.setTotalAmount(totalBenefitAmount);
+                orderBenefit.setBenefitType(CARD_BENEFIT.getCode());
+                orderBenefit.setCrtId(loginUserId);
+                orderBenefit.setUpdId(loginUserId);
+                orderBenefitMapper.insertSelective(orderBenefit);
+                cardBenefitMapper.insertList(list);
+                //需要更新的卡券
+                Set<Card> updateCards = updateCardStatus(list);
+                mqServiceFeign.sendMessage(orderId, ADD, BaseBenefit);
+                log.info("【订单使用卡券优惠发送消息成功】：订单id[{}]", orderId);
+                updateCards.forEach(obj -> mqServiceFeign.sendMessage(obj.getId(), UPDATE, BaseCardSingle));
+                log.info("【订单使用卡券优惠，更新卡券发送消息成功】：卡券ids：{}", updateCards.stream().map(Card::getId).collect(toList()));
+            }
+            return ResponseUtil.success();
+        } finally {
+            //解锁卡券
+            cardBiz.manualUnLock(model.getPatientId(), RedisConstants.LOCK_CHOICE_CARD);
+            log.info("【保存卡券优惠解锁成功】");
+        }
+    }
 
-	/**
-	 * 收费 - 卡券保存优惠
-	 *
-	 * @param model model
-	 * @return ResponseResult
-	 */
-	@Transactional
-	public ResponseResult<PatientOrderBenefitVo> saveCardBenefit(PatientOrderBenefitModel model) {
-		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
-		Integer orderId = model.getOrderId();
-		try {
-			//校验是否使用过优惠
-			int count = countOrder(orderId);
-			if (count != 0) {
-				return ResponseUtil.error(DiscountError.ORDER_HAS_BENEFIT);
-			}
-			log.info("收费时选择的优惠券信息：[{}]", model);
-			//设置门诊为开单门诊（重置组织id）
-			this.setOrderField(model);
-			PatientChooseBenefitForm benefitForm = benefitTransformToForm(model);
-			//查询订单项目对应的优惠
-			ResponseResult result = cardBiz.choiceBenefitBo(benefitForm);
-			log.info("收费时选择的优惠券信息匹配优惠：{}", result);
-			if (!FALSE.getCode().equals(result.getStatus())) {
-				return result;
-			}
-			List<OrderItemUseBo> data = (List<OrderItemUseBo>) result.getData();
-			List<CardBenefit> list = Lists.newArrayList();
-			CardBenefit cardBenefit;
-			for (OrderItemUseBo itemBenefitBo : data) {
-				List<ItemUseBenefitBo> itemUseBenefitBos = itemBenefitBo.getItemUseBenefitBos();
-				if (CollectionUtils.isNotEmpty(itemUseBenefitBos)) {
-					for (ItemUseBenefitBo itemUseBenefitBo : itemUseBenefitBos) {
-						cardBenefit = new CardBenefit();
-						cardBenefit.setOrgId(benefitForm.getOrgId());
-						cardBenefit.setOrderId(benefitForm.getOrderId());
-						cardBenefit.setOrderDetailId(itemBenefitBo.getOrderDetailId());
-						cardBenefit.setCouponId(itemUseBenefitBo.getCouponId());
-						cardBenefit.setPatientId(benefitForm.getPatientId());
-						cardBenefit.setCardId(itemUseBenefitBo.getBenefitId());
-						cardBenefit.setItemId(itemBenefitBo.getItemId());
-						cardBenefit.setItemType(itemBenefitBo.getType());
-						cardBenefit.setCouponType(itemUseBenefitBo.getCouponType());
-						cardBenefit.setBenefitType(itemUseBenefitBo.getBenefitType());
-						cardBenefit.setItemIndex(itemUseBenefitBo.getItemIndex());
-						cardBenefit.setBenefitAmount(itemUseBenefitBo.getBenefitAmount());
-						cardBenefit.setOperateType(CHARGE.getCode());
-						cardBenefit.setCrtId(loginUserId);
-						cardBenefit.setUpdId(loginUserId);
-						cardBenefit.setSort(itemUseBenefitBo.getId());
-						//计算工作量
-						cardBenefit.setSupplyWorkload(calculateWordLoad(itemBenefitBo));
-						list.add(cardBenefit);
-					}
-				}
-			}
-			if (CollectionUtils.isNotEmpty(list)) {
-				BigDecimal totalBenefitAmount = data.stream()
-						.filter(obj -> obj.getBenefitAmount() != null).map(OrderItemUseBo::getBenefitAmount)
-						.reduce(BigDecimal.ZERO, BigDecimal::add);
-				OrderBenefit orderBenefit = new OrderBenefit();
-				orderBenefit.setOrderId(orderId);
-				orderBenefit.setTotalAmount(totalBenefitAmount);
-				orderBenefit.setBenefitType(CARD_BENEFIT.getCode());
-				orderBenefit.setCrtId(loginUserId);
-				orderBenefit.setUpdId(loginUserId);
-				orderBenefitMapper.insertSelective(orderBenefit);
-				cardBenefitMapper.insertList(list);
-				//需要更新的卡券
-				Set<Card> updateCards = updateCardStatus(list);
-				mqServiceFeign.sendMessage(orderId, ADD, BaseBenefit);
-				log.info("【订单使用卡券优惠发送消息成功】：订单id[{}]", orderId);
-				updateCards.forEach(obj -> mqServiceFeign.sendMessage(obj.getId(), UPDATE, BaseCardSingle));
-				log.info("【订单使用卡券优惠，更新卡券发送消息成功】：卡券ids：{}", updateCards.stream().map(Card::getId).collect(toList()));
-			}
-			return ResponseUtil.success();
-		} finally {
-			//解锁卡券
-			cardBiz.manualUnLock(model.getPatientId(), RedisConstants.LOCK_CHOICE_CARD);
-			log.info("【保存卡券优惠解锁成功】");
-		}
-	}
+    private void setOrderField(PatientOrderBenefitModel model) {
+        OrderRecord record = treatmentServiceFeign.findOrderRecordById(model.getOrderId());
+        if (record != null) {
+            model.setOrgId(record.getOrgId());
+        }
+    }
 
-	private void setOrderField(PatientOrderBenefitModel model) {
-		OrderRecord record = treatmentServiceFeign.findOrderRecordById(model.getOrderId());
-		if (record != null) {
-			model.setOrgId(record.getOrgId());
-		}
-	}
+    /**
+     * 收费 - 授权折扣优惠
+     *
+     * @param model model
+     * @return ResponseResult
+     */
+    @Transactional
+    public ResponseResult saveAuthBenefit(AuthDiscountBenefitModel model) {
+        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+        Integer orderId = model.getOrderId();
+        try {
+            //校验是否使用过优惠
+            int count = countOrder(orderId);
+            if (count != 0) {
+                return ResponseUtil.error(DiscountError.ORDER_HAS_BENEFIT);
+            }
+            SysEmployee employee = systemServiceFeign.findSysEmployeeById(model.getAuthorizedId());
+            if (employee == null || !employee.getDiscount()) {
+                log.warn("【授权折扣优惠】授权人没有权限进行授权折扣");
+                return ResponseUtil.error(DiscountError.EMPLOYEE_NO_AUTH_DISCOUNT);
+            }
+            //获取订单明细
+            List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
+            if (CollectionUtils.isEmpty(orderDetails)) {
+                return ResponseUtil.error(DiscountError.ORDER_NOT_EXIST);
+            }
+            List<AuthItemBenefitModel> itemBenefits = model.getItemBenefits();
+            AuthDiscountBenefit authDiscountBenefit;
+            List<AuthDiscountBenefit> list = Lists.newArrayList();
+            if (CollectionUtils.isNotEmpty(itemBenefits)) {
+                RestErrorBo errorBo = checkAuthItem(orderDetails, itemBenefits);
+                if (errorBo.getError() != null) {
+                    return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+                }
+                for (AuthItemBenefitModel itemBenefit : itemBenefits) {
+                    authDiscountBenefit = new AuthDiscountBenefit();
+                    authDiscountBenefit.setOrgId(model.getOrgId());
+                    authDiscountBenefit.setOrderId(orderId);
+                    authDiscountBenefit.setOrderDetailId(itemBenefit.getOrderDetailId());
+                    authDiscountBenefit.setPatientId(model.getPatientId());
+                    authDiscountBenefit.setItemId(itemBenefit.getItemId());
+                    authDiscountBenefit.setItemType(itemBenefit.getType());
+                    authDiscountBenefit.setBenefitAmount(itemBenefit.getBenefitAmount());
+                    authDiscountBenefit.setOperateType(CHARGE.getCode());
+                    authDiscountBenefit.setCrtId(loginUserId);
+                    authDiscountBenefit.setUpdId(loginUserId);
+                    list.add(authDiscountBenefit);
+                }
+                if (CollectionUtils.isNotEmpty(list)) {
+                    BigDecimal totalBenefitAmount = itemBenefits.stream().map(AuthItemBenefitModel::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    OrderBenefit orderBenefit = new OrderBenefit();
+                    orderBenefit.setOrderId(orderId);
+                    orderBenefit.setTotalAmount(totalBenefitAmount);
+                    orderBenefit.setBenefitType(AUTH_BENEFIT.getCode());
+                    orderBenefit.setAuthorizedId(model.getAuthorizedId());
+                    orderBenefit.setRemark(model.getRemark());
+                    orderBenefit.setCrtId(loginUserId);
+                    orderBenefit.setUpdId(loginUserId);
+                    orderBenefitMapper.insertSelective(orderBenefit);
+                    authDiscountBenefitMapper.insertList(list);
+                    mqServiceFeign.sendMessage(orderId, ADD, BaseBenefit);
+                    log.info("【订单使用授权优惠发送消息成功】：订单id[{}]", orderId);
+                }
+            }
+            return ResponseUtil.success();
+        } finally {
+            //解锁卡券
+            cardBiz.manualUnLock(model.getPatientId(), RedisConstants.LOCK_CHOICE_CARD);
+            log.info("【授权折扣-卡券选择优惠解锁成功】");
+        }
+    }
 
-	/**
-	 * 收费 - 授权折扣优惠
-	 *
-	 * @param model model
-	 * @return ResponseResult
-	 */
-	@Transactional
-	public ResponseResult saveAuthBenefit(AuthDiscountBenefitModel model) {
-		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
-		Integer orderId = model.getOrderId();
-		try {
-			//校验是否使用过优惠
-			int count = countOrder(orderId);
-			if (count != 0) {
-				return ResponseUtil.error(DiscountError.ORDER_HAS_BENEFIT);
-			}
-			SysEmployee employee = systemServiceFeign.findSysEmployeeById(model.getAuthorizedId());
-			if (employee == null || !employee.getDiscount()) {
-				log.warn("【授权折扣优惠】授权人没有权限进行授权折扣");
-				return ResponseUtil.error(DiscountError.EMPLOYEE_NO_AUTH_DISCOUNT);
-			}
-			//获取订单明细
-			List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
-			if (CollectionUtils.isEmpty(orderDetails)) {
-				return ResponseUtil.error(DiscountError.ORDER_NOT_EXIST);
-			}
-			List<AuthItemBenefitModel> itemBenefits = model.getItemBenefits();
-			AuthDiscountBenefit authDiscountBenefit;
-			List<AuthDiscountBenefit> list = Lists.newArrayList();
-			if (CollectionUtils.isNotEmpty(itemBenefits)) {
-				RestErrorBo errorBo = checkAuthItem(orderDetails, itemBenefits);
-				if (errorBo.getError() != null) {
-					return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
-				}
-				for (AuthItemBenefitModel itemBenefit : itemBenefits) {
-					authDiscountBenefit = new AuthDiscountBenefit();
-					authDiscountBenefit.setOrgId(model.getOrgId());
-					authDiscountBenefit.setOrderId(orderId);
-					authDiscountBenefit.setOrderDetailId(itemBenefit.getOrderDetailId());
-					authDiscountBenefit.setPatientId(model.getPatientId());
-					authDiscountBenefit.setItemId(itemBenefit.getItemId());
-					authDiscountBenefit.setItemType(itemBenefit.getType());
-					authDiscountBenefit.setBenefitAmount(itemBenefit.getBenefitAmount());
-					authDiscountBenefit.setOperateType(CHARGE.getCode());
-					authDiscountBenefit.setCrtId(loginUserId);
-					authDiscountBenefit.setUpdId(loginUserId);
-					list.add(authDiscountBenefit);
-				}
-				if (CollectionUtils.isNotEmpty(list)) {
-					BigDecimal totalBenefitAmount = itemBenefits.stream().map(AuthItemBenefitModel::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-					OrderBenefit orderBenefit = new OrderBenefit();
-					orderBenefit.setOrderId(orderId);
-					orderBenefit.setTotalAmount(totalBenefitAmount);
-					orderBenefit.setBenefitType(AUTH_BENEFIT.getCode());
-					orderBenefit.setAuthorizedId(model.getAuthorizedId());
-					orderBenefit.setRemark(model.getRemark());
-					orderBenefit.setCrtId(loginUserId);
-					orderBenefit.setUpdId(loginUserId);
-					orderBenefitMapper.insertSelective(orderBenefit);
-					authDiscountBenefitMapper.insertList(list);
-					mqServiceFeign.sendMessage(orderId, ADD, BaseBenefit);
-					log.info("【订单使用授权优惠发送消息成功】：订单id[{}]", orderId);
-				}
-			}
-			return ResponseUtil.success();
-		} finally {
-			//解锁卡券
-			cardBiz.manualUnLock(model.getPatientId(), RedisConstants.LOCK_CHOICE_CARD);
-			log.info("【授权折扣-卡券选择优惠解锁成功】");
-		}
-	}
+    /**
+     * 查询订单优惠明细
+     *
+     * @param orderId 订单id
+     * @return list
+     */
+    public List<OrderBenefitDetailVo> getOrderBenefit(Integer orderId) {
+        List<OrderBenefitDetailVo> resultList = Lists.newArrayList();
+        //查询订单优惠汇总信息
+        OrderBenefit summary = getOrderBenefitSummary(orderId, null);
+        if (summary == null) {
+            return resultList;
+        }
+        if (CARD_BENEFIT.equals(summary.getBenefitType())) {
+            List<CardBenefit> cardBenefits = getOrderBenefitDetail(orderId, CardBenefit.class, cardBenefitMapper, null);
+            if (CollectionUtils.isNotEmpty(cardBenefits)) {
+                Map<Integer, List<CardBenefit>> listMap = cardBenefits.stream().collect(groupingBy(CardBenefit::getOrderDetailId));
+                listMap.forEach((k, v) -> {
+                    OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
+                    BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal supplyWorkTotalLoad = v.stream()
+                            .filter(obj -> ONE.equals(obj.getBenefitType()) && obj.getSupplyWorkload() != null)
+                            .map(CardBenefit::getSupplyWorkload).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    log.info("查询账单优惠明细，开单明细id：{}，计算补入工作量：{}", k, supplyWorkTotalLoad);
+                    vo.setOrderDetailId(k);
+                    vo.setItemBenefitAmount(itemBenefitAmount);
+                    //按照优惠提交顺序排序
+                    v.sort(Comparator.comparing(CardBenefit::getSort));
+                    List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
+                        ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
+                        benefitVo.setBenefitId(obj.getCardId());
+                        benefitVo.setBenefitType(obj.getBenefitType());
+                        benefitVo.setCouponType(obj.getCouponType());
+                        if (MEMBER_TYPE.equals(obj.getBenefitType())) {
+                            MemberType memberType = systemServiceFeign.findMemberTypeById(obj.getCardId());
+                            benefitVo.setBenefitName(memberType == null ? null : memberType.getName());
+                        }
+                        if (COUPON_TYPE.equals(obj.getBenefitType())) {
+                            CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(obj.getCouponId());
+                            benefitVo.setBenefitName(coupon == null ? null : coupon.getName());
+                        }
+                        benefitVo.setBenefitAmount(obj.getBenefitAmount());
+                        return benefitVo;
+                    }).collect(toList());
+                    vo.setItemBenefitList(itemBenefits);
+                    vo.setSupplyWorkload(supplyWorkTotalLoad);
+                    resultList.add(vo);
+                });
+            }
+        }
+        if (AUTH_BENEFIT.equals(summary.getBenefitType())) {
+            List<AuthDiscountBenefit> authBenefit = getOrderBenefitDetail(orderId, AuthDiscountBenefit.class, authDiscountBenefitMapper, null);
+            if (CollectionUtils.isNotEmpty(authBenefit)) {
+                Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream().collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
+                listMap.forEach((k, v) -> {
+                    OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
+                    BigDecimal itemBenefitAmount = v.stream().map(AuthDiscountBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    vo.setOrderDetailId(k);
+                    vo.setItemBenefitAmount(itemBenefitAmount);
+                    List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
+                        ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
+                        benefitVo.setBenefitType(AUTH_BENEFIT_TYPE);
+                        benefitVo.setBenefitAmount(obj.getBenefitAmount());
+                        benefitVo.setBenefitId(summary.getAuthorizedId());
+                        SysUserInfoDetail author = summary.getAuthorizedId() == null ? null :
+                                systemServiceFeign.findSysUserEmployeeInfoByUserId(summary.getAuthorizedId());
+                        benefitVo.setBenefitName(author == null ? null : author.getName());
+                        return benefitVo;
+                    }).collect(toList());
+                    vo.setItemBenefitList(itemBenefits);
+                    resultList.add(vo);
+                });
+            }
+        }
+        return resultList;
+    }
 
-	/**
-	 * 查询订单优惠明细
-	 *
-	 * @param orderId 订单id
-	 * @return list
-	 */
-	public List<OrderBenefitDetailVo> getOrderBenefit(Integer orderId) {
-		List<OrderBenefitDetailVo> resultList = Lists.newArrayList();
-		//查询订单优惠汇总信息
-		OrderBenefit summary = getOrderBenefitSummary(orderId, null);
-		if (summary == null) {
-			return resultList;
-		}
-		if (CARD_BENEFIT.equals(summary.getBenefitType())) {
-			List<CardBenefit> cardBenefits = getOrderBenefitDetail(orderId, CardBenefit.class, cardBenefitMapper, null);
-			if (CollectionUtils.isNotEmpty(cardBenefits)) {
-				Map<Integer, List<CardBenefit>> listMap = cardBenefits.stream().collect(groupingBy(CardBenefit::getOrderDetailId));
-				listMap.forEach((k, v) -> {
-					OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
-					BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-					BigDecimal supplyWorkTotalLoad = v.stream()
-							.filter(obj -> ONE.equals(obj.getBenefitType()) && obj.getSupplyWorkload() != null)
-							.map(CardBenefit::getSupplyWorkload).reduce(BigDecimal.ZERO, BigDecimal::add);
-					log.info("查询账单优惠明细，开单明细id：{}，计算补入工作量：{}", k, supplyWorkTotalLoad);
-					vo.setOrderDetailId(k);
-					vo.setItemBenefitAmount(itemBenefitAmount);
-					//按照优惠提交顺序排序
-					v.sort(Comparator.comparing(CardBenefit::getSort));
-					List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
-						ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
-						benefitVo.setBenefitId(obj.getCardId());
-						benefitVo.setBenefitType(obj.getBenefitType());
-						benefitVo.setCouponType(obj.getCouponType());
-						if (MEMBER_TYPE.equals(obj.getBenefitType())) {
-							MemberType memberType = systemServiceFeign.findMemberTypeById(obj.getCardId());
-							benefitVo.setBenefitName(memberType == null ? null : memberType.getName());
-						}
-						if (COUPON_TYPE.equals(obj.getBenefitType())) {
-							CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(obj.getCouponId());
-							benefitVo.setBenefitName(coupon == null ? null : coupon.getName());
-						}
-						benefitVo.setBenefitAmount(obj.getBenefitAmount());
-						return benefitVo;
-					}).collect(toList());
-					vo.setItemBenefitList(itemBenefits);
-					vo.setSupplyWorkload(supplyWorkTotalLoad);
-					resultList.add(vo);
-				});
-			}
-		}
-		if (AUTH_BENEFIT.equals(summary.getBenefitType())) {
-			List<AuthDiscountBenefit> authBenefit = getOrderBenefitDetail(orderId, AuthDiscountBenefit.class, authDiscountBenefitMapper, null);
-			if (CollectionUtils.isNotEmpty(authBenefit)) {
-				Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream().collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
-				listMap.forEach((k, v) -> {
-					OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
-					BigDecimal itemBenefitAmount = v.stream().map(AuthDiscountBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-					vo.setOrderDetailId(k);
-					vo.setItemBenefitAmount(itemBenefitAmount);
-					List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
-						ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
-						benefitVo.setBenefitType(AUTH_BENEFIT_TYPE);
-						benefitVo.setBenefitAmount(obj.getBenefitAmount());
-						benefitVo.setBenefitId(summary.getAuthorizedId());
-						SysUserInfoDetail author = summary.getAuthorizedId() == null ? null :
-								systemServiceFeign.findSysUserEmployeeInfoByUserId(summary.getAuthorizedId());
-						benefitVo.setBenefitName(author == null ? null : author.getName());
-						return benefitVo;
-					}).collect(toList());
-					vo.setItemBenefitList(itemBenefits);
-					resultList.add(vo);
-				});
-			}
-		}
-		return resultList;
-	}
+    @Transactional
+    public RestErrorBo revokeBenefit(Integer orderId) {
+        RestErrorBo errorBo = RestErrorBo.getInstance();
+        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+        //查询订单优惠汇总信息
+        OrderBenefit summary = getOrderBenefitSummary(orderId, ZERO);
+        if (summary == null) {
+            errorBo.setError(DiscountError.ORDER_NO_BENEFIT);
+            return errorBo;
+        }
+        //更新优惠券
+        if (CARD_BENEFIT.equals(summary.getBenefitType())) {
+            List<CardBenefit> revokeCards = getOrderBenefitDetail(orderId, CardBenefit.class, cardBenefitMapper, ZERO);
+            CardBenefit cardBenefit = new CardBenefit();
+            cardBenefit.setDeleted(TRUE.getCode());
+            cardBenefit.setOperateType(MODIFY_BILL.getCode());
+            cardBenefit.setUpdId(loginUserId);
+            updateOrderBenefit(cardBenefit, orderId, CardBenefit.class, cardBenefitMapper);
+            //更新卡券状态
+            Set<Card> updateCards = updateRevokeCardStatus(revokeCards);
+            updateCards.forEach(obj -> mqServiceFeign.sendMessage(obj.getId(), UPDATE, BaseCardSingle));
+            log.info("【订单撤销卡券优惠，更新卡券发送消息成功】：卡券ids：{}", updateCards.stream().map(Card::getId).collect(toList()));
+        }
+        //更新授权
+        if (AUTH_BENEFIT.equals(summary.getBenefitType())) {
+            AuthDiscountBenefit authDiscountBenefit = new AuthDiscountBenefit();
+            authDiscountBenefit.setDeleted(TRUE.getCode());
+            authDiscountBenefit.setOperateType(MODIFY_BILL.getCode());
+            authDiscountBenefit.setUpdId(loginUserId);
+            updateOrderBenefit(authDiscountBenefit, orderId, AuthDiscountBenefit.class, authDiscountBenefitMapper);
+        }
+        //更新订单优惠总信息
+        OrderBenefit orderBenefit = new OrderBenefit();
+        orderBenefit.setDeleted(TRUE.getCode());
+        orderBenefit.setUpdId(loginUserId);
+        updateOrderBenefit(orderBenefit, orderId, OrderBenefit.class, orderBenefitMapper);
+        mqServiceFeign.sendMessage(orderId, DELETE, BaseBenefit);
+        log.info("【订单撤销优惠发送消息成功】：订单id[{}]", orderId);
+        return errorBo;
+    }
 
-	@Transactional
-	public RestErrorBo revokeBenefit(Integer orderId) {
-		RestErrorBo errorBo = RestErrorBo.getInstance();
-		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
-		//查询订单优惠汇总信息
-		OrderBenefit summary = getOrderBenefitSummary(orderId, ZERO);
-		if (summary == null) {
-			errorBo.setError(DiscountError.ORDER_NO_BENEFIT);
-			return errorBo;
-		}
-		//更新优惠券
-		if (CARD_BENEFIT.equals(summary.getBenefitType())) {
-			List<CardBenefit> revokeCards = getOrderBenefitDetail(orderId, CardBenefit.class, cardBenefitMapper, ZERO);
-			CardBenefit cardBenefit = new CardBenefit();
-			cardBenefit.setDeleted(TRUE.getCode());
-			cardBenefit.setOperateType(MODIFY_BILL.getCode());
-			cardBenefit.setUpdId(loginUserId);
-			updateOrderBenefit(cardBenefit, orderId, CardBenefit.class, cardBenefitMapper);
-			//更新卡券状态
-			Set<Card> updateCards = updateRevokeCardStatus(revokeCards);
-			updateCards.forEach(obj -> mqServiceFeign.sendMessage(obj.getId(), UPDATE, BaseCardSingle));
-			log.info("【订单撤销卡券优惠，更新卡券发送消息成功】：卡券ids：{}", updateCards.stream().map(Card::getId).collect(toList()));
-		}
-		//更新授权
-		if (AUTH_BENEFIT.equals(summary.getBenefitType())) {
-			AuthDiscountBenefit authDiscountBenefit = new AuthDiscountBenefit();
-			authDiscountBenefit.setDeleted(TRUE.getCode());
-			authDiscountBenefit.setOperateType(MODIFY_BILL.getCode());
-			authDiscountBenefit.setUpdId(loginUserId);
-			updateOrderBenefit(authDiscountBenefit, orderId, AuthDiscountBenefit.class, authDiscountBenefitMapper);
-		}
-		//更新订单优惠总信息
-		OrderBenefit orderBenefit = new OrderBenefit();
-		orderBenefit.setDeleted(TRUE.getCode());
-		orderBenefit.setUpdId(loginUserId);
-		updateOrderBenefit(orderBenefit, orderId, OrderBenefit.class, orderBenefitMapper);
-		mqServiceFeign.sendMessage(orderId, DELETE, BaseBenefit);
-		log.info("【订单撤销优惠发送消息成功】：订单id[{}]", orderId);
-		return errorBo;
-	}
+    /**
+     * 查询账单的使用优惠券信息
+     *
+     * @param orderId orderId
+     * @return String
+     */
+    public String getOrderCoupon(Integer orderId) {
+        List<BillUsedCouponBo> billCoupons = cardBenefitMapper.getBillCoupons(orderId);
+        List<String> cardNames = billCoupons.stream().map(obj -> {
+            if (MEMBER_TYPE.equals(obj.getBenefitType())) {
+                MemberType memberType = systemServiceFeign.findMemberTypeById(obj.getCouponId());
+                return memberType != null ? memberType.getName() : null;
+            }
+            return obj.getCouponName();
+        }).collect(toList());
+        if (CollectionUtils.isNotEmpty(cardNames)) {
+            return Joiner.on(",").join(cardNames);
+        }
+        return null;
+    }
 
-	/**
-	 * 查询账单的使用优惠券信息
-	 * @param orderId orderId
-	 * @return String
-	 */
-	public String getOrderCoupon(Integer orderId) {
-		List<BillUsedCouponBo> billCoupons = cardBenefitMapper.getBillCoupons(orderId);
-		List<String> cardNames = billCoupons.stream().map(obj -> {
-			if (MEMBER_TYPE.equals(obj.getBenefitType())) {
-				MemberType memberType = systemServiceFeign.findMemberTypeById(obj.getCouponId());
-				return memberType != null ? memberType.getName() : null;
-			}
-			return obj.getCouponName();
-		}).collect(toList());
-		if (CollectionUtils.isNotEmpty(cardNames)) {
-			return Joiner.on(",").join(cardNames);
-		}
-		return null;
-	}
+    /**
+     * 对象转换
+     *
+     * @param model model
+     * @return PatientChooseBenefitForm
+     */
+    private PatientChooseBenefitForm benefitTransformToForm(PatientOrderBenefitModel model) {
+        return BeanCopierUtils.generalCopyBean(model, PatientChooseBenefitForm.class);
+    }
 
-	/**
-	 * 对象转换
-	 *
-	 * @param model model
-	 * @return PatientChooseBenefitForm
-	 */
-	private PatientChooseBenefitForm benefitTransformToForm(PatientOrderBenefitModel model) {
-		return BeanCopierUtils.generalCopyBean(model, PatientChooseBenefitForm.class);
-	}
+    /**
+     * 计算工作量
+     * @param itemUseBenefitBo OrderItemUseBo
+     * @param itemBenefitBo itemBenefitBo
+     */
+    private BigDecimal calculateWordLoad(ItemUseBenefitBo itemUseBenefitBo, OrderItemUseBo itemBenefitBo) {
+        Example example;
+        BigDecimal supplyWorkload = BigDecimal.ZERO;
+        if (COUPON_TYPE.equals(itemUseBenefitBo.getBenefitType())) {
+            Integer couponType = itemUseBenefitBo.getCouponType();
+            Integer couponId = itemUseBenefitBo.getCouponId();
+            if (VOUCHER.equals(couponType)) {
+                example = new Example(VoucheCoupon.class);
+                example.createCriteria().andEqualTo("couponId", couponId);
+                VoucheCoupon voucheCoupon = voucherMapper.selectOneByExample(example);
+                if (voucheCoupon != null) {
+                    supplyWorkload = supplyWorkload.add(itemUseBenefitBo.getBenefitAmount()
+                            .multiply(voucheCoupon.getWorkloadRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP)))
+                            .setScale(2, BigDecimal.ROUND_HALF_UP);
+                }
+            }
+            if (DISCOUNT.equals(couponType)) {
+                example = new Example(DiscountCoupon.class);
+                example.createCriteria().andEqualTo("couponId", couponId);
+                DiscountCoupon discountCoupon = discountCouponMapper.selectOneByExample(example);
+                if (discountCoupon != null) {
+                    supplyWorkload = supplyWorkload.add(itemUseBenefitBo.getBenefitAmount()
+                            .multiply(discountCoupon.getWorkloadRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP)))
+                            .setScale(2, BigDecimal.ROUND_HALF_UP);
+                }
+            }
+            if (EXCHANGE.equals(couponType)) {
+                example = new Example(PackageCouponItem.class);
+                example.createCriteria().andEqualTo("couponId", couponId).andEqualTo("itemId", itemBenefitBo.getItemId()).
+                        andEqualTo("type", itemBenefitBo.getType());
+                PackageCouponItem packageCouponItem = packageCouponItemMapper.selectOneByExample(example);
+                if (packageCouponItem != null) {
+                    supplyWorkload = supplyWorkload.add(packageCouponItem.getWorkloadLoad());
+                }
+            }
+            if (SPECIAL_PACKAGE.equals(couponType)) {
+                example = new Example(SpecialPackageCouponItem.class);
+                example.createCriteria().andEqualTo("couponId", couponId).andEqualTo("itemId", itemBenefitBo.getItemId()).
+                        andEqualTo("type", itemBenefitBo.getType());
+                SpecialPackageCouponItem specialPackageCouponItem = specialPackageCouponItemMapper.selectOneByExample(example);
+                if (specialPackageCouponItem != null) {
+                    supplyWorkload = supplyWorkload.add(specialPackageCouponItem.getWorkloadLoad());
+                }
+            }
+        }
 
-	/**
-	 * 计算工作量
-	 *
-	 * @param itemBenefitBo    itemBenefitBo
-	 */
-	private BigDecimal calculateWordLoad(OrderItemUseBo itemBenefitBo) {
-		Example example;
-		BigDecimal supplyWorkload = BigDecimal.ZERO;
-		List<ItemUseBenefitBo> itemUseBenefitBos = itemBenefitBo.getItemUseBenefitBos();
-		for (ItemUseBenefitBo itemUseBenefitBo : itemUseBenefitBos) {
-			if (COUPON_TYPE.equals(itemUseBenefitBo.getBenefitType())) {
-				Integer couponType = itemUseBenefitBo.getCouponType();
-				Integer couponId = itemUseBenefitBo.getCouponId();
-				if (VOUCHER.equals(couponType)) {
-					example = new Example(VoucheCoupon.class);
-					example.createCriteria().andEqualTo("couponId", couponId);
-					VoucheCoupon voucheCoupon = voucherMapper.selectOneByExample(example);
-					if (voucheCoupon != null) {
-						supplyWorkload = supplyWorkload.add(itemUseBenefitBo.getBenefitAmount()
-								.multiply(voucheCoupon.getWorkloadRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP)))
-								.setScale(2, BigDecimal.ROUND_HALF_UP);
-					}
-				}
-				if (DISCOUNT.equals(couponType)) {
-					example = new Example(DiscountCoupon.class);
-					example.createCriteria().andEqualTo("couponId", couponId);
-					DiscountCoupon discountCoupon = discountCouponMapper.selectOneByExample(example);
-					if (discountCoupon != null) {
-						supplyWorkload = supplyWorkload.add(itemUseBenefitBo.getBenefitAmount()
-								.multiply(discountCoupon.getWorkloadRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP)))
-								.setScale(2, BigDecimal.ROUND_HALF_UP);
-					}
-				}
-				if (EXCHANGE.equals(couponType)) {
-					example = new Example(PackageCouponItem.class);
-					example.createCriteria().andEqualTo("couponId", couponId).andEqualTo("itemId", itemBenefitBo.getItemId()).
-							andEqualTo("type", itemBenefitBo.getType());
-					PackageCouponItem packageCouponItem = packageCouponItemMapper.selectOneByExample(example);
-					if (packageCouponItem != null) {
-						supplyWorkload = supplyWorkload.add(packageCouponItem.getWorkloadLoad());
-					}
-				}
-				if (SPECIAL_PACKAGE.equals(couponType)) {
-					example = new Example(SpecialPackageCouponItem.class);
-					example.createCriteria().andEqualTo("couponId", couponId).andEqualTo("itemId", itemBenefitBo.getItemId()).
-							andEqualTo("type", itemBenefitBo.getType());
-					SpecialPackageCouponItem specialPackageCouponItem = specialPackageCouponItemMapper.selectOneByExample(example);
-					if (specialPackageCouponItem != null) {
-						supplyWorkload = supplyWorkload.add(specialPackageCouponItem.getWorkloadLoad());
-					}
-				}
-			}
-		}
-		log.info("保存优惠，开单明细id：{}，计算补入工作量：{}", itemBenefitBo.getOrderDetailId(), supplyWorkload);
-		return supplyWorkload;
-	}
+        log.info("保存优惠，开单明细id：{}，计算补入工作量：{}", itemBenefitBo.getOrderDetailId(), supplyWorkload);
+        return supplyWorkload;
+    }
 
-	private RestErrorBo checkAuthItem(List<OrderDetail> orderDetails, List<AuthItemBenefitModel> itemBenefits) {
-		RestErrorBo errorBo = RestErrorBo.getInstance();
-		Map<Integer, OrderDetail> orderDetailMap = orderDetails.stream().collect(toMap(OrderDetail::getId, Function.identity(), (v1, v2) -> v2));
-		for (AuthItemBenefitModel item : itemBenefits) {
-			OrderDetail detail = orderDetailMap.get(item.getOrderDetailId());
-			if (detail == null) {
-				errorBo.setError(DiscountError.ORDER_ITEM_NOT_EXIST);
-				errorBo.setMsg(item.getItemId());
-				return errorBo;
-			}
-			if (detail.getReceivableAmount().compareTo(item.getBenefitAmount()) < 0) {
-				errorBo.setError(DiscountError.AUTH_BENEFIT_AMOUNT_ERROR);
-				errorBo.setMsg(item.getItemId());
-				return errorBo;
-			}
-		}
-		return errorBo;
-	}
+    private RestErrorBo checkAuthItem(List<OrderDetail> orderDetails, List<AuthItemBenefitModel> itemBenefits) {
+        RestErrorBo errorBo = RestErrorBo.getInstance();
+        Map<Integer, OrderDetail> orderDetailMap = orderDetails.stream().collect(toMap(OrderDetail::getId, Function.identity(), (v1, v2) -> v2));
+        for (AuthItemBenefitModel item : itemBenefits) {
+            OrderDetail detail = orderDetailMap.get(item.getOrderDetailId());
+            if (detail == null) {
+                errorBo.setError(DiscountError.ORDER_ITEM_NOT_EXIST);
+                errorBo.setMsg(item.getItemId());
+                return errorBo;
+            }
+            if (detail.getReceivableAmount().compareTo(item.getBenefitAmount()) < 0) {
+                errorBo.setError(DiscountError.AUTH_BENEFIT_AMOUNT_ERROR);
+                errorBo.setMsg(item.getItemId());
+                return errorBo;
+            }
+        }
+        return errorBo;
+    }
 
-	/**
-	 * 查询订单总优惠信息
-	 *
-	 * @param orderId orderId
-	 * @return order
-	 */
-	private OrderBenefit getOrderBenefitSummary(Integer orderId, Integer deleteStatus) {
-		Example example = new Example(OrderBenefit.class);
-		if (deleteStatus != null) {
-			example.createCriteria().andEqualTo("deleted", deleteStatus)
-					.andEqualTo("orderId", orderId);
-		} else {
-			example.createCriteria().andEqualTo("orderId", orderId);
-		}
-		return orderBenefitMapper.selectOneByExample(example);
-	}
+    /**
+     * 查询订单总优惠信息
+     *
+     * @param orderId orderId
+     * @return order
+     */
+    private OrderBenefit getOrderBenefitSummary(Integer orderId, Integer deleteStatus) {
+        Example example = new Example(OrderBenefit.class);
+        if (deleteStatus != null) {
+            example.createCriteria().andEqualTo("deleted", deleteStatus)
+                    .andEqualTo("orderId", orderId);
+        } else {
+            example.createCriteria().andEqualTo("orderId", orderId);
+        }
+        return orderBenefitMapper.selectOneByExample(example);
+    }
 
-	/**
-	 * 获取订单优惠明细（优惠券或授权折扣）
-	 *
-	 * @param orderId orderId
-	 * @param clazz   clazz
-	 * @param mapper  mapper
-	 */
-	private <T> List<T> getOrderBenefitDetail(Integer orderId, Class<?> clazz, Mapper<T> mapper, Integer deleteStatus) {
-		Example example = new Example(clazz);
-		if (deleteStatus != null) {
-			example.createCriteria().andEqualTo("deleted", deleteStatus)
-					.andEqualTo("orderId", orderId);
-		} else {
-			example.createCriteria().andEqualTo("orderId", orderId);
-		}
-		return mapper.selectByExample(example);
-	}
+    /**
+     * 获取订单优惠明细（优惠券或授权折扣）
+     *
+     * @param orderId orderId
+     * @param clazz   clazz
+     * @param mapper  mapper
+     */
+    private <T> List<T> getOrderBenefitDetail(Integer orderId, Class<?> clazz, Mapper<T> mapper, Integer deleteStatus) {
+        Example example = new Example(clazz);
+        if (deleteStatus != null) {
+            example.createCriteria().andEqualTo("deleted", deleteStatus)
+                    .andEqualTo("orderId", orderId);
+        } else {
+            example.createCriteria().andEqualTo("orderId", orderId);
+        }
+        return mapper.selectByExample(example);
+    }
 
-	private <T> void updateOrderBenefit(T t, Integer orderId, Class<?> clazz, Mapper<T> mapper) {
-		Example example = new Example(clazz);
-		example.createCriteria().andEqualTo("orderId", orderId)
-				.andEqualTo("deleted", FALSE.getCode());
-		mapper.updateByExampleSelective(t, example);
-	}
+    private <T> void updateOrderBenefit(T t, Integer orderId, Class<?> clazz, Mapper<T> mapper) {
+        Example example = new Example(clazz);
+        example.createCriteria().andEqualTo("orderId", orderId)
+                .andEqualTo("deleted", FALSE.getCode());
+        mapper.updateByExampleSelective(t, example);
+    }
 
-	/**
-	 * 获取卡券使用情况
-	 *
-	 * @param list list
-	 * @return map
-	 */
-	private Map<Integer, CardUseBo> getCardUseList(List<CardBenefit> list) {
-		Set<Integer> exchangeCards = list.stream()
-				.filter(obj -> EXCHANGE.equals(obj.getCouponType()))
-				.map(CardBenefit::getCardId).collect(toSet());
-		Set<Integer> packageCards = list.stream()
-				.filter(obj -> SPECIAL_PACKAGE.equals(obj.getCouponType()))
-				.map(CardBenefit::getCardId).collect(toSet());
-		Map<Integer, CardUseBo> map = Maps.newHashMapWithExpectedSize(list.size());
-		if (CollectionUtils.isNotEmpty(exchangeCards)) {
-			List<CardUseBo> useList = cardBenefitMapper.getCardUseInfo(exchangeCards, EXCHANGE.getCode());
-			Map<Integer, CardUseBo> useBoMap = useList.stream().collect(toMap(CardUseBo::getCardId, Function.identity()));
-			if (!useBoMap.isEmpty()) {
-				map.putAll(useBoMap);
-			}
-		}
-		if (CollectionUtils.isNotEmpty(packageCards)) {
-			List<CardUseBo> useList = cardBenefitMapper.getCardUseInfo(packageCards, SPECIAL_PACKAGE.getCode());
-			Map<Integer, CardUseBo> useBoMap = useList.stream().collect(toMap(CardUseBo::getCardId, Function.identity()));
-			if (!useBoMap.isEmpty()) {
-				map.putAll(useBoMap);
-			}
-		}
-		return map;
-	}
+    /**
+     * 获取卡券使用情况
+     *
+     * @param list list
+     * @return map
+     */
+    private Map<Integer, CardUseBo> getCardUseList(List<CardBenefit> list) {
+        Set<Integer> exchangeCards = list.stream()
+                .filter(obj -> EXCHANGE.equals(obj.getCouponType()))
+                .map(CardBenefit::getCardId).collect(toSet());
+        Set<Integer> packageCards = list.stream()
+                .filter(obj -> SPECIAL_PACKAGE.equals(obj.getCouponType()))
+                .map(CardBenefit::getCardId).collect(toSet());
+        Map<Integer, CardUseBo> map = Maps.newHashMapWithExpectedSize(list.size());
+        if (CollectionUtils.isNotEmpty(exchangeCards)) {
+            List<CardUseBo> useList = cardBenefitMapper.getCardUseInfo(exchangeCards, EXCHANGE.getCode());
+            Map<Integer, CardUseBo> useBoMap = useList.stream().collect(toMap(CardUseBo::getCardId, Function.identity()));
+            if (!useBoMap.isEmpty()) {
+                map.putAll(useBoMap);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(packageCards)) {
+            List<CardUseBo> useList = cardBenefitMapper.getCardUseInfo(packageCards, SPECIAL_PACKAGE.getCode());
+            Map<Integer, CardUseBo> useBoMap = useList.stream().collect(toMap(CardUseBo::getCardId, Function.identity()));
+            if (!useBoMap.isEmpty()) {
+                map.putAll(useBoMap);
+            }
+        }
+        return map;
+    }
 
-	/**
-	 * 返回设置卡券更新信息
-	 *
-	 * @param list list
-	 * @return list
-	 */
-	private Set<Card> getUpdateCards(List<CardBenefit> list) {
-		//查询兑换券，套餐券的使用信息
-		Map<Integer, CardUseBo> useBoMap = getCardUseList(list);
-		//更新卡券状态
-		return list.stream().filter(obj -> COUPON_TYPE.equals(obj.getBenefitType())).map(obj -> {
-			Card card = new Card();
-			CardUseBo cardUseBo = useBoMap.get(obj.getCardId());
-			card.setId(obj.getCardId());
-			if (VOUCHER.equals(obj.getCouponType()) || DISCOUNT.equals(obj.getCouponType())) {
-				card.setStatus(USE_ALL.getCode());
-			}
-			if (EXCHANGE.equals(obj.getCouponType()) || SPECIAL_PACKAGE.equals(obj.getCouponType())) {
-				card.setStatus(ONE_TIME_USE.equals(cardUseBo.getUseWay()) ?
-						USE_ALL.getCode() : ZERO.equals(cardUseBo.getUsable()) ?
-						USE_ALL.getCode() : PARTIAL_USE.getCode());
-			}
-			return card;
-		}).collect(toSet());
-	}
+    /**
+     * 返回设置卡券更新信息
+     *
+     * @param list list
+     * @return list
+     */
+    private Set<Card> getUpdateCards(List<CardBenefit> list) {
+        //查询兑换券，套餐券的使用信息
+        Map<Integer, CardUseBo> useBoMap = getCardUseList(list);
+        //更新卡券状态
+        return list.stream().filter(obj -> COUPON_TYPE.equals(obj.getBenefitType())).map(obj -> {
+            Card card = new Card();
+            CardUseBo cardUseBo = useBoMap.get(obj.getCardId());
+            card.setId(obj.getCardId());
+            if (VOUCHER.equals(obj.getCouponType()) || DISCOUNT.equals(obj.getCouponType())) {
+                card.setStatus(USE_ALL.getCode());
+            }
+            if (EXCHANGE.equals(obj.getCouponType()) || SPECIAL_PACKAGE.equals(obj.getCouponType())) {
+                card.setStatus(ONE_TIME_USE.equals(cardUseBo.getUseWay()) ?
+                        USE_ALL.getCode() : ZERO.equals(cardUseBo.getUsable()) ?
+                        USE_ALL.getCode() : PARTIAL_USE.getCode());
+            }
+            return card;
+        }).collect(toSet());
+    }
 
-	/**
-	 * 获取撤销优惠的卡券信息
-	 *
-	 * @param list list
-	 * @return list
-	 */
-	private Set<Card> getRevokeUpdateCards(List<CardBenefit> list) {
-		//查询兑换券，套餐券的使用信息
-		Map<Integer, CardUseBo> useBoMap = getCardUseList(list);
-		//更新卡券状态
-		return list.stream().filter(obj -> COUPON_TYPE.equals(obj.getBenefitType())).map(obj -> {
-			Card card = new Card();
-			CardUseBo cardUseBo = useBoMap.get(obj.getCardId());
-			card.setId(obj.getCardId());
-			if (VOUCHER.equals(obj.getCouponType()) || DISCOUNT.equals(obj.getCouponType())) {
-				card.setStatus(ACTIVATED.getCode());
-			}
-			if (EXCHANGE.equals(obj.getCouponType()) || SPECIAL_PACKAGE.equals(obj.getCouponType())) {
-				if (ONE_TIME_USE.equals(cardUseBo.getUseWay())) {
-					card.setStatus(ACTIVATED.getCode());
-				} else {
-					if (cardUseBo.getUseCount() == 0) {
-						card.setStatus(ACTIVATED.getCode());
-					}
-					if (ONE.equals(cardUseBo.getUsable()) && cardUseBo.getUseCount() > 0) {
-						card.setStatus(PARTIAL_USE.getCode());
-					}
-				}
-			}
-			return card;
-		}).collect(toSet());
-	}
+    /**
+     * 获取撤销优惠的卡券信息
+     *
+     * @param list list
+     * @return list
+     */
+    private Set<Card> getRevokeUpdateCards(List<CardBenefit> list) {
+        //查询兑换券，套餐券的使用信息
+        Map<Integer, CardUseBo> useBoMap = getCardUseList(list);
+        //更新卡券状态
+        return list.stream().filter(obj -> COUPON_TYPE.equals(obj.getBenefitType())).map(obj -> {
+            Card card = new Card();
+            CardUseBo cardUseBo = useBoMap.get(obj.getCardId());
+            card.setId(obj.getCardId());
+            if (VOUCHER.equals(obj.getCouponType()) || DISCOUNT.equals(obj.getCouponType())) {
+                card.setStatus(ACTIVATED.getCode());
+            }
+            if (EXCHANGE.equals(obj.getCouponType()) || SPECIAL_PACKAGE.equals(obj.getCouponType())) {
+                if (ONE_TIME_USE.equals(cardUseBo.getUseWay())) {
+                    card.setStatus(ACTIVATED.getCode());
+                } else {
+                    if (cardUseBo.getUseCount() == 0) {
+                        card.setStatus(ACTIVATED.getCode());
+                    }
+                    if (ONE.equals(cardUseBo.getUsable()) && cardUseBo.getUseCount() > 0) {
+                        card.setStatus(PARTIAL_USE.getCode());
+                    }
+                }
+            }
+            return card;
+        }).collect(toSet());
+    }
 
-	/**
-	 * 使用优惠更新卡券状态
-	 * @param cardBenefits 优惠卡券集合
-	 */
-	private Set<Card> updateCardStatus(List<CardBenefit> cardBenefits) {
-		Set<Card> updateCards = getUpdateCards(cardBenefits);
-		if (CollectionUtils.isNotEmpty(updateCards)) {
-			//更新卡券状态
-			updateCards.forEach(obj -> cardMapper.updateByPrimaryKeySelective(obj));
-		}
-		return updateCards;
-	}
+    /**
+     * 使用优惠更新卡券状态
+     *
+     * @param cardBenefits 优惠卡券集合
+     */
+    private Set<Card> updateCardStatus(List<CardBenefit> cardBenefits) {
+        Set<Card> updateCards = getUpdateCards(cardBenefits);
+        if (CollectionUtils.isNotEmpty(updateCards)) {
+            //更新卡券状态
+            updateCards.forEach(obj -> cardMapper.updateByPrimaryKeySelective(obj));
+        }
+        return updateCards;
+    }
 
-	/**
-	 * 撤销优惠更新卡券状态
-	 * @param cardBenefits 优惠卡券集合
-	 */
-	private Set<Card> updateRevokeCardStatus(List<CardBenefit> cardBenefits) {
-		Set<Card> updateCards = getRevokeUpdateCards(cardBenefits);
-		if (CollectionUtils.isNotEmpty(updateCards)) {
-			//更新卡券状态
-			updateCards.forEach(obj -> cardMapper.updateByPrimaryKeySelective(obj));
-		}
-		return updateCards;
-	}
+    /**
+     * 撤销优惠更新卡券状态
+     *
+     * @param cardBenefits 优惠卡券集合
+     */
+    private Set<Card> updateRevokeCardStatus(List<CardBenefit> cardBenefits) {
+        Set<Card> updateCards = getRevokeUpdateCards(cardBenefits);
+        if (CollectionUtils.isNotEmpty(updateCards)) {
+            //更新卡券状态
+            updateCards.forEach(obj -> cardMapper.updateByPrimaryKeySelective(obj));
+        }
+        return updateCards;
+    }
 
-	/**
-	 * 查询订单使用优惠数量
-	 * @param orderId orderId
-	 * @return int
-	 */
-	private int countOrder(Integer orderId) {
-		Example example = new Example(OrderBenefit.class);
-		example.createCriteria().andEqualTo("orderId", orderId)
-				.andEqualTo("deleted", ZERO);
-		return orderBenefitMapper.selectCountByExample(example);
-	}
+    /**
+     * 查询订单使用优惠数量
+     *
+     * @param orderId orderId
+     * @return int
+     */
+    private int countOrder(Integer orderId) {
+        Example example = new Example(OrderBenefit.class);
+        example.createCriteria().andEqualTo("orderId", orderId)
+                .andEqualTo("deleted", ZERO);
+        return orderBenefitMapper.selectCountByExample(example);
+    }
 }

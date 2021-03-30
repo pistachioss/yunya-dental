@@ -67,4 +67,11 @@ public class BasePatientController {
     return ResponseUtil.success();
   }
 
+
+  @ApiOperation("修改患者信息")
+  @PostMapping("/updPatientInfo")
+  public ResponseResult<T> updPatientInfo(){
+    basePatientBiz.updPatientInfo();
+    return ResponseUtil.success();
+  }
 }

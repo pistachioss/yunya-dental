@@ -61,5 +61,11 @@ public class PatientOriginEmployeeQuery implements Serializable {
     @ApiModelProperty(value = "门诊ID(可多选)")
     private List<Integer> orgIds;
 
+    /**
+     * 员工id
+     */
+    @ApiModelProperty(value = "员工id")
+    private Integer employeeId;
+
 
 }

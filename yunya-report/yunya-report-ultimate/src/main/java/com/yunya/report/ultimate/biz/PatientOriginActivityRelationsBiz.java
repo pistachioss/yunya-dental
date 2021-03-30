@@ -21,10 +21,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 简介:
@@ -242,7 +241,7 @@ public class PatientOriginActivityRelationsBiz
     }
     List<PatientOriginActivityVo> patientOriginActivityVoList = combinationActivityReferral(query);
     ExcelUtil<PatientOriginActivityVo> excelUtil = new ExcelUtil<>(PatientOriginActivityVo.class);
-    excelUtil.exportExcel(response, patientOriginActivityVoList, "员工推荐明细", "员工推荐明细");
+    excelUtil.exportExcel(response, patientOriginActivityVoList, "活动推荐明细", "活动推荐明细");
   }
 
   /**
@@ -251,7 +250,7 @@ public class PatientOriginActivityRelationsBiz
    * @param query 条件
    * @return 已收工作量明细列表分页列表信息
    */
-  public List<ReceivedWorkloadDetailsVo> findEreceiverkLoad(ReceiverkLoadQuery query) {
+  public List<ReceivedWorkloadDetailsVo> findEreceiverkLoad(ReceiverkLoadQuery query) throws ParseException {
     // 1.已收 2.免单 3.退费 4.补入
     switch (query.getType()) {
       case 1:
@@ -274,9 +273,13 @@ public class PatientOriginActivityRelationsBiz
    * @param query 条件
    * @return 补入工作量明细
    */
-  private List<ReceivedWorkloadDetailsVo> makeUpDetail(ReceiverkLoadQuery query) {
+  private List<ReceivedWorkloadDetailsVo> makeUpDetail(ReceiverkLoadQuery query) throws ParseException {
     List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = baseBillMapper.selectMakeUpDetail(query);
     if (receivedWorkloadDetailsVoList != null) {
+      for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo : receivedWorkloadDetailsVoList) {
+        // 判断关联时间是否大于初诊时间
+        receivedWorkloadDetailsVo.setIsChange(getIsChange(receivedWorkloadDetailsVo));
+      }
       return receivedWorkloadDetailsVoList;
     }
     return null;
@@ -288,7 +291,7 @@ public class PatientOriginActivityRelationsBiz
    * @param query 条件
    * @return 退费金额明细
    */
-  private List<ReceivedWorkloadDetailsVo> refundDetail(ReceiverkLoadQuery query) {
+  private List<ReceivedWorkloadDetailsVo> refundDetail(ReceiverkLoadQuery query) throws ParseException {
     List<ReceivedWorkloadDetailsVo> refundDetailList = new ArrayList<>();
     List<Integer> refundIdList = baseRefundMapper.selectfundBillIdList(query);
     if (refundIdList != null) {
@@ -296,6 +299,10 @@ public class PatientOriginActivityRelationsBiz
         List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList =
             baseRefundMapper.selectrefundDetail(refundId, query.getOriginId());
         if (receivedWorkloadDetailsVoList != null) {
+          for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo :receivedWorkloadDetailsVoList ) {
+            // 判断关联时间是否大于初诊时间
+            receivedWorkloadDetailsVo.setIsChange(getIsChange(receivedWorkloadDetailsVo));
+          }
           refundDetailList.addAll(receivedWorkloadDetailsVoList);
         }
       }
@@ -311,7 +318,7 @@ public class PatientOriginActivityRelationsBiz
    * @return 明细
    */
   public List<ReceivedWorkloadDetailsVo> receivedDetail(
-      ReceiverkLoadQuery query, Boolean isFreePayment) {
+      ReceiverkLoadQuery query, Boolean isFreePayment) throws ParseException {
     List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsListVo = new ArrayList<>();
     List<Integer> baseBillIdList;
     if (isFreePayment) {
@@ -319,13 +326,7 @@ public class PatientOriginActivityRelationsBiz
       baseBillIdList = baseBillMapper.findBaseBillIdList(query, null);
     } else {
       // 其中免单支付 订单id List
-      List<Integer> typeList =
-          new ArrayList<Integer>() {
-            {
-              add(23);
-              add(26);
-            }
-          };
+      List<Integer> typeList = new ArrayList<Integer>() {{ add(23);add(26); }};
       baseBillIdList = baseBillMapper.findBaseBillIdList(query, typeList);
     }
     if (baseBillIdList != null) {
@@ -335,15 +336,8 @@ public class PatientOriginActivityRelationsBiz
         baseBillPayList = baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, null);
       } else {
         // 查询免单支付方式
-        List<Integer> typeList =
-            new ArrayList<Integer>() {
-              {
-                add(23);
-                add(26);
-              }
-            };
-        baseBillPayList =
-            baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, typeList);
+        List<Integer> typeList = new ArrayList<Integer>() {{ add(23);add(26); }};
+        baseBillPayList = baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, typeList);
       }
       // 订单支付明细
       for (Integer billId : baseBillIdList) {
@@ -352,6 +346,8 @@ public class PatientOriginActivityRelationsBiz
             baseBillDetailMapper.selectEreceiverkLoad(billId, query.getOriginId());
         if (baseBillDetailBizVos != null) {
           for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo : baseBillDetailBizVos) {
+            // 判断关联时间是否大于初诊时间
+            receivedWorkloadDetailsVo.setIsChange(getIsChange(receivedWorkloadDetailsVo));
             if (baseBillPayList != null) {
               for (BaseBillPay baseBillPay : baseBillPayList) {
                 // 如果项目订单id 和支付记录明细订单id相同,就用项目实收价格乘以支付金额 = 项目工作量
@@ -373,5 +369,46 @@ public class PatientOriginActivityRelationsBiz
       }
     }
     return receivedWorkloadDetailsListVo;
+  }
+
+  /**
+   * 判断患者来源是否有变更过
+   * @param model 来源信息
+   * @return 是否更改过
+   */
+  private Boolean getIsChange(ReceivedWorkloadDetailsVo model) throws ParseException {
+    if (model.getRelatedTime() != null && model.getFirstVisitDate() != null){
+      return comparetoTime(model.getRelatedTime(),model.getFirstVisitDate());
+    }
+    return false;
+  }
+
+  /**
+   * 比较两个时间大小
+   * @param relatedTime 关联时间
+   * @param firstVisitDate 初诊时间
+   * @return true 大于 false 小于 or 等于
+   * @throws ParseException
+   */
+  public Boolean comparetoTime(String relatedTime, String firstVisitDate) throws ParseException {
+    Boolean isChange = false;
+    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    try {
+      Date relatedTime1 = format.parse(relatedTime);
+      Date firstVisitDate1 = format.parse(firstVisitDate);
+      int compareTo = relatedTime1.compareTo(firstVisitDate1);
+      if (compareTo > 0){
+        isChange = true;
+      }
+      if (compareTo < 0){
+        isChange = false;
+      }
+      if (compareTo == 0){
+        isChange = false;
+      }
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    return isChange;
   }
 }
