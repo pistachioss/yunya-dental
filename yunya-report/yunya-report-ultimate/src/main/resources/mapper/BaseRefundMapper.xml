@@ -469,7 +469,6 @@
             FROM
             base_bill bb
             <where>
-                AND bb.bill_num IS NOT NULL
                 AND bb.bill_date IS NOT NULL
                 <if test="query.orgId != null">
                     AND bb.org_id = #{query.orgId}
@@ -615,7 +614,6 @@
             FROM
             base_bill bb
             <where>
-                AND bb.bill_num IS NOT NULL
                 AND bb.bill_date IS NOT NULL
                 <if test="query.orgId != null">
                     AND bb.org_id = #{query.orgId}
@@ -705,7 +703,7 @@
         base_refund_detail brd
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
         INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
-        AND bbd.executor_id IS NOT NULL
+        AND bbd.executor_id > 0
         ) brd
         <where>
             <if test="query.orgIds != null and query.orgIds.length > 0">

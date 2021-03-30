@@ -54,7 +54,6 @@
         base_bill bb
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -125,7 +124,6 @@
         base_bill bb
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -223,7 +221,6 @@
         base_bill bb
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -488,7 +485,6 @@
         base_bill bb
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id != #{query.orgId}
             </if>
@@ -585,7 +581,6 @@
         base_bill bb
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id != #{query.orgId}
             </if>
@@ -675,7 +670,6 @@
         base_bill bb
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -771,7 +765,6 @@
         base_bill bb
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -972,7 +965,6 @@
         base_bill bb
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -1068,7 +1060,6 @@
         base_bill bb
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -1920,7 +1911,6 @@
         base_bill bb
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -2025,7 +2015,6 @@
         base_bill bb
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>

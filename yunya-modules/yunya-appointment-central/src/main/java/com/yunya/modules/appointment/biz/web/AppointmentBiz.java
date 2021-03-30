@@ -834,6 +834,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         fieldQuery.setEndWorkDate(endDate);
         fieldQuery.setApprovalStatus(1);
         List<FieldInfoListVO> fieldInfoListVOS = this.employeeAttendServiceFeign.fieldFindList(fieldQuery);
+        if (StringHelper.isNotEmpty(fieldInfoListVOS)) {
+            fieldInfoListVOS = fieldInfoListVOS.stream().filter(entity-> entity.getApprovalStatus() == 1).collect(Collectors.toList());
+        }
         return fieldInfoListVOS;
     }
 
@@ -896,6 +899,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         workOverTime.setEndWorkDate(endDate);
         workOverTime.setApprovalStatus(1);
         List<WorkOvertimeInfoListVO> workOvertimeInfoListVOS = this.employeeAttendServiceFeign.workFindList(workOverTime);
+        if (StringHelper.isNotEmpty(workOvertimeInfoListVOS)) {
+            workOvertimeInfoListVOS = workOvertimeInfoListVOS.stream().filter(entity-> null !=entity.getId() && entity.getApprovalStatus() == 1).collect(Collectors.toList());
+        }
         return workOvertimeInfoListVOS;
     }
 
