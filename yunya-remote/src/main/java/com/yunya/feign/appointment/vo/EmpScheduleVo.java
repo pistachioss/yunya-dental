@@ -25,7 +25,7 @@ public class EmpScheduleVo implements Serializable {
     private Integer companyId;
     @ApiModelProperty("门诊名称")
     private String comName;
-    @ApiModelProperty("排班（上班/休息）; 假期类型(班次/天)")
+    @ApiModelProperty("排班（上班/休息）; 假期类型(班次/天)；外勤；加班")
     private String status;
     @ApiModelProperty("排班/请假 开始日期")
     private String startDate;
