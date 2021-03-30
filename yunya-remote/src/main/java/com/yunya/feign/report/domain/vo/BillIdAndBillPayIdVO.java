@@ -45,13 +45,4 @@ public class BillIdAndBillPayIdVO implements Serializable {
   /** 账单时间 */
   @ApiModelProperty("账单时间")
   private Date billDate;
-  /** 使用优惠组织ID */
-  @ApiModelProperty("使用优惠组织ID")
-  private Integer privilegeOrgId;
-  /** 使用优惠日期 */
-  @ApiModelProperty("使用优惠日期")
-  private Date privilegeDate;
-  /** 是否首次优惠使用优惠 */
-  @ApiModelProperty("是否首次优惠使用优惠")
-  private Boolean firstPrivilege;
 }

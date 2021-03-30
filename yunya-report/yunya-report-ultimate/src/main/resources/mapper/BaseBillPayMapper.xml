@@ -1753,8 +1753,7 @@
         bbp.billOrgId,
         bbp.billId,
         bbp.billDate,
-        bbp.actualAmount,
-        bbp.privilegeOrgId
+        bbp.actualAmount
         FROM
         (
         SELECT
@@ -1765,8 +1764,7 @@
         bb.org_id AS billOrgId,
         bb.bill_id AS billId,
         bb.bill_date AS billDate,
-        bb.actual_amount AS actualAmount,
-        bb.privilege_org_id AS privilegeOrgId
+        bb.actual_amount AS actualAmount
         FROM
         base_bill_pay bbp
         INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
