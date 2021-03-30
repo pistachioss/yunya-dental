@@ -509,11 +509,13 @@
         ) / 3
         ) AS leaveTime,
         ls.start_time AS LsStartDate,
-        ls.end_time AS LsEndDate
+        ls.end_time AS LsEndDate,
+        es.work_date AS workDate
         FROM
         leave_info t
         LEFT JOIN vacation_set vs ON t.vacation_id = vs.id
         LEFT JOIN leave_schedule ls ON ls.leave_id = t.id
+        LEFT JOIN employee_schedule es ON ls.schedule_id = es.id
         <where>
             <if test="userIds != null and userIds.size() > 0">
                 and t.user_id in
