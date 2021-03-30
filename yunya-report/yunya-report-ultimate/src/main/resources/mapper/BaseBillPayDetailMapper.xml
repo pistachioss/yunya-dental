@@ -130,7 +130,8 @@
                 bb.bill_num as billNum,
                 bbpd.principal_amount as amount,
                 bbpd.card_num as remark,
-                '/' as discountUser,
+                bp.name as patientName,
+                null as discountUser,
                 CASE
                 WHEN bbpd.account_item_id=23 then '本次免单支付'
                 WHEN bbpd.account_item_id=26 then '艾维员工免单'
@@ -142,6 +143,7 @@
             LEFT JOIN base_treatment_process btp ON btp.treatment_id=bb.treatment_id
             LEFT JOIN base_employee emp ON emp.user_id=btp.registered_dentist_id
             LEFT JOIN base_organization bo ON bo.org_id=bbp.org_id
+            LEFT JOIN base_patient bp ON bp.patient_id=bb.patient_id
             <where>
                 <if test="query.accountType==null or query.accountType==0">
                     and bbpd.account_item_id in (23,26)
@@ -175,10 +177,11 @@
                 bb.bill_num as billNum,
                 bbf.principal_amount as amount,
                 bbf.remark,
+                bp.name as patientName,
                 bep.employee_name as discountUser,
                 '授权折扣' as discountFree
             FROM (
-                select order_id as bill_id,sum(benefit_amount) as principal_amount, remark, authorized_id
+                select order_id as bill_id,sum(benefit_amount) as principal_amount, remark, authorized_id, patient_id
                 from base_benefit
                 <where>
                     choice_benefit_type=1
@@ -187,7 +190,7 @@
                         and org_id = -1
                     </if>
                 </where>
-                group by order_id,remark,authorized_id
+                group by order_id,remark,authorized_id,patient_id
             ) bbf
             LEFT JOIN base_bill bb ON bb.bill_id=bbf.bill_id
             LEFT JOIN base_bill_pay bbp ON bbp.bill_id=bbf.bill_id
@@ -196,6 +199,7 @@
             LEFT JOIN base_employee emp ON emp.user_id=btp.registered_dentist_id
             LEFT JOIN base_employee bep ON bep.user_id=bbf.authorized_id
             LEFT JOIN base_organization bo ON bo.org_id=bbp.org_id
+            LEFT JOIN base_patient bp ON bp.patient_id=bbf.patient_id
             <where>
                 <if test="query.orgIds!=null and query.orgIds.size()>0">
                     and bbp.org_id in

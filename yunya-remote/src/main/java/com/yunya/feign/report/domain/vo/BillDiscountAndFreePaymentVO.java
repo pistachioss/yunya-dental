@@ -45,6 +45,11 @@ public class BillDiscountAndFreePaymentVO implements Serializable {
   @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
   private Date billDate;
 
+  /** 患者 */
+  @Excel(name = "患者")
+  @ApiModelProperty("患者")
+  private String patientName;
+
   /** 账单编号 */
   @Excel(name = "账单编号")
   @ApiModelProperty("账单编号")

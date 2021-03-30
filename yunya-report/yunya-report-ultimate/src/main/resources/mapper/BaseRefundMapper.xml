@@ -109,107 +109,88 @@
     <select id="selectEmployeePersonalRefundWorkloadDetail"
             resultType="com.yunya.feign.report.domain.vo.EmployeePersonalRefundWorkloadDetailVO">
         SELECT
-        refundId,
-        billNum,
-        DATE_FORMAT(orderDate, '%Y-%m-%d') as orderDate,
-        DATE_FORMAT(billDate, '%Y-%m-%d') as billDate,
-        DATE_FORMAT(refundDate, '%Y-%m-%d') as refundDate,
-        patientId,
-        patientName,
-        mobile,
-        refundWorkload,
-        employeeId
+        brd.orderDate,
+        brd.billDate,
+        brd.billNum,
+        SUM(brd.refundAmount) AS refundWorkload,
+        brd.refundId,
+        brd.refundDate,
+        brd.patientId,
+        brd.patientName,
+        brd.mobile,
+        brd.employeeId
         FROM
         (
         SELECT
-        brd.refund_id as refundId,
-        brd.bill_num as billNum,
-        brd.order_date as orderDate,
-        brd.bill_date as billDate,
-        brd.refund_date as refundDate,
-        brd.patient_id as patientId,
-        brd.`name` as patientName,
-        brd.pinyin_name as pinyinName,
-        brd.mobile,
-        SUM(brd.refund_amount) as refundWorkload,
-        brd.executor_id as employeeId
-        FROM
-        ( SELECT
-        brp.org_id,
-        brp.patient_id,
-        brp.`name`,
-        brp.pinyin_name,
-        brp.refund_date,
-        brp.mobile,
-        brd.bill_detail_id,
-        brd.refund_id,
-        brd.refund_amount,
-        bbd.order_date,
-        bbd.bill_date,
-        bbd.bill_num,
-        bbd.executor_id
+        brd.refund_amount as refundAmount,
+        br.billId,
+        DATE_FORMAT( br.orderDate, ' %Y-%m-%d' ) AS orderDate,
+        DATE_FORMAT( br.billDate, ' %Y-%m-%d' ) AS billDate,
+        br.billNum,
+        br.refundId,
+        DATE_FORMAT( br.refundDate, '%Y-%m-%d' ) AS refundDate,
+        br.patientId,
+        br.patientName,
+        br.pinyinName,
+        br.mobile,
+        bbd.executor_id AS employeeId
         FROM
         base_refund_detail brd
-        LEFT JOIN (
+        INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
+        <if test="query.employeeId != null">
+            AND bbd.executor_id = #{query.employeeId}
+        </if>
+        INNER JOIN (
         SELECT
-        bbd.bill_detail_id,
-        bbd.executor_id,
-        bb.order_date,
-        bb.bill_date,
-        bb.bill_num
-        FROM
-        base_bill_detail bbd
-        LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
-        WHERE
-        executor_id IS NOT NULL
-        ) bbd ON brd.bill_detail_id = bbd.bill_detail_id
-        LEFT JOIN (
-        SELECT
-        br.org_id,
-        br.refund_id,
-        br.refund_date,
-        br.patient_id,
-        bp.pinyin_name,
-        bp.`name`,
-        bp.mobile
+        br.refund_id as refundId,
+        br.refund_date as refundDate,
+        br.bill_id as billId,
+        bb.order_date as orderDate,
+        bb.bill_date as billDate,
+        bb.bill_num AS billNum,
+        br.patient_id AS patientId,
+        bp.`name` AS patientName,
+        bp.pinyin_name AS pinyinName,
+        bp.mobile AS mobile
         FROM
         base_refund br
         LEFT JOIN base_patient bp ON br.patient_id = bp.patient_id
-        ) brp ON brd.refund_id = brp.refund_id
-        ) brd
+        LEFT JOIN base_bill bb ON br.bill_id = bb.bill_id
         <where>
             <if test="query.orgId != null">
-                and brd.org_id = #{query.orgId}
+                AND br.org_id = #{query.orgId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( brd.order_date, '%Y-%m' ) = #{query.queryDate}
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m' ) = #{query.queryDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( brd.order_date, '%Y' ) = #{query.queryDate}
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m' ) = #{query.queryDate}
                 </if>
             </if>
-            <if test="query.employeeId != null">
-                and brd.executor_id = #{query.employeeId}
-            </if>
         </where>
-        GROUP BY brd.refund_id
-        ) rfd
+        ) br ON brd.refund_id = br.refundId
+        ) brd
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(IFNULL(rfd.patientName, ''), IFNULL(rfd.pinyinName, ''), IFNULL(rfd.mobile, '')) Like
+                AND concat(IFNULL(brd.patientName, ''), IFNULL(brd.pinyinName, ''), IFNULL(brd.mobile, '')) Like
                 concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
-                and rfd.billNum like concat('%', #{query.billNum} ,'%')
+                AND brd.billNum like concat('%', #{query.billNum} ,'%')
             </if>
             <if test="query.orderDate != null and query.orderDate != ''">
-                and DATE_FORMAT(rfd.orderDate, '%Y-%m-%d') = #{query.orderDate}
+                AND DATE_FORMAT(brd.billDate, '%Y-%m-%d') = #{query.billDate}
+            </if>
+            <if test="query.orderDate != null and query.orderDate != ''">
+                AND DATE_FORMAT(brd.orderDate, '%Y-%m-%d') = #{query.orderDate}
             </if>
         </where>
-        ORDER BY rfd.refundDate DESC
+        GROUP BY brd.refundId
+        ORDER BY
+        brd.refundDate DESC
     </select>
 
     <!-- 根据条件查询员工退费工作量退费明细列表 -->
@@ -469,7 +450,6 @@
             FROM
             base_bill bb
             <where>
-                AND bb.bill_num IS NOT NULL
                 AND bb.bill_date IS NOT NULL
                 <if test="query.orgId != null">
                     AND bb.org_id = #{query.orgId}
@@ -615,7 +595,6 @@
             FROM
             base_bill bb
             <where>
-                AND bb.bill_num IS NOT NULL
                 AND bb.bill_date IS NOT NULL
                 <if test="query.orgId != null">
                     AND bb.org_id = #{query.orgId}
@@ -705,7 +684,7 @@
         base_refund_detail brd
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
         INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
-        AND bbd.executor_id IS NOT NULL
+        AND bbd.executor_id > 0
         ) brd
         <where>
             <if test="query.orgIds != null and query.orgIds.length > 0">
