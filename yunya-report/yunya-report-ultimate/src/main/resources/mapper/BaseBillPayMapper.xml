@@ -1964,12 +1964,12 @@
             </foreach>
         </if>
 
-        <if test="query.startDate != null">
-            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+        <if test="startDate != null">
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
-            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+        <if test="endDate != null" >
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{endDate}, '%Y-%m-%d' )
         </if>
 
         <if test="list.size() > 0">

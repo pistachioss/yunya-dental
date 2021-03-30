@@ -2370,12 +2370,12 @@
         ) t on t.patient_id = bb.patient_id
         where
         privilege_date is not null
-        <if test="query.startDate != null">
-            and DATE_FORMAT( privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+        <if test="startDate != null">
+            and DATE_FORMAT( privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null">
-            and DATE_FORMAT( privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+        <if test="endDate != null" >
+            and DATE_FORMAT( privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{endDate}, '%Y-%m-%d' )
         </if>
         ) t on t.bill_id = bbd.bill_id
         where bbd.coupon_workload is not null
@@ -2388,12 +2388,12 @@
                 SELECT
                     bb.bill_id billId,
                     bb.patient_id patientId,
-                    DATE_FORMAT( t.crt_time, '%Y-%m-%d') relatedTime,
+                    DATE_FORMAT( t.crt_time, '%Y-%m-%d %H:%i') relatedTime,
                     t.`name`,
                     t.mobile,
-                    DATE_FORMAT( t.first_visit_date, '%Y-%m-%d') firstVisitDate,
-                    DATE_FORMAT( t.last_visit_date, '%Y-%m-%d') lastVisitDate,
-                    DATE_FORMAT( bb.order_date, '%Y-%m-%d') orderDate,
+                    DATE_FORMAT( t.first_visit_date, '%Y-%m-%d %H:%i') firstVisitDate,
+                    DATE_FORMAT( t.last_visit_date, '%Y-%m-%d %H:%i') lastVisitDate,
+                    DATE_FORMAT( bb.order_date, '%Y-%m-%d %H:%i') orderDate,
                     bo.abbreviation abbreviation,
                     be.employee_name employeeName,
                     bti.item_name itemName,

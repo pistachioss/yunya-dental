@@ -12,32 +12,25 @@ import java.math.BigDecimal;
  *
  * @author: WY
  * @date: 2021/3/19 17:28
- * @description: 员工推荐列表结果返回模板
+ * @description: 活动推荐列表结果返回模板
  * @since: 1.0.0
  */
-@ApiModel(value = "PrintInfoVo",description = "员工推荐列表结果返回模板")
+@ApiModel(value = "PrintInfoVo",description = "活动推荐列表结果返回模板")
 @Data
-public class PatientOriginEmployeeVo {
+public class PatientOriginActivityVo {
 
     /**
-     * 推荐人id
+     * 活动id
      */
-    @ApiModelProperty(value ="推荐人id",required = false)
+    @ApiModelProperty(value ="活动id",required = false)
     private Integer originId;
 
     /**
-     * 推荐人姓名
+     * 活动名称
      */
-    @Excel(name = "推荐人")
-    @ApiModelProperty(value ="推荐人姓名",required = false)
-    private String referrerName;
-
-    /**
-     * 就职状态
-     */
-    @Excel(name = "就职状态")
-    @ApiModelProperty(value ="就职状态",required = false)
-    private String workStatus;
+    @Excel(name = "活动名称")
+    @ApiModelProperty(value ="活动名称",required = false)
+    private String activityName;
 
     /**
      * 患者数量

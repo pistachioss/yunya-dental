@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.patient_central.domain.query.PatientOriginActivityQuery;
 import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
 import com.yunya.feign.patient_central.domain.query.ReceiverkLoadQuery;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
@@ -180,11 +181,12 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
   /**
    * 查询订单支付记录
    * @param billIdList 账单id集合
-   * @param query 条件
+   * @param startDate 开始时间
+   * @param endDate 结束时间
    * @param typeList 支付方式类型
    * @return 账单支付记录集合
    */
-    List<BaseBillPay> findBaseBillPayInfoList(@Param("list") List<Integer> billIdList,@Param("query") PatientOriginEmployeeQuery query,@Param("typeList") List<Integer> typeList);
+    List<BaseBillPay> findBaseBillPayInfoList(@Param("list") List<Integer> billIdList, @Param("startDate") String startDate,@Param("endDate") String endDate, @Param("typeList") List<Integer> typeList);
 
   /**
    * 根据订单id查询支付记录

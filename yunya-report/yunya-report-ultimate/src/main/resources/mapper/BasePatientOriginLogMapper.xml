@@ -42,7 +42,7 @@
           JOIN base_user_post bup ON bup.user_id = ee.user_id
           WHERE
               ee.work_status = 1
-              <if test="query.orgIds != null">
+              <if test="query.orgIds != null and query.orgIds.size() > 0">
                   and bup.org_id in
                   <foreach collection="query.orgIds" item="orgId" open="(" separator="," close=")">
                       #{orgId}
@@ -65,6 +65,7 @@
         from  (
             SELECT
                 bb.bill_id,
+
                 bb.patient_id,
                 bb.actual_amount,
                 (
@@ -83,8 +84,8 @@
                             JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
                         WHERE
                             log.inservice = 1
-                        <if test="patientOriginEmployeeVo.originId != null ">
-                            AND log.origin_id = #{patientOriginEmployeeVo.originId}
+                        <if test="originId != null ">
+                            AND log.origin_id = #{originId}
                         </if>
 
                      ) t ON bb.patient_id = t.patient_id
@@ -94,6 +95,27 @@
 
                ) t  where t.OrderWorkload > 0
 
+    </select>
+
+    <select id="findActivityVoLists" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientOriginActivityVo">
+        select * from (
+        select
+        bpo.id originId,
+        bpo.name activityName,
+        (
+        select count(1) from base_patient_origin_log
+        where origin_type = 3
+        AND inservice = 1
+        and origin_id = bpo.id
+        ) patientNumber
+
+        from base_patient_origin bpo
+        where bpo.origin_type = 3
+        <if test="query.activityName != null">
+            and concat( IFNULL(  bpo.`name`, '' ))
+            LIKE concat( concat( '%', #{query.activityName} ), '%' )
+        </if>
+        ) t where t.patientNumber > 0
     </select>
 
 

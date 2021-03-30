@@ -911,6 +911,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         empScheduleVo.setUserId(userId);
         empScheduleVo.setUserName(userName);
         empScheduleVo.setType(4);
+        empScheduleVo.setStatus("外勤");
         empScheduleVo.setCompanyId(fieldInfoVO.getCompanyId());
         empScheduleVo.setComName(fieldInfoVO.getCompanyName());
         String startTime = LocalDateTime.fromDateFields(fieldInfoVO.getStartTime()).toString(dateTimePattern);
@@ -934,6 +935,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         empScheduleVo.setCompanyId(workOvertimeInfos.getCompanyId());
         empScheduleVo.setComName(workOvertimeInfos.getCompanyName());
         empScheduleVo.setType(3);
+        empScheduleVo.setStatus("加班");
         String workDate = LocalDate.fromDateFields(workOvertimeInfos.getWorkDate()).toString(datePattern);
         String workStartTime = LocalDateTime.fromDateFields(workOvertimeInfos.getStartTime()).toString(timePattern);
         String workEndTime = LocalDateTime.fromDateFields(workOvertimeInfos.getEndTime()).toString(timePattern);
