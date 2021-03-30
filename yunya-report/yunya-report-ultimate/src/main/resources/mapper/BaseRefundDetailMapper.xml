@@ -25,7 +25,7 @@
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
         ) brd
         <where>
-            AND brd.executor_id IS NOT NULL
+            AND brd.executor_id > 0
             <if test="billIds != null and billIds.size > 0">
                 AND brd.bill_id IN
                 <foreach collection="billIds" index="index" item="item" open="(" separator="," close=")">

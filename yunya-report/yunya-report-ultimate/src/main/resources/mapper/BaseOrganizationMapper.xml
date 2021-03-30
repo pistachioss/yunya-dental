@@ -341,7 +341,7 @@
         FROM
         base_bill bb
         <where>
-            AND bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgIds != null and query.orgIds.length > 0">
                 AND bb.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
