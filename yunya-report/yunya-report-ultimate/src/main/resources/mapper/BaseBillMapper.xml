@@ -1086,6 +1086,14 @@
         </where>
         GROUP BY log.origin_id) t
         on t.origin_id = log.origin_id
+        where 1 = 1
+        <if test="query.startDate != null">
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+        </if>
+
+        <if test="query.endDate != null" >
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+        </if>
     </select>
 
 
