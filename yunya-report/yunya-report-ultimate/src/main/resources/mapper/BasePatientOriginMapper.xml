@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.middletable.dao.report.BasePatientOriginMapper" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BasePatientOriginMapper" >
   <resultMap id="BaseResultMap" type="com.yunya.models.report.BasePatientOrigin" >
     <!--
       WARNING - @mbg.generated
@@ -23,5 +23,10 @@
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <!-- 获取活动列表 -->
+  <select id="selectActivityList" resultType="com.yunya.models.report.BasePatientOrigin">
+    select * from  base_patient_origin where origin_type = 3 and parent_id != 0
+  </select>
 
 </mapper>

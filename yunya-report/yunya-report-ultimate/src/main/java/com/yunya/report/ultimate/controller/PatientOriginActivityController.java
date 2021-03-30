@@ -7,14 +7,12 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientOriginActivityVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.report.BasePatientOrigin;
 import com.yunya.report.ultimate.biz.PatientOriginActivityRelationsBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -109,6 +107,11 @@ public class PatientOriginActivityController {
         return ResponseUtil.success(new PageInfo<>(receivedWorkloadDetailsVoList));
     }
 
-
+    @ApiOperation("获取活动列表")
+    @GetMapping(value = "/activity", name = "公司端-市场营销-活动推荐-获取活动列表")
+    public ResponseResult<List<BasePatientOrigin>> getActivityList(){
+       List<BasePatientOrigin> basePatientOrigins = patientOriginActivityRelationsBiz.getActivityList();
+       return ResponseUtil.success(basePatientOrigins);
+    }
 
 }
