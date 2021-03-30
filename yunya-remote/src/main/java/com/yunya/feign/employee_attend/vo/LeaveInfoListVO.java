@@ -110,4 +110,11 @@ public class LeaveInfoListVO {
     @ApiModelProperty("请假时长(分钟)")
     private Integer leaveTime;
 
+    @ApiModelProperty("班次开始时间（后端使用）")
+    @JsonFormat(pattern = "HH:mm:ss",timezone = "GMT+8")
+    private Date LsStartDate;
+    @ApiModelProperty("班次结束时间（后端使用）")
+    @JsonFormat(pattern = "HH:mm:ss",timezone = "GMT+8")
+    private Date LsEndDate;
+
 }
