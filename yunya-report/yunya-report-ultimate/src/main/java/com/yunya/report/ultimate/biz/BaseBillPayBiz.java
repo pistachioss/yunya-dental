@@ -92,8 +92,6 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         Integer billOrgId = vo.getBillOrgId();
         Date billDate = vo.getBillDate();
         BigDecimal actualAmount = vo.getActualAmount();
-        Integer privilegeOrgId = vo.getPrivilegeOrgId();
-        Boolean firstPrivilege = vo.getFirstPrivilege();
         Integer payeeOrgId = vo.getPayeeOrgId();
         Date payeeDate = vo.getPayeeDate();
         Integer billPayId = vo.getBillPayId();
