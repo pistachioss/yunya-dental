@@ -551,10 +551,10 @@
                 </foreach>
             </if>
             <if test="startDate != null and startDate != ''">
-                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &gt;= #{startDate}
+                AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{startDate}
             </if>
             <if test="endDate != null and endDate != ''">
-                AND DATE_FORMAT( btp.treat_end_time, '%Y-%m-%d' ) &lt;= #{endDate}
+                AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{endDate}
             </if>
         </where>
     </select>
