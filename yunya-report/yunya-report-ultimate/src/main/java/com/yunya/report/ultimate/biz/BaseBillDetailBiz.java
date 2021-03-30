@@ -54,7 +54,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   @Autowired private BaseBillPayDetailMapper baseBillPayDetailMapper;
   /** 诊所基础信息 */
   @Autowired private RemoteClinicBaseServiceFeign clinicBaseServiceFeign;
-  /** 系统服务*/
+  /** 系统服务 */
   @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
   /**
@@ -1078,7 +1078,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query
    * @return
    */
-  public void couponExecutoredExport(CouponExecutoredQuery query, HttpServletResponse response) throws IOException {
+  public void couponExecutoredExport(CouponExecutoredQuery query, HttpServletResponse response)
+      throws IOException {
     query.setWhetherPage(false);
     PageInfo<CouponExecutoredVO> pageInfo = couponExecutoredList(query);
     List<CouponExecutoredVO> resultList = pageInfo.getList();
@@ -1093,14 +1094,14 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query
    * @return
    */
-  public PageInfo<CouponExecutoredDetailVO> couponExecutoredDetails(CouponExecutoredDetailQuery query) {
+  public PageInfo<CouponExecutoredDetailVO> couponExecutoredDetails(
+      CouponExecutoredDetailQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<CouponExecutoredDetailVO> list = mapper.couponExecutoredDetails(query);
     return new PageInfo<>(list);
   }
-
 
   /**
    * 月工作量完成度导出
@@ -1113,19 +1114,21 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     String startDate = now.dayOfMonth().withMinimumValue().toString("yyyy-MM-dd");
     String curDate = now.toString("yyyy-MM-dd");
     List<WorkloadMonthGoalCompletedVO> resultList = workloadCompleted(startDate, curDate);
-    ExcelUtil<WorkloadMonthGoalCompletedVO> excelUtil = new ExcelUtil<>(WorkloadMonthGoalCompletedVO.class);
+    ExcelUtil<WorkloadMonthGoalCompletedVO> excelUtil =
+        new ExcelUtil<>(WorkloadMonthGoalCompletedVO.class);
     String fileName = excelUtil.getFileName(startDate, curDate, "", "月营业目标完成度报表");
     excelUtil.exportExcel(response, resultList, "月营业目标完成度报表", fileName);
   }
 
   /**
    * 查询组织信息列表
+   *
    * @return
    */
   private List<OrganizationInfoDetail> getOrganizationList() {
     OrganizationModel model = new OrganizationModel();
     model.setWhetherPage(false);
-    model.setTypes(new Byte[]{2});
+    model.setTypes(new Byte[] {2});
     return remoteSystemServiceFeign.findOrgInfoList(model);
   }
 
@@ -1138,9 +1141,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public List<WorkloadMonthGoalCompletedVO> workloadCompleted(String startDate, String curDate) {
     Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
-    Integer[] orgIds = {26,27,28,29,30,31,32,33,34,35,36,37};
+    Integer[] orgIds = {26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37};
     DataStatisticsQuery query = new DataStatisticsQuery();
-    query.setDateType((byte)0);
+    query.setDateType((byte) 0);
     query.setStartDate(startDate);
     query.setEndDate(curDate);
     query.setOrgIds(orgIds);
@@ -1158,26 +1161,35 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     BigDecimal percentageTotal = BigDecimal.ZERO;
     BigDecimal curTotal = BigDecimal.ZERO;
     for (Integer orgId : orgIds) {
-      BigDecimal goal = workloadGoalMap.get(orgId); //目标值
+      BigDecimal goal = workloadGoalMap.get(orgId); // 目标值
       if (goal == null) {
         goal = BigDecimal.ZERO;
       }
       BigDecimal[] workloads = workloadCompleted.get(orgId);
       if (workloads == null) {
-        workloads = new BigDecimal[]{BigDecimal.ZERO,BigDecimal.ZERO};
+        workloads = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO};
       }
-      BigDecimal monthWorkload = workloads[0].setScale(2, BigDecimal.ROUND_HALF_UP); //实际值
-      BigDecimal curWorkload = workloads[1]; //今日完成
-      BigDecimal completedPercentage = BigDecimal.ZERO; //完成度
-      if (goal.compareTo(BigDecimal.ZERO)!=0) {
-        completedPercentage = monthWorkload.divide(goal, 2, BigDecimal.ROUND_HALF_UP)
-                .multiply(new BigDecimal(100));
+      BigDecimal monthWorkload = workloads[0].setScale(2, BigDecimal.ROUND_HALF_UP); // 实际值
+      BigDecimal curWorkload = workloads[1]; // 今日完成
+      BigDecimal completedPercentage = BigDecimal.ZERO; // 完成度
+      if (goal.compareTo(BigDecimal.ZERO) != 0) {
+        completedPercentage =
+            monthWorkload.divide(goal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
       }
       goalTotal = goalTotal.add(goal);
       monthTotal = monthTotal.add(monthWorkload);
       percentageTotal = percentageTotal.add(completedPercentage);
       curTotal = curTotal.add(curWorkload);
-      setOrgTotal(orgId, goal, monthWorkload, completedPercentage, curWorkload, goalVO, monthVO, percentageVO, curVO);
+      setOrgTotal(
+          orgId,
+          goal,
+          monthWorkload,
+          completedPercentage,
+          curWorkload,
+          goalVO,
+          monthVO,
+          percentageVO,
+          curVO);
     }
     goalVO.setTotal(goalTotal.toString());
     monthVO.setTotal(monthTotal.toString());
@@ -1186,93 +1198,113 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return Arrays.asList(goalVO, monthVO, percentageVO, curVO);
   }
 
-  private void setOrgTotal(Integer orgId, BigDecimal goal, BigDecimal monthWorkload, BigDecimal completedPercentage, BigDecimal curWorkload,
-       WorkloadMonthGoalCompletedVO goalVO, WorkloadMonthGoalCompletedVO monthVO, WorkloadMonthGoalCompletedVO percentageVO, WorkloadMonthGoalCompletedVO curVO) {
+  private void setOrgTotal(
+      Integer orgId,
+      BigDecimal goal,
+      BigDecimal monthWorkload,
+      BigDecimal completedPercentage,
+      BigDecimal curWorkload,
+      WorkloadMonthGoalCompletedVO goalVO,
+      WorkloadMonthGoalCompletedVO monthVO,
+      WorkloadMonthGoalCompletedVO percentageVO,
+      WorkloadMonthGoalCompletedVO curVO) {
     switch (orgId) {
-      case 26:{// 古墩路
-        goalVO.setGuDunRoad(goal.toString());
-        monthVO.setGuDunRoad(monthWorkload.toString());
-        percentageVO.setGuDunRoad(completedPercentage.toString() + "%");
-        curVO.setGuDunRoad(curWorkload.toString());
-        break;
-      }
-      case 27:{// 金山大道
-        goalVO.setJinShaRoad(goal.toString());
-        monthVO.setJinShaRoad(monthWorkload.toString());
-        percentageVO.setJinShaRoad(completedPercentage.toString() + "%");
-        curVO.setJinShaRoad(curWorkload.toString());
-        break;
-      }
-      case 28:{// 乾元
-        goalVO.setQianYuan(goal.toString());
-        monthVO.setQianYuan(monthWorkload.toString());
-        percentageVO.setQianYuan(completedPercentage.toString() + "%");
-        curVO.setQianYuan(curWorkload.toString());
-        break;
-      }
-      case 29:{// 常春藤
-        goalVO.setChangChunTeng(goal.toString());
-        monthVO.setChangChunTeng(monthWorkload.toString());
-        percentageVO.setChangChunTeng(completedPercentage.toString() + "%");
-        curVO.setChangChunTeng(curWorkload.toString());
-        break;
-      }
-      case 30:{// 西溪路
-        goalVO.setXiXiRoad(goal.toString());
-        monthVO.setXiXiRoad(monthWorkload.toString());
-        percentageVO.setXiXiRoad(completedPercentage.toString() + "%");
-        curVO.setXiXiRoad(curWorkload.toString());
-        break;
-      }
-      case 31:{// 春花江月
-        goalVO.setChunJiangHuaYue(goal.toString());
-        monthVO.setChunJiangHuaYue(monthWorkload.toString());
-        percentageVO.setChunJiangHuaYue(completedPercentage.toString() + "%");
-        curVO.setChunJiangHuaYue(curWorkload.toString());
-        break;
-      }
-      case 32:{// 鲲鹏
-        goalVO.setKunPengRoad(goal.toString());
-        monthVO.setKunPengRoad(monthWorkload.toString());
-        percentageVO.setKunPengRoad(completedPercentage.toString() + "%");
-        curVO.setKunPengRoad(curWorkload.toString());
-        break;
-      }
-      case 33:{// 滨江龙湖
-        goalVO.setLongHu(goal.toString());
-        monthVO.setLongHu(monthWorkload.toString());
-        percentageVO.setLongHu(completedPercentage.toString() + "%");
-        curVO.setLongHu(curWorkload.toString());
-        break;
-      }
-      case 34:{// 雅文
-        goalVO.setYaWen(goal.toString());
-        monthVO.setYaWen(monthWorkload.toString());
-        percentageVO.setYaWen(completedPercentage.toString() + "%");
-        curVO.setYaWen(curWorkload.toString());
-        break;
-      }
-      case 35:{// 博方
-        goalVO.setBoFang(goal.toString());
-        monthVO.setBoFang(monthWorkload.toString());
-        percentageVO.setBoFang(completedPercentage.toString() + "%");
-        curVO.setBoFang(curWorkload.toString());
-        break;
-      }
-      case 36:{// 艾芃
-        goalVO.setAiPeng(goal.toString());
-        monthVO.setAiPeng(monthWorkload.toString());
-        percentageVO.setAiPeng(completedPercentage.toString() + "%");
-        curVO.setAiPeng(curWorkload.toString());
-        break;
-      }
-      case 37:{// 文二西路
-        goalVO.setWenErXiRoad(goal.toString());
-        monthVO.setWenErXiRoad(monthWorkload.toString());
-        percentageVO.setWenErXiRoad(completedPercentage.toString() + "%");
-        curVO.setWenErXiRoad(curWorkload.toString());
-        break;
-      }
+      case 26:
+        { // 古墩路
+          goalVO.setGuDunRoad(goal.toString());
+          monthVO.setGuDunRoad(monthWorkload.toString());
+          percentageVO.setGuDunRoad(completedPercentage.toString() + "%");
+          curVO.setGuDunRoad(curWorkload.toString());
+          break;
+        }
+      case 27:
+        { // 金山大道
+          goalVO.setJinShaRoad(goal.toString());
+          monthVO.setJinShaRoad(monthWorkload.toString());
+          percentageVO.setJinShaRoad(completedPercentage.toString() + "%");
+          curVO.setJinShaRoad(curWorkload.toString());
+          break;
+        }
+      case 28:
+        { // 乾元
+          goalVO.setQianYuan(goal.toString());
+          monthVO.setQianYuan(monthWorkload.toString());
+          percentageVO.setQianYuan(completedPercentage.toString() + "%");
+          curVO.setQianYuan(curWorkload.toString());
+          break;
+        }
+      case 29:
+        { // 常春藤
+          goalVO.setChangChunTeng(goal.toString());
+          monthVO.setChangChunTeng(monthWorkload.toString());
+          percentageVO.setChangChunTeng(completedPercentage.toString() + "%");
+          curVO.setChangChunTeng(curWorkload.toString());
+          break;
+        }
+      case 30:
+        { // 西溪路
+          goalVO.setXiXiRoad(goal.toString());
+          monthVO.setXiXiRoad(monthWorkload.toString());
+          percentageVO.setXiXiRoad(completedPercentage.toString() + "%");
+          curVO.setXiXiRoad(curWorkload.toString());
+          break;
+        }
+      case 31:
+        { // 春花江月
+          goalVO.setChunJiangHuaYue(goal.toString());
+          monthVO.setChunJiangHuaYue(monthWorkload.toString());
+          percentageVO.setChunJiangHuaYue(completedPercentage.toString() + "%");
+          curVO.setChunJiangHuaYue(curWorkload.toString());
+          break;
+        }
+      case 32:
+        { // 鲲鹏
+          goalVO.setKunPengRoad(goal.toString());
+          monthVO.setKunPengRoad(monthWorkload.toString());
+          percentageVO.setKunPengRoad(completedPercentage.toString() + "%");
+          curVO.setKunPengRoad(curWorkload.toString());
+          break;
+        }
+      case 33:
+        { // 滨江龙湖
+          goalVO.setLongHu(goal.toString());
+          monthVO.setLongHu(monthWorkload.toString());
+          percentageVO.setLongHu(completedPercentage.toString() + "%");
+          curVO.setLongHu(curWorkload.toString());
+          break;
+        }
+      case 34:
+        { // 雅文
+          goalVO.setYaWen(goal.toString());
+          monthVO.setYaWen(monthWorkload.toString());
+          percentageVO.setYaWen(completedPercentage.toString() + "%");
+          curVO.setYaWen(curWorkload.toString());
+          break;
+        }
+      case 35:
+        { // 博方
+          goalVO.setBoFang(goal.toString());
+          monthVO.setBoFang(monthWorkload.toString());
+          percentageVO.setBoFang(completedPercentage.toString() + "%");
+          curVO.setBoFang(curWorkload.toString());
+          break;
+        }
+      case 36:
+        { // 艾芃
+          goalVO.setAiPeng(goal.toString());
+          monthVO.setAiPeng(monthWorkload.toString());
+          percentageVO.setAiPeng(completedPercentage.toString() + "%");
+          curVO.setAiPeng(curWorkload.toString());
+          break;
+        }
+      case 37:
+        { // 文二西路
+          goalVO.setWenErXiRoad(goal.toString());
+          monthVO.setWenErXiRoad(monthWorkload.toString());
+          percentageVO.setWenErXiRoad(completedPercentage.toString() + "%");
+          curVO.setWenErXiRoad(curWorkload.toString());
+          break;
+        }
       default:
     }
   }
@@ -1283,18 +1315,19 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return
    */
   private Map<Integer, BigDecimal> workloadMonthGoal() {
-    String date = DateUtil.parseDateToStr("yyyy-MM",new Date());
+    String date = DateUtil.parseDateToStr("yyyy-MM", new Date());
     BusinessGoalCompletedInfoQuery query = new BusinessGoalCompletedInfoQuery();
-    query.setBusinessType((byte)1); //工作量
-    query.setBusinessTypes(new Byte[]{1}); //工作量
-    query.setDateType((byte) 1); //按月查
+    query.setBusinessType((byte) 1); // 工作量
+    query.setBusinessTypes(new Byte[] {1}); // 工作量
+    query.setDateType((byte) 1); // 按月查
     query.setStartDate("1");
     query.setEndDate("1");
     query.setOrgId(0);
     query.setDateRange(Arrays.asList(date));
     List<BusinessGoalVO> goalVOS = clinicBaseServiceFeign.businessGoalList(query);
     if (StringHelper.isNotEmpty(goalVOS)) {
-      return goalVOS.stream().collect(Collectors.toMap(BusinessGoalVO::getBelongId,BusinessGoalVO::getBusinessGoal));
+      return goalVOS.stream()
+          .collect(Collectors.toMap(BusinessGoalVO::getBelongId, BusinessGoalVO::getBusinessGoal));
     }
     return new HashMap<>(16);
   }
