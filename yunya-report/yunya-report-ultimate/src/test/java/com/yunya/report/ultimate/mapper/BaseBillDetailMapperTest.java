@@ -50,7 +50,7 @@ public class BaseBillDetailMapperTest {
     query.setDateType((byte) 0);
     query.setQueryDate("2021-03");
     query.setEmployeeId(341);
-    //query.setKeyword("三七");
+    // query.setKeyword("三七");
     List<EmployeePersonalActualWorkloadDetailVO> vos =
         baseBillDetailMapper.selectEmployeePersonalActualWorkloadDetailList(query);
     System.out.println(vos);
@@ -147,6 +147,18 @@ public class BaseBillDetailMapperTest {
     query.setWorkStatus(new Integer[] {0, 1});
     List<EmployeeWorkloadOfOperationVO> vos =
         baseBillDetailMapper.selectEmployeeWorkloadListOfOperation(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find6() {
+    EmployeePersonalWorkloadDetailQuery query = new EmployeePersonalWorkloadDetailQuery();
+    query.setOrgId(26);
+    query.setDateType((byte) 0);
+    query.setQueryDate("2021-03");
+    query.setEmployeeId(341);
+    List<EmployeePersonalReceivedWorkloadDetailVO> vos =
+        baseBillDetailMapper.selectEmployeePersonalReceivedWorkloadDetailList(query);
     System.out.println(vos);
   }
 }

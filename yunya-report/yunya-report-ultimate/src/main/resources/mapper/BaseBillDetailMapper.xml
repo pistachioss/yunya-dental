@@ -887,123 +887,141 @@
     <select id="selectEmployeePersonalReceivedWorkloadDetailList"
             resultType="com.yunya.feign.report.domain.vo.EmployeePersonalReceivedWorkloadDetailVO">
         SELECT
-        orgId,
-        orgName,
-        billId,
-        billNum,
-        DATE_FORMAT(orderDate, '%Y-%m-%d %H:%i') as orderDate,
-        DATE_FORMAT(billDate, '%Y-%m-%d %H:%i') as billDate,
-        DATE_FORMAT(billDate, '%Y-%m-%d %H:%i') as chargeDate,
-        patientId,
-        patientName,
-        mobile,
-        ewd.receivedWorkload
-        FROM
-        (
-        SELECT
-        ebd.orgId,
-        ebd.abbreviation as orgName,
-        ebd.billId,
-        ebd.billNum,
-        ebd.orderDate,
-        ebd.billDate,
-        ebd.patientId,
-        ebd.patientName,
-        ebd.pinyinName,
-        ebd.mobile,
-        IFNULL( ew.receivedWorkload, 0 ) AS receivedWorkload,
-        ebd.executorId
-        FROM
-        (
-        SELECT
-        bbp.org_id AS orgId,
-        bbp.abbreviation,
-        bbp.bill_id AS billId,
-        bbp.bill_num AS billNum,
-        bbp.order_date AS orderDate,
-        bbp.bill_date AS billDate,
-        bbp.patient_id AS patientId,
-        bbp.`name` AS patientName,
-        bbp.pinyin_name AS pinyinName,
+        bbp.billId,
+        DATE_FORMAT(bbp.orderDate, '%Y-%m-%d') AS orderDate,
+        DATE_FORMAT(bbp.billDate, '%Y-%m-%d') AS billDate,
+        bbp.billNum,
+        bbp.orgId,
+        bbp.orgName,
+        bbp.patientId,
+        bbp.patientName,
         bbp.mobile,
-        bbd.executor_id AS executorId
+        DATE_FORMAT(bbp.payeeDate, '%Y-%m-%d %H:%i') AS chargeDate,
+        SUM(
+        CONVERT (
+        (bbp.actualWorkload / bbp.actualAmount) * bbp.receivedAmount,
+        DECIMAL( 19, 6 ))) AS receivedWorkload
         FROM
-        base_bill_detail bbd
-        LEFT JOIN (
+        (
+        SELECT
+        bbp.orgId,
+        bbp.orgName,
+        bbp.billPayId,
+        bbp.billId,
+        bbp.billDate,
+        bbp.orderDate,
+        bbp.billNum,
+        bbp.actualAmount,
+        bbp.payeeDate,
+        bbp.receivedAmount,
+        bbp.actualWorkload,
+        bbp.patientId,
+        bp.`name` AS patientName,
+        bp.pinyin_name AS pinyinName,
+        bp.mobile AS mobile
+        FROM
+        (
+        SELECT
+        bbp.billPayId,
+        bbp.billId,
+        bbp.orgId,
+        bbp.orgName,
+        bbp.actualAmount,
+        bbp.receivedAmount,
+        bbp.payeeDate,
+        bbp.patientId,
+        bbp.billDate,
+        bbp.orderDate,
+        bbp.billNum,
+        IFNULL( bbd.actualWorkload, 0 ) AS actualWorkload
+        FROM
+        (
+        SELECT
+        bbp.bill_pay_id as billPayId,
+        bbp.received_amount AS receivedAmount,
+        bbp.bill_id AS billId,
+        bbp.payee_date AS payeeDate,
+        bb.org_id AS orgId,
+        bb.abbreviation AS orgName,
+        bb.patient_id AS patientId,
+        bb.order_date AS orderDate,
+        bb.bill_date AS billDate,
+        bb.bill_num AS billNum,
+        bb.actual_amount AS actualAmount
+        FROM
+        base_bill_pay bbp
+        INNER JOIN (
         SELECT
         bb.org_id,
         bo.abbreviation,
+        bb.patient_id,
         bb.bill_id,
-        bb.bill_num,
+        bb.actual_amount,
         bb.order_date,
         bb.bill_date,
-        bb.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.pinyin_name
+        bb.bill_num
         FROM
         base_bill bb
-        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
-        LEFT JOIN base_organization bo on bb.org_id = bo.org_id
-        ) bbp ON bbd.bill_id = bbp.bill_id
-        ) ebd
-        LEFT JOIN (
-        SELECT
-        SUM( ew.receivedAmount ) AS receivedWorkload,
-        ew.billId,
-        ew.executorId
-        FROM
-        (
-        SELECT
-        bbd.bill_id AS billId,
-        bbd.received_amount AS receivedAmount,
-        bbd.executor_id AS executorId
-        FROM
-        base_bill_detail bbd
-        WHERE
-        bbd.executor_id IS NOT NULL
-        GROUP BY
-        bbd.bill_detail_id
-        ) ew
-        GROUP BY
-        ew.billId,
-        ew.executorId
-        ) ew ON ebd.executorId = ew.executorId
-        AND ebd.billId = ew.billId
+        LEFT JOIN base_organization bo ON bb.org_id = bo.org_id
         <where>
+            AND bb.actual_amount > 0
             <if test="query.orgId != null">
-                and ebd.orgId = #{query.orgId}
+                AND bb.org_id = #{query.orgId}
             </if>
+        </where>
+        ) bb ON bbp.bill_id = bb.bill_id
+        <where>
+            AND bbp.received_amount > 0
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( ebd.orderDate, '%Y-%m' ) = #{query.queryDate}
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( ebd.orderDate, '%Y' ) = #{query.queryDate}
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
+        </where>
+        ) bbp
+        LEFT JOIN (
+        SELECT
+        bbd.bill_id,
+        SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS actualWorkload
+        FROM
+        base_bill_detail bbd
+        <where>
+            AND bbd.executor_id IS NOT NULL
+            <if test="query.orgId != null">
+                AND bbd.org_id = #{query.orgId}
+            </if>
             <if test="query.employeeId != null">
-                and ebd.executorId = #{query.employeeId}
+                AND bbd.executor_id = #{query.employeeId}
             </if>
         </where>
         GROUP BY
-        ebd.billId
-        ) ewd
+        bbd.bill_id
+        ) bbd ON bbp.billId = bbd.bill_id
+        ) bbp
+        LEFT JOIN base_patient bp ON bbp.patientId = bp.patient_id
+        ) bbp
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(IFNULL(ewd.patientName, ''), IFNULL(ewd.pinyinName, ''), IFNULL(ewd.mobile, '')) Like
+                AND concat(IFNULL(bbp.patientName, ''), IFNULL(bbp.pinyinName, ''), IFNULL(bbp.mobile, '')) Like
                 concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
-                and ewd.billNum like concat('%', #{query.billNum} ,'%')
+                AND bbp.billNum LIKE concat('%', #{query.billNum} ,'%')
             </if>
             <if test="query.orderDate != null and query.orderDate != ''">
-                and DATE_FORMAT(ewd.orderDate, '%Y-%m-%d') = #{query.orderDate}
+                AND DATE_FORMAT(bbp.billDate, '%Y-%m-%d') = #{query.orderDate}
             </if>
         </where>
-        ORDER BY ewd.orderDate, ewd.billNum DESC
+        GROUP BY
+        bbp.billPayId
+        ORDER BY
+        bbp.billDate DESC ,
+        bbp.billNum DESC
     </select>
 
     <!-- 根据条件查询员工已收工作量明细列表 -->
