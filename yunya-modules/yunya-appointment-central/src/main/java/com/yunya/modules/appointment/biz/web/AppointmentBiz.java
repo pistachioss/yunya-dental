@@ -853,8 +853,30 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         query.setApprovalStatus(1);
         List<LeaveInfoListVO> listByIds = this.employeeAttendServiceFeign.backFindListByIds(query);
         if (StringHelper.isNotEmpty(listByIds)) {
-            listByIds = listByIds.stream().filter(entity -> entity.getWorkDate().compareTo(startDate) == 0).collect(Collectors.toList());
-
+            if (startDate.compareTo(endDate) != 0) {
+                listByIds = listByIds.stream().filter(entity->{
+                    // 请假类型是按天请假时直接返回
+                    if (entity.getVacationStatus() == 1) {
+                        return true;
+                    } else {
+                        // 按日期范围查找请假信息时，只显示范围内的请假详情
+                        return null != entity.getWorkDate()
+                                && startDate.compareTo(entity.getWorkDate()) <= 0
+                                && endDate.compareTo(entity.getWorkDate()) >= 0;
+                    }
+                }).collect(Collectors.toList());
+            } else {
+                listByIds = listByIds.stream().filter(entity->{
+                    // 请假类型是按天请假时直接返回
+                    if (entity.getVacationStatus() == 1) {
+                        return true;
+                    } else {
+                        // 按指定日期查找请假信息时，只显示指定日期的请假信息
+                        return null != entity.getWorkDate()
+                                && startDate.compareTo(entity.getWorkDate()) == 0;
+                    }
+                }).collect(Collectors.toList());
+            }
         }
         return listByIds;
     }
@@ -1899,21 +1921,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         String end = dateFormat.format(appointEndTime);
         // 设置预约时间段
         appointment.setAppointPeriod(start + "-" + end);
-
-        // 设置预约类型(0-初诊；1-复诊)
-//        // 根据患者是否有病历号来判断患者预约类型
-//        PatientBaseInfo patientBaseInfo = remotePatientCentralServiceFeign.findPatientInfoById(appointment.getPatientId());
-//        String medicalNumber = patientBaseInfo.getMedicalNumber();
-//        log.info("=========================【预约初复诊判断】=====================");
-//        log.info("==>患者信息:{}",patientBaseInfo.toString());
-//        log.info("============================end==============================");
-//        if (StringHelper.isBlank(medicalNumber)){
-//            // 病历号为空，初诊
-//            appointment.setAppointType((byte)0);
-//        } else {
-//            // 病历号不为空，复诊
-//            appointment.setAppointType((byte)1);
-//        }
         TreatmentRecord treatmentRecord = new TreatmentRecord();
         treatmentRecord.setPatientId(appointment.getPatientId());
         List<TreatmentRecord> treatmentRecords = remoteTreatmentServiceFeign.findTreatmentRecordList(treatmentRecord);

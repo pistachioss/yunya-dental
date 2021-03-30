@@ -20,6 +20,25 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class ClinicWorkloadGroupInfoVO implements Serializable {
+
+  public ClinicWorkloadGroupInfoVO(){}
+
+  public ClinicWorkloadGroupInfoVO(boolean init) {
+    init();
+  }
+
+  public void init() {
+    firstReceivedWorkload = BigDecimal.ZERO;
+    firstCouponWorkload = BigDecimal.ZERO;
+    firstFreePayWorkload = BigDecimal.ZERO;
+    arrearsReceivedWorkload = BigDecimal.ZERO;
+    arrearsCouponWorkload = BigDecimal.ZERO;
+    arrearsFreePayWorkload = BigDecimal.ZERO;
+    beCollectedReceivedWorkload = BigDecimal.ZERO;
+    beCollectedCouponWorkload = BigDecimal.ZERO;
+    beCollectedFreePayWorkload = BigDecimal.ZERO;
+  }
+
   /** 首次收费总额 */
   @ApiModelProperty("首次收费总额")
   private BigDecimal firstReceivedAmount;
