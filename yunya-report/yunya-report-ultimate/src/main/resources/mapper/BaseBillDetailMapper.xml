@@ -101,8 +101,8 @@
         </where>
         ORDER BY
         bdi.orderDate DESC,
-        bdi.billId,
-        bdi.billDetailId
+        bdi.billId DESC,
+        bdi.billDetailId DESC
     </select>
 
     <!-- 根据条件查询员工工作量列表（人事报表） -->
@@ -265,42 +265,43 @@
         SELECT
         bbd.org_id,
         bbd.executor_id,
-        SUM(
         CONVERT (
-        bbd.billWorkload / bbd.actualAmount * bbd.receivedAmount,
-        DECIMAL ( 19, 6 ))) AS receivedWorkload
+        SUM( bbd.billWorkload / bbd.actualAmount * bbd.receivedAmount ),
+        DECIMAL ( 19, 4 )) AS receivedWorkload
         FROM
         (
         SELECT
+        bbp.org_id,
         bbp.billId,
         bbp.actualAmount,
+        bbp.billPayId,
         bbp.receivedAmount,
         bbd.billWorkload,
-        bbd.org_id,
         bbd.executor_id
         FROM
         (
         SELECT
-        bbp.received_amount AS receivedAmount,
-        bbp.bill_id AS billId,
-        bb.actual_amount AS actualAmount
+        bb.org_id,
+        bb.bill_id AS billId,
+        bb.actual_amount AS actualAmount,
+        bbp.bill_pay_id AS billPayId,
+        bbp.received_amount AS receivedAmount
         FROM
         base_bill_pay bbp
         INNER JOIN (
         SELECT
+        bb.org_id,
         bb.bill_id,
         bb.actual_amount
-        FROM
-        base_bill bb
+        FROM base_bill bb
         <where>
-            bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
         </where>
         ) bb ON bbp.bill_id = bb.bill_id
         <where>
-            AND bbp.received_amount > 0
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
                     and DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
@@ -311,11 +312,11 @@
                     and DATE_FORMAT( bbp.payee_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
+            AND bbp.received_amount > 0
         </where>
         ) bbp
-        LEFT JOIN (
+        INNER JOIN (
         SELECT
-        bbd.org_id,
         bbd.bill_id,
         bbd.executor_id,
         SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS billWorkload
@@ -328,7 +329,6 @@
             </if>
         </where>
         GROUP BY
-        bbd.org_id,
         bbd.bill_id,
         bbd.executor_id
         ) bbd ON bbp.billId = bbd.bill_id
@@ -573,42 +573,43 @@
         SELECT
         bbd.org_id,
         bbd.executor_id,
-        SUM(
         CONVERT (
-        bbd.billWorkload / bbd.actualAmount * bbd.receivedAmount,
-        DECIMAL ( 19, 6 ))) AS receivedWorkload
+        SUM( bbd.billWorkload / bbd.actualAmount * bbd.receivedAmount ),
+        DECIMAL ( 19, 4 )) AS receivedWorkload
         FROM
         (
         SELECT
+        bbp.org_id,
         bbp.billId,
         bbp.actualAmount,
+        bbp.billPayId,
         bbp.receivedAmount,
         bbd.billWorkload,
-        bbd.org_id,
         bbd.executor_id
         FROM
         (
         SELECT
-        bbp.received_amount AS receivedAmount,
-        bbp.bill_id AS billId,
-        bb.actual_amount AS actualAmount
+        bb.org_id,
+        bb.bill_id AS billId,
+        bb.actual_amount AS actualAmount,
+        bbp.bill_pay_id AS billPayId,
+        bbp.received_amount AS receivedAmount
         FROM
         base_bill_pay bbp
         INNER JOIN (
         SELECT
+        bb.org_id,
         bb.bill_id,
         bb.actual_amount
-        FROM
-        base_bill bb
+        FROM base_bill bb
         <where>
-            bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
         </where>
         ) bb ON bbp.bill_id = bb.bill_id
         <where>
-            AND bbp.received_amount > 0
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
                     and DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
@@ -619,11 +620,11 @@
                     and DATE_FORMAT( bbp.payee_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
+            AND bbp.received_amount > 0
         </where>
         ) bbp
-        LEFT JOIN (
+        INNER JOIN (
         SELECT
-        bbd.org_id,
         bbd.bill_id,
         bbd.executor_id,
         SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS billWorkload
@@ -636,7 +637,6 @@
             </if>
         </where>
         GROUP BY
-        bbd.org_id,
         bbd.bill_id,
         bbd.executor_id
         ) bbd ON bbp.billId = bbd.bill_id
@@ -984,7 +984,7 @@
             </if>
         </where>
         ) bbp
-        LEFT JOIN (
+        INNER JOIN (
         SELECT
         bbd.bill_id,
         SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS actualWorkload
