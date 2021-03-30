@@ -54,12 +54,9 @@ public class PatientOriginRelationsBiz
    * @return 员工推荐信息列表返回
    */
   public List<PatientOriginEmployeeVo> finleEmployeeReferral(PatientOriginEmployeeQuery query) {
-    if (StringHelper.isNotEmpty(query.getEndDate())) {
-      String endDate = new DateTime(query.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
-      query.setEndDate(endDate);
-    }
     return combinationEmployeeReferral(query);
   }
+
 
   /**
    * 组合返回集
@@ -207,21 +204,11 @@ public class PatientOriginRelationsBiz
     List<Integer> billIdList = baseBillMapper.findBillIdList(query);
     if (type) {
       // 根据订单号和支付时间查询订单支付记录集合
-      baseBillPayList =
-          baseBillPayMapper.findBaseBillPayInfoList(
-              billIdList, query.getStartDate(), query.getEndDate(), null);
+      baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(), query.getEndDate(), null);
     } else {
       // 其中免单支付工作量合计
-      List<Integer> typeList =
-          new ArrayList<Integer>() {
-            {
-              add(23);
-              add(26);
-            }
-          };
-      baseBillPayList =
-          baseBillPayMapper.findBaseBillPayInfoList(
-              billIdList, query.getStartDate(), query.getEndDate(), typeList);
+      List<Integer> typeList = new ArrayList<Integer>() {{ add(23);add(26); }};
+      baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(), query.getEndDate(), typeList);
     }
     for (Integer biilId : billIdList) {
       for (BaseBillPay baseBillPay : baseBillPayList) {
@@ -259,6 +246,10 @@ public class PatientOriginRelationsBiz
    * @return 已收工作量明细列表分页列表信息
    */
   public List<ReceivedWorkloadDetailsVo> findEreceiverkLoad(ReceiverkLoadQuery query) {
+    /*if (StringHelper.isNotEmpty(query.getEndDate())) {
+      String endDate = new DateTime(query.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+      query.setEndDate(endDate);
+    }*/
     // 1.已收 2.免单 3.退费 4.补入
     switch (query.getType()) {
       case 1:
@@ -332,7 +323,7 @@ public class PatientOriginRelationsBiz
             {
               add(23);
               add(26);
-            }
+              }
           };
       baseBillIdList = baseBillMapper.findBaseBillIdList(query, typeList);
     }
