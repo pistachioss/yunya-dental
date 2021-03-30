@@ -1,30 +1,83 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.middletable.dao.report.BasePatientMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.report.BasePatient" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="name" property="name" jdbcType="VARCHAR" />
-    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
-    <result column="medical_number" property="medicalNumber" jdbcType="VARCHAR" />
-    <result column="birthday" property="birthday" jdbcType="DATE" />
-    <result column="origin_type" property="originType" jdbcType="INTEGER" />
-    <result column="origin_id" property="originId" jdbcType="INTEGER" />
-    <result column="gender" property="gender" jdbcType="TINYINT" />
-    <result column="first_visit_date" property="firstVisitDate" jdbcType="TIMESTAMP" />
-    <result column="first_visit_outpatient" property="firstVisitOutpatient" jdbcType="VARCHAR" />
-    <result column="first_visit_doctors" property="firstVisitDoctors" jdbcType="VARCHAR" />
-    <result column="last_visit_date" property="lastVisitDate" jdbcType="TIMESTAMP" />
-    <result column="last_visit_outpatient" property="lastVisitOutpatient" jdbcType="VARCHAR" />
-    <result column="last_visit_doctors" property="lastVisitDoctors" jdbcType="VARCHAR" />
-    <result column="cumulative_consumption" property="cumulativeConsumption" jdbcType="INTEGER" />
-    <result column="total_arrears" property="totalArrears" jdbcType="INTEGER" />
-    <result column="number_of_visits" property="numberOfVisits" jdbcType="INTEGER" />
-    <result column="pinyin_name" property="pinyinName" jdbcType="VARCHAR" />
-    <result column="patient_crt_time" property="patientCrtTime" jdbcType="TIMESTAMP" />
-    <result column="origin_type_name" property="originTypeName" jdbcType="VARCHAR" />
-  </resultMap>
+<mapper namespace="com.yunya.middletable.dao.report.BasePatientMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BasePatient">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="mobile" property="mobile" jdbcType="VARCHAR"/>
+        <result column="medical_number" property="medicalNumber" jdbcType="VARCHAR"/>
+        <result column="birthday" property="birthday" jdbcType="DATE"/>
+        <result column="origin_type" property="originType" jdbcType="INTEGER"/>
+        <result column="origin_id" property="originId" jdbcType="INTEGER"/>
+        <result column="gender" property="gender" jdbcType="TINYINT"/>
+        <result column="first_visit_date" property="firstVisitDate" jdbcType="TIMESTAMP"/>
+        <result column="first_visit_outpatient" property="firstVisitOutpatient" jdbcType="VARCHAR"/>
+        <result column="first_visit_doctors" property="firstVisitDoctors" jdbcType="VARCHAR"/>
+        <result column="last_visit_date" property="lastVisitDate" jdbcType="TIMESTAMP"/>
+        <result column="last_visit_outpatient" property="lastVisitOutpatient" jdbcType="VARCHAR"/>
+        <result column="last_visit_doctors" property="lastVisitDoctors" jdbcType="VARCHAR"/>
+        <result column="cumulative_consumption" property="cumulativeConsumption" jdbcType="INTEGER"/>
+        <result column="total_arrears" property="totalArrears" jdbcType="INTEGER"/>
+        <result column="number_of_visits" property="numberOfVisits" jdbcType="INTEGER"/>
+        <result column="pinyin_name" property="pinyinName" jdbcType="VARCHAR"/>
+        <result column="patient_crt_time" property="patientCrtTime" jdbcType="TIMESTAMP"/>
+        <result column="origin_type_name" property="originTypeName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 根据患者id 查询患者初诊信息 -->
+    <select id="selectFirstVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientTreatInfoVo">
+      SELECT
+            btp.treatmentId,
+            btp.treatDate,
+            btp.registered_dentist_id AS treatDentistId,
+            be.employee_name AS treatDentistName,
+            btp.org_id AS orgId,
+            bo.abbreviation AS treatOutpatient
+        FROM
+            (
+            SELECT
+                btp.treatmentId,
+                DATE_FORMAT( btp1.treat_start_time, '%Y-%m-%d HH:mm' ) AS treatDate,
+                btp1.registered_dentist_id,
+                btp1.org_id
+            FROM
+                ( SELECT min( btp.treatment_id ) AS treatmentId FROM base_treatment_process btp WHERE btp.treat_end_time IS NOT NULL AND btp.patient_id = #{patientId} ) btp
+                LEFT JOIN base_treatment_process btp1 ON btp.treatmentId = btp1.treatment_id
+            ) btp
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+        LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+    </select>
+
+    <!-- 根据患者id 查询末诊信息 -->
+    <select id="selectLastVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientTreatInfoVo">
+      SELECT
+          btp.treatmentId,
+          btp.treatDate,
+          btp.registered_dentist_id AS treatDentistId,
+          be.employee_name AS treatDentistName,
+          btp.org_id AS orgId,
+          bo.abbreviation AS treatOutpatient
+      FROM
+          (
+          SELECT
+              btp.treatmentId,
+              DATE_FORMAT( btp1.treat_start_time, '%Y-%m-%d HH:mm' ) AS treatDate,
+              btp1.registered_dentist_id,
+              btp1.org_id
+          FROM
+              ( SELECT max( btp.treatment_id ) AS treatmentId FROM base_treatment_process btp WHERE btp.treat_end_time IS NOT NULL AND btp.patient_id = #{patientId} ) btp
+              LEFT JOIN base_treatment_process btp1 ON btp.treatmentId = btp1.treatment_id
+          ) btp
+      LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+      LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+  </select>
+
+    <!-- 查询有过初诊的患者id -->
+    <select id="selectPatientIdList" resultType="com.yunya.models.report.BasePatient">
+        select bp.* from base_patient bp join base_treatment_process btp where btp.patient_id = bp.patient_id and btp.treat_end_time IS NOT NULL
+    </select>
 </mapper>

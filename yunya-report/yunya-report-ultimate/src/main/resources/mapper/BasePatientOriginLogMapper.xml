@@ -49,6 +49,10 @@
                   </foreach>
               </if>
 
+              <if test="query.employeeId != null">
+                  and ee.user_id = #{query.employeeId}
+              </if>
+
               <if test="query.referrerName != null">
                   and concat( IFNULL( ee.`employee_name`, '' ))
                   LIKE concat( concat( '%', #{query.referrerName} ), '%' )
