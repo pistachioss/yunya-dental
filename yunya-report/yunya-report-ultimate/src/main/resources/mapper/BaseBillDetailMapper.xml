@@ -2621,7 +2621,7 @@
         IFNULL( SUM( bbd.coupon_workload ), 0 ) AS billTotalCouponWorkload,
         bb.org_id AS billOrgId,
         bb.privilege_org_id AS privilegeOrgId,
-        bb.first_privilege AS firstPrivilege
+        IFNULL(bb.first_privilege, 0) AS firstPrivilege
         FROM
         base_bill_detail bbd
         INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id

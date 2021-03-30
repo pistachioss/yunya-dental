@@ -155,8 +155,8 @@
                         #{item}
                     </foreach>
                 </if>
-                <if test="query.startDate!=null and query.startDate!=''">
-                    and DATE_FORMAT(bbp.payee_date,'%Y-%m-%d') = #{query.startDate}
+                <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                    and DATE_FORMAT(bbp.payee_date,'%Y-%m-%d') between #{query.startDate} and #{query.endDate}
                 </if>
                 <if test="query.employeeIds!=null and query.employeeIds.size()>0">
                     and btp.registered_dentist_id in
@@ -203,8 +203,8 @@
                         #{item}
                     </foreach>
                 </if>
-                <if test="query.startDate!=null and query.startDate!=''">
-                    and DATE_FORMAT(bbp.payee_date,'%Y-%m-%d') = #{query.startDate}
+                <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                    and DATE_FORMAT(bbp.payee_date,'%Y-%m-%d') between #{query.startDate} and #{query.endDate}
                 </if>
                 <if test="query.employeeIds!=null and query.employeeIds.size()>0">
                     and btp.registered_dentist_id in

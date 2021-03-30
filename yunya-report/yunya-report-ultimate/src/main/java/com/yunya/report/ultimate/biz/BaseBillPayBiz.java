@@ -238,14 +238,18 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           beCollectedReceivedWorkload = calculateReceivedWorkload(beCollectedReceivedWorkload, receivedAmount, actualAmount, totalWorkload);
           beCollectedFreePayWorkload = calculateFreePayWorkload(beCollectedFreePayWorkload, freePayAmount, totalWorkload);
         }
-        if (billOrgId.equals(privilegeOrgId)) {
-          if (firstPrivilege) {
-            firstCouponWorkload = calculateCouponWorkload(firstCouponWorkload, workloadVO);
-          } else {
-            arrearsCouponWorkload = calculateCouponWorkload(arrearsCouponWorkload, workloadVO);
+        if (StringHelper.isNotEmpty(workloadInfos)) {
+          for (BillRecordWorkloadVO info : workloadInfos) {
+            if (info.getBillOrgId().equals(info.getPrivilegeOrgId())) {
+              if (info.getFirstPrivilege()) {
+                firstCouponWorkload = calculateCouponWorkload(firstCouponWorkload, info);
+              } else {
+                arrearsCouponWorkload = calculateCouponWorkload(arrearsCouponWorkload, info);
+              }
+            } else {
+              beCollectedCouponWorkload = calculateCouponWorkload(beCollectedCouponWorkload, info);
+            }
           }
-        } else {
-          beCollectedCouponWorkload = calculateCouponWorkload(beCollectedCouponWorkload, workloadVO);
         }
         ClinicWorkloadGroupInfoVO[] workloads = workloadMap.get(billOrgId);
         if (workloads == null) {
