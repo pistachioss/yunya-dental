@@ -323,7 +323,7 @@
         FROM
         base_bill_detail bbd
         <where>
-            AND bbd.executor_id IS NOT NULL
+            AND bbd.executor_id > 0
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
             </if>
@@ -521,7 +521,7 @@
         </where>
         ) bb ON bbd.bill_id = bb.bill_id
         WHERE
-        bbd.executor_id IS NOT NULL
+        bbd.executor_id > 0
         ) bbd
         GROUP BY
         bbd.org_id,

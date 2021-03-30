@@ -423,7 +423,7 @@
         bill_id
         ) bbpd ON bbpd.bill_id=bb.bill_id
         <where>
-            AND bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     and DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
@@ -721,7 +721,6 @@
         FROM
         base_bill bb
         <where>
-            AND bb.bill_num IS NOT NULL
             AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
@@ -813,7 +812,6 @@
         from
         base_bill bb
         <where>
-            AND bb.bill_date IS NOT NULL
             AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
@@ -938,8 +936,7 @@
         LEFT JOIN base_organization bo ON bb.org_id = bo.org_id
         LEFT JOIN base_employee be ON bb.bill_id = be.user_id
         WHERE
-        bb.bill_num IS NULL
-        AND bb.bill_date IS NULL
+        bb.bill_date IS NULL
         ) bb
         <where>
             <if test="query.orderRecordNum != null and query.orderRecordNum != ''">
@@ -1003,7 +1000,7 @@
         LEFT JOIN base_card bcd ON bbf.cardId = bcd.card_id
         LEFT JOIN base_tariff_info bri ON (bri.item_id = bbf.itemId AND bri.item_type = bbf.itemType)
         <where>
-            bb.bill_num is not null
+            bb.bill_date is not null
             <if test="query.orgId != null">
                 and bbf.orgId = #{query.orgId}
             </if>
