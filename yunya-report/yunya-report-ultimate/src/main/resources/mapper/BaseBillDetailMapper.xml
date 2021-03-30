@@ -897,10 +897,9 @@
         bbp.patientName,
         bbp.mobile,
         DATE_FORMAT(bbp.payeeDate, '%Y-%m-%d %H:%i') AS chargeDate,
-        SUM(
         CONVERT (
-        (bbp.actualWorkload / bbp.actualAmount) * bbp.receivedAmount,
-        DECIMAL( 19, 6 ))) AS receivedWorkload
+        SUM((bbp.actualWorkload / bbp.actualAmount) * bbp.receivedAmount),
+        DECIMAL( 19, 6 )) AS receivedWorkload
         FROM
         (
         SELECT
@@ -1020,7 +1019,7 @@
         GROUP BY
         bbp.billPayId
         ORDER BY
-        bbp.billDate DESC ,
+        bbp.billDate DESC,
         bbp.billNum DESC
     </select>
 
