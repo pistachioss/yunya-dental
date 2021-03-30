@@ -1,13 +1,13 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
+import com.yunya.feign.patient_central.domain.query.PatientOriginActivityQuery;
 import com.yunya.feign.patient_central.domain.query.ReceiverkLoadQuery;
-import com.yunya.feign.patient_central.domain.vo.web.PatientOriginEmployeeVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientOriginActivityVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.report.ultimate.biz.PatientOriginRelationsBiz;
+import com.yunya.report.ultimate.biz.PatientOriginActivityRelationsBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
@@ -22,61 +22,61 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * 简介:公司端-人力资源菜单内-员工推荐
+ * 简介:公司端-市场营销菜单内-活动推荐
  *
  * @author: WY
  * @date: 2021/3/19 16:32
- * @description: 公司端-人力资源菜单内-员工推荐
+ * @description: 公司端-市场营销菜单内-活动推荐
  * @since: 1.0.0
  */
-@Api(tags = "公司端-人力资源菜单内-员工推荐")
+@Api(tags = "公司端-市场营销-活动推荐报表")
 @RestController
-@RequestMapping("originRelations")
-public class PatientOriginRelationsController {
+@RequestMapping("originActivity")
+public class PatientOriginActivityController {
 
     /** 业务层 */
     @Resource
-    PatientOriginRelationsBiz patientOriginRelationsBiz;
+    PatientOriginActivityRelationsBiz patientOriginActivityRelationsBiz;
 
     /**
-     * 员工推荐推荐分页列表查询
+     * 活动推荐推荐分页列表查询
      * @param query 查询条件
-     * @return 员工推荐推荐分页列表信息
+     * @return 活动推荐推荐分页列表信息
      */
-    @ApiOperation("员工推荐")
-    @PostMapping(value = "/employeeReferral",name = "公司端-人力资源-员工推荐")
-    public ResponseResult<PageInfo<PatientOriginEmployeeVo>> employeeReferral(@RequestBody PatientOriginEmployeeQuery query){
-       List<PatientOriginEmployeeVo> patientOriginEmployeeVoList = patientOriginRelationsBiz.finleEmployeeReferral(query);
+    @ApiOperation("活动推荐列表")
+    @PostMapping(value = "/employeeReferral",name = "公司端-市场营销-活动推荐列表")
+    public ResponseResult<PageInfo<PatientOriginActivityVo>> activityReferral(@RequestBody PatientOriginActivityQuery query){
+       List<PatientOriginActivityVo> patientOriginActivityVos = patientOriginActivityRelationsBiz.finleActivityReferral(query);
        if (query.getWhetherPage()) {
            Integer pageNum = query.getPageNum();
            Integer pageSize = query.getPageSize();
-           int total = patientOriginEmployeeVoList.size();
-           PageInfo<PatientOriginEmployeeVo> pageInfo = new PageInfo<>();
+           int total = patientOriginActivityVos.size();
+           PageInfo<PatientOriginActivityVo> pageInfo = new PageInfo<>();
            pageInfo.setPageNum(pageNum);
            pageInfo.setPageSize(pageSize);
            pageInfo.setTotal(total);
-           List<PatientOriginEmployeeVo> list =
-                   patientOriginEmployeeVoList.subList(
+           List<PatientOriginActivityVo> list =
+                   patientOriginActivityVos.subList(
                            pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
            pageInfo.setList(list);
            return ResponseUtil.success(pageInfo);
        }
-       return ResponseUtil.success(new PageInfo<>(patientOriginEmployeeVoList));
+       return ResponseUtil.success(new PageInfo<>(patientOriginActivityVos));
     }
 
     /**
-     * 导出员工推荐推荐分页列表查询
+     * 导出活动推荐推荐分页列表查询
      *
      * @param response 响应
      * @param query 查询条件
-     * @return 导出员工推荐推荐分页列表查询
+     * @return 导出活动推荐推荐分页列表查询
      */
-    @ApiOperation("导出员工推荐记录列表")
-    @PostMapping(value = "/employeeReferral/export", name = "公司端-人力资源-员工推荐-导出")
+    @ApiOperation("导出活动推荐记录列表")
+    @PostMapping(value = "/employeeReferral/export", name = "公司端-市场营销-活动推荐-导出")
     public ResponseResult<T> exportEmployeeReferral(
-            HttpServletResponse response, @RequestBody PatientOriginEmployeeQuery query)
+            HttpServletResponse response, @RequestBody PatientOriginActivityQuery query)
             throws IOException {
-        patientOriginRelationsBiz.exportEmployeeReferralList(response,query);
+        patientOriginActivityRelationsBiz.exportActivityReferralList(response,query);
         return ResponseUtil.success(null);
     }
 
@@ -87,10 +87,10 @@ public class PatientOriginRelationsController {
      * @param query 查询条件
      * @return 已收工作量明细列表分页列表查询
      */
-    @ApiOperation("员工推荐-各项明细列表")
-    @PostMapping(value = "/workloadBreakdown",name = "公司端-人力资源-员工推荐-各项明细列表 type区分")
+    @ApiOperation("活动推荐-各项明细列表")
+    @PostMapping(value = "/workloadBreakdown",name = "公司端-市场营销-活动推荐-各项明细列表 type区分")
     public ResponseResult<PageInfo<ReceivedWorkloadDetailsVo>> workloadBreakdown(@RequestBody ReceiverkLoadQuery query){
-        List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = patientOriginRelationsBiz.findEreceiverkLoad(query);
+        List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = patientOriginActivityRelationsBiz.findEreceiverkLoad(query);
         if (query.getWhetherPage()) {
             Integer pageNum = query.getPageNum();
             Integer pageSize = query.getPageSize();

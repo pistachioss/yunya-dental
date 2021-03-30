@@ -286,12 +286,21 @@
         bb.actual_amount AS actualAmount
         FROM
         base_bill_pay bbp
-        INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
+        INNER JOIN (
+        SELECT
+        bb.bill_id,
+        bb.actual_amount
+        FROM
+        base_bill bb
         <where>
-            AND bbp.received_amount > 0
+            bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
+        </where>
+        ) bb ON bbp.bill_id = bb.bill_id
+        <where>
+            AND bbp.received_amount > 0
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
                     and DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
@@ -585,12 +594,21 @@
         bb.actual_amount AS actualAmount
         FROM
         base_bill_pay bbp
-        INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
+        INNER JOIN (
+        SELECT
+        bb.bill_id,
+        bb.actual_amount
+        FROM
+        base_bill bb
         <where>
-            AND bbp.received_amount > 0
+            bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
+        </where>
+        ) bb ON bbp.bill_id = bb.bill_id
+        <where>
+            AND bbp.received_amount > 0
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
                     and DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
@@ -741,35 +759,34 @@
         orgId,
         billId,
         billNum,
-        billDate,
-        originalAmount,
-        discountAmount,
+        DATE_FORMAT(orderDate, '%Y-%m-%d') AS orderDate,
+        DATE_FORMAT(billDate, '%Y-%m-%d') AS billDate,
+        totalOriginalAmount,
+        privilegeAmount,
         actualAmount,
         patientId,
         patientName,
         mobile,
-        actualWorkload,
-        executorId
+        actualWorkload
         FROM (
         SELECT
         bb.orgId,
         bb.billId,
         bb.billNum,
         bb.billDate,
-        bb.originalAmount,
-        bb.discountAmount,
+        bb.orderDate,
+        bb.totalOriginalAmount,
+        bb.privilegeAmount,
         bb.actualAmount,
         bb.patientId,
         bb.patientName,
         bb.pinyinName,
         bb.mobile,
-        bbd.actualWorkload,
-        bbd.executorId
+        bbd.actualWorkload
         FROM
         (
         SELECT
         bbd.bill_id,
-        bbd.executor_id as executorId,
         SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS actualWorkload
         FROM
         base_bill_detail bbd
@@ -792,8 +809,9 @@
         bb.bill_id AS billId,
         bb.bill_num AS billNum,
         bb.bill_date AS billDate,
-        bb.order_amount AS originalAmount,
-        bb.privilege_amount AS discountAmount,
+        bb.order_date AS orderDate,
+        bb.order_amount AS totalOriginalAmount,
+        bb.privilege_amount AS privilegeAmount,
         bb.actual_amount AS actualAmount,
         bb.patient_id AS patientId,
         bp.`name` AS patientName,
@@ -2334,12 +2352,12 @@
         ) t on t.patient_id = bb.patient_id
         where
         privilege_date is not null
-        <if test="query.startDate != null">
-            and DATE_FORMAT( privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+        <if test="startDate != null">
+            and DATE_FORMAT( privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null">
-            and DATE_FORMAT( privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+        <if test="endDate != null" >
+            and DATE_FORMAT( privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{endDate}, '%Y-%m-%d' )
         </if>
         ) t on t.bill_id = bbd.bill_id
         where bbd.coupon_workload is not null
@@ -2352,12 +2370,12 @@
                 SELECT
                     bb.bill_id billId,
                     bb.patient_id patientId,
-                    DATE_FORMAT( t.crt_time, '%Y-%m-%d') relatedTime,
+                    DATE_FORMAT( t.crt_time, '%Y-%m-%d %H:%i') relatedTime,
                     t.`name`,
                     t.mobile,
-                    DATE_FORMAT( t.first_visit_date, '%Y-%m-%d') firstVisitDate,
-                    DATE_FORMAT( t.last_visit_date, '%Y-%m-%d') lastVisitDate,
-                    DATE_FORMAT( bb.order_date, '%Y-%m-%d') orderDate,
+                    DATE_FORMAT( t.first_visit_date, '%Y-%m-%d %H:%i') firstVisitDate,
+                    DATE_FORMAT( t.last_visit_date, '%Y-%m-%d %H:%i') lastVisitDate,
+                    DATE_FORMAT( bb.order_date, '%Y-%m-%d %H:%i') orderDate,
                     bo.abbreviation abbreviation,
                     be.employee_name employeeName,
                     bti.item_name itemName,
@@ -2661,42 +2679,42 @@
 
     <select id="couponExecutoredList" resultType="com.yunya.feign.report.domain.vo.CouponExecutoredVO">
         SELECT
-            bb.org_id AS orgId,
-            bo.abbreviation,
-            bb.executor_id AS executorId,
-            be.employee_name AS executorName,
-            bb.coupon_id AS couponId,
-            bc.coupon_name AS couponName,
-            bb.item_type AS itemType,
-            bb.item_id AS itemId,
-            bti.item_name AS itemName,
-            bb.num
+        bb.org_id AS orgId,
+        bo.abbreviation,
+        bb.executor_id AS executorId,
+        be.employee_name AS executorName,
+        bb.coupon_id AS couponId,
+        bc.coupon_name AS couponName,
+        bb.item_type AS itemType,
+        bb.item_id AS itemId,
+        bti.item_name AS itemName,
+        bb.num
         FROM (
-            SELECT bb.org_id,bb.coupon_id,bb.item_type,bb.item_id,SUM(bb.num) num, bbd.executor_id FROM (
-                SELECT org_id,coupon_id,order_detail_id,item_type,item_id,COUNT(item_index) num FROM base_benefit
-                <where>
-                 benefit_type = 1
-                 AND choice_benefit_type = 0
-                 <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
-                     AND DATE_FORMAT(use_date, '%Y-%m-%d') between #{query.startDate} and #{query.endDate}
-                 </if>
-                 <if test="query.orgIds!=null and query.orgIds.size()>0">
-                     AND org_id IN
-                     <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
-                         #{item}
-                     </foreach>
-                 </if>
-                 <if test="query.couponIds!=null and query.couponIds.size()>0">
-                     AND coupon_id IN
-                     <foreach collection="query.couponIds" index="index" item="item" open="(" separator="," close=")">
-                         #{item}
-                     </foreach>
-                 </if>
-                </where>
-                group by org_id,coupon_id,order_detail_id,item_type,item_id
-            ) bb
-            LEFT JOIN base_bill_detail bbd ON bb.order_detail_id = bbd.bill_detail_id
-            group by bb.org_id,bb.coupon_id,bbd.executor_id,bb.order_detail_id,bb.item_type,bb.item_id
+        SELECT bb.org_id,bb.coupon_id,bb.item_type,bb.item_id,SUM(bb.num) num, bbd.executor_id FROM (
+        SELECT org_id,coupon_id,order_detail_id,item_type,item_id,COUNT(item_index) num FROM base_benefit
+        <where>
+            benefit_type = 1
+            AND choice_benefit_type = 0
+            <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                AND DATE_FORMAT(use_date, '%Y-%m-%d') between #{query.startDate} and #{query.endDate}
+            </if>
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
+                AND org_id IN
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.couponIds!=null and query.couponIds.size()>0">
+                AND coupon_id IN
+                <foreach collection="query.couponIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by org_id,coupon_id,order_detail_id,item_type,item_id
+        ) bb
+        LEFT JOIN base_bill_detail bbd ON bb.order_detail_id = bbd.bill_detail_id
+        group by bb.org_id,bb.coupon_id,bbd.executor_id,bb.order_detail_id,bb.item_type,bb.item_id
         ) bb
         LEFT JOIN base_coupon bc ON bc.coupon_id=bb.coupon_id
         LEFT JOIN base_tariff_info bti ON (bti.item_type=bb.item_type AND bti.item_id=bb.item_id)
@@ -2724,27 +2742,28 @@
         bp.mobile,
         bb.use_date AS useDate
         FROM (
-            SELECT org_id,coupon_id,order_detail_id,item_type,item_id,patient_id,use_date,COUNT(item_index) num FROM base_benefit
-            <where>
-                benefit_type = 1
-                AND choice_benefit_type = 0
-                <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
-                    AND DATE_FORMAT(use_date, '%Y-%m-%d') between #{query.startDate} and #{query.endDate}
-                </if>
-                <if test="query.orgId != null">
-                    AND org_id = #{query.orgId}
-                </if>
-                <if test="query.couponId != null">
-                    AND coupon_id = #{query.couponId}
-                </if>
-                <if test="query.itemType != null">
-                    AND item_type = #{query.itemType}
-                </if>
-                <if test="query.itemId != null">
-                    AND item_id = #{query.itemId}
-                </if>
-            </where>
-            group by org_id,patient_id,coupon_id,order_detail_id,item_type,item_id,use_date
+        SELECT org_id,coupon_id,order_detail_id,item_type,item_id,patient_id,use_date,COUNT(item_index) num FROM
+        base_benefit
+        <where>
+            benefit_type = 1
+            AND choice_benefit_type = 0
+            <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
+                AND DATE_FORMAT(use_date, '%Y-%m-%d') between #{query.startDate} and #{query.endDate}
+            </if>
+            <if test="query.orgId != null">
+                AND org_id = #{query.orgId}
+            </if>
+            <if test="query.couponId != null">
+                AND coupon_id = #{query.couponId}
+            </if>
+            <if test="query.itemType != null">
+                AND item_type = #{query.itemType}
+            </if>
+            <if test="query.itemId != null">
+                AND item_id = #{query.itemId}
+            </if>
+        </where>
+        group by org_id,patient_id,coupon_id,order_detail_id,item_type,item_id,use_date
         ) bb
         LEFT JOIN base_bill_detail bbd ON bb.order_detail_id = bbd.bill_detail_id
         LEFT JOIN base_bill bill ON bbd.bill_id = bill.bill_id
