@@ -508,8 +508,8 @@
         DATE_ADD(t.end_time, INTERVAL '1' DAY)
         ) / 3
         ) AS leaveTime,
-        ls.start_time AS LsStartDate,
-        ls.end_time AS LsEndDate,
+        ls.start_time AS lsStartDate,
+        ls.end_time AS lsEndDate,
         es.work_date AS workDate
         FROM
         leave_info t

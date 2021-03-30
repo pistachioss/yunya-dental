@@ -951,20 +951,28 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param leaveInfoListVO 员工请假信息对象
      */
     private void buildEmpScheduleInfoFromLeaveInfoList(EmpScheduleVo empScheduleVo, LeaveInfoListVO leaveInfoListVO) {
-        String dataPatterStr = "yyyy-MM-dd HH:mm";
+        String dataPatterStr = "yyyy-MM-dd";
         empScheduleVo.setUserId(leaveInfoListVO.getUserId());
         empScheduleVo.setType(2);
         empScheduleVo.setUserName(leaveInfoListVO.getUserName());
         Integer vacationStatus = leaveInfoListVO.getVacationStatus();
+        String startTime = "";
+        String endTime = "";
         if (vacationStatus == 0) {
             empScheduleVo.setStatus("班次");
+            String hmsPatterStr = "HH:mm";
+            String ymd = LocalDate.fromDateFields(leaveInfoListVO.getWorkDate()).toString(dataPatterStr);
+            String hmsStart = LocalDateTime.fromDateFields(leaveInfoListVO.getLsStartDate()).toString(hmsPatterStr);
+            String hmsEnd = LocalDateTime.fromDateFields(leaveInfoListVO.getLsEndDate()).toString(hmsPatterStr);
+            startTime = ymd + " " + hmsStart;
+            endTime = ymd + " " + hmsEnd;
         } else if (vacationStatus == 1) {
             empScheduleVo.setStatus("天");
+            startTime = LocalDateTime.fromDateFields(leaveInfoListVO.getStartTime()).toString(dataPatterStr);
+            endTime = LocalDateTime.fromDateFields(leaveInfoListVO.getEndTime()).toString(dataPatterStr);
         }
 
         empScheduleVo.setCompanyId(leaveInfoListVO.getCompanyId());
-        String startTime = LocalDateTime.fromDateFields(leaveInfoListVO.getStartTime()).toString(dataPatterStr);
-        String endTime = LocalDateTime.fromDateFields(leaveInfoListVO.getEndTime()).toString(dataPatterStr);
         empScheduleVo.setStartDate(startTime);
         empScheduleVo.setEndDate(endTime);
         empScheduleVo.setName(leaveInfoListVO.getLeaveReason());
