@@ -149,15 +149,18 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                   actualAmount,
                   totalNotWorkload);
         }
-        if (billOrgId.equals(privilegeOrgId)) {
-          if (firstPrivilege) {
-            firstCouponWorkload = calculateCouponWorkload(firstCouponWorkload, workloadVO);
+      }
+      if (StringHelper.isNotEmpty(workloadInfos)) {
+        for (BillRecordWorkloadVO info : workloadInfos) {
+          if (info.getBillOrgId().equals(info.getPrivilegeOrgId())) {
+            if (info.getFirstPrivilege()) {
+              firstCouponWorkload = calculateCouponWorkload(firstCouponWorkload, info);
+            } else {
+              arrearsCouponWorkload = calculateCouponWorkload(arrearsCouponWorkload, info);
+            }
           } else {
-            arrearsCouponWorkload = calculateCouponWorkload(arrearsCouponWorkload, workloadVO);
+            beCollectedCouponWorkload = calculateCouponWorkload(beCollectedCouponWorkload, info);
           }
-        } else {
-          beCollectedCouponWorkload =
-              calculateCouponWorkload(beCollectedCouponWorkload, workloadVO);
         }
       }
     }
@@ -860,8 +863,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     List<BillDiscountAndFreePaymentVO> resultList = pageInfo.getList();
     ExcelUtil<BillDiscountAndFreePaymentVO> excelUtil =
         new ExcelUtil<>(BillDiscountAndFreePaymentVO.class);
-    String fileName =
-        excelUtil.getFileName(query.getStartDate(), "", "", "折扣&免单报表");
+    String fileName = excelUtil.getFileName(query.getStartDate(), "", "", "折扣&免单报表");
     excelUtil.exportExcel(response, resultList, "折扣&免单报表", fileName);
   }
 

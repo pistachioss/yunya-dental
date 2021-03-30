@@ -2618,9 +2618,13 @@
         SELECT
         bbd.bill_id AS billId,
         IFNULL( SUM(( bbd.price * bbd.quantity ) - bbd.discount_amount ), 0 ) AS billTotalWorkload,
-        IFNULL( SUM( bbd.coupon_workload ), 0 ) AS billTotalCouponWorkload
+        IFNULL( SUM( bbd.coupon_workload ), 0 ) AS billTotalCouponWorkload,
+        bb.org_id AS billOrgId,
+        bb.privilege_org_id AS privilegeOrgId,
+        bb.first_privilege AS firstPrivilege
         FROM
         base_bill_detail bbd
+        INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         <where>
             AND bbd.executor_id IS NOT NULL
             <if test="billIds != null and billIds.size > 0">

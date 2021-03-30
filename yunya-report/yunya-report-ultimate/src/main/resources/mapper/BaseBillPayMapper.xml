@@ -1754,9 +1754,7 @@
         bbp.billId,
         bbp.billDate,
         bbp.actualAmount,
-        bbp.privilegeOrgId,
-        bbp.privilegeDate,
-        bbp.firstPrivilege
+        bbp.privilegeOrgId
         FROM
         (
         SELECT
@@ -1768,13 +1766,11 @@
         bb.bill_id AS billId,
         bb.bill_date AS billDate,
         bb.actual_amount AS actualAmount,
-        bb.privilege_org_id AS privilegeOrgId,
-        bb.privilege_date AS privilegeDate,
-        bb.first_privilege AS firstPrivilege
+        bb.privilege_org_id AS privilegeOrgId
         FROM
         base_bill_pay bbp
         INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
-        AND bb.bill_num IS NOT NULL
+        AND bb.bill_date IS NOT NULL
         <where>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -1801,7 +1797,8 @@
                 </if>
             </if>
         </where>
-        GROUP BY bbp.bill_pay_id
+        GROUP BY
+        bbp.bill_pay_id
         ) bbp
         <where>
             <if test="query.orgIds != null and query.orgIds.length > 0">
