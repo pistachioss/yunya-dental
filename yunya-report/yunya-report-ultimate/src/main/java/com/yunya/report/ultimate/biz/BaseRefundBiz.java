@@ -284,4 +284,8 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
   public BigDecimal findTotalRefundWorkload(DataStatisticsQuery query) {
     return mapper.selectTotalRefundWorkload(query);
   }
+
+  public List<BillOfRefundWorkloadVO> groupTotalRefundWorkload(DataStatisticsQuery query) {
+    return mapper.groupTotalRefundWorkload(query);
+  }
 }

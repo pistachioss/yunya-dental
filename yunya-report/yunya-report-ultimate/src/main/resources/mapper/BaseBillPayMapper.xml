@@ -1761,16 +1761,16 @@
         (
         SELECT
         bbp.bill_pay_id AS billPayId,
-        bbp.received_amount AS receivedAmount,
+        IFNULL(bbp.received_amount,0) AS receivedAmount,
         bbp.org_id AS payeeOrgId,
         bbp.payee_date AS payeeDate,
         bb.org_id AS billOrgId,
         bb.bill_id AS billId,
         bb.bill_date AS billDate,
-        bb.actual_amount AS actualAmount,
+        IFNULL(bb.actual_amount,0) AS actualAmount,
         bb.privilege_org_id AS privilegeOrgId,
         bb.privilege_date AS privilegeDate,
-        bb.first_privilege AS firstPrivilege
+        IFNULL(bb.first_privilege,0) AS firstPrivilege
         FROM
         base_bill_pay bbp
         INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id

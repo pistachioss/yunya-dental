@@ -122,10 +122,6 @@ public class SmsSendMessageScheduledAsync {
      * 查询组织信息列表
      * @return
      */
-    /**
-     * 查询组织信息列表
-     * @return
-     */
     private List<OrganizationInfoDetail> getOrganizationList() {
         List<OrganizationInfoDetail> orgInfos = redisUtils.getJSONArray(RedisConstants.REDIS_KEY_ORG_LIST, OrganizationInfoDetail.class);
         if (StringHelper.isEmpty(orgInfos)) {
