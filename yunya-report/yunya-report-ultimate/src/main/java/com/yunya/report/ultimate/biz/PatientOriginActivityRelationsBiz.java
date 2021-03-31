@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.domain.vo.web.ActivityVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginActivityVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedTotalWorkloadVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
+import com.yunya.feign.report.domain.vo.BillIdVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -70,7 +71,7 @@ public class PatientOriginActivityRelationsBiz
     // 查询活动信息以及推荐数量
     List<PatientOriginActivityVo> patientOriginActivityVoList = mapper.findActivityVoLists(query);
     // 查询所有符合条件的订单号
-    List<Integer> billIdList = baseBillMapper.findActivityBillIdList(query);
+    List<BillIdVo> billIdList = baseBillMapper.findActivityBillIdList(query);
     if (patientOriginActivityVoList != null) {
       // 获取已收工作量合计
       getReceivedTotalWorkload(patientOriginActivityVoList, query, true,billIdList);
@@ -130,58 +131,58 @@ public class PatientOriginActivityRelationsBiz
    * @param patientOriginActivityVoList 查询活动信息以及推荐数量
    * @param query 条件
    */
-  private void getReceivedTotalWorkload(List<PatientOriginActivityVo> patientOriginActivityVoList, PatientOriginActivityQuery query, Boolean type, List<Integer> billIdList) {
+  private void getReceivedTotalWorkload(List<PatientOriginActivityVo> patientOriginActivityVoList, PatientOriginActivityQuery query, Boolean type, List<BillIdVo> billIdList) {
     // 获取全部订单记录Map
     Map<Integer, List<BaseBillPay>> baseBillPayInfoMap = getBaseBillPayInfoMap(query, type,billIdList);
-
     if (patientOriginActivityVoList.size() > 0) {
       for (PatientOriginActivityVo patientOriginActivityVo : patientOriginActivityVoList) {
-        // 根据推荐人id查询推荐患者订单项目实收计算
-        List<ReceivedTotalWorkloadVo> receivedTotalWorkloadVoList = mapper.findReceivedTotalWorkload(billIdList);
-        if (receivedTotalWorkloadVoList != null) {
-          for (ReceivedTotalWorkloadVo receivedTotalWorkloadVo : receivedTotalWorkloadVoList) {
-            // 根据订单号 获取订单支付记录
-            List<BaseBillPay> baseBillPays =
-                baseBillPayInfoMap.get(receivedTotalWorkloadVo.getBillId());
-            if (baseBillPays != null) {
-              for (BaseBillPay baseBillPay : baseBillPays) {
-                BigDecimal multiply = receivedTotalWorkloadVo.getOrderWorkload().multiply(baseBillPay.getReceivedAmount());
-                if (multiply == null) {
-                  multiply = new BigDecimal(0);
-                }
-                // 判断是全部工作量 还是 免单支付工作量
-                if (type) {
-                  if (patientOriginActivityVo.getReceivedTotalWorkload() == null) {
-                    patientOriginActivityVo.setReceivedTotalWorkload(multiply);
-                  } else {
-                    patientOriginActivityVo.setReceivedTotalWorkload(
-                            patientOriginActivityVo.getReceivedTotalWorkload().add(multiply));
+        // 根据推荐人id获取订单号集合
+        List<Integer> billIds = getBillId(patientOriginActivityVo.getOriginId(),billIdList);
+        if (billIds != null && billIds.size() > 0){
+          // 根据订单id获取订单明细
+          List<ReceivedTotalWorkloadVo> receivedTotalWorkloadVoList = mapper.findReceivedTotalWorkload(billIds);
+          if (receivedTotalWorkloadVoList != null) {
+            for (ReceivedTotalWorkloadVo receivedTotalWorkloadVo : receivedTotalWorkloadVoList) {
+              // 根据订单号 获取订单支付记录
+              List<BaseBillPay> baseBillPays =
+                      baseBillPayInfoMap.get(receivedTotalWorkloadVo.getBillId());
+              if (baseBillPays != null) {
+                for (BaseBillPay baseBillPay : baseBillPays) {
+                  BigDecimal multiply = receivedTotalWorkloadVo.getOrderWorkload().multiply(baseBillPay.getReceivedAmount());
+                  if (multiply == null) {
+                    multiply = new BigDecimal(0);
                   }
-                } else {
-                  if (patientOriginActivityVo.getFreeTotalWorkload() == null) {
-                    patientOriginActivityVo.setFreeTotalWorkload(multiply);
+                  // 判断是全部工作量 还是 免单支付工作量
+                  if (type) {
+                    patientOriginActivityVo.setReceivedTotalWorkload(patientOriginActivityVo.getReceivedTotalWorkload().add(multiply));
                   } else {
-                    patientOriginActivityVo.setFreeTotalWorkload(
-                            patientOriginActivityVo.getFreeTotalWorkload().add(multiply));
+                    patientOriginActivityVo.setFreeTotalWorkload(patientOriginActivityVo.getFreeTotalWorkload().add(multiply));
                   }
                 }
               }
             }
           }
         }
-        if (type) {
-          // 如果已收工作量为空就天补为0
-          if (patientOriginActivityVo.getReceivedTotalWorkload() == null) {
-            patientOriginActivityVo.setReceivedTotalWorkload(new BigDecimal(0));
-          }
-        } else {
-          // 如果免单支付工作量为空就天补为0
-          if (patientOriginActivityVo.getFreeTotalWorkload() == null) {
-            patientOriginActivityVo.setFreeTotalWorkload(new BigDecimal(0));
-          }
+      }
+    }
+  }
+
+  /**
+   * 根据推荐人获取所属订单id
+   * @param originId 推荐人id
+   * @param BillIdVoList 订单id
+   * @return id集合
+   */
+  public List<Integer> getBillId(Integer originId,List<BillIdVo> BillIdVoList){
+    List<Integer> BillIdList = new ArrayList<>();
+    if (originId != null && BillIdVoList != null){
+      for (BillIdVo billIdVo : BillIdVoList ) {
+        if (originId.equals(billIdVo.getOriginId())){
+          BillIdList.add(billIdVo.getBillId());
         }
       }
     }
+    return BillIdList;
   }
 
   /**
@@ -191,7 +192,7 @@ public class PatientOriginActivityRelationsBiz
    * @return 订单支付记录 key订单号 v订单支付记录集合
    */
   private Map<Integer, List<BaseBillPay>> getBaseBillPayInfoMap(
-          PatientOriginActivityQuery query, Boolean type,List<Integer> billIdList) {
+          PatientOriginActivityQuery query, Boolean type,List<BillIdVo> billIdList) {
     List<BaseBillPay> baseBillPayVo = null;
     List<BaseBillPay> baseBillPayList;
     Map<Integer, List<BaseBillPay>> billPayMap = new HashMap<>();
@@ -200,23 +201,17 @@ public class PatientOriginActivityRelationsBiz
       baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(),query.getEndDate(), null);
     } else {
       // 其中免单支付工作量合计
-      List<Integer> typeList =
-          new ArrayList<Integer>() {
-            {
-              add(23);
-              add(26);
-            }
-          };
+      List<Integer> typeList = new ArrayList<Integer>() {{ add(23);add(26); }};
       baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(),query.getEndDate(), typeList);
     }
-    for (Integer biilId : billIdList) {
+    for (BillIdVo billIdVo : billIdList) {
       for (BaseBillPay baseBillPay : baseBillPayList) {
-        if (biilId.equals(baseBillPay.getBillId())) {
+        if (billIdVo.getBillId().equals(baseBillPay.getBillId())) {
           baseBillPayVo = new ArrayList<>();
           baseBillPayVo.add(baseBillPay);
         }
       }
-      billPayMap.put(biilId, baseBillPayVo);
+      billPayMap.put(billIdVo.getBillId(), baseBillPayVo);
     }
     return billPayMap;
   }
@@ -290,8 +285,7 @@ public class PatientOriginActivityRelationsBiz
     List<Integer> refundIdList = baseRefundMapper.selectfundBillIdList(query);
     if (refundIdList != null) {
       for (Integer refundId : refundIdList) {
-        List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList =
-            baseRefundMapper.selectrefundDetail(refundId, query.getOriginId());
+        List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = baseRefundMapper.selectrefundDetail(refundId, query.getOriginId());
         if (receivedWorkloadDetailsVoList != null) {
           for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo :receivedWorkloadDetailsVoList ) {
             // 判断关联时间是否大于初诊时间

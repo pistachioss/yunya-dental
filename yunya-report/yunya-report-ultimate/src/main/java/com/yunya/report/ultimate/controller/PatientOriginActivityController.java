@@ -45,7 +45,7 @@ public class PatientOriginActivityController {
      * @return 活动推荐推荐分页列表信息
      */
     @ApiOperation("活动推荐列表")
-    @PostMapping(value = "/employeeReferral",name = "公司端-市场营销-活动推荐列表")
+    @PostMapping(value = "/activityReferral",name = "公司端-市场营销-活动推荐列表")
     public ResponseResult<PageInfo<PatientOriginActivityVo>> activityReferral(@RequestBody PatientOriginActivityQuery query){
        List<PatientOriginActivityVo> patientOriginActivityVos = patientOriginActivityRelationsBiz.finleActivityReferral(query);
        if (query.getWhetherPage()) {
@@ -73,7 +73,7 @@ public class PatientOriginActivityController {
      * @return 导出活动推荐推荐分页列表查询
      */
     @ApiOperation("导出活动推荐记录列表")
-    @PostMapping(value = "/employeeReferral/export", name = "公司端-市场营销-活动推荐-导出")
+    @PostMapping(value = "/activityReferral/export", name = "公司端-市场营销-活动推荐-导出")
     public ResponseResult<T> exportEmployeeReferral(
             HttpServletResponse response, @RequestBody PatientOriginActivityQuery query)
             throws IOException {

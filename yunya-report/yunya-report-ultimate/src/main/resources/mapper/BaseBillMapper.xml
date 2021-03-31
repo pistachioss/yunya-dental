@@ -1063,8 +1063,8 @@
     </select>
 
     <!-- 查询员工患者消费的订单号 -->
-    <select id="findBillIdList" resultType="java.lang.Integer">
-        select distinct bbp.bill_id
+    <select id="findBillIdList" resultType="com.yunya.feign.report.domain.vo.BillIdVo">
+        select distinct bbp.bill_id billId,t.origin_id originId
         from base_patient_origin_log log
         join base_bill bb on log.patient_id = bb.patient_id
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
@@ -1101,13 +1101,13 @@
 
 
     <!-- 查询活动患者消费的订单号 -->
-    <select id="findActivityBillIdList" resultType="java.lang.Integer">
-        select distinct bbp.bill_id
+    <select id="findActivityBillIdList" resultType="com.yunya.feign.report.domain.vo.BillIdVo">
+        select distinct bbp.bill_id billId,log.origin_id originId
         from base_patient_origin_log log
         join base_bill bb on log.patient_id = bb.patient_id
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         where 1 = 1
-        <if test="query.activityIds.size() > 0">
+        <if test="query.activityIds != null and query.activityIds.size() > 0">
             and log.origin_id in
             <foreach collection="query.activityIds" item="activityId" open="(" separator="," close=")">
                 #{activityId}
