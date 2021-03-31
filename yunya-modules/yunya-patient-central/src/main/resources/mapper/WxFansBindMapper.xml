@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya365.wechat.mapper.WxFansBindMapper" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.WxFansBindMapper" >
   <resultMap id="BaseResultMap" type="com.yunya.models.wechat.WxFansBind" >
     <!--
       WARNING - @mbg.generated

@@ -1,4 +1,4 @@
-package com.yunya365.wechat.mapper;
+package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.models.wechat.WxFansBind;
 import tk.mybatis.mapper.common.Mapper;
