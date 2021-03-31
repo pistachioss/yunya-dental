@@ -2,10 +2,12 @@ package com.yunya.report.ultimate.biz;
 
 import com.yunya.feign.patient_central.domain.query.PatientOriginActivityQuery;
 import com.yunya.feign.patient_central.domain.query.ReceiverkLoadQuery;
+import com.yunya.feign.patient_central.domain.vo.web.ActivityVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginActivityVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedTotalWorkloadVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBillPay;
@@ -425,7 +427,19 @@ public class PatientOriginActivityRelationsBiz
    * 获取活动列表
    * @return 活动列表
    */
-  public List<BasePatientOrigin> getActivityList() {
-    return basePatientOriginMapper.selectActivityList();
+  public List<ActivityVo> getActivityList() {
+    List<ActivityVo> activityVoList = basePatientOriginMapper.selectActivityList();
+    if (!StringHelper.isEmpty(activityVoList)){
+      Iterator<ActivityVo> activityVoIterator = activityVoList.iterator();
+      while (activityVoIterator.hasNext()){
+        ActivityVo activityVo = activityVoIterator.next();
+        if (activityVo.getTimeLimit() == 1) {
+          if (!DateUtil.isEffectiveDate(new Date(), activityVo.getLimitStartDate(), activityVo.getLimitEndDate())) {
+            activityVoIterator.remove(); // 使用迭代器的删除方法删除
+          }
+        }
+      }
+    }
+    return activityVoList;
   }
 }
