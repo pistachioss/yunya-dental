@@ -1,4 +1,4 @@
-package com.yunya.models.wechat;
+package com.yunya.models.patient_central;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
