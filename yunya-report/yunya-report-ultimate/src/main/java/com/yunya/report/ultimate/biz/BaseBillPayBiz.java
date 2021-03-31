@@ -982,6 +982,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    */
   public PageInfo<BillDiscountAndFreePaymentVO> billDiscountAndFreePaymentList(
       BillDiscountAndFreePaymentQuery query) {
+    if (query.getEndDate() == null) {
+      query.setEndDate(query.getStartDate());
+    }
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }

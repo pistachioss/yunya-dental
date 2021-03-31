@@ -35,7 +35,7 @@ public class BillDiscountAndFreePaymentQuery extends PageQuery implements Serial
 
     /** 查询收费结束日期 */
     @ApiModelProperty(value = "查询收费结束日期", required = true)
-    @NotBlank(message = "查询收费结束日期不能为空！")
+//    @NotBlank(message = "查询收费结束日期不能为空！")
     private String endDate;
 
     /** 折扣/免单 */

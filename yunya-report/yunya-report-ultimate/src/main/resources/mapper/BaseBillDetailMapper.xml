@@ -109,7 +109,7 @@
     <select id="selectEmployeeWorkloadListOfPersonnel"
             resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadOfPersonnelVO">
         SELECT
-        orgId,
+        #{query.orgId} AS orgId,
         employeeId,
         employeeName,
         workStatus,
@@ -126,7 +126,6 @@
         FROM
         (
         SELECT
-        bup.org_id AS orgId,
         bup.user_id AS employeeId,
         bup.employee_name AS employeeName,
         bup.work_status AS workStatus,
@@ -143,19 +142,15 @@
         FROM
         (
         SELECT
-        bup.org_id,
-        bup.user_id,
+        be.user_id,
         be.employee_name,
         be.work_status,
         IFNULL( be.bonus_coefficient, 0 ) AS bonus_coefficient,
         GROUP_CONCAT( DISTINCT bup.post_name SEPARATOR ',' ) AS post_names
         FROM
-        base_user_post bup
-        LEFT JOIN base_employee be ON bup.user_id = be.user_id
+        base_employee be
+        INNER JOIN base_user_post bup  ON be.user_id = bup.user_id
         <where>
-            <if test="query.orgId != null">
-                and bup.org_id = #{query.orgId}
-            </if>
             <if test="query.employeeIds != null and query.employeeIds.length > 0">
                 and bup.user_id in
                 <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
@@ -176,7 +171,6 @@
             </if>
         </where>
         GROUP BY
-        bup.org_id,
         bup.user_id
         ) bup
         LEFT JOIN (
@@ -220,8 +214,7 @@
         GROUP BY
         bbd.org_id,
         bbd.executor_id
-        ) bbd ON bup.org_id = bbd.org_id
-        AND bup.user_id = bbd.executor_id
+        ) bbd ON bup.user_id = bbd.executor_id
         LEFT JOIN (
         SELECT
         bbd.org_id,
@@ -261,8 +254,7 @@
         GROUP BY
         bbd.org_id,
         bbd.executor_id
-        ) bbd1 ON bup.org_id = bbd1.org_id
-        AND bup.user_id = bbd1.executor_id
+        ) bbd1 ON bup.user_id = bbd1.executor_id
         LEFT JOIN (
         SELECT
         bbd.org_id,
@@ -347,8 +339,7 @@
         GROUP BY
         bbd.org_id,
         bbd.executor_id
-        ) bbd2 ON bup.org_id = bbd2.org_id
-        AND bup.user_id = bbd2.executor_id
+        ) bbd2 ON bup.user_id = bbd2.executor_id
         LEFT JOIN (
         SELECT
         brd.org_id,
@@ -390,8 +381,7 @@
         GROUP BY
         brd.org_id,
         brd.executor_id
-        ) brd ON bup.org_id = brd.org_id
-        AND bup.user_id = brd.executor_id
+        ) brd ON bup.user_id = brd.executor_id
         LEFT JOIN (
         SELECT
         ewc.org_id,
@@ -420,18 +410,20 @@
         GROUP BY
         ewc.org_id,
         ewc.user_id
-        ) ewc ON bup.org_id = ewc.org_id
-        AND bup.user_id = ewc.user_id
+        ) ewc ON bup.user_id = ewc.user_id
         ) bup
         ORDER BY
-        bup.actualWorkload DESC
+        bup.actualWorkload DESC,
+        bup.receivedWorkload DESC,
+        bup.supplementWorkload DESC,
+        bup.refundWorkload DESC
     </select>
 
     <!-- 根据条件查询员工工作量列表（运营报表） -->
     <select id="selectEmployeeWorkloadListOfOperation"
             resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadOfOperationVO">
         SELECT
-        orgId,
+        #{query.orgId} AS orgId,
         employeeId,
         employeeName,
         workStatus,
@@ -447,7 +439,6 @@
         FROM
         (
         SELECT
-        bup.org_id AS orgId,
         bup.user_id AS employeeId,
         bup.employee_name AS employeeName,
         bup.work_status AS workStatus,
@@ -462,18 +453,15 @@
         ifnull( ewc.largeMaterialCost, 0 ) AS largeMaterialCost
         FROM (
         SELECT
-        bup.org_id,
-        bup.user_id,
+        be.user_id,
         be.employee_name,
         be.work_status,
+        IFNULL( be.bonus_coefficient, 0 ) AS bonus_coefficient,
         GROUP_CONCAT( DISTINCT bup.post_name SEPARATOR ',' ) AS post_names
         FROM
-        base_user_post bup
-        LEFT JOIN base_employee be ON bup.user_id = be.user_id
+        base_employee be
+        INNER JOIN base_user_post bup  ON be.user_id = bup.user_id
         <where>
-            <if test="query.orgId != null">
-                and bup.org_id = #{query.orgId}
-            </if>
             <if test="query.employeeIds != null and query.employeeIds.length > 0">
                 and bup.user_id in
                 <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
@@ -494,7 +482,6 @@
             </if>
         </where>
         GROUP BY
-        bup.org_id,
         bup.user_id
         ) bup
         LEFT JOIN (
@@ -538,8 +525,7 @@
         GROUP BY
         bbd.org_id,
         bbd.executor_id
-        ) bbd ON bup.org_id = bbd.org_id
-        AND bup.user_id = bbd.executor_id
+        ) bbd ON bup.user_id = bbd.executor_id
         LEFT JOIN (
         SELECT
         bbd.org_id,
@@ -579,8 +565,7 @@
         GROUP BY
         bbd.org_id,
         bbd.executor_id
-        ) bbd1 ON bup.org_id = bbd1.org_id
-        AND bup.user_id = bbd1.executor_id
+        ) bbd1 ON bup.user_id = bbd1.executor_id
         LEFT JOIN (
         SELECT
         bbd.org_id,
@@ -665,8 +650,7 @@
         GROUP BY
         bbd.org_id,
         bbd.executor_id
-        ) bbd2 ON bup.org_id = bbd2.org_id
-        AND bup.user_id = bbd2.executor_id
+        ) bbd2 ON bup.user_id = bbd2.executor_id
         LEFT JOIN (
         SELECT
         brd.org_id,
@@ -704,7 +688,6 @@
         brd.org_id,
         brd.executor_id
         ) brd ON bup.user_id = brd.executor_id
-        AND bup.org_id = brd.org_id
         LEFT JOIN (
         SELECT
         ewc.org_id,
@@ -734,10 +717,12 @@
         ewc.user_id,
         ewc.org_id
         ) ewc ON bup.user_id = ewc.user_id
-        AND bup.org_id = ewc.org_id
         ) bup
         ORDER BY
-        bup.actualWorkload DESC
+        bup.actualWorkload DESC,
+        bup.receivedWorkload DESC,
+        bup.supplementWorkload DESC,
+        bup.refundWorkload DESC
     </select>
 
     <!-- 根据条件查询项目分类收入汇总列表 -->
@@ -2646,7 +2631,7 @@
         IFNULL(bb.first_privilege, 0) AS firstPrivilege
         FROM
         base_bill_detail bbd
-        INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+        INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id AND bb.bill_date IS NOT NULL
         <where>
             AND bbd.executor_id > 0
             <if test="billIds != null and billIds.size > 0">

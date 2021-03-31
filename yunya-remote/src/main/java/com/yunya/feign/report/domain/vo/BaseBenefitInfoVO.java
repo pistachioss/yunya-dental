@@ -37,4 +37,7 @@ public class BaseBenefitInfoVO implements Serializable {
 
     @ApiModelProperty("卡号")
     private String cardNumber;
+
+    @ApiModelProperty("授权人")
+    private String authorizedName;
 }
