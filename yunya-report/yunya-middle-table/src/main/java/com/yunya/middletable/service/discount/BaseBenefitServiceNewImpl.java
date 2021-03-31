@@ -227,8 +227,8 @@ public class BaseBenefitServiceNewImpl extends BaseBiz<BaseBenefitMapper, BaseBe
         List<BaseBenefit> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(orderBenefits)) {
             //查询订单优惠汇总信息
-            Map<Integer, Map<Integer, OrderBenefit>> orderBenefitMap = orderBenefits.stream().filter(distinctByKey(OrderBenefit::getOrderId)).collect(groupingBy(obj -> obj.getBenefitType().intValue(),
-                    Collectors.toMap(OrderBenefit::getOrderId, Function.identity())));
+            Map<Integer, Map<Integer, OrderBenefit>> orderBenefitMap = orderBenefits.stream().filter(distinctByKey(OrderBenefit::getOrderId))
+                    .collect(groupingBy(obj -> obj.getBenefitType().intValue(), Collectors.toMap(OrderBenefit::getOrderId, Function.identity())));
             orderBenefitMap.forEach((k, map) -> {
                 //产品优惠
                 if (CARD_BENEFIT.equals(k)) {
