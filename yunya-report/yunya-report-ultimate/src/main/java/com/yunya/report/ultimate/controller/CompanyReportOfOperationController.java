@@ -406,7 +406,8 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-产品使用报表")
   @PostMapping(value = "/coupon/executored/list", name = "根据条件查询产品使用报表")
-  public ResponseResult<PageInfo<CouponExecutoredVO>> couponExecutoredList(CouponExecutoredQuery query) {
+  public ResponseResult<PageInfo<CouponExecutoredVO>> couponExecutoredList(
+      CouponExecutoredQuery query) {
     PageInfo<CouponExecutoredVO> pageInfo = billDetailBiz.couponExecutoredList(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -419,7 +420,8 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-产品使用报表导出")
   @PostMapping(value = "/coupon/executored/export", name = "根据条件查询产品使用报表导出")
-  public ResponseResult<T> couponExecutoredExport(HttpServletResponse response, CouponExecutoredQuery query) throws IOException {
+  public ResponseResult<T> couponExecutoredExport(
+      HttpServletResponse response, CouponExecutoredQuery query) throws IOException {
     billDetailBiz.couponExecutoredExport(query, response);
     return ResponseUtil.success(null);
   }
@@ -432,7 +434,8 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-产品使用报表明细")
   @PostMapping(value = "/coupon/executored/detail", name = "根据条件查询产品使用报表明细")
-  public ResponseResult<PageInfo<CouponExecutoredDetailVO>> couponExecutoredDetails(CouponExecutoredDetailQuery query) {
+  public ResponseResult<PageInfo<CouponExecutoredDetailVO>> couponExecutoredDetails(
+      CouponExecutoredDetailQuery query) {
     PageInfo<CouponExecutoredDetailVO> pageInfo = billDetailBiz.couponExecutoredDetails(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -444,8 +447,16 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-运营BI-月工作量完成度导出")
   @PostMapping(value = "/workload/monthGoalCompleted/export", name = "月工作量完成度导出")
-  public ResponseResult<T> workloadMonthGoalCompletedExport(HttpServletResponse response) throws IOException {
+  public ResponseResult<T> workloadMonthGoalCompletedExport(HttpServletResponse response)
+      throws IOException {
     billDetailBiz.workloadMonthGoalCompletedExport(response);
+    return ResponseUtil.success(null);
+  }
+
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-项目收费金额及工作量统计")
+  @PostMapping(value = "/tariff/pay/workload/list", name = "公司端报表-报表统计-运营报表-")
+  public ResponseResult<T> tariffPaymentWorkloadStatistics() {
+
     return ResponseUtil.success(null);
   }
 }

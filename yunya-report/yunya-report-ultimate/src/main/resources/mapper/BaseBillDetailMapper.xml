@@ -153,9 +153,6 @@
         base_user_post bup
         LEFT JOIN base_employee be ON bup.user_id = be.user_id
         <where>
-            <if test="query.orgId != null">
-                and bup.org_id = #{query.orgId}
-            </if>
             <if test="query.employeeIds != null and query.employeeIds.length > 0">
                 and bup.user_id in
                 <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
@@ -471,9 +468,6 @@
         base_user_post bup
         LEFT JOIN base_employee be ON bup.user_id = be.user_id
         <where>
-            <if test="query.orgId != null">
-                and bup.org_id = #{query.orgId}
-            </if>
             <if test="query.employeeIds != null and query.employeeIds.length > 0">
                 and bup.user_id in
                 <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
@@ -2646,7 +2640,7 @@
         IFNULL(bb.first_privilege, 0) AS firstPrivilege
         FROM
         base_bill_detail bbd
-        INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+        INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id AND bb.bill_date IS NOT NULL
         <where>
             AND bbd.executor_id > 0
             <if test="billIds != null and billIds.size > 0">
