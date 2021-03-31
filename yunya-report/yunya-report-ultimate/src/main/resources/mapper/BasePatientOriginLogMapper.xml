@@ -41,7 +41,11 @@
           FROM base_employee ee
           JOIN base_user_post bup ON bup.user_id = ee.user_id
           WHERE
-              ee.work_status = 1
+                1 = 1
+              <if test="query.workStatus != null">
+                  and ee.work_status = #{query.workStatus}
+              </if>
+
               <if test="query.orgIds != null and query.orgIds.size() > 0">
                   and bup.org_id in
                   <foreach collection="query.orgIds" item="orgId" open="(" separator="," close=")">
@@ -107,7 +111,10 @@
 
         from base_patient_origin bpo
         where bpo.origin_type = 3
-        <if test="query.activityIds.size() > 0">
+        <!-- and bpo.inservice = 1
+        and bpo.parent_id != 0
+         -->
+        <if test="query.activityIds != null and query.activityIds.size() > 0">
             and bpo.id in
             <foreach collection="query.activityIds" item="activityId" open="(" separator="," close=")">
                 #{activityId}

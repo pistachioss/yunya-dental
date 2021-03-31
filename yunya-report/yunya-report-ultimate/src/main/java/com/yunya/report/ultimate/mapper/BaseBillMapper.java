@@ -190,14 +190,14 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @param query 条件
    * @return 订单号集合
    */
-    List<Integer> findBillIdList(@Param("query") PatientOriginEmployeeQuery query);
+    List<BillIdVo> findBillIdList(@Param("query") PatientOriginEmployeeQuery query);
 
   /**
    * 查询活动患者消费的订单号
    * @param query 条件
    * @return 订单号集合
    */
-  List<Integer> findActivityBillIdList(@Param("query") PatientOriginActivityQuery query);
+  List<BillIdVo> findActivityBillIdList(@Param("query") PatientOriginActivityQuery query);
 
   /**
    * 根据推荐人id和支付记录时间查询订单id

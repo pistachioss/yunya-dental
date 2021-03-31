@@ -1976,10 +1976,10 @@
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{endDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="list.size() > 0">
+        <if test="billIdList != null and billIdList.size() > 0 ">
             and bbpd.bill_id in
-            <foreach collection="list" item="billId" open="(" separator="," close=")">
-                 #{billId}
+            <foreach collection="billIdList" item="BillIdVo" open="(" separator="," close=")">
+                 #{BillIdVo.billId}
             </foreach>
         </if>
     </select>
