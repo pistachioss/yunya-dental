@@ -5,4 +5,5 @@ package com.yunya.middletable.constant;
  */
 public interface SynConstant {
     int CUT_SLICE_100 = 100;
+    int CUT_SLICE_5000 = 5000;
 }
