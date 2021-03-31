@@ -44,10 +44,10 @@ public class PatientOriginActivityQuery implements Serializable {
     private String endDate;
 
     /**
-     * 活动名称
+     * 活动id
      */
-    @ApiModelProperty(value ="活动名称",required = false)
-    private String activityName;
+    @ApiModelProperty(value ="活动id",required = false)
+    private List<Integer> activityIds;
 
 
 }

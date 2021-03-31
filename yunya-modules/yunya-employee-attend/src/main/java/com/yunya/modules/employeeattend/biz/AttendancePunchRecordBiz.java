@@ -3123,15 +3123,27 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         if (punchRecord.getIsPunch().equals(AttendanceIsPunchEnum.PUNCHED.getCode())) {
                             Date sTime = punchRecord.getStartTime();
                             Date eTime = punchRecord.getEndTime();
+                            Date midTime;
+                            try {
+                                midTime = DateUtil.parse("1970-01-01 12:00:00", "yyyy-MM-dd HH:mm:ss");
+                            } catch (ParseException e) {
+                                throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+                            }
                             if (punchRecord.getPunchType().equals(AttendanceTypeEnum.ONDUTY.getCode())) {//上班
                                 onPunchTime = punchRecord.getPunchTime();
                                 if (onPunchTime.after(sTime)) {
                                     sTime = onPunchTime;
                                 }
+                                if (eTime.after(midTime)) {
+                                    eTime = midTime;
+                                }
                             } else {
                                 offPunchTime = punchRecord.getPunchTime();
                                 if (offPunchTime.before(eTime)) {
                                     eTime = offPunchTime;
+                                }
+                                if (sTime.before(midTime)) {
+                                    sTime = midTime;
                                 }
                             }
                             diff += eTime.getTime() - sTime.getTime();
@@ -3420,8 +3432,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 recordVOS.add(attendancePunchRecordVO);
                 punchRecords.put(esId, recordVOS);
             }
-
-
         });
         return attendancePunchRecordMap;
     }

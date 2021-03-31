@@ -27,4 +27,10 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
      * @return 患者id
      */
     List<BasePatient> selectPatientIdList();
+
+    /**
+     * 批量修改患者信息
+     * @param basePatientList 患者信息
+     */
+    void updatePatientInfoList(@Param("list") List<BasePatient> basePatientList);
 }

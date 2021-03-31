@@ -28,6 +28,39 @@
         <result column="origin_type_name" property="originTypeName" jdbcType="VARCHAR"/>
     </resultMap>
 
+    <!-- 批量修改患者信息 -->
+    <update id="updatePatientInfoList">
+        <foreach collection="list" separator=";" item="basePatientInfo">
+            update base_patient
+            <set>
+                <if test="basePatientInfo.firstVisitDate != null and basePatientInfo.firstVisitDate != '' ">
+                    first_visit_date = #{basePatientInfo.firstVisitDate},
+                </if>
+
+                <if test="basePatientInfo.firstVisitDate != null and basePatientInfo.firstVisitDate != '' ">
+                    first_visit_outpatient = #{basePatientInfo.firstVisitOutpatient},
+                </if>
+
+                <if test="basePatientInfo.firstVisitDate != null and basePatientInfo.firstVisitDate != '' ">
+                    first_visit_doctors = #{basePatientInfo.firstVisitDoctors},
+                </if>
+
+                <if test="basePatientInfo.firstVisitDate != null and basePatientInfo.firstVisitDate != '' ">
+                    last_visit_date = #{basePatientInfo.lastVisitDate},
+                </if>
+
+                <if test="basePatientInfo.firstVisitDate != null and basePatientInfo.firstVisitDate != '' ">
+                    last_visit_outpatient = #{basePatientInfo.lastVisitOutpatient},
+                </if>
+
+                <if test="basePatientInfo.firstVisitDate != null and basePatientInfo.firstVisitDate != '' ">
+                    last_visit_doctors = #{basePatientInfo.lastVisitDoctors},
+                </if>
+            </set>
+            WHERE patient_id = #{basePatientInfo.patientId}
+        </foreach>
+    </update>
+
     <!-- 根据患者id 查询患者初诊信息 -->
     <select id="selectFirstVisitInfo" resultType="com.yunya.feign.report.domain.vo.PatientTreatInfoVo">
       SELECT
@@ -41,7 +74,7 @@
             (
             SELECT
                 btp.treatmentId,
-                DATE_FORMAT( btp1.treat_start_time, '%Y-%m-%d HH:mm' ) AS treatDate,
+                DATE_FORMAT( btp1.treat_start_time, '%Y-%m-%d %H:%i:%s' ) AS treatDate,
                 btp1.registered_dentist_id,
                 btp1.org_id
             FROM
@@ -65,7 +98,7 @@
           (
           SELECT
               btp.treatmentId,
-              DATE_FORMAT( btp1.treat_start_time, '%Y-%m-%d HH:mm' ) AS treatDate,
+              DATE_FORMAT( btp1.treat_start_time, '%Y-%m-%d %H:%i:%s' ) AS treatDate,
               btp1.registered_dentist_id,
               btp1.org_id
           FROM

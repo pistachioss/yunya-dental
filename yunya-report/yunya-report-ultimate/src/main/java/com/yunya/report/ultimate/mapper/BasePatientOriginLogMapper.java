@@ -26,10 +26,10 @@ public interface BasePatientOriginLogMapper extends Mapper<BasePatientOriginLog>
 
     /**
      * 查询订单项目实收计算
-     * @param originId 条件
+     * @param billIdList 订单id
      * @return 订单项目实收计算信息列表
      */
-    List<ReceivedTotalWorkloadVo> findReceivedTotalWorkload(@Param("originId") Integer originId);
+    List<ReceivedTotalWorkloadVo> findReceivedTotalWorkload(@Param("list") List<Integer> billIdList);
 
     /**
      * 查询活动推荐患者人数信息

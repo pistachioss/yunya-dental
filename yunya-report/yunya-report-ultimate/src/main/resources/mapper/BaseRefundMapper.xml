@@ -765,14 +765,14 @@
 				bti.item_name itemName,
 				brd.refund_amount workload
         from base_refund_detail brd
-                 join base_bill_detail bbd on bbd.bill_detail_id = brd.bill_detail_id
-                 join base_bill bb on bb.bill_id = bbd.bill_id
-                 join base_patient bp on bp.patient_id = bb.patient_id
-                 join base_patient_origin_log log on log.patient_id = bp.patient_id
-                 join base_organization bo on bo.org_id = bb.org_id
-                 join base_treatment_process btp on btp.treatment_id = bb.treatment_id
-                 join base_employee be on be.user_id = btp.registered_dentist_id
-                 join base_tariff_info bti ON bti.item_id = bbd.item_id
+                 left join base_bill_detail bbd on bbd.bill_detail_id = brd.bill_detail_id
+                 left join base_bill bb on bb.bill_id = bbd.bill_id
+                 left join base_patient bp on bp.patient_id = bb.patient_id
+                 left join base_patient_origin_log log on log.patient_id = bp.patient_id
+                 left join base_organization bo on bo.org_id = bb.org_id
+                 left join base_treatment_process btp on btp.treatment_id = bb.treatment_id
+                 left join base_employee be on be.user_id = btp.registered_dentist_id
+                 left join base_tariff_info bti ON bti.item_id = bbd.item_id
         where brd.refund_id = #{refundId}
               and log.origin_id = #{originId}
     </select>

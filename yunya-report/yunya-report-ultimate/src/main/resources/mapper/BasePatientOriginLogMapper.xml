@@ -65,39 +65,31 @@
     <!-- 查询订单项目实收计算 -->
     <select id="findReceivedTotalWorkload"
             resultType="com.yunya.feign.patient_central.domain.vo.web.ReceivedTotalWorkloadVo">
-        select bill_id,patient_id,actual_amount,orderWorkload
-        from  (
-            SELECT
-                bb.bill_id,
+            select bill_id,patient_id,actual_amount,orderWorkload
+            from  (
+                SELECT
+                    bb.bill_id,
 
-                bb.patient_id,
-                bb.actual_amount,
-                (
-                    select TRUNCATE (SUM(((price * quantity) - discount_amount)) / bb.actual_amount,2)
-                    from base_bill_detail bbd
-                    where bbd.bill_id = bb.bill_id and bbd.executor_id is not null
-                ) as orderWorkload
-            FROM
-                base_bill bb
-                JOIN (
-                        SELECT DISTINCT
-                            log.patient_id
-                        FROM
-                            base_patient_origin_log log
-                            JOIN base_bill bb ON log.patient_id = bb.patient_id
-                            JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
-                        WHERE
-                            log.inservice = 1
-                        <if test="originId != null ">
-                            AND log.origin_id = #{originId}
-                        </if>
+                    bb.patient_id,
+                    bb.actual_amount,
+                    (
+                        select TRUNCATE (SUM(((price * quantity) - discount_amount)) / bb.actual_amount,2)
+                        from base_bill_detail bbd
+                        where bbd.bill_id = bb.bill_id and bbd.executor_id is not null
+                    ) as orderWorkload
+                FROM
+                    base_bill bb
+                    where
+                     bb.actual_amount > 0
+                    <if test="list.size() > 0">
+                        and bb.bill_id in
+                        <foreach collection="list" item="billId" open="(" separator="," close=")">
+                            #{billId}
+                        </foreach>
+                    </if>
+                     GROUP BY bb.bill_id
 
-                     ) t ON bb.patient_id = t.patient_id
-                where
-                 bb.actual_amount > 0
-                 GROUP BY bb.bill_id
-
-               ) t  where t.OrderWorkload > 0
+                   ) t  where t.OrderWorkload > 0
 
     </select>
 
@@ -115,9 +107,11 @@
 
         from base_patient_origin bpo
         where bpo.origin_type = 3
-        <if test="query.activityName != null">
-            and concat( IFNULL(  bpo.`name`, '' ))
-            LIKE concat( concat( '%', #{query.activityName} ), '%' )
+        <if test="query.activityIds.size() > 0">
+            and bpo.id in
+            <foreach collection="query.activityIds" item="activityId" open="(" separator="," close=")">
+                #{activityId}
+            </foreach>
         </if>
         ) t where t.patientNumber > 0
     </select>
