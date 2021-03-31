@@ -414,7 +414,9 @@
         ) bup
         ORDER BY
         bup.actualWorkload DESC,
-        bup.receivedWorkload DESC
+        bup.receivedWorkload DESC,
+        bup.supplementWorkload DESC,
+        bup.refundWorkload DESC
     </select>
 
     <!-- 根据条件查询员工工作量列表（运营报表） -->
@@ -718,7 +720,9 @@
         ) bup
         ORDER BY
         bup.actualWorkload DESC,
-        bup.receivedWorkload DESC
+        bup.receivedWorkload DESC,
+        bup.supplementWorkload DESC,
+        bup.refundWorkload DESC
     </select>
 
     <!-- 根据条件查询项目分类收入汇总列表 -->
