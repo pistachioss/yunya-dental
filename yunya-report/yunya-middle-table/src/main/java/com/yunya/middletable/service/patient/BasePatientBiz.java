@@ -269,7 +269,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
   /**
    * 批量更新患者信息
    */
-  public void updPatientInfo() {
+  public void updPatientInfo() throws InterruptedException {
     // 查询有过初诊的患者id
    List<BasePatient> patientIdList  = mapper.selectPatientIdList();
    if (patientIdList != null){
@@ -295,9 +295,17 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
      long start = System.currentTimeMillis();
      for (List<BasePatient> basePatientList: partitionLists) {
        importExcelThreadPool.execute(() ->{
-
+         try {
+           mapper.updatePatientInfoList(basePatientList);
+           countDownLatch.countDown();
+         } catch (Exception e) {
+           log.info("患者信息批量修改异常",e);
+         }
        });
      }
+     countDownLatch.await();
+     long end = System.currentTimeMillis();
+     log.info("患者信息批量修改完成，时长：[{}]秒",(end - start) / 1000);
    }
 
   }

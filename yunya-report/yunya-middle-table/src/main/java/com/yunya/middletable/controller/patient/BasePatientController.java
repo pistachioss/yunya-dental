@@ -70,7 +70,7 @@ public class BasePatientController {
 
   @ApiOperation("修改患者信息")
   @PostMapping("/updPatientInfo")
-  public ResponseResult<T> updPatientInfo(){
+  public ResponseResult<T> updPatientInfo() throws InterruptedException {
     basePatientBiz.updPatientInfo();
     return ResponseUtil.success();
   }

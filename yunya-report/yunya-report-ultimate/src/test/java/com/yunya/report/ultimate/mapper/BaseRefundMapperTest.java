@@ -1,8 +1,10 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.AssistantRefundDetailQuery;
+import com.yunya.feign.report.domain.query.EmployeePersonalWorkloadDetailQuery;
 import com.yunya.feign.report.domain.query.StatementBillRefundDetailInfoQuery;
 import com.yunya.feign.report.domain.vo.AssistantRefundDetailVO;
+import com.yunya.feign.report.domain.vo.EmployeePersonalRefundWorkloadDetailVO;
 import com.yunya.feign.report.domain.vo.StatementBillRefundDetailVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,5 +55,16 @@ public class BaseRefundMapperTest {
     // query.setRefundEndDate("2021-01-12");
     List<StatementBillRefundDetailVO> vos = refundMapper.selectCurrentBillRefundDetailList(query);
     System.out.println(vos);
+  }
+
+  @Test
+  public void find1() {
+    EmployeePersonalWorkloadDetailQuery query = new EmployeePersonalWorkloadDetailQuery();
+    query.setQueryDate("2021-01");
+    query.setEmployeeId(88);
+    query.setDateType((byte) 0);
+    List<EmployeePersonalRefundWorkloadDetailVO> list =
+        refundMapper.selectEmployeePersonalRefundWorkloadDetail(query);
+    System.out.println(list);
   }
 }
