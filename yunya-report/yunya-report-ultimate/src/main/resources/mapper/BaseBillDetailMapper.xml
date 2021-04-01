@@ -305,7 +305,7 @@
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
             AND bbp.received_amount > 0
@@ -412,7 +412,7 @@
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
             AND bbp.received_amount > 0
@@ -731,7 +731,7 @@
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
             AND bbp.received_amount > 0
@@ -838,7 +838,7 @@
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
             AND bbp.received_amount > 0
