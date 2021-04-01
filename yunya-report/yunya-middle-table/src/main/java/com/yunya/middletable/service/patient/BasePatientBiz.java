@@ -11,17 +11,14 @@ import com.yunya.middletable.dao.patient.PatientOriginMapper;
 import com.yunya.middletable.dao.patient.PatientPrepaymentsInfoMapper;
 import com.yunya.middletable.dao.report.BasePatientMapper;
 import com.yunya.middletable.dao.report.BasePatientMemberMapper;
-import com.yunya.middletable.dao.report.BaseTreatmentProcessMapper;
 import com.yunya.middletable.service.BaseTreatmentProcessBiz;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.patient_central.PatientPrepaymentsInfo;
 import com.yunya.models.report.BasePatient;
 import com.yunya.models.report.BasePatientMember;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
@@ -32,9 +29,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.function.Function;
+
+import static java.util.stream.Collectors.toMap;
+
 
 /**
  * 简介: 报表服务患者信息同步
@@ -250,7 +252,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
   }
 
   /**
-   * 查询患者质料信息
+   * 查询患者资料信息
    *
    * @param id 患者id
    * @return BasePatient
@@ -258,11 +260,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
   public BasePatient selectPatientInfo(Integer id) {
     BasePatient basePatient = new BasePatient();
     basePatient.setPatientId(id);
-    BasePatient basePatientVO = mapper.selectOne(basePatient);
-    if (basePatient != null) {
-      return basePatientVO;
-    }
-    return null;
+    return mapper.selectOne(basePatient);
   }
 
 
@@ -271,23 +269,28 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
    */
   public void updPatientInfo() throws InterruptedException {
     // 查询有过初诊的患者id
-   List<BasePatient> patientIdList  = mapper.selectPatientIdList();
-   if (patientIdList != null){
+    List<BasePatient> patientIdList  = mapper.selectPatientIdList();
+    // k 患者id v 初诊信息
+    Map<Integer, PatientTreatInfoVo> firstInfoMap = getFirstInfoMap();
+    // k 患者id v 末诊信息
+    Map<Integer, PatientTreatInfoVo> lastTreatInfoMap = getLastTreatInfoMap();
+
+    if (!StringHelper.isEmpty(patientIdList)){
      for (BasePatient  basePatient : patientIdList) {
-       // 初诊信息
-       PatientTreatInfoVo firstTreatInfo = mapper.selectFirstVisitInfo(basePatient.getPatientId());
-       if (null != firstTreatInfo) {
-         basePatient.setFirstVisitDate(getDateTime(firstTreatInfo.getTreatDate()));
-         basePatient.setFirstVisitDoctors(firstTreatInfo.getTreatDentistName());
-         basePatient.setFirstVisitOutpatient(firstTreatInfo.getTreatOutpatient());
-       }
-       // 末诊信息
-       PatientTreatInfoVo lastTreatInfo = mapper.selectLastVisitInfo(basePatient.getPatientId());
-       if (null != lastTreatInfo) {
-         basePatient.setLastVisitDate(getDateTime(lastTreatInfo.getTreatDate()));
-         basePatient.setLastVisitDoctors(lastTreatInfo.getTreatDentistName());
-         basePatient.setLastVisitOutpatient(lastTreatInfo.getTreatOutpatient());
-       }
+         // 获取初诊信息
+         PatientTreatInfoVo firstInfo = firstInfoMap.get(basePatient.getPatientId());
+         if (null != firstInfo.getPatientId()){
+             basePatient.setFirstVisitDate(getDateTime(firstInfo.getTreatDate()));
+             basePatient.setFirstVisitDoctors(firstInfo.getTreatDentistName());
+             basePatient.setFirstVisitOutpatient(firstInfo.getTreatOutpatient());
+           }
+         // 获取末诊信息
+         PatientTreatInfoVo lastTreatInfo = lastTreatInfoMap.get(basePatient.getPatientId());
+         if (null != lastTreatInfo.getPatientId()){
+             basePatient.setLastVisitDate(getDateTime(lastTreatInfo.getTreatDate()));
+             basePatient.setLastVisitDoctors(lastTreatInfo.getTreatDentistName());
+             basePatient.setLastVisitOutpatient(lastTreatInfo.getTreatOutpatient());
+           }
      }
 
      List<List<BasePatient>> partitionLists = Lists.partition(patientIdList, 100);
@@ -308,5 +311,25 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
      log.info("患者信息批量修改完成，时长：[{}]秒",(end - start) / 1000);
    }
 
+  }
+
+  /**
+   * 封装患者初诊信息
+   * @return k 患者id v 初诊信息
+   */
+  private Map<Integer, PatientTreatInfoVo> getFirstInfoMap() {
+    // 初诊信息
+    List<PatientTreatInfoVo> firstInfoVoList = mapper.selectFirstVisitInfoList();
+    return firstInfoVoList.stream().collect(toMap(PatientTreatInfoVo::getPatientId, Function.identity()));
+  }
+
+  /**
+   * 封装患者末诊信息
+   * @return k 患者id v 末诊信息
+   */
+  private Map<Integer, PatientTreatInfoVo> getLastTreatInfoMap() {
+    // 末诊信息
+    List<PatientTreatInfoVo> firstInfoVoList = mapper.selectFirstVisitInfoList();
+    return firstInfoVoList.stream().collect(toMap(PatientTreatInfoVo::getPatientId, Function.identity()));
   }
 }

@@ -37,7 +37,6 @@
     WHERE
         origin_type = 3
         AND parent_id != 0
-        AND inservice = 1
   </select>
 
 </mapper>

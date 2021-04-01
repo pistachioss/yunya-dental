@@ -55,6 +55,7 @@
         ) ai ON ai.leave_id = ls.leave_id
         <where>
             es.inservice = 1
+            AND EXISTS (SELECT id from leave_info li where li.approval_status=1 and li.id=ls.leave_id)
             <if test="queryForm.userId != null">
                 and es.employee_id = #{queryForm.userId}
             </if>

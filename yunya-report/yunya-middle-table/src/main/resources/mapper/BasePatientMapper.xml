@@ -33,27 +33,27 @@
         <foreach collection="list" separator=";" item="basePatientInfo">
             update base_patient
             <set>
-                <if test="basePatientInfo.firstVisitDate != null and basePatientInfo.firstVisitDate != '' ">
+                <if test="basePatientInfo.firstVisitDate != null ">
                     first_visit_date = #{basePatientInfo.firstVisitDate},
                 </if>
 
-                <if test="basePatientInfo.firstVisitDate != null and basePatientInfo.firstVisitDate != '' ">
+                <if test="basePatientInfo.firstVisitOutpatient != null and basePatientInfo.firstVisitOutpatient != '' ">
                     first_visit_outpatient = #{basePatientInfo.firstVisitOutpatient},
                 </if>
 
-                <if test="basePatientInfo.firstVisitDate != null and basePatientInfo.firstVisitDate != '' ">
+                <if test="basePatientInfo.firstVisitDoctors != null ">
                     first_visit_doctors = #{basePatientInfo.firstVisitDoctors},
                 </if>
 
-                <if test="basePatientInfo.firstVisitDate != null and basePatientInfo.firstVisitDate != '' ">
+                <if test="basePatientInfo.lastVisitDate != null ">
                     last_visit_date = #{basePatientInfo.lastVisitDate},
                 </if>
 
-                <if test="basePatientInfo.firstVisitDate != null and basePatientInfo.firstVisitDate != '' ">
+                <if test="basePatientInfo.lastVisitOutpatient != null and basePatientInfo.lastVisitOutpatient != '' ">
                     last_visit_outpatient = #{basePatientInfo.lastVisitOutpatient},
                 </if>
 
-                <if test="basePatientInfo.firstVisitDate != null and basePatientInfo.firstVisitDate != '' ">
+                <if test="basePatientInfo.lastVisitDoctors != null ">
                     last_visit_doctors = #{basePatientInfo.lastVisitDoctors},
                 </if>
             </set>
@@ -111,6 +111,98 @@
 
     <!-- 查询有过初诊的患者id -->
     <select id="selectPatientIdList" resultType="com.yunya.models.report.BasePatient">
-        select bp.* from base_patient bp join base_treatment_process btp where btp.patient_id = bp.patient_id and btp.treat_end_time IS NOT NULL
+        SELECT
+            bp.patient_id
+        FROM
+            base_patient bp
+	    JOIN ( SELECT patient_id FROM base_treatment_process WHERE treat_end_time IS NOT NULL GROUP BY patient_id ) t ON bp.patient_id = t.patient_id
     </select>
+
+
+
+    <!-- 查询患者初诊信息 -->
+    <select id="selectFirstVisitInfoList" resultType="com.yunya.feign.report.domain.vo.PatientTreatInfoVo">
+        SELECT
+            btp.patient_id patientId,
+            btp.treatmentId,
+            btp.treatDate,
+            btp.registered_dentist_id AS treatDentistId,
+            be.employee_name AS treatDentistName,
+            btp.org_id AS orgId,
+            bo.abbreviation AS treatOutpatient
+        FROM
+            (
+            SELECT
+                btp.patient_id,
+                btp.treatmentId,
+                DATE_FORMAT( btp1.treat_start_time, '%Y-%m-%d %H:%i:%s' ) AS treatDate,
+                btp1.registered_dentist_id,
+                btp1.org_id
+            FROM
+                (
+                SELECT
+                    btp.patient_id,
+                    min( btp.treatment_id ) AS treatmentId
+                FROM
+                    base_treatment_process btp
+                    JOIN (
+                    SELECT
+                        bp.patient_id
+                    FROM
+                        base_patient bp
+                        JOIN ( SELECT patient_id FROM base_treatment_process WHERE treat_end_time IS NOT NULL GROUP BY patient_id ) t ON bp.patient_id = t.patient_id
+                    ) t ON btp.patient_id = t.patient_id
+                WHERE
+                    btp.treat_end_time IS NOT NULL
+                GROUP BY
+                    btp.patient_id
+                ) btp
+                LEFT JOIN base_treatment_process btp1 ON btp.treatmentId = btp1.treatment_id
+            ) btp
+            LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+            LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+    </select>
+
+    <!-- 查询末诊信息 -->
+    <select id="selectLastVisitInfoList" resultType="com.yunya.feign.report.domain.vo.PatientTreatInfoVo">
+        SELECT
+            btp.patient_id patientId,
+            btp.treatmentId,
+            btp.treatDate,
+            btp.registered_dentist_id AS treatDentistId,
+            be.employee_name AS treatDentistName,
+            btp.org_id AS orgId,
+            bo.abbreviation AS treatOutpatient
+        FROM
+            (
+            SELECT
+                btp.patient_id,
+                btp.treatmentId,
+                DATE_FORMAT( btp1.treat_start_time, '%Y-%m-%d %H:%i:%s' ) AS treatDate,
+                btp1.registered_dentist_id,
+                btp1.org_id
+            FROM
+                (
+                SELECT
+                    btp.patient_id,
+                    max( btp.treatment_id ) AS treatmentId
+                FROM
+                    base_treatment_process btp
+                    JOIN (
+                    SELECT
+                        bp.patient_id
+                    FROM
+                        base_patient bp
+                        JOIN ( SELECT patient_id FROM base_treatment_process WHERE treat_end_time IS NOT NULL GROUP BY patient_id ) t ON bp.patient_id = t.patient_id
+                    ) t ON btp.patient_id = t.patient_id
+                WHERE
+                    btp.treat_end_time IS NOT NULL
+                GROUP BY
+                    btp.patient_id
+                ) btp
+                LEFT JOIN base_treatment_process btp1 ON btp.treatmentId = btp1.treatment_id
+            ) btp
+            LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+            LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+  </select>
 </mapper>

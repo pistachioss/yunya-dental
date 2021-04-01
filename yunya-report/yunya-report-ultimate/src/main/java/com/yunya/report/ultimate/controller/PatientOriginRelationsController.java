@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -89,7 +90,7 @@ public class PatientOriginRelationsController {
      */
     @ApiOperation("员工推荐-各项明细列表")
     @PostMapping(value = "/workloadBreakdown",name = "公司端-人力资源-员工推荐-各项明细列表 type区分")
-    public ResponseResult<PageInfo<ReceivedWorkloadDetailsVo>> workloadBreakdown(@RequestBody ReceiverkLoadQuery query){
+    public ResponseResult<PageInfo<ReceivedWorkloadDetailsVo>> workloadBreakdown(@RequestBody ReceiverkLoadQuery query) throws ParseException {
         List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = patientOriginRelationsBiz.findEreceiverkLoad(query);
         if (query.getWhetherPage()) {
             Integer pageNum = query.getPageNum();

@@ -130,11 +130,11 @@
     </select>
 
     <!-- 根据患者姓名、手机号、门诊号 查询患者信息 -->
-    <select id="selectPatientInfoByNameAndMobileAndOrgId"
+    <select id="selectPatienInfoById"
             resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
-        from patient_base_info where name = #{form.name} and mobile = #{form.mobile} and org_id = #{form.orgId}
+        from patient_base_info where id = #{patientId}
     </select>
 
     <!-- 根据患者ID查询患者全部信息 -->
