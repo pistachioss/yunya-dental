@@ -70,17 +70,17 @@ public class PatientOriginActivityRelationsBiz
           PatientOriginActivityQuery query) {
     // 查询活动信息以及推荐数量
     List<PatientOriginActivityVo> patientOriginActivityVoList = mapper.findActivityVoLists(query);
-    // 查询所有符合条件的订单号
+    // 根据时间段查询所有符合条件的订单号
     List<BillIdVo> billIdList = baseBillMapper.findActivityBillIdList(query);
     if (patientOriginActivityVoList != null) {
       // 获取已收工作量合计
       getReceivedTotalWorkload(patientOriginActivityVoList, query, true,billIdList);
-      // 获取其中免单支付工作量合计
+     /* // 获取其中免单支付工作量合计
       getReceivedTotalWorkload(patientOriginActivityVoList, query, false,billIdList);
       // 获取退费金额合计
       getTotalRefundAmount(patientOriginActivityVoList, query);
       // 获取补入工作量合计
-      getMakeUpWorkload(patientOriginActivityVoList, query);
+      getMakeUpWorkload(patientOriginActivityVoList, query);*/
     }
     return patientOriginActivityVoList;
   }
