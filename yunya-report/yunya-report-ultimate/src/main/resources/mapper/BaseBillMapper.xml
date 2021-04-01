@@ -1159,9 +1159,9 @@
         </if>
 
         <if test="typeList != null">
-            and bbpd.type in
-            <foreach collection="typeList" item="type" open="(" separator="," close=")">
-                #{type}
+            and bbpd.account_item_id in
+            <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
+                #{itemId}
             </foreach>
         </if>
 

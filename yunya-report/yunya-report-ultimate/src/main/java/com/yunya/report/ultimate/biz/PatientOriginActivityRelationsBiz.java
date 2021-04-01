@@ -75,12 +75,12 @@ public class PatientOriginActivityRelationsBiz
     if (patientOriginActivityVoList != null) {
       // 获取已收工作量合计
       getReceivedTotalWorkload(patientOriginActivityVoList, query, true,billIdList);
-     /* // 获取其中免单支付工作量合计
+      // 获取其中免单支付工作量合计
       getReceivedTotalWorkload(patientOriginActivityVoList, query, false,billIdList);
       // 获取退费金额合计
       getTotalRefundAmount(patientOriginActivityVoList, query);
       // 获取补入工作量合计
-      getMakeUpWorkload(patientOriginActivityVoList, query);*/
+      getMakeUpWorkload(patientOriginActivityVoList, query);
     }
     return patientOriginActivityVoList;
   }
@@ -201,8 +201,8 @@ public class PatientOriginActivityRelationsBiz
       baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(),query.getEndDate(), null);
     } else {
       // 其中免单支付工作量合计
-      List<Integer> typeList = new ArrayList<Integer>() {{ add(23);add(26); }};
-      baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(),query.getEndDate(), typeList);
+      List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
+      baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(),query.getEndDate(), itemIds);
     }
     for (BillIdVo billIdVo : billIdList) {
       for (BaseBillPay baseBillPay : baseBillPayList) {

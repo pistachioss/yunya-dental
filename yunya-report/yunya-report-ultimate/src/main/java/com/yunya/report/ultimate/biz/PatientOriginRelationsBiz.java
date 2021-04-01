@@ -314,8 +314,8 @@ public class PatientOriginRelationsBiz
       baseBillIdList = baseBillMapper.findBaseBillIdList(query, null);
     } else {
       // 其中免单支付 订单id List
-      List<Integer> typeList = new ArrayList<Integer>() {{ add(23);add(26); }};
-      baseBillIdList = baseBillMapper.findBaseBillIdList(query, typeList);
+      List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
+      baseBillIdList = baseBillMapper.findBaseBillIdList(query, itemIds);
     }
     if (baseBillIdList != null) {
       List<BaseBillPay> baseBillPayList;
