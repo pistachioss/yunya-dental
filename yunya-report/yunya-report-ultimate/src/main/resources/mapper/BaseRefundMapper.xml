@@ -659,6 +659,7 @@
                     JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
                 WHERE
                     log.origin_id = #{originId}
+                    AND log.origin_type = #{originType}
                     AND log.inservice = 1
             ) t ON br.patient_id = t.patient_id
         <if test="startDate != null">
@@ -775,6 +776,7 @@
                  left join base_tariff_info bti ON bti.item_id = bbd.item_id
         where brd.refund_id = #{refundId}
               and log.origin_id = #{originId}
+              and log.origin_type = #{originType}
     </select>
 
     <!-- 根据条件查询退费工作量 -->

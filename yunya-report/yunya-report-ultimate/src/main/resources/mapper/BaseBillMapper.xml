@@ -1217,6 +1217,7 @@
             where bb.privilege_date is not null
             and bbd.coupon_workload  > 0
             and log.origin_id = #{query.originId}
+            and log.origin_type = #{originType}
             <if test="query.startDate != null">
                 and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
             </if>

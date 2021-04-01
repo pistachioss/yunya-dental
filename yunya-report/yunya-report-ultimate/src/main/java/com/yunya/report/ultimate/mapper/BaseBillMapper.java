@@ -226,7 +226,8 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
   /**
    * 查询补入工作量明细
    * @param query 条件
+   * @param originType 推荐类型
    * @return 补入工作量明细
    */
-  List<ReceivedWorkloadDetailsVo> selectMakeUpDetail(@Param("query") ReceiverkLoadQuery query);
+  List<ReceivedWorkloadDetailsVo> selectMakeUpDetail(@Param("query") ReceiverkLoadQuery query,@Param("originType") Integer originType);
 }

@@ -8,11 +8,9 @@ import com.yunya.feign.patient_central.domain.vo.web.ReceivedTotalWorkloadVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.vo.BillIdVo;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBillPay;
-import com.yunya.models.report.BasePatientOrigin;
 import com.yunya.models.report.BasePatientOriginLog;
 import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
@@ -95,7 +93,7 @@ public class PatientOriginActivityRelationsBiz
       List<PatientOriginActivityVo> patientOriginActivityVoList, PatientOriginActivityQuery query) {
     for (PatientOriginActivityVo patientOriginActivityVo : patientOriginActivityVoList) {
       BigDecimal makeUpWorkload =
-          baseBillDetailMapper.findMakeUpWorkload(patientOriginActivityVo.getOriginId(), query.getStartDate(),query.getEndDate());
+          baseBillDetailMapper.findMakeUpWorkload(patientOriginActivityVo.getOriginId(), query.getStartDate(),query.getEndDate(), 3);
       if (makeUpWorkload == null) {
         patientOriginActivityVo.setMakeUpWorkload(new BigDecimal(0));
       } else {
@@ -115,7 +113,7 @@ public class PatientOriginActivityRelationsBiz
     if (patientOriginActivityVoList != null) {
       for (PatientOriginActivityVo patientOriginActivityVo : patientOriginActivityVoList) {
         BigDecimal totalRefundAmount =
-            baseRefundMapper.findRefundAmount(patientOriginActivityVo.getOriginId(), query.getStartDate(),query.getEndDate());
+            baseRefundMapper.findRefundAmount(patientOriginActivityVo.getOriginId(), query.getStartDate(),query.getEndDate(), 3);
         if (totalRefundAmount == null) {
           patientOriginActivityVo.setTotalRefundAmount(new BigDecimal(0));
         } else {
@@ -247,9 +245,9 @@ public class PatientOriginActivityRelationsBiz
       case 2:
         return receivedDetail(query, false,3);
       case 3:
-        return refundDetail(query);
+        return refundDetail(query,3);
       case 4:
-        return makeUpDetail(query);
+        return makeUpDetail(query,3);
       default:
         break;
     }
@@ -262,8 +260,8 @@ public class PatientOriginActivityRelationsBiz
    * @param query 条件
    * @return 补入工作量明细
    */
-  private List<ReceivedWorkloadDetailsVo> makeUpDetail(ReceiverkLoadQuery query) throws ParseException {
-    List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = baseBillMapper.selectMakeUpDetail(query);
+  private List<ReceivedWorkloadDetailsVo> makeUpDetail(ReceiverkLoadQuery query,Integer originType) throws ParseException {
+    List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = baseBillMapper.selectMakeUpDetail(query,originType);
     if (receivedWorkloadDetailsVoList != null) {
       for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo : receivedWorkloadDetailsVoList) {
         // 判断关联时间是否大于初诊时间
@@ -280,12 +278,12 @@ public class PatientOriginActivityRelationsBiz
    * @param query 条件
    * @return 退费金额明细
    */
-  private List<ReceivedWorkloadDetailsVo> refundDetail(ReceiverkLoadQuery query) throws ParseException {
+  private List<ReceivedWorkloadDetailsVo> refundDetail(ReceiverkLoadQuery query,Integer originType) throws ParseException {
     List<ReceivedWorkloadDetailsVo> refundDetailList = new ArrayList<>();
     List<Integer> refundIdList = baseRefundMapper.selectfundBillIdList(query);
     if (refundIdList != null) {
       for (Integer refundId : refundIdList) {
-        List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = baseRefundMapper.selectrefundDetail(refundId, query.getOriginId());
+        List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = baseRefundMapper.selectrefundDetail(refundId, query.getOriginId(), originType);
         if (receivedWorkloadDetailsVoList != null) {
           for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo :receivedWorkloadDetailsVoList ) {
             // 判断关联时间是否大于初诊时间

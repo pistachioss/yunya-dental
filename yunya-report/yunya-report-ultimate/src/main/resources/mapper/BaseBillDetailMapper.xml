@@ -2602,7 +2602,9 @@
         from base_bill_detail bbd
         join (
         select bb.bill_id from base_bill bb join (
-        select patient_id from base_patient_origin_log where origin_id = #{originId} and inservice = 1
+        select patient_id from base_patient_origin_log where origin_id = #{originId}
+        and origin_type = #{originType}
+        and inservice = 1
         ) t on t.patient_id = bb.patient_id
         where
         privilege_date is not null

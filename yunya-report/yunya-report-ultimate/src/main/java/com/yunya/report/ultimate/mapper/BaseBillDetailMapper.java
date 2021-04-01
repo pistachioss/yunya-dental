@@ -1,6 +1,5 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
@@ -221,9 +220,10 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param originId 推荐人id
    * @param startDate 开始时间
    * @param endDate 结束时间
+   * @param originType 推荐类型
    * @return 补入工作量
    */
-    BigDecimal findMakeUpWorkload(@Param("originId") Integer originId,@Param("startDate") String startDate,@Param("endDate") String endDate);
+    BigDecimal findMakeUpWorkload(@Param("originId") Integer originId,@Param("startDate") String startDate,@Param("endDate") String endDate,@Param("originType") Integer originType);
 
 
   /**
