@@ -22,6 +22,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +48,8 @@ public class PatientOriginRelationsBiz
   @Resource private BaseRefundMapper baseRefundMapper;
 
   @Resource private BaseBillDetailMapper baseBillDetailMapper;
+
+  @Resource private PatientOriginActivityRelationsBiz activityRelationsBiz;
 
   /**
    * 员工推荐信息列表
@@ -234,7 +237,7 @@ public class PatientOriginRelationsBiz
    * @param query 条件
    * @return 已收工作量明细列表分页列表信息
    */
-  public List<ReceivedWorkloadDetailsVo> findEreceiverkLoad(ReceiverkLoadQuery query) {
+  public List<ReceivedWorkloadDetailsVo> findEreceiverkLoad(ReceiverkLoadQuery query) throws ParseException {
     // 1.已收 2.免单 3.退费 4.补入
     switch (query.getType()) {
       case 1:
@@ -257,10 +260,14 @@ public class PatientOriginRelationsBiz
    * @param query 条件
    * @return 补入工作量明细
    */
-  private List<ReceivedWorkloadDetailsVo> makeUpDetail(ReceiverkLoadQuery query) {
+  private List<ReceivedWorkloadDetailsVo> makeUpDetail(ReceiverkLoadQuery query) throws ParseException {
     List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList =
         baseBillMapper.selectMakeUpDetail(query);
     if (receivedWorkloadDetailsVoList != null) {
+      for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo : receivedWorkloadDetailsVoList) {
+        // 判断关联时间是否大于初诊时间
+        receivedWorkloadDetailsVo.setIsChange(activityRelationsBiz.getIsChange(receivedWorkloadDetailsVo));
+      }
       return receivedWorkloadDetailsVoList;
     }
     return null;
@@ -272,7 +279,7 @@ public class PatientOriginRelationsBiz
    * @param query 条件
    * @return 退费金额明细
    */
-  private List<ReceivedWorkloadDetailsVo> refundDetail(ReceiverkLoadQuery query) {
+  private List<ReceivedWorkloadDetailsVo> refundDetail(ReceiverkLoadQuery query) throws ParseException {
     List<ReceivedWorkloadDetailsVo> refundDetailList = new ArrayList<>();
     List<Integer> refundIdList = baseRefundMapper.selectfundBillIdList(query);
     if (refundIdList != null) {
@@ -280,6 +287,10 @@ public class PatientOriginRelationsBiz
         List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList =
             baseRefundMapper.selectrefundDetail(refundId, query.getOriginId());
         if (receivedWorkloadDetailsVoList != null) {
+          for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo :receivedWorkloadDetailsVoList ) {
+            // 判断关联时间是否大于初诊时间
+            receivedWorkloadDetailsVo.setIsChange(activityRelationsBiz.getIsChange(receivedWorkloadDetailsVo));
+          }
           refundDetailList.addAll(receivedWorkloadDetailsVoList);
         }
       }
@@ -295,7 +306,7 @@ public class PatientOriginRelationsBiz
    * @return 明细
    */
   public List<ReceivedWorkloadDetailsVo> receivedDetail(
-      ReceiverkLoadQuery query, Boolean isFreePayment) {
+      ReceiverkLoadQuery query, Boolean isFreePayment) throws ParseException {
     List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsListVo = new ArrayList<>();
     List<Integer> baseBillIdList;
     if (isFreePayment) {
@@ -324,6 +335,8 @@ public class PatientOriginRelationsBiz
         List<ReceivedWorkloadDetailsVo> baseBillDetailBizVos = baseBillDetailMapper.selectEreceiverkLoad(billId, query.getOriginId());
         if (baseBillDetailBizVos != null) {
           for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo : baseBillDetailBizVos) {
+            // 判断推荐时间是否大于初诊时间
+            receivedWorkloadDetailsVo.setIsChange(activityRelationsBiz.getIsChange(receivedWorkloadDetailsVo));
             // 通过项目订单id 获取订单支付记录
             List<BaseBillPay> billPayList = baseBillPayMap.get(receivedWorkloadDetailsVo.getBillId());
             if (StringHelper.isNotNull(billPayList)){

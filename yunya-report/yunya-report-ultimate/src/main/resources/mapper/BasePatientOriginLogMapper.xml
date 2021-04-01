@@ -111,9 +111,7 @@
 
         from base_patient_origin bpo
         where bpo.origin_type = 3
-        <!-- and bpo.inservice = 1
         and bpo.parent_id != 0
-         -->
         <if test="query.activityIds != null and query.activityIds.size() > 0">
             and bpo.id in
             <foreach collection="query.activityIds" item="activityId" open="(" separator="," close=")">

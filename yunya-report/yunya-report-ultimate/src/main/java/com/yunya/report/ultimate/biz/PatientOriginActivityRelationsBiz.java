@@ -334,6 +334,8 @@ public class PatientOriginActivityRelationsBiz
         List<ReceivedWorkloadDetailsVo> baseBillDetailBizVos = baseBillDetailMapper.selectEreceiverkLoad(billId, query.getOriginId());
         if (baseBillDetailBizVos != null) {
           for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo : baseBillDetailBizVos) {
+            // 判断推荐时间是否大于初诊时间
+            receivedWorkloadDetailsVo.setIsChange(getIsChange(receivedWorkloadDetailsVo));
             // 通过项目订单id 获取订单支付记录
             List<BaseBillPay> billPayList = baseBillPayMap.get(receivedWorkloadDetailsVo.getBillId());
             if (StringHelper.isNotNull(billPayList)){
@@ -357,7 +359,7 @@ public class PatientOriginActivityRelationsBiz
    * @param model 来源信息
    * @return 是否更改过
    */
-  private Boolean getIsChange(ReceivedWorkloadDetailsVo model) throws ParseException {
+  public Boolean getIsChange(ReceivedWorkloadDetailsVo model) throws ParseException {
     if (model.getRelatedTime() != null && model.getFirstVisitDate() != null){
       return comparetoTime(model.getRelatedTime(),model.getFirstVisitDate());
     }

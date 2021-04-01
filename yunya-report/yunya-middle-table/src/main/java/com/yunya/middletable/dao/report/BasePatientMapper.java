@@ -33,4 +33,16 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
      * @param basePatientList 患者信息
      */
     void updatePatientInfoList(@Param("list") List<BasePatient> basePatientList);
+
+    /**
+     * 查询患者初诊信息
+     * @return 初诊信息
+     */
+    List<PatientTreatInfoVo> selectFirstVisitInfoList();
+
+    /**
+     * 查询患者末诊信息
+     * @return 末诊信息
+     */
+    List<PatientTreatInfoVo> selectLastVisitInfoList();
 }
