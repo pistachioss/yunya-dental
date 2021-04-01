@@ -424,19 +424,6 @@ public class PatientOriginActivityRelationsBiz
    * @return 活动列表
    */
   public List<ActivityVo> getActivityList() {
-    List<ActivityVo> activityVoList = basePatientOriginMapper.selectActivityList();
-    /*// 删除过期机活动
-    if (!StringHelper.isEmpty(activityVoList)){
-      Iterator<ActivityVo> activityVoIterator = activityVoList.iterator();
-      while (activityVoIterator.hasNext()){
-        ActivityVo activityVo = activityVoIterator.next();
-        if (activityVo.getTimeLimit() == 1) {
-          if (!DateUtil.isEffectiveDate(new Date(), activityVo.getLimitStartDate(), activityVo.getLimitEndDate())) {
-            activityVoIterator.remove(); // 使用迭代器的删除方法删除
-          }
-        }
-      }
-    }*/
-    return activityVoList;
+    return basePatientOriginMapper.selectActivityList();
   }
 }
