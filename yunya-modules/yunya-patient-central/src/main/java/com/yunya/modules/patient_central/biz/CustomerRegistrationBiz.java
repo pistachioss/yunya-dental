@@ -87,9 +87,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         patientBaseInfo.setCrtId(1);
         patientBaseInfo.setCrtName("客户登记");
         mapper.insertPatientInfo(patientBaseInfo);
-
-        PatientBaseInfoVo patientBaseInfoVo =
-                mapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
+        PatientBaseInfoVo patientBaseInfoVo = mapper.selectPatienInfoById(patientBaseInfo.getOriginId());
         // 创建预付款 并发送消息
         patientBaseInfoBiz.sendMessages(patientBaseInfo.getId(), 0);
         addPatientPrepaymentsInfo(patientBaseInfo);

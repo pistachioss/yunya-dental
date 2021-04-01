@@ -191,8 +191,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientOriginLog.setUpdName(patientBaseInfo.getUpdName());
       patientOriginLog.setUpdTime(patientBaseInfo.getUpdTime());
       patientOriginLogMapper.insertSelective(patientOriginLog);
-      remoteRabbitMqServiceFeign.sendMessage(
-              patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
+      remoteRabbitMqServiceFeign.sendMessage(patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
       System.out.println("已發送消息！");
     }
     // 创建预付款 并发送消息
