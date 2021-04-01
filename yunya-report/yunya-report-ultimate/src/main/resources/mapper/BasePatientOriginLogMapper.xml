@@ -42,7 +42,7 @@
           JOIN base_user_post bup ON bup.user_id = ee.user_id
           WHERE
                 1 = 1
-              <if test="query.workStatus != null">
+              <if test="query.workStatus != null and query.workStatus != ''">
                   and ee.work_status = #{query.workStatus}
               </if>
 
