@@ -1158,7 +1158,7 @@
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="typeList != null">
+        <if test="itemIds != null">
             and bbpd.account_item_id in
             <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
                 #{itemId}
