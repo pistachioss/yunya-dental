@@ -146,7 +146,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             vo.setReceivedBonusBase(receivedBonusBase);
             vo.setReceivedBonus(receivedBonusBase.multiply(bonusCoefficient));
           });
-      assemblyFreepayment(resultList, query);
     }
     return new PageInfo<>(resultList);
   }
@@ -164,11 +163,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     List<EmployeeWorkloadOfOperationVO> resultList =
         mapper.selectEmployeeWorkloadListOfOperation(query);
-
-    // 免单支付工作量
-    if (StringHelper.isNotEmpty(resultList)) {
-      assemblyFreepayment(resultList, query);
-    }
     return new PageInfo<>(resultList);
   }
 

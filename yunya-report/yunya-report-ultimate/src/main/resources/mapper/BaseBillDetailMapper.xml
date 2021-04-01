@@ -119,6 +119,7 @@
         actualWorkload,
         supplementWorkload,
         receivedWorkload,
+        freePaymentWorkload,
         refundWorkload,
         processingFee,
         orthodonticsFee,
@@ -135,6 +136,7 @@
         IFNULL( bbd.actualWorkload, 0 ) AS actualWorkload,
         IFNULL( bbd1.supplementWorkload, 0 ) AS supplementWorkload,
         IFNULL( bbd2.receivedWorkload, 0 ) AS receivedWorkload,
+        IFNULL( bbd3.freePaymentWorkload, 0 ) AS freePaymentWorkload,
         IFNULL( brd.refundWorkload, 0 ) AS refundWorkload,
         IFNULL( ewc.processingFee, 0 ) AS processingFee,
         IFNULL( ewc.orthodonticsFee, 0 ) AS orthodonticsFee,
@@ -149,7 +151,7 @@
         GROUP_CONCAT( DISTINCT bup.post_name SEPARATOR ',' ) AS post_names
         FROM
         base_employee be
-        INNER JOIN base_user_post bup  ON be.user_id = bup.user_id
+        INNER JOIN base_user_post bup ON be.user_id = bup.user_id
         <where>
             <if test="query.employeeIds != null and query.employeeIds.length > 0">
                 and bup.user_id in
@@ -340,6 +342,118 @@
         bbd.org_id,
         bbd.executor_id
         ) bbd2 ON bup.user_id = bbd2.executor_id
+        LEFT JOIN (
+        SELECT
+        bbd.org_id,
+        bbd.executor_id,
+        CONVERT (
+        SUM( bbd.billWorkload / bbd.billTotalWorkload * bbd.freePayAmount ),
+        DECIMAL ( 19, 4 )) AS freePaymentWorkload
+        FROM
+        (
+        SELECT
+        bbp.org_id,
+        bbp.bill_id,
+        bbp.bill_pay_id,
+        bbp.billTotalWorkload,
+        IF
+        ( bbp.freePayAmount > bbp.billTotalWorkload, bbp.billTotalWorkload, bbp.freePayAmount ) AS freePayAmount,
+        bbd.billWorkload,
+        bbd.executor_id
+        FROM
+        (
+        SELECT
+        bbpd.bill_id,
+        bbpd.bill_pay_id,
+        SUM( bbpd.principal_amount ) AS freePayAmount,
+        bbp.org_id,
+        bbp.billTotalWorkload
+        FROM
+        base_bill_pay_detail bbpd
+        INNER JOIN (
+        SELECT
+        bb.org_id,
+        bbp.bill_pay_id,
+        bbd.billTotalWorkload
+        FROM
+        base_bill_pay bbp
+        INNER JOIN (
+        SELECT
+        bb.org_id,
+        bb.bill_id
+        FROM base_bill bb
+        <where>
+            AND bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id = #{query.orgId}
+            </if>
+        </where>
+        ) bb ON bbp.bill_id = bb.bill_id
+        INNER JOIN (
+        SELECT
+        bbd.bill_id,
+        SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS billTotalWorkload
+        FROM
+        base_bill_detail bbd
+        <where>
+            AND bbd.executor_id > 0
+            <if test="query.orgId != null">
+                AND bbd.org_id = #{query.orgId}
+            </if>
+        </where>
+        GROUP BY
+        bbd.bill_id
+        ) bbd ON bbp.bill_id = bbd.bill_id
+        <where>
+            <if test="query.dateType == 0">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
+                </if>
+            </if>
+            AND bbp.received_amount > 0
+        </where>
+        ) bbp ON bbpd.bill_pay_id = bbp.bill_pay_id
+        WHERE
+        bbpd.account_item_id IN ( 23, 26 )
+        GROUP BY
+        bbpd.bill_pay_id
+        ) bbp
+        INNER JOIN (
+        SELECT
+        bbd.bill_id,
+        bbd.executor_id,
+        bbd.billWorkload
+        FROM
+        (
+        SELECT
+        bbd.bill_id,
+        bbd.executor_id,
+        SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS billWorkload
+        FROM
+        base_bill_detail bbd
+        <where>
+            AND bbd.executor_id > 0
+            <if test="query.orgId != null">
+                AND bbd.org_id = #{query.orgId}
+            </if>
+        </where>
+        GROUP BY
+        bbd.bill_id,
+        bbd.executor_id
+        ) bbd
+        WHERE
+        bbd.billWorkload > 0
+        ) bbd ON bbp.bill_id = bbd.bill_id
+        ) bbd
+        GROUP BY
+        bbd.org_id,
+        bbd.executor_id
+        ) bbd3 ON bup.user_id = bbd3.executor_id
         LEFT JOIN (
         SELECT
         brd.org_id,
@@ -416,6 +530,7 @@
         bup.actualWorkload DESC,
         bup.receivedWorkload DESC,
         bup.supplementWorkload DESC,
+        bup.freePaymentWorkload DESC,
         bup.refundWorkload DESC
     </select>
 
@@ -431,6 +546,7 @@
         actualWorkload,
         supplementWorkload,
         receivedWorkload,
+        freePaymentWorkload,
         refundWorkload,
         processingFee,
         orthodonticsFee,
@@ -446,6 +562,7 @@
         IFNULL( bbd.actualWorkload, 0 ) AS actualWorkload,
         ifnull( bbd1.supplementWorkload, 0 ) AS supplementWorkload,
         ifnull( bbd2.receivedWorkload, 0 ) AS receivedWorkload,
+        ifnull( bbd3.freePaymentWorkload, 0 ) AS freePaymentWorkload,
         ifnull( brd.refundWorkload, 0 ) AS refundWorkload,
         ifnull( ewc.processingFee, 0 ) AS processingFee,
         ifnull( ewc.orthodonticsFee, 0 ) AS orthodonticsFee,
@@ -460,7 +577,7 @@
         GROUP_CONCAT( DISTINCT bup.post_name SEPARATOR ',' ) AS post_names
         FROM
         base_employee be
-        INNER JOIN base_user_post bup  ON be.user_id = bup.user_id
+        INNER JOIN base_user_post bup ON be.user_id = bup.user_id
         <where>
             <if test="query.employeeIds != null and query.employeeIds.length > 0">
                 and bup.user_id in
@@ -653,6 +770,118 @@
         ) bbd2 ON bup.user_id = bbd2.executor_id
         LEFT JOIN (
         SELECT
+        bbd.org_id,
+        bbd.executor_id,
+        CONVERT (
+        SUM( bbd.billWorkload / bbd.billTotalWorkload * bbd.freePayAmount ),
+        DECIMAL ( 19, 4 )) AS freePaymentWorkload
+        FROM
+        (
+        SELECT
+        bbp.org_id,
+        bbp.bill_id,
+        bbp.bill_pay_id,
+        bbp.billTotalWorkload,
+        IF
+        ( bbp.freePayAmount > bbp.billTotalWorkload, bbp.billTotalWorkload, bbp.freePayAmount ) AS freePayAmount,
+        bbd.billWorkload,
+        bbd.executor_id
+        FROM
+        (
+        SELECT
+        bbpd.bill_id,
+        bbpd.bill_pay_id,
+        SUM( bbpd.principal_amount ) AS freePayAmount,
+        bbp.org_id,
+        bbp.billTotalWorkload
+        FROM
+        base_bill_pay_detail bbpd
+        INNER JOIN (
+        SELECT
+        bb.org_id,
+        bbp.bill_pay_id,
+        bbd.billTotalWorkload
+        FROM
+        base_bill_pay bbp
+        INNER JOIN (
+        SELECT
+        bb.org_id,
+        bb.bill_id
+        FROM base_bill bb
+        <where>
+            AND bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id = #{query.orgId}
+            </if>
+        </where>
+        ) bb ON bbp.bill_id = bb.bill_id
+        INNER JOIN (
+        SELECT
+        bbd.bill_id,
+        SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS billTotalWorkload
+        FROM
+        base_bill_detail bbd
+        <where>
+            AND bbd.executor_id > 0
+            <if test="query.orgId != null">
+                AND bbd.org_id = #{query.orgId}
+            </if>
+        </where>
+        GROUP BY
+        bbd.bill_id
+        ) bbd ON bbp.bill_id = bbd.bill_id
+        <where>
+            <if test="query.dateType == 0">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
+                </if>
+            </if>
+            AND bbp.received_amount > 0
+        </where>
+        ) bbp ON bbpd.bill_pay_id = bbp.bill_pay_id
+        WHERE
+        bbpd.account_item_id IN ( 23, 26 )
+        GROUP BY
+        bbpd.bill_pay_id
+        ) bbp
+        INNER JOIN (
+        SELECT
+        bbd.bill_id,
+        bbd.executor_id,
+        bbd.billWorkload
+        FROM
+        (
+        SELECT
+        bbd.bill_id,
+        bbd.executor_id,
+        SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS billWorkload
+        FROM
+        base_bill_detail bbd
+        <where>
+            AND bbd.executor_id > 0
+            <if test="query.orgId != null">
+                AND bbd.org_id = #{query.orgId}
+            </if>
+        </where>
+        GROUP BY
+        bbd.bill_id,
+        bbd.executor_id
+        ) bbd
+        WHERE
+        bbd.billWorkload > 0
+        ) bbd ON bbp.bill_id = bbd.bill_id
+        ) bbd
+        GROUP BY
+        bbd.org_id,
+        bbd.executor_id
+        ) bbd3 ON bup.user_id = bbd3.executor_id
+        LEFT JOIN (
+        SELECT
         brd.org_id,
         SUM( brd.refund_amount ) AS refundWorkload,
         brd.executor_id
@@ -722,6 +951,7 @@
         bup.actualWorkload DESC,
         bup.receivedWorkload DESC,
         bup.supplementWorkload DESC,
+        bup.freePaymentWorkload DESC,
         bup.refundWorkload DESC
     </select>
 
@@ -2380,7 +2610,7 @@
             and DATE_FORMAT( privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="endDate != null" >
+        <if test="endDate != null">
             and DATE_FORMAT( privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{endDate}, '%Y-%m-%d' )
         </if>
         ) t on t.bill_id = bbd.bill_id

@@ -405,7 +405,7 @@
         SUM( any_value(bbpd.amount) ) AS totalFreePaymentAmount
         FROM
         base_bill bb
-        INNER JOIN (
+        LEFT JOIN (
         SELECT
         bill_id,
         IFNULL(SUM(principal_amount), 0) amount

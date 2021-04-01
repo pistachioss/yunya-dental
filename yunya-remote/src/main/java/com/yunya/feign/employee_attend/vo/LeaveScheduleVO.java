@@ -44,7 +44,7 @@ public class LeaveScheduleVO implements Serializable {
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
     private Date endTime;
 
-    /** 审批用户id */
-    @ApiModelProperty(value = "审批用户id")
-    private Integer approvalPeopleId;
+    /** 审批用户id列表 */
+    @ApiModelProperty(value = "审批用户id列表")
+    private String approvalPeopleId;
 }

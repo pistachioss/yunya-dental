@@ -3195,14 +3195,20 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         leaveQueryForm.setBetweenStartDate(queryForm.getBetweenDate());
         leaveQueryForm.setAndStartDate(queryForm.getAndDate());
         leaveQueryForm.setApprovalStatus(1);
+        queryForm.setWhetherPage(false);
         // 排班
         List<LeaveScheduleVO> leaveScheduleVOS = leaveScheduleBiz.findLeaveScheduleByStatisticsQuery(queryForm);
         Map<Integer, List<LeaveScheduleVO>> leaveScheduleMap = new HashMap<>(16);
         Set<Integer> userIds = new HashSet<>();
         leaveScheduleVOS.forEach(leaveScheduleVO -> {
             Integer leaveId = leaveScheduleVO.getLeaveId();
-            Integer approvalPeopleId = leaveScheduleVO.getApprovalPeopleId();
-            userIds.add(approvalPeopleId);
+            String approvalPeopleIds = leaveScheduleVO.getApprovalPeopleId();
+            if (StringHelper.isNotEmpty(approvalPeopleIds)) {
+                String[] ids = approvalPeopleIds.split(",");
+                for (String id : ids) {
+                    userIds.add(Integer.parseInt(id));
+                }
+            }
             List<LeaveScheduleVO> list = leaveScheduleMap.get(leaveId);
             if (list == null) {
                 list = new ArrayList<>();
@@ -3229,14 +3235,22 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             StringBuilder approvalNames = new StringBuilder();
             if (leaveInfoVO.getVacationStatus().equals(0)) {
                 List<LeaveScheduleVO> list = leaveScheduleMap.get(leaveInfoVO.getId());
-                for (LeaveScheduleVO leaveScheduleVO : list) {
-                    Integer approvalPeopleId = leaveScheduleVO.getApprovalPeopleId();
-                    String userName = userNameMap.get(approvalPeopleId);
-                    if (StringHelper.isNotEmpty(userName)) {
-                        if (approvalNames.length() > 0) {
-                            approvalNames.append("、");
+                for (int i = 0; i < list.size(); i++) {
+                    LeaveScheduleVO leaveScheduleVO = list.get(i);
+                    if (i == 0) {
+                        String approvalPeopleIds = leaveScheduleVO.getApprovalPeopleId();
+                        if (StringHelper.isNotEmpty(approvalPeopleIds)) {
+                            String[] ids = approvalPeopleIds.split(",");
+                            for (String id : ids) {
+                                String userName = userNameMap.get(Integer.parseInt(id));
+                                if (StringHelper.isNotEmpty(userName)) {
+                                    if (approvalNames.length() > 0) {
+                                        approvalNames.append("、");
+                                    }
+                                    approvalNames.append(userName);
+                                }
+                            }
                         }
-                        approvalNames.append(userName);
                     }
                     diff += leaveScheduleVO.getEndTime().getTime() - leaveScheduleVO.getStartTime().getTime();
                 }
