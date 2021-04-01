@@ -37,4 +37,7 @@ public class PatientTreatInfoVo implements Serializable {
   /** 初诊门诊 */
   @ApiModelProperty("就诊门诊")
   private String treatOutpatient;
+  /** 患者id */
+  @ApiModelProperty("患者id")
+  private Integer patientId;
 }

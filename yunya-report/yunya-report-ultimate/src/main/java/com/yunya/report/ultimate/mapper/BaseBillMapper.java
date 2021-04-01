@@ -202,10 +202,10 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
   /**
    * 根据推荐人id和支付记录时间查询订单id
    * @param query 条件
-   * @param typeList 支付方式
+   * @param itemIds 支付方式
    * @return 已收工作量信息
    */
-  List<Integer> findBaseBillIdList(@Param("query") ReceiverkLoadQuery query,@Param("typeList") List<Integer> typeList);
+  List<Integer> findBaseBillIdList(@Param("query") ReceiverkLoadQuery query,@Param("itemIds") List<Integer> itemIds);
 
   /**
    * 查询账单列表实收金额总和

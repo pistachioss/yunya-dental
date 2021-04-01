@@ -1107,13 +1107,21 @@
         join base_bill bb on log.patient_id = bb.patient_id
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         where 1 = 1
+
+        <if test="query.startDate != null">
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+        </if>
+
+        <if test="query.endDate != null" >
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+        </if>
+
         <if test="query.activityIds != null and query.activityIds.size() > 0">
             and log.origin_id in
             <foreach collection="query.activityIds" item="activityId" open="(" separator="," close=")">
                 #{activityId}
             </foreach>
         </if>
-
     </select>
 
     <!-- 根据推荐人id和支付记录时间查询已收工作量信息 -->
@@ -1150,12 +1158,10 @@
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
-
-
         <if test="typeList != null">
-            and bbpd.type in
-            <foreach collection="typeList" item="type" open="(" separator="," close=")">
-                #{type}
+            and bbpd.account_item_id in
+            <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
+                #{itemId}
             </foreach>
         </if>
 
@@ -1192,8 +1198,8 @@
                 DATE_FORMAT( log.crt_time, '%Y-%m-%d %H:%i') relatedTime,
                 bp.`name`,
                 bp.mobile,
-                DATE_FORMAT( bp.first_visit_date, '%Y-%m-%d %H:%i') firstVisitDate,
-                DATE_FORMAT( bp.last_visit_date, '%Y-%m-%d %H:%i') lastVisitDate,
+                (select DATE_FORMAT(min(treat_start_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id = bb.patient_id and treat_start_time IS NOT NULL) firstVisitDate,
+                (select DATE_FORMAT(max(treat_end_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id = bb.patient_id and treat_start_time IS NOT NULL) lastVisitDate ,
                 DATE_FORMAT( bb.order_date, '%Y-%m-%d %H:%i') orderDate,
                 bo.abbreviation abbreviation,
                 be.employee_name employeeName,

@@ -113,7 +113,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
             draftMedicalApplyModel.setId(model.getApprovalId());
             ResponseResult responseResult = medicalApprovalBiz.applyAddDraftCase(draftMedicalApplyModel);
             if (responseResult.getStatus() != 200) {
-                return responseResult;
+                throw new ClientServiceException(responseResult.getMsg(), responseResult.getStatus());
             }
         }
         //修改就诊记录病历书写状态

@@ -183,10 +183,10 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    * @param billIdList 账单id集合
    * @param startDate 开始时间
    * @param endDate 结束时间
-   * @param typeList 支付方式类型
+   * @param itemIds 支付方式类型
    * @return 账单支付记录集合
    */
-    List<BaseBillPay> findBaseBillPayInfoList(@Param("billIdList") List<BillIdVo> billIdList, @Param("startDate") String startDate,@Param("endDate") String endDate, @Param("typeList") List<Integer> typeList);
+    List<BaseBillPay> findBaseBillPayInfoList(@Param("billIdList") List<BillIdVo> billIdList, @Param("startDate") String startDate,@Param("endDate") String endDate, @Param("itemIds") List<Integer> itemIds);
 
   /**
    * 根据订单id查询支付记录

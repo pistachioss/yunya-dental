@@ -70,7 +70,7 @@ public class PatientOriginActivityRelationsBiz
           PatientOriginActivityQuery query) {
     // 查询活动信息以及推荐数量
     List<PatientOriginActivityVo> patientOriginActivityVoList = mapper.findActivityVoLists(query);
-    // 查询所有符合条件的订单号
+    // 根据时间段查询所有符合条件的订单号
     List<BillIdVo> billIdList = baseBillMapper.findActivityBillIdList(query);
     if (patientOriginActivityVoList != null) {
       // 获取已收工作量合计
@@ -201,8 +201,8 @@ public class PatientOriginActivityRelationsBiz
       baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(),query.getEndDate(), null);
     } else {
       // 其中免单支付工作量合计
-      List<Integer> typeList = new ArrayList<Integer>() {{ add(23);add(26); }};
-      baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(),query.getEndDate(), typeList);
+      List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
+      baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(),query.getEndDate(), itemIds);
     }
     for (BillIdVo billIdVo : billIdList) {
       for (BaseBillPay baseBillPay : baseBillPayList) {
@@ -334,6 +334,8 @@ public class PatientOriginActivityRelationsBiz
         List<ReceivedWorkloadDetailsVo> baseBillDetailBizVos = baseBillDetailMapper.selectEreceiverkLoad(billId, query.getOriginId());
         if (baseBillDetailBizVos != null) {
           for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo : baseBillDetailBizVos) {
+            // 判断推荐时间是否大于初诊时间
+            receivedWorkloadDetailsVo.setIsChange(getIsChange(receivedWorkloadDetailsVo));
             // 通过项目订单id 获取订单支付记录
             List<BaseBillPay> billPayList = baseBillPayMap.get(receivedWorkloadDetailsVo.getBillId());
             if (StringHelper.isNotNull(billPayList)){
@@ -357,7 +359,7 @@ public class PatientOriginActivityRelationsBiz
    * @param model 来源信息
    * @return 是否更改过
    */
-  private Boolean getIsChange(ReceivedWorkloadDetailsVo model) throws ParseException {
+  public Boolean getIsChange(ReceivedWorkloadDetailsVo model) throws ParseException {
     if (model.getRelatedTime() != null && model.getFirstVisitDate() != null){
       return comparetoTime(model.getRelatedTime(),model.getFirstVisitDate());
     }
@@ -422,18 +424,6 @@ public class PatientOriginActivityRelationsBiz
    * @return 活动列表
    */
   public List<ActivityVo> getActivityList() {
-    List<ActivityVo> activityVoList = basePatientOriginMapper.selectActivityList();
-    if (!StringHelper.isEmpty(activityVoList)){
-      Iterator<ActivityVo> activityVoIterator = activityVoList.iterator();
-      while (activityVoIterator.hasNext()){
-        ActivityVo activityVo = activityVoIterator.next();
-        if (activityVo.getTimeLimit() == 1) {
-          if (!DateUtil.isEffectiveDate(new Date(), activityVo.getLimitStartDate(), activityVo.getLimitEndDate())) {
-            activityVoIterator.remove(); // 使用迭代器的删除方法删除
-          }
-        }
-      }
-    }
-    return activityVoList;
+    return basePatientOriginMapper.selectActivityList();
   }
 }
