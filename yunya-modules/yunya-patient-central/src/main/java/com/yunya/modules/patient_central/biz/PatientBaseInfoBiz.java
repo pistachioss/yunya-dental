@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -104,7 +105,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   @Autowired private RemoteTreatmentServiceFeign treatmentServiceFeign;
 
   /** 患者来源绑定关系 */
-  @Autowired private PatientOriginLogMapper patientOriginLogMapper;
+  @Resource
+  private PatientOriginLogMapper patientOriginLogMapper;
 
   /** 获取患者服务端口号 */
   @Value("${codeUrl.url}")
@@ -159,7 +161,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     // 患者id不为空表明,是修改操作
     if (StringHelper.isNotNull(patientBaseInfoModel.getId())) {
       patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
-      return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
+      return patientBaseInfoMapper.selectPatienInfoById(patientBaseInfo.getId());
     }
     Integer originType = patientBaseInfo.getOriginType();
     if (null != originType) {
@@ -174,9 +176,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setCrtName(BaseContextHandler.getName());
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     mapper.insertPatientInfo(patientBaseInfo);
-    PatientBaseInfoVo patientBaseInfoVo =
-        this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
+    PatientBaseInfoVo patientBaseInfoVo = this.patientBaseInfoMapper.selectPatienInfoById(patientBaseInfo.getId());
     if (patientBaseInfoVo.getOriginId() != null) {
+      System.out.println("不爲空,進來了");
       PatientOriginLog patientOriginLog = new PatientOriginLog();
       patientOriginLog.setPatientId(patientBaseInfoVo.getId());
       patientOriginLog.setOriginType(patientBaseInfo.getOriginType());
@@ -191,6 +193,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientOriginLogMapper.insertSelective(patientOriginLog);
       remoteRabbitMqServiceFeign.sendMessage(
               patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
+      System.out.println("已發送消息！");
     }
     // 创建预付款 并发送消息
     this.addPatientPrepaymentsInfo(patientBaseInfo);

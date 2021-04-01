@@ -425,6 +425,7 @@ public class PatientOriginActivityRelationsBiz
    */
   public List<ActivityVo> getActivityList() {
     List<ActivityVo> activityVoList = basePatientOriginMapper.selectActivityList();
+    /*// 删除过期机活动
     if (!StringHelper.isEmpty(activityVoList)){
       Iterator<ActivityVo> activityVoIterator = activityVoList.iterator();
       while (activityVoIterator.hasNext()){
@@ -435,7 +436,7 @@ public class PatientOriginActivityRelationsBiz
           }
         }
       }
-    }
+    }*/
     return activityVoList;
   }
 }

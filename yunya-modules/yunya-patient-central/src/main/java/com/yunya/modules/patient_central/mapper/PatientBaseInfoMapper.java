@@ -89,11 +89,11 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
   /**
    * 根据患者姓名、手机号、门诊号 查询患者信息
    *
-   * @param patientBaseInfo 患者信息
+   * @param patientId 患者id
    * @return PatientBaseInfoVo
    */
-  PatientBaseInfoVo selectPatientInfoByNameAndMobileAndOrgId(
-      @Param("form") PatientBaseInfo patientBaseInfo);
+  PatientBaseInfoVo selectPatienInfoById(
+      @Param("patientId") Integer patientId);
 
   /**
    * 根据患者ID查询患者全部信息
