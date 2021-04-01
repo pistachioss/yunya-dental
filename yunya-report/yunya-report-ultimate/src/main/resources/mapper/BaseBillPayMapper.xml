@@ -1961,7 +1961,7 @@
         select bbp.* from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
-        <if test="typeList != null">
+        <if test="itemIds != null">
             and bbpd.account_item_id in
             <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
                 #{itemId}
