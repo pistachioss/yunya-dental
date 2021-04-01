@@ -241,9 +241,9 @@ public class PatientOriginRelationsBiz
     // 1.已收 2.免单 3.退费 4.补入
     switch (query.getType()) {
       case 1:
-        return receivedDetail(query, true);
+        return receivedDetail(query, true,1);
       case 2:
-        return receivedDetail(query, false);
+        return receivedDetail(query, false,1);
       case 3:
         return refundDetail(query);
       case 4:
@@ -306,16 +306,16 @@ public class PatientOriginRelationsBiz
    * @return 明细
    */
   public List<ReceivedWorkloadDetailsVo> receivedDetail(
-      ReceiverkLoadQuery query, Boolean isFreePayment) throws ParseException {
+      ReceiverkLoadQuery query, Boolean isFreePayment,Integer originType) throws ParseException {
     List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsListVo = new ArrayList<>();
     List<Integer> baseBillIdList;
     if (isFreePayment) {
       // 订单id List
-      baseBillIdList = baseBillMapper.findBaseBillIdList(query, null);
+      baseBillIdList = baseBillMapper.findBaseBillIdList(query, null,originType);
     } else {
       // 其中免单支付 订单id List
       List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
-      baseBillIdList = baseBillMapper.findBaseBillIdList(query, itemIds);
+      baseBillIdList = baseBillMapper.findBaseBillIdList(query, itemIds,originType);
     }
     if (baseBillIdList != null) {
       List<BaseBillPay> baseBillPayList;

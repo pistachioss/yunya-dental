@@ -1145,6 +1145,7 @@
             <if test="query.condition != null">
                 and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition} ), '%' )
             </if>
+            AND log.origin_type = #{originType}
             AND log.inservice = 1
         ) t ON bb.patient_id = t.patient_id
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
