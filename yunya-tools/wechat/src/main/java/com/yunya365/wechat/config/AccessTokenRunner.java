@@ -4,7 +4,6 @@ import com.yunya.feign.wechat.domain.vo.WxAccessTokenVo;
 import com.yunya.framework.common.constant.WXConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.client.RestTemplate;
@@ -19,15 +18,15 @@ import java.util.concurrent.TimeUnit;
  **/
 @Configuration
 @Slf4j
-public class AccessTokenRunner implements CommandLineRunner {
+public class AccessTokenRunner{
     @Resource
     private WXConfig wxConfig;
     @Resource
     private RestTemplate restTemplate;
     @Resource
     private RedisTemplate<String, String> redisTemplate;
-    @Override
-    public void run(String... args) throws Exception {
+
+    public void refreshToken(){
         String accessToken = null;
         String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
         accessToken = redisTemplate.opsForValue().get(redisKey);

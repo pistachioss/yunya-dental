@@ -5,6 +5,7 @@ import com.yunya.feign.wechat.domain.vo.WxKfAllVo;
 import com.yunya.feign.wechat.domain.vo.WxKfListVo;
 import com.yunya.feign.wechat.domain.vo.WxKfOnlineVo;
 import com.yunya.framework.common.constant.WXConstant;
+import com.yunya.framework.common.exception.BaseException;
 import com.yunya365.wechat.config.WXConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -28,6 +29,19 @@ public abstract class AbstractWxBaseApi {
     private RedisTemplate<String, String> redisTemplate;
     @Resource
     private RestTemplate restTemplate;
+
+    private String getAccessToken() {
+        String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
+        return redisTemplate.opsForValue().get(redisKey);
+    }
+
+    private void checkWxResult(JSONObject jsonObject) {
+        Integer errCode = jsonObject.getInteger("errcode");
+        if (errCode != null) {
+            String errmsg = jsonObject.getString("errmsg");
+            throw new BaseException(errmsg, errCode);
+        }
+    }
 
     public WxKfOnlineVo listOnlineKf() {
         String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
@@ -62,22 +76,21 @@ public abstract class AbstractWxBaseApi {
         return null;
     }
 
-    public void beforeLogin(String code) {
+    public String getAuthOpenId(String code) {
         String authAccessTokenUrl = String.format(WXConstant.WX_AUTH_ACCESS_TOKEN_URL, wxConfig.getAppId(), wxConfig.getAppSecret(), code);
         String resultStr = restTemplate.getForObject(authAccessTokenUrl, String.class);
+        JSONObject jsonObject = JSONObject.parseObject(resultStr);
+        this.checkWxResult(jsonObject);
+        return jsonObject.getString("openid");
     }
 
-    public void getUserInfo(String openId) {
-        String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
-        String accessToken = redisTemplate.opsForValue().get(redisKey);
+    public JSONObject getUserInfo(String openId) {
+        String accessToken = this.getAccessToken();
         String url = String.format(WXConstant.WX_USER_INFO_URL, accessToken, openId);
         String resultStr = restTemplate.getForObject(url, String.class);
         JSONObject jsonObject = JSONObject.parseObject(resultStr);
-        System.out.println(jsonObject.getString("subscribe"));
-        System.out.println(jsonObject.getString("openid"));
-        System.out.println(jsonObject.getString("nickname"));
-        System.out.println(jsonObject.getString("sex"));
-        log.info("会员信息：{}", resultStr);
+        this.checkWxResult(jsonObject);
+        return jsonObject;
     }
 
     public void pushMsg(String msgId) {

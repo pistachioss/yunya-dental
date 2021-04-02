@@ -2,11 +2,11 @@
 spring:
   application:
     name: wechat
-  cloud:
-    nacos:
-      config:
-        server-addr: 192.168.31.215:8848
-        file-extension: yaml
+#  cloud:
+#    nacos:
+#      config:
+#        server-addr: 192.168.31.215:8848
+#        file-extension: yaml
   profiles:
     active: dev
   main:

@@ -1,6 +1,0 @@
-# 生产环境：勿动！！！
-spring:
-  cloud:
-    nacos:
-      config:
-        server-addr: 192.168.100.80:8848

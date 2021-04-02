@@ -1,11 +1,10 @@
 package com.yunya365.wechat.config;
 
-import com.yunya365.wechat.service.impl.WXService;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -16,8 +15,9 @@ import java.util.concurrent.TimeUnit;
  **/
 @Component
 public class RefreshToken implements InitializingBean {
-    @Autowired
-    private WXService wxService;
+
+    @Resource
+    private AccessTokenRunner accessTokenRunner;
 
     /**
      * 刷新token的定时线程
@@ -28,6 +28,6 @@ public class RefreshToken implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
-        scheduledPool.scheduleAtFixedRate(() -> wxService.refreshToken(),0, 7000, TimeUnit.SECONDS);
+        scheduledPool.scheduleAtFixedRate(() -> accessTokenRunner.refreshToken(),0, 7000, TimeUnit.SECONDS);
     }
 }

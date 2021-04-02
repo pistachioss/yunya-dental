@@ -22,10 +22,10 @@ spring:
     port: 6379
     password: foobared
     database: 2
-  cloud:
-    nacos:
-      discovery:
-        server-addr: 192.168.31.215:8848
+#  cloud:
+#    nacos:
+#      discovery:
+#        server-addr: 192.168.31.215:8848
   zipkin:
     discovery-client-enabled: false
   profiles:

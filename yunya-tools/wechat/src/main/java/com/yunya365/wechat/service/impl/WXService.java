@@ -1,16 +1,18 @@
 package com.yunya365.wechat.service.impl;
 
-import com.yunya.feign.wechat.domain.vo.WxAccessTokenVo;
-import com.yunya.framework.common.constant.WXConstant;
+import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Joiner;
+import com.yunya.feign.wechat.domain.model.WxRegisterModel;
+import com.yunya.feign.wechat.domain.vo.WxAuthVo;
+import com.yunya.models.patient_central.WxFans;
 import com.yunya365.wechat.config.WXConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.util.concurrent.TimeUnit;
+import java.util.Date;
 
 /**
  * @description:
@@ -27,25 +29,40 @@ public class WXService extends AbstractWxBaseApi{
     @Resource
     private RedisTemplate<String, String> redisTemplate;
 
-    /**
-     * 刷新微信公众号的access_token
-     * https请求:
-     * https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET
-     * 微信返回数据:
-     * {"access_token":"ACCESS_TOKEN","expires_in":7200}
-     *
-     */
-    public void refreshToken() {
-        String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
-        String url = String.format(WXConstant.WX_ACCESS_TOKEN_URL, wxConfig.getAppId(), wxConfig.getAppSecret());
-        //HttpClient工具根据项目自行修改
-        WxAccessTokenVo accessTokenRes = restTemplate.getForObject(url, WxAccessTokenVo.class);
-        log.info("刷新access_token，返回结果是: {}", accessTokenRes);
-        if (accessTokenRes == null || StringUtils.isNotBlank(accessTokenRes.getErrcode())) {
-            return;
-        }
-        String accessToken = accessTokenRes.getAccess_token();
-        //redis工具根据项目自行修改
-        redisTemplate.opsForValue().set(redisKey, accessToken, 7200, TimeUnit.SECONDS);
+    public WxAuthVo getAuthInfo(String code) {
+        WxAuthVo vo = new WxAuthVo();
+        //1.根据code获取access_token和openid(非基础的那个)
+        String authOpenId = super.getAuthOpenId(code);
+        //2.根据openid获取用户信息
+        JSONObject userJson = super.getUserInfo(authOpenId);
+        vo.setIsSubscribe( userJson.getBoolean("subscribe"));
+        vo.setOpenId(userJson.getString("openid"));
+        return vo;
+    }
+
+    public void register(String openId, WxRegisterModel model) {
+        JSONObject userJson = super.getUserInfo(openId);
+        WxFans wxFans = this.jsonToFans(userJson);
+
+    }
+
+    private WxFans jsonToFans(JSONObject userJson) {
+        WxFans wxFans = new WxFans();
+        wxFans.setOpenId(userJson.getString("openid"));
+        wxFans.setNickName(userJson.getString("nickname"));
+        wxFans.setSex(userJson.getShortValue("sex"));
+        wxFans.setCountry(userJson.getString("country"));
+        wxFans.setProvince(userJson.getString("province"));
+        wxFans.setCity(userJson.getString("city"));
+        wxFans.setLanguage(userJson.getString("language"));
+        wxFans.setHeadImgurl(userJson.getString("headimgurl"));
+        wxFans.setSubscribe(userJson.getBoolean("subscribe"));
+        wxFans.setSubscribeTime(new Date(userJson.getLong("subscribe_time") * 1000));
+        wxFans.setUnionId(userJson.getString("unionid"));
+        wxFans.setGroupId(userJson.getString("groupid"));
+        wxFans.setTagidList(Joiner.on(",").join(userJson.getJSONArray("tagid_list")));
+        wxFans.setBind(true);
+        wxFans.setBindTime(null);
+        return wxFans;
     }
 }
