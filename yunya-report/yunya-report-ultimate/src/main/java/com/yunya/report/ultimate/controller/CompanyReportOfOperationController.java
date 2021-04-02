@@ -453,10 +453,18 @@ public class CompanyReportOfOperationController {
     return ResponseUtil.success(null);
   }
 
+  /**
+   * 根据条件查询项目收费工作量
+   *
+   * @param query 查询条件
+   * @return
+   */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-项目收费金额及工作量统计")
   @PostMapping(value = "/tariff/pay/workload/list", name = "公司端报表-报表统计-运营报表-")
-  public ResponseResult<T> tariffPaymentWorkloadStatistics() {
-
-    return ResponseUtil.success(null);
+  public ResponseResult<PageInfo<BillItemTollAndWorkloadVO>> tariffPaymentWorkloadStatistics(
+      @RequestBody @Validated BillItemTollAndWorkloadQuery query) {
+    PageInfo<BillItemTollAndWorkloadVO> pageInfo =
+        billDetailBiz.findStatisticsTariffPaymentWorkloadList(query);
+    return ResponseUtil.success(pageInfo);
   }
 }

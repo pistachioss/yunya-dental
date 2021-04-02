@@ -1317,12 +1317,39 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setStartDate("1");
     query.setEndDate("1");
     query.setOrgId(0);
-    query.setDateRange(Arrays.asList(date));
+    query.setDateRange(Collections.singletonList(date));
     List<BusinessGoalVO> goalVOS = clinicBaseServiceFeign.businessGoalList(query);
     if (StringHelper.isNotEmpty(goalVOS)) {
       return goalVOS.stream()
           .collect(Collectors.toMap(BusinessGoalVO::getBelongId, BusinessGoalVO::getBusinessGoal));
     }
     return new HashMap<>(16);
+  }
+
+  /**
+   * 查询开单项目工作量列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public PageInfo<BillItemTollAndWorkloadVO> findStatisticsTariffPaymentWorkloadList(
+      BillItemTollAndWorkloadQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    Collection<Integer[]> items = query.getCategoryItems();
+    if (StringHelper.isNotEmpty(items)) {
+      Set<Integer> categoryIds = new HashSet<>();
+      Set<Integer> itemIds = new HashSet<>();
+      items.forEach(
+          vo -> {
+            categoryIds.add(vo[0]);
+            itemIds.add(vo[1]);
+          });
+      query.setCategoryIds(categoryIds);
+      query.setItemIds(itemIds);
+    }
+    List<BillItemTollAndWorkloadVO> resultList = mapper.selectTariffWorkloadInfo(query);
+    return new PageInfo<>(resultList);
   }
 }

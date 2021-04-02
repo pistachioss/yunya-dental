@@ -161,4 +161,15 @@ public class BaseBillDetailMapperTest {
         baseBillDetailMapper.selectEmployeePersonalReceivedWorkloadDetailList(query);
     System.out.println(vos);
   }
+
+  @Test
+  public void find7() {
+    BillItemTollAndWorkloadQuery query = new BillItemTollAndWorkloadQuery();
+    query.setOrgId(26);
+    query.setStartDate("2021-03-01");
+    query.setEndDate("2021-03-31");
+    query.setEmployeeIds(new Integer[] {341});
+    List<BillItemTollAndWorkloadVO> vos = baseBillDetailMapper.selectTariffWorkloadInfo(query);
+    System.out.println(vos);
+  }
 }
