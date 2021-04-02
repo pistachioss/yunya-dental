@@ -12,16 +12,15 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientOrigin;
+import com.yunya.models.patient_central.PatientOriginLog;
 import com.yunya.models.patient_central.PatientPrepaymentsInfo;
-import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
-import com.yunya.modules.patient_central.mapper.PatientMemberInfoMapper;
-import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
-import com.yunya.modules.patient_central.mapper.PatientPrepaymentsInfoMapper;
+import com.yunya.modules.patient_central.mapper.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.Date;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
@@ -54,6 +53,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     @Autowired private PatientMemberInfoMapper patientMemberInfoMapper;
 
     @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
+    @Resource private PatientOriginLogMapper patientOriginLogMapper;
 
     /**
      * 添加客户登记
@@ -88,6 +89,21 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         patientBaseInfo.setCrtName("客户登记");
         mapper.insertPatientInfo(patientBaseInfo);
         PatientBaseInfoVo patientBaseInfoVo = mapper.selectPatienInfoById(patientBaseInfo.getOriginId());
+        if (patientBaseInfoVo.getOriginId() != null) {
+            PatientOriginLog patientOriginLog = new PatientOriginLog();
+            patientOriginLog.setPatientId(patientBaseInfoVo.getId());
+            patientOriginLog.setOriginType(patientBaseInfo.getOriginType());
+            patientOriginLog.setOriginId(patientBaseInfo.getOriginId());
+            patientOriginLog.setInservice(patientBaseInfo.getInservice());
+            patientOriginLog.setCrtId(patientBaseInfo.getCrtId());
+            patientOriginLog.setCrtName(patientBaseInfo.getCrtName());
+            patientOriginLog.setCrtTime(patientBaseInfo.getCrtTime());
+            patientOriginLog.setUptId(patientBaseInfo.getUptId());
+            patientOriginLog.setUpdName(patientBaseInfo.getUpdName());
+            patientOriginLog.setUpdTime(patientBaseInfo.getUpdTime());
+            patientOriginLogMapper.insertSelective(patientOriginLog);
+            remoteRabbitMqServiceFeign.sendMessage(patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
+        }
         // 创建预付款 并发送消息
         patientBaseInfoBiz.sendMessages(patientBaseInfo.getId(), 0);
         addPatientPrepaymentsInfo(patientBaseInfo);

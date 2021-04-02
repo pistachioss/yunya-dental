@@ -178,7 +178,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     mapper.insertPatientInfo(patientBaseInfo);
     PatientBaseInfoVo patientBaseInfoVo = this.patientBaseInfoMapper.selectPatienInfoById(patientBaseInfo.getId());
     if (patientBaseInfoVo.getOriginId() != null) {
-      System.out.println("不爲空,進來了");
       PatientOriginLog patientOriginLog = new PatientOriginLog();
       patientOriginLog.setPatientId(patientBaseInfoVo.getId());
       patientOriginLog.setOriginType(patientBaseInfo.getOriginType());
@@ -192,7 +191,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientOriginLog.setUpdTime(patientBaseInfo.getUpdTime());
       patientOriginLogMapper.insertSelective(patientOriginLog);
       remoteRabbitMqServiceFeign.sendMessage(patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
-      System.out.println("已發送消息！");
     }
     // 创建预付款 并发送消息
     this.addPatientPrepaymentsInfo(patientBaseInfo);
