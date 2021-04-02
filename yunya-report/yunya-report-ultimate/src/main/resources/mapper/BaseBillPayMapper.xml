@@ -2004,10 +2004,10 @@
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="typeList != null and typeList.size() > 0">
+        <if test="itemIds != null and itemIds.size() > 0">
             and bbpd.type in
-            <foreach collection="typeList" item="type" open="(" separator="," close=")">
-                #{type}
+            <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
+                #{itemId}
             </foreach>
         </if>
     </select>
