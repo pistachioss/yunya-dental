@@ -13,6 +13,7 @@ import com.yunya.models.report.BaseBillPay;
 import com.yunya.models.report.BasePatientOriginLog;
 import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -340,10 +341,12 @@ public class PatientOriginRelationsBiz
             if (StringHelper.isNotNull(billPayList)){
               // 循环乘以订单记录中本次支付金额
               for (BaseBillPay baseBillPay: billPayList) {
+                ReceivedWorkloadDetailsVo receivedWorkloadDetails = new ReceivedWorkloadDetailsVo();
+                BeanUtils.copyProperties(receivedWorkloadDetailsVo,receivedWorkloadDetails);
                 BigDecimal multiply = receivedWorkloadDetailsVo.getWorkload().multiply(baseBillPay.getReceivedAmount());
-                receivedWorkloadDetailsVo.setWorkload(multiply.setScale(1, BigDecimal.ROUND_HALF_UP));
+                receivedWorkloadDetails.setWorkload(multiply.setScale(1, BigDecimal.ROUND_HALF_UP));
                 // 加入到结果返回集合中
-                receivedWorkloadDetailsListVo.add(receivedWorkloadDetailsVo);
+                receivedWorkloadDetailsListVo.add(receivedWorkloadDetails);
               }
             }
           }
@@ -360,13 +363,12 @@ public class PatientOriginRelationsBiz
    * @return map key订单id v订单支付记录
    */
   public Map<Integer,List<BaseBillPay>> getBaseBillPayList(List<Integer> baseBillIdList,List<BaseBillPay> baseBillPayList){
+    List<BaseBillPay> baseBillPayVoList = new ArrayList<>();
     Map<Integer,List<BaseBillPay>> map = new HashMap();
-    List<BaseBillPay> baseBillPayVoList = null;
     if (baseBillIdList != null && baseBillPayList != null){
       for (Integer billId : baseBillIdList) {
         for (BaseBillPay baseBillPay: baseBillPayList) {
             if (billId.equals(baseBillPay.getBillId())){
-              baseBillPayVoList = new ArrayList<>();
               baseBillPayVoList.add(baseBillPay);
             }
         }
