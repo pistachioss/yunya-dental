@@ -58,7 +58,7 @@
                   and ee.user_id = #{query.employeeId}
               </if>
 
-              <if test="query.referrerName != null and ">
+              <if test="query.referrerName != null and query.referrerName != ''">
                   and concat( IFNULL( ee.`employee_name`, '' ))
                   LIKE concat( concat( '%', #{query.referrerName} ), '%' )
               </if>

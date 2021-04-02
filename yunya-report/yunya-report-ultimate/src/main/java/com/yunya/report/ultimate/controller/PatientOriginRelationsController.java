@@ -7,6 +7,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientOriginEmployeeVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.report.ultimate.biz.PatientOriginRelationsBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -48,21 +49,24 @@ public class PatientOriginRelationsController {
     @PostMapping(value = "/employeeReferral",name = "公司端-人力资源-员工推荐")
     public ResponseResult<PageInfo<PatientOriginEmployeeVo>> employeeReferral(@RequestBody PatientOriginEmployeeQuery query){
        List<PatientOriginEmployeeVo> patientOriginEmployeeVoList = patientOriginRelationsBiz.finleEmployeeReferral(query);
-       if (query.getWhetherPage()) {
-           Integer pageNum = query.getPageNum();
-           Integer pageSize = query.getPageSize();
-           int total = patientOriginEmployeeVoList.size();
-           PageInfo<PatientOriginEmployeeVo> pageInfo = new PageInfo<>();
-           pageInfo.setPageNum(pageNum);
-           pageInfo.setPageSize(pageSize);
-           pageInfo.setTotal(total);
-           List<PatientOriginEmployeeVo> list =
-                   patientOriginEmployeeVoList.subList(
-                           pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
-           pageInfo.setList(list);
-           return ResponseUtil.success(pageInfo);
-       }
-       return ResponseUtil.success(new PageInfo<>(patientOriginEmployeeVoList));
+        if (!StringHelper.isEmpty(patientOriginEmployeeVoList)){
+            if (query.getWhetherPage()) {
+                Integer pageNum = query.getPageNum();
+                Integer pageSize = query.getPageSize();
+                int total = patientOriginEmployeeVoList.size();
+                PageInfo<PatientOriginEmployeeVo> pageInfo = new PageInfo<>();
+                pageInfo.setPageNum(pageNum);
+                pageInfo.setPageSize(pageSize);
+                pageInfo.setTotal(total);
+                List<PatientOriginEmployeeVo> list =
+                        patientOriginEmployeeVoList.subList(
+                                pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+                pageInfo.setList(list);
+                return ResponseUtil.success(pageInfo);
+            }
+            return ResponseUtil.success(new PageInfo<>(patientOriginEmployeeVoList));
+        }
+        return ResponseUtil.success();
     }
 
     /**
