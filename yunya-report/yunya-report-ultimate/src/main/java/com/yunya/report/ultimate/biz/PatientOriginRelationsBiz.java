@@ -62,7 +62,7 @@ public class PatientOriginRelationsBiz
 
 
   /**
-   * 组合返回集
+   * 组装返回集合
    *
    * @param query 条件
    * @return 推荐人推荐信息
@@ -71,19 +71,22 @@ public class PatientOriginRelationsBiz
       PatientOriginEmployeeQuery query) {
     // 查询推荐人信息以及推荐数量
     List<PatientOriginEmployeeVo> patientOriginEmployeeVoList = mapper.findEmployeeVoLists(query);
-    // 查询所有符合条件的订单号
-    List<BillIdVo> billIdList = baseBillMapper.findBillIdList(query,patientOriginEmployeeVoList);
-    if (patientOriginEmployeeVoList != null) {
-      // 获取已收工作量合计
-      getReceivedTotalWorkload(patientOriginEmployeeVoList, query, true,billIdList);
-      // 获取其中免单支付工作量合计
-      getReceivedTotalWorkload(patientOriginEmployeeVoList, query, false,billIdList);
-      // 获取退费金额合计
-      getTotalRefundAmount(patientOriginEmployeeVoList, query);
-      // 获取补入工作量合计
-      getMakeUpWorkload(patientOriginEmployeeVoList, query);
+    if (!StringHelper.isEmpty(patientOriginEmployeeVoList)) {
+      // 查询所有符合条件的订单号
+      List<BillIdVo> billIdList = baseBillMapper.findBillIdList(query, patientOriginEmployeeVoList);
+      if (patientOriginEmployeeVoList != null) {
+        // 获取已收工作量合计
+        getReceivedTotalWorkload(patientOriginEmployeeVoList, query, true, billIdList);
+        // 获取其中免单支付工作量合计
+        getReceivedTotalWorkload(patientOriginEmployeeVoList, query, false, billIdList);
+        // 获取退费金额合计
+        getTotalRefundAmount(patientOriginEmployeeVoList, query);
+        // 获取补入工作量合计
+        getMakeUpWorkload(patientOriginEmployeeVoList, query);
+      }
+      return patientOriginEmployeeVoList;
     }
-    return patientOriginEmployeeVoList;
+    return null;
   }
 
   /**

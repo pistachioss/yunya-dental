@@ -71,19 +71,22 @@ public class PatientOriginActivityRelationsBiz
           PatientOriginActivityQuery query) {
     // 查询活动信息以及推荐数量
     List<PatientOriginActivityVo> patientOriginActivityVoList = mapper.findActivityVoLists(query);
-    // 根据时间段查询所有符合条件的订单号
-    List<BillIdVo> billIdList = baseBillMapper.findActivityBillIdList(query);
-    if (patientOriginActivityVoList != null) {
-      // 获取已收工作量合计
-      getReceivedTotalWorkload(patientOriginActivityVoList, query, true,billIdList);
-      // 获取其中免单支付工作量合计
-      getReceivedTotalWorkload(patientOriginActivityVoList, query, false,billIdList);
-      // 获取退费金额合计
-      getTotalRefundAmount(patientOriginActivityVoList, query);
-      // 获取补入工作量合计
-      getMakeUpWorkload(patientOriginActivityVoList, query);
+    if (!StringHelper.isEmpty(patientOriginActivityVoList)){
+      // 根据时间段查询所有符合条件的订单号
+      List<BillIdVo> billIdList = baseBillMapper.findActivityBillIdList(query);
+      if (patientOriginActivityVoList != null) {
+        // 获取已收工作量合计
+        getReceivedTotalWorkload(patientOriginActivityVoList, query, true,billIdList);
+        // 获取其中免单支付工作量合计
+        getReceivedTotalWorkload(patientOriginActivityVoList, query, false,billIdList);
+        // 获取退费金额合计
+        getTotalRefundAmount(patientOriginActivityVoList, query);
+        // 获取补入工作量合计
+        getMakeUpWorkload(patientOriginActivityVoList, query);
+      }
+      return patientOriginActivityVoList;
     }
-    return patientOriginActivityVoList;
+   return null;
   }
 
   /**
@@ -177,7 +180,6 @@ public class PatientOriginActivityRelationsBiz
    */
   private Map<Integer, List<BaseBillPay>> getBaseBillPayInfoMap(
           PatientOriginActivityQuery query, Boolean type,List<BillIdVo> billIdList) {
-    List<BaseBillPay> baseBillPayVo = null;
     List<BaseBillPay> baseBillPayList;
     Map<Integer, List<BaseBillPay>> billPayMap = new HashMap<>();
     if (type) {
@@ -188,10 +190,12 @@ public class PatientOriginActivityRelationsBiz
       List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
       baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(),query.getEndDate(), itemIds);
     }
+    // k 订单id v 订单记录
     for (BillIdVo billIdVo : billIdList) {
+      List<BaseBillPay> baseBillPayVo = null;
       for (BaseBillPay baseBillPay : baseBillPayList) {
-        if (billIdVo.getBillId().equals(baseBillPay.getBillId())) {
-          baseBillPayVo = new ArrayList<>();
+        baseBillPayVo = new ArrayList<>();
+        if (baseBillPay.getBillId().equals(billIdVo.getBillId())) {
           baseBillPayVo.add(baseBillPay);
         }
       }

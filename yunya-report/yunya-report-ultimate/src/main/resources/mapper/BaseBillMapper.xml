@@ -1080,10 +1080,10 @@
             <if test="query.employeeId != null">
                 and ee.user_id = #{query.employeeId}
             </if>
-            <if test="list != null">
+            <if test="list != null and list.size() > 0">
                 and log.origin_id in
-                <foreach collection="list" item="list" open="(" separator="," close=")">
-                  #{list.originId}
+                <foreach collection="list" item="patientOriginEmployeeVo" open="(" separator="," close=")">
+                  #{patientOriginEmployeeVo.originId}
                 </foreach>
             </if>
             <if test="query.workStatus != null">
