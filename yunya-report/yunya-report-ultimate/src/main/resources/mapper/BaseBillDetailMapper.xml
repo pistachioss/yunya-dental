@@ -231,7 +231,6 @@
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
-            and bb.bill_date is not null
         </where>
         ) bb ON bbd.bill_id = bb.bill_id
         ) bbd
@@ -655,7 +654,6 @@
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
-            and bb.bill_date is not null
         </where>
         ) bb ON bbd.bill_id = bb.bill_id
         ) bbd
