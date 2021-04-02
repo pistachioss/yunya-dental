@@ -225,6 +225,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("startDate") String startDate,
       @Param("endDate") String endDate);
 
+  BigDecimal findMakeUpWorkload(
+      @Param("originId") Integer originId,
+      @Param("startDate") String startDate,
+      @Param("endDate") String endDate,
+      @Param("originType") Integer originType);
+
   /**
    * 根据订单id查询项目实收金额
    *

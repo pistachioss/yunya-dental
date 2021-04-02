@@ -1961,7 +1961,7 @@
         select bbp.* from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
-        <if test="typeList != null">
+        <if test="itemIds != null">
             and bbpd.account_item_id in
             <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
                 #{itemId}
@@ -2004,10 +2004,10 @@
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="typeList != null and typeList.size() > 0">
-            and bbpd.type in
-            <foreach collection="typeList" item="type" open="(" separator="," close=")">
-                #{type}
+        <if test="itemIds != null and itemIds.size() > 0">
+            and bbpd.account_item_id in
+            <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
+                #{itemId}
             </foreach>
         </if>
     </select>
