@@ -29,4 +29,24 @@
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+  <select id="findList" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansVo">
+    select wf.id,wf.nick_name as nickName,wf.head_imgurl as headImgurl,wf.open_id as openId,pbi.name,pbi.mobile,
+    wf.remark,wf.crt_time as crtTime,wf.bind as isBind from wx_fans wf
+    LEFT JOIN wx_fans_bind wfb ON wf.open_id = wfb.open_id
+    LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
+    <where>
+      <if test="startTime !=null and endTime != null">
+        and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') >= DATE_FORMAT(#{startTime},'%Y-%m-%d')
+        and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(DATE_ADD(#{endTime},INTERVAL '1' DAY),'%Y-%m-%d')
+      </if>
+      <if test="isBind !=null and isBind != ''">
+        wf.bind = #{isBind}
+      </if>
+      AND concat(IFNULL(pbi.`name`,''),
+      IFNULL(pbi.medical_number,''),
+      IFNULL(pbi.pinyin_name,''),
+      IFNULL(pbi.mobile,''))
+      like concat(concat('%', rtrim(#{name})), '%')
+    </where>
+  </select>
 </mapper>
