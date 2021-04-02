@@ -1,6 +1,5 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
@@ -13,9 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-/**
- * @author YK
- */
+/** @author YK */
 public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   /**
    * 根据条件查询账单项目收入明细列表
@@ -185,7 +182,6 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<BaseBillDetail> selectBillDetailByQuery(@Param("query") EmployeeWorkloadQuery query);
 
-
   /**
    * 根据账单id查询账单详情列表
    *
@@ -218,21 +214,26 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
   /**
    * 根据推荐人id和优惠时间 查询患者补入工作量总合
+   *
    * @param originId 推荐人id
    * @param startDate 开始时间
    * @param endDate 结束时间
    * @return 补入工作量
    */
-    BigDecimal findMakeUpWorkload(@Param("originId") Integer originId,@Param("startDate") String startDate,@Param("endDate") String endDate);
-
+  BigDecimal findMakeUpWorkload(
+      @Param("originId") Integer originId,
+      @Param("startDate") String startDate,
+      @Param("endDate") String endDate);
 
   /**
    * 根据订单id查询项目实收金额
+   *
    * @param billId 订单id
    * @param originId 推荐人id
    * @return 订单项目实收金额
    */
-  List<ReceivedWorkloadDetailsVo> selectEreceiverkLoad(@Param("billId") Integer billId,@Param("originId") Integer originId);
+  List<ReceivedWorkloadDetailsVo> selectEreceiverkLoad(
+      @Param("billId") Integer billId, @Param("originId") Integer originId);
 
   /**
    * 开单项目统计
@@ -305,5 +306,15 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<CouponExecutoredDetailVO> couponExecutoredDetails(@Param("query") CouponExecutoredDetailQuery query);
+  List<CouponExecutoredDetailVO> couponExecutoredDetails(
+      @Param("query") CouponExecutoredDetailQuery query);
+
+  /**
+   * 根据条件查询开单项目工作量信息
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<BillItemTollAndWorkloadVO> selectTariffWorkloadInfo(
+      @Param("query") BillItemTollAndWorkloadQuery query);
 }
