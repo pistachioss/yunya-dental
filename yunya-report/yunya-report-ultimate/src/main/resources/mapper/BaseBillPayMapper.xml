@@ -2005,7 +2005,7 @@
         </if>
 
         <if test="itemIds != null and itemIds.size() > 0">
-            and bbpd.type in
+            and bbpd.account_item_id in
             <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
                 #{itemId}
             </foreach>

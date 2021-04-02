@@ -312,8 +312,8 @@ public class PatientOriginActivityRelationsBiz
       baseBillIdList = baseBillMapper.findBaseBillIdList(query, null,originType);
     } else {
       // 其中免单支付 订单id List
-      List<Integer> typeList = new ArrayList<Integer>() {{ add(23);add(26); }};
-      baseBillIdList = baseBillMapper.findBaseBillIdList(query, typeList,originType);
+      List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
+      baseBillIdList = baseBillMapper.findBaseBillIdList(query, itemIds,originType);
     }
     if (baseBillIdList != null) {
       List<BaseBillPay> baseBillPayList;
@@ -322,8 +322,8 @@ public class PatientOriginActivityRelationsBiz
         baseBillPayList = baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, null);
       } else {
         // 查询免单支付方式
-        List<Integer> typeList = new ArrayList<Integer>() {{ add(23);add(26); }};
-        baseBillPayList = baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, typeList);
+        List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
+        baseBillPayList = baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, itemIds);
       }
       Map<Integer, List<BaseBillPay>> baseBillPayMap = getBaseBillPayList(baseBillIdList,baseBillPayList);
       // 订单支付明细
