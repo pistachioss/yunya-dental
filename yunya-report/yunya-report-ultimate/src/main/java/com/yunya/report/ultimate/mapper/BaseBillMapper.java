@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.mapper;
 import com.yunya.feign.patient_central.domain.query.PatientOriginActivityQuery;
 import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
 import com.yunya.feign.patient_central.domain.query.ReceiverkLoadQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientOriginEmployeeVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
@@ -188,9 +189,10 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
   /**
    * 查询员工患者消费的订单号
    * @param query 条件
+   * @param patientOriginEmployeeVoList 推荐人id
    * @return 订单号集合
    */
-    List<BillIdVo> findBillIdList(@Param("query") PatientOriginEmployeeQuery query);
+    List<BillIdVo> findBillIdList(@Param("query") PatientOriginEmployeeQuery query,@Param("list") List<PatientOriginEmployeeVo> patientOriginEmployeeVoList);
 
   /**
    * 查询活动患者消费的订单号

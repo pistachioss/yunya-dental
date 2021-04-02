@@ -1080,8 +1080,11 @@
             <if test="query.employeeId != null">
                 and ee.user_id = #{query.employeeId}
             </if>
-            <if test="query.referrerName != null">
-                and concat( IFNULL( ee.`employee_name`, '' )) LIKE concat( concat( '%', #{query.referrerName} ), '%' )
+            <if test="list != null">
+                and log.origin_id in
+                <foreach collection="list" item="list" open="(" separator="," close=")">
+                  #{list.originId}
+                </foreach>
             </if>
             <if test="query.workStatus != null">
                 and ee.work_status = #{query.workStatus}

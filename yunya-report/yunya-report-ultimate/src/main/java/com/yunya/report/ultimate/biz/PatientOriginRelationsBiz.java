@@ -9,6 +9,7 @@ import com.yunya.feign.report.domain.vo.BillIdVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
+import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.report.BaseBillPay;
 import com.yunya.models.report.BasePatientOriginLog;
 import com.yunya.report.ultimate.mapper.*;
@@ -22,10 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 简介:
@@ -74,7 +72,7 @@ public class PatientOriginRelationsBiz
     // 查询推荐人信息以及推荐数量
     List<PatientOriginEmployeeVo> patientOriginEmployeeVoList = mapper.findEmployeeVoLists(query);
     // 查询所有符合条件的订单号
-    List<BillIdVo> billIdList = baseBillMapper.findBillIdList(query);
+    List<BillIdVo> billIdList = baseBillMapper.findBillIdList(query,patientOriginEmployeeVoList);
     if (patientOriginEmployeeVoList != null) {
       // 获取已收工作量合计
       getReceivedTotalWorkload(patientOriginEmployeeVoList, query, true,billIdList);
@@ -192,7 +190,6 @@ public class PatientOriginRelationsBiz
    * @return 订单支付记录 key订单号 v订单支付记录集合
    */
   private Map<Integer, List<BaseBillPay>> getBaseBillPayInfoMap(PatientOriginEmployeeQuery query, Boolean type,List<BillIdVo> billIdList) {
-    List<BaseBillPay> baseBillPayVo = null;
     List<BaseBillPay> baseBillPayList;
     Map<Integer, List<BaseBillPay>> billPayMap = new HashMap<>();
     if (type) {
@@ -200,13 +197,15 @@ public class PatientOriginRelationsBiz
       baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(), query.getEndDate(), null);
     } else {
       // 其中免单支付工作量合计
-      List<Integer> typeList = new ArrayList<Integer>() {{ add(23);add(26); }};
-      baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(), query.getEndDate(), typeList);
+      List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
+      baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(), query.getEndDate(), itemIds);
     }
+    // k 订单id v 订单记录
     for (BillIdVo billIdVo : billIdList) {
+      List<BaseBillPay> baseBillPayVo = null;
       for (BaseBillPay baseBillPay : baseBillPayList) {
-        if (billIdVo.getBillId().equals(baseBillPay.getBillId())) {
-          baseBillPayVo = new ArrayList<>();
+        baseBillPayVo = new ArrayList<>();
+        if (baseBillPay.getBillId().equals(billIdVo.getBillId())) {
           baseBillPayVo.add(baseBillPay);
         }
       }
