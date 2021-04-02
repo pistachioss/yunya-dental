@@ -48,7 +48,9 @@ public class PatientOriginActivityRelationsBiz
 
   @Resource private BaseBillDetailMapper baseBillDetailMapper;
 
-  @Autowired private BasePatientOriginMapper basePatientOriginMapper;
+  @Resource private BasePatientOriginMapper basePatientOriginMapper;
+
+  @Resource private PatientOriginRelationsBiz patientOriginRelationsBiz;
   /**
    * 员工推荐信息列表
    *
@@ -136,7 +138,7 @@ public class PatientOriginActivityRelationsBiz
     if (patientOriginActivityVoList.size() > 0) {
       for (PatientOriginActivityVo patientOriginActivityVo : patientOriginActivityVoList) {
         // 根据推荐人id获取订单号集合
-        List<Integer> billIds = getBillId(patientOriginActivityVo.getOriginId(),billIdList);
+        List<Integer> billIds = patientOriginRelationsBiz.getBillIds(patientOriginActivityVo.getOriginId(),billIdList);
         if (billIds != null && billIds.size() > 0){
           // 根据订单id获取订单明细
           List<ReceivedTotalWorkloadVo> receivedTotalWorkloadVoList = mapper.findReceivedTotalWorkload(billIds);
@@ -166,23 +168,6 @@ public class PatientOriginActivityRelationsBiz
     }
   }
 
-  /**
-   * 根据推荐人获取所属订单id
-   * @param originId 推荐人id
-   * @param BillIdVoList 订单id
-   * @return id集合
-   */
-  public List<Integer> getBillId(Integer originId,List<BillIdVo> BillIdVoList){
-    List<Integer> BillIdList = new ArrayList<>();
-    if (originId != null && BillIdVoList != null){
-      for (BillIdVo billIdVo : BillIdVoList ) {
-        if (originId.equals(billIdVo.getOriginId())){
-          BillIdList.add(billIdVo.getBillId());
-        }
-      }
-    }
-    return BillIdList;
-  }
 
   /**
    * 获取订单支付记录
@@ -326,7 +311,7 @@ public class PatientOriginActivityRelationsBiz
         List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
         baseBillPayList = baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, itemIds);
       }
-      Map<Integer, List<BaseBillPay>> baseBillPayMap = getBaseBillPayList(baseBillIdList,baseBillPayList);
+      Map<Integer, List<BaseBillPay>> baseBillPayMap = patientOriginRelationsBiz.getBaseBillPayList(baseBillIdList,baseBillPayList);
       // 订单支付明细
       for (Integer billId : baseBillIdList) {
         // 订单项目明细
@@ -397,27 +382,6 @@ public class PatientOriginActivityRelationsBiz
   }
 
 
-  /**
-   * 封装map
-   * @param baseBillIdList 订单idList
-   * @param baseBillPayList 订单支付记录List
-   * @return map key订单id v订单支付记录
-   */
-  public Map<Integer,List<BaseBillPay>> getBaseBillPayList(List<Integer> baseBillIdList,List<BaseBillPay> baseBillPayList){
-    List<BaseBillPay> baseBillPayVoList = new ArrayList<>();
-    Map<Integer,List<BaseBillPay>> map = new HashMap();
-    if (baseBillIdList != null && baseBillPayList != null){
-      for (Integer billId : baseBillIdList) {
-        for (BaseBillPay baseBillPay: baseBillPayList) {
-          if (billId.equals(baseBillPay.getBillId())){
-            baseBillPayVoList.add(baseBillPay);
-          }
-        }
-        map.put(billId,baseBillPayVoList);
-      }
-    }
-    return map;
-  }
 
   /**
    * 获取活动列表
