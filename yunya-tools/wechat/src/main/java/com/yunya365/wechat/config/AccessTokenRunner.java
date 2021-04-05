@@ -38,7 +38,7 @@ public class AccessTokenRunner{
         log.info("获取access_token的url：{}", url);
         //HttpClient工具根据项目自行修改
         WxAccessTokenVo accessTokenRes = restTemplate.getForObject(url, WxAccessTokenVo.class);
-        log.info("调用微信acces_token返回结果是: {}", accessTokenRes);
+        log.info("调用微信access_token返回结果是: {}", accessTokenRes);
         if (accessTokenRes == null || StringUtils.isNotBlank(accessTokenRes.getErrcode())) {
             return;
         }
