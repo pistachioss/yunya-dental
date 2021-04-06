@@ -48,10 +48,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
@@ -93,6 +100,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   /** 门诊基础服务*/
   @Autowired private RemoteClinicBaseServiceFeign remoteClinicBaseServiceFeign;
 
+  @Resource(name = "treatmentThreadPool")
+  private ExecutorService executorService;
   /**
    * 根据账单（开单）记录ID查询商品开单详情列表
    *
@@ -539,30 +548,70 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return percentage
    */
   public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(
-      SpecialistProjectReportModel specialistProjectReportModel) {
-    Integer count = 0;
+      SpecialistProjectReportModel specialistProjectReportModel) throws InterruptedException {
+    AtomicInteger count = new AtomicInteger(0);
     List<SpecialistProjectReportVO> specialistProjectReportVOList = new ArrayList<>();
-    for (SpecialistProject specialistProject :
-        specialistProjectReportModel.getSpecialistProjects()) {
+    List<SpecialistProject> specialistProjects = specialistProjectReportModel.getSpecialistProjects();
+
+    CountDownLatch latch = new CountDownLatch(specialistProjects.size());
+
+    List<Future<SpecialistProjectReportVO>> futureList = new ArrayList<>();
+    for (SpecialistProject specialistProject : specialistProjects) {
       SpecialistProjectReportVO specialistProjectReportVO = new SpecialistProjectReportVO();
-      specialistProjectReportVO.setSpecialistProjectName(specialistProject.getName());
-      String tariffIds = specialistProject.getTariffIds();
-      if (tariffIds != null) {
-        String[] billingItemIds = tariffIds.split(",");
-        if (billingItemIds.length > 0) {
-          specialistProjectReportModel.setBillingItemIds(billingItemIds);
-          Integer numberOfItems =
-              mapper.selectTariffSpecialistPercentage(specialistProjectReportModel);
-          count = count + numberOfItems;
-          specialistProjectReportVO.setPercentage(numberOfItems.toString());
-        }
+      try {
+        SpecialistProjectReportModel clone = (SpecialistProjectReportModel)specialistProjectReportModel.clone();
+        futureList.add(this.executorService.submit(() -> {
+          try {
+            specialistProjectReportVO.setSpecialistProjectName(specialistProject.getName());
+            String tariffIds = specialistProject.getTariffIds();
+            if (tariffIds != null) {
+              String[] billingItemIds = tariffIds.split(",");
+              if (billingItemIds.length > 0) {
+                clone.setBillingItemIds(billingItemIds);
+                Integer numberOfItems =
+                        mapper.selectTariffSpecialistPercentage(clone);
+                count.getAndAdd(numberOfItems);
+                specialistProjectReportVO.setPercentage(numberOfItems.toString());
+              }
+            }
+            return specialistProjectReportVO;
+          } finally {
+            latch.countDown();
+          }
+        }));
+      } catch (Exception e) {
+        e.printStackTrace();
       }
-      specialistProjectReportVOList.add(specialistProjectReportVO);
     }
-    for (SpecialistProjectReportVO specialistProjectReportVO : specialistProjectReportVOList) {
-      String percentage =
-          mapper.percentage(Integer.parseInt(specialistProjectReportVO.getPercentage()), count);
-      specialistProjectReportVO.setPercentage(percentage);
+    latch.await();
+    if (StringHelper.isNotEmpty(futureList)) {
+      futureList.forEach(entity->{
+        try {
+          SpecialistProjectReportVO specialistProjectReportVO = entity.get();
+          if (specialistProjectReportVO != null) {
+            specialistProjectReportVOList.add(specialistProjectReportVO);
+          }
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        } catch (ExecutionException e) {
+          e.printStackTrace();
+        }
+      });
+    }
+    System.out.println("sddddddddddddddddddddddddddddddd");
+    System.out.println(specialistProjectReportVOList);
+    System.out.println("总数量==================" + count.get());
+
+    BigDecimal numberOfItemsBD = null;
+    BigDecimal countBD = new BigDecimal(count.get());
+    BigDecimal percen100 = new BigDecimal(100);
+    if (countBD.intValue() > 0) {
+      for (SpecialistProjectReportVO specialistProjectReportVO : specialistProjectReportVOList) {
+        numberOfItemsBD = new BigDecimal(specialistProjectReportVO.getPercentage());
+        BigDecimal percentBD = numberOfItemsBD.multiply(percen100).divide(countBD, 2, RoundingMode.HALF_UP);
+        String percentage = percentBD.toString();
+        specialistProjectReportVO.setPercentage(percentage);
+      }
     }
     return specialistProjectReportVOList;
   }
