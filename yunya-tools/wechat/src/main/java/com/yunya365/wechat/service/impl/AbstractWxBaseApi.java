@@ -6,10 +6,10 @@ import com.yunya.feign.wechat.domain.vo.WxKfListVo;
 import com.yunya.feign.wechat.domain.vo.WxKfOnlineVo;
 import com.yunya.framework.common.constant.WXConstant;
 import com.yunya.framework.common.exception.BaseException;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya365.wechat.config.WXConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -26,13 +26,13 @@ public abstract class AbstractWxBaseApi {
     @Resource
     private WXConfig wxConfig;
     @Resource
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisUtils redisUtils;
     @Resource
     private RestTemplate restTemplate;
 
     private String getAccessToken() {
         String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
-        return redisTemplate.opsForValue().get(redisKey);
+        return redisUtils.get(redisKey);
     }
 
     private void checkWxResult(JSONObject jsonObject) {
@@ -45,7 +45,7 @@ public abstract class AbstractWxBaseApi {
 
     public WxKfOnlineVo listOnlineKf() {
         String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
-        String accessToken = redisTemplate.opsForValue().get(redisKey);
+        String accessToken = redisUtils.get(redisKey);
         log.info("access_token：{}", accessToken);
         String url = String.format(WXConstant.WX_ONLINE_KF_LIST_URL, accessToken);
         //HttpClient工具根据项目自行修改
@@ -62,7 +62,7 @@ public abstract class AbstractWxBaseApi {
 
     public WxKfListVo listAllKf() {
         String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
-        String accessToken = redisTemplate.opsForValue().get(redisKey);
+        String accessToken = redisUtils.get(redisKey);
         String url = String.format(WXConstant.WX_LIST_KF_LIST_URL, accessToken);
         //HttpClient工具根据项目自行修改
         WxKfAllVo kfAllRes = restTemplate.getForObject(url, WxKfAllVo.class);
@@ -84,18 +84,18 @@ public abstract class AbstractWxBaseApi {
         return jsonObject.getString("openid");
     }
 
-    public JSONObject getUserInfo(String openId) {
+    public String getUserInfo(String openId) {
         String accessToken = this.getAccessToken();
         String url = String.format(WXConstant.WX_USER_INFO_URL, accessToken, openId);
         String resultStr = restTemplate.getForObject(url, String.class);
         JSONObject jsonObject = JSONObject.parseObject(resultStr);
         this.checkWxResult(jsonObject);
-        return jsonObject;
+        return resultStr;
     }
 
     public void pushMsg(String msgId) {
         String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
-        String accessToken = redisTemplate.opsForValue().get(redisKey);
+        String accessToken = redisUtils.get(redisKey);
         String url = String.format(WXConstant.WX_SEND_TEMPLATE_MSG_URL, accessToken);
         String resultStr = restTemplate.postForObject(url, String.class, String.class);
         JSONObject jsonObject = JSONObject.parseObject(resultStr);

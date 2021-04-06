@@ -2,10 +2,10 @@ package com.yunya365.wechat.config;
 
 import com.yunya.feign.wechat.domain.vo.WxAccessTokenVo;
 import com.yunya.framework.common.constant.WXConstant;
+import com.yunya.framework.redis.util.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -24,12 +24,12 @@ public class AccessTokenRunner{
     @Resource
     private RestTemplate restTemplate;
     @Resource
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisUtils redisUtils;
 
     public void refreshToken(){
         String accessToken = null;
         String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
-        accessToken = redisTemplate.opsForValue().get(redisKey);
+        accessToken = redisUtils.get(redisKey);
         if (StringUtils.isNotBlank(accessToken)) {
             log.info("access_token已存在，不需要刷新：{}", accessToken);
             return;
@@ -44,6 +44,6 @@ public class AccessTokenRunner{
         }
         accessToken = accessTokenRes.getAccess_token();
         //redis工具根据项目自行修改
-        redisTemplate.opsForValue().set(redisKey, accessToken, 7200, TimeUnit.SECONDS);
+        redisUtils.set(redisKey, accessToken, 7200, TimeUnit.SECONDS);
     }
 }
