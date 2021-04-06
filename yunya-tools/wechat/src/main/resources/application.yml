@@ -1,6 +1,9 @@
 server:
   port: 8997
 
+corn:
+  data: 00 00 00 * * ?
+
 spring:
   application:
     name: wechat
