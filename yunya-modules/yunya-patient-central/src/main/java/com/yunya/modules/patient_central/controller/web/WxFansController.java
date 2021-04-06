@@ -73,7 +73,7 @@ public class WxFansController {
      * @param
      * @return ResponseResult<PageInfo<WxFansVo>>
      */
-    @ApiOperation("客服中心-用户管理列表-查看详情")
+    @ApiOperation("客服中心-新增粉丝信息以及绑定关系")
     @PostMapping("/save")
     public ResponseResult<T> save(
             @RequestBody @Validated WxFansSaveForm wxFansSaveForm) {

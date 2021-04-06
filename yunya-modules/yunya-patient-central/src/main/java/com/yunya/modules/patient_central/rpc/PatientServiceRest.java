@@ -9,11 +9,7 @@ import com.yunya.feign.patient_central.domain.model.PrepaidBillRechargeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidRevocationFeeModel;
-import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
-import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
-import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
-import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
+import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
@@ -27,10 +23,7 @@ import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
-import com.yunya.modules.patient_central.biz.InformationCallbackBiz;
-import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
-import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
-import com.yunya.modules.patient_central.biz.PatientPrepaymentRelationBiz;
+import com.yunya.modules.patient_central.biz.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +71,14 @@ public class PatientServiceRest {
     @Autowired private RedisUtils redisUtils;
 
     @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+
+    @Autowired private WxFansBiz wxFansBiz;
+
+    @ApiOperation("根据姓名/手机号/姓名拼音模糊查询患者")
+    @RequestMapping (value = "/saveWxAndFansBind",method = RequestMethod.POST)
+    public void saveWx(@RequestBody @Validated WxFansSaveForm wxFansSaveForm){
+        wxFansBiz.save(wxFansSaveForm);
+    }
 
 
     @ApiOperation("根据姓名/手机号/姓名拼音模糊查询患者")
