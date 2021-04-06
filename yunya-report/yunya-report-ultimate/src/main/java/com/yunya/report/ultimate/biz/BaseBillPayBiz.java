@@ -188,10 +188,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     Map<Integer, ClinicWorkloadGroupInfoVO[]> workloadMap = new HashMap<>(16);
     List<BillOfRefundWorkloadVO> refunds = refundBiz.groupTotalRefundWorkload(query);
     List<BillIdAndBillPayIdVO> vos = mapper.selectBillIdsAndBillPayIds(query);
-    Map<Integer, Date> billIds = new HashMap<>(16);
-    Set<Integer> billPayIds = new LinkedHashSet<>();
     String curDate = DateTime.now().toString("yyyy-MM-dd");
     if (StringHelper.isNotEmpty(vos)) {
+      Map<Integer, Date> billIds = new HashMap<>(16);
+      Set<Integer> billPayIds = new HashSet<>();
       for (BillIdAndBillPayIdVO vo : vos) {
         billIds.put(vo.getBillId(), vo.getPayeeDate());
         if (vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0) {

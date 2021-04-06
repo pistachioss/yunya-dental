@@ -467,4 +467,19 @@ public class CompanyReportOfOperationController {
         billDetailBiz.findStatisticsTariffPaymentWorkloadList(query);
     return ResponseUtil.success(pageInfo);
   }
+
+  /**
+   * 根据条件查询门诊业绩
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊业绩")
+  @PostMapping(value = "/clinic/monthPerformance/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊业绩")
+  public ResponseResult<PageInfo<ClinicPerformanceVO>> clinicMonthPerformanceList(
+          @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
+    PageInfo<ClinicPerformanceVO> pageInfo =
+            billDetailBiz.clinicMonthPerformanceList(query);
+    return ResponseUtil.success(pageInfo);
+  }
 }
