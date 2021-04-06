@@ -279,7 +279,7 @@
     <!-- 查询专科数量 -->
     <select id="selectTariffSpecialistPercentage" resultType="java.lang.Integer">
         select IFNULL(SUM(quantity),0)
-        from order_detail od join order_record ord on od.order_record_id = ord.id
+        from order_record ord left join order_detail od on od.order_record_id = ord.id
         <where>
             <if test=" form.orgIds != null and form.orgIds.size() > 0 ">
                 and od.org_id in

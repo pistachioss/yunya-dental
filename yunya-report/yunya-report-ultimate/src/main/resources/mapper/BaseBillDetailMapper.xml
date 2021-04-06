@@ -1752,7 +1752,7 @@
         bp.`name` AS patientName,
         bp.pinyin_name AS pinyinName,
         bp.mobile,
-        btp.user_id AS regDentistId,
+        btp.registered_dentist_id AS regDentistId,
         btp.employee_name AS regDentistName
         FROM
         (
@@ -1773,15 +1773,17 @@
         WHERE
         bbd.source_type = 0
         ) bbd
-        LEFT JOIN base_patient bp ON bbd.patientId = bp.patient_id
-        LEFT JOIN (
+        inner JOIN base_patient bp ON bbd.patientId = bp.patient_id
+        inner JOIN (
         SELECT
-        btp.treatment_id,
-        be.user_id,
-        be.employee_name
+        btp.treatment_id, btp.registered_dentist_id, (select be.employee_name from base_employee be where be.user_id = btp.registered_dentist_id) as employee_name
         FROM
-        base_treatment_process btp
-        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+          base_treatment_process btp
+        <where>
+            <if test="query.orgId != null">
+                and btp.org_id = #{query.orgId}
+            </if>
+        </where>
         GROUP BY
         btp.treatment_id
         ) btp ON bbd.treatment_id = btp.treatment_id
