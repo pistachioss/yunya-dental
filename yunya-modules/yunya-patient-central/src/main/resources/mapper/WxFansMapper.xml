@@ -49,4 +49,14 @@
       like concat(concat('%', rtrim(#{name})), '%')
     </where>
   </select>
+
+  <select id="findDetail" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO">
+      SELECT
+	  pbi.name as patientName,
+	  wfb.dictionary_id as dictionaryId
+      FROM
+	  wx_fans_bind wfb
+      LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
+      where wfb.open_id = #{openId}
+  </select>
 </mapper>

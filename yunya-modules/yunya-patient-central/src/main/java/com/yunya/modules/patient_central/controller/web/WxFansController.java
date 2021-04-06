@@ -1,19 +1,25 @@
 package com.yunya.modules.patient_central.controller.web;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.patient_central.domain.query.WxFansDetailForm;
 import com.yunya.feign.patient_central.domain.query.WxFansQueryForm;
+import com.yunya.feign.patient_central.domain.query.WxFansSaveForm;
+import com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO;
 import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.WxFansBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * 简介:公司微信公众号粉丝控制层
@@ -45,6 +51,34 @@ public class WxFansController {
             @RequestBody @Validated WxFansQueryForm wxFansQueryForm) {
         return ResponseUtil.success(
                wxFansBiz.findList(wxFansQueryForm));
+    }
+
+    /**
+     * 客服中心-用户管理列表-查看详情
+     *
+     * @param
+     * @return ResponseResult<PageInfo<WxFansVo>>
+     */
+    @ApiOperation("客服中心-用户管理列表-查看详情")
+    @PostMapping("/detail")
+    public ResponseResult<List<WxFansDetailVO>> findDetail(
+            @RequestBody @Validated WxFansDetailForm wxFansDetailForm) {
+        return ResponseUtil.success(
+                wxFansBiz.findDetail(wxFansDetailForm));
+    }
+
+    /**
+     * 客服中心-新增粉丝信息以及绑定关系
+     *
+     * @param
+     * @return ResponseResult<PageInfo<WxFansVo>>
+     */
+    @ApiOperation("客服中心-用户管理列表-查看详情")
+    @PostMapping("/save")
+    public ResponseResult<T> save(
+            @RequestBody @Validated WxFansSaveForm wxFansSaveForm) {
+        wxFansBiz.save(wxFansSaveForm);
+        return ResponseUtil.success();
     }
 
 }
