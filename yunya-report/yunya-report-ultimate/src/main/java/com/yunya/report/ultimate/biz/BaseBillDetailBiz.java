@@ -8,9 +8,6 @@ import com.yunya.feign.clinic_base.domain.vo.BusinessGoalVO;
 import com.yunya.feign.report.domain.bo.ClinicWorkloadGroupInfoVO;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
-import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.form.OrganizationModel;
-import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -54,8 +51,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   @Autowired private BaseBillPayDetailMapper baseBillPayDetailMapper;
   /** 诊所基础信息 */
   @Autowired private RemoteClinicBaseServiceFeign clinicBaseServiceFeign;
-  /** 系统服务 */
-  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
   /**
    * 根据条件查询账单收入详情列表
@@ -1115,18 +1110,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-   * 查询组织信息列表
-   *
-   * @return
-   */
-  private List<OrganizationInfoDetail> getOrganizationList() {
-    OrganizationModel model = new OrganizationModel();
-    model.setWhetherPage(false);
-    model.setTypes(new Byte[] {2});
-    return remoteSystemServiceFeign.findOrgInfoList(model);
-  }
-
-  /**
    * 各个门诊的月工作量和日工作量合计
    *
    * @return
@@ -1172,7 +1155,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       }
       goalTotal = goalTotal.add(goal);
       monthTotal = monthTotal.add(monthWorkload);
-      percentageTotal = percentageTotal.add(completedPercentage);
       curTotal = curTotal.add(curWorkload);
       setOrgTotal(
           orgId,
@@ -1184,6 +1166,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           monthVO,
           percentageVO,
           curVO);
+    }
+    if (goalTotal.compareTo(BigDecimal.ZERO)!=0) {
+      percentageTotal = monthTotal.divide(goalTotal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
     }
     goalVO.setTotal(goalTotal.toString());
     monthVO.setTotal(monthTotal.toString());
@@ -1351,5 +1336,59 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     List<BillItemTollAndWorkloadVO> resultList = mapper.selectTariffWorkloadInfo(query);
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件查询门诊业绩
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  public PageInfo<ClinicPerformanceVO> clinicMonthPerformanceList(ClinicPerformanceBusinessQuery queryForm) {
+    DataStatisticsQuery query = new DataStatisticsQuery();
+    query.setDateType(queryForm.getDateType());
+    query.setStartDate(queryForm.getStartDate());
+    query.setEndDate(queryForm.getEndDate());
+    Map<Integer, BigDecimal[]> workloadCompleted = baseBillPayBiz.computeWorkloadGroupOrgId(query);
+    Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
+    if (queryForm.getWhetherPage()) {
+      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+    }
+    BaseOrganization entity = new BaseOrganization();
+    entity.setOrgType((byte) 2);
+    List<BaseOrganization> orgs = organizationMapper.select(entity);
+    PageInfo pageInfo = new PageInfo<>(orgs);
+    List<ClinicPerformanceVO> result = new ArrayList<>();
+    if (StringHelper.isNotEmpty(orgs)) {
+      String month = queryForm.getStartDate();
+      if (StringHelper.countChild("-",month) > 1) {
+        month = month.substring(0,7); //月份
+      }
+      for (BaseOrganization vo : orgs) {
+        Integer orgId = vo.getOrgId();
+        BigDecimal goal = workloadGoalMap.get(orgId);
+        if (goal == null) {
+          goal = BigDecimal.ZERO;
+        }
+        BigDecimal[] workloads = workloadCompleted.get(orgId);
+        if (workloads == null) {
+          workloads = new BigDecimal[]{BigDecimal.ZERO};
+        }
+        BigDecimal completedPercentage = BigDecimal.ZERO;
+        if (goal.compareTo(BigDecimal.ZERO) != 0) {
+          completedPercentage =
+                  workloads[0].divide(goal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+        }
+        ClinicPerformanceVO clinicPerformanceVO = new ClinicPerformanceVO();
+        clinicPerformanceVO.setAbbreviation(vo.getAbbreviation());
+        clinicPerformanceVO.setMonth(month);
+        clinicPerformanceVO.setGoal(goal);
+        clinicPerformanceVO.setWorkload(workloads[0]);
+        clinicPerformanceVO.setCompletePercentage(completedPercentage.toString() + "%");
+        result.add(clinicPerformanceVO);
+      }
+    }
+    pageInfo.setList(result);
+    return pageInfo;
   }
 }
