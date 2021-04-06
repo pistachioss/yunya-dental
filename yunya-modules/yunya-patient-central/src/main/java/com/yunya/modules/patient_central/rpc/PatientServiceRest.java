@@ -76,8 +76,8 @@ public class PatientServiceRest {
 
     @ApiOperation("根据姓名/手机号/姓名拼音模糊查询患者")
     @RequestMapping (value = "/saveWxAndFansBind",method = RequestMethod.POST)
-    public void saveWx(@RequestBody @Validated WxFansSaveForm wxFansSaveForm){
-        wxFansBiz.save(wxFansSaveForm);
+    public Integer saveWx(@RequestBody @Validated WxFansSaveForm wxFansSaveForm){
+        return wxFansBiz.save(wxFansSaveForm);
     }
 
 

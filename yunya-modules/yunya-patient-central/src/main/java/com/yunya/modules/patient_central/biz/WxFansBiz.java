@@ -60,8 +60,8 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         return list;
     }
 
-    public void save(WxFansSaveForm wxFansSaveForm){
+    public Integer save(WxFansSaveForm wxFansSaveForm){
         wxFansBindBiz.insert(wxFansSaveForm.getFansBind());
-        mapper.insert(wxFansSaveForm.getWxFans());
+        return mapper.insert(wxFansSaveForm.getWxFans());
     }
 }
