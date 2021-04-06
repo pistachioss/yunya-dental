@@ -54,6 +54,16 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 30000
+# 负载均衡
+ribbon:
+  eureka:
+    enabled: true
+  ReadTimeout: 100000
+  ConnectTimeout: 100000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 1
+  OkToRetryOnAllOperations: false
+
 
 
 
