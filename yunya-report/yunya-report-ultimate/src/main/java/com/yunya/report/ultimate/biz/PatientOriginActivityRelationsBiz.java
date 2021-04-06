@@ -192,9 +192,8 @@ public class PatientOriginActivityRelationsBiz
     }
     // k 订单id v 订单记录
     for (BillIdVo billIdVo : billIdList) {
-      List<BaseBillPay> baseBillPayVo = null;
+      List<BaseBillPay> baseBillPayVo = new ArrayList<>();;
       for (BaseBillPay baseBillPay : baseBillPayList) {
-        baseBillPayVo = new ArrayList<>();
         if (baseBillPay.getBillId().equals(billIdVo.getBillId())) {
           baseBillPayVo.add(baseBillPay);
         }

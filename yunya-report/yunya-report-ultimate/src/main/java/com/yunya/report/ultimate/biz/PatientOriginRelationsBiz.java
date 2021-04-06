@@ -76,11 +76,11 @@ public class PatientOriginRelationsBiz
       List<BillIdVo> billIdList = baseBillMapper.findBillIdList(query, patientOriginEmployeeVoList);
       if (patientOriginEmployeeVoList != null) {
         // 获取已收工作量合计
-       // getReceivedTotalWorkload(patientOriginEmployeeVoList, query, true, billIdList);
+        getReceivedTotalWorkload(patientOriginEmployeeVoList, query, true, billIdList);
         // 获取其中免单支付工作量合计
-       // getReceivedTotalWorkload(patientOriginEmployeeVoList, query, false, billIdList);
+        getReceivedTotalWorkload(patientOriginEmployeeVoList, query, false, billIdList);
         // 获取退费金额合计
-      //  getTotalRefundAmount(patientOriginEmployeeVoList, query);
+        getTotalRefundAmount(patientOriginEmployeeVoList, query);
         // 获取补入工作量合计
         getMakeUpWorkload(patientOriginEmployeeVoList, query);
       }
