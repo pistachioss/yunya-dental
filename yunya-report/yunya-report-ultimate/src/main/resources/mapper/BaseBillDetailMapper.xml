@@ -2177,17 +2177,20 @@
         bp.`name` AS patientName,
         bp.mobile
         FROM base_bill_pay bbp
-        LEFT JOIN base_bill_pay_detail bbpd ON bbpd.bill_pay_id=bbp.bill_pay_id
         LEFT JOIN base_bill bb ON bbp.bill_id=bb.bill_id
         LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
         LEFT JOIN base_organization bo ON bo.org_id=bbp.org_id
         <where>
-            <if test="payIds!=null and payIds.size()>0">
-                and bbpd.account_item_id IN
-                <foreach collection="payIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
+            EXISTS (
+                SELECT bbpd.bill_pay_id FROM base_bill_pay_detail bbpd
+                <where>
+                    and bbpd.account_item_id IN
+                    <foreach collection="payIds" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                    AND bbpd.bill_pay_id=bbp.bill_pay_id
+                </where>
+            )
             <if test="query.orgId != null">
                 and bbp.org_id = #{query.orgId}
             </if>
