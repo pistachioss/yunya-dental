@@ -2973,7 +2973,7 @@
                 </foreach>
             </if>
         </where>
-        group by org_id,coupon_id,order_detail_id,item_type,item_id
+        group by org_id,coupon_id,item_type,item_id
         ) bb
         LEFT JOIN base_bill_detail bbd ON bb.order_detail_id = bbd.bill_detail_id
         group by bb.org_id,bb.coupon_id,bbd.executor_id,bb.order_detail_id,bb.item_type,bb.item_id
