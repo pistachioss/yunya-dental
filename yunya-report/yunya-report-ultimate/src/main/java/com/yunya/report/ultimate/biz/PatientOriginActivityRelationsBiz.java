@@ -158,9 +158,9 @@ public class PatientOriginActivityRelationsBiz
                   }
                   // 判断是全部工作量 还是 免单支付工作量
                   if (type) {
-                    patientOriginActivityVo.setReceivedTotalWorkload(patientOriginActivityVo.getReceivedTotalWorkload().add(multiply));
+                    patientOriginActivityVo.setReceivedTotalWorkload(patientOriginActivityVo.getReceivedTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
                   } else {
-                    patientOriginActivityVo.setFreeTotalWorkload(patientOriginActivityVo.getFreeTotalWorkload().add(multiply));
+                    patientOriginActivityVo.setFreeTotalWorkload(patientOriginActivityVo.getFreeTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
                   }
                 }
               }
@@ -270,10 +270,10 @@ public class PatientOriginActivityRelationsBiz
    */
   private List<ReceivedWorkloadDetailsVo> refundDetail(ReceiverkLoadQuery query,Integer originType) throws ParseException {
     List<ReceivedWorkloadDetailsVo> refundDetailList = new ArrayList<>();
-    List<Integer> refundIdList = baseRefundMapper.selectfundBillIdList(query);
+    List<Integer> refundIdList = baseRefundMapper.selectFundBillIdList(query);
     if (refundIdList != null) {
       for (Integer refundId : refundIdList) {
-        List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = baseRefundMapper.selectrefundDetail(refundId, query.getOriginId(), originType);
+        List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = baseRefundMapper.selectRefundDetail(refundId, query.getOriginId(), originType);
         if (receivedWorkloadDetailsVoList != null) {
           for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo :receivedWorkloadDetailsVoList ) {
             // 判断关联时间是否大于初诊时间

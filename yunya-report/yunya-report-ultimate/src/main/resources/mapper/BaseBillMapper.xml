@@ -1110,7 +1110,7 @@
         join base_bill bb on log.patient_id = bb.patient_id
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         where 1 = 1
-        AND log.origin_type = 4
+        AND log.origin_type = 3
         <if test="query.startDate != null">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
@@ -1218,6 +1218,7 @@
                 left join base_employee be on be.user_id = btp.registered_dentist_id
                 left join base_tariff_info bti ON bti.item_id = bbd.item_id
             where bb.privilege_date is not null
+            and bti.item_type = bbd.item_type
             and bbd.coupon_workload  > 0
             and log.origin_id = #{query.originId}
             and log.origin_type = #{originType}

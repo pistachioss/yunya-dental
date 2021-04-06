@@ -2637,7 +2637,6 @@
                     base_bill_detail bbd
                     LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
                     LEFT JOIN base_tariff_info bti ON bti.item_id = bbd.item_id
-
                     LEFT JOIN (
                          SELECT DISTINCT
                                 log.patient_id, log.crt_time , bp.`name` ,bp.mobile ,bp.first_visit_date ,bp.last_visit_date
@@ -2657,6 +2656,7 @@
                 WHERE
                     bb.bill_id = #{billId}
                     AND bbd.executor_id > 0
+                    and bti.item_type = bbd.item_type
                 ) t where workload > 0
     </select>
 

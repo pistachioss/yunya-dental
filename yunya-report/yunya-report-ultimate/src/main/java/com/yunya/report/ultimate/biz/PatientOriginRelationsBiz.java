@@ -76,11 +76,11 @@ public class PatientOriginRelationsBiz
       List<BillIdVo> billIdList = baseBillMapper.findBillIdList(query, patientOriginEmployeeVoList);
       if (patientOriginEmployeeVoList != null) {
         // 获取已收工作量合计
-        getReceivedTotalWorkload(patientOriginEmployeeVoList, query, true, billIdList);
+       // getReceivedTotalWorkload(patientOriginEmployeeVoList, query, true, billIdList);
         // 获取其中免单支付工作量合计
-        getReceivedTotalWorkload(patientOriginEmployeeVoList, query, false, billIdList);
+       // getReceivedTotalWorkload(patientOriginEmployeeVoList, query, false, billIdList);
         // 获取退费金额合计
-        getTotalRefundAmount(patientOriginEmployeeVoList, query);
+      //  getTotalRefundAmount(patientOriginEmployeeVoList, query);
         // 获取补入工作量合计
         getMakeUpWorkload(patientOriginEmployeeVoList, query);
       }
@@ -100,7 +100,7 @@ public class PatientOriginRelationsBiz
     for (PatientOriginEmployeeVo patientOriginEmployee : patientOriginEmployeeVoList) {
       BigDecimal makeUpWorkload =
           baseBillDetailMapper.findMakeUpWorkload(
-              patientOriginEmployee.getOriginId(), query.getStartDate(), query.getEndDate(), 3);
+              patientOriginEmployee.getOriginId(), query.getStartDate(), query.getEndDate(), 1);
       if (makeUpWorkload == null) {
         patientOriginEmployee.setMakeUpWorkload(new BigDecimal(0));
       } else {
@@ -155,9 +155,9 @@ public class PatientOriginRelationsBiz
                     }
                     // 判断是全部工作量 还是 免单支付工作量
                     if (type) {
-                      patientOriginEmployeeVo.setReceivedTotalWorkload(patientOriginEmployeeVo.getReceivedTotalWorkload().add(multiply));
+                      patientOriginEmployeeVo.setReceivedTotalWorkload(patientOriginEmployeeVo.getReceivedTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
                     } else {
-                      patientOriginEmployeeVo.setFreeTotalWorkload(patientOriginEmployeeVo.getFreeTotalWorkload().add(multiply));
+                      patientOriginEmployeeVo.setFreeTotalWorkload(patientOriginEmployeeVo.getFreeTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
                     }
                   }
                 }
@@ -205,9 +205,8 @@ public class PatientOriginRelationsBiz
     }
     // k 订单id v 订单记录
     for (BillIdVo billIdVo : billIdList) {
-      List<BaseBillPay> baseBillPayVo = null;
+      List<BaseBillPay> baseBillPayVo = new ArrayList<>();
       for (BaseBillPay baseBillPay : baseBillPayList) {
-        baseBillPayVo = new ArrayList<>();
         if (baseBillPay.getBillId().equals(billIdVo.getBillId())) {
           baseBillPayVo.add(baseBillPay);
         }
@@ -284,11 +283,11 @@ public class PatientOriginRelationsBiz
    */
   private List<ReceivedWorkloadDetailsVo> refundDetail(ReceiverkLoadQuery query,Integer originType) throws ParseException {
     List<ReceivedWorkloadDetailsVo> refundDetailList = new ArrayList<>();
-    List<Integer> refundIdList = baseRefundMapper.selectfundBillIdList(query);
+    List<Integer> refundIdList = baseRefundMapper.selectFundBillIdList(query);
     if (refundIdList != null) {
       for (Integer refundId : refundIdList) {
         List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList =
-            baseRefundMapper.selectrefundDetail(refundId, query.getOriginId(), originType);
+            baseRefundMapper.selectRefundDetail(refundId, query.getOriginId(), originType);
         if (receivedWorkloadDetailsVoList != null) {
           for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo :receivedWorkloadDetailsVoList ) {
             // 判断关联时间是否大于初诊时间
@@ -371,10 +370,9 @@ public class PatientOriginRelationsBiz
     Map<Integer,List<BaseBillPay>> map = new HashMap();
     if (baseBillIdList != null && baseBillPayList != null){
       for (Integer billId : baseBillIdList) {
-        List<BaseBillPay> baseBillPayVoList = null;
+        List<BaseBillPay> baseBillPayVoList = new ArrayList<>();
         for (BaseBillPay baseBillPay: baseBillPayList) {
             if (billId.equals(baseBillPay.getBillId())){
-              baseBillPayVoList = new ArrayList<>();
               baseBillPayVoList.add(baseBillPay);
             }
         }
