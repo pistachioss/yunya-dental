@@ -1958,7 +1958,7 @@
 
     <!-- 查询订单支付记录 -->
     <select id="findBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
-        select DISTINCT bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount receivedAmount from base_bill_pay bbp
+        select DISTINCT bbpd.bill_pay_detail_record_id billPayDetailRecordId,bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount receivedAmount from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
         <if test="itemIds != null">
@@ -1986,7 +1986,7 @@
 
     <!-- 根据订单id查询支付记录 -->
     <select id="selectBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
-        select DISTINCT bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount receivedAmount from base_bill_pay bbp
+        select DISTINCT bbpd.bill_pay_detail_record_id billPayDetailRecordId,bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount receivedAmount from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
         <if test=" billIdList != null and billIdList.size() > 0">
