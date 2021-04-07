@@ -63,9 +63,9 @@ public class PatientOriginActivityController {
                pageInfo.setList(list);
                return ResponseUtil.success(pageInfo);
            }
-           return ResponseUtil.fail(RETURN_VALUE_ISNULL,"未查询到数据",pageInfo);
+           return ResponseUtil.fail(RETURN_VALUE_ISNULL,"未查询到活动推荐数据",pageInfo);
        }
-       return ResponseUtil.fail(RETURN_VALUE_ISNULL,"未查询到数据",pageInfo);
+       return ResponseUtil.fail(RETURN_VALUE_ISNULL,"未查询到活动推荐数据",pageInfo);
     }
 
     /**

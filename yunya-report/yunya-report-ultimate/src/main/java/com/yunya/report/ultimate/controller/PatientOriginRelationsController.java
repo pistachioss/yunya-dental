@@ -66,9 +66,9 @@ public class PatientOriginRelationsController {
                 pageInfo.setList(list);
                 return ResponseUtil.success(pageInfo);
             }
-            return ResponseUtil.fail(RETURN_VALUE_ISNULL,"未查询到数据",pageInfo);
+            return ResponseUtil.fail(RETURN_VALUE_ISNULL,"未查询到员工推荐数据",pageInfo);
         }
-        return ResponseUtil.fail(RETURN_VALUE_ISNULL,"未查询到数据",pageInfo);
+        return ResponseUtil.fail(RETURN_VALUE_ISNULL,"未查询到员工推荐数据",pageInfo);
     }
 
     /**
