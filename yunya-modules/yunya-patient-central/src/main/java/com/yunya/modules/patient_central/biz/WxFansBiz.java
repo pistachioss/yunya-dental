@@ -61,7 +61,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
     }
 
     public Integer save(WxFansSaveForm wxFansSaveForm){
-        wxFansBindBiz.insert(wxFansSaveForm.getFansBind());
+        wxFansBindBiz.batchInsert(wxFansSaveForm.getFansBind());
         return mapper.insert(wxFansSaveForm.getWxFans());
     }
 }

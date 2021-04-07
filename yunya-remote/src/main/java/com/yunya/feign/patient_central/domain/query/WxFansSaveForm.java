@@ -5,6 +5,8 @@ import com.yunya.models.patient_central.WxFansBind;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 简介:
  * <$>
@@ -22,6 +24,6 @@ public class WxFansSaveForm {
     @ApiModelProperty("公司微信公众号粉丝信息")
     private WxFans wxFans;
     @ApiModelProperty("绑定关系")
-    private WxFansBind fansBind;
+    private List<WxFansBind> fansBind;
 
 }

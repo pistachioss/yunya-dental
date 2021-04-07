@@ -9,6 +9,8 @@ import com.yunya.modules.patient_central.mapper.WxFansBindMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * 简介:公司 微信公众号粉丝与患者绑定关系业务层
  * <$>
@@ -24,5 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(rollbackFor = Exception.class)
 public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
 
+    public Integer batchInsert(List<WxFansBind> list){
+        return mapper.batchInsert(list);
+    }
 
 }
