@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Set;
 
@@ -453,4 +455,8 @@ public interface RemoteSystemServiceFeign {
    */
   @RequestMapping(value = "/api/dictionary/ids", method = RequestMethod.POST)
   List<DictionaryItem> findDictionaryItemByIds(@RequestBody List<Integer> ids);
+
+  @RequestMapping(value = "/dictItem/name", method = RequestMethod.GET)
+  public DictionaryItem getDictItemByNames(@NotBlank @RequestParam(value = "typeName", required = true) String typeName
+          , @NotBlank @RequestParam(value = "itemName", required = true) String itemName);
 }

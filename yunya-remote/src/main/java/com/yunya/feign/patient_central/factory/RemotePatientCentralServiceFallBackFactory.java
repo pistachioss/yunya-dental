@@ -67,7 +67,7 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     }
 
     @Override
-    public PatientBaseInfo findPatientInfo(PatientBaseInfo patientBaseInfo) {
+    public List<PatientBaseInfo> findPatientInfo(PatientBaseInfo patientBaseInfo) {
         return null;
     }
 
@@ -157,6 +157,11 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
 
     @Override
     public BigDecimal sumMemberAndPrepaidRefundCash(CashReceiptOrRefundQuery query) {
+        return null;
+    }
+
+    @Override
+    public Integer saveWx(WxFansSaveForm wxFansSaveForm) {
         return null;
     }
 

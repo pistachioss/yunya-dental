@@ -98,8 +98,8 @@ import java.util.List;
    * @param patientBaseInfo 条件
    * @return PatientBaseInfo
    */
-  @RequestMapping(value = "/api/findPatientInfo", method = RequestMethod.POST)
-  PatientBaseInfo findPatientInfo(@RequestBody PatientBaseInfo patientBaseInfo);
+  @RequestMapping(value = "/api/findPatientList", method = RequestMethod.POST)
+  List<PatientBaseInfo> findPatientInfo(@RequestBody PatientBaseInfo patientBaseInfo);
 
   /**
    * 查询患者信息列表
@@ -270,4 +270,8 @@ import java.util.List;
   @ApiOperation("根据支付方式统计会员充值和预付款退费金额")
   @RequestMapping(value = "/api/refund/cash", method = RequestMethod.POST)
   BigDecimal sumMemberAndPrepaidRefundCash(@RequestBody @Validated CashReceiptOrRefundQuery query);
+
+  @ApiOperation("保存公众号粉丝绑定")
+  @RequestMapping (value = "/saveWxAndFansBind",method = RequestMethod.POST)
+  Integer saveWx(@RequestBody @Validated WxFansSaveForm wxFansSaveForm);
 }

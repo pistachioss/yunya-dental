@@ -20,15 +20,6 @@ spring:
     url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.name}?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false
     driver-class-name: com.mysql.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
-  redis:
-    host: 192.168.31.90
-    port: 6379
-    password: foobared
-    database: 2
-#  cloud:
-#    nacos:
-#      discovery:
-#        server-addr: 192.168.31.215:8848
   zipkin:
     discovery-client-enabled: false
   profiles:

@@ -37,9 +37,10 @@ public class WxController {
         return ResponseUtil.success(wxService.getAuthInfo(code));
     }
 
-    @PostMapping(value = "/auth")
+    @PostMapping(value = "/wxVip/register")
     @ApiOperation(value = "获取用户授权信息")
-    public void wxRegister(@NotBlank @RequestParam(required = true) String openId, @Valid @RequestBody WxRegisterModel model) {
+    public ResponseResult wxRegister(@NotBlank @RequestParam(required = true) String openId, @Valid @RequestBody WxRegisterModel model) {
         wxService.register(openId, model);
+        return ResponseUtil.success();
     }
 }

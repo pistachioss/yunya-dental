@@ -64,4 +64,13 @@
         </where>
         order by id asc
     </select>
+
+    <select id="findByTypeAndItemName" resultMap="BaseResultMap">
+        select
+            <include refid="baseColumns"></include>
+        from dictionary_item di
+                 inner join dictionary_type dt on di.dictionary_type_id = dt.id
+        where dt.name = #{typeName}
+          and di.name = #{itemName}
+    </select>
 </mapper>

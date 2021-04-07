@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 public class WxAuthVo {
     @ApiModelProperty(value = "是否关注公众号")
-    private Boolean isSubscribe;
+    private Boolean subscribe;
     @ApiModelProperty(value = "用户openid")
     private String openId;
 }

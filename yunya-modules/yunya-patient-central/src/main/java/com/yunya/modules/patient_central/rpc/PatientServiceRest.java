@@ -128,9 +128,9 @@ public class PatientServiceRest {
     }
 
     @ApiOperation("查询患者信息")
-    @RequestMapping (value = "/findPatientInfo",method = RequestMethod.POST)
-    public PatientBaseInfo findPatientInfo(@RequestBody PatientBaseInfo patientBaseInfo){
-        return patientBaseInfoBiz.selectOne(patientBaseInfo);
+    @RequestMapping (value = "/findPatientList",method = RequestMethod.POST)
+    public List<PatientBaseInfo> findPatientInfo(@RequestBody PatientBaseInfo patientBaseInfo){
+        return patientBaseInfoBiz.selectList(patientBaseInfo);
     }
 
     @ApiOperation("查询患者信息列表")
