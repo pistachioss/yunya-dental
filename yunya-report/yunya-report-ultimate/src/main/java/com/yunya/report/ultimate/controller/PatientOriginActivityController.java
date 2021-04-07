@@ -48,12 +48,12 @@ public class PatientOriginActivityController {
     @PostMapping(value = "/activityReferral",name = "公司端-市场营销-活动推荐列表")
     public ResponseResult<PageInfo<PatientOriginActivityVo>> activityReferral(@RequestBody PatientOriginActivityQuery query){
        List<PatientOriginActivityVo> patientOriginActivityVos = patientOriginActivityRelationsBiz.finleActivityReferral(query);
+       PageInfo<PatientOriginActivityVo> pageInfo = new PageInfo<>();
        if (!StringHelper.isEmpty(patientOriginActivityVos)){
            if (query.getWhetherPage()) {
                Integer pageNum = query.getPageNum();
                Integer pageSize = query.getPageSize();
                int total = patientOriginActivityVos.size();
-               PageInfo<PatientOriginActivityVo> pageInfo = new PageInfo<>();
                pageInfo.setPageNum(pageNum);
                pageInfo.setPageSize(pageSize);
                pageInfo.setTotal(total);
@@ -63,9 +63,9 @@ public class PatientOriginActivityController {
                pageInfo.setList(list);
                return ResponseUtil.success(pageInfo);
            }
-           return ResponseUtil.success(new PageInfo<>(patientOriginActivityVos));
+           return ResponseUtil.success(pageInfo);
        }
-       return ResponseUtil.success();
+       return ResponseUtil.success(pageInfo);
     }
 
     /**
@@ -95,11 +95,11 @@ public class PatientOriginActivityController {
     @PostMapping(value = "/workloadBreakdown",name = "公司端-市场营销-活动推荐-各项明细列表 type区分")
     public ResponseResult<PageInfo<ReceivedWorkloadDetailsVo>> workloadBreakdown(@RequestBody ReceiverkLoadQuery query) throws ParseException {
         List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = patientOriginActivityRelationsBiz.findEreceiverkLoad(query);
+        PageInfo<ReceivedWorkloadDetailsVo> pageInfo = new PageInfo<>();
         if (query.getWhetherPage()) {
             Integer pageNum = query.getPageNum();
             Integer pageSize = query.getPageSize();
             int total = receivedWorkloadDetailsVoList.size();
-            PageInfo<ReceivedWorkloadDetailsVo> pageInfo = new PageInfo<>();
             pageInfo.setPageNum(pageNum);
             pageInfo.setPageSize(pageSize);
             pageInfo.setTotal(total);
@@ -109,7 +109,7 @@ public class PatientOriginActivityController {
             pageInfo.setList(list);
             return ResponseUtil.success(pageInfo);
         }
-        return ResponseUtil.success(new PageInfo<>(receivedWorkloadDetailsVoList));
+        return ResponseUtil.success(pageInfo);
     }
 
 
