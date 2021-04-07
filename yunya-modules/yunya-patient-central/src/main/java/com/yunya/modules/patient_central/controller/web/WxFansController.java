@@ -89,7 +89,7 @@ public class WxFansController {
      */
     @ApiOperation("客服中心-用户管理列表-查看详情-修改备注")
     @PostMapping("/update")
-    private ResponseResult<Integer> update(@RequestBody @Validated WxFans wxFans){
+    public ResponseResult<Integer> update(@RequestBody @Validated WxFans wxFans){
         return ResponseUtil.success(wxFansBiz.updateSelectiveById(wxFans));
     }
 
