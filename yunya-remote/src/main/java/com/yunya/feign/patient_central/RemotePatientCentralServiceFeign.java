@@ -274,4 +274,8 @@ import java.util.List;
   @ApiOperation("保存公众号粉丝绑定")
   @RequestMapping (value = "/saveWxAndFansBind",method = RequestMethod.POST)
   Integer saveWx(@RequestBody @Validated WxFansSaveForm wxFansSaveForm);
+
+  @ApiOperation("查询微信用户是否注册")
+  @GetMapping (value = "/count/register")
+  int countRegister(@RequestParam(value = "openId", required = true) String openId);
 }

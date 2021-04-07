@@ -59,6 +59,10 @@ public class WXService extends AbstractWxBaseApi{
 
     public void register(String openId, WxRegisterModel model) {
         WxFansSaveForm fansSaveForm = new WxFansSaveForm();
+        int count = patientFeign.countRegister(openId);
+        if (count > 0) {
+            throw new ClientServiceException(WeChatError.USER_IS_REGISTERED);
+        }
         //获取微信用户信息
         String userInfoStr = super.getUserInfo(openId);
         WxFans wxFans = this.assembleWxFans(userInfoStr);

@@ -9,7 +9,8 @@ import com.yunya.framework.common.model.RestError;
 
 public enum WeChatError implements RestError {
     USER_NOT_FOLLOW(1, "非关注公众号用户请先关注艾维口腔公众号！"),
-    DICT_NO_CONFIG(2, "亲属关系不存在，请先配置"),
+    DICT_NO_CONFIG(2, "亲属关系不存在，请联系管理员配置"),
+    USER_IS_REGISTERED(3, "你已经是会员，请勿重复注册"),
     ;
     private Integer code;
     private String value;

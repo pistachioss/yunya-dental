@@ -29,12 +29,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -297,6 +292,12 @@ public class PatientServiceRest {
     @RequestMapping (value = "/total/findPatientTotalInfo", method = RequestMethod.POST)
     public List<PatientTotalInfoVo> findPatientTotalInfo(@RequestBody PatientBaseInfoQueryForm queryForm) {
         return patientBaseInfoBiz.findPatientTotalInfo(queryForm);
+    }
+
+    @ApiOperation("查询微信用户是否注册")
+    @GetMapping (value = "/count/register")
+    public int countRegister(@RequestParam(value = "openId", required = true) String openId) {
+        return wxFansBiz.countRegister(openId);
     }
 
 }

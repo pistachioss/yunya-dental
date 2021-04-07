@@ -38,7 +38,7 @@ public class WxController {
     }
 
     @PostMapping(value = "/wxVip/register")
-    @ApiOperation(value = "获取用户授权信息")
+    @ApiOperation(value = "会员注册")
     public ResponseResult wxRegister(@NotBlank @RequestParam(required = true) String openId, @Valid @RequestBody WxRegisterModel model) {
         wxService.register(openId, model);
         return ResponseUtil.success();

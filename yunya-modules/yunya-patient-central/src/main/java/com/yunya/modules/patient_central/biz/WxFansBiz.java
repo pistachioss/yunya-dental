@@ -1,26 +1,20 @@
 package com.yunya.modules.patient_central.biz;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.query.WxFansDetailForm;
-import com.yunya.feign.patient_central.domain.query.WxFansQueryForm;
-import com.yunya.feign.patient_central.domain.query.WxFansSaveForm;
-import com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO;
-import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
-import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.form.DictionaryItemModel;
-import com.yunya.feign.system.vo.SysUserInfoDetail;
-import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.models.patient_central.WxFans;
-import com.yunya.models.system.DictionaryItem;
-import com.yunya.modules.patient_central.mapper.WxFansMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.github.pagehelper.*;
+import com.yunya.feign.patient_central.domain.query.*;
+import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.system.*;
+import com.yunya.feign.system.form.*;
+import com.yunya.framework.common.biz.*;
+import com.yunya.models.patient_central.*;
+import com.yunya.models.system.*;
+import com.yunya.modules.patient_central.mapper.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.stereotype.*;
+import org.springframework.transaction.annotation.*;
+import tk.mybatis.mapper.entity.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 简介: 公司微信公众号粉丝业务层
@@ -63,5 +57,11 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
     public Integer save(WxFansSaveForm wxFansSaveForm){
         wxFansBindBiz.batchInsert(wxFansSaveForm.getFansBind());
         return mapper.insert(wxFansSaveForm.getWxFans());
+    }
+
+    public int countRegister(String openId) {
+        Example example = new Example(WxFans.class);
+        example.createCriteria().andEqualTo("openId", openId);
+        return mapper.selectCountByExample(example);
     }
 }
