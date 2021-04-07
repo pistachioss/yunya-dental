@@ -277,8 +277,11 @@
     </select>
 
     <!-- 查询专科数量 -->
-    <select id="selectTariffSpecialistPercentage" resultType="java.lang.Integer">
-        select IFNULL(SUM(quantity),0)
+    <select id="selectTariffSpecialistPercentage" resultType="com.yunya.feign.treatment.domain.vo.SpecialistProjectVO">
+        select sum(od.quantity) as quantity,
+               od.org_id as orgId,
+               od.crt_time as crtTime,
+               od.billing_item_id as billingItemId
         from order_record ord left join order_detail od on od.order_record_id = ord.id
         <where>
             <if test=" form.orgIds != null and form.orgIds.size() > 0 ">
@@ -288,13 +291,13 @@
                 </foreach>
             </if>
 
-            <if test=" form.billingItemIds != null and form.billingItemIds.length > 0 ">
-                and od.billing_item_id in
-                <foreach collection="form.billingItemIds" item="billingItemId" index="index" open="(" separator=","
-                         close=")">
-                    #{billingItemId}
-                </foreach>
-            </if>
+<!--            <if test=" form.billingItemIds != null and form.billingItemIds.length > 0 ">-->
+<!--                and od.billing_item_id in-->
+<!--                <foreach collection="form.billingItemIds" item="billingItemId" index="index" open="(" separator=","-->
+<!--                         close=")">-->
+<!--                    #{billingItemId}-->
+<!--                </foreach>-->
+<!--            </if>-->
 
             <if test="form.dateType == 0">
                 <if test="form.startDate != null and form.startDate != ''">
@@ -324,6 +327,7 @@
             and od.type = 0
             and ord.status = 2
         </where>
+        group by billingItemId
     </select>
 
     <!-- 计算占比 -->
