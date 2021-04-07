@@ -2179,17 +2179,20 @@
         bp.`name` AS patientName,
         bp.mobile
         FROM base_bill_pay bbp
-        LEFT JOIN base_bill_pay_detail bbpd ON bbpd.bill_pay_id=bbp.bill_pay_id
         LEFT JOIN base_bill bb ON bbp.bill_id=bb.bill_id
         LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
         LEFT JOIN base_organization bo ON bo.org_id=bbp.org_id
         <where>
-            <if test="payIds!=null and payIds.size()>0">
-                and bbpd.account_item_id IN
-                <foreach collection="payIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
+            EXISTS (
+                SELECT bbpd.bill_pay_id FROM base_bill_pay_detail bbpd
+                <where>
+                    and bbpd.account_item_id IN
+                    <foreach collection="payIds" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                    AND bbpd.bill_pay_id=bbp.bill_pay_id
+                </where>
+            )
             <if test="query.orgId != null">
                 and bbp.org_id = #{query.orgId}
             </if>
@@ -2639,7 +2642,6 @@
                     base_bill_detail bbd
                     LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
                     LEFT JOIN base_tariff_info bti ON bti.item_id = bbd.item_id
-
                     LEFT JOIN (
                          SELECT DISTINCT
                                 log.patient_id, log.crt_time , bp.`name` ,bp.mobile ,bp.first_visit_date ,bp.last_visit_date
@@ -2659,6 +2661,7 @@
                 WHERE
                     bb.bill_id = #{billId}
                     AND bbd.executor_id > 0
+                    and bti.item_type = bbd.item_type
                 ) t where workload > 0
     </select>
 
@@ -2790,6 +2793,7 @@
         LEFT JOIN base_employee be ON bbd.executor_id = be.user_id
         <where>
             AND bb.bill_date IS NOT NULL
+            AND bbd.source_type = 0
             <if test="query.orgId != null">
                 and btp.org_id = #{query.orgId}
                 and bb.org_id = #{query.orgId}
@@ -2969,7 +2973,7 @@
                 </foreach>
             </if>
         </where>
-        group by org_id,coupon_id,order_detail_id,item_type,item_id
+        group by org_id,coupon_id,item_type,item_id
         ) bb
         LEFT JOIN base_bill_detail bbd ON bb.order_detail_id = bbd.bill_detail_id
         group by bb.org_id,bb.coupon_id,bbd.executor_id,bb.order_detail_id,bb.item_type,bb.item_id

@@ -407,7 +407,7 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-产品使用报表")
   @PostMapping(value = "/coupon/executored/list", name = "根据条件查询产品使用报表")
   public ResponseResult<PageInfo<CouponExecutoredVO>> couponExecutoredList(
-      CouponExecutoredQuery query) {
+          @RequestBody @Validated CouponExecutoredQuery query) {
     PageInfo<CouponExecutoredVO> pageInfo = billDetailBiz.couponExecutoredList(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -421,7 +421,7 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-产品使用报表导出")
   @PostMapping(value = "/coupon/executored/export", name = "根据条件查询产品使用报表导出")
   public ResponseResult<T> couponExecutoredExport(
-      HttpServletResponse response, CouponExecutoredQuery query) throws IOException {
+      HttpServletResponse response, @RequestBody @Validated CouponExecutoredQuery query) throws IOException {
     billDetailBiz.couponExecutoredExport(query, response);
     return ResponseUtil.success(null);
   }
@@ -435,7 +435,7 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-产品使用报表明细")
   @PostMapping(value = "/coupon/executored/detail", name = "根据条件查询产品使用报表明细")
   public ResponseResult<PageInfo<CouponExecutoredDetailVO>> couponExecutoredDetails(
-      CouponExecutoredDetailQuery query) {
+          @RequestBody @Validated CouponExecutoredDetailQuery query) {
     PageInfo<CouponExecutoredDetailVO> pageInfo = billDetailBiz.couponExecutoredDetails(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -465,6 +465,21 @@ public class CompanyReportOfOperationController {
       @RequestBody @Validated BillItemTollAndWorkloadQuery query) {
     PageInfo<BillItemTollAndWorkloadVO> pageInfo =
         billDetailBiz.findStatisticsTariffPaymentWorkloadList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询门诊业绩
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊业绩")
+  @PostMapping(value = "/clinic/monthPerformance/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊业绩")
+  public ResponseResult<PageInfo<ClinicPerformanceVO>> clinicMonthPerformanceList(
+          @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
+    PageInfo<ClinicPerformanceVO> pageInfo =
+            billDetailBiz.clinicMonthPerformanceList(query);
     return ResponseUtil.success(pageInfo);
   }
 }
