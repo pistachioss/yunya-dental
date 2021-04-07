@@ -25,5 +25,6 @@
     #{item.bind}, #{item.bindTime},#{item.isVip},
     #{item.isOwner}, #{item.crtId},#{item.crtTime}
     )
+    </foreach>
   </insert>
 </mapper>
