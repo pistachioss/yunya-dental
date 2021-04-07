@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
+import static com.yunya.framework.common.constant.OperationCodeConstants.RETURN_VALUE_ISNULL;
+
 /**
  * 简介:公司端-人力资源菜单内-员工推荐
  *
@@ -64,9 +66,9 @@ public class PatientOriginRelationsController {
                 pageInfo.setList(list);
                 return ResponseUtil.success(pageInfo);
             }
-            return ResponseUtil.success(pageInfo);
+            return ResponseUtil.fail(RETURN_VALUE_ISNULL,"未查询到数据",pageInfo);
         }
-        return ResponseUtil.success(pageInfo);
+        return ResponseUtil.fail(RETURN_VALUE_ISNULL,"未查询到数据",pageInfo);
     }
 
     /**
@@ -110,7 +112,7 @@ public class PatientOriginRelationsController {
             pageInfo.setList(list);
             return ResponseUtil.success(pageInfo);
         }
-        return ResponseUtil.success(pageInfo);
+        return ResponseUtil.success(new PageInfo<>(receivedWorkloadDetailsVoList));
     }
 
 
