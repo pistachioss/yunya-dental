@@ -43,4 +43,11 @@ public class WxController {
         wxService.register(openId, model);
         return ResponseUtil.success();
     }
+
+    @PostMapping(value = "/wxVip/vipInfo")
+    @ApiOperation(value = "会员中心")
+    public ResponseResult vipInfo(@NotBlank @RequestParam(required = true) String openId) {
+//        wxService.register(openId, model);
+        return ResponseUtil.success();
+    }
 }

@@ -77,6 +77,10 @@ public class WXService extends AbstractWxBaseApi{
         patientFeign.saveWx(fansSaveForm);
     }
 
+    public void vipInfo(String openId) {
+
+    }
+
     private WxFans assembleWxFans(String userInfoStr) {
         WxFans wxFans = JSONObject.parseObject(userInfoStr, WxFans.class);
         this.jsonToFans(wxFans, userInfoStr);
