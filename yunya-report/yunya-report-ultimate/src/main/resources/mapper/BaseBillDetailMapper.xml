@@ -1750,7 +1750,7 @@
         bp.`name` AS patientName,
         bp.pinyin_name AS pinyinName,
         bp.mobile,
-        btp.user_id AS regDentistId,
+        btp.registered_dentist_id AS regDentistId,
         btp.employee_name AS regDentistName
         FROM
         (
@@ -1771,15 +1771,17 @@
         WHERE
         bbd.source_type = 0
         ) bbd
-        LEFT JOIN base_patient bp ON bbd.patientId = bp.patient_id
-        LEFT JOIN (
+        inner JOIN base_patient bp ON bbd.patientId = bp.patient_id
+        inner JOIN (
         SELECT
-        btp.treatment_id,
-        be.user_id,
-        be.employee_name
+        btp.treatment_id, btp.registered_dentist_id, (select be.employee_name from base_employee be where be.user_id = btp.registered_dentist_id) as employee_name
         FROM
-        base_treatment_process btp
-        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+          base_treatment_process btp
+        <where>
+            <if test="query.orgId != null">
+                and btp.org_id = #{query.orgId}
+            </if>
+        </where>
         GROUP BY
         btp.treatment_id
         ) btp ON bbd.treatment_id = btp.treatment_id
@@ -2175,17 +2177,20 @@
         bp.`name` AS patientName,
         bp.mobile
         FROM base_bill_pay bbp
-        LEFT JOIN base_bill_pay_detail bbpd ON bbpd.bill_pay_id=bbp.bill_pay_id
         LEFT JOIN base_bill bb ON bbp.bill_id=bb.bill_id
         LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
         LEFT JOIN base_organization bo ON bo.org_id=bbp.org_id
         <where>
-            <if test="payIds!=null and payIds.size()>0">
-                and bbpd.account_item_id IN
-                <foreach collection="payIds" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
+            EXISTS (
+                SELECT bbpd.bill_pay_id FROM base_bill_pay_detail bbpd
+                <where>
+                    and bbpd.account_item_id IN
+                    <foreach collection="payIds" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                    AND bbpd.bill_pay_id=bbp.bill_pay_id
+                </where>
+            )
             <if test="query.orgId != null">
                 and bbp.org_id = #{query.orgId}
             </if>
@@ -2635,7 +2640,6 @@
                     base_bill_detail bbd
                     LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
                     LEFT JOIN base_tariff_info bti ON bti.item_id = bbd.item_id
-
                     LEFT JOIN (
                          SELECT DISTINCT
                                 log.patient_id, log.crt_time , bp.`name` ,bp.mobile ,bp.first_visit_date ,bp.last_visit_date
@@ -2655,6 +2659,7 @@
                 WHERE
                     bb.bill_id = #{billId}
                     AND bbd.executor_id > 0
+                    and bti.item_type = bbd.item_type
                 ) t where workload > 0
     </select>
 
@@ -2786,6 +2791,7 @@
         LEFT JOIN base_employee be ON bbd.executor_id = be.user_id
         <where>
             AND bb.bill_date IS NOT NULL
+            AND bbd.source_type = 0
             <if test="query.orgId != null">
                 and btp.org_id = #{query.orgId}
                 and bb.org_id = #{query.orgId}
@@ -2965,7 +2971,7 @@
                 </foreach>
             </if>
         </where>
-        group by org_id,coupon_id,order_detail_id,item_type,item_id
+        group by org_id,coupon_id,item_type,item_id
         ) bb
         LEFT JOIN base_bill_detail bbd ON bb.order_detail_id = bbd.bill_detail_id
         group by bb.org_id,bb.coupon_id,bbd.executor_id,bb.order_detail_id,bb.item_type,bb.item_id
@@ -3288,5 +3294,30 @@
         WHERE brd.executorId > 0
         GROUP BY brd.executorId, brd.itemType, brd.itemId
         ) brd on bet.user_id = brd.executorId and bet.item_type = brd.itemType and bet.item_id = brd.itemId
+    </select>
+
+    <select id="billItemStatisticsGroupByOrgId" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsVO">
+        SELECT
+            bbd.org_id AS orgId,
+            bbd.item_id AS itemId,
+            SUM(bbd.quantity) AS quantity
+        FROM base_bill_detail bbd
+        <where>
+            bbd.source_type = 0
+            AND bbd.item_type = 0
+            <if test="query.itemIds!=null and query.itemIds.size()>0">
+                and bbd.item_id in
+                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.billIds!=null and query.billIds.size()>0">
+                and bbd.bill_id IN
+                <foreach collection="query.billIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by bbd.org_id, bbd.item_id
     </select>
 </mapper>

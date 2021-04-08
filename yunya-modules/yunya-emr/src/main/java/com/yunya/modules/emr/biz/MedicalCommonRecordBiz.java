@@ -112,7 +112,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
             draftMedicalApplyModel.setApplyBase(applyBase);
             draftMedicalApplyModel.setId(model.getApprovalId());
             ResponseResult responseResult = medicalApprovalBiz.applyAddDraftCase(draftMedicalApplyModel);
-            if (responseResult.getStatus() != 200) {
+            if (responseResult.getStatus() != 0) {
                 throw new ClientServiceException(responseResult.getMsg(), responseResult.getStatus());
             }
         }

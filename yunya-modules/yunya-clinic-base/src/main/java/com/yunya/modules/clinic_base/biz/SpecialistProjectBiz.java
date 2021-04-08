@@ -200,4 +200,16 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
     });
     return result;
   }
+
+  /**
+   * 条件查询专科项目列表
+   * @param query
+   * @return
+   */
+  public PageInfo<SpecialistProjectVO> specialProjectList(SpecialistProjectQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    return new PageInfo<>(mapper.selectSpecialistProjectList(query));
+  }
 }
