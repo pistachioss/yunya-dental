@@ -35,26 +35,33 @@
     </select>
     <!-- 查询来源类型总数量 -->
     <select id="selectCountOriginType" resultType="java.lang.Integer">
-        select count(bp.origin_type)
-        from base_patient bp
+        select count(bp.patient_id)
+        from base_patient bp inner join (
+            select distinct btp.patient_id
+            from base_treatment_process btp
+                <where>
+                    and btp.treat_status > 1
+                    <if test="form.orgId != null and form.orgId != ''">
+                        AND btp.org_id = #{form.orgId}
+                    </if>
+                    <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+                        AND cast(btp.treat_start_time as date) between #{form.startDate} and #{form.endDate}
+                    </if>
+
+                    <if test="form.monthDay != null and form.monthDay != ''">
+                        AND DATE_FORMAT(btp.treat_start_time,'%Y-%m') = #{form.monthDay}
+                        and DATE_FORMAT(btp.treat_end_time, '%Y-%m') = #{form.monthDay}
+                    </if>
+
+                    <if test="form.year != null and form.year != ''">
+                        AND year(btp.treat_start_time) =#{form.year}
+                        AND year(btp.treat_end_time) =#{form.year}
+                    </if>
+                </where>
+            ) bp1 on bp1.patient_id = bp.patient_id
         <where>
             bp.origin_type_name is not null
             and bp.origin_type is not null
-            <if test="form.orgId != null and form.orgId != ''">
-                AND bp.org_id = #{form.orgId}
-            </if>
-
-            <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-                AND cast(bp.patient_crt_time as date) between #{form.startDate} and #{form.endDate}
-            </if>
-
-            <if test="form.monthDay != null and form.monthDay != ''">
-                AND DATE_FORMAT(bp.patient_crt_time,'%Y-%m') = #{form.monthDay}
-            </if>
-
-            <if test="form.year != null and form.year != ''">
-                AND year(bp.patient_crt_time) =#{form.year}
-            </if>
         </where>
 
     </select>
@@ -65,25 +72,32 @@
         bp.origin_type_name originTypeName,
         count(bp.origin_type) countType,
         concat( format(count(bp.origin_type) / ${countOriginType} * 100, 2 ),'%') percentage
-        from base_patient bp
+        from base_patient bp inner join (
+        select distinct btp.patient_id
+        from base_treatment_process btp
+            <where>
+                and btp.treat_status > 1
+                <if test="form.orgId != null and form.orgId != ''">
+                    AND btp.org_id = #{form.orgId}
+                </if>
+                <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+                    AND cast(btp.treat_start_time as date) between #{form.startDate} and #{form.endDate}
+                </if>
+
+                <if test="form.monthDay != null and form.monthDay != ''">
+                    AND DATE_FORMAT(btp.treat_start_time,'%Y-%m') = #{form.monthDay}
+                    and DATE_FORMAT(btp.treat_end_time, '%Y-%m') = #{form.monthDay}
+                </if>
+
+                <if test="form.year != null and form.year != ''">
+                    AND year(btp.treat_start_time) =#{form.year}
+                    AND year(btp.treat_end_time) =#{form.year}
+                </if>
+            </where>
+        ) bp1 on bp1.patient_id = bp.patient_id
         <where>
             bp.origin_type_name is not null
             and bp.origin_type is not null
-            <if test="form.orgId != null and form.orgId != ''">
-                AND bp.org_id = #{form.orgId}
-            </if>
-
-            <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-                AND cast(bp.patient_crt_time as date) between #{form.startDate} and #{form.endDate}
-            </if>
-
-            <if test="form.monthDay != null and form.monthDay != ''">
-                AND DATE_FORMAT(bp.patient_crt_time,'%Y-%m') = #{form.monthDay}
-            </if>
-
-            <if test="form.year != null and form.year != ''">
-                AND year(bp.patient_crt_time) = #{form.year}
-            </if>
         </where>
         group by bp.origin_type
     </select>
@@ -91,24 +105,31 @@
     <!-- 查询性别总数量 -->
     <select id="selectCountGender" resultType="java.lang.Integer">
         select count(bp.gender)
-        from base_patient bp
+        from base_patient bp inner join (
+        select distinct btp.patient_id
+        from base_treatment_process btp
         <where>
-            bp.gender is not null
+            and btp.treat_status > 1
             <if test="form.orgId != null and form.orgId != ''">
-                AND bp.org_id = #{form.orgId}
+                AND btp.org_id = #{form.orgId}
             </if>
-
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-                AND cast(bp.patient_crt_time as date) between #{form.startDate} and #{form.endDate}
+                AND cast(btp.treat_start_time as date) between #{form.startDate} and #{form.endDate}
             </if>
 
             <if test="form.monthDay != null and form.monthDay != ''">
-                AND DATE_FORMAT(bp.patient_crt_time,'%Y-%m') = #{form.monthDay}
+                AND DATE_FORMAT(btp.treat_start_time,'%Y-%m') = #{form.monthDay}
+                and DATE_FORMAT(btp.treat_end_time, '%Y-%m') = #{form.monthDay}
             </if>
 
             <if test="form.year != null and form.year != ''">
-                AND year(bp.patient_crt_time) =#{form.year}
+                AND year(btp.treat_start_time) =#{form.year}
+                AND year(btp.treat_end_time) =#{form.year}
             </if>
+        </where>
+        ) bp1 on bp1.patient_id = bp.patient_id
+        <where>
+            bp.gender is not null
         </where>
     </select>
 
@@ -121,48 +142,62 @@
         end gender,
         count(bp.gender) countGender,
         concat( format(count(bp.gender) / ${countGender} * 100, 2 ),'%') percentage
-        from base_patient bp
+        from base_patient bp inner join (
+        select distinct btp.patient_id
+        from base_treatment_process btp
         <where>
-            bp.gender is not null
+            and btp.treat_status > 1
             <if test="form.orgId != null and form.orgId != ''">
-                AND bp.org_id = #{form.orgId}
+                AND btp.org_id = #{form.orgId}
             </if>
-
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-                AND cast(bp.patient_crt_time as date) between #{form.startDate} and #{form.endDate}
+                AND cast(btp.treat_start_time as date) between #{form.startDate} and #{form.endDate}
             </if>
 
             <if test="form.monthDay != null and form.monthDay != ''">
-                AND DATE_FORMAT(bp.patient_crt_time,'%Y-%m') = #{form.monthDay}
+                AND DATE_FORMAT(btp.treat_start_time,'%Y-%m') = #{form.monthDay}
+                and DATE_FORMAT(btp.treat_end_time, '%Y-%m') = #{form.monthDay}
             </if>
 
             <if test="form.year != null and form.year != ''">
-                AND year(bp.patient_crt_time) =#{form.year}
+                AND year(btp.treat_start_time) =#{form.year}
+                AND year(btp.treat_end_time) =#{form.year}
             </if>
+        </where>
+        ) bp1 on bp1.patient_id = bp.patient_id
+        <where>
+            bp.gender is not null
         </where>
         group by bp.gender
     </select>
 
     <!-- 查询时间段内 患者个数 -->
     <select id="selectCountAnalysisAge" resultType="java.lang.Integer">
-        select count(1) from base_patient bp
+        select count(1) from base_patient bp inner join (
+        select distinct btp.patient_id
+        from base_treatment_process btp
         <where>
-            bp.birthday is not null
+            and btp.treat_status > 1
             <if test="form.orgId != null and form.orgId != ''">
-                AND bp.org_id = #{form.orgId}
+                AND btp.org_id = #{form.orgId}
             </if>
-
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-                AND cast(bp.patient_crt_time as date) between #{form.startDate} and #{form.endDate}
+                AND cast(btp.treat_start_time as date) between #{form.startDate} and #{form.endDate}
             </if>
 
             <if test="form.monthDay != null and form.monthDay != ''">
-                AND DATE_FORMAT(bp.patient_crt_time,'%Y-%m') = #{form.monthDay}
+                AND DATE_FORMAT(btp.treat_start_time,'%Y-%m') = #{form.monthDay}
+                and DATE_FORMAT(btp.treat_end_time, '%Y-%m') = #{form.monthDay}
             </if>
 
             <if test="form.year != null and form.year != ''">
-                AND year(bp.patient_crt_time) =#{form.year}
+                AND year(btp.treat_start_time) =#{form.year}
+                AND year(btp.treat_end_time) =#{form.year}
             </if>
+        </where>
+        ) bp1 on bp1.patient_id = bp.patient_id
+        <where>
+            bp.birthday is not null
         </where>
     </select>
 
@@ -171,37 +206,42 @@
    -->
     <!-- 根据条件查询 年龄段患者数量 -->
     <select id="selectAnalysisAge" resultType="java.lang.Integer">
-        select count(1) from base_patient bp
+        select count(1) from base_patient bp inner join (
+        select distinct btp.patient_id
+        from base_treatment_process btp
         <where>
-            bp.birthday is not null
+            and btp.treat_status > 1
             <if test="form.orgId != null and form.orgId != ''">
-                AND bp.org_id = #{form.orgId}
+                AND btp.org_id = #{form.orgId}
             </if>
-
-            <if test="ageOne != null and ageOne != '' and ageOne > 0">
-                AND ( DATE_FORMAT(now(),'%Y-%m-%d') - DATE_FORMAT(bp.birthday,'%Y-%m-%d') ) &lt;= #{ageOne}
-            </if>
-
-            <if test="ageTwo != null and ageTwo != '' and ageTwo > 0">
-                AND ( DATE_FORMAT(now(),'%Y-%m-%d') - DATE_FORMAT(bp.birthday,'%Y-%m-%d') ) &gt;= #{ageTwo}
-            </if>
-
-            <if test="ageThree != null and ageThree != '' and ageThree > 0">
-                AND ( DATE_FORMAT(now(),'%Y-%m') - DATE_FORMAT(bp.birthday,'%Y-%m') ) &lt;= #{ageThree}
-            </if>
-
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-                AND cast(bp.patient_crt_time as date) between #{form.startDate} and #{form.endDate}
+                AND cast(btp.treat_start_time as date) between #{form.startDate} and #{form.endDate}
             </if>
 
             <if test="form.monthDay != null and form.monthDay != ''">
-                AND DATE_FORMAT(bp.patient_crt_time,'%Y-%m') = #{form.monthDay}
+                AND DATE_FORMAT(btp.treat_start_time,'%Y-%m') = #{form.monthDay}
+                and DATE_FORMAT(btp.treat_end_time, '%Y-%m') = #{form.monthDay}
             </if>
 
             <if test="form.year != null and form.year != ''">
-                AND year(bp.patient_crt_time) =#{form.year}
+                AND year(btp.treat_start_time) =#{form.year}
+                AND year(btp.treat_end_time) =#{form.year}
+            </if>
+        </where>
+        ) bp1 on bp1.patient_id = bp.patient_id
+        <where>
+            bp.birthday is not null
+            <if test="ageOne != null and ageOne != '' and ageOne > 0">
+                AND TIMESTAMPDIFF(YEAR, DATE_FORMAT(bp.birthday,'%Y-%m-%d'), CURDATE()) &lt;= #{ageOne}
             </if>
 
+            <if test="ageTwo != null and ageTwo != '' and ageTwo > 0">
+                AND TIMESTAMPDIFF(YEAR, DATE_FORMAT(bp.birthday,'%Y-%m-%d'), CURDATE()) &gt; #{ageTwo}
+            </if>
+
+            <if test="ageThree != null and ageThree != '' and ageThree > 0">
+                AND TIMESTAMPDIFF(YEAR, DATE_FORMAT(bp.birthday,'%Y-%m-%d'), CURDATE()) &lt;= #{ageThree}
+            </if>
         </where>
     </select>
 

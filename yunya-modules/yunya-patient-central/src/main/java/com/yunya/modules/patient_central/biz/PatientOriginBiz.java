@@ -125,7 +125,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
   }
 
 
-  public static Date getEndTimeOfDate(Date endDate) {
+  private Date getEndTimeOfDate(Date endDate) {
     Calendar calendar = Calendar.getInstance();
     calendar.setTime(endDate);
     calendar.set(Calendar.HOUR_OF_DAY, 23);
@@ -357,6 +357,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
               countDownLatch.countDown();
             } catch (Exception e) {
               log.info("患者来源迁移入库异常",e);
+              e.printStackTrace();
             }
           });
       }
