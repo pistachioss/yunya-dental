@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * 简介: 专科项目列表查询模型
@@ -25,4 +26,7 @@ public class SpecialistProjectQuery extends PageQuery implements Serializable {
   /** 专科项目名称 */
   @ApiModelProperty(value = "专科项目名称")
   private String specialistProjectName;
+  /** 专科项目ID列表 */
+  @ApiModelProperty(value = "专科项目ID列表")
+  private Collection<Integer> specialistProjectIds;
 }

@@ -40,10 +40,14 @@ public class ClinicPerformanceBusinessQuery extends PageQuery implements Seriali
   @ApiModelProperty(value = "查询结束时间", required = true)
   @NotBlank(message = "查询结束时间不能为空！")
   private String endDate;
-  /** 项目分类ID */
-  @ApiModelProperty(value = "项目ID")
-  private Integer itemId;
-  /** 项目类型 */
-  @ApiModelProperty(value = "项目类型：0-价目表；1-商品")
-  private Byte itemType = 0;
+  /** 患者来源类型ID列表 */
+  @ApiModelProperty(value = "患者来源类型ID列表")
+  private Collection<Integer> originTypes;
+  /** 专科项目ID列表 */
+  @ApiModelProperty(value = "专科项目ID列表")
+  private Collection<Integer> specailistProjectIds;
+  /** 项目ID列表 */
+  private Collection<Integer> itemIds;
+  /** 账单ID列表 */
+  private Collection<Integer> billIds;
 }

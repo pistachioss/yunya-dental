@@ -232,4 +232,11 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @return 补入工作量明细
    */
   List<ReceivedWorkloadDetailsVo> selectMakeUpDetail(@Param("query") ReceiverkLoadQuery query,@Param("originType") Integer originType);
+
+  /**
+   * 已就诊完成的账单Id
+   * @param query
+   * @return
+   */
+  List<Integer> distinctBillIds(@Param("query") ClinicPerformanceBusinessQuery query);
 }

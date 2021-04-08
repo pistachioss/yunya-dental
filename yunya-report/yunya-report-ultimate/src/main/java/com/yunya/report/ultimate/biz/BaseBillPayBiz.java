@@ -2,11 +2,9 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.bo.ClinicWorkloadGroupInfoVO;
-import com.yunya.feign.report.domain.query.BillDiscountAndFreePaymentQuery;
-import com.yunya.feign.report.domain.query.BillPayRecordQuery;
-import com.yunya.feign.report.domain.query.DataStatisticsQuery;
-import com.yunya.feign.report.domain.query.StatementBillChargeDetailInfoQuery;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
@@ -21,11 +19,14 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
@@ -40,6 +41,8 @@ import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM
  */
 @Service
 public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
+  private static final int CUT_SLICE_500 = 500;
+
   /** 开单明细 */
   @Autowired private BaseBillDetailBiz billDetailBiz;
   /** 收费记录明细 */
@@ -48,6 +51,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   @Autowired private BaseOrganizationMapper organizationMapper;
   /** 退费订单 */
   @Autowired private BaseRefundBiz refundBiz;
+
+  @Resource(name = "customizeThreadPool")
+  private ExecutorService cardThreadPool;
 
   /**
    * 构建门诊工作量相关信息
@@ -198,10 +204,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           billPayIds.add(vo.getBillPayId());
         }
       }
-      List<BillRecordWorkloadVO> workloadInfos =
-          billDetailBiz.findBillWorkloadInfoByBillIds(billIds.keySet());
-      List<BillPayFreePayAmountVO> freePayAmountList =
-          billPayDetailBiz.findBillFreePayAmountList(billPayIds);
+      List<BillRecordWorkloadVO> workloadInfos = findBillWorkloadInfoByBillIds(new ArrayList<>(billIds.keySet()));
+      List<BillPayFreePayAmountVO> freePayAmountList = findBillFreePayAmountList(new ArrayList<>(billPayIds));
+
       for (BillIdAndBillPayIdVO vo : vos) {
         Integer billId = vo.getBillId();
         Integer billOrgId = vo.getBillOrgId();
@@ -360,6 +365,54 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     return result;
   }
 
+  private List<BillRecordWorkloadVO> findBillWorkloadInfoByBillIds(List<Integer> list) {
+    List<List<Integer>> partition = Lists.partition(list, CUT_SLICE_500);
+    CountDownLatch downLatch = new CountDownLatch(partition.size());
+    List<BillRecordWorkloadVO> result = new ArrayList<>();
+    for (List<Integer> ids : partition) {
+      //多线程异步插入
+      cardThreadPool.execute(() -> {
+        try {
+          result.addAll(billDetailBiz.findBillWorkloadInfoByBillIds(ids));
+          downLatch.countDown();
+        } catch (Exception e) {
+          downLatch.countDown();
+          e.printStackTrace();
+        }
+      });
+    }
+    try {
+      downLatch.await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    return result;
+  }
+
+  private List<BillPayFreePayAmountVO> findBillFreePayAmountList(List<Integer> list) {
+    List<List<Integer>> partition = Lists.partition(list, CUT_SLICE_500);
+    CountDownLatch downLatch = new CountDownLatch(partition.size());
+    List<BillPayFreePayAmountVO> result = new ArrayList<>(list.size());
+    for (List<Integer> ids : partition) {
+      //多线程异步插入
+      cardThreadPool.execute(() -> {
+        try {
+          result.addAll(billPayDetailBiz.findBillFreePayAmountList(ids));
+          downLatch.countDown();
+        } catch (Exception e) {
+          downLatch.countDown();
+          e.printStackTrace();
+        }
+      });
+    }
+    try {
+      downLatch.await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    return result;
+  }
+
   private BigDecimal computeTotalClinicWorkload(
       ClinicWorkloadGroupInfoVO monthWorkload, BigDecimal totalRefundWorkload) {
     BigDecimal firstReceivedWorkload = monthWorkload.getFirstReceivedWorkload();
@@ -433,7 +486,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     workloadVO.setBillTotalWorkload(BigDecimal.ZERO);
     workloadVO.setBillTotalCouponWorkload(BigDecimal.ZERO);
     return workloadInfos.stream()
-        .filter(info -> info.getBillId().equals(billId))
+        .filter(info-> info!=null && info.getBillId().equals(billId))
         .findFirst()
         .orElse(workloadVO);
   }
