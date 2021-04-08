@@ -119,7 +119,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       patientOrigin.setCrtName(BaseContextHandler.getName());
       mapper.insertSelective(patientOrigin);
       remoteRabbitMqServiceFeign.sendMessage(
-              patientOrigin.getId(), 0, MsgCategoryEnum.BasePatientMember);
+              patientOrigin.getId(), 0, MsgCategoryEnum.BasePatientOrigin);
     }
     return ResponseUtil.success();
   }
@@ -226,7 +226,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       patientOrigin.setUpdTime(new Date());
       mapper.updateByPrimaryKey(patientOrigin);
       remoteRabbitMqServiceFeign.sendMessage(
-              patientOrigin.getId(), 1, MsgCategoryEnum.BasePatientMember);
+              patientOrigin.getId(), 1, MsgCategoryEnum.BasePatientOrigin);
     } else {
       return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST, "未找到患者来源", patientOrigin);
     }
@@ -249,7 +249,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
     }
     mapper.deleteByPrimaryKey(id);
     remoteRabbitMqServiceFeign.sendMessage(
-            id, 2, MsgCategoryEnum.BasePatientMember);
+            id, 2, MsgCategoryEnum.BasePatientOrigin);
     return ResponseUtil.success();
   }
 

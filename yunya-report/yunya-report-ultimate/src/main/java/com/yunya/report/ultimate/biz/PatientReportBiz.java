@@ -225,7 +225,7 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     Integer count = mapper.selectCountAnalysisAge(form);
     Integer countYoungAge = mapper.selectAnalysisAge(form, 14, 0, 0);
     String percentageYoung = mapper.calculateAgePercentage(countYoungAge, count);
-    youngVo.setAgeBracket("0-14");
+    youngVo.setAgeBracket("14及以下");
     youngVo.setPercentage(percentageYoung);
     analysisPatientAgeVoList.add(youngVo);
 
@@ -239,7 +239,7 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     AnalysisPatientAgeVo oldPeopleList = new AnalysisPatientAgeVo();
     Integer countOldPeople = mapper.selectAnalysisAge(form, 0, 60, 999);
     String percentageOldPeople = mapper.calculateAgePercentage(countOldPeople, count);
-    oldPeopleList.setAgeBracket("60-999");
+    oldPeopleList.setAgeBracket("14及以上");
     oldPeopleList.setPercentage(percentageOldPeople);
     analysisPatientAgeVoList.add(oldPeopleList);
     analysisVo.setAnalysisPatientAgeVoList(analysisPatientAgeVoList);
