@@ -54,6 +54,7 @@
 
   <select id="findDetail" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO">
       SELECT
+      pbi.id as patientId,
 	  pbi.name as patientName,
 	  wfb.dictionary_id as dictionaryId
       FROM

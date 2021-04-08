@@ -19,6 +19,8 @@ public class WxFansDetailVO {
 
     @ApiModelProperty("患者姓名")
     private String patientName;
+    @ApiModelProperty("患者Id")
+    private Integer patientId;
     @ApiModelProperty("关系")
     private String dictionaryName;
     @ApiModelProperty("关系字典ID")
