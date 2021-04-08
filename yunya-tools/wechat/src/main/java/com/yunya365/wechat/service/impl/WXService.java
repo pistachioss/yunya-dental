@@ -98,6 +98,7 @@ public class WXService extends AbstractWxBaseApi{
             if (dictItem == null) {
                 throw new ClientServiceException(WeChatError.DICT_NO_CONFIG);
             }
+            wxFans.setPatientId(patientInfoList.get(0).getId());
             list =  patientInfoList.stream().map(obj -> {
                 WxFansBind wxFansBind = new WxFansBind();
                 wxFansBind.setPatientId(obj.getId());

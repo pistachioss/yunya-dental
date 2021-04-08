@@ -11,6 +11,18 @@ public class WxFans {
     private Integer id;
 
     /**
+     * 注册人姓名
+     */
+    @Column(name = "register_name")
+    private String registerName;
+
+    /**
+     * 注册人手机号
+     */
+    @Column(name = "register_mobile")
+    private String registerMobile;
+
+    /**
      * 用户标识码
      */
     @Column(name = "open_id")
@@ -113,7 +125,7 @@ public class WxFans {
      * 卡主患者ID
      */
     @Column(name = "patient_id")
-    private String patientId;
+    private Integer patientId;
 
     /**
      * 上次沟通的客服ID
@@ -132,6 +144,22 @@ public class WxFans {
      */
     @Column(name = "upd_time")
     private Date updTime;
+
+    public String getRegisterName() {
+        return registerName;
+    }
+
+    public void setRegisterName(String registerName) {
+        this.registerName = registerName;
+    }
+
+    public String getRegisterMobile() {
+        return registerMobile;
+    }
+
+    public void setRegisterMobile(String registerMobile) {
+        this.registerMobile = registerMobile;
+    }
 
     /**
      * @return id
@@ -476,7 +504,7 @@ public class WxFans {
      *
      * @return patient_id - 卡主患者ID
      */
-    public String getPatientId() {
+    public Integer getPatientId() {
         return patientId;
     }
 
@@ -485,7 +513,7 @@ public class WxFans {
      *
      * @param patientId 卡主患者ID
      */
-    public void setPatientId(String patientId) {
+    public void setPatientId(Integer patientId) {
         this.patientId = patientId;
     }
 

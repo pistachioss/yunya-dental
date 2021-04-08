@@ -161,12 +161,17 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     }
 
     @Override
+    public PrepaidExpendRecord prePaidPaymentRecordDetail(PaymentRecordDetailQuery query){
+        return null;
+    }
+
+    @Override
     public Integer saveWx(WxFansSaveForm wxFansSaveForm) {
         return null;
     }
 
     @Override
-    public PrepaidExpendRecord prePaidPaymentRecordDetail(PaymentRecordDetailQuery query){
-        return null;
+    public int countRegister(String openId) {
+        return 0;
     }
 }
