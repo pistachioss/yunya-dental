@@ -103,7 +103,7 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         wxFansBind.setDictionaryId(wxFansBindForm.getDictionaryId());
         int de = mapper.delete(wxFansBind);
         if(de>0){
-            //如果解绑的是本人
+            //如果解绑的是本人 则把卡主ID设置为空
             if(BEN_REN.equals(wxFansBindForm.getDictionaryName())){
                 wxFans.setPatientId(null);
             }
