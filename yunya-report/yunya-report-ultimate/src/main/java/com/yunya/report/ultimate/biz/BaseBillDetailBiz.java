@@ -1379,9 +1379,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setEndDate(endDate);
     Map<Integer, BigDecimal[]> curWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
     Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
-    if (queryForm.getWhetherPage()) {
-      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
-    }
     //环比：去年+查询月份范围
     String preYear = DateUtil.preYear(year);
     String chainStartDate = preYear + "-" + sMonth;
@@ -1408,7 +1405,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setEndDate(yearEndDate);
     Map<Integer, BigDecimal[]> yearWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
 
-    DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(orgs);
+    DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
     List<JSONObject> result = new ArrayList<>();
     if (StringHelper.isNotEmpty(orgs)) {
       BigDecimal actualTotal = BigDecimal.ZERO;
@@ -1492,6 +1489,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       result.add(curYear);
       pageInfo.setMap(map);
     }
+    pageInfo.setPageNum(query.getPageNum());
+    pageInfo.setPageSize(query.getPageSize());
+    pageInfo.setTotal(result.size());
     pageInfo.setList(result);
     return pageInfo;
   }
@@ -1555,7 +1555,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     entity.setInservice(true);
     List<BasePatientOrigin> origins = basePatientOriginMapper.select(entity);
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(origins);
-    PageHelper.clearPage();
+    if (query.getWhetherPage()) {
+      PageHelper.clearPage();
+    }
     List<BaseOrganization> orgs = getOrganization(query);
     if (StringHelper.isEmpty(query.getOriginTypes())) {
       query.setOriginTypes(origins.stream().map(BasePatientOrigin::getOriginType).collect(Collectors.toSet()));
@@ -1645,7 +1647,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           itemIds.add(Integer.parseInt(id));
         }
       });
-      PageHelper.clearPage();
+      if (query.getWhetherPage()) {
+        PageHelper.clearPage();
+      }
       query.setItemIds(itemIds);
       List<BillItemStatisticsVO> list = billItemStatisticsGroupByOrgId(query, "item_id");
       Map<String, Integer> dataMap = new HashMap<>(16);
@@ -1828,6 +1832,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     List<BaseOrganization> orgs = getOrganization(query);
     PageInfo pageInfo = new PageInfo(orgs);
+    if (query.getWhetherPage()) {
+      PageHelper.clearPage();
+    }
 //    IVY365-731
 //    嘉医汇IVY365-413
     query.setItemIds(Arrays.asList(731,413));
@@ -1923,7 +1930,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           if (youngsIds.contains(couponId)) {
             youngsQuantity += quantity;
           }
-          break;
         }
       }
       entity.setAdults365Card(adultsQuantity);
