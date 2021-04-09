@@ -84,7 +84,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
    * @param ids 字符串ID
    * @return String
    */
-  public String findBaseTariffNamesByIds(String[] ids) {
+  public List<BaseTariff> findBaseTariffNamesByIds(String[] ids) {
     if (StringHelper.isNotEmpty(ids)) {
       Joiner joiner = Joiner.on(",");
       return mapper.selectBaseTariffNamesByIds(joiner.join(ids));

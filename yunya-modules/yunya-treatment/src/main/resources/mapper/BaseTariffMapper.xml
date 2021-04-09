@@ -40,9 +40,9 @@
     </resultMap>
 
     <!-- 根据基础价目表ID列表查询价目表名字 -->
-    <select id="selectBaseTariffNamesByIds" resultType="java.lang.String">
+    <select id="selectBaseTariffNamesByIds" resultMap="BaseResultMap">
         SELECT
-        GROUP_CONCAT( bt.`name` ) AS tariffItemName
+            bt.id , bt.name
         FROM
         base_tariff bt
         WHERE

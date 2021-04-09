@@ -19,6 +19,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.clinic_base.SpecialistBusinessTarget;
 import com.yunya.models.clinic_base.SpecialistProject;
+import com.yunya.models.tariff.BaseTariff;
 import com.yunya.modules.clinic_base.mapper.SpecialistBusinessTargetMapper;
 import com.yunya.modules.clinic_base.mapper.SpecialistProjectMapper;
 import org.springframework.beans.BeanUtils;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
@@ -62,13 +64,21 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
     }
     List<SpecialistProjectVO> resultList = mapper.selectSpecialistProjectList(query);
     if (StringHelper.isNotEmpty(resultList)) {
-      resultList.forEach(
-          vo -> {
-            String tariffItemIds = vo.getTariffItemIds();
-            String[] ids = tariffItemIds.split(",");
-            String tariffItemName = treatmentServiceFeign.findBaseTariffNamesByIds(ids);
-            vo.setTariffItemName(tariffItemName);
-          });
+      StringBuilder sb = null;
+      for(SpecialistProjectVO vo : resultList) {
+        sb = new StringBuilder();
+        String tariffItemIds = vo.getTariffItemIds();
+        String[] ids = tariffItemIds.split(",");
+        List<BaseTariff> tariffItemNames = treatmentServiceFeign.findBaseTariffNamesByIds(ids);
+        for (int i = 0; i < ids.length; i++) {
+          int tmp = i;
+          String name = tariffItemNames.stream().filter(entity -> entity.getId().equals(Integer.valueOf(ids[tmp]))).findAny().get().getName();
+          sb.append(name);
+          sb.append(",");
+        }
+        sb.deleteCharAt(sb.lastIndexOf(","));
+        vo.setTariffItemName(sb.toString());
+      }
     }
     return new PageInfo<>(resultList);
   }
