@@ -147,7 +147,7 @@ public class TreatmentServiceRest {
    * @return String
    */
   @RequestMapping(value = "/tariff/name", method = RequestMethod.POST)
-  public String findBaseTariffNamesByIds(@RequestBody @NotEmpty String[] ids) {
+  public List<BaseTariff> findBaseTariffNamesByIds(@RequestBody @NotEmpty String[] ids) {
     return baseTariffBiz.findBaseTariffNamesByIds(ids);
   }
 
