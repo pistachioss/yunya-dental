@@ -830,10 +830,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     private List<FieldInfoListVO> findFieldList(List<Integer> dentistIdsList,Date startDate, Date endDate) {
         FieldInfoForm fieldQuery = new FieldInfoForm();
         fieldQuery.setUserList(dentistIdsList);
-        fieldQuery.setStartTime(startDate);
-        fieldQuery.setEndTime(endDate);
+        fieldQuery.setStartWorkDate(startDate);
+        fieldQuery.setEndWorkDate(endDate);
         fieldQuery.setApprovalStatus(1);
         List<FieldInfoListVO> fieldInfoListVOS = this.employeeAttendServiceFeign.fieldFindList(fieldQuery);
+        if (StringHelper.isNotEmpty(fieldInfoListVOS)) {
+            fieldInfoListVOS = fieldInfoListVOS.stream().filter(entity-> entity.getApprovalStatus() == 1).collect(Collectors.toList());
+        }
         return fieldInfoListVOS;
     }
 
@@ -852,6 +855,32 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 审批状态 0 审批中 1通过 2拒绝 3撤回
         query.setApprovalStatus(1);
         List<LeaveInfoListVO> listByIds = this.employeeAttendServiceFeign.backFindListByIds(query);
+        if (StringHelper.isNotEmpty(listByIds)) {
+            if (startDate.compareTo(endDate) != 0) {
+                listByIds = listByIds.stream().filter(entity->{
+                    // 请假类型是按天请假时直接返回
+                    if (entity.getVacationStatus() == 1) {
+                        return true;
+                    } else {
+                        // 按日期范围查找请假信息时，只显示范围内的请假详情
+                        return null != entity.getWorkDate()
+                                && startDate.compareTo(entity.getWorkDate()) <= 0
+                                && endDate.compareTo(entity.getWorkDate()) >= 0;
+                    }
+                }).collect(Collectors.toList());
+            } else {
+                listByIds = listByIds.stream().filter(entity->{
+                    // 请假类型是按天请假时直接返回
+                    if (entity.getVacationStatus() == 1) {
+                        return true;
+                    } else {
+                        // 按指定日期查找请假信息时，只显示指定日期的请假信息
+                        return null != entity.getWorkDate()
+                                && startDate.compareTo(entity.getWorkDate()) == 0;
+                    }
+                }).collect(Collectors.toList());
+            }
+        }
         return listByIds;
     }
 
@@ -866,10 +895,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 查询员工加班信息
         WorkOvertimeInfoForm workOverTime = new WorkOvertimeInfoForm();
         workOverTime.setCompanyId(orgId);
-        workOverTime.setStartTime(startDate);
-        workOverTime.setEndTime(endDate);
+        workOverTime.setStartWorkDate(startDate);
+        workOverTime.setEndWorkDate(endDate);
         workOverTime.setApprovalStatus(1);
         List<WorkOvertimeInfoListVO> workOvertimeInfoListVOS = this.employeeAttendServiceFeign.workFindList(workOverTime);
+        if (StringHelper.isNotEmpty(workOvertimeInfoListVOS)) {
+            workOvertimeInfoListVOS = workOvertimeInfoListVOS.stream().filter(entity-> null !=entity.getId() && entity.getApprovalStatus() == 1).collect(Collectors.toList());
+        }
         return workOvertimeInfoListVOS;
     }
 
@@ -911,6 +943,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         empScheduleVo.setUserId(userId);
         empScheduleVo.setUserName(userName);
         empScheduleVo.setType(4);
+        empScheduleVo.setStatus("外勤");
         empScheduleVo.setCompanyId(fieldInfoVO.getCompanyId());
         empScheduleVo.setComName(fieldInfoVO.getCompanyName());
         String startTime = LocalDateTime.fromDateFields(fieldInfoVO.getStartTime()).toString(dateTimePattern);
@@ -934,6 +967,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         empScheduleVo.setCompanyId(workOvertimeInfos.getCompanyId());
         empScheduleVo.setComName(workOvertimeInfos.getCompanyName());
         empScheduleVo.setType(3);
+        empScheduleVo.setStatus("加班");
         String workDate = LocalDate.fromDateFields(workOvertimeInfos.getWorkDate()).toString(datePattern);
         String workStartTime = LocalDateTime.fromDateFields(workOvertimeInfos.getStartTime()).toString(timePattern);
         String workEndTime = LocalDateTime.fromDateFields(workOvertimeInfos.getEndTime()).toString(timePattern);
@@ -949,20 +983,28 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param leaveInfoListVO 员工请假信息对象
      */
     private void buildEmpScheduleInfoFromLeaveInfoList(EmpScheduleVo empScheduleVo, LeaveInfoListVO leaveInfoListVO) {
-        String dataPatterStr = "yyyy-MM-dd HH:mm";
+        String dataPatterStr = "yyyy-MM-dd";
         empScheduleVo.setUserId(leaveInfoListVO.getUserId());
         empScheduleVo.setType(2);
         empScheduleVo.setUserName(leaveInfoListVO.getUserName());
         Integer vacationStatus = leaveInfoListVO.getVacationStatus();
+        String startTime = "";
+        String endTime = "";
         if (vacationStatus == 0) {
             empScheduleVo.setStatus("班次");
+            String hmsPatterStr = "HH:mm";
+            String ymd = LocalDate.fromDateFields(leaveInfoListVO.getWorkDate()).toString(dataPatterStr);
+            String hmsStart = LocalDateTime.fromDateFields(leaveInfoListVO.getLsStartDate()).toString(hmsPatterStr);
+            String hmsEnd = LocalDateTime.fromDateFields(leaveInfoListVO.getLsEndDate()).toString(hmsPatterStr);
+            startTime = ymd + " " + hmsStart;
+            endTime = ymd + " " + hmsEnd;
         } else if (vacationStatus == 1) {
             empScheduleVo.setStatus("天");
+            startTime = LocalDateTime.fromDateFields(leaveInfoListVO.getStartTime()).toString(dataPatterStr);
+            endTime = LocalDateTime.fromDateFields(leaveInfoListVO.getEndTime()).toString(dataPatterStr);
         }
 
         empScheduleVo.setCompanyId(leaveInfoListVO.getCompanyId());
-        String startTime = LocalDateTime.fromDateFields(leaveInfoListVO.getStartTime()).toString(dataPatterStr);
-        String endTime = LocalDateTime.fromDateFields(leaveInfoListVO.getEndTime()).toString(dataPatterStr);
         empScheduleVo.setStartDate(startTime);
         empScheduleVo.setEndDate(endTime);
         empScheduleVo.setName(leaveInfoListVO.getLeaveReason());
@@ -1885,21 +1927,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         String end = dateFormat.format(appointEndTime);
         // 设置预约时间段
         appointment.setAppointPeriod(start + "-" + end);
-
-        // 设置预约类型(0-初诊；1-复诊)
-//        // 根据患者是否有病历号来判断患者预约类型
-//        PatientBaseInfo patientBaseInfo = remotePatientCentralServiceFeign.findPatientInfoById(appointment.getPatientId());
-//        String medicalNumber = patientBaseInfo.getMedicalNumber();
-//        log.info("=========================【预约初复诊判断】=====================");
-//        log.info("==>患者信息:{}",patientBaseInfo.toString());
-//        log.info("============================end==============================");
-//        if (StringHelper.isBlank(medicalNumber)){
-//            // 病历号为空，初诊
-//            appointment.setAppointType((byte)0);
-//        } else {
-//            // 病历号不为空，复诊
-//            appointment.setAppointType((byte)1);
-//        }
         TreatmentRecord treatmentRecord = new TreatmentRecord();
         treatmentRecord.setPatientId(appointment.getPatientId());
         List<TreatmentRecord> treatmentRecords = remoteTreatmentServiceFeign.findTreatmentRecordList(treatmentRecord);
@@ -2768,7 +2795,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             EmpScheduleVo empScheduleVo = null;
             for (WorkOvertimeInfoListVO workOvertime: workOvertimes) {
                 empScheduleVo = new EmpScheduleVo();
-                this.setEmpSchedule(item,workOvertime.getUserId(),workOvertime.getUserName(),empScheduleVo);
+                this.setEmpSchedule(workOvertime,workOvertime.getUserId(),workOvertime.getUserName(),empScheduleVo);
                 empScheduleVos.add(empScheduleVo);
             }
         }
@@ -2784,9 +2811,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (StringHelper.isNotEmpty(workDayVOS)) {
             EmpScheduleVo empScheduleVo = null;
             for (WorkDayVO workDay : workDayVOS) {
-                empScheduleVo = new EmpScheduleVo();
-                this.setEmpSchedule(workDay,appointment.getDentistId(),appointment.getName(),empScheduleVo);
-                empScheduleVos.add(empScheduleVo);
+                if (null != workDay.getId()) {
+                    empScheduleVo = new EmpScheduleVo();
+                    this.setEmpSchedule(workDay, appointment.getDentistId(), appointment.getName(), empScheduleVo);
+                    empScheduleVos.add(empScheduleVo);
+                }
             }
         }
         appointment.setDentistScheduleVos(empScheduleVos);
@@ -2810,8 +2839,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     empScheduleVos.add(empScheduleVo);
                 }
             }
+            appoint.setDentistScheduleVos(empScheduleVos);
         }
-        appoint.setDentistScheduleVos(empScheduleVos);
     }
 
 

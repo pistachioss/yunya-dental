@@ -28,10 +28,15 @@ public class BillDiscountAndFreePaymentQuery extends PageQuery implements Serial
     @ApiModelProperty(value = "门诊ID列表")
     private Collection<Integer> orgIds;
 
-    /** 查询收费日期 */
-    @ApiModelProperty(value = "查询收费日期", required = true)
-    @NotBlank(message = "查询收费日期不能为空！")
+    /** 查询收费开始日期 */
+    @ApiModelProperty(value = "查询收费开始日期", required = true)
+    @NotBlank(message = "查询收费开始日期不能为空！")
     private String startDate;
+
+    /** 查询收费结束日期 */
+    @ApiModelProperty(value = "查询收费结束日期", required = true)
+//    @NotBlank(message = "查询收费结束日期不能为空！")
+    private String endDate;
 
     /** 折扣/免单 */
     @ApiModelProperty(value = "折扣/免单")

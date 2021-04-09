@@ -67,4 +67,11 @@ public class BasePatientController {
     return ResponseUtil.success();
   }
 
+
+  @ApiOperation("修改患者信息")
+  @PostMapping("/batchUpdPatientInfo")
+  public ResponseResult<T> batchUpdPatientInfo() throws InterruptedException {
+    basePatientBiz.updPatientInfo();
+    return ResponseUtil.success();
+  }
 }

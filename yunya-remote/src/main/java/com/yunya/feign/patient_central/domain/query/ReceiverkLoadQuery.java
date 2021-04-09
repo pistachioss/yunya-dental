@@ -29,7 +29,7 @@ public class ReceiverkLoadQuery implements Serializable {
 
     @ApiModelProperty("每页显示数量")
     @Min(message = "最小值", value = 1)
-    private Integer pageSize = 10;
+    private Integer pageSize = 100;
 
     /** 开始时间 */
     @ApiModelProperty(value = "开始时间", example = "yyyy-MM-dd")

@@ -23,7 +23,7 @@ public class PatientOriginEmployeeVo {
      * 推荐人id
      */
     @ApiModelProperty(value ="推荐人id",required = false)
-    private String originId;
+    private Integer originId;
 
     /**
      * 推荐人姓名
@@ -51,28 +51,28 @@ public class PatientOriginEmployeeVo {
      */
     @Excel(name = "已收工作量合计")
     @ApiModelProperty(value ="已收工作量合计",required = false)
-    private BigDecimal receivedTotalWorkload;
+    private BigDecimal receivedTotalWorkload = new BigDecimal(0);
 
     /**
      * 其中免单支付工作量合计
      */
     @Excel(name = "其中免单支付工作量合计")
     @ApiModelProperty(value ="其中免单支付工作量合计",required = false)
-    private BigDecimal freeTotalWorkload;
+    private BigDecimal freeTotalWorkload = new BigDecimal(0);
 
     /**
      * 退费金额合计
      */
     @Excel(name = "退费金额合计")
     @ApiModelProperty(value ="退费金额合计",required = false)
-    private BigDecimal totalRefundAmount;
+    private BigDecimal totalRefundAmount = new BigDecimal(0);
 
     /**
      * 补入工作量合计
      */
     @Excel(name = "补入工作量合计")
     @ApiModelProperty(value ="补入工作量合计",required = false)
-    private BigDecimal makeUpWorkload;
+    private BigDecimal makeUpWorkload = new BigDecimal(0);
 
 
 }

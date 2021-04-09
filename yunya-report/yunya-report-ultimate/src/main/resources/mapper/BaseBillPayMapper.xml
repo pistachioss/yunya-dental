@@ -397,7 +397,6 @@
             FROM
             base_bill bb
             <where>
-                and bb.bill_num IS NOT NULL
                 AND bb.bill_date IS NOT NULL
                 <if test="query.orgId != null">
                     and bb.org_id = #{query.orgId}
@@ -624,7 +623,7 @@
         FROM
         base_bill bb
         <where>
-            AND bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -795,7 +794,7 @@
         FROM
         base_bill bb
         <where>
-            AND bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -869,7 +868,9 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
-        ORDER BY bbp.payeeDate, bbp.billNum DESC
+        ORDER BY
+        bbp.payeeDate DESC,
+        bbp.billNum DESC
     </select>
 
     <!-- 根据条件查询门诊代收（当月）账单详情列表 -->
@@ -957,7 +958,7 @@
         FROM
         base_bill bb
         <where>
-            AND bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id != #{query.orgId}
             </if>
@@ -1038,7 +1039,9 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
-        ORDER BY bbp.payeeDate, bbp.billNum DESC
+        ORDER BY
+        bbp.payeeDate DESC,
+        bbp.billNum DESC
     </select>
 
     <!-- 根据条件查询门诊代收（非当月）账单详情列表 -->
@@ -1126,7 +1129,7 @@
         FROM
         base_bill bb
         <where>
-            AND bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id != #{query.orgId}
             </if>
@@ -1198,7 +1201,9 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
-        ORDER BY bbp.payeeDate, bbp.billNum DESC
+        ORDER BY
+        bbp.payeeDate DESC,
+        bbp.billNum DESC
     </select>
 
     <!-- 根据条件查询门诊被代收账单（当月）明细列表 -->
@@ -1286,7 +1291,7 @@
         FROM
         base_bill bb
         <where>
-            AND bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -1367,7 +1372,9 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
-        ORDER BY bbp.payeeDate, bbp.billNum DESC
+        ORDER BY
+        bbp.payeeDate DESC,
+        bbp.billNum DESC
     </select>
 
     <!-- 根据条件查询门诊被代收账单（非当月）明细列表 -->
@@ -1455,7 +1462,7 @@
         FROM
         base_bill bb
         <where>
-            AND bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -1527,7 +1534,9 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
-        ORDER BY bbp.payeeDate, bbp.billNum DESC
+        ORDER BY
+        bbp.payeeDate DESC,
+        bbp.billNum DESC
     </select>
     <!-- 根据条件查询门诊某段时间内收费总额（本门诊账单） -->
     <select id="selectTotalReceivedAmount" resultType="java.math.BigDecimal">
@@ -1753,10 +1762,7 @@
         bbp.billOrgId,
         bbp.billId,
         bbp.billDate,
-        bbp.actualAmount,
-        bbp.privilegeOrgId,
-        bbp.privilegeDate,
-        bbp.firstPrivilege
+        bbp.actualAmount
         FROM
         (
         SELECT
@@ -1767,14 +1773,11 @@
         bb.org_id AS billOrgId,
         bb.bill_id AS billId,
         bb.bill_date AS billDate,
-        bb.actual_amount AS actualAmount,
-        bb.privilege_org_id AS privilegeOrgId,
-        bb.privilege_date AS privilegeDate,
-        bb.first_privilege AS firstPrivilege
+        bb.actual_amount AS actualAmount
         FROM
         base_bill_pay bbp
         INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
-        AND bb.bill_num IS NOT NULL
+        AND bb.bill_date IS NOT NULL
         <where>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -1801,7 +1804,8 @@
                 </if>
             </if>
         </where>
-        GROUP BY bbp.bill_pay_id
+        GROUP BY
+        bbp.bill_pay_id
         ) bbp
         <where>
             <if test="query.orgIds != null and query.orgIds.length > 0">
@@ -1954,35 +1958,35 @@
 
     <!-- 查询订单支付记录 -->
     <select id="findBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
-        select bbp.* from base_bill_pay bbp
+        select DISTINCT bbpd.bill_pay_detail_record_id billPayDetailRecordId,bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount receivedAmount from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
-        <if test="typeList != null">
-            and bbpd.type in
-            <foreach collection="typeList" item="type" open="(" separator="," close=")">
-                #{type}
+        <if test="itemIds != null">
+            and bbpd.account_item_id in
+            <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
+                #{itemId}
             </foreach>
         </if>
 
-        <if test="query.startDate != null">
-            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+        <if test="startDate != null">
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
-            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+        <if test="endDate != null" >
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{endDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="list.size() > 0">
+        <if test="billIdList != null and billIdList.size() > 0 ">
             and bbpd.bill_id in
-            <foreach collection="list" item="billId" open="(" separator="," close=")">
-                 #{billId}
+            <foreach collection="billIdList" item="BillIdVo" open="(" separator="," close=")">
+                 #{BillIdVo.billId}
             </foreach>
         </if>
     </select>
 
     <!-- 根据订单id查询支付记录 -->
     <select id="selectBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
-        select bbp.* from base_bill_pay bbp
+        select DISTINCT bbpd.bill_pay_detail_record_id billPayDetailRecordId,bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount receivedAmount from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
         <if test=" billIdList != null and billIdList.size() > 0">
@@ -2000,10 +2004,10 @@
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="typeList != null and typeList.size() > 0">
-            and bbpd.type in
-            <foreach collection="typeList" item="type" open="(" separator="," close=")">
-                #{type}
+        <if test="itemIds != null and itemIds.size() > 0">
+            and bbpd.account_item_id in
+            <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
+                #{itemId}
             </foreach>
         </if>
     </select>

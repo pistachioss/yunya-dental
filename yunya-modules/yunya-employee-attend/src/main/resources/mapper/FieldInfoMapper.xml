@@ -71,6 +71,10 @@
             <if test="startTime != null ">
                 and fi.crt_time >= #{startTime} and fi.crt_time &lt;= #{endTime}
             </if>
+            <if test="startWorkDate != null and endWorkDate != null">
+                and date_format(fi.start_time,'%Y-%m-%d') >= date_format(#{startWorkDate},'%Y-%m-%d')
+                and  date_format(fi.start_time,'%Y-%m-%d') &lt; date_format(DATE_ADD(#{endWorkDate}, INTERVAL '1' DAY),'%Y-%m-%d')
+            </if>
             <if test="userList!=null and userList.size()>0">
                 and fi.user_id in
                 <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
@@ -80,7 +84,7 @@
         </where>
         order by fi.crt_time desc
     </select>
-    <select id="findcountByday" resultType="Integer">
+    <select id="findcountByday" resultType="java.lang.Integer">
         select count(*) from field_info
         where user_id = #{userId}
         and DATE_FORMAT(start_time,'%Y-%m-%d') = DATE_FORMAT(#{startTime},'%Y-%m-%d' )

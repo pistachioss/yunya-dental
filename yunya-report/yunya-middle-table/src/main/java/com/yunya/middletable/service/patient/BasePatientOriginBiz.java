@@ -50,18 +50,22 @@ public class BasePatientOriginBiz extends BaseBiz<BasePatientOriginMapper, BaseP
         Integer operateType = model.getOperateType();
         Integer id = (Integer)model.getParamMap().get("id");
         PatientOrigin patientOrigin = patientOriginMapper.selectByPrimaryKey(id);
-        if (patientOrigin != null){
-            BasePatientOrigin basePatientOrigin = getBasePatientOrigin(patientOrigin);
+        Integer type = 2;
+        if (patientOrigin != null || operateType.equals(type)){
+            BasePatientOrigin basePatientOrigin =null;
+            if (patientOrigin != null){
+                basePatientOrigin = getBasePatientOrigin(patientOrigin);
+            }
             switch (operateType){
                 case 0:
-                   mapper.delete(basePatientOrigin);
+                   mapper.deleteByPrimaryKey(basePatientOrigin);
                    mapper.insertSelective(basePatientOrigin);
                     break;
                 case 1:
                     mapper.updateByPrimaryKeySelective(basePatientOrigin);
                     break;
                 case 2:
-                    mapper.delete(basePatientOrigin);
+                    mapper.deleteByPrimaryKey(id);
                     break;
                 default:
                     break;

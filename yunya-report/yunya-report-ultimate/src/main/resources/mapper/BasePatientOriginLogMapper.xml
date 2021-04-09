@@ -18,6 +18,7 @@
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
   <select id="findEmployeeVoLists" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientOriginEmployeeVo">
       select * from (
           SELECT
@@ -41,19 +42,27 @@
           FROM base_employee ee
           JOIN base_user_post bup ON bup.user_id = ee.user_id
           WHERE
-              ee.work_status = 1
-              <if test="query.orgIds != null">
+                1 = 1
+              <if test="query.workStatus != null and query.workStatus != ''">
+                  and ee.work_status = #{query.workStatus}
+              </if>
+
+              <if test="query.orgIds != null and query.orgIds.size() > 0">
                   and bup.org_id in
                   <foreach collection="query.orgIds" item="orgId" open="(" separator="," close=")">
                       #{orgId}
                   </foreach>
               </if>
 
-              <if test="query.referrerName != null">
+              <if test="query.employeeId != null">
+                  and ee.user_id = #{query.employeeId}
+              </if>
+
+              <if test="query.referrerName != null and query.referrerName != ''">
                   and concat( IFNULL( ee.`employee_name`, '' ))
                   LIKE concat( concat( '%', #{query.referrerName} ), '%' )
               </if>
-
+              ORDER BY patientNumber desc
       ) t where t.patientNumber > 0
 
   </select>
@@ -61,39 +70,57 @@
     <!-- 查询订单项目实收计算 -->
     <select id="findReceivedTotalWorkload"
             resultType="com.yunya.feign.patient_central.domain.vo.web.ReceivedTotalWorkloadVo">
-        select bill_id,patient_id,actual_amount,orderWorkload
-        from  (
-            SELECT
-                bb.bill_id,
-                bb.patient_id,
-                bb.actual_amount,
-                (
-                    select TRUNCATE (SUM(((price * quantity) - discount_amount)) / bb.actual_amount,2)
-                    from base_bill_detail bbd
-                    where bbd.bill_id = bb.bill_id and bbd.executor_id is not null
-                ) as orderWorkload
-            FROM
-                base_bill bb
-                JOIN (
-                        SELECT DISTINCT
-                            log.patient_id
-                        FROM
-                            base_patient_origin_log log
-                            JOIN base_bill bb ON log.patient_id = bb.patient_id
-                            JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
-                        WHERE
-                            log.inservice = 1
-                        <if test="patientOriginEmployeeVo.originId != null ">
-                            AND log.origin_id = #{patientOriginEmployeeVo.originId}
-                        </if>
+            select bill_id,patient_id,actual_amount,orderWorkload
+            from  (
+                SELECT
+                    bb.bill_id,
 
-                     ) t ON bb.patient_id = t.patient_id
-                where
-                 bb.actual_amount > 0
-                 GROUP BY bb.bill_id
+                    bb.patient_id,
+                    bb.actual_amount,
+                    (
+                        select  SUM(((price * quantity) - discount_amount)) / bb.actual_amount
+                        from base_bill_detail bbd
+                        where bbd.bill_id = bb.bill_id and bbd.executor_id is not null
+                    ) as orderWorkload
+                FROM
+                    base_bill bb
+                    where
+                     bb.actual_amount > 0
+                    <if test="list.size() > 0">
+                        and bb.bill_id in
+                        <foreach collection="list" item="billId" open="(" separator="," close=")">
+                            #{billId}
+                        </foreach>
+                    </if>
+                     GROUP BY bb.bill_id
 
-               ) t  where t.OrderWorkload > 0
+                   ) t  where t.OrderWorkload > 0
 
+    </select>
+
+    <select id="findActivityVoLists" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientOriginActivityVo">
+        select * from (
+        select
+        bpo.id originId,
+        bpo.name activityName,
+        (
+        select count(1) from base_patient_origin_log
+        where origin_type = 3
+        AND inservice = 1
+        and origin_id = bpo.id
+        ) patientNumber
+
+        from base_patient_origin bpo
+        where bpo.origin_type = 3
+        and bpo.parent_id != 0
+        <if test="query.activityIds != null and query.activityIds.size() > 0">
+            and bpo.id in
+            <foreach collection="query.activityIds" item="activityId" open="(" separator="," close=")">
+                #{activityId}
+            </foreach>
+        </if>
+        ORDER BY patientNumber desc
+        ) t where t.patientNumber > 0
     </select>
 
 

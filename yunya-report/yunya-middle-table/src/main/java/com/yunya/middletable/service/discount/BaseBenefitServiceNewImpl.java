@@ -1,6 +1,7 @@
 package com.yunya.middletable.service.discount;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.BaseException;
@@ -24,17 +25,19 @@ import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import static com.yunya.middletable.constant.SynConstant.*;
-import static com.yunya.middletable.enums.BenefitEnum.*;
-import static com.yunya.middletable.enums.TrueFalseEnum.*;
+import static com.yunya.middletable.constant.SynConstant.CUT_SLICE_100;
+import static com.yunya.middletable.constant.SynConstant.CUT_SLICE_5000;
+import static com.yunya.middletable.enums.BenefitEnum.AUTH_BENEFIT;
+import static com.yunya.middletable.enums.BenefitEnum.CARD_BENEFIT;
+import static com.yunya.middletable.enums.TrueFalseEnum.FALSE;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -63,7 +66,7 @@ public class BaseBenefitServiceNewImpl extends BaseBiz<BaseBenefitMapper, BaseBe
         List<BaseBenefit> originData = getOriginDataByDate(startDateStr, endDateStr);
         if (CollectionUtils.isNotEmpty(originData)) {
             List<Integer> orderIds = originData.stream().map(BaseBenefit::getOrderId).collect(toList());
-            List<BaseBenefit> existData = getExistByOrderIds(orderIds);
+            List<BaseBenefit> existData = getExistInOrderIds(orderIds);
             //批量删除
             batchDelete(getDeleteBenefit(originData, existData));
             //批量新增
@@ -81,12 +84,14 @@ public class BaseBenefitServiceNewImpl extends BaseBiz<BaseBenefitMapper, BaseBe
         } else {
             List<BaseBenefit> baseBenefits = Lists.newArrayList();
             if (CARD_BENEFIT.equals(orderBenefit.getBenefitType())) {
-                List<CardBenefit> originData = getBenefitDetail(Sets.newHashSet(orderId), CardBenefit.class, cardBenefitMapper);
-                baseBenefits = cardTransform(originData);
+                Set<Integer> key = Sets.newHashSet(orderId);
+                List<CardBenefit> originData = getBenefitDetail(key, CardBenefit.class, cardBenefitMapper);
+                baseBenefits = cardTransform(originData, Maps.asMap(key, obj->orderBenefit));
             }
             if (AUTH_BENEFIT.equals(orderBenefit.getBenefitType())) {
-                List<AuthDiscountBenefit> originData = getBenefitDetail(Collections.singleton(orderId), AuthDiscountBenefit.class, authBenefitMapper);
-                baseBenefits = authTransform(originData);
+                Set<Integer> key = Collections.singleton(orderId);
+                List<AuthDiscountBenefit> originData = getBenefitDetail(key, AuthDiscountBenefit.class, authBenefitMapper);
+                baseBenefits = authTransform(originData, Maps.asMap(key,obj->orderBenefit));
             }
             List<BaseBenefit> existBenefits = getExistByOrderIds(Collections.singletonList(orderId));
 
@@ -180,14 +185,33 @@ public class BaseBenefitServiceNewImpl extends BaseBiz<BaseBenefitMapper, BaseBe
     /**
      * 批量删除
      *
-     * @param ids 删除ids
+     * @param list 删除ids
      */
-    private void batchDelete(List<Integer> ids) {
-        if (CollectionUtils.isNotEmpty(ids)) {
-            Example example = new Example(BaseBenefit.class);
-            example.createCriteria().andEqualTo("orderId", ids);
-            mapper.deleteByExample(example);
+    private void batchDelete(List<Integer> list) throws InterruptedException {
+        if (CollectionUtils.isNotEmpty(list)) {
+            List<List<Integer>> partition = Lists.partition(list, CUT_SLICE_5000);
+            CountDownLatch downLatch = new CountDownLatch(partition.size());
+            for (List<Integer> ids : partition) {
+                //多线程异步插入
+                cardThreadPool.execute(() -> {
+                    try {
+                        Example example = new Example(BaseBenefit.class);
+                        example.createCriteria().andEqualTo("orderId", ids);
+                        mapper.deleteByExample(example);
+                        downLatch.countDown();
+                    } catch (Exception e) {
+                        downLatch.countDown();
+                        log.error("pull benefit batchInsert error", e);
+                    }
+                });
+            }
+            downLatch.await();
         }
+    }
+
+    public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
+        Map<Object, Boolean> seen = new HashMap<>(16);
+        return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
     /**
@@ -203,24 +227,24 @@ public class BaseBenefitServiceNewImpl extends BaseBiz<BaseBenefitMapper, BaseBe
         List<BaseBenefit> list = Lists.newArrayList();
         if (CollectionUtils.isNotEmpty(orderBenefits)) {
             //查询订单优惠汇总信息
-            Map<Integer, Set<Integer>> orderBenefitMap = orderBenefits.stream().collect(groupingBy(obj -> obj.getBenefitType().intValue(),
-                    mapping(OrderBenefit::getOrderId, toSet())));
-            orderBenefitMap.forEach((k, v) -> {
+            Map<Integer, Map<Integer, OrderBenefit>> orderBenefitMap = orderBenefits.stream().filter(distinctByKey(OrderBenefit::getOrderId))
+                    .collect(groupingBy(obj -> obj.getBenefitType().intValue(), Collectors.toMap(OrderBenefit::getOrderId, Function.identity())));
+            orderBenefitMap.forEach((k, map) -> {
                 //产品优惠
                 if (CARD_BENEFIT.equals(k)) {
-                    List<CardBenefit> cardBenefits = getBenefitDetail(v, CardBenefit.class, cardBenefitMapper);
+                    List<CardBenefit> cardBenefits = getBenefitDetail(map.keySet(), CardBenefit.class, cardBenefitMapper);
                     //卡券优惠转换
-                    List<BaseBenefit> templateList = cardTransform(cardBenefits);
+                    List<BaseBenefit> templateList = cardTransform(cardBenefits, map);
                     if (CollectionUtils.isNotEmpty(templateList)) {
                         list.addAll(templateList);
                     }
                 }
                 //授权折扣优惠
                 if (AUTH_BENEFIT.equals(k)) {
-                    List<AuthDiscountBenefit> authBenefits = getBenefitDetail(v, AuthDiscountBenefit.class, authBenefitMapper);
+                    List<AuthDiscountBenefit> authBenefits = getBenefitDetail(map.keySet(), AuthDiscountBenefit.class, authBenefitMapper);
                     if (CollectionUtils.isNotEmpty(authBenefits)) {
                         //授权优惠转换
-                        List<BaseBenefit> templateList = authTransform(authBenefits);
+                        List<BaseBenefit> templateList = authTransform(authBenefits, map);
                         list.addAll(templateList);
                     }
                 }
@@ -235,26 +259,42 @@ public class BaseBenefitServiceNewImpl extends BaseBiz<BaseBenefitMapper, BaseBe
         authBenefits.forEach(obj -> obj.setCrtId(collect.get(obj.getOrderId())));
     }
 
-    private List<BaseBenefit> cardTransform(List<CardBenefit> cardBenefits) {
+    private List<BaseBenefit> cardTransform(List<CardBenefit> cardBenefits, Map<Integer, OrderBenefit> map) {
         return cardBenefits.stream().map(obj -> {
             BaseBenefit benefit = BeanCopierUtils.generalCopyBean(obj, BaseBenefit.class, getBenefitConvert());
             benefit.setItemType(obj.getItemType().byteValue());
             benefit.setChoiceBenefitType(CARD_BENEFIT.getCode());
             benefit.setOperateUserId(obj.getCrtId());
             benefit.setUseDate(obj.getCrtTime());
+            setOrderBenefit(benefit, map);
             return benefit;
         }).collect(toList());
     }
 
-    private List<BaseBenefit> authTransform(List<AuthDiscountBenefit> authBenefits) {
+    private List<BaseBenefit> authTransform(List<AuthDiscountBenefit> authBenefits, Map<Integer, OrderBenefit> map) {
         return authBenefits.stream().map(obj -> {
             BaseBenefit benefit = BeanCopierUtils.generalCopyBean(obj, BaseBenefit.class, getBenefitConvert());
             benefit.setItemType(obj.getItemType().byteValue());
             benefit.setChoiceBenefitType(AUTH_BENEFIT.getCode());
             benefit.setOperateUserId(obj.getCrtId());
             benefit.setUseDate(obj.getCrtTime());
+            setOrderBenefit(benefit, map);
             return benefit;
         }).collect(toList());
+    }
+
+    /**
+     * 设置OrderBenefit的数据
+     *
+     * @param benefit
+     * @param map
+     */
+    private void setOrderBenefit(BaseBenefit benefit, Map<Integer, OrderBenefit> map) {
+        OrderBenefit orderBenefit = map.get(benefit.getOrderId());
+        if (orderBenefit != null) {
+            benefit.setAuthorizedId(orderBenefit.getAuthorizedId());
+            benefit.setRemark(orderBenefit.getRemark());
+        }
     }
 
     private Converter getBenefitConvert() {
@@ -295,6 +335,26 @@ public class BaseBenefitServiceNewImpl extends BaseBiz<BaseBenefitMapper, BaseBe
         example.createCriteria().andEqualTo("orderId", orderId)
                 .andEqualTo("deleted", FALSE.getCode());
         return orderBenefitMapper.selectOneByExample(example);
+    }
+
+    private List<BaseBenefit> getExistInOrderIds(List<Integer> orderIds) throws InterruptedException {
+        List<BaseBenefit> result = new CopyOnWriteArrayList<>();
+        List<List<Integer>> partition = Lists.partition(orderIds, CUT_SLICE_5000);
+        CountDownLatch downLatch = new CountDownLatch(partition.size());
+        for (List<Integer> ids : partition) {
+            //多线程异步插入
+            cardThreadPool.execute(() -> {
+                try {
+                    downLatch.countDown();
+                    result.addAll(getExistByOrderIds(ids));
+                } catch (Exception e) {
+                    downLatch.countDown();
+                    log.error("pull benefit batchInsert error", e);
+                }
+            });
+        }
+        downLatch.await();
+        return result;
     }
 
     private List<BaseBenefit> getExistByOrderIds(List<Integer> orderIds) {

@@ -32,4 +32,13 @@ public class BillRecordWorkloadVO implements Serializable {
   /** 订单补入工作量 */
   @ApiModelProperty("订单补入工作量")
   private BigDecimal billTotalCouponWorkload;
+  /** 账单门诊ID */
+  @ApiModelProperty("账单门诊ID")
+  private Integer billOrgId;
+  /** 使用优惠门诊ID */
+  @ApiModelProperty("使用优惠门诊ID")
+  private Integer privilegeOrgId;
+  /** 是否首次收费进行优惠 */
+  @ApiModelProperty("是否首次收费进行优惠")
+  private Boolean firstPrivilege;
 }

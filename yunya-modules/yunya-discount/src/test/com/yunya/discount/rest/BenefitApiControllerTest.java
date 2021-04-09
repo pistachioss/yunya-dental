@@ -1,5 +1,6 @@
 package com.yunya.discount.rest;
 
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.modules.discount.ClinicDiscountApplication;
 import com.yunya.modules.discount.rpc.BenefitApiController;
 import org.junit.Test;

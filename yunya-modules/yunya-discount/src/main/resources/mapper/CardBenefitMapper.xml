@@ -80,7 +80,7 @@
             <foreach collection="cardIds" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
-        group by `c`.`coupon_id`
+        group by `c`.`id`
     </select>
 
     <select id="getBillCoupons" resultType="com.yunya.feign.discount.domain.bo.BillUsedCouponBo">

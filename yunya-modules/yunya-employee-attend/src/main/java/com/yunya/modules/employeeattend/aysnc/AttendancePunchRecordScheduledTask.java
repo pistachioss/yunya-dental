@@ -275,7 +275,10 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             BaseSchedule baseSchedule = baseScheduleBiz.selectById(scheduleId);
             if (baseSchedule != null) {
                 Date startTime = baseSchedule.getFirstStartTime();
-                Date endTime = baseSchedule.getFirstEndTime();
+                Date endTime = baseSchedule.getSecondEndTime();
+                if (endTime == null) {
+                    endTime = baseSchedule.getFirstEndTime();
+                }
                 String name = baseSchedule.getName();
                 List<EmployeeScheduleVO> punchItemList = new ArrayList<>();
                 if (list.isEmpty()) {

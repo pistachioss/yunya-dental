@@ -203,6 +203,7 @@ public class BaseTreatmentProcessBiz
         setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
         mapper.updateByAppointmentId(appointmentId, treatmentProcess);
       } else {
+        mapper.deleteByAppointmentId(appointmentId);
         treatmentProcess = new BaseTreatmentProcess();
         setTreatmentProcessAppointmentValue(treatmentProcess, appointment);
         setTreatmentProcessRegisteredValue(treatmentProcess, appointmentId);
@@ -234,6 +235,7 @@ public class BaseTreatmentProcessBiz
           setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
           mapper.updateByRegisteredId(registeredId, treatmentProcess);
         } else {
+          mapper.deleteByRegisteredId(registeredId);
           treatmentProcess = new BaseTreatmentProcess();
           setTreatmentProcessRegisteredValue(treatmentProcess, registered);
           TreatmentRecord treatmentRecord = new TreatmentRecord();

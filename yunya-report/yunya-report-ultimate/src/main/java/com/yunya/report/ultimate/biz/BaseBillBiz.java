@@ -296,7 +296,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     List<BaseBenefitInfoVO> benefits = mapper.selectBaseBenefitInfoByBillId(billId);
     Map<String, BaseBenefitInfoVO> benefitMap = new HashMap<>(16);
     Map<String, BigDecimal> amountMap = new HashMap<>(16);
-    benefits.forEach(
+    if (StringHelper.isNotEmpty(benefits)) {
+      benefits.forEach(
         benefit -> {
           Integer orderDetailId = benefit.getOrderDetailId();
           Integer cardId = benefit.getCardId();
@@ -309,7 +310,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           if (!benefitMap.containsKey(key)) {
             benefitMap.put(key, benefit);
           }
+          billDiscountVOs.setOperateUserName(benefit.getAuthorizedName());
         });
+    }
     if (StringHelper.isNotEmpty(amountMap)) {
       amountMap.forEach(
           (key, amount) -> {

@@ -7,20 +7,23 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientOriginEmployeeVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.report.ultimate.biz.PatientOriginRelationsBiz;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.RETURN_VALUE_ISNULL;
 
 /**
  * 简介:公司端-人力资源菜单内-员工推荐
@@ -35,8 +38,8 @@ import java.util.List;
 @RequestMapping("originRelations")
 public class PatientOriginRelationsController {
 
-    /**              */
-    @Autowired
+    /** 业务层 */
+    @Resource
     PatientOriginRelationsBiz patientOriginRelationsBiz;
 
     /**
@@ -48,21 +51,24 @@ public class PatientOriginRelationsController {
     @PostMapping(value = "/employeeReferral",name = "公司端-人力资源-员工推荐")
     public ResponseResult<PageInfo<PatientOriginEmployeeVo>> employeeReferral(@RequestBody PatientOriginEmployeeQuery query){
        List<PatientOriginEmployeeVo> patientOriginEmployeeVoList = patientOriginRelationsBiz.finleEmployeeReferral(query);
-       if (query.getWhetherPage()) {
-           Integer pageNum = query.getPageNum();
-           Integer pageSize = query.getPageSize();
-           int total = patientOriginEmployeeVoList.size();
-           PageInfo<PatientOriginEmployeeVo> pageInfo = new PageInfo<>();
-           pageInfo.setPageNum(pageNum);
-           pageInfo.setPageSize(pageSize);
-           pageInfo.setTotal(total);
-           List<PatientOriginEmployeeVo> list =
-                   patientOriginEmployeeVoList.subList(
-                           pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
-           pageInfo.setList(list);
-           return ResponseUtil.success(pageInfo);
-       }
-       return ResponseUtil.success(new PageInfo<>(patientOriginEmployeeVoList));
+       PageInfo<PatientOriginEmployeeVo> pageInfo = new PageInfo<>();
+        if (!StringHelper.isEmpty(patientOriginEmployeeVoList)){
+            if (query.getWhetherPage()) {
+                Integer pageNum = query.getPageNum();
+                Integer pageSize = query.getPageSize();
+                int total = patientOriginEmployeeVoList.size();
+                pageInfo.setPageNum(pageNum);
+                pageInfo.setPageSize(pageSize);
+                pageInfo.setTotal(total);
+                List<PatientOriginEmployeeVo> list =
+                        patientOriginEmployeeVoList.subList(
+                                pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+                pageInfo.setList(list);
+                return ResponseUtil.success(pageInfo);
+            }
+            return ResponseUtil.fail(RETURN_VALUE_ISNULL,"未查询到员工推荐数据",pageInfo);
+        }
+        return ResponseUtil.fail(RETURN_VALUE_ISNULL,"未查询到员工推荐数据",pageInfo);
     }
 
     /**
@@ -90,13 +96,13 @@ public class PatientOriginRelationsController {
      */
     @ApiOperation("员工推荐-各项明细列表")
     @PostMapping(value = "/workloadBreakdown",name = "公司端-人力资源-员工推荐-各项明细列表 type区分")
-    public ResponseResult<PageInfo<ReceivedWorkloadDetailsVo>> workloadBreakdown(@RequestBody ReceiverkLoadQuery query){
-        List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = patientOriginRelationsBiz.finlereceiverkLoad(query);
+    public ResponseResult<PageInfo<ReceivedWorkloadDetailsVo>> workloadBreakdown(@RequestBody ReceiverkLoadQuery query) throws ParseException {
+        List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = patientOriginRelationsBiz.findEreceiverkLoad(query);
+        PageInfo<ReceivedWorkloadDetailsVo> pageInfo = new PageInfo<>();
         if (query.getWhetherPage()) {
             Integer pageNum = query.getPageNum();
             Integer pageSize = query.getPageSize();
             int total = receivedWorkloadDetailsVoList.size();
-            PageInfo<ReceivedWorkloadDetailsVo> pageInfo = new PageInfo<>();
             pageInfo.setPageNum(pageNum);
             pageInfo.setPageSize(pageSize);
             pageInfo.setTotal(total);
@@ -108,6 +114,8 @@ public class PatientOriginRelationsController {
         }
         return ResponseUtil.success(new PageInfo<>(receivedWorkloadDetailsVoList));
     }
+
+
 
 
 

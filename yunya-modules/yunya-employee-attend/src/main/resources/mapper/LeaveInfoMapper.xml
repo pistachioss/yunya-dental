@@ -507,11 +507,15 @@
         t.start_time,
         DATE_ADD(t.end_time, INTERVAL '1' DAY)
         ) / 3
-        ) AS leaveTime
+        ) AS leaveTime,
+        ls.start_time AS lsStartDate,
+        ls.end_time AS lsEndDate,
+        es.work_date AS workDate
         FROM
         leave_info t
         LEFT JOIN vacation_set vs ON t.vacation_id = vs.id
         LEFT JOIN leave_schedule ls ON ls.leave_id = t.id
+        LEFT JOIN employee_schedule es ON ls.schedule_id = es.id
         <where>
             <if test="userIds != null and userIds.size() > 0">
                 and t.user_id in
@@ -535,7 +539,7 @@
             </if>
         </where>
         GROUP BY
-        t.id) a
+        t.id,ls.start_time,ls.end_time) a
         LEFT JOIN copy_info ci ON ci.apply_id = a.id and ci.apply_type = 0
         <where>
             <if test="copyId !=null and copyId != '' ">

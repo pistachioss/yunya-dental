@@ -341,7 +341,7 @@
         FROM
         base_bill bb
         <where>
-            AND bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgIds != null and query.orgIds.length > 0">
                 AND bb.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
@@ -386,5 +386,24 @@
         </where>
         GROUP BY
         bo.org_id
+    </select>
+
+    <select id="selectOrganizationList" resultType="com.yunya.models.report.BaseOrganization">
+        SELECT bo.*
+        FROM base_organization bo
+        <where>
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
+                AND bo.org_id IN
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.originTypes!=null and query.originTypes.size()>0">
+                AND bo.org_type IN
+                <foreach collection="query.originTypes" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>
