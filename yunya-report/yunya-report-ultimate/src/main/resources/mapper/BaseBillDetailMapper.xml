@@ -3299,12 +3299,16 @@
     <select id="billItemStatisticsGroupByOrgId" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsVO">
         SELECT
             bbd.org_id AS orgId,
-            bbd.item_id AS itemId,
+            <if test="column!=null and column!=''">
+                ${column} AS itemId,
+            </if>
             SUM(bbd.quantity) AS quantity
         FROM base_bill_detail bbd
         <where>
             bbd.source_type = 0
-            AND bbd.item_type = 0
+            <if test="query.itemType != null">
+                AND bbd.item_type = #{query.itemType}
+            </if>
             <if test="query.itemIds!=null and query.itemIds.size()>0">
                 and bbd.item_id in
                 <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
@@ -3318,6 +3322,9 @@
                 </foreach>
             </if>
         </where>
-        group by bbd.org_id, bbd.item_id
+        group by bbd.org_id
+        <if test="column!=null and column!=''">
+        , ${column}
+        </if>
     </select>
 </mapper>

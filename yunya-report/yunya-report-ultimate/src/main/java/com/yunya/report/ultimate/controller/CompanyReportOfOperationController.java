@@ -14,6 +14,8 @@ import com.yunya.report.ultimate.biz.BaseUserPostBiz;
 import com.yunya.report.ultimate.biz.ClinicDataStatisticsBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -476,6 +478,9 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊工作量统计")
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message="响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":20,\"orgId1\":10,\"name\":\"工作量\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"工作量\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
+  })
   @PostMapping(value = "/clinic/performance/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊工作量统计")
   public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicPerformanceList(
           @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
@@ -504,6 +509,9 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析")
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message="响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":0,\"orgId1\":0,\"originType\":\"患者来源\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"患者来源\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
+  })
   @PostMapping(value = "/clinic/firstVisitSource/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析")
   public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicFirstVisitSourceList(
           @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
@@ -532,7 +540,10 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计")
-  @PostMapping(value = "/clinic/specailItem/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计")
+  @ApiResponses(value = {
+          @ApiResponse(code = 200, message="响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":20,\"orgId1\":10,\"name\":\"专科项目\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"专科项目\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
+  })
+  @PostMapping(value = "/clinic/specialProject/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计")
   public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicSpecialItemList(
           @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
     DynamicHeaderPageInfo<JSONObject> pageInfo = billDetailBiz.clinicSpecialItemList(query);
@@ -540,16 +551,44 @@ public class CompanyReportOfOperationController {
   }
 
   /**
-   * 根据条件导出门诊专科项目数量统计统计
+   * 根据条件导出门诊专科项目数量统计
    *
    * @param query 查询条件
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计导出")
-  @PostMapping(value = "/clinic/billItem/export", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计导出")
-  public ResponseResult<T> clinicBillItemExport(HttpServletResponse response,
+  @PostMapping(value = "/clinic/specialProject/export", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计导出")
+  public ResponseResult<T> clinicSpecialItemExport(HttpServletResponse response,
                                                         @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
-    billDetailBiz.clinicBillItemExport(query, response);
+    billDetailBiz.clinicSpecialItemExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询门诊365卡销售激活统计
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计")
+  @PostMapping(value = "/clinic/365CardSaleActivited/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计")
+  public ResponseResult<PageInfo<SaleActivited365CardVO>> clinic365CardSaleActivitedList(
+          @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
+    PageInfo<SaleActivited365CardVO> pageInfo = billDetailBiz.clinic365CardSaleActivitedList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出门诊365卡销售激活统计
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计导出")
+  @PostMapping(value = "/clinic/365CardSaleActivited/export", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计导出")
+  public ResponseResult<T> clinic365CardSaleActivitedExport(HttpServletResponse response,
+                                                @RequestBody @Validated ClinicPerformanceBusinessQuery query) throws IOException {
+    billDetailBiz.clinic365CardSaleActivitedExport(query, response);
     return ResponseUtil.success(null);
   }
 }
