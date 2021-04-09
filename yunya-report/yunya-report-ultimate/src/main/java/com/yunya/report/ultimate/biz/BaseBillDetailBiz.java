@@ -66,6 +66,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;
   /** 患者来源*/
   @Autowired private BasePatientOriginMapper basePatientOriginMapper;
+  /** 卡券*/
+  @Autowired private BaseCouponMapper baseCouponMapper;
 
   /**
    * 根据条件查询账单收入详情列表
@@ -1368,7 +1370,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     String sMonth = startDate.substring(5,7); //月份
     String eMonth = endDate.substring(5,7); //月份
-    List<BaseOrganization> orgs = getOrganization();
+    List<BaseOrganization> orgs = getOrganization(queryForm);
     Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
     DataStatisticsQuery query = new DataStatisticsQuery();
     query.setDateType(queryForm.getDateType());
@@ -1497,12 +1499,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   /**
    * 获取所有门诊信息
    *
-   * @return
+   * @param query
    */
-  private List<BaseOrganization> getOrganization() {
-    BaseOrganization entity = new BaseOrganization();
-    entity.setOrgType((byte) 2);
-    return organizationMapper.select(entity);
+  private List<BaseOrganization> getOrganization(ClinicPerformanceBusinessQuery query) {
+    query.setOriginTypes(Collections.singletonList(2));
+    return organizationMapper.selectOrganizationList(query);
   }
 
   /**
@@ -1560,7 +1561,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<BasePatientOrigin> origins = basePatientOriginMapper.select(entity);
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(origins);
     PageHelper.clearPage();
-    List<BaseOrganization> orgs = getOrganization();
+    List<BaseOrganization> orgs = getOrganization(query);
     if (StringHelper.isEmpty(query.getOriginTypes())) {
       query.setOriginTypes(origins.stream().map(BasePatientOrigin::getOriginType).collect(Collectors.toSet()));
     }
@@ -1650,13 +1651,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         }
       });
       PageHelper.clearPage();
-      List<Integer> billIds = baseBillMapper.distinctBillIds(query);
       query.setItemIds(itemIds);
-      query.setBillIds(billIds);
-      List<BillItemStatisticsVO> list = mapper.billItemStatisticsGroupByOrgId(query);
+      List<BillItemStatisticsVO> list = billItemStatisticsGroupByOrgId(query, "item_id");
       Map<String, Integer> dataMap = new HashMap<>(16);
       list.forEach(vo -> dataMap.put(vo.getItemId() + "," + vo.getOrgId(), vo.getQuantity()));
-      List<BaseOrganization> orgs = getOrganization();
+      List<BaseOrganization> orgs = getOrganization(query);
       List<JSONObject> result = new ArrayList<>();
       if (StringHelper.isNotEmpty(specialItems)) {
         Map<String, String> map = new LinkedHashMap<>();
@@ -1696,6 +1695,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return resPageInfo;
   }
 
+  private List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(ClinicPerformanceBusinessQuery query) {
+    return billItemStatisticsGroupByOrgId(query, null);
+  }
+
+  private List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(ClinicPerformanceBusinessQuery query, String column) {
+    List<Integer> billIds = baseBillMapper.distinctBillIds(query);
+    query.setBillIds(billIds);
+    return mapper.billItemStatisticsGroupByOrgId(query, column);
+  }
+
   private PageInfo<SpecialistProjectVO> getSpecialProjectList(ClinicPerformanceBusinessQuery query) {
     SpecialistProjectQuery queryForm = new SpecialistProjectQuery();
     queryForm.setWhetherPage(query.getWhetherPage());
@@ -1712,7 +1721,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query 查询条件
    * @return
    */
-  public void clinicBillItemExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) {
+  public void clinicSpecialItemExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) {
     query.setWhetherPage(false);
     DynamicHeaderPageInfo<JSONObject> pageInfo = clinicSpecialItemList(query);
     List<JSONObject> list = pageInfo.getList();
@@ -1810,5 +1819,139 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     } catch (IOException e) {
       throw new Exception("导出excel表格失败!", e);
     }
+  }
+
+  /**
+   * 根据条件查询门诊365卡销售激活统计
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public PageInfo<SaleActivited365CardVO> clinic365CardSaleActivitedList(ClinicPerformanceBusinessQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BaseOrganization> orgs = getOrganization(query);
+    PageInfo pageInfo = new PageInfo(orgs);
+//    IVY365-731
+//    嘉医汇IVY365-413
+    query.setItemIds(Arrays.asList(731,413));
+    query.setOrgIds(orgs.stream().map(BaseOrganization::getOrgId).collect(Collectors.toList()));
+    List<BillItemStatisticsVO> vos = billItemStatisticsGroupByOrgId(query);
+    Map<Integer, SaleActivited365CardVO> result = new LinkedHashMap<>();
+    for (BaseOrganization org : orgs) {
+      Integer orgId = org.getOrgId();
+      SaleActivited365CardVO saleActivited365CardVO = new SaleActivited365CardVO();
+      saleActivited365CardVO.setAbbreviation(org.getAbbreviation());
+      int quantity = 0;
+      for (BillItemStatisticsVO vo : vos) {
+        if (vo.getOrgId().equals(orgId)) {
+          quantity = vo.getQuantity();
+          break;
+        }
+      }
+      saleActivited365CardVO.setSaleNum(quantity);
+      result.put(orgId, saleActivited365CardVO);
+    }
+
+//    IVY365年卡-101
+    query.setItemIds(Arrays.asList(101));
+    query.setItemType(1);
+    query.setOrgIds(orgs.stream().map(BaseOrganization::getOrgId).collect(Collectors.toList()));
+    vos = billItemStatisticsGroupByOrgId(query);
+    for (BaseOrganization org : orgs) {
+      Integer orgId = org.getOrgId();
+      int quantity = 0;
+      for (BillItemStatisticsVO vo : vos) {
+        if (vo.getOrgId().equals(orgId)) {
+          quantity = vo.getQuantity();
+          break;
+        }
+      }
+      SaleActivited365CardVO entity = result.get(orgId);
+      if (entity == null) {
+        entity = new SaleActivited365CardVO();
+        entity.setAbbreviation(org.getAbbreviation());
+      }
+      entity.setSaleNum(quantity);
+      result.put(orgId, entity);
+    }
+
+//    138-929  IVY365 kids
+//    254-932亿家健康IVY365 kids
+//    261-260阿里健康IVY365 Kids
+//    264-263大众点评IVY365 kids
+//    270-266口碑IVY365 Kids
+//    287-287风雪户外IVY365 Kids
+    List kidsIds = Arrays.asList(138,254,261,264,270,287);
+
+//    7-964有赞IVY365 Adults
+//    140-931 IVY365 Adults
+//    256-934亿家健康IVY365 Adults
+//    263-262阿里健康 IVY365 Adults
+//    266-265大众点评IVY365 Adults
+//    272-268口碑IVY365 Adults
+//    292-292嘉医汇IVY365 Adults
+    List adultsIds = Arrays.asList(7,140,256,263,266,272,292);
+//    139-930 IVY365 Youngs
+//    255-933亿家健康 IVY365 Youngs
+//    262-261阿里健康IVY365 Youngs
+//    265-264大众点评IVY365 Youngs
+//    271-267口碑IVY365 Youngs
+    List youngsIds = Arrays.asList(139,255,262,265,271);
+    List couponIds = new ArrayList();
+    couponIds.addAll(kidsIds);
+    couponIds.addAll(adultsIds);
+    couponIds.addAll(youngsIds);
+    query.setCouponIds(couponIds);
+    List<CouponActiveVo> couponActiveVos = baseCouponMapper.couponActivedGroupByOrgId(query);
+    for (BaseOrganization org : orgs) {
+      Integer orgId = org.getOrgId();
+      SaleActivited365CardVO entity = result.get(orgId);
+      if (entity == null) {
+        entity = new SaleActivited365CardVO();
+        entity.setAbbreviation(org.getAbbreviation());
+      }
+      Long kidsQuantity = 0L;
+      Long adultsQuantity = 0L;
+      Long youngsQuantity = 0L;
+      for (CouponActiveVo vo : couponActiveVos) {
+        if (vo.getOrgId().equals(orgId+"")) {
+          Long quantity = vo.getActivatedQuantity();
+          Integer couponId = vo.getCouponId();
+          if (kidsIds.contains(couponId)) {
+            kidsQuantity += quantity;
+          }
+          if (adultsIds.contains(couponId)) {
+            adultsQuantity += quantity;
+          }
+          if (youngsIds.contains(couponId)) {
+            youngsQuantity += quantity;
+          }
+          break;
+        }
+      }
+      entity.setAdults365Card(adultsQuantity);
+      entity.setKids365Card(kidsQuantity);
+      entity.setYoungs365Card(youngsQuantity);
+      result.put(orgId, entity);
+    }
+    List<SaleActivited365CardVO> list = result.values().stream().collect(Collectors.toList());
+    pageInfo.setList(list);
+    return pageInfo;
+  }
+
+  /**
+   * 根据条件导出门诊365卡销售激活统计
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public void clinic365CardSaleActivitedExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<SaleActivited365CardVO> data = clinic365CardSaleActivitedList(query).getList();
+    ExcelUtil<SaleActivited365CardVO> excelUtil = new ExcelUtil<>(SaleActivited365CardVO.class);
+    String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(),"","门诊365卡销售激活统计");
+    excelUtil.exportExcel(response, data, "门诊365卡销售激活统计", fileName);
   }
 }
