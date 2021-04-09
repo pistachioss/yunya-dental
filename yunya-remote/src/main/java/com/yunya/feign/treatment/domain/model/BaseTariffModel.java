@@ -32,6 +32,7 @@ public class BaseTariffModel implements Serializable {
   /** 项目编码 */
   @NotBlank(message = "基础价目表编码不能为空")
   @ApiModelProperty(value = "基础价目表编码", required = true)
+  @Size(min = 6, max = 6, message = "基础价目表编码长度必须是6个字符")
   private String itemNumber;
 
   /** 项目名称 */
