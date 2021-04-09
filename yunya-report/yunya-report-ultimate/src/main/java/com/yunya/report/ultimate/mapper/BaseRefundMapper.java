@@ -91,7 +91,7 @@ public interface BaseRefundMapper extends Mapper<BaseRefund> {
    * @param query 条件
    * @return 退费id 集合
    */
-  List<Integer> selectFundBillIdList(@Param("query") ReceiverkLoadQuery query);
+  List<Integer> selectfundBillIdList(@Param("query") ReceiverkLoadQuery query);
 
   /**
    * 查询退费项目明细
@@ -100,7 +100,7 @@ public interface BaseRefundMapper extends Mapper<BaseRefund> {
    * @param originType 推荐类型
    * @return 查询退费项目明细
    */
-  List<ReceivedWorkloadDetailsVo> selectRefundDetail(@Param("refundId") Integer refundId,@Param("originId") Integer originId,@Param("originType") Integer originType);
+  List<ReceivedWorkloadDetailsVo> selectrefundDetail(@Param("refundId") Integer refundId,@Param("originId") Integer originId,@Param("originType") Integer originType);
 
   List<BillOfRefundWorkloadVO> groupTotalRefundWorkload(@Param("query") DataStatisticsQuery query);
 }

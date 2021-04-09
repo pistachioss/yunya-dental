@@ -312,7 +312,7 @@
     <!-- 根据患者来源ID查询所有推荐患者  -->
     <select id="findPatientBaseInfoByOriginId" resultMap="BaseResultMap">
         select <include refid="Patient_Column_List"></include>
-        from patient_base_info where origin_id = #{originId} and origin_type = 3
+        from patient_base_info where origin_id = #{originId}
     </select>
 
     <select id="findPatientTotalInfo"

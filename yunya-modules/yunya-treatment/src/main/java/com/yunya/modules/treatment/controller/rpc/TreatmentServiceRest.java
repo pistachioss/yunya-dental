@@ -147,7 +147,7 @@ public class TreatmentServiceRest {
    * @return String
    */
   @RequestMapping(value = "/tariff/name", method = RequestMethod.POST)
-  public List<BaseTariff> findBaseTariffNamesByIds(@RequestBody @NotEmpty String[] ids) {
+  public String findBaseTariffNamesByIds(@RequestBody @NotEmpty String[] ids) {
     return baseTariffBiz.findBaseTariffNamesByIds(ids);
   }
 
@@ -455,7 +455,7 @@ public class TreatmentServiceRest {
    */
   @RequestMapping(value = "/tariff/specialist/percentage", method = RequestMethod.POST)
   public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(
-      @RequestBody SpecialistProjectReportModel specialistProjectReportModel) throws Exception {
+      @RequestBody SpecialistProjectReportModel specialistProjectReportModel) {
     return orderDetailBiz.findTariffSpecialistPercentage(specialistProjectReportModel);
   }
 

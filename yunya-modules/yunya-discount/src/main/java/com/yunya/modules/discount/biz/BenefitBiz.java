@@ -190,7 +190,7 @@ public class BenefitBiz {
             return ResponseUtil.success();
         } finally {
             //解锁卡券
-            cardBiz.manualUnLock(loginUserId, RedisConstants.LOCK_CHOICE_CARD);
+            cardBiz.manualUnLock(model.getPatientId(), RedisConstants.LOCK_CHOICE_CARD);
             log.info("【保存卡券优惠解锁成功】");
         }
     }

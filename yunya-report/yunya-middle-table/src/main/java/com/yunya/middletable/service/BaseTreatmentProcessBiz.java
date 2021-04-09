@@ -203,17 +203,15 @@ public class BaseTreatmentProcessBiz
         setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
         mapper.updateByAppointmentId(appointmentId, treatmentProcess);
       } else {
-        int i = mapper.deleteByAppointmentId(appointmentId);
-        if (i > 0) {
-          treatmentProcess = new BaseTreatmentProcess();
-          setTreatmentProcessAppointmentValue(treatmentProcess, appointment);
-          setTreatmentProcessRegisteredValue(treatmentProcess, appointmentId);
-          TreatmentRecord treatmentRecord = new TreatmentRecord();
-          treatmentRecord.setAppointmentId(appointmentId);
-          setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
-          log.info("=============开始插入中间表就诊记录（更新预约）============{}", treatmentProcess);
-          mapper.insertSelective(treatmentProcess);
-        }
+        mapper.deleteByAppointmentId(appointmentId);
+        treatmentProcess = new BaseTreatmentProcess();
+        setTreatmentProcessAppointmentValue(treatmentProcess, appointment);
+        setTreatmentProcessRegisteredValue(treatmentProcess, appointmentId);
+        TreatmentRecord treatmentRecord = new TreatmentRecord();
+        treatmentRecord.setAppointmentId(appointmentId);
+        setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
+        log.info("=============开始插入中间表就诊记录（更新预约）============{}", treatmentProcess);
+        mapper.insertSelective(treatmentProcess);
       }
     } else {
       mapper.deleteByAppointmentId(appointmentId);

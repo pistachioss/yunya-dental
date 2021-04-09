@@ -10,8 +10,8 @@ import com.yunya.report.ultimate.mapper.BaseBillPayDetailMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 简介: 收费明细记录业务层
@@ -50,7 +50,7 @@ public class BaseBillPayDetailBiz extends BaseBiz<BaseBillPayDetailMapper, BaseB
    * @param billPayIds 收费记录ID列表
    * @return
    */
-  public List<BillPayFreePayAmountVO> findBillFreePayAmountList(Collection<Integer> billPayIds) {
+  public List<BillPayFreePayAmountVO> findBillFreePayAmountList(Set<Integer> billPayIds) {
     return mapper.selectTotalFreePayAmount(billPayIds);
   }
 

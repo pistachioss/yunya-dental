@@ -66,7 +66,7 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
-  public List<BaseTariff> findBaseTariffNamesByIds(@NotEmpty String[] ids) {
+  public String findBaseTariffNamesByIds(String[] ids) {
     return null;
   }
 

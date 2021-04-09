@@ -1,12 +1,9 @@
 package com.yunya.modules.clinic_base.rpc;
 
-import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
-import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
 import com.yunya.feign.clinic_base.domain.vo.BusinessGoalCompletedInfoVO;
 import com.yunya.feign.clinic_base.domain.vo.BusinessGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectTargetVO;
-import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.modules.clinic_base.biz.BusinessTargetBiz;
 import com.yunya.modules.clinic_base.biz.SpecialistProjectBiz;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,10 +57,5 @@ public class ClinicBaseRest {
                                                                     @RequestParam("dateRange") List<String> dateRange,
                                                                     @RequestParam("orgIds") Integer[] orgIds) {
     return specialistProjectBiz.specialProjectAndGoalsList(dateType, dateRange, orgIds);
-  }
-
-  @RequestMapping(value = "/specialProject/list", method = RequestMethod.POST)
-  public PageInfo<SpecialistProjectVO> specialProjectList(@RequestBody SpecialistProjectQuery query) {
-    return specialistProjectBiz.specialProjectList(query);
   }
 }

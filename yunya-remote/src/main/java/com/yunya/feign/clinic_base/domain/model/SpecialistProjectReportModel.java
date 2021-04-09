@@ -18,7 +18,7 @@ import java.util.List;
  */
 @ApiModel("就诊患者分析-专科项目参数模板")
 @Data
-public class SpecialistProjectReportModel implements Serializable, Cloneable {
+public class SpecialistProjectReportModel implements Serializable {
 
     /** 门诊orgIds */
     private List<Integer> orgIds;
@@ -38,8 +38,4 @@ public class SpecialistProjectReportModel implements Serializable, Cloneable {
     /** 专科项目 */
     List<SpecialistProject> specialistProjects;
 
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        return (SpecialistProjectReportModel)super.clone();
-    }
 }

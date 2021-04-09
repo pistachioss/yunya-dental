@@ -74,7 +74,7 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    *
    * @param appointmentId 预约ID
    */
-  int deleteByAppointmentId(@Param("appointmentId") Integer appointmentId);
+  void deleteByAppointmentId(@Param("appointmentId") Integer appointmentId);
 
   /**
    * 根据挂号ID删除

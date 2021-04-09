@@ -12,6 +12,7 @@ import tk.mybatis.mapper.common.Mapper;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface BaseBillPayDetailMapper extends Mapper<BaseBillPayDetail> {
 
@@ -51,7 +52,7 @@ public interface BaseBillPayDetailMapper extends Mapper<BaseBillPayDetail> {
    * @return BigDecimal
    */
   List<BillPayFreePayAmountVO> selectTotalFreePayAmount(
-      @Param("billPayIds") Collection<Integer> billPayIds);
+      @Param("billPayIds") Set<Integer> billPayIds);
 
   /**
    * 免单支付金额

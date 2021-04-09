@@ -3,7 +3,10 @@ package com.yunya.modules.treatment.mapper;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
-import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.feign.treatment.domain.vo.BillPrintInfoVO;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
+import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
+import com.yunya.feign.treatment.domain.vo.SpecialistTariffCompletedDetailVO;
 import com.yunya.models.treatment.OrderDetail;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -56,7 +59,7 @@ public interface OrderDetailMapper extends Mapper<OrderDetail> {
    * @param specialistProjectReportModel 查询条件
    * @return Integer
    */
-  List<SpecialistProjectVO> selectTariffSpecialistPercentage(
+  Integer selectTariffSpecialistPercentage(
       @Param("form") SpecialistProjectReportModel specialistProjectReportModel);
 
   /**

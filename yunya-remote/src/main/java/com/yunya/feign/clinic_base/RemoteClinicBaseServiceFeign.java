@@ -1,12 +1,9 @@
 package com.yunya.feign.clinic_base;
 
-import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
-import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
 import com.yunya.feign.clinic_base.domain.vo.BusinessGoalCompletedInfoVO;
 import com.yunya.feign.clinic_base.domain.vo.BusinessGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectTargetVO;
-import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.feign.clinic_base.factory.RemoteClinicBaseServiceFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -62,12 +59,4 @@ public interface RemoteClinicBaseServiceFeign {
   List<SpecialistProjectTargetVO> specialProjectAndGoalsList(@RequestParam("dateType") Byte dateType,
                                                              @RequestParam("dateRange") List<String> dateRange,
                                                              @RequestParam("orgIds") Integer[] orgIds);
-  /**
-   * 根据条件查询门诊业务目标列表
-   *
-   * @param query 查询条件
-   * @return BusinessGoalCompletedInfoVO
-   */
-  @RequestMapping(value = "/rpc/specialProject/list", method = RequestMethod.POST)
-  PageInfo<SpecialistProjectVO> specialProjectList(@RequestBody SpecialistProjectQuery query);
 }

@@ -17,7 +17,7 @@ public interface BaseTariffMapper extends Mapper<BaseTariff> {
    * @param ids 字符串ID
    * @return String
    */
-  List<BaseTariff> selectBaseTariffNamesByIds(@Param("ids") String ids);
+  String selectBaseTariffNamesByIds(@Param("ids") String ids);
 
   /**
    * 根据基础价目表ID查询价目表信息

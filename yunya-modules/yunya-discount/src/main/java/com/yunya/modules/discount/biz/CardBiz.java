@@ -1032,7 +1032,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @return res
      */
     public ResponseResult<List<OrderItemUseBo>> choiceBenefitBo(PatientChooseBenefitForm form) {
-        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         Integer orderId = form.getOrderId();
         Integer patientId = form.getPatientId();
         Integer orgId = form.getOrgId();
@@ -1053,7 +1052,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         }
         try {
             //锁定患者选择的优惠信息
-            errorBo = needLockKeys(assembleCardIds(form), loginUserId, RedisConstants.LOCK_CHOICE_CARD, DiscountError.CARD_HAS_CHOICE);
+            errorBo = needLockKeys(assembleCardIds(form), patientId, RedisConstants.LOCK_CHOICE_CARD, DiscountError.CARD_HAS_CHOICE);
             if (errorBo.getError() != null) {
                 return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
             }
@@ -1069,7 +1068,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             return ResponseUtil.success(orderItemBos);
         } catch (Exception e) {
             log.warn("【选择优惠】优惠选择发生异常，解除卡券锁定");
-            manualUnLock(loginUserId, RedisConstants.LOCK_CHOICE_CARD);
+            manualUnLock(patientId, RedisConstants.LOCK_CHOICE_CARD);
             throw e;
         }
     }
