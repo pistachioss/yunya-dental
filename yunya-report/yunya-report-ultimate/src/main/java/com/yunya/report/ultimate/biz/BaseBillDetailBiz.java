@@ -1153,7 +1153,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     completedObj.put("name", "完成度");
     JSONObject curCompletedObj = new JSONObject();
     curCompletedObj.put("name", "今日完成");
-    Map<String, String> titles = new HashMap<>(16);
+    Map<String, String> titles = new LinkedHashMap<>(16);
     titles.put("name", "门诊");
     BigDecimal goalTotal = BigDecimal.ZERO;
     BigDecimal monthTotal = BigDecimal.ZERO;
