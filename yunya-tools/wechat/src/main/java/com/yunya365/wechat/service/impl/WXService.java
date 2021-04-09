@@ -1,28 +1,25 @@
 package com.yunya365.wechat.service.impl;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
-import com.yunya.feign.patient_central.domain.query.WxFansSaveForm;
-import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.wechat.domain.model.WxRegisterModel;
-import com.yunya.feign.wechat.domain.vo.WxAuthVo;
-import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.patient_central.WxFans;
-import com.yunya.models.patient_central.WxFansBind;
-import com.yunya.models.system.DictionaryItem;
-import com.yunya365.wechat.config.WXConfig;
-import com.yunya365.wechat.enums.WeChatError;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import com.alibaba.fastjson.*;
+import com.google.common.base.*;
+import com.google.common.collect.*;
+import com.yunya.feign.patient_central.*;
+import com.yunya.feign.patient_central.domain.query.*;
+import com.yunya.feign.system.*;
+import com.yunya.feign.wechat.domain.model.*;
+import com.yunya.feign.wechat.domain.vo.*;
+import com.yunya.framework.common.exception.*;
+import com.yunya.models.patient_central.*;
+import com.yunya.models.system.*;
+import com.yunya365.wechat.config.*;
+import com.yunya365.wechat.enums.*;
+import lombok.extern.slf4j.*;
+import org.apache.commons.collections4.*;
+import org.springframework.stereotype.*;
+import org.springframework.web.client.*;
 
-import javax.annotation.Resource;
-import java.util.List;
+import javax.annotation.*;
+import java.util.*;
 
 import static java.util.stream.Collectors.*;
 
@@ -89,6 +86,8 @@ public class WXService extends AbstractWxBaseApi{
 
     private List<WxFansBind> buildWxFansBind(WxFans wxFans, WxRegisterModel model) {
         List<WxFansBind> list = Lists.newArrayList();
+        wxFans.setRegisterName(model.getUserName());
+        wxFans.setRegisterMobile(model.getMobile());
         PatientBaseInfo baseInfo = new PatientBaseInfo();
         baseInfo.setMobile(model.getMobile());
         baseInfo.setName(model.getUserName());
@@ -98,6 +97,8 @@ public class WXService extends AbstractWxBaseApi{
             if (dictItem == null) {
                 throw new ClientServiceException(WeChatError.DICT_NO_CONFIG);
             }
+            wxFans.setBind(true);
+            wxFans.setBindTime(new Date());
             wxFans.setPatientId(patientInfoList.get(0).getId());
             list =  patientInfoList.stream().map(obj -> {
                 WxFansBind wxFansBind = new WxFansBind();
