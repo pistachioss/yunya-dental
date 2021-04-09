@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
+import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
 import com.yunya.feign.report.domain.vo.*;
@@ -8,6 +9,7 @@ import com.yunya.models.report.BasePatient;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.Collection;
 import java.util.List;
 
 /** @author YK */
@@ -114,4 +116,21 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    * @return List<PatientInfoVO>
    */
   List<PatientInfoVO> selectPatientInfoByExample(@Param("query") PatientSearchQuery query);
+
+  /**
+   * 根据条件统计患者来源
+   *
+   * @param query
+   * @param patientIds
+   * @return
+   */
+  List<PatientFirstVisitSourceVO> clinicFirstVisitSourceList(@Param("query") ClinicPerformanceBusinessQuery query,
+                                                             @Param("patientIds") Collection<Integer> patientIds);
+
+  /**
+   * 根据条件查询初诊患者ID
+   * @param query
+   * @return
+   */
+  List<BaseTreatmentProcessVO> firstVisitPatientList(@Param("query") ClinicPerformanceBusinessQuery query);
 }

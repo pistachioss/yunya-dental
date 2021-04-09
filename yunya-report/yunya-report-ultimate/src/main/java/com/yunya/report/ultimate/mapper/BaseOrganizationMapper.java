@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.vo.PatientDataStatisticsVO;
 import com.yunya.models.report.BaseOrganization;
@@ -18,4 +19,6 @@ public interface BaseOrganizationMapper extends Mapper<BaseOrganization> {
    */
   List<PatientDataStatisticsVO> selectClinicPatientDataStatistic(
       @Param("query") DataStatisticsQuery query);
+
+  List<BaseOrganization> selectOrganizationList(@Param("query") ClinicPerformanceBusinessQuery query);
 }

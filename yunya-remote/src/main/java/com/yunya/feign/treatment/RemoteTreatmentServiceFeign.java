@@ -99,7 +99,7 @@ public interface RemoteTreatmentServiceFeign {
    * @return String
    */
   @RequestMapping(value = "/rpc/tariff/name", method = RequestMethod.POST)
-  String findBaseTariffNamesByIds(@RequestBody @NotEmpty String[] ids);
+  List<BaseTariff> findBaseTariffNamesByIds(@RequestBody @NotEmpty String[] ids);
 
   /**
    * 根据价目表项目ID查询基础价目表信息
