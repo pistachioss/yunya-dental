@@ -327,7 +327,9 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   /**
    * 统计每组开单项目的数量
    * @param query
+   * @param column
    * @return
    */
-  List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(@Param("query") ClinicPerformanceBusinessQuery query);
+  List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(@Param("query") ClinicPerformanceBusinessQuery query,
+                                                            @Param("column") String column);
 }
