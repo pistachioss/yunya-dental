@@ -1431,7 +1431,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       init(curYear, startDate, endDate, "年度总工作量");
       Map<String, String> map = new LinkedHashMap<>();
       map.put("date", "时间");
-      map.put("workload", "工作量");
+      map.put("name", "工作量");
       for (BaseOrganization vo : orgs) {
         Integer orgId = vo.getOrgId();
         BigDecimal goal = workloadGoalMap.get(orgId);
@@ -1512,20 +1512,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param object
    * @param sMonth
    * @param eMonth
-   * @param key
    * @param value
    */
-  private void init(JSONObject object, String sMonth, String eMonth, String key, String value) {
+  private void init(JSONObject object, String sMonth, String eMonth, String value) {
     String month = sMonth;
     if (!sMonth.equals(eMonth)) {
       month = sMonth + "-" + eMonth;
     }
     object.put("date", month);
-    object.put(key, value);
-  }
-
-  private void init(JSONObject object, String sMonth, String eMonth, String value) {
-    init(object,sMonth,eMonth,"workload",value);
+    object.put("name", value);
   }
 
   /**
@@ -1574,10 +1569,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (StringHelper.isNotEmpty(origins)) {
       Map<String, String> map = new LinkedHashMap<>();
       map.put("date", "时间");
-      map.put("originType", "患者来源");
+      map.put("name", "患者来源");
       for (BasePatientOrigin vo : origins) {
         JSONObject object = new JSONObject();
-        init(object, startDate, endDate, "originType", vo.getName());
+        init(object, startDate, endDate, vo.getName());
         object.put("total", computeOrgPatientCount(vo.getOriginType()+"", object, map, orgs, originMap));
         result.add(object);
       }
@@ -1663,7 +1658,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         map.put("name", "专科项目");
         for (SpecialistProjectVO item : specialItems) {
           JSONObject object = new JSONObject();
-          init(object, startDate, endDate, "name", item.getSpecialistProjectName());
+          init(object, startDate, endDate, item.getSpecialistProjectName());
           String[] ids = item.getTariffItemIds().split(",");
           Integer total = 0;
           for (BaseOrganization org : orgs) {
