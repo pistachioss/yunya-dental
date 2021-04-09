@@ -3,6 +3,7 @@ package com.yunya.modules.patient_central.biz;
 
 import com.yunya.feign.patient_central.domain.query.WxFansBindForm;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.patient_central.WxFans;
@@ -30,7 +31,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_EX
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
-
+    public static String BEN_REN = "本人";
     @Autowired private WxFansBiz wxFansBiz;
 
     public Integer batchInsert(List<WxFansBind> list){
@@ -62,13 +63,12 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         }else{
             wxFansBind.setIsVip(true);
         }
-        String eq = "本人";
         //处理微信粉丝表绑定状态以及卡主ID
         WxFans wxFans = new WxFans();
         wxFans.setId(wxFansBindForm.getWxId());
         wxFans.setBind(true);
         wxFans.setBindTime(date);
-        if(eq.equals(wxFansBindForm.getDictionaryName())){
+        if(BEN_REN.equals(wxFansBindForm.getDictionaryName())){
             wxFansBind.setIsOwner(true);
             //如果是本人 则添加卡主ID
             WxFans op = new WxFans();
@@ -83,6 +83,34 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         }
         wxFansBiz.updateSelectiveById(wxFans);
         return mapper.insert(wxFansBind);
+    }
+
+    public int unbind(WxFansBindForm wxFansBindForm){
+        WxFans wxFans = wxFansBiz.selectById(wxFansBindForm.getWxId());
+
+        WxFansBind wxFansBind = new WxFansBind();
+        wxFansBind.setOpenId(wxFansBindForm.getOpenId());
+        int num = mapper.selectCount(wxFansBind);
+        if(num == 1){
+            wxFans.setBind(false);
+            wxFans.setBindTime(null);
+        }else if(num > 1){
+
+        }else{
+            throw new ClientServiceException("解绑异常", OperationCodeConstants.DELETE_NOT_ALLOW);
+        }
+        wxFansBind.setPatientId(wxFansBindForm.getPatientId());
+        wxFansBind.setDictionaryId(wxFansBindForm.getDictionaryId());
+        int de = mapper.delete(wxFansBind);
+        if(de>0){
+            //如果解绑的是本人
+            if(BEN_REN.equals(wxFansBindForm.getDictionaryName())){
+                wxFans.setPatientId(null);
+            }
+        }
+        //处理粉丝表中绑定状态，绑定时间以及卡主ID
+        wxFansBiz.updateById(wxFans);
+        return de;
     }
 
 }

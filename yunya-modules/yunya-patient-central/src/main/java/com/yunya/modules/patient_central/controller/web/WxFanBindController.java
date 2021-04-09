@@ -47,4 +47,17 @@ public class WxFanBindController {
     }
 
 
+    /**
+     * 客服中心-用户管理-绑定患者
+     *
+     * @param
+     * @return
+     */
+    @ApiOperation("客服中心-用户管理-解除绑定")
+    @PostMapping("/unbind")
+    public ResponseResult<Integer> unbind(
+            @RequestBody @Validated WxFansBindForm wxFansBindForm) {
+        return ResponseUtil.success(wxFansBindBiz.unbind(wxFansBindForm));
+    }
+
 }
