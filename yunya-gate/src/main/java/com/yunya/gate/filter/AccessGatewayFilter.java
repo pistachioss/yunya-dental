@@ -67,9 +67,6 @@ public class AccessGatewayFilter implements GlobalFilter {
   @Resource(name = "stringRedisTemplate")
   private ValueOperations<String, String> valueOperations;
 
-  @Autowired
-  private RedisUtils redisUtils;
-
 
   /** 忽略网关鉴权的路径 */
   @Value("${gate.ignore.startWith}")
@@ -131,7 +128,7 @@ public class AccessGatewayFilter implements GlobalFilter {
 
     // 获取该用户在redis中存储的的token
     String currentUserIdKey = RedisConstants.setKey(RedisConstants.REDIS_KEY_USER_ID, jwtInfo.getDeviceType(), jwtInfo.getId());
-    String redisToken = redisUtils.get(currentUserIdKey);
+    String redisToken = valueOperations.get(currentUserIdKey);
     if (StringUtils.isBlank(redisToken)) {
       log.info("登录失效，请重新登录系统后重试");
       return setUnauthorizedResponse(serverWebExchange, "登陆失效，请重新登陆系统后重试");
@@ -141,7 +138,7 @@ public class AccessGatewayFilter implements GlobalFilter {
     }
 
     // 获取redis中存储的用户信息
-    String userInfoStr = redisUtils.get(RedisConstants.REDIS_KEY_USER_TOKEN + redisToken);
+    String userInfoStr = valueOperations.get(RedisConstants.REDIS_KEY_USER_TOKEN + redisToken);
     if (StringUtils.isBlank(userInfoStr)) {
       log.info("token校验失败");
       log.info("用户信息:{}",userInfoStr);
