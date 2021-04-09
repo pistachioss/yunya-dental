@@ -55,7 +55,7 @@
             (#{item.billId}, #{item.orgId}, #{item.patientId},
             #{item.treatmentId}, #{item.billStatus}, #{item.orderNum},
             #{item.orderAmount}, #{item.orderDate}, #{item.billerId},
-            #{item.privilegeType}, #{privilegeOrgId}, #{item.privilegeAmount},
+            #{item.privilegeType}, #{item.privilegeOrgId}, #{item.privilegeAmount},
             #{item.firstPrivilege}, #{item.privilegeDate}, #{item.billDate},
             #{item.billNum}, #{item.actualAmount}, #{item.receivedAmount},
             #{item.debtAmount}, #{item.checkerId})
