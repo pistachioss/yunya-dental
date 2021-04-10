@@ -67,7 +67,6 @@ public class AccessGatewayFilter implements GlobalFilter {
   @Resource(name = "stringRedisTemplate")
   private ValueOperations<String, String> valueOperations;
 
-
   /** 忽略网关鉴权的路径 */
   @Value("${gate.ignore.startWith}")
   private String startWith;
