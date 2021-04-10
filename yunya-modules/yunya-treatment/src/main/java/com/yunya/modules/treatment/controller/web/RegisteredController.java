@@ -10,6 +10,7 @@ import com.yunya.feign.treatment.domain.vo.ReferredInfoVO;
 import com.yunya.feign.treatment.domain.vo.ReferredRrportVO;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -50,6 +51,7 @@ public class RegisteredController {
    * @param model 挂号信息
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增患者挂号")
   @PostMapping("/save")
