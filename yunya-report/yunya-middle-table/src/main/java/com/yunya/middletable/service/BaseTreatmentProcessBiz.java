@@ -235,18 +235,7 @@ public class BaseTreatmentProcessBiz
    */
   private void updateTreatProcessByRegisteredId(Integer registeredId) {
     Registered registered = registeredMapper.selectByPrimaryKey(registeredId);
-    mapper.deleteByRegisteredId(registeredId);
-    if (registered != null) {
-      BaseTreatmentProcess treatmentProcess = new BaseTreatmentProcess();
-      setTreatmentProcessRegisteredValue(treatmentProcess, registered);
-      TreatmentRecord treatmentRecord = new TreatmentRecord();
-      treatmentRecord.setRegisteredId(registeredId);
-      setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
-      log.info("=============开始插入中间表就诊记录(更新挂号)=============={}", treatmentProcess);
-      mapper.insertSelective(treatmentProcess);
-    }
-
-    /*if (null != registered) {
+    if (null != registered) {
       BaseTreatmentProcess treatmentProcess = mapper.selectOneByRegisteredId(registeredId);
       if (registered.getInservice()) {
         if (treatmentProcess != null) {
@@ -273,7 +262,7 @@ public class BaseTreatmentProcessBiz
           treatmentProcess.setRegisteredTime(null);
           treatmentProcess.setTreatStatus(null);
           treatmentProcess.setRegisteredDate(null);
-          mapper.updateRegisteredValueByAppointmentId(treatmentProcess.getAppointmentId());
+          //mapper.updateRegisteredValueByAppointmentId(treatmentProcess.getAppointmentId());
           mapper.updateByRegisteredId(registeredId, treatmentProcess);
         } else {
           mapper.deleteByRegisteredId(registeredId);
@@ -281,7 +270,7 @@ public class BaseTreatmentProcessBiz
       }
     } else {
       mapper.deleteByRegisteredId(registeredId);
-    }*/
+    }
   }
 
   /**
