@@ -193,6 +193,7 @@
         bb.bill_id
         FROM base_bill bb
         <where>
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
@@ -227,6 +228,7 @@
         SELECT bb.bill_id
         FROM base_bill bb
         <where>
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
@@ -587,6 +589,7 @@
         bb.bill_id
         FROM base_bill bb
         <where>
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
@@ -621,6 +624,7 @@
         SELECT bb.bill_id
         FROM base_bill bb
         <where>
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
@@ -829,6 +833,7 @@
         FROM
         (
         SELECT
+        br.org_id,
         br.refund_date,
         brd.refund_amount,
         bbd.executor_id
