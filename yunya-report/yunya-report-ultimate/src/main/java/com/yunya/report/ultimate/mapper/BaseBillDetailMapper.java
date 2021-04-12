@@ -280,7 +280,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param billIds 订单ID列表
    * @return BigDecimal
    */
-  List<BillRecordWorkloadVO> selectBillTotalWorkload(@Param("billIds") Set<Integer> billIds);
+  List<BillRecordWorkloadVO> selectBillTotalWorkload(@Param("billIds") Collection<Integer> billIds);
 
   /**
    * 根据订单ID列表查询非工作量总和
@@ -331,4 +331,17 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<BillItemTollAndWorkloadVO> selectTariffWorkloadInfo(
       @Param("query") BillItemTollAndWorkloadQuery query);
+
+  /**
+   * 统计每组开单项目的数量
+   * @param query
+   * @param column
+   * @return
+   */
+  List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(@Param("query") ClinicPerformanceBusinessQuery query,
+                                                            @Param("column") String column);
+
+  List<MonthCategoryVO> monthCategoryList(@Param("query") ClinicPerformanceBusinessQuery query, @Param("cur") Integer cur);
+
+  List<NonMonthCategoryVO> nonMonthCategoryList(@Param("query") ClinicPerformanceBusinessQuery query);
 }
