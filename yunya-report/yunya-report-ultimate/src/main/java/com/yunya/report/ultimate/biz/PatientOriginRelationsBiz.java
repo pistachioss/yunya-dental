@@ -2,7 +2,6 @@ package com.yunya.report.ultimate.biz;
 
 import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
 import com.yunya.feign.patient_central.domain.query.ReceiverkLoadQuery;
-import com.yunya.feign.patient_central.domain.vo.web.BaseBillDetailBizVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientOriginEmployeeVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedTotalWorkloadVo;
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
@@ -14,7 +13,7 @@ import com.yunya.models.report.BaseBillPay;
 import com.yunya.models.report.BasePatientOriginLog;
 import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +21,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +48,10 @@ public class PatientOriginRelationsBiz
 
   @Resource private BaseBillDetailMapper baseBillDetailMapper;
 
+  @Resource private PatientOriginActivityRelationsBiz activityRelationsBiz;
+
+
+
   /**
    * 员工推荐信息列表
    *
@@ -60,7 +64,7 @@ public class PatientOriginRelationsBiz
 
 
   /**
-   * 组合返回集
+   * 组装返回集合
    *
    * @param query 条件
    * @return 推荐人推荐信息
@@ -69,19 +73,22 @@ public class PatientOriginRelationsBiz
       PatientOriginEmployeeQuery query) {
     // 查询推荐人信息以及推荐数量
     List<PatientOriginEmployeeVo> patientOriginEmployeeVoList = mapper.findEmployeeVoLists(query);
-    // 查询所有符合条件的订单号
-    List<BillIdVo> billIdList = baseBillMapper.findBillIdList(query);
-    if (patientOriginEmployeeVoList != null) {
-      // 获取已收工作量合计
-      getReceivedTotalWorkload(patientOriginEmployeeVoList, query, true,billIdList);
-      // 获取其中免单支付工作量合计
-      getReceivedTotalWorkload(patientOriginEmployeeVoList, query, false,billIdList);
-      // 获取退费金额合计
-      getTotalRefundAmount(patientOriginEmployeeVoList, query);
-      // 获取补入工作量合计
-      getMakeUpWorkload(patientOriginEmployeeVoList, query);
+    if (!StringHelper.isEmpty(patientOriginEmployeeVoList)) {
+      // 查询所有符合条件的订单号
+      List<BillIdVo> billIdList = baseBillMapper.findBillIdList(query, patientOriginEmployeeVoList);
+      if (patientOriginEmployeeVoList != null) {
+        // 获取已收工作量合计
+        getReceivedTotalWorkload(patientOriginEmployeeVoList, query, true, billIdList);
+        // 获取其中免单支付工作量合计
+        getReceivedTotalWorkload(patientOriginEmployeeVoList, query, false, billIdList);
+        // 获取退费金额合计
+        getTotalRefundAmount(patientOriginEmployeeVoList, query);
+        // 获取补入工作量合计
+        getMakeUpWorkload(patientOriginEmployeeVoList, query);
+      }
+      return patientOriginEmployeeVoList;
     }
-    return patientOriginEmployeeVoList;
+    return null;
   }
 
   /**
@@ -95,7 +102,7 @@ public class PatientOriginRelationsBiz
     for (PatientOriginEmployeeVo patientOriginEmployee : patientOriginEmployeeVoList) {
       BigDecimal makeUpWorkload =
           baseBillDetailMapper.findMakeUpWorkload(
-              patientOriginEmployee.getOriginId(), query.getStartDate(), query.getEndDate());
+              patientOriginEmployee.getOriginId(), query.getStartDate(), query.getEndDate(), 1);
       if (makeUpWorkload == null) {
         patientOriginEmployee.setMakeUpWorkload(new BigDecimal(0));
       } else {
@@ -114,7 +121,7 @@ public class PatientOriginRelationsBiz
       List<PatientOriginEmployeeVo> patientOriginEmployeeVoList, PatientOriginEmployeeQuery query) {
     if (patientOriginEmployeeVoList != null) {
       for (PatientOriginEmployeeVo patientOriginEmployeeVo : patientOriginEmployeeVoList) {
-        BigDecimal totalRefundAmount = baseRefundMapper.findRefundAmount(patientOriginEmployeeVo.getOriginId(), query.getStartDate(), query.getEndDate());
+        BigDecimal totalRefundAmount = baseRefundMapper.findRefundAmount(patientOriginEmployeeVo.getOriginId(), query.getStartDate(), query.getEndDate(), 1);
         if (totalRefundAmount != null) {
           patientOriginEmployeeVo.setTotalRefundAmount(totalRefundAmount);
         }
@@ -134,7 +141,7 @@ public class PatientOriginRelationsBiz
     if (patientOriginEmployeeVoList.size() > 0) {
       for (PatientOriginEmployeeVo patientOriginEmployeeVo : patientOriginEmployeeVoList) {
           // 根据推荐人id获取订单号集合
-          List<Integer> billIds = getBillId(patientOriginEmployeeVo.getOriginId(),BillIdVoList);
+          List<Integer> billIds = getBillIds(patientOriginEmployeeVo.getOriginId(),BillIdVoList);
           if (billIds != null && billIds.size() > 0){
             // 根据订单id获取订单明细
             List<ReceivedTotalWorkloadVo> receivedTotalWorkloadVoList = mapper.findReceivedTotalWorkload(billIds);
@@ -150,9 +157,9 @@ public class PatientOriginRelationsBiz
                     }
                     // 判断是全部工作量 还是 免单支付工作量
                     if (type) {
-                      patientOriginEmployeeVo.setReceivedTotalWorkload(patientOriginEmployeeVo.getReceivedTotalWorkload().add(multiply));
+                      patientOriginEmployeeVo.setReceivedTotalWorkload(patientOriginEmployeeVo.getReceivedTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
                     } else {
-                      patientOriginEmployeeVo.setFreeTotalWorkload(patientOriginEmployeeVo.getFreeTotalWorkload().add(multiply));
+                      patientOriginEmployeeVo.setFreeTotalWorkload(patientOriginEmployeeVo.getFreeTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
                     }
                   }
                 }
@@ -169,7 +176,7 @@ public class PatientOriginRelationsBiz
    * @param BillIdVoList 订单id
    * @return id集合
    */
-  public List<Integer> getBillId(Integer originId,List<BillIdVo> BillIdVoList){
+  public List<Integer> getBillIds(Integer originId,List<BillIdVo> BillIdVoList){
     List<Integer> BillIdList = new ArrayList<>();
     if (originId != null && BillIdVoList != null){
       for (BillIdVo billIdVo : BillIdVoList ) {
@@ -188,7 +195,6 @@ public class PatientOriginRelationsBiz
    * @return 订单支付记录 key订单号 v订单支付记录集合
    */
   private Map<Integer, List<BaseBillPay>> getBaseBillPayInfoMap(PatientOriginEmployeeQuery query, Boolean type,List<BillIdVo> billIdList) {
-    List<BaseBillPay> baseBillPayVo = null;
     List<BaseBillPay> baseBillPayList;
     Map<Integer, List<BaseBillPay>> billPayMap = new HashMap<>();
     if (type) {
@@ -196,13 +202,14 @@ public class PatientOriginRelationsBiz
       baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(), query.getEndDate(), null);
     } else {
       // 其中免单支付工作量合计
-      List<Integer> typeList = new ArrayList<Integer>() {{ add(23);add(26); }};
-      baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(), query.getEndDate(), typeList);
+      List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
+      baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(), query.getEndDate(), itemIds);
     }
+    // k 订单id v 订单记录
     for (BillIdVo billIdVo : billIdList) {
+      List<BaseBillPay> baseBillPayVo = new ArrayList<>();
       for (BaseBillPay baseBillPay : baseBillPayList) {
-        if (billIdVo.getBillId().equals(baseBillPay.getBillId())) {
-          baseBillPayVo = new ArrayList<>();
+        if (baseBillPay.getBillId().equals(billIdVo.getBillId())) {
           baseBillPayVo.add(baseBillPay);
         }
       }
@@ -234,17 +241,17 @@ public class PatientOriginRelationsBiz
    * @param query 条件
    * @return 已收工作量明细列表分页列表信息
    */
-  public List<ReceivedWorkloadDetailsVo> findEreceiverkLoad(ReceiverkLoadQuery query) {
+  public List<ReceivedWorkloadDetailsVo> findEreceiverkLoad(ReceiverkLoadQuery query) throws ParseException {
     // 1.已收 2.免单 3.退费 4.补入
     switch (query.getType()) {
       case 1:
-        return receivedDetail(query, true);
+        return receivedDetail(query, true,1);
       case 2:
-        return receivedDetail(query, false);
+        return receivedDetail(query, false,1);
       case 3:
-        return refundDetail(query);
+        return refundDetail(query,1);
       case 4:
-        return makeUpDetail(query);
+        return makeUpDetail(query,1);
       default:
         break;
     }
@@ -257,10 +264,14 @@ public class PatientOriginRelationsBiz
    * @param query 条件
    * @return 补入工作量明细
    */
-  private List<ReceivedWorkloadDetailsVo> makeUpDetail(ReceiverkLoadQuery query) {
+  private List<ReceivedWorkloadDetailsVo> makeUpDetail(ReceiverkLoadQuery query,Integer originType) throws ParseException {
     List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList =
-        baseBillMapper.selectMakeUpDetail(query);
+        baseBillMapper.selectMakeUpDetail(query,originType);
     if (receivedWorkloadDetailsVoList != null) {
+      for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo : receivedWorkloadDetailsVoList) {
+        // 判断关联时间是否大于初诊时间
+        receivedWorkloadDetailsVo.setIsChange(activityRelationsBiz.getIsChange(receivedWorkloadDetailsVo));
+      }
       return receivedWorkloadDetailsVoList;
     }
     return null;
@@ -272,14 +283,18 @@ public class PatientOriginRelationsBiz
    * @param query 条件
    * @return 退费金额明细
    */
-  private List<ReceivedWorkloadDetailsVo> refundDetail(ReceiverkLoadQuery query) {
+  private List<ReceivedWorkloadDetailsVo> refundDetail(ReceiverkLoadQuery query,Integer originType) throws ParseException {
     List<ReceivedWorkloadDetailsVo> refundDetailList = new ArrayList<>();
-    List<Integer> refundIdList = baseRefundMapper.selectfundBillIdList(query);
+    List<Integer> refundIdList = baseRefundMapper.selectFundBillIdList(query);
     if (refundIdList != null) {
       for (Integer refundId : refundIdList) {
         List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList =
-            baseRefundMapper.selectrefundDetail(refundId, query.getOriginId());
+            baseRefundMapper.selectRefundDetail(refundId, query.getOriginId(), originType);
         if (receivedWorkloadDetailsVoList != null) {
+          for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo :receivedWorkloadDetailsVoList ) {
+            // 判断关联时间是否大于初诊时间
+            receivedWorkloadDetailsVo.setIsChange(activityRelationsBiz.getIsChange(receivedWorkloadDetailsVo));
+          }
           refundDetailList.addAll(receivedWorkloadDetailsVoList);
         }
       }
@@ -295,16 +310,16 @@ public class PatientOriginRelationsBiz
    * @return 明细
    */
   public List<ReceivedWorkloadDetailsVo> receivedDetail(
-      ReceiverkLoadQuery query, Boolean isFreePayment) {
+      ReceiverkLoadQuery query, Boolean isFreePayment,Integer originType) throws ParseException {
     List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsListVo = new ArrayList<>();
     List<Integer> baseBillIdList;
     if (isFreePayment) {
       // 订单id List
-      baseBillIdList = baseBillMapper.findBaseBillIdList(query, null);
+      baseBillIdList = baseBillMapper.findBaseBillIdList(query, null,originType);
     } else {
       // 其中免单支付 订单id List
-      List<Integer> typeList = new ArrayList<Integer>() {{ add(23);add(26); }};
-      baseBillIdList = baseBillMapper.findBaseBillIdList(query, typeList);
+      List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
+      baseBillIdList = baseBillMapper.findBaseBillIdList(query, itemIds,originType);
     }
     if (baseBillIdList != null) {
       List<BaseBillPay> baseBillPayList;
@@ -313,9 +328,10 @@ public class PatientOriginRelationsBiz
         baseBillPayList = baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, null);
       } else {
         // 查询免单支付方式
-        List<Integer> typeList = new ArrayList<Integer>() {{ add(23);add(26); }};
+        List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
+        // 其中
         baseBillPayList =
-            baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, typeList);
+            baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, itemIds);
       }
       Map<Integer, List<BaseBillPay>> baseBillPayMap = getBaseBillPayList(baseBillIdList,baseBillPayList);
       // 订单支付明细
@@ -324,15 +340,19 @@ public class PatientOriginRelationsBiz
         List<ReceivedWorkloadDetailsVo> baseBillDetailBizVos = baseBillDetailMapper.selectEreceiverkLoad(billId, query.getOriginId());
         if (baseBillDetailBizVos != null) {
           for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo : baseBillDetailBizVos) {
+            // 判断推荐时间是否大于初诊时间
+            receivedWorkloadDetailsVo.setIsChange(activityRelationsBiz.getIsChange(receivedWorkloadDetailsVo));
             // 通过项目订单id 获取订单支付记录
             List<BaseBillPay> billPayList = baseBillPayMap.get(receivedWorkloadDetailsVo.getBillId());
             if (StringHelper.isNotNull(billPayList)){
               // 循环乘以订单记录中本次支付金额
               for (BaseBillPay baseBillPay: billPayList) {
+                ReceivedWorkloadDetailsVo receivedWorkloadDetails = new ReceivedWorkloadDetailsVo();
+                BeanUtils.copyProperties(receivedWorkloadDetailsVo,receivedWorkloadDetails);
                 BigDecimal multiply = receivedWorkloadDetailsVo.getWorkload().multiply(baseBillPay.getReceivedAmount());
-                receivedWorkloadDetailsVo.setWorkload(multiply.setScale(1, BigDecimal.ROUND_HALF_UP));
+                receivedWorkloadDetails.setWorkload(multiply.setScale(1, BigDecimal.ROUND_HALF_UP));
                 // 加入到结果返回集合中
-                receivedWorkloadDetailsListVo.add(receivedWorkloadDetailsVo);
+                receivedWorkloadDetailsListVo.add(receivedWorkloadDetails);
               }
             }
           }
@@ -349,13 +369,13 @@ public class PatientOriginRelationsBiz
    * @return map key订单id v订单支付记录
    */
   public Map<Integer,List<BaseBillPay>> getBaseBillPayList(List<Integer> baseBillIdList,List<BaseBillPay> baseBillPayList){
+
     Map<Integer,List<BaseBillPay>> map = new HashMap();
-    List<BaseBillPay> baseBillPayVoList = null;
     if (baseBillIdList != null && baseBillPayList != null){
       for (Integer billId : baseBillIdList) {
+        List<BaseBillPay> baseBillPayVoList = new ArrayList<>();
         for (BaseBillPay baseBillPay: baseBillPayList) {
             if (billId.equals(baseBillPay.getBillId())){
-              baseBillPayVoList = new ArrayList<>();
               baseBillPayVoList.add(baseBillPay);
             }
         }

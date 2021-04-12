@@ -142,7 +142,7 @@
             LEFT JOIN base_employee be ON be.user_id=bbp.payee_user_id
             LEFT JOIN base_treatment_process btp ON btp.treatment_id=bb.treatment_id
             LEFT JOIN base_employee emp ON emp.user_id=btp.registered_dentist_id
-            LEFT JOIN base_organization bo ON bo.org_id=bbp.org_id
+            LEFT JOIN base_organization bo ON bo.org_id=bb.org_id
             LEFT JOIN base_patient bp ON bp.patient_id=bb.patient_id
             <where>
                 <if test="query.accountType==null or query.accountType==0">
@@ -152,7 +152,7 @@
                     bbpd.account_item_id = #{query.accountType}
                 </if>
                 <if test="query.orgIds!=null and query.orgIds.size()>0">
-                    and bbp.org_id in
+                    and bb.org_id in
                     <foreach item="item" index="index" collection="query.orgIds" open="(" separator="," close=")">
                         #{item}
                     </foreach>
@@ -193,16 +193,16 @@
                 group by order_id,remark,authorized_id,patient_id
             ) bbf
             LEFT JOIN base_bill bb ON bb.bill_id=bbf.bill_id
-            LEFT JOIN base_bill_pay bbp ON bbp.bill_id=bbf.bill_id
+            LEFT JOIN base_bill_pay bbp ON (bbp.bill_id = bbf.bill_id AND TIMESTAMPDIFF(SECOND,bb.privilege_date, bbp.payee_date)&lt;=5)
             LEFT JOIN base_employee be ON be.user_id=bbp.payee_user_id
             LEFT JOIN base_treatment_process btp ON btp.treatment_id=bb.treatment_id
             LEFT JOIN base_employee emp ON emp.user_id=btp.registered_dentist_id
             LEFT JOIN base_employee bep ON bep.user_id=bbf.authorized_id
-            LEFT JOIN base_organization bo ON bo.org_id=bbp.org_id
+            LEFT JOIN base_organization bo ON bo.org_id=bb.org_id
             LEFT JOIN base_patient bp ON bp.patient_id=bbf.patient_id
             <where>
                 <if test="query.orgIds!=null and query.orgIds.size()>0">
-                    and bbp.org_id in
+                    and bb.org_id in
                     <foreach item="item" index="index" collection="query.orgIds" open="(" separator="," close=")">
                         #{item}
                     </foreach>
@@ -219,5 +219,30 @@
             </where>
         ) t
         order by t.payeeDate desc,t.billNum desc
+    </select>
+
+    <select id="sumPayDetailListByPayeeDate" resultType="com.yunya.feign.report.domain.vo.BaseBillPayDetailVO">
+        select
+        t.bill_id as billId,
+        IFNULL(SUM(t.principal_amount), 0) AS principalAmount,
+        bbp.payee_date AS cardNum,
+        from base_bill_pay_detail t
+        left join base_bill_pay bbp on bbp.bill_pay_id=t.bill_pay_id
+        <where>
+            t.type = 2
+            <if test="payIds!=null and payIds.size()>0">
+                and t.account_item_id in
+                <foreach item="item" index="index" collection="payIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="billIds!=null and billIds.size()>0">
+                and t.bill_id in
+                <foreach item="item" index="index" collection="billIds" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by t.bill_id
     </select>
 </mapper>

@@ -484,7 +484,7 @@
         INNER JOIN base_bill bb ON bbp.org_id = bb.org_id
         AND bbp.bill_id = bb.bill_id
         AND bbp.payee_date = bb.bill_date
-        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        LEFT JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
         INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
         <where>
             <if test="query.orgId != null">
@@ -535,7 +535,7 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
-        ORDER BY bbp.payeeDate, bbp.billNum DESC
+        ORDER BY bbp.payeeDate DESC, bbp.billNum DESC
     </select>
 
     <!-- 根据条件查询账单收欠费（本月账单本月非首次收费）详情信息列表 -->
@@ -655,7 +655,7 @@
         ) bb ON bbp.org_id = bb.org_id
         AND bbp.bill_id = bb.bill_id
         AND bbp.payee_date != bb.bill_date
-        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        LEFT JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
         INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
         <where>
             <if test="query.orgId != null">
@@ -706,7 +706,7 @@
                 AND bbp.payeeDate &lt;= #{query.chargeEndDate}
             </if>
         </where>
-        ORDER BY bbp.payeeDate, bbp.billNum DESC
+        ORDER BY bbp.payeeDate DESC, bbp.billNum DESC
     </select>
 
     <!-- 根据条件查询账单收欠费（非本月账单本月非首次收费）详情信息列表 -->
@@ -817,7 +817,7 @@
         ) bb ON bbp.org_id = bb.org_id
         AND bbp.bill_id = bb.bill_id
         AND bbp.payee_date != bb.bill_date
-        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        LEFT JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
         INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
         <where>
             <if test="query.orgId != null">
@@ -988,7 +988,7 @@
             </if>
         </where>
         ) bb ON bbp.bill_id = bb.bill_id
-        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        LEFT JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
         INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
         <where>
             <if test="query.orgId != null">
@@ -1150,7 +1150,7 @@
             </if>
         </where>
         ) bb ON bbp.bill_id = bb.bill_id
-        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        LEFT JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
         INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
         <where>
             <if test="query.orgId != null">
@@ -1321,7 +1321,7 @@
             </if>
         </where>
         ) bb ON bbp.bill_id = bb.bill_id
-        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        LEFT JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
         INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
         <where>
             <if test="query.orgId != null">
@@ -1483,7 +1483,7 @@
             </if>
         </where>
         ) bb ON bbp.bill_id = bb.bill_id
-        INNER JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
+        LEFT JOIN base_treatment_process btp ON bbp.treatment_id = btp.treatment_id
         INNER JOIN base_employee be ON bbp.payee_user_id = be.user_id
         <where>
             <if test="query.orgId != null">
@@ -1776,8 +1776,24 @@
         bb.actual_amount AS actualAmount
         FROM
         base_bill_pay bbp
-        INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
-        AND bb.bill_date IS NOT NULL
+        INNER JOIN (
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date,
+        bb.actual_amount
+        FROM
+        base_bill bb
+        <where>
+            AND bb.bill_date IS NOT NULL
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                AND bb.org_id IN
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ) bb ON bbp.bill_id = bb.bill_id
         <where>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -1804,17 +1820,7 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        bbp.bill_pay_id
         ) bbp
-        <where>
-            <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND bbp.billOrgId IN
-                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
     </select>
     <!-- 根据条件查询账单首次收费收费记录ID列表 -->
     <select id="selectBillFirstPayIdList" resultType="com.yunya.feign.report.domain.vo.BillIdAndBillPayIdVO">
@@ -1958,13 +1964,13 @@
 
     <!-- 查询订单支付记录 -->
     <select id="findBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
-        select bbp.* from base_bill_pay bbp
+        select DISTINCT bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount receivedAmount from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
-        <if test="typeList != null">
-            and bbpd.type in
-            <foreach collection="typeList" item="type" open="(" separator="," close=")">
-                #{type}
+        <if test="itemIds != null">
+            and bbpd.account_item_id in
+            <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
+                #{itemId}
             </foreach>
         </if>
 
@@ -1972,26 +1978,26 @@
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="endDate != null" >
+        <if test="endDate != null">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{endDate}, '%Y-%m-%d' )
         </if>
 
         <if test="billIdList != null and billIdList.size() > 0 ">
             and bbpd.bill_id in
             <foreach collection="billIdList" item="BillIdVo" open="(" separator="," close=")">
-                 #{BillIdVo.billId}
+                #{BillIdVo.billId}
             </foreach>
         </if>
     </select>
 
     <!-- 根据订单id查询支付记录 -->
     <select id="selectBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
-        select bbp.* from base_bill_pay bbp
+        select DISTINCT bbpd.bill_pay_detail_record_id billPayDetailRecordId,bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount receivedAmount from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
         <if test=" billIdList != null and billIdList.size() > 0">
             and bbp.bill_id in
-            <foreach collection="billIdList" item="billId" open="(" separator="," close=")" >
+            <foreach collection="billIdList" item="billId" open="(" separator="," close=")">
                 #{billId}
             </foreach>
         </if>
@@ -2000,14 +2006,14 @@
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
+        <if test="query.endDate != null">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="typeList != null and typeList.size() > 0">
-            and bbpd.type in
-            <foreach collection="typeList" item="type" open="(" separator="," close=")">
-                #{type}
+        <if test="itemIds != null and itemIds.size() > 0">
+            and bbpd.account_item_id in
+            <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
+                #{itemId}
             </foreach>
         </if>
     </select>

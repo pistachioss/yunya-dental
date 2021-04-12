@@ -23,7 +23,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TR
 public class DateUtil {
   /** 最大秒*/
   public static final int MAX_SECOND = 59;
-  private static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
+  private final static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
 
   private DateUtil() {}
 
@@ -483,8 +483,7 @@ public class DateUtil {
    * @return 日期字符串
    */
   public static String format(Date date, String pattern) {
-    SDF = new SimpleDateFormat(pattern);
-    return SDF.format(date);
+    return new SimpleDateFormat(pattern).format(date);
   }
 
   /**
@@ -496,8 +495,7 @@ public class DateUtil {
    * @throws ParseException 解析异常
    */
   public static Date parse(String date, String pattern) throws ParseException {
-    SDF = new SimpleDateFormat(pattern);
-    return SDF.parse(date);
+    return new SimpleDateFormat(pattern).parse(date);
   }
 
   /**
@@ -546,5 +544,36 @@ public class DateUtil {
       e.printStackTrace();
     }
     return rs;
+  }
+
+
+  /**
+   * 上一年
+   *
+   * @param year
+   * @return
+   */
+  public static String preYear(String year) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+    Calendar c = Calendar.getInstance();
+    try {
+      c.setTime(sdf.parse(year));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    c.add(Calendar.YEAR, -1);
+    return sdf.format(c.getTime());
+  }
+
+  public static String preMonth(String month, int range) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+    Calendar c = Calendar.getInstance();
+    try {
+      c.setTime(sdf.parse(month));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    c.add(Calendar.MONTH, -range);
+    return sdf.format(c.getTime());
   }
 }

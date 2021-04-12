@@ -48,21 +48,24 @@ public class PatientOriginActivityController {
     @PostMapping(value = "/activityReferral",name = "公司端-市场营销-活动推荐列表")
     public ResponseResult<PageInfo<PatientOriginActivityVo>> activityReferral(@RequestBody PatientOriginActivityQuery query){
        List<PatientOriginActivityVo> patientOriginActivityVos = patientOriginActivityRelationsBiz.finleActivityReferral(query);
-       if (query.getWhetherPage()) {
-           Integer pageNum = query.getPageNum();
-           Integer pageSize = query.getPageSize();
-           int total = patientOriginActivityVos.size();
-           PageInfo<PatientOriginActivityVo> pageInfo = new PageInfo<>();
-           pageInfo.setPageNum(pageNum);
-           pageInfo.setPageSize(pageSize);
-           pageInfo.setTotal(total);
-           List<PatientOriginActivityVo> list =
-                   patientOriginActivityVos.subList(
-                           pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
-           pageInfo.setList(list);
-           return ResponseUtil.success(pageInfo);
+       if (!StringHelper.isEmpty(patientOriginActivityVos)){
+           if (query.getWhetherPage()) {
+               Integer pageNum = query.getPageNum();
+               Integer pageSize = query.getPageSize();
+               int total = patientOriginActivityVos.size();
+               PageInfo<PatientOriginActivityVo> pageInfo = new PageInfo<>();
+               pageInfo.setPageNum(pageNum);
+               pageInfo.setPageSize(pageSize);
+               pageInfo.setTotal(total);
+               List<PatientOriginActivityVo> list =
+                       patientOriginActivityVos.subList(
+                               pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+               pageInfo.setList(list);
+               return ResponseUtil.success(pageInfo);
+           }
+           return ResponseUtil.success(new PageInfo<>(patientOriginActivityVos));
        }
-       return ResponseUtil.success(new PageInfo<>(patientOriginActivityVos));
+       return ResponseUtil.success();
     }
 
     /**

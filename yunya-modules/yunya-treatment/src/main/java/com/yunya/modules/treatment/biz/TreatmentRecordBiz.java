@@ -166,7 +166,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     int i = mapper.insertSelective(entity);
     redisUtils.delete(treatingKey);
 
-    if (postType == 0) {
+   /* if (postType == 0) {
       AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
       matchingRecord.setOrgId(orgId);
       matchingRecord.setTreatmentRecordId(entity.getId());
@@ -176,7 +176,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       matchingRecord.setCrtId(userId);
       matchingRecord.setCrtName(name);
       assistantMatchingRecordMapper.insertSelective(matchingRecord);
-    }
+    }*/
 
     regResult.setStatus((byte) 1);
     regResult.setUpdId(userId);

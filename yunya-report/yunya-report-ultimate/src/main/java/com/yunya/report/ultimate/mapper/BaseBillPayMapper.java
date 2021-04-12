@@ -1,9 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.patient_central.domain.query.PatientOriginActivityQuery;
-import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
 import com.yunya.feign.patient_central.domain.query.ReceiverkLoadQuery;
-import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.query.BillPayRecordQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.StatementBillChargeDetailInfoQuery;
@@ -183,17 +180,17 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    * @param billIdList 账单id集合
    * @param startDate 开始时间
    * @param endDate 结束时间
-   * @param typeList 支付方式类型
+   * @param itemIds 支付方式类型
    * @return 账单支付记录集合
    */
-    List<BaseBillPay> findBaseBillPayInfoList(@Param("billIdList") List<BillIdVo> billIdList, @Param("startDate") String startDate,@Param("endDate") String endDate, @Param("typeList") List<Integer> typeList);
+    List<BaseBillPay> findBaseBillPayInfoList(@Param("billIdList") List<BillIdVo> billIdList, @Param("startDate") String startDate,@Param("endDate") String endDate, @Param("itemIds") List<Integer> itemIds);
 
   /**
    * 根据订单id查询支付记录
    * @param baseBillIdList 订单id集合
    * @param query 支付时间条件
-   * @param typeList 支付方式
+   * @param itemIds 支付方式
    * @return 支付记录
    */
-  List<BaseBillPay> selectBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query,@Param("typeList") List<Integer> typeList);
+  List<BaseBillPay> selectBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query,@Param("itemIds") List<Integer> itemIds);
 }

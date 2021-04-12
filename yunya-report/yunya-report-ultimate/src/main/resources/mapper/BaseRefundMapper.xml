@@ -659,6 +659,7 @@
                     JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
                 WHERE
                     log.origin_id = #{originId}
+                    AND log.origin_type = #{originType}
                     AND log.inservice = 1
             ) t ON br.patient_id = t.patient_id
         <if test="startDate != null">
@@ -719,9 +720,8 @@
             </if>
         </where>
     </select>
-
     <!-- 根据推荐人id 和 退费时间查询 退费id -->
-    <select id="selectfundBillIdList" resultType="java.lang.Integer">
+    <select id="selectFundBillIdList" resultType="java.lang.Integer">
         select br.refund_id from base_refund br join (
             SELECT DISTINCT
             log.patient_id
@@ -749,7 +749,7 @@
     </select>
 
     <!-- 查询退费项目明细 -->
-    <select id="selectrefundDetail"
+    <select id="selectRefundDetail"
             resultType="com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo">
         SELECT
 				bb.bill_id billId,
@@ -757,8 +757,8 @@
 				DATE_FORMAT( log.crt_time, '%Y-%m-%d %H:%i') relatedTime,
 				bp.`name`,
 				bp.mobile,
-				DATE_FORMAT( bp.first_visit_date, '%Y-%m-%d %H:%i') firstVisitDate,
-				DATE_FORMAT( bp.last_visit_date, '%Y-%m-%d %H:%i') lastVisitDate,
+				(select DATE_FORMAT(min(treat_start_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id = bb.patient_id and treat_start_time IS NOT NULL) firstVisitDate,
+				(select DATE_FORMAT(max(treat_end_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id = bb.patient_id and treat_start_time IS NOT NULL) lastVisitDate ,
 				DATE_FORMAT( bb.order_date, '%Y-%m-%d %H:%i') orderDate,
 				bo.abbreviation abbreviation,
 				be.employee_name employeeName,
@@ -775,6 +775,8 @@
                  left join base_tariff_info bti ON bti.item_id = bbd.item_id
         where brd.refund_id = #{refundId}
               and log.origin_id = #{originId}
+              and log.origin_type = #{originType}
+              and bti.item_type = bbd.item_type
     </select>
 
     <!-- 根据条件查询退费工作量 -->
