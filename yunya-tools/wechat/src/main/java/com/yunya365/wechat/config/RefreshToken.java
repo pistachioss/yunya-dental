@@ -1,19 +1,17 @@
 package com.yunya365.wechat.config;
 
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.stereotype.Component;
+import org.apache.commons.lang3.concurrent.*;
+import org.springframework.beans.factory.*;
 
-import javax.annotation.Resource;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import javax.annotation.*;
+import java.util.concurrent.*;
 
 /**
  * @description:
  * @author: xy
  * @date 2021/3/24 15:34
  **/
-@Component
+//@Component
 public class RefreshToken implements InitializingBean {
 
     @Resource

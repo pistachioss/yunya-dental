@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  * @author: xy
  * @date 2021/3/26 13:16
  **/
-@Configuration
+//@Configuration
 @Slf4j
 public class AccessTokenRunner{
     @Resource

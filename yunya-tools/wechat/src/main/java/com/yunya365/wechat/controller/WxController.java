@@ -1,7 +1,7 @@
 package com.yunya365.wechat.controller;
 
 import com.yunya.feign.wechat.domain.model.WxRegisterModel;
-import com.yunya.feign.wechat.domain.vo.WxAuthVo;
+import com.yunya.feign.wechat.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.wechat.service.impl.WXService;
@@ -46,8 +46,8 @@ public class WxController {
 
     @PostMapping(value = "/wxVip/vipInfo")
     @ApiOperation(value = "会员中心")
-    public ResponseResult vipInfo(@NotBlank @RequestParam(required = true) String openId) {
-//        wxService.register(openId, model);
-        return ResponseUtil.success();
+    public ResponseResult<WxVipInfo> vipInfo(@NotBlank @RequestParam(required = true) String openId) {
+        WxVipInfo wxVipInfo = wxService.vipInfo(openId);
+        return ResponseUtil.success(wxVipInfo);
     }
 }
