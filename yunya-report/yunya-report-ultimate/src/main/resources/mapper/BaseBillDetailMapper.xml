@@ -3250,13 +3250,31 @@
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
-            <if test="query.startDate != null and query.startDate != ''">
-                and DATE_FORMAT(bb.privilege_date, '%Y-%m') = #{query.startDate}
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
             </if>
-            <if test="query.endDate != null and query.endDate != ''">
-                and DATE_FORMAT(bb.privilege_date, '%Y') = #{query.endDate}
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
             </if>
         </where>
-        group by bb.privilege_org_id, bb.first_privilege
+        group by bb.org_id, bb.privilege_org_id, bb.first_privilege
     </select>
 </mapper>
