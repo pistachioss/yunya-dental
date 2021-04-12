@@ -207,8 +207,7 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     AnalysisVo analysisVo = new AnalysisVo();
     // 来源类型比例
     Integer countOriginType = mapper.selectCountOriginType(form);
-    List<AnalysisPatientOriginVo> analysisPatientOriginVoList =
-        mapper.analysis(form, countOriginType);
+    List<AnalysisPatientOriginVo> analysisPatientOriginVoList = mapper.analysis(form, countOriginType);
     if (StringHelper.isNotEmpty(analysisPatientOriginVoList)) {
       analysisVo.setAnalysisPatientOriginVoList(analysisPatientOriginVoList);
     }
