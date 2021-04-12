@@ -2107,6 +2107,14 @@
             <if test="query.billNum != null and query.billNum != ''">
                 and bb.bill_num like concat('', #{query.billNum} ,'%')
             </if>
+            <if test="query.queryDate != null and query.queryDate!= ''">
+                <if test="query.dateType == 0">
+                    and DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.queryDate}
+                </if>
+                <if test="query.dateType == 1">
+                    and DATE_FORMAT(bbp.payee_date, '%Y') = #{query.queryDate}
+                </if>
+            </if>
             <if test="query.billDate != null and query.billDate != ''">
                 and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') = #{query.billDate}
             </if>
