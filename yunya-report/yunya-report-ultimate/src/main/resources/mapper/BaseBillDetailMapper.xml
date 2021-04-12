@@ -832,7 +832,6 @@
         FROM
         (
         SELECT
-        br.org_id,
         br.refund_date,
         brd.refund_amount,
         bbd.executor_id
@@ -858,12 +857,10 @@
             </if>
         </where>
         GROUP BY
-        brd.org_id,
         brd.executor_id
         ) brd ON bup.user_id = brd.executor_id
         LEFT JOIN (
         SELECT
-        ewc.org_id,
         SUM( ewc.processing_fee ) AS processingFee,
         SUM( ewc.orthodontics_fee ) AS orthodonticsFee,
         SUM( ewc.base_workload ) AS baseWorkload,
@@ -887,8 +884,7 @@
             </if>
         </where>
         GROUP BY
-        ewc.user_id,
-        ewc.org_id
+        ewc.user_id
         ) ewc ON bup.user_id = ewc.user_id
         ) bup
         ORDER BY
