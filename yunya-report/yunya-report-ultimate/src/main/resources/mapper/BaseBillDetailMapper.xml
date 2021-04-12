@@ -2398,9 +2398,9 @@
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
-            <if test="billIds!=null and billIds.size()>0">
+            <if test="query.billIds!=null and query.billIds.size()>0">
                 and bbd.bill_id in
-                <foreach collection="billIds" item="item" open="(" separator="," close=")">
+                <foreach collection="query.billIds" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
@@ -3091,15 +3091,7 @@
         group by bbpd.bill_pay_id
         ) bbpd on bbp.bill_pay_id = bbpd.bill_pay_id
         <where>
-            bbd.executor_id > 0
-            <if test="query.orgId != null">
-                and bbd.org_id = #{query.orgId}
-            </if>
-        </where>
-        GROUP BY bbd.bill_id
-        ) bbd ON bbp.bill_id = bbd.bill_id
-        <where>
-            AND bbp.received_amount > 0
+            bbpd.freePayAmount > 0
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
             </if>
@@ -3107,16 +3099,18 @@
                 and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &lt;= #{query.endDate}
             </if>
         </where>
-        ) bbp ON bbpd.bill_pay_id = bbp.bill_pay_id
-        WHERE bbpd.account_item_id IN (23, 26)
-        GROUP BY bbpd.bill_pay_id
         ) bbp
         INNER JOIN (
         SELECT bbd.bill_id,
-        bbd.executor_id,
+        bbd.executor_id as executorId,
         bbd.item_type as itemType,
         bbd.item_id as itemId,
-        SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS itemWorkload
+        SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS itemWorkload,
+        bbd1.billTotalWorkload
+        FROM base_bill_detail bbd
+        INNER JOIN (
+        SELECT bbd.bill_id,
+        SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS billTotalWorkload
         FROM base_bill_detail bbd
         <where>
             bbd.executor_id > 0
@@ -3124,10 +3118,17 @@
                 and bbd.org_id = #{query.orgId}
             </if>
         </where>
-        GROUP BY bbd.bill_id,
-        bbd.executor_id
-        ) bbd ON bbp.bill_id = bbd.bill_id
-        ) bbd
+        GROUP BY bbd.bill_id
+        ) bbd1
+        ON bbd.bill_id = bbd1.bill_id
+        <where>
+            bbd.executor_id > 0
+            <if test="query.orgId != null">
+                and bbd.org_id = #{query.orgId}
+            </if>
+        </where>
+        GROUP BY bbd.bill_detail_id, bbd.executor_id
+        ) bbd ON bbp.bill_id = bbd.bill_id) bbd
         GROUP BY bbd.executorId, bbd.itemType, bbd.itemId
         ) bbd1 on bet.user_id = bbd1.executorId and bet.item_id = bbd1.itemId and bet.item_type = bbd1.itemType
         LEFT JOIN (
