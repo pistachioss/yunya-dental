@@ -1354,6 +1354,25 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
+   * 根据条件导出项目收费及工作量明细列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportTariffPaymentWorkloadList(
+      HttpServletResponse response, BillItemTollAndWorkloadQuery query) throws IOException {
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "收费项目及工作量列表";
+    List<BillItemTollAndWorkloadVO> resultList = mapper.selectTariffWorkloadInfo(query);
+    ExcelUtil<BillItemTollAndWorkloadVO> excelUtil =
+        new ExcelUtil<>(BillItemTollAndWorkloadVO.class);
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    if (organization != null) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
+    excelUtil.exportExcel(response, resultList, "收费项目及工作量列表", fileName);
+  }
+
+  /**
    * 根据条件查询门诊补入工作量
    *
    * @param query 查询条件

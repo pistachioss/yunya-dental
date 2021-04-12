@@ -340,17 +340,7 @@
         bbd.billTotalWorkload
         FROM
         base_bill_pay bbp
-        INNER JOIN (
-        SELECT
-        bb.bill_id
-        FROM base_bill bb
-        <where>
-            AND bb.bill_date IS NOT NULL
-            <if test="query.orgId != null">
-                AND bb.org_id = #{query.orgId}
-            </if>
-        </where>
-        ) bb ON bbp.bill_id = bb.bill_id
+        INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
         INNER JOIN (
         SELECT
         bbd.bill_id,
@@ -378,6 +368,10 @@
                 </if>
             </if>
             AND bbp.received_amount > 0
+            AND bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id = #{query.orgId}
+            </if>
         </where>
         ) bbp ON bbpd.bill_pay_id = bbp.bill_pay_id
         WHERE
@@ -2967,6 +2961,7 @@
         be.employee_name,
         bti.category_id,
         bti.category_name,
+        bti.item_type,
         bti.item_id,
         bti.item_name,
         bti.item_num
@@ -2995,7 +2990,8 @@
         </where>
         ) bet
         LEFT JOIN (
-        select bbd.itemType,
+        select
+        bbd.itemType,
         bbd.itemId,
         bbd.executorId,
         CONVERT(
@@ -3048,7 +3044,7 @@
         </where>
         ) bbd on bbp.billId = bbd.billId) bbd
         group by bbd.itemType, bbd.itemId, bbd.executorId
-        ) bbd ON bet.user_id = bbd.executorId and bet.item_id = bbd.itemId
+        ) bbd ON bet.user_id = bbd.executorId and bet.item_id = bbd.itemId and bet.item_type = bbd.itemType
         left join (
         SELECT bbd.executorId,
         bbd.itemType,
@@ -3128,7 +3124,7 @@
         ) bbd ON bbp.bill_id = bbd.bill_id
         ) bbd
         GROUP BY bbd.executorId, bbd.itemType, bbd.itemId
-        ) bbd1 on bet.user_id = bbd1.executorId and bet.item_id = bbd1.itemId
+        ) bbd1 on bet.user_id = bbd1.executorId and bet.item_id = bbd1.itemId and bet.item_type = bbd1.itemType
         LEFT JOIN (
         select bbd.executorId,
         bbd.itemType,
@@ -3166,7 +3162,7 @@
         group by bbt.order_detail_id
         ) bbt on bbd.bill_detail_id = bbt.order_detail_id
         group by bbd.executorId, bbd.itemType, bbd.itemId, bbt.supplementWorkload
-        ) bbd2 ON bet.user_id = bbd2.executorId and bet.item_id = bbd2.itemId
+        ) bbd2 ON bet.user_id = bbd2.executorId and bet.item_id = bbd2.itemId and bet.item_type = bbd2.itemType
         left join (
         SELECT SUM(brd.refund_amount) AS refundWorkload,
         brd.executorId,
@@ -3198,7 +3194,7 @@
         ) brd
         WHERE brd.executorId > 0
         GROUP BY brd.executorId, brd.itemType, brd.itemId
-        ) brd on bet.user_id = brd.executorId and bet.item_id = brd.itemId
+        ) brd on bet.user_id = brd.executorId and bet.item_id = brd.itemId and bet.item_type = brd.itemType
     </select>
     <!-- 根据条件查询补入工作量列表 -->
     <select id="selectCouponWorkloadList" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
