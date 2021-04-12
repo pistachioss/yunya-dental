@@ -290,7 +290,7 @@ public class CompanyReportOfPersonnelController {
   @PostMapping(value = "/matching/statistics/list/export", name = "根据条件导出助手配诊统计列表")
   public ResponseResult<T> exportEmployeeTreatMatchingStatisticsList(
       HttpServletResponse response, @RequestBody @Validated EmployeeMatchingRecordQuery query)
-      throws IOException {
+          throws IOException, InterruptedException {
     baseUserPostBiz.exportEmployeeMatchingStatisticsList(response, query);
     return ResponseUtil.success(null);
   }
