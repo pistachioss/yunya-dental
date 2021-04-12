@@ -3063,7 +3063,7 @@
         group by bbpd.bill_pay_id
         ) bbpd on bbp.bill_pay_id = bbpd.bill_pay_id
         <where>
-            bbpd.freePayAmount > 0
+            bbp.received_amount > 0
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
             </if>
