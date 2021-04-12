@@ -215,12 +215,14 @@
         bbd.executor_id
         ) bbd ON bup.user_id = bbd.executor_id
         LEFT JOIN (
-        select bbd.executorId,
-        sum(bbt.supplementWorkload) as supplementWorkload
-        from (
-        select bbd.bill_detail_id,
-        bbd.executor_id as executorId
-        from base_bill_detail bbd
+        SELECT
+        bbd.executor_id,
+        SUM(bbd.coupon_workload) AS supplementWorkload
+        FROM (
+        SELECT bbd.org_id,
+        bbd.executor_id,
+        bbd.coupon_workload
+        FROM base_bill_detail bbd
         INNER JOIN (
         SELECT bb.bill_id
         FROM base_bill bb
@@ -228,31 +230,22 @@
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
-            and bb.bill_date is not null
-        </where>
-        ) bb ON bbd.bill_id = bb.bill_id
-        ) bbd
-        inner join (
-        select bbt.order_detail_id,
-        sum(bci.workload_load) as supplementWorkload
-        from base_benefit bbt
-        inner join base_coupon_item bci on bbt.item_id = bci.item_id and bbt.coupon_id = bci.coupon_id
-        <where>
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bbt.use_date, '%Y-%m' ) = #{query.queryDate}
+                    and DATE_FORMAT( bb.privilege_date, '%Y-%m' ) = #{query.queryDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bbt.use_date, '%Y' ) = #{query.queryDate}
+                    and DATE_FORMAT( bb.privilege_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
         </where>
-        group by bbt.order_detail_id
-        ) bbt on bbd.bill_detail_id = bbt.order_detail_id
-        group by bbd.executorId
-        ) bbd1 ON bup.user_id = bbd1.executorId
+        ) bb ON bbd.bill_id = bb.bill_id
+        WHERE bbd.executor_id > 0
+        ) bbd
+        GROUP BY bbd.executor_id
+        ) bbd1 ON bup.user_id = bbd1.executor_id
         LEFT JOIN (
         SELECT
         bbd.executor_id,
@@ -618,12 +611,15 @@
         bbd.org_id,
         bbd.executor_id
         ) bbd ON bup.user_id = bbd.executor_id
-        LEFT JOIN (select bbd.executorId,
-        sum(bbt.supplementWorkload) as supplementWorkload
-        from (
-        select bbd.bill_detail_id,
-        bbd.executor_id as executorId
-        from base_bill_detail bbd
+        LEFT JOIN (
+        SELECT
+        bbd.executor_id,
+        SUM(bbd.coupon_workload) AS supplementWorkload
+        FROM (
+        SELECT bbd.org_id,
+        bbd.executor_id,
+        bbd.coupon_workload
+        FROM base_bill_detail bbd
         INNER JOIN (
         SELECT bb.bill_id
         FROM base_bill bb
@@ -631,31 +627,22 @@
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
-            and bb.bill_date is not null
-        </where>
-        ) bb ON bbd.bill_id = bb.bill_id
-        ) bbd
-        inner join (
-        select bbt.order_detail_id,
-        sum(bci.workload_load) as supplementWorkload
-        from base_benefit bbt
-        inner join base_coupon_item bci on bbt.item_id = bci.item_id and bbt.coupon_id = bci.coupon_id
-        <where>
             <if test="query.dateType == 0">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bbt.use_date, '%Y-%m' ) = #{query.queryDate}
+                    and DATE_FORMAT( bb.privilege_date, '%Y-%m' ) = #{query.queryDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bbt.use_date, '%Y' ) = #{query.queryDate}
+                    and DATE_FORMAT( bb.privilege_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
         </where>
-        group by bbt.order_detail_id
-        ) bbt on bbd.bill_detail_id = bbt.order_detail_id
-        group by bbd.executorId
-        ) bbd1 ON bup.user_id = bbd1.executorId
+        ) bb ON bbd.bill_id = bb.bill_id
+        WHERE bbd.executor_id > 0
+        ) bbd
+        GROUP BY bbd.executor_id
+        ) bbd1 ON bup.user_id = bbd1.executor_id
         LEFT JOIN (
         SELECT
         bbd.executor_id,
