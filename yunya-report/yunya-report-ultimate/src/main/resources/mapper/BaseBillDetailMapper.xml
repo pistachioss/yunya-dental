@@ -3098,7 +3098,7 @@
         group by bbpd.bill_pay_id
         ) bbpd on bbp.bill_pay_id = bbpd.bill_pay_id
         <where>
-            bbpd.freePayAmount > 0
+            bbp.received_amount > 0
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
             </if>
@@ -3174,7 +3174,7 @@
         </where>
         group by bbt.order_detail_id
         ) bbt on bbd.bill_detail_id = bbt.order_detail_id
-        group by bbd.executorId, bbd.itemType, bbd.itemId, bbt.supplementWorkload
+        group by bbd.executorId, bbd.itemType, bbd.itemId
         ) bbd2 ON bet.user_id = bbd2.executorId and bet.item_id = bbd2.itemId and bet.item_type = bbd2.itemType
         left join (
         SELECT SUM(brd.refund_amount) AS refundWorkload,
@@ -3208,6 +3208,10 @@
         WHERE brd.executorId > 0
         GROUP BY brd.executorId, brd.itemType, brd.itemId
         ) brd on bet.user_id = brd.executorId and bet.item_id = brd.itemId and bet.item_type = brd.itemType
+        ORDER BY bbd.receivedWorkload DESC,
+        bbd1.freePayWorkload DESC,
+        bbd2.supplementWorkload DESC,
+        brd.refundWorkload DESC
     </select>
     <!-- 根据条件查询补入工作量列表 -->
     <select id="selectCouponWorkloadList" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
