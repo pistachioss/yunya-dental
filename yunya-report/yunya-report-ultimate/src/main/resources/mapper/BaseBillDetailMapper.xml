@@ -2556,6 +2556,7 @@
             resultType="com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo">
                 select * from (
                 SELECT
+                DISTINCT
                     bb.bill_id billId,
                     bb.patient_id patientId,
                     DATE_FORMAT( t.crt_time, '%Y-%m-%d %H:%i') relatedTime,
