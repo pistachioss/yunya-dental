@@ -9,7 +9,6 @@ import com.yunya.feign.report.domain.vo.BillIdVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.report.BaseBillPay;
 import com.yunya.models.report.BasePatientOriginLog;
 import com.yunya.report.ultimate.mapper.*;
@@ -23,7 +22,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 简介:
@@ -100,7 +102,7 @@ public class PatientOriginRelationsBiz
     for (PatientOriginEmployeeVo patientOriginEmployee : patientOriginEmployeeVoList) {
       BigDecimal makeUpWorkload =
           baseBillDetailMapper.findMakeUpWorkload(
-              patientOriginEmployee.getOriginId(), query.getStartDate(), query.getEndDate(), 3);
+              patientOriginEmployee.getOriginId(), query.getStartDate(), query.getEndDate(), 1);
       if (makeUpWorkload == null) {
         patientOriginEmployee.setMakeUpWorkload(new BigDecimal(0));
       } else {
@@ -155,9 +157,9 @@ public class PatientOriginRelationsBiz
                     }
                     // 判断是全部工作量 还是 免单支付工作量
                     if (type) {
-                      patientOriginEmployeeVo.setReceivedTotalWorkload(patientOriginEmployeeVo.getReceivedTotalWorkload().add(multiply));
+                      patientOriginEmployeeVo.setReceivedTotalWorkload(patientOriginEmployeeVo.getReceivedTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
                     } else {
-                      patientOriginEmployeeVo.setFreeTotalWorkload(patientOriginEmployeeVo.getFreeTotalWorkload().add(multiply));
+                      patientOriginEmployeeVo.setFreeTotalWorkload(patientOriginEmployeeVo.getFreeTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
                     }
                   }
                 }
@@ -205,9 +207,8 @@ public class PatientOriginRelationsBiz
     }
     // k 订单id v 订单记录
     for (BillIdVo billIdVo : billIdList) {
-      List<BaseBillPay> baseBillPayVo = null;
+      List<BaseBillPay> baseBillPayVo = new ArrayList<>();
       for (BaseBillPay baseBillPay : baseBillPayList) {
-        baseBillPayVo = new ArrayList<>();
         if (baseBillPay.getBillId().equals(billIdVo.getBillId())) {
           baseBillPayVo.add(baseBillPay);
         }
@@ -284,11 +285,11 @@ public class PatientOriginRelationsBiz
    */
   private List<ReceivedWorkloadDetailsVo> refundDetail(ReceiverkLoadQuery query,Integer originType) throws ParseException {
     List<ReceivedWorkloadDetailsVo> refundDetailList = new ArrayList<>();
-    List<Integer> refundIdList = baseRefundMapper.selectfundBillIdList(query);
+    List<Integer> refundIdList = baseRefundMapper.selectFundBillIdList(query);
     if (refundIdList != null) {
       for (Integer refundId : refundIdList) {
         List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList =
-            baseRefundMapper.selectrefundDetail(refundId, query.getOriginId(), originType);
+            baseRefundMapper.selectRefundDetail(refundId, query.getOriginId(), originType);
         if (receivedWorkloadDetailsVoList != null) {
           for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo :receivedWorkloadDetailsVoList ) {
             // 判断关联时间是否大于初诊时间
@@ -328,6 +329,7 @@ public class PatientOriginRelationsBiz
       } else {
         // 查询免单支付方式
         List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
+        // 其中
         baseBillPayList =
             baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, itemIds);
       }
@@ -371,10 +373,9 @@ public class PatientOriginRelationsBiz
     Map<Integer,List<BaseBillPay>> map = new HashMap();
     if (baseBillIdList != null && baseBillPayList != null){
       for (Integer billId : baseBillIdList) {
-        List<BaseBillPay> baseBillPayVoList = null;
+        List<BaseBillPay> baseBillPayVoList = new ArrayList<>();
         for (BaseBillPay baseBillPay: baseBillPayList) {
             if (billId.equals(baseBillPay.getBillId())){
-              baseBillPayVoList = new ArrayList<>();
               baseBillPayVoList.add(baseBillPay);
             }
         }
