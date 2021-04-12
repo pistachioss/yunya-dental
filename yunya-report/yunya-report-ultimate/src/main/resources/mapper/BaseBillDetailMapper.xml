@@ -2724,6 +2724,7 @@
                 </foreach>
             </if>
         </where>
+        order by bbd.orgId,bbd.itemType,bbd.itemId
     </select>
 
     <select id="billItemStatisticsDetail" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsDetailVO">
@@ -2748,6 +2749,7 @@
         LEFT JOIN base_employee be ON bbd.executor_id = be.user_id
         <where>
             AND bb.bill_date IS NOT NULL
+            AND bbd.source_type = 0
             <if test="query.orgId != null">
                 and btp.org_id = #{query.orgId}
                 and bb.org_id = #{query.orgId}
