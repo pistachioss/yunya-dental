@@ -276,5 +276,8 @@ import java.util.*;
 
   @ApiOperation("根据Id查询患者信息公用信息")
   @GetMapping("/publicInformation/{id}")
-  ResponseResult<PatientPublicInfoVo> findPatientPublicInfoById(@PathVariable("id") Integer id);
+  PatientPublicInfoVo findPatientPublicInfoById(@PathVariable("id") Integer id);
+
+  @PostMapping("/wxFans/query")
+  WxFans getWxFans(@RequestBody WxUserQuery query);
 }

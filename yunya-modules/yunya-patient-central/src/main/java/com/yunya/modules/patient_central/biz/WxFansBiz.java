@@ -9,6 +9,7 @@ import com.yunya.framework.common.biz.*;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.*;
 import com.yunya.modules.patient_central.mapper.*;
+import org.apache.commons.lang3.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
@@ -31,12 +32,16 @@ import java.util.*;
 @Transactional(rollbackFor = Exception.class)
 public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
 
-    /** 系统服务调用 */
-    @Autowired private RemoteSystemServiceFeign systemServiceFeign;
+    /**
+     * 系统服务调用
+     */
+    @Autowired
+    private RemoteSystemServiceFeign systemServiceFeign;
 
-    @Autowired private WxFansBindBiz wxFansBindBiz;
+    @Autowired
+    private WxFansBindBiz wxFansBindBiz;
 
-    public PageInfo<WxFansVo> findList(WxFansQueryForm wxFansQueryForm){
+    public PageInfo<WxFansVo> findList(WxFansQueryForm wxFansQueryForm) {
         if (wxFansQueryForm.getWhetherPage()) {
             PageHelper.startPage(wxFansQueryForm.getPageNum(), wxFansQueryForm.getPageSize());
         }
@@ -44,17 +49,17 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         return new PageInfo<>(list);
     }
 
-    public List<WxFansDetailVO> findDetail(WxFansDetailForm wxFansDetailForm){
-        List<WxFansDetailVO>list = mapper.findDetail(wxFansDetailForm);
+    public List<WxFansDetailVO> findDetail(WxFansDetailForm wxFansDetailForm) {
+        List<WxFansDetailVO> list = mapper.findDetail(wxFansDetailForm);
         DictionaryItemModel model = new DictionaryItemModel();
-        List<DictionaryItem>dicList =  systemServiceFeign.findDictionaryItemList(model);
+        List<DictionaryItem> dicList = systemServiceFeign.findDictionaryItemList(model);
         Map<String, DictionaryItem> dicMap = new HashMap(16);
         dicList.forEach(z -> dicMap.put(z.getId() + "", z));
-        list.forEach(item -> item.setDictionaryName(dicMap.get(item.getDictionaryId()+"").getName()));
+        list.forEach(item -> item.setDictionaryName(dicMap.get(item.getDictionaryId() + "").getName()));
         return list;
     }
 
-    public Integer save(WxFansSaveForm wxFansSaveForm){
+    public Integer save(WxFansSaveForm wxFansSaveForm) {
         wxFansBindBiz.batchInsert(wxFansSaveForm.getFansBind());
         return mapper.insert(wxFansSaveForm.getWxFans());
     }
@@ -63,5 +68,17 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         Example example = new Example(WxFans.class);
         example.createCriteria().andEqualTo("openId", openId);
         return mapper.selectCountByExample(example);
+    }
+
+    public WxFans getOwnWxFans(WxUserQuery query) {
+        Example example = new Example(WxFans.class);
+        Example.Criteria criteria = example.createCriteria();
+        if (StringUtils.isNotBlank(query.getOpenId())) {
+            criteria.andEqualTo("openId", query.getOpenId());
+        }
+        if (query.getPatientId() != null) {
+            criteria.andEqualTo("patientId", query.getPatientId());
+        }
+        return mapper.selectOneByExample(example);
     }
 }

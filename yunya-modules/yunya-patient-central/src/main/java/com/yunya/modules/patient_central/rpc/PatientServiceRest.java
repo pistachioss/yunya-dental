@@ -291,4 +291,9 @@ public class PatientServiceRest {
         return this.patientBaseInfoBiz.findPatientPublicInfoById(id);
     }
 
+    @PostMapping("/wxFans/query")
+    public WxFans getWxFans(@RequestBody WxUserQuery query) {
+        return this.wxFansBiz.getOwnWxFans(query);
+    }
+
 }

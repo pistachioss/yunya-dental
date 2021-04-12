@@ -56,6 +56,7 @@
                TIMESTAMPDIFF(YEAR,pbi.birthday,CURDATE()) AS age,
                pbi.mobile mobile,
                pbi.medical_number medicalNumber,pmi.member_type_id memberTypeId,
+               pmi.card_number cardNumber,ppi.prepayment_number prepaymentNumber,
                cast(IFNULL(pmi.principal_amount,0) as decimal(15,2)) principalAmount,
 			   cast(IFNULL(pmi.bonus_amount,0) as decimal(15,2)) bonusAmount,
                cast(IFNULL(ppi.prepayment_principal,0) as decimal(15,2)) prepaymentPrincipal,

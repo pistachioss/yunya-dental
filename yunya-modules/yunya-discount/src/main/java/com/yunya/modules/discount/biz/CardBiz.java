@@ -39,27 +39,7 @@ import com.yunya.feign.discount.domain.query.GenerateAllocateCardQuery;
 import com.yunya.feign.discount.domain.query.GenerateAllocateDetailQuery;
 import com.yunya.feign.discount.domain.query.PatientBenefitQuery;
 import com.yunya.feign.discount.domain.query.PatientCardQuery;
-import com.yunya.feign.discount.domain.vo.CardActiveDetailVo;
-import com.yunya.feign.discount.domain.vo.CardQrCodeVo;
-import com.yunya.feign.discount.domain.vo.CardSalePageVo;
-import com.yunya.feign.discount.domain.vo.CouponSalePageVo;
-import com.yunya.feign.discount.domain.vo.ExportCardAllocateVo;
-import com.yunya.feign.discount.domain.vo.GenerateAllocateDetailVo;
-import com.yunya.feign.discount.domain.vo.GenerateAllocatePageVo;
-import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
-import com.yunya.feign.discount.domain.vo.PatientCardBaseVo;
-import com.yunya.feign.discount.domain.vo.PatientCardSharerVo;
-import com.yunya.feign.discount.domain.vo.PatientDiscountVo;
-import com.yunya.feign.discount.domain.vo.PatientExchangeVo;
-import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
-import com.yunya.feign.discount.domain.vo.PatientMemberCardVo;
-import com.yunya.feign.discount.domain.vo.PatientOptionalBenefitVo;
-import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
-import com.yunya.feign.discount.domain.vo.PatientOwnCardVo;
-import com.yunya.feign.discount.domain.vo.PatientPackageVo;
-import com.yunya.feign.discount.domain.vo.PatientShareCardVo;
-import com.yunya.feign.discount.domain.vo.PatientVoucherVo;
-import com.yunya.feign.discount.domain.vo.ViewAllocateVo;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
@@ -1000,6 +980,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         pageInfo.setTotal(page.getTotal());
         pageInfo.setPageNum(page.getPageNum());
         return pageInfo;
+    }
+
+    public List<WxPatientEffectiveVo> getPatientEffectiveCard(Integer patientId) {
+        return mapper.listPatientEffectiveCard(patientId);
     }
 
     public RestErrorBo removeCard(Integer patientId, Integer cardId) {

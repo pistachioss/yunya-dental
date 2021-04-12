@@ -3,8 +3,11 @@ package com.yunya365.wechat.service.impl;
 import com.alibaba.fastjson.*;
 import com.google.common.base.*;
 import com.google.common.collect.*;
+import com.yunya.feign.discount.*;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.patient_central.*;
 import com.yunya.feign.patient_central.domain.query.*;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.*;
 import com.yunya.feign.wechat.domain.model.*;
 import com.yunya.feign.wechat.domain.vo.*;
@@ -15,6 +18,7 @@ import com.yunya.models.system.*;
 import com.yunya365.wechat.enums.*;
 import lombok.extern.slf4j.*;
 import org.apache.commons.collections4.*;
+import org.apache.commons.lang3.*;
 import org.springframework.stereotype.*;
 import org.springframework.web.client.*;
 
@@ -30,7 +34,9 @@ import static java.util.stream.Collectors.*;
  **/
 @Slf4j
 @Service
-public class WXService extends AbstractWxBaseApi{
+public class WXService extends AbstractWxBaseApi {
+    public static String QIN_SHU_GUAN_XI = "亲属关系";
+    public static String BEN_REN = "本人";
     @Resource
     private RedisUtils redisUtils;
     @Resource
@@ -38,9 +44,9 @@ public class WXService extends AbstractWxBaseApi{
     @Resource
     private RemotePatientCentralServiceFeign patientFeign;
     @Resource
+    private RemoteDiscountFeign discountFeign;
+    @Resource
     private RemoteSystemServiceFeign systemServiceFeign;
-    public static String QIN_SHU_GUAN_XI = "亲属关系";
-    public static String BEN_REN = "本人";
 
     public WxAuthVo getAuthInfo(String code) {
         WxAuthVo vo = new WxAuthVo();
@@ -66,8 +72,59 @@ public class WXService extends AbstractWxBaseApi{
         patientFeign.saveWx(fansSaveForm);
     }
 
-    public void vipInfo(String openId) {
+    public WxVipInfo vipInfo(String openId) {
+        WxVipInfo wxVipInfo;
+        WxUserQuery query = new WxUserQuery();
+        query.setOpenId(openId);
+        //查询微信患者id
+        WxFans wxFans = patientFeign.getWxFans(query);
+        Integer patientId = wxFans.getPatientId();
+        if (patientId == null) {
+            wxVipInfo = this.assembleWxUserInfo(wxFans);
+        } else {
+            wxVipInfo = this.assembleWxPatientInfo(patientId);
+            if (wxVipInfo == null) {
+                wxVipInfo = this.assembleWxUserInfo(wxFans);
+            }
+        }
+        return wxVipInfo;
+    }
 
+    private WxVipInfo assembleWxUserInfo(WxFans wxFans) {
+        //未注册
+        WxVipInfo wxVipInfo = new WxVipInfo();
+        wxVipInfo.setRegisterName(wxFans.getRegisterName());
+        wxVipInfo.setRegisterMobile(wxFans.getRegisterMobile());
+        wxVipInfo.setHeadImgUrl(wxFans.getHeadImgurl());
+        return wxVipInfo;
+    }
+
+    private WxVipInfo assembleWxPatientInfo(Integer patientId) {
+        WxVipInfo wxVipInfo = null;
+        PatientPublicInfoVo patientInfo = patientFeign.findPatientPublicInfoById(patientId);
+        if (patientInfo != null) {
+            wxVipInfo = new WxVipInfo();
+            wxVipInfo.setRegisterName(patientInfo.getName());
+            wxVipInfo.setRegisterMobile(patientInfo.getMobile());
+            wxVipInfo.setHeadImgUrl(patientInfo.getFaceUrl());
+            wxVipInfo.setMemberType(patientInfo.getMemberTypeId());
+            wxVipInfo.setExistPrePayment(false);
+            wxVipInfo.setExistMemberCard(false);
+            //是否有预付款账号
+            if (StringUtils.isNotBlank(patientInfo.getPrepaymentNumber())) {
+                wxVipInfo.setExistPrePayment(true);
+            }
+            //是否有会员卡账号
+            if (StringUtils.isNotBlank(patientInfo.getCardNumber())) {
+                wxVipInfo.setExistMemberCard(true);
+                wxVipInfo.setMemberBalance(patientInfo.getMemberCardMoneySum());
+            }
+            List<WxPatientEffectiveVo> effectCardList = discountFeign.getPatientEffectCardList(patientId);
+            if (CollectionUtils.isNotEmpty(effectCardList)) {
+                wxVipInfo.setCardList(effectCardList);
+            }
+        }
+        return wxVipInfo;
     }
 
     private WxFans assembleWxFans(String userInfoStr) {
@@ -92,7 +149,7 @@ public class WXService extends AbstractWxBaseApi{
             wxFans.setBind(true);
             wxFans.setBindTime(new Date());
             wxFans.setPatientId(patientInfoList.get(0).getId());
-            list =  patientInfoList.stream().map(obj -> {
+            list = patientInfoList.stream().map(obj -> {
                 WxFansBind wxFansBind = new WxFansBind();
                 wxFansBind.setPatientId(obj.getId());
                 wxFansBind.setOpenId(wxFans.getOpenId());

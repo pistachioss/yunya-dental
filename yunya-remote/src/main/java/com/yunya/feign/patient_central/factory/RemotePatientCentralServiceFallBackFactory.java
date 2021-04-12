@@ -7,10 +7,7 @@ import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.models.patient_central.MemberExpendRecord;
-import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.patient_central.PatientMemberInfo;
-import com.yunya.models.patient_central.PrepaidExpendRecord;
+import com.yunya.models.patient_central.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -174,7 +171,12 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     }
 
     @Override
-    public ResponseResult<PatientPublicInfoVo> findPatientPublicInfoById(Integer id) {
+    public PatientPublicInfoVo findPatientPublicInfoById(Integer id) {
+        return null;
+    }
+
+    @Override
+    public WxFans getWxFans(WxUserQuery query) {
         return null;
     }
 }
