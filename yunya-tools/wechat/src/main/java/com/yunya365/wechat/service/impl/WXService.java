@@ -9,9 +9,9 @@ import com.yunya.feign.system.*;
 import com.yunya.feign.wechat.domain.model.*;
 import com.yunya.feign.wechat.domain.vo.*;
 import com.yunya.framework.common.exception.*;
+import com.yunya.framework.redis.util.*;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.*;
-import com.yunya365.wechat.config.*;
 import com.yunya365.wechat.enums.*;
 import lombok.extern.slf4j.*;
 import org.apache.commons.collections4.*;
@@ -32,7 +32,7 @@ import static java.util.stream.Collectors.*;
 @Service
 public class WXService extends AbstractWxBaseApi{
     @Resource
-    private WXConfig wxConfig;
+    private RedisUtils redisUtils;
     @Resource
     private RestTemplate restTemplate;
     @Resource
@@ -44,13 +44,9 @@ public class WXService extends AbstractWxBaseApi{
 
     public WxAuthVo getAuthInfo(String code) {
         WxAuthVo vo = new WxAuthVo();
-        //1.根据code获取access_token和openid(非基础的那个)
-        String authOpenId = super.getAuthOpenId(code);
-        //2.根据openid获取用户信息
-        String userInfoStr = super.getUserInfo(authOpenId);
-        WxFans wxFans = JSONObject.parseObject(userInfoStr, WxFans.class);
-        vo.setSubscribe(wxFans.getSubscribe());
-        vo.setOpenId(wxFans.getOpenId());
+        //根据code获取access_token和openid(非基础的那个)
+        String openId = super.getAuthOpenId(code);
+        vo.setOpenId(openId);
         return vo;
     }
 
@@ -61,12 +57,8 @@ public class WXService extends AbstractWxBaseApi{
             throw new ClientServiceException(WeChatError.USER_IS_REGISTERED);
         }
         //获取微信用户信息
-        String userInfoStr = super.getUserInfo(openId);
+        String userInfoStr = redisUtils.get(openId);
         WxFans wxFans = this.assembleWxFans(userInfoStr);
-        //是否关注
-        if (!wxFans.getSubscribe()) {
-            throw new ClientServiceException(WeChatError.USER_NOT_FOLLOW);
-        }
         List<WxFansBind> wxFansBinds = this.buildWxFansBind(wxFans, model);
         fansSaveForm.setWxFans(wxFans);
         fansSaveForm.setFansBind(wxFansBinds);

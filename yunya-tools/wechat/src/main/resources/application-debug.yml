@@ -5,12 +5,12 @@ spring:
       host: 81.69.14.153
       port: 6379
       password: 190611
-    cloud:
-      nacos:
-        discovery:
-          server-addr: 127.0.0.1:8848
-        config:
-          server-addr: 127.0.0.1:8848
+#    cloud:
+#      nacos:
+#        discovery:
+#          server-addr: 127.0.0.1:8848
+#        config:
+#          server-addr: 127.0.0.1:8848
 wechat:
   token: "yunya365"
   appId: "wx607bb75d3d685618"

@@ -1,26 +1,21 @@
 package com.yunya.feign.patient_central;
 
-import com.yunya.feign.patient_central.domain.form.UpdPassForm;
+import com.yunya.feign.patient_central.domain.form.*;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
-import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
-import com.yunya.feign.patient_central.factory.RemotePatientCentralServiceFallBackFactory;
-import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.constant.YunyaServiceNameConstants;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.models.patient_central.MemberExpendRecord;
-import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.patient_central.PatientMemberInfo;
-import com.yunya.models.patient_central.PrepaidExpendRecord;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.validation.annotation.Validated;
+import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.patient_central.factory.*;
+import com.yunya.framework.common.annation.*;
+import com.yunya.framework.common.constant.*;
+import com.yunya.framework.common.model.*;
+import com.yunya.models.patient_central.*;
+import io.swagger.annotations.*;
+import org.springframework.cloud.openfeign.*;
+import org.springframework.validation.annotation.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.util.List;
+import java.math.*;
+import java.util.*;
 
 /** @author YK */
 @FeignClient(
@@ -278,4 +273,8 @@ import java.util.List;
   @ApiOperation("查询微信用户是否注册")
   @GetMapping (value = "/count/register")
   int countRegister(@RequestParam(value = "openId", required = true) String openId);
+
+  @ApiOperation("根据Id查询患者信息公用信息")
+  @GetMapping("/publicInformation/{id}")
+  ResponseResult<PatientPublicInfoVo> findPatientPublicInfoById(@PathVariable("id") Integer id);
 }

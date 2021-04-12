@@ -5,9 +5,7 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
-import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -173,5 +171,10 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     @Override
     public int countRegister(String openId) {
         return 0;
+    }
+
+    @Override
+    public ResponseResult<PatientPublicInfoVo> findPatientPublicInfoById(Integer id) {
+        return null;
     }
 }

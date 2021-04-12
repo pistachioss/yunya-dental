@@ -1,15 +1,20 @@
 package com.yunya365.wechat.config;
 
-import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.exception.auth.UserAuthException;
-import com.yunya.framework.redis.util.RedisUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import com.alibaba.fastjson.*;
+import com.yunya.framework.common.constant.*;
+import com.yunya.framework.common.context.*;
+import com.yunya.framework.common.exception.*;
+import com.yunya.framework.common.exception.auth.*;
+import com.yunya.framework.redis.util.*;
+import com.yunya365.wechat.enums.*;
+import org.apache.commons.lang3.*;
+import org.springframework.web.client.*;
+import org.springframework.web.method.*;
+import org.springframework.web.servlet.handler.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.annotation.*;
+import javax.servlet.http.*;
+import java.util.concurrent.*;
 
 /**
  * 用户请求权限拦截器
@@ -19,7 +24,11 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
 
-    @Autowired
+    @Resource
+    private WXConfig wxConfig;
+    @Resource
+    private RestTemplate restTemplate;
+    @Resource
     private RedisUtils redisUtils;
 
     /**
@@ -41,7 +50,39 @@ public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
         if (StringUtils.isBlank(openId)) {
             throw new UserAuthException("您还没注册会员，请先注册！");
         }
+        //微信用户信息放入缓存
+        String userInfo = this.getAndCheckUserInfo(openId);
+        redisUtils.set(openId, userInfo, 1, TimeUnit.DAYS);
         return super.preHandle(request, response, handler);
+    }
+
+    public String getAndCheckUserInfo(String openId) {
+        String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
+        String accessToken = redisUtils.get(redisKey);
+        String url = String.format(WXConstant.WX_USER_INFO_URL, accessToken, openId);
+        String resultStr = restTemplate.getForObject(url, String.class);
+        JSONObject jsonObject = JSONObject.parseObject(resultStr);
+        this.checkWxResult(jsonObject);
+        return resultStr;
+    }
+
+    private void checkWxResult(JSONObject jsonObject) {
+        if (jsonObject == null) {
+            throw new ClientServiceException(WeChatError.USER_NOT_FOLLOW);
+        }
+        Integer errCode = jsonObject.getInteger("errcode");
+        if (errCode != null) {
+            if (errCode == 40003) {
+                throw new BaseException(WeChatError.USER_NOT_FOLLOW.getMessage(), errCode);
+            }
+            String errMsg = jsonObject.getString("errmsg");
+            throw new BaseException(errMsg, errCode);
+        }
+        boolean subscribe = jsonObject.getBooleanValue("subscribe");
+        //是否关注
+        if (!subscribe) {
+            throw new ClientServiceException(WeChatError.USER_NOT_FOLLOW);
+        }
     }
 
     /**
