@@ -191,6 +191,15 @@ spring:
             - StripPrefix=2
           metadata:
             title: "系统消息服务"
+        - id: wechat
+          uri: lb://wechat
+          order: 8997
+          predicates:
+            - Path=/api/wechat/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "微信平台服务"
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848
@@ -215,7 +224,7 @@ management:
 # 忽略网关鉴权的请求路径
 gate:
   ignore:
-    startWith: /auth/jwt,/v2/api-docs,/callback/,/central/paizhaohuidiao,/coupon/card/QRCode/init,/registration/permit/add,/registration/permit/userExistsFind,/dict/permit/item/list,/unlock,/user/authorization/code,/user/forget/password,/smsSignatureSet/signSmsReport,/smsTemplateSet/templateSmsReport,/smsSendMessage/smsReport,/smsChargeOrder/notifyUrl,/smsChargeOrder/redirectUrl
+    startWith: /auth/jwt,/v2/api-docs,/callback/,/central/paizhaohuidiao,/coupon/card/QRCode/init,/registration/permit/add,/registration/permit/userExistsFind,/dict/permit/item/list,/unlock,/user/authorization/code,/user/forget/password,/smsSignatureSet/signSmsReport,/smsTemplateSet/templateSmsReport,/smsSendMessage/smsReport,/smsChargeOrder/notifyUrl,/smsChargeOrder/redirectUrl,/wxVip
 
 auth:
   serviceId: yunya-auth
