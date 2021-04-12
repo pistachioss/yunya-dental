@@ -150,8 +150,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                   totalNotWorkload);
         }
       }
-      if (StringHelper.isNotEmpty(workloadInfos)) {
-        for (BillRecordWorkloadVO info : workloadInfos) {
+      List<BillRecordWorkloadVO> couponWorkloads = billDetailBiz.findCouponWorkloadList(query);
+      if (StringHelper.isNotEmpty(couponWorkloads)) {
+        for (BillRecordWorkloadVO info : couponWorkloads) {
           if (info.getBillOrgId().equals(info.getPrivilegeOrgId())) {
             if (info.getFirstPrivilege()) {
               firstCouponWorkload = calculateCouponWorkload(firstCouponWorkload, info);
@@ -245,8 +246,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           beCollectedFreePayWorkload =
               calculateFreePayWorkload(beCollectedFreePayWorkload, freePayAmount, totalWorkload);
         }
-        if (StringHelper.isNotEmpty(workloadInfos)) {
-          for (BillRecordWorkloadVO info : workloadInfos) {
+        List<BillRecordWorkloadVO> couponWorkloads = billDetailBiz.findCouponWorkloadList(query);
+        if (StringHelper.isNotEmpty(couponWorkloads)) {
+          for (BillRecordWorkloadVO info : couponWorkloads) {
             if (info.getBillOrgId().equals(info.getPrivilegeOrgId())) {
               if (info.getFirstPrivilege()) {
                 firstCouponWorkload = calculateCouponWorkload(firstCouponWorkload, info);
@@ -1049,7 +1051,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     List<BillDiscountAndFreePaymentVO> resultList = pageInfo.getList();
     ExcelUtil<BillDiscountAndFreePaymentVO> excelUtil =
         new ExcelUtil<>(BillDiscountAndFreePaymentVO.class);
-    String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "折扣&免单报表");
+    String fileName =
+        excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "折扣&免单报表");
     excelUtil.exportExcel(response, resultList, "折扣&免单报表", fileName);
   }
 

@@ -1352,4 +1352,14 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<BillItemTollAndWorkloadVO> resultList = mapper.selectTariffWorkloadInfo(query);
     return new PageInfo<>(resultList);
   }
+
+  /**
+   * 根据条件查询门诊补入工作量
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public List<BillRecordWorkloadVO> findCouponWorkloadList(DataStatisticsQuery query) {
+    return mapper.selectCouponWorkloadList(query);
+  }
 }
