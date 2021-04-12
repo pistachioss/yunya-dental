@@ -2110,6 +2110,14 @@
             <if test="query.billDate != null and query.billDate != ''">
                 and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') = #{query.billDate}
             </if>
+            <if test="query.queryDate != null and query.queryDate!= ''">
+                <if test="query.dateType == 0">
+                    and DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.queryDate}
+                </if>
+                <if test="query.dateType == 1">
+                    and DATE_FORMAT(bbp.payee_date, '%Y') = #{query.queryDate}
+                </if>
+            </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{query.startDate},'%Y-%m-%d')
