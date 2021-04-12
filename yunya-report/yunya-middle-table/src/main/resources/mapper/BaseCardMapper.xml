@@ -65,13 +65,6 @@
                     </if>
                 </foreach>
             </trim>
-            <trim prefix="card_password = case" suffix="end,">
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.cardPassword != null">
-                        when `card_id` = #{item.cardId} then #{item.cardPassword}
-                    </if>
-                </foreach>
-            </trim>
             <trim prefix="allocate_org_id = case" suffix="end,">
                 <foreach collection="list" item="item" index="index">
                     <if test="item.allocateOrgId != null">
@@ -167,20 +160,6 @@
                 <foreach collection="list" item="item" index="index">
                     <if test="item.payName != null">
                         when `card_id` = #{item.cardId} then #{item.payName}
-                    </if>
-                </foreach>
-            </trim>
-            <trim prefix="sale_channel_id = case" suffix="end,">
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.saleChannelId != null">
-                        when `card_id` = #{item.cardId} then #{item.saleChannelId}
-                    </if>
-                </foreach>
-            </trim>
-            <trim prefix="sale_channel_name = case" suffix="end,">
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.saleChannelName != null">
-                        when `card_id` = #{item.cardId} then #{item.saleChannelName}
                     </if>
                 </foreach>
             </trim>

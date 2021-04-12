@@ -192,8 +192,18 @@ public class BaseTreatmentProcessBiz
     log.info("====================【APP就诊主页面】============");
     log.info("==> user.dir:{}", System.getProperty("user.dir"));
     log.info("==> appointment:{}", appointment);
+    mapper.deleteByAppointmentId(appointmentId);
     if (null != appointment) {
-      BaseTreatmentProcess treatmentProcess = mapper.selectOneByAppointmentId(appointmentId);
+      BaseTreatmentProcess treatmentProcess = generateBaseTreatmentProcess(appointment);
+      setTreatmentProcessRegisteredValue(treatmentProcess, appointmentId);
+      TreatmentRecord treatmentRecord = new TreatmentRecord();
+      treatmentRecord.setAppointmentId(appointmentId);
+      setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
+      log.info("=============开始插入中间表就诊记录（更新预约）============{}", treatmentProcess);
+      mapper.insertSelective(treatmentProcess);
+    }
+
+    /*BaseTreatmentProcess treatmentProcess = mapper.selectOneByAppointmentId(appointmentId);
       log.info("==> treatmentProcess:{}", treatmentProcess);
       if (null != treatmentProcess) {
         setTreatmentProcessAppointmentValue(treatmentProcess, appointment);
@@ -215,7 +225,7 @@ public class BaseTreatmentProcessBiz
       }
     } else {
       mapper.deleteByAppointmentId(appointmentId);
-    }
+    }*/
   }
 
   /**
@@ -252,7 +262,7 @@ public class BaseTreatmentProcessBiz
           treatmentProcess.setRegisteredTime(null);
           treatmentProcess.setTreatStatus(null);
           treatmentProcess.setRegisteredDate(null);
-          mapper.updateRegisteredValueByAppointmentId(treatmentProcess.getAppointmentId());
+          //mapper.updateRegisteredValueByAppointmentId(treatmentProcess.getAppointmentId());
           mapper.updateByRegisteredId(registeredId, treatmentProcess);
         } else {
           mapper.deleteByRegisteredId(registeredId);
@@ -267,13 +277,14 @@ public class BaseTreatmentProcessBiz
    * 设置就诊流程就诊属性
    *
    * @param treatmentProcess 就诊流程
-   * @param treatmentRecord 挂号
+   * @param treatmentRecord 就诊记录
    */
   private void setTreatmentProcessTreatmentValue(
       BaseTreatmentProcess treatmentProcess, TreatmentRecord treatmentRecord) {
     TreatmentRecord treatmentRecordResult = treatmentRecordMapper.selectOne(treatmentRecord);
     if (null != treatmentRecordResult) {
-      treatmentProcess.setTreatmentId(treatmentRecordResult.getId());
+      Integer treatmentRecordId = treatmentRecordResult.getId();
+      treatmentProcess.setTreatmentId(treatmentRecordId);
       Byte status = treatmentRecordResult.getStatus();
       switch (status) {
         case 0:
@@ -295,7 +306,7 @@ public class BaseTreatmentProcessBiz
       treatmentProcess.setOrgId(treatmentRecordResult.getOrgId());
       treatmentProcess.setTreatStartTime(treatmentRecordResult.getTreatStartTime());
       treatmentProcess.setTreatEndTime(treatmentRecordResult.getTreatEndTime());
-      setBaseTreatmentProcessAssistantValue(treatmentRecordResult.getId(), treatmentProcess);
+      setBaseTreatmentProcessAssistantValue(treatmentRecordId, treatmentProcess);
     }
   }
 
@@ -624,14 +635,14 @@ public class BaseTreatmentProcessBiz
       process.setRegisteredDentistId(registeredResult.getDentistId());
       process.setRegisteredTime(registeredResult.getRegTime());
       process.setRegisteredDate(registeredResult.getCrtTime());
-    } else { // 将挂号信息清空
+    } else {
+      // 将挂号信息清空
       process.setTreatType(null);
       process.setRegisteredId(null);
       process.setTreatStatus(null);
       process.setRegisteredDentistId(null);
       process.setRegisteredTime(null);
       process.setRegisteredDate(null);
-      mapper.updateRegisteredValueByAppointmentId(appointmentId);
     }
   }
 

@@ -1,6 +1,5 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.vo.CouponActiveVo;
 import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
@@ -37,6 +36,4 @@ public interface BaseCouponMapper extends Mapper<BaseCoupon> {
 
 	List<CouponActiveVo> listCouponActive(@Param("couponName") String couponName, @Param("soldChannelIds") List<Integer> soldChannelIds,
 										  @Param("activeOrgIds") List<Integer> activeOrgIds);
-
-    List<CouponActiveVo> couponActivedGroupByOrgId(@Param("query") ClinicPerformanceBusinessQuery query);
 }

@@ -3,7 +3,6 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
-import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.report.BasePatient;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -102,24 +100,5 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
     }
     List<PatientInfoVO> list = mapper.selectPatientInfoByExample(query);
     return new PageInfo<>(list);
-  }
-
-  /**
-   * 根据条件统计患者来源
-   *
-   * @param query
-   * @return
-   */
-  public List<PatientFirstVisitSourceVO> clinicFirstVisitSourceList(ClinicPerformanceBusinessQuery query, Collection<Integer> patientIds) {
-    return mapper.clinicFirstVisitSourceList(query, patientIds);
-  }
-
-  /**
-   * 根据条件查询初诊患者ID
-   * @param query
-   * @return
-   */
-  public List<BaseTreatmentProcessVO> firstVisitPatientList(ClinicPerformanceBusinessQuery query) {
-    return mapper.firstVisitPatientList(query);
   }
 }

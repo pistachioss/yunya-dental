@@ -195,5 +195,5 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    * @param itemIds 支付方式
    * @return 支付记录
    */
-    List<BaseBillPay> selectBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query,@Param("itemIds") List<Integer> itemIds);
+  List<BaseBillPay> selectBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query,@Param("itemIds") List<Integer> itemIds);
 }

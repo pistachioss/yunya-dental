@@ -100,7 +100,7 @@ public class PatientOriginRelationsBiz
     for (PatientOriginEmployeeVo patientOriginEmployee : patientOriginEmployeeVoList) {
       BigDecimal makeUpWorkload =
           baseBillDetailMapper.findMakeUpWorkload(
-              patientOriginEmployee.getOriginId(), query.getStartDate(), query.getEndDate(), 1);
+              patientOriginEmployee.getOriginId(), query.getStartDate(), query.getEndDate(), 3);
       if (makeUpWorkload == null) {
         patientOriginEmployee.setMakeUpWorkload(new BigDecimal(0));
       } else {
@@ -155,9 +155,9 @@ public class PatientOriginRelationsBiz
                     }
                     // 判断是全部工作量 还是 免单支付工作量
                     if (type) {
-                      patientOriginEmployeeVo.setReceivedTotalWorkload(patientOriginEmployeeVo.getReceivedTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
+                      patientOriginEmployeeVo.setReceivedTotalWorkload(patientOriginEmployeeVo.getReceivedTotalWorkload().add(multiply));
                     } else {
-                      patientOriginEmployeeVo.setFreeTotalWorkload(patientOriginEmployeeVo.getFreeTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
+                      patientOriginEmployeeVo.setFreeTotalWorkload(patientOriginEmployeeVo.getFreeTotalWorkload().add(multiply));
                     }
                   }
                 }
@@ -205,8 +205,9 @@ public class PatientOriginRelationsBiz
     }
     // k 订单id v 订单记录
     for (BillIdVo billIdVo : billIdList) {
-      List<BaseBillPay> baseBillPayVo = new ArrayList<>();
+      List<BaseBillPay> baseBillPayVo = null;
       for (BaseBillPay baseBillPay : baseBillPayList) {
+        baseBillPayVo = new ArrayList<>();
         if (baseBillPay.getBillId().equals(billIdVo.getBillId())) {
           baseBillPayVo.add(baseBillPay);
         }
@@ -283,11 +284,11 @@ public class PatientOriginRelationsBiz
    */
   private List<ReceivedWorkloadDetailsVo> refundDetail(ReceiverkLoadQuery query,Integer originType) throws ParseException {
     List<ReceivedWorkloadDetailsVo> refundDetailList = new ArrayList<>();
-    List<Integer> refundIdList = baseRefundMapper.selectFundBillIdList(query);
+    List<Integer> refundIdList = baseRefundMapper.selectfundBillIdList(query);
     if (refundIdList != null) {
       for (Integer refundId : refundIdList) {
         List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList =
-            baseRefundMapper.selectRefundDetail(refundId, query.getOriginId(), originType);
+            baseRefundMapper.selectrefundDetail(refundId, query.getOriginId(), originType);
         if (receivedWorkloadDetailsVoList != null) {
           for (ReceivedWorkloadDetailsVo receivedWorkloadDetailsVo :receivedWorkloadDetailsVoList ) {
             // 判断关联时间是否大于初诊时间
@@ -370,9 +371,10 @@ public class PatientOriginRelationsBiz
     Map<Integer,List<BaseBillPay>> map = new HashMap();
     if (baseBillIdList != null && baseBillPayList != null){
       for (Integer billId : baseBillIdList) {
-        List<BaseBillPay> baseBillPayVoList = new ArrayList<>();
+        List<BaseBillPay> baseBillPayVoList = null;
         for (BaseBillPay baseBillPay: baseBillPayList) {
             if (billId.equals(baseBillPay.getBillId())){
+              baseBillPayVoList = new ArrayList<>();
               baseBillPayVoList.add(baseBillPay);
             }
         }
