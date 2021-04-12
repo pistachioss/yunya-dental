@@ -15,7 +15,6 @@ import com.yunya.models.report.BasePatientOriginLog;
 import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -192,7 +191,7 @@ public class PatientOriginActivityRelationsBiz
     }
     // k 订单id v 订单记录
     for (BillIdVo billIdVo : billIdList) {
-      List<BaseBillPay> baseBillPayVo = new ArrayList<>();;
+      List<BaseBillPay> baseBillPayVo  = new ArrayList<>();;
       for (BaseBillPay baseBillPay : baseBillPayList) {
         if (baseBillPay.getBillId().equals(billIdVo.getBillId())) {
           baseBillPayVo.add(baseBillPay);

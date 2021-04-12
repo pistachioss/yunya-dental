@@ -546,6 +546,7 @@ public class DateUtil {
     return rs;
   }
 
+
   /**
    * 上一年
    *
@@ -574,17 +575,5 @@ public class DateUtil {
     }
     c.add(Calendar.MONTH, -range);
     return sdf.format(c.getTime());
-  }
-
-  public static int compareMonth(String firstDate, String secondDate) {
-    Date d1 = null;
-    Date d2 = null;
-    try {
-      d1 = DateUtil.parse(firstDate, "yyyy-MM");
-      d2 = DateUtil.parse(secondDate, "yyyy-MM");
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return d1.compareTo(d2);
   }
 }

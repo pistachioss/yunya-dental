@@ -9,7 +9,6 @@ import com.yunya.feign.report.domain.vo.BillIdVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.report.BaseBillPay;
 import com.yunya.models.report.BasePatientOriginLog;
 import com.yunya.report.ultimate.mapper.*;
@@ -23,7 +22,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 简介:
@@ -327,6 +329,7 @@ public class PatientOriginRelationsBiz
       } else {
         // 查询免单支付方式
         List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
+        // 其中
         baseBillPayList =
             baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, itemIds);
       }

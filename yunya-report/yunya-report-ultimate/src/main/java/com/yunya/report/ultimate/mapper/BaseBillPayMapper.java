@@ -1,9 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.patient_central.domain.query.PatientOriginActivityQuery;
-import com.yunya.feign.patient_central.domain.query.PatientOriginEmployeeQuery;
 import com.yunya.feign.patient_central.domain.query.ReceiverkLoadQuery;
-import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.query.BillPayRecordQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.StatementBillChargeDetailInfoQuery;
@@ -195,5 +192,5 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    * @param itemIds 支付方式
    * @return 支付记录
    */
-    List<BaseBillPay> selectBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query,@Param("itemIds") List<Integer> itemIds);
+  List<BaseBillPay> selectBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query,@Param("itemIds") List<Integer> itemIds);
 }

@@ -62,6 +62,7 @@ public interface RemoteClinicBaseServiceFeign {
   List<SpecialistProjectTargetVO> specialProjectAndGoalsList(@RequestParam("dateType") Byte dateType,
                                                              @RequestParam("dateRange") List<String> dateRange,
                                                              @RequestParam("orgIds") Integer[] orgIds);
+
   /**
    * 根据条件查询门诊业务目标列表
    *

@@ -353,7 +353,7 @@
                 and brr.orgId = #{query.orgId}
             </if>
             <if test="query.billDate != null and query.billDate != ''">
-                AND date_format(brr.billDate, '%Y-%m-%d') = #{query.billDate}
+                AND date_format(brr.billDate, '%Y-%m-%d') &lt;= #{query.billDate}
             </if>
             <if test="query.orderDate != null and query.orderDate != ''">
                 AND date_format(brr.orderDate, '%Y-%m-%d') = #{query.orderDate}
@@ -1218,7 +1218,6 @@
                 left join base_employee be on be.user_id = btp.registered_dentist_id
                 left join base_tariff_info bti ON bti.item_id = bbd.item_id
             where bb.privilege_date is not null
-            and bti.item_type = bbd.item_type
             and bbd.coupon_workload  > 0
             and log.origin_id = #{query.originId}
             and log.origin_type = #{originType}
@@ -1234,7 +1233,7 @@
 
     <select id="distinctBillIds" resultType="java.lang.Integer">
         SELECT
-            distinct bb.bill_id as billId
+        distinct bb.bill_id as billId
         FROM base_bill bb
         LEFT JOIN base_treatment_process btp on bb.treatment_id=btp.treatment_id
         <where>

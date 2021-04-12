@@ -104,6 +104,7 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
     return new PageInfo<>(list);
   }
 
+
   /**
    * 根据条件统计患者来源
    *

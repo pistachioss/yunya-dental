@@ -455,7 +455,7 @@ public class TreatmentServiceRest {
    */
   @RequestMapping(value = "/tariff/specialist/percentage", method = RequestMethod.POST)
   public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(
-      @RequestBody SpecialistProjectReportModel specialistProjectReportModel) throws Exception {
+      @RequestBody SpecialistProjectReportModel specialistProjectReportModel) {
     return orderDetailBiz.findTariffSpecialistPercentage(specialistProjectReportModel);
   }
 

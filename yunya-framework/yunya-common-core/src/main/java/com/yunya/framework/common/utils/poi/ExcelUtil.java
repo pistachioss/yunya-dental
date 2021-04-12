@@ -1,6 +1,7 @@
 package com.yunya.framework.common.utils.poi;
 
 import cn.hutool.core.date.DateUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.yunya.framework.common.annation.Excel;
 import com.yunya.framework.common.annation.Excel.Type;
 import com.yunya.framework.common.annation.Excels;
@@ -279,6 +280,29 @@ public class ExcelUtil<T> {
   }
 
   /**
+   * 对list数据源将其里面的数据导入到excel表单
+   *
+   * @param response 返回数据
+   * @param list 导出数据集合
+   * @param sheetName 工作表的名称
+   * @param fileName excel文件名
+   * @param dynamicTitle 动态表头
+   * @return 结果
+   * @throws IOException
+   */
+  public void exportExcel(
+          HttpServletResponse response, List<T> list, String sheetName, String fileName, Map<String, String> dynamicTitle)
+          throws IOException {
+    response.setContentType("application/vnd.ms-excel");
+    response.setCharacterEncoding("utf-8");
+    response.setHeader(
+            "Content-Disposition",
+            "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
+    this.init(list, sheetName, Type.EXPORT);
+    exportExcel(response.getOutputStream(), dynamicTitle);
+  }
+
+  /**
    * 获取文件名
    *
    * @param sDate
@@ -403,6 +427,65 @@ public class ExcelUtil<T> {
   }
 
   /**
+   * 动态表头
+   *
+   * @param outputStream
+   */
+  public void exportExcel(OutputStream outputStream, Map<String, String> dynamicTitle) {
+    try {
+      // 取出一共有多少个sheet.
+      double sheetNo = Math.ceil(list.size() / SHEET_SIZE);
+      for (int index = 0; index <= sheetNo; index++) {
+        // 创建sheet工作表
+        createSheet(sheetNo, index);
+        // 产生一行
+        Row row = sheet.createRow(0);
+        int column = 0;
+        for (String head : dynamicTitle.values()) {
+          sheet.setColumnWidth(column, (int) ((16 + 0.72) * 256));
+          this.createCell(head, row, column++, "header");
+        }
+        if (Type.EXPORT.equals(type)) {
+          int startNo = index * SHEET_SIZE;
+          int endNo = Math.min(startNo + SHEET_SIZE, list.size());
+          for (int i = startNo; i < endNo; i++) {
+            row = sheet.createRow(i + 1 - startNo);
+            // 得到导出对象.
+            JSONObject obj = (JSONObject) list.get(i);
+            int col = 0;
+            for (Map.Entry<String, String> entry : dynamicTitle.entrySet()) {
+              String value = obj.getString(entry.getKey());
+              this.createCell(value, row, col++, "data");
+            }
+          }
+        }
+      }
+      // 设置表格合并
+      this.mergeRegion();
+      wb.write(outputStream);
+    } catch (Exception e) {
+      log.error("导出Excel异常{}", e.getMessage());
+      log.error("导出Excel异常{}", e);
+    } finally {
+      if (wb != null) {
+        try {
+          wb.close();
+        } catch (IOException e1) {
+          e1.printStackTrace();
+        }
+      }
+      if (outputStream != null) {
+        try {
+          outputStream.close();
+        } catch (IOException e1) {
+          e1.printStackTrace();
+        }
+      }
+      log.info("导出完成");
+    }
+  }
+
+  /**
    * 填充excel数据
    *
    * @param index 序号
@@ -509,6 +592,23 @@ public class ExcelUtil<T> {
     cell.setCellValue(attr.name());
     setDataValidation(attr, row, column);
     cell.setCellStyle(styles.get("header"));
+    return cell;
+  }
+
+  /**
+   * 创建单元格
+   *
+   * @param name 属性
+   * @param row 行
+   * @param column 列
+   * @return
+   */
+  public Cell createCell(String name, Row row, int column, String titleKey) {
+    // 创建列
+    Cell cell = row.createCell(column);
+    // 写入列信息
+    cell.setCellValue(name);
+    cell.setCellStyle(styles.get(titleKey));
     return cell;
   }
 
