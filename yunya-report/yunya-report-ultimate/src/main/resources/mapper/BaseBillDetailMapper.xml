@@ -2673,6 +2673,7 @@
                 </foreach>
             </if>
         </where>
+        order by bbd.orgId,bbd.itemType,bbd.itemId
     </select>
 
     <select id="billItemStatisticsDetail" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsDetailVO">
@@ -2697,6 +2698,7 @@
         LEFT JOIN base_employee be ON bbd.executor_id = be.user_id
         <where>
             AND bb.bill_date IS NOT NULL
+            AND bbd.source_type = 0
             <if test="query.orgId != null">
                 and btp.org_id = #{query.orgId}
                 and bb.org_id = #{query.orgId}
@@ -2879,7 +2881,7 @@
         group by org_id,coupon_id,order_detail_id,item_type,item_id
         ) bb
         LEFT JOIN base_bill_detail bbd ON bb.order_detail_id = bbd.bill_detail_id
-        group by bb.org_id,bb.coupon_id,bbd.executor_id,bb.order_detail_id,bb.item_type,bb.item_id
+        group by bb.org_id,bb.coupon_id,bbd.executor_id,bb.item_type,bb.item_id
         ) bb
         LEFT JOIN base_coupon bc ON bc.coupon_id=bb.coupon_id
         LEFT JOIN base_tariff_info bti ON (bti.item_type=bb.item_type AND bti.item_id=bb.item_id)
@@ -2893,6 +2895,7 @@
                 AND be.work_status = #{query.workStatus}
             </if>
         </where>
+        order by bb.org_id,bb.executor_id,bb.coupon_id
     </select>
 
     <select id="couponExecutoredDetails" resultType="com.yunya.feign.report.domain.vo.CouponExecutoredDetailVO">
