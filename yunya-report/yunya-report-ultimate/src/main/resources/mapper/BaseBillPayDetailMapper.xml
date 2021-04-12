@@ -221,28 +221,4 @@
         order by t.payeeDate desc,t.billNum desc
     </select>
 
-    <select id="sumPayDetailListByPayeeDate" resultType="com.yunya.feign.report.domain.vo.BaseBillPayDetailVO">
-        select
-        t.bill_id as billId,
-        IFNULL(SUM(t.principal_amount), 0) AS principalAmount,
-        bbp.payee_date AS cardNum,
-        from base_bill_pay_detail t
-        left join base_bill_pay bbp on bbp.bill_pay_id=t.bill_pay_id
-        <where>
-            t.type = 2
-            <if test="payIds!=null and payIds.size()>0">
-                and t.account_item_id in
-                <foreach item="item" index="index" collection="payIds" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="billIds!=null and billIds.size()>0">
-                and t.bill_id in
-                <foreach item="item" index="index" collection="billIds" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
-        group by t.bill_id
-    </select>
 </mapper>
