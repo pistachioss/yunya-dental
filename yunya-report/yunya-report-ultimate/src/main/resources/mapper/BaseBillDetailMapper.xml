@@ -193,6 +193,7 @@
         bb.bill_id
         FROM base_bill bb
         <where>
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
@@ -219,7 +220,7 @@
         bbd.executor_id,
         SUM(bbd.coupon_workload) AS supplementWorkload
         FROM (
-        SELECT bbd.org_id,
+        SELECT
         bbd.executor_id,
         bbd.coupon_workload
         FROM base_bill_detail bbd
@@ -227,6 +228,7 @@
         SELECT bb.bill_id
         FROM base_bill bb
         <where>
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
@@ -571,13 +573,11 @@
         ) bup
         LEFT JOIN (
         SELECT
-        bbd.org_id,
         bbd.executor_id,
         SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS actualWorkload
         FROM
         (
         SELECT
-        bbd.org_id,
         bbd.executor_id,
         bbd.discount_amount,
         bbd.price,
@@ -589,6 +589,7 @@
         bb.bill_id
         FROM base_bill bb
         <where>
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
@@ -608,7 +609,6 @@
         bbd.executor_id > 0
         ) bbd
         GROUP BY
-        bbd.org_id,
         bbd.executor_id
         ) bbd ON bup.user_id = bbd.executor_id
         LEFT JOIN (
@@ -616,7 +616,7 @@
         bbd.executor_id,
         SUM(bbd.coupon_workload) AS supplementWorkload
         FROM (
-        SELECT bbd.org_id,
+        SELECT
         bbd.executor_id,
         bbd.coupon_workload
         FROM base_bill_detail bbd
@@ -624,6 +624,7 @@
         SELECT bb.bill_id
         FROM base_bill bb
         <where>
+            AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
@@ -858,12 +859,10 @@
             </if>
         </where>
         GROUP BY
-        brd.org_id,
         brd.executor_id
         ) brd ON bup.user_id = brd.executor_id
         LEFT JOIN (
         SELECT
-        ewc.org_id,
         SUM( ewc.processing_fee ) AS processingFee,
         SUM( ewc.orthodontics_fee ) AS orthodonticsFee,
         SUM( ewc.base_workload ) AS baseWorkload,
@@ -887,8 +886,7 @@
             </if>
         </where>
         GROUP BY
-        ewc.user_id,
-        ewc.org_id
+        ewc.user_id
         ) ewc ON bup.user_id = ewc.user_id
         ) bup
         ORDER BY
