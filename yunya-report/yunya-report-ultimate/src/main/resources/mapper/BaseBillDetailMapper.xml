@@ -219,7 +219,7 @@
         bbd.executor_id,
         SUM(bbd.coupon_workload) AS supplementWorkload
         FROM (
-        SELECT bbd.org_id,
+        SELECT
         bbd.executor_id,
         bbd.coupon_workload
         FROM base_bill_detail bbd
@@ -242,7 +242,12 @@
             </if>
         </where>
         ) bb ON bbd.bill_id = bb.bill_id
-        WHERE bbd.executor_id > 0
+        <where>
+            and bbd.executor_id > 0
+            <if test="query.orgId != null">
+                and bbd.org_id = #{query.orgId}
+            </if>
+        </where>
         ) bbd
         GROUP BY bbd.executor_id
         ) bbd1 ON bup.user_id = bbd1.executor_id
