@@ -74,7 +74,6 @@
             from  (
                 SELECT
                     bb.bill_id,
-
                     bb.patient_id,
                     bb.actual_amount,
                     (
