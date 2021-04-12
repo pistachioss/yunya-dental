@@ -30,6 +30,12 @@
             <if test="query.specialistProjectName != null and query.specialistProjectName != ''">
                 and sp.name like concat('%', #{query.specialistProjectName} ,'%')
             </if>
+            <if test="query.specialistProjectIds!=null and query.specialistProjectIds.size()>0">
+                and sp.id IN
+                <foreach collection="query.specialistProjectIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 

@@ -545,4 +545,35 @@ public class DateUtil {
     }
     return rs;
   }
+
+
+  /**
+   * 上一年
+   *
+   * @param year
+   * @return
+   */
+  public static String preYear(String year) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+    Calendar c = Calendar.getInstance();
+    try {
+      c.setTime(sdf.parse(year));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    c.add(Calendar.YEAR, -1);
+    return sdf.format(c.getTime());
+  }
+
+  public static String preMonth(String month, int range) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+    Calendar c = Calendar.getInstance();
+    try {
+      c.setTime(sdf.parse(month));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    c.add(Calendar.MONTH, -range);
+    return sdf.format(c.getTime());
+  }
 }
