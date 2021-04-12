@@ -78,7 +78,7 @@
                     bb.patient_id,
                     bb.actual_amount,
                     (
-                        select TRUNCATE (SUM(((price * quantity) - discount_amount)) / bb.actual_amount,2)
+                        select  SUM(((price * quantity) - discount_amount)) / bb.actual_amount
                         from base_bill_detail bbd
                         where bbd.bill_id = bb.bill_id and bbd.executor_id is not null
                     ) as orderWorkload
