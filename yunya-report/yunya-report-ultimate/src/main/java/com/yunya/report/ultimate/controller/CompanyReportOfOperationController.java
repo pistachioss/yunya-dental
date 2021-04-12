@@ -478,7 +478,7 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-项目收费金额及工作量统计-导出")
   @PostMapping(value = "/tariff/pay/workload/list/export", name = "导出项目收费金额及工作量")
   public ResponseResult<T> exportTariffPaymentWorkloadList(
-      HttpServletResponse response, @RequestBody @Validated BillItemTollAndWorkloadQuery query) {
+      HttpServletResponse response, @RequestBody @Validated BillItemTollAndWorkloadQuery query) throws IOException {
     billDetailBiz.exportTariffPaymentWorkloadList(response, query);
     return ResponseUtil.success(null);
   }
