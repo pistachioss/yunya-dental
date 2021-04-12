@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * 简介：
@@ -140,7 +141,7 @@ public class BizTest {
     }
 
     @Test
-    public void test10() {
+    public void test10() throws ExecutionException, InterruptedException {
         String param = "{\"assistantIds\":[],\"dateType\":1,\"endDate\":\"2021-01\",\"orgId\":26,\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-01\",\"workStatus\":[3],\"whetherPage\":true}";
         EmployeeMatchingRecordQuery query = JSONObject.parseObject(param, EmployeeMatchingRecordQuery.class);
         baseUserPostBiz.findTreatMatchingStatisticsList(query);
