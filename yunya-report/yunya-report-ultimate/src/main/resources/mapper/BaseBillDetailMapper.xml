@@ -255,7 +255,6 @@
         ) bbd1 ON bup.user_id = bbd1.executorId
         LEFT JOIN (
         SELECT
-        bbd.org_id,
         bbd.executor_id,
         CONVERT (
         SUM( bbd.billWorkload / bbd.actualAmount * bbd.receivedAmount ),
@@ -263,17 +262,13 @@
         FROM
         (
         SELECT
-        bbp.org_id,
-        bbp.billId,
         bbp.actualAmount,
-        bbp.billPayId,
         bbp.receivedAmount,
         bbd.billWorkload,
         bbd.executor_id
         FROM
         (
         SELECT
-        bb.org_id,
         bb.bill_id AS billId,
         bb.actual_amount AS actualAmount,
         bbp.bill_pay_id AS billPayId,
@@ -282,7 +277,6 @@
         base_bill_pay bbp
         INNER JOIN (
         SELECT
-        bb.org_id,
         bb.bill_id,
         bb.actual_amount
         FROM base_bill bb
@@ -335,12 +329,10 @@
         ) bbd ON bbp.billId = bbd.bill_id
         ) bbd
         GROUP BY
-        bbd.org_id,
         bbd.executor_id
         ) bbd2 ON bup.user_id = bbd2.executor_id
         LEFT JOIN (
         SELECT
-        bbd.org_id,
         bbd.executor_id,
         CONVERT (
         SUM( bbd.billWorkload / bbd.billTotalWorkload * bbd.freePayAmount ),
@@ -348,9 +340,6 @@
         FROM
         (
         SELECT
-        bbp.org_id,
-        bbp.bill_id,
-        bbp.bill_pay_id,
         bbp.billTotalWorkload,
         IF
         ( bbp.freePayAmount > bbp.billTotalWorkload, bbp.billTotalWorkload, bbp.freePayAmount ) AS freePayAmount,
@@ -362,20 +351,17 @@
         bbpd.bill_id,
         bbpd.bill_pay_id,
         SUM( bbpd.principal_amount ) AS freePayAmount,
-        bbp.org_id,
         bbp.billTotalWorkload
         FROM
         base_bill_pay_detail bbpd
         INNER JOIN (
         SELECT
-        bb.org_id,
         bbp.bill_pay_id,
         bbd.billTotalWorkload
         FROM
         base_bill_pay bbp
         INNER JOIN (
         SELECT
-        bb.org_id,
         bb.bill_id
         FROM base_bill bb
         <where>
@@ -447,12 +433,10 @@
         ) bbd ON bbp.bill_id = bbd.bill_id
         ) bbd
         GROUP BY
-        bbd.org_id,
         bbd.executor_id
         ) bbd3 ON bup.user_id = bbd3.executor_id
         LEFT JOIN (
         SELECT
-        brd.org_id,
         SUM( brd.refund_amount ) AS refundWorkload,
         brd.executor_id
         FROM
