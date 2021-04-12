@@ -16,9 +16,12 @@ import com.yunya.report.ultimate.mapper.BaseUserPostMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 简介: 员工可登录组织
@@ -51,6 +54,7 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
         mapper.selectAssistantMatchingStatisticsByAssistant("assistant_2", query);
     List<AssistantMatchingStatisticsVO> resultList3 =
         mapper.selectAssistantMatchingStatisticsByAssistant("assistant_3", query);
+
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           assistant1 -> {
@@ -96,7 +100,7 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
    * @param query 查询条件
    */
   public void exportEmployeeMatchingStatisticsList(
-      HttpServletResponse response, EmployeeMatchingRecordQuery query) throws IOException {
+      HttpServletResponse response, EmployeeMatchingRecordQuery query) throws IOException, InterruptedException {
     query.setWhetherPage(false);
     PageInfo<AssistantMatchingStatisticsVO> pageInfo = findTreatMatchingStatisticsList(query);
     List<AssistantMatchingStatisticsVO> list = pageInfo.getList();
