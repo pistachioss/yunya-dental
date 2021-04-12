@@ -641,11 +641,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return PageInfo<EmployeeFreepaymentWorkloadDetailVO>
    */
   public PageInfo<EmployeeFreepaymentWorkloadDetailVO> findEmployeeFreepaymentWorkloadDetailList(
-      EmployeePersonalWorkloadDetailQuery query) {
+          EmployeePersonalWorkloadDetailQuery query) {
     EmployeeWorkloadQuery workloadQuery = new EmployeeWorkloadQuery();
     workloadQuery.setWhetherPage(false);
-    workloadQuery.setDateType(query.getDateType());
-    workloadQuery.setQueryDate(query.getQueryDate());
+    workloadQuery.setOrgId(query.getOrgId());
     workloadQuery.setEmployeeIds(new Integer[] {query.getEmployeeId()});
     List<BaseBillDetail> billDetails = mapper.selectBillDetailByQuery(workloadQuery);
     if (StringHelper.isEmpty(billDetails)) {
@@ -655,53 +654,54 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     Set<Integer> billIds =
-        billDetails.stream().map(BaseBillDetail::getBillId).collect(Collectors.toSet());
+            billDetails.stream().map(BaseBillDetail::getBillId).collect(Collectors.toSet());
+    query.setOrgId(null);
     List<EmployeeFreepaymentWorkloadDetailVO> resultList =
-        mapper.selectEmployeeFreepaymentWorkloadDetailList(query, billIds, FREE_PAYMENT_ID);
+            mapper.selectEmployeeFreepaymentWorkloadDetailList(query, billIds, FREE_PAYMENT_ID);
     // 免单支付
     if (StringHelper.isNotEmpty(resultList)) {
       Integer employeeId = query.getEmployeeId();
       Map<Integer, BigDecimal> billPayIdMap =
-          resultList.stream()
-              .collect(
-                  Collectors.toMap(
-                      EmployeeFreepaymentWorkloadDetailVO::getBillPayId, v -> BigDecimal.ZERO));
+              resultList.stream()
+                      .collect(
+                              Collectors.toMap(
+                                      EmployeeFreepaymentWorkloadDetailVO::getBillPayId, v -> BigDecimal.ZERO));
       billIds =
-          resultList.stream()
-              .map(EmployeeFreepaymentWorkloadDetailVO::getBillId)
-              .collect(Collectors.toSet());
+              resultList.stream()
+                      .map(EmployeeFreepaymentWorkloadDetailVO::getBillId)
+                      .collect(Collectors.toSet());
       Set<Integer> billPayIds = billPayIdMap.keySet();
       List<BaseBillDetail> details = mapper.selectBillDetailByBillIds(billIds);
       details =
-          details.stream()
-              .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
-              .collect(Collectors.toList());
+              details.stream()
+                      .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
+                      .collect(Collectors.toList());
       computePercentage(details);
       Map<Integer, List<BaseBillPayDetailVO>> freePaymentMap =
-          sumFreePaymentMapByBillPayIds(billPayIds);
+              sumFreePaymentMapByBillPayIds(billPayIds);
       details.forEach(
-          detail -> {
-            Integer executorId = detail.getExecutorId();
-            if (employeeId.equals(executorId)) {
-              Integer billId = detail.getBillId();
-              List<BaseBillPayDetailVO> list = freePaymentMap.get(billId);
-              list.forEach(
-                  vo -> {
-                    Integer billPayId = vo.getBillPayId();
-                    BigDecimal free = vo.getPrincipalAmount();
-                    BigDecimal amount =
-                        detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
-                    billPayIdMap.put(billPayId, amount.add(billPayIdMap.get(billPayId)));
-                  });
-            }
-          });
+              detail -> {
+                Integer executorId = detail.getExecutorId();
+                if (employeeId.equals(executorId)) {
+                  Integer billId = detail.getBillId();
+                  List<BaseBillPayDetailVO> list = freePaymentMap.get(billId);
+                  list.forEach(
+                          vo -> {
+                            Integer billPayId = vo.getBillPayId();
+                            BigDecimal free = vo.getPrincipalAmount();
+                            BigDecimal amount =
+                                    detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+                            billPayIdMap.put(billPayId, amount.add(billPayIdMap.get(billPayId)));
+                          });
+                }
+              });
       resultList.forEach(
-          vo -> {
-            Integer billPayId = vo.getBillPayId();
-            BigDecimal free = billPayIdMap.get(billPayId);
-            vo.setFreePaymentWorkload(free == null ? BigDecimal.ZERO : free);
-            vo.setEmployeeId(employeeId);
-          });
+              vo -> {
+                Integer billPayId = vo.getBillPayId();
+                BigDecimal free = billPayIdMap.get(billPayId);
+                vo.setFreePaymentWorkload(free == null ? BigDecimal.ZERO : free);
+                vo.setEmployeeId(employeeId);
+              });
     }
     return new PageInfo<>(resultList);
   }
