@@ -3238,4 +3238,25 @@
         GROUP BY brd.executorId, brd.itemType, brd.itemId
         ) brd on bet.user_id = brd.executorId and bet.item_type = brd.itemType and bet.item_id = brd.itemId
     </select>
+    <!-- 根据条件查询补入工作量列表 -->
+    <select id="selectCouponWorkloadList" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
+        select sum(bbd.coupon_workload) as billTotalCouponWorkload,
+        bb.org_id as billOrgId,
+        bb.privilege_org_id as privilegeOrgId,
+        bb.first_privilege as firstPrivilege
+        from base_bill_detail bbd
+        inner join base_bill bb on bbd.bill_id = bb.bill_id
+        <where>
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT(bb.privilege_date, '%Y-%m') = #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT(bb.privilege_date, '%Y') = #{query.endDate}
+            </if>
+        </where>
+        group by bb.privilege_org_id, bb.first_privilege
+    </select>
 </mapper>
