@@ -3247,8 +3247,11 @@
         from base_bill_detail bbd
         inner join base_bill bb on bbd.bill_id = bb.bill_id
         <where>
-            <if test="query.orgId != null">
-                and bb.org_id = #{query.orgId}
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                AND bb.org_id IN
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
