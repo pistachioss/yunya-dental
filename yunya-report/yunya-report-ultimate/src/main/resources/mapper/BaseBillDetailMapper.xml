@@ -2398,9 +2398,9 @@
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
-            <if test="billIds!=null and billIds.size()>0">
+            <if test="query.billIds!=null and query.billIds.size()>0">
                 and bbd.bill_id in
-                <foreach collection="billIds" item="item" open="(" separator="," close=")">
+                <foreach collection="query.billIds" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
@@ -3101,9 +3101,9 @@
         ) bbp
         INNER JOIN (
         SELECT bbd.bill_id,
-        bbd.executor_id                                     as executorId,
-        bbd.item_type                                       as itemType,
-        bbd.item_id                                         as itemId,
+        bbd.executor_id as executorId,
+        bbd.item_type as itemType,
+        bbd.item_id as itemId,
         SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS itemWorkload,
         bbd1.billTotalWorkload
         FROM base_bill_detail bbd
