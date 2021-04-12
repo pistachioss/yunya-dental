@@ -91,7 +91,7 @@ public class BasePatientOriginLogBiz extends BaseBiz<BasePatientOriginLogMapper,
         String startDate = form.getStartDate();
         String endDate = form.getEndDate();
         Example emp = new Example(PatientOrigin.class);
-        emp.createCriteria().andBetween("updTime",startDate,endDate);
+        emp.createCriteria().andBetween("updTime",startDate,endDate).andEqualTo("inservice",1);
         List<PatientOriginLog> patientOriginLogLists = patientOriginLogMapper.selectByExample(emp);
         if (StringHelper.isNotNull(patientOriginLogLists)){
             List<List<PatientOriginLog>> partitionLists = Lists.partition(patientOriginLogLists, 100);
