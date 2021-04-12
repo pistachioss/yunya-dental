@@ -65,15 +65,15 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
 
   /** 消息中间件调用 */
-  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+  @Resource private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 系统服务远程调用 */
-  @Autowired private RemoteSystemServiceFeign systemServiceFeign;
+  @Resource private RemoteSystemServiceFeign systemServiceFeign;
   /** 价目表分类 */
-  @Autowired private BaseTariffCategoryMapper baseTariffCategoryMapper;
+  @Resource private BaseTariffCategoryMapper baseTariffCategoryMapper;
   /** 价目表操作记录 */
-  @Autowired private BaseTariffHistoryMapper baseTariffHistoryMapper;
+  @Resource private BaseTariffHistoryMapper baseTariffHistoryMapper;
   /** 门诊价目表 */
-  @Autowired private ClinicTariffBiz clinicTariffBiz;
+  @Resource private ClinicTariffBiz clinicTariffBiz;
   /** 线程池 */
   @Resource(name = "treatmentThreadPool")
   private ExecutorService importExcelThreadPool;

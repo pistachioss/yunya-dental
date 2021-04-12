@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -92,9 +93,16 @@ public class RegisteredController {
       pageInfo.setPageNum(pageNum);
       pageInfo.setPageSize(pageSize);
       pageInfo.setTotal(total);
-      List<ReferredInfoVO> list =
-              relist.subList(
-                      pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+      int a  = pageSize * (pageNum - 1);
+      List<ReferredInfoVO> list = new ArrayList<>();
+      if(a>total){
+        list =  relist.subList(
+                        0, (Math.min((pageSize * pageNum), total)));
+      }else{
+        list =
+                relist.subList(
+                        a, (Math.min((pageSize * pageNum), total)));
+      }
       pageInfo.setList(list);
       return ResponseUtil.success(pageInfo);
     }

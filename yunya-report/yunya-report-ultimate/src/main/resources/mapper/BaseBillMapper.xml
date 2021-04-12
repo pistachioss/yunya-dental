@@ -353,7 +353,7 @@
                 and brr.orgId = #{query.orgId}
             </if>
             <if test="query.billDate != null and query.billDate != ''">
-                AND date_format(brr.billDate, '%Y-%m-%d') = #{query.billDate}
+                AND date_format(brr.billDate, '%Y-%m-%d') &lt;= #{query.billDate}
             </if>
             <if test="query.orderDate != null and query.orderDate != ''">
                 AND date_format(brr.orderDate, '%Y-%m-%d') = #{query.orderDate}
@@ -1110,7 +1110,7 @@
         join base_bill bb on log.patient_id = bb.patient_id
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         where 1 = 1
-        AND log.origin_type = 4
+        AND log.origin_type = 3
         <if test="query.startDate != null">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
@@ -1229,5 +1229,40 @@
                 and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
             </if>
         ) t
+    </select>
+
+    <select id="distinctBillIds" resultType="java.lang.Integer">
+        SELECT
+        distinct bb.bill_id as billId
+        FROM base_bill bb
+        LEFT JOIN base_treatment_process btp on bb.treatment_id=btp.treatment_id
+        <where>
+            AND btp.treat_end_time IS NOT NULL
+            AND bb.bill_date IS NOT NULL
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
     </select>
 </mapper>
