@@ -1274,13 +1274,13 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     excelUtil.exportExcel(response, resultList, "收费项目及工作量列表", fileName);
   }
 
-    /**
-     * 根据条件查询门诊工作量统计
-     *
-     * @param queryForm 查询条件
-     * @return
-     */
-    public DynamicHeaderPageInfo<JSONObject> clinicPerformanceList(ClinicPerformanceBusinessQuery queryForm) {
+  /**
+   * 根据条件查询门诊工作量统计
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  public DynamicHeaderPageInfo<JSONObject> clinicPerformanceList(ClinicPerformanceBusinessQuery queryForm) {
       String startDate = queryForm.getStartDate().substring(0,7);
       String endDate = queryForm.getEndDate().substring(0,7);
       String year = startDate.substring(0,4); //年份
@@ -1414,6 +1414,148 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       pageInfo.setList(result);
       return pageInfo;
     }
+
+  /**
+   * 根据条件查询门诊工作量统计（优化版）
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  public DynamicHeaderPageInfo<JSONObject> clinicPerformanceList2(ClinicPerformanceBusinessQuery queryForm) {
+    long t1 = System.currentTimeMillis();
+    String startDate = queryForm.getStartDate().substring(0,7);
+    String endDate = queryForm.getEndDate().substring(0,7);
+    String year = startDate.substring(0,4); //年份
+    if (!year.equals(endDate.substring(0,4))) {
+      throw new ClientServiceException("查询月份不能跨年", PARAMETERS_IS_ILLEGAL);
+    }
+    String sMonth = startDate.substring(5,7); //月份
+    String eMonth = endDate.substring(5,7); //月份
+    List<BaseOrganization> orgs = getOrganization(queryForm);
+    Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
+    DataStatisticsQuery query = new DataStatisticsQuery();
+    query.setDateType(queryForm.getDateType());
+    query.setOrgIds(orgIds);
+
+    Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
+    //环比：去年+查询月份范围
+    String preYear = DateUtil.preYear(year);
+    String chainStartDate = preYear + "-" + sMonth;
+    String chainEndDate = preYear + "-" + eMonth;
+    query.setStartDate(chainStartDate);
+    query.setEndDate(chainEndDate);
+    Map<String, Map<Integer, BigDecimal[]>> chainWorkload = baseBillPayBiz.computeWorkloadGroupOrgId2(query);
+
+    //同比：查询条件的开始月份 + 查询月份范围的跨度值
+    int range = 1; //默认1个月
+    if (!startDate.equals(endDate)) {
+      range = Integer.parseInt(eMonth)-Integer.parseInt(sMonth);
+    }
+    String preStartDate = DateUtil.preMonth(startDate, range);
+    String preEndDate = DateUtil.preMonth(endDate, range);
+
+    //年度工作量
+    String yearStartDate = year + "-01";
+    String yearEndDate = year + "-12";
+    if (DateUtil.compareMonth(preStartDate, yearStartDate)<0) {
+      query.setStartDate(preStartDate);
+    } else {
+      query.setStartDate(yearStartDate);
+    }
+    query.setEndDate(yearEndDate);
+    Map<String, Map<Integer, BigDecimal[]>> yearWorkload = baseBillPayBiz.computeWorkloadGroupOrgId2(query);
+    long t2 = System.currentTimeMillis();
+    System.out.println("----------------111111111111-----------" + (t2 - t1));
+    DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
+    List<JSONObject> result = new ArrayList<>();
+//    if (StringHelper.isNotEmpty(orgs)) {
+//      BigDecimal actualTotal = BigDecimal.ZERO;
+//      BigDecimal goalTotal = BigDecimal.ZERO;
+//      BigDecimal completedTotal = BigDecimal.ZERO;
+//      BigDecimal chainTotal = BigDecimal.ZERO;
+//      BigDecimal preTotal = BigDecimal.ZERO;
+//      BigDecimal yearTotal = BigDecimal.ZERO;
+//      JSONObject actual = new JSONObject();
+//      init(actual, startDate, endDate, "实际值");
+//      JSONObject goals = new JSONObject();
+//      init(goals, startDate, endDate, "目标值");
+//      JSONObject completed = new JSONObject();
+//      init(completed, startDate, endDate, "完成度");
+//      JSONObject chainDiff = new JSONObject();//环比
+//      init(chainDiff, startDate, endDate, "环比值");
+//      JSONObject preDiff = new JSONObject();//同比
+//      init(preDiff, startDate, endDate, "同比值");
+//      JSONObject curYear = new JSONObject();//年度总工作量
+//      init(curYear, startDate, endDate, "年度总工作量");
+//      Map<String, String> map = new LinkedHashMap<>();
+//      map.put("date", "时间");
+//      map.put("name", "工作量");
+//      for (BaseOrganization vo : orgs) {
+//        Integer orgId = vo.getOrgId();
+//        BigDecimal goal = workloadGoalMap.get(orgId);
+//        if (goal == null) {
+//          goal = BigDecimal.ZERO;
+//        }
+//        BigDecimal[] workloads = curWorkload.get(orgId);
+//        if (workloads == null) {
+//          workloads = new BigDecimal[]{BigDecimal.ZERO};
+//        }
+//        BigDecimal completedPercentage = BigDecimal.ZERO;
+//        if (goal.compareTo(BigDecimal.ZERO) != 0) {
+//          completedPercentage =
+//                  workloads[0].divide(goal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+//        }
+//        String key = orgId + "";
+//        map.put(key, vo.getAbbreviation());
+//        actual.put(key, workloads[0]);
+//        goals.put(key, goal);
+//        completed.put(key, completedPercentage.toString() + "%");
+//        BigDecimal[] chains = chainWorkload.get(orgId);
+//        if (chains == null) {
+//          chains = new BigDecimal[]{BigDecimal.ZERO};
+//        }
+//        BigDecimal[] pres = preWorkload.get(orgId);
+//        if (pres == null) {
+//          pres = new BigDecimal[]{BigDecimal.ZERO};
+//        }
+//        BigDecimal[] years = yearWorkload.get(orgId);
+//        if (years == null) {
+//          years = new BigDecimal[]{BigDecimal.ZERO};
+//        }
+//        chainDiff.put(key, chains[0]);
+//        preDiff.put(key, pres[0]);
+//        curYear.put(key, years[0]);
+//        actualTotal = actualTotal.add(workloads[0]);
+//        goalTotal = goalTotal.add(goal);
+//        chainTotal = chainTotal.add(chains[0]);
+//        preTotal = preTotal.add(pres[0]);
+//        yearTotal = yearTotal.add(years[0]);
+//      }
+//      map.put("total","合计");
+//      actual.put("total", actualTotal);
+//      goals.put("total", goalTotal);
+//      if (goalTotal.compareTo(BigDecimal.ZERO) != 0) {
+//        completedTotal =
+//                actualTotal.divide(goalTotal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+//      }
+//      completed.put("total", completedTotal.toString() + "%");
+//      chainDiff.put("total", chainTotal);
+//      preDiff.put("total", preTotal);
+//      curYear.put("total", yearTotal);
+//      result.add(actual);
+//      result.add(goals);
+//      result.add(completed);
+//      result.add(chainDiff);
+//      result.add(preDiff);
+//      result.add(curYear);
+//      pageInfo.setMap(map);
+//    }
+    pageInfo.setPageNum(query.getPageNum());
+    pageInfo.setPageSize(query.getPageSize());
+    pageInfo.setTotal(result.size());
+    pageInfo.setList(result);
+    return pageInfo;
+  }
 
     /**
      * 获取所有门诊信息

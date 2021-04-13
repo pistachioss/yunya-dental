@@ -599,4 +599,17 @@ public class DateUtil {
     c.add(Calendar.MONTH, -range);
     return sdf.format(c.getTime());
   }
+
+  public static int compareMonth(String firstMonth, String secondMonth) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+    Date d1 = null;
+    Date d2 = null;
+    try {
+      d1 = sdf.parse(firstMonth);
+      d2 = sdf.parse(secondMonth);
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    return d1.compareTo(d2);
+  }
 }

@@ -3235,10 +3235,6 @@
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
-                AND bb.org_id IN
-                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -3263,6 +3259,12 @@
                 <if test="query.endDate != null and query.endDate != ''">
                     AND DATE_FORMAT( bb.privilege_date, '%Y' ) &lt;= #{query.endDate}
                 </if>
+            </if>
+            <if test="query.billIds!=null and query.billIds.size()>0">
+                and bbd.bill_id IN
+                <foreach collection="query.billIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
         </where>
         group by bbd.org_id, bb.privilege_org_id,
