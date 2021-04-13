@@ -573,7 +573,6 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                       .mapToInt(SpecialistTariffProjectVO::getQuantity).sum();
               count.getAndAdd(numberOfItems);
               specialistProjectReportVO.setPercentage(String.valueOf(numberOfItems));
-//            specialistProjectReportVOList.add(specialistProjectReportVO);
             }
           }
           return specialistProjectReportVO;
