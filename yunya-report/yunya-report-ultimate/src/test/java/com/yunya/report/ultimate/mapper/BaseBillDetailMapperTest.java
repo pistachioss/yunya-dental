@@ -172,4 +172,18 @@ public class BaseBillDetailMapperTest {
     List<BillItemTollAndWorkloadVO> vos = baseBillDetailMapper.selectTariffWorkloadInfo(query);
     System.out.println(vos);
   }
+
+  @Test
+  public void find8() {
+    EmployeePersonalWorkloadDetailQuery query = new EmployeePersonalWorkloadDetailQuery();
+    query.setDateType((byte) 0);
+    query.setEmployeeId(341);
+    query.setOrgId(26);
+    query.setQueryDate("2021-03");
+    // query.setKeyword("章佳萍");
+    query.setBillNum("ZD00262103270034");
+    List<EmployeePersonalSupplyWorkloadDetailVO> vos =
+        baseBillDetailMapper.selectEmployeePersonalSupplyWorkloadDetailList(query);
+    System.out.println(vos);
+  }
 }
