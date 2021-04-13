@@ -19,11 +19,11 @@
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
   </resultMap>
   <insert id="batchInsert" parameterType="java.util.List">
-    insert into wx_fans_bind ( patient_id, dictionary_id,open_id,bind,bind_time,is_vip,is_owner, crt_id, crt_time) VALUES
+    insert into wx_fans_bind ( patient_id, dictionary_id,open_id,bind,bind_time,is_vip,is_owner, crt_id) VALUES
     <foreach collection="list" item="item" index="index" separator=",">
     (#{item.patientId}, #{item.dictionaryId}, #{item.openId},
     #{item.bind}, #{item.bindTime},#{item.isVip},
-    #{item.isOwner}, #{item.crtId},#{item.crtTime}
+    #{item.isOwner}, #{item.crtId}
     )
     </foreach>
   </insert>

@@ -61,7 +61,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
 
     public Integer save(WxFansSaveForm wxFansSaveForm) {
         wxFansBindBiz.batchInsert(wxFansSaveForm.getFansBind());
-        return mapper.insert(wxFansSaveForm.getWxFans());
+        return mapper.insertSelective(wxFansSaveForm.getWxFans());
     }
 
     public int countRegister(String openId) {
