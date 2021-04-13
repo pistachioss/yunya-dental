@@ -43,8 +43,11 @@
           JOIN base_user_post bup ON bup.user_id = ee.user_id
           WHERE
                 1 = 1
-              <if test="query.workStatus != null and query.workStatus != ''">
-                  and ee.work_status = #{query.workStatus}
+              <if test="query.workStatus != null and query.workStatus.size() > 0">
+                  and ee.work_status in
+                  <foreach collection="query.workStatus" item="workStatus" open="(" separator="," close=")">
+                      #{workStatus}
+                  </foreach>
               </if>
 
               <if test="query.orgIds != null and query.orgIds.size() > 0">
