@@ -11,8 +11,6 @@ import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.feign.report.domain.bo.ClinicWorkloadGroupInfoVO;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
-import com.yunya.feign.system.form.OrganizationModel;
-import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
@@ -1121,18 +1119,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         new ExcelUtil<>(WorkloadMonthGoalCompletedVO.class);
     String fileName = excelUtil.getFileName(startDate, curDate, "", "月营业目标完成度报表");
     excelUtil.exportExcel(response, resultList, "月营业目标完成度报表", fileName);
-  }
-
-  /**
-   * 查询组织信息列表
-   *
-   * @return
-   */
-  private List<OrganizationInfoDetail> getOrganizationList() {
-    OrganizationModel model = new OrganizationModel();
-    model.setWhetherPage(false);
-    model.setTypes(new Byte[] {2});
-    return remoteSystemServiceFeign.findOrgInfoList(model);
   }
 
   /**
