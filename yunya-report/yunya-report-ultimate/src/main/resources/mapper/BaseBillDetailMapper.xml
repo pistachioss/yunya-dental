@@ -2409,9 +2409,9 @@
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
-            <if test="query.billIds!=null and query.billIds.size()>0">
+            <if test="billIds!=null and billIds.size()>0">
                 and bbd.bill_id in
-                <foreach collection="query.billIds" item="item" open="(" separator="," close=")">
+                <foreach collection="billIds" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
@@ -2559,6 +2559,7 @@
             resultType="com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo">
                 select * from (
                 SELECT
+                DISTINCT
                     bb.bill_id billId,
                     bb.patient_id patientId,
                     DATE_FORMAT( t.crt_time, '%Y-%m-%d %H:%i') relatedTime,
