@@ -25,8 +25,11 @@ import java.io.Serializable;
 public class EmployeeWorkloadDetailQuery extends PageQuery implements Serializable {
   /** 账单ID */
   @ApiModelProperty(value = "账单ID", required = true)
-  @NotNull(message = "账单ID不能为空！")
   private Integer billId;
+  /** 收费记录ID */
+  @ApiModelProperty("收费记录ID")
+  @NotNull(message = "收费记录ID不能为空！")
+  private Integer billPayId;
   /** 员工ID */
   @ApiModelProperty(value = "员工ID")
   @NotNull(message = "员工ID不能为空！")
