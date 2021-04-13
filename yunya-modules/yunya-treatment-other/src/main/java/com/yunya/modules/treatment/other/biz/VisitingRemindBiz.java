@@ -279,17 +279,13 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 this.setPatientInfo(dentistInfoList,patientTotalInfoVoList,finalMemberTypeList,finalDebtAmountModelList,build);
                 visitingRemindVos.add(build);
             });
-
             // 排序
-            searchVisitingRemindVo = this.customSort(visitingRemindVos,query);
+            searchVisitingRemindVo = this.customSort(visitingRemindVos,query,visitingRemindVoPageInfo);
 
         }
         // 如果 searchVisitingRemindVo 为空
         if (StringHelper.isEmpty(searchVisitingRemindVo)) {
             searchVisitingRemindVo = new ArrayList<>();
-        } else {
-            // 设置分页插件总数量=条件检索出来的结果数量
-            visitingRemindVoPageInfo.setTotal(searchVisitingRemindVo.size());
         }
         // 设置分页数据
         visitingRemindVoPageInfo.setList(searchVisitingRemindVo);
@@ -302,7 +298,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @param query
      * @return
      */
-    private List<VisitingRemindVo> customSort(List<VisitingRemindVo> list, VisitingRemindQuery query) {
+    private List<VisitingRemindVo> customSort(List<VisitingRemindVo> list, VisitingRemindQuery query, PageInfo visitingRemindVoPageInfo) {
         String orderBy = query.getOrderBy();
         String sort = query.getSort();
         if (StringHelper.isNotEmpty(list) && StringHelper.isNotBlank(orderBy) && StringHelper.isNotBlank(sort)) {
@@ -326,6 +322,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             } else if (null != query.getPatientId() && query.getSearchId().equals(SEARCH_ID)){
                 return list;
             } else {
+                // 设置分页插件总数量=条件检索出来的结果数量
+                visitingRemindVoPageInfo.setTotal(list.size());
                 // 按照时间正序排序
                 return this.sort(list);
             }
