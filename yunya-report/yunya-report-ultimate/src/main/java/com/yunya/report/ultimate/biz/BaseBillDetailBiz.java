@@ -1361,6 +1361,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportTariffPaymentWorkloadList(
       HttpServletResponse response, BillItemTollAndWorkloadQuery query) throws IOException {
+    query.setWhetherPage(false);
     String fileName = query.getStartDate() + "-" + query.getEndDate() + "收费项目及工作量列表";
     List<BillItemTollAndWorkloadVO> resultList =
         findStatisticsTariffPaymentWorkloadList(query).getList();
