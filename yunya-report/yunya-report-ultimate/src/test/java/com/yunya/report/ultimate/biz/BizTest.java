@@ -81,7 +81,7 @@ public class BizTest {
 
     @Test
     public void test4() {
-        String param = "{\"billNum\":\"\",\"dateType\":0,\"employeeId\":74,\"keyword\":\"\",\"billDate\":\"\",\"orgId\":30,\"queryDate\":\"2021-03\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":10}";
+        String param = "{\"billNum\":\"\",\"dateType\":0,\"employeeId\":612,\"keyword\":\"\",\"billDate\":\"\",\"orgId\":35,\"queryDate\":\"2021-04\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":10}";
         EmployeePersonalWorkloadDetailQuery query = JSONObject.parseObject(param, EmployeePersonalWorkloadDetailQuery.class);
         PageInfo<EmployeeFreepaymentWorkloadDetailVO> pageInfo =
                 baseBillDetailBiz.findEmployeeFreepaymentWorkloadDetailList(query);
@@ -241,7 +241,7 @@ public class BizTest {
      */
     @Test
     public void test20() {
-        String param = "{\"couponIds\":[],\"executorName\":\"\",\"workStatus\":\"\",\"startDate\":\"2020-04-01\",\"endDate\":\"2020-04-30\",\"orgIds\":[26],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+        String param = "{\"couponIds\":[],\"executorName\":\"\",\"workStatus\":\"\",\"startDate\":\"2021-03-01\",\"endDate\":\"2021-03-31\",\"orgIds\":[26],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
         CouponExecutoredQuery query = JSONObject.parseObject(param, CouponExecutoredQuery.class);
         long t1 = System.currentTimeMillis();
         PageInfo<CouponExecutoredVO> pageInfo = baseBillDetailBiz.couponExecutoredList(query);
@@ -254,8 +254,7 @@ public class BizTest {
      */
     @Test
     public void test21() {
-        String param = "{\"endDate\":\"2020-04-30\",\"startDate\":\"2020-04-01\",\"executorId\":74,\"itemId\":709,\"itemType\":0," +
-                "\"couponId\":140,\"orgId\":26,\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true,\"abbreviation\":\"古墩路门诊\",\"executorName\":\"谢玮\",\"couponName\":\"366双旦活动美白两人同行一人免单（2020））\",\"itemName\":\"牙齿美白（线上活动专享）\",\"num\":\"1\",\"index\":0,\"showClinic\":true}";
+        String param = "{\"endDate\":\"2021-03-31\",\"startDate\":\"2021-03-01\",\"executorId\":27,\"keyword\":\"\",\"itemId\":729,\"itemType\":0,\"couponId\":135,\"orgId\":26,\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true,\"abbreviation\":\"古墩路门诊\",\"executorName\":\"谢玮\",\"couponName\":\"973单次达妃琦美白\",\"itemName\":\"牙齿美白（线上活动专享）\",\"num\":\"4\",\"index\":2,\"showClinic\":true}";
         CouponExecutoredDetailQuery query = JSONObject.parseObject(param, CouponExecutoredDetailQuery.class);
         long t1 = System.currentTimeMillis();
         PageInfo<CouponExecutoredDetailVO> pageInfo = baseBillDetailBiz.couponExecutoredDetails(query);
@@ -272,5 +271,16 @@ public class BizTest {
         DataStatisticsQuery query = JSONObject.parseObject(param, DataStatisticsQuery.class);
         WorkloadStatisticsVO clinicWorkloadStatistic = baseBillDetailBiz.findClinicWorkloadStatistic(query);
         System.out.println(JSONObject.toJSON(clinicWorkloadStatistic));
+    }
+
+    /**
+     * 月工作量完成度导出
+     */
+    @Test
+    public void test23() throws IOException {
+        String startDate = "2021-04-01";
+        String curDate = "2021-04-13";
+        DynamicHeaderPageInfo<JSONObject> resultList = baseBillDetailBiz.workloadCompleted(startDate, curDate);
+        System.out.println(JSONObject.toJSON(resultList));
     }
 }

@@ -154,7 +154,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query 查询条件
    * @return list
    */
-  List<BillRecordWorkloadVO> selectCouponWorkloadList(@Param("query") DataStatisticsQuery query);
+  List<BillRecordWorkloadVO> selectCouponWorkloadList(@Param("query") DataStatisticsQuery query,
+                                                      @Param("column") String column);
 
   /**
    * 根据条件查询门诊当月账单明细列表
