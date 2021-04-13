@@ -302,8 +302,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         }
         workloadMap.put(billOrgId, workloads);
       }
-      if (StringHelper.isNotEmpty(workloadInfos)) {
-        for (BillRecordWorkloadVO info : workloadInfos) {
+      List<BillRecordWorkloadVO> couponWorkloads = billDetailBiz.findCouponWorkloadList(query, "privilege_date");
+      if (StringHelper.isNotEmpty(couponWorkloads)) {
+        for (BillRecordWorkloadVO info : couponWorkloads) {
           Integer billOrgId = info.getBillOrgId();
           ClinicWorkloadGroupInfoVO[] workloads = workloadMap.get(billOrgId);
           ClinicWorkloadGroupInfoVO monthWorkload = workloads[0];
@@ -316,7 +317,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           } else {
             monthWorkload.setBeCollectedCouponWorkload(calculateCouponWorkload(monthWorkload.getBeCollectedCouponWorkload(), info));
           }
-          if (curDate.equals(DateUtil.format(billIds.get(info.getBillId()), "yyyy-MM-dd"))) { // 当天
+          if (curDate.equals(DateUtil.format(info.getPrivilegeDate(), "yyyy-MM-dd"))) { // 当天
             ClinicWorkloadGroupInfoVO curWorkload = workloads[1];
             if (billOrgId.equals(info.getPrivilegeOrgId())) {
               if (info.getFirstPrivilege()) {

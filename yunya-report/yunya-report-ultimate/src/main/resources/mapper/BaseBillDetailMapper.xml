@@ -3223,6 +3223,9 @@
         select sum(bbd.coupon_workload) as billTotalCouponWorkload,
         bb.org_id as billOrgId,
         bb.privilege_org_id as privilegeOrgId,
+        <if test="column!=null and column!=''">
+            ${column},
+        </if>
         bb.first_privilege as firstPrivilege
         from base_bill_detail bbd
         inner join base_bill bb on bbd.bill_id = bb.bill_id
@@ -3258,7 +3261,11 @@
                 </if>
             </if>
         </where>
-        group by bb.org_id, bb.privilege_org_id, bb.first_privilege
+        group by bb.org_id, bb.privilege_org_id,
+        <if test="column!=null and column!=''">
+            ${column},
+        </if>
+        bb.first_privilege
     </select>
 
     <select id="billItemStatisticsGroupByOrgId" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsVO">
