@@ -1964,7 +1964,36 @@
 
     <!-- 查询订单支付记录 -->
     <select id="findBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
-        select DISTINCT bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount receivedAmount from base_bill_pay bbp
+        select DISTINCT bbp.bill_id billId,bbp.bill_pay_id billPayId,bbp.received_amount receivedAmount  from base_bill_pay bbp
+        join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
+        where 1 = 1
+        <if test="itemIds != null">
+            and bbpd.account_item_id in
+            <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
+                #{itemId}
+            </foreach>
+        </if>
+
+        <if test="startDate != null">
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{startDate}, '%Y-%m-%d' )
+        </if>
+
+        <if test="endDate != null">
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{endDate}, '%Y-%m-%d' )
+        </if>
+
+        <if test="billIdList != null and billIdList.size() > 0 ">
+            and bbpd.bill_id in
+            <foreach collection="billIdList" item="BillIdVo" open="(" separator="," close=")">
+                #{BillIdVo.billId}
+            </foreach>
+        </if>
+    </select>
+
+
+    <!-- 查询免单订单支付记录 -->
+    <select id="findMdBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
+        select DISTINCT bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount + bbpd.bonus_amount receivedAmount  from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
         <if test="itemIds != null">
@@ -1992,7 +2021,35 @@
 
     <!-- 根据订单id查询支付记录 -->
     <select id="selectBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
-        select DISTINCT bbpd.bill_pay_detail_record_id billPayDetailRecordId,bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount receivedAmount from base_bill_pay bbp
+        select DISTINCT bbpd.bill_pay_detail_record_id billPayDetailRecordId,bbp.bill_id billId,bbp.bill_pay_id billPayId,bbp.received_amount receivedAmount from base_bill_pay bbp
+        join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
+        where 1 = 1
+        <if test=" billIdList != null and billIdList.size() > 0">
+            and bbp.bill_id in
+            <foreach collection="billIdList" item="billId" open="(" separator="," close=")">
+                #{billId}
+            </foreach>
+        </if>
+
+        <if test="query.startDate != null">
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+        </if>
+
+        <if test="query.endDate != null">
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+        </if>
+
+        <if test="itemIds != null and itemIds.size() > 0">
+            and bbpd.account_item_id in
+            <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
+                #{itemId}
+            </foreach>
+        </if>
+    </select>
+
+    <!-- 根据订单id查询免单支付记录 -->
+    <select id="selectMdBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
+        select DISTINCT bbpd.bill_pay_detail_record_id billPayDetailRecordId,bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount + bbpd.bonus_amount receivedAmount from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
         <if test=" billIdList != null and billIdList.size() > 0">

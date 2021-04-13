@@ -187,7 +187,7 @@ public class PatientOriginActivityRelationsBiz
     } else {
       // 其中免单支付工作量合计
       List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
-      baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(),query.getEndDate(), itemIds);
+      baseBillPayList = baseBillPayMapper.findMdBaseBillPayInfoList(billIdList, query.getStartDate(),query.getEndDate(), itemIds);
     }
     // k 订单id v 订单记录
     for (BillIdVo billIdVo : billIdList) {
@@ -311,7 +311,7 @@ public class PatientOriginActivityRelationsBiz
       } else {
         // 查询免单支付方式
         List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
-        baseBillPayList = baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, itemIds);
+        baseBillPayList = baseBillPayMapper.selectMdBaseBillPayInfoList(baseBillIdList, query, itemIds);
       }
       Map<Integer, List<BaseBillPay>> baseBillPayMap = patientOriginRelationsBiz.getBaseBillPayList(baseBillIdList,baseBillPayList);
       // 订单支付明细
