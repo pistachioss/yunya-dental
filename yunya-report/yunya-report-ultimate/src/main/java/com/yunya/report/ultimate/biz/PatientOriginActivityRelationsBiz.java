@@ -187,7 +187,7 @@ public class PatientOriginActivityRelationsBiz
     } else {
       // 其中免单支付工作量合计
       List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
-      baseBillPayList = baseBillPayMapper.findBaseBillPayInfoList(billIdList, query.getStartDate(),query.getEndDate(), itemIds);
+      baseBillPayList = baseBillPayMapper.findMdBaseBillPayInfoList(billIdList, query.getStartDate(),query.getEndDate(), itemIds);
     }
     // k 订单id v 订单记录
     for (BillIdVo billIdVo : billIdList) {
