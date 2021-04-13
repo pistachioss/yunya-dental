@@ -1090,9 +1090,10 @@
                 and ee.work_status = #{query.workStatus}
             </if>
         </where>
-        GROUP BY log.origin_id) t
+        GROUP BY log.origin_id ) t
         on t.origin_id = log.origin_id
         where 1 = 1
+        and log.origin_type = 1
         <if test="query.startDate != null">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
