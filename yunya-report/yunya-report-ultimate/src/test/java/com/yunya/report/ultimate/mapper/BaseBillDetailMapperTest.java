@@ -186,4 +186,14 @@ public class BaseBillDetailMapperTest {
         baseBillDetailMapper.selectEmployeePersonalSupplyWorkloadDetailList(query);
     System.out.println(vos);
   }
+
+  @Test
+  public void find9() {
+    EmployeeWorkloadDetailQuery query = new EmployeeWorkloadDetailQuery();
+    query.setBillPayId(283608);
+    query.setEmployeeId(562);
+    List<EmployeeReceivedDetailWorkloadVO> vos =
+        baseBillDetailMapper.selectEmployeeReceivedDetailList(query);
+    System.out.println(vos);
+  }
 }

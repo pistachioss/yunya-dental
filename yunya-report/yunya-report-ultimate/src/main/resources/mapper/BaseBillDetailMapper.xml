@@ -1178,7 +1178,7 @@
         FROM base_bill_pay bbp
         inner join base_bill bb on bbp.bill_id = bb.bill_id
         <where>
-            <if test="query.billId != null">
+            <if test="query.billPayId != null">
                 and bbp.bill_pay_id = #{query.billPayId}
             </if>
         </where>
