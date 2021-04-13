@@ -33,6 +33,12 @@ public class VisitingRemindQuery implements Serializable {
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
 
+    @ApiModelProperty("排序字段")
+    private String orderBy;
+
+    @ApiModelProperty("排序规则(asc升序；desc降序)")
+    private String sort;
+
     @ApiModelProperty(value = "检索类型：1-按随访创建时间检索；2-按随访执行时间检索，默认按随访执行时间检索;3-患者档案检索", required = true)
     private Integer searchId = 2;
 
