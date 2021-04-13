@@ -1,22 +1,17 @@
 package com.yunya365.wechat.controller;
 
-import com.yunya.feign.wechat.domain.model.WxRegisterModel;
+import com.yunya.feign.wechat.domain.model.*;
 import com.yunya.feign.wechat.domain.vo.*;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya365.wechat.service.impl.WXService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import com.yunya.framework.common.model.*;
+import com.yunya.framework.common.utils.*;
+import com.yunya365.wechat.service.impl.*;
+import io.swagger.annotations.*;
+import lombok.extern.slf4j.*;
+import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
+import javax.annotation.*;
+import javax.validation.*;
+import javax.validation.constraints.*;
 
 /**
  * @description:
@@ -44,7 +39,7 @@ public class WxController {
         return ResponseUtil.success();
     }
 
-    @PostMapping(value = "/wxVip/vipInfo")
+    @GetMapping(value = "/wxVip/vipInfo")
     @ApiOperation(value = "会员中心")
     public ResponseResult<WxVipInfo> vipInfo(@NotBlank @RequestParam(required = true) String openId) {
         WxVipInfo wxVipInfo = wxService.vipInfo(openId);

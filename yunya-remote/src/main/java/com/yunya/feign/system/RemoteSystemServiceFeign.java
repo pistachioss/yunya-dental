@@ -456,7 +456,7 @@ public interface RemoteSystemServiceFeign {
   @RequestMapping(value = "/api/dictionary/ids", method = RequestMethod.POST)
   List<DictionaryItem> findDictionaryItemByIds(@RequestBody List<Integer> ids);
 
-  @RequestMapping(value = "/dictItem/name", method = RequestMethod.GET)
-  public DictionaryItem getDictItemByNames(@NotBlank @RequestParam(value = "typeName", required = true) String typeName
+  @RequestMapping(value = "/api/dictItem/name", method = RequestMethod.GET)
+  DictionaryItem getDictItemByNames(@NotBlank @RequestParam(value = "typeName", required = true) String typeName
           , @NotBlank @RequestParam(value = "itemName", required = true) String itemName);
 }

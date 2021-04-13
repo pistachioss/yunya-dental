@@ -267,17 +267,17 @@ import java.util.*;
   BigDecimal sumMemberAndPrepaidRefundCash(@RequestBody @Validated CashReceiptOrRefundQuery query);
 
   @ApiOperation("保存公众号粉丝绑定")
-  @RequestMapping (value = "/saveWxAndFansBind",method = RequestMethod.POST)
+  @RequestMapping (value = "/api/saveWxAndFansBind",method = RequestMethod.POST)
   Integer saveWx(@RequestBody @Validated WxFansSaveForm wxFansSaveForm);
 
   @ApiOperation("查询微信用户是否注册")
-  @GetMapping (value = "/count/register")
+  @GetMapping (value = "/api/count/register")
   int countRegister(@RequestParam(value = "openId", required = true) String openId);
 
   @ApiOperation("根据Id查询患者信息公用信息")
-  @GetMapping("/publicInformation/{id}")
+  @GetMapping("/api/publicInformation/{id}")
   PatientPublicInfoVo findPatientPublicInfoById(@PathVariable("id") Integer id);
 
-  @PostMapping("/wxFans/query")
+  @PostMapping("/api/wxFans/query")
   WxFans getWxFans(@RequestBody WxUserQuery query);
 }
