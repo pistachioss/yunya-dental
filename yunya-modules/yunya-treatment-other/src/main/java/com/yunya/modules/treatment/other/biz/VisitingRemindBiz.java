@@ -339,9 +339,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      */
     private List<VisitingRemindVo> sortByDentistName(List<VisitingRemindVo> list, String sort) {
         Comparator<VisitingRemindVo> dentistNamecomparing = Comparator.comparing(VisitingRemindVo::getDentistName, (a, b) -> {
-            if (StringHelper.isBlank(a) || StringHelper.isBlank(b)) {
-                return 0;
-            }
+            a = null == a ? "" : a;
+            b = null == b ? "" : b;
             if ("asc".equalsIgnoreCase(sort)) {
                 return a.compareTo(b);
             } else if ("desc".equalsIgnoreCase(sort)) {
@@ -361,9 +360,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      */
     private List<VisitingRemindVo> sortByPatientName(List<VisitingRemindVo> list, String sort) {
         Comparator<VisitingRemindVo> patientNamecomparing = Comparator.comparing(VisitingRemindVo::getPatientName, (a, b) -> {
-            if (StringHelper.isBlank(a) || StringHelper.isBlank(b)) {
-                return 0;
-            }
+            a = null == a ? "" : a;
+            b = null == b ? "" : b;
             if ("asc".equalsIgnoreCase(sort)) {
                 return a.compareTo(b);
             } else if ("desc".equalsIgnoreCase(sort)) {
@@ -383,9 +381,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      */
     private List<VisitingRemindVo> sortByMobileName(List<VisitingRemindVo> list, String sort) {
         Comparator<VisitingRemindVo> mobileNamecomparing = Comparator.comparing(VisitingRemindVo::getMobile, (a, b) -> {
-            if (StringHelper.isBlank(a) || StringHelper.isBlank(b)) {
-                return 0;
-            }
+            a = null == a ? "" : a;
+            b = null == b ? "" : b;
             if ("asc".equalsIgnoreCase(sort)) {
                 return a.compareTo(b);
             } else if ("desc".equalsIgnoreCase(sort)) {
