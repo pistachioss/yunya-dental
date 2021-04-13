@@ -339,9 +339,9 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      */
     private List<VisitingRemindVo> sortByDentistName(List<VisitingRemindVo> list, String sort) {
         Comparator<VisitingRemindVo> dentistNamecomparing = Comparator.comparing(VisitingRemindVo::getDentistName, (a, b) -> {
-            if ("asc".equalsIgnoreCase(sort)) {
+            if ("asc".equalsIgnoreCase(sort) && StringHelper.isNotBlank(a)) {
                 return a.compareTo(b);
-            } else if ("desc".equalsIgnoreCase(sort)) {
+            } else if ("desc".equalsIgnoreCase(sort) && StringHelper.isNotBlank(b)) {
                 return b.compareTo(a);
             } else {
                 return 0;
@@ -358,9 +358,9 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      */
     private List<VisitingRemindVo> sortByPatientName(List<VisitingRemindVo> list, String sort) {
         Comparator<VisitingRemindVo> patientNamecomparing = Comparator.comparing(VisitingRemindVo::getPatientName, (a, b) -> {
-            if ("asc".equalsIgnoreCase(sort)) {
+            if ("asc".equalsIgnoreCase(sort) && StringHelper.isNotBlank(a)) {
                 return a.compareTo(b);
-            } else if ("desc".equalsIgnoreCase(sort)) {
+            } else if ("desc".equalsIgnoreCase(sort) && StringHelper.isNotBlank(b)) {
                 return b.compareTo(a);
             } else {
                 return 0;
@@ -377,9 +377,9 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      */
     private List<VisitingRemindVo> sortByMobileName(List<VisitingRemindVo> list, String sort) {
         Comparator<VisitingRemindVo> mobileNamecomparing = Comparator.comparing(VisitingRemindVo::getMobile, (a, b) -> {
-            if ("asc".equalsIgnoreCase(sort)) {
+            if ("asc".equalsIgnoreCase(sort) && StringHelper.isNotBlank(a)) {
                 return a.compareTo(b);
-            } else if ("desc".equalsIgnoreCase(sort)) {
+            } else if ("desc".equalsIgnoreCase(sort) && StringHelper.isNotBlank(b)) {
                 return b.compareTo(a);
             } else {
                 return 0;
