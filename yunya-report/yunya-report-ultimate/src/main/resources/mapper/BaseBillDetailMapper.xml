@@ -2992,7 +2992,7 @@
         bet.item_num as itemNum,
         ifnull(bbd.receivedWorkload, 0) as receivedWorkload,
         ifnull(bbd1.freePayWorkload, 0) as freePayWorkload,
-        ifnull(bbd2.supplementWorkload, 0) as supplementWorkload,
+        ifnull(bbd2.supplementWorkload, 0) as supplyWorkload,
         ifnull(brd.refundWorkload, 0) as refundWorkload
         from (
         SELECT be.user_id,
