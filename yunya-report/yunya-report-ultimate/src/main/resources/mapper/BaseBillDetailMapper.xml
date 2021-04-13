@@ -1036,7 +1036,7 @@
         DATE_FORMAT(bbp.payeeDate, '%Y-%m-%d %H:%i') AS chargeDate,
         CONVERT (
         SUM((bbp.actualWorkload / bbp.actualAmount) * bbp.receivedAmount),
-        DECIMAL( 19, 6 )) AS receivedWorkload
+        DECIMAL( 19, 2 )) AS receivedWorkload
         FROM
         (
         SELECT
