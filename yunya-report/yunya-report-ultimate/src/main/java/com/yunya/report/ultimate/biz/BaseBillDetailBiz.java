@@ -1253,7 +1253,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   public void exportTariffPaymentWorkloadList(
             HttpServletResponse response, BillItemTollAndWorkloadQuery query) throws IOException {
     String fileName = query.getStartDate() + "-" + query.getEndDate() + "收费项目及工作量列表";
-    List<BillItemTollAndWorkloadVO> resultList = mapper.selectTariffWorkloadInfo(query);
+    List<BillItemTollAndWorkloadVO> resultList =
+        findStatisticsTariffPaymentWorkloadList(query).getList();
     ExcelUtil<BillItemTollAndWorkloadVO> excelUtil =
                 new ExcelUtil<>(BillItemTollAndWorkloadVO.class);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
