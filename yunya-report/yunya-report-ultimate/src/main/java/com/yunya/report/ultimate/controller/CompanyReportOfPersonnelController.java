@@ -396,6 +396,7 @@ public class CompanyReportOfPersonnelController {
    * @param query 查询条件
    * @return PageInfo<EmployeeFreepaymentWorkloadDetailVO>
    */
+  @Deprecated
   @ApiOperation("公司端报表-人事报表-开单项目实收金额及数量")
   @PostMapping(value = "/employee/billItem/list", name = "根据条件查询开单项目实收金额及数量列表")
   public ResponseResult<PageInfo<EmployeeFreepaymentWorkloadDetailVO>> findEmployeeBillItemList(
