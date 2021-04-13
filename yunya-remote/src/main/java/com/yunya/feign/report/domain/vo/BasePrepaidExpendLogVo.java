@@ -61,22 +61,22 @@ public class BasePrepaidExpendLogVo {
     private String cardNumber;
 
     /** 本次消费本金 */
-    @Excel(name = "本次消费本金")
+    @Excel(name = "本次消费本金", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("本次消费本金")
     private BigDecimal principalAmount = new BigDecimal(0);
 
     /** 本次消费赠金 */
-    @Excel(name = "本次消费赠金")
+    @Excel(name = "本次消费赠金", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("本次消费赠金")
     private BigDecimal bonusAmount = new BigDecimal(0);
 
     /** 消费后预付款余额（含赠送金额） */
-    @Excel(name = "消费后预付款余额（含赠送金额）")
+    @Excel(name = "消费后预付款余额（含赠送金额）", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("消费后预付款余额（含赠送金额）")
     private BigDecimal currentExpendPrincipal = new BigDecimal(0);
 
     /** 剩余预付款余额（含赠送金额） */
-    @Excel(name = "剩余预付款余额（含赠送金额）")
+    @Excel(name = "剩余预付款余额（含赠送金额）", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("剩余预付款余额（含赠送金额）")
     private BigDecimal currentAmount = new BigDecimal(0);
 

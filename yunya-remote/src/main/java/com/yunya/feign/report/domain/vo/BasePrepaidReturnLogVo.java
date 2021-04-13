@@ -46,22 +46,22 @@ public class BasePrepaidReturnLogVo {
     private String cardNumber;
 
     /** 退本金金额 */
-    @Excel(name = "退本金金额")
+    @Excel(name = "退本金金额", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("退本金金额")
     private BigDecimal principalAmount = new BigDecimal(0);
 
     /** 退赠金金额 */
-    @Excel(name = "退赠金金额")
+    @Excel(name = "退赠金金额", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("退赠金金额")
     private BigDecimal bonusAmount = new BigDecimal(0);
 
     /** 退费后预付款余额（含赠送金额） */
-    @Excel(name = "退费后预付款余额（含赠送金额）")
+    @Excel(name = "退费后预付款余额（含赠送金额）", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("退费后预付款余额（含赠送金额）")
     private BigDecimal currentReturnPrincipal = new BigDecimal(0);
 
     /** 剩余预付款余额（含赠送金额） */
-    @Excel(name = "剩余预付款余额（含赠送金额）")
+    @Excel(name = "剩余预付款余额（含赠送金额）", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("剩余预付款余额（含赠送金额）")
     private BigDecimal currentAmount = new BigDecimal(0);
 

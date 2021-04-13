@@ -46,22 +46,22 @@ public class BasePrepaidRechargeLogVo {
     private String cardNumber;
 
     /** 充值本金金额 */
-    @Excel(name = "充值本金金额")
+    @Excel(name = "充值本金金额", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("充值本金金额")
     private BigDecimal principalAmount = new BigDecimal(0);
 
     /** 充值赠金金额 */
-    @Excel(name = "充值赠金金额")
+    @Excel(name = "充值赠金金额", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("充值赠金金额")
     private BigDecimal bonusAmount = new BigDecimal(0);
 
     /** 充值后预付款余额（含赠送金额） */
-    @Excel(name = "充值后预付款余额（含赠送金额）")
+    @Excel(name = "充值后预付款余额（含赠送金额）", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("充值后预付款余额（含赠送金额）")
     private BigDecimal currentRechargePrincipal = new BigDecimal(0);
 
     /** 剩余预付款余额（含赠送金额） */
-    @Excel(name = "剩余预付款余额（含赠送金额）")
+    @Excel(name = "剩余预付款余额（含赠送金额）", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("剩余预付款余额（含赠送金额）")
     private BigDecimal currentAmount = new BigDecimal(0);
 

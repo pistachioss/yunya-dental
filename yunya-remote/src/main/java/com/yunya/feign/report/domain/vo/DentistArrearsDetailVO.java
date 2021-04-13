@@ -51,23 +51,23 @@ public class DentistArrearsDetailVO implements Serializable {
   @ApiModelProperty("手机号")
   private String mobile;
   /** 原价合计 */
-  @Excel(name = "原价合计")
+  @Excel(name = "原价合计", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("原价合计")
   private BigDecimal originalAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额")
+  @Excel(name = "优惠金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("优惠金额")
   private BigDecimal privilegeAmount;
   /** 实收金额 */
-  @Excel(name = "实收金额")
+  @Excel(name = "实收金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("实收金额")
   private BigDecimal actualAmount;
   /** 已收金额 */
-  @Excel(name = "已收金额")
+  @Excel(name = "已收金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("已收金额")
   private BigDecimal receivedAmount;
   /** 剩余欠费合计 */
-  @Excel(name = "剩余欠费金额")
+  @Excel(name = "剩余欠费金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("剩余欠费金额")
   private BigDecimal remainingArrears;
 }

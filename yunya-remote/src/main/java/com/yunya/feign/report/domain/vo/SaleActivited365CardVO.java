@@ -29,7 +29,7 @@ public class SaleActivited365CardVO implements Serializable {
     private String abbreviation;
 
     /** 销售数量 */
-    @Excel(name = "销售数量")
+    @Excel(name = "销售数量", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("销售数量")
     private Integer saleNum;
 
