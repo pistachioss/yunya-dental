@@ -331,7 +331,7 @@ public class PatientOriginRelationsBiz
         List<Integer> itemIds = new ArrayList<Integer>() {{ add(23);add(26); }};
         // 其中
         baseBillPayList =
-            baseBillPayMapper.selectBaseBillPayInfoList(baseBillIdList, query, itemIds);
+            baseBillPayMapper.selectMdBaseBillPayInfoList(baseBillIdList, query, itemIds);
       }
       Map<Integer, List<BaseBillPay>> baseBillPayMap = getBaseBillPayList(baseBillIdList,baseBillPayList);
       // 订单支付明细
