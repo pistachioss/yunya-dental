@@ -81,4 +81,12 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         }
         return mapper.selectOneByExample(example);
     }
+
+    public int update(WxFansUpdateForm wxFansUpdateForm){
+        WxFans wxFans = new WxFans();
+        wxFans.setId(wxFansUpdateForm.getId());
+        wxFans.setRemark(wxFansUpdateForm.getRemark());
+        wxFans.setUpdTime(new Date());
+        return mapper.updateByPrimaryKeySelective(wxFans);
+    }
 }

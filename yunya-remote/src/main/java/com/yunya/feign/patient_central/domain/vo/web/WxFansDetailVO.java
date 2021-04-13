@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -15,6 +16,7 @@ import lombok.Data;
  * @return: $
  */
 @Data
+@ApiModel("服中心-用户管理列表-查看详情VO")
 public class WxFansDetailVO {
 
     @ApiModelProperty("患者姓名")

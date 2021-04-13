@@ -1,5 +1,7 @@
 package com.yunya.models.patient_central;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -85,6 +87,7 @@ public class WxFans {
     /**
      * 备注
      */
+    @ApiModelProperty("备注")
     private String remark;
 
     /**

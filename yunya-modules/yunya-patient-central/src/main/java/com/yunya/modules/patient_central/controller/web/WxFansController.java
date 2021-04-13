@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.WxFansDetailForm;
 import com.yunya.feign.patient_central.domain.query.WxFansQueryForm;
 import com.yunya.feign.patient_central.domain.query.WxFansSaveForm;
+import com.yunya.feign.patient_central.domain.query.WxFansUpdateForm;
 import com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO;
 import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
 import com.yunya.framework.common.model.ResponseResult;
@@ -74,7 +75,7 @@ public class WxFansController {
      * @param
      * @return
      */
-    @ApiOperation("客服中心-新增粉丝信息以及绑定关系")
+    @ApiOperation("客服中心-新增粉丝信息以及绑定关系(后端调用)")
     @PostMapping("/save")
     public ResponseResult<Integer> save(
             @RequestBody @Validated WxFansSaveForm wxFansSaveForm) {
@@ -89,8 +90,8 @@ public class WxFansController {
      */
     @ApiOperation("客服中心-用户管理列表-查看详情-修改备注")
     @PostMapping("/update")
-    public ResponseResult<Integer> update(@RequestBody @Validated WxFans wxFans){
-        return ResponseUtil.success(wxFansBiz.updateSelectiveById(wxFans));
+    public ResponseResult<Integer> update(@RequestBody @Validated WxFansUpdateForm wxFansUpdateForm){
+        return ResponseUtil.success(wxFansBiz.update(wxFansUpdateForm));
     }
 
 }
