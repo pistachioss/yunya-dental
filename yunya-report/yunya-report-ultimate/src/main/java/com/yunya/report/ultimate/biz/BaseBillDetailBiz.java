@@ -17,10 +17,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.models.report.BaseBillDetail;
-import com.yunya.models.report.BaseOrganization;
-import com.yunya.models.report.BasePatientOrigin;
-import com.yunya.models.report.BaseTreatmentProcess;
+import com.yunya.models.report.*;
 import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +59,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   @Autowired private BasePatientOriginMapper basePatientOriginMapper;
   /** 卡券*/
   @Autowired private BaseCouponMapper baseCouponMapper;
+  /** 项目信息*/
+  @Autowired private BaseTariffInfoBiz baseTariffInfoBiz;
 
   /**
    * 根据条件查询账单收入详情列表
@@ -650,8 +649,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       EmployeePersonalWorkloadDetailQuery query) {
     EmployeeWorkloadQuery workloadQuery = new EmployeeWorkloadQuery();
     workloadQuery.setWhetherPage(false);
-    workloadQuery.setDateType(query.getDateType());
-    workloadQuery.setQueryDate(query.getQueryDate());
+    workloadQuery.setOrgId(query.getOrgId());
     workloadQuery.setEmployeeIds(new Integer[] {query.getEmployeeId()});
     List<BaseBillDetail> billDetails = mapper.selectBillDetailByQuery(workloadQuery);
     if (StringHelper.isEmpty(billDetails)) {
@@ -662,6 +660,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     Set<Integer> billIds =
         billDetails.stream().map(BaseBillDetail::getBillId).collect(Collectors.toSet());
+    query.setOrgId(null);
     List<EmployeeFreepaymentWorkloadDetailVO> resultList =
         mapper.selectEmployeeFreepaymentWorkloadDetailList(query, billIds, FREE_PAYMENT_ID);
     // 免单支付
@@ -1795,7 +1794,39 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   PageInfo<MonthCategoryVO> monthCategoryList(ClinicPerformanceBusinessQuery query) {
+    List<BaseTariffInfo> items = baseTariffInfoBiz.selectListAll();
+    Map<String, String> map = new HashMap<>(16);
+    if (StringHelper.isNotEmpty(items)) {
+      items.forEach(vo->map.put(vo.getItemType()+","+vo.getItemId(),vo.getItemType()+","+vo.getCategoryId()));
+    }
     List<MonthCategoryVO> vos = mapper.monthCategoryList(query, null);
+    if (StringHelper.isNotEmpty(vos)) {
+      Set<Integer> billIds = vos.stream().map(MonthCategoryVO::getBillId).collect(Collectors.toSet());
+      List<BaseBillDetail> details = mapper.selectBillDetailByBillIds(billIds);
+      details = details.stream().filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0).collect(Collectors.toList());
+      computePercentage(details);
+      Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(billIds);
+      Map<String, BigDecimal> frees = new HashMap<>(16);
+      details.forEach(detail -> {
+        String key = detail.getItemType() + "," + detail.getItemId();
+        Integer billId = detail.getBillId();
+        BigDecimal free = freePaymentMap.get(billId);
+        BigDecimal amount = detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+        BigDecimal freeAmount = frees.get(key);
+        if (freeAmount == null) {
+          freeAmount = BigDecimal.ZERO;
+        }
+        frees.put(key, freeAmount.add(amount));
+      });
+//      Map<String, >
+    }
+    vos = mapper.monthCategoryList(query, 1);
+
+    if (StringHelper.isNotEmpty(vos)) {
+      Set<Integer> billIds = vos.stream().map(MonthCategoryVO::getBillId).collect(Collectors.toSet());
+      Map<Integer, BigDecimal> frees = sumFreePaymentMap(billIds);
+
+    }
     return new PageInfo<>(vos);
   }
 
