@@ -26,7 +26,7 @@ public class WebConfiguration implements WebMvcConfigurer {
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(getUserAuthRestInterceptor())
-            .addPathPatterns("/wxVip/**");
+            .addPathPatterns("/wxVip/**").excludePathPatterns("/wxVip/auth");
 
   }
 

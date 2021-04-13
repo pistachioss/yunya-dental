@@ -26,20 +26,20 @@ public class WxController {
     @Resource
     private WXService wxService;
 
-    @GetMapping(value = "/auth")
+    @GetMapping(value = "/wxVip/auth")
     @ApiOperation(value = "获取用户授权信息")
     public ResponseResult<WxAuthVo> getUserOpenId(@RequestParam String code) {
         return ResponseUtil.success(wxService.getAuthInfo(code));
     }
 
-    @PostMapping(value = "/wxVip/register")
+    @PostMapping(value = "/wxVip/home/register")
     @ApiOperation(value = "会员注册")
     public ResponseResult wxRegister(@NotBlank @RequestParam(required = true) String openId, @Valid @RequestBody WxRegisterModel model) {
         wxService.register(openId, model);
         return ResponseUtil.success();
     }
 
-    @GetMapping(value = "/wxVip/vipInfo")
+    @GetMapping(value = "/wxVip/home/vipInfo")
     @ApiOperation(value = "会员中心")
     public ResponseResult<WxVipInfo> vipInfo(@NotBlank @RequestParam(required = true) String openId) {
         WxVipInfo wxVipInfo = wxService.vipInfo(openId);
