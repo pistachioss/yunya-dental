@@ -293,4 +293,14 @@ public class BizTest {
         System.out.println(System.currentTimeMillis() - t1);
         System.out.println(JSONObject.toJSON(resultList));
     }
+
+    @Test
+    public void testNonMonthCategoryList() {
+        String param = "{\"queryDate\":\"2021-03\",\"orgId\":27,\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+        BillCategoryIncomeQuery query = JSONObject.parseObject(param, BillCategoryIncomeQuery.class);
+        long t1 = System.currentTimeMillis();
+        PageInfo<NonMonthCategoryVO> resultList = baseBillDetailBiz.nonMonthCategoryList(query);
+        System.out.println(System.currentTimeMillis() - t1);
+        System.out.println(JSONObject.toJSON(resultList));
+    }
 }

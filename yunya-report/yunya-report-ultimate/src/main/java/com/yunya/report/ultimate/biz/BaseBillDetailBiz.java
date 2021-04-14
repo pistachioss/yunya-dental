@@ -15,6 +15,7 @@ import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBillDetail;
@@ -32,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
@@ -1348,5 +1350,130 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         vo.setTotalAmount(vo.getTotalActualAmount().subtract(freeAmount).add(vo.getTotalCouponAmount()));
       });
     }
+  }
+
+  /**
+   * 根据条件查询非本月免单金额列表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<NonMonthCategoryVO> nonMonthCategoryList(BillCategoryIncomeQuery query) {
+    List<NonMonthCategoryVO> vos = mapper.nonMonthCategoryList(query);
+    List<NonMonthCategoryVO> res = new ArrayList<>();
+    if (StringHelper.isNotEmpty(vos)) {
+      Map<String, String> categoryMap = new HashMap<>(16);
+      Map<String, String> categoryName = new HashMap<>(16);
+      List<BaseTariffInfo> items = baseTariffInfoBiz.selectListAll();
+      if (StringHelper.isNotEmpty(items)) {
+        items.forEach(vo->{
+          categoryMap.put(vo.getItemType()+","+vo.getItemId(),vo.getItemType()+","+vo.getCategoryId());
+          categoryName.put(vo.getItemType()+","+vo.getCategoryId(), vo.getCategoryName());
+        });
+      }
+      Map<Integer, BigDecimal[]> billMap = new HashMap<>(16);
+      for (NonMonthCategoryVO vo : vos) {
+        Integer billId = vo.getBillId();
+        BigDecimal[] amounts = billMap.get(billId);
+        if (amounts == null) {
+          amounts = new BigDecimal[]{BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO};
+        }
+        amounts[0] = amounts[0].add(vo.getActualAmount());// 实收
+        amounts[1] = amounts[1].add(vo.getBillAmount());// 原价
+        billMap.put(billId, amounts);
+      }
+      Set<Integer> billIds = billMap.keySet();
+      EmployeePersonalWorkloadDetailQuery queryForm = new EmployeePersonalWorkloadDetailQuery();
+      queryForm.setOrgId(query.getOrgId());
+      queryForm.setQueryDate(query.getQueryDate());
+      queryForm.setDateType((byte) 0);
+      List<EmployeeFreepaymentWorkloadDetailVO> resultList =
+              mapper.selectEmployeeFreepaymentWorkloadDetailList(queryForm, billIds, FREE_PAYMENT_ID);
+      // 免单支付
+      if (StringHelper.isNotEmpty(resultList)) {
+        Map<Integer, EmployeeFreepaymentWorkloadDetailVO> billPayIds = resultList.stream()
+                .collect(Collectors.toMap(EmployeeFreepaymentWorkloadDetailVO::getBillPayId, Function.identity()));
+        billIds = resultList.stream().map(EmployeeFreepaymentWorkloadDetailVO::getBillId).collect(Collectors.toSet());
+        List<BaseBillDetail> details = mapper.selectBillDetailByBillIds(billIds);
+        details = details.stream().filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0).collect(Collectors.toList());
+        computePercentage(details);
+        Map<Integer, List<BaseBillPayDetailVO>> freePaymentMap = sumFreePaymentMapByBillPayIds(billPayIds.keySet());
+        Map<String, BigDecimal> freeMap = new LinkedHashMap<>(16);
+        details.forEach(detail -> {
+          Integer billId = detail.getBillId();
+          String cid = categoryMap.get(detail.getItemType() + "," + detail.getItemId());
+          List<BaseBillPayDetailVO> list = freePaymentMap.get(billId);
+          if (StringHelper.isNotEmpty(list)) {
+            list.forEach(vo -> {
+              Integer billPayId = vo.getBillPayId();
+              String key = billId + "," + billPayId + "," + cid;
+              BigDecimal free = vo.getPrincipalAmount();
+              BigDecimal amount = detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+              BigDecimal freeAmount = freeMap.get(key);
+              if (freeAmount == null) {
+                freeAmount = BigDecimal.ZERO;
+              }
+              freeMap.put(key, freeAmount.add(amount));
+              BigDecimal[] billAmounts = billMap.get(billId);
+              if (billAmounts == null) {
+                billAmounts = new BigDecimal[]{BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO};
+              }
+              billAmounts[2] = billAmounts[2].add(amount);
+              billMap.put(billId, billAmounts);
+            });
+          }
+        });
+
+        for (Map.Entry<String, BigDecimal> entry : freeMap.entrySet()) {
+          String[] keys = entry.getKey().split(",");
+          Integer billId = Integer.parseInt(keys[0]);
+          Integer billPayId = Integer.parseInt(keys[1]);
+          Integer itemType = Integer.parseInt(keys[2]);
+          Integer categoryId = Integer.parseInt(keys[3]);
+          BigDecimal freeAmount = entry.getValue();
+          if (freeAmount == null) {
+            freeAmount = BigDecimal.ZERO;
+          }
+          BigDecimal[] billAmounts = billMap.get(billId);
+          if (billAmounts == null) {
+            billAmounts = new BigDecimal[]{BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO};
+          }
+          NonMonthCategoryVO vo = new NonMonthCategoryVO();
+          vo.setFreeAmount(freeAmount);
+          vo.setActualAmount(billAmounts[0]);
+          vo.setBillAmount(billAmounts[1]);
+          vo.setFreeBillAmount(billAmounts[2]);
+          vo.setCategoryId(categoryId);
+          vo.setCategoryName(categoryName.get(itemType+","+categoryId));
+          EmployeeFreepaymentWorkloadDetailVO workload = billPayIds.get(billPayId);
+          if (workload != null) {
+            vo.setPatientName(workload.getPatientName());
+            vo.setFreeDate(workload.getChargeDate());
+            vo.setAbbreviation(workload.getAbbreviation());
+          }
+          res.add(vo);
+        }
+      }
+    }
+    if (query.getWhetherPage()) {
+      return PageUtl.doPage(query.getPageNum(), query.getPageSize(), res);
+    }
+    return new PageInfo<>(res);
+  }
+
+  /**
+   * 根据条件导出非本月免单金额明细列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return void
+   */
+  public void nonMonthCategoryExport(HttpServletResponse response, BillCategoryIncomeQuery query) throws IOException {
+    query.setWhetherPage(false);
+    List<NonMonthCategoryVO> list = nonMonthCategoryList(query).getList();
+    ExcelUtil<NonMonthCategoryVO> excelUtil = new ExcelUtil<>(NonMonthCategoryVO.class);
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    String fileName = excelUtil.getFileName(query.getQueryDate(),"", organization.getAbbreviation(),"非本月免单金额明细");
+    excelUtil.exportExcel(response, list, "非本月免单金额明细", fileName);
   }
 }
