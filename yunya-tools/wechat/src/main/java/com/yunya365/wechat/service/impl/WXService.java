@@ -5,6 +5,8 @@ import com.google.common.base.*;
 import com.google.common.collect.*;
 import com.yunya.feign.discount.*;
 import com.yunya.feign.discount.domain.vo.*;
+import com.yunya.feign.oss.*;
+import com.yunya.feign.oss.domain.model.*;
 import com.yunya.feign.patient_central.*;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
@@ -12,6 +14,7 @@ import com.yunya.feign.system.*;
 import com.yunya.feign.wechat.domain.model.*;
 import com.yunya.feign.wechat.domain.vo.*;
 import com.yunya.framework.common.exception.*;
+import com.yunya.framework.common.model.*;
 import com.yunya.framework.redis.util.*;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.*;
@@ -24,6 +27,7 @@ import org.springframework.web.client.*;
 
 import javax.annotation.*;
 import java.util.*;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.*;
 
@@ -47,6 +51,8 @@ public class WXService extends AbstractWxBaseApi {
     private RemoteDiscountFeign discountFeign;
     @Resource
     private RemoteSystemServiceFeign systemServiceFeign;
+    @Resource
+    private RemoteOssServiceFeign ossServiceFeign;
 
     public WxAuthVo getAuthInfo(String code) {
         WxAuthVo vo = new WxAuthVo();
@@ -153,10 +159,40 @@ public class WXService extends AbstractWxBaseApi {
             }
             List<WxPatientEffectiveVo> effectCardList = discountFeign.getPatientEffectCardList(patientId);
             if (CollectionUtils.isNotEmpty(effectCardList)) {
+                //组装oss文件路径
+                this.assembleFileUrl(effectCardList);
                 wxVipInfoVo.setCardList(effectCardList);
             }
         }
         return wxVipInfoVo;
+    }
+
+    private void assembleFileUrl(List<WxPatientEffectiveVo> effectCardList) {
+        List<String> urls = effectCardList.stream()
+                .filter(obj -> StringUtils.isNotBlank(obj.getPath()))
+                .map(WxPatientEffectiveVo::getPath).collect(toList());
+        List<OssUrlForm> ossObs = urls.stream().map(url -> {
+            OssUrlForm ossUrlForm = new OssUrlForm();
+            ossUrlForm.setCompanyId(0);
+            ossUrlForm.setIsThumb(false);
+            ossUrlForm.setObjectId(1);
+            ossUrlForm.setOssCategory(4);
+            ossUrlForm.setOssFilename(url);
+            return ossUrlForm;
+        }).collect(toList());
+        try {
+            final ResponseResult url = ossServiceFeign.getUrl(ossObs);
+            List<String> data = (List<String>) url.getData();
+            effectCardList.stream()
+                    .filter(obj -> StringUtils.isNotBlank(obj.getPath()))
+                    .forEach(obj -> {
+                        Optional<String> first = data.stream().filter(urlStr -> urlStr.contains(obj.getPath())).findFirst();
+                        first.ifPresent(obj::setPath);
+                    });
+        } catch (Exception e) {
+            log.warn("获取图片异常，e", e);
+            throw new ClientServiceException(WeChatError.WX_FILE_URL_ERROR);
+        }
     }
 
     private WxFans assembleWxFans(String userInfoStr) {

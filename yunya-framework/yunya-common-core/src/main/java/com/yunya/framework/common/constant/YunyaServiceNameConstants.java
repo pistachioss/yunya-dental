@@ -42,4 +42,6 @@ public interface YunyaServiceNameConstants {
   String YUNYA_SMS_SERVICE = "yunya-sms";
   /** 微信平台 */
   String YUNYA_WECHAT = "wechat";
+  /** aliyun-oss */
+  String YUNYA_ALIYUN_OSS = "aliyun-oss";
 }
