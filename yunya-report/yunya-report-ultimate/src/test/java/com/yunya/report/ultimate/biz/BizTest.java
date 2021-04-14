@@ -241,7 +241,7 @@ public class BizTest {
      */
     @Test
     public void test20() {
-        String param = "{\"couponIds\":[],\"executorName\":\"\",\"workStatus\":\"\",\"startDate\":\"2021-03-01\",\"endDate\":\"2021-03-31\",\"orgIds\":[26],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+        String param = "{\"couponIds\":[],\"executorName\":\"\",\"workStatus\":[],\"startDate\":\"2021-04-13\",\"endDate\":\"2021-04-13\",\"orgIds\":[26],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
         CouponExecutoredQuery query = JSONObject.parseObject(param, CouponExecutoredQuery.class);
         long t1 = System.currentTimeMillis();
         PageInfo<CouponExecutoredVO> pageInfo = baseBillDetailBiz.couponExecutoredList(query);
@@ -281,6 +281,16 @@ public class BizTest {
         String startDate = "2021-04-01";
         String curDate = "2021-04-13";
         DynamicHeaderPageInfo<JSONObject> resultList = baseBillDetailBiz.workloadCompleted(startDate, curDate);
+        System.out.println(JSONObject.toJSON(resultList));
+    }
+
+    @Test
+    public void testCategoryInComeList() {
+        String param = "{\"queryDate\":\"2021-03\",\"orgId\":26,\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+        BillCategoryIncomeQuery query = JSONObject.parseObject(param, BillCategoryIncomeQuery.class);
+        long t1 = System.currentTimeMillis();
+        PageInfo<CategoryInfoIncomeVO> resultList = baseBillDetailBiz.findCategoryIncomeList(query);
+        System.out.println(System.currentTimeMillis() - t1);
         System.out.println(JSONObject.toJSON(resultList));
     }
 }

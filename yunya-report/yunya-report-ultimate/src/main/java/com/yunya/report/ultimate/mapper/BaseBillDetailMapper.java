@@ -342,7 +342,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(@Param("query") ClinicPerformanceBusinessQuery query,
                                                             @Param("column") String column);
 
-  List<MonthCategoryVO> monthCategoryList(@Param("query") ClinicPerformanceBusinessQuery query, @Param("cur") Integer cur);
+  List<Integer> billIdByMonthFreePayment(@Param("query") BillCategoryIncomeQuery query);
 
   List<NonMonthCategoryVO> nonMonthCategoryList(@Param("query") ClinicPerformanceBusinessQuery query);
 }
