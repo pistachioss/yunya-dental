@@ -2,6 +2,7 @@ package com.yunya365.wechat.config;
 
 import org.apache.commons.lang3.concurrent.*;
 import org.springframework.beans.factory.*;
+import org.springframework.stereotype.*;
 
 import javax.annotation.*;
 import java.util.concurrent.*;
@@ -11,7 +12,7 @@ import java.util.concurrent.*;
  * @author: xy
  * @date 2021/3/24 15:34
  **/
-//@Component
+@Component
 public class RefreshToken implements InitializingBean {
 
     @Resource

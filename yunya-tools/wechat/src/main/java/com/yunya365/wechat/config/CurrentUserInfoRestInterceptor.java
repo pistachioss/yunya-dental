@@ -7,6 +7,7 @@ import com.yunya.framework.common.exception.*;
 import com.yunya.framework.common.exception.auth.*;
 import com.yunya.framework.redis.util.*;
 import com.yunya365.wechat.enums.*;
+import lombok.extern.slf4j.*;
 import org.apache.commons.lang3.*;
 import org.springframework.web.client.*;
 import org.springframework.web.method.*;
@@ -22,6 +23,7 @@ import java.util.concurrent.*;
  * @author ace
  * @date 2017/9/10
  */
+@Slf4j
 public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
 
     @Resource
@@ -61,6 +63,7 @@ public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
         String accessToken = redisUtils.get(redisKey);
         String url = String.format(WXConstant.WX_USER_INFO_URL, accessToken, openId);
         String resultStr = restTemplate.getForObject(url, String.class);
+        log.info("获取用户信息结果，{}", resultStr);
         JSONObject jsonObject = JSONObject.parseObject(resultStr);
         this.checkWxResult(jsonObject);
         return resultStr;

@@ -5,6 +5,7 @@ import com.yunya.framework.common.constant.*;
 import com.yunya.framework.redis.util.*;
 import lombok.extern.slf4j.*;
 import org.apache.commons.lang3.*;
+import org.springframework.context.annotation.*;
 import org.springframework.web.client.*;
 
 import javax.annotation.*;
@@ -15,7 +16,7 @@ import java.util.concurrent.*;
  * @author: xy
  * @date 2021/3/26 13:16
  **/
-//@Configuration
+@Configuration
 @Slf4j
 public class AccessTokenRunner{
     @Resource

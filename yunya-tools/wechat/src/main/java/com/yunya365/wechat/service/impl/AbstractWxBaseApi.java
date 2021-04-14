@@ -69,6 +69,7 @@ public abstract class AbstractWxBaseApi {
     public String getAuthOpenId(String code) {
         String authAccessTokenUrl = String.format(WXConstant.WX_AUTH_ACCESS_TOKEN_URL, wxConfig.getAppId(), wxConfig.getAppSecret(), code);
         String resultStr = restTemplate.getForObject(authAccessTokenUrl, String.class);
+        log.info("用户授权信息：{}", resultStr);
         JSONObject jsonObject = JSONObject.parseObject(resultStr);
         Integer errCode = jsonObject.getInteger("errcode");
         if (errCode != null) {

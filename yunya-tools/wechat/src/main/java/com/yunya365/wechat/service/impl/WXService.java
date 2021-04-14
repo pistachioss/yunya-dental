@@ -52,7 +52,12 @@ public class WXService extends AbstractWxBaseApi {
         WxAuthVo vo = new WxAuthVo();
         //根据code获取access_token和openid(非基础的那个)
         String openId = super.getAuthOpenId(code);
+        vo.setSubscribe(false);
         vo.setOpenId(openId);
+        int count = patientFeign.countRegister(openId);
+        if (count > 0) {
+            vo.setSubscribe(true);
+        }
         return vo;
     }
 
