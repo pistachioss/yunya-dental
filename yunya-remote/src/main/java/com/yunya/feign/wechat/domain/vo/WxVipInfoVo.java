@@ -13,7 +13,7 @@ import java.util.*;
  * @date 2021/4/7 17:37
  **/
 @Data
-public class WxVipInfo {
+public class WxVipInfoVo {
     @ApiModelProperty(value = "注册用户名")
     private String registerName;
     @ApiModelProperty(value = "注册手机号")

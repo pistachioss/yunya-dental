@@ -41,8 +41,10 @@ public class WxController {
 
     @GetMapping(value = "/wxVip/home/vipInfo")
     @ApiOperation(value = "会员中心")
-    public ResponseResult<WxVipInfo> vipInfo(@NotBlank @RequestParam(required = true) String openId) {
-        WxVipInfo wxVipInfo = wxService.vipInfo(openId);
-        return ResponseUtil.success(wxVipInfo);
+    public ResponseResult<WxVipInfoVo> vipInfo(@NotBlank @RequestParam(required = true) String openId,
+                                               @RequestParam(required = false) Integer patientId) {
+        WxVipInfoVo wxVipInfoVo = wxService.vipInfo(openId, patientId);
+        return ResponseUtil.success(wxVipInfoVo);
     }
+
 }

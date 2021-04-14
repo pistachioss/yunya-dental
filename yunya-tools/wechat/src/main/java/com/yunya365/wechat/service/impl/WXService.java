@@ -77,59 +77,86 @@ public class WXService extends AbstractWxBaseApi {
         patientFeign.saveWx(fansSaveForm);
     }
 
-    public WxVipInfo vipInfo(String openId) {
-        WxVipInfo wxVipInfo;
-        WxUserQuery query = new WxUserQuery();
-        query.setOpenId(openId);
-        //查询微信患者id
-        WxFans wxFans = patientFeign.getWxFans(query);
-        Integer patientId = wxFans.getPatientId();
+    public WxVipInfoVo vipInfo(String openId, Integer patientId) {
+        WxFans wxFans = this.getOwnInfo(openId, patientId);
         if (patientId == null) {
-            wxVipInfo = this.assembleWxUserInfo(wxFans);
+            if (wxFans == null) {
+                throw new ClientServiceException(WeChatError.USER_NOT_FOLLOW);
+            }
+            return this.getVipInfo(patientId, wxFans);
         } else {
-            wxVipInfo = this.assembleWxPatientInfo(patientId);
-            if (wxVipInfo == null) {
-                wxVipInfo = this.assembleWxUserInfo(wxFans);
+            if (wxFans == null) {
+                return this.assembleWxPatientInfo(patientId);
+            } else {
+                return this.getVipInfo(patientId, wxFans);
             }
         }
-        return wxVipInfo;
     }
 
-    private WxVipInfo assembleWxUserInfo(WxFans wxFans) {
+    private WxFans getOwnInfo(String openId, Integer patientId) {
+        WxUserQuery query = new WxUserQuery();
+        if (patientId == null) {
+            query.setOpenId(openId);
+        } else {
+            query.setPatientId(patientId);
+        }
+        //查询微信患者id
+        return patientFeign.getWxFans(query);
+    }
+
+    private WxVipInfoVo getVipInfo(Integer patientId, WxFans wxFans) {
+        WxVipInfoVo wxVipInfoVo;
+        //未绑定患者直接返回注册信息
+        if (patientId == null) {
+            wxVipInfoVo = this.assembleWxUserInfo(wxFans);
+        } else {
+            wxVipInfoVo = this.assembleWxPatientInfo(patientId);
+            if (wxVipInfoVo == null) {
+                wxVipInfoVo = this.assembleWxUserInfo(wxFans);
+            }
+            //患者头像没有取微信用户头像
+            if (StringUtils.isBlank(wxVipInfoVo.getHeadImgUrl())) {
+                wxVipInfoVo.setHeadImgUrl(wxFans.getHeadImgurl());
+            }
+        }
+        return wxVipInfoVo;
+    }
+
+    private WxVipInfoVo assembleWxUserInfo(WxFans wxFans) {
         //未注册
-        WxVipInfo wxVipInfo = new WxVipInfo();
-        wxVipInfo.setRegisterName(wxFans.getRegisterName());
-        wxVipInfo.setRegisterMobile(wxFans.getRegisterMobile());
-        wxVipInfo.setHeadImgUrl(wxFans.getHeadImgurl());
-        return wxVipInfo;
+        WxVipInfoVo wxVipInfoVo = new WxVipInfoVo();
+        wxVipInfoVo.setRegisterName(wxFans.getRegisterName());
+        wxVipInfoVo.setRegisterMobile(wxFans.getRegisterMobile());
+        wxVipInfoVo.setHeadImgUrl(wxFans.getHeadImgurl());
+        return wxVipInfoVo;
     }
 
-    private WxVipInfo assembleWxPatientInfo(Integer patientId) {
-        WxVipInfo wxVipInfo = null;
+    private WxVipInfoVo assembleWxPatientInfo(Integer patientId) {
+        WxVipInfoVo wxVipInfoVo = null;
         PatientPublicInfoVo patientInfo = patientFeign.findPatientPublicInfoById(patientId);
         if (patientInfo != null) {
-            wxVipInfo = new WxVipInfo();
-            wxVipInfo.setRegisterName(patientInfo.getName());
-            wxVipInfo.setRegisterMobile(patientInfo.getMobile());
-            wxVipInfo.setHeadImgUrl(patientInfo.getFaceUrl());
-            wxVipInfo.setMemberType(patientInfo.getMemberTypeId());
-            wxVipInfo.setExistPrePayment(false);
-            wxVipInfo.setExistMemberCard(false);
+            wxVipInfoVo = new WxVipInfoVo();
+            wxVipInfoVo.setRegisterName(patientInfo.getName());
+            wxVipInfoVo.setRegisterMobile(patientInfo.getMobile());
+            wxVipInfoVo.setHeadImgUrl(patientInfo.getFaceUrl());
+            wxVipInfoVo.setMemberType(patientInfo.getMemberTypeId());
+            wxVipInfoVo.setExistPrePayment(false);
+            wxVipInfoVo.setExistMemberCard(false);
             //是否有预付款账号
             if (StringUtils.isNotBlank(patientInfo.getPrepaymentNumber())) {
-                wxVipInfo.setExistPrePayment(true);
+                wxVipInfoVo.setExistPrePayment(true);
             }
             //是否有会员卡账号
             if (StringUtils.isNotBlank(patientInfo.getCardNumber())) {
-                wxVipInfo.setExistMemberCard(true);
-                wxVipInfo.setMemberBalance(patientInfo.getMemberCardMoneySum());
+                wxVipInfoVo.setExistMemberCard(true);
+                wxVipInfoVo.setMemberBalance(patientInfo.getMemberCardMoneySum());
             }
             List<WxPatientEffectiveVo> effectCardList = discountFeign.getPatientEffectCardList(patientId);
             if (CollectionUtils.isNotEmpty(effectCardList)) {
-                wxVipInfo.setCardList(effectCardList);
+                wxVipInfoVo.setCardList(effectCardList);
             }
         }
-        return wxVipInfo;
+        return wxVipInfoVo;
     }
 
     private WxFans assembleWxFans(String userInfoStr) {
