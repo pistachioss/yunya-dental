@@ -269,7 +269,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeeWorkloadOfPersonnelVO> resultList = workloadList.getList();
     ExcelUtil<EmployeeWorkloadOfPersonnelVO> excelUtil =
         new ExcelUtil<>(EmployeeWorkloadOfPersonnelVO.class);
-    String fileName = query.getQueryDate() + query.getQueryDate() + "员工工作量统计";
+    String fileName = query.getQueryDate() + "员工工作量统计";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -323,7 +323,13 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       throws IOException {
     List<CategoryInfoIncomeVO> list = mapper.selectCategoryIncomeList(query);
     ExcelUtil<CategoryInfoIncomeVO> excelUtil = new ExcelUtil<>(CategoryInfoIncomeVO.class);
-    excelUtil.exportExcel(response, list, "门诊分类收入汇总", "门诊分类收入汇总");
+    String fileName = "门诊分类收入汇总";
+    Integer orgId = query.getOrgId();
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgId);
+    if (organization != null) {
+      fileName = organization.getAbbreviation() + query.getQueryDate() + fileName;
+    }
+    excelUtil.exportExcel(response, list, "门诊分类收入汇总", fileName);
   }
 
   /**
@@ -356,7 +362,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeePersonalActualWorkloadDetailVO> resultList = pageInfo.getList();
     ExcelUtil<EmployeePersonalActualWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalActualWorkloadDetailVO.class);
-    String fileName = query.getOrderDate() + "实收工作量统计明细表";
+    String fileName = query.getQueryDate() + "实收工作量统计明细表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -526,7 +532,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setWhetherPage(false);
     ExcelUtil<BillingItemInfoVO> excelUtil = new ExcelUtil<>(BillingItemInfoVO.class);
     List<BillingItemInfoVO> resultList = mapper.selectBillingItemInfoList(query);
-    String fileName = query.getStartDate() + query.getEndDate() + "开单项目数量统计表";
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单项目数量统计表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -559,7 +565,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setWhetherPage(false);
     ExcelUtil<BillingItemDetailVO> excelUtil = new ExcelUtil<>(BillingItemDetailVO.class);
     List<BillingItemDetailVO> resultList = mapper.selectBillingItemDetailList(query);
-    String fileName = query.getStartDate() + query.getEndDate() + "开单项目统计明细表";
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单项目统计明细表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -626,9 +632,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportCurrentMonthBillDetail(
       HttpServletResponse response, CurrentMonthBillInfoQuery query) throws IOException {
+    String fileName = query.getCurrentMonth() + "账单明细报表";
     List<CurrentMonthBillDetailVO> resultList = mapper.selectCurrentMonthBillDetail(query);
     ExcelUtil<CurrentMonthBillDetailVO> excelUtil = new ExcelUtil<>(CurrentMonthBillDetailVO.class);
-    excelUtil.exportExcel(response, resultList, "账单明细记录");
+    Integer orgId = query.getOrgId();
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgId);
+    if (organization != null) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
+    excelUtil.exportExcel(response, resultList, "账单明细记录", fileName);
   }
 
   /**
@@ -639,10 +651,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportCurrentMonthBillPayRecord(
       HttpServletResponse response, CurrentMonthBillInfoQuery query) throws IOException {
+    String fileName = query.getCurrentMonth() + "账单当月收费记录";
+    Integer orgId = query.getOrgId();
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgId);
+    if (organization != null) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
     List<CurrentMonthBillPayRecordVO> resultList = mapper.selectCurrentMonthBillPayRecord(query);
     ExcelUtil<CurrentMonthBillPayRecordVO> excelUtil =
         new ExcelUtil<>(CurrentMonthBillPayRecordVO.class);
-    excelUtil.exportExcel(response, resultList, "门诊当月账单当月收费记录");
+    excelUtil.exportExcel(response, resultList, "门诊当月账单当月收费记录", fileName);
   }
 
   /**
