@@ -1045,6 +1045,36 @@
                     and DATE_FORMAT( bb.order_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                AND bb.org_id IN
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.privilegeStartDate != null and query.privilegeStartDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= #{query.privilegeStartDate}
+                </if>
+                <if test="query.privilegeEndDate != null and query.privilegeEndDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= #{query.privilegeEndDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.privilegeStartDate != null and query.privilegeStartDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) &gt;= #{query.privilegeStartDate}
+                </if>
+                <if test="query.privilegeEndDate != null and query.privilegeEndDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) &lt;= #{query.privilegeEndDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.privilegeStartDate != null and query.privilegeStartDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y' ) &gt;= #{query.privilegeStartDate}
+                </if>
+                <if test="query.privilegeEndDate != null and query.privilegeEndDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y' ) &lt;= #{query.privilegeEndDate}
+                </if>
+            </if>
         </where>
     </select>
     <!-- 查询账单列表实收金额总和 -->

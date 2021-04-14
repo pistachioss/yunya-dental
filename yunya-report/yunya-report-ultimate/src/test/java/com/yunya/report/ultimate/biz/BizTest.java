@@ -11,8 +11,10 @@ import org.junit.*;
 import org.junit.runner.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.boot.test.context.*;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -267,7 +269,7 @@ public class BizTest {
      */
     @Test
     public void test22() {
-        String param = "{\"orgIds\":[26],\"dateType\":1,\"startDate\":\"2021-04\",\"endDate\":\"2021-04\"}";
+        String param = "{\"orgIds\":[31],\"dateType\":1,\"startDate\":\"2021-04\",\"endDate\":\"2021-04\"}";
         DataStatisticsQuery query = JSONObject.parseObject(param, DataStatisticsQuery.class);
         WorkloadStatisticsVO clinicWorkloadStatistic = baseBillDetailBiz.findClinicWorkloadStatistic(query);
         System.out.println(JSONObject.toJSON(clinicWorkloadStatistic));
@@ -282,5 +284,57 @@ public class BizTest {
         String curDate = "2021-04-13";
         DynamicHeaderPageInfo<JSONObject> resultList = baseBillDetailBiz.workloadCompleted(startDate, curDate);
         System.out.println(JSONObject.toJSON(resultList));
+    }
+
+    /**
+     * 门诊业绩
+     */
+    @Test
+    public void test24() {
+        String param = "{\"dateType\":1,\"endDate\":\"2021-03-31\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-03-01\",\"whetherPage\":true}";
+        ClinicPerformanceBusinessQuery query = JSONObject.parseObject(param,ClinicPerformanceBusinessQuery.class);
+        long t1 = System.currentTimeMillis();
+        DynamicHeaderPageInfo<JSONObject> pageInfo = baseBillDetailBiz.clinicPerformanceList(query);
+        System.out.println(System.currentTimeMillis() - t1);
+        System.out.println(JSONObject.toJSON(pageInfo));
+    }
+
+    /**
+     * 初诊来源数量分析
+     */
+    @Test
+    public void test25() {
+        String param = "{\"dateType\":1,\"endDate\":\"2021-05-01\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-03-01\",\"whetherPage\":true}";
+        ClinicPerformanceBusinessQuery query = JSONObject.parseObject(param,ClinicPerformanceBusinessQuery.class);
+        long t1 = System.currentTimeMillis();
+        DynamicHeaderPageInfo<JSONObject> pageInfo = baseBillDetailBiz.clinicFirstVisitSourceList(query);
+        System.out.println(System.currentTimeMillis() - t1);
+        System.out.println(JSONObject.toJSON(pageInfo));
+    }
+
+    /**
+     * 门诊专科项目数量统计
+     */
+    @Test
+    public void test26() {
+        String param = "{\"dateType\":1,\"endDate\":\"2021-05-01\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-03-01\",\"whetherPage\":true}";
+        ClinicPerformanceBusinessQuery query = JSONObject.parseObject(param,ClinicPerformanceBusinessQuery.class);
+        long t1 = System.currentTimeMillis();
+        DynamicHeaderPageInfo<JSONObject> pageInfo = baseBillDetailBiz.clinicSpecialItemList(query);
+        System.out.println(System.currentTimeMillis() - t1);
+        System.out.println(JSONObject.toJSON(pageInfo));
+    }
+
+    /**
+     * 门诊365卡销售激活统计
+     */
+    @Test
+    public void test27() {
+        String param = "{\"dateType\":0,\"endDate\":\"2021-05-01\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-01-01\",\"whetherPage\":false}";
+        ClinicPerformanceBusinessQuery query = JSONObject.parseObject(param,ClinicPerformanceBusinessQuery.class);
+        long t1 = System.currentTimeMillis();
+        PageInfo<SaleActivited365CardVO>  pageInfo = baseBillDetailBiz.clinic365CardSaleActivitedList(query);
+        System.out.println(System.currentTimeMillis() - t1);
+        System.out.println(JSONObject.toJSON(pageInfo));
     }
 }

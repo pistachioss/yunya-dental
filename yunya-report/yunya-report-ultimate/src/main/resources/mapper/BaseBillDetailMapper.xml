@@ -3212,7 +3212,7 @@
         inner join base_bill bb on bbd.bill_id = bb.bill_id
         <where>
             <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND bb.org_id IN
+                AND bbd.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
@@ -3241,8 +3241,14 @@
                     AND DATE_FORMAT( bb.privilege_date, '%Y' ) &lt;= #{query.endDate}
                 </if>
             </if>
+            <if test="query.billIds!=null and query.billIds.size()>0">
+                and bbd.bill_id IN
+                <foreach collection="query.billIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
-        group by bb.org_id, bb.privilege_org_id,
+        group by bbd.org_id, bb.privilege_org_id,
         <if test="column!=null and column!=''">
             ${column},
         </if>
