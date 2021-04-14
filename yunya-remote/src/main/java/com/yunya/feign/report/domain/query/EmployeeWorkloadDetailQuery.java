@@ -28,7 +28,6 @@ public class EmployeeWorkloadDetailQuery extends PageQuery implements Serializab
   private Integer billId;
   /** 收费记录ID */
   @ApiModelProperty("收费记录ID")
-  @NotNull(message = "收费记录ID不能为空！")
   private Integer billPayId;
   /** 员工ID */
   @ApiModelProperty(value = "员工ID")
