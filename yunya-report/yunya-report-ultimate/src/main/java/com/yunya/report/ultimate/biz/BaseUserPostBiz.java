@@ -56,9 +56,9 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    CountDownLatch latch_1 = new CountDownLatch(3);
+    List<AssistantMatchingStatisticsVO> resultList = mapper.selectAssistantMatchingStatisticsByAssistant("assistant_1", query);
+    CountDownLatch latch_1 = new CountDownLatch(2);
 
-    List<AssistantMatchingStatisticsVO> resultList = this.getAssistant1List(query, latch_1);
     List<AssistantMatchingStatisticsVO> resultList2 = this.getAssistant2List(query, latch_1);
     List<AssistantMatchingStatisticsVO> resultList3 = this.getAssistant3List(query, latch_1);
 
@@ -99,24 +99,6 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
         }
     }
     return new PageInfo<>(resultList);
-  }
-
-
-  /**
-   * 查询助手1信息
-   * @param query
-   * @param latch
-   * @return
-   */
-  private List<AssistantMatchingStatisticsVO> getAssistant1List(EmployeeMatchingRecordQuery query, CountDownLatch latch) throws ExecutionException, InterruptedException {
-    List<AssistantMatchingStatisticsVO> result;
-    try{
-      Future<List<AssistantMatchingStatisticsVO>> assistant_1 = executorService.submit(() -> mapper.selectAssistantMatchingStatisticsByAssistant("assistant_1", query));
-      result =  getFutureObj(assistant_1);
-    } finally {
-      latch.countDown();
-    }
-    return result;
   }
 
   /**
