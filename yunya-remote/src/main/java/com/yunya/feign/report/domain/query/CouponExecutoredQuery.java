@@ -45,8 +45,7 @@ public class CouponExecutoredQuery extends PageQuery implements Serializable {
   /** 执行人姓名 */
   @ApiModelProperty(value = "执行人姓名")
   private String executorName;
-
-  /** 就职状态 */
-  @ApiModelProperty(value = "就职状态")
+  /** 就职状态列表 */
+  @ApiModelProperty(value = "就职状态列表")
   private Collection<Byte> workStatus;
 }
