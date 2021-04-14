@@ -1,22 +1,22 @@
-# 开发环境，nacos连215开发环境
+# 测试环境
 spring:
   datasource:
-    host: 192.168.31.90
+    host: community.yunya365.com
     port: 3306
     username: sa
     password: Admin001!
-    name: dev_yunya_third_part
+    name: test_yunya_third_part
 
   cloud:
     nacos:
       discovery:
-        server-addr: 192.168.31.215:8848
+        server-addr: 172.16.17.181:8848
       config:
-        server-addr: 192.168.31.215:8848
+        server-addr: 172.16.17.181:8848
 
   redis:
     database: 2
-    host: 192.168.31.90
+    host: 127.0.0.1
     port: 6379
     password: foobared
 
