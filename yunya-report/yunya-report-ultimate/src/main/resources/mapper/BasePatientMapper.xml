@@ -468,14 +468,14 @@
             </if>
             <if test="query.dateType == 1">
                 <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
-                    AND DATE_FORMAT(btp.treat_start_time,'%Y-%m') between DATE_FORMAT(#{query.startDate},'%Y-%m')
-                    and DATE_FORMAT(#{query.endDate},'%Y-%m')
+                    AND DATE_FORMAT(btp.treat_start_time,'%Y-%m') between #{query.startDate}
+                    and #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 2">
                 <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
-                    AND DATE_FORMAT(btp.treat_start_time,'%Y') between DATE_FORMAT(#{query.startDate},'%Y')
-                    and DATE_FORMAT(#{query.endDate},'%Y')
+                    AND DATE_FORMAT(btp.treat_start_time,'%Y') between #{query.startDate}
+                    and #{query.endDate}
                 </if>
             </if>
         </where>

@@ -13,17 +13,12 @@ import com.yunya.feign.report.domain.bo.ClinicWorkloadGroupInfoVO;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.form.OrganizationModel;
-import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.models.report.BaseBillDetail;
-import com.yunya.models.report.BaseOrganization;
-import com.yunya.models.report.BasePatientOrigin;
-import com.yunya.models.report.BaseTreatmentProcess;
+import com.yunya.models.report.*;
 import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1563,7 +1558,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
      * @param query
      */
     private List<BaseOrganization> getOrganization(ClinicPerformanceBusinessQuery query) {
-      query.setOriginTypes(Collections.singletonList(2));
       return organizationMapper.selectOrganizationList(query);
     }
 
@@ -1848,32 +1842,33 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         result.put(orgId, entity);
       }
 
-//    138-929  IVY365 kids
-//    254-932亿家健康IVY365 kids
-//    261-260阿里健康IVY365 Kids
-//    264-263大众点评IVY365 kids
-//    270-266口碑IVY365 Kids
-//    287-287风雪户外IVY365 Kids
-      List kidsIds = Arrays.asList(138,254,261,264,270,287);
-
-//    7-964有赞IVY365 Adults
-//    140-931 IVY365 Adults
-//    256-934亿家健康IVY365 Adults
-//    263-262阿里健康 IVY365 Adults
-//    266-265大众点评IVY365 Adults
-//    272-268口碑IVY365 Adults
-//    292-292嘉医汇IVY365 Adults
-      List adultsIds = Arrays.asList(7,140,256,263,266,272,292);
-//    139-930 IVY365 Youngs
-//    255-933亿家健康 IVY365 Youngs
-//    262-261阿里健康IVY365 Youngs
-//    265-264大众点评IVY365 Youngs
-//    271-267口碑IVY365 Youngs
-      List youngsIds = Arrays.asList(139,255,262,265,271);
+      List<BaseCoupon> baseCoupons = baseCouponMapper.selectAll();
+      String kids1 = "IVY365 KIDS";
+      String kids2 = "IVY365KIDS";
+      String adults1 = "IVY365 ADULTS";
+      String adults2 = "IVY365ADULTS";
+      String youngs1 = "IVY365 YOUNGS";
+      String youngs2 = "IVY365YOUNGS";
+      List kidsIds = new ArrayList();
+      List adultsIds = new ArrayList();
+      List youngsIds = new ArrayList();
       List couponIds = new ArrayList();
-      couponIds.addAll(kidsIds);
-      couponIds.addAll(adultsIds);
-      couponIds.addAll(youngsIds);
+      baseCoupons.forEach(vo->{
+        String couponName = vo.getCouponName();
+        Integer couponId = vo.getCouponId();
+        if (couponName.toUpperCase().contains(kids1)||couponName.toUpperCase().contains(kids2)) {
+          kidsIds.add(couponId);
+          couponIds.add(couponId);
+        }
+        if (couponName.toUpperCase().contains(adults1)||couponName.toUpperCase().contains(adults2)) {
+          adultsIds.add(couponId);
+          couponIds.add(couponId);
+        }
+        if (couponName.toUpperCase().contains(youngs1)||couponName.toUpperCase().contains(youngs2)) {
+          youngsIds.add(couponId);
+          couponIds.add(couponId);
+        }
+      });
       query.setCouponIds(couponIds);
       List<CouponActiveVo> couponActiveVos = baseCouponMapper.couponActivedGroupByOrgId(query);
       for (BaseOrganization org : orgs) {
