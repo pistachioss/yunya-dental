@@ -83,7 +83,7 @@ public class WXService extends AbstractWxBaseApi {
             if (wxFans == null) {
                 throw new ClientServiceException(WeChatError.USER_NOT_FOLLOW);
             }
-            return this.getVipInfo(patientId, wxFans);
+            return this.getVipInfo(wxFans.getPatientId(), wxFans);
         } else {
             if (wxFans == null) {
                 return this.assembleWxPatientInfo(patientId);

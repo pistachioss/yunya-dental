@@ -688,15 +688,17 @@
                     end      as `useDeadline`,
                     date_format(`c`.`active_date`, '%Y-%m-%d') as `activeDate`
                 from `card` `c`
-                inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
-                left join `coupon_file_info` `cfi` on `cfi`.`coupon_id` = `cci`.`id`
+                    inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
+                    left join `coupon_file_info` `cfi` on `cfi`.`coupon_id` = `cci`.`id`
                 where `cci`.`is_inservice` = 1
-                and `c`.`status` in (2, 3, 4)
-                and `c`.`patient_id` = #{patientId}
-                and `cci`.`name` in
-                ('014金藤卡礼包', '013银藤卡礼包', '012青藤卡礼包', '938  IVY365 kids（新）', '937  IVY365 Youngs（新）',
-                '936 IVY365 Adults（新）')
+                    and `c`.`status` in (2, 3, 4)
+                    and `c`.`patient_id` = #{patientId}
+                    and `cci`.`name` in
+                    ('014金藤卡礼包', '013银藤卡礼包', '012青藤卡礼包', '938  IVY365 kids（新）', '937  IVY365 Youngs（新）',
+                    '936 IVY365 Adults（新）')
+                order by `cfi`.`id` desc
         ) `temp`
         where (isnull(`temp`.`useDeadline`) = 1 or `temp`.`useDeadline` >= date_format(now(), '%Y-%m-%d'))
+        group by `temp`.`cardId`
     </select>
 </mapper>
