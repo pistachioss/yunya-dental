@@ -303,8 +303,8 @@ public class BizTest {
      * 初诊来源数量分析
      */
     @Test
-    public void test25() {
-        String param = "{\"dateType\":1,\"endDate\":\"2021-05-01\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-03-01\",\"whetherPage\":true}";
+    public void testClinicFirstVisitStatistics() {
+        String param = "{\"dateType\":1,\"endDate\":\"2021-05-01\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-03-01\",\"whetherPage\":true,\"originTypes\":[1]}";
         ClinicPerformanceBusinessQuery query = JSONObject.parseObject(param,ClinicPerformanceBusinessQuery.class);
         long t1 = System.currentTimeMillis();
         DynamicHeaderPageInfo<JSONObject> pageInfo = baseBillDetailBiz.clinicFirstVisitSourceList(query);

@@ -56,4 +56,5 @@ public class ClinicPerformanceBusinessQuery extends PageQuery implements Seriali
   private Collection<Integer> couponIds;
   /** 项目类型  0:基础价目表,1:基础商品表 */
   private Integer itemType = 0;
+  private Integer parentId = 0;
 }

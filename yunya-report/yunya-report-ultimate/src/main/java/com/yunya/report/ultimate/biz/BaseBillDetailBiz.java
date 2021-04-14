@@ -1628,10 +1628,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       if (query.getWhetherPage()) {
         PageHelper.startPage(query.getPageNum(), query.getPageSize());
       }
-      BasePatientOrigin entity = new BasePatientOrigin();
-      entity.setParentId(0);
-      entity.setInservice(true);
-      List<BasePatientOrigin> origins = basePatientOriginMapper.select(entity);
+      List<BasePatientOrigin> origins = basePatientOriginMapper.selectPatientOriginList(query);
       DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(origins);
       if (query.getWhetherPage()) {
         PageHelper.clearPage();
