@@ -1036,7 +1036,7 @@
         DATE_FORMAT(bbp.payeeDate, '%Y-%m-%d %H:%i') AS chargeDate,
         CONVERT (
         SUM((bbp.actualWorkload / bbp.actualAmount) * bbp.receivedAmount),
-        DECIMAL( 19, 2 )) AS receivedWorkload
+        DECIMAL( 19, 6 )) AS receivedWorkload
         FROM
         (
         SELECT
@@ -2387,9 +2387,9 @@
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
-            <if test="billIds!=null and billIds.size()>0">
+            <if test="query.billIds!=null and query.billIds.size()>0">
                 and bbd.bill_id in
-                <foreach collection="billIds" item="item" open="(" separator="," close=")">
+                <foreach collection="query.billIds" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
@@ -2899,9 +2899,9 @@
             <if test="query.executorName!=null and query.executorName!=''">
                 AND be.employee_name like concat('%', #{query.executorName}, '%')
             </if>
-            <if test="query.workStatus != null and query.workStatus.length > 0">
+            <if test="query.workStatus!=null and query.workStatus.length>0">
                 AND be.work_status in
-                <foreach collection="query.workStatus" index="index" item="item" open="(" separator="," close=")">
+                <foreach collection="query.workStatus" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
@@ -2995,7 +2995,7 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="query.workStatus!=null and query.workStatus.length > 0">
+            <if test="query.workStatus!=null and query.workStatus.size()>0">
                 and be.work_status in
                 <foreach collection="query.workStatus" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
@@ -3204,12 +3204,15 @@
         select sum(bbd.coupon_workload) as billTotalCouponWorkload,
         bb.org_id as billOrgId,
         bb.privilege_org_id as privilegeOrgId,
+        <if test="column!=null and column!=''">
+            ${column},
+        </if>
         bb.first_privilege as firstPrivilege
         from base_bill_detail bbd
         inner join base_bill bb on bbd.bill_id = bb.bill_id
         <where>
             <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND bb.org_id IN
+                AND bbd.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
@@ -3238,8 +3241,18 @@
                     AND DATE_FORMAT( bb.privilege_date, '%Y' ) &lt;= #{query.endDate}
                 </if>
             </if>
+            <if test="query.billIds!=null and query.billIds.size()>0">
+                and bbd.bill_id IN
+                <foreach collection="query.billIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
-        group by bb.org_id, bb.privilege_org_id, bb.first_privilege
+        group by bbd.org_id, bb.privilege_org_id,
+        <if test="column!=null and column!=''">
+            ${column},
+        </if>
+        bb.first_privilege
     </select>
 
     <select id="billItemStatisticsGroupByOrgId" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsVO">
