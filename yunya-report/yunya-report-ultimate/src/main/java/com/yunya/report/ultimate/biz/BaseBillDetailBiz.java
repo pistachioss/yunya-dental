@@ -1442,7 +1442,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<String> chainMonthList = DateUtil.sliceUpDateRange(chainStartDate, chainEndDate);
     query.setStartDate(chainStartDate);
     query.setEndDate(chainEndDate);
-    Map<String, Map<Integer, BigDecimal[]>> chainWorkload = baseBillPayBiz.computeWorkloadGroupOrgId2(query);
+//    Map<String, Map<Integer, BigDecimal[]>> chainWorkload = baseBillPayBiz.computeWorkloadGroupOrgId2(query);
     long t3 = System.currentTimeMillis();
     System.out.println("===========2===========" + (t3 - t2));
     //同比：查询条件的开始月份 + 查询月份范围的跨度值
@@ -1457,11 +1457,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     //年度工作量
     String yearStartDate = year + "-01";
     String yearEndDate = year + "-12";
-    if (DateUtil.compareMonth(preStartDate, yearStartDate)<0) {
+    /*if (DateUtil.compareMonth(preStartDate, yearStartDate)<0) {
       query.setStartDate(preStartDate);
     } else {
       query.setStartDate(yearStartDate);
-    }
+    }*/
+    query.setStartDate(chainStartDate);
     query.setEndDate(yearEndDate);
     List<String> yearMonthList = DateUtil.sliceUpDateRange(preStartDate, preEndDate);
     Map<String, Map<Integer, BigDecimal[]>> yearWorkload = baseBillPayBiz.computeWorkloadGroupOrgId2(query);
@@ -1523,7 +1524,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
 
         BigDecimal chains = BigDecimal.ZERO;
         for (String month : chainMonthList) {
-          Map<Integer, BigDecimal[]> chainMap = chainWorkload.get(month);
+//          Map<Integer, BigDecimal[]> chainMap = chainWorkload.get(month);
+          Map<Integer, BigDecimal[]> chainMap = yearWorkload.get(month);
           if (chainMap == null) {
             chainMap = new HashMap<>(16);
           }
@@ -1557,7 +1559,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           if (yearOrg == null) {
             yearOrg = new BigDecimal[]{BigDecimal.ZERO};
           }
-          pres = pres.add(yearOrg[0]);
+          years = years.add(yearOrg[0]);
         }
         chainDiff.put(key, chains);
         preDiff.put(key, pres);
