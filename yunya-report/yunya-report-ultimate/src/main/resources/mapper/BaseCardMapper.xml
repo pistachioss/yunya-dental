@@ -114,7 +114,8 @@
             </foreach>
         </if>
         <if test="soldStartDate != null and soldEndDate != null">
-            and (date_format(`bc`.`sold_date`,'%Y-%m-%d') between date_format(#{soldStartDate},'%Y-%m-%d') and date_format(#{soldEndDate},'%Y-%m-%d'))
+            and (date_format(`bc`.`sold_date`,'%Y-%m-%d') between date_format(#{soldStartDate},'%Y-%m-%d') and
+            date_format(#{soldEndDate},'%Y-%m-%d'))
         </if>
         <if test="activeOrgIds != null and activeOrgIds.size() > 0">
             and `bc`.`active_org_id` in
@@ -123,7 +124,8 @@
             </foreach>
         </if>
         <if test="activeStartDate != null and activeEndDate != null">
-            and (date_format(`bc`.`active_date`,'%Y-%m-%d') between date_format(#{activeStartDate},'%Y-%m-%d') and date_format(#{activeEndDate},'%Y-%m-%d'))
+            and (date_format(`bc`.`active_date`,'%Y-%m-%d') between date_format(#{activeStartDate},'%Y-%m-%d') and
+            date_format(#{activeEndDate},'%Y-%m-%d'))
         </if>
         <if test="soldWays != null and soldWays.size() > 0">
             and `bc`.`sold_way` in
@@ -283,7 +285,8 @@
             </foreach>
         </if>
         <if test="soldStartDate != null and soldEndDate != null">
-            and (DATE_FORMAT(`bc`.`sold_date`,'%Y-%m-%d') between DATE_FORMAT(#{soldStartDate},'%Y-%m-%d') and DATE_FORMAT(#{soldEndDate},'%Y-%m-%d'))
+            and (DATE_FORMAT(`bc`.`sold_date`,'%Y-%m-%d') between DATE_FORMAT(#{soldStartDate},'%Y-%m-%d') and
+            DATE_FORMAT(#{soldEndDate},'%Y-%m-%d'))
         </if>
         <if test="soldWays != null and soldWays.size() > 0">
             and `bc`.`sold_way` in
@@ -339,7 +342,8 @@
             </foreach>
         </if>
         <if test="activeStartDate != null and activeEndDate != null">
-            and (DATE_FORMAT(`bc`.`active_date`,'%Y-%m-%d') between DATE_FORMAT(#{activeStartDate},'%Y-%m-%d') and DATE_FORMAT(#{activeEndDate},'%Y-%m-%d'))
+            and (DATE_FORMAT(`bc`.`active_date`,'%Y-%m-%d') between DATE_FORMAT(#{activeStartDate},'%Y-%m-%d') and
+            DATE_FORMAT(#{activeEndDate},'%Y-%m-%d'))
         </if>
         <if test="activeOrgIds != null and activeOrgIds.size() > 0">
             and `bc`.`active_org_id` in
@@ -423,7 +427,8 @@
             </foreach>
         </if>
         <if test="soldStartDate != null and soldEndDate != null">
-            and (DATE_FORMAT(`bc`.`sold_date`,'%Y-%m-%d') between DATE_FORMAT(#{soldStartDate},'%Y-%m-%d') and DATE_FORMAT(#{soldEndDate},'%Y-%m-%d'))
+            and (DATE_FORMAT(`bc`.`sold_date`,'%Y-%m-%d') between DATE_FORMAT(#{soldStartDate},'%Y-%m-%d') and
+            DATE_FORMAT(#{soldEndDate},'%Y-%m-%d'))
         </if>
         <if test="soldWays != null and soldWays.size() > 0">
             and `bc`.`sold_way` in
@@ -542,7 +547,8 @@
             and `bpm`.`card_number` like concat('%', #{rechargeAccount}, '%')
         </if>
         <if test="rechargeStartDate != null and rechargeEndDate != null">
-            and (DATE_FORMAT(`bc`.`active_date`,'%Y-%m-%d') between DATE_FORMAT(#{rechargeStartDate},'%Y-%m-%d') and DATE_FORMAT(#{rechargeEndDate},'%Y-%m-%d'))
+            and (DATE_FORMAT(`bc`.`active_date`,'%Y-%m-%d') between DATE_FORMAT(#{rechargeStartDate},'%Y-%m-%d') and
+            DATE_FORMAT(#{rechargeEndDate},'%Y-%m-%d'))
         </if>
         order by `bc`.`active_date` desc
     </select>
@@ -646,35 +652,80 @@
 
     <select id="listCardActive" resultType="com.yunya.feign.report.domain.vo.CardActiveVo">
         select
-            `bp`.`name`                                                    as `patientName`,
-            `bc`.`card_number`,
-            date_format(`bc`.`active_date`, '%Y-%m-%d')                    as `activeDate`,
-            (select
-                 `abbreviation`
-             from `base_organization`
-             where `org_id` = `bc`.`active_org_id`)                        as `activeOrgName`,
-            (select
-                 `employee_name`
-             from `base_employee`
-             where `user_id` = `bc`.`active_user_id`)                      as `operateUser`,
-            IF(`bc`.`status` in (3, 4), '是', '否') as `used`
+        `bp`.`name` as `patientName`,
+        `bc`.`card_number`,
+        date_format(`bc`.`active_date`, '%Y-%m-%d') as `activeDate`,
+        (select
+        `abbreviation`
+        from `base_organization`
+        where `org_id` = `bc`.`active_org_id`) as `activeOrgName`,
+        (select
+        `employee_name`
+        from `base_employee`
+        where `user_id` = `bc`.`active_user_id`) as `operateUser`,
+        IF(`bc`.`status` in (3, 4), '是', '否') as `used`
         from `base_card` `bc`
-            left join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
-            inner join `base_patient` `bp` on `bp`.`patient_id` = `bc`.`patient_id`
+        left join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        inner join `base_patient` `bp` on `bp`.`patient_id` = `bc`.`patient_id`
         where `bc`.`coupon_id` = #{couponId}
-            and `bc`.`sale_channel_id` = #{saleChannelId}
-            <if test="patientKeyword != null and patientKeyword != ''">
-                and bp.name like concat('%', #{patientKeyword}, '%')
-            </if>
-            <if test="activeStartDate != null and activeEndDate != null">
-                and (DATE_FORMAT(`bc`.`active_date`,'%Y-%m-%d') between DATE_FORMAT(#{activeStartDate},'%Y-%m-%d') and DATE_FORMAT(#{activeEndDate},'%Y-%m-%d'))
-            </if>
-            <if test="activeOrgIds != null and activeOrgIds.size() > 0">
-                and `bc`.`active_org_id` in
-                <foreach collection="activeOrgIds" item="item" open="(" separator="," close=")">
-                     #{item}
-                </foreach>
-            </if>
+        and `bc`.`sale_channel_id` = #{saleChannelId}
+        <if test="patientKeyword != null and patientKeyword != ''">
+            and bp.name like concat('%', #{patientKeyword}, '%')
+        </if>
+        <if test="activeStartDate != null and activeEndDate != null">
+            and (DATE_FORMAT(`bc`.`active_date`,'%Y-%m-%d') between DATE_FORMAT(#{activeStartDate},'%Y-%m-%d') and
+            DATE_FORMAT(#{activeEndDate},'%Y-%m-%d'))
+        </if>
+        <if test="activeOrgIds != null and activeOrgIds.size() > 0">
+            and `bc`.`active_org_id` in
+            <foreach collection="activeOrgIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
         order by `bc`.`active_date` desc
+    </select>
+    <select id="getCardActiveRecoedPage" resultType="com.yunya.feign.report.domain.vo.CardActiveRecoedVO">
+        SELECT
+        cd.active_date as activeDate,cd.active_org_id as orgId,bo.abbreviation as orgName,cd.patient_id as patientId,bp.name as patientName,
+        cd.sale_channel_id as saleChannelId,cd.sale_channel_name as saleChannelName,ci.coupon_name as couponName,
+        case when ci.coupon_type = 0 then '代金券'
+        when ci.coupon_type = 1 then '折扣券'
+        when ci.coupon_type = 2 then '兑换券'
+        when ci.coupon_type = 3 then '套餐券'
+        when ci.coupon_type = 4 then '充值券'
+        else '' end as couponType,
+        cd.card_number as cardNumber,
+        case when cd.status in (0,1,2) then 0
+        else 1 end as status,
+        cd.active_user_id as activeUserId,
+        be.employee_name as activeUserName
+        FROM
+        base_card cd
+        LEFT JOIN base_employee be ON cd.active_user_id = be.user_id
+        LEFT JOIN base_coupon ci on cd.coupon_id = ci.coupon_id
+        LEFT JOIN base_organization bo on cd.allocate_org_id = bo.org_id
+        LEFT JOIN base_patient bp on cd.patient_id = bp.patient_id
+        <where>
+        <if test="activeOrgId != null and activeOrgId != ''">
+            and cd.active_org_id = #{activeOrgId}
+        </if>
+        <if test="couponIds != null and couponIds.size() > 0">
+            and cd.coupon_id in
+            <foreach collection="couponIds" item="couponId" open="(" separator="," close=")">
+                #{couponId}
+            </foreach>
+        </if>
+        <if test="saleChannelIds != null and saleChannelIds.size() > 0">
+            and cd.sale_channel_id in
+            <foreach collection="saleChannelIds" item="saleChannelId" open="(" separator="," close=")">
+                #{saleChannelId}
+            </foreach>
+        </if>
+        <if test="rechargeStartDate != null and rechargeEndDate != null">
+            and (DATE_FORMAT(cd.active_date,'%Y-%m-%d') between DATE_FORMAT(#{rechargeStartDate},'%Y-%m-%d') and
+            DATE_FORMAT(#{rechargeEndDate},'%Y-%m-%d'))
+        </if>
+        </where>
+        order by cd.active_date desc
     </select>
 </mapper>
