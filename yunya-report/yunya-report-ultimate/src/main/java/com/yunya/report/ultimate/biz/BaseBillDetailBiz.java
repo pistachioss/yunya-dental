@@ -1439,7 +1439,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<String> chainMonthList = DateUtil.sliceUpDateRange(chainStartDate, chainEndDate);
     query.setStartDate(chainStartDate);
     query.setEndDate(chainEndDate);
-    Map<Integer, BigDecimal[]> chainWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
+    Map<String, Map<Integer, BigDecimal[]>> chainWorkload = baseBillPayBiz.computeWorkloadGroupOrgId2(query);
     //同比：查询条件的开始月份 + 查询月份范围的跨度值
     int range = 1; //默认1个月
     if (!startDate.equals(endDate)) {
@@ -1515,10 +1515,19 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         goals.put(key, goal);
         completed.put(key, completedPercentage.toString() + "%");
 
-        BigDecimal[] chains = chainWorkload.get(orgId);
-        if (chains == null) {
-          chains = new BigDecimal[]{BigDecimal.ZERO};
+        BigDecimal chains = BigDecimal.ZERO;
+        for (String month : chainMonthList) {
+          Map<Integer, BigDecimal[]> chainMap = chainWorkload.get(month);
+          if (chainMap == null) {
+            chainMap = new HashMap<>(16);
+          }
+          BigDecimal[] chainOrg = chainMap.get(orgId);
+          if (chainOrg == null) {
+            chainOrg = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          chains = chains.add(chainOrg[0]);
         }
+
         BigDecimal pres = BigDecimal.ZERO;
         for (String month : preMonthList) {
           Map<Integer, BigDecimal[]> yearMap = yearWorkload.get(month);
@@ -1544,12 +1553,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           }
           years = years.add(yearOrg[0]);
         }
-        chainDiff.put(key, chains[0]);
+        chainDiff.put(key, chains);
         preDiff.put(key, pres);
         curYear.put(key, years);
         actualTotal = actualTotal.add(workloads);
         goalTotal = goalTotal.add(goal);
-        chainTotal = chainTotal.add(chains[0]);
+        chainTotal = chainTotal.add(chains);
         preTotal = preTotal.add(pres);
         yearTotal = yearTotal.add(years);
       }
