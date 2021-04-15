@@ -1275,7 +1275,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param queryForm 查询条件
    * @return
    */
-  public DynamicHeaderPageInfo<JSONObject> clinicPerformanceList(ClinicPerformanceBusinessQuery queryForm) {
+  public DynamicHeaderPageInfo<JSONObject> clinicPerformanceList1(ClinicPerformanceBusinessQuery queryForm) {
       String startDate = queryForm.getStartDate().substring(0,7);
       String endDate = queryForm.getEndDate().substring(0,7);
       String year = startDate.substring(0,4); //年份
@@ -1416,7 +1416,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param queryForm 查询条件
    * @return
    */
-  public DynamicHeaderPageInfo<JSONObject> clinicPerformanceList2(ClinicPerformanceBusinessQuery queryForm) {
+  public DynamicHeaderPageInfo<JSONObject> clinicPerformanceList(ClinicPerformanceBusinessQuery queryForm) {
     long t1 = System.currentTimeMillis();
     String startDate = queryForm.getStartDate().substring(0,7);
     String endDate = queryForm.getEndDate().substring(0,7);
@@ -1431,16 +1431,20 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     DataStatisticsQuery query = new DataStatisticsQuery();
     query.setDateType(queryForm.getDateType());
     query.setOrgIds(orgIds);
-
+    List<String> curMonthList = DateUtil.sliceUpDateRange(startDate, endDate);
     Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
+    long t2 = System.currentTimeMillis();
+    System.out.println("===========1===========" + (t2 - t1));
     //环比：去年+查询月份范围
     String preYear = DateUtil.preYear(year);
     String chainStartDate = preYear + "-" + sMonth;
     String chainEndDate = preYear + "-" + eMonth;
+    List<String> chainMonthList = DateUtil.sliceUpDateRange(chainStartDate, chainEndDate);
     query.setStartDate(chainStartDate);
     query.setEndDate(chainEndDate);
     Map<String, Map<Integer, BigDecimal[]>> chainWorkload = baseBillPayBiz.computeWorkloadGroupOrgId2(query);
-
+    long t3 = System.currentTimeMillis();
+    System.out.println("===========2===========" + (t3 - t2));
     //同比：查询条件的开始月份 + 查询月份范围的跨度值
     int range = 1; //默认1个月
     if (!startDate.equals(endDate)) {
@@ -1448,6 +1452,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     String preStartDate = DateUtil.preMonth(startDate, range);
     String preEndDate = DateUtil.preMonth(endDate, range);
+    List<String> preMonthList = DateUtil.sliceUpDateRange(preStartDate, preEndDate);
 
     //年度工作量
     String yearStartDate = year + "-01";
@@ -1458,97 +1463,136 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       query.setStartDate(yearStartDate);
     }
     query.setEndDate(yearEndDate);
+    List<String> yearMonthList = DateUtil.sliceUpDateRange(preStartDate, preEndDate);
     Map<String, Map<Integer, BigDecimal[]>> yearWorkload = baseBillPayBiz.computeWorkloadGroupOrgId2(query);
-    long t2 = System.currentTimeMillis();
-    System.out.println("----------------111111111111-----------" + (t2 - t1));
+    long t4 = System.currentTimeMillis();
+    System.out.println("===========3===========" + (t4 - t3));
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
     List<JSONObject> result = new ArrayList<>();
-//    if (StringHelper.isNotEmpty(orgs)) {
-//      BigDecimal actualTotal = BigDecimal.ZERO;
-//      BigDecimal goalTotal = BigDecimal.ZERO;
-//      BigDecimal completedTotal = BigDecimal.ZERO;
-//      BigDecimal chainTotal = BigDecimal.ZERO;
-//      BigDecimal preTotal = BigDecimal.ZERO;
-//      BigDecimal yearTotal = BigDecimal.ZERO;
-//      JSONObject actual = new JSONObject();
-//      init(actual, startDate, endDate, "实际值");
-//      JSONObject goals = new JSONObject();
-//      init(goals, startDate, endDate, "目标值");
-//      JSONObject completed = new JSONObject();
-//      init(completed, startDate, endDate, "完成度");
-//      JSONObject chainDiff = new JSONObject();//环比
-//      init(chainDiff, startDate, endDate, "环比值");
-//      JSONObject preDiff = new JSONObject();//同比
-//      init(preDiff, startDate, endDate, "同比值");
-//      JSONObject curYear = new JSONObject();//年度总工作量
-//      init(curYear, startDate, endDate, "年度总工作量");
-//      Map<String, String> map = new LinkedHashMap<>();
-//      map.put("date", "时间");
-//      map.put("name", "工作量");
-//      for (BaseOrganization vo : orgs) {
-//        Integer orgId = vo.getOrgId();
-//        BigDecimal goal = workloadGoalMap.get(orgId);
-//        if (goal == null) {
-//          goal = BigDecimal.ZERO;
-//        }
-//        BigDecimal[] workloads = curWorkload.get(orgId);
-//        if (workloads == null) {
-//          workloads = new BigDecimal[]{BigDecimal.ZERO};
-//        }
-//        BigDecimal completedPercentage = BigDecimal.ZERO;
-//        if (goal.compareTo(BigDecimal.ZERO) != 0) {
-//          completedPercentage =
-//                  workloads[0].divide(goal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
-//        }
-//        String key = orgId + "";
-//        map.put(key, vo.getAbbreviation());
-//        actual.put(key, workloads[0]);
-//        goals.put(key, goal);
-//        completed.put(key, completedPercentage.toString() + "%");
-//        BigDecimal[] chains = chainWorkload.get(orgId);
-//        if (chains == null) {
-//          chains = new BigDecimal[]{BigDecimal.ZERO};
-//        }
-//        BigDecimal[] pres = preWorkload.get(orgId);
-//        if (pres == null) {
-//          pres = new BigDecimal[]{BigDecimal.ZERO};
-//        }
-//        BigDecimal[] years = yearWorkload.get(orgId);
-//        if (years == null) {
-//          years = new BigDecimal[]{BigDecimal.ZERO};
-//        }
-//        chainDiff.put(key, chains[0]);
-//        preDiff.put(key, pres[0]);
-//        curYear.put(key, years[0]);
-//        actualTotal = actualTotal.add(workloads[0]);
-//        goalTotal = goalTotal.add(goal);
-//        chainTotal = chainTotal.add(chains[0]);
-//        preTotal = preTotal.add(pres[0]);
-//        yearTotal = yearTotal.add(years[0]);
-//      }
-//      map.put("total","合计");
-//      actual.put("total", actualTotal);
-//      goals.put("total", goalTotal);
-//      if (goalTotal.compareTo(BigDecimal.ZERO) != 0) {
-//        completedTotal =
-//                actualTotal.divide(goalTotal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
-//      }
-//      completed.put("total", completedTotal.toString() + "%");
-//      chainDiff.put("total", chainTotal);
-//      preDiff.put("total", preTotal);
-//      curYear.put("total", yearTotal);
-//      result.add(actual);
-//      result.add(goals);
-//      result.add(completed);
-//      result.add(chainDiff);
-//      result.add(preDiff);
-//      result.add(curYear);
-//      pageInfo.setMap(map);
-//    }
+    if (StringHelper.isNotEmpty(orgs)) {
+      BigDecimal actualTotal = BigDecimal.ZERO;
+      BigDecimal goalTotal = BigDecimal.ZERO;
+      BigDecimal completedTotal = BigDecimal.ZERO;
+      BigDecimal chainTotal = BigDecimal.ZERO;
+      BigDecimal preTotal = BigDecimal.ZERO;
+      BigDecimal yearTotal = BigDecimal.ZERO;
+      JSONObject actual = new JSONObject();
+      init(actual, startDate, endDate, "实际值");
+      JSONObject goals = new JSONObject();
+      init(goals, startDate, endDate, "目标值");
+      JSONObject completed = new JSONObject();
+      init(completed, startDate, endDate, "完成度");
+      JSONObject chainDiff = new JSONObject();//环比
+      init(chainDiff, startDate, endDate, "环比值");
+      JSONObject preDiff = new JSONObject();//同比
+      init(preDiff, startDate, endDate, "同比值");
+      JSONObject curYear = new JSONObject();//年度总工作量
+      init(curYear, startDate, endDate, "年度总工作量");
+      Map<String, String> map = new LinkedHashMap<>();
+      map.put("date", "时间");
+      map.put("name", "工作量");
+      for (BaseOrganization vo : orgs) {
+        Integer orgId = vo.getOrgId();
+        BigDecimal goal = workloadGoalMap.get(orgId);
+        if (goal == null) {
+          goal = BigDecimal.ZERO;
+        }
+
+        BigDecimal workloads = BigDecimal.ZERO;
+        for (String month : curMonthList) {
+          Map<Integer, BigDecimal[]> yearMap = yearWorkload.get(month);
+          if (yearMap == null) {
+            yearMap = new HashMap<>(16);
+          }
+          BigDecimal[] yearOrg = yearMap.get(orgId);
+          if (yearOrg == null) {
+            yearOrg = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          workloads = workloads.add(yearOrg[0]);
+        }
+        BigDecimal completedPercentage = BigDecimal.ZERO;
+        if (goal.compareTo(BigDecimal.ZERO) != 0) {
+          completedPercentage =
+                  workloads.divide(goal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+        }
+        String key = orgId + "";
+        map.put(key, vo.getAbbreviation());
+        actual.put(key, workloads);
+        goals.put(key, goal);
+        completed.put(key, completedPercentage.toString() + "%");
+
+        BigDecimal chains = BigDecimal.ZERO;
+        for (String month : chainMonthList) {
+          Map<Integer, BigDecimal[]> chainMap = chainWorkload.get(month);
+          if (chainMap == null) {
+            chainMap = new HashMap<>(16);
+          }
+          BigDecimal[] chainOrg = chainMap.get(orgId);
+          if (chainOrg == null) {
+            chainOrg = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          chains = chains.add(chainOrg[0]);
+        }
+
+        BigDecimal pres = BigDecimal.ZERO;
+        for (String month : preMonthList) {
+          Map<Integer, BigDecimal[]> yearMap = yearWorkload.get(month);
+          if (yearMap == null) {
+            yearMap = new HashMap<>(16);
+          }
+          BigDecimal[] preOrg = yearMap.get(orgId);
+          if (preOrg == null) {
+            preOrg = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          pres = pres.add(preOrg[0]);
+        }
+
+        BigDecimal years = BigDecimal.ZERO;
+        for (String month : yearMonthList) {
+          Map<Integer, BigDecimal[]> yearMap = yearWorkload.get(month);
+          if (yearMap == null) {
+            yearMap = new HashMap<>(16);
+          }
+          BigDecimal[] yearOrg = yearMap.get(orgId);
+          if (yearOrg == null) {
+            yearOrg = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          pres = pres.add(yearOrg[0]);
+        }
+        chainDiff.put(key, chains);
+        preDiff.put(key, pres);
+        curYear.put(key, years);
+        actualTotal = actualTotal.add(workloads);
+        goalTotal = goalTotal.add(goal);
+        chainTotal = chainTotal.add(chains);
+        preTotal = preTotal.add(pres);
+        yearTotal = yearTotal.add(years);
+      }
+      map.put("total","合计");
+      actual.put("total", actualTotal);
+      goals.put("total", goalTotal);
+      if (goalTotal.compareTo(BigDecimal.ZERO) != 0) {
+        completedTotal =
+                actualTotal.divide(goalTotal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+      }
+      completed.put("total", completedTotal.toString() + "%");
+      chainDiff.put("total", chainTotal);
+      preDiff.put("total", preTotal);
+      curYear.put("total", yearTotal);
+      result.add(actual);
+      result.add(goals);
+      result.add(completed);
+      result.add(chainDiff);
+      result.add(preDiff);
+      result.add(curYear);
+      pageInfo.setMap(map);
+    }
     pageInfo.setPageNum(query.getPageNum());
     pageInfo.setPageSize(query.getPageSize());
     pageInfo.setTotal(result.size());
     pageInfo.setList(result);
+    long t5= System.currentTimeMillis();
+    System.out.println("===========4===========" + (t5 - t4));
     return pageInfo;
   }
 
