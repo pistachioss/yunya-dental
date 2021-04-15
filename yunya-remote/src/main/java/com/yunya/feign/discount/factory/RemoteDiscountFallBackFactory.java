@@ -5,8 +5,7 @@ import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
-import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
-import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.framework.common.model.ResponseResult;
 
@@ -50,6 +49,11 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
 
     @Override
     public BigDecimal sumCardSoldAmount(CashReceiptOrRefundQuery query) {
+        return null;
+    }
+
+    @Override
+    public List<WxPatientEffectiveVo> getPatientEffectCardList(Integer patientId) {
         return null;
     }
 }

@@ -1,0 +1,18 @@
+# 开发环境，nacos连215开发环境
+spring:
+    redis:
+      database: 1
+      host: 81.69.14.153
+      port: 6379
+      password: 190611
+#    cloud:
+#      nacos:
+#        discovery:
+#          server-addr: 127.0.0.1:8848
+#        config:
+#          server-addr: 127.0.0.1:8848
+wechat:
+  token: "yunya365"
+  appId: "wx607bb75d3d685618"
+  appSecret: "87f02d9135c6228409bc0d07be6e471d"
+  encodingAESKey: "B4Pjk52AjOXzC37mtfYAzNa2X2UFp3AxhBkBaXj6Zu1"

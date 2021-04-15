@@ -1,5 +1,7 @@
 package com.yunya.framework.common.exception;
 
+import com.yunya.framework.common.model.RestError;
+
 /**
  * 简介: 客户端服务异常
  *
@@ -18,5 +20,9 @@ public class ClientServiceException extends BaseException {
    */
   public ClientServiceException(String msg, Integer exceptionCode) {
     super(msg, exceptionCode);
+  }
+
+  public ClientServiceException(RestError restError) {
+    super(restError.getMessage(), restError.getCode());
   }
 }

@@ -40,4 +40,8 @@ public interface YunyaServiceNameConstants {
   String YUNYA_RABBIT_MQ = "rabbit-mq";
   /** 短信服务 */
   String YUNYA_SMS_SERVICE = "yunya-sms";
+  /** 微信平台 */
+  String YUNYA_WECHAT = "wechat";
+  /** aliyun-oss */
+  String YUNYA_ALIYUN_OSS = "aliyun-oss";
 }

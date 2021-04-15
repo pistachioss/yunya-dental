@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya365.wechat.mapper.WxConfigsMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.wechat.WxConfigs" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="app_id" property="appId" jdbcType="VARCHAR" />
+    <result column="app_secret" property="appSecret" jdbcType="VARCHAR" />
+    <result column="account" property="account" jdbcType="VARCHAR" />
+    <result column="url" property="url" jdbcType="VARCHAR" />
+    <result column="token" property="token" jdbcType="VARCHAR" />
+    <result column="encoding_aeskey" property="encodingAeskey" jdbcType="VARCHAR" />
+    <result column="qualification_verify" property="qualificationVerify" jdbcType="BIT" />
+    <result column="naming_verify" property="namingVerify" jdbcType="BIT" />
+    <result column="annual_renew" property="annualRenew" jdbcType="BIT" />
+    <result column="verify_expired" property="verifyExpired" jdbcType="BIT" />
+    <result column="today_newfans" property="todayNewfans" jdbcType="INTEGER" />
+    <result column="fans" property="fans" jdbcType="INTEGER" />
+    <result column="bind_fans" property="bindFans" jdbcType="INTEGER" />
+    <result column="access_token" property="accessToken" jdbcType="VARCHAR" />
+    <result column="expires_in" property="expiresIn" jdbcType="TIMESTAMP" />
+    <result column="warnchat_no" property="warnchatNo" jdbcType="INTEGER" />
+    <result column="busy_auto_replaymsg" property="busyAutoReplaymsg" jdbcType="VARCHAR" />
+    <result column="noonline_auto_replaymsg" property="noonlineAutoReplaymsg" jdbcType="VARCHAR" />
+    <result column="welcome_replayemsg" property="welcomeReplayemsg" jdbcType="VARCHAR" />
+    <result column="endchat_replaymsg" property="endchatReplaymsg" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>
