@@ -353,6 +353,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       importExcelThreadPool.execute(
           () -> {
             try {
+              patientOriginLogMapper.deleteList(patientOriginLogList);
               patientOriginLogMapper.insertList(patientOriginLogList);
               countDownLatch.countDown();
             } catch (Exception e) {
