@@ -324,7 +324,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") CouponExecutoredDetailQuery query);
 
   /**
-   * 根据条件查询开单项目工作量信息
+   * 根据条件查询收费项目工作量列表
    *
    * @param query 查询条件
    * @return list
