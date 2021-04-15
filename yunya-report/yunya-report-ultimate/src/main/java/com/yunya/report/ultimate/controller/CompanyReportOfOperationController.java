@@ -493,9 +493,13 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊工作量统计")
-  @ApiResponses(value = {
-          @ApiResponse(code = 200, message="响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":20,\"orgId1\":10,\"name\":\"工作量\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"工作量\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
-  })
+  @ApiResponses(
+          value = {
+                  @ApiResponse(
+                          code = 200,
+                          message =
+                                  "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":20,\"orgId1\":10,\"name\":\"工作量\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"工作量\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
+          })
   @PostMapping(value = "/clinic/performance/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊工作量统计")
   public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicPerformanceList(
           @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
@@ -511,8 +515,9 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊工作量统计导出")
   @PostMapping(value = "/clinic/performance/export", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊工作量统计导出")
-  public ResponseResult<T> clinicPerformanceExport(HttpServletResponse response,
-         @RequestBody @Validated ClinicPerformanceBusinessQuery query) throws IOException {
+  public ResponseResult<T> clinicPerformanceExport(
+          HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
+          throws IOException {
     billDetailBiz.clinicPerformanceExport(query, response);
     return ResponseUtil.success(null);
   }
@@ -524,9 +529,13 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析")
-  @ApiResponses(value = {
-          @ApiResponse(code = 200, message="响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":0,\"orgId1\":0,\"originType\":\"患者来源\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"患者来源\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
-  })
+  @ApiResponses(
+          value = {
+                  @ApiResponse(
+                          code = 200,
+                          message =
+                                  "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":0,\"orgId1\":0,\"originType\":\"患者来源\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"患者来源\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
+          })
   @PostMapping(value = "/clinic/firstVisitSource/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析")
   public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicFirstVisitSourceList(
           @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
@@ -541,9 +550,12 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析导出")
-  @PostMapping(value = "/clinic/firstVisitSource/export", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析导出")
-  public ResponseResult<T> clinicFirstVisitSourceExport(HttpServletResponse response,
-          @RequestBody @Validated ClinicPerformanceBusinessQuery query) throws IOException {
+  @PostMapping(
+          value = "/clinic/firstVisitSource/export",
+          name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析导出")
+  public ResponseResult<T> clinicFirstVisitSourceExport(
+          HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
+          throws IOException {
     billDetailBiz.clinicFirstVisitSourceExport(query, response);
     return ResponseUtil.success(null);
   }
@@ -555,9 +567,13 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计")
-  @ApiResponses(value = {
-          @ApiResponse(code = 200, message="响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":20,\"orgId1\":10,\"name\":\"专科项目\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"专科项目\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
-  })
+  @ApiResponses(
+          value = {
+                  @ApiResponse(
+                          code = 200,
+                          message =
+                                  "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":20,\"orgId1\":10,\"name\":\"专科项目\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"专科项目\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
+          })
   @PostMapping(value = "/clinic/specialProject/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计")
   public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicSpecialItemList(
           @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
@@ -572,9 +588,12 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计导出")
-  @PostMapping(value = "/clinic/specialProject/export", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计导出")
-  public ResponseResult<T> clinicSpecialItemExport(HttpServletResponse response,
-                                                        @RequestBody @Validated ClinicPerformanceBusinessQuery query) throws IOException {
+  @PostMapping(
+          value = "/clinic/specialProject/export",
+          name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计导出")
+  public ResponseResult<T> clinicSpecialItemExport(
+          HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
+          throws IOException {
     billDetailBiz.clinicSpecialItemExport(query, response);
     return ResponseUtil.success(null);
   }
@@ -586,7 +605,9 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计")
-  @PostMapping(value = "/clinic/365CardSaleActivited/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计")
+  @PostMapping(
+          value = "/clinic/365CardSaleActivited/list",
+          name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计")
   public ResponseResult<PageInfo<SaleActivited365CardVO>> clinic365CardSaleActivitedList(
           @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
     PageInfo<SaleActivited365CardVO> pageInfo = billDetailBiz.clinic365CardSaleActivitedList(query);
@@ -600,38 +621,13 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计导出")
-  @PostMapping(value = "/clinic/365CardSaleActivited/export", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计导出")
-  public ResponseResult<T> clinic365CardSaleActivitedExport(HttpServletResponse response,
-                                                @RequestBody @Validated ClinicPerformanceBusinessQuery query) throws IOException {
+  @PostMapping(
+          value = "/clinic/365CardSaleActivited/export",
+          name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计导出")
+  public ResponseResult<T> clinic365CardSaleActivitedExport(
+          HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
+          throws IOException {
     billDetailBiz.clinic365CardSaleActivitedExport(query, response);
-    return ResponseUtil.success(null);
-  }
-
-  /**
-   * 根据条件导出本月开单项目大类汇总
-   *
-   * @param query 查询条件
-   * @return
-   */
-  @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-本月开单项目大类汇总")
-  @PostMapping(value = "/month/categroy/export", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-本月开单项目大类汇总")
-  public ResponseResult<T> monthCategoryExport(HttpServletResponse response,
-                                                        @RequestBody @Validated ClinicPerformanceBusinessQuery query) throws IOException {
-    billDetailBiz.monthCategoryExport(query, response);
-    return ResponseUtil.success(null);
-  }
-
-  /**
-   * 根据条件导出非本月开单项目大类汇总
-   *
-   * @param query 查询条件
-   * @return
-   */
-  @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-非本月开单项目大类汇总")
-  @PostMapping(value = "/nonMonth/categroy/export", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-非本月开单项目大类汇总")
-  public ResponseResult<T> nonMonthCategoryExport(HttpServletResponse response,
-                                               @RequestBody @Validated ClinicPerformanceBusinessQuery query) throws IOException {
-    billDetailBiz.nonMonthCategoryExport(query, response);
     return ResponseUtil.success(null);
   }
 }

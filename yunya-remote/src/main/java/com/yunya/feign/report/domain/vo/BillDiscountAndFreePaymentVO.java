@@ -61,7 +61,7 @@ public class BillDiscountAndFreePaymentVO implements Serializable {
   private String discountFree;
 
   /** 金额 */
-  @Excel(name = "金额")
+  @Excel(name = "金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("金额")
   private BigDecimal amount;
 

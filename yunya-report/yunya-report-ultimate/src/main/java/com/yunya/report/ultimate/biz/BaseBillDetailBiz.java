@@ -12,9 +12,11 @@ import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.feign.report.domain.bo.ClinicWorkloadGroupInfoVO;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.*;
@@ -27,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
@@ -53,6 +56,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   @Autowired private BaseBillPayDetailMapper baseBillPayDetailMapper;
   /** 诊所基础信息 */
   @Autowired private RemoteClinicBaseServiceFeign clinicBaseServiceFeign;
+  /** 系统服务 */
+  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
   /** 患者信息*/
   @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;
   /** 患者来源*/
@@ -263,7 +268,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeeWorkloadOfPersonnelVO> resultList = workloadList.getList();
     ExcelUtil<EmployeeWorkloadOfPersonnelVO> excelUtil =
         new ExcelUtil<>(EmployeeWorkloadOfPersonnelVO.class);
-    String fileName = query.getQueryDate() + query.getQueryDate() + "员工工作量统计";
+    String fileName = query.getQueryDate() + "员工工作量统计";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -304,6 +309,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<CategoryInfoIncomeVO> resultList = mapper.selectCategoryIncomeList(query);
+    monthCategoryFreePayment(resultList, query);
     return new PageInfo<>(resultList);
   }
 
@@ -350,7 +356,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeePersonalActualWorkloadDetailVO> resultList = pageInfo.getList();
     ExcelUtil<EmployeePersonalActualWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalActualWorkloadDetailVO.class);
-    String fileName = query.getOrderDate() + "实收工作量统计明细表";
+    String fileName = query.getQueryDate() + "实收工作量统计明细表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -520,7 +526,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setWhetherPage(false);
     ExcelUtil<BillingItemInfoVO> excelUtil = new ExcelUtil<>(BillingItemInfoVO.class);
     List<BillingItemInfoVO> resultList = mapper.selectBillingItemInfoList(query);
-    String fileName = query.getStartDate() + query.getEndDate() + "开单项目数量统计表";
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单项目数量统计表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -553,7 +559,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setWhetherPage(false);
     ExcelUtil<BillingItemDetailVO> excelUtil = new ExcelUtil<>(BillingItemDetailVO.class);
     List<BillingItemDetailVO> resultList = mapper.selectBillingItemDetailList(query);
-    String fileName = query.getStartDate() + query.getEndDate() + "开单项目统计明细表";
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单项目统计明细表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -620,9 +626,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportCurrentMonthBillDetail(
       HttpServletResponse response, CurrentMonthBillInfoQuery query) throws IOException {
+    String fileName = query.getCurrentMonth() + "账单明细报表";
     List<CurrentMonthBillDetailVO> resultList = mapper.selectCurrentMonthBillDetail(query);
     ExcelUtil<CurrentMonthBillDetailVO> excelUtil = new ExcelUtil<>(CurrentMonthBillDetailVO.class);
-    excelUtil.exportExcel(response, resultList, "账单明细记录");
+    Integer orgId = query.getOrgId();
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgId);
+    if (organization != null) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
+    excelUtil.exportExcel(response, resultList, "账单明细记录", fileName);
   }
 
   /**
@@ -633,10 +645,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportCurrentMonthBillPayRecord(
       HttpServletResponse response, CurrentMonthBillInfoQuery query) throws IOException {
+    String fileName = query.getCurrentMonth() + "账单当月收费记录";
+    Integer orgId = query.getOrgId();
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgId);
+    if (organization != null) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
     List<CurrentMonthBillPayRecordVO> resultList = mapper.selectCurrentMonthBillPayRecord(query);
     ExcelUtil<CurrentMonthBillPayRecordVO> excelUtil =
         new ExcelUtil<>(CurrentMonthBillPayRecordVO.class);
-    excelUtil.exportExcel(response, resultList, "门诊当月账单当月收费记录");
+    excelUtil.exportExcel(response, resultList, "门诊当月账单当月收费记录", fileName);
   }
 
   /**
@@ -649,7 +667,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       EmployeePersonalWorkloadDetailQuery query) {
     EmployeeWorkloadQuery workloadQuery = new EmployeeWorkloadQuery();
     workloadQuery.setWhetherPage(false);
-    workloadQuery.setOrgId(query.getOrgId());
+    workloadQuery.setDateType(query.getDateType());
+    workloadQuery.setQueryDate(query.getQueryDate());
     workloadQuery.setEmployeeIds(new Integer[] {query.getEmployeeId()});
     List<BaseBillDetail> billDetails = mapper.selectBillDetailByQuery(workloadQuery);
     if (StringHelper.isEmpty(billDetails)) {
@@ -660,7 +679,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     Set<Integer> billIds =
         billDetails.stream().map(BaseBillDetail::getBillId).collect(Collectors.toSet());
-    query.setOrgId(null);
     List<EmployeeFreepaymentWorkloadDetailVO> resultList =
         mapper.selectEmployeeFreepaymentWorkloadDetailList(query, billIds, FREE_PAYMENT_ID);
     // 免单支付
@@ -1167,7 +1185,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       BigDecimal completedPercentage = BigDecimal.ZERO; // 完成度
       if (goal.compareTo(BigDecimal.ZERO) != 0) {
         completedPercentage =
-            monthWorkload.divide(goal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+                monthWorkload.divide(goal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
       }
       goalTotal = goalTotal.add(goal);
       monthTotal = monthTotal.add(monthWorkload);
@@ -1193,6 +1211,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     pageInfo.setMap(titles);
     return pageInfo;
   }
+
 
   /**
    * 查询所有门诊当前月份的工作量目标
@@ -1244,27 +1263,170 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return new PageInfo<>(resultList);
   }
 
-    /**
-     * 根据条件导出项目收费及工作量明细列表
-     *
-     * @param response http响应
-     * @param query 查询条件
-     */
+  /**
+   * 根据条件导出项目收费及工作量明细列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
   public void exportTariffPaymentWorkloadList(
-            HttpServletResponse response, BillItemTollAndWorkloadQuery query) throws IOException {
+      HttpServletResponse response, BillItemTollAndWorkloadQuery query) throws IOException {
+    query.setWhetherPage(false);
     String fileName = query.getStartDate() + "-" + query.getEndDate() + "收费项目及工作量列表";
-    List<BillItemTollAndWorkloadVO> resultList = mapper.selectTariffWorkloadInfo(query);
+    List<BillItemTollAndWorkloadVO> resultList =
+        findStatisticsTariffPaymentWorkloadList(query).getList();
     ExcelUtil<BillItemTollAndWorkloadVO> excelUtil =
-                new ExcelUtil<>(BillItemTollAndWorkloadVO.class);
+        new ExcelUtil<>(BillItemTollAndWorkloadVO.class);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (organization != null) {
-        fileName = organization.getAbbreviation() + fileName;
+      fileName = organization.getAbbreviation() + fileName;
     }
     excelUtil.exportExcel(response, resultList, "收费项目及工作量列表", fileName);
   }
 
   /**
    * 根据条件查询门诊工作量统计
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  public DynamicHeaderPageInfo<JSONObject> clinicPerformanceList1(ClinicPerformanceBusinessQuery queryForm) {
+      String startDate = queryForm.getStartDate().substring(0,7);
+      String endDate = queryForm.getEndDate().substring(0,7);
+      String year = startDate.substring(0,4); //年份
+      if (!year.equals(endDate.substring(0,4))) {
+        throw new ClientServiceException("查询月份不能跨年", PARAMETERS_IS_ILLEGAL);
+      }
+      String sMonth = startDate.substring(5,7); //月份
+      String eMonth = endDate.substring(5,7); //月份
+      List<BaseOrganization> orgs = getOrganization(queryForm);
+      Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
+      DataStatisticsQuery query = new DataStatisticsQuery();
+      query.setDateType(queryForm.getDateType());
+      query.setOrgIds(orgIds);
+      query.setStartDate(startDate);
+      query.setEndDate(endDate);
+      Map<Integer, BigDecimal[]> curWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
+      Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
+      //环比：去年+查询月份范围
+      String preYear = DateUtil.preYear(year);
+      String chainStartDate = preYear + "-" + sMonth;
+      String chainEndDate = preYear + "-" + eMonth;
+      query.setStartDate(chainStartDate);
+      query.setEndDate(chainEndDate);
+      Map<Integer, BigDecimal[]> chainWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
+
+      //同比：查询条件的开始月份 + 查询月份范围的跨度值
+      int range = 1; //默认1个月
+      if (!startDate.equals(endDate)) {
+        range = Integer.parseInt(eMonth)-Integer.parseInt(sMonth);
+      }
+      String preStartDate = DateUtil.preMonth(startDate, range);
+      String preEndDate = DateUtil.preMonth(endDate, range);
+      query.setStartDate(preStartDate);
+      query.setEndDate(preEndDate);
+      Map<Integer, BigDecimal[]> preWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
+
+      //年度工作量
+      String yearStartDate = year + "-01";
+      String yearEndDate = year + "-12";
+      query.setStartDate(yearStartDate);
+      query.setEndDate(yearEndDate);
+      Map<Integer, BigDecimal[]> yearWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
+
+      DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
+      List<JSONObject> result = new ArrayList<>();
+      if (StringHelper.isNotEmpty(orgs)) {
+        BigDecimal actualTotal = BigDecimal.ZERO;
+        BigDecimal goalTotal = BigDecimal.ZERO;
+        BigDecimal completedTotal = BigDecimal.ZERO;
+        BigDecimal chainTotal = BigDecimal.ZERO;
+        BigDecimal preTotal = BigDecimal.ZERO;
+        BigDecimal yearTotal = BigDecimal.ZERO;
+        JSONObject actual = new JSONObject();
+        init(actual, startDate, endDate, "实际值");
+        JSONObject goals = new JSONObject();
+        init(goals, startDate, endDate, "目标值");
+        JSONObject completed = new JSONObject();
+        init(completed, startDate, endDate, "完成度");
+        JSONObject chainDiff = new JSONObject();//环比
+        init(chainDiff, startDate, endDate, "环比值");
+        JSONObject preDiff = new JSONObject();//同比
+        init(preDiff, startDate, endDate, "同比值");
+        JSONObject curYear = new JSONObject();//年度总工作量
+        init(curYear, startDate, endDate, "年度总工作量");
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("date", "时间");
+        map.put("name", "工作量");
+        for (BaseOrganization vo : orgs) {
+          Integer orgId = vo.getOrgId();
+          BigDecimal goal = workloadGoalMap.get(orgId);
+          if (goal == null) {
+            goal = BigDecimal.ZERO;
+          }
+          BigDecimal[] workloads = curWorkload.get(orgId);
+          if (workloads == null) {
+            workloads = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          BigDecimal completedPercentage = BigDecimal.ZERO;
+          if (goal.compareTo(BigDecimal.ZERO) != 0) {
+            completedPercentage =
+                      workloads[0].divide(goal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+          }
+          String key = orgId + "";
+          map.put(key, vo.getAbbreviation());
+          actual.put(key, workloads[0]);
+          goals.put(key, goal);
+          completed.put(key, completedPercentage.toString() + "%");
+          BigDecimal[] chains = chainWorkload.get(orgId);
+          if (chains == null) {
+            chains = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          BigDecimal[] pres = preWorkload.get(orgId);
+          if (pres == null) {
+            pres = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          BigDecimal[] years = yearWorkload.get(orgId);
+          if (years == null) {
+            years = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          chainDiff.put(key, chains[0]);
+          preDiff.put(key, pres[0]);
+          curYear.put(key, years[0]);
+          actualTotal = actualTotal.add(workloads[0]);
+          goalTotal = goalTotal.add(goal);
+          chainTotal = chainTotal.add(chains[0]);
+          preTotal = preTotal.add(pres[0]);
+          yearTotal = yearTotal.add(years[0]);
+        }
+        map.put("total","合计");
+        actual.put("total", actualTotal);
+        goals.put("total", goalTotal);
+        if (goalTotal.compareTo(BigDecimal.ZERO) != 0) {
+          completedTotal =
+                    actualTotal.divide(goalTotal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+        }
+        completed.put("total", completedTotal.toString() + "%");
+        chainDiff.put("total", chainTotal);
+        preDiff.put("total", preTotal);
+        curYear.put("total", yearTotal);
+        result.add(actual);
+        result.add(goals);
+        result.add(completed);
+        result.add(chainDiff);
+        result.add(preDiff);
+        result.add(curYear);
+        pageInfo.setMap(map);
+      }
+      pageInfo.setPageNum(query.getPageNum());
+      pageInfo.setPageSize(query.getPageSize());
+      pageInfo.setTotal(result.size());
+      pageInfo.setList(result);
+      return pageInfo;
+    }
+
+  /**
+   * 根据条件查询门诊工作量统计（优化版）
    *
    * @param queryForm 查询条件
    * @return
@@ -1283,18 +1445,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     DataStatisticsQuery query = new DataStatisticsQuery();
     query.setDateType(queryForm.getDateType());
     query.setOrgIds(orgIds);
-    query.setStartDate(startDate);
-    query.setEndDate(endDate);
-    Map<Integer, BigDecimal[]> curWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
+    List<String> curMonthList = DateUtil.sliceUpDateRange(startDate, endDate);
     Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
     //环比：去年+查询月份范围
     String preYear = DateUtil.preYear(year);
     String chainStartDate = preYear + "-" + sMonth;
     String chainEndDate = preYear + "-" + eMonth;
+    List<String> chainMonthList = DateUtil.sliceUpDateRange(chainStartDate, chainEndDate);
     query.setStartDate(chainStartDate);
     query.setEndDate(chainEndDate);
     Map<Integer, BigDecimal[]> chainWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
-
     //同比：查询条件的开始月份 + 查询月份范围的跨度值
     int range = 1; //默认1个月
     if (!startDate.equals(endDate)) {
@@ -1302,17 +1462,20 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     String preStartDate = DateUtil.preMonth(startDate, range);
     String preEndDate = DateUtil.preMonth(endDate, range);
-    query.setStartDate(preStartDate);
-    query.setEndDate(preEndDate);
-    Map<Integer, BigDecimal[]> preWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
+    List<String> preMonthList = DateUtil.sliceUpDateRange(preStartDate, preEndDate);
 
     //年度工作量
     String yearStartDate = year + "-01";
     String yearEndDate = year + "-12";
-    query.setStartDate(yearStartDate);
+    if (DateUtil.compareMonth(preStartDate, yearStartDate)<0) {
+      query.setStartDate(preStartDate);
+    } else {
+      query.setStartDate(yearStartDate);
+    }
+    query.setStartDate(chainStartDate);
     query.setEndDate(yearEndDate);
-    Map<Integer, BigDecimal[]> yearWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
-
+    List<String> yearMonthList = DateUtil.sliceUpDateRange(preStartDate, preEndDate);
+    Map<String, Map<Integer, BigDecimal[]>> yearWorkload = baseBillPayBiz.computeWorkloadGroupOrgId2(query);
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
     List<JSONObject> result = new ArrayList<>();
     if (StringHelper.isNotEmpty(orgs)) {
@@ -1343,40 +1506,67 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         if (goal == null) {
           goal = BigDecimal.ZERO;
         }
-        BigDecimal[] workloads = curWorkload.get(orgId);
-        if (workloads == null) {
-          workloads = new BigDecimal[]{BigDecimal.ZERO};
+
+        BigDecimal workloads = BigDecimal.ZERO;
+        for (String month : curMonthList) {
+          Map<Integer, BigDecimal[]> yearMap = yearWorkload.get(month);
+          if (yearMap == null) {
+            yearMap = new HashMap<>(16);
+          }
+          BigDecimal[] yearOrg = yearMap.get(orgId);
+          if (yearOrg == null) {
+            yearOrg = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          workloads = workloads.add(yearOrg[0]);
         }
         BigDecimal completedPercentage = BigDecimal.ZERO;
         if (goal.compareTo(BigDecimal.ZERO) != 0) {
           completedPercentage =
-                  workloads[0].divide(goal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+                  workloads.divide(goal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
         }
         String key = orgId + "";
         map.put(key, vo.getAbbreviation());
-        actual.put(key, workloads[0]);
+        actual.put(key, workloads);
         goals.put(key, goal);
         completed.put(key, completedPercentage.toString() + "%");
+
         BigDecimal[] chains = chainWorkload.get(orgId);
         if (chains == null) {
           chains = new BigDecimal[]{BigDecimal.ZERO};
         }
-        BigDecimal[] pres = preWorkload.get(orgId);
-        if (pres == null) {
-          pres = new BigDecimal[]{BigDecimal.ZERO};
+        BigDecimal pres = BigDecimal.ZERO;
+        for (String month : preMonthList) {
+          Map<Integer, BigDecimal[]> yearMap = yearWorkload.get(month);
+          if (yearMap == null) {
+            yearMap = new HashMap<>(16);
+          }
+          BigDecimal[] preOrg = yearMap.get(orgId);
+          if (preOrg == null) {
+            preOrg = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          pres = pres.add(preOrg[0]);
         }
-        BigDecimal[] years = yearWorkload.get(orgId);
-        if (years == null) {
-          years = new BigDecimal[]{BigDecimal.ZERO};
+
+        BigDecimal years = BigDecimal.ZERO;
+        for (String month : yearMonthList) {
+          Map<Integer, BigDecimal[]> yearMap = yearWorkload.get(month);
+          if (yearMap == null) {
+            yearMap = new HashMap<>(16);
+          }
+          BigDecimal[] yearOrg = yearMap.get(orgId);
+          if (yearOrg == null) {
+            yearOrg = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          years = years.add(yearOrg[0]);
         }
         chainDiff.put(key, chains[0]);
-        preDiff.put(key, pres[0]);
-        curYear.put(key, years[0]);
-        actualTotal = actualTotal.add(workloads[0]);
+        preDiff.put(key, pres);
+        curYear.put(key, years);
+        actualTotal = actualTotal.add(workloads);
         goalTotal = goalTotal.add(goal);
         chainTotal = chainTotal.add(chains[0]);
-        preTotal = preTotal.add(pres[0]);
-        yearTotal = yearTotal.add(years[0]);
+        preTotal = preTotal.add(pres);
+        yearTotal = yearTotal.add(years);
       }
       map.put("total","合计");
       actual.put("total", actualTotal);
@@ -1404,376 +1594,373 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return pageInfo;
   }
 
-  /**
-   * 获取所有门诊信息
-   *
-   * @param query
-   */
-  private List<BaseOrganization> getOrganization(ClinicPerformanceBusinessQuery query) {
-    query.setOriginTypes(Collections.singletonList(2));
-    return organizationMapper.selectOrganizationList(query);
-  }
+    /**
+     * 获取所有门诊信息
+     *
+     * @param query
+     */
+    private List<BaseOrganization> getOrganization(ClinicPerformanceBusinessQuery query) {
+      return organizationMapper.selectOrganizationList(query);
+    }
 
-  /**
-   * 初始化
-   *
-   * @param object
-   * @param sMonth
-   * @param eMonth
-   * @param value
-   */
-  private void init(JSONObject object, String sMonth, String eMonth, String value) {
-    String month = sMonth;
-    if (!sMonth.equals(eMonth)) {
-      month = sMonth + "-" + eMonth;
-    }
-    object.put("date", month);
-    object.put("name", value);
-  }
-
-  /**
-   * 门诊业绩导出
-   *
-   * @param query
-   * @param response
-   */
-  public void clinicPerformanceExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) throws IOException {
-    query.setWhetherPage(false);
-    DynamicHeaderPageInfo<JSONObject> pageInfo = clinicPerformanceList(query);
-    List<JSONObject> list = pageInfo.getList();
-    Map<String, String> titles = pageInfo.getMap();//表头
-    ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
-    String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "门诊工作量目标完成情况");
-    excelUtil.exportExcel(response, list, "门诊工作量目标完成情况", fileName, titles);
-  }
-
-  /**
-   * 根据条件查询初诊来源数量分析
-   *
-   * @param query 查询条件
-   * @return
-   */
-  public DynamicHeaderPageInfo<JSONObject> clinicFirstVisitSourceList(ClinicPerformanceBusinessQuery query) {
-    String startDate = query.getStartDate().substring(0,7);
-    String endDate = query.getEndDate().substring(0,7);
-    if (query.getWhetherPage()) {
-      PageHelper.startPage(query.getPageNum(), query.getPageSize());
-    }
-    BasePatientOrigin entity = new BasePatientOrigin();
-    entity.setParentId(0);
-    entity.setInservice(true);
-    List<BasePatientOrigin> origins = basePatientOriginMapper.select(entity);
-    DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(origins);
-    if (query.getWhetherPage()) {
-      PageHelper.clearPage();
-    }
-    List<BaseOrganization> orgs = getOrganization(query);
-    if (StringHelper.isEmpty(query.getOriginTypes())) {
-      query.setOriginTypes(origins.stream().map(BasePatientOrigin::getOriginType).collect(Collectors.toSet()));
-    }
-    List<BaseTreatmentProcessVO> patientIds = patientBaseInfoBiz.firstVisitPatientList(query);
-    List<PatientFirstVisitSourceVO> patients = patientBaseInfoBiz.clinicFirstVisitSourceList(query,
-            patientIds.stream().map(BaseTreatmentProcess::getPatientId).collect(Collectors.toSet()));
-    Map<String, Integer> originMap = new HashMap<>(16);
-    patients.forEach(vo-> originMap.put(vo.getOriginType() + "," + vo.getOrgId(), vo.getFirstVisitCount()));
-    List<JSONObject> result = new ArrayList<>();
-    if (StringHelper.isNotEmpty(origins)) {
-      Map<String, String> map = new LinkedHashMap<>();
-      map.put("date", "时间");
-      map.put("name", "患者来源");
-      for (BasePatientOrigin vo : origins) {
-        JSONObject object = new JSONObject();
-        init(object, startDate, endDate, vo.getName());
-        object.put("total", computeOrgPatientCount(vo.getOriginType()+"", object, map, orgs, originMap));
-        result.add(object);
+    /**
+     * 初始化
+     *
+     * @param object
+     * @param sMonth
+     * @param eMonth
+     * @param value
+     */
+    private void init(JSONObject object, String sMonth, String eMonth, String value) {
+      String month = sMonth;
+      if (!sMonth.equals(eMonth)) {
+        month = sMonth + "-" + eMonth;
       }
-      map.put("total", "合计");
-      pageInfo.setMap(map);
+      object.put("date", month);
+      object.put("name", value);
     }
-    pageInfo.setList(result);
-    return pageInfo;
-  }
 
-  /**
-   * 计算所有门诊的总数
-   *
-   * @param firstKey
-   * @param object
-   * @param map
-   * @param orgs
-   * @param originMap
-   * @return
-   */
-  private Integer computeOrgPatientCount(String firstKey, JSONObject object, Map<String, String> map,
-                                         List<BaseOrganization> orgs, Map<String, Integer> originMap) {
-    Integer total = 0;
-    for (BaseOrganization org : orgs) {
-      Integer orgId = org.getOrgId();
-      String key = orgId + "";
-      Integer count = originMap.get(firstKey + "," + orgId);
-      if (count == null) {
-        count = 0;
+    /**
+     * 门诊业绩导出
+     *
+     * @param query
+     * @param response
+     */
+    public void clinicPerformanceExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) throws IOException {
+      query.setWhetherPage(false);
+      DynamicHeaderPageInfo<JSONObject> pageInfo = clinicPerformanceList(query);
+      List<JSONObject> list = pageInfo.getList();
+      Map<String, String> titles = pageInfo.getMap();//表头
+      ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+      String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "门诊工作量目标完成情况");
+      excelUtil.exportExcel(response, list, "门诊工作量目标完成情况", fileName, titles);
+    }
+
+    /**
+     * 根据条件查询初诊来源数量分析
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public DynamicHeaderPageInfo<JSONObject> clinicFirstVisitSourceList(ClinicPerformanceBusinessQuery query) {
+      String startDate = query.getStartDate().substring(0,7);
+      String endDate = query.getEndDate().substring(0,7);
+      if (query.getWhetherPage()) {
+        PageHelper.startPage(query.getPageNum(), query.getPageSize());
       }
-      total += count;
-      object.put(key, count);
-      map.put(key, org.getAbbreviation());
-    }
-    return total;
-  }
-
-  /**
-   * 根据条件导出初诊来源数量分析
-   *
-   * @param query 查询条件
-   * @return
-   */
-  public void clinicFirstVisitSourceExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) throws IOException {
-    query.setWhetherPage(false);
-    DynamicHeaderPageInfo<JSONObject> pageInfo = clinicFirstVisitSourceList(query);
-    List<JSONObject> list = pageInfo.getList();
-    Map<String, String> titles = pageInfo.getMap();//表头
-    ExcelUtil excelUtil = new ExcelUtil<>(JSONObject.class);
-    String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(),"","门诊各初诊来源数据统计");
-    excelUtil.exportExcel(response, list, "门诊各初诊来源数据统计", fileName, titles);
-  }
-
-  /**
-   * 根据条件查询门诊专科项目数量统计
-   *
-   * @param query 查询条件
-   * @return
-   */
-  public DynamicHeaderPageInfo<JSONObject> clinicSpecialItemList(ClinicPerformanceBusinessQuery query) {
-    String startDate = query.getStartDate().substring(0,7);
-    String endDate = query.getEndDate().substring(0,7);
-    PageInfo<SpecialistProjectVO> pageInfo = getSpecialProjectList(query);
-    List<SpecialistProjectVO> specialItems = pageInfo.getList();
-    DynamicHeaderPageInfo resPageInfo = new DynamicHeaderPageInfo();
-    if (StringHelper.isNotEmpty(specialItems)) {
-      List<Integer> itemIds = new ArrayList<>();
-      specialItems.forEach(vo->{
-        String[] itemIdStr = vo.getTariffItemIds().split(",");
-        for (String id : itemIdStr) {
-          itemIds.add(Integer.parseInt(id));
-        }
-      });
+      List<BasePatientOrigin> origins = basePatientOriginMapper.selectPatientOriginList(query);
+      DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(origins);
       if (query.getWhetherPage()) {
         PageHelper.clearPage();
       }
-      query.setItemIds(itemIds);
-      List<BillItemStatisticsVO> list = billItemStatisticsGroupByOrgId(query, "item_id");
-      Map<String, Integer> dataMap = new HashMap<>(16);
-      list.forEach(vo -> dataMap.put(vo.getItemId() + "," + vo.getOrgId(), vo.getQuantity()));
       List<BaseOrganization> orgs = getOrganization(query);
+      if (StringHelper.isEmpty(query.getOriginTypes())) {
+        query.setOriginTypes(origins.stream().map(BasePatientOrigin::getOriginType).collect(Collectors.toSet()));
+      }
+      List<BaseTreatmentProcessVO> patientIds = patientBaseInfoBiz.firstVisitPatientList(query);
+      List<PatientFirstVisitSourceVO> patients = patientBaseInfoBiz.clinicFirstVisitSourceList(query,
+              patientIds.stream().map(BaseTreatmentProcess::getPatientId).collect(Collectors.toSet()));
+      Map<String, Integer> originMap = new HashMap<>(16);
+      patients.forEach(vo-> originMap.put(vo.getOriginType() + "," + vo.getOrgId(), vo.getFirstVisitCount()));
       List<JSONObject> result = new ArrayList<>();
-      if (StringHelper.isNotEmpty(specialItems)) {
+      if (StringHelper.isNotEmpty(origins)) {
         Map<String, String> map = new LinkedHashMap<>();
         map.put("date", "时间");
-        map.put("name", "专科项目");
-        for (SpecialistProjectVO item : specialItems) {
+        map.put("name", "患者来源");
+        for (BasePatientOrigin vo : origins) {
           JSONObject object = new JSONObject();
-          init(object, startDate, endDate, item.getSpecialistProjectName());
-          String[] ids = item.getTariffItemIds().split(",");
-          Integer total = 0;
-          for (BaseOrganization org : orgs) {
-            Integer orgId = org.getOrgId();
-            String key = orgId + "";
-            int count = 0;
-            for (String id : ids) {
-              Integer quantity = dataMap.get(id + "," + orgId);
-              if (quantity == null) {
-                quantity = 0;
-              }
-              count += quantity;
-            }
-            object.put(key, count);
-            map.put(key, org.getAbbreviation());
-            total += count;
-          }
-          object.put("total", total);
+          init(object, startDate, endDate, vo.getName());
+          object.put("total", computeOrgPatientCount(vo.getOriginType()+"", object, map, orgs, originMap));
           result.add(object);
         }
         map.put("total", "合计");
-        resPageInfo.setMap(map);
+        pageInfo.setMap(map);
       }
-      resPageInfo.setTotal(pageInfo.getTotal());
-      resPageInfo.setList(result);
+      pageInfo.setList(result);
+      return pageInfo;
     }
-    resPageInfo.setPageNum(query.getPageNum());
-    resPageInfo.setPageSize(query.getPageSize());
-    return resPageInfo;
-  }
 
-  private List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(ClinicPerformanceBusinessQuery query) {
-    return billItemStatisticsGroupByOrgId(query, null);
-  }
-
-  private List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(ClinicPerformanceBusinessQuery query, String column) {
-    List<Integer> billIds = baseBillMapper.distinctBillIds(query);
-    query.setBillIds(billIds);
-    return mapper.billItemStatisticsGroupByOrgId(query, column);
-  }
-
-  private PageInfo<SpecialistProjectVO> getSpecialProjectList(ClinicPerformanceBusinessQuery query) {
-    SpecialistProjectQuery queryForm = new SpecialistProjectQuery();
-    queryForm.setWhetherPage(query.getWhetherPage());
-    queryForm.setPageNum(query.getPageNum());
-    queryForm.setPageSize(query.getPageSize());
-    queryForm.setSpecialistProjectIds(query.getSpecailistProjectIds());
-    return clinicBaseServiceFeign.specialProjectList(queryForm);
-  }
-
-
-  /**
-   * 根据条件导出门诊专科项目数量统计
-   *
-   * @param query 查询条件
-   * @return
-   */
-  public void clinicSpecialItemExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) throws IOException {
-    query.setWhetherPage(false);
-    DynamicHeaderPageInfo<JSONObject> pageInfo = clinicSpecialItemList(query);
-    List<JSONObject> list = pageInfo.getList();
-    Map<String, String> titles = pageInfo.getMap();//表头
-    ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
-    String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "门诊年度治疗项目数量");
-    excelUtil.exportExcel(response, list, "门诊年度治疗项目数量", fileName, titles);
-  }
-  /**
-   * 根据条件查询门诊365卡销售激活统计
-   *
-   * @param query 查询条件
-   * @return
-   */
-  public PageInfo<SaleActivited365CardVO> clinic365CardSaleActivitedList(ClinicPerformanceBusinessQuery query) {
-    if (query.getWhetherPage()) {
-      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    /**
+     * 计算所有门诊的总数
+     *
+     * @param firstKey
+     * @param object
+     * @param map
+     * @param orgs
+     * @param originMap
+     * @return
+     */
+    private Integer computeOrgPatientCount(String firstKey, JSONObject object, Map<String, String> map,
+                                           List<BaseOrganization> orgs, Map<String, Integer> originMap) {
+      Integer total = 0;
+      for (BaseOrganization org : orgs) {
+        Integer orgId = org.getOrgId();
+        String key = orgId + "";
+        Integer count = originMap.get(firstKey + "," + orgId);
+        if (count == null) {
+          count = 0;
+        }
+        total += count;
+        object.put(key, count);
+        map.put(key, org.getAbbreviation());
+      }
+      return total;
     }
-    List<BaseOrganization> orgs = getOrganization(query);
-    PageInfo pageInfo = new PageInfo(orgs);
-    if (query.getWhetherPage()) {
-      PageHelper.clearPage();
+
+    /**
+     * 根据条件导出初诊来源数量分析
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public void clinicFirstVisitSourceExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) throws IOException {
+      query.setWhetherPage(false);
+      DynamicHeaderPageInfo<JSONObject> pageInfo = clinicFirstVisitSourceList(query);
+      List<JSONObject> list = pageInfo.getList();
+      Map<String, String> titles = pageInfo.getMap();//表头
+      ExcelUtil excelUtil = new ExcelUtil<>(JSONObject.class);
+      String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(),"","门诊各初诊来源数据统计");
+      excelUtil.exportExcel(response, list, "门诊各初诊来源数据统计", fileName, titles);
     }
+
+    /**
+     * 根据条件查询门诊专科项目数量统计
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public DynamicHeaderPageInfo<JSONObject> clinicSpecialItemList(ClinicPerformanceBusinessQuery query) {
+      String startDate = query.getStartDate().substring(0,7);
+      String endDate = query.getEndDate().substring(0,7);
+      PageInfo<SpecialistProjectVO> pageInfo = getSpecialProjectList(query);
+      List<SpecialistProjectVO> specialItems = pageInfo.getList();
+      DynamicHeaderPageInfo resPageInfo = new DynamicHeaderPageInfo();
+      if (StringHelper.isNotEmpty(specialItems)) {
+        List<Integer> itemIds = new ArrayList<>();
+        specialItems.forEach(vo->{
+          String[] itemIdStr = vo.getTariffItemIds().split(",");
+          for (String id : itemIdStr) {
+            itemIds.add(Integer.parseInt(id));
+          }
+        });
+        if (query.getWhetherPage()) {
+          PageHelper.clearPage();
+        }
+        query.setItemIds(itemIds);
+        List<BillItemStatisticsVO> list = billItemStatisticsGroupByOrgId(query, "item_id");
+        Map<String, Integer> dataMap = new HashMap<>(16);
+        list.forEach(vo -> dataMap.put(vo.getItemId() + "," + vo.getOrgId(), vo.getQuantity()));
+        List<BaseOrganization> orgs = getOrganization(query);
+        List<JSONObject> result = new ArrayList<>();
+        if (StringHelper.isNotEmpty(specialItems)) {
+          Map<String, String> map = new LinkedHashMap<>();
+          map.put("date", "时间");
+          map.put("name", "专科项目");
+          for (SpecialistProjectVO item : specialItems) {
+            JSONObject object = new JSONObject();
+            init(object, startDate, endDate, item.getSpecialistProjectName());
+            String[] ids = item.getTariffItemIds().split(",");
+            Integer total = 0;
+            for (BaseOrganization org : orgs) {
+              Integer orgId = org.getOrgId();
+              String key = orgId + "";
+              int count = 0;
+              for (String id : ids) {
+                Integer quantity = dataMap.get(id + "," + orgId);
+                if (quantity == null) {
+                  quantity = 0;
+                }
+                count += quantity;
+              }
+              object.put(key, count);
+              map.put(key, org.getAbbreviation());
+              total += count;
+            }
+            object.put("total", total);
+            result.add(object);
+          }
+          map.put("total", "合计");
+          resPageInfo.setMap(map);
+        }
+        resPageInfo.setTotal(pageInfo.getTotal());
+        resPageInfo.setList(result);
+      }
+      resPageInfo.setPageNum(query.getPageNum());
+      resPageInfo.setPageSize(query.getPageSize());
+      return resPageInfo;
+    }
+
+    private List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(ClinicPerformanceBusinessQuery query) {
+      return billItemStatisticsGroupByOrgId(query, null);
+    }
+
+    private List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(ClinicPerformanceBusinessQuery query, String column) {
+      List<Integer> billIds = baseBillMapper.distinctBillIds(query);
+      query.setBillIds(billIds);
+      return mapper.billItemStatisticsGroupByOrgId(query, column);
+    }
+
+    private PageInfo<SpecialistProjectVO> getSpecialProjectList(ClinicPerformanceBusinessQuery query) {
+      SpecialistProjectQuery queryForm = new SpecialistProjectQuery();
+      queryForm.setWhetherPage(query.getWhetherPage());
+      queryForm.setPageNum(query.getPageNum());
+      queryForm.setPageSize(query.getPageSize());
+      queryForm.setSpecialistProjectIds(query.getSpecailistProjectIds());
+      return clinicBaseServiceFeign.specialProjectList(queryForm);
+    }
+
+
+    /**
+     * 根据条件导出门诊专科项目数量统计
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public void clinicSpecialItemExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) throws IOException {
+      query.setWhetherPage(false);
+      DynamicHeaderPageInfo<JSONObject> pageInfo = clinicSpecialItemList(query);
+      List<JSONObject> list = pageInfo.getList();
+      Map<String, String> titles = pageInfo.getMap();//表头
+      ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+      String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "门诊年度治疗项目数量");
+      excelUtil.exportExcel(response, list, "门诊年度治疗项目数量", fileName, titles);
+    }
+    /**
+     * 根据条件查询门诊365卡销售激活统计
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public PageInfo<SaleActivited365CardVO> clinic365CardSaleActivitedList(ClinicPerformanceBusinessQuery query) {
+      if (query.getWhetherPage()) {
+        PageHelper.startPage(query.getPageNum(), query.getPageSize());
+      }
+      List<BaseOrganization> orgs = getOrganization(query);
+      PageInfo pageInfo = new PageInfo(orgs);
+      if (query.getWhetherPage()) {
+        PageHelper.clearPage();
+      }
 //    IVY365-731
 //    嘉医汇IVY365-413
-    query.setItemIds(Arrays.asList(731,413));
-    query.setOrgIds(orgs.stream().map(BaseOrganization::getOrgId).collect(Collectors.toList()));
-    List<BillItemStatisticsVO> vos = billItemStatisticsGroupByOrgId(query);
-    Map<Integer, SaleActivited365CardVO> result = new LinkedHashMap<>();
-    for (BaseOrganization org : orgs) {
-      Integer orgId = org.getOrgId();
-      SaleActivited365CardVO saleActivited365CardVO = new SaleActivited365CardVO();
-      saleActivited365CardVO.setAbbreviation(org.getAbbreviation());
-      int quantity = 0;
-      for (BillItemStatisticsVO vo : vos) {
-        if (vo.getOrgId().equals(orgId)) {
-          quantity = vo.getQuantity();
-          break;
+      query.setItemIds(Arrays.asList(731,413));
+      query.setOrgIds(orgs.stream().map(BaseOrganization::getOrgId).collect(Collectors.toList()));
+      List<BillItemStatisticsVO> vos = billItemStatisticsGroupByOrgId(query);
+      Map<Integer, SaleActivited365CardVO> result = new LinkedHashMap<>();
+      for (BaseOrganization org : orgs) {
+        Integer orgId = org.getOrgId();
+        SaleActivited365CardVO saleActivited365CardVO = new SaleActivited365CardVO();
+        saleActivited365CardVO.setAbbreviation(org.getAbbreviation());
+        int quantity = 0;
+        for (BillItemStatisticsVO vo : vos) {
+          if (vo.getOrgId().equals(orgId)) {
+            quantity = vo.getQuantity();
+            break;
+          }
         }
+        saleActivited365CardVO.setSaleNum(quantity);
+        result.put(orgId, saleActivited365CardVO);
       }
-      saleActivited365CardVO.setSaleNum(quantity);
-      result.put(orgId, saleActivited365CardVO);
-    }
 
 //    IVY365年卡-101
-    query.setItemIds(Arrays.asList(101));
-    query.setItemType(1);
-    query.setOrgIds(orgs.stream().map(BaseOrganization::getOrgId).collect(Collectors.toList()));
-    vos = billItemStatisticsGroupByOrgId(query);
-    for (BaseOrganization org : orgs) {
-      Integer orgId = org.getOrgId();
-      int quantity = 0;
-      for (BillItemStatisticsVO vo : vos) {
-        if (vo.getOrgId().equals(orgId)) {
-          quantity = vo.getQuantity();
-          break;
-        }
-      }
-      SaleActivited365CardVO entity = result.get(orgId);
-      if (entity == null) {
-        entity = new SaleActivited365CardVO();
-        entity.setAbbreviation(org.getAbbreviation());
-      }
-      entity.setSaleNum(quantity);
-      result.put(orgId, entity);
-    }
-
-//    138-929  IVY365 kids
-//    254-932亿家健康IVY365 kids
-//    261-260阿里健康IVY365 Kids
-//    264-263大众点评IVY365 kids
-//    270-266口碑IVY365 Kids
-//    287-287风雪户外IVY365 Kids
-    List kidsIds = Arrays.asList(138,254,261,264,270,287);
-
-//    7-964有赞IVY365 Adults
-//    140-931 IVY365 Adults
-//    256-934亿家健康IVY365 Adults
-//    263-262阿里健康 IVY365 Adults
-//    266-265大众点评IVY365 Adults
-//    272-268口碑IVY365 Adults
-//    292-292嘉医汇IVY365 Adults
-    List adultsIds = Arrays.asList(7,140,256,263,266,272,292);
-//    139-930 IVY365 Youngs
-//    255-933亿家健康 IVY365 Youngs
-//    262-261阿里健康IVY365 Youngs
-//    265-264大众点评IVY365 Youngs
-//    271-267口碑IVY365 Youngs
-    List youngsIds = Arrays.asList(139,255,262,265,271);
-    List couponIds = new ArrayList();
-    couponIds.addAll(kidsIds);
-    couponIds.addAll(adultsIds);
-    couponIds.addAll(youngsIds);
-    query.setCouponIds(couponIds);
-    List<CouponActiveVo> couponActiveVos = baseCouponMapper.couponActivedGroupByOrgId(query);
-    for (BaseOrganization org : orgs) {
-      Integer orgId = org.getOrgId();
-      SaleActivited365CardVO entity = result.get(orgId);
-      if (entity == null) {
-        entity = new SaleActivited365CardVO();
-        entity.setAbbreviation(org.getAbbreviation());
-      }
-      Long kidsQuantity = 0L;
-      Long adultsQuantity = 0L;
-      Long youngsQuantity = 0L;
-      for (CouponActiveVo vo : couponActiveVos) {
-        if (vo.getOrgId().equals(orgId+"")) {
-          Long quantity = vo.getActivatedQuantity();
-          Integer couponId = vo.getCouponId();
-          if (kidsIds.contains(couponId)) {
-            kidsQuantity += quantity;
-          }
-          if (adultsIds.contains(couponId)) {
-            adultsQuantity += quantity;
-          }
-          if (youngsIds.contains(couponId)) {
-            youngsQuantity += quantity;
+      query.setItemIds(Arrays.asList(101));
+      query.setItemType(1);
+      query.setOrgIds(orgs.stream().map(BaseOrganization::getOrgId).collect(Collectors.toList()));
+      vos = billItemStatisticsGroupByOrgId(query);
+      for (BaseOrganization org : orgs) {
+        Integer orgId = org.getOrgId();
+        int quantity = 0;
+        for (BillItemStatisticsVO vo : vos) {
+          if (vo.getOrgId().equals(orgId)) {
+            quantity = vo.getQuantity();
+            break;
           }
         }
+        SaleActivited365CardVO entity = result.get(orgId);
+        if (entity == null) {
+          entity = new SaleActivited365CardVO();
+          entity.setAbbreviation(org.getAbbreviation());
+        }
+        entity.setSaleNum(quantity);
+        result.put(orgId, entity);
       }
-      entity.setAdults365Card(adultsQuantity);
-      entity.setKids365Card(kidsQuantity);
-      entity.setYoungs365Card(youngsQuantity);
-      result.put(orgId, entity);
-    }
-    List<SaleActivited365CardVO> list = result.values().stream().collect(Collectors.toList());
-    pageInfo.setList(list);
-    return pageInfo;
-  }
 
-  /**
-   * 根据条件导出门诊365卡销售激活统计
-   *
-   * @param query 查询条件
-   * @return
-   */
-  public void clinic365CardSaleActivitedExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) throws IOException {
-    query.setWhetherPage(false);
-    List<SaleActivited365CardVO> data = clinic365CardSaleActivitedList(query).getList();
-    ExcelUtil<SaleActivited365CardVO> excelUtil = new ExcelUtil<>(SaleActivited365CardVO.class);
-    String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(),"","门诊365卡销售激活统计");
-    excelUtil.exportExcel(response, data, "门诊365卡销售激活统计", fileName);
-  }
+      List<BaseCoupon> baseCoupons = baseCouponMapper.selectAll();
+      String kids1 = "IVY365 KIDS";
+      String kids2 = "IVY365KIDS";
+      String adults1 = "IVY365 ADULTS";
+      String adults2 = "IVY365ADULTS";
+      String youngs1 = "IVY365 YOUNGS";
+      String youngs2 = "IVY365YOUNGS";
+      List kidsIds = new ArrayList();
+      List adultsIds = new ArrayList();
+      List youngsIds = new ArrayList();
+      List couponIds = new ArrayList();
+      baseCoupons.forEach(vo->{
+        String couponName = vo.getCouponName();
+        Integer couponId = vo.getCouponId();
+        if (couponName.toUpperCase().contains(kids1)||couponName.toUpperCase().contains(kids2)) {
+          kidsIds.add(couponId);
+          couponIds.add(couponId);
+        }
+        if (couponName.toUpperCase().contains(adults1)||couponName.toUpperCase().contains(adults2)) {
+          adultsIds.add(couponId);
+          couponIds.add(couponId);
+        }
+        if (couponName.toUpperCase().contains(youngs1)||couponName.toUpperCase().contains(youngs2)) {
+          youngsIds.add(couponId);
+          couponIds.add(couponId);
+        }
+      });
+      query.setCouponIds(couponIds);
+      List<CouponActiveVo> couponActiveVos = baseCouponMapper.couponActivedGroupByOrgId(query);
+      for (BaseOrganization org : orgs) {
+        Integer orgId = org.getOrgId();
+        SaleActivited365CardVO entity = result.get(orgId);
+        if (entity == null) {
+            entity = new SaleActivited365CardVO();
+            entity.setAbbreviation(org.getAbbreviation());
+        }
+        Long kidsQuantity = 0L;
+        Long adultsQuantity = 0L;
+        Long youngsQuantity = 0L;
+        for (CouponActiveVo vo : couponActiveVos) {
+          if (vo.getOrgId().equals(orgId+"")) {
+            Long quantity = vo.getActivatedQuantity();
+            Integer couponId = vo.getCouponId();
+            if (kidsIds.contains(couponId)) {
+              kidsQuantity += quantity;
+            }
+            if (adultsIds.contains(couponId)) {
+              adultsQuantity += quantity;
+            }
+            if (youngsIds.contains(couponId)) {
+              youngsQuantity += quantity;
+            }
+          }
+        }
+        entity.setAdults365Card(adultsQuantity);
+        entity.setKids365Card(kidsQuantity);
+        entity.setYoungs365Card(youngsQuantity);
+        result.put(orgId, entity);
+      }
+      List<SaleActivited365CardVO> list = result.values().stream().collect(Collectors.toList());
+      pageInfo.setList(list);
+      return pageInfo;
+    }
+
+    /**
+     * 根据条件导出门诊365卡销售激活统计
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public void clinic365CardSaleActivitedExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) throws IOException {
+      query.setWhetherPage(false);
+      List<SaleActivited365CardVO> data = clinic365CardSaleActivitedList(query).getList();
+      ExcelUtil<SaleActivited365CardVO> excelUtil = new ExcelUtil<>(SaleActivited365CardVO.class);
+      String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(),"","门诊365卡销售激活统计");
+      excelUtil.exportExcel(response, data, "门诊365卡销售激活统计", fileName);
+    }
 
   /**
    * 根据条件查询门诊补入工作量
@@ -1782,55 +1969,183 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return list
    */
   public List<BillRecordWorkloadVO> findCouponWorkloadList(DataStatisticsQuery query) {
-    return mapper.selectCouponWorkloadList(query);
+    return mapper.selectCouponWorkloadList(query, null);
   }
 
-  public void monthCategoryExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) throws IOException {
-    query.setWhetherPage(false);
-    List<MonthCategoryVO> list = monthCategoryList(query).getList();
-    ExcelUtil<MonthCategoryVO> excelUtil = new ExcelUtil<>(MonthCategoryVO.class);
-    String fileName = excelUtil.getFileName(query.getStartDate(), "","","本月开单项目大类");
-    excelUtil.exportExcel(response, list, "本月开单项目大类", fileName);
+  /**
+   * 根据条件查询门诊补入工作量
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public List<BillRecordWorkloadVO> findCouponWorkloadList(DataStatisticsQuery query, String column) {
+    return mapper.selectCouponWorkloadList(query, column);
   }
 
-  PageInfo<MonthCategoryVO> monthCategoryList(ClinicPerformanceBusinessQuery query) {
-    List<BaseTariffInfo> items = baseTariffInfoBiz.selectListAll();
-    Map<String, String> map = new HashMap<>(16);
-    if (StringHelper.isNotEmpty(items)) {
-      items.forEach(vo->map.put(vo.getItemType()+","+vo.getItemId(),vo.getItemType()+","+vo.getCategoryId()));
-    }
-    List<MonthCategoryVO> vos = mapper.monthCategoryList(query, null);
-    if (StringHelper.isNotEmpty(vos)) {
-      Set<Integer> billIds = vos.stream().map(MonthCategoryVO::getBillId).collect(Collectors.toSet());
-      List<BaseBillDetail> details = mapper.selectBillDetailByBillIds(billIds);
-      details = details.stream().filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0).collect(Collectors.toList());
-      computePercentage(details);
-      Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(billIds);
+  /**
+   * 计算当月免单金额
+   *
+   * @param result
+   * @param queryFrom
+   */
+  public void monthCategoryFreePayment(List<CategoryInfoIncomeVO> result, BillCategoryIncomeQuery queryFrom) {
+    if (StringHelper.isNotEmpty(result)) {
+      List<BaseTariffInfo> items = baseTariffInfoBiz.selectListAll();
+      Map<String, String> itemMap = new HashMap<>(16);
+      items.forEach(vo -> itemMap.put(vo.getItemType() + "," + vo.getItemId(), vo.getItemType() + "," + vo.getCategoryId()));
+      List<Integer> billIds = mapper.billIdByMonthFreePayment(queryFrom);
       Map<String, BigDecimal> frees = new HashMap<>(16);
-      details.forEach(detail -> {
-        String key = detail.getItemType() + "," + detail.getItemId();
-        Integer billId = detail.getBillId();
-        BigDecimal free = freePaymentMap.get(billId);
-        BigDecimal amount = detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
-        BigDecimal freeAmount = frees.get(key);
+      if (StringHelper.isNotEmpty(billIds)) {
+        List<BaseBillDetail> details = mapper.selectBillDetailByBillIds(billIds);
+        details = details.stream().filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0).collect(Collectors.toList());
+        computePercentage(details);
+        Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(billIds);
+        details.forEach(detail -> {
+          String key = itemMap.get(detail.getItemType() + "," + detail.getItemId());
+          Integer billId = detail.getBillId();
+          BigDecimal free = freePaymentMap.get(billId);
+          BigDecimal amount = detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+          BigDecimal freeAmount = frees.get(key);
+          if (freeAmount == null) {
+            freeAmount = BigDecimal.ZERO;
+          }
+          frees.put(key, freeAmount.add(amount));
+        });
+      }
+      result.forEach(vo -> {
+        String cid = vo.getCategoryType() + "," + vo.getCategoryId();
+        BigDecimal freeAmount = frees.get(cid);
         if (freeAmount == null) {
           freeAmount = BigDecimal.ZERO;
         }
-        frees.put(key, freeAmount.add(amount));
+        vo.setTotalFreePaymentAmount(freeAmount);
+        vo.setTotalAmount(vo.getTotalActualAmount().subtract(freeAmount).add(vo.getTotalCouponAmount()));
       });
-//      Map<String, >
     }
-    vos = mapper.monthCategoryList(query, 1);
-
-    if (StringHelper.isNotEmpty(vos)) {
-      Set<Integer> billIds = vos.stream().map(MonthCategoryVO::getBillId).collect(Collectors.toSet());
-      Map<Integer, BigDecimal> frees = sumFreePaymentMap(billIds);
-
-    }
-    return new PageInfo<>(vos);
   }
 
-  public void nonMonthCategoryExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) {
+  /**
+   * 根据条件查询非本月免单金额列表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<NonMonthCategoryVO> nonMonthCategoryList(BillCategoryIncomeQuery query) {
+    List<NonMonthCategoryVO> vos = mapper.nonMonthCategoryList(query);
+    List<NonMonthCategoryVO> res = new ArrayList<>();
+    if (StringHelper.isNotEmpty(vos)) {
+      Map<String, String> categoryMap = new HashMap<>(16);
+      Map<String, String> categoryName = new HashMap<>(16);
+      List<BaseTariffInfo> items = baseTariffInfoBiz.selectListAll();
+      if (StringHelper.isNotEmpty(items)) {
+        items.forEach(vo->{
+          categoryMap.put(vo.getItemType()+","+vo.getItemId(),vo.getItemType()+","+vo.getCategoryId());
+          categoryName.put(vo.getItemType()+","+vo.getCategoryId(), vo.getCategoryName());
+        });
+      }
+      Map<Integer, BigDecimal[]> billMap = new HashMap<>(16);
+      for (NonMonthCategoryVO vo : vos) {
+        Integer billId = vo.getBillId();
+        BigDecimal[] amounts = billMap.get(billId);
+        if (amounts == null) {
+          amounts = new BigDecimal[]{BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO};
+        }
+        amounts[0] = amounts[0].add(vo.getActualAmount());// 实收
+        amounts[1] = amounts[1].add(vo.getBillAmount());// 原价
+        billMap.put(billId, amounts);
+      }
+      Set<Integer> billIds = billMap.keySet();
+      EmployeePersonalWorkloadDetailQuery queryForm = new EmployeePersonalWorkloadDetailQuery();
+      queryForm.setOrgId(query.getOrgId());
+      queryForm.setQueryDate(query.getQueryDate());
+      queryForm.setDateType((byte) 0);
+      List<EmployeeFreepaymentWorkloadDetailVO> resultList =
+              mapper.selectEmployeeFreepaymentWorkloadDetailList(queryForm, billIds, FREE_PAYMENT_ID);
+      // 免单支付
+      if (StringHelper.isNotEmpty(resultList)) {
+        Map<Integer, EmployeeFreepaymentWorkloadDetailVO> billPayIds = resultList.stream()
+                .collect(Collectors.toMap(EmployeeFreepaymentWorkloadDetailVO::getBillPayId, Function.identity()));
+        billIds = resultList.stream().map(EmployeeFreepaymentWorkloadDetailVO::getBillId).collect(Collectors.toSet());
+        List<BaseBillDetail> details = mapper.selectBillDetailByBillIds(billIds);
+        details = details.stream().filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0).collect(Collectors.toList());
+        computePercentage(details);
+        Map<Integer, List<BaseBillPayDetailVO>> freePaymentMap = sumFreePaymentMapByBillPayIds(billPayIds.keySet());
+        Map<String, BigDecimal> freeMap = new LinkedHashMap<>(16);
+        details.forEach(detail -> {
+          Integer billId = detail.getBillId();
+          String cid = categoryMap.get(detail.getItemType() + "," + detail.getItemId());
+          List<BaseBillPayDetailVO> list = freePaymentMap.get(billId);
+          if (StringHelper.isNotEmpty(list)) {
+            list.forEach(vo -> {
+              Integer billPayId = vo.getBillPayId();
+              String key = billId + "," + billPayId + "," + cid;
+              BigDecimal free = vo.getPrincipalAmount();
+              BigDecimal amount = detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+              BigDecimal freeAmount = freeMap.get(key);
+              if (freeAmount == null) {
+                freeAmount = BigDecimal.ZERO;
+              }
+              freeMap.put(key, freeAmount.add(amount));
+              BigDecimal[] billAmounts = billMap.get(billId);
+              if (billAmounts == null) {
+                billAmounts = new BigDecimal[]{BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO};
+              }
+              billAmounts[2] = billAmounts[2].add(amount);
+              billMap.put(billId, billAmounts);
+            });
+          }
+        });
 
+        for (Map.Entry<String, BigDecimal> entry : freeMap.entrySet()) {
+          String[] keys = entry.getKey().split(",");
+          Integer billId = Integer.parseInt(keys[0]);
+          Integer billPayId = Integer.parseInt(keys[1]);
+          Integer itemType = Integer.parseInt(keys[2]);
+          Integer categoryId = Integer.parseInt(keys[3]);
+          BigDecimal freeAmount = entry.getValue();
+          if (freeAmount == null) {
+            freeAmount = BigDecimal.ZERO;
+          }
+          BigDecimal[] billAmounts = billMap.get(billId);
+          if (billAmounts == null) {
+            billAmounts = new BigDecimal[]{BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO};
+          }
+          NonMonthCategoryVO vo = new NonMonthCategoryVO();
+          vo.setFreeAmount(freeAmount);
+          vo.setActualAmount(billAmounts[0]);
+          vo.setBillAmount(billAmounts[1]);
+          vo.setFreeBillAmount(billAmounts[2]);
+          vo.setCategoryId(categoryId);
+          vo.setCategoryName(categoryName.get(itemType+","+categoryId));
+          EmployeeFreepaymentWorkloadDetailVO workload = billPayIds.get(billPayId);
+          if (workload != null) {
+            vo.setPatientName(workload.getPatientName());
+            vo.setFreeDate(workload.getChargeDate());
+            vo.setAbbreviation(workload.getAbbreviation());
+          }
+          res.add(vo);
+        }
+      }
+    }
+    if (query.getWhetherPage()) {
+      return PageUtl.doPage(query.getPageNum(), query.getPageSize(), res);
+    }
+    return new PageInfo<>(res);
+  }
+
+  /**
+   * 根据条件导出非本月免单金额明细列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return void
+   */
+  public void nonMonthCategoryExport(HttpServletResponse response, BillCategoryIncomeQuery query) throws IOException {
+    query.setWhetherPage(false);
+    List<NonMonthCategoryVO> list = nonMonthCategoryList(query).getList();
+    ExcelUtil<NonMonthCategoryVO> excelUtil = new ExcelUtil<>(NonMonthCategoryVO.class);
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    String fileName = excelUtil.getFileName(query.getQueryDate(),"", organization.getAbbreviation(),"非本月免单金额明细");
+    excelUtil.exportExcel(response, list, "非本月免单金额明细", fileName);
   }
 }

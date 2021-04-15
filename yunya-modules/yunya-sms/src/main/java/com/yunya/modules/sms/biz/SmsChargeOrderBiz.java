@@ -73,7 +73,11 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         Long amount = smsChargeOrder.getPrice().multiply(new BigDecimal(100)).longValue();
         String orderNo = UUID.randomUUID().toString();
         smsChargeOrder.setOrderNo(orderNo);
-        EntityUtils.setCreatAndUpdatInfo(smsChargeOrder);
+        smsChargeOrder.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        smsChargeOrder.setCrtTime(new Date());
+        smsChargeOrder.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        smsChargeOrder.setUptTime(new Date());
+        smsChargeOrder.setCrtUser(BaseContextHandler.getName());
         int count = mapper.insert(smsChargeOrder);
         if (count != 1) {
             throw new ClientServiceException("插入数据失败", OperationCodeConstants.INSERT_MODEL);

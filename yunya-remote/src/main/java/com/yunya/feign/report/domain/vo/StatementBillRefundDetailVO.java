@@ -58,55 +58,55 @@ public class StatementBillRefundDetailVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 原价合计 */
-  @Excel(name = "原价合计", scale = 2)
+  @Excel(name = "原价合计", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("原价合计")
   private BigDecimal originalAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额", scale = 2)
+  @Excel(name = "优惠金额", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("优惠金额")
   private BigDecimal privilegeAmount;
   /** 实收金额 */
-  @Excel(name = "实收金额", scale = 2)
+  @Excel(name = "实收金额", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("实收金额")
   private BigDecimal actualAmount;
   /** 已收金额 */
-  @Excel(name = "已收金额", scale = 2)
+  @Excel(name = "已收金额", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("已收金额")
   private BigDecimal totalReceivedAmount;
   /** 本次退费金额 */
-  @Excel(name = "本次退费金额")
+  @Excel(name = "本次退费金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("本次退费金额")
   private BigDecimal refundAmount;
   /** 会员卡本金 */
-  @Excel(name = "会员卡本金")
+  @Excel(name = "会员卡本金", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("会员卡本金")
   private BigDecimal memberPrincipleAmount;
   /** 会员卡赠金 */
-  @Excel(name = "会员卡赠金")
+  @Excel(name = "会员卡赠金", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("会员卡赠金")
   private BigDecimal memberBonusAmount;
   /** 预付款本金 */
-  @Excel(name = "预付款本金")
+  @Excel(name = "预付款本金", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("预付款本金")
   private BigDecimal prepaidPrincipleAmount;
   /** 预付款赠金 */
-  @Excel(name = "预付款赠金")
+  @Excel(name = "预付款赠金", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("预付款赠金")
   private BigDecimal prepaidBonusAmount;
   /** 现金 */
-  @Excel(name = "现金")
+  @Excel(name = "现金", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("现金")
   private BigDecimal cashAmount;
   /** 支付宝 */
-  @Excel(name = "支付宝")
+  @Excel(name = "支付宝", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("支付宝")
   private BigDecimal aliPayAmount;
   /** 微信 */
-  @Excel(name = "微信")
+  @Excel(name = "微信", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("微信")
   private BigDecimal weChatAmount;
   /** 银行账户 */
-  @Excel(name = "银行账户")
+  @Excel(name = "银行账户", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("银行账户")
   private BigDecimal bankAmount;
   /** 退费操作人ID */

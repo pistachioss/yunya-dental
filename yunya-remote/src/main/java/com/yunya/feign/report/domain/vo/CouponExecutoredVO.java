@@ -62,7 +62,7 @@ public class CouponExecutoredVO implements Serializable {
     private String itemName;
 
     /** 数量*/
-    @Excel(name = "数量")
+    @Excel(name = "数量", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("数量")
     private String num;
 }

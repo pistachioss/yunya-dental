@@ -55,7 +55,7 @@ public class EmployeeFreepaymentWorkloadDetailVO implements Serializable {
   private String billNum;
 
   /** 账单日期 */
-//  @Excel(name = "订单日期", dateFormat = "yyyy-MM-dd HH:mm")
+  //  @Excel(name = "订单日期", dateFormat = "yyyy-MM-dd HH:mm")
   @ApiModelProperty("订单日期")
   private String orderDate;
 
@@ -76,7 +76,7 @@ public class EmployeeFreepaymentWorkloadDetailVO implements Serializable {
   private String mobile;
 
   /** 免单支付工作量 */
-  @Excel(name = "免单支付工作量", scale = 2)
+  @Excel(name = "免单支付工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("免单支付工作量")
   private BigDecimal freePaymentWorkload;
 }

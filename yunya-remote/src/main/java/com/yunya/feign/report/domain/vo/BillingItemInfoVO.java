@@ -42,7 +42,7 @@ public class BillingItemInfoVO implements Serializable {
   @ApiModelProperty("项目分类名称")
   private String categoryName;
   /** 开单数量合计 */
-  @Excel(name = "数量")
+  @Excel(name = "数量", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("开单数量合计")
   private Integer totalBillCount;
 }

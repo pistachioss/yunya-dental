@@ -59,15 +59,15 @@ public class BillOfRefundRecordInfoVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 实收金额 */
-  @Excel(name = "实收金额")
+  @Excel(name = "实收金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("实收金额")
   private BigDecimal actualAmount;
   /** 已收金额 */
-  @Excel(name = "已收金额")
+  @Excel(name = "已收金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("已收金额")
   private BigDecimal receivedAmount;
   /** 本次退费金额 */
-  @Excel(name = "本次退费金额")
+  @Excel(name = "本次退费金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("本次退费金额")
   private BigDecimal refundAmount;
   /** 退费人ID */
