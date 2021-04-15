@@ -169,8 +169,11 @@ public class BaseTreatmentProcessBiz
     SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
     List<BaseTreatmentProcessVO> baseTreatmentProcessVOS =
         mapper.treatmentList4App(query.getOrgId(), query.getDentistId(), query.getQueryDate());
+    PageInfo pageInfo = null;
     if (StringHelper.isEmpty(baseTreatmentProcessVOS)) {
       return new PageInfo<>(baseTreatmentProcessVOS);
+    } else {
+      pageInfo = new PageInfo(baseTreatmentProcessVOS);
     }
     // 获取患者ID集合
     List<Integer> patientIds =
@@ -411,7 +414,8 @@ public class BaseTreatmentProcessBiz
         }
       }
     }
-    return new PageInfo(patientTreatmentInfo4ListVOS);
+    pageInfo.setList(patientTreatmentInfo4ListVOS);
+    return pageInfo;
   }
 
   /**
