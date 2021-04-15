@@ -15,17 +15,12 @@ import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.models.report.BaseBillDetail;
-import com.yunya.models.report.BaseOrganization;
-import com.yunya.models.report.BaseTariffInfo;
-import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
-import com.yunya.report.ultimate.mapper.BaseBillMapper;
-import com.yunya.report.ultimate.mapper.BaseBillPayDetailMapper;
-import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
+import com.yunya.models.report.*;
+import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,9 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import com.yunya.framework.common.utils.PageUtl;
-import com.yunya.models.report.*;
-import com.yunya.report.ultimate.mapper.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
@@ -1145,27 +1138,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     excelUtil.exportExcel(response, resultList, fileName, fileName, titles);
   }
 
-  /**
-   * 查询组织信息列表
-   *
-   * @return
-   */
-  private List<OrganizationInfoDetail> getOrganizationList() {
-    OrganizationModel model = new OrganizationModel();
-    model.setWhetherPage(false);
-    model.setTypes(new Byte[] {2});
-    return remoteSystemServiceFeign.findOrgInfoList(model);
-  }
-
-  /**
-   * 获取所有门诊信息
-   *
-   * @param query
-   */
-  private List<BaseOrganization> getOrganization(ClinicPerformanceBusinessQuery query) {
-    query.setOriginTypes(Collections.singletonList(2));
-    return organizationMapper.selectOrganizationList(query);
-  }
   /**
    * 各个门诊的月工作量和日工作量合计
    *
