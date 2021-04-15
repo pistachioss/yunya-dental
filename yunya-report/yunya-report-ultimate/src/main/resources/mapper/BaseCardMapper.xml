@@ -686,8 +686,8 @@
     </select>
     <select id="getCardActiveRecoedPage" resultType="com.yunya.feign.report.domain.vo.CardActiveRecoedVO">
         SELECT
-        cd.active_date as activeDate,cd.active_org_id as orgId,bo.abbreviation as orgName,cd.patient_id as patientId,bp.name as patientName,
-        cd.sale_channel_id as saleChannelId,cd.sale_channel_name as saleChannelName,ci.coupon_name as couponName,
+        cd.active_date as activeDate,bo.abbreviation as orgName,bp.name as patientName,
+       cd.sale_channel_name as saleChannelName,ci.coupon_name as couponName,
         case when ci.coupon_type = 0 then '代金券'
         when ci.coupon_type = 1 then '折扣券'
         when ci.coupon_type = 2 then '兑换券'
@@ -695,15 +695,14 @@
         when ci.coupon_type = 4 then '充值券'
         else '' end as couponType,
         cd.card_number as cardNumber,
-        case when cd.status in (0,1,2) then 0
-        else 1 end as status,
-        cd.active_user_id as activeUserId,
+        case when cd.status in (0,1,2) then '否'
+        else '是' end as status,
         be.employee_name as activeUserName
         FROM
         base_card cd
         LEFT JOIN base_employee be ON cd.active_user_id = be.user_id
         LEFT JOIN base_coupon ci on cd.coupon_id = ci.coupon_id
-        LEFT JOIN base_organization bo on cd.allocate_org_id = bo.org_id
+        LEFT JOIN base_organization bo on cd.active_org_id = bo.org_id
         LEFT JOIN base_patient bp on cd.patient_id = bp.patient_id
         <where>
         <if test="activeOrgId != null and activeOrgId != ''">

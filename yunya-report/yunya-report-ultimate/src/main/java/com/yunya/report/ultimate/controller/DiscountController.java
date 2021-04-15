@@ -298,9 +298,17 @@ public class DiscountController {
 	}
 
 	@ApiOperation(value = "产品记录-产品激活记录")
-	@PostMapping("/coupon/active/recoed")
+	@PostMapping("/coupon/active/record")
 	public ResponseResult<PageInfo<CardActiveRecoedVO>> getCardActiveRecoed(@Valid @RequestBody CardActiveRecoedQuery query) {
 		return ResponseUtil.success(discountBiz.getCardActiveRecoedPage(query));
+	}
+
+	@ApiOperation(value = "产品记录-产品激活记录-导出")
+	@PostMapping("/coupon/active/record/export")
+	public void getCardActiveRecoedExport(HttpServletResponse response,@Valid @RequestBody CardActiveRecoedQuery query) throws IOException {
+		discountBiz.buildResponse(response, "产品激活记录");
+		EasyExcel.write(response.getOutputStream(), CardActiveRecoedVO.class)
+				.sheet("sheet").doWrite(discountBiz.getCardActiveRecoedPage(query).getList());
 	}
 
 }

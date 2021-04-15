@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.alibaba.excel.annotation.ExcelProperty;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -23,30 +24,31 @@ import java.util.Date;
 public class CardActiveRecoedVO {
 
     @ApiModelProperty("激活日期")
+    @ExcelProperty("激活日期")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date activeDate;
-    @ApiModelProperty("激活门诊Id")
-    private Integer orgId;
-    @ApiModelProperty("激活门诊名称")
+    @ApiModelProperty("激活门诊")
+    @ExcelProperty("激活门诊")
     private String orgName;
-    @ApiModelProperty("患者ID")
-    private Integer patientId;
-    @ApiModelProperty("患者名称")
+    @ApiModelProperty("患者")
+    @ExcelProperty("患者")
     private String patientName;
-    @ApiModelProperty("渠道ID")
-    private Integer saleChannelId;
-    @ApiModelProperty("渠道名称")
+    @ApiModelProperty("渠道")
+    @ExcelProperty("渠道")
     private String saleChannelName;
-    @ApiModelProperty("卡券名称")
+    @ApiModelProperty("产品名称")
+    @ExcelProperty("产品名称")
     private String couponName;
-    @ApiModelProperty("卡券类型")
+    @ApiModelProperty("产品类型")
+    @ExcelProperty("产品类型")
     private String couponType;
     @ApiModelProperty("卡号")
+    @ExcelProperty("卡号")
     private String cardNumber;
-    @ApiModelProperty("是否使用 0:否 1:是")
-    private Integer status;
-    @ApiModelProperty("激活人ID")
-    private Integer activeUserId;
-    @ApiModelProperty("激活人姓名")
+    @ApiModelProperty("是否使用")
+    @ExcelProperty("是否使用")
+    private String status;
+    @ApiModelProperty("操作人")
+    @ExcelProperty("操作人")
     private String activeUserName;
 }
