@@ -1,6 +1,7 @@
 package com.yunya365.wechat.service.impl;
 
 import com.alibaba.fastjson.*;
+import com.github.pagehelper.*;
 import com.google.common.base.*;
 import com.google.common.collect.*;
 import com.yunya.feign.discount.*;
@@ -11,6 +12,9 @@ import com.yunya.feign.patient_central.*;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.*;
+import com.yunya.feign.treatment.*;
+import com.yunya.feign.treatment.domain.query.*;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.wechat.domain.model.*;
 import com.yunya.feign.wechat.domain.vo.*;
 import com.yunya.framework.common.exception.*;
@@ -26,8 +30,8 @@ import org.springframework.stereotype.*;
 import org.springframework.web.client.*;
 
 import javax.annotation.*;
-import java.util.*;
 import java.util.Optional;
+import java.util.*;
 
 import static java.util.stream.Collectors.*;
 
@@ -53,6 +57,8 @@ public class WXService extends AbstractWxBaseApi {
     private RemoteSystemServiceFeign systemServiceFeign;
     @Resource
     private RemoteOssServiceFeign ossServiceFeign;
+    @Resource
+    private RemoteTreatmentServiceFeign treatmentServiceFeign;
 
     public WxAuthVo getAuthInfo(String code) {
         WxAuthVo vo = new WxAuthVo();
@@ -64,6 +70,7 @@ public class WXService extends AbstractWxBaseApi {
         if (count > 0) {
             vo.setSubscribe(true);
         }
+        log.info("用户注册授权信息：{}", vo);
         return vo;
     }
 
@@ -99,6 +106,50 @@ public class WXService extends AbstractWxBaseApi {
         }
     }
 
+    public List<WxFansDetailVO> listAccount(String openId) {
+        WxFansDetailForm wxFansDetailForm = new WxFansDetailForm();
+        wxFansDetailForm.setOpenId(openId);
+        return patientFeign.findDetail(wxFansDetailForm);
+    }
+
+    public WxPatientVo settingInfo(String openId, Integer patientId) {
+        WxUserQuery query = new WxUserQuery();
+        query.setOpenId(openId);
+        WxFans wxFans = patientFeign.getWxFans(query);
+        if (patientId == null) {
+            return this.assembleWxPatientVo(wxFans);
+        } else {
+            return patientFeign.getWxPatientInfo(patientId);
+        }
+    }
+
+    public List<WxCardUseVo> listCardRecord(String cardNumber, Integer type) {
+        return patientFeign.listPatientCardRecord(cardNumber, type);
+    }
+
+    private WxPatientVo assembleWxPatientVo(WxFans wxFans) {
+        WxPatientVo wxPatientVo = new WxPatientVo();
+        wxPatientVo.setHeadImgUrl(wxFans.getHeadImgurl());
+        wxPatientVo.setUserName(wxFans.getRegisterName());
+        wxPatientVo.setMobile(wxFans.getRegisterMobile());
+        if (wxFans.getSex() == 1) {
+            wxPatientVo.setGender((byte) 0);
+        }
+        if (wxFans.getSex() == 2) {
+            wxPatientVo.setGender((byte) 1);
+        }
+        wxPatientVo.setAddress(wxFans.getCountry() + wxFans.getProvince() + wxFans.getCity());
+        return wxPatientVo;
+    }
+
+    public PageInfo<PatientTreatmentRecordVO> treatRecordPage(PatientTreatmentRecordQueryForm form) {
+        return treatmentServiceFeign.patientTreatmentRecordList(form);
+    }
+
+    public OrderDetailInfoVO treatDetail(Integer treatmentRecordId) {
+        return treatmentServiceFeign.findOrderInfoByTreatmentId(treatmentRecordId);
+    }
+
     private WxFans getOwnInfo(String openId, Integer patientId) {
         WxUserQuery query = new WxUserQuery();
         if (patientId == null) {
@@ -125,6 +176,7 @@ public class WXService extends AbstractWxBaseApi {
                 wxVipInfoVo.setHeadImgUrl(wxFans.getHeadImgurl());
             }
         }
+        wxVipInfoVo.setPatientId(patientId);
         return wxVipInfoVo;
     }
 
@@ -150,10 +202,12 @@ public class WXService extends AbstractWxBaseApi {
             wxVipInfoVo.setExistMemberCard(false);
             //是否有预付款账号
             if (StringUtils.isNotBlank(patientInfo.getPrepaymentNumber())) {
+                wxVipInfoVo.setPrepaymentNumber(patientInfo.getPrepaymentNumber());
                 wxVipInfoVo.setExistPrePayment(true);
             }
             //是否有会员卡账号
             if (StringUtils.isNotBlank(patientInfo.getCardNumber())) {
+                wxVipInfoVo.setMemberNumber(patientInfo.getCardNumber());
                 wxVipInfoVo.setExistMemberCard(true);
                 wxVipInfoVo.setMemberBalance(patientInfo.getMemberCardMoneySum());
             }
@@ -163,6 +217,7 @@ public class WXService extends AbstractWxBaseApi {
                 this.assembleFileUrl(effectCardList);
                 wxVipInfoVo.setCardList(effectCardList);
             }
+            wxVipInfoVo.setPatientId(patientId);
         }
         return wxVipInfoVo;
     }
@@ -175,7 +230,7 @@ public class WXService extends AbstractWxBaseApi {
             OssUrlForm ossUrlForm = new OssUrlForm();
             ossUrlForm.setCompanyId(0);
             ossUrlForm.setIsThumb(false);
-            ossUrlForm.setObjectId(1);
+            ossUrlForm.setObjectId(111111);
             ossUrlForm.setOssCategory(4);
             ossUrlForm.setOssFilename(url);
             return ossUrlForm;

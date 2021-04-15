@@ -280,4 +280,16 @@ import java.util.*;
 
   @PostMapping("/api/wxFans/query")
   WxFans getWxFans(@RequestBody WxUserQuery query);
+
+  @PostMapping("/api/wxFans/detail")
+  List<WxFansDetailVO> findDetail(@RequestBody @Validated WxFansDetailForm wxFansDetailForm);
+
+  @ApiOperation("查询微信用户信息")
+  @RequestMapping (value = "/api/wx/patient/{patientId}", method = RequestMethod.POST)
+  WxPatientVo getWxPatientInfo(@PathVariable("patientId") Integer patientId);
+
+  @ApiOperation("查询微信用户的会员卡和预付款使用记录")
+  @RequestMapping (value = "/api/wx/card/record", method = RequestMethod.GET)
+  public List<WxCardUseVo> listPatientCardRecord(@RequestParam(value = "cardNumber", required = true) String cardNumber
+          , @RequestParam(value = "type", required = true) Integer type);
 }

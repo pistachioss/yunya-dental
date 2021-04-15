@@ -14,6 +14,8 @@ import java.util.*;
  **/
 @Data
 public class WxVipInfoVo {
+    @ApiModelProperty(value = "患者id")
+    private Integer patientId;
     @ApiModelProperty(value = "注册用户名")
     private String registerName;
     @ApiModelProperty(value = "注册手机号")
@@ -24,10 +26,14 @@ public class WxVipInfoVo {
     private Integer memberType;
     @ApiModelProperty(value = "会员卡余额")
     private BigDecimal memberBalance;
-    @ApiModelProperty(value = "是否有预付款")
-    private Boolean existPrePayment;
-    @ApiModelProperty(value = "是否有会员卡")
+    @ApiModelProperty(value = "是否有会员卡（返回值为null或者false代表没有会员卡）")
     private Boolean existMemberCard;
+    @ApiModelProperty(value = "会员卡卡号")
+    private String memberNumber;
+    @ApiModelProperty(value = "是否有预付款（返回值为null或者false代表没有预付款）")
+    private Boolean existPrePayment;
+    @ApiModelProperty(value = "预付款卡号")
+    private String prepaymentNumber;
     @ApiModelProperty(value = "患者拥有礼包")
     private List<WxPatientEffectiveVo> cardList;
 

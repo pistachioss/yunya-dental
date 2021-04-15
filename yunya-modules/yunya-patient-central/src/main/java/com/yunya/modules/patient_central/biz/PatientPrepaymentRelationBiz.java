@@ -421,7 +421,6 @@ public class PatientPrepaymentRelationBiz
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    form.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     List<PrepaidRechargeRecordVo> resultList = prepaidRechargeRecordMapper.RechargeRecord(form);
     if (!StringHelper.isEmpty(resultList)) {
       for (PrepaidRechargeRecordVo prepaidRechargeRecordVo : resultList) {
