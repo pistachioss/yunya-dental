@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.controller.rpc;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
@@ -7,6 +8,7 @@ import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
+import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.utils.StringHelper;
@@ -504,5 +506,29 @@ public class TreatmentServiceRest {
   LastTreatmentInfoVO findLastTreatmentRecord(
       @PathVariable(value = "patientId") Integer patientId) {
     return treatmentRecordBiz.lastTreatmentInfo(patientId);
+  }
+
+  /**
+   * 根据条件查询患者就诊记录列表
+   *
+   * @param queryForm 查询条件
+   * @return resultList
+   */
+  @PostMapping(value = "/patient/list", name = "患者就诊记录列表")
+  public PageInfo<PatientTreatmentRecordVO> patientTreatmentRecordList(
+          @RequestBody @Validated PatientTreatmentRecordQueryForm queryForm) {
+    return treatmentRecordBiz.findPatientTreatList(queryForm);
+  }
+
+  /**
+   * 根据就诊ID查询开单信息
+   *
+   * @param treatmentRecordId 就诊记录ID
+   * @return
+   */
+  @GetMapping("/list/{treatmentRecordId}")
+  public OrderDetailInfoVO findOrderInfoByTreatmentId(
+          @PathVariable(value = "treatmentRecordId") Integer treatmentRecordId) {
+    return orderRecordBiz.findOrderDetailInfoVO(treatmentRecordId);
   }
 }

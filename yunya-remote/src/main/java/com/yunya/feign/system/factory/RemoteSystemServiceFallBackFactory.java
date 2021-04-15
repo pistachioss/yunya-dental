@@ -8,6 +8,7 @@ import com.yunya.models.system.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Set;
 
@@ -283,6 +284,11 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
 
   @Override
   public List<DictionaryItem> findDictionaryItemByIds(List<Integer> ids) {
+    return null;
+  }
+
+  @Override
+  public DictionaryItem getDictItemByNames(@NotBlank String typeName, @NotBlank String itemName) {
     return null;
   }
 }

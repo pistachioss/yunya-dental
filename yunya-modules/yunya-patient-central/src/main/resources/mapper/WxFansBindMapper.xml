@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.WxFansBindMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.WxFansBind" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="dictionary_id" property="dictionaryId" jdbcType="INTEGER" />
+    <result column="open_id" property="openId" jdbcType="VARCHAR" />
+    <result column="bind" property="bind" jdbcType="BIT" />
+    <result column="bind_time" property="bindTime" jdbcType="TIMESTAMP" />
+    <result column="is_vip" property="isVip" jdbcType="BIT" />
+    <result column="is_owner" property="isOwner" jdbcType="BIT" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <insert id="batchInsert" parameterType="java.util.List">
+    insert into wx_fans_bind ( patient_id, dictionary_id,open_id,bind,bind_time,is_vip,is_owner, crt_id) VALUES
+    <foreach collection="list" item="item" index="index" separator=",">
+    (#{item.patientId}, #{item.dictionaryId}, #{item.openId},
+    #{item.bind}, #{item.bindTime},#{item.isVip},
+    #{item.isOwner}, #{item.crtId}
+    )
+    </foreach>
+  </insert>
+</mapper>

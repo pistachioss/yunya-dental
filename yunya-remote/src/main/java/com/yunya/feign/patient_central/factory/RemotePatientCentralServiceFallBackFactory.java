@@ -5,14 +5,9 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
-import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.models.patient_central.MemberExpendRecord;
-import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.patient_central.PatientMemberInfo;
-import com.yunya.models.patient_central.PrepaidExpendRecord;
+import com.yunya.models.patient_central.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -67,7 +62,7 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     }
 
     @Override
-    public PatientBaseInfo findPatientInfo(PatientBaseInfo patientBaseInfo) {
+    public List<PatientBaseInfo> findPatientInfo(PatientBaseInfo patientBaseInfo) {
         return null;
     }
 
@@ -162,6 +157,41 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
 
     @Override
     public PrepaidExpendRecord prePaidPaymentRecordDetail(PaymentRecordDetailQuery query){
+        return null;
+    }
+
+    @Override
+    public Integer saveWx(WxFansSaveForm wxFansSaveForm) {
+        return null;
+    }
+
+    @Override
+    public int countRegister(String openId) {
+        return 0;
+    }
+
+    @Override
+    public PatientPublicInfoVo findPatientPublicInfoById(Integer id) {
+        return null;
+    }
+
+    @Override
+    public WxFans getWxFans(WxUserQuery query) {
+        return null;
+    }
+
+    @Override
+    public List<WxFansDetailVO> findDetail(WxFansDetailForm wxFansDetailForm) {
+        return null;
+    }
+
+    @Override
+    public WxPatientVo getWxPatientInfo(Integer patientId) {
+        return null;
+    }
+
+    @Override
+    public List<WxCardUseVo> listPatientCardRecord(String cardNumber, Integer type) {
         return null;
     }
 }

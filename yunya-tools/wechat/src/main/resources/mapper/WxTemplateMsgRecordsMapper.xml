@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya365.wechat.mapper.WxTemplateMsgRecordsMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.wechat.WxTemplateMsgRecords" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="id" property="id" jdbcType="BIGINT" />
+    <result column="template_id" property="templateId" jdbcType="VARCHAR" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="patient_name" property="patientName" jdbcType="VARCHAR" />
+    <result column="open_id" property="openId" jdbcType="VARCHAR" />
+    <result column="nick_name" property="nickName" jdbcType="VARCHAR" />
+    <result column="category" property="category" jdbcType="INTEGER" />
+    <result column="content" property="content" jdbcType="VARCHAR" />
+    <result column="msg_status" property="msgStatus" jdbcType="INTEGER" />
+    <result column="msg_date" property="msgDate" jdbcType="TIMESTAMP" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>

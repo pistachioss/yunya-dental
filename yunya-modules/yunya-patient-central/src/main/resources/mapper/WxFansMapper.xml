@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.WxFansMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.WxFans" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="register_name" property="registerName" jdbcType="VARCHAR" />
+    <result column="register_mobile" property="registerMobile" jdbcType="VARCHAR" />
+    <result column="open_id" property="openId" jdbcType="VARCHAR" />
+    <result column="nick_name" property="nickName" jdbcType="VARCHAR" />
+    <result column="sex" property="sex" jdbcType="SMALLINT" />
+    <result column="country" property="country" jdbcType="VARCHAR" />
+    <result column="province" property="province" jdbcType="VARCHAR" />
+    <result column="city" property="city" jdbcType="VARCHAR" />
+    <result column="language" property="language" jdbcType="VARCHAR" />
+    <result column="head_imgurl" property="headImgurl" jdbcType="VARCHAR" />
+    <result column="subscribe" property="subscribe" jdbcType="BIT" />
+    <result column="subscribe_time" property="subscribeTime" jdbcType="TIMESTAMP" />
+    <result column="union_id" property="unionId" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="group_id" property="groupId" jdbcType="VARCHAR" />
+    <result column="tagid_list" property="tagidList" jdbcType="VARCHAR" />
+    <result column="bind" property="bind" jdbcType="BIT" />
+    <result column="bind_time" property="bindTime" jdbcType="TIMESTAMP" />
+    <result column="code" property="code" jdbcType="VARCHAR" />
+    <result column="access_token" property="accessToken" jdbcType="VARCHAR" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="lastchatkf_id" property="lastchatkfId" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <select id="findList" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansVo">
+    select wf.id,wf.nick_name as nickName,wf.head_imgurl as headImgurl,wf.open_id as openId,pbi.name,pbi.mobile,
+    wf.remark,wf.crt_time as crtTime,wf.bind as isBind from wx_fans wf
+    LEFT JOIN wx_fans_bind wfb ON wf.open_id = wfb.open_id
+    LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
+    <where>
+      <if test="startTime !=null and endTime != null">
+        and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') >= DATE_FORMAT(#{startTime},'%Y-%m-%d')
+        and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(DATE_ADD(#{endTime},INTERVAL '1' DAY),'%Y-%m-%d')
+      </if>
+      <if test="isBind !=null and isBind != ''">
+        and wf.bind = #{isBind}
+      </if>
+      AND concat(IFNULL(pbi.`name`,''),
+      IFNULL(pbi.medical_number,''),
+      IFNULL(pbi.pinyin_name,''),
+      IFNULL(pbi.mobile,''))
+      like concat(concat('%', rtrim(#{name})), '%')
+    </where>
+  </select>
+
+  <select id="findDetail" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO">
+      SELECT
+      pbi.id as patientId,
+	  pbi.name as patientName,
+	  wfb.dictionary_id as dictionaryId,
+	  pbi.age
+      FROM
+	  wx_fans_bind wfb
+      LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
+      where wfb.open_id = #{openId}
+  </select>
+</mapper>

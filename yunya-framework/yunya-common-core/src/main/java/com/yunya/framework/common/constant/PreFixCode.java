@@ -13,6 +13,7 @@ public enum PreFixCode {
     TREATMENT(19),
     TREATMENT_OTHER(20),
     MIDDLE_TABLE(21),
+    WCHAR(22),
     ;
 
 
