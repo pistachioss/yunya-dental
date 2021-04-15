@@ -42,7 +42,7 @@
         and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(DATE_ADD(#{endTime},INTERVAL '1' DAY),'%Y-%m-%d')
       </if>
       <if test="isBind !=null and isBind != ''">
-        wf.bind = #{isBind}
+        and wf.bind = #{isBind}
       </if>
       AND concat(IFNULL(pbi.`name`,''),
       IFNULL(pbi.medical_number,''),
