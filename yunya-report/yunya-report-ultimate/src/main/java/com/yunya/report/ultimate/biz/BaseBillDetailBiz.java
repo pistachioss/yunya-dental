@@ -1435,7 +1435,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return
    */
   public DynamicHeaderPageInfo<JSONObject> clinicPerformanceList(ClinicPerformanceBusinessQuery queryForm) {
-    long t1 = System.currentTimeMillis();
     String startDate = queryForm.getStartDate().substring(0,7);
     String endDate = queryForm.getEndDate().substring(0,7);
     String year = startDate.substring(0,4); //年份
@@ -1451,8 +1450,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setOrgIds(orgIds);
     List<String> curMonthList = DateUtil.sliceUpDateRange(startDate, endDate);
     Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
-    long t2 = System.currentTimeMillis();
-    System.out.println("===========1===========" + (t2 - t1));
     //环比：去年+查询月份范围
     String preYear = DateUtil.preYear(year);
     String chainStartDate = preYear + "-" + sMonth;
@@ -1460,9 +1457,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<String> chainMonthList = DateUtil.sliceUpDateRange(chainStartDate, chainEndDate);
     query.setStartDate(chainStartDate);
     query.setEndDate(chainEndDate);
-//    Map<String, Map<Integer, BigDecimal[]>> chainWorkload = baseBillPayBiz.computeWorkloadGroupOrgId2(query);
-    long t3 = System.currentTimeMillis();
-    System.out.println("===========2===========" + (t3 - t2));
+    Map<Integer, BigDecimal[]> chainWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
     //同比：查询条件的开始月份 + 查询月份范围的跨度值
     int range = 1; //默认1个月
     if (!startDate.equals(endDate)) {
@@ -1475,17 +1470,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     //年度工作量
     String yearStartDate = year + "-01";
     String yearEndDate = year + "-12";
-    /*if (DateUtil.compareMonth(preStartDate, yearStartDate)<0) {
+    if (DateUtil.compareMonth(preStartDate, yearStartDate)<0) {
       query.setStartDate(preStartDate);
     } else {
       query.setStartDate(yearStartDate);
-    }*/
+    }
     query.setStartDate(chainStartDate);
     query.setEndDate(yearEndDate);
     List<String> yearMonthList = DateUtil.sliceUpDateRange(preStartDate, preEndDate);
     Map<String, Map<Integer, BigDecimal[]>> yearWorkload = baseBillPayBiz.computeWorkloadGroupOrgId2(query);
-    long t4 = System.currentTimeMillis();
-    System.out.println("===========3===========" + (t4 - t3));
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
     List<JSONObject> result = new ArrayList<>();
     if (StringHelper.isNotEmpty(orgs)) {
@@ -1540,20 +1533,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         goals.put(key, goal);
         completed.put(key, completedPercentage.toString() + "%");
 
-        BigDecimal chains = BigDecimal.ZERO;
-        for (String month : chainMonthList) {
-//          Map<Integer, BigDecimal[]> chainMap = chainWorkload.get(month);
-          Map<Integer, BigDecimal[]> chainMap = yearWorkload.get(month);
-          if (chainMap == null) {
-            chainMap = new HashMap<>(16);
-          }
-          BigDecimal[] chainOrg = chainMap.get(orgId);
-          if (chainOrg == null) {
-            chainOrg = new BigDecimal[]{BigDecimal.ZERO};
-          }
-          chains = chains.add(chainOrg[0]);
+        BigDecimal[] chains = chainWorkload.get(orgId);
+        if (chains == null) {
+          chains = new BigDecimal[]{BigDecimal.ZERO};
         }
-
         BigDecimal pres = BigDecimal.ZERO;
         for (String month : preMonthList) {
           Map<Integer, BigDecimal[]> yearMap = yearWorkload.get(month);
@@ -1579,12 +1562,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           }
           years = years.add(yearOrg[0]);
         }
-        chainDiff.put(key, chains);
+        chainDiff.put(key, chains[0]);
         preDiff.put(key, pres);
         curYear.put(key, years);
         actualTotal = actualTotal.add(workloads);
         goalTotal = goalTotal.add(goal);
-        chainTotal = chainTotal.add(chains);
+        chainTotal = chainTotal.add(chains[0]);
         preTotal = preTotal.add(pres);
         yearTotal = yearTotal.add(years);
       }
@@ -1611,8 +1594,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     pageInfo.setPageSize(query.getPageSize());
     pageInfo.setTotal(result.size());
     pageInfo.setList(result);
-    long t5= System.currentTimeMillis();
-    System.out.println("===========4===========" + (t5 - t4));
     return pageInfo;
   }
 
