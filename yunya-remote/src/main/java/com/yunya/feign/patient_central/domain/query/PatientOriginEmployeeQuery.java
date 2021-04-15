@@ -53,7 +53,7 @@ public class PatientOriginEmployeeQuery implements Serializable {
      * 就职状态
      */
     @ApiModelProperty(value ="就职状态",required = false)
-    private String workStatus;
+    private List<String> workStatus;
 
     /**
      * 门诊id

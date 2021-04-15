@@ -33,11 +33,11 @@ public class CategoryInfoIncomeVO implements Serializable {
   @ApiModelProperty("项目分类名称")
   private String categoryName;
   /** 实收金额合计 */
-  @Excel(name = "实收金额合计", scale = 2)
+  @Excel(name = "实收金额合计", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("实收金额合计")
   private BigDecimal totalActualAmount;
   /** 优惠金额合计 */
-  @Excel(name = "优惠金额合计", scale = 2)
+  @Excel(name = "优惠金额合计", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("优惠金额合计")
   private BigDecimal totalDiscountAmount;
 }

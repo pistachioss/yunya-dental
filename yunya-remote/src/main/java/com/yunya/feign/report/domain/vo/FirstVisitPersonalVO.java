@@ -37,7 +37,7 @@ public class FirstVisitPersonalVO {
     private String registeredDentistName;
 
     @ApiModelProperty("初诊患者数量")
-    @Excel(name = "初诊患者数量")
+    @Excel(name = "初诊患者数量", cellType = Excel.ColumnType.NUMERIC)
     private Integer count;
 
 }

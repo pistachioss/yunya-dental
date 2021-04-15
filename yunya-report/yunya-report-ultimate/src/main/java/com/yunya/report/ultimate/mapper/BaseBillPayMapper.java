@@ -185,6 +185,16 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    */
     List<BaseBillPay> findBaseBillPayInfoList(@Param("billIdList") List<BillIdVo> billIdList, @Param("startDate") String startDate,@Param("endDate") String endDate, @Param("itemIds") List<Integer> itemIds);
 
+    /**
+     * 查询免单订单支付记录
+     * @param billIdList 账单id集合
+     * @param startDate 开始时间
+     * @param endDate 结束时间
+     * @param itemIds 支付方式类型
+     * @return 账单支付记录集合
+     */
+    List<BaseBillPay> findMdBaseBillPayInfoList(@Param("billIdList") List<BillIdVo> billIdList, @Param("startDate") String startDate,@Param("endDate") String endDate, @Param("itemIds") List<Integer> itemIds);
+
   /**
    * 根据订单id查询支付记录
    * @param baseBillIdList 订单id集合
@@ -193,4 +203,13 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    * @return 支付记录
    */
   List<BaseBillPay> selectBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query,@Param("itemIds") List<Integer> itemIds);
+
+  /**
+   * 根据订单id查询免单支付记录
+   * @param baseBillIdList 订单id集合
+   * @param query 支付时间条件
+   * @param itemIds 支付方式
+   * @return 支付记录
+   */
+  List<BaseBillPay> selectMdBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query,@Param("itemIds") List<Integer> itemIds);
 }

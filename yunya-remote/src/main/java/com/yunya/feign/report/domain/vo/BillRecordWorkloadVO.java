@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 简介: 账单工作量VO
@@ -41,4 +42,6 @@ public class BillRecordWorkloadVO implements Serializable {
   /** 是否首次收费进行优惠 */
   @ApiModelProperty("是否首次收费进行优惠")
   private Boolean firstPrivilege;
+  /** 使用优惠日期*/
+  private Date privilegeDate;
 }

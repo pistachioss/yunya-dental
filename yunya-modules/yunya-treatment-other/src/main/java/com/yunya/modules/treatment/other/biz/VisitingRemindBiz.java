@@ -33,6 +33,7 @@ import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.modules.treatment.other.mapper.VisitingRemindMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -209,8 +210,6 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         query.setInservice(true);
         String medicalNumber = query.getMedicalNumber();
         String distentName = query.getDistentName();
-        // 预约档案画面接口为3
-        final Integer SEARCH_ID = 3;
         // 分页
         if (query.getWhetherPage()){
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
@@ -248,8 +247,6 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 return ResponseUtil.success(new PageInfo<>(new ArrayList<>()));
             }
         }
-
-
         List<VisitingRemind> visitingReminds = mapper.findVisitingRemindByCondition(query);
 
         PageInfo visitingRemindVoPageInfo = new PageInfo(visitingReminds);
@@ -282,25 +279,119 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 this.setPatientInfo(dentistInfoList,patientTotalInfoVoList,finalMemberTypeList,finalDebtAmountModelList,build);
                 visitingRemindVos.add(build);
             });
+            // 排序
+            searchVisitingRemindVo = this.customSort(visitingRemindVos,query,visitingRemindVoPageInfo);
 
-            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName) && query.getSearchId() < 3) {
-                // 按照时间正序排序
-                searchVisitingRemindVo = this.sort(visitingRemindVos);
-            } else if (null != query.getPatientId() && query.getSearchId().equals(SEARCH_ID)){
-                searchVisitingRemindVo = visitingRemindVos;
-            } else {
-                // 按照时间正序排序
-                searchVisitingRemindVo = this.sort(visitingRemindVos);
-                // 设置分页插件总数量=条件检索出来的结果数量
-                visitingRemindVoPageInfo.setTotal(searchVisitingRemindVo.size());
-            }
         }
         // 如果 searchVisitingRemindVo 为空
         if (StringHelper.isEmpty(searchVisitingRemindVo)) {
             searchVisitingRemindVo = new ArrayList<>();
         }
+        // 设置分页数据
         visitingRemindVoPageInfo.setList(searchVisitingRemindVo);
         return ResponseUtil.success(visitingRemindVoPageInfo);
+    }
+
+    /**
+     * 自定义排序
+     * @param list
+     * @param query
+     * @return
+     */
+    private List<VisitingRemindVo> customSort(List<VisitingRemindVo> list, VisitingRemindQuery query, PageInfo visitingRemindVoPageInfo) {
+        String orderBy = query.getOrderBy();
+        String sort = query.getSort();
+        if (StringHelper.isNotEmpty(list) && StringHelper.isNotBlank(orderBy) && StringHelper.isNotBlank(sort)) {
+            List<VisitingRemindVo> result = null;
+            if ("dentistName".equalsIgnoreCase(orderBy)) {
+                return  this.sortByDentistName(list,sort);
+            } else if ("patientName".equalsIgnoreCase(orderBy)) {
+                return this.sortByPatientName(list,sort);
+            } else if ("mobile".equalsIgnoreCase(orderBy)) {
+                return this.sortByMobileName(list,sort);
+            }
+        } else {
+            // 预约档案画面接口为3
+            Integer SEARCH_ID = 3;
+            String search = query.getSearch();
+            String medicalNumber = query.getMedicalNumber();
+            String distentName = query.getDistentName();
+            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName) && query.getSearchId() < 3) {
+                // 按照时间正序排序
+                return this.sort(list);
+            } else if (null != query.getPatientId() && query.getSearchId().equals(SEARCH_ID)){
+                return list;
+            } else {
+                // 设置分页插件总数量=条件检索出来的结果数量
+                visitingRemindVoPageInfo.setTotal(list.size());
+                // 按照时间正序排序
+                return this.sort(list);
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * 根据医生名字排序
+     * @param list
+     * @param sort
+     * @return
+     */
+    private List<VisitingRemindVo> sortByDentistName(List<VisitingRemindVo> list, String sort) {
+        Comparator<VisitingRemindVo> dentistNamecomparing = Comparator.comparing(VisitingRemindVo::getDentistName, (a, b) -> {
+            a = null == a ? "" : a;
+            b = null == b ? "" : b;
+            if ("asc".equalsIgnoreCase(sort)) {
+                return a.compareTo(b);
+            } else if ("desc".equalsIgnoreCase(sort)) {
+                return b.compareTo(a);
+            } else {
+                return 0;
+            }
+        });
+        return list.stream().sorted(dentistNamecomparing).collect(Collectors.toList());
+    }
+
+    /**
+     * 根据患者名字排序
+     * @param list
+     * @param sort
+     * @return
+     */
+    private List<VisitingRemindVo> sortByPatientName(List<VisitingRemindVo> list, String sort) {
+        Comparator<VisitingRemindVo> patientNamecomparing = Comparator.comparing(VisitingRemindVo::getPatientName, (a, b) -> {
+            a = null == a ? "" : a;
+            b = null == b ? "" : b;
+            if ("asc".equalsIgnoreCase(sort)) {
+                return a.compareTo(b);
+            } else if ("desc".equalsIgnoreCase(sort)) {
+                return b.compareTo(a);
+            } else {
+                return 0;
+            }
+        });
+        return list.stream().sorted(patientNamecomparing).collect(Collectors.toList());
+    }
+
+    /**
+     * 根据手机号排序
+     * @param list
+     * @param sort
+     * @return
+     */
+    private List<VisitingRemindVo> sortByMobileName(List<VisitingRemindVo> list, String sort) {
+        Comparator<VisitingRemindVo> mobileNamecomparing = Comparator.comparing(VisitingRemindVo::getMobile, (a, b) -> {
+            a = null == a ? "" : a;
+            b = null == b ? "" : b;
+            if ("asc".equalsIgnoreCase(sort)) {
+                return a.compareTo(b);
+            } else if ("desc".equalsIgnoreCase(sort)) {
+                return b.compareTo(a);
+            } else {
+                return 0;
+            }
+        });
+        return list.stream().sorted(mobileNamecomparing).collect(Collectors.toList());
     }
 
 

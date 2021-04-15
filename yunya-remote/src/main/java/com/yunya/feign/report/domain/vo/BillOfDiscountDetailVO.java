@@ -58,15 +58,15 @@ public class BillOfDiscountDetailVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 原价合计 */
-  @Excel(name = "原价合计")
+  @Excel(name = "原价合计", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("原价合计")
   private BigDecimal originalAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额")
+  @Excel(name = "优惠金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("优惠金额")
   private BigDecimal discountAmount;
   /** 实收金额 */
-  @Excel(name = "实收金额")
+  @Excel(name = "实收金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("实收金额")
   private BigDecimal actualAmount;
   /** 优惠类型 */

@@ -75,23 +75,23 @@ public class BillTariffIncomeDetailVO implements Serializable {
   @ApiModelProperty(name = "执行人姓名")
   private String executorName;
   /** 单价 */
-  @Excel(name = "单价")
+  @Excel(name = "单价", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("单价")
   private BigDecimal price;
   /** 数量 */
-  @Excel(name = "数量")
+  @Excel(name = "数量", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("数量")
   private Integer quantity;
   /** 原价合计 */
-  @Excel(name = "原价")
+  @Excel(name = "原价", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("原价合计(单价*数量)")
   private BigDecimal totalOriginalAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额")
+  @Excel(name = "优惠金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("优惠金额")
   private BigDecimal discountAmount;
   /** 实收金额 */
-  @Excel(name = "实收金额")
+  @Excel(name = "实收金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("实收金额（原价合计-折扣金额）")
   private BigDecimal actualAmount;
 }

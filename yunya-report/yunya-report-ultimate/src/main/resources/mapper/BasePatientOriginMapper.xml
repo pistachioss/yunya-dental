@@ -39,4 +39,32 @@
         AND parent_id != 0
   </select>
 
+  <select id="selectPatientOriginList" resultType="com.yunya.models.report.BasePatientOrigin">
+    SELECT
+      bpo.id,
+      bpo.parent_id,
+      bpo.name,
+      bpo.origin_type,
+      bpo.source_attribute,
+      bpo.qr_code_path,
+      bpo.allow_operate,
+      bpo.time_limit,
+      bpo.limit_start_date,
+      bpo.limit_end_date
+    FROM base_patient_origin bpo
+    <where>
+        AND bpo.inservice = true
+        <if test="query.parentId != null">
+            AND bpo.parent_id = #{query.parentId}
+        </if>
+        <if test="query.originTypes!=null and query.originTypes.size()>0">
+            AND bpo.origin_type in
+            <foreach collection="query.originTypes" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </where>
+
+  </select>
+
 </mapper>

@@ -1,16 +1,8 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.CardActiveRecoedQuery;
 import com.yunya.feign.report.domain.query.StatementProductSoldDetailQuery;
-import com.yunya.feign.report.domain.vo.CardActiveVo;
-import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
-import com.yunya.feign.report.domain.vo.CardStatisticsVo;
-import com.yunya.feign.report.domain.vo.CouponActiveDetailVo;
-import com.yunya.feign.report.domain.vo.CouponSoldDetailVo;
-import com.yunya.feign.report.domain.vo.CouponSoldRecordVo;
-import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
-import com.yunya.feign.report.domain.vo.RechargeDetailVo;
-import com.yunya.feign.report.domain.vo.StatementPaymentVO;
-import com.yunya.feign.report.domain.vo.StatementProductSoldDetailVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseCard;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -139,5 +131,12 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
     List<CardActiveVo> listCardActive(@Param("patientKeyword") String patientKeyword, @Param("activeOrgIds") List<Integer> activeOrgIds,
                                       @Param("activeStartDate") LocalDate activeStartDate, @Param("activeEndDate") LocalDate activeEndDate,
                                       @Param("couponId") Integer couponId, @Param("saleChannelId") Integer saleChannelId);
+
+    /**
+     * 产品激活报表
+     * @param query
+     * @return
+     */
+    List<CardActiveRecoedVO> getCardActiveRecoedPage(CardActiveRecoedQuery query);
 
 }

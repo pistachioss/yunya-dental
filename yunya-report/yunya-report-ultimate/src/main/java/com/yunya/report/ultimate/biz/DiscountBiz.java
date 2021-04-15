@@ -3,20 +3,25 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.models.report.BaseCoupon;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author xiangyang
@@ -35,7 +40,6 @@ public class DiscountBiz {
     private BaseBenefitMapper benefitMapper;
     @Resource
     private BaseOrganizationMapper orgMapper;
-
     /**
      * 产品售出激活统计
      *
@@ -425,5 +429,13 @@ public class DiscountBiz {
         return cardMapper.listCardActive(query.getPatientKeyword()
                 , query.getActiveOrgIds(), query.getActiveStartDate(),query.getActiveEndDate(),
                 couponId, saleChannelId);
+    }
+
+    public PageInfo<CardActiveRecoedVO> getCardActiveRecoedPage(CardActiveRecoedQuery query){
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<CardActiveRecoedVO> resultList = cardMapper.getCardActiveRecoedPage(query);
+        return new PageInfo<>(resultList);
     }
 }
