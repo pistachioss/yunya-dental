@@ -47,12 +47,12 @@ public class BasePatientMemberOverviewVo {
     private String cardOpeningDate;
 
     /** 会员卡余额（本金） */
-    @Excel(name = "会员卡余额（本金）")
+    @Excel(name = "会员卡余额（本金）", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty(value = "会员卡余额（本金）")
     private BigDecimal principalAmount;
 
     /** 会员卡余额（赠金） */
-    @Excel(name = "会员卡余额（赠金）")
+    @Excel(name = "会员卡余额（赠金）", cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty(value = "会员卡余额（赠金）")
     private BigDecimal bonusAmount;
     

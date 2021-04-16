@@ -28,6 +28,7 @@ import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
@@ -48,10 +49,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
@@ -93,6 +101,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   /** 门诊基础服务*/
   @Autowired private RemoteClinicBaseServiceFeign remoteClinicBaseServiceFeign;
 
+  @Resource(name = "treatmentThreadPool")
+  private ExecutorService executorService;
   /**
    * 根据账单（开单）记录ID查询商品开单详情列表
    *
@@ -539,30 +549,65 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return percentage
    */
   public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(
-      SpecialistProjectReportModel specialistProjectReportModel) {
-    Integer count = 0;
+          SpecialistProjectReportModel specialistProjectReportModel) throws Exception {
+    AtomicInteger count = new AtomicInteger(0);
     List<SpecialistProjectReportVO> specialistProjectReportVOList = new ArrayList<>();
-    for (SpecialistProject specialistProject :
-        specialistProjectReportModel.getSpecialistProjects()) {
-      SpecialistProjectReportVO specialistProjectReportVO = new SpecialistProjectReportVO();
-      specialistProjectReportVO.setSpecialistProjectName(specialistProject.getName());
-      String tariffIds = specialistProject.getTariffIds();
-      if (tariffIds != null) {
-        String[] billingItemIds = tariffIds.split(",");
-        if (billingItemIds.length > 0) {
-          specialistProjectReportModel.setBillingItemIds(billingItemIds);
-          Integer numberOfItems =
-              mapper.selectTariffSpecialistPercentage(specialistProjectReportModel);
-          count = count + numberOfItems;
-          specialistProjectReportVO.setPercentage(numberOfItems.toString());
+    List<SpecialistProject> specialistProjects = specialistProjectReportModel.getSpecialistProjects();
+    List<SpecialistTariffProjectVO> specialistProjectVOs = mapper.selectTariffSpecialistPercentage(specialistProjectReportModel);
+    CountDownLatch latch = new CountDownLatch(specialistProjects.size());
+
+    List<Future<SpecialistProjectReportVO>> futureList = Lists.newArrayList();
+
+    for (SpecialistProject specialistProject : specialistProjects) {
+      SpecialistProjectReportModel clone = (SpecialistProjectReportModel) specialistProjectReportModel.clone();
+      futureList.add(executorService.submit(()->{
+        try {
+          SpecialistProjectReportVO specialistProjectReportVO = new SpecialistProjectReportVO();
+          specialistProjectReportVO.setSpecialistProjectName(specialistProject.getName());
+          String tariffIds = specialistProject.getTariffIds();
+          if (tariffIds != null) {
+            List<String> billingItemIds = Arrays.asList(tariffIds.split(","));
+            if (billingItemIds.size() > 0) {
+              int numberOfItems = specialistProjectVOs.stream().filter(entity ->
+                      clone.getOrgIds().contains(
+                              entity.getOrgId()) && billingItemIds.contains(String.valueOf(entity.getBillingItemId())))
+                      .mapToInt(SpecialistTariffProjectVO::getQuantity).sum();
+              count.getAndAdd(numberOfItems);
+              specialistProjectReportVO.setPercentage(String.valueOf(numberOfItems));
+            }
+          }
+          return specialistProjectReportVO;
+        } finally {
+          latch.countDown();
         }
-      }
-      specialistProjectReportVOList.add(specialistProjectReportVO);
+      }));
     }
-    for (SpecialistProjectReportVO specialistProjectReportVO : specialistProjectReportVOList) {
-      String percentage =
-          mapper.percentage(Integer.parseInt(specialistProjectReportVO.getPercentage()), count);
-      specialistProjectReportVO.setPercentage(percentage);
+
+    latch.await();
+
+    if (StringHelper.isNotEmpty(futureList)) {
+      futureList.forEach(entity->{
+        try {
+          SpecialistProjectReportVO specialistProjectReportVO = entity.get();
+          specialistProjectReportVOList.add(specialistProjectReportVO);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        } catch (ExecutionException e) {
+          e.printStackTrace();
+        }
+      });
+    }
+
+    BigDecimal numberOfItemsBD = null;
+    BigDecimal countBD = new BigDecimal(count.get());
+    BigDecimal percen100 = new BigDecimal(100);
+    if (countBD.intValue() > 0) {
+      for (SpecialistProjectReportVO specialistProjectReportVO : specialistProjectReportVOList) {
+        numberOfItemsBD = new BigDecimal(specialistProjectReportVO.getPercentage());
+        BigDecimal percentBD = numberOfItemsBD.multiply(percen100).divide(countBD, 2, RoundingMode.HALF_UP);
+        String percentage = percentBD.toString();
+        specialistProjectReportVO.setPercentage(percentage);
+      }
     }
     return specialistProjectReportVOList;
   }
@@ -632,30 +677,10 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       });
       // 分页
       if (query.getWhetherPage()) {
-        return doPage(query.getPageNum(), query.getPageSize(), resultList);
+        return PageUtl.doPage(query.getPageNum(), query.getPageSize(), resultList);
       }
     }
     return new PageInfo<>(resultList);
-  }
-
-  /**
-   * 手动分页
-   *
-   * @param pageNum
-   * @param pageSize
-   * @param resultList
-   * @return
-   */
-  private PageInfo<SpecialistProjectCompletedInfoVO> doPage(Integer pageNum, Integer pageSize, List<SpecialistProjectCompletedInfoVO> resultList) {
-    int total = resultList.size();
-    PageInfo<SpecialistProjectCompletedInfoVO> pageInfo = new PageInfo<>();
-    pageInfo.setPageNum(pageNum);
-    pageInfo.setPageSize(pageSize);
-    pageInfo.setTotal(total);
-    List<SpecialistProjectCompletedInfoVO> list =
-            resultList.subList(pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
-    pageInfo.setList(list);
-    return pageInfo;
   }
 
   private List<OrderDetail> getSpecialistProjectCompletedList(

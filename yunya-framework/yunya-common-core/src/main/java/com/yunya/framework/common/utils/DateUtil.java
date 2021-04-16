@@ -489,6 +489,17 @@ public class DateUtil {
   /**
    * 格式化日期 - yyyy-MM-dd HH:mm:ss
    *
+   * @param date 日期
+   * @param sdf 日期解析器
+   * @return 日期字符串
+   */
+  public static String format(Date date, SimpleDateFormat sdf) {
+    return sdf.format(date);
+  }
+
+  /**
+   * 格式化日期 - yyyy-MM-dd HH:mm:ss
+   *
    * @param date 日期字符串
    * @param pattern 日期格式
    * @return 日期
@@ -496,6 +507,18 @@ public class DateUtil {
    */
   public static Date parse(String date, String pattern) throws ParseException {
     return new SimpleDateFormat(pattern).parse(date);
+  }
+
+  /**
+   * 格式化日期 - yyyy-MM-dd HH:mm:ss
+   *
+   * @param date 日期字符串
+   * @param sdf 日期解析器
+   * @return 日期
+   * @throws ParseException 解析异常
+   */
+  public static Date parse(String date, SimpleDateFormat sdf) throws ParseException {
+    return sdf.parse(date);
   }
 
   /**
@@ -544,5 +567,49 @@ public class DateUtil {
       e.printStackTrace();
     }
     return rs;
+  }
+
+
+  /**
+   * 上一年
+   *
+   * @param year
+   * @return
+   */
+  public static String preYear(String year) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
+    Calendar c = Calendar.getInstance();
+    try {
+      c.setTime(sdf.parse(year));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    c.add(Calendar.YEAR, -1);
+    return sdf.format(c.getTime());
+  }
+
+  public static String preMonth(String month, int range) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+    Calendar c = Calendar.getInstance();
+    try {
+      c.setTime(sdf.parse(month));
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    c.add(Calendar.MONTH, -range);
+    return sdf.format(c.getTime());
+  }
+
+  public static int compareMonth(String firstMonth, String secondMonth) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+    Date d1 = null;
+    Date d2 = null;
+    try {
+      d1 = sdf.parse(firstMonth);
+      d2 = sdf.parse(secondMonth);
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    return d1.compareTo(d2);
   }
 }

@@ -34,19 +34,19 @@ public class CouponDiscountItemInfoVO implements Serializable {
     private String categoryName;
 
     @ApiModelProperty("单价")
-    @Excel(name = "单价")
+    @Excel(name = "单价", cellType = Excel.ColumnType.NUMERIC)
     private BigDecimal price;
 
     @ApiModelProperty("数量")
-    @Excel(name = "数量")
+    @Excel(name = "数量", cellType = Excel.ColumnType.NUMERIC)
     private Integer quantity;
 
     @ApiModelProperty("原价合计")
-    @Excel(name = "原价合计")
+    @Excel(name = "原价合计", cellType = Excel.ColumnType.NUMERIC)
     private BigDecimal originPrice;
 
     @ApiModelProperty("优惠金额")
-    @Excel(name = "优惠金额")
+    @Excel(name = "优惠金额", cellType = Excel.ColumnType.NUMERIC)
     private BigDecimal benefitAmount;
 
     @ApiModelProperty("账单编号")

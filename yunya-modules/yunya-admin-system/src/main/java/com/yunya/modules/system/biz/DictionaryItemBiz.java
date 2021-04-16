@@ -15,6 +15,7 @@ import com.yunya.modules.system.domain.query.DictQueryForm;
 import com.yunya.modules.system.mapper.DictionaryItemMapper;
 import com.yunya.modules.system.mapper.DictionaryTypeMapper;
 import com.yunya.modules.system.vo.DictionaryItemVO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -129,6 +130,20 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
   public List<DictionaryItem> findDictionaryItemByIds(List<Integer> ids) {
     if (StringHelper.isNotEmpty(ids)) {
       return mapper.findByIds(ids);
+    }
+    return null;
+  }
+
+  /**
+   * 通过字典分类名称和字典明细名称
+   *
+   * @param typeName 分类name
+   * @param itemName 明细name
+   * @return 字典
+   */
+  public DictionaryItem getDictItemByName(String typeName, String itemName) {
+    if (StringUtils.isNotBlank(typeName) && StringUtils.isNotBlank(itemName)) {
+      return mapper.findByTypeAndItemName(typeName, itemName);
     }
     return null;
   }

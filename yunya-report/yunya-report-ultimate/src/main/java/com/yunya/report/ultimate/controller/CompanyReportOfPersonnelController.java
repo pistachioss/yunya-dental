@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * 简介: 公司端报表-人事报表控制层
@@ -273,7 +274,8 @@ public class CompanyReportOfPersonnelController {
   @ApiOperation("公司端报表-人事报表-配诊统计")
   @PostMapping(value = "/matching/statistics/list", name = "公司端报表-人事报表-配诊统计")
   public ResponseResult<PageInfo<AssistantMatchingStatisticsVO>> treatMatchingStatisticsList(
-      @RequestBody @Validated EmployeeMatchingRecordQuery query) {
+      @RequestBody @Validated EmployeeMatchingRecordQuery query)
+      throws InterruptedException, ExecutionException {
     PageInfo<AssistantMatchingStatisticsVO> pageInfo =
         baseUserPostBiz.findTreatMatchingStatisticsList(query);
     return ResponseUtil.success(pageInfo);
@@ -290,7 +292,7 @@ public class CompanyReportOfPersonnelController {
   @PostMapping(value = "/matching/statistics/list/export", name = "根据条件导出助手配诊统计列表")
   public ResponseResult<T> exportEmployeeTreatMatchingStatisticsList(
       HttpServletResponse response, @RequestBody @Validated EmployeeMatchingRecordQuery query)
-      throws IOException {
+      throws IOException, InterruptedException, ExecutionException {
     baseUserPostBiz.exportEmployeeMatchingStatisticsList(response, query);
     return ResponseUtil.success(null);
   }
@@ -395,6 +397,7 @@ public class CompanyReportOfPersonnelController {
    * @param query 查询条件
    * @return PageInfo<EmployeeFreepaymentWorkloadDetailVO>
    */
+  @Deprecated
   @ApiOperation("公司端报表-人事报表-开单项目实收金额及数量")
   @PostMapping(value = "/employee/billItem/list", name = "根据条件查询开单项目实收金额及数量列表")
   public ResponseResult<PageInfo<EmployeeFreepaymentWorkloadDetailVO>> findEmployeeBillItemList(

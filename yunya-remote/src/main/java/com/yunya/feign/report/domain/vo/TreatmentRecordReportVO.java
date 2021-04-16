@@ -60,7 +60,7 @@ public class TreatmentRecordReportVO implements Serializable {
   @ApiModelProperty("预约时间")
   private String appointTime;
   /** 预约时长 */
-  @Excel(name = "预约时长(分钟)")
+  @Excel(name = "预约时长(分钟)", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("预约时长")
   private Integer appointDuration;
   /** 预约内容 */
@@ -80,11 +80,11 @@ public class TreatmentRecordReportVO implements Serializable {
   @ApiModelProperty("治疗完成时间")
   private String treatEndTime;
   /** 挂号看诊等待时长 */
-  @Excel(name = "挂号看诊等待时长(分钟)")
+  @Excel(name = "挂号看诊等待时长(分钟)", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("挂号看诊等待时长")
   private Integer treatWaitingTime;
   /** 看诊时长 */
-  @Excel(name = "看诊时长(分钟)")
+  @Excel(name = "看诊时长(分钟)", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("看诊时长")
   private Integer treatExpendTime;
 }

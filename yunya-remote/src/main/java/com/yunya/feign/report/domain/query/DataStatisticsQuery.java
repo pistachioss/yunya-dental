@@ -48,4 +48,5 @@ public class DataStatisticsQuery extends PageQuery implements Serializable {
   /** 入账方式id列表 */
   @ApiModelProperty(value = "入账方式id列表")
   private Collection<Integer> payIds;
+  private Collection<Integer> billIds;
 }

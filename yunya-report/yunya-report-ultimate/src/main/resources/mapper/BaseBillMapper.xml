@@ -353,7 +353,7 @@
                 and brr.orgId = #{query.orgId}
             </if>
             <if test="query.billDate != null and query.billDate != ''">
-                AND date_format(brr.billDate, '%Y-%m-%d') = #{query.billDate}
+                AND date_format(brr.billDate, '%Y-%m-%d') &lt;= #{query.billDate}
             </if>
             <if test="query.orderDate != null and query.orderDate != ''">
                 AND date_format(brr.orderDate, '%Y-%m-%d') = #{query.orderDate}
@@ -1045,6 +1045,36 @@
                     and DATE_FORMAT( bb.order_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                AND bb.org_id IN
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.privilegeStartDate != null and query.privilegeStartDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= #{query.privilegeStartDate}
+                </if>
+                <if test="query.privilegeEndDate != null and query.privilegeEndDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= #{query.privilegeEndDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.privilegeStartDate != null and query.privilegeStartDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) &gt;= #{query.privilegeStartDate}
+                </if>
+                <if test="query.privilegeEndDate != null and query.privilegeEndDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) &lt;= #{query.privilegeEndDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.privilegeStartDate != null and query.privilegeStartDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y' ) &gt;= #{query.privilegeStartDate}
+                </if>
+                <if test="query.privilegeEndDate != null and query.privilegeEndDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y' ) &lt;= #{query.privilegeEndDate}
+                </if>
+            </if>
         </where>
     </select>
     <!-- 查询账单列表实收金额总和 -->
@@ -1090,9 +1120,10 @@
                 and ee.work_status = #{query.workStatus}
             </if>
         </where>
-        GROUP BY log.origin_id) t
+        GROUP BY log.origin_id ) t
         on t.origin_id = log.origin_id
         where 1 = 1
+        and log.origin_type = 1
         <if test="query.startDate != null">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
@@ -1110,7 +1141,7 @@
         join base_bill bb on log.patient_id = bb.patient_id
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         where 1 = 1
-        AND log.origin_type = 4
+        AND log.origin_type = 3
         <if test="query.startDate != null">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
@@ -1127,7 +1158,7 @@
         </if>
     </select>
 
-    <!-- 根据推荐人id和支付记录时间查询已收工作量信息 -->
+    <!-- 查询已收工作量信息 -->
     <select id="findBaseBillIdList"
             resultType="java.lang.Integer">
         SELECT
@@ -1150,6 +1181,50 @@
             </if>
             AND log.origin_type = #{originType}
             AND log.inservice = 1
+        ) t ON bb.patient_id = t.patient_id
+        join base_bill_pay bbp on bbp.bill_id = bb.bill_id
+        join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
+        where 1 = 1
+        <if test="query.startDate != null">
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+        </if>
+
+        <if test="query.endDate != null" >
+            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+        </if>
+
+        <if test="itemIds != null">
+            and bbpd.account_item_id in
+            <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
+                #{itemId}
+            </foreach>
+        </if>
+
+    </select>
+
+    <!-- 查询免單工作量信息 -->
+    <select id="findMdBaseBillIdList"
+            resultType="java.lang.Integer">
+        SELECT
+        DISTINCT
+        bb.bill_id billId
+        FROM
+        base_bill bb
+        JOIN (
+        SELECT DISTINCT
+        log.patient_id
+        FROM
+        base_patient_origin_log log
+        JOIN base_bill bb ON log.patient_id = bb.patient_id
+        JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
+        JOIN base_patient bp on bp.patient_id = log.patient_id
+        WHERE
+        log.origin_id = #{query.originId}
+        <if test="query.condition != null">
+            and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition} ), '%' )
+        </if>
+        AND log.origin_type = #{originType}
+        AND log.inservice = 1
         ) t ON bb.patient_id = t.patient_id
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
@@ -1229,5 +1304,40 @@
                 and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
             </if>
         ) t
+    </select>
+
+    <select id="distinctBillIds" resultType="java.lang.Integer">
+        SELECT
+        distinct bb.bill_id as billId
+        FROM base_bill bb
+        LEFT JOIN base_treatment_process btp on bb.treatment_id=btp.treatment_id
+        <where>
+            AND btp.treat_end_time IS NOT NULL
+            AND bb.bill_date IS NOT NULL
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
     </select>
 </mapper>

@@ -1,12 +1,10 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
-import io.swagger.annotations.ApiModel;
-import lombok.Data;
-import lombok.ToString;
+import io.swagger.annotations.*;
+import lombok.*;
 
-import javax.persistence.Column;
-import java.io.Serializable;
-import java.math.BigDecimal;
+import java.io.*;
+import java.math.*;
 
 /**
  * 简单介绍:</br> 返回患者公告信息模型
@@ -89,5 +87,15 @@ public class PatientPublicInfoVo implements Serializable {
      * 会员卡类型id
      */
     private Integer memberTypeId;
+
+    /**
+     * 会员卡卡号
+     */
+    private String cardNumber;
+
+    /**
+     * 预付款卡号
+     */
+    private String prepaymentNumber;
 
 }

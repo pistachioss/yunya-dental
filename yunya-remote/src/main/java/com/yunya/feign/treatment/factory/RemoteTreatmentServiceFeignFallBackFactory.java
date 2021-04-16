@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment.factory;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
@@ -8,6 +9,7 @@ import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
+import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.models.tariff.*;
@@ -220,6 +222,16 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
 
   @Override
   public List<OrderDetail> findSpecialistProjectCompletedList(SpecialistProjectCompletedCountQuery query) {
+    return null;
+  }
+
+  @Override
+  public PageInfo<PatientTreatmentRecordVO> patientTreatmentRecordList(PatientTreatmentRecordQueryForm queryForm) {
+    return null;
+  }
+
+  @Override
+  public OrderDetailInfoVO findOrderInfoByTreatmentId(Integer treatmentRecordId) {
     return null;
   }
 }

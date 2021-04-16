@@ -1,0 +1,13 @@
+# 默认启用开发环境配置
+spring:
+  application:
+    name: wechat
+#  cloud:
+#    nacos:
+#      config:
+#        server-addr: 192.168.31.215:8848
+#        file-extension: yaml
+  profiles:
+    active: dev
+  main:
+    allow-bean-definition-overriding: true

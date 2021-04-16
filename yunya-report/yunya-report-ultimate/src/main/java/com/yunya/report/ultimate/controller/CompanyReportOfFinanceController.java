@@ -360,6 +360,21 @@ public class CompanyReportOfFinanceController {
     return ResponseUtil.success(resultList);
   }
 
+
+  /**
+   * 根据条件导出门诊出入账对账单
+   *
+   * @param query 查询条件
+   * @return Map<String, Object>
+   */
+  @ApiOperation("公司端报表-财务报表-对账单导出")
+  @PostMapping(value = "/statement/export", name = "根据条件导出门诊出入账对账单")
+  public ResponseResult<T> inboundAndOutboundStatementExport(HttpServletResponse response,
+          @RequestBody @Validated InboundAndOutboundStatementQuery query) {
+    accountItemBiz.InboundAndOutboundStatementExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
   /**
    * 根据条件查询门诊账单收费明细（首次收费）
    *
@@ -853,6 +868,36 @@ public class CompanyReportOfFinanceController {
   public ResponseResult<T> billDiscountAndFreePaymentExport(HttpServletResponse response,
           @RequestBody @Validated BillDiscountAndFreePaymentQuery query) throws IOException {
     billPayBiz.billDiscountAndFreePaymentExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询非本月免单金额明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<NonMonthCategoryVO>
+   */
+  @ApiOperation("公司端报表-财务报表-分类收入汇总-非本月免单金额明细")
+  @PostMapping(value = "/category/nonMonthCateogry/list", name = "根据条件查询非本月免单金额明细列表")
+  public ResponseResult<PageInfo<NonMonthCategoryVO>> nonMonthCategoryList(
+          @RequestBody @Validated BillCategoryIncomeQuery query) {
+    PageInfo<NonMonthCategoryVO> resultList = billDetailBiz.nonMonthCategoryList(query);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 根据条件导出非本月免单金额明细列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return void
+   */
+  @ApiOperation("公司端报表-财务报表-分类收入汇总-导出非本月免单金额明细")
+  @PostMapping(value = "/category/nonMonthCateogry/export", name = "根据条件导出非本月免单金额明细列表")
+  public ResponseResult<T> nonMonthCategoryExport(
+          HttpServletResponse response, @RequestBody @Validated BillCategoryIncomeQuery query)
+          throws IOException {
+    billDetailBiz.nonMonthCategoryExport(response, query);
     return ResponseUtil.success(null);
   }
 }

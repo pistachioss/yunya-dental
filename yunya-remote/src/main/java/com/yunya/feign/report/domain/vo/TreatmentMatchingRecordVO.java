@@ -75,7 +75,7 @@ public class TreatmentMatchingRecordVO implements Serializable {
   @ApiModelProperty("治疗完成时间")
   private String treatEndTime;
   /** 配诊时长 */
-  @Excel(name = "配诊时长（分钟）")
+  @Excel(name = "配诊时长（分钟）", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("配诊时长")
   private Integer matchingDuration;
 }

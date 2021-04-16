@@ -35,7 +35,7 @@ public class BillingItemDetailVO implements Serializable {
   @ApiModelProperty("账单编号")
   private String billNum;
   /** 开单数量 */
-  @Excel(name = "开单数量")
+  @Excel(name = "开单数量", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("开单数量")
   private Integer quantity;
   /** 挂号医生ID */

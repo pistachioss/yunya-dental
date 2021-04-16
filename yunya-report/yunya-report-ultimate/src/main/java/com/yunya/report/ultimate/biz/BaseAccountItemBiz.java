@@ -11,6 +11,7 @@ import com.yunya.models.report.BaseAccountItem;
 import com.yunya.report.ultimate.mapper.BaseAccountItemMapper;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -1126,5 +1127,14 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     List<StatementPaymentVO> resultList =
         mapper.selectClinicIsAcceptedPaymentInfoNotThisMonth(query);
     return resultList;
+  }
+
+  /**
+   * 根据条件导出门诊出入账对账单
+   *
+   * @param query 查询条件
+   * @return Map<String, Object>
+   */
+  public void InboundAndOutboundStatementExport(InboundAndOutboundStatementQuery query, HttpServletResponse response) {
   }
 }

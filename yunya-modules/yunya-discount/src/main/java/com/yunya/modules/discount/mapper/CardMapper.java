@@ -1,14 +1,13 @@
 package com.yunya.modules.discount.mapper;
 
 import com.yunya.feign.discount.domain.bo.*;
-import com.yunya.feign.discount.domain.vo.CardActiveDetailVo;
-import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
-import com.yunya.models.discount.Card;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
+import com.yunya.feign.discount.domain.vo.*;
+import com.yunya.feign.patient_central.domain.query.*;
+import com.yunya.models.discount.*;
+import org.apache.ibatis.annotations.*;
 
-import java.math.BigDecimal;
-import java.util.List;
+import java.math.*;
+import java.util.*;
 
 
 @Mapper
@@ -78,4 +77,9 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
     String getRecentCard(@Param("patientId") Integer patientId, @Param("couponId") Integer couponId);
 
     int countPatientCoupon(@Param("patientId") Integer patientId, @Param("couponId") Integer couponId);
+
+    /**
+     * 微信公众号-查询患者有效的卡券
+     */
+    List<WxPatientEffectiveVo> listPatientEffectiveCard(@Param("patientId") Integer patientId);
 }

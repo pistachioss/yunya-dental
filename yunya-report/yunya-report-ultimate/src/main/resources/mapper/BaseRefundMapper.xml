@@ -720,9 +720,8 @@
             </if>
         </where>
     </select>
-
     <!-- 根据推荐人id 和 退费时间查询 退费id -->
-    <select id="selectfundBillIdList" resultType="java.lang.Integer">
+    <select id="selectFundBillIdList" resultType="java.lang.Integer">
         select br.refund_id from base_refund br join (
             SELECT DISTINCT
             log.patient_id
@@ -750,7 +749,7 @@
     </select>
 
     <!-- 查询退费项目明细 -->
-    <select id="selectrefundDetail"
+    <select id="selectRefundDetail"
             resultType="com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo">
         SELECT
 				bb.bill_id billId,
@@ -777,6 +776,7 @@
         where brd.refund_id = #{refundId}
               and log.origin_id = #{originId}
               and log.origin_type = #{originType}
+              and bti.item_type = bbd.item_type
     </select>
 
     <!-- 根据条件查询退费工作量 -->

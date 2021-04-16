@@ -64,19 +64,19 @@ public class CurrentMonthBillDetailVO implements Serializable {
   @ApiModelProperty("项目名称")
   private String itemName;
   /** 数量 */
-  @Excel(name = "数量")
+  @Excel(name = "数量", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("数量")
   private Integer quantity;
   /** 项目实收金额（项目原价*数量-该项目的优惠金额） */
-  @Excel(name = "项目实收金额", scale = 2)
+  @Excel(name = "项目实收金额", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("项目实收金额（项目原价*数量-该项目的优惠金额）")
   private BigDecimal itemActualAmount;
   /** 账单实收金额（账单原价合计-账单优惠金额） */
-  @Excel(name = "账单实收金额", scale = 2)
+  @Excel(name = "账单实收金额", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty(" 账单实收金额（账单原价合计-账单优惠金额）")
   private BigDecimal billActualAmount;
   /** 项目补入工作量 */
-  @Excel(name = "项目补入工作量", scale = 2)
+  @Excel(name = "项目补入工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("项目补入工作量")
   private BigDecimal itemSupplyWorkloadAmount;
 }
