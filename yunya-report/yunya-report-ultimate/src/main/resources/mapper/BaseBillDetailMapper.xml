@@ -1536,7 +1536,7 @@
         bbd.quantity,
         bb.org_id,
         bb.bill_date,
-        bb.bill_num
+        bb.order_date
         FROM
         base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
@@ -2560,18 +2560,15 @@
         bbd.org_id AS orgId,
         bbd.item_id AS itemId,
         bbd.item_type AS itemType,
-        bbd.registered_dentist_id as employeeId,
+        bbd.executor_id as employeeId,
         IFNULL(SUM(bbd.quantity),0) as quantity,
         IFNULL(SUM(bbd.price*bbd.quantity-bbd.discount_amount),0) as amount
         FROM
         (
-        select bbd.org_id,bbd.item_id,bbd.item_type,btp.registered_dentist_id,bbd.quantity,bbd.price,bbd.discount_amount
+        select bbd.org_id,bbd.item_id,bbd.item_type,bbd.executor_id,bbd.quantity,bbd.price,bbd.discount_amount
         from base_bill_detail bbd
         LEFT JOIN base_bill bb on bb.bill_id=bbd.bill_id
-        LEFT JOIN base_treatment_process btp on btp.treatment_id=bb.treatment_id
         <where>
-            bbd.source_type = 0
-            and btp.treat_end_time IS NOT NULL
             AND bb.bill_date IS NOT NULL
             <if test="query.itemIds!=null and query.itemIds.size()>0">
                 and bbd.item_id in
@@ -2583,12 +2580,11 @@
                 and bbd.item_type=#{query.itemType}
             </if>
             <if test="query.orgId != null">
-                and btp.org_id = #{query.orgId}
                 and bbd.org_id = #{query.orgId}
                 and bb.org_id = #{query.orgId}
             </if>
             <if test="query.employeeIds!=null and query.employeeIds.size()>0">
-                AND btp.registered_dentist_id in
+                AND bbd.executor_id in
                 <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
@@ -2621,7 +2617,7 @@
         ) bbd
         GROUP BY
         bbd.org_id,
-        bbd.registered_dentist_id,
+        bbd.executor_id,
         bbd.item_id,
         bbd.item_type
         ORDER BY
@@ -2756,11 +2752,11 @@
     <select id="selectBillTotalNotWorkload" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
         SELECT
         bbd.bill_id AS billId,
-        SUM(( bbd.price * bbd.quantity ) - bbd.discount_amount ) AS billTotalNotWorkload
+        SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS billTotalNotWorkload
         FROM
         base_bill_detail bbd
         <where>
-            AND bbd.executor_id IS NULL
+            bbd.item_type = 1
             <if test="billIds != null and billIds.size > 0">
                 AND bbd.bill_id IN
                 <foreach collection="billIds" index="index" item="item" open="(" separator="," close=")">
@@ -3048,7 +3044,7 @@
         bbd.executor_id as executorId,
         bbd.item_type as itemType,
         bbd.item_id as itemId,
-        SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS itemWorkload,
+        bbd.price * bbd.quantity - bbd.discount_amount AS itemWorkload,
         bbd1.billTotalWorkload
         FROM base_bill_detail bbd
         INNER JOIN (
@@ -3069,7 +3065,6 @@
                 and bbd.org_id = #{query.orgId}
             </if>
         </where>
-        GROUP BY bbd.bill_detail_id
         ) bbd ON bbp.bill_id = bbd.bill_id) bbd
         GROUP BY bbd.executorId, bbd.itemType, bbd.itemId
         ) bbd1 on bet.user_id = bbd1.executorId and bet.item_id = bbd1.itemId and bet.item_type = bbd1.itemType
@@ -3124,7 +3119,7 @@
         </where>
         ) br ON brd.refund_id = br.refund_id
         ) brd
-        WHERE brd.executor_id is not null
+        WHERE brd.executorId is not null
         GROUP BY brd.executorId, brd.itemType, brd.itemId
         ) brd on bet.user_id = brd.executorId and bet.item_id = brd.itemId and bet.item_type = brd.itemType
         ORDER BY bbd.receivedWorkload DESC,
@@ -3173,5 +3168,126 @@
             </if>
         </where>
         group by bb.org_id, bb.privilege_org_id, bb.first_privilege
+    </select>
+    <!-- 根据条件查询个人开单项目已收工作量明细 -->
+    <select id="selectPersonalBillItemAndWorkloadDetail"
+            resultType="com.yunya.feign.report.domain.vo.PersonalBillItemTollAndWorkloadDetailVO">
+        select
+        bbd.billId,
+        bbd.billDate,
+        bbd.billNum,
+        bbd.regDentistId,
+        bbd.regDentistName,
+        bbd.executorId,
+        bbd.executorName,
+        bbd.patientId,
+        bbd.patientName,
+        bbd.mobile,
+        bbd.itemReveivedWorkload
+        from (
+        select bbd.billId,
+        date_format(bbd.billDate, '%Y-%m-%d %H:%m') as billDate,
+        bbd.billNum,
+        bbd.regDentistId,
+        be.employee_name as regDentistName,
+        bbd.executorId,
+        bbd.executorName,
+        bbd.patientId,
+        bbd.patientName,
+        bbd.pinyinName,
+        bbd.mobile,
+        bbd.itemReveivedWorkload
+        from (select bbp.billId,
+        bbd.billDate,
+        bbd.billNum,
+        bbd.regDentistId,
+        bbd.executorId,
+        bbd.executorName,
+        bbd.patientId,
+        bbd.patientName,
+        bbd.pinyinName,
+        bbd.mobile,
+        convert(bbd.itemWorkload / bbd.actualAmount * bbp.receivedAmount, decimal(19, 2)) as itemReveivedWorkload
+        from (
+        select bbp.bill_id as billId,
+        sum(bbp.received_amount) as receivedAmount
+        from base_bill_pay bbp
+        inner join base_bill bb on bbp.bill_id = bb.bill_id
+        <where>
+            and bbp.received_amount > 0
+            <if test="query.startDate != null and query.startDate != ''">
+                and date_format(bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and date_format(bbp.payee_date, '%Y-%m-%d') &lt;= #{query.endDate}
+            </if>
+            and bb.bill_date is not null
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+        </where>
+        group by bbp.bill_id
+        ) bbp
+        inner join (
+        select bb.billId,
+        bb.billDate,
+        bb.billNum,
+        bb.patientId,
+        bb.patientName,
+        bb.pinyinName,
+        bb.mobile,
+        bb.treatmentId,
+        bb.regDentistId,
+        bb.actualAmount,
+        bbd.price * bbd.quantity - bbd.coupon_workload as itemWorkload,
+        bbd.executor_id as executorId,
+        be.employee_name as executorName
+        from base_bill_detail bbd
+        inner join (
+        select bb.bill_id as billId,
+        bb.patient_id as patientId,
+        bp.name as patientName,
+        bp.pinyin_name as pinyinName,
+        bp.mobile as mobile,
+        bb.bill_num as billNum,
+        bb.bill_date as billDate,
+        bb.actual_amount as actualAmount,
+        bb.treatment_id as treatmentId,
+        btp.registered_dentist_id as regDentistId
+        from base_bill bb
+        left join base_patient bp on bb.patient_id = bp.patient_id
+        left join base_treatment_process btp on bb.treatment_id = btp.treatment_id
+        <where>
+            and bb.bill_date is not null
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+        </where>
+        ) bb on bbd.bill_id = bb.billId
+        left join base_employee be on bbd.executor_id = be.user_id
+        <where>
+            <if test="query.executorId != null">
+                and bbd.executor_id = #{query.executorId}
+            </if>
+            <if test="query.itemId != null">
+                and bbd.item_id = #{query.itemId}
+            </if>
+            <if test="query.orgId != null">
+                and bbd.org_id = #{query.orgId}
+            </if>
+        </where>
+        ) bbd on bbp.billId = bbd.billId
+        group by bbp.billId) bbd
+        left join base_employee be on bbd.regDentistId = be.user_id
+        ) bbd
+        <where>
+            <if test="query.patientKeyword != null and query.patientKeyword != ''">
+                and concat(IFNULL(bbd.patientName, ''), IFNULL(bbd.pinyinName, ''), IFNULL(bbd.mobile, '')) like
+                concat('%', #{query.patientKeyword}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and concat(IFNULL(bbd.billNum, '')) like concat('%', #{query.billNum}, '%')
+            </if>
+        </where>
     </select>
 </mapper>

@@ -331,4 +331,13 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<BillItemTollAndWorkloadVO> selectTariffWorkloadInfo(
       @Param("query") BillItemTollAndWorkloadQuery query);
+
+  /**
+   * 根据条件查询个人开单项目工作量明细
+   *
+   * @param query 查询条件
+   * @return
+   */
+  List<PersonalBillItemTollAndWorkloadDetailVO> selectPersonalBillItemAndWorkloadDetail(
+      @Param("query") PersonalBillItemTollAndWorkloadQuery query);
 }
