@@ -10,15 +10,14 @@ import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
 import com.yunya.feign.oss.RemoteOssServiceFeign;
 import com.yunya.feign.oss.domain.model.OssUrlForm;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.query.WxFansDetailForm;
 import com.yunya.feign.patient_central.domain.query.WxFansSaveForm;
 import com.yunya.feign.patient_central.domain.query.WxUserQuery;
-import com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.WxCardUseVo;
-import com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO;
-import com.yunya.feign.patient_central.domain.vo.web.WxPatientVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
+import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
@@ -26,6 +25,7 @@ import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.wechat.domain.model.WxRegisterModel;
 import com.yunya.feign.wechat.domain.vo.WxAuthVo;
+import com.yunya.feign.wechat.domain.vo.WxMemberRelationVO;
 import com.yunya.feign.wechat.domain.vo.WxVipInfoVo;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -139,12 +140,18 @@ public class WXService extends AbstractWxBaseApi {
     }
 
     public List<WxCardUseVo> listCardRecord(String cardNumber, Integer type) {
-        return patientFeign.listPatientCardRecord(cardNumber, type);
+        List<WxCardUseVo> wxCardUseVos = patientFeign.listPatientCardRecord(cardNumber, type);
+        wxCardUseVos.sort(Comparator.comparing(WxCardUseVo::getOperatingTime).reversed());
+        return wxCardUseVos;
     }
 
-    public List<BenefitItemVo> listCouponCardUsage(Integer cardId, String couponName) {
+    public WxCardUsageVo listCouponCardUsage(Integer cardId, String couponName) {
+        WxCardUsageVo cardUsage = discountFeign.getUserCardUsage(cardId);
+        if (cardUsage == null) {
+            return null;
+        }
         List<BenefitItemVo> voList = Lists.newArrayList();
-        List<String> list = Lists.newArrayList("938  IVY365 kids（新）","937  IVY365 Youngs（新）","936 IVY365 Adults（新）");
+        List<String> list = Lists.newArrayList("938  IVY365 kids（新）", "937  IVY365 Youngs（新）", "936 IVY365 Adults（新）");
         if (list.contains(couponName)) {
             voList.add(fixedItem("初/复诊检查费"));
             voList.add(fixedItem("影像检查"));
@@ -152,8 +159,32 @@ public class WXService extends AbstractWxBaseApi {
             voList.add(fixedItem("口腔健康管理咨询"));
         }
         List<BenefitItemVo> benefitItemVos = reportServiceFeign.listWxCouponsUseItem(cardId);
-        voList.addAll(benefitItemVos);
-        return voList;
+        if (CollectionUtils.isNotEmpty(benefitItemVos)) {
+            voList.addAll(benefitItemVos);
+        }
+        cardUsage.setCardUsageList(voList);
+        //拼接oss图片
+        if (StringUtils.isNotBlank(cardUsage.getPath())) {
+            List<String> urls = this.getOssUrls(Lists.newArrayList());
+            cardUsage.setPath(urls.get(0));
+        }
+        return cardUsage;
+    }
+
+    public WxMemberRelationVO memberRelation(Integer patientId) {
+        PatientMemberRelationQueryForm form = new PatientMemberRelationQueryForm();
+        form.setPatientId(patientId);
+        MemberRelationVo vo = patientFeign.findMemberBindingRelation(form);
+        WxMemberRelationVO relationVO = new WxMemberRelationVO();
+        if (CollectionUtils.isNotEmpty(vo.getMemberRelationList())) {
+            relationVO.setViceCarder(vo.getMemberRelationList().stream()
+                    .map(PatientMemberRelationVo::getName).collect(toList()));
+        }
+        if (CollectionUtils.isNotEmpty(vo.getMemberBalanceRelationList())) {
+            relationVO.setBalanceSharer(vo.getMemberBalanceRelationList().stream()
+                    .map(PatientMemberRelationVo::getName).collect(toList()));
+        }
+        return relationVO;
     }
 
     private BenefitItemVo fixedItem(String itemName) {
@@ -263,6 +294,18 @@ public class WXService extends AbstractWxBaseApi {
         List<String> urls = effectCardList.stream()
                 .filter(obj -> StringUtils.isNotBlank(obj.getPath()))
                 .map(WxPatientEffectiveVo::getPath).collect(toList());
+        if (CollectionUtils.isNotEmpty(urls)) {
+            List<String> data = this.getOssUrls(urls);
+            effectCardList.stream()
+                    .filter(obj -> StringUtils.isNotBlank(obj.getPath()))
+                    .forEach(obj -> {
+                        Optional<String> first = data.stream().filter(urlStr -> urlStr.contains(obj.getPath())).findFirst();
+                        first.ifPresent(obj::setPath);
+                    });
+        }
+    }
+
+    private List<String> getOssUrls(List<String> urls) {
         List<OssUrlForm> ossObs = urls.stream().map(url -> {
             OssUrlForm ossUrlForm = new OssUrlForm();
             ossUrlForm.setCompanyId(0);
@@ -274,13 +317,7 @@ public class WXService extends AbstractWxBaseApi {
         }).collect(toList());
         try {
             final ResponseResult url = ossServiceFeign.getUrl(ossObs);
-            List<String> data = (List<String>) url.getData();
-            effectCardList.stream()
-                    .filter(obj -> StringUtils.isNotBlank(obj.getPath()))
-                    .forEach(obj -> {
-                        Optional<String> first = data.stream().filter(urlStr -> urlStr.contains(obj.getPath())).findFirst();
-                        first.ifPresent(obj::setPath);
-                    });
+            return (List<String>) url.getData();
         } catch (Exception e) {
             log.warn("获取图片异常，e", e);
             throw new ClientServiceException(WeChatError.WX_FILE_URL_ERROR);

@@ -1,23 +1,30 @@
 package com.yunya365.wechat.controller;
 
-import com.github.pagehelper.*;
-import com.yunya.feign.patient_central.domain.vo.web.*;
-import com.yunya.feign.report.domain.vo.BenefitItemVo;
-import com.yunya.feign.treatment.domain.query.*;
-import com.yunya.feign.treatment.domain.vo.*;
-import com.yunya.feign.wechat.domain.model.*;
-import com.yunya.feign.wechat.domain.vo.*;
-import com.yunya.framework.common.model.*;
-import com.yunya.framework.common.utils.*;
-import com.yunya365.wechat.service.impl.*;
-import io.swagger.annotations.*;
-import lombok.extern.slf4j.*;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.patient_central.domain.vo.web.WxCardUseVo;
+import com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO;
+import com.yunya.feign.patient_central.domain.vo.web.WxPatientVo;
+import com.yunya.feign.report.domain.vo.WxCardUsageVo;
+import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
+import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
+import com.yunya.feign.wechat.domain.model.WxRegisterModel;
+import com.yunya.feign.wechat.domain.vo.WxAuthVo;
+import com.yunya.feign.wechat.domain.vo.WxMemberRelationVO;
+import com.yunya.feign.wechat.domain.vo.WxVipInfoVo;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya365.wechat.service.impl.WXService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.*;
-import javax.validation.*;
-import javax.validation.constraints.*;
-import java.util.*;
+import javax.annotation.Resource;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @description:
@@ -95,11 +102,19 @@ public class WxController {
 
     @GetMapping(value = "/wxVip/home/card")
     @ApiOperation(value = "会员中心-礼包详情")
-    public ResponseResult<List<BenefitItemVo>> cardDetail(@NotNull @RequestParam(required = true) Integer cardId,
+    public ResponseResult<WxCardUsageVo> cardDetail(@NotNull @RequestParam(required = true) Integer cardId,
                                                           @NotBlank @RequestParam(required = true) String couponName,
                                                           @NotBlank @RequestParam(required = true) String openId) {
-        List<BenefitItemVo> benefitItemVos = wxService.listCouponCardUsage(cardId, couponName);
-        return ResponseUtil.success(benefitItemVos);
+        WxCardUsageVo wxCardUsageVo = wxService.listCouponCardUsage(cardId, couponName);
+        return ResponseUtil.success(wxCardUsageVo);
+    }
+
+    @GetMapping(value = "/wxVip/home/member/relation")
+    @ApiOperation(value = "会员中心-会员卡关联")
+    public ResponseResult<WxMemberRelationVO> memberRelation(@NotBlank @RequestParam(required = true) String openId,
+                                                          @RequestParam(required = true) Integer patientId) {
+        WxMemberRelationVO relationVO = wxService.memberRelation(patientId);
+        return ResponseUtil.success(relationVO);
     }
 
 }
