@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.*;
 import tk.mybatis.mapper.entity.*;
 
 import javax.annotation.*;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.*;
 
@@ -162,7 +163,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             if (CollectionUtils.isNotEmpty(rechargeRecordVoList)) {
                 list.addAll(rechargeRecordVoList.stream().map(obj -> {
                     WxCardUseVo cardUseVo = new WxCardUseVo();
-                    cardUseVo.setAmount("+" + obj.getRechargePrincipal().add(obj.getRechargeBonus()).toString());
+                    cardUseVo.setAmount("+" + this.setAmount(obj.getRechargePrincipal(),obj.getRechargeBonus()));
                     cardUseVo.setOperateTypeName("充值");
                     cardUseVo.setOperatingTime(obj.getOperatingTime());
                     cardUseVo.setOperatorName(obj.getOperatorName());
@@ -175,7 +176,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             if (CollectionUtils.isNotEmpty(expendList)) {
                 list.addAll(expendList.stream().map(obj -> {
                     WxCardUseVo cardUseVo = new WxCardUseVo();
-                    cardUseVo.setAmount("-" + obj.getExpendPrincipal().add(obj.getExpendGift()).toString());
+                    cardUseVo.setAmount("-" + this.setAmount(obj.getExpendPrincipal(),obj.getExpendGift()));
                     cardUseVo.setOperateTypeName("消费");
                     cardUseVo.setOperatingTime(obj.getOperatingTime());
                     cardUseVo.setOperatorName(obj.getOperatorName());
@@ -188,7 +189,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             if (CollectionUtils.isNotEmpty(refundList)) {
                 list.addAll(refundList.stream().map(obj -> {
                     WxCardUseVo cardUseVo = new WxCardUseVo();
-                    cardUseVo.setAmount("-" + obj.getReturnPrincipalAmount().add(obj.getReturnGiftAmount()).toString());
+                    cardUseVo.setAmount("-" + this.setAmount(obj.getReturnPrincipalAmount(),obj.getReturnGiftAmount()));
                     cardUseVo.setOperateTypeName("退费");
                     cardUseVo.setOperatingTime(obj.getOperatingTime());
                     cardUseVo.setOperatorName(obj.getOperatorName());
@@ -203,7 +204,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             if (CollectionUtils.isNotEmpty(rechargeList)) {
                 list.addAll(rechargeList.stream().map(obj -> {
                     WxCardUseVo cardUseVo = new WxCardUseVo();
-                    cardUseVo.setAmount("+" + obj.getRechargePrincipal().add(obj.getRechargeBonus()).toString());
+                    cardUseVo.setAmount("+" + this.setAmount(obj.getRechargePrincipal(),obj.getRechargeBonus()));
                     cardUseVo.setOperateTypeName("充值");
                     cardUseVo.setOperatingTime(obj.getOperatingTime());
                     cardUseVo.setOperatorName(obj.getOperatorName());
@@ -216,7 +217,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             if (CollectionUtils.isNotEmpty(expendList)) {
                 list.addAll(expendList.stream().map(obj -> {
                     WxCardUseVo cardUseVo = new WxCardUseVo();
-                    cardUseVo.setAmount("-" + obj.getExpendPrincipal().add(obj.getExpendGift()).toString());
+                    cardUseVo.setAmount("-" + this.setAmount(obj.getExpendPrincipal(),obj.getExpendGift()));
                     cardUseVo.setOperateTypeName("消费");
                     cardUseVo.setOperatingTime(obj.getOperatingTime());
                     cardUseVo.setOperatorName(obj.getOperatorName());
@@ -229,7 +230,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             if (CollectionUtils.isNotEmpty(refundList)) {
                 list.addAll(refundList.stream().map(obj -> {
                     WxCardUseVo cardUseVo = new WxCardUseVo();
-                    cardUseVo.setAmount("-" + obj.getReturnRrincipalAmount().add(obj.getReturnGiftAmount()).toString());
+                    cardUseVo.setAmount("-" + this.setAmount(obj.getReturnRrincipalAmount(),obj.getReturnGiftAmount()));
                     cardUseVo.setOperateTypeName("退费");
                     cardUseVo.setOperatingTime(obj.getOperatingTime());
                     cardUseVo.setOperatorName(obj.getOperatorName());
@@ -238,6 +239,13 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             }
         }
         return list;
+    }
+
+    private String setAmount(BigDecimal principal, BigDecimal bonus) {
+        BigDecimal zero = BigDecimal.ZERO;
+        principal = principal == null ? zero : principal;
+        bonus = bonus == null ? zero : bonus;
+        return principal.add(bonus).toString();
     }
 
     private void assembleMedical(List<PatientExtInfoVo> extInfoVos, WxPatientVo wxPatientVo) {

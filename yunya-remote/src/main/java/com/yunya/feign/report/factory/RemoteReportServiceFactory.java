@@ -1,9 +1,11 @@
 package com.yunya.feign.report.factory;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.RemoteMiddleTableServiceFeign;
+import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
-import com.yunya.models.report.BaseTreatmentProcess;
+import com.yunya.feign.report.domain.vo.BenefitItemVo;
+
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -11,9 +13,14 @@ import com.yunya.models.report.BaseTreatmentProcess;
  * @author: LHB
  * @create: 2020-12-23 12:41
  **/
-public class RemoteMiddleTableServiceFactory implements RemoteMiddleTableServiceFeign {
+public class RemoteReportServiceFactory implements RemoteReportServiceFeign {
     @Override
     public PageInfo treatmentList4App(TreatmentList4AppQuery query) {
+        return null;
+    }
+
+    @Override
+    public List<BenefitItemVo> listWxCouponsUseItem(Integer cardId) {
         return null;
     }
 }

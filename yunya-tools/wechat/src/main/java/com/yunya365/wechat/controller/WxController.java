@@ -2,6 +2,7 @@ package com.yunya365.wechat.controller;
 
 import com.github.pagehelper.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.wechat.domain.model.*;
@@ -90,6 +91,15 @@ public class WxController {
                                                @RequestParam(required = false) Integer patientId) {
         WxPatientVo wxPatientVo = wxService.settingInfo(openId, patientId);
         return ResponseUtil.success(wxPatientVo);
+    }
+
+    @GetMapping(value = "/wxVip/home/card")
+    @ApiOperation(value = "会员中心-礼包详情")
+    public ResponseResult<List<BenefitItemVo>> cardDetail(@NotNull @RequestParam(required = true) Integer cardId,
+                                                          @NotBlank @RequestParam(required = true) String couponName,
+                                                          @NotBlank @RequestParam(required = true) String openId) {
+        List<BenefitItemVo> benefitItemVos = wxService.listCouponCardUsage(cardId, couponName);
+        return ResponseUtil.success(benefitItemVos);
     }
 
 }

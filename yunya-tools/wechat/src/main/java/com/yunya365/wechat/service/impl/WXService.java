@@ -1,37 +1,50 @@
 package com.yunya365.wechat.service.impl;
 
-import com.alibaba.fastjson.*;
-import com.github.pagehelper.*;
-import com.google.common.base.*;
-import com.google.common.collect.*;
-import com.yunya.feign.discount.*;
-import com.yunya.feign.discount.domain.vo.*;
-import com.yunya.feign.oss.*;
-import com.yunya.feign.oss.domain.model.*;
-import com.yunya.feign.patient_central.*;
-import com.yunya.feign.patient_central.domain.query.*;
-import com.yunya.feign.patient_central.domain.vo.web.*;
-import com.yunya.feign.system.*;
-import com.yunya.feign.treatment.*;
-import com.yunya.feign.treatment.domain.query.*;
-import com.yunya.feign.treatment.domain.vo.*;
-import com.yunya.feign.wechat.domain.model.*;
-import com.yunya.feign.wechat.domain.vo.*;
-import com.yunya.framework.common.exception.*;
-import com.yunya.framework.common.model.*;
-import com.yunya.framework.redis.util.*;
-import com.yunya.models.patient_central.*;
-import com.yunya.models.system.*;
-import com.yunya365.wechat.enums.*;
-import lombok.extern.slf4j.*;
-import org.apache.commons.collections4.*;
-import org.apache.commons.lang3.*;
-import org.springframework.stereotype.*;
-import org.springframework.web.client.*;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageInfo;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
+import com.yunya.feign.oss.RemoteOssServiceFeign;
+import com.yunya.feign.oss.domain.model.OssUrlForm;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.WxFansDetailForm;
+import com.yunya.feign.patient_central.domain.query.WxFansSaveForm;
+import com.yunya.feign.patient_central.domain.query.WxUserQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.WxCardUseVo;
+import com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO;
+import com.yunya.feign.patient_central.domain.vo.web.WxPatientVo;
+import com.yunya.feign.report.RemoteReportServiceFeign;
+import com.yunya.feign.report.domain.vo.BenefitItemVo;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
+import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
+import com.yunya.feign.wechat.domain.model.WxRegisterModel;
+import com.yunya.feign.wechat.domain.vo.WxAuthVo;
+import com.yunya.feign.wechat.domain.vo.WxVipInfoVo;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.patient_central.WxFans;
+import com.yunya.models.patient_central.WxFansBind;
+import com.yunya.models.system.DictionaryItem;
+import com.yunya365.wechat.enums.WeChatError;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.*;
+import javax.annotation.Resource;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
-import java.util.*;
 
 import static java.util.stream.Collectors.*;
 
@@ -59,6 +72,8 @@ public class WXService extends AbstractWxBaseApi {
     private RemoteOssServiceFeign ossServiceFeign;
     @Resource
     private RemoteTreatmentServiceFeign treatmentServiceFeign;
+    @Resource
+    private RemoteReportServiceFeign reportServiceFeign;
 
     public WxAuthVo getAuthInfo(String code) {
         WxAuthVo vo = new WxAuthVo();
@@ -125,6 +140,28 @@ public class WXService extends AbstractWxBaseApi {
 
     public List<WxCardUseVo> listCardRecord(String cardNumber, Integer type) {
         return patientFeign.listPatientCardRecord(cardNumber, type);
+    }
+
+    public List<BenefitItemVo> listCouponCardUsage(Integer cardId, String couponName) {
+        List<BenefitItemVo> voList = Lists.newArrayList();
+        List<String> list = Lists.newArrayList("938  IVY365 kids（新）","937  IVY365 Youngs（新）","936 IVY365 Adults（新）");
+        if (list.contains(couponName)) {
+            voList.add(fixedItem("初/复诊检查费"));
+            voList.add(fixedItem("影像检查"));
+            voList.add(fixedItem("口腔卫生宣教"));
+            voList.add(fixedItem("口腔健康管理咨询"));
+        }
+        List<BenefitItemVo> benefitItemVos = reportServiceFeign.listWxCouponsUseItem(cardId);
+        voList.addAll(benefitItemVos);
+        return voList;
+    }
+
+    private BenefitItemVo fixedItem(String itemName) {
+        BenefitItemVo vo = new BenefitItemVo();
+        vo.setItemName(itemName);
+        vo.setOriginalQuantity(-1);
+        vo.setRemainingQuantity(-1);
+        return vo;
     }
 
     private WxPatientVo assembleWxPatientVo(WxFans wxFans) {
