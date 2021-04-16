@@ -179,4 +179,19 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     public WxFans getWxFans(WxUserQuery query) {
         return null;
     }
+
+    @Override
+    public List<WxFansDetailVO> findDetail(WxFansDetailForm wxFansDetailForm) {
+        return null;
+    }
+
+    @Override
+    public WxPatientVo getWxPatientInfo(Integer patientId) {
+        return null;
+    }
+
+    @Override
+    public List<WxCardUseVo> listPatientCardRecord(String cardNumber, Integer type) {
+        return null;
+    }
 }

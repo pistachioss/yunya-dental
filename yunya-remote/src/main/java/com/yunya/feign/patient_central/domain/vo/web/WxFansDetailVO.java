@@ -27,5 +27,7 @@ public class WxFansDetailVO {
     private String dictionaryName;
     @ApiModelProperty("关系字典ID")
     private Integer dictionaryId;
+    @ApiModelProperty("患者年龄")
+    private Integer age;
 
 }

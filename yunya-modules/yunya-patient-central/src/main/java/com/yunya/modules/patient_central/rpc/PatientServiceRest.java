@@ -296,4 +296,23 @@ public class PatientServiceRest {
         return this.wxFansBiz.getOwnWxFans(query);
     }
 
+    @ApiOperation("客服中心-用户管理列表-查看详情")
+    @PostMapping("/wxFans/detail")
+    public List<WxFansDetailVO> findDetail(@RequestBody @Validated WxFansDetailForm wxFansDetailForm) {
+        return wxFansBiz.findDetail(wxFansDetailForm);
+    }
+
+    @ApiOperation("查询微信用户信息")
+    @RequestMapping (value = "/wx/patient/{patientId}", method = RequestMethod.POST)
+    public WxPatientVo getWxPatientInfo(@PathVariable("patientId") Integer patientId) {
+        return wxFansBiz.getWxPatientInfo(patientId);
+    }
+
+    @ApiOperation("查询微信用户的会员卡和预付款使用记录")
+    @RequestMapping (value = "/wx/card/record", method = RequestMethod.GET)
+    public List<WxCardUseVo> listPatientCardRecord(@RequestParam(value = "cardNumber", required = true) String cardNumber
+                                , @RequestParam(value = "type", required = true) Integer type) {
+        return wxFansBiz.listPatientCardRecord(cardNumber, type);
+    }
+
 }

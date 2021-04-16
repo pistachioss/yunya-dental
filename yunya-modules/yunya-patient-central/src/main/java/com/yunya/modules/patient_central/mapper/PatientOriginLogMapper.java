@@ -19,4 +19,10 @@ public interface PatientOriginLogMapper extends Mapper<PatientOriginLog> {
      * @return 患者来源推荐关系
      */
     PatientOriginLog selectByPatientId(@Param("patientId") Integer id);
+
+    /**
+     * 批量删除
+     * @param patientOriginLogList 患者来源关系批量删除
+     */
+    void deleteList(@Param("list") List<PatientOriginLog> patientOriginLogList);
 }

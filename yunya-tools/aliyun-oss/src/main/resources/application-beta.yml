@@ -12,4 +12,4 @@ aliyun:
     access-key-id: LTAI4GL3SpbVMBDnzGRYz6GZ
     access-key-secret: nQKA5iLUfMCPHH6Yy2UrBageveHmeh
     bucket: yunya-backend
-    prefixPath: #统一根目录，可不填       # 只能包括小写字母、数字和短划线（-）
+    prefixPath: ivy2-test #统一根目录，可不填       # 只能包括小写字母、数字和短划线（-）

@@ -1,21 +1,26 @@
 package com.yunya.modules.patient_central.biz;
 
 import com.github.pagehelper.*;
+import com.google.common.collect.*;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.*;
 import com.yunya.feign.system.form.*;
 import com.yunya.framework.common.biz.*;
+import com.yunya.framework.common.utils.*;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.*;
 import com.yunya.modules.patient_central.mapper.*;
+import org.apache.commons.collections4.*;
 import org.apache.commons.lang3.*;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
 import tk.mybatis.mapper.entity.*;
 
+import javax.annotation.*;
 import java.util.*;
+import java.util.stream.*;
 
 /**
  * 简介: 公司微信公众号粉丝业务层
@@ -40,6 +45,19 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
 
     @Autowired
     private WxFansBindBiz wxFansBindBiz;
+    @Resource
+    private PatientExpInfoMapper expInfoMapper;
+    @Resource
+    private PatientBaseInfoMapper baseInfoMapper;
+    @Resource
+    private PatientExtInfoMapper extInfoMapper;
+    @Resource
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    @Resource
+    private PatientMemberInfoBiz patientMemberInfoBiz;
+    @Resource
+    private PatientPrepaymentRelationBiz prepaymentRelationBiz;
+
 
     public PageInfo<WxFansVo> findList(WxFansQueryForm wxFansQueryForm) {
         if (wxFansQueryForm.getWhetherPage()) {
@@ -72,6 +90,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
 
     public WxFans getOwnWxFans(WxUserQuery query) {
         Example example = new Example(WxFans.class);
+        example.selectProperties("registerName","registerMobile","headImgurl","country","province","city","patientId","sex");
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(query.getOpenId())) {
             criteria.andEqualTo("openId", query.getOpenId());
@@ -82,11 +101,173 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         return mapper.selectOneByExample(example);
     }
 
-    public int update(WxFansUpdateForm wxFansUpdateForm){
+    public int update(WxFansUpdateForm wxFansUpdateForm) {
         WxFans wxFans = new WxFans();
         wxFans.setId(wxFansUpdateForm.getId());
         wxFans.setRemark(wxFansUpdateForm.getRemark());
         wxFans.setUpdTime(new Date());
         return mapper.updateByPrimaryKeySelective(wxFans);
+    }
+
+    public WxPatientVo getWxPatientInfo(Integer patientId) {
+        //患者基础信息
+        PatientBaseInfoVo baseInfoVo = baseInfoMapper.selectPatienInfoById(patientId);
+        //患者的基础扩展信息
+        PatientExpInfo expInfo = this.getPatientExpInfo(patientId);
+        //患者疾病扩展信息
+        List<PatientExtInfoVo> extInfoVos = extInfoMapper.patientExtInfoListByid(patientId);
+        WxUserQuery query = new WxUserQuery();
+        query.setPatientId(patientId);
+        //患者的wx信息
+        WxFans ownWxFans = this.getOwnWxFans(query);
+        WxPatientVo wxPatientVo = BeanCopierUtils.generalCopyBean(baseInfoVo, WxPatientVo.class);
+        if (StringUtils.isNotBlank(baseInfoVo.getFaceUrl())) {
+            wxPatientVo.setHeadImgUrl(baseInfoVo.getFaceUrl());
+        }
+        if (StringUtils.isNotBlank(baseInfoVo.getName())) {
+            wxPatientVo.setUserName(baseInfoVo.getName());
+        }
+        if (expInfo != null) {
+            //家庭住址
+            wxPatientVo.setAddress(expInfo.getProvince() + expInfo.getCity() + expInfo.getCountry() + expInfo.getAddress());
+        }
+        if (CollectionUtils.isNotEmpty(extInfoVos)) {
+            //设置疾病史，过敏原
+            this.assembleMedical(extInfoVos, wxPatientVo);
+        }
+        if (ownWxFans != null) {
+            if (StringUtils.isBlank(wxPatientVo.getHeadImgUrl())) {
+                wxPatientVo.setHeadImgUrl(ownWxFans.getHeadImgurl());
+            }
+            if (StringUtils.isBlank(wxPatientVo.getAddress())) {
+                wxPatientVo.setAddress(ownWxFans.getCountry() + ownWxFans.getProvince() + ownWxFans.getCity());
+            }
+        }
+        return wxPatientVo;
+    }
+
+    public List<WxCardUseVo> listPatientCardRecord(String cardNumber, Integer type) {
+        RechargeRecordQueryForm recordQueryForm = new RechargeRecordQueryForm();
+        MemberExpendRecordQueryForm queryForm = new MemberExpendRecordQueryForm();
+        MemberReturnRecordQueryForm returnRecordQueryForm = new MemberReturnRecordQueryForm();
+        PrepaidRechargeRecordQueryForm preRechargeForm = new PrepaidRechargeRecordQueryForm();
+        PrepaidExpendRecordQueryForm preExpendForm = new PrepaidExpendRecordQueryForm();
+        PrepaidMeturnRecordQueryForm preRefundForm = new PrepaidMeturnRecordQueryForm();
+        List<WxCardUseVo> list = Lists.newArrayList();
+        //会员卡记录
+        if (type == 1) {
+            recordQueryForm.setWhetherPage(false);
+            recordQueryForm.setCardNumber(cardNumber);
+            List<RechargeRecordVo> rechargeRecordVoList = patientMemberInfoBiz.rechargeRecord(recordQueryForm).getList();
+            if (CollectionUtils.isNotEmpty(rechargeRecordVoList)) {
+                list.addAll(rechargeRecordVoList.stream().map(obj -> {
+                    WxCardUseVo cardUseVo = new WxCardUseVo();
+                    cardUseVo.setAmount("+" + obj.getRechargePrincipal().add(obj.getRechargeBonus()).toString());
+                    cardUseVo.setOperateTypeName("充值");
+                    cardUseVo.setOperatingTime(obj.getOperatingTime());
+                    cardUseVo.setOperatorName(obj.getOperatorName());
+                    return cardUseVo;
+                }).collect(Collectors.toList()));
+            }
+            queryForm.setMemberId(cardNumber);
+            queryForm.setWhetherPage(false);
+            List<MemberExpendRecordVo> expendList = patientMemberInfoBiz.expendList(queryForm).getList();
+            if (CollectionUtils.isNotEmpty(expendList)) {
+                list.addAll(expendList.stream().map(obj -> {
+                    WxCardUseVo cardUseVo = new WxCardUseVo();
+                    cardUseVo.setAmount("-" + obj.getExpendPrincipal().add(obj.getExpendGift()).toString());
+                    cardUseVo.setOperateTypeName("消费");
+                    cardUseVo.setOperatingTime(obj.getOperatingTime());
+                    cardUseVo.setOperatorName(obj.getOperatorName());
+                    return cardUseVo;
+                }).collect(Collectors.toList()));
+            }
+            returnRecordQueryForm.setMemberId(cardNumber);
+            returnRecordQueryForm.setWhetherPage(false);
+            List<MemberReturnRecordVo> refundList = patientMemberInfoBiz.refundList(returnRecordQueryForm).getList();
+            if (CollectionUtils.isNotEmpty(refundList)) {
+                list.addAll(refundList.stream().map(obj -> {
+                    WxCardUseVo cardUseVo = new WxCardUseVo();
+                    cardUseVo.setAmount("-" + obj.getReturnPrincipalAmount().add(obj.getReturnGiftAmount()).toString());
+                    cardUseVo.setOperateTypeName("退费");
+                    cardUseVo.setOperatingTime(obj.getOperatingTime());
+                    cardUseVo.setOperatorName(obj.getOperatorName());
+                    return cardUseVo;
+                }).collect(Collectors.toList()));
+            }
+        }
+        if (type == 2) {
+            preRechargeForm.setWhetherPage(false);
+            preRechargeForm.setPrepaidId(cardNumber);
+            List<PrepaidRechargeRecordVo> rechargeList = prepaymentRelationBiz.rechargeRecord(preRechargeForm).getList();
+            if (CollectionUtils.isNotEmpty(rechargeList)) {
+                list.addAll(rechargeList.stream().map(obj -> {
+                    WxCardUseVo cardUseVo = new WxCardUseVo();
+                    cardUseVo.setAmount("+" + obj.getRechargePrincipal().add(obj.getRechargeBonus()).toString());
+                    cardUseVo.setOperateTypeName("充值");
+                    cardUseVo.setOperatingTime(obj.getOperatingTime());
+                    cardUseVo.setOperatorName(obj.getOperatorName());
+                    return cardUseVo;
+                }).collect(Collectors.toList()));
+            }
+            preExpendForm.setWhetherPage(false);
+            preExpendForm.setPrepaidId(cardNumber);
+            List<PrepaidExpendRecordVo> expendList = prepaymentRelationBiz.expendList(preExpendForm).getList();
+            if (CollectionUtils.isNotEmpty(expendList)) {
+                list.addAll(expendList.stream().map(obj -> {
+                    WxCardUseVo cardUseVo = new WxCardUseVo();
+                    cardUseVo.setAmount("-" + obj.getExpendPrincipal().add(obj.getExpendGift()).toString());
+                    cardUseVo.setOperateTypeName("消费");
+                    cardUseVo.setOperatingTime(obj.getOperatingTime());
+                    cardUseVo.setOperatorName(obj.getOperatorName());
+                    return cardUseVo;
+                }).collect(Collectors.toList()));
+            }
+            preRefundForm.setWhetherPage(false);
+            preRefundForm.setPrepaidId(cardNumber);
+            List<PrepaidMeturnRecordVo> refundList = prepaymentRelationBiz.refundList(preRefundForm).getList();
+            if (CollectionUtils.isNotEmpty(refundList)) {
+                list.addAll(refundList.stream().map(obj -> {
+                    WxCardUseVo cardUseVo = new WxCardUseVo();
+                    cardUseVo.setAmount("-" + obj.getReturnRrincipalAmount().add(obj.getReturnGiftAmount()).toString());
+                    cardUseVo.setOperateTypeName("退费");
+                    cardUseVo.setOperatingTime(obj.getOperatingTime());
+                    cardUseVo.setOperatorName(obj.getOperatorName());
+                    return cardUseVo;
+                }).collect(Collectors.toList()));
+            }
+        }
+        return list;
+    }
+
+    private void assembleMedical(List<PatientExtInfoVo> extInfoVos, WxPatientVo wxPatientVo) {
+        Map<Byte, String> dictMap = extInfoVos.stream()
+                .peek(obj -> {
+                    //有itemId的 1-疾病史；2-过敏原
+                    if (obj.getDictItemId() != null) {
+                        DictionaryItem item = remoteSystemServiceFeign.findDictionaryItemById(obj.getDictItemId());
+                        if (item != null) {
+                            obj.setDescription(item.getName());
+                        }
+                    }})
+                .collect(Collectors.groupingBy(PatientExtInfoVo::getType
+                        , Collectors.mapping(PatientExtInfoVo::getDescription
+                                , Collectors.joining(","))));
+       dictMap.forEach((k,v) -> {
+           if (k == 1) {
+               wxPatientVo.setMedicalHistory(v);
+           }
+           if (k == 2) {
+               wxPatientVo.setAllergen(v);
+           }
+       });
+    }
+
+    private PatientExpInfo getPatientExpInfo(Integer patientId) {
+        Example example = new Example(PatientExpInfo.class);
+        example.selectProperties("address","province","city","country");
+        Example.Criteria criteria = example.createCriteria()
+                .andEqualTo("patientId", patientId);
+        return expInfoMapper.selectOneByExample(example);
     }
 }

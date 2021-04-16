@@ -568,7 +568,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    form.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     List<RechargeRecordVo> resultList = memberRechargeRecordMapper.RechargeRecord(form);
     if (!StringHelper.isEmpty(resultList)) {
       for (RechargeRecordVo rechargeRecordVo : resultList) {
