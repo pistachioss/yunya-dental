@@ -20,19 +20,22 @@ import java.util.Date;
 @ApiModel("账单工作量VO")
 @Data
 @ToString
-public class BillRecordWorkloadVO implements Serializable {
+public class BillWorkloadVO implements Serializable {
   /** 订单ID */
   @ApiModelProperty("订单ID")
   private Integer billId;
-  /** 订单工作量合计 */
-  @ApiModelProperty("订单工作量合计")
-  private BigDecimal billTotalWorkload;
-  /** 订单fei工作量合计 */
-  @ApiModelProperty("订单非工作量合计")
-  private BigDecimal billTotalNotWorkload;
-  /** 订单补入工作量 */
-  @ApiModelProperty("订单补入工作量")
-  private BigDecimal billTotalCouponWorkload;
+  /** 应收工作量合计 */
+  @ApiModelProperty("应收工作量合计")
+  private BigDecimal totalWorkload;
+  /** 实收金额合计 */
+  @ApiModelProperty("实收金额合计")
+  private BigDecimal actualAmount;
+  /** 已收金额合计 */
+  @ApiModelProperty("已收金额合计")
+  private BigDecimal receivedAmount;
+  /** 免单支付金额合计 */
+  @ApiModelProperty("免单支付金额合计")
+  private BigDecimal freePayAmount;
   /** 账单门诊ID */
   @ApiModelProperty("账单门诊ID")
   private Integer billOrgId;
