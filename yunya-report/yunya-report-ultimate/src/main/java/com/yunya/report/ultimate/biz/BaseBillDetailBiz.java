@@ -1237,7 +1237,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-   * 查询开单项目工作量列表
+   * 根据条件查询收费项目工作量列表
    *
    * @param query 查询条件
    * @return
@@ -2147,5 +2147,21 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     String fileName = excelUtil.getFileName(query.getQueryDate(),"", organization.getAbbreviation(),"非本月免单金额明细");
     excelUtil.exportExcel(response, list, "非本月免单金额明细", fileName);
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public PageInfo<PersonalBillItemTollAndWorkloadDetailVO>
+      findPersonalBillItemAndWorkloadDetailList(PersonalBillItemTollAndWorkloadQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<PersonalBillItemTollAndWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemAndWorkloadDetail(query);
+    return new PageInfo<>(resultList);
   }
 }
