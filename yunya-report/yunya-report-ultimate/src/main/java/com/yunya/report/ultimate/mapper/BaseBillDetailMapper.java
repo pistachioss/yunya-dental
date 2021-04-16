@@ -345,4 +345,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   List<MonthCategoryVO> monthCategoryList(@Param("query") ClinicPerformanceBusinessQuery query, @Param("cur") Integer cur);
 
   List<NonMonthCategoryVO> nonMonthCategoryList(@Param("query") ClinicPerformanceBusinessQuery query);
+
+  /**
+   * 根据条件按月份分组门诊补入工作量
+   *
+   * @param query
+   * @return
+   */
+  List<BillRecordWorkloadVO> selectCouponWorkloadGroupByPrivilegeDate(@Param("query") DataStatisticsQuery query);
 }
