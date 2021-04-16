@@ -360,4 +360,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return list
    */
   List<NonMonthCategoryVO> nonMonthCategoryList(@Param("query") BillCategoryIncomeQuery query);
+
+  /**
+   * 根据条件按月份分组门诊补入工作量
+   *
+   * @param query
+   * @return
+   */
+  List<BillRecordWorkloadVO> selectCouponWorkloadGroupByPrivilegeDate(@Param("query") DataStatisticsQuery query);
 }
