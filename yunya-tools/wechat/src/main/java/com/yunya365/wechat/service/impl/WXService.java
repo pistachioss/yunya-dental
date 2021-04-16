@@ -165,7 +165,7 @@ public class WXService extends AbstractWxBaseApi {
         cardUsage.setCardUsageList(voList);
         //拼接oss图片
         if (StringUtils.isNotBlank(cardUsage.getPath())) {
-            List<String> urls = this.getOssUrls(Lists.newArrayList());
+            List<String> urls = this.getOssUrls(Lists.newArrayList(cardUsage.getPath()));
             cardUsage.setPath(urls.get(0));
         }
         return cardUsage;
