@@ -24,12 +24,10 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;

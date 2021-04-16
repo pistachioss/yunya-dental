@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -385,9 +384,11 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     List<BillOfRefundWorkloadVO> totalRefundWorkload = refundBiz.selectTotalRefundWorkloadGroupByMonth(query);
     if (StringHelper.isNotEmpty(workloads)) {
       workloads.forEach(vo -> {
+        String month = vo.getMonth();
+        Integer orgId = vo.getBillOrgId();
         BigDecimal totalWorkload = totalWorkloadMaps.get(vo.getBillId());
-        if (totalWorkload == null) {
-          totalWorkload = BigDecimal.ZERO;
+        if (totalWorkload==null || totalWorkload.compareTo(BigDecimal.ZERO)<=0) {
+          return;
         }
         BigDecimal actualAmount = vo.getActualAmount();
         BigDecimal receivedAmount = vo.getReceivedAmount();
@@ -399,8 +400,6 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                   .multiply(receivedAmount)
                   .setScale(4, BigDecimal.ROUND_HALF_UP);
         }
-        String month = vo.getMonth();
-        Integer orgId = vo.getBillOrgId();
         Map<Integer, BigDecimal> res = result.get(month);
         if (res == null) {
           res = new HashMap<>(16);

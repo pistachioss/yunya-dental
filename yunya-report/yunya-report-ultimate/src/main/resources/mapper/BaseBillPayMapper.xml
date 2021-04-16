@@ -2080,7 +2080,7 @@
         DATE_FORMAT(bbp.payee_date,'%Y-%m') AS month,
         bb.bill_id AS billId,
         bb.org_id AS billOrgId,
-        IFNULL(SUM(bb.actual_amount),0) AS actualAmount,
+        IFNULL(bb.actual_amount,0) AS actualAmount,
         IFNULL(SUM(bbp.received_amount),0) AS receivedAmount,
         IFNULL(SUM(bbpd.freePayAmount),0) AS freePayAmount
         FROM
@@ -2105,12 +2105,18 @@
             </where>
         ) bb ON bbp.bill_id = bb.bill_id
         LEFT JOIN (
-            SELECT bill_id,IFNULL(SUM(principal_amount),0) AS freePayAmount FROM base_bill_pay_detail
+            SELECT bill_pay_id,IFNULL(SUM(principal_amount),0) AS freePayAmount FROM base_bill_pay_detail
             WHERE account_item_id IN (23,26) AND type=2
-            GROUP BY bill_id
-        ) bbpd ON bbpd.bill_id=bbp.bill_id
+            GROUP BY bill_pay_id
+        ) bbpd ON bbpd.bill_pay_id=bbp.bill_pay_id
         <where>
             AND bbp.received_amount &gt; 0
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                AND bb.org_id IN
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
