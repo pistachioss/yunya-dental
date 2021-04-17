@@ -196,14 +196,9 @@
             </if>
         </where>
         ) bp1 on bp1.patient_id = bp.patient_id
-        <where>
-            bp.birthday is not null
-        </where>
     </select>
 
 
-    <!--
-   -->
     <!-- 根据条件查询 年龄段患者数量 -->
     <select id="selectAnalysisAge" resultType="java.lang.Integer">
         select count(1) from base_patient bp inner join (
@@ -502,5 +497,33 @@
             </if>
         </where>
         GROUP BY bp.origin_type, bp.org_id
+    </select>
+
+    <!-- 查询未填写出生日期并有过就诊的患者数量 -->
+    <select id="selectNotAgeCount" resultType="java.lang.Integer">
+        select count(1) from base_patient bp inner join (
+        select distinct btp.patient_id
+        from base_treatment_process btp
+        <where>
+            and btp.treat_status > 1
+            <if test="form.orgId != null and form.orgId != ''">
+                AND btp.org_id = #{form.orgId}
+            </if>
+            <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+                AND cast(btp.treat_start_time as date) between #{form.startDate} and #{form.endDate}
+            </if>
+
+            <if test="form.monthDay != null and form.monthDay != ''">
+                AND DATE_FORMAT(btp.treat_start_time,'%Y-%m') = #{form.monthDay}
+                and DATE_FORMAT(btp.treat_end_time, '%Y-%m') = #{form.monthDay}
+            </if>
+
+            <if test="form.year != null and form.year != ''">
+                AND year(btp.treat_start_time) =#{form.year}
+                AND year(btp.treat_end_time) =#{form.year}
+            </if>
+        </where>
+        ) bp1 on bp1.patient_id = bp.patient_id
+        where bp.birthday is null
     </select>
 </mapper>
