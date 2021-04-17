@@ -194,4 +194,9 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     public List<WxCardUseVo> listPatientCardRecord(String cardNumber, Integer type) {
         return null;
     }
+
+    @Override
+    public MemberRelationVo findMemberBindingRelation(PatientMemberRelationQueryForm patientMemberRelationQueryForm) {
+        return null;
+    }
 }

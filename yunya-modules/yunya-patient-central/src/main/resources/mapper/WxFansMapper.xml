@@ -57,7 +57,8 @@
       pbi.id as patientId,
 	  pbi.name as patientName,
 	  wfb.dictionary_id as dictionaryId,
-	  pbi.age
+	  pbi.age,
+	  pbi.mobile
       FROM
 	  wx_fans_bind wfb
       LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
