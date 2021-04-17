@@ -1116,9 +1116,14 @@
                   #{patientOriginEmployeeVo.originId}
                 </foreach>
             </if>
-            <if test="query.workStatus != null">
-                and ee.work_status = #{query.workStatus}
+
+            <if test="query.workStatus != null and query.workStatus.size() > 0">
+                and ee.work_status in
+                <foreach collection="query.workStatus" item="workStatus" open="(" separator="," close=")">
+                    #{workStatus}
+                </foreach>
             </if>
+
         </where>
         GROUP BY log.origin_id ) t
         on t.origin_id = log.origin_id
@@ -1202,52 +1207,9 @@
 
     </select>
 
-    <!-- 查询免單工作量信息 -->
-    <select id="findMdBaseBillIdList"
-            resultType="java.lang.Integer">
-        SELECT
-        DISTINCT
-        bb.bill_id billId
-        FROM
-        base_bill bb
-        JOIN (
-        SELECT DISTINCT
-        log.patient_id
-        FROM
-        base_patient_origin_log log
-        JOIN base_bill bb ON log.patient_id = bb.patient_id
-        JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
-        JOIN base_patient bp on bp.patient_id = log.patient_id
-        WHERE
-        log.origin_id = #{query.originId}
-        <if test="query.condition != null">
-            and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition} ), '%' )
-        </if>
-        AND log.origin_type = #{originType}
-        AND log.inservice = 1
-        ) t ON bb.patient_id = t.patient_id
-        join base_bill_pay bbp on bbp.bill_id = bb.bill_id
-        join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
-        where 1 = 1
-        <if test="query.startDate != null">
-            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
-        </if>
-
-        <if test="query.endDate != null" >
-            and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
-        </if>
-
-        <if test="itemIds != null">
-            and bbpd.account_item_id in
-            <foreach collection="itemIds" item="itemId" open="(" separator="," close=")">
-                #{itemId}
-            </foreach>
-        </if>
-
-    </select>
 
     <!-- 根据推荐人id 和 优惠时间 查询补入订单id -->
-        <select id="selectMakeUpBillIdList" resultType="java.lang.Integer">
+    <select id="selectMakeUpBillIdList" resultType="java.lang.Integer">
         select bill_id
         from base_bill bb
         join (
