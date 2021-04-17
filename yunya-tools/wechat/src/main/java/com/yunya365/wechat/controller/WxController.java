@@ -63,7 +63,6 @@ public class WxController {
     @ApiOperation(value = "会员中心")
     public ResponseResult<WxVipInfoVo> vipInfo(HttpServletRequest request,
                                                @RequestParam(required = false) Integer patientId) {
-        log.info("会员中心的请求参数，patientId：{}", patientId);
         String openId = request.getSession().getAttribute(GZH_SESSION_KEY).toString();
         WxVipInfoVo wxVipInfoVo = wxService.vipInfo(openId, patientId);
         return ResponseUtil.success(wxVipInfoVo);

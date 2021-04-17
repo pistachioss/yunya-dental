@@ -242,7 +242,7 @@ public class WXService extends AbstractWxBaseApi {
 
     private WxFans getOwnInfo(String openId, Integer patientId) {
         WxUserQuery query = new WxUserQuery();
-        if (patientId == null) {
+        if (patientId == null || patientId == 0) {
             query.setOpenId(openId);
         } else {
             query.setPatientId(patientId);
