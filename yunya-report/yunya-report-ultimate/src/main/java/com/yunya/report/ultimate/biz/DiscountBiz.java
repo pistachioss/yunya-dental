@@ -3,25 +3,20 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
-import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
-import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.vo.OrganizationInfoDetail;
-import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.models.report.BaseCoupon;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
 
 /**
  * @author xiangyang
@@ -381,6 +376,10 @@ public class DiscountBiz {
         List<BenefitItemVo> itemVos = benefitMapper.listItemUseById(cardId);
         vo.setItemVos(itemVos);
         return vo;
+    }
+
+    public List<BenefitItemVo> listWxCouponsUseItem(Integer cardId) {
+        return benefitMapper.listItemUseById(cardId);
     }
 
     /**

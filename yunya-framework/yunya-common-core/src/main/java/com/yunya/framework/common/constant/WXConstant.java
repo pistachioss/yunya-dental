@@ -10,6 +10,15 @@ public interface WXConstant {
      * 微信公众号access_token_key 用于保存在redis中的key
      */
     String ACCESS_TOKEN_KEY = "wechat:accessToken:%s";
+    /**
+     * 微信openId key
+     */
+    String WECHAT_OPENID_KEY = "wechat:openId:%s";
+
+    /**
+     * 公众号session key
+     */
+    String GZH_SESSION_KEY = "openId:gzh";
 
     /**
      * 获取微信公众号的access_token

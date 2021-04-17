@@ -315,4 +315,11 @@ public class PatientServiceRest {
         return wxFansBiz.listPatientCardRecord(cardNumber, type);
     }
 
+    @ApiOperation("会员卡关联查询")
+    @PostMapping("/relatedInformation")
+    public MemberRelationVo findMemberBindingRelation(
+            @RequestBody @Validated PatientMemberRelationQueryForm patientMemberRelationQueryForm) {
+        return patientMemberInfoBiz.findMemberBindingRelation(patientMemberRelationQueryForm);
+    }
+
 }

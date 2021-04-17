@@ -292,4 +292,9 @@ import java.util.*;
   @RequestMapping (value = "/api/wx/card/record", method = RequestMethod.GET)
   public List<WxCardUseVo> listPatientCardRecord(@RequestParam(value = "cardNumber", required = true) String cardNumber
           , @RequestParam(value = "type", required = true) Integer type);
+
+  @ApiOperation("会员卡关联查询")
+  @PostMapping("/api/relatedInformation")
+ MemberRelationVo findMemberBindingRelation(
+          @RequestBody @Validated PatientMemberRelationQueryForm patientMemberRelationQueryForm);
 }
