@@ -150,12 +150,12 @@ public class VoucherController {
     }
 
     /**
-     * 获取第三方卡券激活模板接口
+     * 获取全部卡券下拉框
      *
      * @return
      */
     @PostMapping("/findDown")
-    @ApiOperation("获取第三方卡券激活模板接口")
+    @ApiOperation("获取全部卡券下拉框")
     public ResponseResult findDown(@RequestBody @Valid CouponCommonInfoFindDownForm couponCommonInfoFindDownForm) {
         return ResponseUtil.success(
                 voucherBiz.findDown(couponCommonInfoFindDownForm));
