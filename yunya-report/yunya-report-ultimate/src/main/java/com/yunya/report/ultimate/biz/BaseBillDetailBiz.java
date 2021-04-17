@@ -1453,8 +1453,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       List<JSONObject> list = pageInfo.getList();
       Map<String, String> titles = pageInfo.getMap();//表头
       ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
-      String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "门诊工作量目标完成情况");
-      excelUtil.exportExcel(response, list, "门诊工作量目标完成情况", fileName, titles);
+      String endDate = "";
+      if (!query.getStartDate().equals(query.getEndDate())) {
+        endDate = query.getEndDate();
+      }
+      String fileName = excelUtil.getFileName(query.getStartDate(), endDate, "", "门诊工作量统计");
+      excelUtil.exportExcel(response, list, "门诊工作量统计", fileName, titles);
     }
 
     /**
@@ -1540,8 +1544,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       List<JSONObject> list = pageInfo.getList();
       Map<String, String> titles = pageInfo.getMap();//表头
       ExcelUtil excelUtil = new ExcelUtil<>(JSONObject.class);
-      String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(),"","门诊各初诊来源数据统计");
-      excelUtil.exportExcel(response, list, "门诊各初诊来源数据统计", fileName, titles);
+      String endDate = "";
+      if (!query.getStartDate().equals(query.getEndDate())) {
+        endDate = query.getEndDate();
+      }
+      String fileName = excelUtil.getFileName(query.getStartDate(), endDate,"","门诊初诊来源数量统计");
+      excelUtil.exportExcel(response, list, "门诊初诊来源数量统计", fileName, titles);
     }
 
     /**
@@ -1643,8 +1651,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       List<JSONObject> list = pageInfo.getList();
       Map<String, String> titles = pageInfo.getMap();//表头
       ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
-      String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "门诊年度治疗项目数量");
-      excelUtil.exportExcel(response, list, "门诊年度治疗项目数量", fileName, titles);
+      String endDate = "";
+      if (!query.getStartDate().equals(query.getEndDate())) {
+        endDate = query.getEndDate();
+      }
+      String fileName = excelUtil.getFileName(query.getStartDate(), endDate, "", "门诊专科项目数量统计");
+      excelUtil.exportExcel(response, list, "门诊专科项目数量统计", fileName, titles);
     }
     /**
      * 根据条件查询门诊365卡销售激活统计
@@ -1779,7 +1791,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       query.setWhetherPage(false);
       List<SaleActivited365CardVO> data = clinic365CardSaleActivitedList(query).getList();
       ExcelUtil<SaleActivited365CardVO> excelUtil = new ExcelUtil<>(SaleActivited365CardVO.class);
-      String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(),"","门诊365卡销售激活统计");
+      String endDate = "";
+      if (!query.getStartDate().equals(query.getEndDate())) {
+        endDate = query.getEndDate();
+      }
+      String fileName = excelUtil.getFileName(query.getStartDate(), endDate,"","门诊365卡销售激活统计");
       excelUtil.exportExcel(response, data, "门诊365卡销售激活统计", fileName);
     }
 
