@@ -1374,20 +1374,20 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         }
         String key = orgId + "";
         map.put(key, vo.getAbbreviation());
-        actual.put(key, workloads);
+        actual.put(key, workloads.setScale(2, BigDecimal.ROUND_HALF_UP));
         goals.put(key, goal);
         completed.put(key, completedPercentage.toString() + "%");
         BigDecimal chainWorkload = computeOrgWorkload(orgId, chainMonthList, workloadMap);
         BigDecimal preWorkload = computeOrgWorkload(orgId, preMonthList, workloadMap);
         BigDecimal yearWorkload = computeOrgWorkload(orgId, yearMonthList, workloadMap);
-        chainDiff.put(key, chainWorkload);
-        preDiff.put(key, preWorkload);
-        curYear.put(key, yearWorkload);
-        actualTotal = actualTotal.add(workloads);
+        chainDiff.put(key, chainWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
+        preDiff.put(key, preWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
+        curYear.put(key, yearWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
+        actualTotal = actualTotal.add(workloads.setScale(2, BigDecimal.ROUND_HALF_UP));
         goalTotal = goalTotal.add(goal);
-        chainTotal = chainTotal.add(chainWorkload);
-        preTotal = preTotal.add(preWorkload);
-        yearTotal = yearTotal.add(yearWorkload);
+        chainTotal = chainTotal.add(chainWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
+        preTotal = preTotal.add(preWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
+        yearTotal = yearTotal.add(yearWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
       }
       map.put("total","合计");
       actual.put("total", actualTotal);
