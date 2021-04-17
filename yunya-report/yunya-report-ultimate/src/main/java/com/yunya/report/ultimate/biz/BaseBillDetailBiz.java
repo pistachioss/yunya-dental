@@ -1974,6 +1974,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             vo.setPatientName(workload.getPatientName());
             vo.setFreeDate(workload.getChargeDate());
             vo.setAbbreviation(workload.getAbbreviation());
+            vo.setBillDate(workload.getBillDate());
           }
           res.add(vo);
         }
