@@ -334,12 +334,39 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") BillItemTollAndWorkloadQuery query);
 
   /**
-   * 根据条件查询个人开单项目工作量明细
+   * 根据条件查询个人开单项目已收工作量明细
    *
    * @param query 查询条件
-   * @return
+   * @return list
    */
-  List<PersonalBillItemTollAndWorkloadDetailVO> selectPersonalBillItemAndWorkloadDetail(
+  List<PersonalBillItemReceivedWorkloadDetailVO> selectPersonalBillItemReceivedWorkloadDetail(
+      @Param("query") PersonalBillItemTollAndWorkloadQuery query);
+
+  /**
+   * 根据条件查询个人开单项目免单工作量明细
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<PersonalBillItemFreeWorkloadDetailVO> selectPersonalBillItemFreeWorkloadDetail(
+      @Param("query") PersonalBillItemTollAndWorkloadQuery query);
+
+  /**
+   * 根据条件查询个人开单项目补入工作量明细
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<PersonalBillItemSupplyWorkloadDetailVO> selectPersonalBillItemSupplyWorkloadDetail(
+      @Param("query") PersonalBillItemTollAndWorkloadQuery query);
+
+  /**
+   * 根据条件查询个人开单项目退费工作量明细
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<PersonalBillItemRefundWorkloadDetailVO> selectPersonalBillItemRefundWorkloadDetail(
       @Param("query") PersonalBillItemTollAndWorkloadQuery query);
 
   /**
