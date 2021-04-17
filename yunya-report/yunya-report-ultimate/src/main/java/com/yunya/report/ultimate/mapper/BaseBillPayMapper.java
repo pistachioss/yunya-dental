@@ -212,4 +212,12 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    * @return 支付记录
    */
   List<BaseBillPay> selectMdBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query,@Param("itemIds") List<Integer> itemIds);
+
+  /**
+   * 根据月份分组求已收工作量合计
+   *
+   * @param query
+   * @return
+   */
+  List<BillWorkloadVO> selectRecievedWorkloadsGroupByMonth(@Param("query") DataStatisticsQuery query);
 }

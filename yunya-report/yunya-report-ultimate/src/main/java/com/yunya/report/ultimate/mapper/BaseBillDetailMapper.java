@@ -325,13 +325,22 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") CouponExecutoredDetailQuery query);
 
   /**
-   * 根据条件查询开单项目工作量信息
+   * 根据条件查询收费项目工作量列表
    *
    * @param query 查询条件
    * @return list
    */
   List<BillItemTollAndWorkloadVO> selectTariffWorkloadInfo(
       @Param("query") BillItemTollAndWorkloadQuery query);
+
+  /**
+   * 根据条件查询个人开单项目工作量明细
+   *
+   * @param query 查询条件
+   * @return
+   */
+  List<PersonalBillItemTollAndWorkloadDetailVO> selectPersonalBillItemAndWorkloadDetail(
+      @Param("query") PersonalBillItemTollAndWorkloadQuery query);
 
   /**
    * 统计每组开单项目的数量
@@ -351,4 +360,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return list
    */
   List<NonMonthCategoryVO> nonMonthCategoryList(@Param("query") BillCategoryIncomeQuery query);
+
+  /**
+   * 根据条件按月份分组门诊补入工作量
+   *
+   * @param query
+   * @return
+   */
+  List<BillRecordWorkloadVO> selectCouponWorkloadGroupByPrivilegeDate(@Param("query") DataStatisticsQuery query);
 }
