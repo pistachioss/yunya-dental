@@ -318,7 +318,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportCategoryIncome(HttpServletResponse response, BillCategoryIncomeQuery query)
       throws IOException {
-    List<CategoryInfoIncomeVO> list = mapper.selectCategoryIncomeList(query);
+    query.setWhetherPage(false);
+    List<CategoryInfoIncomeVO> list = findCategoryIncomeList(query).getList();
     ExcelUtil<CategoryInfoIncomeVO> excelUtil = new ExcelUtil<>(CategoryInfoIncomeVO.class);
     excelUtil.exportExcel(response, list, "门诊分类收入汇总", "门诊分类收入汇总");
   }
