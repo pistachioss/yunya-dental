@@ -26,7 +26,9 @@ import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.wechat.domain.model.WxRegisterModel;
 import com.yunya.feign.wechat.domain.vo.WxAuthVo;
 import com.yunya.feign.wechat.domain.vo.WxMemberRelationVO;
+import com.yunya.feign.wechat.domain.vo.WxRegisterVo;
 import com.yunya.feign.wechat.domain.vo.WxVipInfoVo;
+import com.yunya.framework.common.constant.WXConstant;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.redis.util.RedisUtils;
@@ -46,6 +48,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.stream.Collectors.*;
 
@@ -80,35 +83,54 @@ public class WXService extends AbstractWxBaseApi {
         WxAuthVo vo = new WxAuthVo();
         //根据code获取access_token和openid(非基础的那个)
         String openId = super.getAuthOpenId(code);
-        vo.setSubscribe(false);
+        vo.setIsRegister(false);
         vo.setOpenId(openId);
-        int count = patientFeign.countRegister(openId);
-        if (count > 0) {
-            vo.setSubscribe(true);
+        WxFans wxFans = this.getOwnInfo(openId,null);
+        if (wxFans != null) {
+            vo.setIsRegister(true);
+            this.authSaveRedis(wxFans, openId);
+        } else {
+            this.authSaveRedis(vo, openId);
         }
         log.info("用户注册授权信息：{}", vo);
         return vo;
     }
 
-    public void register(String openId, WxRegisterModel model) {
+    private void authSaveRedis(Object object, String openId) {
+        String weChatOpenIdKey = String.format(WXConstant.WECHAT_OPENID_KEY,openId);
+        String openInfoStr = redisUtils.get(weChatOpenIdKey);
+        if (StringUtils.isBlank(openInfoStr)) {
+            redisUtils.set(weChatOpenIdKey, object, 30, TimeUnit.DAYS);
+        }
+    }
+
+    public WxRegisterVo register(String openId, WxRegisterModel model) {
+        WxRegisterVo vo = new WxRegisterVo();
         WxFansSaveForm fansSaveForm = new WxFansSaveForm();
-        int count = patientFeign.countRegister(openId);
-        if (count > 0) {
+        WxFans wxFansReg = this.getOwnInfo(openId,null);
+        if (wxFansReg != null) {
             throw new ClientServiceException(WeChatError.USER_IS_REGISTERED);
         }
         //获取微信用户信息
-        String userInfoStr = redisUtils.get(openId);
+        String userInfoStr = super.getAndCheckUserInfo(openId);
         WxFans wxFans = this.assembleWxFans(userInfoStr);
         List<WxFansBind> wxFansBinds = this.buildWxFansBind(wxFans, model);
         fansSaveForm.setWxFans(wxFans);
         fansSaveForm.setFansBind(wxFansBinds);
         //调用患者服务的保存微信用户接口，患者绑定关系表
         patientFeign.saveWx(fansSaveForm);
+        if (wxFans.getPatientId() != null) {
+            vo.setPatientId(wxFans.getPatientId());
+            vo.setMobile(wxFans.getRegisterMobile());
+            vo.setPatientName(wxFans.getRegisterName());
+        }
+        redisUtils.set(String.format(WXConstant.WECHAT_OPENID_KEY,openId), wxFans, 30, TimeUnit.DAYS);
+        return vo;
     }
 
     public WxVipInfoVo vipInfo(String openId, Integer patientId) {
         WxFans wxFans = this.getOwnInfo(openId, patientId);
-        if (patientId == null) {
+        if (patientId == null || patientId == 0) {
             if (wxFans == null) {
                 throw new ClientServiceException(WeChatError.USER_NOT_FOLLOW);
             }
@@ -232,7 +254,7 @@ public class WXService extends AbstractWxBaseApi {
     private WxVipInfoVo getVipInfo(Integer patientId, WxFans wxFans) {
         WxVipInfoVo wxVipInfoVo;
         //未绑定患者直接返回注册信息
-        if (patientId == null) {
+        if (patientId == null || patientId == 0) {
             wxVipInfoVo = this.assembleWxUserInfo(wxFans);
         } else {
             wxVipInfoVo = this.assembleWxPatientInfo(patientId);
@@ -334,6 +356,7 @@ public class WXService extends AbstractWxBaseApi {
         List<WxFansBind> list = Lists.newArrayList();
         wxFans.setRegisterName(model.getUserName());
         wxFans.setRegisterMobile(model.getMobile());
+        wxFans.setBind(false);
         PatientBaseInfo baseInfo = new PatientBaseInfo();
         baseInfo.setMobile(model.getMobile());
         baseInfo.setName(model.getUserName());
@@ -366,8 +389,6 @@ public class WXService extends AbstractWxBaseApi {
     private void jsonToFans(WxFans wxFans, String userInfoStr) {
         JSONObject userJson = JSONObject.parseObject(userInfoStr);
         JSONArray tagList = userJson.getJSONArray("tagid_list");
-        if (CollectionUtils.isNotEmpty(tagList)) {
-            wxFans.setTagidList(Joiner.on(",").join(tagList));
-        }
+        wxFans.setTagidList(Joiner.on(",").join(tagList));
     }
 }

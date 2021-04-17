@@ -11,6 +11,7 @@ import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.wechat.domain.model.WxRegisterModel;
 import com.yunya.feign.wechat.domain.vo.WxAuthVo;
 import com.yunya.feign.wechat.domain.vo.WxMemberRelationVO;
+import com.yunya.feign.wechat.domain.vo.WxRegisterVo;
 import com.yunya.feign.wechat.domain.vo.WxVipInfoVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -21,10 +22,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.WXConstant.*;
 
 /**
  * @description:
@@ -41,52 +45,55 @@ public class WxController {
 
     @GetMapping(value = "/wxVip/auth")
     @ApiOperation(value = "获取用户授权信息")
-    public ResponseResult<WxAuthVo> getUserOpenId(@RequestParam String code) {
-        return ResponseUtil.success(wxService.getAuthInfo(code));
+    public ResponseResult<WxAuthVo> getUserOpenId(@RequestParam String code, HttpServletRequest request) {
+        WxAuthVo authInfo = wxService.getAuthInfo(code);
+        request.getSession().setAttribute(GZH_SESSION_KEY, authInfo.getOpenId());
+        return ResponseUtil.success(authInfo);
     }
 
     @PostMapping(value = "/wxVip/home/register")
     @ApiOperation(value = "会员注册")
-    public ResponseResult wxRegister(@NotBlank @RequestParam(required = true) String openId, @Valid @RequestBody WxRegisterModel model) {
-        wxService.register(openId, model);
-        return ResponseUtil.success();
+    public ResponseResult<WxRegisterVo> wxRegister(HttpServletRequest request, @Valid @RequestBody WxRegisterModel model) {
+        String openId = request.getSession().getAttribute(GZH_SESSION_KEY).toString();
+        WxRegisterVo register = wxService.register(openId, model);
+        return ResponseUtil.success(register);
     }
 
     @GetMapping(value = "/wxVip/home/vipInfo")
     @ApiOperation(value = "会员中心")
-    public ResponseResult<WxVipInfoVo> vipInfo(@NotBlank @RequestParam(required = true) String openId,
+    public ResponseResult<WxVipInfoVo> vipInfo(HttpServletRequest request,
                                                @RequestParam(required = false) Integer patientId) {
+        log.info("会员中心的请求参数，patientId：{}", patientId);
+        String openId = request.getSession().getAttribute(GZH_SESSION_KEY).toString();
         WxVipInfoVo wxVipInfoVo = wxService.vipInfo(openId, patientId);
         return ResponseUtil.success(wxVipInfoVo);
     }
 
     @GetMapping(value = "/wxVip/home/account/list")
     @ApiOperation(value = "会员中心-切换账号")
-    public ResponseResult<List<WxFansDetailVO>> listAccount(@NotBlank @RequestParam(required = true) String openId) {
+    public ResponseResult<List<WxFansDetailVO>> listAccount(HttpServletRequest request) {
+        String openId = request.getSession().getAttribute(GZH_SESSION_KEY).toString();
         List<WxFansDetailVO> list = wxService.listAccount(openId);
         return ResponseUtil.success(list);
     }
 
     @PostMapping(value = "/wxVip/home/treat/record")
     @ApiOperation(value = "会员中心-就诊记录（有分页）")
-    public ResponseResult<PageInfo<PatientTreatmentRecordVO>> treatPage(@NotBlank @RequestParam(required = true) String openId,
-                                                                           @RequestBody(required = true) PatientTreatmentRecordQueryForm form) {
+    public ResponseResult<PageInfo<PatientTreatmentRecordVO>> treatPage(@RequestBody(required = true) PatientTreatmentRecordQueryForm form) {
         PageInfo<PatientTreatmentRecordVO> page = wxService.treatRecordPage(form);
         return ResponseUtil.success(page);
     }
 
     @GetMapping(value = "/wxVip/home/treat/{treatmentRecordId}")
     @ApiOperation(value = "会员中心-就诊记录-详情")
-    public ResponseResult<OrderDetailInfoVO> treatDetail(@NotBlank @RequestParam(required = true) String openId,
-                                                                           @PathVariable("treatmentRecordId") Integer treatmentRecordId) {
+    public ResponseResult<OrderDetailInfoVO> treatDetail(@PathVariable("treatmentRecordId") Integer treatmentRecordId) {
         OrderDetailInfoVO infoVO = wxService.treatDetail(treatmentRecordId);
         return ResponseUtil.success(infoVO);
     }
 
     @GetMapping(value = "/wxVip/home/member/record")
     @ApiOperation(value = "会员中心-会员卡/预付款记录")
-    public ResponseResult<List<WxCardUseVo>> memberRecord(@NotBlank @RequestParam(required = true) String openId,
-                                                             @RequestParam(required = true) String cardNumber,
+    public ResponseResult<List<WxCardUseVo>> memberRecord(@RequestParam(required = true) String cardNumber,
                                                              @RequestParam(required = true) Integer type) {
         List<WxCardUseVo> wxCardUseVos = wxService.listCardRecord(cardNumber, type);
         return ResponseUtil.success(wxCardUseVos);
@@ -94,8 +101,9 @@ public class WxController {
 
     @GetMapping(value = "/wxVip/home/setting")
     @ApiOperation(value = "会员中心-设置")
-    public ResponseResult<WxPatientVo> settingInfo(@NotBlank @RequestParam(required = true) String openId,
+    public ResponseResult<WxPatientVo> settingInfo(HttpServletRequest request,
                                                @RequestParam(required = false) Integer patientId) {
+        String openId = request.getSession().getAttribute(GZH_SESSION_KEY).toString();
         WxPatientVo wxPatientVo = wxService.settingInfo(openId, patientId);
         return ResponseUtil.success(wxPatientVo);
     }
@@ -103,16 +111,14 @@ public class WxController {
     @GetMapping(value = "/wxVip/home/card")
     @ApiOperation(value = "会员中心-礼包详情")
     public ResponseResult<WxCardUsageVo> cardDetail(@NotNull @RequestParam(required = true) Integer cardId,
-                                                          @NotBlank @RequestParam(required = true) String couponName,
-                                                          @NotBlank @RequestParam(required = true) String openId) {
+                                                          @NotBlank @RequestParam(required = true) String couponName) {
         WxCardUsageVo wxCardUsageVo = wxService.listCouponCardUsage(cardId, couponName);
         return ResponseUtil.success(wxCardUsageVo);
     }
 
     @GetMapping(value = "/wxVip/home/member/relation")
     @ApiOperation(value = "会员中心-会员卡关联")
-    public ResponseResult<WxMemberRelationVO> memberRelation(@NotBlank @RequestParam(required = true) String openId,
-                                                          @RequestParam(required = true) Integer patientId) {
+    public ResponseResult<WxMemberRelationVO> memberRelation(@RequestParam(required = true) Integer patientId) {
         WxMemberRelationVO relationVO = wxService.memberRelation(patientId);
         return ResponseUtil.success(relationVO);
     }
