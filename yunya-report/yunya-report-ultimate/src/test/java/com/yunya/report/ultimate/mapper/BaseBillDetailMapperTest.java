@@ -205,10 +205,55 @@ public class BaseBillDetailMapperTest {
     query.setEndDate("2020-06-30");
     query.setItemId(1);
     query.setExecutorId(341);
-    //query.setPatientKeyword("罗惠萍");
+    // query.setPatientKeyword("罗惠萍");
     query.setBillNum("ZD00072006100014");
-    List<PersonalBillItemTollAndWorkloadDetailVO> vos =
-        baseBillDetailMapper.selectPersonalBillItemAndWorkloadDetail(query);
+    List<PersonalBillItemReceivedWorkloadDetailVO> vos =
+        baseBillDetailMapper.selectPersonalBillItemReceivedWorkloadDetail(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find11() {
+    PersonalBillItemTollAndWorkloadQuery query = new PersonalBillItemTollAndWorkloadQuery();
+    query.setOrgId(26);
+    query.setStartDate("2020-06-01");
+    query.setEndDate("2020-06-30");
+    query.setItemId(1);
+    query.setExecutorId(341);
+    // query.setPatientKeyword("罗惠萍");
+    query.setBillNum("ZD00072006100014");
+    List<PersonalBillItemFreeWorkloadDetailVO> vos =
+        baseBillDetailMapper.selectPersonalBillItemFreeWorkloadDetail(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find12() {
+    PersonalBillItemTollAndWorkloadQuery query = new PersonalBillItemTollAndWorkloadQuery();
+    query.setOrgId(26);
+    query.setStartDate("2020-06-01");
+    query.setEndDate("2020-06-30");
+    query.setItemId(1);
+    query.setExecutorId(341);
+    // query.setPatientKeyword("罗惠萍");
+    query.setBillNum("ZD00072006100014");
+    List<PersonalBillItemSupplyWorkloadDetailVO> vos =
+        baseBillDetailMapper.selectPersonalBillItemSupplyWorkloadDetail(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find13() {
+    PersonalBillItemTollAndWorkloadQuery query = new PersonalBillItemTollAndWorkloadQuery();
+    query.setOrgId(27);
+    query.setStartDate("2021-03-10");
+    query.setEndDate("2021-03-12");
+    query.setItemId(616);
+    query.setExecutorId(410);
+    // query.setPatientKeyword("罗惠萍");
+    // query.setBillNum("ZD00072006100014");
+    List<PersonalBillItemRefundWorkloadDetailVO> vos =
+        baseBillDetailMapper.selectPersonalBillItemRefundWorkloadDetail(query);
     System.out.println(vos);
   }
 }

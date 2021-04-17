@@ -1147,9 +1147,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   /**
    * 各个门诊的月工作量和日工作量合计
    *
-   * @return
    * @param startDate
    * @param curDate
+   * @return
    */
   public List<WorkloadMonthGoalCompletedVO> workloadCompleted(String startDate, String curDate) {
     Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
@@ -1408,13 +1408,121 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query 查询条件
    * @return list
    */
-  public PageInfo<PersonalBillItemTollAndWorkloadDetailVO>
-      findPersonalBillItemAndWorkloadDetailList(PersonalBillItemTollAndWorkloadQuery query) {
+  public PageInfo<PersonalBillItemReceivedWorkloadDetailVO>
+      findPersonalBillItemReceivedWorkloadDetailList(PersonalBillItemTollAndWorkloadQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    List<PersonalBillItemTollAndWorkloadDetailVO> resultList =
-        mapper.selectPersonalBillItemAndWorkloadDetail(query);
+    List<PersonalBillItemReceivedWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemReceivedWorkloadDetail(query);
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 个人收费项目已收工作量明细导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportPersonalBillItemReceivedWorkloadList(
+      HttpServletResponse response, PersonalBillItemTollAndWorkloadQuery query) throws IOException {
+    ExcelUtil<PersonalBillItemReceivedWorkloadDetailVO> excelUtil =
+        new ExcelUtil<>(PersonalBillItemReceivedWorkloadDetailVO.class);
+    List<PersonalBillItemReceivedWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemReceivedWorkloadDetail(query);
+    excelUtil.exportExcel(response, resultList, "个人收费项目已收工作量明细列表");
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目免单工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public PageInfo<PersonalBillItemFreeWorkloadDetailVO> findPersonalBillItemFreeWorkloadDetailList(
+      PersonalBillItemTollAndWorkloadQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<PersonalBillItemFreeWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemFreeWorkloadDetail(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 个人收费项目免单工作量明细导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportPersonalBillItemFreeWorkloadList(
+      HttpServletResponse response, PersonalBillItemTollAndWorkloadQuery query) throws IOException {
+    ExcelUtil<PersonalBillItemFreeWorkloadDetailVO> excelUtil =
+        new ExcelUtil<>(PersonalBillItemFreeWorkloadDetailVO.class);
+    List<PersonalBillItemFreeWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemFreeWorkloadDetail(query);
+    excelUtil.exportExcel(response, resultList, "个人收费项目免单工作量明细列表");
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目补入工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public PageInfo<PersonalBillItemSupplyWorkloadDetailVO>
+      findPersonalBillItemSupplyWorkloadDetailList(PersonalBillItemTollAndWorkloadQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<PersonalBillItemSupplyWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemSupplyWorkloadDetail(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 个人收费项目补入工作量明细导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportPersonalBillItemSupplyWorkloadList(
+      HttpServletResponse response, PersonalBillItemTollAndWorkloadQuery query) throws IOException {
+    ExcelUtil<PersonalBillItemSupplyWorkloadDetailVO> excelUtil =
+        new ExcelUtil<>(PersonalBillItemSupplyWorkloadDetailVO.class);
+    List<PersonalBillItemSupplyWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemSupplyWorkloadDetail(query);
+    excelUtil.exportExcel(response, resultList, "个人收费项目补入工作量明细列表");
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目退费工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public PageInfo<PersonalBillItemRefundWorkloadDetailVO>
+      findPersonalBillItemRefundWorkloadDetailList(PersonalBillItemTollAndWorkloadQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<PersonalBillItemRefundWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemRefundWorkloadDetail(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 个人收费项目退费工作量明细导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportPersonalBillItemRefundWorkloadList(
+      HttpServletResponse response, PersonalBillItemTollAndWorkloadQuery query) throws IOException {
+    ExcelUtil<PersonalBillItemRefundWorkloadDetailVO> excelUtil =
+        new ExcelUtil<>(PersonalBillItemRefundWorkloadDetailVO.class);
+    List<PersonalBillItemRefundWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemRefundWorkloadDetail(query);
+    excelUtil.exportExcel(response, resultList, "个人收费项目退费工作量明细列表");
   }
 }
