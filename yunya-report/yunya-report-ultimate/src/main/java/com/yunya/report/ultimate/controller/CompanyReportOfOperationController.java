@@ -410,7 +410,7 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-产品使用报表")
   @PostMapping(value = "/coupon/executored/list", name = "根据条件查询产品使用报表")
   public ResponseResult<PageInfo<CouponExecutoredVO>> couponExecutoredList(
-          @RequestBody @Validated CouponExecutoredQuery query) {
+      @RequestBody @Validated CouponExecutoredQuery query) {
     PageInfo<CouponExecutoredVO> pageInfo = billDetailBiz.couponExecutoredList(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -424,7 +424,8 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-产品使用报表导出")
   @PostMapping(value = "/coupon/executored/export", name = "根据条件查询产品使用报表导出")
   public ResponseResult<T> couponExecutoredExport(
-      HttpServletResponse response, @RequestBody @Validated CouponExecutoredQuery query) throws IOException {
+      HttpServletResponse response, @RequestBody @Validated CouponExecutoredQuery query)
+      throws IOException {
     billDetailBiz.couponExecutoredExport(query, response);
     return ResponseUtil.success(null);
   }
@@ -438,7 +439,7 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-产品使用报表明细")
   @PostMapping(value = "/coupon/executored/detail", name = "根据条件查询产品使用报表明细")
   public ResponseResult<PageInfo<CouponExecutoredDetailVO>> couponExecutoredDetails(
-          @RequestBody @Validated CouponExecutoredDetailQuery query) {
+      @RequestBody @Validated CouponExecutoredDetailQuery query) {
     PageInfo<CouponExecutoredDetailVO> pageInfo = billDetailBiz.couponExecutoredDetails(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -462,8 +463,8 @@ public class CompanyReportOfOperationController {
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-项目收费金额及工作量统计")
-  @PostMapping(value = "/tariff/pay/workload/list", name = "公司端报表-报表统计-运营报表-")
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目工作量统计")
+  @PostMapping(value = "/tariff/pay/workload/list", name = "公司端报表-报表统计-运营报表-收费项目工作量统计")
   public ResponseResult<PageInfo<BillItemTollAndWorkloadVO>> tariffPaymentWorkloadStatistics(
       @RequestBody @Validated BillItemTollAndWorkloadQuery query) {
     PageInfo<BillItemTollAndWorkloadVO> pageInfo =
@@ -478,12 +479,29 @@ public class CompanyReportOfOperationController {
    * @param query 查询参数
    * @return
    */
-  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-项目收费金额及工作量统计-导出")
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目工作量统计-导出")
   @PostMapping(value = "/tariff/pay/workload/list/export", name = "导出项目收费金额及工作量")
   public ResponseResult<T> exportTariffPaymentWorkloadList(
-            HttpServletResponse response, @RequestBody @Validated BillItemTollAndWorkloadQuery query) throws IOException {
+      HttpServletResponse response, @RequestBody @Validated BillItemTollAndWorkloadQuery query)
+      throws IOException {
     billDetailBiz.exportTariffPaymentWorkloadList(response, query);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目工作量-查看明细")
+  @PostMapping(value = "/personal/tariff/pay/workload/detail", name = "个人收费项目工作量明细")
+  public ResponseResult<PageInfo<PersonalBillItemTollAndWorkloadDetailVO>>
+      personalTariffPaymentWorkloadStatistics(
+          @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query) {
+    PageInfo<PersonalBillItemTollAndWorkloadDetailVO> pageInfo =
+        billDetailBiz.findPersonalBillItemAndWorkloadDetailList(query);
+    return ResponseUtil.success(pageInfo);
   }
 
   /**
@@ -494,15 +512,15 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊工作量统计")
   @ApiResponses(
-          value = {
-                  @ApiResponse(
-                          code = 200,
-                          message =
-                                  "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":20,\"orgId1\":10,\"name\":\"工作量\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"工作量\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
-          })
+      value = {
+        @ApiResponse(
+            code = 200,
+            message =
+                "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":20,\"orgId1\":10,\"name\":\"工作量\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"工作量\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
+      })
   @PostMapping(value = "/clinic/performance/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊工作量统计")
   public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicPerformanceList(
-          @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
+      @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
     DynamicHeaderPageInfo<JSONObject> pageInfo = billDetailBiz.clinicPerformanceList(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -516,8 +534,8 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊工作量统计导出")
   @PostMapping(value = "/clinic/performance/export", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊工作量统计导出")
   public ResponseResult<T> clinicPerformanceExport(
-          HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
-          throws IOException {
+      HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
+      throws IOException {
     billDetailBiz.clinicPerformanceExport(query, response);
     return ResponseUtil.success(null);
   }
@@ -530,15 +548,15 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析")
   @ApiResponses(
-          value = {
-                  @ApiResponse(
-                          code = 200,
-                          message =
-                                  "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":0,\"orgId1\":0,\"originType\":\"患者来源\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"患者来源\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
-          })
+      value = {
+        @ApiResponse(
+            code = 200,
+            message =
+                "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":0,\"orgId1\":0,\"originType\":\"患者来源\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"患者来源\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
+      })
   @PostMapping(value = "/clinic/firstVisitSource/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析")
   public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicFirstVisitSourceList(
-          @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
+      @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
     DynamicHeaderPageInfo<JSONObject> pageInfo = billDetailBiz.clinicFirstVisitSourceList(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -551,11 +569,11 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析导出")
   @PostMapping(
-          value = "/clinic/firstVisitSource/export",
-          name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析导出")
+      value = "/clinic/firstVisitSource/export",
+      name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析导出")
   public ResponseResult<T> clinicFirstVisitSourceExport(
-          HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
-          throws IOException {
+      HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
+      throws IOException {
     billDetailBiz.clinicFirstVisitSourceExport(query, response);
     return ResponseUtil.success(null);
   }
@@ -568,15 +586,15 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计")
   @ApiResponses(
-          value = {
-                  @ApiResponse(
-                          code = 200,
-                          message =
-                                  "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":20,\"orgId1\":10,\"name\":\"专科项目\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"专科项目\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
-          })
+      value = {
+        @ApiResponse(
+            code = 200,
+            message =
+                "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":20,\"orgId1\":10,\"name\":\"专科项目\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"专科项目\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
+      })
   @PostMapping(value = "/clinic/specialProject/list", name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计")
   public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicSpecialItemList(
-          @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
+      @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
     DynamicHeaderPageInfo<JSONObject> pageInfo = billDetailBiz.clinicSpecialItemList(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -589,11 +607,11 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计导出")
   @PostMapping(
-          value = "/clinic/specialProject/export",
-          name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计导出")
+      value = "/clinic/specialProject/export",
+      name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科项目数量统计导出")
   public ResponseResult<T> clinicSpecialItemExport(
-          HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
-          throws IOException {
+      HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
+      throws IOException {
     billDetailBiz.clinicSpecialItemExport(query, response);
     return ResponseUtil.success(null);
   }
@@ -606,10 +624,10 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计")
   @PostMapping(
-          value = "/clinic/365CardSaleActivited/list",
-          name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计")
+      value = "/clinic/365CardSaleActivited/list",
+      name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计")
   public ResponseResult<PageInfo<SaleActivited365CardVO>> clinic365CardSaleActivitedList(
-          @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
+      @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
     PageInfo<SaleActivited365CardVO> pageInfo = billDetailBiz.clinic365CardSaleActivitedList(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -622,11 +640,11 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计导出")
   @PostMapping(
-          value = "/clinic/365CardSaleActivited/export",
-          name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计导出")
+      value = "/clinic/365CardSaleActivited/export",
+      name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊365卡销售激活统计导出")
   public ResponseResult<T> clinic365CardSaleActivitedExport(
-          HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
-          throws IOException {
+      HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
+      throws IOException {
     billDetailBiz.clinic365CardSaleActivitedExport(query, response);
     return ResponseUtil.success(null);
   }

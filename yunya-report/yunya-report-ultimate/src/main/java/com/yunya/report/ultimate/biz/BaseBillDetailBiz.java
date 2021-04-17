@@ -1237,7 +1237,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-   * 查询开单项目工作量列表
+   * 根据条件查询收费项目工作量列表
    *
    * @param query 查询条件
    * @return
@@ -1431,13 +1431,13 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-     * 获取所有门诊信息
-     *
-     * @param query
-     */
-    private List<BaseOrganization> getOrganization(ClinicPerformanceBusinessQuery query) {
-      return organizationMapper.selectOrganizationList(query);
-    }
+   * 获取所有门诊信息
+   *
+   * @param query
+   */
+  private List<BaseOrganization> getOrganization(ClinicPerformanceBusinessQuery query) {
+    return organizationMapper.selectOrganizationList(query);
+  }
 
   /**
    * 初始化
@@ -1983,5 +1983,31 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     String fileName = excelUtil.getFileName(query.getQueryDate(),"", organization.getAbbreviation(),"非本月免单金额明细");
     excelUtil.exportExcel(response, list, "非本月免单金额明细", fileName);
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public PageInfo<PersonalBillItemTollAndWorkloadDetailVO>
+      findPersonalBillItemAndWorkloadDetailList(PersonalBillItemTollAndWorkloadQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<PersonalBillItemTollAndWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemAndWorkloadDetail(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件按月份分组门诊补入工作量
+   *
+   * @param query
+   * @return
+   */
+  public List<BillRecordWorkloadVO> findCouponWorkloadGroupByPrivilegeDate(DataStatisticsQuery query) {
+    return mapper.selectCouponWorkloadGroupByPrivilegeDate(query);
   }
 }
