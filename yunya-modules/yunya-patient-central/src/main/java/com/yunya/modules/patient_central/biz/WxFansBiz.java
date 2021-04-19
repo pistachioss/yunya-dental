@@ -247,7 +247,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         BigDecimal zero = BigDecimal.ZERO;
         principal = principal == null ? zero : principal;
         bonus = bonus == null ? zero : bonus;
-        return principal.add(bonus).toString();
+        return principal.add(bonus).setScale(2, BigDecimal.ROUND_HALF_UP).toString();
     }
 
     private void assembleMedical(List<PatientExtInfoVo> extInfoVos, WxPatientVo wxPatientVo) {

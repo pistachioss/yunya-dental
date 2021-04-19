@@ -88,6 +88,7 @@ public class WXService extends AbstractWxBaseApi {
         WxFans wxFans = this.getOwnInfo(openId,null);
         if (wxFans != null) {
             vo.setIsRegister(true);
+            vo.setPatientId(wxFans.getPatientId());
             this.authSaveRedis(wxFans, openId);
         } else {
             this.authSaveRedis(vo, openId);
@@ -154,7 +155,7 @@ public class WXService extends AbstractWxBaseApi {
         WxUserQuery query = new WxUserQuery();
         query.setOpenId(openId);
         WxFans wxFans = patientFeign.getWxFans(query);
-        if (patientId == null) {
+        if (patientId == null || patientId == 0) {
             return this.assembleWxPatientVo(wxFans);
         } else {
             return patientFeign.getWxPatientInfo(patientId);
