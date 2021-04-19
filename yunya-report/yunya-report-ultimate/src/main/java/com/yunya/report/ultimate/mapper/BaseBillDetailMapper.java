@@ -154,8 +154,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query 查询条件
    * @return list
    */
-  List<BillRecordWorkloadVO> selectCouponWorkloadList(@Param("query") DataStatisticsQuery query,
-                                                      @Param("column") String column);
+  List<BillRecordWorkloadVO> selectCouponWorkloadList(
+      @Param("query") DataStatisticsQuery query, @Param("column") String column);
 
   /**
    * 根据条件查询门诊当月账单明细列表
@@ -371,12 +371,13 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
   /**
    * 统计每组开单项目的数量
+   *
    * @param query
    * @param column
    * @return
    */
-  List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(@Param("query") ClinicPerformanceBusinessQuery query,
-                                                            @Param("column") String column);
+  List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(
+      @Param("query") ClinicPerformanceBusinessQuery query, @Param("column") String column);
 
   List<Integer> billIdByMonthFreePayment(@Param("query") BillCategoryIncomeQuery query);
 
@@ -394,5 +395,6 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<BillRecordWorkloadVO> selectCouponWorkloadGroupByPrivilegeDate(@Param("query") DataStatisticsQuery query);
+  List<BillRecordWorkloadVO> selectCouponWorkloadGroupByPrivilegeDate(
+      @Param("query") DataStatisticsQuery query);
 }

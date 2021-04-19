@@ -866,32 +866,32 @@
         ifnull(sum(bdp.discountAmount),0) as totalDiscountAmount,
         ifnull(SUM(bdp.supplementWorkload),0) AS totalCouponAmount
         from (
-            select
-            bb.org_id as orgId,
-            bti.item_type as itemType,
-            bti.category_id as categoryId,
-            bti.category_name as categoryName,
-            bbd.discount_amount as discountAmount,
-            bbd.price * bbd.quantity as totalOriginalAmount,
-            bbt.supplementWorkload AS supplementWorkload,
-            date_format(bb.bill_date, '%Y-%m') as billDate
-            from base_bill_detail bbd
-            left join base_tariff_info bti on bbd.item_id = bti.item_id
-            and bbd.item_type = bti.item_type
-            left join base_bill bb on bbd.bill_id = bb.bill_id
-            left join (
-                select bbt.order_detail_id,
-                sum(bci.workload_load) as supplementWorkload
-                from base_benefit bbt
-                inner join base_coupon_item bci on bbt.item_id = bci.item_id and bbt.coupon_id = bci.coupon_id
-                <where>
-                    <if test="query.queryDate != null and query.queryDate != ''">
-                        and DATE_FORMAT(bbt.use_date, '%Y-%m') = #{query.queryDate}
-                    </if>
-                </where>
-                group by bbt.order_detail_id
-            ) bbt on bbd.bill_detail_id = bbt.order_detail_id
-            order by bti.item_type, bti.category_id
+        select
+        bb.org_id as orgId,
+        bti.item_type as itemType,
+        bti.category_id as categoryId,
+        bti.category_name as categoryName,
+        bbd.discount_amount as discountAmount,
+        bbd.price * bbd.quantity as totalOriginalAmount,
+        bbt.supplementWorkload AS supplementWorkload,
+        date_format(bb.bill_date, '%Y-%m') as billDate
+        from base_bill_detail bbd
+        left join base_tariff_info bti on bbd.item_id = bti.item_id
+        and bbd.item_type = bti.item_type
+        left join base_bill bb on bbd.bill_id = bb.bill_id
+        left join (
+        select bbt.order_detail_id,
+        sum(bci.workload_load) as supplementWorkload
+        from base_benefit bbt
+        inner join base_coupon_item bci on bbt.item_id = bci.item_id and bbt.coupon_id = bci.coupon_id
+        <where>
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and DATE_FORMAT(bbt.use_date, '%Y-%m') = #{query.queryDate}
+            </if>
+        </where>
+        group by bbt.order_detail_id
+        ) bbt on bbd.bill_detail_id = bbt.order_detail_id
+        order by bti.item_type, bti.category_id
         ) bdp
         <where>
             and bdp.billDate is not null
@@ -2618,9 +2618,16 @@
         IFNULL(SUM(bbd.price*bbd.quantity-bbd.discount_amount),0) as amount
         FROM
         (
-        select bbd.org_id,bbd.item_id,bbd.item_type,bbd.executor_id,bbd.quantity,bbd.price,bbd.discount_amount
+        select
+        bbd.org_id,
+        bbd.item_id,
+        bbd.item_type,
+        bbd.executor_id,
+        bbd.quantity,
+        bbd.price,
+        bbd.discount_amount
         from base_bill_detail bbd
-        LEFT JOIN base_bill bb on bb.bill_id=bbd.bill_id
+        LEFT JOIN base_bill bb on bb.bill_id = bbd.bill_id
         <where>
             AND bb.bill_date IS NOT NULL
             <if test="query.itemIds!=null and query.itemIds.size()>0">
@@ -2669,17 +2676,16 @@
         </where>
         ) bbd
         GROUP BY
-        bbd.org_id,
         bbd.executor_id,
-        bbd.item_id,
-        bbd.item_type
+        bbd.item_id
         ORDER BY
+        amount DESC,
         bbd.item_id,
         bbd.item_type
         ) bbd
         LEFT JOIN base_tariff_info bti ON bbd.itemId = bti.item_id AND bbd.itemType = bti.item_type
         LEFT JOIN base_employee be ON be.user_id = bbd.employeeId
-        LEFT JOIN base_organization bo ON bo.org_id=bbd.orgId
+        LEFT JOIN base_organization bo ON bo.org_id = bbd.orgId
         <where>
             <if test="query.categoryIds!=null and query.categoryIds.size()>0">
                 and bti.category_id in
@@ -2703,7 +2709,7 @@
         bbd.quantity,
         bem.employee_name as regDentistName,
         be.employee_name as executorName,
-        IFNULL(bbd.price*bbd.quantity-bbd.discount_amount,0) amount,
+        IFNULL(bbd.price*bbd.quantity - bbd.discount_amount, 0) as amount,
         bp.name AS patientName,
         bp.patient_id as patientId,
         bp.mobile,
@@ -2718,13 +2724,12 @@
         LEFT JOIN base_employee be ON bbd.executor_id = be.user_id
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bbd.source_type = 0
             <if test="query.orgId != null">
                 and btp.org_id = #{query.orgId}
                 and bb.org_id = #{query.orgId}
                 and bbd.org_id = #{query.orgId}
             </if>
-            <if test="query.executorIds!=null and query.executorIds.size()>0">
+            <if test="query.executorIds! = null and query.executorIds.size()>0">
                 and bbd.executor_id in
                 <foreach collection="query.executorIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
@@ -2777,7 +2782,9 @@
                 and bbd.item_type = #{query.itemType}
             </if>
         </where>
-        order by bb.bill_date desc
+        order by
+        bb.bill_date desc,
+        bb.bill_num desc
     </select>
     <!-- 查询订单实收工作量总和 -->
     <select id="selectBillTotalWorkload" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
@@ -3398,7 +3405,7 @@
     <!--给定月份中含免单支付的账单单id-->
     <select id="billIdByMonthFreePayment" resultType="java.lang.Integer">
         select
-            distinct bbd.bill_id AS billId
+        distinct bbd.bill_id AS billId
         from base_bill_detail bbd
         <where>
             <if test="query.orgId != null">
@@ -3434,28 +3441,29 @@
                 and bbd.org_id = #{query.orgId}
             </if>
             AND EXISTS (
-                select bb.bill_id from base_bill bb where bbd.bill_id=bb.bill_id
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;&gt; #{query.queryDate}
-                </if>
+            select bb.bill_id from base_bill bb where bbd.bill_id=bb.bill_id
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;&gt; #{query.queryDate}
+            </if>
             )
             and EXISTS (
-                select bbp.bill_id from base_bill_pay bbp
-                where bbp.bill_id=bbd.bill_id
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.queryDate}
-                </if>
+            select bbp.bill_id from base_bill_pay bbp
+            where bbp.bill_id=bbd.bill_id
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.queryDate}
+            </if>
             )
         </where>
         group by bbd.item_id,bbd.item_type,bbd.bill_id
     </select>
 
     <!-- 根据条件按月份分组补入工作量列表 -->
-    <select id="selectCouponWorkloadGroupByPrivilegeDate" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
+    <select id="selectCouponWorkloadGroupByPrivilegeDate"
+            resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
         select
-            sum(bbd.coupon_workload) as billTotalCouponWorkload,
-            bbd.org_id AS billOrgId,
-            DATE_FORMAT(bb.privilege_date,'%Y-%m') AS month
+        sum(bbd.coupon_workload) as billTotalCouponWorkload,
+        bbd.org_id AS billOrgId,
+        DATE_FORMAT(bb.privilege_date,'%Y-%m') AS month
         from base_bill_detail bbd
         inner join base_bill bb on bbd.bill_id = bb.bill_id
         <where>
