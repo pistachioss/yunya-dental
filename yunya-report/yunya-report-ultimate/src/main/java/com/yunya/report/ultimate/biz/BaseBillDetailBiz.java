@@ -1291,17 +1291,17 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setOrgIds(orgIds);
     List<String> curMonthList = DateUtil.sliceUpDateRange(startDate, endDate);
     Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
-    //环比：去年+查询月份范围
+    //同比：去年+查询月份范围
     String preYear = DateUtil.preYear(year);
     String chainSMonth = preYear + "-" + sMonth;
     String chainEMonth = preYear + "-" + eMonth;
     String minMonth = chainSMonth;
     List<String> chainMonthList = DateUtil.sliceUpDateRange(chainSMonth, chainEMonth);
 
-    //同比：查询条件的开始月份 + 查询月份范围的跨度值
+    //环比：查询条件的开始月份 + 查询月份范围的跨度值
     int range = 1; //默认1个月
     if (!startDate.equals(endDate)) {
-      range = Integer.parseInt(eMonth)-Integer.parseInt(sMonth);
+      range += Integer.parseInt(eMonth)-Integer.parseInt(sMonth);
     }
     String preSMonth = DateUtil.preMonth(startDate, range);
     String preEMonth = DateUtil.preMonth(endDate, range);
@@ -1335,12 +1335,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       init(goals, startDate, endDate, "目标值");
       JSONObject completed = new JSONObject();
       init(completed, startDate, endDate, "完成度");
-      JSONObject chainDiff = new JSONObject();//环比
-      init(chainDiff, startDate, endDate, "环比值");
-      JSONObject preDiff = new JSONObject();//同比
-      init(preDiff, startDate, endDate, "同比值");
+      JSONObject preDiff = new JSONObject();//环比
+      init(preDiff, preSMonth, preEMonth, "环比值");
+      JSONObject chainDiff = new JSONObject();//同比
+      init(chainDiff, chainSMonth, chainEMonth, "同比值");
       JSONObject curYear = new JSONObject();//年度总工作量
-      init(curYear, startDate, endDate, "年度总工作量");
+      init(curYear, year, year, "年度总工作量");
       Map<String, String> map = new LinkedHashMap<>();
       map.put("date", "时间");
       map.put("name", "工作量");
@@ -1433,9 +1433,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
      * @param value
      */
     private void init(JSONObject object, String sMonth, String eMonth, String value) {
-      String month = sMonth;
+      String month = sMonth.replaceAll("-",".");
       if (!sMonth.equals(eMonth)) {
-        month = sMonth + "-" + eMonth;
+        month = month + "-" + eMonth.replaceAll("-",".");
       }
       object.put("date", month);
       object.put("name", value);
