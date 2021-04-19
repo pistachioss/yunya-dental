@@ -351,4 +351,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return list
    */
   List<NonMonthCategoryVO> nonMonthCategoryList(@Param("query") BillCategoryIncomeQuery query);
+
+  /**
+   * 查询账单开单不属于给定月份，而使用优惠在给定月份的账单补入工作量明细
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<NonMonthCategoryVO> nonMonthCategoryCouponWorkloadList(@Param("query") BillCategoryIncomeQuery query);
 }

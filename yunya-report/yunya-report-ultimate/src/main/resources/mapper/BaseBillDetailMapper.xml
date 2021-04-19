@@ -3352,4 +3352,28 @@
         </where>
         group by bbd.item_id,bbd.item_type,bbd.bill_id
     </select>
+
+    <select id="nonMonthCategoryCouponWorkloadList" resultType="com.yunya.feign.report.domain.vo.NonMonthCategoryVO">
+        select
+        bbd.item_id AS itemId,
+        bbd.item_type AS itemType,
+        SUM(bbd.coupon_workload) AS couponWorkload,
+        bbd.bill_id AS billId
+        from base_bill_detail bbd
+        <where>
+            <if test="query.orgId != null">
+                and bbd.org_id = #{query.orgId}
+            </if>
+            AND EXISTS (
+            select bb.bill_id from base_bill bb where bbd.bill_id=bb.bill_id
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;&gt; #{query.queryDate}
+            </if>
+            <if test="query.privilegeDate!=null and query.privilegeDate!=''">
+                and DATE_FORMAT(bb.privilege_date, '%Y-%m') = #{query.privilegeDate}
+            </if>
+            )
+        </where>
+        group by bbd.item_id,bbd.item_type,bbd.bill_id
+    </select>
 </mapper>
