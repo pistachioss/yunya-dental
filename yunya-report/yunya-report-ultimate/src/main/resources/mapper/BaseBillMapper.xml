@@ -309,7 +309,7 @@
         from (
         select
         bb.bill_id as billId,
-        bb.bill_date as billDate,
+        date_format(bb.bill_date, '%Y-%m-%d') as billDate,
         bb.bill_num as billNum,
         bb.patient_id as patientId,
         bp.name as patientname,
