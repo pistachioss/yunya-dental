@@ -24,9 +24,6 @@ public class BillRestReceivableAmountVO implements Serializable {
   /** 账单ID */
   @ApiModelProperty("账单ID")
   private Integer billId;
-  /** 开单日期 */
-  @ApiModelProperty("开单日期")
-  private String orderDate;
   /** 账单日期 */
   @Excel(name = "账单日期")
   @ApiModelProperty("账单日期")
@@ -54,15 +51,15 @@ public class BillRestReceivableAmountVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 原价合计 */
-  @Excel(name = "原价合计")
+  @Excel(name = "原价合计", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("原价合计")
   private BigDecimal totalOriginalAmount;
   /** 实收金额 */
-  @Excel(name = "实收金额")
+  @Excel(name = "实收金额", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("实收金额")
   private BigDecimal totalActualAmount;
   /** 账单剩余欠费余额 */
-  @Excel(name = "账单剩余欠费余额")
+  @Excel(name = "账单剩余欠费余额", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("账单剩余欠费余额")
   private BigDecimal billReceivableAmount;
 }
