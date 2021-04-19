@@ -2729,7 +2729,7 @@
                 and bb.org_id = #{query.orgId}
                 and bbd.org_id = #{query.orgId}
             </if>
-            <if test="query.executorId! = nul">
+            <if test="query.executorId != nul">
                 and bbd.executor_id = #{query.executorId}
             </if>
             <if test="query.keyword != null and query.keyword != ''">
