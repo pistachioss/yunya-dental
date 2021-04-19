@@ -2729,11 +2729,8 @@
                 and bb.org_id = #{query.orgId}
                 and bbd.org_id = #{query.orgId}
             </if>
-            <if test="query.executorIds! = null and query.executorIds.size()>0">
-                and bbd.executor_id in
-                <foreach collection="query.executorIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
+            <if test="query.executorId! = nul">
+                and bbd.executor_id = #{query.executorId}
             </if>
             <if test="query.keyword != null and query.keyword != ''">
                 and concat(IFNULL(bp.name, ''), IFNULL(bp.pinyin_name, ''), IFNULL(bp.mobile, '')) like
@@ -2747,9 +2744,6 @@
             </if>
             <if test="query.billEndDate != null and query.billEndDate != ''">
                 and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &lt;= #{query.billEndDate}
-            </if>
-            <if test="query.regDentistId != null">
-                and btp.registered_dentist_id = #{query.regDentistId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
