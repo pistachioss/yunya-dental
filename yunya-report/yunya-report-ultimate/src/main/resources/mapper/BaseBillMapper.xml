@@ -312,7 +312,7 @@
         date_format(bb.bill_date, '%Y-%m-%d') as billDate,
         bb.bill_num as billNum,
         bb.patient_id as patientId,
-        bp.name as patientname,
+        bp.name as patientName,
         bp.pinyin_name as pinyinName,
         bp.mobile as mobile,
         btp.registered_dentist_id as regDentistId,
