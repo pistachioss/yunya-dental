@@ -338,6 +338,7 @@
         <where>
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
+                and btp.org_id = #{query.orgId}
             </if>
             <if test="query.billDate != null and query.billDate != ''">
                 AND date_format(bb.bill_date, '%Y-%m-%d') &lt;= #{query.billDate}
