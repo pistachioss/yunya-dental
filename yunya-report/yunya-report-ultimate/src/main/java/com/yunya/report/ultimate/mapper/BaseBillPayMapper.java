@@ -177,41 +177,68 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
 
   /**
    * 查询订单支付记录
+   *
+   *
    * @param billIdList 账单id集合
    * @param startDate 开始时间
    * @param endDate 结束时间
    * @param itemIds 支付方式类型
    * @return 账单支付记录集合
    */
-    List<BaseBillPay> findBaseBillPayInfoList(@Param("billIdList") List<BillIdVo> billIdList, @Param("startDate") String startDate,@Param("endDate") String endDate, @Param("itemIds") List<Integer> itemIds);
+  List<BaseBillPay> findBaseBillPayInfoList(
+      @Param("billIdList") List<BillIdVo> billIdList,
+      @Param("startDate") String startDate,
+      @Param("endDate") String endDate,
+      @Param("itemIds") List<Integer> itemIds);
 
-    /**
-     * 查询免单订单支付记录
-     * @param billIdList 账单id集合
-     * @param startDate 开始时间
-     * @param endDate 结束时间
-     * @param itemIds 支付方式类型
-     * @return 账单支付记录集合
-     */
-    List<BaseBillPay> findMdBaseBillPayInfoList(@Param("billIdList") List<BillIdVo> billIdList, @Param("startDate") String startDate,@Param("endDate") String endDate, @Param("itemIds") List<Integer> itemIds);
+  /**
+   * 查询免单订单支付记录
+   *
+   * @param billIdList 账单id集合
+   * @param startDate 开始时间
+   * @param endDate 结束时间
+   * @param itemIds 支付方式类型
+   * @return 账单支付记录集合
+   */
+  List<BaseBillPay> findMdBaseBillPayInfoList(
+      @Param("billIdList") List<BillIdVo> billIdList,
+      @Param("startDate") String startDate,
+      @Param("endDate") String endDate,
+      @Param("itemIds") List<Integer> itemIds);
 
   /**
    * 根据订单id查询支付记录
+   *
    * @param baseBillIdList 订单id集合
    * @param query 支付时间条件
    * @param itemIds 支付方式
    * @return 支付记录
    */
-  List<BaseBillPay> selectBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query,@Param("itemIds") List<Integer> itemIds);
+  List<BaseBillPay> selectBaseBillPayInfoList(
+      @Param("billIdList") List<Integer> baseBillIdList,
+      @Param("query") ReceiverkLoadQuery query,
+      @Param("itemIds") List<Integer> itemIds);
+
+  /**
+   * 根据条件查询门诊当月免单收费金额
+   *
+   * @param query 查询条件
+   * @return BigDecimal - 当月免单收费金额
+   */
+  BigDecimal selectCurrentMonthTotalFreePayAmount(@Param("query") StatementStatisticQuery query);
 
   /**
    * 根据订单id查询免单支付记录
+   *
    * @param baseBillIdList 订单id集合
    * @param query 支付时间条件
    * @param itemIds 支付方式
    * @return 支付记录
    */
-  List<BaseBillPay> selectMdBaseBillPayInfoList(@Param("billIdList") List<Integer> baseBillIdList,@Param("query") ReceiverkLoadQuery query,@Param("itemIds") List<Integer> itemIds);
+  List<BaseBillPay> selectMdBaseBillPayInfoList(
+      @Param("billIdList") List<Integer> baseBillIdList,
+      @Param("query") ReceiverkLoadQuery query,
+      @Param("itemIds") List<Integer> itemIds);
 
   /**
    * 根据月份分组求已收工作量合计
@@ -219,5 +246,6 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    * @param query
    * @return
    */
-  List<BillWorkloadVO> selectRecievedWorkloadsGroupByMonth(@Param("query") DataStatisticsQuery query);
+  List<BillWorkloadVO> selectRecievedWorkloadsGroupByMonth(
+      @Param("query") DataStatisticsQuery query);
 }

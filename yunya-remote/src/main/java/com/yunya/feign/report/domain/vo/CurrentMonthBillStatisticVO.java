@@ -35,6 +35,9 @@ public class CurrentMonthBillStatisticVO implements Serializable {
   /** 本月账单已收金额合计 */
   @ApiModelProperty("本月账单已收金额合计")
   private BigDecimal currentMonthTotalReceivedAmount;
+  /** 本月账单免单金额合计 */
+  @ApiModelProperty("本月账单免单金额合计")
+  private BigDecimal currentMonthTotalFreePayAmount;
   /** 本月账单欠费金额合计 */
   @ApiModelProperty("本月账单欠费金额合计")
   private BigDecimal currentMonthTotalDebtAmount;

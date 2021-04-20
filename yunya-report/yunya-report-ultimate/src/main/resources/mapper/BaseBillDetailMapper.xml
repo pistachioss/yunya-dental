@@ -3285,7 +3285,7 @@
         bbd.patientId,
         bbd.patientName,
         bbd.mobile,
-        bbd.itemReceivedWorkload
+        bbd.itemReveivedWorkload
         from (
         select bbd.billId,
         date_format(bbd.billDate, '%Y-%m-%d %H:%m') as billDate,

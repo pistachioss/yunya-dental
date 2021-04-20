@@ -298,20 +298,20 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     Map<String, BigDecimal> amountMap = new HashMap<>(16);
     if (StringHelper.isNotEmpty(benefits)) {
       benefits.forEach(
-        benefit -> {
-          Integer orderDetailId = benefit.getOrderDetailId();
-          Integer cardId = benefit.getCardId();
-          String key = orderDetailId + "," + cardId;
-          BigDecimal amount = amountMap.get(key);
-          if (amount == null) {
-            amount = BigDecimal.ZERO;
-          }
-          amountMap.put(key, amount.add(benefit.getBenefitAmount()));
-          if (!benefitMap.containsKey(key)) {
-            benefitMap.put(key, benefit);
-          }
-          billDiscountVOs.setOperateUserName(benefit.getAuthorizedName());
-        });
+          benefit -> {
+            Integer orderDetailId = benefit.getOrderDetailId();
+            Integer cardId = benefit.getCardId();
+            String key = orderDetailId + "," + cardId;
+            BigDecimal amount = amountMap.get(key);
+            if (amount == null) {
+              amount = BigDecimal.ZERO;
+            }
+            amountMap.put(key, amount.add(benefit.getBenefitAmount()));
+            if (!benefitMap.containsKey(key)) {
+              benefitMap.put(key, benefit);
+            }
+            billDiscountVOs.setOperateUserName(benefit.getAuthorizedName());
+          });
     }
     if (StringHelper.isNotEmpty(amountMap)) {
       amountMap.forEach(
@@ -392,6 +392,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       BigDecimal currentMonthTotalReceivedAmount =
           billPayMapper.selectCurrentMonthTotalReceivedAmount(query);
       statisticVO.setCurrentMonthTotalReceivedAmount(currentMonthTotalReceivedAmount);
+      BigDecimal currentMonthTotalFreePayAmount =
+          billPayMapper.selectCurrentMonthTotalFreePayAmount(query);
+      statisticVO.setCurrentMonthTotalFreePayAmount(currentMonthTotalFreePayAmount);
     } else {
       statisticVO = currentMonthBillStatisticsMapper.selectCurrentMonthBillStatistics(query);
     }

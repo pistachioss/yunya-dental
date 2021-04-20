@@ -798,11 +798,11 @@
         #{query.orgId} as orgId,
         IFNULL(SUM( bb.actual_amount ), 0) as currentMonthTotalActualAmount,
         IFNULL(SUM( bb.privilege_amount ), 0) as currentMonthTotalDiscountAmount,
+        IFNULL(SUM( bb.received_amount ), 0) as currentMonthTotalReceivedAmount,
         IFNULL(SUM( bb.debt_amount ), 0) as currentMonthTotalDebtAmount
         from
         base_bill bb
         <where>
-            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>

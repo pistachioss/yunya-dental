@@ -201,12 +201,12 @@ public class BaseBillDetailMapperTest {
   public void find10() {
     PersonalBillItemTollAndWorkloadQuery query = new PersonalBillItemTollAndWorkloadQuery();
     query.setOrgId(26);
-    query.setStartDate("2020-06-01");
-    query.setEndDate("2020-06-30");
-    query.setItemId(1);
+    query.setStartDate("2021-03-01");
+    query.setEndDate("2021-03-31");
+    query.setItemId(39);
     query.setExecutorId(341);
     // query.setPatientKeyword("罗惠萍");
-    query.setBillNum("ZD00072006100014");
+    // query.setBillNum("ZD00072006100014");
     List<PersonalBillItemReceivedWorkloadDetailVO> vos =
         baseBillDetailMapper.selectPersonalBillItemReceivedWorkloadDetail(query);
     System.out.println(vos);
