@@ -394,18 +394,22 @@ public class PatientOriginRelationsBiz
         List<ReceivedWorkloadDetailsVo> receivedDetailsList = receivedDetail(query, true, 1);
         excelUtil = new ExcelUtil<>(ReceivedWorkloadDetailsVo.class);
         excelUtil.exportExcel(response, receivedDetailsList, "已收工作量明细", "已收工作量明细");
+        break;
       case 2:
         List<ReceivedWorkloadDetailsVo> freeOrderDetails = receivedDetail(query, false, 1);
         excelUtil = new ExcelUtil<>(ReceivedWorkloadDetailsVo.class);
         excelUtil.exportExcel(response, freeOrderDetails, "免单工作量明细", "免单工作量明细");
+        break;
       case 3:
         List<ReceivedWorkloadDetailsVo> refundDetails = refundDetail(query, 1);
         excelUtil = new ExcelUtil<>(ReceivedWorkloadDetailsVo.class);
         excelUtil.exportExcel(response, refundDetails, "退费明细", "退费明细");
+        break;
       case 4:
         List<ReceivedWorkloadDetailsVo> supplementaryDetails = makeUpDetail(query, 1);
         excelUtil = new ExcelUtil<>(ReceivedWorkloadDetailsVo.class);
         excelUtil.exportExcel(response, supplementaryDetails, "补入工作量明细", "补入工作量明细");
+        break;
       default:
         break;
     }
