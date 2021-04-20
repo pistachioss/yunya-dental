@@ -1119,11 +1119,11 @@
         on t.origin_id = log.origin_id
         where 1 = 1
         and log.origin_type = 1
-        <if test="query.startDate != null">
+        <if test="query.startDate != null and query.startDate != '' ">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null">
+        <if test="query.endDate != null and query.endDate != '' " >
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
     </select>
@@ -1137,11 +1137,11 @@
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         where 1 = 1
         AND log.origin_type = 3
-        <if test="query.startDate != null">
+        <if test="query.startDate != null and query.startDate != '' ">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null">
+        <if test="query.endDate != null and query.endDate != '' " >
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
@@ -1181,11 +1181,11 @@
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
-        <if test="query.startDate != null">
+        <if test="query.startDate != null and query.startDate != '' ">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null">
+        <if test="query.endDate != null and query.endDate != '' " >
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
@@ -1209,11 +1209,11 @@
         and inservice = 1
         ) t on bb.patient_id = t.patient_id
         where bb.privilege_date is not null
-        <if test="query.startDate != null">
+        <if test="query.startDate != null and query.startDate != '' ">
             and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null">
+        <if test="query.endDate != null and query.endDate != '' " >
             and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
     </select>
@@ -1222,41 +1222,39 @@
     <select id="selectMakeUpDetail"
             resultType="com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo">
         select DISTINCT t.* from (
-        select
-        bbd.bill_detail_id,
-        bb.bill_id billId,
-        bb.patient_id patientId,
-        DATE_FORMAT( log.crt_time, '%Y-%m-%d %H:%i') relatedTime,
-        bp.`name`,
-        bp.mobile,
-        (select DATE_FORMAT(min(treat_start_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id =
-        bb.patient_id and treat_start_time IS NOT NULL) firstVisitDate,
-        (select DATE_FORMAT(max(treat_end_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id =
-        bb.patient_id and treat_start_time IS NOT NULL) lastVisitDate ,
-        DATE_FORMAT( bb.order_date, '%Y-%m-%d %H:%i') orderDate,
-        bo.abbreviation abbreviation,
-        be.employee_name employeeName,
-        bti.item_name itemName,
-        bbd.coupon_workload workload
-        from base_bill_detail bbd
-        left join base_bill bb on bb.bill_id = bbd.bill_id
-        left join base_patient bp on bp.patient_id = bb.patient_id
-        left join base_patient_origin_log log on log.patient_id = bp.patient_id
-        left join base_organization bo on bo.org_id = bb.org_id
-        left join base_treatment_process btp on btp.treatment_id = bb.treatment_id
-        left join base_employee be on be.user_id = btp.registered_dentist_id
-        left join base_tariff_info bti ON bti.item_id = bbd.item_id
-        where bb.privilege_date is not null
-        and bbd.coupon_workload > 0
-        and log.origin_id = #{query.originId}
-        and log.origin_type = #{originType}
-        <if test="query.startDate != null">
-            and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
-        </if>
+            select
+                bbd.bill_detail_id,
+                bb.bill_id billId,
+                bb.patient_id patientId,
+                DATE_FORMAT( log.crt_time, '%Y-%m-%d %H:%i') relatedTime,
+                bp.`name`,
+                bp.mobile,
+                (select DATE_FORMAT(min(treat_start_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id = bb.patient_id and treat_start_time IS NOT NULL) firstVisitDate,
+                (select DATE_FORMAT(max(treat_end_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id = bb.patient_id and treat_start_time IS NOT NULL) lastVisitDate ,
+                DATE_FORMAT( bb.order_date, '%Y-%m-%d %H:%i') orderDate,
+                bo.abbreviation abbreviation,
+                be.employee_name employeeName,
+                bti.item_name itemName,
+                bbd.coupon_workload workload
+            from base_bill_detail bbd
+                left join base_bill bb on bb.bill_id = bbd.bill_id
+                left join base_patient bp on bp.patient_id = bb.patient_id
+                left join base_patient_origin_log log on log.patient_id = bp.patient_id
+                left join base_organization bo on bo.org_id = bb.org_id
+                left join base_treatment_process btp on btp.treatment_id = bb.treatment_id
+                left join base_employee be on be.user_id = btp.registered_dentist_id
+                left join base_tariff_info bti ON bti.item_id = bbd.item_id
+            where bb.privilege_date is not null
+            and bbd.coupon_workload  > 0
+            and log.origin_id = #{query.originId}
+            and log.origin_type = #{originType}
+            <if test="query.startDate != null and query.startDate != '' ">
+                and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+            </if>
 
-        <if test="query.endDate != null">
-            and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
-        </if>
+            <if test="query.endDate != null and query.endDate != '' " >
+                and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+            </if>
         ) t
     </select>
 
