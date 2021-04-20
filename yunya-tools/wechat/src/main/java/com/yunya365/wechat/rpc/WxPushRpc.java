@@ -1,7 +1,15 @@
 package com.yunya365.wechat.rpc;
 
+import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.feign.wechat.domain.vo.WxMemberRelationVO;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya365.wechat.service.impl.WXService;
 import io.swagger.annotations.Api;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
 
 /**
  * @description:
@@ -11,11 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = {"微信会员中心"})
 @RestController
 public class WxPushRpc {
-//    @GetMapping(value = "/wxVip/home/member/relation")
-//    @ApiOperation(value = "会员中心-会员卡关联")
-//    public ResponseResult<WxMemberRelationVO> memberRelation(@RequestParam(required = true) Integer patientId) {
-//        WxMemberRelationVO relationVO = wxService.memberRelation(patientId);
-//        return ResponseUtil.success(relationVO);
-//    }
+
+    @Resource
+    private WXService wxService;
+
+    @PostMapping(value = "/wxVip/template/msg/push")
+    public ResponseResult<WxMemberRelationVO> memberRelation(@RequestBody WxTemplateMsgModel msgModel) {
+        wxService.pushTemplateMsg(msgModel);
+        return null;
+    }
 
 }

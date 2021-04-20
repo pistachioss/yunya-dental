@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
 import com.yunya.feign.oss.RemoteOssServiceFeign;
@@ -24,10 +25,8 @@ import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.wechat.domain.model.WxRegisterModel;
-import com.yunya.feign.wechat.domain.vo.WxAuthVo;
-import com.yunya.feign.wechat.domain.vo.WxMemberRelationVO;
-import com.yunya.feign.wechat.domain.vo.WxRegisterVo;
-import com.yunya.feign.wechat.domain.vo.WxVipInfoVo;
+import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.feign.wechat.domain.vo.*;
 import com.yunya.framework.common.constant.WXConstant;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -36,20 +35,22 @@ import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.WxFans;
 import com.yunya.models.patient_central.WxFansBind;
 import com.yunya.models.system.DictionaryItem;
+import com.yunya.models.wechat.WxMsgTemplates;
 import com.yunya365.wechat.enums.WeChatError;
+import com.yunya365.wechat.mapper.WxMsgTemplatesMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static com.yunya365.wechat.enums.TemplateDataEnum.*;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -78,6 +79,8 @@ public class WXService extends AbstractWxBaseApi {
     private RemoteTreatmentServiceFeign treatmentServiceFeign;
     @Resource
     private RemoteReportServiceFeign reportServiceFeign;
+    @Resource
+    private WxMsgTemplatesMapper templatesMapper;
 
     public WxAuthVo getAuthInfo(String code) {
         WxAuthVo vo = new WxAuthVo();
@@ -85,7 +88,7 @@ public class WXService extends AbstractWxBaseApi {
         String openId = super.getAuthOpenId(code);
         vo.setIsRegister(false);
         vo.setOpenId(openId);
-        WxFans wxFans = this.getOwnInfo(openId,null);
+        WxFans wxFans = this.getOwnInfo(openId, null);
         if (wxFans != null) {
             vo.setIsRegister(true);
             vo.setPatientId(wxFans.getPatientId());
@@ -98,7 +101,7 @@ public class WXService extends AbstractWxBaseApi {
     }
 
     private void authSaveRedis(Object object, String openId) {
-        String weChatOpenIdKey = String.format(WXConstant.WECHAT_OPENID_KEY,openId);
+        String weChatOpenIdKey = String.format(WXConstant.WECHAT_OPENID_KEY, openId);
         String openInfoStr = redisUtils.get(weChatOpenIdKey);
         if (StringUtils.isBlank(openInfoStr)) {
             redisUtils.set(weChatOpenIdKey, object, 30, TimeUnit.DAYS);
@@ -108,7 +111,7 @@ public class WXService extends AbstractWxBaseApi {
     public WxRegisterVo register(String openId, WxRegisterModel model) {
         WxRegisterVo vo = new WxRegisterVo();
         WxFansSaveForm fansSaveForm = new WxFansSaveForm();
-        WxFans wxFansReg = this.getOwnInfo(openId,null);
+        WxFans wxFansReg = this.getOwnInfo(openId, null);
         if (wxFansReg != null) {
             throw new ClientServiceException(WeChatError.USER_IS_REGISTERED);
         }
@@ -125,7 +128,7 @@ public class WXService extends AbstractWxBaseApi {
             vo.setMobile(wxFans.getRegisterMobile());
             vo.setPatientName(wxFans.getRegisterName());
         }
-        redisUtils.set(String.format(WXConstant.WECHAT_OPENID_KEY,openId), wxFans, 30, TimeUnit.DAYS);
+        redisUtils.set(String.format(WXConstant.WECHAT_OPENID_KEY, openId), wxFans, 30, TimeUnit.DAYS);
         return vo;
     }
 
@@ -208,6 +211,122 @@ public class WXService extends AbstractWxBaseApi {
                     .map(PatientMemberRelationVo::getName).collect(toList()));
         }
         return relationVO;
+    }
+
+    public void pullTemplate() {
+        String template = super.listTemplate();
+        List<WxMsgTemplates> list = JSONArray.parseArray(template, WxMsgTemplates.class);
+        if (CollectionUtils.isNotEmpty(list)) {
+            list.forEach(obj -> {
+                String content = this.filterAndGenData(obj);
+                obj.setContent(content);
+            });
+            templatesMapper.batchInsert(list);
+        }
+    }
+
+    public void pushTemplateMsg(WxTemplateMsgModel msgModel) {
+        Map<String, Object> paramMap = msgModel.getParamMap();
+        Integer patientId = msgModel.getPatientId();
+        String openId = patientFeign.getWxPushUser(patientId);
+        if (StringUtils.isBlank(openId)) {
+            throw new ClientServiceException(WeChatError.PATIENT_UNBIND_WX);
+        }
+
+    }
+
+    private String getTemplate(String title) {
+        Example example = new Example(WxMsgTemplates.class);
+        example.createCriteria().andEqualTo("title", title);
+        WxMsgTemplates wxMsgTemplates = templatesMapper.selectOneByExample(example);
+        return wxMsgTemplates.getTemplateId();
+    }
+
+
+    private String filterAndGenData(WxMsgTemplates wxMsgTemplates) {
+        Map<String, WxTemplateDataVo> map = Maps.newLinkedHashMap();
+        String content = wxMsgTemplates.getContent();
+        String title = wxMsgTemplates.getTitle();
+        int count = 0;
+        if (content.indexOf("{first") > 0) {
+            count = (content.length() - content.replace("{{first", "").length()) / "{{first".length();
+            this.assembleTemplate(count, map, "first", "", title);
+
+        }
+        if (content.indexOf("{keyword") > 0) {
+            count = (content.length() - content.replace("{{keyword", "").length()) / "{{keyword".length();
+            this.assembleTemplate(count, map, "keyword", "#00b9b2", title);
+        }
+        if (content.indexOf("{remark") > 0) {
+            count = (content.length() - content.replace("{{remark", "").length()) / "{{remark".length();
+            this.assembleTemplate(count, map, "remark", "", title);
+        }
+        return JSONObject.toJSONString(map);
+    }
+
+    private void assembleTemplate(int count, Map<String, WxTemplateDataVo> map, String key, String color, String title) {
+        StringBuilder sb = null;
+        for (int i = 0; i < count; i++) {
+            if ("keyword".equals(key)) {
+                sb = new StringBuilder("${").append(key);
+                map.put(key + (i + 1), new WxTemplateDataVo(sb.append(i).append("}").toString(), color));
+            } else {
+                map.put(key, new WxTemplateDataVo("${" + key + "}", color));
+                if ("first".equals(key)) {
+                    if ("预约确认通知".equals(title)) {
+                        sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}")
+                                .append("，您的预约时间是：").append("${").append(APPOINT_DATE.getArgName()).append("}")
+                                .append("，是否确认按时就诊，请点击【详情】 进行查看，谢谢！");
+                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    }
+                    if ("预约成功提醒".equals(title)) {
+                        sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}，");
+                        map.put(key, new WxTemplateDataVo(sb.append("您已预约成功").toString(), color));
+                    }
+                    if ("预约变更成功通知".equals(title)) {
+                        sb = new StringBuilder("您好，您原定${").append(APPOINT_DATE.getArgName()).append("}")
+                                .append("的预约已变更为：");
+                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    }
+                    if ("预约取消提醒".equals(title)) {
+                        sb = new StringBuilder("您好，您原定${").append(APPOINT_DATE.getArgName()).append("}")
+                                .append("的预约已取消。");
+                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    }
+                    if ("会员卡开卡通知".equals(title)) {
+                        map.put(key, new WxTemplateDataVo("您的会员卡已成功开卡！", color));
+                    }
+                    if ("充值成功提醒".equals(title)) {
+                        sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}")
+                                .append("，您的会员卡充值成功！");
+                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    }
+                    if ("会员消费提醒".equals(title)) {
+                        sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}")
+                                .append("消费您的会员卡详情如下：");
+                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    }
+                    if ("缴费成功提醒".equals(title)) {
+                        map.put(key, new WxTemplateDataVo("您已成功缴费", color));
+                    }
+                    if ("次卡使用提醒".equals(title)) {
+                        sb = new StringBuilder("亲爱的用户，您有一张${").append(COUPON_NAME.getArgName()).append("}")
+                                .append("至今还未激活使用，不要忘了哦~");
+                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    }
+                    if ("授权到期提醒".equals(title)) {
+                        sb = new StringBuilder("你好，您的${").append(COUPON_NAME.getArgName()).append("}")
+                                .append("即将到期。存在项目次数未使用完");
+                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    }
+                    if ("授权到期提醒".equals(title)) {
+                        sb = new StringBuilder("你好，你的${").append(COUPON_NAME.getArgName()).append("}")
+                                .append("服务已到期");
+                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    }
+                }
+            }
+        }
     }
 
     private BenefitItemVo fixedItem(String itemName) {
@@ -391,5 +510,15 @@ public class WXService extends AbstractWxBaseApi {
         JSONObject userJson = JSONObject.parseObject(userInfoStr);
         JSONArray tagList = userJson.getJSONArray("tagid_list");
         wxFans.setTagidList(Joiner.on(",").join(tagList));
+    }
+
+    public static void main(String[] args) {
+        Map<String, String> map = new HashMap<>();
+        map.put("first", "张三");
+        map.put("keyword1", "16");
+        StrSubstitutor strSubstitutor = new StrSubstitutor(map);
+        String str3 = "{\"first\":{\"color\":\"\",\"value\":\"${first}\"},\"keyword1\":{\"color\":\"#00b9b2\",\"value\":\"${keyword0}\"},\"keyword2\":{\"color\":\"#00b9b2\",\"value\":\"${keyword1}\"},\"keyword3\":{\"color\":\"#00b9b2\",\"value\":\"${keyword2}\"},\"keyword4\":{\"color\":\"#00b9b2\",\"value\":\"${keyword3}\"},\"remark\":{\"color\":\"\",\"value\":\"${remark}\"}}";
+        String context3 = strSubstitutor.replace(str3);
+        System.out.println("context3: " + context3);
     }
 }

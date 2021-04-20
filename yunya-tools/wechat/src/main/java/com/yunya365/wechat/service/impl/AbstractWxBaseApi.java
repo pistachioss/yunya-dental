@@ -47,6 +47,18 @@ public abstract class AbstractWxBaseApi {
         return resultStr;
     }
 
+    public String listTemplate() {
+        String accessToken = getAccessToken();
+        String url = String.format(WXConstant.WX_TEMPLATE_URL, accessToken);
+        String resultStr = restTemplate.postForObject(url, String.class, String.class);
+        JSONObject jsonObject = JSONObject.parseObject(resultStr);
+        Integer errCode = jsonObject.getInteger("errcode");
+        if (errCode != null) {
+            throw new ClientServiceException(jsonObject.getString("errmsg"), errCode);
+        }
+        return jsonObject.getString("template_list");
+    }
+
     public WxKfOnlineVo listOnlineKf() {
         String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
         String accessToken = redisUtils.get(redisKey);

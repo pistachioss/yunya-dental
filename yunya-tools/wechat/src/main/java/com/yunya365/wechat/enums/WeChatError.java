@@ -12,7 +12,8 @@ public enum WeChatError implements RestError {
     DICT_NO_CONFIG(2, "亲属关系不存在，请联系管理员配置"),
     USER_IS_REGISTERED(3, "你已经是会员，请勿重复注册"),
     WX_FILE_URL_ERROR(4, "礼包图片获取异常"),
-    WX_USER_NOT_REGISTER(4, "您还没注册会员，请先注册！"),
+    WX_USER_NOT_REGISTER(5, "您还没注册会员，请先注册！"),
+    PATIENT_UNBIND_WX(6, "患者未绑定微信用户，推送失败"),
     ;
     private Integer code;
     private String value;

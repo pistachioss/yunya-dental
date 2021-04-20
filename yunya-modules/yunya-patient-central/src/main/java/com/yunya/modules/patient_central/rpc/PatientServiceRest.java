@@ -303,7 +303,7 @@ public class PatientServiceRest {
     }
 
     @ApiOperation("查询微信用户信息")
-    @RequestMapping (value = "/wx/patient/{patientId}", method = RequestMethod.POST)
+    @RequestMapping (value = "/wx/patient/{patientId}", method = RequestMethod.GET)
     public WxPatientVo getWxPatientInfo(@PathVariable("patientId") Integer patientId) {
         return wxFansBiz.getWxPatientInfo(patientId);
     }
@@ -320,6 +320,12 @@ public class PatientServiceRest {
     public MemberRelationVo findMemberBindingRelation(
             @RequestBody @Validated PatientMemberRelationQueryForm patientMemberRelationQueryForm) {
         return patientMemberInfoBiz.findMemberBindingRelation(patientMemberRelationQueryForm);
+    }
+
+    @ApiOperation("查询推送消息的绑定人")
+    @RequestMapping (value = "/wx/pusher/{patientId}", method = RequestMethod.GET)
+    public String getWxPushUser(@PathVariable("patientId") Integer patientId) {
+        return wxFansBiz.getPushWxUser(patientId);
     }
 
 }

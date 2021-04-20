@@ -58,6 +58,8 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
     private PatientMemberInfoBiz patientMemberInfoBiz;
     @Resource
     private PatientPrepaymentRelationBiz prepaymentRelationBiz;
+    @Resource
+    private WxFansBindMapper wxFansBindMapper;
 
 
     public PageInfo<WxFansVo> findList(WxFansQueryForm wxFansQueryForm) {
@@ -241,6 +243,22 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             }
         }
         return list;
+    }
+
+    public String getPushWxUser(Integer patientId) {
+        Example example = new Example(WxFans.class);
+        example.createCriteria().andEqualTo("patientId", patientId);
+        WxFans wxFans = mapper.selectOneByExample(example);
+        if (wxFans != null) {
+            return wxFans.getOpenId();
+        }
+        Example bindExample = new Example(WxFansBind.class);
+        bindExample.createCriteria().andEqualTo("patientId", patientId);
+        List<WxFansBind> list = wxFansBindMapper.selectByExample(bindExample);
+        if (CollectionUtils.isNotEmpty(list)) {
+            return list.get(0).getOpenId();
+        }
+        return null;
     }
 
     private String setAmount(BigDecimal principal, BigDecimal bonus) {
