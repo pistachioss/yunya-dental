@@ -1927,6 +1927,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public PageInfo<NonMonthCategoryVO> nonMonthCategoryList(BillCategoryIncomeQuery query) {
     List<NonMonthCategoryVO> vos = mapper.nonMonthCategoryList(query);
+    query.setPrivilegeDate(query.getQueryDate());
+    List<NonMonthCategoryVO> coupons = mapper.nonMonthCategoryCouponWorkloadList(query);
     List<NonMonthCategoryVO> res = new ArrayList<>();
     if (StringHelper.isNotEmpty(vos)) {
       Map<String, String> categoryMap = new HashMap<>(16);
@@ -1940,6 +1942,17 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                   vo.getItemType() + "," + vo.getCategoryId());
               categoryName.put(vo.getItemType() + "," + vo.getCategoryId(), vo.getCategoryName());
             });
+      }
+      Map<String, BigDecimal> couponMap = new HashMap<>(16);
+      if (StringHelper.isNotEmpty(coupons)) {
+        coupons.forEach(vo->{
+          String key = vo.getBillId() + "," +categoryMap.get(vo.getItemType() + "," + vo.getItemId());
+          BigDecimal couponWorkload = couponMap.get(key);
+          if (couponWorkload == null) {
+            couponWorkload = BigDecimal.ZERO;
+          }
+          couponMap.put(key, couponWorkload.add(vo.getCouponWorkload()));
+        });
       }
       Map<Integer, BigDecimal[]> billMap = new HashMap<>(16);
       for (NonMonthCategoryVO vo : vos) {
@@ -2038,6 +2051,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             vo.setAbbreviation(workload.getAbbreviation());
             vo.setBillDate(workload.getBillDate());
           }
+          BigDecimal couponWorkload = couponMap.get(billId + "," + itemType + "," + categoryId);
+          if (couponWorkload == null) {
+            couponWorkload = BigDecimal.ZERO;
+          }
+          vo.setCouponWorkload(couponWorkload);
           res.add(vo);
         }
       }

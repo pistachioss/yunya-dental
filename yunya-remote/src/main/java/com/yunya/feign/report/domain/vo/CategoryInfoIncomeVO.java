@@ -36,14 +36,14 @@ public class CategoryInfoIncomeVO implements Serializable {
   @Excel(name = "优惠金额合计", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("优惠金额合计")
   private BigDecimal totalOriginalAmount;
-  /** 实收金额合计 */
-  @Excel(name = "实收金额合计", scale = 2, cellType = Excel.ColumnType.NUMERIC)
-  @ApiModelProperty("实收金额合计")
-  private BigDecimal totalActualAmount;
   /** 优惠金额合计 */
   @Excel(name = "优惠金额合计", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("优惠金额合计")
   private BigDecimal totalDiscountAmount;
+  /** 实收金额合计 */
+  @Excel(name = "实收金额合计", scale = 2, cellType = Excel.ColumnType.NUMERIC)
+  @ApiModelProperty("实收金额合计")
+  private BigDecimal totalActualAmount;
   /** 当月免单金额*/
   @Excel(name = "当月免单金额", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("当月免单金额")
