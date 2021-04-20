@@ -57,12 +57,12 @@ public class NonMonthCategoryVO implements Serializable {
     @Excel(name = "免单时间")
     @ApiModelProperty("免单时间")
     private String freeDate;
-    /** 非当月补入工作量*/
-    @Excel(name = "非当月补入工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC)
-    @ApiModelProperty("非当月补入工作量")
-    private BigDecimal couponWorkload = BigDecimal.ZERO;
     /** 非当月免单金额分摊*/
     @Excel(name = "非当月免单金额分摊", scale = 2, cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("非当月免单金额分摊")
     private BigDecimal freeAmount = BigDecimal.ZERO;
+    /** 非本月账单项目补入工作量*/
+    @Excel(name = "非本月账单项目补入工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC)
+    @ApiModelProperty("非本月账单项目补入工作量")
+    private BigDecimal couponWorkload = BigDecimal.ZERO;
 }
