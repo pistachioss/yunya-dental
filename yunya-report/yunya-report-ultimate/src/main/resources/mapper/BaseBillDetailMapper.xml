@@ -3390,10 +3390,6 @@
                 and concat(IFNULL(bbd.billNum, '')) like concat('%', #{query.billNum}, '%')
             </if>
         </where>
-        group by bbd.org_id
-        <if test="column!=null and column!=''">
-            , ${column}
-        </if>
     </select>
 
     <!--给定月份中含免单支付的账单单id-->
