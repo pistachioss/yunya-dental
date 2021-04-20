@@ -58,6 +58,7 @@
       IFNULL(pbi.mobile,''))
       like concat(concat('%', rtrim(#{name})), '%')
     </where>
+    GROUP BY wf.id
   </select>
 
   <select id="findDetail" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO">
