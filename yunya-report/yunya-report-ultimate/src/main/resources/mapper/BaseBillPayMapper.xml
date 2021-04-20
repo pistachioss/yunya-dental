@@ -384,28 +384,15 @@
         SUM( bbp.received_amount )
         FROM
         base_bill_pay bbp
+        INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
         <where>
-            <if test="query.orgId != null">
-                and bbp.org_id = #{query.orgId}
-            </if>
             <if test="query.queryDate != null and query.queryDate != ''">
                 AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
+                AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) = #{query.queryDate}
             </if>
-            AND bbp.bill_id IN (
-            SELECT
-            bb.bill_id
-            FROM
-            base_bill bb
-            <where>
-                AND bb.bill_date IS NOT NULL
-                <if test="query.orgId != null">
-                    and bb.org_id = #{query.orgId}
-                </if>
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) = #{query.queryDate}
-                </if>
-            </where>
-            )
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
         </where>
     </select>
 
@@ -2016,5 +2003,22 @@
                 #{itemId}
             </foreach>
         </if>
+    </select>
+    <!-- 根据条件查询门诊当月免单收费金额 -->
+    <select id="selectCurrentMonthTotalFreePayAmount" resultType="java.math.BigDecimal">
+        select sum(principal_amount)
+        from base_bill_pay_detail bbpd
+        inner join base_bill_pay bbp on bbpd.bill_pay_id = bbp.bill_pay_id
+        inner join base_bill bb on bbp.bill_id = bb.bill_id
+        <where>
+            bbpd.account_item_id in (23, 26)
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and date_format(bbp.payee_date, '%Y-%m') = #{query.queryDate}
+                and date_format(bb.bill_date, '%Y-%m') = #{query.queryDate}
+            </if>
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+        </where>
     </select>
 </mapper>

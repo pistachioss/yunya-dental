@@ -72,8 +72,8 @@ public class BaseBillMapperTest {
   @Test
   public void find5() {
     StatementStatisticQuery query = new StatementStatisticQuery();
-    query.setOrgId(35);
-    query.setQueryDate("2020-12");
+    query.setOrgId(26);
+    query.setQueryDate("2021-03");
     CurrentMonthBillStatisticVO vo = billMapper.selectRealBillStatistic(query);
     System.out.println(vo);
   }
