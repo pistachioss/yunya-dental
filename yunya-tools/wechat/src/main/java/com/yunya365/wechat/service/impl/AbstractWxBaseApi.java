@@ -1,6 +1,7 @@
 package com.yunya365.wechat.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.yunya.feign.wechat.domain.model.WxTemplatePushModel;
 import com.yunya.feign.wechat.domain.vo.WxKfAllVo;
 import com.yunya.feign.wechat.domain.vo.WxKfListVo;
 import com.yunya.feign.wechat.domain.vo.WxKfOnlineVo;
@@ -53,10 +54,21 @@ public abstract class AbstractWxBaseApi {
         String resultStr = restTemplate.postForObject(url, String.class, String.class);
         JSONObject jsonObject = JSONObject.parseObject(resultStr);
         Integer errCode = jsonObject.getInteger("errcode");
-        if (errCode != null) {
+        if (errCode != null && errCode != 0) {
             throw new ClientServiceException(jsonObject.getString("errmsg"), errCode);
         }
         return jsonObject.getString("template_list");
+    }
+
+    public void pushTemplate(WxTemplatePushModel pushModel) {
+        String accessToken = getAccessToken();
+        String url = String.format(WXConstant.WX_SEND_TEMPLATE_MSG_URL, accessToken);
+        String resultStr = restTemplate.postForObject(url, pushModel, String.class);
+        JSONObject jsonObject = JSONObject.parseObject(resultStr);
+        Integer errCode = jsonObject.getInteger("errcode");
+        if (errCode != null && errCode != 0) {
+            throw new ClientServiceException(jsonObject.getString("errmsg"), errCode);
+        }
     }
 
     public WxKfOnlineVo listOnlineKf() {
@@ -98,24 +110,11 @@ public abstract class AbstractWxBaseApi {
         log.info("用户授权信息：{}", resultStr);
         JSONObject jsonObject = JSONObject.parseObject(resultStr);
         Integer errCode = jsonObject.getInteger("errcode");
-        if (errCode != null) {
+        if (errCode != null && errCode != 0) {
             String errMsg = jsonObject.getString("errmsg");
             throw new BaseException(errMsg, errCode);
         }
         return jsonObject.getString("openid");
-    }
-
-    public void pushMsg(String msgId) {
-        String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
-        String accessToken = redisUtils.get(redisKey);
-        String url = String.format(WXConstant.WX_SEND_TEMPLATE_MSG_URL, accessToken);
-        String resultStr = restTemplate.postForObject(url, String.class, String.class);
-        JSONObject jsonObject = JSONObject.parseObject(resultStr);
-        System.out.println(jsonObject.getString("subscribe"));
-        System.out.println(jsonObject.getString("openid"));
-        System.out.println(jsonObject.getString("nickname"));
-        System.out.println(jsonObject.getString("sex"));
-        log.info("会员信息：{}", resultStr);
     }
 
     private void checkWxResult(JSONObject jsonObject) {
@@ -123,7 +122,7 @@ public abstract class AbstractWxBaseApi {
             throw new ClientServiceException(WeChatError.USER_NOT_FOLLOW);
         }
         Integer errCode = jsonObject.getInteger("errcode");
-        if (errCode != null) {
+        if (errCode != null && errCode != 0) {
             if (errCode == 40003) {
                 throw new BaseException(WeChatError.USER_NOT_FOLLOW.getMessage(), errCode);
             }

@@ -1,7 +1,9 @@
 package com.yunya365.wechat.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -26,6 +28,7 @@ import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.wechat.domain.model.WxRegisterModel;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.feign.wechat.domain.model.WxTemplatePushModel;
 import com.yunya.feign.wechat.domain.vo.*;
 import com.yunya.framework.common.constant.WXConstant;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -42,6 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import tk.mybatis.mapper.entity.Example;
@@ -81,6 +85,8 @@ public class WXService extends AbstractWxBaseApi {
     private RemoteReportServiceFeign reportServiceFeign;
     @Resource
     private WxMsgTemplatesMapper templatesMapper;
+    @Value("${mp.domain}")
+    private String mpDomain;
 
     public WxAuthVo getAuthInfo(String code) {
         WxAuthVo vo = new WxAuthVo();
@@ -229,17 +235,32 @@ public class WXService extends AbstractWxBaseApi {
         Map<String, Object> paramMap = msgModel.getParamMap();
         Integer patientId = msgModel.getPatientId();
         String openId = patientFeign.getWxPushUser(patientId);
+        log.info("模板推送用户id：{}", openId);
         if (StringUtils.isBlank(openId)) {
             throw new ClientServiceException(WeChatError.PATIENT_UNBIND_WX);
         }
-
+        //获取模板信息
+        WxMsgTemplates template = this.getTemplate(msgModel.getTemplateEnum().getTitle());
+        if (template != null) {
+            StrSubstitutor strSubstitutor = new StrSubstitutor(paramMap);
+            String context = strSubstitutor.replace(template.getContent());
+            paramMap = JSON.parseObject(context, new TypeReference<Map<String, Object>>(){});
+            WxTemplatePushModel pushModel = WxTemplatePushModel.builder()
+                    .touser(openId)
+                    .template_id(template.getTemplateId())
+                    .data(paramMap).build();
+            if ("预约确认通知".equals(template.getTitle())) {
+                pushModel.setUrl(mpDomain + "/mobile/#/registerBtn");
+            }
+            log.info("模板推送消息：{}", pushModel);
+            super.pushTemplate(pushModel);
+        }
     }
 
-    private String getTemplate(String title) {
+    private WxMsgTemplates getTemplate(String title) {
         Example example = new Example(WxMsgTemplates.class);
         example.createCriteria().andEqualTo("title", title);
-        WxMsgTemplates wxMsgTemplates = templatesMapper.selectOneByExample(example);
-        return wxMsgTemplates.getTemplateId();
+        return templatesMapper.selectOneByExample(example);
     }
 
 

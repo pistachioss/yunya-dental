@@ -199,4 +199,9 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     public MemberRelationVo findMemberBindingRelation(PatientMemberRelationQueryForm patientMemberRelationQueryForm) {
         return null;
     }
+
+    @Override
+    public String getWxPushUser(Integer patientId) {
+        return null;
+    }
 }

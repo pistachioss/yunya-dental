@@ -1,8 +1,6 @@
 package com.yunya365.wechat.rpc;
 
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
-import com.yunya.feign.wechat.domain.vo.WxMemberRelationVO;
-import com.yunya.framework.common.model.ResponseResult;
 import com.yunya365.wechat.service.impl.WXService;
 import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,9 +22,8 @@ public class WxPushRpc {
     private WXService wxService;
 
     @PostMapping(value = "/wxVip/template/msg/push")
-    public ResponseResult<WxMemberRelationVO> memberRelation(@RequestBody WxTemplateMsgModel msgModel) {
+    public void memberRelation(@RequestBody WxTemplateMsgModel msgModel) {
         wxService.pushTemplateMsg(msgModel);
-        return null;
     }
 
 }

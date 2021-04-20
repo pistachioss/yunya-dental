@@ -20,7 +20,7 @@ public enum TemplateEnum {
     TemplateEnum(String templateId) {
         this.title = templateId;
     }
-    public String getTemplateId() {
+    public String getTitle() {
         return title;
     }
 }

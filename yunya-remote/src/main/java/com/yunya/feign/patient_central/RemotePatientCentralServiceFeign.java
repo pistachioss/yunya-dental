@@ -299,6 +299,6 @@ import java.util.*;
           @RequestBody @Validated PatientMemberRelationQueryForm patientMemberRelationQueryForm);
 
   @ApiOperation("查询推送消息的绑定人")
-  @RequestMapping (value = "/wx/pusher/{patientId}", method = RequestMethod.GET)
+  @RequestMapping (value = "/api/wx/pusher/{patientId}", method = RequestMethod.GET)
   String getWxPushUser(@PathVariable("patientId") Integer patientId);
 }
