@@ -16,11 +16,9 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBillDetail;
+import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BaseOrganization;
-import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
-import com.yunya.report.ultimate.mapper.BaseBillMapper;
-import com.yunya.report.ultimate.mapper.BaseBillPayDetailMapper;
-import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
+import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,6 +44,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
 
   /** 组织 */
   @Autowired private BaseOrganizationMapper organizationMapper;
+  /** 员工 */
+  @Autowired private BaseEmployeeMapper employeeMapper;
   /** 账单 */
   @Autowired private BaseBillMapper baseBillMapper;
   /** 收费记录 */
@@ -1430,7 +1430,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         new ExcelUtil<>(PersonalBillItemReceivedWorkloadDetailVO.class);
     List<PersonalBillItemReceivedWorkloadDetailVO> resultList =
         mapper.selectPersonalBillItemReceivedWorkloadDetail(query);
-    excelUtil.exportExcel(response, resultList, "个人收费项目已收工作量明细列表");
+    String fileName = "个人收费项目已收工作量明细列表";
+    BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+    if (employee != null) {
+      fileName = fileName + "-" + employee.getEmployeeName();
+    }
+    excelUtil.exportExcel(response, resultList, "个人收费项目已收工作量明细列表", fileName);
   }
 
   /**
@@ -1461,7 +1466,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         new ExcelUtil<>(PersonalBillItemFreeWorkloadDetailVO.class);
     List<PersonalBillItemFreeWorkloadDetailVO> resultList =
         mapper.selectPersonalBillItemFreeWorkloadDetail(query);
-    excelUtil.exportExcel(response, resultList, "个人收费项目免单工作量明细列表");
+    String fileName = "个人收费项目已收工作量明细列表";
+    BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+    if (employee != null) {
+      fileName = fileName + "-" + employee.getEmployeeName();
+    }
+    excelUtil.exportExcel(response, resultList, "个人收费项目免单工作量明细列表", fileName);
   }
 
   /**
@@ -1492,7 +1502,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         new ExcelUtil<>(PersonalBillItemSupplyWorkloadDetailVO.class);
     List<PersonalBillItemSupplyWorkloadDetailVO> resultList =
         mapper.selectPersonalBillItemSupplyWorkloadDetail(query);
-    excelUtil.exportExcel(response, resultList, "个人收费项目补入工作量明细列表");
+    String fileName = "个人收费项目已收工作量明细列表";
+    BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+    if (employee != null) {
+      fileName = fileName + "-" + employee.getEmployeeName();
+    }
+    excelUtil.exportExcel(response, resultList, "个人收费项目补入工作量明细列表", fileName);
   }
 
   /**
@@ -1523,6 +1538,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         new ExcelUtil<>(PersonalBillItemRefundWorkloadDetailVO.class);
     List<PersonalBillItemRefundWorkloadDetailVO> resultList =
         mapper.selectPersonalBillItemRefundWorkloadDetail(query);
-    excelUtil.exportExcel(response, resultList, "个人收费项目退费工作量明细列表");
+    String fileName = "个人收费项目已收工作量明细列表";
+    BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+    if (employee != null) {
+      fileName = fileName + "-" + employee.getEmployeeName();
+    }
+    excelUtil.exportExcel(response, resultList, "个人收费项目退费工作量明细列表", fileName);
   }
 }
