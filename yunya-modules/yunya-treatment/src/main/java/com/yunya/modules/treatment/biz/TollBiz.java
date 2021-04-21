@@ -1273,7 +1273,7 @@ public class TollBiz {
       billRecordResult.setPrivilegeType(discountType);
       if (0 != discountType && billRecordResult.getPrivilegeDate() == null) {
         billRecordResult.setFirstPrivilege(false);
-        billRecordResult.setPrivilegeDate(new Date(System.currentTimeMillis()));
+        billRecordResult.setPrivilegeDate(new Date(currentTimeMillis));
         billRecordResult.setPrivilegeOrgId(orgId);
       }
       // 设置优惠总额
