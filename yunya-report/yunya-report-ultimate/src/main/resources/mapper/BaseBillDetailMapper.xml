@@ -3285,7 +3285,7 @@
         bbd.patientId,
         bbd.patientName,
         bbd.mobile,
-        bbd.itemReveivedWorkload
+        bbd.itemReceivedWorkload
         from (
         select bbd.billId,
         date_format(bbd.billDate, '%Y-%m-%d %H:%m') as billDate,
@@ -3298,7 +3298,7 @@
         bbd.patientName,
         bbd.pinyinName,
         bbd.mobile,
-        bbd.itemReveivedWorkload
+        bbd.itemReceivedWorkload
         from (
         select bbp.billId,
         bbd.billDate,
@@ -3310,7 +3310,7 @@
         bbd.patientName,
         bbd.pinyinName,
         bbd.mobile,
-        convert(bbd.itemWorkload / bbd.actualAmount * bbp.receivedAmount, decimal(19, 2)) as itemReveivedWorkload
+        convert(bbd.itemWorkload / bbd.actualAmount * bbp.receivedAmount, decimal(19, 2)) as itemReceivedWorkload
         from (
         select bbp.bill_id as billId,
         sum(bbp.received_amount) as receivedAmount
