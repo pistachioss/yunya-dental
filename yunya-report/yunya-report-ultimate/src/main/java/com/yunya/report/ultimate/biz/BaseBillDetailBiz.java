@@ -18,6 +18,10 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
+import com.yunya.models.report.BaseBillDetail;
+import com.yunya.models.report.BaseEmployee;
+import com.yunya.models.report.BaseOrganization;
+import com.yunya.report.ultimate.mapper.*;
 import com.yunya.models.report.*;
 import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
@@ -47,6 +51,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
 
   /** 组织 */
   @Autowired private BaseOrganizationMapper organizationMapper;
+  /** 员工 */
+  @Autowired private BaseEmployeeMapper employeeMapper;
   /** 账单 */
   @Autowired private BaseBillMapper baseBillMapper;
   /** 收费记录 */
@@ -1305,17 +1311,17 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setOrgIds(orgIds);
     List<String> curMonthList = DateUtil.sliceUpDateRange(startDate, endDate);
     Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
-    //同比：去年+查询月份范围
+    // 同比：去年+查询月份范围
     String preYear = DateUtil.preYear(year);
     String chainSMonth = preYear + "-" + sMonth;
     String chainEMonth = preYear + "-" + eMonth;
     String minMonth = chainSMonth;
     List<String> chainMonthList = DateUtil.sliceUpDateRange(chainSMonth, chainEMonth);
 
-    //环比：查询条件的开始月份 + 查询月份范围的跨度值
-    int range = 1; //默认1个月
+    // 环比：查询条件的开始月份 + 查询月份范围的跨度值
+    int range = 1; // 默认1个月
     if (!startDate.equals(endDate)) {
-      range += Integer.parseInt(eMonth)-Integer.parseInt(sMonth);
+      range += Integer.parseInt(eMonth) - Integer.parseInt(sMonth);
     }
     String preSMonth = DateUtil.preMonth(startDate, range);
     String preEMonth = DateUtil.preMonth(endDate, range);
@@ -1350,11 +1356,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       init(goals, startDate, endDate, "目标值");
       JSONObject completed = new JSONObject();
       init(completed, startDate, endDate, "完成度");
-      JSONObject preDiff = new JSONObject();//环比
+      JSONObject preDiff = new JSONObject(); // 环比
       init(preDiff, preSMonth, preEMonth, "环比值");
-      JSONObject chainDiff = new JSONObject();//同比
+      JSONObject chainDiff = new JSONObject(); // 同比
       init(chainDiff, chainSMonth, chainEMonth, "同比值");
-      JSONObject curYear = new JSONObject();//年度总工作量
+      JSONObject curYear = new JSONObject(); // 年度总工作量
       init(curYear, year, year, "年度总工作量");
       Map<String, String> map = new LinkedHashMap<>();
       map.put("date", "时间");
@@ -1444,22 +1450,22 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return organizationMapper.selectOrganizationList(query);
   }
 
-    /**
-     * 初始化
-     *
-     * @param object
-     * @param sMonth
-     * @param eMonth
-     * @param value
-     */
-    private void init(JSONObject object, String sMonth, String eMonth, String value) {
-      String month = sMonth.replaceAll("-",".");
-      if (!sMonth.equals(eMonth)) {
-        month = month + "-" + eMonth.replaceAll("-",".");
-      }
-      object.put("date", month);
-      object.put("name", value);
+  /**
+   * 初始化
+   *
+   * @param object
+   * @param sMonth
+   * @param eMonth
+   * @param value
+   */
+  private void init(JSONObject object, String sMonth, String eMonth, String value) {
+    String month = sMonth.replaceAll("-", ".");
+    if (!sMonth.equals(eMonth)) {
+      month = month + "-" + eMonth.replaceAll("-", ".");
     }
+    object.put("date", month);
+    object.put("name", value);
+  }
 
   /**
    * 门诊业绩导出
@@ -1945,14 +1951,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       }
       Map<String, BigDecimal> couponMap = new HashMap<>(16);
       if (StringHelper.isNotEmpty(coupons)) {
-        coupons.forEach(vo->{
-          String key = vo.getBillId() + "," +categoryMap.get(vo.getItemType() + "," + vo.getItemId());
-          BigDecimal couponWorkload = couponMap.get(key);
-          if (couponWorkload == null) {
-            couponWorkload = BigDecimal.ZERO;
-          }
-          couponMap.put(key, couponWorkload.add(vo.getCouponWorkload()));
-        });
+        coupons.forEach(
+            vo -> {
+              String key =
+                  vo.getBillId() + "," + categoryMap.get(vo.getItemType() + "," + vo.getItemId());
+              BigDecimal couponWorkload = couponMap.get(key);
+              if (couponWorkload == null) {
+                couponWorkload = BigDecimal.ZERO;
+              }
+              couponMap.put(key, couponWorkload.add(vo.getCouponWorkload()));
+            });
       }
       Map<Integer, BigDecimal[]> billMap = new HashMap<>(16);
       for (NonMonthCategoryVO vo : vos) {
@@ -2113,7 +2121,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         new ExcelUtil<>(PersonalBillItemReceivedWorkloadDetailVO.class);
     List<PersonalBillItemReceivedWorkloadDetailVO> resultList =
         mapper.selectPersonalBillItemReceivedWorkloadDetail(query);
-    excelUtil.exportExcel(response, resultList, "个人收费项目已收工作量明细列表");
+    String fileName = "个人收费项目已收工作量明细列表";
+    BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+    if (employee != null) {
+      fileName = fileName + "-" + employee.getEmployeeName();
+    }
+    excelUtil.exportExcel(response, resultList, "个人收费项目已收工作量明细列表", fileName);
   }
 
   /**
@@ -2144,7 +2157,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         new ExcelUtil<>(PersonalBillItemFreeWorkloadDetailVO.class);
     List<PersonalBillItemFreeWorkloadDetailVO> resultList =
         mapper.selectPersonalBillItemFreeWorkloadDetail(query);
-    excelUtil.exportExcel(response, resultList, "个人收费项目免单工作量明细列表");
+    String fileName = "个人收费项目已收工作量明细列表";
+    BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+    if (employee != null) {
+      fileName = fileName + "-" + employee.getEmployeeName();
+    }
+    excelUtil.exportExcel(response, resultList, "个人收费项目免单工作量明细列表", fileName);
   }
 
   /**
@@ -2175,7 +2193,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         new ExcelUtil<>(PersonalBillItemSupplyWorkloadDetailVO.class);
     List<PersonalBillItemSupplyWorkloadDetailVO> resultList =
         mapper.selectPersonalBillItemSupplyWorkloadDetail(query);
-    excelUtil.exportExcel(response, resultList, "个人收费项目补入工作量明细列表");
+    String fileName = "个人收费项目已收工作量明细列表";
+    BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+    if (employee != null) {
+      fileName = fileName + "-" + employee.getEmployeeName();
+    }
+    excelUtil.exportExcel(response, resultList, "个人收费项目补入工作量明细列表", fileName);
   }
 
   /**
@@ -2206,7 +2229,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         new ExcelUtil<>(PersonalBillItemRefundWorkloadDetailVO.class);
     List<PersonalBillItemRefundWorkloadDetailVO> resultList =
         mapper.selectPersonalBillItemRefundWorkloadDetail(query);
-    excelUtil.exportExcel(response, resultList, "个人收费项目退费工作量明细列表");
+    String fileName = "个人收费项目已收工作量明细列表";
+    BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+    if (employee != null) {
+      fileName = fileName + "-" + employee.getEmployeeName();
+    }
+    excelUtil.exportExcel(response, resultList, "个人收费项目退费工作量明细列表", fileName);
   }
 
   /**
