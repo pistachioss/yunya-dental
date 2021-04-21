@@ -873,13 +873,14 @@
             bti.category_name as categoryName,
             bbd.discount_amount as discountAmount,
             bbd.price * bbd.quantity as totalOriginalAmount,
-            bbt.supplementWorkload AS supplementWorkload,
+--             bbt.supplementWorkload AS supplementWorkload,
+            bbd.coupon_workload AS supplementWorkload,
             date_format(bb.bill_date, '%Y-%m') as billDate
             from base_bill_detail bbd
             left join base_tariff_info bti on bbd.item_id = bti.item_id
             and bbd.item_type = bti.item_type
             left join base_bill bb on bbd.bill_id = bb.bill_id
-            left join (
+            <!--left join (
                 select bbt.order_detail_id,
                 sum(bci.workload_load) as supplementWorkload
                 from base_benefit bbt
@@ -890,7 +891,7 @@
                     </if>
                 </where>
                 group by bbt.order_detail_id
-            ) bbt on bbd.bill_detail_id = bbt.order_detail_id
+            ) bbt on bbd.bill_detail_id = bbt.order_detail_id-->
             order by bti.item_type, bti.category_id
         ) bdp
         <where>
@@ -3330,33 +3331,6 @@
         bbd.item_type AS itemType,
         SUM(bbd.quantity*bbd.price) AS billAmount,
         SUM(bbd.quantity*bbd.price-bbd.discount_amount) AS actualAmount,
-        bbd.bill_id AS billId
-        from base_bill_detail bbd
-        <where>
-            <if test="query.orgId != null">
-                and bbd.org_id = #{query.orgId}
-            </if>
-            AND EXISTS (
-                select bb.bill_id from base_bill bb where bbd.bill_id=bb.bill_id
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;&gt; #{query.queryDate}
-                </if>
-            )
-            and EXISTS (
-                select bbp.bill_id from base_bill_pay bbp
-                where bbp.bill_id=bbd.bill_id
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.queryDate}
-                </if>
-            )
-        </where>
-        group by bbd.item_id,bbd.item_type,bbd.bill_id
-    </select>
-
-    <select id="nonMonthCategoryCouponWorkloadList" resultType="com.yunya.feign.report.domain.vo.NonMonthCategoryVO">
-        select
-        bbd.item_id AS itemId,
-        bbd.item_type AS itemType,
         SUM(bbd.coupon_workload) AS couponWorkload,
         bbd.bill_id AS billId
         from base_bill_detail bbd
@@ -3364,16 +3338,37 @@
             <if test="query.orgId != null">
                 and bbd.org_id = #{query.orgId}
             </if>
-            AND EXISTS (
-            select bb.bill_id from base_bill bb where bbd.bill_id=bb.bill_id
+            <if test="billIds!=null and billIds.size()>0">
+                and bbd.bill_id in
+                <foreach collection="billIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by bbd.item_id,bbd.item_type,bbd.bill_id
+    </select>
+
+    <select id="findBillIdsByNonMonth" resultType="java.lang.Integer">
+        SELECT
+            DISTINCT bb.bill_id
+        FROM base_bill bb
+        <where>
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
             <if test="query.queryDate != null and query.queryDate != ''">
                 and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;&gt; #{query.queryDate}
             </if>
             <if test="query.privilegeDate!=null and query.privilegeDate!=''">
                 and DATE_FORMAT(bb.privilege_date, '%Y-%m') = #{query.privilegeDate}
             </if>
-            )
+            <if test="query.privilegeDate==null or query.privilegeDate==''">
+                and EXISTS (
+                    select bbp.bill_id from base_bill_pay bbp
+                    where bbp.bill_id=bb.bill_id AND DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.queryDate}
+                    group by bill_id
+                )
+            </if>
         </where>
-        group by bbd.item_id,bbd.item_type,bbd.bill_id
     </select>
 </mapper>

@@ -1360,9 +1360,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return
    */
   public PageInfo<NonMonthCategoryVO> nonMonthCategoryList(BillCategoryIncomeQuery query) {
-    List<NonMonthCategoryVO> vos = mapper.nonMonthCategoryList(query);
-    query.setPrivilegeDate(query.getQueryDate());
-    List<NonMonthCategoryVO> coupons = mapper.nonMonthCategoryCouponWorkloadList(query);
+    List<Integer> ids = mapper.findBillIdsByNonMonth(query);
+    List<NonMonthCategoryVO> vos = mapper.nonMonthCategoryList(query, ids);
     List<NonMonthCategoryVO> res = new ArrayList<>();
     if (StringHelper.isNotEmpty(vos)) {
       Map<String, String> categoryMap = new HashMap<>(16);
@@ -1375,15 +1374,20 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         });
       }
       Map<String, BigDecimal> couponMap = new HashMap<>(16);
-      if (StringHelper.isNotEmpty(coupons)) {
-        coupons.forEach(vo->{
-          String key = vo.getBillId() + "," +categoryMap.get(vo.getItemType() + "," + vo.getItemId());
-          BigDecimal couponWorkload = couponMap.get(key);
-          if (couponWorkload == null) {
-            couponWorkload = BigDecimal.ZERO;
-          }
-          couponMap.put(key, couponWorkload.add(vo.getCouponWorkload()));
-        });
+      query.setPrivilegeDate(query.getQueryDate());
+      ids = mapper.findBillIdsByNonMonth(query);
+      if (StringHelper.isNotEmpty(ids)) {
+        List<NonMonthCategoryVO> coupons = mapper.nonMonthCategoryList(query, ids);
+        if (StringHelper.isNotEmpty(coupons)) {
+          coupons.forEach(vo -> {
+            String key = vo.getBillId() + "," + categoryMap.get(vo.getItemType() + "," + vo.getItemId());
+            BigDecimal couponWorkload = couponMap.get(key);
+            if (couponWorkload == null) {
+              couponWorkload = BigDecimal.ZERO;
+            }
+            couponMap.put(key, couponWorkload.add(vo.getCouponWorkload()));
+          });
+        }
       }
       Map<Integer, BigDecimal[]> billMap = new HashMap<>(16);
       for (NonMonthCategoryVO vo : vos) {
