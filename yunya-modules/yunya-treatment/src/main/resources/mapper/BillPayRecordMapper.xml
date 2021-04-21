@@ -31,4 +31,59 @@
             bpr.inservice = 1 and bpr.bill_record_id = #{billRecordId}
             ORDER BY bpr.crt_time LIMIT 1
     </select>
+    <!-- 根据条件导出门诊本月收欠费（使用优惠）账单列表 -->
+    <select id="selectCurrentMonthBillCollectionDebtList"
+            resultType="com.yunya.feign.report.domain.vo.CurrentMonthBillCollectionDebtVO">
+        SELECT bb.id as billId,
+        DATE_FORMAT(bb.privilege_date, '%Y-%m-%d') AS collectDebtDate,
+        bb.bill_number as billNum,
+        DATE_FORMAT(bb.privilege_date, '%Y-%m') as billDate,
+        bb.patient_id AS patientId,
+        btp.dentist_id AS regDentistId,
+        bbp.crt_id as payeeId
+        FROM bill_record bb
+        left join treatment_record btp on bb.treatment_record_id = btp.id
+        left join bill_pay_record bbp on bb.id = bbp.bill_record_id and
+        date_format(bb.privilege_date, '%Y-%m-%d %H:%m') =
+        date_format(bbp.crt_time, '%Y-%m-%d %H:%m')
+        <where>
+            and first_privilege = 0
+            <if test="query.orgId != null">
+                AND bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.currentMonth != null and query.currentMonth != ''">
+                AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) = #{query.currentMonth}
+            </if>
+        </where>
+        order by bb.privilege_date
+    </select>
+    <!-- 根据条件查询本门诊本月收费记录列表 -->
+    <select id="selectCurrentMonthBillPayRecord"
+            resultType="com.yunya.feign.report.domain.vo.CurrentMonthBillPayRecordVO">
+        select bpr.id AS billPayId,
+        DATE_FORMAT(bpr.crt_time, '%Y-%m-%d') AS payeeDate,
+        DATE_FORMAT(br.crt_time, '%Y-%m-%d') AS billDate,
+        br.bill_number AS billNum,
+        bpr.patient_id AS patientId,
+        tr.dentist_id as regDentistId,
+        br.receivable_amount AS orderAmount,
+        br.privilege_amount AS privilegeAmount,
+        br.actual_receivable_amount AS actualAmount,
+        bpr.received_amount AS receivedAmount,
+        bpr.still_owe_amount AS stillOweAmount,
+        br.debt_amount AS billDebtAmount,
+        bpr.crt_id AS payeeId
+        from bill_pay_record bpr
+        left join bill_record br on bpr.bill_record_id = br.id
+        left join treatment_record tr on bpr.treatment_record_id = tr.id
+        <where>
+            <if test="query.orgId != null">
+                AND bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.currentMonth != null and query.currentMonth != ''">
+                AND date_format(br.crt_time, '%Y-%m') = #{query.currentMonth}
+            </if>
+        </where>
+        order by bpr.crt_time
+    </select>
 </mapper>
