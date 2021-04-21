@@ -200,7 +200,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       HttpServletResponse response, PatientArrearsCallForQuery query) throws IOException {
     List<PatientArrearsCallForVO> resultList = mapper.selectPatientArrearsList(query);
     ExcelUtil<PatientArrearsCallForVO> excelUtil = new ExcelUtil<>(PatientArrearsCallForVO.class);
-    excelUtil.exportExcel(response, resultList, "患者催缴欠费列表");
+    excelUtil.exportExcel(response, resultList, "患者催缴欠费列表", "患者催缴欠费列表");
   }
 
   /**
@@ -254,7 +254,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       HttpServletResponse response, DentistArrearsDetailQuery query) throws IOException {
     List<DentistArrearsDetailVO> resultList = mapper.selectDentistArrearsDetailList(query);
     ExcelUtil<DentistArrearsDetailVO> excelUtil = new ExcelUtil<>(DentistArrearsDetailVO.class);
-    excelUtil.exportExcel(response, resultList, "医生所属欠费明细列表");
+    excelUtil.exportExcel(response, resultList, "医生所属欠费明细列表", "医生所属欠费明细列表");
   }
 
   /**
@@ -355,8 +355,10 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   private static BigDecimal compute(BigDecimal price, BigDecimal amount) {
     BigDecimal res = BigDecimal.ZERO;
     BigDecimal[] result = amount.divideAndRemainder(price);
-    BigDecimal quotient = result[0]; // 商
-    BigDecimal remainder = result[1]; // 余数
+    // 商
+    BigDecimal quotient = result[0];
+    // 余数
+    BigDecimal remainder = result[1];
     if (quotient.compareTo(res) == 0 && remainder.compareTo(res) == 0) {
       return res;
     } else {
@@ -418,9 +420,14 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
                 : "非当月账单");
       }
     }
+    String fileName = "当月收欠费（使用优惠）账单记录";
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    if (organization != null) {
+      fileName = organization.getAbbreviation() + query.getCurrentMonth() + fileName;
+    }
     ExcelUtil<CurrentMonthBillCollectionDebtVO> excelUtil =
         new ExcelUtil<>(CurrentMonthBillCollectionDebtVO.class);
-    excelUtil.exportExcel(response, resultList, "门诊当月收欠费（使用优惠）账单记录");
+    excelUtil.exportExcel(response, resultList, "门诊当月收欠费（使用优惠）账单记录", fileName);
   }
 
   /**
