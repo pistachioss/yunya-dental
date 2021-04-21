@@ -390,9 +390,7 @@ public class SystemServiceRest {
    */
   @RequestMapping(value = "/employee/{userId}", method = RequestMethod.GET)
   public SysEmployee findSysEmployeeById(@PathVariable(value = "userId") Integer userId) {
-    SysEmployee employee = new SysEmployee();
-    employee.setUserId(userId);
-    return sysEmployeeBiz.selectOne(employee);
+    return sysEmployeeBiz.findSysEmployeeById(userId);
   }
 
   /**

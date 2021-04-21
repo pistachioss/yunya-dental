@@ -11,7 +11,6 @@ import com.yunya.feign.report.domain.vo.CurrentMonthBillCollectionDebtVO;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillPayRecordVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
-import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -258,7 +257,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
           vo.setPatientMobile(patientBaseInfo.getMobile());
         }
         Integer payeeId = vo.getPayeeId();
-        SysUserInfoDetail payer = systemServiceFeign.findSysUserEmployeeInfoByUserId(payeeId);
+        SysEmployee payer = systemServiceFeign.findSysEmployeeById(payeeId);
         if (payer != null) {
           vo.setPayeeName(payer.getName());
         }
