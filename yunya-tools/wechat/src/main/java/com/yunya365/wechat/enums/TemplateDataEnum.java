@@ -9,6 +9,7 @@ public enum TemplateDataEnum {
     PATIENT_NAME("patientName"),
     APPOINT_DATE("appointDate"),
     COUPON_NAME("couponName"),
+    LINK_MOBILE("linkMobile"),
     ;
 
     private String argName;

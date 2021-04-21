@@ -244,7 +244,8 @@ public class WXService extends AbstractWxBaseApi {
         if (template != null) {
             StrSubstitutor strSubstitutor = new StrSubstitutor(paramMap);
             String context = strSubstitutor.replace(template.getContent());
-            paramMap = JSON.parseObject(context, new TypeReference<Map<String, Object>>(){});
+            paramMap = JSON.parseObject(context, new TypeReference<Map<String, Object>>() {
+            });
             WxTemplatePushModel pushModel = WxTemplatePushModel.builder()
                     .touser(openId)
                     .template_id(template.getTemplateId())
@@ -262,7 +263,6 @@ public class WXService extends AbstractWxBaseApi {
         example.createCriteria().andEqualTo("title", title);
         return templatesMapper.selectOneByExample(example);
     }
-
 
     private String filterAndGenData(WxMsgTemplates wxMsgTemplates) {
         Map<String, WxTemplateDataVo> map = Maps.newLinkedHashMap();
@@ -287,66 +287,87 @@ public class WXService extends AbstractWxBaseApi {
 
     private void assembleTemplate(int count, Map<String, WxTemplateDataVo> map, String key, String color, String title) {
         StringBuilder sb = null;
-        for (int i = 0; i < count; i++) {
+        for (int i = 1; i <= count; i++) {
             if ("keyword".equals(key)) {
                 sb = new StringBuilder("${").append(key);
-                map.put(key + (i + 1), new WxTemplateDataVo(sb.append(i).append("}").toString(), color));
+                map.put(key + i, new WxTemplateDataVo(sb.append(i).append("}").toString(), color));
             } else {
                 map.put(key, new WxTemplateDataVo("${" + key + "}", color));
-                if ("first".equals(key)) {
-                    if ("预约确认通知".equals(title)) {
-                        sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}")
-                                .append("，您的预约时间是：").append("${").append(APPOINT_DATE.getArgName()).append("}")
-                                .append("，是否确认按时就诊，请点击【详情】 进行查看，谢谢！");
-                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                if ("预约确认通知".equals(title)) {
+                    sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}")
+                            .append("，您的预约时间是：").append("${").append(APPOINT_DATE.getArgName()).append("}")
+                            .append("，是否确认按时就诊，请点击【详情】 进行查看，谢谢！");
+                    map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    this.assembleRemark(key, color, map);
+                }
+                if ("预约成功提醒".equals(title)) {
+                    sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}，");
+                    map.put(key, new WxTemplateDataVo(sb.append("您已预约成功").toString(), color));
+
+                    this.assembleRemark(key, color, map);
+                }
+                if ("预约变更成功通知".equals(title)) {
+                    sb = new StringBuilder("您好，您原定${").append(APPOINT_DATE.getArgName()).append("}")
+                            .append("的预约已变更为：");
+                    map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    this.assembleRemark(key, color, map);
+                }
+                if ("预约取消提醒".equals(title)) {
+                    sb = new StringBuilder("您好，您原定${").append(APPOINT_DATE.getArgName()).append("}")
+                            .append("的预约已取消。");
+                    map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    this.assembleRemark(key, color, map);
+                }
+                if ("会员卡开卡通知".equals(title)) {
+                    map.put(key, new WxTemplateDataVo("您的会员卡已成功开卡！", color));
+                    if ("remark".equals(key)) {
+                        map.put(key, new WxTemplateDataVo("开卡后将开始计算有效时长，请悉知！", color));
                     }
-                    if ("预约成功提醒".equals(title)) {
-                        sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}，");
-                        map.put(key, new WxTemplateDataVo(sb.append("您已预约成功").toString(), color));
+                }
+                if ("充值成功提醒".equals(title)) {
+                    sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}")
+                            .append("，您的会员卡充值成功！");
+                    map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                }
+                if ("会员消费提醒".equals(title)) {
+                    sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}")
+                            .append("消费您的会员卡详情如下：");
+                    map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                }
+                if ("缴费成功提醒".equals(title)) {
+                    map.put(key, new WxTemplateDataVo("您已成功缴费", color));
+                }
+                if ("次卡使用提醒".equals(title)) {
+                    sb = new StringBuilder("亲爱的用户，您有一张${").append(COUPON_NAME.getArgName()).append("}")
+                            .append("至今还未激活使用，不要忘了哦~");
+                    map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    if ("remark".equals(key)) {
+                        map.put(key, new WxTemplateDataVo("赶紧用起来吧！", color));
                     }
-                    if ("预约变更成功通知".equals(title)) {
-                        sb = new StringBuilder("您好，您原定${").append(APPOINT_DATE.getArgName()).append("}")
-                                .append("的预约已变更为：");
-                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                }
+                if ("授权到期提醒".equals(title)) {
+                    sb = new StringBuilder("你好，您的${").append(COUPON_NAME.getArgName()).append("}")
+                            .append("即将到期。存在项目次数未使用完");
+                    map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    if ("remark".equals(key)) {
+                        map.put(key, new WxTemplateDataVo("请及时使用，避免过期作废", color));
                     }
-                    if ("预约取消提醒".equals(title)) {
-                        sb = new StringBuilder("您好，您原定${").append(APPOINT_DATE.getArgName()).append("}")
-                                .append("的预约已取消。");
-                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
-                    }
-                    if ("会员卡开卡通知".equals(title)) {
-                        map.put(key, new WxTemplateDataVo("您的会员卡已成功开卡！", color));
-                    }
-                    if ("充值成功提醒".equals(title)) {
-                        sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}")
-                                .append("，您的会员卡充值成功！");
-                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
-                    }
-                    if ("会员消费提醒".equals(title)) {
-                        sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}")
-                                .append("消费您的会员卡详情如下：");
-                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
-                    }
-                    if ("缴费成功提醒".equals(title)) {
-                        map.put(key, new WxTemplateDataVo("您已成功缴费", color));
-                    }
-                    if ("次卡使用提醒".equals(title)) {
-                        sb = new StringBuilder("亲爱的用户，您有一张${").append(COUPON_NAME.getArgName()).append("}")
-                                .append("至今还未激活使用，不要忘了哦~");
-                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
-                    }
-                    if ("授权到期提醒".equals(title)) {
-                        sb = new StringBuilder("你好，您的${").append(COUPON_NAME.getArgName()).append("}")
-                                .append("即将到期。存在项目次数未使用完");
-                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
-                    }
-                    if ("授权到期提醒".equals(title)) {
-                        sb = new StringBuilder("你好，你的${").append(COUPON_NAME.getArgName()).append("}")
-                                .append("服务已到期");
-                        map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                }
+                if ("服务到期提醒".equals(title)) {
+                    sb = new StringBuilder("你好，你的${").append(COUPON_NAME.getArgName()).append("}")
+                            .append("服务已到期");
+                    map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    if ("remark".equals(key)) {
+                        map.put(key, new WxTemplateDataVo("为避免影响使用，请及时续费。", color));
                     }
                 }
             }
+        }
+    }
+
+    private void assembleRemark(String key, String color, Map<String, WxTemplateDataVo> map) {
+        if ("remark".equals(key)) {
+            map.put(key, new WxTemplateDataVo("如有疑问，请联系我们。联系电话：${" + LINK_MOBILE.getArgName() + "}", color));
         }
     }
 
@@ -531,15 +552,5 @@ public class WXService extends AbstractWxBaseApi {
         JSONObject userJson = JSONObject.parseObject(userInfoStr);
         JSONArray tagList = userJson.getJSONArray("tagid_list");
         wxFans.setTagidList(Joiner.on(",").join(tagList));
-    }
-
-    public static void main(String[] args) {
-        Map<String, String> map = new HashMap<>();
-        map.put("first", "张三");
-        map.put("keyword1", "16");
-        StrSubstitutor strSubstitutor = new StrSubstitutor(map);
-        String str3 = "{\"first\":{\"color\":\"\",\"value\":\"${first}\"},\"keyword1\":{\"color\":\"#00b9b2\",\"value\":\"${keyword0}\"},\"keyword2\":{\"color\":\"#00b9b2\",\"value\":\"${keyword1}\"},\"keyword3\":{\"color\":\"#00b9b2\",\"value\":\"${keyword2}\"},\"keyword4\":{\"color\":\"#00b9b2\",\"value\":\"${keyword3}\"},\"remark\":{\"color\":\"\",\"value\":\"${remark}\"}}";
-        String context3 = strSubstitutor.replace(str3);
-        System.out.println("context3: " + context3);
     }
 }
