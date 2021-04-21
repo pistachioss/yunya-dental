@@ -346,6 +346,7 @@
         be.employee_name as employeeName,
         btp.treatType,
         btp.name,
+        btp.pinyinName,
         btp.mobile,
         IFNULL(btp1.appointCount, 0) AS appointCount,
         IFNULL(bvr.visitCount, 0) AS visitCount
