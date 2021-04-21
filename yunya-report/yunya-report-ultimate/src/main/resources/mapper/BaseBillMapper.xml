@@ -843,6 +843,7 @@
                 AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) = #{query.currentMonth}
             </if>
         </where>
+        order by bb.privilege_date
     </select>
 
     <!-- 根据患者ID查询患者消费信息 -->
