@@ -1,13 +1,10 @@
 package com.yunya.middletable.model.credits_shop;
 
-import com.yunya.middletable.utils.SignTool;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @program: yunya-dental
@@ -17,7 +14,7 @@ import java.util.Map;
  **/
 @ApiModel(value = "CreditConsumeParams",description = "积分消费请求参数")
 @Data
-public class CreditConsumeParams extends AbstractCredit {
+public class CreditConsumeParams {
 
 	private String appKey;
 	@ApiModelProperty("时间戳")
@@ -46,36 +43,5 @@ public class CreditConsumeParams extends AbstractCredit {
 	private String params="";
 	@ApiModelProperty("自定义参数")
 	private String transfer="";
-	
-	@Override
-	public Map<String, String> toRequestMap(String appSecret, String signUrl){
-		Map<String, String> map=new HashMap<String, String>();
-		map.put("credits", credits+"");
-		map.put("description", description);
-		map.put("uid", uid);
-		map.put("appKey", appKey);
-		map.put("waitAudit", waitAudit+"");
-		map.put("appSecret", appSecret);
-		map.put("timestamp", System.currentTimeMillis()+"");
-		map.put("orderNum", orderNum);
-		map.put("type", type);
-		map.put("facePrice", facePrice+"");
-		map.put("actualPrice", actualPrice+"");
-		map.put("ip", ip);
-		map.put("params", params);
-		putIfNotEmpty(map, "itemCode", itemCode);
-		putIfNotEmpty(map, "transfer", transfer);
-		
-		map.remove("appSecret");
-		map.put("sign", signUrl);
-		return map;
-	}
-	
-	@Override
-	void putIfNotEmpty(Map<String, String> map, String key, String value){
-		if(value==null || value.length()==0){
-			return;
-		}
-		map.put(key, value);
-	}
+
 }

@@ -66,22 +66,7 @@ public class AssembleTool {
 			Field[] declaredFields = aClass.getDeclaredFields();
 			if (declaredFields.length > 0) {
 				for (Field field : declaredFields) {
-					String fieldType = field.getGenericType().toString();
-					if (fieldType.equals("class java.lang.String")) {
-						result.put(field.getName(),this.reflectString(field.getName(),obj));
-					} else if (fieldType.equals("class java.lang.Integer")) {
-						result.put(field.getName(),String.valueOf(this.reflectInteger(field.getName(),obj)));
-					} else if (fieldType.equals("class java.lang.Double")) {
-						result.put(field.getName(),String.valueOf(this.reflectDouble(field.getName(),obj)));
-					} else if (fieldType.equals("class java.lang.Boolean")) {
-						result.put(field.getName(),String.valueOf(this.reflectBoolean(field.getName(),obj)));
-					} else if (fieldType.equals("boolean")) {
-						result.put(field.getName(),String.valueOf(this.reflectBool(field.getName(),obj)));
-					} else if (fieldType.equals("class java.util.Date")) {
-						result.put(field.getName(),String.valueOf(this.reflectDate(field.getName(),obj)));
-					} else if (fieldType.equals("class java.lang.Long")) {
-						result.put(field.getName(),String.valueOf(this.reflectLong(field.getName(),obj)));
-					}
+					putParams(result,field,obj);
 				}
 				result.put("appSecret",duiBaConfig.getAppSecret());
 				String sign = SignTool.sign(result);
@@ -113,7 +98,7 @@ public class AssembleTool {
 		} else if (fieldType.equals("boolean")) {
 			result.put(fieldName,String.valueOf(this.reflectBool(fieldName,obj)));
 		} else if (fieldType.equals("class java.util.Date")) {
-			result.put(fieldName,String.valueOf(this.reflectDate(fieldName,obj)));
+			result.put(fieldName,String.valueOf(this.reflectDate(fieldName,obj).getTime()));
 		} else if (fieldType.equals("class java.lang.Long")) {
 			result.put(fieldName,String.valueOf(this.reflectLong(fieldName,obj)));
 		}
@@ -132,6 +117,9 @@ public class AssembleTool {
 	private Date reflectDate(String fieldName,Object obj) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 		Method method = obj.getClass().getMethod("get" + getMethodName(fieldName));
 		Date date = (Date) method.invoke(obj);
+		if (date == null) {
+			return new Date();
+		}
 		return date;
 	}
 

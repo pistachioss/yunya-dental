@@ -13,7 +13,7 @@ import java.io.Serializable;
  **/
 @ApiModel(value = "AddCreditResult1", description = "用户积分增加")
 @Data
-public class AddCreditResult extends AbstractCredit implements Serializable {
+public class AddCreditResult implements Serializable {
     private boolean success;
     private String errorMessage="";
     private String bizId="";
