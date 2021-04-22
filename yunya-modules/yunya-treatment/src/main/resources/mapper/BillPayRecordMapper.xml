@@ -78,7 +78,7 @@
         left join treatment_record tr on bpr.treatment_record_id = tr.id
         <where>
             <if test="query.orgId != null">
-                AND bb.org_id = #{query.orgId}
+                AND br.org_id = #{query.orgId}
             </if>
             <if test="query.currentMonth != null and query.currentMonth != ''">
                 AND date_format(br.crt_time, '%Y-%m') = #{query.currentMonth}
