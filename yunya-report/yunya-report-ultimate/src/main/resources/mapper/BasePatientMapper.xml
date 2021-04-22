@@ -292,8 +292,7 @@
 
     <!-- 末诊后无预约、随访的患者列表 -->
     <select id="selectNotSeenList" resultType="com.yunya.feign.report.domain.vo.BasePatientNotSeenVo">
-        select
-        btp.patientId,
+        select btp.patientId,
         btp.treatmentId,
         btp.lastVisitDate,
         btp.dentistId,
@@ -303,30 +302,26 @@
         btp.mobile
         from (
         select btp.patientId,
-        btp.orgId,
         btp.treatmentId,
         btp.lastVisitDate,
         btp.dentistId,
-        be.employee_name as employeeName,
+        btp.employeeName,
         btp.treatType,
         btp.name,
-        btp.pinyinName,
         btp.mobile,
         IFNULL(btp1.appointCount, 0) AS appointCount,
         IFNULL(bvr.visitCount, 0) AS visitCount
         from (
         select btp.patientId,
         btp.treatmentId,
-        btp2.org_id as orgId,
         date_format(btp2.treat_end_time, '%Y-%m-%d') as lastVisitDate,
         btp2.registered_dentist_id as dentistId,
+        be.employee_name as employeeName,
         btp2.treat_type as treatType,
         bp.name as name,
-        bp.pinyin_name as pinyinName,
         bp.mobile
         from (
-        select
-        btp.patient_id as patientId,
+        select btp.patient_id as patientId,
         max(btp.treatment_id) AS treatmentId
         from base_treatment_process btp
         where btp.treat_end_time is not null
@@ -334,8 +329,35 @@
         ) btp
         inner join base_treatment_process btp2 on btp.treatmentId = btp2.treatment_id
         left join base_patient bp on btp.patientId = bp.patient_id
+        left join base_employee be on btp2.registered_dentist_id = be.user_id
+        <where>
+            <if test="form.orgId != null">
+                and btp2.org_id = #{form.orgId}
+            </if>
+            <if test="form.startDate != null and form.startDate != ''">
+                and date_format(btp2.treat_end_time, '%Y-%m-%d') &gt;= #{form.startDate}
+            </if>
+            <if test="form.endDate != null and form.endDate != ''">
+                and date_format(btp2.treat_end_time, '%Y-%m-%d') &lt;= #{form.endDate}
+            </if>
+            <if test="form.attendingDoctors != null and form.attendingDoctors.size > 0">
+                and btp2.registered_dentist_id in
+                <foreach collection="form.attendingDoctors" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(bp.`name`,''),IFNULL(bp.pinyinName,''),IFNULL(bp.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+            <if test="form.treatTypes != null and form.treatTypes.size > 0">
+                and btp2.treat_type in
+                <foreach collection="form.treatTypes" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
         ) btp
-        left join base_employee be on btp.dentistId = be.user_id
         LEFT JOIN (
         SELECT patient_id,
         count(btp.patient_id) AS appointCount
@@ -353,34 +375,7 @@
         GROUP BY patient_id
         ) bvr ON btp.patientId = bvr.patient_id
         ) btp
-        <where>
-            and btp.appointCount = 0
-            and btp.visitCount = 0
-            <if test="form.orgId != null">
-                and btp.orgId = #{form.orgId}
-            </if>
-            <if test="form.startDate != null and form.startDate != ''">
-                and btp.lastVisitDate &gt;= #{form.startDate}
-            </if>
-            <if test="form.endDate != null and form.endDate != ''">
-                and btp.lastVisitDate &lt; #{form.endDate}
-            </if>
-            <if test="form.attendingDoctors != null and form.attendingDoctors.size > 0">
-                and btp.dentistId in
-                <foreach collection="form.attendingDoctors" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="form.combination != null and form.combination != ''">
-                and concat(IFNULL(btp.`name`,''),IFNULL(btp.pinyinName,''),IFNULL(btp.mobile,'')) like
-                concat(concat('%',#{form.combination}),'%')
-            </if>
-            <if test="form.treatTypes != null and form.treatTypes.size > 0">
-                and btp.treatType in
-                <foreach collection="form.treatTypes" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
+        where btp.appointCount = 0
+        and btp.visitCount = 0
     </select>
 </mapper>
