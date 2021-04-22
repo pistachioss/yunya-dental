@@ -224,7 +224,7 @@ management:
 # 忽略网关鉴权的请求路径
 gate:
   ignore:
-    startWith: /auth/jwt,/v2/api-docs,/callback/,/central/paizhaohuidiao,/coupon/card/QRCode/init,/registration/permit/add,/registration/permit/userExistsFind,/dict/permit/item/list,/unlock,/user/authorization/code,/user/forget/password,/smsSignatureSet/signSmsReport,/smsTemplateSet/templateSmsReport,/smsSendMessage/smsReport,/smsChargeOrder/notifyUrl,/smsChargeOrder/redirectUrl,/wxVip
+    startWith: /auth/jwt,/v2/api-docs,/callback/,/central/paizhaohuidiao,/coupon/card/QRCode/init,/registration/permit/add,/registration/permit/userExistsFind,/dict/permit/item/list,/unlock,/user/authorization/code,/user/forget/password,/smsSignatureSet/signSmsReport,/smsTemplateSet/templateSmsReport,/smsSendMessage/smsReport,/smsChargeOrder/notifyUrl,/smsChargeOrder/redirectUrl,/wxVip,/credits/shop
 
 auth:
   serviceId: yunya-auth
