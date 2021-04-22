@@ -122,4 +122,10 @@ public class WxController {
         return ResponseUtil.success(relationVO);
     }
 
+    @GetMapping(value = "/wxVip/msg/pull")
+    public ResponseResult pullTemplate() {
+        wxService.pullTemplate();
+        return ResponseUtil.success();
+    }
+
 }

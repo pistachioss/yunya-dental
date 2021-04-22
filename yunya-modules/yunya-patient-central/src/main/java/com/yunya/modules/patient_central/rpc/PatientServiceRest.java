@@ -306,8 +306,8 @@ public class PatientServiceRest {
 
     @ApiOperation("查询微信用户是否注册")
     @GetMapping (value = "/count/register")
-    public int countRegister(@RequestParam(value = "openId", required = true) String openId) {
-        return wxFansBiz.countRegister(openId);
+    public WxFans countRegister(@RequestParam(value = "openId", required = true) String openId) {
+        return wxFansBiz.getRegister(openId);
     }
 
     @ApiOperation("根据Id查询患者信息公用信息")
@@ -328,7 +328,7 @@ public class PatientServiceRest {
     }
 
     @ApiOperation("查询微信用户信息")
-    @RequestMapping (value = "/wx/patient/{patientId}", method = RequestMethod.POST)
+    @RequestMapping (value = "/wx/patient/{patientId}", method = RequestMethod.GET)
     public WxPatientVo getWxPatientInfo(@PathVariable("patientId") Integer patientId) {
         return wxFansBiz.getWxPatientInfo(patientId);
     }
@@ -345,6 +345,12 @@ public class PatientServiceRest {
     public MemberRelationVo findMemberBindingRelation(
             @RequestBody @Validated PatientMemberRelationQueryForm patientMemberRelationQueryForm) {
         return patientMemberInfoBiz.findMemberBindingRelation(patientMemberRelationQueryForm);
+    }
+
+    @ApiOperation("查询推送消息的绑定人")
+    @RequestMapping (value = "/wx/pusher/{patientId}", method = RequestMethod.GET)
+    public WxFans getWxPushUser(@PathVariable("patientId") Integer patientId) {
+        return wxFansBiz.getPushWxUser(patientId);
     }
 
 }

@@ -19,7 +19,10 @@ public interface WXConstant {
      * 公众号session key
      */
     String GZH_SESSION_KEY = "openId:gzh";
-
+    /**
+     * template msgId
+     */
+    String WX_TEMPLATE_MSGID_KEY = "wechat:template:msgId:%s";
     /**
      * 获取微信公众号的access_token
      */
@@ -59,4 +62,9 @@ public interface WXConstant {
      * 发送模板消息
      */
     String WX_SEND_TEMPLATE_MSG_URL = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=%s";
+
+    /**
+     * 所有模板列表
+     */
+    String WX_TEMPLATE_URL = "https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=%s";
 }

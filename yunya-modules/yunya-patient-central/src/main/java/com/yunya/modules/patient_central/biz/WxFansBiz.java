@@ -1,27 +1,35 @@
 package com.yunya.modules.patient_central.biz;
 
-import com.github.pagehelper.*;
-import com.google.common.collect.*;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
-import com.yunya.feign.system.*;
-import com.yunya.feign.system.form.*;
-import com.yunya.framework.common.biz.*;
-import com.yunya.framework.common.utils.*;
-import com.yunya.models.patient_central.*;
-import com.yunya.models.system.*;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.DictionaryItemModel;
+import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.models.patient_central.PatientExpInfo;
+import com.yunya.models.patient_central.WxFans;
+import com.yunya.models.patient_central.WxFansBind;
+import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.patient_central.mapper.*;
-import org.apache.commons.collections4.*;
-import org.apache.commons.lang3.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.stereotype.*;
-import org.springframework.transaction.annotation.*;
-import tk.mybatis.mapper.entity.*;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
-import javax.annotation.*;
+import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 简介: 公司微信公众号粉丝业务层
@@ -37,6 +45,7 @@ import java.util.stream.*;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
+    private Logger log = LoggerFactory.getLogger(WxFansBiz.class);
 
     /**
      * 系统服务调用
@@ -58,6 +67,8 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
     private PatientMemberInfoBiz patientMemberInfoBiz;
     @Resource
     private PatientPrepaymentRelationBiz prepaymentRelationBiz;
+    @Resource
+    private WxFansBindMapper wxFansBindMapper;
 
 
     public PageInfo<WxFansVo> findList(WxFansQueryForm wxFansQueryForm) {
@@ -85,10 +96,10 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         return mapper.insertSelective(wxFansSaveForm.getWxFans());
     }
 
-    public int countRegister(String openId) {
+    public WxFans getRegister(String openId) {
         Example example = new Example(WxFans.class);
         example.createCriteria().andEqualTo("openId", openId);
-        return mapper.selectCountByExample(example);
+        return mapper.selectOneByExample(example);
     }
 
     public WxFans getOwnWxFans(WxUserQuery query) {
@@ -243,11 +254,27 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         return list;
     }
 
+    public WxFans getPushWxUser(Integer patientId) {
+        Example example = new Example(WxFans.class);
+        example.createCriteria().andEqualTo("patientId", patientId);
+        WxFans wxFans = mapper.selectOneByExample(example);
+        if (wxFans != null) {
+            return wxFans;
+        }
+        Example bindExample = new Example(WxFansBind.class);
+        bindExample.createCriteria().andEqualTo("patientId", patientId);
+        List<WxFansBind> list = wxFansBindMapper.selectByExample(bindExample);
+        if (CollectionUtils.isNotEmpty(list)) {
+            return this.getRegister(list.get(0).getOpenId());
+        }
+        return null;
+    }
+
     private String setAmount(BigDecimal principal, BigDecimal bonus) {
         BigDecimal zero = BigDecimal.ZERO;
         principal = principal == null ? zero : principal;
         bonus = bonus == null ? zero : bonus;
-        return principal.add(bonus).toString();
+        return principal.add(bonus).setScale(2, BigDecimal.ROUND_HALF_UP).toString();
     }
 
     private void assembleMedical(List<PatientExtInfoVo> extInfoVos, WxPatientVo wxPatientVo) {
