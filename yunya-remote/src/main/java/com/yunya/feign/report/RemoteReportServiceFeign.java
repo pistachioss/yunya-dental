@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
+import com.yunya.feign.report.domain.vo.WxCardEventVo;
 import com.yunya.feign.report.factory.RemoteReportServiceFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -24,4 +25,7 @@ public interface RemoteReportServiceFeign {
 
     @PostMapping("/api/card/{cardId}/item/usage")
     List<BenefitItemVo> listWxCouponsUseItem(@PathVariable(value = "cardId") Integer cardId);
+
+    @PostMapping("/api/card/{noticeType}/list")
+    List<WxCardEventVo> listPushCard(@PathVariable(value = "noticeType") Integer noticeType);
 }

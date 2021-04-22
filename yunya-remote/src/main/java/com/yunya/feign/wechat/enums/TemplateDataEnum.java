@@ -1,4 +1,4 @@
-package com.yunya365.wechat.enums;
+package com.yunya.feign.wechat.enums;
 
 /**
  * @description:

@@ -1,9 +1,10 @@
 package com.yunya365.wechat.task;
 
+import com.yunya.feign.report.RemoteReportServiceFeign;
+import com.yunya365.wechat.service.impl.WXService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 
@@ -16,12 +17,13 @@ import javax.annotation.Resource;
 public class WxTask {
 
     @Resource
-    private RestTemplate restTemplate;
+    private WXService wxService;
+    @Resource
+    private RemoteReportServiceFeign reportServiceFeign;
 
-    //0 0 0 * * ? 每日零点
-    @Scheduled(cron = "${corn.data}")
+    @Scheduled(cron = "${corn.wxPushDate}")
     public void process() {
         long start = System.currentTimeMillis();
-
+//        reportServiceFeign.listPushCard()
     }
 }
