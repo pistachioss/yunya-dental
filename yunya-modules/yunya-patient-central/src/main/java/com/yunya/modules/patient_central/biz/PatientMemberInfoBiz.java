@@ -14,8 +14,14 @@ import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
+import com.yunya.feign.wechat.RemoteWechatServiceFeign;
+import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.feign.wechat.enums.TemplateDataEnum;
+import com.yunya.feign.wechat.enums.TemplateEnum;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
@@ -38,8 +44,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.RETURN_VALUE_ISNULL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.SAME_DATA_EXIST;
 
 /**
  * 简单介绍:</br> 患者会员卡信息 业务层
@@ -76,6 +86,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
   /** redis队列 */
   @Autowired private RedisUtils redisUtils;
+  /** 微信推送 */
+  @Autowired private RemoteWechatServiceFeign remoteWechatServiceFeign;
 
   /** 预付款Mapper */
   @Autowired
@@ -446,6 +458,30 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         // 会员卡充值发送短信 type:0充值 1消费
         memberSendMessages(memberRechargeRecord, 0);
+        //会员卡充值成功发送推送
+        WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+        wxTemplateMsgModel.setPatientId(model.getPatientId());
+        wxTemplateMsgModel.setTemplateEnum(TemplateEnum.RECHARGE_SUCCESS);
+        PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(model.getPatientId());
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put(TemplateDataEnum.PATIENT_NAME.getArgName(),patientBaseInfoVo.getName());
+        paramMap.put("keyword1",model.getRechargePrincipal());
+        paramMap.put("keyword2",patientMemberInfo.getPrincipalAmount());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+        paramMap.put("keyword3",sdf.format(new Date()));
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setId(Integer.valueOf(BaseContextHandler.getOrgId()));
+
+        List<OrganizationInfoDetail>orgList = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        log.info("门诊信息："+orgList.get(0).toString());
+        if(orgList!=null&&orgList.size()>0){
+          paramMap.put("keyword4",orgList.get(0).getName());
+        }else{
+          throw new ClientServiceException("门诊信息为空", RETURN_VALUE_ISNULL);
+        }
+        paramMap.put("linkMobile",orgList.get(0).getTel());
+        wxTemplateMsgModel.setParamMap(paramMap);
+        remoteWechatServiceFeign.memberRelation(wxTemplateMsgModel);
       }
     } else {
       return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "充值金额与入账金额不相等!", null);
