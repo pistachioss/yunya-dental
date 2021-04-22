@@ -34,7 +34,7 @@ public class SysEmployeeBiz extends BaseBiz<SysEmployeeMapper, SysEmployee> {
   public SysEmployee findSysEmployeeById(Integer userId) {
     String empKey = REDIS_KEY_EMPLOYEE_INFO + userId;
     SysEmployee sysEmployee = redisUtils.get(empKey, SysEmployee.class);
-    if (null != sysEmployee) {
+    if (null == sysEmployee) {
       sysEmployee = mapper.selectByUserId(userId);
       if (null != sysEmployee) {
         redisUtils.set(empKey, sysEmployee);

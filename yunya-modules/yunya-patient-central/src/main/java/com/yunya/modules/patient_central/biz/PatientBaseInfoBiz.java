@@ -663,7 +663,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public PatientBaseInfo findPatientInfoById(Integer id) {
     String patientKey = PATIENT_BASE_INFO + id;
     PatientBaseInfo patientBaseInfo = redisUtils.get(patientKey, PatientBaseInfo.class);
-    if (null != patientBaseInfo) {
+    if (null == patientBaseInfo) {
       patientBaseInfo = this.patientBaseInfoMapper.selectPatientById(id);
       if (patientBaseInfo != null) {
         redisUtils.set(patientKey, patientBaseInfo);
