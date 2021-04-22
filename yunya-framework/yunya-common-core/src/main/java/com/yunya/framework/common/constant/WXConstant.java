@@ -19,7 +19,10 @@ public interface WXConstant {
      * 公众号session key
      */
     String GZH_SESSION_KEY = "openId:gzh";
-
+    /**
+     * template msgId
+     */
+    String WX_TEMPLATE_MSGID_KEY = "wechat:template:msgId:%s";
     /**
      * 获取微信公众号的access_token
      */

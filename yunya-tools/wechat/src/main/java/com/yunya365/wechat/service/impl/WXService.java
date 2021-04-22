@@ -4,10 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.alibaba.fastjson.parser.Feature;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gson.Gson;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
 import com.yunya.feign.oss.RemoteOssServiceFeign;
@@ -39,6 +41,7 @@ import com.yunya.models.patient_central.WxFans;
 import com.yunya.models.patient_central.WxFansBind;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.wechat.WxMsgTemplates;
+import com.yunya.models.wechat.WxTemplateMsgRecords;
 import com.yunya365.wechat.enums.WeChatError;
 import com.yunya365.wechat.mapper.WxMsgTemplatesMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -47,13 +50,13 @@ import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static com.alibaba.fastjson.serializer.SerializerFeature.*;
 import static com.yunya365.wechat.enums.TemplateDataEnum.*;
 import static java.util.stream.Collectors.*;
 
@@ -69,8 +72,6 @@ public class WXService extends AbstractWxBaseApi {
     public static String BEN_REN = "本人";
     @Resource
     private RedisUtils redisUtils;
-    @Resource
-    private RestTemplate restTemplate;
     @Resource
     private RemotePatientCentralServiceFeign patientFeign;
     @Resource
@@ -234,28 +235,42 @@ public class WXService extends AbstractWxBaseApi {
     public void pushTemplateMsg(WxTemplateMsgModel msgModel) {
         Map<String, Object> paramMap = msgModel.getParamMap();
         Integer patientId = msgModel.getPatientId();
-        String openId = patientFeign.getWxPushUser(patientId);
-        log.info("模板推送用户id：{}", openId);
-        if (StringUtils.isBlank(openId)) {
+        WxFans wxPushUser = patientFeign.getWxPushUser(patientId);
+        if (wxPushUser == null) {
             throw new ClientServiceException(WeChatError.PATIENT_UNBIND_WX);
         }
+        log.info("患者id：{}，被推送微信用户：{}", patientId, wxPushUser.getOpenId());
         //获取模板信息
         WxMsgTemplates template = this.getTemplate(msgModel.getTemplateEnum().getTitle());
         if (template != null) {
             StrSubstitutor strSubstitutor = new StrSubstitutor(paramMap);
             String context = strSubstitutor.replace(template.getContent());
-            paramMap = JSON.parseObject(context, new TypeReference<Map<String, Object>>() {
-            });
+            paramMap = JSON.parseObject(context, new TypeReference<Map<String, Object>>() {}, Feature.OrderedField);
             WxTemplatePushModel pushModel = WxTemplatePushModel.builder()
-                    .touser(openId)
+                    .touser(wxPushUser.getOpenId())
                     .template_id(template.getTemplateId())
                     .data(paramMap).build();
             if ("预约确认通知".equals(template.getTitle())) {
                 pushModel.setUrl(mpDomain + "/mobile/#/registerBtn");
             }
             log.info("模板推送消息：{}", pushModel);
-            super.pushTemplate(pushModel);
+            //推送消息
+            String msgId = super.pushTemplate(pushModel);
+            //消息暂存缓存
+            redisUtils.set(WXConstant.WX_TEMPLATE_MSGID_KEY + msgId,  this.transferTemplateRecord(pushModel, msgId, wxPushUser), 1, TimeUnit.MINUTES);
         }
+    }
+
+    private String transferTemplateRecord(WxTemplatePushModel pushModel, String msgId, WxFans wxPushUser) {
+        WxTemplateMsgRecords record = new WxTemplateMsgRecords();
+        record.setMsgId(msgId);
+        record.setTemplateId(pushModel.getTemplate_id());
+        record.setPatientId(wxPushUser.getPatientId());
+        record.setOpenId(pushModel.getTouser());
+        record.setNickName(wxPushUser.getNickName());
+        record.setContent(JSONObject.toJSONString(pushModel, WriteMapNullValue));
+        record.setMsgDate(new Date());
+        return JSONObject.toJSONString(record, WriteMapNullValue);
     }
 
     private WxMsgTemplates getTemplate(String title) {
@@ -282,7 +297,7 @@ public class WXService extends AbstractWxBaseApi {
             count = (content.length() - content.replace("{{remark", "").length()) / "{{remark".length();
             this.assembleTemplate(count, map, "remark", "", title);
         }
-        return JSONObject.toJSONString(map);
+        return new Gson().toJson(map);
     }
 
     private void assembleTemplate(int count, Map<String, WxTemplateDataVo> map, String key, String color, String title) {
@@ -333,6 +348,7 @@ public class WXService extends AbstractWxBaseApi {
                     sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}")
                             .append("消费您的会员卡详情如下：");
                     map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    this.assembleRemark(key, color, map);
                 }
                 if ("缴费成功提醒".equals(title)) {
                     map.put(key, new WxTemplateDataVo("您已成功缴费", color));
@@ -359,6 +375,16 @@ public class WXService extends AbstractWxBaseApi {
                     map.put(key, new WxTemplateDataVo(sb.toString(), color));
                     if ("remark".equals(key)) {
                         map.put(key, new WxTemplateDataVo("为避免影响使用，请及时续费。", color));
+                    }
+                }
+                if ("绑定成功通知".equals(title)) {
+                    if ("remark".equals(key)) {
+                        map.put(key, null);
+                    }
+                }
+                if ("解绑成功通知".equals(title)) {
+                    if ("remark".equals(key)) {
+                        map.put(key, null);
                     }
                 }
             }

@@ -272,7 +272,7 @@ import java.util.*;
 
   @ApiOperation("查询微信用户是否注册")
   @GetMapping (value = "/api/count/register")
-  int countRegister(@RequestParam(value = "openId", required = true) String openId);
+  WxFans countRegister(@RequestParam(value = "openId", required = true) String openId);
 
   @ApiOperation("根据Id查询患者信息公用信息")
   @GetMapping("/api/publicInformation/{id}")
@@ -300,5 +300,5 @@ import java.util.*;
 
   @ApiOperation("查询推送消息的绑定人")
   @RequestMapping (value = "/api/wx/pusher/{patientId}", method = RequestMethod.GET)
-  String getWxPushUser(@PathVariable("patientId") Integer patientId);
+  WxFans getWxPushUser(@PathVariable("patientId") Integer patientId);
 }

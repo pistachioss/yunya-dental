@@ -60,15 +60,17 @@ public abstract class AbstractWxBaseApi {
         return jsonObject.getString("template_list");
     }
 
-    public void pushTemplate(WxTemplatePushModel pushModel) {
+    public String pushTemplate(WxTemplatePushModel pushModel) {
         String accessToken = getAccessToken();
         String url = String.format(WXConstant.WX_SEND_TEMPLATE_MSG_URL, accessToken);
         String resultStr = restTemplate.postForObject(url, pushModel, String.class);
+        log.info("模板消息推送返回：{}", resultStr);
         JSONObject jsonObject = JSONObject.parseObject(resultStr);
         Integer errCode = jsonObject.getInteger("errcode");
         if (errCode != null && errCode != 0) {
             throw new ClientServiceException(jsonObject.getString("errmsg"), errCode);
         }
+        return jsonObject.getString("msgid");
     }
 
     public WxKfOnlineVo listOnlineKf() {
