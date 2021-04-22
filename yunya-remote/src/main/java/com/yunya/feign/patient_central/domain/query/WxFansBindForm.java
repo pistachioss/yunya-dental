@@ -23,7 +23,7 @@ public class WxFansBindForm {
     @ApiModelProperty("公司微信公众号粉丝表Id")
     private Integer wxId;
 
-    @ApiModelProperty("解绑患者ID")
+    @ApiModelProperty("患者ID")
     private Integer patientId;
 
     @ApiModelProperty("openID")
