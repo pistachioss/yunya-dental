@@ -89,7 +89,27 @@ public class SignTool {
 			e.printStackTrace();
 			throw new RuntimeException("md5 error");
 		}
+
 		return sign;
+	}
+
+	/**
+	 * 拼接登录URL
+	 * @param params 请求参数
+	 * @param sign  签名
+	 * @param duibaUrl 兑吧路径
+	 * @return
+	 */
+	public static String signRequestUrl(Map<String,String> params, String sign, String duibaUrl) {
+		// 拼接登录URL
+		StringBuffer sb = new StringBuffer();
+		sb.append(duibaUrl + "?");
+		sb.append("uid=" + params.get("uid") + "&");
+		sb.append("credits=" + params.get("credits") + "&");
+		sb.append("appKey=" + params.get("appKey") + "&");
+		sb.append("timestamp=" + params.get("timestamp") + "&");
+		sb.append("sign=" + sign);
+		return sb.toString();
 	}
 
 	/**
@@ -103,6 +123,7 @@ public class SignTool {
 		md5.update(data);
 		return md5.digest();
 	}
+
 	
 /*	public static void main(String[] args) {
 		String appKey="key";
@@ -117,6 +138,7 @@ public class SignTool {
 
 		params.put("sign", sign);
 
+		System.out.println(sign);
 		System.out.println(signVerify(appSecret, params));
 
 	}*/

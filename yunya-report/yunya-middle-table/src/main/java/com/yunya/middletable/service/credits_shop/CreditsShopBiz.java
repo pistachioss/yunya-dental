@@ -6,14 +6,20 @@ import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.middletable.config.DuiBaConfig;
 import com.yunya.middletable.dao.credits_shop.CreditsShopMapper;
+import com.yunya.middletable.utils.SignTool;
 import com.yunya.models.credits_shop.CreditsShop;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.InetAddress;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @program: yunya-dental
@@ -23,6 +29,9 @@ import java.util.List;
  **/
 @Service
 public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
+
+    @Autowired
+    private DuiBaConfig duiBaConfig;
 
     /**
      * 增加积分
@@ -78,5 +87,36 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         return ResponseUtil.success(creditsRecordVOList);
     }
 
+    /**
+     * 生成兑吧自动登录URl
+     * @param openId
+     * @param patientId
+     * @return
+     */
+    public String duibaAutoLogin(String openId, Integer patientId) {
+        Map<String,String> params = new HashMap<String,String>();
+        String uidStr = openId + "#" + patientId.toString();
+        CreditsShop creditsShop = mapper.selectLastCredits(patientId);
+        Long credits = 0L;
+        if (creditsShop != null) {
+            credits = creditsShop.getCreditsAccount();
+        }
+        params.put("uid",uidStr);
+        params.put("credits",credits.toString());
+        params.put("appKey",duiBaConfig.getAppKey());
+        params.put("timestamp",String.valueOf(System.currentTimeMillis()));
+        String sign = SignTool.sign(params);
+        String autoLoginUrl = SignTool.signRequestUrl(params, sign, duiBaConfig.getAutoLoginUrl());
+        return autoLoginUrl;
+    }
 
+    /**
+     * 查询患者积分
+     * @param patientId
+     * @return
+     */
+    public ResponseResult lastPatientCredits(Integer patientId) {
+        CreditsShop creditsShop = mapper.selectLastCredits(patientId);
+        return ResponseUtil.success(creditsShop);
+    }
 }

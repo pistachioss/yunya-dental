@@ -1,5 +1,7 @@
 package com.yunya.middletable.controller.credits_shop;
 
+import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -7,10 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpRequest;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
  * @program: yunya-dental
@@ -21,16 +26,26 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @Slf4j
 @Api(tags = "积分商城")
-@RequestMapping("/duiba/credits/shop")
+@RequestMapping("/duiba/shop")
 public class ShopController {
     @Autowired
     private CreditsShopBiz creditsShopBiz;
 
     @ApiOperation("生成免登录URL")
     @GetMapping("/dautoLogin")
-    public String duibaAutoLogin(HttpServletRequest request) {
+    public String duibaAutoLogin(@NotBlank(message = "openID不能为空") String openId,
+                                 @NotNull(message = "患者ID不能为空") Integer patientId) {
+        return creditsShopBiz.duibaAutoLogin(openId,patientId);
+    }
 
-        // TODO 生成免登录URL
-        return "";
+    @ApiOperation("查询患者积分记录")
+    @GetMapping("/credits/record")
+    public ResponseResult patientCreditsRecord(PatientCreditsRecordQuery query) {
+        return creditsShopBiz.selectPatientCreditsRecord(query);
+    }
+
+    @GetMapping("/credits/{patientId}")
+    public ResponseResult lastPatientCredits(@NotNull(message = "患者ID不能为空") @PathVariable("patientId") Integer patientId) {
+        return creditsShopBiz.lastPatientCredits(patientId);
     }
 }
