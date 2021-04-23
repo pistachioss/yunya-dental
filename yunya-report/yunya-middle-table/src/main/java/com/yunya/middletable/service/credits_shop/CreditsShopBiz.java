@@ -7,17 +7,22 @@ import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.middletable.config.DuiBaConfig;
 import com.yunya.middletable.dao.credits_shop.CreditsShopMapper;
+import com.yunya.middletable.utils.SignTool;
 import com.yunya.models.credits_shop.CreditsShop;
+import org.springframework.beans.factory.annotation.Autowired;
 import com.yunya.models.report.BasePatientConsumptionCountVo;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -29,6 +34,9 @@ import java.util.concurrent.ExecutorService;
  **/
 @Service
 public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
+
+    @Autowired
+    private DuiBaConfig duiBaConfig;
 
     /** 多线程 */
     @Resource(name = "customizeThreadPool")
@@ -51,7 +59,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      * @param payId 患者支付ID
      * @return
      */
-    public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, String payId) {
+    public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, Integer payId) {
         CreditsShop creditsShop = mapper.selectLastCredits(patientId);
         Long creditsAccount = 0L;
         if (creditsShop != null) {
@@ -68,7 +76,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         entity.setType("offlineConsume");
         // 积分新增
         entity.setCreditsOption((byte) 0);
-        entity.setRemarks(payId);
+        entity.setRemarks(payId.toString());
         entity.setId(patientId);
         return addCredits(entity);
     }
@@ -86,6 +94,39 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         entity.setPatientId(query.getPatientId());
         List<CreditsRecordVO> creditsRecordVOList = mapper.selectPatientCreditsRecord(query.getPatientId());
         return ResponseUtil.success(creditsRecordVOList);
+    }
+
+    /**
+     * 生成兑吧自动登录URl
+     * @param openId
+     * @param patientId
+     * @return
+     */
+    public String duibaAutoLogin(String openId, Integer patientId) {
+        Map<String,String> params = new HashMap<String,String>();
+        String uidStr = openId + "#" + patientId.toString();
+        CreditsShop creditsShop = mapper.selectLastCredits(patientId);
+        Long credits = 0L;
+        if (creditsShop != null) {
+            credits = creditsShop.getCreditsAccount();
+        }
+        params.put("uid",uidStr);
+        params.put("credits",credits.toString());
+        params.put("appKey",duiBaConfig.getAppKey());
+        params.put("timestamp",String.valueOf(System.currentTimeMillis()));
+        String sign = SignTool.sign(params);
+        String autoLoginUrl = SignTool.signRequestUrl(params, sign, duiBaConfig.getAutoLoginUrl());
+        return autoLoginUrl;
+    }
+
+    /**
+     * 查询患者积分
+     * @param patientId
+     * @return
+     */
+    public ResponseResult lastPatientCredits(Integer patientId) {
+        CreditsShop creditsShop = mapper.selectLastCredits(patientId);
+        return ResponseUtil.success(creditsShop);
     }
 
 

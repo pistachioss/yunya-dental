@@ -11,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Date;
