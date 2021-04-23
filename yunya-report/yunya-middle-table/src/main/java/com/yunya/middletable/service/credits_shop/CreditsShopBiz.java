@@ -11,18 +11,16 @@ import com.yunya.middletable.config.DuiBaConfig;
 import com.yunya.middletable.dao.credits_shop.CreditsShopMapper;
 import com.yunya.middletable.utils.SignTool;
 import com.yunya.models.credits_shop.CreditsShop;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.yunya.models.report.BasePatientConsumptionCountVo;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -32,7 +30,9 @@ import java.util.concurrent.ExecutorService;
  * @author: LHB
  * @create: 2021-04-22 16:01
  **/
+@Slf4j
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
 
     @Autowired
@@ -133,7 +133,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     /**
      * 初始患者化积分
      */
-    public void initialization() {
+    public void initialization() throws InterruptedException {
         List<CreditsShop> creditsShopList = new ArrayList<>();
         List<BasePatientConsumptionCountVo> basePatientConsumptionCountVos = mapper.selectPatientConsumptionCount();
         if (basePatientConsumptionCountVos != null){
@@ -159,11 +159,21 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
             }
             List<List<CreditsShop>> creditsShopLists = Lists.partition(creditsShopList, 100);
             CountDownLatch countDownLatch = new CountDownLatch(creditsShopLists.size());
+            long start = System.currentTimeMillis();
             for (List<CreditsShop> creditsShopListVo: creditsShopLists) {
                 importExcelThreadPool.execute(()->{
-
+                    try{
+                        mapper.insetCreditsShopList(creditsShopListVo);
+                    }catch (Exception e){
+                        log.info("批量添加患者初始化积分信息异常",e);
+                    }finally{
+                        countDownLatch.countDown();
+                    }
                 });
             }
+            countDownLatch.await();
+            long end = System.currentTimeMillis();
+            log.info("批量添加患者初始化积分信息完成，时长：[{}]秒",(end - start) / 1000);
         }
     }
 }

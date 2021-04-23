@@ -55,7 +55,7 @@ public class ShopController {
 
     @ApiOperation("初始患者化积分")
     @PostMapping("/initialization")
-    public ResponseResult<T> initialization(){
+    public ResponseResult<T> initialization() throws InterruptedException {
         creditsShopBiz.initialization();
         return ResponseUtil.success();
     }

@@ -82,4 +82,46 @@
          DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) >= DATE_FORMAT( '2019-08-01', '%Y-%m-%d' )
       GROUP BY bb.patient_id
     </select>
+
+  <insert id="insetCreditsShopList">
+     INSERT INTO credits_shop (
+      `patient_id`,
+      `type`,
+      `channel`,
+      `order_num`,
+      `credits_account`,
+      `credits`,
+      `credits_option`,
+      `actual_price`,
+      `item_code`,
+      `description`,
+      `remarks`,
+      `inservice`,
+      `crt_id`,
+      `crt_time`,
+      `upd_id`,
+      `upd_time`
+    )
+    VALUES
+    <foreach collection="list" item="CreditsShop" open="(" separator="," close=")">
+      (
+      {CreditsShop.patientId},
+      {CreditsShop.type},
+      {CreditsShop.channel},
+      {CreditsShop.orderNum},
+      {CreditsShop.creditsAccount},
+      {CreditsShop.credits},
+      {CreditsShop.creditsOption},
+      {CreditsShop.actualPrice},
+      {CreditsShop.itemCode},
+      {CreditsShop.description},
+      {CreditsShop.remarks},
+      {CreditsShop.inservice},
+      {CreditsShop.crtId},
+      {CreditsShop.crtTime},
+      {CreditsShop.updId},
+      {CreditsShop.updTime}
+      );
+    </foreach>
+  </insert>
 </mapper>

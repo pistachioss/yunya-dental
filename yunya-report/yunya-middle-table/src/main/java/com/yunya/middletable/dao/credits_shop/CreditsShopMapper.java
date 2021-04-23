@@ -4,6 +4,7 @@ import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.models.credits_shop.CreditsShop;
 import com.yunya.models.report.BasePatientConsumptionCountVo;
+import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
@@ -28,4 +29,10 @@ public interface CreditsShopMapper extends Mapper<CreditsShop> {
      * @return
      */
     List<BasePatientConsumptionCountVo> selectPatientConsumptionCount();
+
+    /**
+     * 批量添加患者初始化积分信息
+     * @param creditsShopListVo 患者积分信息
+     */
+    void insetCreditsShopList(@Param("list") List<CreditsShop> creditsShopListVo);
 }
