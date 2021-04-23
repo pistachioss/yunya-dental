@@ -96,6 +96,7 @@ public class OrderDetailPayRecordBiz
         PatientBaseInfo patientBaseInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
         if (patientBaseInfo != null) {
           vo.setPatientName(patientBaseInfo.getName());
+          vo.setMedicalNum(patientBaseInfo.getMedicalNumber());
           vo.setPatientMobile(patientBaseInfo.getMobile());
         }
       }
