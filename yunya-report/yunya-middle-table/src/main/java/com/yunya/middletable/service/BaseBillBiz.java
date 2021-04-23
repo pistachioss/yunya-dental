@@ -6,14 +6,19 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.middletable.dao.credits_shop.CreditsShopMapper;
 import com.yunya.middletable.dao.report.BaseBillDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillMapper;
+import com.yunya.middletable.dao.report.BasePatientOriginLogMapper;
+import com.yunya.middletable.dao.report.BasePatientOriginMapper;
 import com.yunya.middletable.dao.treatment.BillRecordMapper;
 import com.yunya.middletable.dao.treatment.OrderDetailMapper;
 import com.yunya.middletable.dao.treatment.OrderDetailPayRecordMapper;
 import com.yunya.middletable.dao.treatment.OrderRecordMapper;
+import com.yunya.models.credits_shop.CreditsShop;
 import com.yunya.models.report.BaseBill;
 import com.yunya.models.report.BaseBillDetail;
+import com.yunya.models.report.BasePatientOriginLog;
 import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderDetailPayRecord;
@@ -27,10 +32,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -60,6 +62,10 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Autowired private BillRecordMapper billRecordMapper;
   /** 中间表账单详情 */
   @Autowired private BaseBillDetailMapper baseBillDetailMapper;
+  /** 患者推荐关系 */
+  @Autowired private BasePatientOriginLogMapper basePatientOriginLogMapper;
+  /** 患者积分信息 */
+  @Autowired private CreditsShopMapper creditsShopMapper;
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -79,6 +85,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       case 1:
         mapper.deleteByPrimaryKey(dataId);
         if (null != bill) {
+          // 推荐积分
+          addPatientIntegral(bill.getPatientId());
           mapper.insertSelective(bill);
           baseBillDetailMapper.deleteByBillId(dataId);
           // 保存账单明细
@@ -90,6 +98,46 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       default:
         break;
     }
+  }
+
+  /**
+   * 判断是否首次下单，若是则推荐者增加500积分
+   */
+  public void addPatientIntegral(Integer patientId){
+   Integer count =  mapper.selectCountByPatientId(patientId);
+   CreditsShop addPatientIntegral = new CreditsShop();
+   if (count > 0){
+     BasePatientOriginLog basePatientOrigin = new BasePatientOriginLog();
+     basePatientOrigin.setPatientId(patientId);
+     basePatientOrigin.setOriginType(2);
+     BasePatientOriginLog basePatientOriginLog = basePatientOriginLogMapper.selectOne(basePatientOrigin);
+     if (basePatientOriginLog != null){
+       CreditsShop creditsShop = new CreditsShop();
+       creditsShop.setPatientId(basePatientOriginLog.getOriginId());
+       CreditsShop patientCreditsShop = creditsShopMapper.selectOne(creditsShop);
+       if (patientCreditsShop != null){
+         addPatientIntegral.setPatientId(patientCreditsShop.getPatientId());
+         // recommend 患者推荐
+         addPatientIntegral.setType("recommend");
+         addPatientIntegral.setChannel((byte)0);
+         addPatientIntegral.setOrderNum("");
+         addPatientIntegral.setCreditsAccount(patientCreditsShop.getCreditsAccount()+500);
+         addPatientIntegral.setCredits(0L);
+         addPatientIntegral.setCreditsOption((byte)1);
+         addPatientIntegral.setActualPrice(0);
+         addPatientIntegral.setItemCode("");
+         addPatientIntegral.setDescription("");
+         addPatientIntegral.setRemarks("患者推荐");
+         addPatientIntegral.setInservice(false);
+         addPatientIntegral.setCrtId(0);
+         addPatientIntegral.setCrtTime(new Date());
+         addPatientIntegral.setUpdId(0);
+         addPatientIntegral.setUpdTime(new Date());
+       }
+       // 增加500积分
+       creditsShopMapper.insertSelective(addPatientIntegral);
+     }
+   }
   }
 
   /**
