@@ -10,13 +10,11 @@ import com.yunya.middletable.config.DuiBaConfig;
 import com.yunya.middletable.dao.credits_shop.CreditsShopMapper;
 import com.yunya.middletable.utils.SignTool;
 import com.yunya.models.credits_shop.CreditsShop;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +48,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      * @param payId 患者支付ID
      * @return
      */
-    public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, String payId) {
+    public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, Integer payId) {
         CreditsShop creditsShop = mapper.selectLastCredits(patientId);
         Long creditsAccount = 0L;
         if (creditsShop != null) {
@@ -67,7 +65,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         entity.setType("offlineConsume");
         // 积分新增
         entity.setCreditsOption((byte) 0);
-        entity.setRemarks(payId);
+        entity.setRemarks(payId.toString());
         entity.setId(patientId);
         return addCredits(entity);
     }
@@ -119,4 +117,6 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         CreditsShop creditsShop = mapper.selectLastCredits(patientId);
         return ResponseUtil.success(creditsShop);
     }
+
+
 }
