@@ -10,7 +10,6 @@ import com.yunya.middletable.dao.credits_shop.CreditsShopMapper;
 import com.yunya.middletable.dao.report.BaseBillDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillMapper;
 import com.yunya.middletable.dao.report.BasePatientOriginLogMapper;
-import com.yunya.middletable.dao.report.BasePatientOriginMapper;
 import com.yunya.middletable.dao.treatment.BillRecordMapper;
 import com.yunya.middletable.dao.treatment.OrderDetailMapper;
 import com.yunya.middletable.dao.treatment.OrderDetailPayRecordMapper;

@@ -104,7 +104,7 @@
       `upd_time`
     )
     VALUES
-    <foreach collection="list" item="CreditsShop" open="(" separator="," close=")">
+    <foreach collection="list" item="CreditsShop" separator=",">
       (
       {CreditsShop.patientId},
       {CreditsShop.type},

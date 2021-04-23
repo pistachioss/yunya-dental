@@ -1,6 +1,5 @@
 package com.yunya.middletable.dao.credits_shop;
 
-import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.models.credits_shop.CreditsShop;
 import com.yunya.models.report.BasePatientConsumptionCountVo;
