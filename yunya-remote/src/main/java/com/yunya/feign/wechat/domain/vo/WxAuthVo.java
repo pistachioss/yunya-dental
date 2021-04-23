@@ -16,4 +16,6 @@ public class WxAuthVo {
     private Boolean isRegister;
     @ApiModelProperty(value = "用户openid")
     private String openId;
+    @ApiModelProperty(value = "患者id")
+    private Integer patientId;
 }

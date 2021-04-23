@@ -1,6 +1,7 @@
 package com.yunya.feign.wechat.factory;
 
 import com.yunya.feign.wechat.RemoteWechatServiceFeign;
+import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -16,4 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class RemoteWechatServiceFeignFallBackFactory implements RemoteWechatServiceFeign {
 
+    @Override
+    public void memberRelation(WxTemplateMsgModel msgModel) {
+    }
 }
