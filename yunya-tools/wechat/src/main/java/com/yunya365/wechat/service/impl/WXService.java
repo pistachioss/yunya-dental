@@ -414,7 +414,7 @@ public class WXService extends AbstractWxBaseApi {
                 }
                 if ("会员消费提醒".equals(title)) {
                     sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}")
-                            .append("消费您的会员卡详情如下：");
+                            .append("消费您的会员卡，详情如下：");
                     map.put(key, new WxTemplateDataVo(sb.toString(), color));
                     this.assembleRemark(key, color, map);
                 }

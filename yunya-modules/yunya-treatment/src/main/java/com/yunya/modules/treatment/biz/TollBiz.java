@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.biz;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
@@ -20,12 +21,16 @@ import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
 import com.yunya.feign.treatment.domain.vo.TollConfirmVO;
+import com.yunya.feign.wechat.RemoteWechatServiceFeign;
+import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.feign.wechat.enums.TemplateEnum;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.*;
@@ -33,6 +38,7 @@ import com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,8 +48,11 @@ import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
@@ -76,6 +85,8 @@ public class TollBiz {
   @Autowired private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
   /** 优惠服务调用 */
   @Autowired private RemoteDiscountFeign discountFeign;
+  /** 微信服务调用 */
+  @Autowired private RemoteWechatServiceFeign weChatServiceFeign;
   /** 开单记录 */
   @Autowired private OrderRecordBiz orderRecordBiz;
   /** 开单明细 */
@@ -84,6 +95,10 @@ public class TollBiz {
   @Autowired private OrderDetailPayRecordBiz orderDetailPayRecordBiz;
   /** 账单记录 */
   @Autowired private BillRecordBiz billRecordBiz;
+  /** 账单记录 */
+  @Autowired private BaseOralTariffBiz oralTariffBiz;
+  /** 账单记录 */
+  @Autowired private BaseTariffBiz baseTariffBiz;
   /** 账单支付记录 */
   @Autowired private BillPayRecordMapper billPayRecordMapper;
   /** 账单支付明细记录 */
@@ -373,6 +388,7 @@ public class TollBiz {
     if (billPayInsertResult > 0) {
       log.info("==========发送消息同步中间表收费记录及支付明细==========》》》{}", billPayRecordId);
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
+      weChatServiceFeign.pushTemplate(chargePushMsg(billPayRecord));
     }
     orderRecord.setStatus((byte) 2);
     int orderUpdateResult = orderRecordBiz.updateSelectiveById(orderRecord);
@@ -398,6 +414,36 @@ public class TollBiz {
     tollConfirmVO.setBillNumber(billRecord.getBillNumber());
     tollConfirmVO.setBillPayRecordId(billPayRecordId);
     return tollConfirmVO;
+  }
+
+  private WxTemplateMsgModel chargePushMsg(BillPayRecord billPayRecord) {
+    PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(billPayRecord.getPatientId());
+    String itemName = assembleItemName(billPayRecord.getOrderRecordId());
+    WxTemplateMsgModel model = new WxTemplateMsgModel();
+    Map<String, Object> paramMap = Maps.newHashMap();
+    paramMap.put("keyword1", itemName);
+    paramMap.put("keyword2", billPayRecord.getReceivedAmount());
+    paramMap.put("keyword3", patient.getName());
+    model.setPatientId(billPayRecord.getPatientId());
+    model.setTemplateEnum(TemplateEnum.MEMBER_PAY);
+    model.setParamMap(paramMap);
+    return model;
+  }
+
+  private String assembleItemName(Integer orderRecordId) {
+    OrderDetail orderDetail = new OrderDetail();
+    orderDetail.setOrderRecordId(orderRecordId);
+    List<OrderDetail> orderDetails = orderDetailBiz.selectList(orderDetail);
+    String res = null;
+    String tariffNames = baseTariffBiz.findBaseTariffNamesByIds(orderDetails.stream()
+            .filter(obj -> obj.getType() == 0)
+            .map(obj -> String.valueOf(obj.getBillingItemId())).toArray(String[]::new));
+    String oralNames = oralTariffBiz.findBaseOralNamesByIds(orderDetails.stream()
+            .filter(obj -> obj.getType() == 1)
+            .map(obj -> String.valueOf(obj.getBillingItemId())).toArray(String[]::new));
+    return Stream.of(tariffNames, oralNames)
+            .filter(StringUtils::isNotBlank)
+            .map(obj -> obj.replace(",","，")).collect(Collectors.joining("，"));
   }
 
   /**
@@ -1394,6 +1440,7 @@ public class TollBiz {
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
       log.info("发送中间表账单收费记录同步消息{}", "收费记录ID：-------》》》" + billPayRecordId);
+      weChatServiceFeign.pushTemplate(chargePushMsg(billPayRecord));
     }
     TollConfirmVO tollConfirmVO = new TollConfirmVO();
     tollConfirmVO.setBillNumber(billNUmber);
