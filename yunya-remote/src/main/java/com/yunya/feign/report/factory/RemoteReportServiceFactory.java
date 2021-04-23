@@ -4,7 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
-import com.yunya.feign.report.domain.vo.WxCardEventVo;
+import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 
 import java.util.List;
 
@@ -26,7 +26,8 @@ public class RemoteReportServiceFactory implements RemoteReportServiceFeign {
     }
 
     @Override
-    public List<WxCardEventVo> listPushCard(Integer noticeType) {
+    public List<WxTemplateMsgModel> listPushCard(Integer noticeType) {
         return null;
     }
+
 }

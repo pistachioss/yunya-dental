@@ -3,6 +3,7 @@ package com.yunya.modules.patient_central.biz;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Maps;
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.*;
@@ -33,10 +34,12 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.appointment.Appointment;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.*;
+import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,8 +51,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.RETURN_VALUE_ISNULL;
-import static com.yunya.framework.common.constant.OperationCodeConstants.SAME_DATA_EXIST;
+import static com.yunya.feign.wechat.enums.TemplateEnum.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 简单介绍:</br> 患者会员卡信息 业务层
@@ -246,6 +249,24 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     remoteRabbitMqServiceFeign.sendMessage(
         patientMemberInfo.getId(), 0, 0, MsgCategoryEnum.BasePatientMember);
     return ResponseUtil.success();
+  }
+
+  private WxTemplateMsgModel cancelPush(Appointment appointment) {
+    OrganizationModel organizationModel = new OrganizationModel();
+    organizationModel.setId(appointment.getOrgId());
+    OrganizationInfoDetail org = remoteSystemServiceFeign.findOrgInfoList(organizationModel).get(0);
+//    PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(appointment.getPatientId());
+    WxTemplateMsgModel model = new WxTemplateMsgModel();
+    Map<String, Object> paramMap = Maps.newHashMap();
+    paramMap.put("keyword1", org.getAbbreviation());
+    paramMap.put("keyword2", org.getAddress());
+    paramMap.put("linkMobile", org.getTel());
+    paramMap.put("appointDate", LocalDate.fromDateFields(appointment.getAppointDate()).toString("yyyy年MM月dd日") + " " + appointment.getAppointTime());
+//    paramMap.put("patientName", patient.getName());
+    model.setPatientId(appointment.getPatientId());
+    model.setTemplateEnum(APPOINT_CANCEL);
+    model.setParamMap(paramMap);
+    return model;
   }
 
   /**
@@ -481,7 +502,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         paramMap.put("linkMobile",orgList.get(0).getTel());
         wxTemplateMsgModel.setParamMap(paramMap);
-        remoteWechatServiceFeign.memberRelation(wxTemplateMsgModel);
+        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
       }
     } else {
       return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "充值金额与入账金额不相等!", null);

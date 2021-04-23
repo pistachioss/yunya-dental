@@ -3,6 +3,7 @@ package com.yunya.modules.appointment.biz.web;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Maps;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
@@ -26,6 +27,7 @@ import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.sms.model.AppointmentSmsSendRecordModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
@@ -33,6 +35,8 @@ import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
+import com.yunya.feign.wechat.RemoteWechatServiceFeign;
+import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -48,7 +52,6 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentOperateRecord;
-import com.yunya.models.employee_attend.WorkOvertimeInfo;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
@@ -60,7 +63,6 @@ import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.cglib.core.Local;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
@@ -80,7 +82,8 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
+import static com.yunya.feign.wechat.enums.TemplateEnum.*;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
@@ -138,6 +141,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /** 短信服务调用 */
     @Autowired
     private RemoteSmsServiceFeign remoteSmsServiceFeign;
+
+    @Resource
+    private RemoteWechatServiceFeign weChatServiceFeign;
 
     /** 注入redis缓冲服务 */
     @Autowired
@@ -198,6 +204,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             if (appointmentOperateRecord <= 0 ){
                 return ResponseUtil.fail(AppointmentError.OPERATION_RECORD_FAIL.getCode(),AppointmentError.OPERATION_RECORD_FAIL.getMessage(),null);
             }
+            //微信推送预约成功通知
+            weChatServiceFeign.pushTemplate(generateModel(form));
             // 如果添加预约成功，则返回预约成功信息
             return ResponseUtil.success();
         }
@@ -248,8 +256,45 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             record.setCrtTime(new Date(System.currentTimeMillis()));
             // 生成新增预约操作记录
             appointOperateRecordBiz.insertSelective(record);
+            //微信推送预约成功通知
+            weChatServiceFeign.pushTemplate(generateModel(form));
         }
         return ResponseUtil.success();
+    }
+
+    private WxTemplateMsgModel generateModel(AppointmentBaseModel appoint) {
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setId(appoint.getOrgId());
+        OrganizationInfoDetail org = remoteSystemServiceFeign.findOrgInfoList(organizationModel).get(0);
+        WxTemplateMsgModel model = new WxTemplateMsgModel();
+        Map<String, Object> paramMap = Maps.newHashMap();
+        paramMap.put("keyword1", LocalDate.fromDateFields(appoint.getAppointDate()).toString("yyyy年MM月dd日") + " " + appoint.getAppointTime());
+        paramMap.put("keyword2", org.getAbbreviation());
+        paramMap.put("keyword3", org.getAddress());
+        paramMap.put("linkMobile", org.getTel());
+        paramMap.put("patientName", appoint.getPatientName());
+        model.setPatientId(appoint.getPatientId());
+        model.setTemplateEnum(APPOINT_SUCCESS);
+        model.setParamMap(paramMap);
+        return model;
+    }
+
+    private WxTemplateMsgModel cancelPush(Appointment appointment) {
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setId(appointment.getOrgId());
+        OrganizationInfoDetail org = remoteSystemServiceFeign.findOrgInfoList(organizationModel).get(0);
+        PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(appointment.getPatientId());
+        WxTemplateMsgModel model = new WxTemplateMsgModel();
+        Map<String, Object> paramMap = Maps.newHashMap();
+        paramMap.put("keyword1", org.getAbbreviation());
+        paramMap.put("keyword2", org.getAddress());
+        paramMap.put("linkMobile", org.getTel());
+        paramMap.put("appointDate", LocalDate.fromDateFields(appointment.getAppointDate()).toString("yyyy年MM月dd日") + " " + appointment.getAppointTime());
+        paramMap.put("patientName", patient.getName());
+        model.setPatientId(appointment.getPatientId());
+        model.setTemplateEnum(APPOINT_CANCEL);
+        model.setParamMap(paramMap);
+        return model;
     }
 
     /**
@@ -372,6 +417,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointOperateRecordBiz.insertAppointmentOperateRecord(record);
         // 发送消息更新中间表就诊流程
         rabbitMqServiceFeign.sendMessage(id,0,2, BaseTreatmentProcess);
+        //微信取消预约推送
+        weChatServiceFeign.pushTemplate(cancelPush(appointment));
         return ResponseUtil.success();
     }
 

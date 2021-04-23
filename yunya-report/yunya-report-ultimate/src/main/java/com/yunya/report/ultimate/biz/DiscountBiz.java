@@ -390,14 +390,12 @@ public class DiscountBiz {
     }
 
     public List<WxTemplateMsgModel> pushCard(Integer noticeType) {
-        List<WxCardEventVo> list = cardMapper.listWxPushCard(0);
-        List<WxCardEventVo> list1 = cardMapper.listWxPushCard(1);
-        List<WxCardEventVo> list2 = cardMapper.listWxPushCard(2);
-        return null;
+        List<WxCardEventVo> list = cardMapper.listWxPushCard(noticeType);
+        return this.assemblePushModel(list, noticeType);
     }
 
-    private void assemblePushModel(List<WxCardEventVo> list, Integer noticeType) {
-        list.stream().filter(obj -> obj.getPatientId() != null).map(obj -> {
+    private List<WxTemplateMsgModel> assemblePushModel(List<WxCardEventVo> list, Integer noticeType) {
+        return list.stream().filter(obj -> obj.getPatientId() != null).map(obj -> {
             WxTemplateMsgModel model = new WxTemplateMsgModel();
             Map<String, Object> map = Maps.newHashMapWithExpectedSize(16);
             model.setPatientId(obj.getPatientId());

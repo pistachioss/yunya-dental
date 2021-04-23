@@ -113,7 +113,7 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
             throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
         }
         wxTemplateMsgModel.setParamMap(paramMap);
-        remoteWechatServiceFeign.memberRelation(wxTemplateMsgModel);
+        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
 
         return re;
     }
@@ -163,7 +163,7 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
             throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
         }
         wxTemplateMsgModel.setParamMap(paramMap);
-        remoteWechatServiceFeign.memberRelation(wxTemplateMsgModel);
+        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
         return de;
     }
 

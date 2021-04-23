@@ -1,11 +1,17 @@
 package com.yunya.modules.appointment.biz.web;
 
+import com.google.common.collect.Maps;
 import com.yunya.feign.appointment.domain.form.AppointModifyRecordForm;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.model.AppointModifyRecordModel;
 import com.yunya.feign.appointment.domain.query.AppointModifyRecordQuery;
 import com.yunya.feign.appointment.vo.AppointModifyRecordVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
+import com.yunya.feign.wechat.RemoteWechatServiceFeign;
+import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -14,14 +20,18 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentModifyRecord;
 import com.yunya.modules.appointment.mapper.AppointmentModifyRecordMapper;
+import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseAppointmentModify;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
+import static com.yunya.feign.wechat.enums.TemplateEnum.*;
 
 /**
  * 预约修改记录服务
@@ -36,6 +46,12 @@ public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordM
 
     @Autowired
     private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+    @Resource
+    private RemoteWechatServiceFeign weChatServiceFeign;
+    /** 注入yunya-admin-system Feign接口服务 */
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
 
     /**
      * 新增预约修改记录
@@ -82,7 +98,26 @@ public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordM
         int count = mapper.insertSelective(modify);
         if (count > 0) {
             rabbitMqServiceFeign.sendMessage(modify.getId(), 0, BaseAppointmentModify);
+            //微信推送变更通知
+            weChatServiceFeign.pushTemplate(generateModel(appointmentForm, appointment));
         }
+    }
+
+    private WxTemplateMsgModel generateModel(AppointmentBaseForm appointForm, Appointment appointment) {
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setId(appointForm.getOrgId());
+        OrganizationInfoDetail org = remoteSystemServiceFeign.findOrgInfoList(organizationModel).get(0);
+        WxTemplateMsgModel model = new WxTemplateMsgModel();
+        Map<String, Object> paramMap = Maps.newHashMap();
+        paramMap.put("keyword1", appointForm.getPatientName());
+        paramMap.put("keyword2", LocalDate.fromDateFields(appointForm.getAppointDate()).toString("yyyy年MM月dd日") + " " + appointForm.getAppointTime());
+        paramMap.put("keyword3", org.getAbbreviation());
+        paramMap.put("linkMobile", org.getTel());
+        paramMap.put("appointDate", LocalDate.fromDateFields(appointment.getAppointDate()).toString("yyyy年MM月dd日"));
+        model.setPatientId(appointForm.getPatientId());
+        model.setTemplateEnum(APPOINT_CHANGE);
+        model.setParamMap(paramMap);
+        return model;
     }
 
     /**

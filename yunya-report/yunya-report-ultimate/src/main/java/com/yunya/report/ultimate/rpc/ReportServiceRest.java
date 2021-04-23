@@ -24,8 +24,8 @@ public class ReportServiceRest {
         return discountBiz.listWxCouponsUseItem(cardId);
     }
 
-    @PostMapping("/card/{noticeType}/list")
-    public List<WxTemplateMsgModel> listPushCard(@PathVariable(value = "noticeType") Integer noticeType) {
+    @PostMapping("/card/{noticeType}/push/list")
+    List<WxTemplateMsgModel> listPushCard(@PathVariable(value = "noticeType") Integer noticeType) {
         return discountBiz.pushCard(noticeType);
     }
 }

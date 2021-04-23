@@ -48,7 +48,6 @@ public class TemplatePush implements WeChatNotify {
         if ("failed: system failed".equals(status)) {
             records.setMsgStatus(2);
         }
-        log.info("发送给用户的消息是：{}", records);
         recordsMapper.insertSelective(records);
         return null;
     }
