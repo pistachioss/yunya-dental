@@ -6,6 +6,7 @@ import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.config.DuiBaConfig;
 import com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -83,6 +85,9 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         entity.setCreditsOption((byte) 0);
         entity.setRemarks(payId.toString());
         entity.setCrtId(patientId);
+        entity.setCrtTime(DateUtil.getCurrentDate());
+        entity.setUpdId(patientId);
+        entity.setUpdTime(DateUtil.getCurrentDate());
         return addCredits(entity);
     }
 
@@ -91,9 +96,9 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      * @param query 查询参数
      * @return
      */
-    public ResponseResult selectPatientCreditsRecord(PatientCreditsRecordQuery query) {
+    public ResponseResult<List<CreditsRecordVO>> selectPatientCreditsRecord(PatientCreditsRecordQuery query) {
         if (query.getWhetherPage()) {
-            PageHelper.offsetPage(query.getPageNum(),query.getPageSize());
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
         CreditsShop entity = new CreditsShop();
         entity.setPatientId(query.getPatientId());
@@ -129,7 +134,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      * @param patientId
      * @return
      */
-    public ResponseResult lastPatientCredits(Integer patientId) {
+    public ResponseResult<CreditsShop> lastPatientCredits(Integer patientId) {
         CreditsShop creditsShop = mapper.selectLastCredits(patientId);
         return ResponseUtil.success(creditsShop);
     }

@@ -1,9 +1,12 @@
 package com.yunya.models.credits_shop;
 
+import lombok.ToString;
+
 import java.util.Date;
 import javax.persistence.*;
 
 @Table(name = "credits_shop")
+@ToString
 public class CreditsShop {
     /**
      * 主键
