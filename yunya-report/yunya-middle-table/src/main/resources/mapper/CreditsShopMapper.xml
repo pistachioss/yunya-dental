@@ -83,6 +83,7 @@
       GROUP BY bb.patient_id
     </select>
 
+  <!-- 批量添加患者初始化积分信息 -->
   <insert id="insetCreditsShopList">
      INSERT INTO credits_shop (
       `patient_id`,

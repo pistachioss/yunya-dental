@@ -61,4 +61,9 @@
             #{item.debtAmount}, #{item.checkerId})
         </foreach>
     </insert>
+
+    <!-- 根据患者id查询订单数量 -->
+    <select id="selectCountByPatientId" resultType="java.lang.Integer">
+        select count(1) from base_bill where patient_id = #{patientId}
+    </select>
 </mapper>

@@ -9,8 +9,10 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.config.DuiBaConfig;
 import com.yunya.middletable.dao.credits_shop.CreditsShopMapper;
+import com.yunya.middletable.dao.report.BasePatientMapper;
 import com.yunya.middletable.utils.SignTool;
 import com.yunya.models.credits_shop.CreditsShop;
+import com.yunya.models.report.BasePatient;
 import com.yunya.models.report.BasePatientConsumptionCountVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,9 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     /** 多线程 */
     @Resource(name = "customizeThreadPool")
     private ExecutorService importExcelThreadPool;
+
+    @Resource
+    private BasePatientMapper basePatientMapper;
 
     /**
      * 增加积分
