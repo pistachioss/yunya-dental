@@ -297,7 +297,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
       for (CurrentMonthBillPayRecordVO vo : resultList) {
         Integer patientId = vo.getPatientId();
         PatientBaseInfo patientInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
-        if (null != patientId) {
+        if (null != patientInfo) {
           vo.setPatientName(patientInfo.getName());
           vo.setPatientMobile(patientInfo.getMobile());
         }
