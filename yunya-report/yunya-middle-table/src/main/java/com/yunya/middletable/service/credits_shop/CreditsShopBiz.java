@@ -1,6 +1,7 @@
 package com.yunya.middletable.service.credits_shop;
 
 import com.github.pagehelper.PageHelper;
+import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -8,16 +9,23 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.config.DuiBaConfig;
 import com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper;
+
+import com.yunya.middletable.dao.report.BasePatientMapper;
 import com.yunya.middletable.utils.SignTool;
 import com.yunya.models.credits_shop.CreditsShop;
+import com.yunya.models.report.BasePatient;
+import com.yunya.models.report.BasePatientConsumptionCountVo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @program: yunya-dental
@@ -25,11 +33,20 @@ import java.util.Map;
  * @author: LHB
  * @create: 2021-04-22 16:01
  **/
+@Slf4j
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
 
     @Autowired
     private DuiBaConfig duiBaConfig;
+
+    /** 多线程 */
+    @Resource(name = "customizeThreadPool")
+    private ExecutorService importExcelThreadPool;
+
+    @Resource
+    private BasePatientMapper basePatientMapper;
 
     /**
      * 增加积分
@@ -119,4 +136,50 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     }
 
 
+    /**
+     * 初始患者化积分
+     */
+    public void initialization() throws InterruptedException {
+        List<CreditsShop> creditsShopList = new ArrayList<>();
+        List<BasePatientConsumptionCountVo> basePatientConsumptionCountVos = mapper.selectPatientConsumptionCount();
+        if (basePatientConsumptionCountVos != null){
+            for (BasePatientConsumptionCountVo basePatientConsumptionCountVo : basePatientConsumptionCountVos) {
+                CreditsShop creditsShop = new CreditsShop();
+                creditsShop.setPatientId(basePatientConsumptionCountVo.getPatientId());
+                creditsShop.setType("offlineConsume");
+                creditsShop.setChannel((byte)0);
+                creditsShop.setOrderNum(null);
+                creditsShop.setCreditsAccount(basePatientConsumptionCountVo.getIntegral().longValue());
+                creditsShop.setCredits(0L);
+                creditsShop.setCreditsOption((byte)0);
+                creditsShop.setActualPrice(0);
+                creditsShop.setItemCode("");
+                creditsShop.setDescription("");
+                creditsShop.setRemarks("初始化积分");
+                creditsShop.setInservice(false);
+                creditsShop.setCrtId(0);
+                creditsShop.setCrtTime(new Date());
+                creditsShop.setUpdId(0);
+                creditsShop.setUpdTime(new Date());
+                creditsShopList.add(creditsShop);
+            }
+            List<List<CreditsShop>> creditsShopLists = Lists.partition(creditsShopList, 100);
+            CountDownLatch countDownLatch = new CountDownLatch(creditsShopLists.size());
+            long start = System.currentTimeMillis();
+            for (List<CreditsShop> creditsShopListVo: creditsShopLists) {
+                importExcelThreadPool.execute(()->{
+                    try{
+                        mapper.insetCreditsShopList(creditsShopListVo);
+                    }catch (Exception e){
+                        log.info("批量添加患者初始化积分信息异常",e);
+                    }finally{
+                        countDownLatch.countDown();
+                    }
+                });
+            }
+            countDownLatch.await();
+            long end = System.currentTimeMillis();
+            log.info("批量添加患者初始化积分信息完成，时长：[{}]秒",(end - start) / 1000);
+        }
+    }
 }
