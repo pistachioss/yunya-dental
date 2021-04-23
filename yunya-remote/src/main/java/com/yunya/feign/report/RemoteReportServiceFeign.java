@@ -27,6 +27,6 @@ public interface RemoteReportServiceFeign {
     @PostMapping("/api/card/{cardId}/item/usage")
     List<BenefitItemVo> listWxCouponsUseItem(@PathVariable(value = "cardId") Integer cardId);
 
-    @PostMapping("/card/{noticeType}/push/list")
+    @PostMapping("/api/card/{noticeType}/push/list")
     List<WxTemplateMsgModel> listPushCard(@PathVariable(value = "noticeType") Integer noticeType);
 }

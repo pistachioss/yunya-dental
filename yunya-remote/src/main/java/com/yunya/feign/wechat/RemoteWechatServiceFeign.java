@@ -27,10 +27,10 @@ import java.util.List;
 public interface RemoteWechatServiceFeign {
 
     @ApiOperation("推送共用接口")
-    @RequestMapping(value = "/wxVip/template/msg/push", method = RequestMethod.POST)
+    @RequestMapping(value = "/wxVip/push/msg", method = RequestMethod.POST)
     void pushTemplate(@RequestBody @Validated WxTemplateMsgModel msgModel);
 
     @ApiOperation("批量推送共用接口")
-    @PostMapping(value = "/wxVip/template/msg/batch/push")
+    @PostMapping(value = "/wxVip/push/msg/batch")
     void batchPushTemplate(@RequestBody List<WxTemplateMsgModel> list);
 }

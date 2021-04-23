@@ -22,12 +22,12 @@ public class WxPushRpc {
     @Resource
     private WXService wxService;
 
-    @PostMapping(value = "/wxVip/template/msg/push")
+    @PostMapping(value = "/wxVip/push/msg")
     public void pushTemplate(@RequestBody WxTemplateMsgModel msgModel) {
         wxService.pushTemplateMsg(msgModel);
     }
 
-    @PostMapping(value = "/wxVip/template/msg/batch/push")
+    @PostMapping(value = "/wxVip/push/msg/batch")
     public void batchPushTemplate(@RequestBody List<WxTemplateMsgModel> list) {
         wxService.batchPushTemplate(list);
     }

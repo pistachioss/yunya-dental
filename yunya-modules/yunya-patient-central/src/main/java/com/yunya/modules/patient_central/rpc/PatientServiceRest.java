@@ -329,7 +329,7 @@ public class PatientServiceRest {
     }
 
     @ApiOperation("批量查询推送消息的绑定人")
-    @RequestMapping (value = "/api/wx/pusher/batch", method = RequestMethod.POST)
+    @RequestMapping (value = "/wx/pusher/batch", method = RequestMethod.POST)
     List<WxFans> listWxPushUser(@RequestBody List<Integer> patientIds) {
         return wxFansBiz.getPushWxUser(patientIds);
     }

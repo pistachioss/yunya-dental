@@ -30,8 +30,9 @@
 
     <select id="listWxUsers" resultType="com.yunya.models.patient_central.WxFans">
       select
-          wf.open_id,
-          wf.nick_name
+          wf.open_id as openId,
+          wfb.patient_id as patientId,
+          wf.nick_name as nickName
       from wx_fans_bind wfb
                inner join wx_fans wf on wf.open_id = wfb.open_id
       where wfb.patient_id in

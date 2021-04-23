@@ -29,7 +29,7 @@ public class WxTask {
         List<WxTemplateMsgModel> pushCard = reportServiceFeign.listPushCard(0);
         wxService.batchPushTemplate(pushCard);
         long end = System.currentTimeMillis();
-        log.info("卡券激活未使用批量推送消息时长：[{}] 秒", (end - start));
+        log.info("卡券激活未使用批量推送消息时长：[{}] 秒", (end - start)/1000);
     }
 
     @Scheduled(cron = "${corn.wxPushDate}")
@@ -38,7 +38,7 @@ public class WxTask {
         List<WxTemplateMsgModel> pushCard = reportServiceFeign.listPushCard(1);
         wxService.batchPushTemplate(pushCard);
         long end = System.currentTimeMillis();
-        log.info("卡券即将到期推送消息时长：[{}] 秒", (end - start));
+        log.info("卡券即将到期推送消息时长：[{}] 秒", (end - start)/1000);
     }
 
     @Scheduled(cron = "${corn.wxPushDate}")
@@ -47,6 +47,6 @@ public class WxTask {
         List<WxTemplateMsgModel> pushCard = reportServiceFeign.listPushCard(2);
         wxService.batchPushTemplate(pushCard);
         long end = System.currentTimeMillis();
-        log.info("卡券到期推送消息时长：[{}] 秒", (end - start));
+        log.info("卡券到期推送消息时长：[{}] 秒", (end - start)/1000);
     }
 }

@@ -12,6 +12,7 @@ import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.wechat.RemoteWechatServiceFeign;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.feign.wechat.enums.TemplateDataEnum;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -112,8 +113,8 @@ public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordM
         paramMap.put("keyword1", appointForm.getPatientName());
         paramMap.put("keyword2", LocalDate.fromDateFields(appointForm.getAppointDate()).toString("yyyy年MM月dd日") + " " + appointForm.getAppointTime());
         paramMap.put("keyword3", org.getAbbreviation());
-        paramMap.put("linkMobile", org.getTel());
-        paramMap.put("appointDate", LocalDate.fromDateFields(appointment.getAppointDate()).toString("yyyy年MM月dd日"));
+        paramMap.put(TemplateDataEnum.LINK_MOBILE.getArgName(), org.getTel());
+        paramMap.put(TemplateDataEnum.APPOINT_DATE.getArgName(), LocalDate.fromDateFields(appointment.getAppointDate()).toString("yyyy年MM月dd日"));
         model.setPatientId(appointForm.getPatientId());
         model.setTemplateEnum(APPOINT_CHANGE);
         model.setParamMap(paramMap);

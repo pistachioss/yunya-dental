@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.feign.wechat.enums.TemplateDataEnum;
 import com.yunya.models.report.BaseCoupon;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.*;
@@ -399,6 +400,7 @@ public class DiscountBiz {
             WxTemplateMsgModel model = new WxTemplateMsgModel();
             Map<String, Object> map = Maps.newHashMapWithExpectedSize(16);
             model.setPatientId(obj.getPatientId());
+            map.put(TemplateDataEnum.COUPON_NAME.getArgName(), obj.getCouponName());
             if (noticeType == 0) {
                 model.setTemplateEnum(ACTIVATED_UNUSED);
                 map.put("keyword1", obj.getCardNumber());
