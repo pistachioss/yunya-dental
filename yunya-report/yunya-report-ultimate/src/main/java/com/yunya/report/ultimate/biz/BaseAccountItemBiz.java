@@ -1176,7 +1176,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
         if (StringHelper.isNotEmpty(paymentList)) {
           for (StatementPaymentVO payment : paymentList) {
             String key = payment.getAccountItemName();
-            BigDecimal totalAmount = payment.getTotalAmount();
+            BigDecimal totalAmount = payment.getTotalAmount().setScale(2, BigDecimal.ROUND_HALF_UP);
             object.put(key, totalAmount);
             dynamicTitles.put(key, key);
             total = total.add(totalAmount);
