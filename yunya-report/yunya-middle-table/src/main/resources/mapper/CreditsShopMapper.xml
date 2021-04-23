@@ -24,9 +24,16 @@
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
 
+  <sql id="baseColumns">
+    id,patient_id,type,`channel`,order_num,credits_account,credits,credits_option,actual_price,item_code,`description`,
+    remarks,inservice,crt_id,crt_time,upd_id,upd_time
+  </sql>
+
   <!-- 获取患者最新积分信息 -->
   <select id="selectLastCredits" resultMap="BaseResultMap">
-    select * from credits_shop
+    select
+    <include refid="baseColumns"/>
+    from credits_shop
     <where>
       <if test="patientId != null">
         patient_id = #{patientId}
@@ -38,10 +45,9 @@
 
   <!-- 查询患者积分记录表 -->
   <select id="selectPatientCreditsRecord" resultType="com.yunya.feign.report.domain.vo.CreditsRecordVO">
-/*   phoneflow(流量), virtual(虚拟商品),offlineConsume(门诊消费), refund(门店退费),introduce(患者介绍) */
     select
       cs.patient_id as patientId,
-      (case cs.type
+      case cs.type
       when 'game' then '游戏'
       when 'sign' then '签到'
       when 'task' then 'PK赛'
@@ -57,11 +63,11 @@
       when 'offlineConsume' then '门诊消费'
       when 'refund' then '门店退费'
       when 'introduce' then '患者介绍'
-      end case) as type ,
-      (case cs.channel
+      end as `type` ,
+      case cs.channel
        when 0 then '艾维自有'
-       when 1 then '兑吧') as channel
-      (concat(if(cs.credits_option=0,'+','-'),cs.credits)) as credits,
+       when 1 then '兑吧' end as `channel`,
+      concat(if(cs.credits_option=0,'+','-'),cs.credits) as `credits`,
       date_format(cs.crt_time,'%Y-%m-%d %H:%i') as crtTime
     from credits_shop cs
     <where>

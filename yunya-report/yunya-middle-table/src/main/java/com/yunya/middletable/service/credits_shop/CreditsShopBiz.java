@@ -98,7 +98,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      */
     public ResponseResult selectPatientCreditsRecord(PatientCreditsRecordQuery query) {
         if (query.getWhetherPage()) {
-            PageHelper.offsetPage(query.getPageNum(),query.getPageSize());
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
         CreditsShop entity = new CreditsShop();
         entity.setPatientId(query.getPatientId());

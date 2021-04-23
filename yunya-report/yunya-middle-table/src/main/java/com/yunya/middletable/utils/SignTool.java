@@ -103,7 +103,7 @@ public class SignTool {
 	public static String signRequestUrl(Map<String,String> params, String sign, String duibaUrl) {
 		// 拼接登录URL
 		StringBuffer sb = new StringBuffer();
-		sb.append(duibaUrl + "?");
+		sb.append(duibaUrl);
 		sb.append("uid=" + params.get("uid") + "&");
 		sb.append("credits=" + params.get("credits") + "&");
 		sb.append("appKey=" + params.get("appKey") + "&");
