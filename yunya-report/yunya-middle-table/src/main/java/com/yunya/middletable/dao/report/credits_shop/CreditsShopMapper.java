@@ -28,7 +28,7 @@ public interface CreditsShopMapper extends Mapper<CreditsShop> {
 
     /**
      * 查询患者消费总额
-     * @return
+     * @return 患者消费总额
      */
     List<BasePatientConsumptionCountVo> selectPatientConsumptionCount();
 
@@ -37,4 +37,11 @@ public interface CreditsShopMapper extends Mapper<CreditsShop> {
      * @param creditsShopListVo 患者积分信息
      */
     void insetCreditsShopList(@Param("list") List<CreditsShop> creditsShopListVo);
+
+    /**
+     * 查询该患者最新一条数据
+     * @param originId 患者id
+     * @return 患者积分信息
+     */
+    CreditsShop selectCreditsShopByPatientId(@Param("patientId") Integer originId);
 }
