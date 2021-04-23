@@ -187,6 +187,33 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         // 添加会员双向关联
         sendMemberRelationMessages(patientMemberRelation.getId(), 0);
       }
+
+      //发送微信推送消息
+      WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+      wxTemplateMsgModel.setPatientId(form.getMasterCardId());
+      wxTemplateMsgModel.setTemplateEnum(TemplateEnum.BIND_SUCCESS);
+
+      PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(form.getSecondaryCardId());
+      log.info("----------------开始------------------------");
+      log.info(form.getMasterCardId()+"");
+      log.info(patientBaseInfoVo.getName()+"");
+      log.info("----------------结束------------------------");
+      Map<String, Object> paramMap = new HashMap<>();
+      if(form.getBindType()==0){
+        paramMap.put("first","您好，您的会员卡成功绑定副卡人，将享受您的会员卡折扣权益，副卡人信息如下：");
+      }else{
+        paramMap.put("first","您好，您的会员卡成功绑定余额共享人，可使用您的会员卡余额，信息如下：");
+      }
+
+      if(patientBaseInfoVo!=null){
+        paramMap.put("keyword1",patientBaseInfoVo.getName());
+        paramMap.put("keyword2",patientBaseInfoVo.getMobile());
+      }else{
+        throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
+      }
+      wxTemplateMsgModel.setParamMap(paramMap);
+      remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
+
       return ResponseUtil.success();
     }
   }
@@ -325,6 +352,11 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param cardRelationForm 会员卡关系删除Form
    */
   public void deleteRelationById(CardRelationForm cardRelationForm) {
+
+    PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
+    patientMemberRelation.setId(cardRelationForm.getId());
+    PatientMemberRelation memberRelation =
+            this.patientMemberRelationMapper.selectOne(patientMemberRelation);
     // 权限绑定 单项删除
     if (cardRelationForm.getBindType() == 0) {
       this.patientMemberRelationMapper.deleteByPrimaryKey(cardRelationForm.getId());
@@ -333,10 +365,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     }
     // 共享值绑定 双项删除
     if (cardRelationForm.getBindType() == 1) {
-      PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
-      patientMemberRelation.setId(cardRelationForm.getId());
-      PatientMemberRelation memberRelation =
-          this.patientMemberRelationMapper.selectOne(patientMemberRelation);
+
       if (memberRelation != null) {
         Integer relationId =
             patientMemberRelationMapper.selectMemberRelationId(
@@ -353,6 +382,30 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         sendMemberRelationMessages(memberRelation.getId(), 2);
       }
     }
+
+    //发送微信推送消息
+    WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+    wxTemplateMsgModel.setPatientId(memberRelation.getMasterCardId());
+    wxTemplateMsgModel.setTemplateEnum(TemplateEnum.UNBIND_SUCCESS);
+
+    PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(memberRelation.getSecondaryCardId());
+    Map<String, Object> paramMap = new HashMap<>();
+    if(cardRelationForm.getBindType()==0){
+      paramMap.put("first","您好，您的会员卡副卡人已解绑，信息如下");
+    }else{
+      paramMap.put("first","您好，您的会员卡余额共享人已解绑，信息如下");
+    }
+
+    if(patientBaseInfoVo!=null){
+      paramMap.put("keyword1",patientBaseInfoVo.getName());
+      paramMap.put("keyword2",patientBaseInfoVo.getMobile());
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+      paramMap.put("keyword3",sdf.format(new Date()));
+    }else{
+      throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
+    }
+    wxTemplateMsgModel.setParamMap(paramMap);
+    remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
   }
 
   /**
