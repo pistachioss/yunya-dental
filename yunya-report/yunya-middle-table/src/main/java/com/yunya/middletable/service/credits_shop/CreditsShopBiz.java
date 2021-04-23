@@ -1,6 +1,7 @@
 package com.yunya.middletable.service.credits_shop;
 
 import com.github.pagehelper.PageHelper;
+import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -8,17 +9,17 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.dao.credits_shop.CreditsShopMapper;
 import com.yunya.models.credits_shop.CreditsShop;
-import com.yunya.models.report.BasePatient;
 import com.yunya.models.report.BasePatientConsumptionCountVo;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.InetAddress;
-import java.util.List;
-
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
 /**
  * @program: yunya-dental
@@ -28,6 +29,10 @@ import java.util.List;
  **/
 @Service
 public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
+
+    /** 多线程 */
+    @Resource(name = "customizeThreadPool")
+    private ExecutorService importExcelThreadPool;
 
     /**
      * 增加积分
@@ -97,9 +102,26 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
                 creditsShop.setType("offlineConsume");
                 creditsShop.setChannel((byte)0);
                 creditsShop.setOrderNum(null);
+                creditsShop.setCreditsAccount(basePatientConsumptionCountVo.getIntegral().longValue());
+                creditsShop.setCredits(0L);
+                creditsShop.setCreditsOption((byte)0);
+                creditsShop.setActualPrice(0);
+                creditsShop.setItemCode("");
+                creditsShop.setDescription("");
+                creditsShop.setRemarks("初始化积分");
+                creditsShop.setInservice(false);
+                creditsShop.setCrtId(0);
+                creditsShop.setCrtTime(new Date());
+                creditsShop.setUpdId(0);
+                creditsShop.setUpdTime(new Date());
+                creditsShopList.add(creditsShop);
+            }
+            List<List<CreditsShop>> creditsShopLists = Lists.partition(creditsShopList, 100);
+            CountDownLatch countDownLatch = new CountDownLatch(creditsShopLists.size());
+            for (List<CreditsShop> creditsShopListVo: creditsShopLists) {
+                importExcelThreadPool.execute(()->{
 
-
-
+                });
             }
         }
     }
