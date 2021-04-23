@@ -3289,7 +3289,7 @@
         bbd.itemReceivedWorkload
         from (
         select bbd.billId,
-        date_format(bbd.billDate, '%Y-%m-%d %H:%m') as billDate,
+        date_format(bbd.billDate, '%Y-%m-%d %H:%i') as billDate,
         bbd.billNum,
         bbd.regDentistId,
         be.employee_name as regDentistName,
@@ -3532,7 +3532,7 @@
         executorName
         from (
         select bbd.billId,
-        date_format(bbd.billDate, '%Y-%m-%d %H:%m') as billDate,
+        date_format(bbd.billDate, '%Y-%m-%d %H:%i') as billDate,
         bbd.billNum,
         bbd.patientId,
         bbd.patientName,
@@ -3663,7 +3663,7 @@
         bbd.executorName
         from (
         select bb.billId,
-        date_format(bb.billDate, '%Y-%m-%d %H:%m') as billDate,
+        date_format(bb.billDate, '%Y-%m-%d %H:%i') as billDate,
         bb.billNum,
         bb.patientId,
         bb.patientName,
@@ -3744,7 +3744,7 @@
         select
         brd.refund_amount,
         bbd.billId,
-        date_format(bbd.billDate, '%Y-%m-%d %H:%m') as billDate,
+        date_format(bbd.billDate, '%Y-%m-%d %H:%i') as billDate,
         bbd.billNum,
         bbd.patientId,
         bbd.patientName,
