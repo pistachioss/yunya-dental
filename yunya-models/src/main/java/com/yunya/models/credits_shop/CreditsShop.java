@@ -37,7 +37,7 @@ public class CreditsShop {
      * 当前总积分
      */
     @Column(name = "credits_account")
-    private String creditsAccount;
+    private Long creditsAccount;
 
     /**
      * 本次兑换、扣除的积分
@@ -196,7 +196,7 @@ public class CreditsShop {
      *
      * @return credits_account - 当前总积分
      */
-    public String getCreditsAccount() {
+    public Long getCreditsAccount() {
         return creditsAccount;
     }
 
@@ -205,7 +205,7 @@ public class CreditsShop {
      *
      * @param creditsAccount 当前总积分
      */
-    public void setCreditsAccount(String creditsAccount) {
+    public void setCreditsAccount(Long creditsAccount) {
         this.creditsAccount = creditsAccount;
     }
 
