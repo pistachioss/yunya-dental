@@ -104,25 +104,25 @@
       `upd_time`
     )
     VALUES
-    <foreach collection="list" item="CreditsShop" open="(" separator="," close=")">
+    <foreach collection="list" item="CreditsShop" index="index" separator=",">
       (
-      {CreditsShop.patientId},
-      {CreditsShop.type},
-      {CreditsShop.channel},
-      {CreditsShop.orderNum},
-      {CreditsShop.creditsAccount},
-      {CreditsShop.credits},
-      {CreditsShop.creditsOption},
-      {CreditsShop.actualPrice},
-      {CreditsShop.itemCode},
-      {CreditsShop.description},
-      {CreditsShop.remarks},
-      {CreditsShop.inservice},
-      {CreditsShop.crtId},
-      {CreditsShop.crtTime},
-      {CreditsShop.updId},
-      {CreditsShop.updTime}
-      );
+      #{CreditsShop.patientId},
+      #{CreditsShop.type},
+      #{CreditsShop.channel},
+      #{CreditsShop.orderNum},
+      #{CreditsShop.creditsAccount},
+      #{CreditsShop.credits},
+      #{CreditsShop.creditsOption},
+      #{CreditsShop.actualPrice},
+      #{CreditsShop.itemCode},
+      #{CreditsShop.description},
+      #{CreditsShop.remarks},
+      #{CreditsShop.inservice},
+      #{CreditsShop.crtId},
+      #{CreditsShop.crtTime},
+      #{CreditsShop.updId},
+      #{CreditsShop.updTime}
+      )
     </foreach>
   </insert>
 </mapper>
