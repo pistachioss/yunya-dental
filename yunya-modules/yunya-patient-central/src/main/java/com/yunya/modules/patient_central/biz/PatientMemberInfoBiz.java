@@ -194,10 +194,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       wxTemplateMsgModel.setTemplateEnum(TemplateEnum.BIND_SUCCESS);
 
       PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(form.getSecondaryCardId());
-      log.info("----------------开始------------------------");
-      log.info(form.getMasterCardId()+"");
-      log.info(patientBaseInfoVo.getName()+"");
-      log.info("----------------结束------------------------");
       Map<String, Object> paramMap = new HashMap<>();
       if(form.getBindType()==0){
         paramMap.put("first","您好，您的会员卡成功绑定副卡人，将享受您的会员卡折扣权益，副卡人信息如下：");
@@ -800,6 +796,37 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         return ResponseUtil.fail(
             OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到会员卡", patientMemberInfo);
       }
+
+        //发送微信推送消息
+        WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+        wxTemplateMsgModel.setPatientId(patientMemberInfo.getPatientId());
+        wxTemplateMsgModel.setTemplateEnum(TemplateEnum.MEMBER_CONSUME);
+
+        PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(model.getPatientId());
+
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put(TemplateDataEnum.PATIENT_NAME.getArgName(),patientBaseInfoVo.getName());
+        if(patientBaseInfoVo!=null){
+            paramMap.put("keyword1",model.getExpendTotal());
+            paramMap.put("keyword2",patientMemberInfo.getPrincipalAmount().add(patientMemberInfo.getBonusAmount()));
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+            paramMap.put("keyword3",sdf.format(new Date()));
+            OrganizationModel organizationModel = new OrganizationModel();
+            organizationModel.setId(Integer.valueOf(BaseContextHandler.getOrgId()));
+
+            List<OrganizationInfoDetail>orgList = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+            if(orgList!=null&&orgList.size()>0){
+              paramMap.put("keyword4",orgList.get(0).getName());
+            }else{
+              throw new ClientServiceException("门诊信息为空", RETURN_VALUE_ISNULL);
+           }
+          paramMap.put("linkMobile",orgList.get(0).getTel());
+        }else{
+            throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
+        }
+        wxTemplateMsgModel.setParamMap(paramMap);
+        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
+
     } finally {
       reentrantLock.unlock();
       log.info("============消费锁释放操作===================");
