@@ -96,7 +96,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      * @param query 查询参数
      * @return
      */
-    public ResponseResult selectPatientCreditsRecord(PatientCreditsRecordQuery query) {
+    public ResponseResult<List<CreditsRecordVO>> selectPatientCreditsRecord(PatientCreditsRecordQuery query) {
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
@@ -134,7 +134,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      * @param patientId
      * @return
      */
-    public ResponseResult lastPatientCredits(Integer patientId) {
+    public ResponseResult<CreditsShop> lastPatientCredits(Integer patientId) {
         CreditsShop creditsShop = mapper.selectLastCredits(patientId);
         return ResponseUtil.success(creditsShop);
     }

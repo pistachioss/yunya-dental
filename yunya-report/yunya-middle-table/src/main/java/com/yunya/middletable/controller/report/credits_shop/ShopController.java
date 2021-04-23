@@ -1,12 +1,13 @@
 package com.yunya.middletable.controller.report.credits_shop;
 
 import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
+import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import com.yunya.models.credits_shop.CreditsShop;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -35,6 +37,11 @@ public class ShopController {
 
     @ApiOperation("生成免登录URL")
     @GetMapping("/dautoLogin")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "openId", value = "用户唯一标识", required = true, dataTypeClass = String.class),
+            @ApiImplicitParam(name = "patientId", value = "患者ID", required = true, dataTypeClass = Integer.class)
+    })
+    @ApiResponse(code = 0,message = "兑吧登录URL",response = String.class)
     public String duibaAutoLogin(@NotBlank(message = "openID不能为空") String openId,
                                  @NotNull(message = "患者ID不能为空") Integer patientId) {
         return creditsShopBiz.duibaAutoLogin(openId,patientId);
@@ -42,12 +49,14 @@ public class ShopController {
 
     @ApiOperation("查询患者积分记录")
     @GetMapping("/credits/record")
-    public ResponseResult patientCreditsRecord(PatientCreditsRecordQuery query) {
+    public ResponseResult<List<CreditsRecordVO>> patientCreditsRecord(PatientCreditsRecordQuery query) {
         return creditsShopBiz.selectPatientCreditsRecord(query);
     }
 
+    @ApiOperation("查询患者个人积分")
     @GetMapping("/credits/{patientId}")
-    public ResponseResult lastPatientCredits(@NotNull(message = "患者ID不能为空") @PathVariable("patientId") Integer patientId) {
+    @ApiImplicitParam(name = "patientId", value = "患者ID", required = true,dataTypeClass = Integer.class)
+    public ResponseResult<CreditsShop> lastPatientCredits(@NotNull(message = "患者ID不能为空") @PathVariable("patientId") Integer patientId) {
         return creditsShopBiz.lastPatientCredits(patientId);
     }
 
