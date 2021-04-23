@@ -1,5 +1,10 @@
 server:
     port: 8300
+## 兑吧appKey,appSecret
+duiba:
+    appKey: 32iW4UwsS1iCR9r3G1BjZSg81T8R
+    appSecret: test
+    autoLoginUrl: https://home.m.duiba.com.cn/autoLogin/autologin?
 ## 数据源连接
 myjdbc:
     type: com.zaxxer.hikari.HikariDataSource

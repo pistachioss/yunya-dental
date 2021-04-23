@@ -33,4 +33,6 @@ public class MessageModel implements Serializable {
 
   @ApiModelProperty(value = "消息识别ID，不必传，调用消息服务时自动生成")
   private String MsgID;
+
+  private Object data;
 }
