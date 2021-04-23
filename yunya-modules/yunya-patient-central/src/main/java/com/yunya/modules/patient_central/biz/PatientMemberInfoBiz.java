@@ -34,12 +34,11 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.appointment.Appointment;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.*;
-import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -248,23 +247,19 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     this.cardLog(patientMemberInfo, "开卡", "");
     remoteRabbitMqServiceFeign.sendMessage(
         patientMemberInfo.getId(), 0, 0, MsgCategoryEnum.BasePatientMember);
+    remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo));
     return ResponseUtil.success();
   }
 
-  private WxTemplateMsgModel cancelPush(Appointment appointment) {
-    OrganizationModel organizationModel = new OrganizationModel();
-    organizationModel.setId(appointment.getOrgId());
-    OrganizationInfoDetail org = remoteSystemServiceFeign.findOrgInfoList(organizationModel).get(0);
-//    PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(appointment.getPatientId());
+  private WxTemplateMsgModel addCardPushMsg(PatientMemberInfo memberInfo) {
+    MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberInfo.getMemberTypeId());
     WxTemplateMsgModel model = new WxTemplateMsgModel();
     Map<String, Object> paramMap = Maps.newHashMap();
-    paramMap.put("keyword1", org.getAbbreviation());
-    paramMap.put("keyword2", org.getAddress());
-    paramMap.put("linkMobile", org.getTel());
-    paramMap.put("appointDate", LocalDate.fromDateFields(appointment.getAppointDate()).toString("yyyy年MM月dd日") + " " + appointment.getAppointTime());
-//    paramMap.put("patientName", patient.getName());
-    model.setPatientId(appointment.getPatientId());
-    model.setTemplateEnum(APPOINT_CANCEL);
+    paramMap.put("keyword1", memberInfo.getCardNumber());
+    paramMap.put("keyword2", memberType.getName());
+    paramMap.put("keyword3", LocalDateTime.now().toString("yyyy年MM月dd日 HH:mm:ss"));
+    model.setPatientId(memberInfo.getPatientId());
+    model.setTemplateEnum(MEMBER_OPEN_CARD);
     model.setParamMap(paramMap);
     return model;
   }
