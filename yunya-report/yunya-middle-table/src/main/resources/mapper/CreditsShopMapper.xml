@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yunya.middletable.dao.credits_shop.CreditsShopMapper">
+<mapper namespace="com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper">
   <resultMap id="BaseResultMap" type="com.yunya.models.credits_shop.CreditsShop">
     <!--
       WARNING - @mbg.generated

@@ -7,7 +7,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.config.DuiBaConfig;
-import com.yunya.middletable.dao.credits_shop.CreditsShopMapper;
+import com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper;
 import com.yunya.middletable.utils.SignTool;
 import com.yunya.models.credits_shop.CreditsShop;
 import org.springframework.beans.factory.annotation.Autowired;
