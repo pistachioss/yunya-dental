@@ -1,4 +1,4 @@
-package com.yunya.middletable.controller.credits_shop;
+package com.yunya.middletable.controller.report.credits_shop;
 
 import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.framework.common.model.ResponseResult;
