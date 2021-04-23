@@ -13,7 +13,6 @@ import com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper;
 import com.yunya.middletable.dao.report.BasePatientMapper;
 import com.yunya.middletable.utils.SignTool;
 import com.yunya.models.credits_shop.CreditsShop;
-import com.yunya.models.report.BasePatient;
 import com.yunya.models.report.BasePatientConsumptionCountVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
