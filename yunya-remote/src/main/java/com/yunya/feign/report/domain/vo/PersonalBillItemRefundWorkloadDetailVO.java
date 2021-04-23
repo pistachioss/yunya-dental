@@ -25,7 +25,7 @@ public class PersonalBillItemRefundWorkloadDetailVO implements Serializable {
   @ApiModelProperty("账单ID")
   private Integer billId;
   /** 账单日期 */
-  @Excel(name = "账单日期", dateFormat = "yyyy-MM-dd HH:mm")
+  @Excel(name = "账单日期")
   @ApiModelProperty("账单日期")
   private String billDate;
   /** 账单编号 */
