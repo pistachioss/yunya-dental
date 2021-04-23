@@ -1535,8 +1535,7 @@
         bti.category_name AS categoryName,
         bbd.quantity,
         bb.org_id,
-        bb.bill_date,
-        bb.order_date
+        bb.bill_date
         FROM
         base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
@@ -2565,9 +2564,16 @@
         IFNULL(SUM(bbd.price*bbd.quantity-bbd.discount_amount),0) as amount
         FROM
         (
-        select bbd.org_id,bbd.item_id,bbd.item_type,bbd.executor_id,bbd.quantity,bbd.price,bbd.discount_amount
+        select
+        bbd.org_id,
+        bbd.item_id,
+        bbd.item_type,
+        bbd.executor_id,
+        bbd.quantity,
+        bbd.price,
+        bbd.discount_amount
         from base_bill_detail bbd
-        LEFT JOIN base_bill bb on bb.bill_id=bbd.bill_id
+        LEFT JOIN base_bill bb on bb.bill_id = bbd.bill_id
         <where>
             AND bb.bill_date IS NOT NULL
             <if test="query.itemIds!=null and query.itemIds.size()>0">
@@ -2616,17 +2622,16 @@
         </where>
         ) bbd
         GROUP BY
-        bbd.org_id,
         bbd.executor_id,
-        bbd.item_id,
-        bbd.item_type
+        bbd.item_id
         ORDER BY
+        amount DESC,
         bbd.item_id,
         bbd.item_type
         ) bbd
         LEFT JOIN base_tariff_info bti ON bbd.itemId = bti.item_id AND bbd.itemType = bti.item_type
         LEFT JOIN base_employee be ON be.user_id = bbd.employeeId
-        LEFT JOIN base_organization bo ON bo.org_id=bbd.orgId
+        LEFT JOIN base_organization bo ON bo.org_id = bbd.orgId
         <where>
             <if test="query.categoryIds!=null and query.categoryIds.size()>0">
                 and bti.category_id in
@@ -3132,12 +3137,15 @@
         select sum(bbd.coupon_workload) as billTotalCouponWorkload,
         bb.org_id as billOrgId,
         bb.privilege_org_id as privilegeOrgId,
+        <if test="column!=null and column!=''">
+            ${column},
+        </if>
         bb.first_privilege as firstPrivilege
         from base_bill_detail bbd
         inner join base_bill bb on bbd.bill_id = bb.bill_id
         <where>
             <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND bb.org_id IN
+                AND bbd.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
@@ -3166,6 +3174,45 @@
                     AND DATE_FORMAT( bb.privilege_date, '%Y' ) &lt;= #{query.endDate}
                 </if>
             </if>
+            <if test="query.billIds!=null and query.billIds.size()>0">
+                and bbd.bill_id IN
+                <foreach collection="query.billIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by bbd.org_id, bb.privilege_org_id,
+        <if test="column!=null and column!=''">
+            ${column},
+        </if>
+        bb.first_privilege
+    </select>
+
+    <select id="billItemStatisticsGroupByOrgId" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsVO">
+        SELECT
+        bbd.org_id AS orgId,
+        <if test="column!=null and column!=''">
+            ${column} AS itemId,
+        </if>
+        SUM(bbd.quantity) AS quantity
+        FROM base_bill_detail bbd
+        <where>
+            bbd.source_type = 0
+            <if test="query.itemType != null">
+                AND bbd.item_type = #{query.itemType}
+            </if>
+            <if test="query.itemIds!=null and query.itemIds.size()>0">
+                and bbd.item_id in
+                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.billIds!=null and query.billIds.size()>0">
+                and bbd.bill_id IN
+                <foreach collection="query.billIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         group by bb.org_id, bb.privilege_org_id, bb.first_privilege
     </select>
@@ -3186,7 +3233,7 @@
         bbd.itemReceivedWorkload
         from (
         select bbd.billId,
-        date_format(bbd.billDate, '%Y-%m-%d %H:%m') as billDate,
+        date_format(bbd.billDate, '%Y-%m-%d %H:%i') as billDate,
         bbd.billNum,
         bbd.regDentistId,
         be.employee_name as regDentistName,
@@ -3306,7 +3353,7 @@
         executorName
         from (
         select bbd.billId,
-        date_format(bbd.billDate, '%Y-%m-%d %H:%m') as billDate,
+        date_format(bbd.billDate, '%Y-%m-%d %H:%i') as billDate,
         bbd.billNum,
         bbd.patientId,
         bbd.patientName,
@@ -3437,7 +3484,7 @@
         bbd.executorName
         from (
         select bb.billId,
-        date_format(bb.billDate, '%Y-%m-%d %H:%m') as billDate,
+        date_format(bb.billDate, '%Y-%m-%d %H:%i') as billDate,
         bb.billNum,
         bb.patientId,
         bb.patientName,
@@ -3518,7 +3565,7 @@
         select
         brd.refund_amount,
         bbd.billId,
-        date_format(bbd.billDate, '%Y-%m-%d %H:%m') as billDate,
+        date_format(bbd.billDate, '%Y-%m-%d %H:%i') as billDate,
         bbd.billNum,
         bbd.patientId,
         bbd.patientName,

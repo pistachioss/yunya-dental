@@ -831,8 +831,8 @@
         left join base_treatment_process btp on bb.treatment_id = btp.treatment_id
         left join base_employee be on btp.registered_dentist_id = be.user_id
         left join base_bill_pay bbp on bb.bill_id = bbp.bill_id and
-        date_format(bb.privilege_date, '%Y-%m-%d %H:%m') =
-        date_format(bbp.payee_date, '%Y-%m-%d %H:%m')
+        date_format(bb.privilege_date, '%Y-%m-%d %H:%i') =
+        date_format(bbp.payee_date, '%Y-%m-%d %H:%i')
         left join base_employee be2 on bbp.payee_user_id = be2.user_id
         <where>
             and first_privilege = 0
