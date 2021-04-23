@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.query.InboundAndOutboundStatementQuery;
 import com.yunya.feign.report.domain.vo.BaseAccountItemVO;
@@ -7,15 +8,18 @@ import com.yunya.feign.report.domain.vo.ClinicInboundAndOutboundVO;
 import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseAccountItem;
+import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.BaseAccountItemMapper;
+import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
@@ -31,6 +35,10 @@ import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM
  */
 @Service
 public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccountItem> {
+
+  /** 组织信息*/
+  @Autowired
+  private BaseOrganizationMapper organizationMapper;
 
   /**
    * 获取全部支付方式表头
@@ -1135,6 +1143,50 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return Map<String, Object>
    */
-  public void InboundAndOutboundStatementExport(InboundAndOutboundStatementQuery query, HttpServletResponse response) {
+  public void inboundAndOutboundStatementExport(InboundAndOutboundStatementQuery query, HttpServletResponse response) throws IOException {
+    List<ClinicInboundAndOutboundVO> list = findInboundAndOutboundStatement(query);
+    Map<String, String> dynamicTitles = new LinkedHashMap<>(16);
+    List<JSONObject> data = toDynamicData(list, dynamicTitles);
+    ExcelUtil<JSONObject> excelUtil = new ExcelUtil<>(JSONObject.class);
+    String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), getAbbreviationById(query.getOrgId()), "对账单");
+    excelUtil.exportExcel(response,data,"对账单",fileName,dynamicTitles);
+  }
+
+  public String getAbbreviationById(Integer orgId) {
+    BaseOrganization organizationInfo = organizationMapper.selectByPrimaryKey(orgId);
+    return organizationInfo.getAbbreviation();
+  }
+
+  /**
+   * 转换成动态列格式
+   *
+   * @param list
+   * @param dynamicTitles
+   * @return
+   */
+  private List<JSONObject> toDynamicData(List<ClinicInboundAndOutboundVO> list, Map<String, String> dynamicTitles) {
+    List<JSONObject> data = new ArrayList<>();
+    if (StringHelper.isNotEmpty(list)) {
+      list.forEach(vo->{
+        JSONObject object = new JSONObject();
+        object.put("name", vo.getName());
+        dynamicTitles.put("name", "收支明细");
+        List<StatementPaymentVO> paymentList = vo.getPaymentInfoList();
+        BigDecimal total = BigDecimal.ZERO;
+        if (StringHelper.isNotEmpty(paymentList)) {
+          for (StatementPaymentVO payment : paymentList) {
+            String key = payment.getAccountItemName();
+            BigDecimal totalAmount = payment.getTotalAmount();
+            object.put(key, totalAmount);
+            dynamicTitles.put(key, key);
+            total = total.add(totalAmount);
+          }
+        }
+        object.put("total", total);
+        dynamicTitles.put("total", "小计");
+        data.add(object);
+      });
+    }
+    return data;
   }
 }
