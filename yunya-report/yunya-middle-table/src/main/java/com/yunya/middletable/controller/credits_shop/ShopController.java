@@ -1,12 +1,16 @@
 package com.yunya.middletable.controller.credits_shop;
 
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpRequest;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,5 +36,12 @@ public class ShopController {
 
         // TODO 生成免登录URL
         return "";
+    }
+
+    @ApiOperation("初始患者化积分")
+    @PostMapping("/initialization")
+    public ResponseResult<T> initialization(){
+        creditsShopBiz.initialization();
+        return ResponseUtil.success();
     }
 }
