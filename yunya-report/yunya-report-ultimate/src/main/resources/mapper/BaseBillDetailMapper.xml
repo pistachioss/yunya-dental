@@ -190,7 +190,7 @@
         base_bill_detail bbd
         INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         <where>
-            bbd.executor_id is not null
+            bbd.executor_id > 0
             AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
@@ -221,7 +221,7 @@
         FROM base_bill_detail bbd
         INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         <where>
-            bbd.executor_id is not null
+            bbd.executor_id > 0
             AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
@@ -295,7 +295,7 @@
         FROM
         base_bill_detail bbd
         <where>
-            AND bbd.executor_id is not null
+            AND bbd.executor_id > 0
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
             </if>
@@ -348,7 +348,7 @@
         FROM
         base_bill_detail bbd
         <where>
-            AND bbd.executor_id is not null
+            AND bbd.executor_id > 0
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
             </if>
@@ -393,7 +393,7 @@
         FROM
         base_bill_detail bbd
         <where>
-            AND bbd.executor_id is not null
+            AND bbd.executor_id > 0
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
             </if>
@@ -443,7 +443,7 @@
         ) br ON brd.refund_id = br.refund_id
         ) brd
         WHERE
-        brd.executor_id is not null
+        brd.executor_id > 0
         GROUP BY
         brd.executor_id
         ) brd ON bup.user_id = brd.executor_id
@@ -565,7 +565,7 @@
         base_bill_detail bbd
         INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         <where>
-            bbd.executor_id is not null
+            bbd.executor_id > 0
             AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
@@ -596,7 +596,7 @@
         FROM base_bill_detail bbd
         INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         <where>
-            bbd.executor_id is not null
+            bbd.executor_id > 0
             AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
@@ -670,7 +670,7 @@
         FROM
         base_bill_detail bbd
         <where>
-            AND bbd.executor_id is not null
+            AND bbd.executor_id > 0
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
             </if>
@@ -723,7 +723,7 @@
         FROM
         base_bill_detail bbd
         <where>
-            AND bbd.executor_id is not null
+            AND bbd.executor_id > 0
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
             </if>
@@ -768,7 +768,7 @@
         FROM
         base_bill_detail bbd
         <where>
-            AND bbd.executor_id is not null
+            AND bbd.executor_id > 0
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
             </if>
@@ -801,7 +801,7 @@
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
         ) brd
         <where>
-            and brd.executor_id is not null
+            and brd.executor_id > 0
             <if test="query.orgId != null">
                 and brd.org_id = #{query.orgId}
             </if>
@@ -945,7 +945,7 @@
         FROM
         base_bill_detail bbd
         <where>
-            AND bbd.executor_id is not null
+            AND bbd.executor_id > 0
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
             </if>
@@ -1145,7 +1145,7 @@
         FROM
         base_bill_detail bbd
         <where>
-            AND bbd.executor_id is not null
+            AND bbd.executor_id > 0
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
             </if>
@@ -1451,7 +1451,7 @@
         where bb.bill_date is not null
         ) bbp ON bbd.bill_id = bbp.bill_id
         WHERE
-        bbd.executor_id is not null
+        bbd.executor_id > 0
         ) btp
         <where>
             <if test="query.orgId != null">
@@ -1782,7 +1782,7 @@
         base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         WHERE
-        bbd.executor_id is not null
+        bbd.executor_id > 0
         ) bbd
         <where>
             <if test="query.dateType == 0">
@@ -2020,7 +2020,7 @@
         from base_bill_detail t
         left join base_bill bbd on t.bill_id=bbd.bill_id
         <where>
-            and t.executor_id is not null
+            and t.executor_id > 0
             <if test="query.orgId != null">
                 and t.org_id = #{query.orgId}
                 and bbd.org_id = #{query.orgId}
@@ -2380,7 +2380,7 @@
         </where>
         ) bbd
         WHERE
-        bbd.executor_id is not null
+        bbd.executor_id > 0
         GROUP BY
         bbd.org_id,
         bbd.executor_id
@@ -2413,7 +2413,7 @@
         </where>
         ) bbd
         WHERE
-        bbd.executor_id is not null
+        bbd.executor_id > 0
         GROUP BY
         bbd.org_id,
         bbd.executor_id
@@ -2437,7 +2437,7 @@
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
         ) brd
         <where>
-            and brd.executor_id is not null
+            and brd.executor_id > 0
             <if test="query.orgId != null">
                 and brd.org_id = #{query.orgId}
             </if>
@@ -2591,7 +2591,7 @@
                     bb.bill_id = #{billId}
                     AND bbd.executor_id > 0
                     AND bti.item_type = bbd.item_type
-                    AND bbd.executor_id is not null
+                    AND bbd.executor_id > 0
                 ) t where workload > 0
     </select>
 
@@ -2794,7 +2794,7 @@
         base_bill_detail bbd
         INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id AND bb.bill_date IS NOT NULL
         <where>
-            AND bbd.executor_id is not null
+            AND bbd.executor_id > 0
             <if test="billIds != null and billIds.size > 0">
                 AND bbd.bill_id IN
                 <foreach collection="billIds" index="index" item="item" open="(" separator="," close=")">
@@ -2829,7 +2829,7 @@
         FROM
         base_bill_detail bbd
         <where>
-            AND bbd.executor_id is not null
+            AND bbd.executor_id > 0
             AND bbd.coupon_workload > 0
             <if test="billIds != null and billIds.size > 0">
                 AND bbd.bill_id IN
@@ -2849,7 +2849,7 @@
         FROM
             base_bill_detail bbd
         WHERE
-            bbd.executor_id is not null
+            bbd.executor_id > 0
             AND bbd.bill_id = #{billId}
     </select>
     <!-- 根据订单ID查询计算非工作量订单明细 -->
@@ -3047,7 +3047,7 @@
         from base_bill_detail bbd
         inner join base_bill bb ON bbd.bill_id = bb.bill_id
         <where>
-            bbd.executor_id is not null
+            bbd.executor_id > 0
             and bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
@@ -3110,7 +3110,7 @@
         SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS billTotalWorkload
         FROM base_bill_detail bbd
         <where>
-            bbd.executor_id is not null
+            bbd.executor_id > 0
             <if test="query.orgId != null">
                 and bbd.org_id = #{query.orgId}
             </if>
@@ -3118,7 +3118,7 @@
         GROUP BY bbd.bill_id
         ) bbd1 ON bbd.bill_id = bbd1.bill_id
         <where>
-            bbd.executor_id is not null
+            bbd.executor_id > 0
             <if test="query.orgId != null">
                 and bbd.org_id = #{query.orgId}
             </if>
@@ -3134,7 +3134,7 @@
         from base_bill_detail bbd
         inner join base_bill bb ON bbd.bill_id = bb.bill_id
         <where>
-            bbd.executor_id is not null
+            bbd.executor_id > 0
             and bb.bill_date is not null
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
@@ -3342,7 +3342,7 @@
         bb.mobile,
         bb.regDentistId,
         bb.actualAmount,
-        bbd.price * bbd.quantity - bbd.coupon_workload as itemWorkload,
+        bbd.price * bbd.quantity - bbd.discount_amount as itemWorkload,
         bbd.executor_id as executorId,
         be.employee_name as executorName
         from base_bill_detail bbd
@@ -3584,7 +3584,7 @@
         bb.mobile,
         bb.regDentistId,
         bbd1.billTotalWorkload,
-        bbd.price * bbd.quantity - bbd.coupon_workload as itemWorkload,
+        bbd.price * bbd.quantity - bbd.discount_amount as itemWorkload,
         bbd.executor_id as executorId,
         be.employee_name as executorName
         from base_bill_detail bbd
@@ -3593,7 +3593,7 @@
         SUM(bbd.price * bbd.quantity - bbd.discount_amount) AS billTotalWorkload
         FROM base_bill_detail bbd
         <where>
-            bbd.executor_id is not null
+            bbd.executor_id > 0
             <if test="query.orgId != null">
                 and bbd.org_id = #{query.orgId}
             </if>
