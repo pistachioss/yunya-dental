@@ -292,34 +292,23 @@
 
     <!-- 末诊后无预约、随访的患者列表 -->
     <select id="selectNotSeenList" resultType="com.yunya.feign.report.domain.vo.BasePatientNotSeenVo">
-        select btp.patientId,
+        select
+        bp.patient_id,
+        bp.name,
+        bp.mobile,
         btp.treatmentId,
         btp.lastVisitDate,
         btp.dentistId,
         btp.employeeName,
-        btp.treatType,
-        btp.name,
-        btp.mobile
+        btp.treatType
         from (
-        select btp.patientId,
-        btp.treatmentId,
-        btp.lastVisitDate,
-        btp.dentistId,
-        btp.employeeName,
-        btp.treatType,
-        btp.name,
-        btp.mobile,
-        IFNULL(btp1.appointCount, 0) AS appointCount,
-        IFNULL(bvr.visitCount, 0) AS visitCount
-        from (
-        select btp.patientId,
+        select
+        btp.patientId,
         btp.treatmentId,
         date_format(btp2.treat_end_time, '%Y-%m-%d') as lastVisitDate,
         btp2.registered_dentist_id as dentistId,
         be.employee_name as employeeName,
-        btp2.treat_type as treatType,
-        bp.name as name,
-        bp.mobile
+        btp2.treat_type as treatType
         from (
         select btp.patient_id as patientId,
         max(btp.treatment_id) AS treatmentId
@@ -328,7 +317,6 @@
         group by btp.patient_id
         ) btp
         inner join base_treatment_process btp2 on btp.treatmentId = btp2.treatment_id
-        left join base_patient bp on btp.patientId = bp.patient_id
         left join base_employee be on btp2.registered_dentist_id = be.user_id
         <where>
             <if test="form.orgId != null">
@@ -346,10 +334,6 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="form.combination != null and form.combination != ''">
-                and concat(IFNULL(bp.`name`,''),IFNULL(bp.pinyinName,''),IFNULL(bp.mobile,'')) like
-                concat(concat('%',#{form.combination}),'%')
-            </if>
             <if test="form.treatTypes != null and form.treatTypes.size > 0">
                 and btp2.treat_type in
                 <foreach collection="form.treatTypes" item="item" index="index" open="(" close=")" separator=",">
@@ -358,24 +342,38 @@
             </if>
         </where>
         ) btp
+        left join (
+        select
+        bp.patient_id,
+        bp.name,
+        bp.mobile,
+        ifnull(btp1.appointCount, 0) as appointCount,
+        ifnull(bvr.visitCount, 0) as visitCount
+        from base_patient bp
         LEFT JOIN (
         SELECT patient_id,
         count(btp.patient_id) AS appointCount
         FROM base_treatment_process btp
-        WHERE btp.appointment_id is not null
-        AND DATE_FORMAT(btp.appoint_start_time, '%Y-%m-%d') > DATE_FORMAT(CURRENT_DATE, '%Y-%m-%d')
+        WHERE
+        DATE_FORMAT(btp.appoint_start_time, '%Y-%m-%d') > current_date
         GROUP BY patient_id
-        ) btp1 ON btp.patientId = btp1.patient_id
+        ) btp1 ON bp.patient_id = btp1.patient_id
         LEFT JOIN (
         SELECT patient_id,
         count(bvr.patient_id) AS visitCount
         FROM base_visit_remind bvr
         WHERE bvr.type = 1
-        AND DATE_FORMAT(bvr.time, '%Y-%m-%d') > DATE_FORMAT(CURRENT_DATE, '%Y-%m-%d')
+        AND DATE_FORMAT(bvr.time, '%Y-%m-%d') > current_date
         GROUP BY patient_id
-        ) bvr ON btp.patientId = bvr.patient_id
-        ) btp
-        where btp.appointCount = 0
-        and btp.visitCount = 0
+        ) bvr ON bp.patient_id = bvr.patient_id
+        <where>
+            <if test="form.combination != null and form.combination != ''">
+                and concat(IFNULL(bp.`name`,''),IFNULL(bp.pinyin_name,''),IFNULL(bp.mobile,'')) like
+                concat(concat('%',#{form.combination}),'%')
+            </if>
+        </where>
+        ) bp on btp.patientId = bp.patient_id
+        where bp.appointCount = 0
+        and bp.visitCount = 0
     </select>
 </mapper>
