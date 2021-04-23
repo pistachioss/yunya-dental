@@ -105,15 +105,13 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   public void addPatientIntegral(Integer patientId){
    Integer count =  mapper.selectCountByPatientId(patientId);
    CreditsShop addPatientIntegral = new CreditsShop();
-   if (count > 0){
+   if (count <= 0){
      BasePatientOriginLog basePatientOrigin = new BasePatientOriginLog();
      basePatientOrigin.setPatientId(patientId);
      basePatientOrigin.setOriginType(2);
      BasePatientOriginLog basePatientOriginLog = basePatientOriginLogMapper.selectOne(basePatientOrigin);
      if (basePatientOriginLog != null){
-       CreditsShop creditsShop = new CreditsShop();
-       creditsShop.setPatientId(basePatientOriginLog.getOriginId());
-       CreditsShop patientCreditsShop = creditsShopMapper.selectOne(creditsShop);
+       CreditsShop patientCreditsShop = creditsShopMapper.selectCreditsShopByPatientId(basePatientOriginLog.getOriginId());
        if (patientCreditsShop != null){
          addPatientIntegral.setPatientId(patientCreditsShop.getPatientId());
          // recommend 患者推荐
@@ -125,7 +123,26 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setCreditsOption((byte)1);
          addPatientIntegral.setActualPrice(0);
          addPatientIntegral.setItemCode("");
-         addPatientIntegral.setDescription("");
+         addPatientIntegral.setDescription("500");
+         addPatientIntegral.setRemarks("患者推荐");
+         addPatientIntegral.setInservice(false);
+         addPatientIntegral.setCrtId(0);
+         addPatientIntegral.setCrtTime(new Date());
+         addPatientIntegral.setUpdId(0);
+         addPatientIntegral.setUpdTime(new Date());
+       }else {
+         // 没有患者积分帐户就新建
+         addPatientIntegral.setPatientId(patientCreditsShop.getPatientId());
+         // recommend 患者推荐
+         addPatientIntegral.setType("recommend");
+         addPatientIntegral.setChannel((byte)0);
+         addPatientIntegral.setOrderNum("");
+         addPatientIntegral.setCreditsAccount(500L);
+         addPatientIntegral.setCredits(0L);
+         addPatientIntegral.setCreditsOption((byte)1);
+         addPatientIntegral.setActualPrice(0);
+         addPatientIntegral.setItemCode("");
+         addPatientIntegral.setDescription("500");
          addPatientIntegral.setRemarks("患者推荐");
          addPatientIntegral.setInservice(false);
          addPatientIntegral.setCrtId(0);

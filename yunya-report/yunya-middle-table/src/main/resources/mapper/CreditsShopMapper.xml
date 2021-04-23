@@ -89,7 +89,12 @@
       GROUP BY bb.patient_id
     </select>
 
-  <!-- 批量添加患者初始化积分信息 -->
+    <!-- 根据患者id查询患者最新一条积分记录 -->
+    <select id="selectCreditsShopByPatientId" resultType="com.yunya.models.credits_shop.CreditsShop">
+        	select * from credits_shop where patient_id = #{patientId} and crt_time = (select max(crt_time) from credits_shop where patient_id = #{patientId} )
+    </select>
+
+    <!-- 批量添加患者初始化积分信息 -->
   <insert id="insetCreditsShopList">
      INSERT INTO credits_shop (
       `patient_id`,
