@@ -83,7 +83,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         // 积分新增
         entity.setCreditsOption((byte) 0);
         entity.setRemarks(payId.toString());
-        entity.setId(patientId);
+        entity.setCrtId(patientId);
         return addCredits(entity);
     }
 
