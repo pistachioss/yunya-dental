@@ -2608,7 +2608,7 @@
         bti.item_num as itemNum,
         bti.item_name as itemName,
         bti.category_name as categoryName,
-        be.employee_name as employeeName
+        ifnull(be.employee_name, '--') as employeeName
         from (
         SELECT
         bbd.org_id AS orgId,
