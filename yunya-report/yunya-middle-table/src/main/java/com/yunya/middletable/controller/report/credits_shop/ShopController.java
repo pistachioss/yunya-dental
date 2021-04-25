@@ -42,8 +42,8 @@ public class ShopController {
             @ApiImplicitParam(name = "patientId", value = "患者ID", required = true, dataTypeClass = Integer.class)
     })
     @ApiResponse(code = 0,message = "兑吧登录URL",response = String.class)
-    public String duibaAutoLogin(@NotBlank(message = "openID不能为空") String openId,
-                                 @NotNull(message = "患者ID不能为空") Integer patientId) {
+    public String duibaAutoLogin(@RequestParam String openId,
+                                 @RequestParam Integer patientId) {
         return creditsShopBiz.duibaAutoLogin(openId,patientId);
     }
 
