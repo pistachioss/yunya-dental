@@ -125,6 +125,13 @@ public class WxController {
         return ResponseUtil.success(relationVO);
     }
 
+//    @GetMapping(value = "/wxVip/home/member/relation")
+//    @ApiOperation(value = "预约确认推送-预约详情")
+//    public ResponseResult<WxMemberRelationVO> appointDetail(@RequestParam(required = true) Integer appointId) {
+//        WxMemberRelationVO relationVO = wxService.getAppointDetail(appointId);
+//        return ResponseUtil.success(relationVO);
+//    }
+
     @GetMapping(value = "/wxVip/msg/pull")
     public ResponseResult pullTemplate() {
         wxService.pullTemplate();

@@ -10,6 +10,8 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import com.yunya.feign.appointment.RemoteAppointmentFeign;
+import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
 import com.yunya.feign.oss.RemoteOssServiceFeign;
@@ -19,11 +21,17 @@ import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryFo
 import com.yunya.feign.patient_central.domain.query.WxFansDetailForm;
 import com.yunya.feign.patient_central.domain.query.WxFansSaveForm;
 import com.yunya.feign.patient_central.domain.query.WxUserQuery;
-import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.patient_central.domain.vo.web.MemberRelationVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientMemberRelationVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.WxCardUseVo;
+import com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO;
+import com.yunya.feign.patient_central.domain.vo.web.WxPatientVo;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
@@ -31,10 +39,16 @@ import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.wechat.domain.model.WxRegisterModel;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.feign.wechat.domain.model.WxTemplatePushModel;
-import com.yunya.feign.wechat.domain.vo.*;
+import com.yunya.feign.wechat.domain.vo.WxAppointDetailVo;
+import com.yunya.feign.wechat.domain.vo.WxAuthVo;
+import com.yunya.feign.wechat.domain.vo.WxMemberRelationVO;
+import com.yunya.feign.wechat.domain.vo.WxRegisterVo;
+import com.yunya.feign.wechat.domain.vo.WxTemplateDataVo;
+import com.yunya.feign.wechat.domain.vo.WxVipInfoVo;
 import com.yunya.framework.common.constant.WXConstant;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.WxFans;
@@ -49,12 +63,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -88,6 +108,8 @@ public class WXService extends AbstractWxBaseApi {
     private RemoteTreatmentServiceFeign treatmentServiceFeign;
     @Resource
     private RemoteReportServiceFeign reportServiceFeign;
+    @Resource
+    private RemoteAppointmentFeign appointmentFeign;
     @Resource
     private WxMsgTemplatesMapper templatesMapper;
     @Value("${mp.domain}")
@@ -124,6 +146,7 @@ public class WXService extends AbstractWxBaseApi {
     }
 
     public WxRegisterVo register(String openId, WxRegisterModel model) {
+        log.info("公众号注册openId：{}", openId);
         WxRegisterVo vo = new WxRegisterVo();
         WxFansSaveForm fansSaveForm = new WxFansSaveForm();
         WxFans wxFansReg = this.getOwnInfo(openId, null);
@@ -260,7 +283,7 @@ public class WXService extends AbstractWxBaseApi {
         }
     }
 
-    public void batchPushTemplate(List<WxTemplateMsgModel> list){
+    public void batchPushTemplate(List<WxTemplateMsgModel> list) {
         if (CollectionUtils.isNotEmpty(list)) {
             List<Integer> patientIds = list.stream()
                     .map(WxTemplateMsgModel::getPatientId).collect(toList());
@@ -276,6 +299,15 @@ public class WXService extends AbstractWxBaseApi {
                     .map(obj -> obj.getTemplateEnum().getTitle()).collect(toSet()));
             this.createAndPushTemplate(list, patientWxMap, templates);
         }
+    }
+
+    public WxAppointDetailVo getAppointDetail(Integer appointId) {
+        AppointmentVo appointmentVo = appointmentFeign.findAppointmentDetailById(appointId);
+        OrganizationInfo org = systemServiceFeign.findOrgInfoByOrgId(appointmentVo.getOrgId());
+        WxAppointDetailVo appointDetailVo = BeanCopierUtils.generalCopyBean(appointId, WxAppointDetailVo.class);
+        appointDetailVo.setAppointDate(LocalDate.fromDateFields(appointmentVo.getAppointDate()).toString("yyyy-MM-dd") + appointmentVo.getAppointTime());
+        appointDetailVo.setOrgName(org.getAbbreviation());
+        return appointDetailVo;
     }
 
     private void createAndPushTemplate(List<WxTemplateMsgModel> list, Map<Integer, WxFans> patientWxMap, List<WxMsgTemplates> templates) {
