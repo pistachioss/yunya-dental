@@ -3,7 +3,6 @@ package com.yunya.middletable.controller.report.credits_shop;
 import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.models.credits_shop.CreditsShop;
@@ -56,7 +55,7 @@ public class ShopController {
         return creditsShopBiz.lastPatientCredits(patientId);
     }
 
-    @ApiOperation("初始患者化积分")
+    @ApiOperation("初始化患者积分")
     @PostMapping("/initialization")
     public ResponseResult<T> initialization() throws InterruptedException {
         creditsShopBiz.initialization();
