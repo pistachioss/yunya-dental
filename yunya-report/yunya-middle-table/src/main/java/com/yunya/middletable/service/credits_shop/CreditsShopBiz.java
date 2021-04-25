@@ -141,7 +141,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
 
 
     /**
-     * 初始患者化积分
+     * 初始化患者积分
      */
     public void initialization() throws InterruptedException {
         List<CreditsShop> creditsShopList = new ArrayList<>();
