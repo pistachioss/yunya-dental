@@ -44,6 +44,7 @@ import com.yunya.models.wechat.WxMsgTemplates;
 import com.yunya.models.wechat.WxTemplateMsgRecords;
 import com.yunya365.wechat.enums.WeChatError;
 import com.yunya365.wechat.mapper.WxMsgTemplatesMapper;
+import com.yunya365.wechat.mapper.WxTemplateMsgRecordsMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
@@ -54,10 +55,13 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static com.alibaba.fastjson.serializer.SerializerFeature.*;
-import static com.yunya365.wechat.enums.TemplateDataEnum.*;
+import static com.yunya.feign.wechat.enums.TemplateDataEnum.*;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -88,6 +92,10 @@ public class WXService extends AbstractWxBaseApi {
     private WxMsgTemplatesMapper templatesMapper;
     @Value("${mp.domain}")
     private String mpDomain;
+    @Resource(name = "customizeThreadPool")
+    private ExecutorService cardThreadPool;
+    @Resource
+    private WxTemplateMsgRecordsMapper recordsMapper;
 
     public WxAuthVo getAuthInfo(String code) {
         WxAuthVo vo = new WxAuthVo();
@@ -233,6 +241,7 @@ public class WXService extends AbstractWxBaseApi {
     }
 
     public void pushTemplateMsg(WxTemplateMsgModel msgModel) {
+        log.info("客户端模板推送消息：{}", msgModel);
         Map<String, Object> paramMap = msgModel.getParamMap();
         Integer patientId = msgModel.getPatientId();
         WxFans wxPushUser = patientFeign.getWxPushUser(patientId);
@@ -243,25 +252,77 @@ public class WXService extends AbstractWxBaseApi {
         //获取模板信息
         WxMsgTemplates template = this.getTemplate(msgModel.getTemplateEnum().getTitle());
         if (template != null) {
-            StrSubstitutor strSubstitutor = new StrSubstitutor(paramMap);
-            String context = strSubstitutor.replace(template.getContent());
-            paramMap = JSON.parseObject(context, new TypeReference<Map<String, Object>>() {}, Feature.OrderedField);
-            WxTemplatePushModel pushModel = WxTemplatePushModel.builder()
-                    .touser(wxPushUser.getOpenId())
-                    .template_id(template.getTemplateId())
-                    .data(paramMap).build();
-            if ("预约确认通知".equals(template.getTitle())) {
-                pushModel.setUrl(mpDomain + "/mobile/#/registerBtn");
-            }
-            log.info("模板推送消息：{}", pushModel);
+            WxTemplatePushModel pushModel = this.generatePushModel(wxPushUser, template, paramMap);
             //推送消息
             String msgId = super.pushTemplate(pushModel);
             //消息暂存缓存
-            redisUtils.set(WXConstant.WX_TEMPLATE_MSGID_KEY + msgId,  this.transferTemplateRecord(pushModel, msgId, wxPushUser), 1, TimeUnit.MINUTES);
+            redisUtils.set(WXConstant.WX_TEMPLATE_MSGID_KEY + msgId, this.transferTemplateRecord(pushModel, msgId, wxPushUser), 1, TimeUnit.MINUTES);
         }
     }
 
-    private String transferTemplateRecord(WxTemplatePushModel pushModel, String msgId, WxFans wxPushUser) {
+    public void batchPushTemplate(List<WxTemplateMsgModel> list){
+        if (CollectionUtils.isNotEmpty(list)) {
+            List<Integer> patientIds = list.stream()
+                    .map(WxTemplateMsgModel::getPatientId).collect(toList());
+            if (CollectionUtils.isEmpty(patientIds)) {
+                throw new ClientServiceException(WeChatError.WX_TEMP_PUSH_ERROR);
+            }
+            //查询需要推送的wx用户
+            List<WxFans> wxFans = patientFeign.listWxPushUser(patientIds);
+            Map<Integer, WxFans> patientWxMap = wxFans.stream()
+                    .collect(toMap(WxFans::getPatientId, Function.identity()));
+            //获取模板信息
+            List<WxMsgTemplates> templates = this.listTemplate(list.stream()
+                    .map(obj -> obj.getTemplateEnum().getTitle()).collect(toSet()));
+            this.createAndPushTemplate(list, patientWxMap, templates);
+        }
+    }
+
+    private void createAndPushTemplate(List<WxTemplateMsgModel> list, Map<Integer, WxFans> patientWxMap, List<WxMsgTemplates> templates) {
+        Map<String, WxMsgTemplates> templateMap = templates.stream()
+                .collect(toMap(WxMsgTemplates::getTitle, Function.identity()));
+        for (WxTemplateMsgModel model : list) {
+            cardThreadPool.execute(() -> {
+                Integer patientId = model.getPatientId();
+                Map<String, Object> paramMap = model.getParamMap();
+                WxFans wxPushUser = patientWxMap.get(patientId);
+                if (wxPushUser == null) {
+                    throw new ClientServiceException(WeChatError.WX_USER_NOT_EXIST.setErrorMsg(patientId));
+                }
+                WxTemplatePushModel pushModel = this.generatePushModel(wxPushUser, templateMap.get(model.getTemplateEnum().getTitle()), paramMap);
+                //推送消息
+                String msgId = super.pushTemplate(pushModel);
+                //消息暂存缓存
+                redisUtils.set(WXConstant.WX_TEMPLATE_MSGID_KEY + msgId
+                        , this.transferTemplateRecord(pushModel, msgId, wxPushUser), 1, TimeUnit.MINUTES);
+            });
+        }
+    }
+
+    private List<WxTemplatePushModel> getTemplateFutureResult(List<Future<WxTemplatePushModel>> futureList) throws Exception {
+        List<WxTemplatePushModel> list = Lists.newArrayListWithCapacity(futureList.size());
+        for (Future<WxTemplatePushModel> future : futureList) {
+            list.add(future.get());
+        }
+        return list;
+    }
+
+    private WxTemplatePushModel generatePushModel(WxFans wxPushUser, WxMsgTemplates template, Map<String, Object> paramMap) {
+        StrSubstitutor strSubstitutor = new StrSubstitutor(paramMap);
+        String context = strSubstitutor.replace(template.getContent());
+        paramMap = JSON.parseObject(context, new TypeReference<Map<String, Object>>() {
+        }, Feature.OrderedField);
+        WxTemplatePushModel pushModel = WxTemplatePushModel.builder()
+                .touser(wxPushUser.getOpenId())
+                .template_id(template.getTemplateId())
+                .data(paramMap).build();
+        if ("预约确认通知".equals(template.getTitle())) {
+            pushModel.setUrl(mpDomain + "/mobile/#/registerBtn");
+        }
+        return pushModel;
+    }
+
+    private WxTemplateMsgRecords transferTemplateRecord(WxTemplatePushModel pushModel, String msgId, WxFans wxPushUser) {
         WxTemplateMsgRecords record = new WxTemplateMsgRecords();
         record.setMsgId(msgId);
         record.setTemplateId(pushModel.getTemplate_id());
@@ -270,13 +331,19 @@ public class WXService extends AbstractWxBaseApi {
         record.setNickName(wxPushUser.getNickName());
         record.setContent(JSONObject.toJSONString(pushModel, WriteMapNullValue));
         record.setMsgDate(new Date());
-        return JSONObject.toJSONString(record, WriteMapNullValue);
+        return record;
     }
 
     private WxMsgTemplates getTemplate(String title) {
         Example example = new Example(WxMsgTemplates.class);
         example.createCriteria().andEqualTo("title", title);
         return templatesMapper.selectOneByExample(example);
+    }
+
+    private List<WxMsgTemplates> listTemplate(Set<String> titles) {
+        Example example = new Example(WxMsgTemplates.class);
+        example.createCriteria().andIn("title", titles);
+        return templatesMapper.selectByExample(example);
     }
 
     private String filterAndGenData(WxMsgTemplates wxMsgTemplates) {
@@ -343,10 +410,11 @@ public class WXService extends AbstractWxBaseApi {
                     sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}")
                             .append("，您的会员卡充值成功！");
                     map.put(key, new WxTemplateDataVo(sb.toString(), color));
+                    this.assembleRemark(key, color, map);
                 }
                 if ("会员消费提醒".equals(title)) {
                     sb = new StringBuilder("您好，${").append(PATIENT_NAME.getArgName()).append("}")
-                            .append("消费您的会员卡详情如下：");
+                            .append("消费您的会员卡，详情如下：");
                     map.put(key, new WxTemplateDataVo(sb.toString(), color));
                     this.assembleRemark(key, color, map);
                 }

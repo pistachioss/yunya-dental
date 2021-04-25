@@ -204,4 +204,9 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     public WxFans getWxPushUser(Integer patientId) {
         return null;
     }
+
+    @Override
+    public List<WxFans> listWxPushUser(List<Integer> patientIds) {
+        return null;
+    }
 }
