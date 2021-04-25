@@ -1,6 +1,8 @@
 server:
   port: 8997
 
+corn:
+  wxPushDate: 00 00 10 * * ?
 
 spring:
   application:

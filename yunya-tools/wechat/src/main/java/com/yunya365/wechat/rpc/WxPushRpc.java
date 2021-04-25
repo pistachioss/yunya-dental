@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @description:
@@ -21,9 +22,14 @@ public class WxPushRpc {
     @Resource
     private WXService wxService;
 
-    @PostMapping(value = "/wxVip/template/msg/push")
-    public void memberRelation(@RequestBody WxTemplateMsgModel msgModel) {
+    @PostMapping(value = "/wxVip/push/msg")
+    public void pushTemplate(@RequestBody WxTemplateMsgModel msgModel) {
         wxService.pushTemplateMsg(msgModel);
+    }
+
+    @PostMapping(value = "/wxVip/push/msg/batch")
+    public void batchPushTemplate(@RequestBody List<WxTemplateMsgModel> list) {
+        wxService.batchPushTemplate(list);
     }
 
 }

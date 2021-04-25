@@ -270,6 +270,10 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         return null;
     }
 
+    public List<WxFans> getPushWxUser(List<Integer> patientIds) {
+        return wxFansBindMapper.listWxUsers(patientIds);
+    }
+
     private String setAmount(BigDecimal principal, BigDecimal bonus) {
         BigDecimal zero = BigDecimal.ZERO;
         principal = principal == null ? zero : principal;

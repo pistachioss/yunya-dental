@@ -3,8 +3,11 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Maps;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.feign.wechat.enums.TemplateDataEnum;
 import com.yunya.models.report.BaseCoupon;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.*;
@@ -17,6 +20,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
+
+import static com.yunya.feign.wechat.enums.TemplateEnum.*;
+import static java.util.stream.Collectors.*;
 
 /**
  * @author xiangyang
@@ -35,6 +42,7 @@ public class DiscountBiz {
     private BaseBenefitMapper benefitMapper;
     @Resource
     private BaseOrganizationMapper orgMapper;
+
     /**
      * 产品售出激活统计
      *
@@ -382,7 +390,37 @@ public class DiscountBiz {
         return benefitMapper.listItemUseById(cardId);
     }
 
+    public List<WxTemplateMsgModel> pushCard(Integer noticeType) {
+        List<WxCardEventVo> list = cardMapper.listWxPushCard(noticeType);
+        return this.assemblePushModel(list, noticeType);
+    }
 
+    private List<WxTemplateMsgModel> assemblePushModel(List<WxCardEventVo> list, Integer noticeType) {
+        return list.stream().filter(obj -> obj.getPatientId() != null).map(obj -> {
+            WxTemplateMsgModel model = new WxTemplateMsgModel();
+            Map<String, Object> map = Maps.newHashMapWithExpectedSize(16);
+            model.setPatientId(obj.getPatientId());
+            map.put(TemplateDataEnum.COUPON_NAME.getArgName(), obj.getCouponName());
+            if (noticeType == 0) {
+                model.setTemplateEnum(ACTIVATED_UNUSED);
+                map.put("keyword1", obj.getCardNumber());
+                map.put("keyword2", obj.getActiveDate());
+                map.put("keyword5", obj.getCouponName());
+            }
+            if (noticeType == 1) {
+                model.setTemplateEnum(CARD_EXPIRING);
+                map.put("keyword1", obj.getCardNumber());
+                map.put("keyword2", obj.getActivationDeadline());
+            }
+            if (noticeType == 2) {
+                model.setTemplateEnum(APPOINT_EXPIRED);
+                map.put("keyword1", obj.getCouponName());
+                map.put("keyword2", obj.getActivationDeadline());
+            }
+            model.setParamMap(map);
+            return model;
+        }).collect(toList());
+    }
 
     /**
      * 产品记录-产品售出记录-导出
@@ -414,9 +452,9 @@ public class DiscountBiz {
         return new PageInfo<>(page);
     }
 
-    public PageInfo<CardActiveVo> getCardActivePage(Integer couponId, Integer saleChannelId, CouponDetailActiveQuery query){
+    public PageInfo<CardActiveVo> getCardActivePage(Integer couponId, Integer saleChannelId, CouponDetailActiveQuery query) {
         Page<CardActiveVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        cardMapper.listCardActive(query.getPatientKeyword(), query.getActiveOrgIds(), query.getActiveStartDate(),query.getActiveEndDate(),
+        cardMapper.listCardActive(query.getPatientKeyword(), query.getActiveOrgIds(), query.getActiveStartDate(), query.getActiveEndDate(),
                 couponId, saleChannelId);
         return new PageInfo<>(page);
     }
@@ -426,13 +464,13 @@ public class DiscountBiz {
                 , query.getSoldChannelIds(), query.getActiveOrgIds());
     }
 
-    public List<CardActiveVo> listCardActive(Integer couponId, Integer saleChannelId, CouponDetailActiveQuery query){
+    public List<CardActiveVo> listCardActive(Integer couponId, Integer saleChannelId, CouponDetailActiveQuery query) {
         return cardMapper.listCardActive(query.getPatientKeyword()
-                , query.getActiveOrgIds(), query.getActiveStartDate(),query.getActiveEndDate(),
+                , query.getActiveOrgIds(), query.getActiveStartDate(), query.getActiveEndDate(),
                 couponId, saleChannelId);
     }
 
-    public PageInfo<CardActiveRecoedVO> getCardActiveRecoedPage(CardActiveRecoedQuery query){
+    public PageInfo<CardActiveRecoedVO> getCardActiveRecoedPage(CardActiveRecoedQuery query) {
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }

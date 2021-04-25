@@ -16,6 +16,7 @@ import com.yunya.feign.wechat.domain.vo.WxVipInfoVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.wechat.service.impl.WXService;
+import com.yunya365.wechat.task.WxTask;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,8 @@ public class WxController {
 
     @Resource
     private WXService wxService;
+    @Resource
+    private WxTask wxTask;
 
     @GetMapping(value = "/wxVip/auth")
     @ApiOperation(value = "获取用户授权信息")
@@ -126,6 +129,21 @@ public class WxController {
     public ResponseResult pullTemplate() {
         wxService.pullTemplate();
         return ResponseUtil.success();
+    }
+
+    @GetMapping(value = "/wxVip/push/unused/card")
+    public void pushUnusedCard() {
+        wxTask.cardUnusedTask();
+    }
+
+    @GetMapping(value = "/wxVip/push/expiring/card")
+    public void pushExpiringCard() {
+        wxTask.cardExpiringTask();
+    }
+
+    @GetMapping(value = "/wxVip/push/expired/card")
+    public void pushExpiredCard() {
+        wxTask.cardExpiredTask();
     }
 
 }
