@@ -63,4 +63,5 @@ public class ShopController {
         creditsShopBiz.initialization();
         return ResponseUtil.success();
     }
+
 }

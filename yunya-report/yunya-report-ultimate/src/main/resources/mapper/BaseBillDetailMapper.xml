@@ -3561,7 +3561,7 @@
         from (
         select bbpd.bill_id, sum(principal_amount) as freePayAmount
         from base_bill_pay_detail bbpd
-        inner join base_bill_pay bbp on bbpd.bill_id = bbp.bill_id
+        inner join base_bill_pay bbp on bbpd.bill_pay_id = bbp.bill_pay_id
         <where>
             bbpd.account_item_id in (23, 26)
             and bbp.received_amount > 0
