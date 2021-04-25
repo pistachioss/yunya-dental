@@ -12,6 +12,7 @@ import com.yunya.middletable.config.DuiBaConfig;
 import com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper;
 
 import com.yunya.middletable.dao.report.BasePatientMapper;
+import com.yunya.middletable.model.credits_shop.CreditResult;
 import com.yunya.middletable.utils.SignTool;
 import com.yunya.models.credits_shop.CreditsShop;
 import com.yunya.models.report.BasePatientConsumptionCountVo;
@@ -186,4 +187,11 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
             log.info("批量添加患者初始化积分信息完成，时长：[{}]秒",(end - start) / 1000);
         }
     }
+
+   /* *//**
+     * 增加积分
+     * @return 增加成功 or 增加失败
+     *//*
+    public CreditResult increasePoints() {
+    }*/
 }

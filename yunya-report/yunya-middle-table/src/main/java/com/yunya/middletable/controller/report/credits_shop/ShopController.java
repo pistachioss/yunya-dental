@@ -1,9 +1,11 @@
 package com.yunya.middletable.controller.report.credits_shop;
 
+import com.yunya.feign.report.domain.model.IncreasePointsModel;
 import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.middletable.model.credits_shop.CreditResult;
 import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.models.credits_shop.CreditsShop;
 import io.swagger.annotations.*;
@@ -60,5 +62,11 @@ public class ShopController {
     public ResponseResult<T> initialization() throws InterruptedException {
         creditsShopBiz.initialization();
         return ResponseUtil.success();
+    }
+
+    @ApiOperation("增加积分")
+    @PostMapping("/increasePoints")
+    public CreditResult increasePoints(@RequestBody IncreasePointsModel increasePointsModel) throws InterruptedException {
+        return creditsShopBiz.increasePoints();
     }
 }
