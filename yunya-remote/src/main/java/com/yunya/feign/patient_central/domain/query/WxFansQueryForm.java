@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -27,9 +28,11 @@ import java.util.List;
 public class WxFansQueryForm extends PageQuery implements Serializable {
 
     @ApiModelProperty("开始日期")
+    @NotNull(message = "注册开始时间不能为空")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date startTime;
     @ApiModelProperty("结束日期")
+    @NotNull(message = "注册结束时间不能为空")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date endTime;
     @ApiModelProperty("客户的姓名/昵称/手机号(包括被绑定的客户)")
