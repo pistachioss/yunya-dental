@@ -55,7 +55,8 @@
       AND concat(IFNULL(pbi.`name`,''),
       IFNULL(pbi.medical_number,''),
       IFNULL(pbi.pinyin_name,''),
-      IFNULL(pbi.mobile,''))
+      IFNULL(pbi.mobile,''),
+      IFNULL(wf.nick_name,''))
       like concat(concat('%', rtrim(#{name})), '%')
     </where>
     GROUP BY wf.id
