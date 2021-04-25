@@ -52,19 +52,19 @@ import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH
 public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
 
   /** 订单记录 */
-  @Autowired private OrderRecordMapper orderRecordMapper;
+  @Resource private OrderRecordMapper orderRecordMapper;
   /** 订单明细 */
-  @Autowired private OrderDetailMapper orderDetailMapper;
+  @Resource private OrderDetailMapper orderDetailMapper;
   /** 订单明细付款记录 */
-  @Autowired private OrderDetailPayRecordMapper orderDetailPayRecordMapper;
+  @Resource private OrderDetailPayRecordMapper orderDetailPayRecordMapper;
   /** 账单记录 */
-  @Autowired private BillRecordMapper billRecordMapper;
+  @Resource private BillRecordMapper billRecordMapper;
   /** 中间表账单详情 */
-  @Autowired private BaseBillDetailMapper baseBillDetailMapper;
+  @Resource private BaseBillDetailMapper baseBillDetailMapper;
   /** 患者推荐关系 */
-  @Autowired private BasePatientOriginLogMapper basePatientOriginLogMapper;
+  @Resource private BasePatientOriginLogMapper basePatientOriginLogMapper;
   /** 患者积分信息 */
-  @Autowired private CreditsShopMapper creditsShopMapper;
+  @Resource private CreditsShopMapper creditsShopMapper;
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
