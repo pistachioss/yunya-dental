@@ -94,10 +94,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           mapper.insertSelective(baseBillPay);
           // 保存收费记录明细
           saveBillPayDetailRecord(dataId);
-          // 推荐积分
-          addPatientIntegral(baseBillPay.getBillId());
           // 增加会员积分  1元=1积分
           creditsShopBiz.ivyConsumeAddCredits(patientId,baseBillPay.getReceivedAmount(),baseBillPay.getBillPayId());
+          // 推荐积分
+          addPatientIntegral(baseBillPay.getBillId());
         } else {
           baseBillPayDetailMapper.deleteByBillPayId(dataId);
         }
