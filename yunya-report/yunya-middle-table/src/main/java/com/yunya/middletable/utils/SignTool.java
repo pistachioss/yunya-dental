@@ -1,6 +1,7 @@
 package com.yunya.middletable.utils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.util.*;
@@ -108,6 +109,7 @@ public class SignTool {
 		sb.append("credits=" + params.get("credits") + "&");
 		sb.append("appKey=" + params.get("appKey") + "&");
 		sb.append("timestamp=" + params.get("timestamp") + "&");
+		sb.append("dcustom=" + URLEncoder.encode(params.get("dcustom"))  + "&");
 		sb.append("sign=" + sign);
 		return sb.toString();
 	}
@@ -125,21 +127,31 @@ public class SignTool {
 	}
 
 	
-/*	public static void main(String[] args) {
-		String appKey="key";
-		String appSecret="secret";
+	public static void main(String[] args) {
+		String appKey="uyjUSAhoswNscUbAoqcxM2EDsiJ";
+		String appSecret="2XYKYmPyTfT44JBvb6MLCNFmffJA";
 
 		Map<String, String> params=new HashMap<String, String>();
-		params.put("appKey", appKey);
-		params.put("appSecret", appSecret);
-		params.put("date", new Date().getTime()+"");
+
+		params.put("uid","oZRpos16w9Gku_lBYeyOyREzlofs");
+		params.put("credits","1000");
+		params.put("appKey",appKey);
+		params.put("appSecret",appSecret);
+		params.put("timestamp",String.valueOf(System.currentTimeMillis()));
+		String dcustomParams = "patientId=" + 107877;
+		params.put("dcustom", URLEncoder.encode(URLEncoder.encode(dcustomParams)));
 
 		String sign=sign(params);
 
 		params.put("sign", sign);
 
+		params.remove("appSecret");
+
+		String s = signRequestUrl(params, sign, "https://activity.m.duiba.com.cn/autoLogin/autologin?");
+
+		System.out.println("url = " + s);
 		System.out.println(sign);
 		System.out.println(signVerify(appSecret, params));
 
-	}*/
+	}
 }

@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * @program: yunya-dental
@@ -37,7 +38,7 @@ public class CreditsShopTest {
 
     @Test
     public void duibaAutoLoginControllerTest() {
-        String url = shopController.duibaAutoLogin("oZRpos5NDKSkcLc9kQs38acsEBLI", 10086);
+        ResponseResult<Map<String, String>> url = shopController.duibaAutoLogin("oZRpos5NDKSkcLc9kQs38acsEBLI", 10086);
         log.info("免登录请求url = {}",url);
     }
 

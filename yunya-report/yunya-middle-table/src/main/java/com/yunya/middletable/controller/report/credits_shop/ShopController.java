@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @program: yunya-dental
@@ -39,8 +40,8 @@ public class ShopController {
             @ApiImplicitParam(name = "patientId", value = "患者ID", required = true, dataTypeClass = Integer.class)
     })
     @ApiResponse(code = 0,message = "兑吧登录URL",response = String.class)
-    public String duibaAutoLogin(@RequestParam String openId,
-                                 @RequestParam Integer patientId) {
+    public ResponseResult<Map<String,String>> duibaAutoLogin(@RequestParam String openId,
+                                                             @RequestParam Integer patientId) {
         return creditsShopBiz.duibaAutoLogin(openId,patientId);
     }
 

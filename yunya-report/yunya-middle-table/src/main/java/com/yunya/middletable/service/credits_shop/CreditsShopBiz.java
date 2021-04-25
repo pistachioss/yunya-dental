@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -113,9 +114,9 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      * @param patientId
      * @return
      */
-    public String duibaAutoLogin(String openId, Integer patientId) {
+    public ResponseResult<Map<String,String>> duibaAutoLogin(String openId, Integer patientId) {
         Map<String,String> params = new HashMap<String,String>(16);
-        String uidStr = openId + "#" + patientId.toString();
+        String uidStr = openId;
         CreditsShop creditsShop = mapper.selectLastCredits(patientId);
         Long credits = 0L;
         if (creditsShop != null) {
@@ -124,10 +125,16 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         params.put("uid",uidStr);
         params.put("credits",credits.toString());
         params.put("appKey",duiBaConfig.getAppKey());
+        params.put("appSecret",duiBaConfig.getAppSecret());
         params.put("timestamp",String.valueOf(System.currentTimeMillis()));
+        String dcustomParams = "patientId=" + patientId;
+        params.put("dcustom", URLEncoder.encode(dcustomParams));
         String sign = SignTool.sign(params);
+        params.remove("appSecret");
         String autoLoginUrl = SignTool.signRequestUrl(params, sign, duiBaConfig.getAutoLoginUrl());
-        return autoLoginUrl;
+        Map<String,String> result = new HashMap<>(16);
+        result.put("url",autoLoginUrl);
+        return ResponseUtil.success(result);
     }
 
     /**
