@@ -97,14 +97,8 @@ public class ThreadPoolManager {
             if (t.getPriority() != Thread.NORM_PRIORITY) {
                 t.setPriority(Thread.NORM_PRIORITY);
             }
-
             //处理未捕捉的异常
-            t.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    log.warn("线程工厂创建异常");
-                }
-            });
+            t.setUncaughtExceptionHandler((t1, e) -> log.warn("线程编号：{}，线程工厂创建异常", t1.getName(), e));
             return t;
         };
     }
