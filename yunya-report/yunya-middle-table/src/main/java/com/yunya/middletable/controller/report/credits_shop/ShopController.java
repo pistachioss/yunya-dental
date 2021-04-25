@@ -67,6 +67,7 @@ public class ShopController {
     @ApiOperation("增加积分")
     @PostMapping("/increasePoints")
     public CreditResult increasePoints(@RequestBody IncreasePointsModel increasePointsModel) throws InterruptedException {
-        return creditsShopBiz.increasePoints();
+        //return creditsShopBiz.increasePoints();
+        return null;
     }
 }
