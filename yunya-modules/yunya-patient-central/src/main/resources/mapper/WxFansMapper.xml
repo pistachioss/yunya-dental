@@ -32,7 +32,7 @@
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
   <select id="findList" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansVo">
-    select wf.id,wf.nick_name as nickName,wf.head_imgurl as headImgurl,wf.open_id as openId,pbi.name,pbi.mobile,
+    select wf.id,wf.nick_name as nickName,wf.head_imgurl as headImgurl,wf.open_id as openId,pbi.name,wf.register_mobile as mobile,
     wf.remark,wf.crt_time as crtTime,wf.bind as isBind,
     case when wf.sex = 1 then '男'
     when wf.sex = 2 then '女'
@@ -55,7 +55,7 @@
       AND concat(IFNULL(pbi.`name`,''),
       IFNULL(pbi.medical_number,''),
       IFNULL(pbi.pinyin_name,''),
-      IFNULL(pbi.mobile,''),
+      IFNULL(wf.register_mobile,''),
       IFNULL(wf.nick_name,''))
       like concat(concat('%', rtrim(#{name})), '%')
     </where>
