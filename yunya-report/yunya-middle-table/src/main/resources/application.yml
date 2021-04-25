@@ -4,7 +4,7 @@ server:
 duiba:
     appKey: uyjUSAhoswNscUbAoqcxM2EDsiJ
     appSecret: 2XYKYmPyTfT44JBvb6MLCNFmffJA
-    autoLoginUrl: https://home.m.duiba.com.cn/autoLogin/autologin?
+    autoLoginUrl: https://activity.m.duiba.com.cn/autoLogin/autologin?
 ## 数据源连接
 myjdbc:
     type: com.zaxxer.hikari.HikariDataSource
