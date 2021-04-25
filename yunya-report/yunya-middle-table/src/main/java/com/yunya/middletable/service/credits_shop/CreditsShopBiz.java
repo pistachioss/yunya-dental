@@ -113,7 +113,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      * @return
      */
     public String duibaAutoLogin(String openId, Integer patientId) {
-        Map<String,String> params = new HashMap<String,String>();
+        Map<String,String> params = new HashMap<String,String>(16);
         String uidStr = openId + "#" + patientId.toString();
         CreditsShop creditsShop = mapper.selectLastCredits(patientId);
         Long credits = 0L;
