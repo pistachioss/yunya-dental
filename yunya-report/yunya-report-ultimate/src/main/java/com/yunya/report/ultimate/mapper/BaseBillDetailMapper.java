@@ -381,6 +381,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
   List<Integer> billIdByMonthFreePayment(@Param("query") BillCategoryIncomeQuery query);
 
+  List<MonthCategoryVO> monthCategoryList(@Param("query") ClinicPerformanceBusinessQuery query, @Param("cur") Integer cur);
   /**
    * 查询账单开单不属于给定月份，而收费在给定月份的账单明细
    *
@@ -398,4 +399,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return
    */
   List<Integer> findBillIdsByNonMonth(@Param("query") BillCategoryIncomeQuery query);
+
+  /**
+   * 根据条件按月份分组门诊补入工作量
+   *
+   * @param query
+   * @return
+   */
+  List<BillRecordWorkloadVO> selectCouponWorkloadGroupByPrivilegeDate(@Param("query") DataStatisticsQuery query);
 }

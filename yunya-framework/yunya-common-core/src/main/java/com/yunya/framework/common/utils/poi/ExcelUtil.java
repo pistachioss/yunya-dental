@@ -340,15 +340,23 @@ public class ExcelUtil<T> {
           }
           res.append(str[i]);
         }
-        if (StringHelper.isNotEmpty(eDate)) {
-          str = eDate.split("-");
-          res.append("-");
-          for (int i = 0; i < str.length; i++) {
-            if (i > 0 && res.length() > 0) {
-              res.append(".");
-            }
-            res.append(str[i]);
+      }
+    }
+    if (StringHelper.isNotEmpty(eDate)) {
+      if (res.length() > 0) {
+        res.append("-");
+      }
+      String[] str = eDate.split("-");
+      if (str.length == 1) { // 年
+        res.append(eDate).append("年");
+      } else if (str.length == 2) { // 月
+        res.append(str[0]).append("年").append(str[1]).append("月");
+      } else if (str.length == 3) { // 日
+        for (int i = 0; i < str.length; i++) {
+          if (i > 0 && res.length() > 0) {
+            res.append(".");
           }
+          res.append(str[i]);
         }
       }
     }
