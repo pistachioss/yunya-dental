@@ -43,11 +43,11 @@ public class BillItemStatisticsVO implements Serializable {
   @ApiModelProperty("项目编号")
   private String itemNum;
 
-  @ApiModelProperty("挂号医生ID")
+  @ApiModelProperty("执行人ID")
   private String employeeId;
 
-  @Excel(name = "挂号医生")
-  @ApiModelProperty("挂号医生")
+  @Excel(name = "执行人")
+  @ApiModelProperty("执行人")
   private String employeeName;
 
   /** 项目分类名称 */

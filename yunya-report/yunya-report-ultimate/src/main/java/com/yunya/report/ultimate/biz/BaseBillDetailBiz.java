@@ -21,6 +21,10 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.*;
 import com.yunya.report.ultimate.mapper.*;
+import com.yunya.models.report.BaseBillDetail;
+import com.yunya.models.report.BaseEmployee;
+import com.yunya.models.report.BaseOrganization;
+import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +52,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
 
   /** 组织 */
   @Autowired private BaseOrganizationMapper organizationMapper;
+  /** 员工 */
+  @Autowired private BaseEmployeeMapper employeeMapper;
   /** 账单 */
   @Autowired private BaseBillMapper baseBillMapper;
   /** 收费记录 */
@@ -74,7 +80,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return list
    */
   public PageInfo<BillTariffIncomeDetailVO> findBillDetailIncomeList(
-          BillDetailIncomeDetailQuery query) {
+      BillDetailIncomeDetailQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
@@ -90,7 +96,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @throws IOException
    */
   public void exportBillDetailIncome(
-          HttpServletResponse response, BillDetailIncomeDetailQuery query) throws IOException {
+      HttpServletResponse response, BillDetailIncomeDetailQuery query) throws IOException {
     String fileName = "门诊项目收入明细";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
@@ -108,54 +114,54 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return
    */
   public PageInfo<EmployeeWorkloadOfPersonnelVO> findEmployeeWorkloadListOfPersonnel(
-          EmployeeWorkloadQuery query) {
+      EmployeeWorkloadQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<EmployeeWorkloadOfPersonnelVO> resultList =
-            mapper.selectEmployeeWorkloadListOfPersonnel(query);
+        mapper.selectEmployeeWorkloadListOfPersonnel(query);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
-              vo -> {
-                // 奖金系数
-                BigDecimal bonusCoefficient = vo.getBonusCoefficient();
-                // 补入工作量
-                BigDecimal supplementWorkload = vo.getSupplementWorkload();
-                // 实收工作量
-                BigDecimal actualWorkload = vo.getActualWorkload();
-                // 退费工作量
-                BigDecimal refundWorkload = vo.getRefundWorkload();
-                // 加工费
-                BigDecimal processingFee = vo.getProcessingFee();
-                // 正畸加工费
-                BigDecimal orthodonticsFee = vo.getOrthodonticsFee();
-                // 大额材料费
-                BigDecimal largeMaterialCost = vo.getLargeMaterialCost();
-                // 基础工作量
-                BigDecimal baseWorkload = vo.getBaseWorkload();
-                // 已收工作量
-                BigDecimal receivedWorkload = vo.getReceivedWorkload();
-                BigDecimal actualBonusBase =
-                        actualWorkload
-                                .add(supplementWorkload)
-                                .subtract(refundWorkload)
-                                .subtract(processingFee)
-                                .subtract(orthodonticsFee)
-                                .subtract(largeMaterialCost)
-                                .subtract(baseWorkload);
-                vo.setActualBonusBase(actualBonusBase);
-                vo.setActualBonus(actualBonusBase.multiply(bonusCoefficient));
-                BigDecimal receivedBonusBase =
-                        receivedWorkload
-                                .add(supplementWorkload)
-                                .subtract(refundWorkload)
-                                .subtract(processingFee)
-                                .subtract(orthodonticsFee)
-                                .subtract(largeMaterialCost)
-                                .subtract(baseWorkload);
-                vo.setReceivedBonusBase(receivedBonusBase);
-                vo.setReceivedBonus(receivedBonusBase.multiply(bonusCoefficient));
-              });
+          vo -> {
+            // 奖金系数
+            BigDecimal bonusCoefficient = vo.getBonusCoefficient();
+            // 补入工作量
+            BigDecimal supplementWorkload = vo.getSupplementWorkload();
+            // 实收工作量
+            BigDecimal actualWorkload = vo.getActualWorkload();
+            // 退费工作量
+            BigDecimal refundWorkload = vo.getRefundWorkload();
+            // 加工费
+            BigDecimal processingFee = vo.getProcessingFee();
+            // 正畸加工费
+            BigDecimal orthodonticsFee = vo.getOrthodonticsFee();
+            // 大额材料费
+            BigDecimal largeMaterialCost = vo.getLargeMaterialCost();
+            // 基础工作量
+            BigDecimal baseWorkload = vo.getBaseWorkload();
+            // 已收工作量
+            BigDecimal receivedWorkload = vo.getReceivedWorkload();
+            BigDecimal actualBonusBase =
+                actualWorkload
+                    .add(supplementWorkload)
+                    .subtract(refundWorkload)
+                    .subtract(processingFee)
+                    .subtract(orthodonticsFee)
+                    .subtract(largeMaterialCost)
+                    .subtract(baseWorkload);
+            vo.setActualBonusBase(actualBonusBase);
+            vo.setActualBonus(actualBonusBase.multiply(bonusCoefficient));
+            BigDecimal receivedBonusBase =
+                receivedWorkload
+                    .add(supplementWorkload)
+                    .subtract(refundWorkload)
+                    .subtract(processingFee)
+                    .subtract(orthodonticsFee)
+                    .subtract(largeMaterialCost)
+                    .subtract(baseWorkload);
+            vo.setReceivedBonusBase(receivedBonusBase);
+            vo.setReceivedBonus(receivedBonusBase.multiply(bonusCoefficient));
+          });
     }
     return new PageInfo<>(resultList);
   }
@@ -167,12 +173,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return PageInfo<EmployeeWorkloadOfOperationVO>
    */
   public PageInfo<EmployeeWorkloadOfOperationVO> findEmployeeWorkloadListOfOperation(
-          EmployeeWorkloadQuery query) {
+      EmployeeWorkloadQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<EmployeeWorkloadOfOperationVO> resultList =
-            mapper.selectEmployeeWorkloadListOfOperation(query);
+        mapper.selectEmployeeWorkloadListOfOperation(query);
     return new PageInfo<>(resultList);
   }
 
@@ -183,7 +189,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query
    */
   private void assemblyFreepayment(
-          List<? extends EmployeeWorkloadOfOperationVO> resultList, EmployeeWorkloadQuery query) {
+      List<? extends EmployeeWorkloadOfOperationVO> resultList, EmployeeWorkloadQuery query) {
     Integer orgId = query.getOrgId();
     Map<String, BigDecimal> userOrgs = new HashMap<>(16);
     Set<Integer> userIds = new HashSet<>();
@@ -1141,9 +1147,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   /**
    * 各个门诊的月工作量和日工作量合计
    *
-   * @return
    * @param startDate
    * @param curDate
+   * @return
    */
   public DynamicHeaderPageInfo<JSONObject> workloadCompleted(String startDate, String curDate) {
     Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
@@ -1237,7 +1243,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-   * 查询开单项目工作量列表
+   * 根据条件查询收费项目工作量列表
    *
    * @param query 查询条件
    * @return
@@ -2147,5 +2153,149 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     String fileName = excelUtil.getFileName(query.getQueryDate(),"", organization.getAbbreviation(),"非本月免单金额明细");
     excelUtil.exportExcel(response, list, "非本月免单金额明细", fileName);
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public PageInfo<PersonalBillItemReceivedWorkloadDetailVO>
+      findPersonalBillItemReceivedWorkloadDetailList(PersonalBillItemTollAndWorkloadQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<PersonalBillItemReceivedWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemReceivedWorkloadDetail(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 个人收费项目已收工作量明细导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportPersonalBillItemReceivedWorkloadList(
+      HttpServletResponse response, PersonalBillItemTollAndWorkloadQuery query) throws IOException {
+    ExcelUtil<PersonalBillItemReceivedWorkloadDetailVO> excelUtil =
+        new ExcelUtil<>(PersonalBillItemReceivedWorkloadDetailVO.class);
+    List<PersonalBillItemReceivedWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemReceivedWorkloadDetail(query);
+    String fileName = "个人收费项目已收工作量明细列表";
+    BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+    if (employee != null) {
+      fileName = fileName + "-" + employee.getEmployeeName();
+    }
+    excelUtil.exportExcel(response, resultList, "个人收费项目已收工作量明细列表", fileName);
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目免单工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public PageInfo<PersonalBillItemFreeWorkloadDetailVO> findPersonalBillItemFreeWorkloadDetailList(
+      PersonalBillItemTollAndWorkloadQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<PersonalBillItemFreeWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemFreeWorkloadDetail(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 个人收费项目免单工作量明细导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportPersonalBillItemFreeWorkloadList(
+      HttpServletResponse response, PersonalBillItemTollAndWorkloadQuery query) throws IOException {
+    ExcelUtil<PersonalBillItemFreeWorkloadDetailVO> excelUtil =
+        new ExcelUtil<>(PersonalBillItemFreeWorkloadDetailVO.class);
+    List<PersonalBillItemFreeWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemFreeWorkloadDetail(query);
+    String fileName = "个人收费项目已收工作量明细列表";
+    BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+    if (employee != null) {
+      fileName = fileName + "-" + employee.getEmployeeName();
+    }
+    excelUtil.exportExcel(response, resultList, "个人收费项目免单工作量明细列表", fileName);
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目补入工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public PageInfo<PersonalBillItemSupplyWorkloadDetailVO>
+      findPersonalBillItemSupplyWorkloadDetailList(PersonalBillItemTollAndWorkloadQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<PersonalBillItemSupplyWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemSupplyWorkloadDetail(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 个人收费项目补入工作量明细导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportPersonalBillItemSupplyWorkloadList(
+      HttpServletResponse response, PersonalBillItemTollAndWorkloadQuery query) throws IOException {
+    ExcelUtil<PersonalBillItemSupplyWorkloadDetailVO> excelUtil =
+        new ExcelUtil<>(PersonalBillItemSupplyWorkloadDetailVO.class);
+    List<PersonalBillItemSupplyWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemSupplyWorkloadDetail(query);
+    String fileName = "个人收费项目已收工作量明细列表";
+    BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+    if (employee != null) {
+      fileName = fileName + "-" + employee.getEmployeeName();
+    }
+    excelUtil.exportExcel(response, resultList, "个人收费项目补入工作量明细列表", fileName);
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目退费工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public PageInfo<PersonalBillItemRefundWorkloadDetailVO>
+      findPersonalBillItemRefundWorkloadDetailList(PersonalBillItemTollAndWorkloadQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<PersonalBillItemRefundWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemRefundWorkloadDetail(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 个人收费项目退费工作量明细导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportPersonalBillItemRefundWorkloadList(
+      HttpServletResponse response, PersonalBillItemTollAndWorkloadQuery query) throws IOException {
+    ExcelUtil<PersonalBillItemRefundWorkloadDetailVO> excelUtil =
+        new ExcelUtil<>(PersonalBillItemRefundWorkloadDetailVO.class);
+    List<PersonalBillItemRefundWorkloadDetailVO> resultList =
+        mapper.selectPersonalBillItemRefundWorkloadDetail(query);
+    String fileName = "个人收费项目已收工作量明细列表";
+    BaseEmployee employee = employeeMapper.selectByPrimaryKey(query.getExecutorId());
+    if (employee != null) {
+      fileName = fileName + "-" + employee.getEmployeeName();
+    }
+    excelUtil.exportExcel(response, resultList, "个人收费项目退费工作量明细列表", fileName);
   }
 }
