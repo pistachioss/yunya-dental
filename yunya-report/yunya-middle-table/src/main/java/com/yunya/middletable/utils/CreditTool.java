@@ -365,13 +365,13 @@ public class CreditTool {
 	 * @param uid uid
 	 * @return map (map.get("openId")、map.get("patientId"))
 	 */
-	public Map<String,Object> parseUid(String uid) {
-		HashMap<String, Object> result = new HashMap<>();
+	public Map<String,String> parseUid(String uid) {
+		HashMap<String, String> result = new HashMap<>();
 		if (StringHelper.isNotBlank(uid)) {
 			String decode = URLDecoder.decode(URLDecoder.decode(uid));
 			String[] split = decode.split("#");
 			result.put("openId",split[0]);
-			result.put("patientId",Integer.valueOf(split[1]));
+			result.put("patientId",split[1]);
 		}
 		return result;
 	}
