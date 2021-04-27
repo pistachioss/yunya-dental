@@ -105,11 +105,10 @@ public class SignTool {
 		// 拼接登录URL
 		StringBuffer sb = new StringBuffer();
 		sb.append(duibaUrl);
-		sb.append("uid=" + params.get("uid") + "&");
+		sb.append("uid=" + URLEncoder.encode(params.get("uid")) + "&");
 		sb.append("credits=" + params.get("credits") + "&");
-		sb.append("appKey=" + params.get("appKey") + "&");
+		sb.append("appKey=" + params.get("appKey")+ "&");
 		sb.append("timestamp=" + params.get("timestamp") + "&");
-		sb.append("dcustom=" + URLEncoder.encode(params.get("dcustom"))  + "&");
 		sb.append("sign=" + sign);
 		return sb.toString();
 	}
@@ -127,19 +126,20 @@ public class SignTool {
 	}
 
 	
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		String appKey="uyjUSAhoswNscUbAoqcxM2EDsiJ";
 		String appSecret="2XYKYmPyTfT44JBvb6MLCNFmffJA";
 
 		Map<String, String> params=new HashMap<String, String>();
 
-		params.put("uid","oZRpos16w9Gku_lBYeyOyREzlofs");
+		params.put("uid",URLEncoder. encode("oZRpos16w9Gku_lBYeyOyREzlofs#10") );
 		params.put("credits","1000");
 		params.put("appKey",appKey);
 		params.put("appSecret",appSecret);
 		params.put("timestamp",String.valueOf(System.currentTimeMillis()));
+		// 自定义参数
 		String dcustomParams = "patientId=" + 107877;
-		params.put("dcustom", URLEncoder.encode(URLEncoder.encode(dcustomParams)));
+		//params.put("dcustom", URLEncoder.encode(URLEncoder.encode(dcustomParams)));
 
 		String sign=sign(params);
 
@@ -153,5 +153,5 @@ public class SignTool {
 		System.out.println(sign);
 		System.out.println(signVerify(appSecret, params));
 
-	}
+	}*/
 }

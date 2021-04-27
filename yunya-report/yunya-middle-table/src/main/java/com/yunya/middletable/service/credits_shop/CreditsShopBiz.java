@@ -116,19 +116,17 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      */
     public ResponseResult<Map<String,String>> duibaAutoLogin(String openId, Integer patientId) {
         Map<String,String> params = new HashMap<String,String>(16);
-        String uidStr = openId;
+        String uidStr = openId + "#" + patientId;
         CreditsShop creditsShop = mapper.selectLastCredits(patientId);
         Long credits = 0L;
         if (creditsShop != null) {
             credits = creditsShop.getCreditsAccount();
         }
-        params.put("uid",uidStr);
+        params.put("uid",URLEncoder.encode(uidStr));
         params.put("credits",credits.toString());
         params.put("appKey",duiBaConfig.getAppKey());
         params.put("appSecret",duiBaConfig.getAppSecret());
         params.put("timestamp",String.valueOf(System.currentTimeMillis()));
-        String dcustomParams = "patientId=" + patientId;
-        params.put("dcustom", URLEncoder.encode(dcustomParams));
         String sign = SignTool.sign(params);
         params.remove("appSecret");
         String autoLoginUrl = SignTool.signRequestUrl(params, sign, duiBaConfig.getAutoLoginUrl());
