@@ -40,7 +40,7 @@ public class PersonalBillItemSupplyWorkloadDetailVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 免单工作量 */
-  @Excel(name = "补入工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "补入工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("补入工作量")
   private BigDecimal itemSupplyPayWorkload;
   /** 执行人ID */

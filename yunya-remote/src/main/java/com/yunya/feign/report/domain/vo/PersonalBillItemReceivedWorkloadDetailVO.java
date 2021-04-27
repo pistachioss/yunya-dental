@@ -51,7 +51,7 @@ public class PersonalBillItemReceivedWorkloadDetailVO implements Serializable {
   @ApiModelProperty("患者手机号")
   private String mobile;
   /** 已收工作量 */
-  @Excel(name = "已收工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "已收工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("已收工作量")
   private BigDecimal itemReceivedWorkload;
   /** 执行人ID */

@@ -40,7 +40,7 @@ public class PersonalBillItemFreeWorkloadDetailVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 免单工作量 */
-  @Excel(name = "其中免单工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "其中免单工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("免单工作量")
   private BigDecimal itemFreePayWorkload;
   /** 执行人ID */
