@@ -1100,40 +1100,41 @@
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         join (SELECT
-            log.origin_id
-        FROM
-            base_patient_origin_log log
+                log.origin_id
+            FROM
+                base_patient_origin_log log
             JOIN base_employee ee ON log.origin_id = ee.user_id
-        <where>
-            log.origin_type = 1
-            and log.inservice = 1
-            <if test="query.employeeId != null">
-                and ee.user_id = #{query.employeeId}
-            </if>
-            <if test="list != null and list.size() > 0">
-                and log.origin_id in
-                <foreach collection="list" item="patientOriginEmployeeVo" open="(" separator="," close=")">
-                  #{patientOriginEmployeeVo.originId}
-                </foreach>
-            </if>
+            <where>
+                log.origin_type = 1
+                and log.inservice = 1
+                <if test="query.employeeId != null">
+                    and ee.user_id = #{query.employeeId}
+                </if>
+                <if test="list != null and list.size() > 0">
+                    and log.origin_id in
+                    <foreach collection="list" item="patientOriginEmployeeVo" open="(" separator="," close=")">
+                        #{patientOriginEmployeeVo.originId}
+                    </foreach>
+                </if>
 
-            <if test="query.workStatus != null and query.workStatus.size() > 0">
-                and ee.work_status in
-                <foreach collection="query.workStatus" item="workStatus" open="(" separator="," close=")">
-                    #{workStatus}
-                </foreach>
-            </if>
+                <if test="query.workStatus != null and query.workStatus.size() > 0">
+                    and ee.work_status in
+                    <foreach collection="query.workStatus" item="workStatus" open="(" separator="," close=")">
+                        #{workStatus}
+                    </foreach>
+                </if>
 
-        </where>
-        GROUP BY log.origin_id ) t
+            </where>
+            GROUP BY log.origin_id )
+        t
         on t.origin_id = log.origin_id
         where 1 = 1
         and log.origin_type = 1
-        <if test="query.startDate != null">
+        <if test="query.startDate != null and query.startDate != '' ">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
+        <if test="query.endDate != null and query.endDate != '' " >
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
     </select>
@@ -1147,11 +1148,11 @@
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         where 1 = 1
         AND log.origin_type = 3
-        <if test="query.startDate != null">
+        <if test="query.startDate != null and query.startDate != '' ">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
+        <if test="query.endDate != null and query.endDate != '' " >
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
@@ -1190,11 +1191,11 @@
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
-        <if test="query.startDate != null">
+        <if test="query.startDate != null and query.startDate != '' ">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
+        <if test="query.endDate != null and query.endDate != '' " >
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
@@ -1219,11 +1220,11 @@
             and inservice = 1
         ) t on bb.patient_id = t.patient_id
         where bb.privilege_date is not null
-        <if test="query.startDate != null">
+        <if test="query.startDate != null and query.startDate != '' ">
             and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
+        <if test="query.endDate != null and query.endDate != '' " >
             and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
     </select>
@@ -1245,7 +1246,7 @@
                 bo.abbreviation abbreviation,
                 be.employee_name employeeName,
                 bti.item_name itemName,
-                bbd.coupon_workload workload
+                cast(bbd.coupon_workload as decimal(20,2)) as workload
             from base_bill_detail bbd
                 left join base_bill bb on bb.bill_id = bbd.bill_id
                 left join base_patient bp on bp.patient_id = bb.patient_id
@@ -1258,11 +1259,16 @@
             and bbd.coupon_workload  > 0
             and log.origin_id = #{query.originId}
             and log.origin_type = #{originType}
-            <if test="query.startDate != null">
+
+            <if test="query.condition != null">
+                and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition} ), '%' )
+            </if>
+
+            <if test="query.startDate != null and query.startDate != '' ">
                 and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
             </if>
 
-            <if test="query.endDate != null" >
+            <if test="query.endDate != null and query.endDate != '' " >
                 and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
             </if>
         ) t

@@ -157,9 +157,9 @@ public class PatientOriginRelationsBiz
                     }
                     // 判断是全部工作量 还是 免单支付工作量
                     if (type) {
-                      patientOriginEmployeeVo.setReceivedTotalWorkload(patientOriginEmployeeVo.getReceivedTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
+                      patientOriginEmployeeVo.setReceivedTotalWorkload(patientOriginEmployeeVo.getReceivedTotalWorkload().add(multiply));
                     } else {
-                      patientOriginEmployeeVo.setFreeTotalWorkload(patientOriginEmployeeVo.getFreeTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
+                      patientOriginEmployeeVo.setFreeTotalWorkload(patientOriginEmployeeVo.getFreeTotalWorkload().add(multiply));
                     }
                   }
                 }
@@ -226,10 +226,6 @@ public class PatientOriginRelationsBiz
    */
   public void exportEmployeeReferralList(
       HttpServletResponse response, PatientOriginEmployeeQuery query) throws IOException {
-    if (StringHelper.isNotEmpty(query.getEndDate())) {
-      String endDate = new DateTime(query.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
-      query.setEndDate(endDate);
-    }
     List<PatientOriginEmployeeVo> patientOriginEmployeeVoLists = combinationEmployeeReferral(query);
     ExcelUtil<PatientOriginEmployeeVo> excelUtil = new ExcelUtil<>(PatientOriginEmployeeVo.class);
     excelUtil.exportExcel(response, patientOriginEmployeeVoLists, "员工推荐明细", "员工推荐明细");
@@ -350,7 +346,7 @@ public class PatientOriginRelationsBiz
                 ReceivedWorkloadDetailsVo receivedWorkloadDetails = new ReceivedWorkloadDetailsVo();
                 BeanUtils.copyProperties(receivedWorkloadDetailsVo,receivedWorkloadDetails);
                 BigDecimal multiply = receivedWorkloadDetailsVo.getWorkload().multiply(baseBillPay.getReceivedAmount());
-                receivedWorkloadDetails.setWorkload(multiply.setScale(1, BigDecimal.ROUND_HALF_UP));
+                receivedWorkloadDetails.setWorkload(multiply.setScale(2,BigDecimal.ROUND_HALF_UP));
                 // 加入到结果返回集合中
                 receivedWorkloadDetailsListVo.add(receivedWorkloadDetails);
               }
@@ -385,4 +381,37 @@ public class PatientOriginRelationsBiz
     return map;
   }
 
+  /**
+   * 员工推荐-各项明细列表-导出
+   * @param response 请求
+   * @param query 条件
+   */
+  public void exportWorkloadBreakdownList(HttpServletResponse response, ReceiverkLoadQuery query) throws ParseException, IOException {
+    ExcelUtil<ReceivedWorkloadDetailsVo> excelUtil = null;
+    // 1.已收 2.免单 3.退费 4.补入
+    switch (query.getType()) {
+      case 1:
+        List<ReceivedWorkloadDetailsVo> receivedDetailsList = receivedDetail(query, true, 1);
+        excelUtil = new ExcelUtil<>(ReceivedWorkloadDetailsVo.class);
+        excelUtil.exportExcel(response, receivedDetailsList, "已收工作量明细", "已收工作量明细");
+        break;
+      case 2:
+        List<ReceivedWorkloadDetailsVo> freeOrderDetails = receivedDetail(query, false, 1);
+        excelUtil = new ExcelUtil<>(ReceivedWorkloadDetailsVo.class);
+        excelUtil.exportExcel(response, freeOrderDetails, "免单工作量明细", "免单工作量明细");
+        break;
+      case 3:
+        List<ReceivedWorkloadDetailsVo> refundDetails = refundDetail(query, 1);
+        excelUtil = new ExcelUtil<>(ReceivedWorkloadDetailsVo.class);
+        excelUtil.exportExcel(response, refundDetails, "退费明细", "退费明细");
+        break;
+      case 4:
+        List<ReceivedWorkloadDetailsVo> supplementaryDetails = makeUpDetail(query, 1);
+        excelUtil = new ExcelUtil<>(ReceivedWorkloadDetailsVo.class);
+        excelUtil.exportExcel(response, supplementaryDetails, "补入工作量明细", "补入工作量明细");
+        break;
+      default:
+        break;
+    }
+  }
 }
