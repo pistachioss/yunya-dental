@@ -1232,7 +1232,7 @@
             and bbd.coupon_workload  > 0
             and log.origin_id = #{query.originId}
             and log.origin_type = #{originType}
-
+            and log.inservice = 1
             <if test="query.condition != null">
                 and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition} ), '%' )
             </if>
