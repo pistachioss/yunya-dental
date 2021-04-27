@@ -320,8 +320,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query 查询条件
    */
   public void exportCategoryIncome(HttpServletResponse response, BillCategoryIncomeQuery query)
-          throws IOException {
-    List<CategoryInfoIncomeVO> list = mapper.selectCategoryIncomeList(query);
+      throws IOException {
+    query.setWhetherPage(false);
+    List<CategoryInfoIncomeVO> list = findCategoryIncomeList(query).getList();
     ExcelUtil<CategoryInfoIncomeVO> excelUtil = new ExcelUtil<>(CategoryInfoIncomeVO.class);
     excelUtil.exportExcel(response, list, "门诊分类收入汇总", "门诊分类收入汇总");
   }
@@ -2031,7 +2032,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return
    */
   public PageInfo<NonMonthCategoryVO> nonMonthCategoryList(BillCategoryIncomeQuery query) {
-    List<NonMonthCategoryVO> vos = mapper.nonMonthCategoryList(query);
+    List<Integer> ids = mapper.findBillIdsByNonMonth(query);
+    List<NonMonthCategoryVO> vos = mapper.nonMonthCategoryList(query, ids);
     List<NonMonthCategoryVO> res = new ArrayList<>();
     if (StringHelper.isNotEmpty(vos)) {
       Map<String, String> categoryMap = new HashMap<>(16);
@@ -2042,6 +2044,22 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           categoryMap.put(vo.getItemType()+","+vo.getItemId(),vo.getItemType()+","+vo.getCategoryId());
           categoryName.put(vo.getItemType()+","+vo.getCategoryId(), vo.getCategoryName());
         });
+      }
+      Map<String, BigDecimal> couponMap = new HashMap<>(16);
+      query.setPrivilegeDate(query.getQueryDate());
+      ids = mapper.findBillIdsByNonMonth(query);
+      if (StringHelper.isNotEmpty(ids)) {
+        List<NonMonthCategoryVO> coupons = mapper.nonMonthCategoryList(query, ids);
+        if (StringHelper.isNotEmpty(coupons)) {
+          coupons.forEach(vo -> {
+            String key = vo.getBillId() + "," + categoryMap.get(vo.getItemType() + "," + vo.getItemId());
+            BigDecimal couponWorkload = couponMap.get(key);
+            if (couponWorkload == null) {
+              couponWorkload = BigDecimal.ZERO;
+            }
+            couponMap.put(key, couponWorkload.add(vo.getCouponWorkload()));
+          });
+        }
       }
       Map<Integer, BigDecimal[]> billMap = new HashMap<>(16);
       for (NonMonthCategoryVO vo : vos) {
@@ -2122,7 +2140,13 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             vo.setPatientName(workload.getPatientName());
             vo.setFreeDate(workload.getChargeDate());
             vo.setAbbreviation(workload.getAbbreviation());
+            vo.setBillDate(workload.getBillDate());
           }
+          BigDecimal couponWorkload = couponMap.get(billId + "," + itemType + "," + categoryId);
+          if (couponWorkload == null) {
+            couponWorkload = BigDecimal.ZERO;
+          }
+          vo.setCouponWorkload(couponWorkload);
           res.add(vo);
         }
       }
