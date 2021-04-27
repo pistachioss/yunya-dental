@@ -8,6 +8,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.config.DuiBaConfig;
 import com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper;
 
@@ -114,13 +115,15 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      * @param patientId
      * @return
      */
-    public ResponseResult<Map<String,String>> duibaAutoLogin(String openId, Integer patientId) {
+    public ResponseResult<Map<String,String>> duibaAutoLogin(String openId, String patientId) {
         Map<String,String> params = new HashMap<String,String>(16);
         String uidStr = openId + "#" + patientId;
-        CreditsShop creditsShop = mapper.selectLastCredits(patientId);
         Long credits = 0L;
-        if (creditsShop != null) {
-            credits = creditsShop.getCreditsAccount();
+        if (StringHelper.isNotBlank(patientId) && !"null".equals(patientId)) {
+            CreditsShop creditsShop = mapper.selectLastCredits(Integer.parseInt(patientId));
+            if (creditsShop != null) {
+                credits = creditsShop.getCreditsAccount();
+            }
         }
         params.put("uid",URLEncoder.encode(uidStr));
         params.put("credits",credits.toString());

@@ -41,7 +41,7 @@ public class ShopController {
     })
     @ApiResponse(code = 0,message = "兑吧登录URL",response = String.class)
     public ResponseResult<Map<String,String>> duibaAutoLogin(@RequestParam String openId,
-                                                             @RequestParam Integer patientId) {
+                                                             @RequestParam String patientId) {
         return creditsShopBiz.duibaAutoLogin(openId,patientId);
     }
 
@@ -67,7 +67,7 @@ public class ShopController {
 
     @ApiOperation("增加积分")
     @PostMapping("/increasePoints")
-    public CreditResult increasePoints(@RequestBody IncreasePointsModel increasePointsModel) throws InterruptedException {
+    public CreditResult increasePoints( IncreasePointsModel increasePointsModel) throws InterruptedException {
         //return creditsShopBiz.increasePoints();
         return null;
     }
