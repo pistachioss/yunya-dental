@@ -98,8 +98,8 @@ public class ReceivedWorkloadDetailsVo {
     /**
      * 已收工作量
      */
-    @Excel(name = "已收工作量")
-    @ApiModelProperty("已收工作量")
+    @Excel(name = "金额")
+    @ApiModelProperty("金额")
     private BigDecimal workload;
 
     /**

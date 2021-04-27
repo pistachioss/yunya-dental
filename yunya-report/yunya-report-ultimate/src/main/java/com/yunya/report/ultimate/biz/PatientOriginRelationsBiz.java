@@ -346,7 +346,7 @@ public class PatientOriginRelationsBiz
                 ReceivedWorkloadDetailsVo receivedWorkloadDetails = new ReceivedWorkloadDetailsVo();
                 BeanUtils.copyProperties(receivedWorkloadDetailsVo,receivedWorkloadDetails);
                 BigDecimal multiply = receivedWorkloadDetailsVo.getWorkload().multiply(baseBillPay.getReceivedAmount());
-                receivedWorkloadDetails.setWorkload(multiply);
+                receivedWorkloadDetails.setWorkload(multiply.setScale(2,BigDecimal.ROUND_HALF_UP));
                 // 加入到结果返回集合中
                 receivedWorkloadDetailsListVo.add(receivedWorkloadDetails);
               }

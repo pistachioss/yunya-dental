@@ -1141,26 +1141,25 @@
     <select id="findBaseBillIdList"
             resultType="java.lang.Integer">
         SELECT
-        DISTINCT
-        bb.bill_id billId
+            DISTINCT
+            bb.bill_id billId
         FROM
-        base_bill bb
+            base_bill bb
         JOIN (
-        SELECT DISTINCT
-        log.patient_id
-        FROM
-        base_patient_origin_log log
-        JOIN base_bill bb ON log.patient_id = bb.patient_id
-        JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
-        JOIN base_patient bp on bp.patient_id = log.patient_id
-        WHERE
-        log.origin_id = #{query.originId}
-        <if test="query.condition != null">
-            and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition}
-            ), '%' )
-        </if>
-        AND log.origin_type = #{originType}
-        AND log.inservice = 1
+            SELECT DISTINCT
+            log.patient_id
+            FROM
+            base_patient_origin_log log
+            JOIN base_bill bb ON log.patient_id = bb.patient_id
+            JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
+            JOIN base_patient bp on bp.patient_id = log.patient_id
+            WHERE
+            log.origin_id = #{query.originId}
+            <if test="query.condition != null">
+                and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition} ), '%' )
+            </if>
+            AND log.origin_type = #{originType}
+            AND log.inservice = 1
         ) t ON bb.patient_id = t.patient_id
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
@@ -1182,15 +1181,16 @@
 
     </select>
 
+
     <!-- 根据推荐人id 和 优惠时间 查询补入订单id -->
     <select id="selectMakeUpBillIdList" resultType="java.lang.Integer">
         select bill_id
         from base_bill bb
         join (
-        select patient_id
-        from base_patient_origin_log
-        where origin_id = 12
-        and inservice = 1
+            select patient_id
+            from base_patient_origin_log
+            where origin_id = 12
+            and inservice = 1
         ) t on bb.patient_id = t.patient_id
         where bb.privilege_date is not null
         <if test="query.startDate != null and query.startDate != '' ">
@@ -1219,7 +1219,7 @@
                 bo.abbreviation abbreviation,
                 be.employee_name employeeName,
                 bti.item_name itemName,
-                bbd.coupon_workload workload
+                cast(bbd.coupon_workload as decimal(20,2)) as workload
             from base_bill_detail bbd
                 left join base_bill bb on bb.bill_id = bbd.bill_id
                 left join base_patient bp on bp.patient_id = bb.patient_id
@@ -1232,6 +1232,11 @@
             and bbd.coupon_workload  > 0
             and log.origin_id = #{query.originId}
             and log.origin_type = #{originType}
+
+            <if test="query.condition != null">
+                and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition} ), '%' )
+            </if>
+
             <if test="query.startDate != null and query.startDate != '' ">
                 and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
             </if>

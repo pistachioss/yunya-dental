@@ -763,7 +763,7 @@
 				bo.abbreviation abbreviation,
 				be.employee_name employeeName,
 				bti.item_name itemName,
-				brd.refund_amount workload
+				cast(brd.refund_amount as decimal(20,2)) as workload
         from base_refund_detail brd
                  left join base_bill_detail bbd on bbd.bill_detail_id = brd.bill_detail_id
                  left join base_bill bb on bb.bill_id = bbd.bill_id
