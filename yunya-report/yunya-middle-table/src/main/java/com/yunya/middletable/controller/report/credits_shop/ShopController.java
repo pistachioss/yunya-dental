@@ -80,7 +80,7 @@ public class ShopController {
 
     @ApiOperation("兑换结果")
     @GetMapping("/exchangeResult")
-    public CreditResult exchangeResult(HttpServletRequest request) {
+    public String exchangeResult(HttpServletRequest request) {
         return creditsShopBiz.exchangeResult(request);
     }
 }
