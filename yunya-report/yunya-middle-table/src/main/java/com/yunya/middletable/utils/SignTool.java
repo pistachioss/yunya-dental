@@ -1,7 +1,6 @@
 package com.yunya.middletable.utils;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
@@ -45,6 +44,7 @@ public class SignTool {
 				map.put(key, params.get(key));
 			}
 		}
+		
 		String sign=sign(map);
 		if(sign.equals(params.get("sign"))){
 			return true;
@@ -85,7 +85,6 @@ public class SignTool {
 		}
 		String sign="";
 		try {
-			System.out.println("加密 = \n\n" + string);
 			sign = toHexValue(encryptMD5(string.getBytes(Charset.forName("utf-8"))));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -106,11 +105,10 @@ public class SignTool {
 		// 拼接登录URL
 		StringBuffer sb = new StringBuffer();
 		sb.append(duibaUrl);
-		sb.append("uid=" + params.get("uid") + "&");
+		sb.append("uid=" + URLEncoder.encode(params.get("uid")) + "&");
 		sb.append("credits=" + params.get("credits") + "&");
-		sb.append("appKey=" + params.get("appKey") + "&");
+		sb.append("appKey=" + params.get("appKey")+ "&");
 		sb.append("timestamp=" + params.get("timestamp") + "&");
-		sb.append("dcustom=" + params.get("dcustom") + "&");
 		sb.append("sign=" + sign);
 		return sb.toString();
 	}
@@ -128,32 +126,32 @@ public class SignTool {
 	}
 
 	
-	public static void main(String[] args) throws UnsupportedEncodingException {
+	/*public static void main(String[] args) {
 		String appKey="uyjUSAhoswNscUbAoqcxM2EDsiJ";
 		String appSecret="2XYKYmPyTfT44JBvb6MLCNFmffJA";
 
 		Map<String, String> params=new HashMap<String, String>();
 
-
-		params.put("appKey", appKey);
-		params.put("appSecret", appSecret);
-//		params.put("date", new Date().getTime()+"");
-
-		params.put("uid","oZRpos16w9Gku_lBYeyOyREzlofs");
+		params.put("uid",URLEncoder. encode("oZRpos16w9Gku_lBYeyOyREzlofs#10") );
 		params.put("credits","1000");
-		params.put("appKey","uyjUSAhoswNscUbAoqcxM2EDsiJ");
+		params.put("appKey",appKey);
+		params.put("appSecret",appSecret);
 		params.put("timestamp",String.valueOf(System.currentTimeMillis()));
-		params.put("dcustom", URLEncoder.encode(URLEncoder.encode("patientId=" + 10)));
+		// 自定义参数
+		String dcustomParams = "patientId=" + 107877;
+		//params.put("dcustom", URLEncoder.encode(URLEncoder.encode(dcustomParams)));
 
 		String sign=sign(params);
 
 		params.put("sign", sign);
 
+		params.remove("appSecret");
 
-		String s = SignTool.signRequestUrl(params, sign, "https://activity.m.duiba.com.cn/autoLogin/autologin?");
+		String s = signRequestUrl(params, sign, "https://activity.m.duiba.com.cn/autoLogin/autologin?");
+
 		System.out.println("url = " + s);
 		System.out.println(sign);
 		System.out.println(signVerify(appSecret, params));
 
-	}
+	}*/
 }

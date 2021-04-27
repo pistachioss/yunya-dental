@@ -1,9 +1,11 @@
 package com.yunya.middletable.controller.report.credits_shop;
 
+import com.yunya.feign.report.domain.model.IncreasePointsModel;
 import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.middletable.model.credits_shop.CreditResult;
 import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.models.credits_shop.CreditsShop;
 import io.swagger.annotations.*;
@@ -14,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public class ShopController {
     })
     @ApiResponse(code = 0,message = "兑吧登录URL",response = String.class)
     public ResponseResult<Map<String,String>> duibaAutoLogin(@RequestParam String openId,
-                                                             @RequestParam Integer patientId) throws UnsupportedEncodingException {
+                                                             @RequestParam Integer patientId) {
         return creditsShopBiz.duibaAutoLogin(openId,patientId);
     }
 
@@ -64,4 +65,10 @@ public class ShopController {
         return ResponseUtil.success();
     }
 
+    @ApiOperation("增加积分")
+    @PostMapping("/increasePoints")
+    public CreditResult increasePoints(@RequestBody IncreasePointsModel increasePointsModel) throws InterruptedException {
+        //return creditsShopBiz.increasePoints();
+        return null;
+    }
 }

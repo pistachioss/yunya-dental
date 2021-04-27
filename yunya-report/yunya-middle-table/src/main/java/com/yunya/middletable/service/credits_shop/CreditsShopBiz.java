@@ -9,8 +9,10 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.config.DuiBaConfig;
-import com.yunya.middletable.dao.report.BasePatientMapper;
 import com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper;
+
+import com.yunya.middletable.dao.report.BasePatientMapper;
+import com.yunya.middletable.model.credits_shop.CreditResult;
 import com.yunya.middletable.utils.SignTool;
 import com.yunya.models.credits_shop.CreditsShop;
 import com.yunya.models.report.BasePatientConsumptionCountVo;
@@ -20,10 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URLEncoder;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -112,27 +114,25 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      * @param patientId
      * @return
      */
-    public ResponseResult<Map<String,String>> duibaAutoLogin(String openId, Integer patientId) throws UnsupportedEncodingException {
-        log.info("openId = {},patientId = {}",openId,patientId);
-        Map<String,String> params = new HashMap<String,String>();
-        String uidStr = openId;
+    public ResponseResult<Map<String,String>> duibaAutoLogin(String openId, Integer patientId) {
+        Map<String,String> params = new HashMap<String,String>(16);
+        String uidStr = openId + "#" + patientId;
         CreditsShop creditsShop = mapper.selectLastCredits(patientId);
         Long credits = 0L;
         if (creditsShop != null) {
             credits = creditsShop.getCreditsAccount();
         }
-        params.put("uid",uidStr);
+        params.put("uid",URLEncoder.encode(uidStr));
         params.put("credits",credits.toString());
         params.put("appKey",duiBaConfig.getAppKey());
         params.put("appSecret",duiBaConfig.getAppSecret());
         params.put("timestamp",String.valueOf(System.currentTimeMillis()));
-        params.put("dcustom", URLEncoder.encode(URLEncoder.encode(String.valueOf(patientId))));
         String sign = SignTool.sign(params);
         params.remove("appSecret");
         String autoLoginUrl = SignTool.signRequestUrl(params, sign, duiBaConfig.getAutoLoginUrl());
-        Map<String,String> urlMapper = new HashMap<>(16);
-        urlMapper.put("url",autoLoginUrl);
-        return ResponseUtil.success(urlMapper);
+        Map<String,String> result = new HashMap<>(16);
+        result.put("url",autoLoginUrl);
+        return ResponseUtil.success(result);
     }
 
     /**
@@ -192,4 +192,11 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
             log.info("批量添加患者初始化积分信息完成，时长：[{}]秒",(end - start) / 1000);
         }
     }
+
+   /* *//**
+     * 增加积分
+     * @return 增加成功 or 增加失败
+     *//*
+    public CreditResult increasePoints() {
+    }*/
 }

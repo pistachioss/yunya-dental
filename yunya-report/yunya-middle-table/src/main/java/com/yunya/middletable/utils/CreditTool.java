@@ -1,13 +1,12 @@
 package com.yunya.middletable.utils;
 
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.config.DuiBaConfig;
 import com.yunya.middletable.model.credits_shop.*;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.URLDecoder;
+import java.util.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -359,6 +358,22 @@ public class CreditTool {
 			params.setTransfer(request.getParameter("transfer"));
 		}
 		return params;
+	}
+
+	/**
+	 * 解析UID
+	 * @param uid uid
+	 * @return map (map.get("openId")、map.get("patientId"))
+	 */
+	public Map<String,Object> parseUid(String uid) {
+		HashMap<String, Object> result = new HashMap<>();
+		if (StringHelper.isNotBlank(uid)) {
+			String decode = URLDecoder.decode(URLDecoder.decode(uid));
+			String[] split = decode.split("#");
+			result.put("openId",split[0]);
+			result.put("patientId",Integer.valueOf(split[1]));
+		}
+		return result;
 	}
 	
 }
