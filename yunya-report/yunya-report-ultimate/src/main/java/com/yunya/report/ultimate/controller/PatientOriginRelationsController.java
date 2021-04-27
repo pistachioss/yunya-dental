@@ -116,7 +116,21 @@ public class PatientOriginRelationsController {
     }
 
 
-
+    /**
+     * 员工推荐-各项明细列表-导出
+     *
+     * @param response 响应
+     * @param query 查询条件
+     * @return 员工推荐-各项明细列表-导出
+     */
+    @ApiOperation("员工推荐-各项明细列表-导出")
+    @PostMapping(value = "/workloadBreakdown/export", name = "员工推荐-各项明细列表-导出")
+    public ResponseResult<T> exportWorkloadBreakdown(
+            HttpServletResponse response, @RequestBody ReceiverkLoadQuery query)
+            throws IOException, ParseException {
+        patientOriginRelationsBiz.exportWorkloadBreakdownList(response,query);
+        return ResponseUtil.success(null);
+    }
 
 
 }

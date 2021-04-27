@@ -752,6 +752,7 @@
     <select id="selectRefundDetail"
             resultType="com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo">
         SELECT
+                distinct
 				bb.bill_id billId,
 				bb.patient_id patientId,
 				DATE_FORMAT( log.crt_time, '%Y-%m-%d %H:%i') relatedTime,
@@ -763,7 +764,7 @@
 				bo.abbreviation abbreviation,
 				be.employee_name employeeName,
 				bti.item_name itemName,
-				brd.refund_amount workload
+				TRUNCATE(brd.refund_amount,2) as workload
         from base_refund_detail brd
                  left join base_bill_detail bbd on bbd.bill_detail_id = brd.bill_detail_id
                  left join base_bill bb on bb.bill_id = bbd.bill_id
@@ -773,7 +774,9 @@
                  left join base_treatment_process btp on btp.treatment_id = bb.treatment_id
                  left join base_employee be on be.user_id = btp.registered_dentist_id
                  left join base_tariff_info bti ON bti.item_id = bbd.item_id
-        where brd.refund_id = #{refundId}
+        where
+              log.inservice = 1
+              and brd.refund_id = #{refundId}
               and log.origin_id = #{originId}
               and log.origin_type = #{originType}
               and bti.item_type = bbd.item_type
