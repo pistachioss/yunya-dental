@@ -381,7 +381,6 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
   List<Integer> billIdByMonthFreePayment(@Param("query") BillCategoryIncomeQuery query);
 
-  List<MonthCategoryVO> monthCategoryList(@Param("query") ClinicPerformanceBusinessQuery query, @Param("cur") Integer cur);
   /**
    * 查询账单开单不属于给定月份，而收费在给定月份的账单明细
    *

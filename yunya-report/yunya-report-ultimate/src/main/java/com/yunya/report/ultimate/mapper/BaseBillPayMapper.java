@@ -238,4 +238,12 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    * @return BigDecimal - 当月免单收费金额
    */
   BigDecimal selectCurrentMonthTotalFreePayAmount(@Param("query") StatementStatisticQuery query);
+
+  /**
+   * 根据月份分组求已收工作量合计
+   *
+   * @param query
+   * @return
+   */
+  List<BillWorkloadVO> selectRecievedWorkloadsGroupByMonth(@Param("query") DataStatisticsQuery query);
 }
