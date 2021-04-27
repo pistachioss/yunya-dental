@@ -163,7 +163,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
                 creditsShop.setChannel((byte)0);
                 creditsShop.setOrderNum(null);
                 creditsShop.setCreditsAccount(basePatientConsumptionCountVo.getIntegral().longValue());
-                creditsShop.setCredits(0L);
+                creditsShop.setCredits(basePatientConsumptionCountVo.getIntegral().longValue());
                 creditsShop.setCreditsOption((byte)0);
                 creditsShop.setActualPrice(0);
                 creditsShop.setItemCode("");
