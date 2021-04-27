@@ -60,6 +60,7 @@
       like concat(concat('%', rtrim(#{name})), '%')
     </where>
     GROUP BY wf.id
+    order by wf.crt_time desc
   </select>
 
   <select id="findDetail" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO">
