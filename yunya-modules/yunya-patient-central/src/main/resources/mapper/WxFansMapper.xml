@@ -49,7 +49,7 @@
         and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') >= DATE_FORMAT(#{startTime},'%Y-%m-%d')
         and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(DATE_ADD(#{endTime},INTERVAL '1' DAY),'%Y-%m-%d')
       </if>
-      <if test="isBind !=null and isBind != ''">
+      <if test="isBind !=null">
         and wf.bind = #{isBind}
       </if>
       AND concat(IFNULL(pbi.`name`,''),
