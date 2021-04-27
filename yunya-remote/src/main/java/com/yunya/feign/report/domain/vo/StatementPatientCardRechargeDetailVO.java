@@ -46,19 +46,24 @@ public class StatementPatientCardRechargeDetailVO implements Serializable {
   @Excel(name = "卡号")
   @ApiModelProperty("会员卡或预付卡卡号")
   private String patientCardNumber;
+
   @Excel(name = "卡类型")
   @ApiModelProperty("卡类型名称")
   private String cardTypeName;
   /** 充值本金金额 */
-  @Excel(name = "充值本金金额", scale = 2)
+  @Excel(name = "充值本金金额", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("充值本金金额")
   private BigDecimal rechargePrincipleAmount;
   /** 充值赠金金额 */
-  @Excel(name = "充值赠送金额", scale = 2)
+  @Excel(name = "充值赠送金额", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("充值赠送金额")
   private BigDecimal rechargeBonusAmount;
   /** 会员卡或预付卡余额（含赠金） */
-  @Excel(name = "会员卡或预付卡余额（含赠金）", scale = 2)
+  @Excel(
+      name = "会员卡或预付卡余额（含赠金）",
+      scale = 2,
+      cellType = Excel.ColumnType.NUMERIC,
+      isStatistics = true)
   @ApiModelProperty("剩余余额（含赠金）")
   private BigDecimal restTotalAmount;
   /** 充值人ID */
@@ -69,19 +74,19 @@ public class StatementPatientCardRechargeDetailVO implements Serializable {
   @ApiModelProperty("充值人姓名")
   private String rechargeOperatorName;
   /** 现金 */
-  @Excel(name = "现金", scale = 2)
+  @Excel(name = "现金", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("现金")
   private BigDecimal cashAmount;
   /** 支付宝 */
-  @Excel(name = "支付宝", scale = 2)
+  @Excel(name = "支付宝", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("支付宝")
   private BigDecimal aliPayAmount;
   /** 微信 */
-  @Excel(name = "微信", scale = 2)
+  @Excel(name = "微信", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("微信")
   private BigDecimal weChatAmount;
   /** 银行账户 */
-  @Excel(name = "银行账户", scale = 2)
+  @Excel(name = "银行账户", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("银行账户")
   private BigDecimal bankAmount;
 }

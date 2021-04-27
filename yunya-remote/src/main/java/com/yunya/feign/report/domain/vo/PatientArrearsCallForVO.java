@@ -36,15 +36,15 @@ public class PatientArrearsCallForVO implements Serializable {
   @ApiModelProperty("手机号")
   private String mobile;
   /** 实收金额合计 */
-  @Excel(name = "实收金额合计")
+  @Excel(name = "实收金额合计", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("实收金额合计")
   private BigDecimal totalActualAmount;
   /** 已收金额合计 */
-  @Excel(name = "已收金额合计")
+  @Excel(name = "已收金额合计", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("已收金额合计")
   private BigDecimal totalReceivedAmount;
   /** 剩余欠费金额合计 */
-  @Excel(name = "剩余欠费金额合计")
+  @Excel(name = "剩余欠费金额合计", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("剩余欠费金额合计")
   private BigDecimal totalRemainingArrearsAmount;
 }

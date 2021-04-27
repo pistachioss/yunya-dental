@@ -40,7 +40,7 @@ public class PersonalBillItemRefundWorkloadDetailVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 退费工作量 */
-  @Excel(name = "退费工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "退费工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("退费工作量")
   private BigDecimal itemRefundWorkload;
   /** 执行人ID */

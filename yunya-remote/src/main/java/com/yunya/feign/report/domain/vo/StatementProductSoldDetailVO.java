@@ -53,19 +53,19 @@ public class StatementProductSoldDetailVO implements Serializable {
   @ApiModelProperty("售出金额")
   private BigDecimal soldAmount;
   /** 现金 */
-  @Excel(name = "现金", scale = 2)
+  @Excel(name = "现金", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("现金")
   private BigDecimal cashAmount;
   /** 支付宝 */
-  @Excel(name = "支付宝", scale = 2)
+  @Excel(name = "支付宝", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("支付宝")
   private BigDecimal aliPayAmount;
   /** 微信 */
-  @Excel(name = "微信", scale = 2)
+  @Excel(name = "微信", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("微信")
   private BigDecimal weChatAmount;
   /** 银行账户 */
-  @Excel(name = "银行账户", scale = 2)
+  @Excel(name = "银行账户", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("银行账户")
   private BigDecimal bankAmount;
   /** 售出人ID */

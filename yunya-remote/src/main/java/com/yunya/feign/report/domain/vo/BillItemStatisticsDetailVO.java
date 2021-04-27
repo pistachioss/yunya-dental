@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class BillItemStatisticsDetailVO implements Serializable {
-  /** 门诊*/
+  /** 门诊 */
   @ApiModelProperty("门诊")
   private String abbreviation;
 
@@ -34,11 +34,11 @@ public class BillItemStatisticsDetailVO implements Serializable {
   @ApiModelProperty("账单编号")
   private String billNum;
   /** 开单数量 */
-  @Excel(name = "开单数量")
+  @Excel(name = "开单数量", cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("开单数量")
   private Integer quantity;
   /** 实收金额 */
-  @Excel(name = "实收金额")
+  @Excel(name = "实收金额", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("实收金额")
   private BigDecimal amount;
   /** 挂号医生 */

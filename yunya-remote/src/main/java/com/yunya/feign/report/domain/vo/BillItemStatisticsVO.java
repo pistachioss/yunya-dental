@@ -29,11 +29,11 @@ public class BillItemStatisticsVO implements Serializable {
   @ApiModelProperty("项目类型：0-价目表；1-商品")
   private Byte itemType;
 
-  /** 门诊ID*/
+  /** 门诊ID */
   @ApiModelProperty("门诊ID")
   private Integer orgId;
 
-  /** 门诊*/
+  /** 门诊 */
   @Excel(name = "门诊")
   @ApiModelProperty("门诊")
   private String abbreviation;
@@ -61,12 +61,12 @@ public class BillItemStatisticsVO implements Serializable {
   private String itemName;
 
   /** 开单数量 */
-  @Excel(name = "数量")
+  @Excel(name = "数量", cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("开单数量")
   private Integer quantity;
 
   /** 实收金额 */
-  @Excel(name = "实收金额")
+  @Excel(name = "实收金额", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("实收金额")
   private BigDecimal amount;
 }
