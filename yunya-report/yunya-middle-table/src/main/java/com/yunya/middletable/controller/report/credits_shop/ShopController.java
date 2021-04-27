@@ -14,6 +14,7 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -66,9 +67,20 @@ public class ShopController {
     }
 
     @ApiOperation("增加积分")
-    @PostMapping("/increasePoints")
-    public CreditResult increasePoints( IncreasePointsModel increasePointsModel) throws InterruptedException {
-        //return creditsShopBiz.increasePoints();
-        return null;
+    @GetMapping("/increasePoints")
+    public CreditResult increasePoints(HttpServletRequest request) {
+        return creditsShopBiz.increasePoints(request);
+    }
+
+    @ApiOperation("消费积分")
+    @GetMapping("/consumptionPoints")
+    public CreditResult consumptionPoints(HttpServletRequest request) {
+        return creditsShopBiz.consumptionPoints(request);
+    }
+
+    @ApiOperation("兑换结果")
+    @GetMapping("/exchangeResult")
+    public CreditResult exchangeResult(HttpServletRequest request) {
+        return creditsShopBiz.exchangeResult(request);
     }
 }
