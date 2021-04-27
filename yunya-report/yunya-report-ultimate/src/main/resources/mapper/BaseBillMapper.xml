@@ -294,84 +294,75 @@
     <!-- 根据条件查询应收账款余额表 -->
     <select id="selectBillReceivableAmountList"
             resultType="com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO">
-        SELECT
+        select
         billId,
-        orgId,
-        DATE_FORMAT(orderDate, '%Y-%m-%d') orderDate,
-        DATE_FORMAT(billDate, '%Y-%m-%d') billDate,
+        billDate,
         billNum,
         patientId,
-        patientName,
+        patientname,
         mobile,
         regDentistId,
         regDentistName,
-        IFNULL(totalOriginalAmount,0) totalOriginalAmount,
-        IFNULL(totalActualAmount,0) totalActualAmount,
-        IFNULL(billReceivableAmount,0) billReceivableAmount
-        FROM
-        (
-        SELECT
-        bb.bill_id AS billId,
-        bb.org_id as orgId,
-        bb.bill_date AS billDate,
-        bb.order_date AS orderDate,
-        bb.bill_num AS billNum,
-        bb.patient_id AS patientId,
-        btp.`name` AS patientName,
-        btp.pinyin_name as pinyinName,
-        btp.mobile AS mobile,
-        btp.registered_dentist_id AS regDentistId,
-        btp.employee_name AS regDentistName,
-        bb.order_amount AS totalOriginalAmount,
-        bb.actual_amount AS totalActualAmount,
-        bb.debt_amount AS billReceivableAmount
-        FROM
-        base_bill bb
-        LEFT JOIN (
-        SELECT
-        btp.treatment_id as treatment_id,
-        any_value(btp.patient_id) as patient_id,
-        any_value(bp.`name`) as name,
-        any_value(bp.mobile) as mobile,
-        any_value(bp.gender) as gender,
-        any_value(bp.pinyin_name) as pinyin_name,
-        any_value(btp.registered_dentist_id) as registered_dentist_id,
-        any_value(be.employee_name) as employee_name
-        FROM
-        base_treatment_process btp
-        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
-        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-        WHERE
-        btp.treatment_id IS NOT NULL
-        GROUP BY
-        btp.treatment_id
-        ) btp ON bb.treatment_id = btp.treatment_id
-        ) brr
+        totalOriginalAmount,
+        totalActualAmount,
+        billReceivableAmount
+        from (
+        select
+        bb.bill_id as billId,
+        date_format(bb.bill_date, '%Y-%m-%d') as billDate,
+        bb.bill_num as billNum,
+        bb.patient_id as patientId,
+        bp.name as patientName,
+        bp.pinyin_name as pinyinName,
+        bp.mobile as mobile,
+        btp.registered_dentist_id as regDentistId,
+        be.employee_name as regDentistName,
+        bb.order_amount as totalOriginalAmount,
+        bb.actual_amount as totalActualAmount,
+        bb.actual_amount - bbp.receivedAmount as billReceivableAmount
+        from base_bill bb
+        left join base_patient bp on bb.patient_id = bp.patient_id
+        left join base_treatment_process btp on bb.treatment_id = btp.treatment_id
+        left join base_employee be on btp.registered_dentist_id = be.user_id
+        inner join (
+        select bbp.bill_id,
+        sum(bbp.received_amount) as receivedAmount
+        from base_bill_pay bbp
         <where>
-            brr.billReceivableAmount>0
-            <if test="query.orgId != null">
-                and brr.orgId = #{query.orgId}
-            </if>
             <if test="query.billDate != null and query.billDate != ''">
+                AND date_format(bbp.payee_date, '%Y-%m-%d') &lt;= #{query.billDate}
                 AND date_format(brr.billDate, '%Y-%m-%d') &lt;= #{query.billDate}
             </if>
-            <if test="query.orderDate != null and query.orderDate != ''">
-                AND date_format(brr.orderDate, '%Y-%m-%d') = #{query.orderDate}
+        </where>
+        group by bbp.bill_id
+        ) bbp on bb.bill_id = bbp.bill_id
+        <where>
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+                and btp.org_id = #{query.orgId}
             </if>
-            <if test="query.keyword != null and query.keyword != ''">
-                and concat(IFNULL(brr.patientName, ''), IFNULL(brr.pinyinName, ''), IFNULL(brr.mobile, '')) like
-                concat('%', #{query.keyword}, '%')
+            <if test="query.billDate != null and query.billDate != ''">
+                AND date_format(bb.bill_date, '%Y-%m-%d') &lt;= #{query.billDate}
             </if>
             <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
-                and brr.regDentistId in
+                and btp.registered_dentist_id in
                 <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
         </where>
-        order by brr.billReceivableAmount desc
+        ) brr
+        <where>
+            brr.billReceivableAmount > 0
+            <if test="query.keyword != null and query.keyword != ''">
+                and concat(IFNULL(brr.patientName, ''), IFNULL(brr.pinyinName, ''), IFNULL(brr.mobile, '')) like
+                concat('%', #{query.keyword}, '%')
+            </if>
+        </where>
+        order by
+        brr.billDate desc,
+        brr.billReceivableAmount desc
     </select>
-
 
     <select id="selectArrears" resultType="com.yunya.feign.report.domain.vo.ArrearsStatisticsVo">
         SELECT
@@ -808,11 +799,11 @@
         #{query.orgId} as orgId,
         IFNULL(SUM( bb.actual_amount ), 0) as currentMonthTotalActualAmount,
         IFNULL(SUM( bb.privilege_amount ), 0) as currentMonthTotalDiscountAmount,
+        IFNULL(SUM( bb.received_amount ), 0) as currentMonthTotalReceivedAmount,
         IFNULL(SUM( bb.debt_amount ), 0) as currentMonthTotalDebtAmount
         from
         base_bill bb
         <where>
-            AND bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -825,44 +816,27 @@
     <!-- 根据条件查询收欠费（使用优惠）账单列表 -->
     <select id="selectCurrentMonthBillCollectionDebtList"
             resultType="com.yunya.feign.report.domain.vo.CurrentMonthBillCollectionDebtVO">
-        SELECT
-        bb.bill_id AS billId,
-        DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) AS collectDebtDate,
-        DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) AS billDate,
-        bb.bill_num AS billNum,
+        SELECT bb.bill_id as billId,
+        DATE_FORMAT(bb.privilege_date, '%Y-%m-%d') AS collectDebtDate,
+        bb.bill_num as billNum,
+        DATE_FORMAT(bb.privilege_date, '%Y-%m') as billDate,
         bb.patient_id AS patientId,
         bp.`name` AS patientName,
         bp.mobile AS patientMobile,
-        btp.regDentistId AS regDentistId,
-        btp.regDentistName AS regDentistName,
-        bbp.payeeId,
-        bbp.payeeName
-        FROM
-        base_bill bb
-        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
-        LEFT JOIN (
-        SELECT
-        btp.treatment_id,
         btp.registered_dentist_id AS regDentistId,
-        be.employee_name AS regDentistName
-        FROM
-        base_treatment_process btp
-        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-        WHERE
-        btp.treat_end_time IS NOT NULL
-        ) btp ON bb.treatment_id = btp.treatment_id
-        LEFT JOIN (
-        SELECT
-        bbp.bill_id,
-        bbp.payee_date,
-        bbp.payee_user_id AS payeeId,
-        be.employee_name AS payeeName
-        FROM
-        base_bill_pay bbp
-        LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
-        ) bbp ON bb.bill_id = bbp.bill_id AND bb.privilege_date = bbp.payee_date
+        be.employee_name AS regDentistName,
+        bbp.payee_user_id as payeeId,
+        be2.employee_name as payeeName
+        FROM base_bill bb
+        left join base_patient bp on bb.patient_id = bp.patient_id
+        left join base_treatment_process btp on bb.treatment_id = btp.treatment_id
+        left join base_employee be on btp.registered_dentist_id = be.user_id
+        left join base_bill_pay bbp on bb.bill_id = bbp.bill_id and
+        date_format(bb.privilege_date, '%Y-%m-%d %H:%i') =
+        date_format(bbp.payee_date, '%Y-%m-%d %H:%i')
+        left join base_employee be2 on bbp.payee_user_id = be2.user_id
         <where>
-            AND bb.bill_date != bb.privilege_date
+            and first_privilege = 0
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
@@ -870,6 +844,7 @@
                 AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) = #{query.currentMonth}
             </if>
         </where>
+        order by bb.privilege_date
     </select>
 
     <!-- 根据患者ID查询患者消费信息 -->
@@ -1100,10 +1075,10 @@
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         join (SELECT
-            log.origin_id
+        log.origin_id
         FROM
-            base_patient_origin_log log
-            JOIN base_employee ee ON log.origin_id = ee.user_id
+        base_patient_origin_log log
+        JOIN base_employee ee ON log.origin_id = ee.user_id
         <where>
             log.origin_type = 1
             and log.inservice = 1
@@ -1113,7 +1088,7 @@
             <if test="list != null and list.size() > 0">
                 and log.origin_id in
                 <foreach collection="list" item="patientOriginEmployeeVo" open="(" separator="," close=")">
-                  #{patientOriginEmployeeVo.originId}
+                    #{patientOriginEmployeeVo.originId}
                 </foreach>
             </if>
 
@@ -1133,7 +1108,7 @@
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
+        <if test="query.endDate != null">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
     </select>
@@ -1151,7 +1126,7 @@
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
+        <if test="query.endDate != null">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
@@ -1167,25 +1142,26 @@
     <select id="findBaseBillIdList"
             resultType="java.lang.Integer">
         SELECT
-            DISTINCT
-            bb.bill_id billId
+        DISTINCT
+        bb.bill_id billId
         FROM
-            base_bill bb
+        base_bill bb
         JOIN (
-            SELECT DISTINCT
-            log.patient_id
-            FROM
-            base_patient_origin_log log
-            JOIN base_bill bb ON log.patient_id = bb.patient_id
-            JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
-            JOIN base_patient bp on bp.patient_id = log.patient_id
-            WHERE
-            log.origin_id = #{query.originId}
-            <if test="query.condition != null">
-                and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition} ), '%' )
-            </if>
-            AND log.origin_type = #{originType}
-            AND log.inservice = 1
+        SELECT DISTINCT
+        log.patient_id
+        FROM
+        base_patient_origin_log log
+        JOIN base_bill bb ON log.patient_id = bb.patient_id
+        JOIN base_bill_pay bbp ON bbp.bill_id = bb.bill_id
+        JOIN base_patient bp on bp.patient_id = log.patient_id
+        WHERE
+        log.origin_id = #{query.originId}
+        <if test="query.condition != null">
+            and concat( IFNULL( bp.`name`, '' ),IFNULL( bp.`mobile`, '' )) LIKE concat( concat( '%', #{query.condition}
+            ), '%' )
+        </if>
+        AND log.origin_type = #{originType}
+        AND log.inservice = 1
         ) t ON bb.patient_id = t.patient_id
         join base_bill_pay bbp on bbp.bill_id = bb.bill_id
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
@@ -1194,7 +1170,7 @@
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
+        <if test="query.endDate != null">
             and DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
 
@@ -1207,23 +1183,22 @@
 
     </select>
 
-
     <!-- 根据推荐人id 和 优惠时间 查询补入订单id -->
     <select id="selectMakeUpBillIdList" resultType="java.lang.Integer">
         select bill_id
         from base_bill bb
         join (
-            select patient_id
-            from base_patient_origin_log
-            where origin_id = 12
-            and inservice = 1
+        select patient_id
+        from base_patient_origin_log
+        where origin_id = 12
+        and inservice = 1
         ) t on bb.patient_id = t.patient_id
         where bb.privilege_date is not null
         <if test="query.startDate != null">
             and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
         </if>
 
-        <if test="query.endDate != null" >
+        <if test="query.endDate != null">
             and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
         </if>
     </select>
@@ -1232,39 +1207,41 @@
     <select id="selectMakeUpDetail"
             resultType="com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo">
         select DISTINCT t.* from (
-            select
-                bbd.bill_detail_id,
-                bb.bill_id billId,
-                bb.patient_id patientId,
-                DATE_FORMAT( log.crt_time, '%Y-%m-%d %H:%i') relatedTime,
-                bp.`name`,
-                bp.mobile,
-                (select DATE_FORMAT(min(treat_start_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id = bb.patient_id and treat_start_time IS NOT NULL) firstVisitDate,
-                (select DATE_FORMAT(max(treat_end_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id = bb.patient_id and treat_start_time IS NOT NULL) lastVisitDate ,
-                DATE_FORMAT( bb.order_date, '%Y-%m-%d %H:%i') orderDate,
-                bo.abbreviation abbreviation,
-                be.employee_name employeeName,
-                bti.item_name itemName,
-                bbd.coupon_workload workload
-            from base_bill_detail bbd
-                left join base_bill bb on bb.bill_id = bbd.bill_id
-                left join base_patient bp on bp.patient_id = bb.patient_id
-                left join base_patient_origin_log log on log.patient_id = bp.patient_id
-                left join base_organization bo on bo.org_id = bb.org_id
-                left join base_treatment_process btp on btp.treatment_id = bb.treatment_id
-                left join base_employee be on be.user_id = btp.registered_dentist_id
-                left join base_tariff_info bti ON bti.item_id = bbd.item_id
-            where bb.privilege_date is not null
-            and bbd.coupon_workload  > 0
-            and log.origin_id = #{query.originId}
-            and log.origin_type = #{originType}
-            <if test="query.startDate != null">
-                and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
-            </if>
+        select
+        bbd.bill_detail_id,
+        bb.bill_id billId,
+        bb.patient_id patientId,
+        DATE_FORMAT( log.crt_time, '%Y-%m-%d %H:%i') relatedTime,
+        bp.`name`,
+        bp.mobile,
+        (select DATE_FORMAT(min(treat_start_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id =
+        bb.patient_id and treat_start_time IS NOT NULL) firstVisitDate,
+        (select DATE_FORMAT(max(treat_end_time),'%Y-%m-%d %H:%i') from base_treatment_process where patient_id =
+        bb.patient_id and treat_start_time IS NOT NULL) lastVisitDate ,
+        DATE_FORMAT( bb.order_date, '%Y-%m-%d %H:%i') orderDate,
+        bo.abbreviation abbreviation,
+        be.employee_name employeeName,
+        bti.item_name itemName,
+        bbd.coupon_workload workload
+        from base_bill_detail bbd
+        left join base_bill bb on bb.bill_id = bbd.bill_id
+        left join base_patient bp on bp.patient_id = bb.patient_id
+        left join base_patient_origin_log log on log.patient_id = bp.patient_id
+        left join base_organization bo on bo.org_id = bb.org_id
+        left join base_treatment_process btp on btp.treatment_id = bb.treatment_id
+        left join base_employee be on be.user_id = btp.registered_dentist_id
+        left join base_tariff_info bti ON bti.item_id = bbd.item_id
+        where bb.privilege_date is not null
+        and bbd.coupon_workload > 0
+        and log.origin_id = #{query.originId}
+        and log.origin_type = #{originType}
+        <if test="query.startDate != null">
+            and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= DATE_FORMAT( #{query.startDate}, '%Y-%m-%d' )
+        </if>
 
-            <if test="query.endDate != null" >
-                and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
-            </if>
+        <if test="query.endDate != null">
+            and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= DATE_FORMAT( #{query.endDate}, '%Y-%m-%d' )
+        </if>
         ) t
     </select>
 

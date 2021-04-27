@@ -54,7 +54,7 @@ public class CurrentMonthBillDetailVO implements Serializable {
   private Byte itemType;
   /** 项目分类ID */
   @ApiModelProperty("项目分类ID")
-  private String itemCategoryId;
+  private Integer itemCategoryId;
   /** 项目分类名称 */
   @Excel(name = "项目分类")
   @ApiModelProperty("项目分类名称")

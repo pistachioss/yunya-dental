@@ -6,20 +6,31 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberRevocationFeeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidRevocationFeeModel;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
+import com.yunya.feign.report.domain.vo.CurrentMonthBillCollectionDebtVO;
+import com.yunya.feign.report.domain.vo.CurrentMonthBillPayRecordVO;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.BillExceptionHandleDetailRecordMapper;
 import com.yunya.modules.treatment.mapper.BillExceptionHandleRecordMapper;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import com.yunya.modules.treatment.mapper.BillRecordMapper;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -46,6 +57,8 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 患者服务调用 */
   @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
+  /** 系统服务调用 */
+  @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   /** 缓存调用 */
   @Autowired private RedisUtils redisUtils;
   /** 账单记录 */
@@ -218,5 +231,90 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
           });
     }
     return billPayRecord;
+  }
+
+  /**
+   * 根据条件导出门诊本月收欠费（使用优惠）账单列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportBillCollectionDebt(
+      HttpServletResponse response, CurrentMonthBillInfoQuery query) throws IOException {
+    List<CurrentMonthBillCollectionDebtVO> resultList =
+        mapper.selectCurrentMonthBillCollectionDebtList(query);
+    if (StringHelper.isNotEmpty(resultList)) {
+      for (CurrentMonthBillCollectionDebtVO vo : resultList) {
+        String billDate = vo.getBillDate();
+        vo.setCurrentMonthBill(
+            query.getCurrentMonth().equals(new DateTime(billDate).toString("yyyy-MM"))
+                ? "当月账单"
+                : "非当月账单");
+        Integer patientId = vo.getPatientId();
+        PatientBaseInfo patientBaseInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
+        if (patientBaseInfo != null) {
+          vo.setPatientName(patientBaseInfo.getName());
+          vo.setPatientMobile(patientBaseInfo.getMobile());
+        }
+        Integer payeeId = vo.getPayeeId();
+        SysEmployee payer = systemServiceFeign.findSysEmployeeById(payeeId);
+        if (payer != null) {
+          vo.setPayeeName(payer.getName());
+        }
+        Integer regDentistId = vo.getRegDentistId();
+        SysEmployee employee = systemServiceFeign.findSysEmployeeById(regDentistId);
+        if (employee != null) {
+          vo.setRegDentistName(employee.getName());
+        }
+      }
+    }
+    String fileName = "当月收欠费（使用优惠）账单记录";
+    OrganizationInfo organization = systemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
+    if (organization != null) {
+      fileName = organization.getAbbreviation() + query.getCurrentMonth() + fileName;
+    }
+    ExcelUtil<CurrentMonthBillCollectionDebtVO> excelUtil =
+        new ExcelUtil<>(CurrentMonthBillCollectionDebtVO.class);
+    excelUtil.exportExcel(response, resultList, "门诊当月收欠费（使用优惠）账单记录", fileName);
+  }
+
+  /**
+   * 根据条件导出本门诊本月收费记录列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportCurrentMonthBillPayRecord(
+      HttpServletResponse response, CurrentMonthBillInfoQuery query) throws IOException {
+    String fileName = query.getCurrentMonth() + "账单当月收费记录";
+    Integer orgId = query.getOrgId();
+    OrganizationInfo organization = systemServiceFeign.findOrgInfoByOrgId(orgId);
+    if (organization != null) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
+    List<CurrentMonthBillPayRecordVO> resultList = mapper.selectCurrentMonthBillPayRecord(query);
+    if (StringHelper.isNotEmpty(resultList)) {
+      for (CurrentMonthBillPayRecordVO vo : resultList) {
+        Integer patientId = vo.getPatientId();
+        PatientBaseInfo patientInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
+        if (null != patientInfo) {
+          vo.setPatientName(patientInfo.getName());
+          vo.setPatientMobile(patientInfo.getMobile());
+        }
+        Integer payeeId = vo.getPayeeId();
+        SysEmployee employee = systemServiceFeign.findSysEmployeeById(payeeId);
+        if (null != employee) {
+          vo.setPayeeName(employee.getName());
+        }
+        Integer regDentistId = vo.getRegDentistId();
+        SysEmployee employee1 = systemServiceFeign.findSysEmployeeById(regDentistId);
+        if (employee1 != null) {
+          vo.setRegDentistName(employee1.getName());
+        }
+      }
+    }
+    ExcelUtil<CurrentMonthBillPayRecordVO> excelUtil =
+        new ExcelUtil<>(CurrentMonthBillPayRecordVO.class);
+    excelUtil.exportExcel(response, resultList, "门诊当月收费记录", fileName);
   }
 }
