@@ -157,9 +157,9 @@ public class PatientOriginRelationsBiz
                     }
                     // 判断是全部工作量 还是 免单支付工作量
                     if (type) {
-                      patientOriginEmployeeVo.setReceivedTotalWorkload(patientOriginEmployeeVo.getReceivedTotalWorkload().add(multiply));
+                      patientOriginEmployeeVo.setReceivedTotalWorkload(patientOriginEmployeeVo.getReceivedTotalWorkload().add(multiply.setScale(2,BigDecimal.ROUND_HALF_UP)));
                     } else {
-                      patientOriginEmployeeVo.setFreeTotalWorkload(patientOriginEmployeeVo.getFreeTotalWorkload().add(multiply));
+                      patientOriginEmployeeVo.setFreeTotalWorkload(patientOriginEmployeeVo.getFreeTotalWorkload().add(multiply.setScale(2,BigDecimal.ROUND_HALF_UP)));
                     }
                   }
                 }
