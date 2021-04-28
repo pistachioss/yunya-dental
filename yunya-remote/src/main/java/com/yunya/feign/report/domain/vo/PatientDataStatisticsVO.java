@@ -88,12 +88,12 @@ public class PatientDataStatisticsVO implements Serializable {
   private Integer treatPerTimes;
 
   /** 人均消费 */
-  @Excel(name = "人均消费", scale = 2, cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "人均消费", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("人均消费")
   private BigDecimal perCapitaConsumption;
 
   /** 次均消费 */
-  @Excel(name = "次均消费", scale = 2, cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "次均消费", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("次均消费")
   private BigDecimal averageConsumption;
 

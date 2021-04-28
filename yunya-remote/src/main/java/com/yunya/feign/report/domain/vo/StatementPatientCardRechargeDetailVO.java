@@ -49,7 +49,7 @@ public class StatementPatientCardRechargeDetailVO implements Serializable {
   @Excel(name = "卡号")
   @ApiModelProperty("会员卡或预付卡卡号")
   private String patientCardNumber;
-
+  /** 卡类型 */
   @Excel(name = "卡类型")
   @ApiModelProperty("卡类型名称")
   private String cardTypeName;
