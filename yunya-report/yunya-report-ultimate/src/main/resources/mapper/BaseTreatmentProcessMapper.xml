@@ -659,4 +659,22 @@
         btp.registered_dentist_id,btp.org_id
         order by btp.treat_start_time
     </select>
+
+    <select id="listAppointConfirm" resultType="com.yunya.feign.wechat.domain.vo.WxAppointConfirmPushVo">
+        select
+            btp.appointment_id     as appointId,
+            btp.appoint_start_time as appointDate,
+            btp.appoint_duration   as appointDuration,
+            bp.patient_id          as patientId,
+            bp.name                as patientName,
+            bo.abbreviation        as orgName,
+            bo.org_id              as orgId
+        from base_treatment_process btp
+                 inner join base_patient bp on bp.patient_id = btp.patient_id
+                 inner join base_organization bo on bo.org_id = btp.org_id
+        where btp.appoint_status = 0
+          and date_format(date_sub(btp.appoint_start_time, interval 1 day), '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+          and isnull(btp.appointment_id) = 0
+          and isnull(registered_id)
+    </select>
 </mapper>

@@ -36,6 +36,7 @@ import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
+import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
 import com.yunya.feign.wechat.domain.model.WxRegisterModel;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.feign.wechat.domain.model.WxTemplatePushModel;
@@ -308,6 +309,10 @@ public class WXService extends AbstractWxBaseApi {
         appointDetailVo.setAppointDate(LocalDate.fromDateFields(appointmentVo.getAppointDate()).toString("yyyy-MM-dd") + appointmentVo.getAppointTime());
         appointDetailVo.setOrgName(org.getAbbreviation());
         return appointDetailVo;
+    }
+
+    public ResponseResult confirmAppoint(WxAppointConfirmModel model) {
+        return appointmentFeign.confirmWxAppoint(model);
     }
 
     private void createAndPushTemplate(List<WxTemplateMsgModel> list, Map<Integer, WxFans> patientWxMap, List<WxMsgTemplates> templates) {

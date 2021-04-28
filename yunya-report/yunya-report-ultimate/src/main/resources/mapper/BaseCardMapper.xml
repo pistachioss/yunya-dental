@@ -733,8 +733,8 @@
             bc.patient_id,
             b.coupon_name,
             bc.card_number,
-            bc.activation_deadline,
-            bc.active_date
+            date_format(bc.activation_deadline,'%Y-%m-%d') as activationDeadline,
+            date_format(bc.active_date,'%Y-%m-%d')         as activeDate
         from base_card bc
             inner join base_coupon b on bc.coupon_id = b.coupon_id
         <if test="noticeType == 0">

@@ -6,9 +6,15 @@ import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.report.factory.RemoteReportServiceFactory;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.feign.wechat.domain.vo.WxAppointConfirmPushVo;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
 
@@ -29,4 +35,7 @@ public interface RemoteReportServiceFeign {
 
     @PostMapping("/api/card/{noticeType}/push/list")
     List<WxTemplateMsgModel> listPushCard(@PathVariable(value = "noticeType") Integer noticeType);
+
+    @GetMapping("/api/appoint/confirm/push/list")
+    List<WxTemplateMsgModel> listPushConfirmAppoint();
 }

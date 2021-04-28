@@ -35,6 +35,8 @@ public abstract class AbstractWxBaseApi {
 
     private String getAccessToken() {
         String redisKey = String.format(WXConstant.ACCESS_TOKEN_KEY, wxConfig.getAppId());
+        String accessToken = redisUtils.get(redisKey);
+        log.info("微信公众号token：{}", accessToken);
         return redisUtils.get(redisKey);
     }
 
