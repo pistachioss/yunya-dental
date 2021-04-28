@@ -10,14 +10,27 @@ import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
 import com.yunya.feign.appointment.domain.model.AppointOperationModel;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
-import com.yunya.feign.appointment.domain.query.*;
+import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
+import com.yunya.feign.appointment.domain.query.AppointListExportQuery;
+import com.yunya.feign.appointment.domain.query.AppointListQuery;
+import com.yunya.feign.appointment.domain.query.AppointOperationQuery;
+import com.yunya.feign.appointment.domain.query.AppointPatientRecordQuery;
+import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
+import com.yunya.feign.appointment.domain.query.AppointmentQuery;
+import com.yunya.feign.appointment.domain.query.AppointmentSplitQuery;
+import com.yunya.feign.appointment.domain.query.PatientDimensionByDayQuery;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
 import com.yunya.feign.employee_attend.form.FieldInfoForm;
 import com.yunya.feign.employee_attend.form.LeaveInfoForm;
 import com.yunya.feign.employee_attend.form.WorkOvertimeInfoForm;
-import com.yunya.feign.employee_attend.vo.*;
+import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
+import com.yunya.feign.employee_attend.vo.FieldInfoListVO;
+import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
+import com.yunya.feign.employee_attend.vo.UserWorkVO;
+import com.yunya.feign.employee_attend.vo.WorkDayVO;
+import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
 import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
 import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
@@ -36,6 +49,7 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.wechat.RemoteWechatServiceFeign;
+import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.feign.wechat.enums.TemplateDataEnum;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -1487,6 +1501,43 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointOperationModel.setOperateType(confirmStatus? (byte) 3 : 4);
             appointOperationModel.setAppointmentId(appointment.getId());
             appointOperationModel.setOrgId(Integer.valueOf(BaseContextHandler.getUserID()));
+            appointOperationModel.setAfterOperation(appointment.getConfirmStatus()?"确认":"未确认");
+            Integer recordResult = appointOperateRecordBiz.insertAppointmentOperateRecord(appointOperationModel);
+            if (recordResult > 0) {
+                return ResponseUtil.success();
+            }
+        }
+        return ResponseUtil.fail(AppointmentError.APPOINT_CONFIRM.getCode(),AppointmentError.APPOINT_CONFIRM.getMessage(),null);
+    }
+
+    /**
+     * 微信患者确认预约
+     * @param model  预约model
+     * @return 返回结果
+     */
+    public ResponseResult confirmWxAppointment(WxAppointConfirmModel model){
+        Integer appointId = model.getAppointId();
+        Boolean flag = model.getFlag();
+        Integer patientId = model.getPatientId();
+        Appointment appointment = mapper.selectByPrimaryKey(appointId);
+        AppointOperationModel appointOperationModel = new AppointOperationModel();
+        if (appointment == null){
+            return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
+        }
+        appointOperationModel.setBeforeOperation(appointment.getConfirmStatus()?"确认":"未确认");
+        appointment.setConfirmStatus(flag == null ? true : flag);
+        appointment.setUptId(patientId);
+        appointment.setUpdName(model.getPatientName());
+        appointment.setUpdTime(new Date(System.currentTimeMillis()));
+        int result = mapper.updateByPrimaryKeySelective(appointment);
+        if (result > 0) {
+            // 发送消息更新中间表就诊流程
+            rabbitMqServiceFeign.sendMessage(appointId,0,1, BaseTreatmentProcess);
+
+            Boolean confirmStatus = appointment.getConfirmStatus();
+            appointOperationModel.setOperateType(confirmStatus? (byte) 3 : 4);
+            appointOperationModel.setAppointmentId(appointment.getId());
+            appointOperationModel.setOrgId(appointment.getOrgId());
             appointOperationModel.setAfterOperation(appointment.getConfirmStatus()?"确认":"未确认");
             Integer recordResult = appointOperateRecordBiz.insertAppointmentOperateRecord(appointOperationModel);
             if (recordResult > 0) {

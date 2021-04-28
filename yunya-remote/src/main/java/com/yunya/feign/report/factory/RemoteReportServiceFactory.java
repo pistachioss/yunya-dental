@@ -30,4 +30,9 @@ public class RemoteReportServiceFactory implements RemoteReportServiceFeign {
         return null;
     }
 
+    @Override
+    public List<WxTemplateMsgModel> listPushConfirmAppoint() {
+        return null;
+    }
+
 }

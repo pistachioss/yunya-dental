@@ -7,7 +7,6 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya365.wechat.enums.WeChatError;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -26,10 +25,6 @@ import static com.yunya.framework.common.constant.WXConstant.*;
 @Slf4j
 public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
 
-    @Resource
-    private WXConfig wxConfig;
-    @Resource
-    private RestTemplate restTemplate;
     @Resource
     private RedisUtils redisUtils;
 

@@ -8,7 +8,9 @@ import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
+import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
 import com.yunya.feign.wechat.domain.model.WxRegisterModel;
+import com.yunya.feign.wechat.domain.vo.WxAppointDetailVo;
 import com.yunya.feign.wechat.domain.vo.WxAuthVo;
 import com.yunya.feign.wechat.domain.vo.WxMemberRelationVO;
 import com.yunya.feign.wechat.domain.vo.WxRegisterVo;
@@ -20,7 +22,13 @@ import com.yunya365.wechat.task.WxTask;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -125,6 +133,19 @@ public class WxController {
         return ResponseUtil.success(relationVO);
     }
 
+    @GetMapping(value = "/wxVip/push/appoint")
+    @ApiOperation(value = "预约确认推送-预约详情")
+    public ResponseResult<WxAppointDetailVo> appointDetail(@RequestParam(required = true) Integer appointId) {
+        WxAppointDetailVo appointDetail = wxService.getAppointDetail(appointId);
+        return ResponseUtil.success(appointDetail);
+    }
+
+    @PutMapping(value = "/wxVip/push/appoint/confirm")
+    @ApiOperation(value = "预约确认推送-确认预约")
+    public ResponseResult confirmAppoint(@RequestBody WxAppointConfirmModel model) {
+         return wxService.confirmAppoint(model);
+    }
+
     @GetMapping(value = "/wxVip/msg/pull")
     public ResponseResult pullTemplate() {
         wxService.pullTemplate();
@@ -144,6 +165,11 @@ public class WxController {
     @GetMapping(value = "/wxVip/push/expired/card")
     public void pushExpiredCard() {
         wxTask.cardExpiredTask();
+    }
+
+    @GetMapping(value = "/wxVip/push/appoint/confirm")
+    public void pushConfirmAppoint() {
+        wxTask.appointConfirmTask();
     }
 
 }

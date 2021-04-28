@@ -606,16 +606,24 @@ public class ExcelUtil<T> {
   /**
    * 创建单元格
    *
-   * @param name 属性
+   * @param value 属性
    * @param row 行
    * @param column 列
    * @return
    */
-  public Cell createCell(String name, Row row, int column, String titleKey) {
+  public Cell createCell(String value, Row row, int column, String titleKey) {
     // 创建列
     Cell cell = row.createCell(column);
-    // 写入列信息
-    cell.setCellValue(name);
+    try {
+      new BigDecimal(value);
+      cell.setCellValue(
+              StringUtils.contains(value, ".")
+                      ? Convert.toDouble(value)
+                      : Convert.toInt(value));
+    } catch (Exception e) {
+      // 写入列信息
+      cell.setCellValue(value);
+    }
     cell.setCellStyle(styles.get(titleKey));
     return cell;
   }
