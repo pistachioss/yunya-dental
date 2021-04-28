@@ -1,9 +1,10 @@
-package com.yunya.middletable.model.credits_shop;
+package com.yunya.models.report.credits_shop;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -14,7 +15,7 @@ import java.util.Date;
  **/
 @ApiModel(value = "CreditConsumeParams",description = "积分消费请求参数")
 @Data
-public class CreditConsumeParams {
+public class CreditConsumeParams implements Serializable {
 
 	private String appKey;
 	@ApiModelProperty("时间戳")

@@ -4,7 +4,7 @@ import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.middletable.model.credits_shop.CreditResult;
+import com.yunya.models.report.credits_shop.CreditResult;
 import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.models.credits_shop.CreditsShop;
 import io.swagger.annotations.*;

@@ -1,7 +1,9 @@
-package com.yunya.middletable.model.credits_shop;
+package com.yunya.models.report.credits_shop;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * @program: yunya-dental
@@ -10,7 +12,7 @@ import lombok.Data;
  * @create: 2021-04-22 09:36
  **/
 @Data
-public class ExpressInfo {
+public class ExpressInfo implements Serializable {
 	@ApiModelProperty("兑吧订单号")
 	private String orderNum;
 	@ApiModelProperty("快递单号")

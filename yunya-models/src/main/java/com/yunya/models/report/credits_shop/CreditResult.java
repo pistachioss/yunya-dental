@@ -1,4 +1,4 @@
-package com.yunya.middletable.model.credits_shop;
+package com.yunya.models.report.credits_shop;
 
 import io.swagger.annotations.ApiModel;
 import lombok.Data;

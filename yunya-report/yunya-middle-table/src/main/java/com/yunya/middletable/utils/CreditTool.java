@@ -2,7 +2,7 @@ package com.yunya.middletable.utils;
 
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.config.DuiBaConfig;
-import com.yunya.middletable.model.credits_shop.*;
+import com.yunya.models.report.credits_shop.*;
 import org.springframework.stereotype.Component;
 
 import java.net.URLDecoder;

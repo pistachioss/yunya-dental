@@ -1,9 +1,7 @@
 package com.yunya.middletable.service.credits_shop;
 
-import com.alibaba.fastjson.JSONArray;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
-import com.yunya.feign.report.domain.model.IncreasePointsModel;
 import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -15,10 +13,9 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.middletable.config.DuiBaConfig;
 import com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper;
 
-import com.yunya.middletable.dao.report.BasePatientMapper;
-import com.yunya.middletable.model.credits_shop.AddCreditsParams;
-import com.yunya.middletable.model.credits_shop.CreditConsumeParams;
-import com.yunya.middletable.model.credits_shop.CreditResult;
+import com.yunya.models.report.credits_shop.AddCreditsParams;
+import com.yunya.models.report.credits_shop.CreditConsumeParams;
+import com.yunya.models.report.credits_shop.CreditResult;
 import com.yunya.middletable.utils.CreditTool;
 import com.yunya.middletable.utils.SignTool;
 import com.yunya.models.credits_shop.CreditsShop;
@@ -32,10 +29,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;

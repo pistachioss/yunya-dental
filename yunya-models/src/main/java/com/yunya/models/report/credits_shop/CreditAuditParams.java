@@ -1,9 +1,10 @@
-package com.yunya.middletable.model.credits_shop;
+package com.yunya.models.report.credits_shop;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 /**
@@ -17,7 +18,7 @@ import java.util.List;
  **/
 @Data
 @ApiModel(value = "CreditAuditParams",description = "订单审核请求参数封装")
-public class CreditAuditParams {
+public class CreditAuditParams implements Serializable {
 
 	@ApiModelProperty("审核通过的订单列表")
 	private List<String> passOrderNums=new ArrayList<String>();

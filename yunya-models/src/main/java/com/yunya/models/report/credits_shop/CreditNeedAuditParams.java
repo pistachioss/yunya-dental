@@ -1,7 +1,8 @@
-package com.yunya.middletable.model.credits_shop;
+package com.yunya.models.report.credits_shop;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -11,7 +12,7 @@ import java.util.Date;
  * @create: 2021-04-22 09:36
  **/
 @Data
-public class CreditNeedAuditParams {
+public class CreditNeedAuditParams implements Serializable {
 
 	private String appKey;
 	private String bizId="";
