@@ -121,7 +121,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setChannel((byte)0);
          addPatientIntegral.setOrderNum("");
          addPatientIntegral.setCreditsAccount(patientCreditsShop.getCreditsAccount()+500);
-         addPatientIntegral.setCredits(0L);
+         addPatientIntegral.setCredits(500L);
          addPatientIntegral.setCreditsOption((byte)1);
          addPatientIntegral.setActualPrice(0);
          addPatientIntegral.setItemCode("");
@@ -129,6 +129,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setRemarks("患者推荐");
          addPatientIntegral.setInservice(false);
          addPatientIntegral.setCrtId(patientId);
+         addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
        }else {
          // 没有患者积分帐户就新建
          addPatientIntegral.setPatientId(patientCreditsShop.getPatientId());
@@ -137,7 +138,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setChannel((byte)0);
          addPatientIntegral.setOrderNum("");
          addPatientIntegral.setCreditsAccount(500L);
-         addPatientIntegral.setCredits(0L);
+         addPatientIntegral.setCredits(500L);
          addPatientIntegral.setCreditsOption((byte)1);
          addPatientIntegral.setActualPrice(0);
          addPatientIntegral.setItemCode("");
@@ -145,6 +146,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setRemarks("患者推荐");
          addPatientIntegral.setInservice(false);
          addPatientIntegral.setCrtId(patientId);
+         addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
        }
        // 增加500积分
        creditsShopMapper.insertSelective(addPatientIntegral);
