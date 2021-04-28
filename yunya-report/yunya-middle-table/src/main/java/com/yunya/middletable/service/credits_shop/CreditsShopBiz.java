@@ -93,6 +93,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     entity.setCreditsOption((byte) 0);
     entity.setRemarks(payId.toString());
     entity.setCrtId(patientId);
+    entity.setCrtTime(new Date(System.currentTimeMillis()));
     return addCredits(entity);
   }
 
@@ -178,6 +179,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
           creditsShop.setRemarks("初始化积分");
           creditsShop.setInservice(false);
           creditsShop.setCrtId(0);
+          creditsShop.setCrtTime(new Date(System.currentTimeMillis()));
           creditsShop.setUpdId(0);
           creditsShopList.add(creditsShop);
         }
@@ -237,9 +239,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
               }
               addCreditsShop.setInservice(true);
               addCreditsShop.setCrtId(creditsShop.getPatientId());
-              addCreditsShop.setCrtTime(new Date());
-              addCreditsShop.setUpdId(creditsShop.getPatientId());
-              addCreditsShop.setUpdTime(new Date());
+              addCreditsShop.setCrtTime(new Date(System.currentTimeMillis()));
               mapper.insertSelective(addCreditsShop);
               // 设置成功响应体
               creditResult.setStatus("ok");
@@ -313,9 +313,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
               addCreditsShop.setRemarks(addCreditConsumeParams.getParams());
               addCreditsShop.setInservice(true);
               addCreditsShop.setCrtId(creditsShop.getPatientId());
-              addCreditsShop.setCrtTime(new Date());
-              addCreditsShop.setUpdId(creditsShop.getPatientId());
-              addCreditsShop.setUpdTime(new Date());
+              addCreditsShop.setCrtTime(new Date(System.currentTimeMillis()));
               redisUtils.set(addCreditConsumeParams.getUid(),addCreditsShop);
               // 设置成功响应体
               creditResult.setStatus("ok");

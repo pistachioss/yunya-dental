@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -24,5 +25,6 @@ public class CreditsRecordVO implements Serializable {
     @ApiModelProperty("本次扣除或增加的积分")
     private String credits;
     @ApiModelProperty("时间")
+    @JsonFormat(pattern = "YYYY-mm-dd")
     private String crtTime;
 }
