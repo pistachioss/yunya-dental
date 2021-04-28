@@ -163,22 +163,24 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     if (basePatientConsumptionCountVos != null) {
       for (BasePatientConsumptionCountVo basePatientConsumptionCountVo :
           basePatientConsumptionCountVos) {
-        CreditsShop creditsShop = new CreditsShop();
-        creditsShop.setPatientId(basePatientConsumptionCountVo.getPatientId());
-        creditsShop.setType("offlineConsume");
-        creditsShop.setChannel((byte) 0);
-        creditsShop.setOrderNum(null);
-        creditsShop.setCreditsAccount(basePatientConsumptionCountVo.getIntegral().longValue());
-        creditsShop.setCredits(basePatientConsumptionCountVo.getIntegral().longValue());
-        creditsShop.setCreditsOption((byte) 0);
-        creditsShop.setActualPrice(0);
-        creditsShop.setItemCode("");
-        creditsShop.setDescription("");
-        creditsShop.setRemarks("初始化积分");
-        creditsShop.setInservice(false);
-        creditsShop.setCrtId(0);
-        creditsShop.setUpdId(0);
-        creditsShopList.add(creditsShop);
+        if (basePatientConsumptionCountVo.getIntegral().intValue() > 0) {
+          CreditsShop creditsShop = new CreditsShop();
+          creditsShop.setPatientId(basePatientConsumptionCountVo.getPatientId());
+          creditsShop.setType("offlineConsume");
+          creditsShop.setChannel((byte) 0);
+          creditsShop.setOrderNum(null);
+          creditsShop.setCreditsAccount(basePatientConsumptionCountVo.getIntegral().longValue());
+          creditsShop.setCredits(basePatientConsumptionCountVo.getIntegral().longValue());
+          creditsShop.setCreditsOption((byte) 0);
+          creditsShop.setActualPrice(0);
+          creditsShop.setItemCode("");
+          creditsShop.setDescription("");
+          creditsShop.setRemarks("初始化积分");
+          creditsShop.setInservice(false);
+          creditsShop.setCrtId(0);
+          creditsShop.setUpdId(0);
+          creditsShopList.add(creditsShop);
+        }
       }
       List<List<CreditsShop>> creditsShopLists = Lists.partition(creditsShopList, 100);
       CountDownLatch countDownLatch = new CountDownLatch(creditsShopLists.size());
