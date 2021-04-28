@@ -21,5 +21,5 @@ public class CreditResult implements Serializable {
     /** 开发者的订单号(唯一且不重复，如果失败情况，该值可以不传) */
     private String bizId="";
     /** 用户积分余额 */
-    private Long credits=0L;
+    private String credits;
 }
