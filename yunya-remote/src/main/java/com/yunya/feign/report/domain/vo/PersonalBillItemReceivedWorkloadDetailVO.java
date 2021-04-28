@@ -13,14 +13,14 @@ import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
 import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 
 /**
- * 简介: 收费项目已收工作量明细VO
+ * 简介: 收费项目实收工作量明细VO
  *
  * @author: chow
  * @date: 2021/4/17 13:50
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("收费项目已收工作量明细VO")
+@ApiModel("收费项目实收工作量明细VO")
 @Data
 @ToString
 public class PersonalBillItemReceivedWorkloadDetailVO implements Serializable {

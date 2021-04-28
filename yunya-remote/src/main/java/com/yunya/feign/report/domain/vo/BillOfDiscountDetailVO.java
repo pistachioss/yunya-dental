@@ -9,6 +9,9 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 账单优惠VO模型
  *
@@ -58,15 +61,15 @@ public class BillOfDiscountDetailVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 原价合计 */
-  @Excel(name = "原价合计", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "原价合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("原价合计")
   private BigDecimal originalAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "优惠金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("优惠金额")
   private BigDecimal discountAmount;
   /** 实收金额 */
-  @Excel(name = "实收金额", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "实收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("实收金额")
   private BigDecimal actualAmount;
   /** 优惠类型 */

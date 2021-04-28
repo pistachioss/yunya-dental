@@ -9,6 +9,9 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 开单记录VO模型
  *
@@ -58,20 +61,20 @@ public class BillOfOrderRecordVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 原价合计 */
-  @Excel(name = "原价合计", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "原价合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("原价合计")
   private BigDecimal orderAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "优惠金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("优惠金额")
   private BigDecimal privilegeAmount;
-  /** 实收金额 */
-  @Excel(name = "实收金额", cellType = Excel.ColumnType.NUMERIC)
-  @ApiModelProperty("实收金额")
+  /** 应收金额 */
+  @Excel(name = "应收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @ApiModelProperty("应收金额")
   private BigDecimal actualAmount;
-  /** 已收金额 */
-  @Excel(name = "已收金额", cellType = Excel.ColumnType.NUMERIC)
-  @ApiModelProperty("已收金额")
+  /** 实收金额 */
+  @Excel(name = "实收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @ApiModelProperty("实收金额")
   private BigDecimal receivedAmount;
   /** 收费状态 */
   @Excel(name = "收费状态", readConverterExp = "0=未收费,1=已收费")
