@@ -358,9 +358,17 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      if (SignTool.signVerify(duiBaConfig.getAppSecret(), request)){
        String success = request.getParameter("success");
        String uid = request.getParameter("uid");
-       if ("true".equals(success)){
+       String status = "true";
+       if (status.equals(success)){
          CreditsShop creditsShop = redisUtils.get(uid,CreditsShop.class);
-         mapper.insertSelective(creditsShop);
+         if (null != creditsShop){
+           mapper.insertSelective(creditsShop);
+         }else {
+           return "fail";
+         }
+       }else {
+         redisUtils.delete(uid);
+         return "fail";
        }
      }
      return "ok";
