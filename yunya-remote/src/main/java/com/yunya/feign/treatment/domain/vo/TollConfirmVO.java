@@ -20,9 +20,9 @@ import lombok.Data;
 public class TollConfirmVO {
 
     @ApiModelProperty("账单编号（ZD+门诊号+时间戳）")
-    private String BillNumber;
+    private String billNumber;
 
     @ApiModelProperty("账单ID")
-    private Integer BillPayRecordId;
+    private Integer billPayRecordId;
 
 }

@@ -38,7 +38,6 @@ public class EmployeeReceivedDetailWorkloadVO implements Serializable {
   /** 已收工作量 */
   @ApiModelProperty("已收工作量")
   private BigDecimal receivedWorkload;
-
   /** 免单支付工作量 */
   @ApiModelProperty("免单支付工作量")
   private BigDecimal freePaymentWorkload;
