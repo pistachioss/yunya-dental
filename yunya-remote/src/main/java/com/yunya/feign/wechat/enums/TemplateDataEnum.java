@@ -10,6 +10,7 @@ public enum TemplateDataEnum {
     APPOINT_DATE("appointDate"),
     COUPON_NAME("couponName"),
     LINK_MOBILE("linkMobile"),
+    APPOINT_ID("appointId"),
     ;
 
     private String argName;

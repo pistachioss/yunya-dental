@@ -41,6 +41,12 @@ public class WxAppointDetailVo {
     private String orgName;
 
     /**
+     * 诊所地址
+     */
+    @ApiModelProperty(value = "诊所地址")
+    private String orgAddress;
+
+    /**
      * 医生名字
      */
     @ApiModelProperty(value = "医生名字")
