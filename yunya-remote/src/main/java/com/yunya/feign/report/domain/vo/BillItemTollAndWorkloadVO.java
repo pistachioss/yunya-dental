@@ -9,6 +9,9 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 项目收费及工作量VO
  *
@@ -46,20 +49,20 @@ public class BillItemTollAndWorkloadVO implements Serializable {
   @Excel(name = "项目名称")
   @ApiModelProperty("项目明细名称")
   private String itemName;
-  /** 已收工作量 */
-  @Excel(name = "已收工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC)
-  @ApiModelProperty("已收工作量")
+  /** 实收工作量 */
+  @Excel(name = "实收工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("实收工作量")
   private BigDecimal receivedWorkload;
   /** 免单工作量 */
-  @Excel(name = "其中免单工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "其中免单工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("免单工作量")
   private BigDecimal freePayWorkload;
   /** 补入工作量 */
-  @Excel(name = "补入工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "补入工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("补入工作量")
   private BigDecimal supplyWorkload;
   /** 退费工作量 */
-  @Excel(name = "退费工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "退费工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("退费工作量")
   private BigDecimal refundWorkload;
 }

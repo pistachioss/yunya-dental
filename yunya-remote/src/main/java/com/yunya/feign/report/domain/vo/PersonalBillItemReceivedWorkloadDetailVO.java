@@ -9,6 +9,9 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 收费项目已收工作量明细VO
  *
@@ -50,9 +53,9 @@ public class PersonalBillItemReceivedWorkloadDetailVO implements Serializable {
   @Excel(name = "患者手机号")
   @ApiModelProperty("患者手机号")
   private String mobile;
-  /** 已收工作量 */
-  @Excel(name = "已收工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC)
-  @ApiModelProperty("已收工作量")
+  /** 实收工作量 */
+  @Excel(name = "实收工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("实收工作量")
   private BigDecimal itemReceivedWorkload;
   /** 执行人ID */
   @ApiModelProperty("执行人ID")

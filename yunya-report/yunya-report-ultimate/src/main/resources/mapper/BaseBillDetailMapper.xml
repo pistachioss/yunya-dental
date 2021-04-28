@@ -620,7 +620,7 @@
         bbd.executor_id,
         CONVERT (
         SUM( bbd.billWorkload / bbd.actualAmount * bbd.receivedAmount ),
-        DECIMAL ( 19, 4 )) AS receivedWorkload
+        DECIMAL ( 19, 2 )) AS receivedWorkload
         FROM
         (
         SELECT
@@ -691,7 +691,7 @@
         bbd.executor_id,
         CONVERT (
         SUM( bbd.billWorkload / bbd.billTotalWorkload * bbd.freePayAmount ),
-        DECIMAL ( 19, 4 )) AS freePaymentWorkload
+        DECIMAL ( 19, 2 )) AS freePaymentWorkload
         FROM
         (
         SELECT

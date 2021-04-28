@@ -737,7 +737,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberReturnRecord.setCurrentBonus(patientMemberInfo.getBonusAmount());
       memberReturnRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       memberReturnRecord.setUpdName(BaseContextHandler.getName());
-      memberReturnRecord.setActualReturnAmount(model.getReturnPrincipalAmount());
+      memberReturnRecord.setActualReturnAmount(model.getReturnPayAmount());
       memberReturnRecordMapper.insertSelective(memberReturnRecord);
       sendMemberLogMessages(memberReturnRecord.getId(), 0, 0, 3);
       return ResponseUtil.success();

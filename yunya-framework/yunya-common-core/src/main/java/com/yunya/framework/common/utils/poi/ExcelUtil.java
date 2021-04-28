@@ -677,9 +677,8 @@ public class ExcelUtil<T> {
    * @param vo vo
    * @param field 字段
    * @param column 列
-   * @return
    */
-  public Cell addCell(Excel attr, Row row, T vo, Field field, int column) {
+  public void addCell(Excel attr, Row row, T vo, Field field, int column) {
     Cell cell = null;
     try {
       // 设置行高
@@ -716,7 +715,6 @@ public class ExcelUtil<T> {
     } catch (Exception e) {
       log.error("导出Excel失败{}", e);
     }
-    return cell;
   }
 
   /**
