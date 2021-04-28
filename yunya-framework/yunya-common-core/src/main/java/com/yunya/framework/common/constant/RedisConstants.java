@@ -54,6 +54,8 @@ public class RedisConstants implements Serializable {
   /** ------------------------------ 开单、收费、账单处理-------------------------------------------- */
   /** 价目表 */
   public static final String REDIS_KEY_TARIFF_INFO = "tariff_info_";
+  /** 商品表 */
+  public static final String REDIS_KEY_ORAL_TARIFF_INFO = "oral_tariff_info_";
   /** 开单 */
   public static final String LOCK_ORDER_PROCESSING_CREATE = "lock:create:process";
   /** 解锁 */
