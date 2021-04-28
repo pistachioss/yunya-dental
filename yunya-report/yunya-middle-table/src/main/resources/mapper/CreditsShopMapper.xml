@@ -38,7 +38,7 @@
       <if test="patientId != null">
         patient_id = #{patientId}
       </if>
-      order by crt_time desc
+      order by id desc,crt_time desc
     limit 1
     </where>
   </select>

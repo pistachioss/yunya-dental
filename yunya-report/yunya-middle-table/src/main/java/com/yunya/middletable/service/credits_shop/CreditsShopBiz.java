@@ -181,9 +181,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         creditsShop.setRemarks("初始化积分");
         creditsShop.setInservice(false);
         creditsShop.setCrtId(0);
-        creditsShop.setCrtTime(new Date());
         creditsShop.setUpdId(0);
-        creditsShop.setUpdTime(new Date());
         creditsShopList.add(creditsShop);
       }
       List<List<CreditsShop>> creditsShopLists = Lists.partition(creditsShopList, 100);
@@ -358,9 +356,22 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
      if (SignTool.signVerify(duiBaConfig.getAppSecret(), request)){
        String success = request.getParameter("success");
        String uid = request.getParameter("uid");
-       if ("true".equals(success)){
-         CreditsShop creditsShop = redisUtils.get(uid,CreditsShop.class);
-         mapper.insertSelective(creditsShop);
+       String status = "true";
+       try {
+         if (status.equals(success)) {
+           CreditsShop creditsShop = redisUtils.get(uid, CreditsShop.class);
+           if (null != creditsShop) {
+             mapper.insertSelective(creditsShop);
+           } else {
+             return "fail";
+           }
+         } else {
+           return "fail";
+         }
+       } finally {
+         if (redisUtils.hasKey(uid)) {
+           redisUtils.delete(uid);
+         }
        }
      }
      return "ok";
