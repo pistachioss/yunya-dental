@@ -33,6 +33,9 @@ public class OrderDetailChargeVO implements Serializable {
   /** 开单项目名称 */
   @ApiModelProperty("开单项目名称")
   private String billingItemName;
+  /** 开单项目英文名称 */
+  @ApiModelProperty("开单项目英文名称")
+  private String billingItemEnglishName;
   /** 单位 */
   @ApiModelProperty("单位")
   private String unit;
