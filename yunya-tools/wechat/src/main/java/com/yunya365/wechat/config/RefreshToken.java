@@ -27,6 +27,6 @@ public class RefreshToken implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
-        scheduledPool.scheduleAtFixedRate(() -> accessTokenRunner.refreshToken(),0, 7000, TimeUnit.SECONDS);
+        scheduledPool.scheduleAtFixedRate(() -> accessTokenRunner.refreshToken(),0, 7140, TimeUnit.SECONDS);
     }
 }

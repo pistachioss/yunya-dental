@@ -3,6 +3,7 @@ package com.yunya.modules.patient_central.biz;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Maps;
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.*;
@@ -14,8 +15,14 @@ import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
+import com.yunya.feign.wechat.RemoteWechatServiceFeign;
+import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.feign.wechat.enums.TemplateDataEnum;
+import com.yunya.feign.wechat.enums.TemplateEnum;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
@@ -31,6 +38,7 @@ import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.*;
+import org.joda.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +46,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static com.yunya.feign.wechat.enums.TemplateEnum.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 简单介绍:</br> 患者会员卡信息 业务层
@@ -76,6 +88,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
   /** redis队列 */
   @Autowired private RedisUtils redisUtils;
+  /** 微信推送 */
+  @Autowired private RemoteWechatServiceFeign remoteWechatServiceFeign;
 
   /** 预付款Mapper */
   @Autowired
@@ -173,6 +187,29 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         // 添加会员双向关联
         sendMemberRelationMessages(patientMemberRelation.getId(), 0);
       }
+
+      //发送微信推送消息
+      WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+      wxTemplateMsgModel.setPatientId(form.getMasterCardId());
+      wxTemplateMsgModel.setTemplateEnum(TemplateEnum.BIND_SUCCESS);
+
+      PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(form.getSecondaryCardId());
+      Map<String, Object> paramMap = new HashMap<>();
+      if(form.getBindType()==0){
+        paramMap.put("first","您好，您的会员卡成功绑定副卡人，将享受您的会员卡折扣权益，副卡人信息如下：");
+      }else{
+        paramMap.put("first","您好，您的会员卡成功绑定余额共享人，可使用您的会员卡余额，信息如下：");
+      }
+
+      if(patientBaseInfoVo!=null){
+        paramMap.put("keyword1",patientBaseInfoVo.getName());
+        paramMap.put("keyword2",patientBaseInfoVo.getMobile());
+      }else{
+        throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
+      }
+      wxTemplateMsgModel.setParamMap(paramMap);
+      remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
+
       return ResponseUtil.success();
     }
   }
@@ -233,7 +270,21 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     this.cardLog(patientMemberInfo, "开卡", "");
     remoteRabbitMqServiceFeign.sendMessage(
         patientMemberInfo.getId(), 0, 0, MsgCategoryEnum.BasePatientMember);
+    remoteWechatServiceFeign.pushTemplate(addCardPushMsg(patientMemberInfo));
     return ResponseUtil.success();
+  }
+
+  private WxTemplateMsgModel addCardPushMsg(PatientMemberInfo memberInfo) {
+    MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberInfo.getMemberTypeId());
+    WxTemplateMsgModel model = new WxTemplateMsgModel();
+    Map<String, Object> paramMap = Maps.newHashMap();
+    paramMap.put("keyword1", memberInfo.getCardNumber());
+    paramMap.put("keyword2", memberType.getName());
+    paramMap.put("keyword3", LocalDateTime.now().toString("yyyy年MM月dd日 HH:mm:ss"));
+    model.setPatientId(memberInfo.getPatientId());
+    model.setTemplateEnum(MEMBER_OPEN_CARD);
+    model.setParamMap(paramMap);
+    return model;
   }
 
   /**
@@ -297,6 +348,11 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param cardRelationForm 会员卡关系删除Form
    */
   public void deleteRelationById(CardRelationForm cardRelationForm) {
+
+    PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
+    patientMemberRelation.setId(cardRelationForm.getId());
+    PatientMemberRelation memberRelation =
+            this.patientMemberRelationMapper.selectOne(patientMemberRelation);
     // 权限绑定 单项删除
     if (cardRelationForm.getBindType() == 0) {
       this.patientMemberRelationMapper.deleteByPrimaryKey(cardRelationForm.getId());
@@ -305,10 +361,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     }
     // 共享值绑定 双项删除
     if (cardRelationForm.getBindType() == 1) {
-      PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
-      patientMemberRelation.setId(cardRelationForm.getId());
-      PatientMemberRelation memberRelation =
-          this.patientMemberRelationMapper.selectOne(patientMemberRelation);
+
       if (memberRelation != null) {
         Integer relationId =
             patientMemberRelationMapper.selectMemberRelationId(
@@ -325,6 +378,30 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         sendMemberRelationMessages(memberRelation.getId(), 2);
       }
     }
+
+    //发送微信推送消息
+    WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+    wxTemplateMsgModel.setPatientId(memberRelation.getMasterCardId());
+    wxTemplateMsgModel.setTemplateEnum(TemplateEnum.UNBIND_SUCCESS);
+
+    PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(memberRelation.getSecondaryCardId());
+    Map<String, Object> paramMap = new HashMap<>();
+    if(cardRelationForm.getBindType()==0){
+      paramMap.put("first","您好，您的会员卡副卡人已解绑，信息如下");
+    }else{
+      paramMap.put("first","您好，您的会员卡余额共享人已解绑，信息如下");
+    }
+
+    if(patientBaseInfoVo!=null){
+      paramMap.put("keyword1",patientBaseInfoVo.getName());
+      paramMap.put("keyword2",patientBaseInfoVo.getMobile());
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+      paramMap.put("keyword3",sdf.format(new Date()));
+    }else{
+      throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
+    }
+    wxTemplateMsgModel.setParamMap(paramMap);
+    remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
   }
 
   /**
@@ -446,6 +523,30 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         // 会员卡充值发送短信 type:0充值 1消费
         memberSendMessages(memberRechargeRecord, 0);
+        //会员卡充值成功发送推送
+        WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+        wxTemplateMsgModel.setPatientId(model.getPatientId());
+        wxTemplateMsgModel.setTemplateEnum(TemplateEnum.RECHARGE_SUCCESS);
+        PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(model.getPatientId());
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put(TemplateDataEnum.PATIENT_NAME.getArgName(),patientBaseInfoVo.getName());
+        paramMap.put("keyword1",model.getRechargePrincipal());
+        paramMap.put("keyword2",patientMemberInfo.getPrincipalAmount());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+        paramMap.put("keyword3",sdf.format(new Date()));
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setId(Integer.valueOf(BaseContextHandler.getOrgId()));
+
+        List<OrganizationInfoDetail>orgList = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        log.info("门诊信息："+orgList.get(0).toString());
+        if(orgList!=null&&orgList.size()>0){
+          paramMap.put("keyword4",orgList.get(0).getName());
+        }else{
+          throw new ClientServiceException("门诊信息为空", RETURN_VALUE_ISNULL);
+        }
+        paramMap.put("linkMobile",orgList.get(0).getTel());
+        wxTemplateMsgModel.setParamMap(paramMap);
+        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
       }
     } else {
       return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "充值金额与入账金额不相等!", null);
@@ -695,6 +796,37 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         return ResponseUtil.fail(
             OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到会员卡", patientMemberInfo);
       }
+
+        //发送微信推送消息
+        WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+        wxTemplateMsgModel.setPatientId(patientMemberInfo.getPatientId());
+        wxTemplateMsgModel.setTemplateEnum(TemplateEnum.MEMBER_CONSUME);
+
+        PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(model.getPatientId());
+
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put(TemplateDataEnum.PATIENT_NAME.getArgName(),patientBaseInfoVo.getName());
+        if(patientBaseInfoVo!=null){
+            paramMap.put("keyword1",model.getExpendTotal());
+            paramMap.put("keyword2",patientMemberInfo.getPrincipalAmount().add(patientMemberInfo.getBonusAmount()));
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+            paramMap.put("keyword3",sdf.format(new Date()));
+            OrganizationModel organizationModel = new OrganizationModel();
+            organizationModel.setId(Integer.valueOf(BaseContextHandler.getOrgId()));
+
+            List<OrganizationInfoDetail>orgList = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+            if(orgList!=null&&orgList.size()>0){
+              paramMap.put("keyword4",orgList.get(0).getName());
+            }else{
+              throw new ClientServiceException("门诊信息为空", RETURN_VALUE_ISNULL);
+           }
+          paramMap.put("linkMobile",orgList.get(0).getTel());
+        }else{
+            throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
+        }
+        wxTemplateMsgModel.setParamMap(paramMap);
+        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
+
     } finally {
       reentrantLock.unlock();
       log.info("============消费锁释放操作===================");

@@ -3,6 +3,7 @@ package com.yunya.modules.discount.mapper;
 import com.yunya.feign.discount.domain.bo.*;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.patient_central.domain.query.*;
+import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.models.discount.*;
 import org.apache.ibatis.annotations.*;
 
@@ -82,4 +83,9 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
      * 微信公众号-查询患者有效的卡券
      */
     List<WxPatientEffectiveVo> listPatientEffectiveCard(@Param("patientId") Integer patientId);
+
+    /**
+     * 微信公众号-用户的礼包使用详情
+     */
+    WxCardUsageVo getCardUsage(@Param("cardId") Integer cardId);
 }

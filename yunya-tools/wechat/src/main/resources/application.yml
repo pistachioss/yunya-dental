@@ -2,7 +2,8 @@ server:
   port: 8997
 
 corn:
-  data: 00 00 00 * * ?
+  cardPush: 00 00 10 * * ?
+  appointConfim: 00 00 9,12 * * ?
 
 spring:
   application:
