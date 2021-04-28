@@ -218,7 +218,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     String key = "patientId";
     String patientId = userInfo.get(key);
     if (null != patientId) {
-      CreditsShop creditsShop = mapper.selectCreditsShopByPatientId(Integer.parseInt(patientId));
+      CreditsShop creditsShop = new CreditsShop();
       try {
         AddCreditsParams addCreditsParams = creditTool.parseaddCredits(request);
         if (null != addCreditsParams) {
@@ -283,7 +283,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     String key = "patientId";
     String patientId = userInfo.get(key);
     if (null != patientId) {
-      CreditsShop creditsShop = mapper.selectCreditsShopByPatientId(Integer.parseInt(patientId));
+      CreditsShop creditsShop = creditsShop = new CreditsShop();
       try {
         CreditConsumeParams addCreditConsumeParams = creditTool.parseCreditConsume(request);
         if (null != addCreditConsumeParams) {
