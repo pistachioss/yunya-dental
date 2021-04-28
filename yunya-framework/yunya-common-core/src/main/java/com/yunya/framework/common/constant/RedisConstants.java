@@ -52,6 +52,8 @@ public class RedisConstants implements Serializable {
   public static final String LOCK_CHANGE_APPLY_NS = "lock:change:apply";
 
   /** ------------------------------ 开单、收费、账单处理-------------------------------------------- */
+  /** 价目表 */
+  public static final String REDIS_KEY_TARIFF_INFO = "tariff_info_";
   /** 开单 */
   public static final String LOCK_ORDER_PROCESSING_CREATE = "lock:create:process";
   /** 解锁 */
