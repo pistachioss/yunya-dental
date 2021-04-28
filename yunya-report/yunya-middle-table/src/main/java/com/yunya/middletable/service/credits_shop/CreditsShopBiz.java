@@ -181,9 +181,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         creditsShop.setRemarks("初始化积分");
         creditsShop.setInservice(false);
         creditsShop.setCrtId(0);
-        creditsShop.setCrtTime(new Date());
         creditsShop.setUpdId(0);
-        creditsShop.setUpdTime(new Date());
         creditsShopList.add(creditsShop);
       }
       List<List<CreditsShop>> creditsShopLists = Lists.partition(creditsShopList, 100);
