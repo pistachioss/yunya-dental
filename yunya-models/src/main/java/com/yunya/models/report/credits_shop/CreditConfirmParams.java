@@ -1,7 +1,10 @@
-package com.yunya.middletable.model.credits_shop;
+package com.yunya.models.report.credits_shop;
 
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
+
+import java.io.Serializable;
+
 /**
  * @program: yunya-dental
  * @description: 积分兑换确认请求参数
@@ -12,7 +15,7 @@ import lombok.Data;
  **/
 @Data
 @ApiModel(value = "CreditConfirmParams",description = "积分兑换确认请求参数")
-public class CreditConfirmParams {
+public class CreditConfirmParams implements Serializable {
 	private boolean success=true;
 	private String errorMessage="";
 	private String orderNum="";

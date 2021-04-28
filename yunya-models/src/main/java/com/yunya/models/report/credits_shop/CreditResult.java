@@ -1,4 +1,4 @@
-package com.yunya.middletable.model.credits_shop;
+package com.yunya.models.report.credits_shop;
 
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
@@ -21,5 +21,5 @@ public class CreditResult implements Serializable {
     /** 开发者的订单号(唯一且不重复，如果失败情况，该值可以不传) */
     private String bizId="";
     /** 用户积分余额 */
-    private Long credits=0L;
+    private String credits;
 }

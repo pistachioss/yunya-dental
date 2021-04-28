@@ -1,11 +1,10 @@
 package com.yunya.middletable.controller.report.credits_shop;
 
-import com.yunya.feign.report.domain.model.IncreasePointsModel;
 import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.middletable.model.credits_shop.CreditResult;
+import com.yunya.models.report.credits_shop.CreditResult;
 import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.models.credits_shop.CreditsShop;
 import io.swagger.annotations.*;
@@ -14,7 +13,7 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotBlank;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
@@ -66,9 +65,20 @@ public class ShopController {
     }
 
     @ApiOperation("增加积分")
-    @PostMapping("/increasePoints")
-    public CreditResult increasePoints( IncreasePointsModel increasePointsModel) throws InterruptedException {
-        //return creditsShopBiz.increasePoints();
-        return null;
+    @GetMapping("/increasePoints")
+    public CreditResult increasePoints(HttpServletRequest request) {
+        return creditsShopBiz.increasePoints(request);
+    }
+
+    @ApiOperation("消费积分")
+    @GetMapping("/consumptionPoints")
+    public CreditResult consumptionPoints(HttpServletRequest request) {
+        return creditsShopBiz.consumptionPoints(request);
+    }
+
+    @ApiOperation("兑换结果")
+    @GetMapping("/exchangeResult")
+    public String exchangeResult(HttpServletRequest request) {
+        return creditsShopBiz.exchangeResult(request);
     }
 }
