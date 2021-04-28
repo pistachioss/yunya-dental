@@ -12,14 +12,13 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.middletable.config.DuiBaConfig;
 import com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper;
-
-import com.yunya.models.report.credits_shop.AddCreditsParams;
-import com.yunya.models.report.credits_shop.CreditConsumeParams;
-import com.yunya.models.report.credits_shop.CreditResult;
 import com.yunya.middletable.utils.CreditTool;
 import com.yunya.middletable.utils.SignTool;
 import com.yunya.models.credits_shop.CreditsShop;
 import com.yunya.models.report.BasePatientConsumptionCountVo;
+import com.yunya.models.report.credits_shop.AddCreditsParams;
+import com.yunya.models.report.credits_shop.CreditConsumeParams;
+import com.yunya.models.report.credits_shop.CreditResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -94,9 +93,6 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     entity.setCreditsOption((byte) 0);
     entity.setRemarks(payId.toString());
     entity.setCrtId(patientId);
-    entity.setCrtTime(DateUtil.getCurrentDate());
-    entity.setUpdId(patientId);
-    entity.setUpdTime(DateUtil.getCurrentDate());
     return addCredits(entity);
   }
 
@@ -218,7 +214,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     String key = "patientId";
     String patientId = userInfo.get(key);
     if (null != patientId) {
-      CreditsShop creditsShop = mapper.selectCreditsShopByPatientId(Integer.parseInt(patientId));
+      CreditsShop creditsShop = mapper.selectLastCredits(Integer.parseInt(patientId));;
       try {
         AddCreditsParams addCreditsParams = creditTool.parseaddCredits(request);
         if (null != addCreditsParams) {
@@ -258,6 +254,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         // 设置失败响应体
         creditResult.setStatus("fail");
         creditResult.setErrorMessage(e.getMessage());
+        assert creditsShop != null;
         creditResult.setCredits(creditsShop.getCredits().toString());
         return creditResult;
       }
@@ -283,7 +280,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     String key = "patientId";
     String patientId = userInfo.get(key);
     if (null != patientId) {
-      CreditsShop creditsShop = mapper.selectCreditsShopByPatientId(Integer.parseInt(patientId));
+      CreditsShop creditsShop = mapper.selectLastCredits(Integer.parseInt(patientId));
       try {
         CreditConsumeParams addCreditConsumeParams = creditTool.parseCreditConsume(request);
         if (null != addCreditConsumeParams) {
