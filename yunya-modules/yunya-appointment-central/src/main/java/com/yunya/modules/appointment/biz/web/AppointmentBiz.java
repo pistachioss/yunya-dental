@@ -3320,4 +3320,55 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         remoteSmsServiceFeign.batchSendModels(templateId, models);
         return ResponseUtil.success(null);
     }
+
+    /**
+     * 根据条件查询取消预约明细表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public PageInfo<CancelAppointmentVO> cancelAppointmentList(CancelAppointmentQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<CancelAppointmentVO> list = mapper.cancelAppointmentList(query);
+        if (StringHelper.isNotEmpty(list)) {
+            list.forEach(vo->{
+                PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(vo.getPatientId());
+                if (patient != null) {
+                    vo.setPatientName(patient.getName());
+                }
+                SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(vo.getDentistId());
+                if (employee != null) {
+                    vo.setDentistName(employee.getName());
+                }
+                OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(vo.getOrgId());
+                if (org != null) {
+                    vo.setAbbreviation(org.getAbbreviation());
+                }
+            });
+        }
+        return new PageInfo<>(list);
+    }
+
+    /**
+     * 根据条件导出取消预约明细表
+     *
+     * @param response 响应
+     * @param query 查询条件
+     * @return
+     */
+    public void cancelAppointmentExport(HttpServletResponse response, CancelAppointmentQuery query) throws IOException {
+        query.setWhetherPage(false);
+        List<CancelAppointmentVO> data = cancelAppointmentList(query).getList();
+        ExcelUtil<CancelAppointmentVO> excelUtil = new ExcelUtil<>(CancelAppointmentVO.class);
+        String startDate = query.getStartDate();
+        String endDate = query.getEndDate();
+        if (startDate.equals(endDate)) {
+            endDate = null;
+        }
+        String abbreviation = remoteSystemServiceFeign.findOrgInfoByOrgId(query.getOrgIds()[0]).getAbbreviation();
+        String fileName = excelUtil.getFileName(startDate, endDate, abbreviation, "取消预约明细表");
+        excelUtil.exportExcel(response,data,"取消预约明细表",fileName);
+    }
 }
