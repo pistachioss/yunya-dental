@@ -9,6 +9,9 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 应收账款余额VO
  *
@@ -51,15 +54,15 @@ public class BillRestReceivableAmountVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 原价合计 */
-  @Excel(name = "原价合计", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
+  @Excel(name = "原价合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("原价合计")
   private BigDecimal totalOriginalAmount;
-  /** 实收金额 */
-  @Excel(name = "实收金额", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
-  @ApiModelProperty("实收金额")
+  /** 应收金额 */
+  @Excel(name = "应收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("应收金额")
   private BigDecimal totalActualAmount;
   /** 账单剩余欠费余额 */
-  @Excel(name = "账单剩余欠费余额", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
+  @Excel(name = "账单剩余欠费余额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("账单剩余欠费余额")
   private BigDecimal billReceivableAmount;
 }

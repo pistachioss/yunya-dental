@@ -8,6 +8,9 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 报表预付款充值vo
  *
@@ -21,78 +24,76 @@ import java.math.BigDecimal;
 @ApiModel("预付款充值列表Vo")
 public class BasePrepaidRechargeLogVo {
 
-    /** 操作id **/
-    @ApiModelProperty("操作id")
-    private Integer occurLogId;
+  /** 操作id * */
+  @ApiModelProperty("操作id")
+  private Integer occurLogId;
 
-    /** 充值日期 */
-    @Excel(name = "充值日期")
-    @ApiModelProperty("充值日期")
-    private String occurDate;
+  /** 充值日期 */
+  @Excel(name = "充值日期")
+  @ApiModelProperty("充值日期")
+  private String occurDate;
 
-    /** 患者姓名 */
-    @Excel(name = "患者姓名")
-    @ApiModelProperty("患者姓名")
-    private String name;
+  /** 患者姓名 */
+  @Excel(name = "患者姓名")
+  @ApiModelProperty("患者姓名")
+  private String name;
 
-    /** 手机号 */
-    @Excel(name = "手机号")
-    @ApiModelProperty("手机号")
-    private String mobile;
+  /** 手机号 */
+  @Excel(name = "手机号")
+  @ApiModelProperty("手机号")
+  private String mobile;
 
-    /** 预付款账号 */
-    @Excel(name = "预付款账号")
-    @ApiModelProperty("预付款账号")
-    private String cardNumber;
+  /** 预付款账号 */
+  @Excel(name = "预付款账号")
+  @ApiModelProperty("预付款账号")
+  private String cardNumber;
 
-    /** 充值本金金额 */
-    @Excel(name = "充值本金金额")
-    @ApiModelProperty("充值本金金额")
-    private BigDecimal principalAmount = new BigDecimal(0);
+  /** 充值本金金额 */
+  @Excel(name = "充值本金金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("充值本金金额")
+  private BigDecimal principalAmount = new BigDecimal(0);
 
-    /** 充值赠金金额 */
-    @Excel(name = "充值赠金金额")
-    @ApiModelProperty("充值赠金金额")
-    private BigDecimal bonusAmount = new BigDecimal(0);
+  /** 充值赠金金额 */
+  @Excel(name = "充值赠金金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("充值赠金金额")
+  private BigDecimal bonusAmount = new BigDecimal(0);
 
-    /** 充值后预付款余额（含赠送金额） */
-    @Excel(name = "充值后预付款余额（含赠送金额）")
-    @ApiModelProperty("充值后预付款余额（含赠送金额）")
-    private BigDecimal currentRechargePrincipal = new BigDecimal(0);
+  /** 充值后预付款余额（含赠送金额） */
+  @Excel(name = "充值后预付款余额（含赠送金额）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("充值后预付款余额（含赠送金额）")
+  private BigDecimal currentRechargePrincipal = new BigDecimal(0);
 
-    /** 剩余预付款余额（含赠送金额） */
-    @Excel(name = "剩余预付款余额（含赠送金额）")
-    @ApiModelProperty("剩余预付款余额（含赠送金额）")
-    private BigDecimal currentAmount = new BigDecimal(0);
+  /** 剩余预付款余额（含赠送金额） */
+  @Excel(name = "剩余预付款余额（含赠送金额）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("剩余预付款余额（含赠送金额）")
+  private BigDecimal currentAmount = new BigDecimal(0);
 
-    /** 充值方式 */
-    @Excel(name = "充值方式 ")
-    @ApiModelProperty("充值方式")
-    private String rechargeMethod;
+  /** 充值方式 */
+  @Excel(name = "充值方式 ")
+  @ApiModelProperty("充值方式")
+  private String rechargeMethod;
 
-    /** 入账方式字典id */
-    @ApiModelProperty("入账方式字典id")
-    private Integer paymentId;
+  /** 入账方式字典id */
+  @ApiModelProperty("入账方式字典id")
+  private Integer paymentId;
 
-    /** 入账方式 */
-    @Excel(name = "入账方式")
-    @ApiModelProperty("入账方式")
-    private String paymentManner;
+  /** 入账方式 */
+  @Excel(name = "入账方式")
+  @ApiModelProperty("入账方式")
+  private String paymentManner;
 
-    /** 充值卡号 */
-    @Excel(name = "充值卡号")
-    @ApiModelProperty("充值卡号")
-    private String rechargeCardNumber;
+  /** 充值卡号 */
+  @Excel(name = "充值卡号")
+  @ApiModelProperty("充值卡号")
+  private String rechargeCardNumber;
 
-    /** 充值人 */
-    @Excel(name = "充值人")
-    @ApiModelProperty("充值人")
-    private String operatorUserName;
+  /** 充值人 */
+  @Excel(name = "充值人")
+  @ApiModelProperty("充值人")
+  private String operatorUserName;
 
-    /** 备注 */
-    @Excel(name = "备注")
-    @ApiModelProperty("备注")
-    private String remarks;
-
-
+  /** 备注 */
+  @Excel(name = "备注")
+  @ApiModelProperty("备注")
+  private String remarks;
 }

@@ -36,85 +36,83 @@ import java.util.List;
 @RequestMapping("originRelations")
 public class PatientOriginRelationsController {
 
-    /** 业务层 */
-    @Resource
-    PatientOriginRelationsBiz patientOriginRelationsBiz;
+  /** 业务层 */
+  @Resource PatientOriginRelationsBiz patientOriginRelationsBiz;
 
-    /**
-     * 员工推荐推荐分页列表查询
-     * @param query 查询条件
-     * @return 员工推荐推荐分页列表信息
-     */
-    @ApiOperation("员工推荐")
-    @PostMapping(value = "/employeeReferral",name = "公司端-人力资源-员工推荐")
-    public ResponseResult<PageInfo<PatientOriginEmployeeVo>> employeeReferral(@RequestBody PatientOriginEmployeeQuery query){
-       List<PatientOriginEmployeeVo> patientOriginEmployeeVoList = patientOriginRelationsBiz.finleEmployeeReferral(query);
-        if (!StringHelper.isEmpty(patientOriginEmployeeVoList)){
-            if (query.getWhetherPage()) {
-                Integer pageNum = query.getPageNum();
-                Integer pageSize = query.getPageSize();
-                int total = patientOriginEmployeeVoList.size();
-                PageInfo<PatientOriginEmployeeVo> pageInfo = new PageInfo<>();
-                pageInfo.setPageNum(pageNum);
-                pageInfo.setPageSize(pageSize);
-                pageInfo.setTotal(total);
-                List<PatientOriginEmployeeVo> list =
-                        patientOriginEmployeeVoList.subList(
-                                pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
-                pageInfo.setList(list);
-                return ResponseUtil.success(pageInfo);
-            }
-            return ResponseUtil.success(new PageInfo<>(patientOriginEmployeeVoList));
-        }
-        return ResponseUtil.success();
+  /**
+   * 员工推荐推荐分页列表查询
+   *
+   * @param query 查询条件
+   * @return 员工推荐推荐分页列表信息
+   */
+  @ApiOperation("员工推荐")
+  @PostMapping(value = "/employeeReferral", name = "公司端-人力资源-员工推荐")
+  public ResponseResult<PageInfo<PatientOriginEmployeeVo>> employeeReferral(
+      @RequestBody PatientOriginEmployeeQuery query) {
+    List<PatientOriginEmployeeVo> patientOriginEmployeeVoList =
+        patientOriginRelationsBiz.finleEmployeeReferral(query);
+    if (!StringHelper.isEmpty(patientOriginEmployeeVoList)) {
+      if (query.getWhetherPage()) {
+        Integer pageNum = query.getPageNum();
+        Integer pageSize = query.getPageSize();
+        int total = patientOriginEmployeeVoList.size();
+        PageInfo<PatientOriginEmployeeVo> pageInfo = new PageInfo<>();
+        pageInfo.setPageNum(pageNum);
+        pageInfo.setPageSize(pageSize);
+        pageInfo.setTotal(total);
+        List<PatientOriginEmployeeVo> list =
+            patientOriginEmployeeVoList.subList(
+                pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+        pageInfo.setList(list);
+        return ResponseUtil.success(pageInfo);
+      }
+      return ResponseUtil.success(new PageInfo<>(patientOriginEmployeeVoList));
     }
+    return ResponseUtil.success();
+  }
 
-    /**
-     * 导出员工推荐推荐分页列表查询
-     *
-     * @param response 响应
-     * @param query 查询条件
-     * @return 导出员工推荐推荐分页列表查询
-     */
-    @ApiOperation("导出员工推荐记录列表")
-    @PostMapping(value = "/employeeReferral/export", name = "公司端-人力资源-员工推荐-导出")
-    public ResponseResult<T> exportEmployeeReferral(
-            HttpServletResponse response, @RequestBody PatientOriginEmployeeQuery query)
-            throws IOException {
-        patientOriginRelationsBiz.exportEmployeeReferralList(response,query);
-        return ResponseUtil.success(null);
+  /**
+   * 导出员工推荐推荐分页列表查询
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return 导出员工推荐推荐分页列表查询
+   */
+  @ApiOperation("导出员工推荐记录列表")
+  @PostMapping(value = "/employeeReferral/export", name = "公司端-人力资源-员工推荐-导出")
+  public ResponseResult<T> exportEmployeeReferral(
+      HttpServletResponse response, @RequestBody PatientOriginEmployeeQuery query)
+      throws IOException {
+    patientOriginRelationsBiz.exportEmployeeReferralList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 已收工作量明细列表分页列表查询
+   *
+   * @param query 查询条件
+   * @return 已收工作量明细列表分页列表查询
+   */
+  @ApiOperation("员工推荐-各项明细列表")
+  @PostMapping(value = "/workloadBreakdown", name = "公司端-人力资源-员工推荐-各项明细列表 type区分")
+  public ResponseResult<PageInfo<ReceivedWorkloadDetailsVo>> workloadBreakdown(
+      @RequestBody ReceiverkLoadQuery query) throws ParseException {
+    List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList =
+        patientOriginRelationsBiz.findEreceiverkLoad(query);
+    if (query.getWhetherPage()) {
+      Integer pageNum = query.getPageNum();
+      Integer pageSize = query.getPageSize();
+      int total = receivedWorkloadDetailsVoList.size();
+      PageInfo<ReceivedWorkloadDetailsVo> pageInfo = new PageInfo<>();
+      pageInfo.setPageNum(pageNum);
+      pageInfo.setPageSize(pageSize);
+      pageInfo.setTotal(total);
+      List<ReceivedWorkloadDetailsVo> list =
+          receivedWorkloadDetailsVoList.subList(
+              pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+      pageInfo.setList(list);
+      return ResponseUtil.success(pageInfo);
     }
-
-
-
-    /**
-     * 已收工作量明细列表分页列表查询
-     * @param query 查询条件
-     * @return 已收工作量明细列表分页列表查询
-     */
-    @ApiOperation("员工推荐-各项明细列表")
-    @PostMapping(value = "/workloadBreakdown",name = "公司端-人力资源-员工推荐-各项明细列表 type区分")
-    public ResponseResult<PageInfo<ReceivedWorkloadDetailsVo>> workloadBreakdown(@RequestBody ReceiverkLoadQuery query) throws ParseException {
-        List<ReceivedWorkloadDetailsVo> receivedWorkloadDetailsVoList = patientOriginRelationsBiz.findEreceiverkLoad(query);
-        if (query.getWhetherPage()) {
-            Integer pageNum = query.getPageNum();
-            Integer pageSize = query.getPageSize();
-            int total = receivedWorkloadDetailsVoList.size();
-            PageInfo<ReceivedWorkloadDetailsVo> pageInfo = new PageInfo<>();
-            pageInfo.setPageNum(pageNum);
-            pageInfo.setPageSize(pageSize);
-            pageInfo.setTotal(total);
-            List<ReceivedWorkloadDetailsVo> list =
-                    receivedWorkloadDetailsVoList.subList(
-                            pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
-            pageInfo.setList(list);
-            return ResponseUtil.success(pageInfo);
-        }
-        return ResponseUtil.success(new PageInfo<>(receivedWorkloadDetailsVoList));
-    }
-
-
-
-
-
+    return ResponseUtil.success(new PageInfo<>(receivedWorkloadDetailsVoList));
+  }
 }

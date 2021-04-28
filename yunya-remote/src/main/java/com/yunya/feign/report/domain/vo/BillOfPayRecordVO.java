@@ -62,23 +62,23 @@ public class BillOfPayRecordVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 原价合计 */
-  @Excel(name = "原价合计", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
+  @Excel(name = "原价合计",  cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("原价合计")
   private BigDecimal orderAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
+  @Excel(name = "优惠金额",  cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("优惠金额")
   private BigDecimal privilegeAmount;
-  /** 实收金额 */
-  @Excel(name = "实收金额", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
-  @ApiModelProperty("实收金额")
+  /** 应收金额 */
+  @Excel(name = "应收金额",  cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
+  @ApiModelProperty("应收金额")
   private BigDecimal actualAmount;
   /** 本次收费金额 */
-  @Excel(name = "本次收费金额", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
+  @Excel(name = "本次收费金额",  cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("本次收费金额")
   private BigDecimal receivedAmount;
   /** 本次欠费金额 */
-  @Excel(name = "本次欠费金额", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
+  @Excel(name = "本次欠费金额",  cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
   @ApiModelProperty("本次欠费金额")
   private BigDecimal stillOweAmount;
   /** 剩余欠费金额 */

@@ -9,6 +9,9 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 患者催缴欠费信息VO
  *
@@ -35,16 +38,16 @@ public class PatientArrearsCallForVO implements Serializable {
   @Excel(name = "手机号")
   @ApiModelProperty("手机号")
   private String mobile;
-  /** 实收金额合计 */
-  @Excel(name = "实收金额合计", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
-  @ApiModelProperty("实收金额合计")
+  /** 应收金额合计 */
+  @Excel(name = "应收金额合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("应收金额合计")
   private BigDecimal totalActualAmount;
-  /** 已收金额合计 */
-  @Excel(name = "已收金额合计", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
-  @ApiModelProperty("已收金额合计")
+  /** 实收金额合计 */
+  @Excel(name = "实收金额合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("实收金额合计")
   private BigDecimal totalReceivedAmount;
   /** 剩余欠费金额合计 */
-  @Excel(name = "剩余欠费金额合计", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
+  @Excel(name = "剩余欠费金额合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("剩余欠费金额合计")
   private BigDecimal totalRemainingArrearsAmount;
 }

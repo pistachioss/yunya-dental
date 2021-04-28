@@ -9,6 +9,9 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 开单项目数量及金额VO
  *
@@ -61,12 +64,12 @@ public class BillItemStatisticsVO implements Serializable {
   private String itemName;
 
   /** 开单数量 */
-  @Excel(name = "数量", cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
+  @Excel(name = "数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("开单数量")
   private Integer quantity;
 
   /** 实收金额 */
-  @Excel(name = "实收金额", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
+  @Excel(name = "实收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("实收金额")
   private BigDecimal amount;
 }
