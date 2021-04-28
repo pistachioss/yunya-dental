@@ -23,6 +23,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.tariff.*;
 import com.yunya.modules.treatment.mapper.BaseOralTariffCategoryMapper;
 import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
@@ -47,6 +48,7 @@ import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTariffInfo;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
 
 /**
  * 描述: 商品商品业务层
@@ -59,6 +61,9 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 @Transactional(rollbackFor = Exception.class)
 public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTariff> {
 
+  /** 缓存 */
+  @Autowired private RedisUtils redisUtils;
+  /** 消息对列 */
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 系统服务远程调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
@@ -126,11 +131,12 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<BaseOralTariffVO> resultList = mapper.selectBaseOralTariffList(queryForm);
-    resultList.forEach(baseOralTariffVO -> {
-      BigDecimal price = baseOralTariffVO.getPrice();
-      BigDecimal bigDecimal = price.setScale(2, BigDecimal.ROUND_HALF_UP);
-      baseOralTariffVO.setPrice(bigDecimal);
-    });
+    resultList.forEach(
+        baseOralTariffVO -> {
+          BigDecimal price = baseOralTariffVO.getPrice();
+          BigDecimal bigDecimal = price.setScale(2, BigDecimal.ROUND_HALF_UP);
+          baseOralTariffVO.setPrice(bigDecimal);
+        });
     return new PageInfo<>(resultList);
   }
 
@@ -307,6 +313,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     }
     // 发送消息同步中间表商品信息
     if (i > 0) {
+      redisUtils.delete(1 + REDIS_KEY_ITEM_INFO + id);
       rabbitMqServiceFeign.sendMessage(id, 1, 1, BaseTariffInfo);
     }
   }
