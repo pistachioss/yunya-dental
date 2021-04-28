@@ -103,4 +103,12 @@ public interface BaseRefundMapper extends Mapper<BaseRefund> {
   List<ReceivedWorkloadDetailsVo> selectRefundDetail(@Param("refundId") Integer refundId,@Param("originId") Integer originId,@Param("originType") Integer originType);
 
   List<BillOfRefundWorkloadVO> groupTotalRefundWorkload(@Param("query") DataStatisticsQuery query);
+
+  /**
+   * 根据条件按月份分组求退费工作量
+   *
+   * @param query
+   * @return
+   */
+  List<BillOfRefundWorkloadVO> selectTotalRefundWorkloadGroupByMonth(@Param("query") DataStatisticsQuery query);
 }

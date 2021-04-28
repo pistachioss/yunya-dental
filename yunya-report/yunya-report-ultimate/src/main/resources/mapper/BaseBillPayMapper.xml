@@ -384,28 +384,15 @@
         SUM( bbp.received_amount )
         FROM
         base_bill_pay bbp
+        INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
         <where>
-            <if test="query.orgId != null">
-                and bbp.org_id = #{query.orgId}
-            </if>
             <if test="query.queryDate != null and query.queryDate != ''">
                 AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) = #{query.queryDate}
+                AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) = #{query.queryDate}
             </if>
-            AND bbp.bill_id IN (
-            SELECT
-            bb.bill_id
-            FROM
-            base_bill bb
-            <where>
-                AND bb.bill_date IS NOT NULL
-                <if test="query.orgId != null">
-                    and bb.org_id = #{query.orgId}
-                </if>
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) = #{query.queryDate}
-                </if>
-            </where>
-            )
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
         </where>
     </select>
 
@@ -2073,5 +2060,95 @@
                 #{itemId}
             </foreach>
         </if>
+    </select>
+    <!-- 根据条件查询门诊当月免单收费金额 -->
+    <select id="selectCurrentMonthTotalFreePayAmount" resultType="java.math.BigDecimal">
+        select sum(principal_amount)
+        from base_bill_pay_detail bbpd
+        inner join base_bill_pay bbp on bbpd.bill_pay_id = bbp.bill_pay_id
+        inner join base_bill bb on bbp.bill_id = bb.bill_id
+        <where>
+            bbpd.account_item_id in (23, 26)
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and date_format(bbp.payee_date, '%Y-%m') = #{query.queryDate}
+                and date_format(bb.bill_date, '%Y-%m') = #{query.queryDate}
+            </if>
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectRecievedWorkloadsGroupByMonth" resultType="com.yunya.feign.report.domain.vo.BillWorkloadVO">
+        SELECT
+        DATE_FORMAT(bbp.payee_date,'%Y-%m') AS month,
+        bb.bill_id AS billId,
+        bb.org_id AS billOrgId,
+        IFNULL(bb.actual_amount,0) AS actualAmount,
+        IFNULL(SUM(bbp.received_amount),0) AS receivedAmount,
+        IFNULL(SUM(bbpd.freePayAmount),0) AS freePayAmount
+        FROM
+        base_bill_pay bbp
+        LEFT JOIN (
+            SELECT
+            bb.org_id,
+            bb.bill_id,
+            bb.bill_date,
+            bb.actual_amount
+            FROM
+            base_bill bb
+            <where>
+                AND bb.bill_date IS NOT NULL
+                AND bb.actual_amount &gt; 0
+                <if test="query.orgIds != null and query.orgIds.length > 0">
+                    AND bb.org_id IN
+                    <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+        ) bb ON bbp.bill_id = bb.bill_id
+        LEFT JOIN (
+            SELECT bill_pay_id,IFNULL(SUM(principal_amount),0) AS freePayAmount FROM base_bill_pay_detail
+            WHERE account_item_id IN (23,26) AND type=2
+            GROUP BY bill_pay_id
+        ) bbpd ON bbpd.bill_pay_id=bbp.bill_pay_id
+        <where>
+            AND bbp.received_amount &gt; 0
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                AND bb.org_id IN
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        group by
+        bb.bill_id,
+        bb.org_id,
+        month
     </select>
 </mapper>

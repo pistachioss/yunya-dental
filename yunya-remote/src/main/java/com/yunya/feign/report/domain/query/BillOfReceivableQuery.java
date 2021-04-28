@@ -1,6 +1,5 @@
 package com.yunya.feign.report.domain.query;
 
-import com.yunya.framework.common.annation.Excel;
 import com.yunya.framework.common.model.PageQuery;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -29,9 +28,6 @@ public class BillOfReceivableQuery extends PageQuery implements Serializable {
   @ApiModelProperty(value = "组织ID", required = true)
   @NotNull(message = "组织ID不能为空！")
   private Integer orgId;
-  /** 开单日期 */
-  @ApiModelProperty(value = "开单日期")
-  private String orderDate;
   /** 账单日期 */
   @ApiModelProperty(value = "账单日期", required = true)
   @NotBlank(message = "账单日期不能为空！")
