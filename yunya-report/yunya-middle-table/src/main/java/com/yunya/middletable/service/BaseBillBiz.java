@@ -113,7 +113,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
      basePatientOrigin.setOriginType(2);
      BasePatientOriginLog basePatientOriginLog = basePatientOriginLogMapper.selectOne(basePatientOrigin);
      if (basePatientOriginLog != null){
-       CreditsShop patientCreditsShop = creditsShopMapper.selectCreditsShopByPatientId(basePatientOriginLog.getOriginId());
+       CreditsShop patientCreditsShop = creditsShopMapper.selectLastCredits(basePatientOriginLog.getOriginId());
        if (patientCreditsShop != null){
          addPatientIntegral.setPatientId(patientCreditsShop.getPatientId());
          // recommend 患者推荐
@@ -128,10 +128,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setDescription("500");
          addPatientIntegral.setRemarks("患者推荐");
          addPatientIntegral.setInservice(false);
-         addPatientIntegral.setCrtId(0);
-         addPatientIntegral.setCrtTime(new Date());
-         addPatientIntegral.setUpdId(0);
-         addPatientIntegral.setUpdTime(new Date());
+         addPatientIntegral.setCrtId(patientId);
        }else {
          // 没有患者积分帐户就新建
          addPatientIntegral.setPatientId(patientCreditsShop.getPatientId());
@@ -147,10 +144,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setDescription("500");
          addPatientIntegral.setRemarks("患者推荐");
          addPatientIntegral.setInservice(false);
-         addPatientIntegral.setCrtId(0);
-         addPatientIntegral.setCrtTime(new Date());
-         addPatientIntegral.setUpdId(0);
-         addPatientIntegral.setUpdTime(new Date());
+         addPatientIntegral.setCrtId(patientId);
        }
        // 增加500积分
        creditsShopMapper.insertSelective(addPatientIntegral);
