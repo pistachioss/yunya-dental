@@ -215,6 +215,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    */
   public CreditResult increasePoints(HttpServletRequest request) {
     CreditResult creditResult = new CreditResult();
+    String uid = request.getParameter("uid");
     Map<String, String> userInfo = creditTool.parseUid(request.getParameter("uid"));
     String key = "patientId";
     String patientId = userInfo.get(key);
@@ -247,7 +248,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
               // 设置成功响应体
               creditResult.setStatus("ok");
               creditResult.setBizId(addCreditsParams.getOrderNum());
-              creditResult.setCredits(addCreditsShop.getCredits().toString());
+              creditResult.setCredits(addCreditsShop.getCreditsAccount().toString());
             }else {
               creditResult.setStatus("ok");
               creditResult.setCredits("0");
@@ -322,7 +323,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
               // 设置成功响应体
               creditResult.setStatus("ok");
               creditResult.setBizId(addCreditConsumeParams.getOrderNum());
-              creditResult.setCredits(addCreditsShop.getCredits().toString());
+              creditResult.setCredits(addCreditsShop.getCreditsAccount().toString());
             }else {
               creditResult.setStatus("ok");
               creditResult.setCredits("0");
@@ -355,9 +356,9 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    */
   public String exchangeResult(HttpServletRequest request) {
      if (SignTool.signVerify(duiBaConfig.getAppSecret(), request)){
-       boolean status = Boolean.getBoolean(request.getParameter("success"));
+       String success = request.getParameter("success");
        String uid = request.getParameter("uid");
-       if (status){
+       if ("true".equals(success)){
          CreditsShop creditsShop = redisUtils.get(uid,CreditsShop.class);
          mapper.insertSelective(creditsShop);
        }
