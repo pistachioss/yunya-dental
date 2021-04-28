@@ -357,20 +357,21 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
        String success = request.getParameter("success");
        String uid = request.getParameter("uid");
        String status = "true";
-       if (status.equals(success)){
-         try{
-           CreditsShop creditsShop = redisUtils.get(uid,CreditsShop.class);
-           if (null != creditsShop){
+       try {
+         if (status.equals(success)) {
+           CreditsShop creditsShop = redisUtils.get(uid, CreditsShop.class);
+           if (null != creditsShop) {
              mapper.insertSelective(creditsShop);
-           }else {
+           } else {
              return "fail";
            }
-         }finally{
+         } else {
+           return "fail";
+         }
+       } finally {
+         if (redisUtils.hasKey(uid)) {
            redisUtils.delete(uid);
          }
-       }else {
-         redisUtils.delete(uid);
-         return "fail";
        }
      }
      return "ok";
