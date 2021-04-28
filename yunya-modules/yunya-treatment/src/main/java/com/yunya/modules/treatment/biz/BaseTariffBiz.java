@@ -24,6 +24,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.BaseTariffCategory;
 import com.yunya.models.tariff.BaseTariffHistory;
@@ -52,6 +53,7 @@ import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTariffInfo;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
 
 /**
  * 描述: 基础价目表业务层
@@ -64,6 +66,8 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 @Transactional(rollbackFor = Exception.class)
 public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
 
+  /** 缓存 */
+  @Autowired private RedisUtils redisUtils;
   /** 消息中间件调用 */
   @Resource private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 系统服务远程调用 */
@@ -308,6 +312,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     }
     // 发送消息同步价目表信息
     if (i > 0) {
+      redisUtils.delete(0 + REDIS_KEY_ITEM_INFO + id);
       rabbitMqServiceFeign.sendMessage(id, 0, 1, BaseTariffInfo);
     }
   }
