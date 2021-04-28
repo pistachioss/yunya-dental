@@ -9,6 +9,9 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 收费项目补入工作量明细VO
  *
@@ -40,7 +43,7 @@ public class PersonalBillItemSupplyWorkloadDetailVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 免单工作量 */
-  @Excel(name = "补入工作量", scale = 2, cellType = Excel.ColumnType.NUMERIC, isStatistics = true)
+  @Excel(name = "补入工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("补入工作量")
   private BigDecimal itemSupplyPayWorkload;
   /** 执行人ID */

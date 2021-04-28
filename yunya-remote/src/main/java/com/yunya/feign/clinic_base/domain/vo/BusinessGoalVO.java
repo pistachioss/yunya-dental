@@ -21,21 +21,15 @@ import java.math.BigDecimal;
 @ToString
 public class BusinessGoalVO implements Serializable {
 
-  /**
-   * 数据所属ID
-   */
+  /** 数据所属ID */
   @ApiModelProperty("数据所属ID")
   private Integer belongId;
 
-  /**
-   * 业务目标类型（0-实收金额；1-工作量；2-初诊人数；3-就诊人次）
-   */
+  /** 业务目标类型（0-实收金额；1-工作量；2-初诊人数；3-就诊人次） */
   @ApiModelProperty("业务目标类型（0-实收金额；1-工作量；2-初诊人数；3-就诊人次）")
   private Byte businessType;
 
-  /**
-   * 业务目标数
-   */
+  /** 业务目标数 */
   @ApiModelProperty("业务目标数")
   private BigDecimal businessGoal;
 }

@@ -37,63 +37,66 @@ import java.util.Map;
 @RestController
 @RequestMapping("overview")
 public class MemberOverviewController {
-    /** 服务注入 */
-    @Resource
-    MemberOverviewBiz memberOverviewBiz;
+  /** 服务注入 */
+  @Resource MemberOverviewBiz memberOverviewBiz;
 
-    /** 会员卡操作Biz */
-    @Resource
-    MemberOccurLogBiz memberOccurLogBiz;
+  /** 会员卡操作Biz */
+  @Resource MemberOccurLogBiz memberOccurLogBiz;
 
-    /**
-     * 查询门诊列表
-     * @return List<BaseOrganization>
-     */
-    @ApiOperation("查询门诊列表")
-    @PostMapping("/org/list")
-    public ResponseResult<List<BaseOrganization>> orgList() {
-        return ResponseUtil.success(this.memberOccurLogBiz.orgList());
+  /**
+   * 查询门诊列表
+   *
+   * @return List<BaseOrganization>
+   */
+  @ApiOperation("查询门诊列表")
+  @PostMapping("/org/list")
+  public ResponseResult<List<BaseOrganization>> orgList() {
+    return ResponseUtil.success(this.memberOccurLogBiz.orgList());
+  }
+
+  /**
+   * 查询患者会员卡/预付款概况
+   *
+   * @param memberOverviewQueryForm 患者会员卡概况form
+   * @return 患者会员卡/预付款概况
+   */
+  @ApiOperation("会员卡/预付款概况")
+  @PostMapping("/patientOverview/list")
+  public ResponseResult<PageInfo<BasePatientMemberOverviewVo>> patientOverviewList(
+      @RequestBody MemberOverviewQueryForm memberOverviewQueryForm) {
+    PageInfo<BasePatientMemberOverviewVo> basePatientMemberOverviewVos =
+        memberOverviewBiz.patientOverviewList(memberOverviewQueryForm);
+    if (StringHelper.isNotNull(basePatientMemberOverviewVos)) {
+      return ResponseUtil.success(basePatientMemberOverviewVos);
     }
+    return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "暂无相关数据", null);
+  }
 
+  /**
+   * 导出患者会员卡/预付款概况记录列表
+   *
+   * @param response 响应
+   * @param memberOverviewQueryForm 查询条件
+   * @return 患者会员卡/预付款概况记录列表
+   */
+  @ApiOperation("导出患者会员卡/预付款概况记录列表")
+  @PostMapping(value = "/patientOverview/export", name = "公司端-运营报表-会员卡概况-导出患者会员卡/预付款概况记录列表")
+  public ResponseResult<T> exportPatientOverviewList(
+      HttpServletResponse response,
+      @RequestBody @Validated MemberOverviewQueryForm memberOverviewQueryForm)
+      throws IOException {
+    memberOverviewBiz.exportPatientOverviewList(response, memberOverviewQueryForm);
+    return ResponseUtil.success(null);
+  }
 
-    /**
-     * 查询患者会员卡/预付款概况
-     * @param memberOverviewQueryForm 患者会员卡概况form
-     * @return 患者会员卡/预付款概况
-     */
-    @ApiOperation("会员卡/预付款概况")
-    @PostMapping("/patientOverview/list")
-    public ResponseResult<PageInfo<BasePatientMemberOverviewVo>> patientOverviewList(@RequestBody MemberOverviewQueryForm memberOverviewQueryForm)  {
-        PageInfo<BasePatientMemberOverviewVo> basePatientMemberOverviewVos = memberOverviewBiz.patientOverviewList(memberOverviewQueryForm);
-        if (StringHelper.isNotNull(basePatientMemberOverviewVos)){
-            return ResponseUtil.success(basePatientMemberOverviewVos);
-        }
-        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据", null);
-    }
-
-    /**
-     * 导出患者会员卡/预付款概况记录列表
-     *
-     * @param response 响应
-     * @param memberOverviewQueryForm 查询条件
-     * @return 患者会员卡/预付款概况记录列表
-     */
-    @ApiOperation("导出患者会员卡/预付款概况记录列表")
-    @PostMapping(value = "/patientOverview/export", name = "公司端-运营报表-会员卡概况-导出患者会员卡/预付款概况记录列表")
-    public ResponseResult<T> exportPatientOverviewList(HttpServletResponse response, @RequestBody @Validated MemberOverviewQueryForm memberOverviewQueryForm) throws IOException {
-        memberOverviewBiz.exportPatientOverviewList(response,memberOverviewQueryForm);
-        return ResponseUtil.success(null);
-    }
-
-    /**
-     * 会员卡概况
-     * @return List<BaseOrganization>
-     */
-    @ApiOperation("会员卡概况")
-    @PostMapping("/member/list")
-    public ResponseResult<Map<String,Object>> memberList() {
-        return ResponseUtil.success(this.memberOverviewBiz.memberList());
-    }
-
-
+  /**
+   * 会员卡概况
+   *
+   * @return List<BaseOrganization>
+   */
+  @ApiOperation("会员卡概况")
+  @PostMapping("/member/list")
+  public ResponseResult<Map<String, Object>> memberList() {
+    return ResponseUtil.success(this.memberOverviewBiz.memberList());
+  }
 }

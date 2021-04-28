@@ -47,11 +47,11 @@ public class PatientArrearsDetailVO implements Serializable {
   /** 优惠金额 */
   @ApiModelProperty("优惠金额")
   private BigDecimal privilegeAmount;
+  /** 应收金额 */
+  @ApiModelProperty("应收应收金额")
+  private BigDecimal actualAmount;
   /** 实收金额 */
   @ApiModelProperty("实收金额")
-  private BigDecimal actualAmount;
-  /** 已收金额 */
-  @ApiModelProperty("已收金额")
   private BigDecimal receivedAmount;
   /** 剩余欠费合计 */
   @ApiModelProperty("剩余欠费合计")
