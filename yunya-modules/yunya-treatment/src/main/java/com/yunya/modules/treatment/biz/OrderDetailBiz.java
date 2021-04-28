@@ -33,6 +33,7 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.clinic_base.SpecialistProject;
 import com.yunya.models.system.AccountItem;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.ClinicOralTariff;
@@ -57,6 +58,7 @@ import java.util.stream.Collectors;
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
+import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
 
 /**
  * 简介: 开单明细业务层（开单明细列表查询、添加商品、删除开单明细）
@@ -90,7 +92,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   @Autowired private RemoteDiscountFeign discountFeign;
   /** 支付方式 */
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
-  /** 门诊基础服务*/
+  /** 门诊基础服务 */
   @Autowired private RemoteClinicBaseServiceFeign remoteClinicBaseServiceFeign;
 
   /**
@@ -107,18 +109,20 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             // todo 从缓存中获取开单项目信息
             Integer billingItemId = vo.getBillingItemId();
             Byte type = vo.getType();
+            String itemKey = type + REDIS_KEY_ITEM_INFO + billingItemId;
             if (1 == type) {
-              BaseOralTariff oralTariff = baseOralTariffBiz.selectById(billingItemId);
-              if (null != oralTariff) {
-                vo.setBillingItemName(oralTariff.getName());
-                vo.setUnit(oralTariff.getUnit());
+              BaseOralTariff oralTariff = redisUtils.get(itemKey, BaseOralTariff.class);
+              if (oralTariff == null) {
+                oralTariff = baseOralTariffBiz.selectById(billingItemId);
+                redisUtils.set(itemKey, oralTariff);
               }
+              vo.setBillingItemName(oralTariff.getName());
+              vo.setUnit(oralTariff.getUnit());
             }
-            // todo 从缓存中获取用户（员工）信息
+            // 从缓存中获取用户（员工）信息
             Integer executorId = vo.getExecutorId();
             if (null != executorId) {
-              SysUserInfoDetail employeeInfo =
-                  systemServiceFeign.findSysUserEmployeeInfoByUserId(executorId);
+              SysEmployee employeeInfo = systemServiceFeign.findSysEmployeeById(executorId);
               vo.setExecutorName(null != employeeInfo ? employeeInfo.getName() : "--");
             }
           });
@@ -139,32 +143,41 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           vo -> {
-            // todo 从缓存中获取开单项目信息
+            //  从缓存中获取开单项目信息
             Integer billingItemId = vo.getBillingItemId();
             Byte type = vo.getType();
+            String itemKey = type + REDIS_KEY_ITEM_INFO + billingItemId;
             switch (type) {
               case 0:
-                BaseTariff tariff = baseTariffBiz.selectById(billingItemId);
-                if (null != tariff) {
-                  vo.setBillingItemName(tariff.getName());
-                  vo.setUnit(tariff.getUnit());
+                BaseTariff tariff = redisUtils.get(itemKey, BaseTariff.class);
+                if (null == tariff) {
+                  tariff = baseTariffBiz.selectById(billingItemId);
+                  redisUtils.set(itemKey, tariff);
                 }
+                vo.setBillingItemName(tariff.getName());
+                vo.setUnit(tariff.getUnit());
                 break;
               case 1:
-                BaseOralTariff oralTariff = baseOralTariffBiz.selectById(billingItemId);
-                if (null != oralTariff) {
-                  vo.setBillingItemName(oralTariff.getName());
-                  vo.setUnit(oralTariff.getUnit());
+                BaseOralTariff oralTariff = redisUtils.get(itemKey, BaseOralTariff.class);
+                if (null == oralTariff) {
+                  oralTariff = baseOralTariffBiz.selectById(billingItemId);
+                  redisUtils.set(itemKey, oralTariff);
                 }
+                vo.setBillingItemName(oralTariff.getName());
+                vo.setUnit(oralTariff.getUnit());
                 break;
               default:
                 break;
             }
-            // todo 从缓存中获取用户（员工）信息
+            // 从缓存中获取用户（员工）信息
             Integer executorId = vo.getExecutorId();
             if (null != executorId) {
-              SysUserInfoDetail employeeInfo =
-                  systemServiceFeign.findSysUserEmployeeInfoByUserId(executorId);
+              SysEmployee employeeInfo =
+                  redisUtils.get(
+                      RedisConstants.REDIS_KEY_EMPLOYEE_INFO + executorId, SysEmployee.class);
+              if (employeeInfo == null) {
+                employeeInfo = systemServiceFeign.findSysEmployeeById(executorId);
+              }
               vo.setExecutorName(null != employeeInfo ? employeeInfo.getName() : "--");
             }
           });
@@ -226,23 +239,30 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param vo 订单明细
    */
   private void setOrderDetailItemValue(OrderDetailChargeVO vo) {
-    // todo 从缓存中获取开单项目信息
+    // 从缓存中获取开单项目信息
     Integer billingItemId = vo.getBillingItemId();
     Byte type = vo.getType();
+    String itemKey = type + REDIS_KEY_ITEM_INFO + billingItemId;
     switch (type) {
       case 0:
-        BaseTariff tariff = baseTariffBiz.selectById(billingItemId);
-        if (null != tariff) {
-          vo.setBillingItemName(tariff.getName());
-          vo.setUnit(tariff.getUnit());
+        BaseTariff tariff = redisUtils.get(itemKey, BaseTariff.class);
+        if (tariff == null) {
+          tariff = baseTariffBiz.selectById(billingItemId);
+          redisUtils.set(itemKey, tariff);
         }
+        vo.setBillingItemName(tariff.getName());
+        vo.setBillingItemEnglishName(tariff.getEnglishName());
+        vo.setUnit(tariff.getUnit());
         break;
       case 1:
-        BaseOralTariff oralTariff = baseOralTariffBiz.selectById(billingItemId);
-        if (null != oralTariff) {
-          vo.setBillingItemName(oralTariff.getName());
-          vo.setUnit(oralTariff.getUnit());
+        BaseOralTariff oralTariff = redisUtils.get(itemKey, BaseOralTariff.class);
+        if (oralTariff == null) {
+          oralTariff = baseOralTariffBiz.selectById(billingItemId);
+          redisUtils.set(itemKey, oralTariff);
         }
+        vo.setBillingItemName(oralTariff.getName());
+        vo.setBillingItemEnglishName(oralTariff.getEnglishName());
+        vo.setUnit(oralTariff.getUnit());
         break;
       default:
         break;
@@ -342,7 +362,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         entity.setType(type);
         Integer itemId = detail.getBillingItemId();
         entity.setBillingItemId(itemId);
-        // todo 从缓存查询开单项目
+        String itemKey = type + REDIS_KEY_ITEM_INFO + itemId;
+        // 从缓存查询开单项目
         switch (type) {
           case 0:
             tariff.setClinicId(orgId);
@@ -351,10 +372,12 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             if (null != clinicTariff) {
               price = clinicTariff.getPrice();
             } else {
-              BaseTariff baseTariff = baseTariffBiz.selectById(itemId);
-              if (null != baseTariff) {
-                price = baseTariff.getPrice();
+              BaseTariff baseTariff = redisUtils.get(itemKey, BaseTariff.class);
+              if (baseTariff == null) {
+                baseTariff = baseTariffBiz.selectById(itemId);
+                redisUtils.set(itemKey, baseTariff);
               }
+              price = baseTariff.getPrice();
             }
             break;
           case 1:
@@ -364,10 +387,12 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             if (null != clinicOralTariff) {
               price = clinicOralTariff.getPrice();
             } else {
-              BaseOralTariff baseOralTariff = baseOralTariffBiz.selectById(itemId);
-              if (null != baseOralTariff) {
-                price = baseOralTariff.getPrice();
+              BaseOralTariff baseOralTariff = redisUtils.get(itemKey, BaseOralTariff.class);
+              if (baseOralTariff == null) {
+                baseOralTariff = baseOralTariffBiz.selectById(itemId);
+                redisUtils.set(itemKey, baseOralTariff);
               }
+              price = baseOralTariff.getPrice();
             }
             break;
           default:
@@ -579,6 +604,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
   /**
    * 更新账单详情
+   *
    * @param orderDetail
    * @return
    */
@@ -586,50 +612,56 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     return mapper.updateByPrimaryKeySelective(orderDetail);
   }
 
-  public PageInfo<SpecialistProjectCompletedInfoVO> specialistProjectTargetCompletedList(DataStatisticsQuery query) {
-    //专科项目 + 门诊为主数据
+  public PageInfo<SpecialistProjectCompletedInfoVO> specialistProjectTargetCompletedList(
+      DataStatisticsQuery query) {
+    // 专科项目 + 门诊为主数据
     List<SpecialistProjectCompletedInfoVO> resultList = new ArrayList<>();
     String startDate = query.getStartDate();
     String endDate = query.getEndDate();
     List<String> dateRange = DateUtil.sliceUpDateRange(startDate, endDate);
-    List<SpecialistProjectTargetVO> specialistProjects = remoteClinicBaseServiceFeign.specialProjectAndGoalsList(query.getDateType(), dateRange, query.getOrgIds());
+    List<SpecialistProjectTargetVO> specialistProjects =
+        remoteClinicBaseServiceFeign.specialProjectAndGoalsList(
+            query.getDateType(), dateRange, query.getOrgIds());
     if (StringHelper.isNotEmpty(specialistProjects)) {
       List<OrganizationInfoDetail> orgs = getOrganizationList(query.getOrgIds());
       Set<String> tids = new HashSet<>();
-      specialistProjects.forEach(vo->{
-        String[] tariffIds = vo.getTariffIds().split(",");
-        for (String tariffId : tariffIds) {
-          tids.add(tariffId);
-        }
-      });
-      orgs.forEach(vo->{
-        Integer orgId = vo.getId();
-        List<OrderDetail> list = getSpecialistProjectCompletedList(orgId, startDate, endDate, tids);
-        for (SpecialistProjectTargetVO specialistProject : specialistProjects) {
-          SpecialistProjectCompletedInfoVO resultVO = new SpecialistProjectCompletedInfoVO();
-          List<String> tariffIds = Arrays.asList(specialistProject.getTariffIds().split(","));
-          Map<Integer, Integer> targets = specialistProject.getTargetMap();
-          Integer completed = 0;
-          if (StringHelper.isNotEmpty(list)) {
-            for (OrderDetail detail : list) {
-              if (tariffIds.contains(detail.getBillingItemId()+"")) {
-                completed += detail.getQuantity();
-              }
+      specialistProjects.forEach(
+          vo -> {
+            String[] tariffIds = vo.getTariffIds().split(",");
+            for (String tariffId : tariffIds) {
+              tids.add(tariffId);
             }
-          }
-          Integer goal = 0;
-          if (targets != null) {
-            goal = targets.get(orgId);
-          }
-          resultVO.setOrgId(orgId);
-          resultVO.setSpecialistProjectGoalCount(goal);
-          resultVO.setSpecialistProjectId(specialistProject.getId());
-          resultVO.setSpecialistProjectName(specialistProject.getName());
-          resultVO.setSpecialistProjectCompletedCount(completed);
-          resultVO.setAbbreviation(vo.getAbbreviation());
-          resultList.add(resultVO);
-        }
-      });
+          });
+      orgs.forEach(
+          vo -> {
+            Integer orgId = vo.getId();
+            List<OrderDetail> list =
+                getSpecialistProjectCompletedList(orgId, startDate, endDate, tids);
+            for (SpecialistProjectTargetVO specialistProject : specialistProjects) {
+              SpecialistProjectCompletedInfoVO resultVO = new SpecialistProjectCompletedInfoVO();
+              List<String> tariffIds = Arrays.asList(specialistProject.getTariffIds().split(","));
+              Map<Integer, Integer> targets = specialistProject.getTargetMap();
+              Integer completed = 0;
+              if (StringHelper.isNotEmpty(list)) {
+                for (OrderDetail detail : list) {
+                  if (tariffIds.contains(detail.getBillingItemId() + "")) {
+                    completed += detail.getQuantity();
+                  }
+                }
+              }
+              Integer goal = 0;
+              if (targets != null) {
+                goal = targets.get(orgId);
+              }
+              resultVO.setOrgId(orgId);
+              resultVO.setSpecialistProjectGoalCount(goal);
+              resultVO.setSpecialistProjectId(specialistProject.getId());
+              resultVO.setSpecialistProjectName(specialistProject.getName());
+              resultVO.setSpecialistProjectCompletedCount(completed);
+              resultVO.setAbbreviation(vo.getAbbreviation());
+              resultList.add(resultVO);
+            }
+          });
       // 分页
       if (query.getWhetherPage()) {
         return doPage(query.getPageNum(), query.getPageSize(), resultList);
@@ -646,49 +678,54 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param resultList
    * @return
    */
-  private PageInfo<SpecialistProjectCompletedInfoVO> doPage(Integer pageNum, Integer pageSize, List<SpecialistProjectCompletedInfoVO> resultList) {
+  private PageInfo<SpecialistProjectCompletedInfoVO> doPage(
+      Integer pageNum, Integer pageSize, List<SpecialistProjectCompletedInfoVO> resultList) {
     int total = resultList.size();
     PageInfo<SpecialistProjectCompletedInfoVO> pageInfo = new PageInfo<>();
     pageInfo.setPageNum(pageNum);
     pageInfo.setPageSize(pageSize);
     pageInfo.setTotal(total);
     List<SpecialistProjectCompletedInfoVO> list =
-            resultList.subList(pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+        resultList.subList(pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
     pageInfo.setList(list);
     return pageInfo;
   }
 
   private List<OrderDetail> getSpecialistProjectCompletedList(
-          Integer orgId, String startDate, String endDate, Collection<String> tariffIds) {
+      Integer orgId, String startDate, String endDate, Collection<String> tariffIds) {
     SpecialistProjectCompletedCountQuery specialistProjectCompletedQuery =
-            new SpecialistProjectCompletedCountQuery();
+        new SpecialistProjectCompletedCountQuery();
     specialistProjectCompletedQuery.setOrgId(orgId);
     specialistProjectCompletedQuery.setTariffIds(tariffIds);
     specialistProjectCompletedQuery.setStartDate(startDate);
     specialistProjectCompletedQuery.setEndDate(endDate);
-    return mapper.selectSpecialistProjectCompletedList(
-            specialistProjectCompletedQuery);
+    return mapper.selectSpecialistProjectCompletedList(specialistProjectCompletedQuery);
   }
-
 
   /**
    * 查询组织信息列表
+   *
    * @return
    */
   private List<OrganizationInfoDetail> getOrganizationList(Integer[] orgIds) {
-    List<OrganizationInfoDetail> orgInfos = redisUtils.getJSONArray(RedisConstants.REDIS_KEY_ORG_LIST, OrganizationInfoDetail.class);
+    List<OrganizationInfoDetail> orgInfos =
+        redisUtils.getJSONArray(RedisConstants.REDIS_KEY_ORG_LIST, OrganizationInfoDetail.class);
     if (StringHelper.isEmpty(orgInfos)) {
       orgInfos = systemServiceFeign.findOrgInfoInIds(Arrays.asList(orgIds));
       redisUtils.set(RedisConstants.REDIS_KEY_ORG_LIST, orgInfos);
     }
-    return orgInfos.stream().filter(vo->"2".equals(vo.getType())).collect(Collectors.toList());
+    return orgInfos.stream().filter(vo -> "2".equals(vo.getType())).collect(Collectors.toList());
   }
 
-  public void specialistProjectTargetCompletedExport(DataStatisticsQuery query, HttpServletResponse response) throws IOException {
+  public void specialistProjectTargetCompletedExport(
+      DataStatisticsQuery query, HttpServletResponse response) throws IOException {
     query.setWhetherPage(false);
-    List<SpecialistProjectCompletedInfoVO> resultList = specialistProjectTargetCompletedList(query).getList();
-    ExcelUtil<SpecialistProjectCompletedInfoVO> excelUtil = new ExcelUtil<>(SpecialistProjectCompletedInfoVO.class);
-    String fileName = excelUtil.getFileName(query.getStartDate(),query.getEndDate(),"","专科数量目标报表");
+    List<SpecialistProjectCompletedInfoVO> resultList =
+        specialistProjectTargetCompletedList(query).getList();
+    ExcelUtil<SpecialistProjectCompletedInfoVO> excelUtil =
+        new ExcelUtil<>(SpecialistProjectCompletedInfoVO.class);
+    String fileName =
+        excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "专科数量目标报表");
     excelUtil.exportExcel(response, resultList, "专科数量目标报表", fileName);
   }
 }
