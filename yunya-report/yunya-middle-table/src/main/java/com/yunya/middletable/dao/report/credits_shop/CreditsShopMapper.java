@@ -38,10 +38,4 @@ public interface CreditsShopMapper extends Mapper<CreditsShop> {
      */
     void insetCreditsShopList(@Param("list") List<CreditsShop> creditsShopListVo);
 
-    /**
-     * 查询该患者最新一条数据
-     * @param originId 患者id
-     * @return 患者积分信息
-     */
-    CreditsShop selectCreditsShopByPatientId(@Param("patientId") Integer originId);
 }
