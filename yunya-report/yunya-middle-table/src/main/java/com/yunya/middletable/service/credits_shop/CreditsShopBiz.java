@@ -93,9 +93,6 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     entity.setCreditsOption((byte) 0);
     entity.setRemarks(payId.toString());
     entity.setCrtId(patientId);
-    entity.setCrtTime(DateUtil.getCurrentDate());
-    entity.setUpdId(patientId);
-    entity.setUpdTime(DateUtil.getCurrentDate());
     return addCredits(entity);
   }
 
