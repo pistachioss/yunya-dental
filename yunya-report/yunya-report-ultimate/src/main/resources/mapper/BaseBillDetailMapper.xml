@@ -475,12 +475,26 @@
         ewc.user_id
         ) ewc ON bup.user_id = ewc.user_id
         ) bup
+        WHERE
+        bup.actualWorkload > 0
+        or supplementWorkload > 0
+        or bup.receivedWorkload > 0
+        or bup.freePaymentWorkload > 0
+        or bup.refundWorkload > 0
+        or bup.processingFee > 0
+        or bup.orthodonticsFee > 0
+        or bup.baseWorkload > 0
+        or bup.largeMaterialCost > 0
         ORDER BY
         bup.actualWorkload DESC,
         bup.receivedWorkload DESC,
         bup.supplementWorkload DESC,
         bup.freePaymentWorkload DESC,
-        bup.refundWorkload DESC
+        bup.refundWorkload DESC,
+        bup.processingFee DESC,
+        bup.orthodonticsFee DESC,
+        bup.baseWorkload DESC,
+        bup.largeMaterialCost DESC
     </select>
 
     <!-- 根据条件查询员工工作量列表（运营报表） -->
@@ -847,12 +861,26 @@
         ewc.user_id
         ) ewc ON bup.user_id = ewc.user_id
         ) bup
+        WHERE
+        bup.actualWorkload > 0
+        or supplementWorkload > 0
+        or bup.receivedWorkload > 0
+        or bup.freePaymentWorkload > 0
+        or bup.refundWorkload > 0
+        or bup.processingFee > 0
+        or bup.orthodonticsFee > 0
+        or bup.baseWorkload > 0
+        or bup.largeMaterialCost > 0
         ORDER BY
         bup.actualWorkload DESC,
         bup.receivedWorkload DESC,
         bup.supplementWorkload DESC,
         bup.freePaymentWorkload DESC,
-        bup.refundWorkload DESC
+        bup.refundWorkload DESC,
+        bup.processingFee DESC,
+        bup.orthodonticsFee DESC,
+        bup.baseWorkload DESC,
+        bup.largeMaterialCost DESC
     </select>
 
     <!-- 根据条件查询项目分类收入汇总列表 -->
@@ -2983,6 +3011,19 @@
     <!-- 根据条件查询查询收费项目工作量列表信息 -->
     <select id="selectTariffWorkloadInfo"
             resultType="com.yunya.feign.report.domain.vo.BillItemTollAndWorkloadVO">
+        select
+        executorId,
+        executorName,
+        itemCategoryId,
+        itemCategoryName,
+        itemId,
+        itemName,
+        itemNum,
+        receivedWorkload,
+        freePayWorkload,
+        supplyWorkload,
+        refundWorkload
+        from (
         select bet.user_id as executorId,
         bet.employee_name as executorName,
         bet.category_id as itemCategoryId,
@@ -3189,6 +3230,12 @@
         bbd1.freePayWorkload DESC,
         bbd2.supplementWorkload DESC,
         brd.refundWorkload DESC
+        ) bet
+        where
+        bet.receivedWorkload > 0
+        or bet.freePayWorkload > 0
+        or bet.supplyWorkload > 0
+        or bet.refundWorkload > 0
     </select>
     <!-- 根据条件查询补入工作量列表 -->
     <select id="selectCouponWorkloadList" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
