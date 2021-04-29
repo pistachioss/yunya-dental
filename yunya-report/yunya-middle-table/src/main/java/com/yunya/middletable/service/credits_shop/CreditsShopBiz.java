@@ -330,7 +330,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         // 设置失败响应体
         creditResult.setStatus("fail");
         creditResult.setErrorMessage(e.getMessage());
-        creditResult.setCredits(creditsShop.getCredits().toString());
+        creditResult.setCredits(null != creditsShop ? creditsShop.getCredits().toString() : "0");
         return creditResult;
       }
     } else {
