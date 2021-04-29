@@ -9,6 +9,9 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 员工退费工作量明细VO
  *
@@ -52,7 +55,7 @@ public class EmployeePersonalRefundWorkloadDetailVO implements Serializable {
   @ApiModelProperty("患者手机号")
   private String mobile;
   /** 实收金额 */
-  @Excel(name = "退费工作量", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "退费工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("退费工作量")
   private BigDecimal refundWorkload;
   /** 员工ID */
