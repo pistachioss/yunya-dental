@@ -331,7 +331,6 @@
         <where>
             <if test="query.billDate != null and query.billDate != ''">
                 AND date_format(bbp.payee_date, '%Y-%m-%d') &lt;= #{query.billDate}
-                AND date_format(brr.billDate, '%Y-%m-%d') &lt;= #{query.billDate}
             </if>
         </where>
         group by bbp.bill_id
