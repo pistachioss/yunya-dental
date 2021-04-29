@@ -2738,7 +2738,7 @@
         bbd.quantity,
         bem.employee_name as regDentistName,
         be.employee_name as executorName,
-        IFNULL(bbd.price*bbd.quantity-bbd.discount_amount,0) amount,
+        IFNULL(bbd.price*bbd.quantity - bbd.discount_amount, 0) as amount,
         bp.name AS patientName,
         bp.patient_id as patientId,
         bp.mobile,
@@ -2753,17 +2753,13 @@
         LEFT JOIN base_employee be ON bbd.executor_id = be.user_id
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bbd.source_type = 0
             <if test="query.orgId != null">
                 and btp.org_id = #{query.orgId}
                 and bb.org_id = #{query.orgId}
                 and bbd.org_id = #{query.orgId}
             </if>
-            <if test="query.executorIds!=null and query.executorIds.size()>0">
-                and bbd.executor_id in
-                <foreach collection="query.executorIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
+            <if test="query.executorId != null">
+                and bbd.executor_id = #{query.executorId}
             </if>
             <if test="query.keyword != null and query.keyword != ''">
                 and concat(IFNULL(bp.name, ''), IFNULL(bp.pinyin_name, ''), IFNULL(bp.mobile, '')) like
@@ -2777,9 +2773,6 @@
             </if>
             <if test="query.billEndDate != null and query.billEndDate != ''">
                 and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &lt;= #{query.billEndDate}
-            </if>
-            <if test="query.regDentistId != null">
-                and btp.registered_dentist_id = #{query.regDentistId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -2812,7 +2805,9 @@
                 and bbd.item_type = #{query.itemType}
             </if>
         </where>
-        order by bb.bill_date desc
+        order by
+        bb.bill_date desc,
+        bb.bill_num desc
     </select>
     <!-- 查询订单实收工作量总和 -->
     <select id="selectBillTotalWorkload" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
