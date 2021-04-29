@@ -3367,7 +3367,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (startDate.equals(endDate)) {
             endDate = null;
         }
-        String abbreviation = remoteSystemServiceFeign.findOrgInfoByOrgId(query.getOrgIds()[0]).getAbbreviation();
+        String abbreviation = null;
+        Integer[] orgIds = query.getOrgIds();
+        if (StringHelper.isNotEmpty(orgIds)) {
+            abbreviation = remoteSystemServiceFeign.findOrgInfoByOrgId(orgIds[0]).getAbbreviation();
+        }
         String fileName = excelUtil.getFileName(startDate, endDate, abbreviation, "取消预约明细表");
         excelUtil.exportExcel(response,data,"取消预约明细表",fileName);
     }
