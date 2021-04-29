@@ -8,6 +8,7 @@ import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
 import com.yunya.modules.discount.biz.VoucherBiz;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.modules.discount.form.CouponCommonInfoIsInserviceForm;
 import com.yunya.modules.discount.form.CouponCommonInfoQueryForm;
 import com.yunya.modules.discount.form.VoucheCouponForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
@@ -147,5 +148,17 @@ public class VoucherController {
         return ResponseUtil.success(
                 voucherBiz.thirdParty());
     }
-
+    /**
+     * 启用/停用 卡券
+     *
+     * @return
+     */
+    @PostMapping("/isInservice")
+    @ApiOperation("启用/停用 卡券")
+    public ResponseResult isInservice(@RequestBody @Valid CouponCommonInfoIsInserviceForm couponCommonInfoIsInserviceForm) {
+        CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
+        BeanUtils.copyProperties(couponCommonInfoIsInserviceForm, couponCommonInfo);
+        return ResponseUtil.success(
+                couponCommonInfoBiz.updateSelectiveById(couponCommonInfo));
+    }
 }

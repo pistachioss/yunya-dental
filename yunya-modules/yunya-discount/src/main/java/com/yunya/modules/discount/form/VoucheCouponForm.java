@@ -135,5 +135,8 @@ public class VoucheCouponForm {
   @ApiModelProperty("是否分配")
   private Boolean isDistribution = true;
 
+  @ApiModelProperty("是否启用")
+  private Boolean isInservice;
+
 
 }
