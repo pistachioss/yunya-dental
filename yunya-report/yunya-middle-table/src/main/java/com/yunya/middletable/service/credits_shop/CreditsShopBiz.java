@@ -174,9 +174,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
           creditsShop.setCredits(basePatientConsumptionCountVo.getIntegral().longValue());
           creditsShop.setCreditsOption((byte) 0);
           creditsShop.setActualPrice(0);
-          creditsShop.setItemCode("");
-          creditsShop.setDescription("");
-          creditsShop.setRemarks("初始化积分");
+          creditsShop.setDescription("初始化积分");
           creditsShop.setInservice(false);
           creditsShop.setCrtId(0);
           creditsShop.setCrtTime(new Date(System.currentTimeMillis()));
