@@ -11,6 +11,9 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * @program: chenl
  * @description: 查看产品优惠项目明细列表数据VO
@@ -34,7 +37,7 @@ public class CouponDiscountItemInfoVO implements Serializable {
     private String categoryName;
 
     @ApiModelProperty("单价")
-    @Excel(name = "单价", cellType = Excel.ColumnType.NUMERIC)
+    @Excel(name = "单价", cellType = NUMERIC)
     private BigDecimal price;
 
   @ApiModelProperty("数量")
