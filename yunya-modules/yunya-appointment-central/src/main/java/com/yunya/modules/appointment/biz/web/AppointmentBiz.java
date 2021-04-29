@@ -1519,6 +1519,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Integer appointId = model.getAppointId();
         Boolean flag = model.getFlag();
         Integer patientId = model.getPatientId();
+        String patientName = model.getPatientName();
         Appointment appointment = mapper.selectByPrimaryKey(appointId);
         AppointOperationModel appointOperationModel = new AppointOperationModel();
         if (appointment == null){
@@ -1527,7 +1528,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointOperationModel.setBeforeOperation(appointment.getConfirmStatus()?"确认":"未确认");
         appointment.setConfirmStatus(flag == null ? true : flag);
         appointment.setUptId(patientId);
-        appointment.setUpdName(model.getPatientName());
+        appointment.setUpdName(patientName);
         appointment.setUpdTime(new Date(System.currentTimeMillis()));
         int result = mapper.updateByPrimaryKeySelective(appointment);
         if (result > 0) {
@@ -1539,7 +1540,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointOperationModel.setAppointmentId(appointment.getId());
             appointOperationModel.setOrgId(appointment.getOrgId());
             appointOperationModel.setAfterOperation(appointment.getConfirmStatus()?"确认":"未确认");
-            Integer recordResult = appointOperateRecordBiz.insertAppointmentOperateRecord(appointOperationModel);
+            Integer recordResult = appointOperateRecordBiz.insertWxAppointmentOperateRecord(appointOperationModel, patientId, patientName);
             if (recordResult > 0) {
                 return ResponseUtil.success();
             }

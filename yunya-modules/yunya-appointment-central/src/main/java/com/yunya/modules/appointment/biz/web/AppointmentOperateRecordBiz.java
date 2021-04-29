@@ -60,6 +60,14 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         return mapper.insertSelective(appointOperateRecord);
     }
 
+    public Integer insertWxAppointmentOperateRecord(AppointOperationModel model, Integer patientId, String patientName){
+        AppointmentOperateRecord appointOperateRecord = EntityUtils.build(model,AppointmentOperateRecord.class);
+        appointOperateRecord.setCrtId(patientId);
+        appointOperateRecord.setCrtName(patientName);
+        appointOperateRecord.setCrtTime(new Date(System.currentTimeMillis()));
+        return mapper.insertSelective(appointOperateRecord);
+    }
+
     /**
      * 保存修改内容记录
      * 修改内容（包括：预约日期、预约时间、预约医生、预约助手、预约时长、科室、预约确认、设备、预约内容、预约备注）
