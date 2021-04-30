@@ -36,9 +36,9 @@ public class PatientOriginActivityVo {
   @ApiModelProperty(value = "患者数量", required = false)
   private String patientNumber;
 
-  /** 已收工作量合计 */
-  @Excel(name = "已收工作量合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty(value = "已收工作量合计", required = false)
+  /** 实收工作量合计 */
+  @Excel(name = "实收工作量合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty(value = "实收工作量合计", required = false)
   private BigDecimal receivedTotalWorkload = new BigDecimal(0);
 
   /** 其中免单支付工作量合计 */
