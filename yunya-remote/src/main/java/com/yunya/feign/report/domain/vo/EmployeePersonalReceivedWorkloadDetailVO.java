@@ -20,7 +20,7 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("员工已收工作量明细VO")
+@ApiModel("员工实收工作量明细VO")
 @Data
 @ToString
 public class EmployeePersonalReceivedWorkloadDetailVO implements Serializable {
@@ -64,8 +64,8 @@ public class EmployeePersonalReceivedWorkloadDetailVO implements Serializable {
   @Excel(name = "手机号")
   @ApiModelProperty("手机号")
   private String mobile;
-  /** 本次已收工作量 */
-  @Excel(name = "本次已收工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty("本次已收工作量")
+  /** 本次实收工作量 */
+  @Excel(name = "本次实收工作量", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @ApiModelProperty("本次实收工作量")
   private BigDecimal receivedWorkload;
 }

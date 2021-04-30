@@ -37,9 +37,9 @@ public class AssistantMatchingStatisticsVO implements Serializable {
   @Excel(name = "助手1配诊时长（分钟）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("助手1配诊时长")
   private Integer treatMatchingTimeAsAssistant1;
-  /** 助手1配诊实收工作量 */
-  @Excel(name = "助手1配诊实收工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty("助手1配诊实收工作量")
+  /** 助手1配诊应收工作量 */
+  @Excel(name = "助手1配诊应收工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("助手1配诊应收工作量")
   private BigDecimal treatMatchingActualWorkloadAsAssistant1;
   /** 助手1配诊退费工作量 */
   @Excel(name = "助手1配诊退费金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
@@ -49,9 +49,9 @@ public class AssistantMatchingStatisticsVO implements Serializable {
   @Excel(name = "助手2配诊时长（分钟）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("助手2配诊时长")
   private Integer treatMatchingTimeAsAssistant2;
-  /** 助手2配诊实收工作量 */
-  @Excel(name = "助手2配诊实收工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty("助手2配诊实收工作量")
+  /** 助手2配诊应收工作量 */
+  @Excel(name = "助手2配诊应收工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("助手2配诊应收工作量")
   private BigDecimal treatMatchingActualWorkloadAsAssistant2;
   /** 助手2配诊退费工作量 */
   @Excel(name = "助手2配诊退费金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
@@ -61,9 +61,9 @@ public class AssistantMatchingStatisticsVO implements Serializable {
   @Excel(name = "巡回配诊时长（分钟）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("巡回配诊时长")
   private Integer treatMatchingTimeAsAssistant3;
-  /** 巡回配诊实收工作量 */
-  @Excel(name = "巡回配诊实收工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty("巡回配诊实收工作量")
+  /** 巡回配诊应收工作量 */
+  @Excel(name = "巡回配诊应收工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("巡回配诊应收工作量")
   private BigDecimal treatMatchingActualWorkloadAsAssistant3;
   /** 巡回配诊退费工作量 */
   @Excel(name = "巡回配诊退费金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)

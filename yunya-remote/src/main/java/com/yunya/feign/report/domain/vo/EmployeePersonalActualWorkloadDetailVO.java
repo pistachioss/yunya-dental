@@ -20,7 +20,7 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("员工实收工作量明细VO")
+@ApiModel("员工应收工作量明细VO")
 @Data
 @ToString
 public class EmployeePersonalActualWorkloadDetailVO implements Serializable {
