@@ -49,4 +49,9 @@ public class EmployeeWorkloadQuery extends PageQuery implements Serializable {
   /** 账单ID列表 */
   @ApiModelProperty("账单ID列表")
   private Collection<Integer> billIds;
+  private Integer[] orgIds;
+  /** 优惠使用开始时间 */
+  private String privilegeStartDate;
+  /** 优惠使用结束时间 */
+  private String privilegeEndDate;
 }
