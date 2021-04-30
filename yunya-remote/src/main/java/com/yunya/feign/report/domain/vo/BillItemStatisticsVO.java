@@ -64,12 +64,12 @@ public class BillItemStatisticsVO implements Serializable {
   private String itemName;
 
   /** 开单数量 */
-  @Excel(name = "数量", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("开单数量")
   private Integer quantity;
 
   /** 实收金额 */
-  @Excel(name = "实收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "实收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("实收金额")
   private BigDecimal amount;
 }

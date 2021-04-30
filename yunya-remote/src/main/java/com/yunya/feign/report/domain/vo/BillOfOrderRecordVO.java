@@ -61,19 +61,19 @@ public class BillOfOrderRecordVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 原价合计 */
-  @Excel(name = "原价合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "原价合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("原价合计")
   private BigDecimal orderAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "优惠金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("优惠金额")
   private BigDecimal privilegeAmount;
   /** 应收金额 */
-  @Excel(name = "应收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "应收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("应收金额")
   private BigDecimal actualAmount;
   /** 实收金额 */
-  @Excel(name = "实收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "实收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("实收金额")
   private BigDecimal receivedAmount;
   /** 收费状态 */

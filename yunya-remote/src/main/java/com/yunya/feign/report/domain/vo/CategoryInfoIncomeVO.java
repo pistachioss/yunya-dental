@@ -9,6 +9,9 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 项目分类收入汇总信息
  *
@@ -37,7 +40,7 @@ public class CategoryInfoIncomeVO implements Serializable {
   @ApiModelProperty("原价合计")
   private BigDecimal totalOriginalAmount;
   /** 优惠金额合计 */
-  @Excel(name = "优惠金额合计", scale = 2, cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "优惠金额合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("优惠金额合计")
   private BigDecimal totalDiscountAmount;
   /** 实收金额合计 */

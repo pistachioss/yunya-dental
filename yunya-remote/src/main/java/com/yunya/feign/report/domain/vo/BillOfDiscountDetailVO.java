@@ -61,16 +61,16 @@ public class BillOfDiscountDetailVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 原价合计 */
-  @Excel(name = "原价合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "原价合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("原价合计")
   private BigDecimal originalAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "优惠金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("优惠金额")
   private BigDecimal discountAmount;
-  /** 实收金额 */
-  @Excel(name = "实收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
-  @ApiModelProperty("实收金额")
+  /** 应收金额 */
+  @Excel(name = "应收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("应收金额")
   private BigDecimal actualAmount;
   /** 优惠类型 */
   @Excel(name = "优惠类型", readConverterExp = "0=未使用优惠,1=产品优惠,2=授权折扣")

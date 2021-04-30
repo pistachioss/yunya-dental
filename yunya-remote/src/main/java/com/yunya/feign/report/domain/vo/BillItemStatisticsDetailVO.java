@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 
 /**
  * 简介: 开单数量及金额统计明细VO
@@ -36,12 +37,12 @@ public class BillItemStatisticsDetailVO implements Serializable {
   @ApiModelProperty("账单编号")
   private String billNum;
   /** 开单数量 */
-  @Excel(name = "开单数量", cellType = NUMERIC)
+  @Excel(name = "开单数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("开单数量")
   private Integer quantity;
-  /** 实收金额 */
-  @Excel(name = "实收金额", cellType = NUMERIC)
-  @ApiModelProperty("实收金额")
+  /** 应收金额 */
+  @Excel(name = "应收金额",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("应收金额")
   private BigDecimal amount;
   /** 挂号医生 */
   @Excel(name = "挂号医生")
