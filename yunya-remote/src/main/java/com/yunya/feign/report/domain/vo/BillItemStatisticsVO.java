@@ -68,8 +68,8 @@ public class BillItemStatisticsVO implements Serializable {
   @ApiModelProperty("开单数量")
   private Integer quantity;
 
-  /** 实收金额 */
-  @Excel(name = "实收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty("实收金额")
+  /** 应收金额 */
+  @Excel(name = "应收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("应收金额")
   private BigDecimal amount;
 }
