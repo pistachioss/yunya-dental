@@ -7,9 +7,6 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 
-import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
-import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
-
 /**
  * 简介:
  *
@@ -37,27 +34,28 @@ public class PatientOriginEmployeeVo {
   private String workStatus;
 
   /** 患者数量 */
-  @Excel(name = "患者数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "患者数量", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty(value = "患者数量", required = false)
   private String patientNumber;
 
-  /** 已收工作量合计 */
-  @Excel(name = "已收工作量合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty(value = "已收工作量合计", required = false)
+  /** 实收工作量合计 */
+  @Excel(name = "实收工作量合计", cellType = Excel.ColumnType.NUMERIC)
+  @ApiModelProperty(value = "实收工作量合计", required = false)
   private BigDecimal receivedTotalWorkload = new BigDecimal(0);
 
   /** 其中免单支付工作量合计 */
-  @Excel(name = "其中免单支付工作量合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "其中免单支付工作量合计", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty(value = "其中免单支付工作量合计", required = false)
   private BigDecimal freeTotalWorkload = new BigDecimal(0);
 
   /** 退费金额合计 */
-  @Excel(name = "退费金额合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "退费金额合计", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty(value = "退费金额合计", required = false)
   private BigDecimal totalRefundAmount = new BigDecimal(0);
 
   /** 补入工作量合计 */
-  @Excel(name = "补入工作量合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "补入工作量合计", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty(value = "补入工作量合计", required = false)
   private BigDecimal makeUpWorkload = new BigDecimal(0);
 }
+
