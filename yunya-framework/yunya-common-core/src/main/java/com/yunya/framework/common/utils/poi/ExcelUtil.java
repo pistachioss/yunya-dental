@@ -340,15 +340,23 @@ public class ExcelUtil<T> {
           }
           res.append(str[i]);
         }
-        if (StringHelper.isNotEmpty(eDate)) {
-          str = eDate.split("-");
-          res.append("-");
-          for (int i = 0; i < str.length; i++) {
-            if (i > 0 && res.length() > 0) {
-              res.append(".");
-            }
-            res.append(str[i]);
+      }
+    }
+    if (StringHelper.isNotEmpty(eDate)) {
+      if (res.length() > 0) {
+        res.append("-");
+      }
+      String[] str = eDate.split("-");
+      if (str.length == 1) { // 年
+        res.append(eDate).append("年");
+      } else if (str.length == 2) { // 月
+        res.append(str[0]).append("年").append(str[1]).append("月");
+      } else if (str.length == 3) { // 日
+        for (int i = 0; i < str.length; i++) {
+          if (i > 0 && res.length() > 0) {
+            res.append(".");
           }
+          res.append(str[i]);
         }
       }
     }
@@ -598,16 +606,24 @@ public class ExcelUtil<T> {
   /**
    * 创建单元格
    *
-   * @param name 属性
+   * @param value 属性
    * @param row 行
    * @param column 列
    * @return
    */
-  public Cell createCell(String name, Row row, int column, String titleKey) {
+  public Cell createCell(String value, Row row, int column, String titleKey) {
     // 创建列
     Cell cell = row.createCell(column);
-    // 写入列信息
-    cell.setCellValue(name);
+    try {
+      new BigDecimal(value);
+      cell.setCellValue(
+              StringUtils.contains(value, ".")
+                      ? Convert.toDouble(value)
+                      : Convert.toInt(value));
+    } catch (Exception e) {
+      // 写入列信息
+      cell.setCellValue(value);
+    }
     cell.setCellStyle(styles.get(titleKey));
     return cell;
   }
@@ -669,9 +685,8 @@ public class ExcelUtil<T> {
    * @param vo vo
    * @param field 字段
    * @param column 列
-   * @return
    */
-  public Cell addCell(Excel attr, Row row, T vo, Field field, int column) {
+  public void addCell(Excel attr, Row row, T vo, Field field, int column) {
     Cell cell = null;
     try {
       // 设置行高
@@ -708,7 +723,6 @@ public class ExcelUtil<T> {
     } catch (Exception e) {
       log.error("导出Excel失败{}", e);
     }
-    return cell;
   }
 
   /**

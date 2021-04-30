@@ -11,6 +11,9 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 折扣&免单支付VO
  *
@@ -27,10 +30,10 @@ public class BillDiscountAndFreePaymentVO implements Serializable {
   /** 收费日期 */
   @Excel(name = "收费日期", dateFormat = "yyyy-MM-dd")
   @ApiModelProperty("收费日期")
-  @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
   private Date payeeDate;
 
-  /** 门诊*/
+  /** 门诊 */
   @Excel(name = "门诊")
   @ApiModelProperty("门诊")
   private String abbreviation;
@@ -42,7 +45,7 @@ public class BillDiscountAndFreePaymentVO implements Serializable {
   /** 账单日期 */
   @Excel(name = "账单日期", dateFormat = "yyyy-MM-dd")
   @ApiModelProperty("账单日期")
-  @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
   private Date billDate;
 
   /** 患者 */
@@ -61,7 +64,7 @@ public class BillDiscountAndFreePaymentVO implements Serializable {
   private String discountFree;
 
   /** 金额 */
-  @Excel(name = "金额", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("金额")
   private BigDecimal amount;
 

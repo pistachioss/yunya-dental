@@ -11,6 +11,7 @@ import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.CouponFileInfo;
 import com.yunya.models.discount.VoucheCoupon;
 import com.yunya.modules.discount.enums.CouponTypeEnum;
+import com.yunya.modules.discount.form.CouponCommonInfoFindDownForm;
 import com.yunya.modules.discount.form.CouponCommonInfoQueryForm;
 import com.yunya.modules.discount.form.VoucheCouponForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
@@ -245,6 +246,17 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
      */
     public List<CouponCommonInfoVO> thirdParty() {
         return mapper.thirdParty();
+    }
+
+
+    /**
+     * 获取第三方卡券激活模板接口
+     *
+     * @param
+     * @return
+     */
+    public List<CouponCommonInfo> findDown(CouponCommonInfoFindDownForm couponCommonInfoFindDownForm) {
+        return mapper.findDown(couponCommonInfoFindDownForm);
     }
 
 }
