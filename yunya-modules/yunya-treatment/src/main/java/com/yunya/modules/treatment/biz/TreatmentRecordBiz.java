@@ -12,7 +12,7 @@ import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
-import com.yunya.feign.report.RemoteReportServiceFeign;
+import com.yunya.feign.report.RemoteMiddleTableServiceFeign;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -100,7 +100,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   /** 挂号服务 */
   @Resource private RegisteredBiz registeredBiz;
 
-  @Resource private RemoteReportServiceFeign remoteMiddleTableServiceFeign;
+  @Resource private RemoteMiddleTableServiceFeign remoteMiddleTableServiceFeign;
 
   /**
    * 开始接诊

@@ -120,11 +120,4 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
   List<PatientFirstVisitSourceVO> clinicFirstVisitSourceList(@Param("query") ClinicPerformanceBusinessQuery query, @Param("patientIds") Collection<Integer> patientIds);
 
   List<BaseTreatmentProcessVO> firstVisitPatientList(@Param("query") ClinicPerformanceBusinessQuery query);
-
-  /**
-   * 查询未填写出生日期并有过就诊的患者数量
-   * @param form 条件
-   * @return 患者数量
-   */
-  Integer selectNotAgeCount(@Param("form") PatientAnalysisQueryForm form);
 }

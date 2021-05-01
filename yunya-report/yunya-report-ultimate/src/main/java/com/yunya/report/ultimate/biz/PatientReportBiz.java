@@ -13,7 +13,6 @@ import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.BasePatient;
 import com.yunya.report.ultimate.mapper.*;
-import io.swagger.models.auth.In;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -64,10 +63,19 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
    * @return 未复诊预约且未提醒集合
    */
   public PageInfo<BasePatientNotSeenVo> notSeenList(PatientReportQueryForm form) {
+    if (StringHelper.isNotEmpty(form.getEndDate())) {
+      String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
+      form.setEndDate(endDate);
+    }
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
     List<BasePatientNotSeenVo> basePatientNotSeenVoList = mapper.selectNotSeenList(form);
+
+    // 下次提醒
+//    if (StringHelper.isNotEmpty(basePatientNotSeenVoList)) {
+//      assemblyNextRemind(basePatientNotSeenVoList, form.getOrgId());
+//    }
     return new PageInfo<>(basePatientNotSeenVoList);
   }
 
@@ -77,25 +85,22 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
    * @param basePatientNotSeenVoList
    * @param orgId
    */
-  //  private void assemblyNextRemind(List<BasePatientNotSeenVo> basePatientNotSeenVoList, Integer
-  // orgId) {
-  //    Map<Integer, Date> patientMap =
-  // basePatientNotSeenVoList.stream().collect(Collectors.toMap(BasePatientNotSeenVo::getPatientId,BasePatientNotSeenVo::getLastVisitDate));
-  //    List<BaseVisitRemind> baseVisitReminds =
-  // baseVisitRemindMapper.findVisitRemindListInPatientId(patientMap.keySet(), 1, orgId);
-  //    basePatientNotSeenVoList.forEach(vo->{
-  //      Date date = vo.getLastVisitDate();
-  //      baseVisitReminds.forEach(remind->{
-  //        Date time = remind.getTime();
-  //        if (vo.getPatientId().equals(remind.getPatientId())
-  //                && time.compareTo(date)>=0) {
-  //          vo.setNoticeTime(time);
-  //          vo.setNoticeContent(remind.getContent());
-  //          return;
-  //        }
-  //      });
-  //    });
-  //  }
+//  private void assemblyNextRemind(List<BasePatientNotSeenVo> basePatientNotSeenVoList, Integer orgId) {
+//    Map<Integer, Date> patientMap = basePatientNotSeenVoList.stream().collect(Collectors.toMap(BasePatientNotSeenVo::getPatientId,BasePatientNotSeenVo::getLastVisitDate));
+//    List<BaseVisitRemind> baseVisitReminds = baseVisitRemindMapper.findVisitRemindListInPatientId(patientMap.keySet(), 1, orgId);
+//    basePatientNotSeenVoList.forEach(vo->{
+//      Date date = vo.getLastVisitDate();
+//      baseVisitReminds.forEach(remind->{
+//        Date time = remind.getTime();
+//        if (vo.getPatientId().equals(remind.getPatientId())
+//                && time.compareTo(date)>=0) {
+//          vo.setNoticeTime(time);
+//          vo.setNoticeContent(remind.getContent());
+//          return;
+//        }
+//      });
+//    });
+//  }
 
   /**
    * 导出未复诊预约且未提醒记录列表
@@ -214,18 +219,9 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
       analysisVo.setAnalysisPatientGenderVoList(analysisPatientGenderVoList);
     }
 
-    // 年龄比例
     List<AnalysisPatientAgeVo> analysisPatientAgeVoList = new ArrayList<>();
-    // 患者总数量(有过就诊)
-    Integer count = mapper.selectCountAnalysisAge(form);
-    AnalysisPatientAgeVo notAge = new AnalysisPatientAgeVo();
-    Integer notAgeCount = mapper.selectNotAgeCount(form);
-    String percentageNotAge = mapper.calculateAgePercentage(notAgeCount, count);
-    notAge.setAgeBracket("未知");
-    notAge.setPercentage(percentageNotAge);
-    analysisPatientAgeVoList.add(notAge);
-
     AnalysisPatientAgeVo youngVo = new AnalysisPatientAgeVo();
+    Integer count = mapper.selectCountAnalysisAge(form);
     Integer countYoungAge = mapper.selectAnalysisAge(form, 14, 0, 0);
     String percentageYoung = mapper.calculateAgePercentage(countYoungAge, count);
     youngVo.setAgeBracket("14岁及以下");

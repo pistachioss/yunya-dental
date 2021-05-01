@@ -24,10 +24,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.HanyuPinyinHelper;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.*;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
@@ -47,8 +44,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.yunya.framework.common.constant.RedisConstants.PATIENT_BASE_INFO;
 
 /**
  * 简单介绍:</br> 患者基本信息业务层
@@ -110,7 +105,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   @Autowired private RemoteTreatmentServiceFeign treatmentServiceFeign;
 
   /** 患者来源绑定关系 */
-  @Resource private PatientOriginLogMapper patientOriginLogMapper;
+  @Resource
+  private PatientOriginLogMapper patientOriginLogMapper;
 
   /** 获取患者服务端口号 */
   @Value("${codeUrl.url}")
@@ -165,7 +161,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     // 患者id不为空表明,是修改操作
     if (StringHelper.isNotNull(patientBaseInfoModel.getId())) {
       patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
-      redisUtils.delete(PATIENT_BASE_INFO + patientBaseInfoModel.getId());
       return patientBaseInfoMapper.selectPatienInfoById(patientBaseInfo.getId());
     }
     Integer originType = patientBaseInfo.getOriginType();
@@ -181,8 +176,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setCrtName(BaseContextHandler.getName());
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     mapper.insertPatientInfo(patientBaseInfo);
-    PatientBaseInfoVo patientBaseInfoVo =
-        this.patientBaseInfoMapper.selectPatienInfoById(patientBaseInfo.getId());
+    PatientBaseInfoVo patientBaseInfoVo = this.patientBaseInfoMapper.selectPatienInfoById(patientBaseInfo.getId());
     if (patientBaseInfoVo.getOriginId() != null) {
       PatientOriginLog patientOriginLog = new PatientOriginLog();
       patientOriginLog.setPatientId(patientBaseInfoVo.getId());
@@ -196,8 +190,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientOriginLog.setUpdName(patientBaseInfo.getUpdName());
       patientOriginLog.setUpdTime(patientBaseInfo.getUpdTime());
       patientOriginLogMapper.insertSelective(patientOriginLog);
-      remoteRabbitMqServiceFeign.sendMessage(
-          patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
+      remoteRabbitMqServiceFeign.sendMessage(patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
     }
     // 创建预付款 并发送消息
     this.addPatientPrepaymentsInfo(patientBaseInfo);
@@ -265,7 +258,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
     // 完善患者基本信息  对补全信息进行更新
     this.mapper.updateByPrimaryKeySelective(patientBaseInfo);
-    redisUtils.delete(PATIENT_BASE_INFO + patientExtendInfoModel.getPatientBaseInfoModel().getId());
     sendMessages(patientBaseInfo.getId(), 1);
     PatientExpInfo patientExpInfo = new PatientExpInfo();
     // 完善患者扩展信息
@@ -315,7 +307,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
   /**
    * 添加患者来源推荐关系
-   *
    * @param patientBaseInfo 患者信息
    */
   public void addPatientOrigin(PatientBaseInfo patientBaseInfo) {
@@ -339,11 +330,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
           // 修改推荐关系状态 并发送消息
           patientOriginLog.setInservice(false);
           patientOriginLogMapper.updateByPrimaryKey(patientOriginLog);
-          sendMemberRelationMessages(patientOriginLog.getId(), 1);
+          sendMemberRelationMessages(patientOriginLog.getId(),1);
           // 添加推荐关系 并发送消息
           patientOriginLogMapper.insertSelective(insertPatientOriginLog);
           remoteRabbitMqServiceFeign.sendMessage(
-              insertPatientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
+                  insertPatientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
         }
       } else {
         insertPatientOriginLog.setPatientId(patientBaseInfo.getId());
@@ -358,7 +349,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         insertPatientOriginLog.setUpdTime(new Date());
         patientOriginLogMapper.insertSelective(insertPatientOriginLog);
         remoteRabbitMqServiceFeign.sendMessage(
-            insertPatientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
+                insertPatientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
       }
     }
   }
@@ -661,15 +652,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @return PatientBaseInfo
    */
   public PatientBaseInfo findPatientInfoById(Integer id) {
-    String patientKey = PATIENT_BASE_INFO + id;
-    PatientBaseInfo patientBaseInfo = redisUtils.get(patientKey, PatientBaseInfo.class);
-    if (null == patientBaseInfo) {
-      patientBaseInfo = this.patientBaseInfoMapper.selectPatientById(id);
-      if (patientBaseInfo != null) {
-        redisUtils.set(patientKey, patientBaseInfo);
-      }
-    }
-    return patientBaseInfo;
+    return this.patientBaseInfoMapper.selectPatientById(id);
   }
 
   /**
@@ -853,7 +836,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         Integer dictItemId = extInfo.getDictItemId();
         if (dictItemId != null) {
           // 查询标签字典名称
-          DictionaryItem item = remoteSystemServiceFeign.findDictionaryItemById(dictItemId);
+          DictionaryItem item =
+                  remoteSystemServiceFeign.findDictionaryItemById(dictItemId);
           if (type == 0 && null != item) {
             labels.append(item.getName());
             labels.append("、");
@@ -1042,7 +1026,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       // 添加患者来源推荐关系
       addPatientOrigin(patientBaseInfo);
       patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
-      redisUtils.delete(PATIENT_BASE_INFO + patientExtendInfoModel.getPatientBaseInfoModel().getId());
     }
   }
 

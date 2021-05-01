@@ -272,7 +272,7 @@ import java.util.*;
 
   @ApiOperation("查询微信用户是否注册")
   @GetMapping (value = "/api/count/register")
-  WxFans countRegister(@RequestParam(value = "openId", required = true) String openId);
+  int countRegister(@RequestParam(value = "openId", required = true) String openId);
 
   @ApiOperation("根据Id查询患者信息公用信息")
   @GetMapping("/api/publicInformation/{id}")
@@ -285,24 +285,11 @@ import java.util.*;
   List<WxFansDetailVO> findDetail(@RequestBody @Validated WxFansDetailForm wxFansDetailForm);
 
   @ApiOperation("查询微信用户信息")
-  @RequestMapping (value = "/api/wx/patient/{patientId}", method = RequestMethod.GET)
+  @RequestMapping (value = "/api/wx/patient/{patientId}", method = RequestMethod.POST)
   WxPatientVo getWxPatientInfo(@PathVariable("patientId") Integer patientId);
 
   @ApiOperation("查询微信用户的会员卡和预付款使用记录")
   @RequestMapping (value = "/api/wx/card/record", method = RequestMethod.GET)
   public List<WxCardUseVo> listPatientCardRecord(@RequestParam(value = "cardNumber", required = true) String cardNumber
           , @RequestParam(value = "type", required = true) Integer type);
-
-  @ApiOperation("会员卡关联查询")
-  @PostMapping("/api/relatedInformation")
- MemberRelationVo findMemberBindingRelation(
-          @RequestBody @Validated PatientMemberRelationQueryForm patientMemberRelationQueryForm);
-
-  @ApiOperation("查询推送消息的绑定人")
-  @RequestMapping (value = "/api/wx/pusher/{patientId}", method = RequestMethod.GET)
-  WxFans getWxPushUser(@PathVariable("patientId") Integer patientId);
-
-  @ApiOperation("批量查询推送消息的绑定人")
-  @RequestMapping (value = "/api/wx/pusher/batch", method = RequestMethod.POST)
-  List<WxFans> listWxPushUser(@RequestBody List<Integer> patientIds);
 }

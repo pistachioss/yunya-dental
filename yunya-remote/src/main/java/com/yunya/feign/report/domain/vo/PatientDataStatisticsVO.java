@@ -9,9 +9,6 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
-import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
-
 /**
  * 简介: 门诊患者信息VO
  *
@@ -60,52 +57,52 @@ public class PatientDataStatisticsVO implements Serializable {
   private String abbreviation;
 
   /** 初诊人数 */
-  @Excel(name = "初诊人数", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "初诊人数", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("初诊人数")
   private Integer firstVisitPerNum;
 
   /** 预约人数 */
-  @Excel(name = "预约人数", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "预约人数", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("预约人数")
   private Integer appointPerNum;
 
   /** 复诊人数 */
-  @Excel(name = "复诊人数", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "复诊人数", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("复诊人数")
   private Integer repeatVisitsPerNum;
 
   /** 预约人次 */
-  @Excel(name = "预约人次", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "预约人次", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("预约人次")
   private Integer appointPerTimes;
 
   /** 改约人次 */
-  @Excel(name = "改约人次", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "改约人次", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("改约人次")
   private Integer appointModifyPerTimes;
 
   /** 就诊人次 */
-  @Excel(name = "就诊人次", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "就诊人次", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("就诊人次")
   private Integer treatPerTimes;
 
   /** 人均消费 */
-  @Excel(name = "人均消费", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "人均消费")
   @ApiModelProperty("人均消费")
   private BigDecimal perCapitaConsumption;
 
   /** 次均消费 */
-  @Excel(name = "次均消费", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "次均消费", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("次均消费")
   private BigDecimal averageConsumption;
 
   /** 取消预约人次 */
-  @Excel(name = "取消预约人次", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "取消预约人次", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("取消预约人次")
   private Integer appointCancelPerTimes;
 
   /** 失约人次 */
-  @Excel(name = "失约人次", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "失约人次", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("失约人次")
   private Integer appointMissedPerTimes;
 

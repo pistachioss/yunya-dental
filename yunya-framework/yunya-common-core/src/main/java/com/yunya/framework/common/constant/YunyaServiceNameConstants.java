@@ -35,7 +35,7 @@ public interface YunyaServiceNameConstants {
   /** 卡券服务 */
   String YUNYA_DISCOUNT = "yunya-discount";
   /** 报表服务 */
-  String YUNYA_REPORT_ULTIMATE = "yunya-report-ultimate";
+  String YUNYA_MIDDLE_TABLE = "yunya-middle-table";
   /** 报表服务 */
   String YUNYA_RABBIT_MQ = "rabbit-mq";
   /** 短信服务 */

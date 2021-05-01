@@ -10,16 +10,16 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 简介：退费工作量
+ * 简介：
  *
  * @author: chenlin
- * @Description: 退费工作量
+ * @Description:
  * @Date: 2021/3/29 17:22
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("退费工作量")
+@ApiModel("")
 public class BillOfRefundWorkloadVO implements Serializable {
 
     /** 门诊ID*/
@@ -33,7 +33,4 @@ public class BillOfRefundWorkloadVO implements Serializable {
     /** 退费时的总工作量*/
     @ApiModelProperty("退费时的总工作量")
     private BigDecimal totalRefundWorkload;
-
-    /** 月份*/
-    private String month;
 }

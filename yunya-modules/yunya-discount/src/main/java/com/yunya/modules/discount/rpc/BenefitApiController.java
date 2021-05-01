@@ -1,28 +1,22 @@
 package com.yunya.modules.discount.rpc;
 
-import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
-import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
-import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
-import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
-import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
-import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
-import com.yunya.feign.emr.domain.bo.RestErrorBo;
-import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
-import com.yunya.feign.report.domain.vo.WxCardUsageVo;
-import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.discount.biz.BenefitBiz;
-import com.yunya.modules.discount.biz.CardBiz;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.validation.annotation.Validated;
+import com.yunya.feign.discount.domain.form.*;
+import com.yunya.feign.discount.domain.model.*;
+import com.yunya.feign.discount.domain.vo.*;
+import com.yunya.feign.emr.domain.bo.*;
+import com.yunya.feign.patient_central.domain.query.*;
+import com.yunya.framework.common.annation.*;
+import com.yunya.framework.common.model.*;
+import com.yunya.framework.common.utils.*;
+import com.yunya.modules.discount.biz.*;
+import io.swagger.annotations.*;
+import org.springframework.validation.annotation.*;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.Valid;
-import java.math.BigDecimal;
-import java.util.List;
+import javax.annotation.*;
+import javax.validation.*;
+import java.math.*;
+import java.util.*;
 
 /**
  * @author xiangyang
@@ -88,10 +82,5 @@ public class BenefitApiController {
     @PostMapping("/patient/{patientId}/effective/card")
     public List<WxPatientEffectiveVo> getPatientEffectCardList(@PathVariable(value = "patientId") Integer patientId) {
         return cardBiz.getPatientEffectiveCard(patientId);
-    }
-
-    @PostMapping("/card/{cardId}/usage")
-    public WxCardUsageVo getUserCardUsage(@PathVariable(value = "cardId") Integer cardId) {
-        return cardBiz.getWxUserCardUsage(cardId);
     }
 }
