@@ -9,6 +9,9 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 员工补入工作量明细VO
  *
@@ -48,19 +51,19 @@ public class EmployeePersonalSupplyWorkloadDetailVO implements Serializable {
   @ApiModelProperty("患者手机号")
   private String mobile;
   /** 原价合计 */
-  @Excel(name = "原价合计", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "原价合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("原价合计")
   private BigDecimal totalOriginalAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "优惠金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("优惠金额")
   private BigDecimal privilegeAmount;
-  /** 实收金额 */
-  @Excel(name = "实收金额", cellType = Excel.ColumnType.NUMERIC)
-  @ApiModelProperty("实收金额")
+  /** 应收金额 */
+  @Excel(name = "应收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("应收金额")
   private BigDecimal actualAmount;
-  /** 实收工作量 */
-  @Excel(name = "补入工作量", cellType = Excel.ColumnType.NUMERIC)
+  /** 应收工作量 */
+  @Excel(name = "补入工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("补入工作量")
   private BigDecimal supplyWorkload;
 }

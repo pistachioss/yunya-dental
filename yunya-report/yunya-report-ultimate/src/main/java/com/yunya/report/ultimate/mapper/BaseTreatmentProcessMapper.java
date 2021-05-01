@@ -1,7 +1,15 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.AppointmentCountQuery;
+import com.yunya.feign.report.domain.query.AssistantMatchingDetailQuery;
+import com.yunya.feign.report.domain.query.FirstVisitDetailQuery;
+import com.yunya.feign.report.domain.query.FirstVisitPersonalQuery;
+import com.yunya.feign.report.domain.query.FirstVisitQuery;
+import com.yunya.feign.report.domain.query.PatientFirstTreatOriginQuery;
+import com.yunya.feign.report.domain.query.TreatmentMatchingRecordQuery;
+import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.wechat.domain.vo.WxAppointConfirmPushVo;
 import com.yunya.models.report.BaseTreatmentProcess;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -129,4 +137,9 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    * @return
    */
   List<FirstVisitPersonalVO> firstVisitRecordPersonalList(FirstVisitPersonalQuery query);
+
+  /**
+   * 查询wx需要推送的预约未到且未确认的数据
+   */
+  List<WxAppointConfirmPushVo> listAppointConfirm();
 }

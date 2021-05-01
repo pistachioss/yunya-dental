@@ -8,6 +8,9 @@ import lombok.ToString;
 
 import java.io.Serializable;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 就诊配诊记录VO
  *
@@ -75,7 +78,7 @@ public class TreatmentMatchingRecordVO implements Serializable {
   @ApiModelProperty("治疗完成时间")
   private String treatEndTime;
   /** 配诊时长 */
-  @Excel(name = "配诊时长（分钟）", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "配诊时长（分钟）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("配诊时长")
   private Integer matchingDuration;
 }

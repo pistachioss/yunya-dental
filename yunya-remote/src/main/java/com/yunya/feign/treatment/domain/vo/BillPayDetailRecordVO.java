@@ -36,10 +36,7 @@ public class BillPayDetailRecordVO implements Serializable {
   /** 入账金额 */
   @ApiModelProperty("入账金额")
   private BigDecimal amount;
-
-
-
-
+  /** 卡号 */
   @ApiModelProperty("预付款/会员卡账号")
   private String remark;
 }

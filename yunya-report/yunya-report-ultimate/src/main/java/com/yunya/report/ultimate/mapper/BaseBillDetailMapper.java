@@ -154,8 +154,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query 查询条件
    * @return list
    */
-  List<BillRecordWorkloadVO> selectCouponWorkloadList(@Param("query") DataStatisticsQuery query,
-                                                      @Param("column") String column);
+  List<BillRecordWorkloadVO> selectCouponWorkloadList(
+      @Param("query") DataStatisticsQuery query, @Param("column") String column);
 
   /**
    * 根据条件查询门诊当月账单明细列表
@@ -325,7 +325,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") CouponExecutoredDetailQuery query);
 
   /**
-   * 根据条件查询开单项目工作量信息
+   * 根据条件查询收费项目工作量列表
    *
    * @param query 查询条件
    * @return list
@@ -334,13 +334,50 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") BillItemTollAndWorkloadQuery query);
 
   /**
+   * 根据条件查询个人开单项目已收工作量明细
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<PersonalBillItemReceivedWorkloadDetailVO> selectPersonalBillItemReceivedWorkloadDetail(
+      @Param("query") PersonalBillItemTollAndWorkloadQuery query);
+
+  /**
+   * 根据条件查询个人开单项目免单工作量明细
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<PersonalBillItemFreeWorkloadDetailVO> selectPersonalBillItemFreeWorkloadDetail(
+      @Param("query") PersonalBillItemTollAndWorkloadQuery query);
+
+  /**
+   * 根据条件查询个人开单项目补入工作量明细
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<PersonalBillItemSupplyWorkloadDetailVO> selectPersonalBillItemSupplyWorkloadDetail(
+      @Param("query") PersonalBillItemTollAndWorkloadQuery query);
+
+  /**
+   * 根据条件查询个人开单项目退费工作量明细
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<PersonalBillItemRefundWorkloadDetailVO> selectPersonalBillItemRefundWorkloadDetail(
+      @Param("query") PersonalBillItemTollAndWorkloadQuery query);
+
+  /**
    * 统计每组开单项目的数量
+   *
    * @param query
    * @param column
    * @return
    */
-  List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(@Param("query") ClinicPerformanceBusinessQuery query,
-                                                            @Param("column") String column);
+  List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(
+      @Param("query") ClinicPerformanceBusinessQuery query, @Param("column") String column);
 
   List<Integer> billIdByMonthFreePayment(@Param("query") BillCategoryIncomeQuery query);
 
@@ -348,7 +385,25 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * 查询账单开单不属于给定月份，而收费在给定月份的账单明细
    *
    * @param query 查询条件
+   * @param billids
    * @return list
    */
-  List<NonMonthCategoryVO> nonMonthCategoryList(@Param("query") BillCategoryIncomeQuery query);
+  List<NonMonthCategoryVO> nonMonthCategoryList(@Param("query") BillCategoryIncomeQuery query,
+                                                @Param("billIds") Collection<Integer> billids);
+
+  /**
+   * 按非本月账单且当月使用优惠（或当月收费）的账单id列表
+   *
+   * @param query
+   * @return
+   */
+  List<Integer> findBillIdsByNonMonth(@Param("query") BillCategoryIncomeQuery query);
+
+  /**
+   * 根据条件按月份分组门诊补入工作量
+   *
+   * @param query
+   * @return
+   */
+  List<BillRecordWorkloadVO> selectCouponWorkloadGroupByPrivilegeDate(@Param("query") DataStatisticsQuery query);
 }

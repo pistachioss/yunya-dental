@@ -9,6 +9,9 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 账单项目收入详情VO
  *
@@ -75,23 +78,23 @@ public class BillTariffIncomeDetailVO implements Serializable {
   @ApiModelProperty(name = "执行人姓名")
   private String executorName;
   /** 单价 */
-  @Excel(name = "单价", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "单价")
   @ApiModelProperty("单价")
   private BigDecimal price;
   /** 数量 */
-  @Excel(name = "数量", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("数量")
   private Integer quantity;
   /** 原价合计 */
-  @Excel(name = "原价", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "原价", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("原价合计(单价*数量)")
   private BigDecimal totalOriginalAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "优惠金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("优惠金额")
   private BigDecimal discountAmount;
-  /** 实收金额 */
-  @Excel(name = "实收金额", cellType = Excel.ColumnType.NUMERIC)
-  @ApiModelProperty("实收金额（原价合计-折扣金额）")
+  /** 应收金额 */
+  @Excel(name = "应收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("应收金额（原价合计-折扣金额）")
   private BigDecimal actualAmount;
 }
