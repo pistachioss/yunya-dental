@@ -482,7 +482,7 @@ public class PatientPrepaymentRelationBiz
       prepaidReturnRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
       prepaidReturnRecord.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidReturnRecord.setUpdName(BaseContextHandler.getName());
-      prepaidReturnRecord.setActualReturnAmount(model.getReturnPayAmount());
+      prepaidReturnRecord.setActualReturnAmount(model.getReturnPrincipalAmount());
       prepaidReturnRecordMapper.insertSelective(prepaidReturnRecord);
 
       // 发送消息 退费

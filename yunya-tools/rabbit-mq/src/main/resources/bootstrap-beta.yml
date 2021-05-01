@@ -1,6 +1,0 @@
-# 测试环境注册中心
-spring:
-  cloud:
-    nacos:
-      config:
-        server-addr: 172.16.17.181:8848

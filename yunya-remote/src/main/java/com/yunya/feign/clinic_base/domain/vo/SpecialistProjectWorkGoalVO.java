@@ -10,9 +10,6 @@ import lombok.ToString;
 
 import java.io.Serializable;
 
-import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
-import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
-
 /**
  * 简介: 专科项目工作目标VO
  *
@@ -37,17 +34,12 @@ public class SpecialistProjectWorkGoalVO implements Serializable {
   @ApiModelProperty("日期")
   private String businessDate;
   /** 专科目标数量 */
-  @Excel(name = "目标数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "目标数量")
   @ApiModelProperty("专科目标数量")
   private Integer specialistProjectGoal;
   /** 专科完成信息VO */
   @Excels({
-    @Excel(
-        name = "完成数量",
-        targetAttr = "specialistProjectCompleted",
-        type = EXPORT,
-        cellType = NUMERIC,
-        isStatistics = true)
+    @Excel(name = "完成数量", targetAttr = "specialistProjectCompleted", type = Excel.Type.EXPORT)
   })
   private SpecialistProjectTariffCompletedInfoVO specialistProjectCompletedInfo;
   /** 专科完成百分比 */

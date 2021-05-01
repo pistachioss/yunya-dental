@@ -9,14 +9,14 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 简介: 实收或免单支付工作量开单明细VO
+ * 简介: 已收或免单支付工作量开单明细VO
  *
  * @author: chow
  * @date: 2020/11/30 20:59
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("实收或免单支付工作量开单明细VO")
+@ApiModel("已收或免单支付工作量开单明细VO")
 @Data
 @ToString
 public class EmployeeReceivedDetailWorkloadVO implements Serializable {
@@ -35,9 +35,10 @@ public class EmployeeReceivedDetailWorkloadVO implements Serializable {
   /** 项目名称 */
   @ApiModelProperty("项目名称")
   private String itemName;
-  /** 实收工作量 */
-  @ApiModelProperty("实收工作量")
+  /** 已收工作量 */
+  @ApiModelProperty("已收工作量")
   private BigDecimal receivedWorkload;
+
   /** 免单支付工作量 */
   @ApiModelProperty("免单支付工作量")
   private BigDecimal freePaymentWorkload;

@@ -3,28 +3,6 @@ package com.yunya.modules.patient_central.rpc;
 import com.yunya.feign.patient_central.domain.form.*;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
-import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
-import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
-import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.patient_central.MemberExpendRecord;
-import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.patient_central.PatientMemberInfo;
-import com.yunya.models.patient_central.PrepaidExpendRecord;
-import com.yunya.modules.patient_central.biz.InformationCallbackBiz;
-import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
-import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
-import com.yunya.modules.patient_central.biz.PatientPrepaymentRelationBiz;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.*;
 import com.yunya.framework.common.annation.*;
@@ -41,9 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.*;
 import java.util.*;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
 
@@ -306,8 +281,8 @@ public class PatientServiceRest {
 
     @ApiOperation("查询微信用户是否注册")
     @GetMapping (value = "/count/register")
-    public WxFans countRegister(@RequestParam(value = "openId", required = true) String openId) {
-        return wxFansBiz.getRegister(openId);
+    public int countRegister(@RequestParam(value = "openId", required = true) String openId) {
+        return wxFansBiz.countRegister(openId);
     }
 
     @ApiOperation("根据Id查询患者信息公用信息")
@@ -328,7 +303,7 @@ public class PatientServiceRest {
     }
 
     @ApiOperation("查询微信用户信息")
-    @RequestMapping (value = "/wx/patient/{patientId}", method = RequestMethod.GET)
+    @RequestMapping (value = "/wx/patient/{patientId}", method = RequestMethod.POST)
     public WxPatientVo getWxPatientInfo(@PathVariable("patientId") Integer patientId) {
         return wxFansBiz.getWxPatientInfo(patientId);
     }
@@ -340,22 +315,4 @@ public class PatientServiceRest {
         return wxFansBiz.listPatientCardRecord(cardNumber, type);
     }
 
-    @ApiOperation("会员卡关联查询")
-    @PostMapping("/relatedInformation")
-    public MemberRelationVo findMemberBindingRelation(
-            @RequestBody @Validated PatientMemberRelationQueryForm patientMemberRelationQueryForm) {
-        return patientMemberInfoBiz.findMemberBindingRelation(patientMemberRelationQueryForm);
-    }
-
-    @ApiOperation("查询推送消息的绑定人")
-    @RequestMapping (value = "/wx/pusher/{patientId}", method = RequestMethod.GET)
-    public WxFans getWxPushUser(@PathVariable("patientId") Integer patientId) {
-        return wxFansBiz.getPushWxUser(patientId);
-    }
-
-    @ApiOperation("批量查询推送消息的绑定人")
-    @RequestMapping (value = "/wx/pusher/batch", method = RequestMethod.POST)
-    List<WxFans> listWxPushUser(@RequestBody List<Integer> patientIds) {
-        return wxFansBiz.getPushWxUser(patientIds);
-    }
 }

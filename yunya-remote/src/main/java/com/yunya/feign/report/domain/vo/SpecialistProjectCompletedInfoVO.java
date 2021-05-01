@@ -9,9 +9,6 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
-import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
-
 /**
  * 简介: 专科项目完成情况VO
  *
@@ -33,7 +30,7 @@ public class SpecialistProjectCompletedInfoVO implements Serializable {
   @ApiModelProperty("专科项目名称")
   private String specialistProjectName;
 
-  /** 门诊id */
+  /**门诊id*/
   @ApiModelProperty("门诊id")
   private Integer orgId;
 
@@ -43,12 +40,12 @@ public class SpecialistProjectCompletedInfoVO implements Serializable {
   private String abbreviation;
 
   /** 专科项目完成数量 */
-  @Excel(name = "完成数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "完成数量")
   @ApiModelProperty("专科项目完成数量")
   private Integer specialistProjectCompletedCount;
 
   /** 专科项目目标数量 */
-  @Excel(name = "目标数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "目标数量")
   @ApiModelProperty("专科项目目标数量")
   private Integer specialistProjectGoalCount;
 

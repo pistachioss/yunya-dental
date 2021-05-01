@@ -5,7 +5,6 @@ import com.yunya.feign.report.domain.vo.CurrentMonthBillStatisticVO;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
-import com.yunya.report.ultimate.mapper.BaseBillPayMapper;
 import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import com.yunya.report.ultimate.mapper.CurrentMonthBillStatisticsMapper;
 import com.yunya.models.report.CurrentMonthBillStatistics;
@@ -17,7 +16,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.List;
 
@@ -41,8 +39,6 @@ public class CurrentMonthBillStatisticScheduledTask {
   @Autowired private BaseOrganizationMapper organizationMapper;
   /** 账单 */
   @Autowired private BaseBillMapper billMapper;
-  /** 收费 */
-  @Autowired private BaseBillPayMapper billPayMapper;
   /** 当前月账单统计 */
   @Autowired private CurrentMonthBillStatisticsMapper billStatisticsMapper;
 
@@ -51,9 +47,7 @@ public class CurrentMonthBillStatisticScheduledTask {
   public void execute() {
     final Calendar c = Calendar.getInstance();
     if (c.get(Calendar.DATE) == c.getActualMaximum(Calendar.DATE)) {
-      BaseOrganization org = new BaseOrganization();
-      org.setOrgType((byte) 2);
-      List<BaseOrganization> organizations = organizationMapper.select(org);
+      List<BaseOrganization> organizations = organizationMapper.selectAll();
       if (StringHelper.isNotEmpty(organizations)) {
         for (BaseOrganization organization : organizations) {
           Integer orgId = organization.getOrgId();
@@ -63,8 +57,6 @@ public class CurrentMonthBillStatisticScheduledTask {
           query.setQueryDate(currentMonth);
           CurrentMonthBillStatisticVO statisticVO = billMapper.selectRealBillStatistic(query);
           if (null != statisticVO) {
-            BigDecimal totalFreePayAmount =
-                billPayMapper.selectCurrentMonthTotalFreePayAmount(query);
             CurrentMonthBillStatistics billStatistics = new CurrentMonthBillStatistics();
             billStatistics.setId(statisticVO.getOrgId());
             billStatistics.setOrgId(statisticVO.getOrgId());
@@ -73,7 +65,6 @@ public class CurrentMonthBillStatisticScheduledTask {
                 statisticVO.getCurrentMonthTotalActualAmount());
             billStatistics.setPrivelegeAmount(statisticVO.getCurrentMonthTotalDiscountAmount());
             billStatistics.setReceivedAmount(statisticVO.getCurrentMonthTotalReceivedAmount());
-            billStatistics.setFreePayAmount(totalFreePayAmount);
             billStatistics.setDebtAmount(statisticVO.getCurrentMonthTotalDebtAmount());
             billStatisticsMapper.insertSelective(billStatistics);
           }

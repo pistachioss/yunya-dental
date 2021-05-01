@@ -1,7 +1,6 @@
 package com.yunya.report.ultimate.mapper;
+
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
-import com.yunya.feign.report.domain.query.PatientReportQueryForm;
-import com.yunya.feign.report.domain.vo.BasePatientNotSeenVo;
 import com.yunya.feign.report.domain.vo.PatientInfoVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,15 +30,5 @@ public class BasePatientMapperTest {
     query.setPatientKeyWord("wang");
     List<PatientInfoVO> list = patientMapper.selectPatientInfoByExample(query);
     System.out.println(list);
-  }
-
-  @Test
-  public void find1() {
-    PatientReportQueryForm query = new PatientReportQueryForm();
-    query.setOrgId(26);
-    query.setStartDate("2021-03-01");
-    query.setEndDate("2021-04-15");
-    List<BasePatientNotSeenVo> vos = patientMapper.selectNotSeenList(query);
-    System.out.println(vos);
   }
 }

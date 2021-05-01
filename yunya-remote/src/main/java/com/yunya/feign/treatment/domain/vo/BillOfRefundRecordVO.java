@@ -9,9 +9,6 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
-import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
-
 /**
  * 简介: 账单退费记录信息VO
  *
@@ -72,16 +69,16 @@ public class BillOfRefundRecordVO implements Serializable {
   @Excel(name = "挂号医生")
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
-  /** 应收金额 */
-  @Excel(name = "应收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
-  @ApiModelProperty("应收金额")
-  private BigDecimal actualAmount;
   /** 实收金额 */
-  @Excel(name = "实收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "实收金额")
   @ApiModelProperty("实收金额")
+  private BigDecimal actualAmount;
+  /** 已收金额 */
+  @Excel(name = "已收金额")
+  @ApiModelProperty("已收金额")
   private BigDecimal receivedAmount;
   /** 本次退费金额 */
-  @Excel(name = "本次退费金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "本次退费金额")
   @ApiModelProperty("本次退费金额")
   private BigDecimal refundAmount;
   /** 退费人ID */

@@ -9,9 +9,6 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
-import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
-
 /**
  * 简介:欠费查询QueryForm
  *
@@ -71,27 +68,27 @@ public class ArrearsVo implements Serializable {
   private String mobile;
 
   /** 原价合计 */
-  @Excel(name = "原价合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "原价合计", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty(value = "原价合计")
   private BigDecimal originalPrice;
 
   /** 优惠金额 */
-  @Excel(name = "优惠金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "优惠金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty(value = "优惠金额")
   private BigDecimal privilegeAmount;
 
-  /** 应收金额 */
-  @Excel(name = "应收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
-  @ApiModelProperty(value = "应收金额")
+  /** 实收金额 */
+  @Excel(name = "实收金额", cellType = Excel.ColumnType.NUMERIC)
+  @ApiModelProperty(value = "实收金额")
   private BigDecimal actualAmount;
 
-  /** 实收金额 */
-  @Excel(name = "实收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
-  @ApiModelProperty(value = "实收金额")
+  /** 已收金额 */
+  @Excel(name = "已收金额", cellType = Excel.ColumnType.NUMERIC)
+  @ApiModelProperty(value = "已收金额")
   private BigDecimal receivedAmount;
 
   /** 剩余欠费金额 */
-  @Excel(name = "剩余欠费金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "剩余欠费金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty(value = "剩余欠费金额")
   private BigDecimal debtAmount;
 }

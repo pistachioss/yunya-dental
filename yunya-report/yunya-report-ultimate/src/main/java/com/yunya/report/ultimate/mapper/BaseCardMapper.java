@@ -139,8 +139,4 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
      */
     List<CardActiveRecoedVO> getCardActiveRecoedPage(CardActiveRecoedQuery query);
 
-    /**
-     * 0-产品激活未使用提醒 1-产品即将到期提醒 2-产品到期提醒
-     */
-    List<WxCardEventVo> listWxPushCard(@Param("noticeType") Integer noticeType);
 }

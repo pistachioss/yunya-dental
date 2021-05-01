@@ -28,10 +28,6 @@ public class WxFansVo implements Serializable {
     private Integer id;
     @ApiModelProperty("openID")
     private String openId;
-    @ApiModelProperty("性别")
-    private String sex;
-    @ApiModelProperty("是否关注")
-    private String subscribe;
     @ApiModelProperty("昵称")
     private String nickName;
     @ApiModelProperty("头像")

@@ -32,7 +32,7 @@ public class BaseBillMapperTest {
     query.setDateType((byte) 0);
     query.setStartDate("2020-03-01");
     query.setEndDate("2020-03-01");
-    query.setPayIds(Arrays.asList(23, 26));
+    query.setPayIds(Arrays.asList(23,26));
     BillDataStatisticsVO vo = billMapper.selectClinicBillDataStatistic(query);
     System.out.println(vo);
   }
@@ -72,8 +72,8 @@ public class BaseBillMapperTest {
   @Test
   public void find5() {
     StatementStatisticQuery query = new StatementStatisticQuery();
-    query.setOrgId(26);
-    query.setQueryDate("2021-03");
+    query.setOrgId(35);
+    query.setQueryDate("2020-12");
     CurrentMonthBillStatisticVO vo = billMapper.selectRealBillStatistic(query);
     System.out.println(vo);
   }
@@ -85,22 +85,6 @@ public class BaseBillMapperTest {
     query.setCurrentMonth("2020-12");
     List<CurrentMonthBillCollectionDebtVO> vos =
         billMapper.selectCurrentMonthBillCollectionDebtList(query);
-    System.out.println(vos);
-  }
-
-  @Test
-  public void find7() {
-    BillOfReceivableQuery query = new BillOfReceivableQuery();
-    query.setOrgId(26);
-    query.setBillDate("2021-03-31");
-    query.setKeyword("陈凌云");
-    query.setRegDentistIds(new Integer[] {341});
-    // query.setWhetherPage(false);
-    // query.setPageNum(0);
-    // query.setPageSize(0);
-    // query.setOrderByColumn("");
-    // query.setIsAsc("");
-    List<BillRestReceivableAmountVO> vos = billMapper.selectBillReceivableAmountList(query);
     System.out.println(vos);
   }
 }

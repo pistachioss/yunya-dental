@@ -8,9 +8,6 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 
-import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
-import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
-
 /**
  * 简介: 预付款概况Vo
  *
@@ -24,38 +21,39 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 @ApiModel("预付款概况Vo")
 public class ExcelBasePatientPrepaymentOverviewVo {
 
-  /** 患者姓名 */
-  @Excel(name = "患者姓名")
-  @ApiModelProperty(value = "患者姓名")
-  private String name;
+    /** 患者姓名 */
+    @Excel(name = "患者姓名")
+    @ApiModelProperty(value = "患者姓名")
+    private String name;
 
-  /** 手机号 */
-  @Excel(name = "手机号")
-  @ApiModelProperty(value = "手机号")
-  private String mobile;
+    /** 手机号 */
+    @Excel(name = "手机号")
+    @ApiModelProperty(value = "手机号")
+    private String mobile;
 
-  /** 会员卡号 */
-  @Excel(name = "预付款账户")
-  @ApiModelProperty(value = "预付款账户")
-  private String cardNumber;
+    /** 会员卡号 */
+    @Excel(name = "预付款账户")
+    @ApiModelProperty(value = "预付款账户")
+    private String cardNumber;
 
-  /** 开卡门诊 */
-  @Excel(name = "开户门诊")
-  @ApiModelProperty(value = "开户门诊")
-  private String abbreviation;
+    /** 开卡门诊 */
+    @Excel(name = "开户门诊")
+    @ApiModelProperty(value = "开户门诊")
+    private String abbreviation;
 
-  /** 开卡日期 */
-  @Excel(name = "开户日期")
-  @ApiModelProperty(value = "开户日期")
-  private String cardOpeningDate;
+    /** 开卡日期 */
+    @Excel(name = "开户日期")
+    @ApiModelProperty(value = "开户日期")
+    private String cardOpeningDate;
 
-  /** 剩余预付款余额（含赠送金额） */
-  @Excel(name = "剩余预付款余额（含赠送金额）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty(value = "剩余预付款余额（含赠送金额）")
-  private BigDecimal principalAmount;
+    /** 剩余预付款余额（含赠送金额） */
+    @Excel(name = "剩余预付款余额（含赠送金额）")
+    @ApiModelProperty(value = "剩余预付款余额（含赠送金额）")
+    private BigDecimal principalAmount;
 
-  /** 剩余预付款赠送金额 */
-  @Excel(name = "剩余预付款赠送金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty(value = "剩余预付款赠送金额")
-  private BigDecimal bonusAmount;
+    /** 剩余预付款赠送金额 */
+    @Excel(name = "剩余预付款赠送金额")
+    @ApiModelProperty(value = "剩余预付款赠送金额")
+    private BigDecimal bonusAmount;
+    
 }

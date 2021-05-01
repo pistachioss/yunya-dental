@@ -244,7 +244,6 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysEmployeeEntity.setUpdName(BaseContextHandler.getName());
       sysEmployeeEntity.setUpdTime(new Date(System.currentTimeMillis()));
       sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
-      redisUtils.delete(REDIS_KEY_EMPLOYEE_INFO + userId);
       // 发送消息同步员工信息
       rabbitMqServiceFeign.sendMessage(userId, 1, BaseEmployee);
     }

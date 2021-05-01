@@ -241,14 +241,4 @@
         select id, tariff_category_id as tariffCategoryId, item_number as itemNumber, `name`
         from base_tariff_view
     </select>
-
-    <!-- 根据基础价目表ID列表查询价目表名字 -->
-    <select id="selectBaseOralNamesByIds" resultType="java.lang.String">
-        SELECT
-        GROUP_CONCAT( bt.`name` ) AS tariffItemName
-        FROM
-        base_oral_tariff bt
-        WHERE
-        FIND_IN_SET( bt.id, #{ids} )
-    </select>
 </mapper>

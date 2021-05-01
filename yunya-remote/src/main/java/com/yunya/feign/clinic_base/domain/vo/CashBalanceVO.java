@@ -9,9 +9,6 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
-import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
-
 /**
  * 简介: 现金结存信息VO
  *
@@ -32,23 +29,23 @@ public class CashBalanceVO implements Serializable {
   @ApiModelProperty("结存日期")
   private String settlementDate;
   /** 期初现金结余 */
-  @Excel(name = "期初现金结余", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "期初现金结余")
   @ApiModelProperty("期初现金结余")
   private BigDecimal beginningBalanceCash;
   /** 期间现金收款 */
-  @Excel(name = "期间现金收款", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "期间现金收款")
   @ApiModelProperty("期间现金收款")
   private BigDecimal periodCollectionCash;
   /** 本日现金存款 */
-  @Excel(name = "本日现金存款", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "本日现金存款")
   @ApiModelProperty("本日现金存款")
   private BigDecimal depositedCash;
   /** 差额调整 */
-  @Excel(name = "差额调整", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "差额调整")
   @ApiModelProperty("差额调整")
   private BigDecimal balanceAdjustmentCash;
   /** 期末现金结余 */
-  @Excel(name = "期末现金结余", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "期末现金结余")
   @ApiModelProperty("期末现金结余")
   private BigDecimal endingBalanceCash;
   /** 结存人ID */
