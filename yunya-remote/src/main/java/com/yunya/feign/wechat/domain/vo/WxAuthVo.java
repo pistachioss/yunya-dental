@@ -12,10 +12,8 @@ import lombok.Data;
 @ApiModel(value = "微信公众号授权返回")
 @Data
 public class WxAuthVo {
-    @ApiModelProperty(value = "是否注册过")
-    private Boolean isRegister;
+    @ApiModelProperty(value = "是否关注公众号")
+    private Boolean subscribe;
     @ApiModelProperty(value = "用户openid")
     private String openId;
-    @ApiModelProperty(value = "患者id")
-    private Integer patientId;
 }

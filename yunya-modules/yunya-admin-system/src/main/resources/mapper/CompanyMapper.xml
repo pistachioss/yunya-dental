@@ -172,8 +172,6 @@
            c.`name`,
            c.`type`,
            c.credit_code as creditCode,
-           cei.tel,
-           cei.address,
            cei.clinic_number as clinicNumber,
            case
                c.type

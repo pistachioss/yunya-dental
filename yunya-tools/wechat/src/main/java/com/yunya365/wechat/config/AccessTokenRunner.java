@@ -1,14 +1,15 @@
 package com.yunya365.wechat.config;
 
-import com.yunya.feign.wechat.domain.vo.WxAccessTokenVo;
-import com.yunya.framework.common.constant.WXConstant;
-import com.yunya.framework.redis.util.RedisUtils;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
+import com.yunya.feign.wechat.domain.vo.*;
+import com.yunya.framework.common.constant.*;
+import com.yunya.framework.redis.util.*;
+import lombok.extern.slf4j.*;
+import org.apache.commons.lang3.*;
+import org.springframework.context.annotation.*;
+import org.springframework.web.client.*;
 
-import javax.annotation.Resource;
-import java.util.concurrent.TimeUnit;
+import javax.annotation.*;
+import java.util.concurrent.*;
 
 /**
  * @description:
@@ -31,7 +32,7 @@ public class AccessTokenRunner{
         log.info("获取access_token的url：{}", url);
         WxAccessTokenVo accessTokenRes = restTemplate.getForObject(url, WxAccessTokenVo.class);
         log.info("调用微信access_token返回结果是: {}", accessTokenRes);
-        if (accessTokenRes == null || (accessTokenRes.getErrcode() != null && accessTokenRes.getErrcode() != 0)) {
+        if (accessTokenRes == null || StringUtils.isNotBlank(accessTokenRes.getErrcode())) {
             log.info("公众号token获取失败");
             return;
         }

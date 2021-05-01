@@ -701,44 +701,4 @@
         where (isnull(`temp`.`useDeadline`) = 1 or `temp`.`useDeadline` >= date_format(now(), '%Y-%m-%d'))
         group by `temp`.`cardId`
     </select>
-
-    <select id="getCardUsage" resultType="com.yunya.feign.report.domain.vo.WxCardUsageVo">
-        select
-            `temp`.`name`                                                   as couponName,
-            `temp`.`couponType`                                             as `couponType`,
-            `temp`.`file_type`                                              as fileType,
-            `temp`.`path`,
-            if(isnull(`temp`.`useDeadline`), '永久有效',
-            concat_ws(' - ', `temp`.`activeDate`, `temp`.`useDeadline`)) as `effectiveDate`
-        from (
-            select
-                `c`.`id`                                   as `cardId`,
-                `cci`.`name`,
-                `cci`.`type`                               as `couponType`,
-                `cfi`.`file_type`,
-                `cfi`.`path`,
-                case
-                when `cci`.`type` = 3 then
-                    (select
-                        if(isnull(activation_deadline), if(`effective_days` = 0, null, date_format(
-                            date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d')),
-                            if(activation_deadline &lt;
-                            date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day),
-                                    '%Y-%m-%d'),
-                                activation_deadline,
-                                date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day),
-                                    '%Y-%m-%d')))
-                    from `special_package_coupon`
-                    where `coupon_id` = `c`.`coupon_id`)
-                else null
-                end                                    as `useDeadline`,
-                date_format(`c`.`active_date`, '%Y-%m-%d') as `activeDate`
-            from `card` `c`
-                inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
-                left join `coupon_file_info` `cfi` on `cfi`.`coupon_id` = `cci`.`id`
-            where `cci`.`is_inservice` = 1
-                and `c`.`id` = #{cardId}
-            order by `cfi`.`id` desc) `temp`
-        group by `temp`.`cardId`
-    </select>
 </mapper>

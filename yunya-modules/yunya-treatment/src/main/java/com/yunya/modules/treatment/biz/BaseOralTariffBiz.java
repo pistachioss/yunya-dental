@@ -2,7 +2,6 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -24,10 +23,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseOralTariffCategory;
-import com.yunya.models.tariff.BaseOralTariffHistory;
-import com.yunya.models.tariff.ClinicOralTariff;
+import com.yunya.models.tariff.*;
 import com.yunya.modules.treatment.mapper.BaseOralTariffCategoryMapper;
 import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +45,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTariffInfo;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
@@ -1159,19 +1155,5 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     List<BaseOralTariffExportVO> resultList = mapper.selectExportBaseOralTariffList(queryForm);
     ExcelUtil<BaseOralTariffExportVO> excelUtil = new ExcelUtil<>(BaseOralTariffExportVO.class);
     excelUtil.exportExcel(response, resultList, "基础商品商品信息表");
-  }
-
-  /**
-   * 根据多个价目表ID查询价目表名称
-   *
-   * @param ids 字符串ID
-   * @return String
-   */
-  public String findBaseOralNamesByIds(String[] ids) {
-    if (StringHelper.isNotEmpty(ids)) {
-      Joiner joiner = Joiner.on(",");
-      return mapper.selectBaseOralNamesByIds(joiner.join(ids));
-    }
-    return null;
   }
 }

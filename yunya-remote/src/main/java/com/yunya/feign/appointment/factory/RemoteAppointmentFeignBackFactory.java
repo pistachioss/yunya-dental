@@ -8,9 +8,6 @@ import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
-import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
-import com.yunya.feign.wechat.domain.vo.WxAppointConfirmPushVo;
-import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
 import lombok.extern.slf4j.Slf4j;
@@ -105,9 +102,5 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
         return null;
     }
 
-    @Override
-    public ResponseResult confirmWxAppoint(WxAppointConfirmModel model) {
-        return null;
-    }
 
 }

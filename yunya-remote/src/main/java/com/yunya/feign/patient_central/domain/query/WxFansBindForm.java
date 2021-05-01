@@ -1,6 +1,5 @@
 package com.yunya.feign.patient_central.domain.query;
 
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @return: $
  */
 @Data
-@ApiModel
 public class WxFansBindForm {
 
     @ApiModelProperty("公司微信公众号粉丝表Id")

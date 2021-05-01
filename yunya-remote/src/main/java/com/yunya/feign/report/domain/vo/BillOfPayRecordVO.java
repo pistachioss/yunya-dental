@@ -9,9 +9,6 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
-import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
-
 /**
  * 简介: 账单支付记录VO
  *
@@ -65,27 +62,27 @@ public class BillOfPayRecordVO implements Serializable {
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
   /** 原价合计 */
-  @Excel(name = "原价合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "原价合计", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("原价合计")
   private BigDecimal orderAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "优惠金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("优惠金额")
   private BigDecimal privilegeAmount;
-  /** 应收金额 */
-  @Excel(name = "应收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty("应收金额")
+  /** 实收金额 */
+  @Excel(name = "实收金额", cellType = Excel.ColumnType.NUMERIC)
+  @ApiModelProperty("实收金额")
   private BigDecimal actualAmount;
   /** 本次收费金额 */
-  @Excel(name = "本次收费金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "本次收费金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("本次收费金额")
   private BigDecimal receivedAmount;
   /** 本次欠费金额 */
-  @Excel(name = "本次欠费金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "本次欠费金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("本次欠费金额")
   private BigDecimal stillOweAmount;
   /** 剩余欠费金额 */
-  @Excel(name = "剩余欠费金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "剩余欠费金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("剩余欠费金额")
   private BigDecimal remainingOweAmount;
   /** 收费人ID */
