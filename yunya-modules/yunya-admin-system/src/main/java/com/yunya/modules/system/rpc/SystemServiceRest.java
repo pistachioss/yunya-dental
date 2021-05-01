@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -586,5 +587,11 @@ public class SystemServiceRest {
   @RequestMapping(value = "/clinicExtInfo/{companyId}", method = RequestMethod.GET)
   public MedicalOrganizationInfoVO clinicExtInfoByCompanyId(@PathVariable(value = "companyId") Integer companyId) {
     return clinicExtInfoBiz.findMedicalOrganizationInfo(companyId);
+  }
+
+  @RequestMapping(value = "/dictItem/name", method = RequestMethod.GET)
+  public DictionaryItem getDictItemByNames(@NotBlank @RequestParam String typeName
+          , @NotBlank @RequestParam String itemName) {
+    return dictionaryItemBiz.getDictItemByName(typeName, itemName);
   }
 }

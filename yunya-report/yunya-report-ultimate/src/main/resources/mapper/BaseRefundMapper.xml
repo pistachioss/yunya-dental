@@ -822,49 +822,4 @@
             </if>
         </where>
     </select>
-
-    <!-- 根据条件按月份分组求退费工作量 -->
-    <select id="selectTotalRefundWorkloadGroupByMonth" resultType="com.yunya.feign.report.domain.vo.BillOfRefundWorkloadVO">
-        SELECT
-        SUM(IFNULL(brd.refund_amount,0)) AS totalRefundWorkload,
-        br.org_id AS orgId,
-        DATE_FORMAT(br.refund_date,'%Y-%m') AS month
-        FROM
-        base_refund_detail brd
-        INNER JOIN base_refund br ON brd.refund_id = br.refund_id
-        INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id AND bbd.executor_id IS NOT NULL
-        <where>
-            <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND br.org_id IN
-                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( br.refund_date, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( br.refund_date, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( brd.refund_date, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( brd.refund_date, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
-        GROUP BY br.org_id, month
-    </select>
 </mapper>

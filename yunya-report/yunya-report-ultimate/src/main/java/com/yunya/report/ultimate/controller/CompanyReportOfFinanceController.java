@@ -870,4 +870,34 @@ public class CompanyReportOfFinanceController {
     billPayBiz.billDiscountAndFreePaymentExport(query, response);
     return ResponseUtil.success(null);
   }
+
+  /**
+   * 根据条件查询非本月免单金额明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<NonMonthCategoryVO>
+   */
+  @ApiOperation("公司端报表-财务报表-分类收入汇总-非本月免单金额明细")
+  @PostMapping(value = "/category/nonMonthCateogry/list", name = "根据条件查询非本月免单金额明细列表")
+  public ResponseResult<PageInfo<NonMonthCategoryVO>> nonMonthCategoryList(
+          @RequestBody @Validated BillCategoryIncomeQuery query) {
+    PageInfo<NonMonthCategoryVO> resultList = billDetailBiz.nonMonthCategoryList(query);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 根据条件导出非本月免单金额明细列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return void
+   */
+  @ApiOperation("公司端报表-财务报表-分类收入汇总-导出非本月免单金额明细")
+  @PostMapping(value = "/category/nonMonthCateogry/export", name = "根据条件导出非本月免单金额明细列表")
+  public ResponseResult<T> nonMonthCategoryExport(
+          HttpServletResponse response, @RequestBody @Validated BillCategoryIncomeQuery query)
+          throws IOException {
+    billDetailBiz.nonMonthCategoryExport(response, query);
+    return ResponseUtil.success(null);
+  }
 }

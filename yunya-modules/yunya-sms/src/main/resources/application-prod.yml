@@ -21,6 +21,9 @@ spring:
     port: 6379
     password: foobared
 
+wiki:
+  host: ivy2.yunya365.com/api/sms
+
 # 日志打印级别
 logging:
   level:

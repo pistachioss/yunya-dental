@@ -16,6 +16,7 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.*;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
@@ -266,7 +268,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeeWorkloadOfPersonnelVO> resultList = workloadList.getList();
     ExcelUtil<EmployeeWorkloadOfPersonnelVO> excelUtil =
         new ExcelUtil<>(EmployeeWorkloadOfPersonnelVO.class);
-    String fileName = query.getQueryDate() + query.getQueryDate() + "员工工作量统计";
+    String fileName = query.getQueryDate() + "员工工作量统计";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -307,6 +309,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<CategoryInfoIncomeVO> resultList = mapper.selectCategoryIncomeList(query);
+    monthCategoryFreePayment(resultList, query);
     return new PageInfo<>(resultList);
   }
 
@@ -353,7 +356,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeePersonalActualWorkloadDetailVO> resultList = pageInfo.getList();
     ExcelUtil<EmployeePersonalActualWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalActualWorkloadDetailVO.class);
-    String fileName = query.getOrderDate() + "实收工作量统计明细表";
+    String fileName = query.getQueryDate() + "实收工作量统计明细表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -523,7 +526,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setWhetherPage(false);
     ExcelUtil<BillingItemInfoVO> excelUtil = new ExcelUtil<>(BillingItemInfoVO.class);
     List<BillingItemInfoVO> resultList = mapper.selectBillingItemInfoList(query);
-    String fileName = query.getStartDate() + query.getEndDate() + "开单项目数量统计表";
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单项目数量统计表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -556,7 +559,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setWhetherPage(false);
     ExcelUtil<BillingItemDetailVO> excelUtil = new ExcelUtil<>(BillingItemDetailVO.class);
     List<BillingItemDetailVO> resultList = mapper.selectBillingItemDetailList(query);
-    String fileName = query.getStartDate() + query.getEndDate() + "开单项目统计明细表";
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单项目统计明细表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -623,9 +626,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportCurrentMonthBillDetail(
       HttpServletResponse response, CurrentMonthBillInfoQuery query) throws IOException {
+    String fileName = query.getCurrentMonth() + "账单明细报表";
     List<CurrentMonthBillDetailVO> resultList = mapper.selectCurrentMonthBillDetail(query);
     ExcelUtil<CurrentMonthBillDetailVO> excelUtil = new ExcelUtil<>(CurrentMonthBillDetailVO.class);
-    excelUtil.exportExcel(response, resultList, "账单明细记录");
+    Integer orgId = query.getOrgId();
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgId);
+    if (organization != null) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
+    excelUtil.exportExcel(response, resultList, "账单明细记录", fileName);
   }
 
   /**
@@ -636,10 +645,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportCurrentMonthBillPayRecord(
       HttpServletResponse response, CurrentMonthBillInfoQuery query) throws IOException {
+    String fileName = query.getCurrentMonth() + "账单当月收费记录";
+    Integer orgId = query.getOrgId();
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgId);
+    if (organization != null) {
+      fileName = organization.getAbbreviation() + fileName;
+    }
     List<CurrentMonthBillPayRecordVO> resultList = mapper.selectCurrentMonthBillPayRecord(query);
     ExcelUtil<CurrentMonthBillPayRecordVO> excelUtil =
         new ExcelUtil<>(CurrentMonthBillPayRecordVO.class);
-    excelUtil.exportExcel(response, resultList, "门诊当月账单当月收费记录");
+    excelUtil.exportExcel(response, resultList, "门诊当月账单当月收费记录", fileName);
   }
 
   /**
@@ -1270,6 +1285,147 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
+   * 根据条件查询门诊工作量统计
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  public DynamicHeaderPageInfo<JSONObject> clinicPerformanceList1(ClinicPerformanceBusinessQuery queryForm) {
+      String startDate = queryForm.getStartDate().substring(0,7);
+      String endDate = queryForm.getEndDate().substring(0,7);
+      String year = startDate.substring(0,4); //年份
+      if (!year.equals(endDate.substring(0,4))) {
+        throw new ClientServiceException("查询月份不能跨年", PARAMETERS_IS_ILLEGAL);
+      }
+      String sMonth = startDate.substring(5,7); //月份
+      String eMonth = endDate.substring(5,7); //月份
+      List<BaseOrganization> orgs = getOrganization(queryForm);
+      Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
+      DataStatisticsQuery query = new DataStatisticsQuery();
+      query.setDateType(queryForm.getDateType());
+      query.setOrgIds(orgIds);
+      query.setStartDate(startDate);
+      query.setEndDate(endDate);
+      Map<Integer, BigDecimal[]> curWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
+      Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
+      //环比：去年+查询月份范围
+      String preYear = DateUtil.preYear(year);
+      String chainStartDate = preYear + "-" + sMonth;
+      String chainEndDate = preYear + "-" + eMonth;
+      query.setStartDate(chainStartDate);
+      query.setEndDate(chainEndDate);
+      Map<Integer, BigDecimal[]> chainWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
+
+      //同比：查询条件的开始月份 + 查询月份范围的跨度值
+      int range = 1; //默认1个月
+      if (!startDate.equals(endDate)) {
+        range = Integer.parseInt(eMonth)-Integer.parseInt(sMonth);
+      }
+      String preStartDate = DateUtil.preMonth(startDate, range);
+      String preEndDate = DateUtil.preMonth(endDate, range);
+      query.setStartDate(preStartDate);
+      query.setEndDate(preEndDate);
+      Map<Integer, BigDecimal[]> preWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
+
+      //年度工作量
+      String yearStartDate = year + "-01";
+      String yearEndDate = year + "-12";
+      query.setStartDate(yearStartDate);
+      query.setEndDate(yearEndDate);
+      Map<Integer, BigDecimal[]> yearWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
+
+      DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
+      List<JSONObject> result = new ArrayList<>();
+      if (StringHelper.isNotEmpty(orgs)) {
+        BigDecimal actualTotal = BigDecimal.ZERO;
+        BigDecimal goalTotal = BigDecimal.ZERO;
+        BigDecimal completedTotal = BigDecimal.ZERO;
+        BigDecimal chainTotal = BigDecimal.ZERO;
+        BigDecimal preTotal = BigDecimal.ZERO;
+        BigDecimal yearTotal = BigDecimal.ZERO;
+        JSONObject actual = new JSONObject();
+        init(actual, startDate, endDate, "实际值");
+        JSONObject goals = new JSONObject();
+        init(goals, startDate, endDate, "目标值");
+        JSONObject completed = new JSONObject();
+        init(completed, startDate, endDate, "完成度");
+        JSONObject chainDiff = new JSONObject();//环比
+        init(chainDiff, startDate, endDate, "环比值");
+        JSONObject preDiff = new JSONObject();//同比
+        init(preDiff, startDate, endDate, "同比值");
+        JSONObject curYear = new JSONObject();//年度总工作量
+        init(curYear, startDate, endDate, "年度总工作量");
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("date", "时间");
+        map.put("name", "工作量");
+        for (BaseOrganization vo : orgs) {
+          Integer orgId = vo.getOrgId();
+          BigDecimal goal = workloadGoalMap.get(orgId);
+          if (goal == null) {
+            goal = BigDecimal.ZERO;
+          }
+          BigDecimal[] workloads = curWorkload.get(orgId);
+          if (workloads == null) {
+            workloads = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          BigDecimal completedPercentage = BigDecimal.ZERO;
+          if (goal.compareTo(BigDecimal.ZERO) != 0) {
+            completedPercentage =
+                      workloads[0].divide(goal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+          }
+          String key = orgId + "";
+          map.put(key, vo.getAbbreviation());
+          actual.put(key, workloads[0]);
+          goals.put(key, goal);
+          completed.put(key, completedPercentage.toString() + "%");
+          BigDecimal[] chains = chainWorkload.get(orgId);
+          if (chains == null) {
+            chains = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          BigDecimal[] pres = preWorkload.get(orgId);
+          if (pres == null) {
+            pres = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          BigDecimal[] years = yearWorkload.get(orgId);
+          if (years == null) {
+            years = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          chainDiff.put(key, chains[0]);
+          preDiff.put(key, pres[0]);
+          curYear.put(key, years[0]);
+          actualTotal = actualTotal.add(workloads[0]);
+          goalTotal = goalTotal.add(goal);
+          chainTotal = chainTotal.add(chains[0]);
+          preTotal = preTotal.add(pres[0]);
+          yearTotal = yearTotal.add(years[0]);
+        }
+        map.put("total","合计");
+        actual.put("total", actualTotal);
+        goals.put("total", goalTotal);
+        if (goalTotal.compareTo(BigDecimal.ZERO) != 0) {
+          completedTotal =
+                    actualTotal.divide(goalTotal, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+        }
+        completed.put("total", completedTotal.toString() + "%");
+        chainDiff.put("total", chainTotal);
+        preDiff.put("total", preTotal);
+        curYear.put("total", yearTotal);
+        result.add(actual);
+        result.add(goals);
+        result.add(completed);
+        result.add(chainDiff);
+        result.add(preDiff);
+        result.add(curYear);
+        pageInfo.setMap(map);
+      }
+      pageInfo.setPageNum(query.getPageNum());
+      pageInfo.setPageSize(query.getPageSize());
+      pageInfo.setTotal(result.size());
+      pageInfo.setList(result);
+      return pageInfo;
+    }
+
+  /**
    * 根据条件查询门诊工作量统计（优化版）
    *
    * @param queryForm 查询条件
@@ -1293,33 +1449,33 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
     //环比：去年+查询月份范围
     String preYear = DateUtil.preYear(year);
-    String chainSMonth = preYear + "-" + sMonth;
-    String chainEMonth = preYear + "-" + eMonth;
-    String minMonth = chainSMonth;
-    List<String> chainMonthList = DateUtil.sliceUpDateRange(chainSMonth, chainEMonth);
-
+    String chainStartDate = preYear + "-" + sMonth;
+    String chainEndDate = preYear + "-" + eMonth;
+    List<String> chainMonthList = DateUtil.sliceUpDateRange(chainStartDate, chainEndDate);
+    query.setStartDate(chainStartDate);
+    query.setEndDate(chainEndDate);
+    Map<Integer, BigDecimal[]> chainWorkload = baseBillPayBiz.computeWorkloadGroupOrgId(query);
     //同比：查询条件的开始月份 + 查询月份范围的跨度值
     int range = 1; //默认1个月
     if (!startDate.equals(endDate)) {
       range = Integer.parseInt(eMonth)-Integer.parseInt(sMonth);
     }
-    String preSMonth = DateUtil.preMonth(startDate, range);
-    String preEMonth = DateUtil.preMonth(endDate, range);
-    if (DateUtil.compareMonth(preSMonth, minMonth) < 0) {
-      minMonth = preSMonth;
-    }
-    List<String> preMonthList = DateUtil.sliceUpDateRange(preSMonth, preEMonth);
+    String preStartDate = DateUtil.preMonth(startDate, range);
+    String preEndDate = DateUtil.preMonth(endDate, range);
+    List<String> preMonthList = DateUtil.sliceUpDateRange(preStartDate, preEndDate);
 
     //年度工作量
-    String yearSMonth = year + "-01";
-    String yearEMonth = year + "-12";
-    if (DateUtil.compareMonth(yearSMonth, minMonth) < 0) {
-      minMonth = yearSMonth;
+    String yearStartDate = year + "-01";
+    String yearEndDate = year + "-12";
+    if (DateUtil.compareMonth(preStartDate, yearStartDate)<0) {
+      query.setStartDate(preStartDate);
+    } else {
+      query.setStartDate(yearStartDate);
     }
-    query.setStartDate(minMonth);
-    query.setEndDate(yearEMonth);
-    List<String> yearMonthList = DateUtil.sliceUpDateRange(yearSMonth, yearEMonth);
-    Map<String, Map<Integer, BigDecimal>> workloadMap = baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(query);
+    query.setStartDate(chainStartDate);
+    query.setEndDate(yearEndDate);
+    List<String> yearMonthList = DateUtil.sliceUpDateRange(preStartDate, preEndDate);
+    Map<String, Map<Integer, BigDecimal[]>> yearWorkload = baseBillPayBiz.computeWorkloadGroupOrgId2(query);
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
     List<JSONObject> result = new ArrayList<>();
     if (StringHelper.isNotEmpty(orgs)) {
@@ -1350,7 +1506,19 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         if (goal == null) {
           goal = BigDecimal.ZERO;
         }
-        BigDecimal workloads = computeOrgWorkload(orgId, curMonthList, workloadMap);
+
+        BigDecimal workloads = BigDecimal.ZERO;
+        for (String month : curMonthList) {
+          Map<Integer, BigDecimal[]> yearMap = yearWorkload.get(month);
+          if (yearMap == null) {
+            yearMap = new HashMap<>(16);
+          }
+          BigDecimal[] yearOrg = yearMap.get(orgId);
+          if (yearOrg == null) {
+            yearOrg = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          workloads = workloads.add(yearOrg[0]);
+        }
         BigDecimal completedPercentage = BigDecimal.ZERO;
         if (goal.compareTo(BigDecimal.ZERO) != 0) {
           completedPercentage =
@@ -1361,17 +1529,44 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         actual.put(key, workloads);
         goals.put(key, goal);
         completed.put(key, completedPercentage.toString() + "%");
-        BigDecimal chainWorkload = computeOrgWorkload(orgId, chainMonthList, workloadMap);
-        BigDecimal preWorkload = computeOrgWorkload(orgId, preMonthList, workloadMap);
-        BigDecimal yearWorkload = computeOrgWorkload(orgId, yearMonthList, workloadMap);
-        chainDiff.put(key, chainWorkload);
-        preDiff.put(key, preWorkload);
-        curYear.put(key, yearWorkload);
+
+        BigDecimal[] chains = chainWorkload.get(orgId);
+        if (chains == null) {
+          chains = new BigDecimal[]{BigDecimal.ZERO};
+        }
+        BigDecimal pres = BigDecimal.ZERO;
+        for (String month : preMonthList) {
+          Map<Integer, BigDecimal[]> yearMap = yearWorkload.get(month);
+          if (yearMap == null) {
+            yearMap = new HashMap<>(16);
+          }
+          BigDecimal[] preOrg = yearMap.get(orgId);
+          if (preOrg == null) {
+            preOrg = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          pres = pres.add(preOrg[0]);
+        }
+
+        BigDecimal years = BigDecimal.ZERO;
+        for (String month : yearMonthList) {
+          Map<Integer, BigDecimal[]> yearMap = yearWorkload.get(month);
+          if (yearMap == null) {
+            yearMap = new HashMap<>(16);
+          }
+          BigDecimal[] yearOrg = yearMap.get(orgId);
+          if (yearOrg == null) {
+            yearOrg = new BigDecimal[]{BigDecimal.ZERO};
+          }
+          years = years.add(yearOrg[0]);
+        }
+        chainDiff.put(key, chains[0]);
+        preDiff.put(key, pres);
+        curYear.put(key, years);
         actualTotal = actualTotal.add(workloads);
         goalTotal = goalTotal.add(goal);
-        chainTotal = chainTotal.add(chainWorkload);
-        preTotal = preTotal.add(preWorkload);
-        yearTotal = yearTotal.add(yearWorkload);
+        chainTotal = chainTotal.add(chains[0]);
+        preTotal = preTotal.add(pres);
+        yearTotal = yearTotal.add(years);
       }
       map.put("total","合计");
       actual.put("total", actualTotal);
@@ -1399,23 +1594,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return pageInfo;
   }
 
-  private BigDecimal computeOrgWorkload(Integer orgId, List<String> chainMonthList, Map<String, Map<Integer, BigDecimal>> workloadMap) {
-    BigDecimal result = BigDecimal.ZERO;
-    for (String month : chainMonthList) {
-      Map<Integer, BigDecimal> midMap = workloadMap.get(month);
-      if (midMap == null) {
-        midMap = new HashMap<>(16);
-      }
-      BigDecimal workload = midMap.get(orgId);
-      if (workload == null) {
-        workload = BigDecimal.ZERO;
-      }
-      result = result.add(workload);
-    }
-    return result;
-  }
-
-  /**
+    /**
      * 获取所有门诊信息
      *
      * @param query
@@ -1804,12 +1983,169 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-   * 根据条件按月份分组门诊补入工作量
+   * 计算当月免单金额
+   *
+   * @param result
+   * @param queryFrom
+   */
+  public void monthCategoryFreePayment(List<CategoryInfoIncomeVO> result, BillCategoryIncomeQuery queryFrom) {
+    if (StringHelper.isNotEmpty(result)) {
+      List<BaseTariffInfo> items = baseTariffInfoBiz.selectListAll();
+      Map<String, String> itemMap = new HashMap<>(16);
+      items.forEach(vo -> itemMap.put(vo.getItemType() + "," + vo.getItemId(), vo.getItemType() + "," + vo.getCategoryId()));
+      List<Integer> billIds = mapper.billIdByMonthFreePayment(queryFrom);
+      Map<String, BigDecimal> frees = new HashMap<>(16);
+      if (StringHelper.isNotEmpty(billIds)) {
+        List<BaseBillDetail> details = mapper.selectBillDetailByBillIds(billIds);
+        details = details.stream().filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0).collect(Collectors.toList());
+        computePercentage(details);
+        Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(billIds);
+        details.forEach(detail -> {
+          String key = itemMap.get(detail.getItemType() + "," + detail.getItemId());
+          Integer billId = detail.getBillId();
+          BigDecimal free = freePaymentMap.get(billId);
+          BigDecimal amount = detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+          BigDecimal freeAmount = frees.get(key);
+          if (freeAmount == null) {
+            freeAmount = BigDecimal.ZERO;
+          }
+          frees.put(key, freeAmount.add(amount));
+        });
+      }
+      result.forEach(vo -> {
+        String cid = vo.getCategoryType() + "," + vo.getCategoryId();
+        BigDecimal freeAmount = frees.get(cid);
+        if (freeAmount == null) {
+          freeAmount = BigDecimal.ZERO;
+        }
+        vo.setTotalFreePaymentAmount(freeAmount);
+        vo.setTotalAmount(vo.getTotalActualAmount().subtract(freeAmount).add(vo.getTotalCouponAmount()));
+      });
+    }
+  }
+
+  /**
+   * 根据条件查询非本月免单金额列表
    *
    * @param query
    * @return
    */
-  public List<BillRecordWorkloadVO> findCouponWorkloadGroupByPrivilegeDate(DataStatisticsQuery query) {
-    return mapper.selectCouponWorkloadGroupByPrivilegeDate(query);
+  public PageInfo<NonMonthCategoryVO> nonMonthCategoryList(BillCategoryIncomeQuery query) {
+    List<NonMonthCategoryVO> vos = mapper.nonMonthCategoryList(query);
+    List<NonMonthCategoryVO> res = new ArrayList<>();
+    if (StringHelper.isNotEmpty(vos)) {
+      Map<String, String> categoryMap = new HashMap<>(16);
+      Map<String, String> categoryName = new HashMap<>(16);
+      List<BaseTariffInfo> items = baseTariffInfoBiz.selectListAll();
+      if (StringHelper.isNotEmpty(items)) {
+        items.forEach(vo->{
+          categoryMap.put(vo.getItemType()+","+vo.getItemId(),vo.getItemType()+","+vo.getCategoryId());
+          categoryName.put(vo.getItemType()+","+vo.getCategoryId(), vo.getCategoryName());
+        });
+      }
+      Map<Integer, BigDecimal[]> billMap = new HashMap<>(16);
+      for (NonMonthCategoryVO vo : vos) {
+        Integer billId = vo.getBillId();
+        BigDecimal[] amounts = billMap.get(billId);
+        if (amounts == null) {
+          amounts = new BigDecimal[]{BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO};
+        }
+        amounts[0] = amounts[0].add(vo.getActualAmount());// 实收
+        amounts[1] = amounts[1].add(vo.getBillAmount());// 原价
+        billMap.put(billId, amounts);
+      }
+      Set<Integer> billIds = billMap.keySet();
+      EmployeePersonalWorkloadDetailQuery queryForm = new EmployeePersonalWorkloadDetailQuery();
+      queryForm.setOrgId(query.getOrgId());
+      queryForm.setQueryDate(query.getQueryDate());
+      queryForm.setDateType((byte) 0);
+      List<EmployeeFreepaymentWorkloadDetailVO> resultList =
+              mapper.selectEmployeeFreepaymentWorkloadDetailList(queryForm, billIds, FREE_PAYMENT_ID);
+      // 免单支付
+      if (StringHelper.isNotEmpty(resultList)) {
+        Map<Integer, EmployeeFreepaymentWorkloadDetailVO> billPayIds = resultList.stream()
+                .collect(Collectors.toMap(EmployeeFreepaymentWorkloadDetailVO::getBillPayId, Function.identity()));
+        billIds = resultList.stream().map(EmployeeFreepaymentWorkloadDetailVO::getBillId).collect(Collectors.toSet());
+        List<BaseBillDetail> details = mapper.selectBillDetailByBillIds(billIds);
+        details = details.stream().filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0).collect(Collectors.toList());
+        computePercentage(details);
+        Map<Integer, List<BaseBillPayDetailVO>> freePaymentMap = sumFreePaymentMapByBillPayIds(billPayIds.keySet());
+        Map<String, BigDecimal> freeMap = new LinkedHashMap<>(16);
+        details.forEach(detail -> {
+          Integer billId = detail.getBillId();
+          String cid = categoryMap.get(detail.getItemType() + "," + detail.getItemId());
+          List<BaseBillPayDetailVO> list = freePaymentMap.get(billId);
+          if (StringHelper.isNotEmpty(list)) {
+            list.forEach(vo -> {
+              Integer billPayId = vo.getBillPayId();
+              String key = billId + "," + billPayId + "," + cid;
+              BigDecimal free = vo.getPrincipalAmount();
+              BigDecimal amount = detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+              BigDecimal freeAmount = freeMap.get(key);
+              if (freeAmount == null) {
+                freeAmount = BigDecimal.ZERO;
+              }
+              freeMap.put(key, freeAmount.add(amount));
+              BigDecimal[] billAmounts = billMap.get(billId);
+              if (billAmounts == null) {
+                billAmounts = new BigDecimal[]{BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO};
+              }
+              billAmounts[2] = billAmounts[2].add(amount);
+              billMap.put(billId, billAmounts);
+            });
+          }
+        });
+
+        for (Map.Entry<String, BigDecimal> entry : freeMap.entrySet()) {
+          String[] keys = entry.getKey().split(",");
+          Integer billId = Integer.parseInt(keys[0]);
+          Integer billPayId = Integer.parseInt(keys[1]);
+          Integer itemType = Integer.parseInt(keys[2]);
+          Integer categoryId = Integer.parseInt(keys[3]);
+          BigDecimal freeAmount = entry.getValue();
+          if (freeAmount == null) {
+            freeAmount = BigDecimal.ZERO;
+          }
+          BigDecimal[] billAmounts = billMap.get(billId);
+          if (billAmounts == null) {
+            billAmounts = new BigDecimal[]{BigDecimal.ZERO,BigDecimal.ZERO,BigDecimal.ZERO};
+          }
+          NonMonthCategoryVO vo = new NonMonthCategoryVO();
+          vo.setFreeAmount(freeAmount);
+          vo.setActualAmount(billAmounts[0]);
+          vo.setBillAmount(billAmounts[1]);
+          vo.setFreeBillAmount(billAmounts[2]);
+          vo.setCategoryId(categoryId);
+          vo.setCategoryName(categoryName.get(itemType+","+categoryId));
+          EmployeeFreepaymentWorkloadDetailVO workload = billPayIds.get(billPayId);
+          if (workload != null) {
+            vo.setPatientName(workload.getPatientName());
+            vo.setFreeDate(workload.getChargeDate());
+            vo.setAbbreviation(workload.getAbbreviation());
+          }
+          res.add(vo);
+        }
+      }
+    }
+    if (query.getWhetherPage()) {
+      return PageUtl.doPage(query.getPageNum(), query.getPageSize(), res);
+    }
+    return new PageInfo<>(res);
+  }
+
+  /**
+   * 根据条件导出非本月免单金额明细列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return void
+   */
+  public void nonMonthCategoryExport(HttpServletResponse response, BillCategoryIncomeQuery query) throws IOException {
+    query.setWhetherPage(false);
+    List<NonMonthCategoryVO> list = nonMonthCategoryList(query).getList();
+    ExcelUtil<NonMonthCategoryVO> excelUtil = new ExcelUtil<>(NonMonthCategoryVO.class);
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    String fileName = excelUtil.getFileName(query.getQueryDate(),"", organization.getAbbreviation(),"非本月免单金额明细");
+    excelUtil.exportExcel(response, list, "非本月免单金额明细", fileName);
   }
 }

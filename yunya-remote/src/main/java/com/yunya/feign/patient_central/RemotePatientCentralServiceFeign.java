@@ -1,26 +1,21 @@
 package com.yunya.feign.patient_central;
 
-import com.yunya.feign.patient_central.domain.form.UpdPassForm;
+import com.yunya.feign.patient_central.domain.form.*;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
-import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
-import com.yunya.feign.patient_central.factory.RemotePatientCentralServiceFallBackFactory;
-import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.constant.YunyaServiceNameConstants;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.models.patient_central.MemberExpendRecord;
-import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.patient_central.PatientMemberInfo;
-import com.yunya.models.patient_central.PrepaidExpendRecord;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.validation.annotation.Validated;
+import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.patient_central.factory.*;
+import com.yunya.framework.common.annation.*;
+import com.yunya.framework.common.constant.*;
+import com.yunya.framework.common.model.*;
+import com.yunya.models.patient_central.*;
+import io.swagger.annotations.*;
+import org.springframework.cloud.openfeign.*;
+import org.springframework.validation.annotation.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.util.List;
+import java.math.*;
+import java.util.*;
 
 /** @author YK */
 @FeignClient(
@@ -98,8 +93,8 @@ import java.util.List;
    * @param patientBaseInfo 条件
    * @return PatientBaseInfo
    */
-  @RequestMapping(value = "/api/findPatientInfo", method = RequestMethod.POST)
-  PatientBaseInfo findPatientInfo(@RequestBody PatientBaseInfo patientBaseInfo);
+  @RequestMapping(value = "/api/findPatientList", method = RequestMethod.POST)
+  List<PatientBaseInfo> findPatientInfo(@RequestBody PatientBaseInfo patientBaseInfo);
 
   /**
    * 查询患者信息列表
@@ -270,4 +265,31 @@ import java.util.List;
   @ApiOperation("根据支付方式统计会员充值和预付款退费金额")
   @RequestMapping(value = "/api/refund/cash", method = RequestMethod.POST)
   BigDecimal sumMemberAndPrepaidRefundCash(@RequestBody @Validated CashReceiptOrRefundQuery query);
+
+  @ApiOperation("保存公众号粉丝绑定")
+  @RequestMapping (value = "/api/saveWxAndFansBind",method = RequestMethod.POST)
+  Integer saveWx(@RequestBody @Validated WxFansSaveForm wxFansSaveForm);
+
+  @ApiOperation("查询微信用户是否注册")
+  @GetMapping (value = "/api/count/register")
+  int countRegister(@RequestParam(value = "openId", required = true) String openId);
+
+  @ApiOperation("根据Id查询患者信息公用信息")
+  @GetMapping("/api/publicInformation/{id}")
+  PatientPublicInfoVo findPatientPublicInfoById(@PathVariable("id") Integer id);
+
+  @PostMapping("/api/wxFans/query")
+  WxFans getWxFans(@RequestBody WxUserQuery query);
+
+  @PostMapping("/api/wxFans/detail")
+  List<WxFansDetailVO> findDetail(@RequestBody @Validated WxFansDetailForm wxFansDetailForm);
+
+  @ApiOperation("查询微信用户信息")
+  @RequestMapping (value = "/api/wx/patient/{patientId}", method = RequestMethod.POST)
+  WxPatientVo getWxPatientInfo(@PathVariable("patientId") Integer patientId);
+
+  @ApiOperation("查询微信用户的会员卡和预付款使用记录")
+  @RequestMapping (value = "/api/wx/card/record", method = RequestMethod.GET)
+  public List<WxCardUseVo> listPatientCardRecord(@RequestParam(value = "cardNumber", required = true) String cardNumber
+          , @RequestParam(value = "type", required = true) Integer type);
 }

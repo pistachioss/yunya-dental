@@ -28,6 +28,7 @@ import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
@@ -573,7 +574,6 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                       .mapToInt(SpecialistTariffProjectVO::getQuantity).sum();
               count.getAndAdd(numberOfItems);
               specialistProjectReportVO.setPercentage(String.valueOf(numberOfItems));
-//            specialistProjectReportVOList.add(specialistProjectReportVO);
             }
           }
           return specialistProjectReportVO;
@@ -677,30 +677,10 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       });
       // 分页
       if (query.getWhetherPage()) {
-        return doPage(query.getPageNum(), query.getPageSize(), resultList);
+        return PageUtl.doPage(query.getPageNum(), query.getPageSize(), resultList);
       }
     }
     return new PageInfo<>(resultList);
-  }
-
-  /**
-   * 手动分页
-   *
-   * @param pageNum
-   * @param pageSize
-   * @param resultList
-   * @return
-   */
-  private PageInfo<SpecialistProjectCompletedInfoVO> doPage(Integer pageNum, Integer pageSize, List<SpecialistProjectCompletedInfoVO> resultList) {
-    int total = resultList.size();
-    PageInfo<SpecialistProjectCompletedInfoVO> pageInfo = new PageInfo<>();
-    pageInfo.setPageNum(pageNum);
-    pageInfo.setPageSize(pageSize);
-    pageInfo.setTotal(total);
-    List<SpecialistProjectCompletedInfoVO> list =
-            resultList.subList(pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
-    pageInfo.setList(list);
-    return pageInfo;
   }
 
   private List<OrderDetail> getSpecialistProjectCompletedList(

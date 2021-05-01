@@ -1,22 +1,21 @@
 package com.yunya.report.ultimate.biz;
 
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.fastjson.JSONObject;
-import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.bo.ClinicDataStatisticsInfoVO;
-import com.yunya.feign.report.domain.model.EmployeeWorkloadCostModel;
+import com.alibaba.excel.*;
+import com.alibaba.fastjson.*;
+import com.github.pagehelper.*;
+import com.yunya.feign.report.domain.bo.*;
+import com.yunya.feign.report.domain.model.*;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.*;
+import org.junit.runner.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.boot.test.context.*;
+import org.springframework.test.context.junit4.*;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * 简介：
@@ -242,7 +241,7 @@ public class BizTest {
      */
     @Test
     public void test20() {
-        String param = "{\"couponIds\":[],\"executorName\":\"\",\"workStatus\":\"\",\"startDate\":\"2021-03-01\",\"endDate\":\"2021-03-31\",\"orgIds\":[26],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+        String param = "{\"couponIds\":[],\"executorName\":\"\",\"workStatus\":[],\"startDate\":\"2021-04-13\",\"endDate\":\"2021-04-13\",\"orgIds\":[26],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
         CouponExecutoredQuery query = JSONObject.parseObject(param, CouponExecutoredQuery.class);
         long t1 = System.currentTimeMillis();
         PageInfo<CouponExecutoredVO> pageInfo = baseBillDetailBiz.couponExecutoredList(query);
@@ -268,7 +267,7 @@ public class BizTest {
      */
     @Test
     public void test22() {
-        String param = "{\"orgIds\":[31],\"dateType\":1,\"startDate\":\"2021-04\",\"endDate\":\"2021-04\"}";
+        String param = "{\"orgIds\":[26],\"dateType\":1,\"startDate\":\"2021-04\",\"endDate\":\"2021-04\"}";
         DataStatisticsQuery query = JSONObject.parseObject(param, DataStatisticsQuery.class);
         WorkloadStatisticsVO clinicWorkloadStatistic = baseBillDetailBiz.findClinicWorkloadStatistic(query);
         System.out.println(JSONObject.toJSON(clinicWorkloadStatistic));
@@ -290,7 +289,7 @@ public class BizTest {
      */
     @Test
     public void test24() {
-        String param = "{\"dateType\":1,\"endDate\":\"2021-04\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-04\",\"whetherPage\":true}";
+        String param = "{\"dateType\":1,\"endDate\":\"2020-01\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2020-12\",\"whetherPage\":true}";
         ClinicPerformanceBusinessQuery query = JSONObject.parseObject(param,ClinicPerformanceBusinessQuery.class);
         long t1 = System.currentTimeMillis();
         DynamicHeaderPageInfo<JSONObject> pageInfo = baseBillDetailBiz.clinicPerformanceList(query);
@@ -335,5 +334,25 @@ public class BizTest {
         PageInfo<SaleActivited365CardVO>  pageInfo = baseBillDetailBiz.clinic365CardSaleActivitedList(query);
         System.out.println(System.currentTimeMillis() - t1);
         System.out.println(JSONObject.toJSON(pageInfo));
+    }
+
+    @Test
+    public void testCategoryInComeList() {
+        String param = "{\"queryDate\":\"2021-03\",\"orgId\":26,\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+        BillCategoryIncomeQuery query = JSONObject.parseObject(param, BillCategoryIncomeQuery.class);
+        long t1 = System.currentTimeMillis();
+        PageInfo<CategoryInfoIncomeVO> resultList = baseBillDetailBiz.findCategoryIncomeList(query);
+        System.out.println(System.currentTimeMillis() - t1);
+        System.out.println(JSONObject.toJSON(resultList));
+    }
+
+    @Test
+    public void testNonMonthCategoryList() {
+        String param = "{\"queryDate\":\"2021-03\",\"orgId\":27,\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+        BillCategoryIncomeQuery query = JSONObject.parseObject(param, BillCategoryIncomeQuery.class);
+        long t1 = System.currentTimeMillis();
+        PageInfo<NonMonthCategoryVO> resultList = baseBillDetailBiz.nonMonthCategoryList(query);
+        System.out.println(System.currentTimeMillis() - t1);
+        System.out.println(JSONObject.toJSON(resultList));
     }
 }

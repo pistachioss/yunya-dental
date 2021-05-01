@@ -56,6 +56,7 @@
                TIMESTAMPDIFF(YEAR,pbi.birthday,CURDATE()) AS age,
                pbi.mobile mobile,
                pbi.medical_number medicalNumber,pmi.member_type_id memberTypeId,
+               pmi.card_number cardNumber,ppi.prepayment_number prepaymentNumber,
                cast(IFNULL(pmi.principal_amount,0) as decimal(15,2)) principalAmount,
 			   cast(IFNULL(pmi.bonus_amount,0) as decimal(15,2)) bonusAmount,
                cast(IFNULL(ppi.prepayment_principal,0) as decimal(15,2)) prepaymentPrincipal,
@@ -312,7 +313,7 @@
     <!-- 根据患者来源ID查询所有推荐患者  -->
     <select id="findPatientBaseInfoByOriginId" resultMap="BaseResultMap">
         select <include refid="Patient_Column_List"></include>
-        from patient_base_info where origin_id = #{originId}
+        from patient_base_info where origin_id = #{originId} and origin_type = 3
     </select>
 
     <select id="findPatientTotalInfo"

@@ -2021,7 +2021,7 @@
 
     <!-- 根据订单id查询支付记录 -->
     <select id="selectBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
-        select DISTINCT bbpd.bill_pay_detail_record_id billPayDetailRecordId,bbp.bill_id billId,bbp.bill_pay_id billPayId,bbp.received_amount receivedAmount from base_bill_pay bbp
+        select DISTINCT bbp.bill_id billId,bbp.bill_pay_id billPayId,bbp.received_amount receivedAmount from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
         <if test=" billIdList != null and billIdList.size() > 0">
@@ -2047,7 +2047,7 @@
         </if>
     </select>
 
-    <!-- 根据订单id查询支付记录 -->
+    <!-- 根据订单id查询免单支付记录 -->
     <select id="selectMdBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
         select DISTINCT bbpd.bill_pay_detail_record_id billPayDetailRecordId,bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount + bbpd.bonus_amount receivedAmount from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
@@ -2073,78 +2073,5 @@
                 #{itemId}
             </foreach>
         </if>
-    </select>
-
-    <select id="selectRecievedWorkloadsGroupByMonth" resultType="com.yunya.feign.report.domain.vo.BillWorkloadVO">
-        SELECT
-        DATE_FORMAT(bbp.payee_date,'%Y-%m') AS month,
-        bb.bill_id AS billId,
-        bb.org_id AS billOrgId,
-        IFNULL(bb.actual_amount,0) AS actualAmount,
-        IFNULL(SUM(bbp.received_amount),0) AS receivedAmount,
-        IFNULL(SUM(bbpd.freePayAmount),0) AS freePayAmount
-        FROM
-        base_bill_pay bbp
-        LEFT JOIN (
-            SELECT
-            bb.org_id,
-            bb.bill_id,
-            bb.bill_date,
-            bb.actual_amount
-            FROM
-            base_bill bb
-            <where>
-                AND bb.bill_date IS NOT NULL
-                AND bb.actual_amount &gt; 0
-                <if test="query.orgIds != null and query.orgIds.length > 0">
-                    AND bb.org_id IN
-                    <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                </if>
-            </where>
-        ) bb ON bbp.bill_id = bb.bill_id
-        LEFT JOIN (
-            SELECT bill_pay_id,IFNULL(SUM(principal_amount),0) AS freePayAmount FROM base_bill_pay_detail
-            WHERE account_item_id IN (23,26) AND type=2
-            GROUP BY bill_pay_id
-        ) bbpd ON bbpd.bill_pay_id=bbp.bill_pay_id
-        <where>
-            AND bbp.received_amount &gt; 0
-            <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND bb.org_id IN
-                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-        </where>
-        group by
-        bb.bill_id,
-        bb.org_id,
-        month
     </select>
 </mapper>
