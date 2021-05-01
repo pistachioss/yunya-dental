@@ -58,12 +58,4 @@ public interface BaseOralTariffMapper extends Mapper<BaseOralTariff> {
    * @param list 商品项目列表
    */
   void updateBaseItems(@Param("list") List<BaseOralTariff> list);
-
-  /**
-   * 根据多个商品表ID查询商品表名称
-   *
-   * @param ids 字符串ID
-   * @return String
-   */
-  String selectBaseOralNamesByIds(@Param("ids") String ids);
 }

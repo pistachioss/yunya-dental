@@ -38,8 +38,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -284,7 +282,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
    * @param patientOrigin 患者来源
    * @return List<PatientOrigin>
    */
-  public List<PatientOrigin> getPatientOriginList(PatientOrigin patientOrigin) throws ParseException {
+  public List<PatientOrigin> getPatientOriginList(PatientOrigin patientOrigin) {
     List<PatientOrigin> PatientOriginInfoList = mapper.findPatientOriginByTypt(patientOrigin);
     if (!StringHelper.isEmpty(PatientOriginInfoList)) {
       Iterator<PatientOrigin> PatientOriginIterator = PatientOriginInfoList.iterator();
@@ -297,9 +295,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
           }
         }
         if (origin.getTimeLimit() == 1) {
-          SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-          Date parse = sdf.parse(sdf.format(new Date()));
-          if (!DateUtil.isEffectiveDate(parse, origin.getLimitStartDate(), origin.getLimitEndDate())) {
+          if (!DateUtil.isEffectiveDate(new Date(), origin.getLimitStartDate(), origin.getLimitEndDate())) {
             PatientOriginIterator.remove(); // 使用迭代器的删除方法删除
           }
         }
@@ -328,12 +324,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
     // 根据来源类型
     patientOrigin.setOriginType(form.getOriginType());
     // 获取符合条件的活动集合
-    try {
-      return getPatientOriginList(patientOrigin);
-    } catch (ParseException e) {
-      e.printStackTrace();
-    }
-    return null;
+    return getPatientOriginList(patientOrigin);
   }
 
   /**

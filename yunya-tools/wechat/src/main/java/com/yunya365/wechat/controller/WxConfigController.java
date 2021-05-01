@@ -59,7 +59,7 @@ public class WxConfigController {
     @PostMapping(value = "/CallBack/WeChatMsg", produces = MediaType.TEXT_XML_VALUE)
     public Object msgChat(@RequestBody WxUserMsgModel msg) throws Exception {
         //获取推送事件类型  可以拿到的事件: 1 关注/取消关注事件  2:扫描带参数二维码事件 3: 用户已经关注公众号 扫描带参数二维码事件 ...等等
-        NotifyEnum notifyEnum = NotifyEnum.resolveEvent(msg.getMsgType(), msg.getEvent());
+        NotifyEnum notifyEnum = NotifyEnum.resolveEvent(msg.getMsgType(), null);
         WeChatNotify infoType = notifyFactory.loadWeChatNotify(notifyEnum);
         return infoType.weChatNotify(msg);
     }

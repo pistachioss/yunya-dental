@@ -6,15 +6,9 @@ import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.factory.RemoteAppointmentFeignBackFactory;
-import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
-import com.yunya.feign.appointment.vo.AppointmentItemVo;
-import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
-import com.yunya.feign.appointment.vo.AppointmentVo;
-import com.yunya.feign.appointment.vo.NextAppointsVo;
+import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
-import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
-import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -169,11 +163,4 @@ public interface RemoteAppointmentFeign {
    */
   @RequestMapping(value = "/api/appoint/detail/{id}", method = RequestMethod.GET)
   AppointmentVo findAppointmentDetailById(@PathVariable(value = "id") Integer id);
-
-  /**
-   * 微信用户确认预约
-   * @param model 预约
-   */
-  @RequestMapping(value = "/api/wx/appoint/confirm", method = RequestMethod.POST)
-  ResponseResult confirmWxAppoint(@RequestBody WxAppointConfirmModel model);
 }

@@ -289,7 +289,7 @@ public class BizTest {
      */
     @Test
     public void test24() {
-        String param = "{\"dateType\":1,\"endDate\":\"2021-04\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-04\",\"whetherPage\":true}";
+        String param = "{\"dateType\":1,\"endDate\":\"2020-01\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2020-12\",\"whetherPage\":true}";
         ClinicPerformanceBusinessQuery query = JSONObject.parseObject(param,ClinicPerformanceBusinessQuery.class);
         long t1 = System.currentTimeMillis();
         DynamicHeaderPageInfo<JSONObject> pageInfo = baseBillDetailBiz.clinicPerformanceList(query);

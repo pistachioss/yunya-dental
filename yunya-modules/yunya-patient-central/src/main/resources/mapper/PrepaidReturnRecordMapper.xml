@@ -40,7 +40,6 @@
         crt_name operatorName,
         return_way_id returnWayId,
         return_way_type returnWayType,
-        actual_return_amount as returnPayAmount,
         remarks
       FROM
           prepaid_return_record

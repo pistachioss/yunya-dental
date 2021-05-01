@@ -32,6 +32,4 @@ public class BillCategoryIncomeQuery extends PageQuery implements Serializable {
   @ApiModelProperty(value = "查询时间", example = "yyyy-MM", required = true)
   @NotBlank(message = "查询时间不能为空！")
   private String queryDate;
-  /** 优惠日期 */
-  private String privilegeDate;
 }

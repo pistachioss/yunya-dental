@@ -403,13 +403,13 @@
         edi.totalTreatmentTime,
         edi.firstVisitNum,
         edi.treatVisitsTimes,
-        ifnull(CONVERT (
+        CONVERT (
         edi.totalActualAmount / edi.treatVisitsTimes,
-        DECIMAL ( 19, 2 )), 0) AS averageConsumption,
+        DECIMAL ( 19, 2 )) AS averageConsumption,
         edi.treatVisitsNum,
-        ifnull(CONVERT (
+        CONVERT (
         edi.totalActualAmount / edi.treatVisitsNum,
-        DECIMAL ( 19, 2 )), 0) AS perCapitaConsumption,
+        DECIMAL ( 19, 2 )) AS perCapitaConsumption,
         edi.appointmentsNum,
         edi.visitArrivedTimes,
         edi.appointmentModifyTimes,
@@ -648,12 +648,6 @@
         </where>
         ) edi
         <where>
-            edi.totalShiftTime > 0
-            or edi.totalTreatmentTime > 0
-            or edi.treatVisitsTimes > 0
-            or edi.appointmentsNum > 0
-            or edi.appointmentModifyTimes > 0
-            or edi.appointmentCancelTimes > 0
             <if test="query.orgId != null">
                 and edi.orgId = #{query.orgId}
             </if>
@@ -668,7 +662,6 @@
         edi.orgId,
         edi.employeeId
         ORDER BY
-        edi.totalTreatmentTime DESC,
-        treatVisitsTimes DESC
+        edi.totalTreatmentTime DESC, treatVisitsTimes DESC
     </select>
 </mapper>

@@ -1,22 +1,12 @@
 package com.yunya.modules.treatment.biz;
 
-import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
-import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
-import com.yunya.feign.report.domain.vo.CurrentMonthBillDetailVO;
-import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.treatment.OrderDetailPayRecord;
 import com.yunya.modules.treatment.mapper.OrderDetailPayRecordMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,14 +23,6 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class OrderDetailPayRecordBiz
     extends BaseBiz<OrderDetailPayRecordMapper, OrderDetailPayRecord> {
-  /** 系统服务 */
-  @Autowired private RemoteSystemServiceFeign systemServiceFeign;
-  /** 患者服务 */
-  @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
-  /** 价目表 */
-  @Autowired private BaseTariffBiz tariffBiz;
-  /** 商品表 */
-  @Autowired private BaseOralTariffBiz oralTariffBiz;
 
   /**
    * 查询账单优惠为0的订单金额
@@ -78,35 +60,5 @@ public class OrderDetailPayRecordBiz
         }
       }
     }
-  }
-
-  /**
-   * 根据条件导出门诊当月账单明细
-   *
-   * @param response http响应
-   * @param query 查询条件
-   */
-  public void exportCurrentMonthBillDetail(
-      HttpServletResponse response, CurrentMonthBillInfoQuery query) throws IOException {
-    String fileName = query.getCurrentMonth() + "账单明细报表";
-    List<CurrentMonthBillDetailVO> resultList = mapper.selectCurrentMonthBillDetail(query);
-    if (StringHelper.isNotEmpty(resultList)) {
-      for (CurrentMonthBillDetailVO vo : resultList) {
-        Integer patientId = vo.getPatientId();
-        PatientBaseInfo patientBaseInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
-        if (patientBaseInfo != null) {
-          vo.setPatientName(patientBaseInfo.getName());
-          vo.setMedicalNum(patientBaseInfo.getMedicalNumber());
-          vo.setPatientMobile(patientBaseInfo.getMobile());
-        }
-      }
-    }
-    ExcelUtil<CurrentMonthBillDetailVO> excelUtil = new ExcelUtil<>(CurrentMonthBillDetailVO.class);
-    Integer orgId = query.getOrgId();
-    OrganizationInfo organization = systemServiceFeign.findOrgInfoByOrgId(orgId);
-    if (organization != null) {
-      fileName = organization.getAbbreviation() + fileName;
-    }
-    excelUtil.exportExcel(response, resultList, "账单明细记录", fileName);
   }
 }

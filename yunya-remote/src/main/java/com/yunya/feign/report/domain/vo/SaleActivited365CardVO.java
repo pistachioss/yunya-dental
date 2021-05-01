@@ -38,13 +38,13 @@ public class SaleActivited365CardVO implements Serializable {
     @ApiModelProperty("365kids（含第三方渠道售卖）")
     private Long kids365Card;
 
-    /** 365Youngs（含第三方渠道售卖） */
-    @Excel(name = "365Youngs（含第三方渠道售卖）")
-    @ApiModelProperty("365Youngs（含第三方渠道售卖）")
+    /** 356Youngs（含第三方渠道售卖） */
+    @Excel(name = "356Youngs（含第三方渠道售卖）")
+    @ApiModelProperty("356Youngs（含第三方渠道售卖）")
     private Long youngs365Card;
 
-    /** 365Adults（含第三方渠道售卖） */
-    @Excel(name = "365Adults（含第三方渠道售卖）")
-    @ApiModelProperty("365Adults（含第三方渠道售卖）")
+    /** 356Adults（含第三方渠道售卖） */
+    @Excel(name = "356Adults（含第三方渠道售卖）")
+    @ApiModelProperty("356Adults（含第三方渠道售卖）")
     private Long adults365Card;
 }

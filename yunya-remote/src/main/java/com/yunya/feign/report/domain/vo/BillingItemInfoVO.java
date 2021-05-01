@@ -8,8 +8,6 @@ import lombok.ToString;
 
 import java.io.Serializable;
 
-import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
-
 /**
  * 简介: 开单项目信息VO
  *
@@ -44,7 +42,7 @@ public class BillingItemInfoVO implements Serializable {
   @ApiModelProperty("项目分类名称")
   private String categoryName;
   /** 开单数量合计 */
-  @Excel(name = "数量", cellType = NUMERIC)
+  @Excel(name = "数量", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("开单数量合计")
   private Integer totalBillCount;
 }

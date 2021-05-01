@@ -28,7 +28,7 @@ public class TreatmentOrderInfo4AppVO implements Serializable {
     private BigDecimal privilegeAmount;
     @ApiModelProperty("实际应收金额")
     private BigDecimal actualReceivableAmount;
-    @ApiModelProperty("实收金额（本单收费总额）")
+    @ApiModelProperty("已收金额（本单收费总额）")
     private BigDecimal receivedAmount;
     @ApiModelProperty("欠费金额（本单欠费）")
     private BigDecimal debtAmount;

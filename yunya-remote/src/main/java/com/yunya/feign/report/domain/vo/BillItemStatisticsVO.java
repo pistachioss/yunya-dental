@@ -9,9 +9,6 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
-import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
-
 /**
  * 简介: 开单项目数量及金额VO
  *
@@ -32,11 +29,11 @@ public class BillItemStatisticsVO implements Serializable {
   @ApiModelProperty("项目类型：0-价目表；1-商品")
   private Byte itemType;
 
-  /** 门诊ID */
+  /** 门诊ID*/
   @ApiModelProperty("门诊ID")
   private Integer orgId;
 
-  /** 门诊 */
+  /** 门诊*/
   @Excel(name = "门诊")
   @ApiModelProperty("门诊")
   private String abbreviation;
@@ -46,11 +43,11 @@ public class BillItemStatisticsVO implements Serializable {
   @ApiModelProperty("项目编号")
   private String itemNum;
 
-  @ApiModelProperty("执行人ID")
+  @ApiModelProperty("挂号医生ID")
   private String employeeId;
 
-  @Excel(name = "执行人")
-  @ApiModelProperty("执行人")
+  @Excel(name = "挂号医生")
+  @ApiModelProperty("挂号医生")
   private String employeeName;
 
   /** 项目分类名称 */
@@ -64,12 +61,12 @@ public class BillItemStatisticsVO implements Serializable {
   private String itemName;
 
   /** 开单数量 */
-  @Excel(name = "数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "数量", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("开单数量")
   private Integer quantity;
 
-  /** 应收金额 */
-  @Excel(name = "应收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty("应收金额")
+  /** 实收金额 */
+  @Excel(name = "实收金额", cellType = Excel.ColumnType.NUMERIC)
+  @ApiModelProperty("实收金额")
   private BigDecimal amount;
 }

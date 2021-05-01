@@ -9,15 +9,13 @@ import java.util.Objects;
  **/
 public enum NotifyEnum {
     //菜单点击事件
-    CLICK("event", "click"),
+    CLICK("event", "CLICK"),
     //关注
     SUBSCRIBE("event", "subscribe"),
     //取关
     UNSUBSCRIBE("event", "unsubscribe"),
     //已关注时的扫码事件
-    SCAN("event", "scan"),
-    //已关注时的扫码事件
-    TEMPLATE("event", "TEMPLATESENDJOBFINISH"),
+    SCAN("event", "SCAN"),
     //文字消息回复
     TEXT("text", null),
     //图片消息回复
