@@ -50,12 +50,12 @@ public class ExcelBasePatientPrepaymentOverviewVo {
   private String cardOpeningDate;
 
   /** 剩余预付款余额（含赠送金额） */
-  @Excel(name = "剩余预付款余额（含赠送金额）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "剩余预付款余额（含赠送金额）", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty(value = "剩余预付款余额（含赠送金额）")
   private BigDecimal principalAmount;
 
   /** 剩余预付款赠送金额 */
-  @Excel(name = "剩余预付款赠送金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "剩余预付款赠送金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty(value = "剩余预付款赠送金额")
   private BigDecimal bonusAmount;
 }

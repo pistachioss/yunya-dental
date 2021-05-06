@@ -57,95 +57,95 @@ public class StatementBillChargeDetailExportVO implements Serializable {
   @ApiModelProperty("挂号医生")
   private String regDentistName;
   /** 原价合计 */
-  @Excel(name = "原价合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "原价合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("原价合计")
   private BigDecimal originalAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "优惠金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("优惠金额")
   private BigDecimal privilegeAmount;
   /** 应收金额 */
-  @Excel(name = "应收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "应收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("应收金额")
   private BigDecimal actualAmount;
   /** 实收金额 */
-  @Excel(name = "实收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "实收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("实收金额")
   private BigDecimal totalReceivedAmount;
   /** 本次收费金额 */
-  @Excel(name = "本次收费金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "本次收费金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("本次收费金额")
   private BigDecimal receivedAmount;
   /** 会员卡本金 */
-  @Excel(name = "会员卡本金", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "会员卡本金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("会员卡本金")
   private BigDecimal memberPrincipleAmount;
   /** 会员卡赠金 */
-  @Excel(name = "会员卡赠金", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "会员卡赠金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("会员卡赠金")
   private BigDecimal memberBonusAmount;
   /** 预付款本金 */
-  @Excel(name = "预付款本金", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "预付款本金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("预付款本金")
   private BigDecimal prepaidPrincipleAmount;
   /** 预付款赠金 */
-  @Excel(name = "预付款赠金", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "预付款赠金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("预付款赠金")
   private BigDecimal prepaidBonusAmount;
   /** 现金 */
-  @Excel(name = "现金", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "现金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("现金")
   private BigDecimal cashAmount;
   /** 支付宝 */
-  @Excel(name = "支付宝", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "支付宝", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("支付宝")
   private BigDecimal aliPayAmount;
   /** 微信 */
-  @Excel(name = "微信", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "微信", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("微信")
   private BigDecimal weChatAmount;
   /** 银行账户 */
-  @Excel(name = "银行账户", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "银行账户", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("银行账户")
   private BigDecimal bankAmount;
   /** 浙江省医保 */
-  @Excel(name = "浙江省医保", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "浙江省医保", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("浙江省医保")
   private BigDecimal zheJiangProvinceMedicalInsuranceAmount;
   /** 杭州市医保 */
-  @Excel(name = "杭州市医保", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "杭州市医保", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("杭州市医保")
   private BigDecimal hangZhouCityMedicalInsuranceAmount;
   /** 杭州市余杭医保 */
-  @Excel(name = "杭州市余杭医保", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "杭州市余杭医保", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("杭州市余杭医保")
   private BigDecimal hangZhouYuHangMedicalInsuranceAmount;
   /** 杭州市萧山医保 */
-  @Excel(name = "杭州市萧山医保", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "杭州市萧山医保", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("杭州市萧山医保")
   private BigDecimal hangZhouXiaoShanMedicalInsuranceAmount;
   /** Cigna */
-  @Excel(name = "Cigna", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "Cigna", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("Cigna")
   private BigDecimal cignaAmount;
   /** MSH */
-  @Excel(name = "MSH", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "MSH", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("MSH")
   private BigDecimal mshAmount;
   /** AXA */
-  @Excel(name = "AXA", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "AXA", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("AXA")
   private BigDecimal axaAmount;
   /** 风石 */
-  @Excel(name = "风石", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "风石", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("风石")
   private BigDecimal fengShiAmount;
   /** 本次免单支付 */
-  @Excel(name = "本次免单支付", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "本次免单支付", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("本次免单支付")
   private BigDecimal thisWaiverAmount;
   /** 艾维员工免单 */
-  @Excel(name = "艾维员工免单", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "艾维员工免单", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("艾维员工免单")
   private BigDecimal employeeWaiverAmount;
   /** 收费人姓名 */

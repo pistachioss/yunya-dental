@@ -43,12 +43,12 @@ public class SpecialistProjectCompletedInfoVO implements Serializable {
   private String abbreviation;
 
   /** 专科项目完成数量 */
-  @Excel(name = "完成数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "完成数量", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("专科项目完成数量")
   private Integer specialistProjectCompletedCount;
 
   /** 专科项目目标数量 */
-  @Excel(name = "目标数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "目标数量", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("专科项目目标数量")
   private Integer specialistProjectGoalCount;
 

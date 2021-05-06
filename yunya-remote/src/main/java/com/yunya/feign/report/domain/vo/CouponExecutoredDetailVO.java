@@ -10,6 +10,8 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.util.Date;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+
 /**
  * 简介：产品使用明细VO
  *
@@ -48,10 +50,10 @@ public class CouponExecutoredDetailVO implements Serializable {
     @ApiModelProperty("使用项目")
     private String itemName;
 
-    /** 数量*/
-    @Excel(name = "数量", cellType = Excel.ColumnType.NUMERIC)
-    @ApiModelProperty("数量")
-    private String num;
+  /** 数量 */
+  @Excel(name = "数量", cellType = NUMERIC)
+  @ApiModelProperty("数量")
+  private String num;
 
     /** 患者*/
     @Excel(name = "患者")
