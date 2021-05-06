@@ -31,7 +31,8 @@ import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
@@ -304,10 +305,13 @@ public class WXService extends AbstractWxBaseApi {
 
     public WxAppointDetailVo getAppointDetail(Integer appointId) {
         AppointmentVo appointmentVo = appointmentFeign.findAppointmentDetailById(appointId);
-        OrganizationInfo org = systemServiceFeign.findOrgInfoByOrgId(appointmentVo.getOrgId());
-        WxAppointDetailVo appointDetailVo = BeanCopierUtils.generalCopyBean(appointId, WxAppointDetailVo.class);
-        appointDetailVo.setAppointDate(LocalDate.fromDateFields(appointmentVo.getAppointDate()).toString("yyyy-MM-dd") + appointmentVo.getAppointTime());
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setId(appointmentVo.getOrgId());
+        OrganizationInfoDetail org = systemServiceFeign.findOrgInfoList(organizationModel).get(0);
+        WxAppointDetailVo appointDetailVo = BeanCopierUtils.generalCopyBean(appointmentVo, WxAppointDetailVo.class);
+        appointDetailVo.setAppointDate(LocalDate.fromDateFields(appointmentVo.getAppointDate()).toString("yyyy-MM-dd ") + appointmentVo.getAppointTime());
         appointDetailVo.setOrgName(org.getAbbreviation());
+        appointDetailVo.setOrgAddress(org.getAddress());
         return appointDetailVo;
     }
 
@@ -345,6 +349,7 @@ public class WXService extends AbstractWxBaseApi {
     }
 
     private WxTemplatePushModel generatePushModel(WxFans wxPushUser, WxMsgTemplates template, Map<String, Object> paramMap) {
+        Integer appointId = (Integer) paramMap.get("appointId");
         StrSubstitutor strSubstitutor = new StrSubstitutor(paramMap);
         String context = strSubstitutor.replace(template.getContent());
         paramMap = JSON.parseObject(context, new TypeReference<Map<String, Object>>() {
@@ -354,7 +359,7 @@ public class WXService extends AbstractWxBaseApi {
                 .template_id(template.getTemplateId())
                 .data(paramMap).build();
         if ("预约确认通知".equals(template.getTitle())) {
-            pushModel.setUrl(mpDomain + "/mobile/#/registerBtn");
+            pushModel.setUrl(mpDomain + "/mobile/#/registerBtn?appointId=" + appointId);
         }
         return pushModel;
     }
