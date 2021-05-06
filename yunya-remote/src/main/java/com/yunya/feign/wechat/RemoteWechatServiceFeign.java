@@ -22,15 +22,15 @@ import java.util.List;
  * @since: 1.0.0
  */
 @FeignClient(
-        name = YunyaServiceNameConstants.YUNYA_WECHAT,
-        fallbackFactory = RemoteWechatServiceFeignFallBackFactory.class)
+    name = YunyaServiceNameConstants.YUNYA_WECHAT,
+    fallbackFactory = RemoteWechatServiceFeignFallBackFactory.class)
 public interface RemoteWechatServiceFeign {
 
-    @ApiOperation("推送共用接口")
-    @RequestMapping(value = "/wxVip/push/msg", method = RequestMethod.POST)
-    void pushTemplate(@RequestBody @Validated WxTemplateMsgModel msgModel);
+  @ApiOperation("推送共用接口")
+  @RequestMapping(value = "/wxVip/push/msg", method = RequestMethod.POST)
+  void pushTemplate(@RequestBody @Validated WxTemplateMsgModel msgModel);
 
-    @ApiOperation("批量推送共用接口")
-    @PostMapping(value = "/wxVip/push/msg/batch")
-    void batchPushTemplate(@RequestBody List<WxTemplateMsgModel> list);
+  @ApiOperation("批量推送共用接口")
+  @PostMapping(value = "/wxVip/push/msg/batch")
+  void batchPushTemplate(@RequestBody List<WxTemplateMsgModel> list);
 }
