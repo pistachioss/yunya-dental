@@ -152,7 +152,7 @@ public class StatementBillChargeDetailExportVO implements Serializable {
   @Excel(name = "艾维员工免单", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("艾维员工免单")
   private BigDecimal employeeWaiverAmount;
-  /** 艾维员工免单 */
+  /** 2020年会员充值送 */
   @Excel(name = "2020年会员充值送", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("2020年会员充值送")
   private BigDecimal memberRechargeAmount;

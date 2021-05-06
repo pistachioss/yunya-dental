@@ -2619,7 +2619,6 @@
                     bb.bill_id = #{billId}
                     AND bbd.executor_id > 0
                     AND bti.item_type = bbd.item_type
-                    AND bbd.executor_id > 0
                 ) t where workload > 0
     </select>
 
@@ -2729,6 +2728,7 @@
                 </foreach>
             </if>
         </where>
+        order by bbd.orgId,bbd.itemType,bbd.itemId
     </select>
 
     <select id="billItemStatisticsDetail" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsDetailVO">
