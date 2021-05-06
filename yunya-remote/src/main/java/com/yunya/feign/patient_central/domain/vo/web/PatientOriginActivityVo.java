@@ -18,7 +18,7 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
  * @description: 活动推荐列表结果返回模板
  * @since: 1.0.0
  */
-@ApiModel(value = "activityInfoVo", description = "活动推荐列表结果返回模板")
+@ApiModel(value = "activityInfoVo",description = "活动推荐列表结果返回模板")
 @Data
 public class PatientOriginActivityVo {
 
