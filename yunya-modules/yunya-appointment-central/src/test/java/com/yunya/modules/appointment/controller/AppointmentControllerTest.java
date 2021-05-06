@@ -1,11 +1,16 @@
 package com.yunya.modules.appointment.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
+import com.yunya.feign.appointment.domain.query.CancelAppointmentQuery;
 import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
+import com.yunya.feign.appointment.vo.CancelAppointmentVO;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.modules.appointment.biz.web.AppointmentModifyRecordBiz;
+import com.yunya.modules.appointment.controller.web.AppointmentController;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +29,7 @@ import java.util.List;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class AppointmentControllerTest {
+  @Autowired private AppointmentController appointmentController;
   @Autowired private AppointmentModifyRecordBiz appointmentModifyRecordBiz;
   @Autowired private AppointmentMapper appointmentMapper;
 
@@ -45,5 +51,16 @@ public class AppointmentControllerTest {
     List<AppointmentUnDonePatientInfoVO> vos =
         appointmentMapper.selectAppointmentUnDonePatientInfoList(qu);
     System.out.println(vos);
+  }
+
+  @Test
+  public void cancelAppointmentList() {
+    String param = "{\"startDate\":\"2021-01-01\",\"endDate\":\"2021-05-01\",\"orgIds\":[26],\"dentistIds\":[]}";
+    CancelAppointmentQuery query = JSONObject.parseObject(param, CancelAppointmentQuery.class);
+    long t1 = System.currentTimeMillis();
+    ResponseResult<PageInfo<CancelAppointmentVO>> result = appointmentController.cancelAppointmentList(query);
+    long t2 = System.currentTimeMillis();
+    System.out.println("接口耗时：" + (t2 - t1));
+    System.out.println(JSONObject.toJSON(result.getData()));
   }
 }
