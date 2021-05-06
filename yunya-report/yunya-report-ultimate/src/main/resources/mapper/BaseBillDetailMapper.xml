@@ -3297,7 +3297,6 @@
         SUM(bbd.quantity) AS quantity
         FROM base_bill_detail bbd
         <where>
-            bbd.source_type = 0
             <if test="query.itemType != null">
                 AND bbd.item_type = #{query.itemType}
             </if>
