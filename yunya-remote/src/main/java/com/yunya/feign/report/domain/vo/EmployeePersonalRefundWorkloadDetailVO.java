@@ -55,7 +55,7 @@ public class EmployeePersonalRefundWorkloadDetailVO implements Serializable {
   @ApiModelProperty("患者手机号")
   private String mobile;
   /** 实收金额 */
-  @Excel(name = "退费工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "退费工作量", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("退费工作量")
   private BigDecimal refundWorkload;
   /** 员工ID */

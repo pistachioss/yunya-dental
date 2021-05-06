@@ -54,31 +54,31 @@ public class StatementPatientCardRefundDetailVO implements Serializable {
   @ApiModelProperty("卡类型名称")
   private String cardTypeName;
   /** 会员卡或预付卡余额（含赠金） */
-  @Excel(name = "会员卡或预付卡余额（含赠金）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "会员卡或预付卡余额（含赠金）", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("剩余余额（含赠金）")
   private BigDecimal restTotalAmount;
   /** 充值本金金额 */
-  @Excel(name = "退本金金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "退本金金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("退本金金额")
   private BigDecimal refundPrincipleAmount;
   /** 充值赠金金额 */
-  @Excel(name = "退赠送金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "退赠送金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("退赠送金额")
   private BigDecimal refundBonusAmount;
   /** 现金 */
-  @Excel(name = "现金", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "现金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("现金")
   private BigDecimal cashAmount;
   /** 支付宝 */
-  @Excel(name = "支付宝", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "支付宝", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("支付宝")
   private BigDecimal aliPayAmount;
   /** 微信 */
-  @Excel(name = "微信", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "微信", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("微信")
   private BigDecimal weChatAmount;
   /** 银行账户 */
-  @Excel(name = "银行账户", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "银行账户", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("银行账户")
   private BigDecimal bankAmount;
   /** 充值人ID */

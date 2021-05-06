@@ -28,23 +28,23 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 public class EmployeeWorkloadOfPersonnelVO extends EmployeeWorkloadOfOperationVO
     implements Serializable {
   /** 奖金系数 */
-  @Excel(name = "奖金系数")
+  @Excel(name = "奖金系数", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("奖金系数")
   private BigDecimal bonusCoefficient;
   /** 应收奖金基数（元） */
-  @Excel(name = "应收奖金基数（元）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "应收奖金基数（元）", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("应收奖金基数（元）= 应收工作量+补入工作量-退费工作量-加工费-大额材料费-基本工作量")
   private BigDecimal actualBonusBase;
   /** 实收奖金基数（元） */
-  @Excel(name = "实收奖金基数（元）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "实收奖金基数（元）", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("实收奖金基数（元）= 实收工作量+补入工作量-退费工作量-加工费-大额材料费-基本工作量")
   private BigDecimal receivedBonusBase;
   /** 应收奖金（元） */
-  @Excel(name = "应收奖金（元）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "应收奖金（元）", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("应收奖金（元）= 应收奖金基数*奖金系数")
   private BigDecimal actualBonus;
   /** 实收奖金（元） */
-  @Excel(name = "实收奖金（元）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "实收奖金（元）", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("实收奖金（元）= 实收奖金基数*奖金系数")
   private BigDecimal receivedBonus;
 }

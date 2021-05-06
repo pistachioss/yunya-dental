@@ -489,6 +489,118 @@ public class CompanyReportOfOperationController {
   }
 
   /**
+   * 根据条件查询员工个人收费项目已收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目已收工作量-查看明细")
+  @PostMapping(value = "/personal/tariff/received/workload/detail", name = "个人收费项目已收工作量明细")
+  public ResponseResult<PageInfo<PersonalBillItemReceivedWorkloadDetailVO>>
+      personalTariffReceivedWorkloadStatistics(
+          @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query) {
+    PageInfo<PersonalBillItemReceivedWorkloadDetailVO> pageInfo =
+        billDetailBiz.findPersonalBillItemReceivedWorkloadDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目已收工作量明细列表导出
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目已收工作量-导出")
+  @PostMapping(value = "/personal/tariff/received/workload/export", name = "个人收费项目已收工作量明细导出")
+  public ResponseResult<T> exportPersonalTariffReceivedWorkloadStatistics(
+      HttpServletResponse response,
+      @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query)
+      throws IOException {
+    billDetailBiz.exportPersonalBillItemReceivedWorkloadList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目已收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目免单工作量-查看明细")
+  @PostMapping(value = "/personal/tariff/free/workload/detail", name = "个人收费项目免单工作量明细")
+  public ResponseResult<PageInfo<PersonalBillItemFreeWorkloadDetailVO>>
+      personalTariffFreeWorkloadStatistics(
+          @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query) {
+    PageInfo<PersonalBillItemFreeWorkloadDetailVO> pageInfo =
+        billDetailBiz.findPersonalBillItemFreeWorkloadDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目已收工作量明细列表导出
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目免单工作量明细-导出")
+  @PostMapping(value = "/personal/tariff/free/workload/export", name = "个人收费项目免单工作量明细导出")
+  public ResponseResult<T> exportPersonalTariffFreeWorkloadStatistics(
+      HttpServletResponse response,
+      @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query)
+      throws IOException {
+    billDetailBiz.exportPersonalBillItemFreeWorkloadList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目已收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目补入工作量-查看明细")
+  @PostMapping(value = "/personal/tariff/supply/workload/detail", name = "个人收费项目补入工作量明细")
+  public ResponseResult<PageInfo<PersonalBillItemSupplyWorkloadDetailVO>>
+      personalTariffSupplyWorkloadStatistics(
+          @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query) {
+    PageInfo<PersonalBillItemSupplyWorkloadDetailVO> pageInfo =
+        billDetailBiz.findPersonalBillItemSupplyWorkloadDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目已收工作量明细列表导出
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目补入工作量明细-导出")
+  @PostMapping(value = "/personal/tariff/supply/workload/export", name = "个人收费项目补入工作量明细导出")
+  public ResponseResult<T> exportPersonalTariffSupplyWorkloadStatistics(
+      HttpServletResponse response,
+      @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query)
+      throws IOException {
+    billDetailBiz.exportPersonalBillItemSupplyWorkloadList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工个人收费项目已收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目退费工作量-查看明细")
+  @PostMapping(value = "/personal/tariff/refund/workload/detail", name = "个人收费项目退费工作量明细")
+  public ResponseResult<PageInfo<PersonalBillItemRefundWorkloadDetailVO>>
+      personalTariffRefundWorkloadStatistics(
+          @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query) {
+    PageInfo<PersonalBillItemRefundWorkloadDetailVO> pageInfo =
+        billDetailBiz.findPersonalBillItemRefundWorkloadDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
    * 根据条件查询门诊业绩
    *
    * @param query 查询条件
@@ -631,118 +743,6 @@ public class CompanyReportOfOperationController {
       throws IOException {
     billDetailBiz.clinic365CardSaleActivitedExport(query, response);
     return ResponseUtil.success(null);
-  }
-
-  /**
-   * 根据条件查询员工个人收费项目已收工作量明细列表
-   *
-   * @param query 查询条件
-   * @return list
-   */
-  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目已收工作量-查看明细")
-  @PostMapping(value = "/personal/tariff/received/workload/detail", name = "个人收费项目已收工作量明细")
-  public ResponseResult<PageInfo<PersonalBillItemReceivedWorkloadDetailVO>>
-      personalTariffReceivedWorkloadStatistics(
-          @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query) {
-    PageInfo<PersonalBillItemReceivedWorkloadDetailVO> pageInfo =
-        billDetailBiz.findPersonalBillItemReceivedWorkloadDetailList(query);
-    return ResponseUtil.success(pageInfo);
-  }
-
-  /**
-   * 根据条件查询员工个人收费项目已收工作量明细列表导出
-   *
-   * @param query 查询条件
-   * @return list
-   */
-  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目已收工作量-导出")
-  @PostMapping(value = "/personal/tariff/received/workload/export", name = "个人收费项目已收工作量明细导出")
-  public ResponseResult<T> exportPersonalTariffReceivedWorkloadStatistics(
-      HttpServletResponse response,
-      @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query)
-      throws IOException {
-    billDetailBiz.exportPersonalBillItemReceivedWorkloadList(response, query);
-    return ResponseUtil.success(null);
-  }
-
-  /**
-   * 根据条件查询员工个人收费项目已收工作量明细列表
-   *
-   * @param query 查询条件
-   * @return list
-   */
-  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目免单工作量-查看明细")
-  @PostMapping(value = "/personal/tariff/free/workload/detail", name = "个人收费项目免单工作量明细")
-  public ResponseResult<PageInfo<PersonalBillItemFreeWorkloadDetailVO>>
-      personalTariffFreeWorkloadStatistics(
-          @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query) {
-    PageInfo<PersonalBillItemFreeWorkloadDetailVO> pageInfo =
-        billDetailBiz.findPersonalBillItemFreeWorkloadDetailList(query);
-    return ResponseUtil.success(pageInfo);
-  }
-
-  /**
-   * 根据条件查询员工个人收费项目已收工作量明细列表导出
-   *
-   * @param query 查询条件
-   * @return list
-   */
-  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目免单工作量明细-导出")
-  @PostMapping(value = "/personal/tariff/free/workload/export", name = "个人收费项目免单工作量明细导出")
-  public ResponseResult<T> exportPersonalTariffFreeWorkloadStatistics(
-      HttpServletResponse response,
-      @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query)
-      throws IOException {
-    billDetailBiz.exportPersonalBillItemFreeWorkloadList(response, query);
-    return ResponseUtil.success(null);
-  }
-
-  /**
-   * 根据条件查询员工个人收费项目已收工作量明细列表
-   *
-   * @param query 查询条件
-   * @return list
-   */
-  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目补入工作量-查看明细")
-  @PostMapping(value = "/personal/tariff/supply/workload/detail", name = "个人收费项目补入工作量明细")
-  public ResponseResult<PageInfo<PersonalBillItemSupplyWorkloadDetailVO>>
-      personalTariffSupplyWorkloadStatistics(
-          @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query) {
-    PageInfo<PersonalBillItemSupplyWorkloadDetailVO> pageInfo =
-        billDetailBiz.findPersonalBillItemSupplyWorkloadDetailList(query);
-    return ResponseUtil.success(pageInfo);
-  }
-
-  /**
-   * 根据条件查询员工个人收费项目已收工作量明细列表导出
-   *
-   * @param query 查询条件
-   * @return list
-   */
-  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目补入工作量明细-导出")
-  @PostMapping(value = "/personal/tariff/supply/workload/export", name = "个人收费项目补入工作量明细导出")
-  public ResponseResult<T> exportPersonalTariffSupplyWorkloadStatistics(
-      HttpServletResponse response,
-      @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query)
-      throws IOException {
-    billDetailBiz.exportPersonalBillItemSupplyWorkloadList(response, query);
-    return ResponseUtil.success(null);
-  }
-
-  /**
-   * 根据条件查询员工个人收费项目已收工作量明细列表
-   *
-   * @param query 查询条件
-   * @return list
-   */
-  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目退费工作量-查看明细")
-  @PostMapping(value = "/personal/tariff/refund/workload/detail", name = "个人收费项目退费工作量明细")
-  public ResponseResult<PageInfo<PersonalBillItemRefundWorkloadDetailVO>>
-      personalTariffRefundWorkloadStatistics(
-          @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query) {
-    PageInfo<PersonalBillItemRefundWorkloadDetailVO> pageInfo =
-        billDetailBiz.findPersonalBillItemRefundWorkloadDetailList(query);
-    return ResponseUtil.success(pageInfo);
   }
 
   /**

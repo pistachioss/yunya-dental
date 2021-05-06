@@ -32,47 +32,47 @@ public class EmployeeDiagnosisInfoVO implements Serializable {
   @ApiModelProperty("医生姓名")
   private String employeeName;
   /** 排班时长(分钟） */
-  @Excel(name = "排班时长(分钟）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "排班时长(分钟）", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("排班时长")
   private Integer totalShiftTime;
   /** 治疗时长（分钟） */
-  @Excel(name = "治疗时长（分钟）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "治疗时长（分钟）", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("治疗时长")
   private Integer totalTreatmentTime;
   /** 初诊人数 */
-  @Excel(name = "初诊人数", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "初诊人数", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("初诊人数")
   private Integer firstVisitNum;
   /** 就诊人次 */
-  @Excel(name = "就诊人次", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "就诊人次", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("就诊人次")
   private Integer treatVisitsTimes;
   /** 次均消费 */
-  @Excel(name = "次均消费", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "次均消费", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("次均消费")
   private BigDecimal averageConsumption;
   /** 就诊人数 */
-  @Excel(name = "就诊人数", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "就诊人数", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("就诊人数")
   private Integer treatVisitsNum;
   /** 人均消费 */
-  @Excel(name = "人均消费", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "人均消费", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("人均消费")
   private BigDecimal perCapitaConsumption;
   /** 预约人次 */
-  @Excel(name = "预约人次", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "预约人次", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("预约人次")
   private Integer appointmentsNum;
   /** 到诊人次 */
-  @Excel(name = "到诊人次", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "到诊人次", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("到诊人次")
   private Integer visitArrivedTimes;
   /** 改约人次 */
-  @Excel(name = "改约人次", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "改约人次", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("改约人次")
   private Integer appointmentModifyTimes;
   /** 取消预约人次 */
-  @Excel(name = "取消预约人次", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "取消预约人次", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("取消预约人次")
   private Integer appointmentCancelTimes;
 }

@@ -248,7 +248,6 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         return mapper.thirdParty();
     }
 
-
     /**
      * 获取第三方卡券激活模板接口
      *

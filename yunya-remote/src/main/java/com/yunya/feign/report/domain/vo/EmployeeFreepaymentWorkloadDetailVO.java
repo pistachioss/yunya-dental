@@ -79,7 +79,7 @@ public class EmployeeFreepaymentWorkloadDetailVO implements Serializable {
   private String mobile;
 
   /** 免单支付工作量 */
-  @Excel(name = "免单支付工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "免单支付工作量", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("免单支付工作量")
   private BigDecimal freePaymentWorkload;
 }

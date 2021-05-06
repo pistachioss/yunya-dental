@@ -49,52 +49,52 @@ public class ExcelBaseMemberBalanceInfoVo {
   private String memberLevelName;
 
   /** 期初本金余额 */
-  @Excel(name = "期初本金余额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "期初本金余额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty(value = "期初本金余额")
   private BigDecimal earlyCurrentRechargePrincipal;
 
   /** 期初赠金余额 */
-  @Excel(name = "期初赠金余额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "期初赠金余额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty(value = "期初赠金余额")
   private BigDecimal earlyCurrentRechargeBonus;
 
   /** 本期充值本金 */
-  @Excel(name = "本期充值本金", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "本期充值本金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty(value = "本期充值本金")
   private BigDecimal thisRechargePrincipalAmount;
 
   /** 本期充值赠金 */
-  @Excel(name = "本期充值赠金", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "本期充值赠金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty(value = "本期充值赠金")
   private BigDecimal thisRechargeBonusAmount;
 
   /** 本期消费本金 */
-  @Excel(name = "本期消费本金", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "本期消费本金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty(value = "本期消费本金")
   private BigDecimal thisExpendPrincipalAmount;
 
   /** 本期消费赠金 */
-  @Excel(name = "本期消费赠金", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "本期消费赠金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty(value = "本期消费赠金")
   private BigDecimal thisExpendBonusAmount;
 
   /** 本期退费本金 */
-  @Excel(name = "本期退费本金", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "本期退费本金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty(value = "本期退费本金")
   private BigDecimal thisReturnPrincipalAmount;
 
   /** 本期退费赠金 */
-  @Excel(name = "本期退费赠金", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "本期退费赠金", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty(value = "本期退费赠金")
   private BigDecimal thisReturnBonusAmount;
 
   /** 期末本金余额 */
-  @Excel(name = "期末本金余额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "期末本金余额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty(value = "期末本金余额")
   private BigDecimal currentRechargePrincipal;
 
   /** 期末赠金余额 */
-  @Excel(name = "期末赠金余额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "期末赠金余额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty(value = "期末赠金余额")
   private BigDecimal currentRechargeBonus;
 }

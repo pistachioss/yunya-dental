@@ -51,19 +51,19 @@ public class EmployeePersonalSupplyWorkloadDetailVO implements Serializable {
   @ApiModelProperty("患者手机号")
   private String mobile;
   /** 原价合计 */
-  @Excel(name = "原价合计", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "原价合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("原价合计")
   private BigDecimal totalOriginalAmount;
   /** 优惠金额 */
-  @Excel(name = "优惠金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "优惠金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("优惠金额")
   private BigDecimal privilegeAmount;
   /** 应收金额 */
-  @Excel(name = "应收金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "应收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("应收金额")
   private BigDecimal actualAmount;
   /** 应收工作量 */
-  @Excel(name = "补入工作量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @Excel(name = "补入工作量", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("补入工作量")
   private BigDecimal supplyWorkload;
 }

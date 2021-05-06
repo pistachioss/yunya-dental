@@ -46,4 +46,15 @@ public class AppointmentControllerTest {
         appointmentMapper.selectAppointmentUnDonePatientInfoList(qu);
     System.out.println(vos);
   }
+
+  @Test
+  public void cancelAppointmentList() {
+    String param = "{\"startDate\":\"2021-01-01\",\"endDate\":\"2021-05-01\",\"orgIds\":[26],\"dentistIds\":[]}";
+    CancelAppointmentQuery query = JSONObject.parseObject(param, CancelAppointmentQuery.class);
+    long t1 = System.currentTimeMillis();
+    ResponseResult<PageInfo<CancelAppointmentVO>> result = appointmentController.cancelAppointmentList(query);
+    long t2 = System.currentTimeMillis();
+    System.out.println("接口耗时：" + (t2 - t1));
+    System.out.println(JSONObject.toJSON(result.getData()));
+  }
 }

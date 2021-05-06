@@ -405,5 +405,6 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<BillRecordWorkloadVO> selectCouponWorkloadGroupByPrivilegeDate(@Param("query") DataStatisticsQuery query);
+  List<BillRecordWorkloadVO> selectCouponWorkloadGroupByPrivilegeDate(
+      @Param("query") DataStatisticsQuery query);
 }

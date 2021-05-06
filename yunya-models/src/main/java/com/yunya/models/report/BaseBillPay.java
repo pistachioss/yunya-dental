@@ -200,4 +200,18 @@ public class BaseBillPay {
     public void setStillOweAmount(BigDecimal stillOweAmount) {
         this.stillOweAmount = stillOweAmount;
     }
+
+    @Override
+    public String toString() {
+        return "BaseBillPay{" +
+                "billPayId=" + billPayId +
+                ", billId=" + billId +
+                ", orgId=" + orgId +
+                ", treatmentId=" + treatmentId +
+                ", payeeUserId=" + payeeUserId +
+                ", payeeDate=" + payeeDate +
+                ", receivedAmount=" + receivedAmount +
+                ", stillOweAmount=" + stillOweAmount +
+                '}';
+    }
 }

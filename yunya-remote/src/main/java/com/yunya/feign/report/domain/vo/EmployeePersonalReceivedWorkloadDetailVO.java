@@ -13,7 +13,7 @@ import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
 import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 
 /**
- * 简介: 员工已收工作量明细VO
+ * 简介: 员工实收工作量明细VO
  *
  * @author: chow
  * @date: 2020/11/30 17:38
