@@ -1,11 +1,16 @@
 package com.yunya.modules.appointment.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
+import com.yunya.feign.appointment.domain.query.CancelAppointmentQuery;
 import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
+import com.yunya.feign.appointment.vo.CancelAppointmentVO;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.modules.appointment.biz.web.AppointmentModifyRecordBiz;
+import com.yunya.modules.appointment.controller.web.AppointmentController;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +29,7 @@ import java.util.List;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class AppointmentControllerTest {
+  @Autowired private AppointmentController appointmentController;
   @Autowired private AppointmentModifyRecordBiz appointmentModifyRecordBiz;
   @Autowired private AppointmentMapper appointmentMapper;
 
