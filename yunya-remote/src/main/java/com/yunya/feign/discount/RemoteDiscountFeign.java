@@ -1,19 +1,24 @@
 package com.yunya.feign.discount;
 
-import com.yunya.feign.discount.domain.form.*;
-import com.yunya.feign.discount.domain.model.*;
-import com.yunya.feign.discount.domain.vo.*;
-import com.yunya.feign.discount.factory.*;
-import com.yunya.feign.patient_central.domain.query.*;
-import com.yunya.framework.common.constant.*;
-import com.yunya.framework.common.model.*;
-import io.swagger.annotations.*;
-import org.springframework.cloud.openfeign.*;
+import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
+import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
+import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
+import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
+import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
+import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
+import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
+import com.yunya.feign.discount.factory.RemoteDiscountFallBackFactory;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
+import com.yunya.feign.report.domain.vo.WxCardUsageVo;
+import com.yunya.framework.common.constant.YunyaServiceNameConstants;
+import com.yunya.framework.common.model.ResponseResult;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.*;
-import java.math.*;
-import java.util.*;
+import javax.validation.Valid;
+import java.math.BigDecimal;
+import java.util.List;
 
 @FeignClient(
         name = YunyaServiceNameConstants.YUNYA_DISCOUNT,
@@ -55,4 +60,7 @@ public interface RemoteDiscountFeign {
 
     @PostMapping("/patient/{patientId}/effective/card")
     List<WxPatientEffectiveVo> getPatientEffectCardList(@PathVariable(value = "patientId") Integer patientId);
+
+    @PostMapping("/card/{cardId}/usage")
+    WxCardUsageVo getUserCardUsage(@PathVariable(value = "cardId") Integer cardId);
 }

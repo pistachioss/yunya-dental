@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
  * @return: $
  */
 @Data
-@ApiModel(value = "WxFansQueryForm",description = "客服中心查看详情参数模型")
+@ApiModel(value = "WxFansDetailForm",description = "客服中心查看详情参数模型")
 public class WxFansDetailForm {
 
     @ApiModelProperty("openId")

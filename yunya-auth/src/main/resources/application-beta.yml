@@ -8,7 +8,7 @@ spring:
     name: test_yunya_system
 
   cloud:
-    nacos:
+    nacos:PatientServiceRest
       discovery:
         server-addr: 172.16.17.181:8848
       config:

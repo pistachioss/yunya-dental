@@ -11,6 +11,6 @@ import lombok.Data;
 public class WxAccessTokenVo {
     private String access_token;
     private Long expires_in;
-    private String errcode;
+    private Integer errcode;
     private String errmsg;
 }

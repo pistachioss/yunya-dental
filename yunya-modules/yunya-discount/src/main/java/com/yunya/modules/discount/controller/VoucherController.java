@@ -8,7 +8,6 @@ import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
 import com.yunya.modules.discount.biz.VoucherBiz;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.discount.form.CouponCommonInfoIsInserviceForm;
 import com.yunya.modules.discount.form.CouponCommonInfoQueryForm;
 import com.yunya.modules.discount.form.VoucheCouponForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
@@ -148,6 +147,19 @@ public class VoucherController {
         return ResponseUtil.success(
                 voucherBiz.thirdParty());
     }
+
+    /**
+     * 获取全部卡券下拉框
+     *
+     * @return
+     */
+    @PostMapping("/findDown")
+    @ApiOperation("获取全部卡券下拉框")
+    public ResponseResult findDown(@RequestBody @Valid CouponCommonInfoFindDownForm couponCommonInfoFindDownForm) {
+        return ResponseUtil.success(
+                voucherBiz.findDown(couponCommonInfoFindDownForm));
+    }
+
     /**
      * 启用/停用 卡券
      *
