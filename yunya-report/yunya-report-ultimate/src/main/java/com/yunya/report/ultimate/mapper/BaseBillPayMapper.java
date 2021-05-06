@@ -178,7 +178,6 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
   /**
    * 查询订单支付记录
    *
-   *
    * @param billIdList 账单id集合
    * @param startDate 开始时间
    * @param endDate 结束时间
