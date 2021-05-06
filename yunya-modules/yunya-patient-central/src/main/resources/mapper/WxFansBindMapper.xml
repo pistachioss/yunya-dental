@@ -27,4 +27,18 @@
     )
     </foreach>
   </insert>
+
+    <select id="listWxUsers" resultType="com.yunya.models.patient_central.WxFans">
+      select
+          wf.open_id as openId,
+          wfb.patient_id as patientId,
+          wf.nick_name as nickName
+      from wx_fans_bind wfb
+               inner join wx_fans wf on wf.open_id = wfb.open_id
+      where wfb.patient_id in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+        and wfb.`bind` = 1
+    </select>
 </mapper>

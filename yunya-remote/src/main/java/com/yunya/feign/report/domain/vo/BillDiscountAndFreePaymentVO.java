@@ -11,6 +11,9 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 折扣&免单支付VO
  *
@@ -61,7 +64,7 @@ public class BillDiscountAndFreePaymentVO implements Serializable {
   private String discountFree;
 
   /** 金额 */
-  @Excel(name = "金额", cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("金额")
   private BigDecimal amount;
 

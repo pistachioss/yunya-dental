@@ -26,15 +26,18 @@ public class CurrentMonthBillStatisticVO implements Serializable {
   /** 当前门诊ID */
   @ApiModelProperty("当前门诊ID")
   private Integer orgId;
-  /** 本月实收金额合计 */
-  @ApiModelProperty("本月实收金额合计")
+  /** 本月应收金额合计 */
+  @ApiModelProperty("本月应收金额合计")
   private BigDecimal currentMonthTotalActualAmount;
   /** 本月优惠金额合计 */
   @ApiModelProperty("本月优惠金额合计")
   private BigDecimal currentMonthTotalDiscountAmount;
-  /** 本月账单已收金额合计 */
-  @ApiModelProperty("本月账单已收金额合计")
+  /** 本月账单实收金额合计 */
+  @ApiModelProperty("本月账单实收金额合计")
   private BigDecimal currentMonthTotalReceivedAmount;
+  /** 本月账单免单金额合计 */
+  @ApiModelProperty("本月账单免单金额合计")
+  private BigDecimal currentMonthTotalFreePayAmount;
   /** 本月账单欠费金额合计 */
   @ApiModelProperty("本月账单欠费金额合计")
   private BigDecimal currentMonthTotalDebtAmount;

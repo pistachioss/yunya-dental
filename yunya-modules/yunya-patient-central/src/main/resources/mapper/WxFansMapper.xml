@@ -32,8 +32,16 @@
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
   <select id="findList" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansVo">
-    select wf.id,wf.nick_name as nickName,wf.head_imgurl as headImgurl,wf.open_id as openId,pbi.name,pbi.mobile,
-    wf.remark,wf.crt_time as crtTime,wf.bind as isBind from wx_fans wf
+    select wf.id,wf.nick_name as nickName,wf.head_imgurl as headImgurl,wf.open_id as openId,pbi.name,wf.register_mobile as mobile,
+    wf.remark,wf.crt_time as crtTime,wf.bind as isBind,
+    case when wf.sex = 1 then '男'
+    when wf.sex = 2 then '女'
+    else '未知'
+    end as sex,
+    case when wf.subscribe = 1 then '是'
+    else '否'
+    end as subscribe
+     from wx_fans wf
     LEFT JOIN wx_fans_bind wfb ON wf.open_id = wfb.open_id
     LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
     <where>
@@ -41,15 +49,18 @@
         and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') >= DATE_FORMAT(#{startTime},'%Y-%m-%d')
         and DATE_FORMAT(wf.crt_time,'%Y-%m-%d') &lt;= DATE_FORMAT(DATE_ADD(#{endTime},INTERVAL '1' DAY),'%Y-%m-%d')
       </if>
-      <if test="isBind !=null and isBind != ''">
+      <if test="isBind !=null">
         and wf.bind = #{isBind}
       </if>
       AND concat(IFNULL(pbi.`name`,''),
       IFNULL(pbi.medical_number,''),
       IFNULL(pbi.pinyin_name,''),
-      IFNULL(pbi.mobile,''))
+      IFNULL(wf.register_mobile,''),
+      IFNULL(wf.nick_name,''))
       like concat(concat('%', rtrim(#{name})), '%')
     </where>
+    GROUP BY wf.id
+    order by wf.crt_time desc
   </select>
 
   <select id="findDetail" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO">
@@ -57,7 +68,8 @@
       pbi.id as patientId,
 	  pbi.name as patientName,
 	  wfb.dictionary_id as dictionaryId,
-	  pbi.age
+	  pbi.age,
+	  pbi.mobile
       FROM
 	  wx_fans_bind wfb
       LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id

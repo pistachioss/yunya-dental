@@ -5,12 +5,17 @@ import com.yunya.feign.treatment_other.domain.model.VisitingRemindModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.other.biz.VisitingRemindBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @program: yunya-dental
@@ -82,6 +87,20 @@ public class VisitingRemindController {
     @CurrentUser
     public ResponseResult findVisitingRemindByCondition(@RequestBody @Validated VisitingRemindQuery query) {
         return visitingRemindBiz.findVisitingRemindByCondition(query);
+    }
+
+    /**
+     * 根据条件导出执行提醒列表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("根据条件导出执行提醒列表")
+    @PostMapping("/execute/export")
+    public ResponseResult<T> executeRemindExport(HttpServletResponse response,
+            @RequestBody @Validated VisitingRemindQuery query) throws IOException {
+        visitingRemindBiz.executeRemindExport(response, query);
+        return ResponseUtil.success(null);
     }
 
     /**

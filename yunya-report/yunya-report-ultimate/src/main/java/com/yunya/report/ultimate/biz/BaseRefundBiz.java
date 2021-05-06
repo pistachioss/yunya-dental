@@ -288,4 +288,14 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
   public List<BillOfRefundWorkloadVO> groupTotalRefundWorkload(DataStatisticsQuery query) {
     return mapper.groupTotalRefundWorkload(query);
   }
+
+  /**
+   * 根据条件按月份分组求退费工作量
+   *
+   * @param query
+   * @return
+   */
+  public List<BillOfRefundWorkloadVO> selectTotalRefundWorkloadGroupByMonth(DataStatisticsQuery query) {
+    return mapper.selectTotalRefundWorkloadGroupByMonth(query);
+  }
 }

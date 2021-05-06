@@ -692,7 +692,7 @@
         when ci.coupon_type = 1 then '折扣券'
         when ci.coupon_type = 2 then '兑换券'
         when ci.coupon_type = 3 then '套餐券'
-        when ci.coupon_type = 4 then '充值券'
+        when ci.coupon_type = 4 then '充值卡'
         else '' end as couponType,
         cd.card_number as cardNumber,
         case when cd.status in (0,1,2) then '否'
@@ -726,5 +726,27 @@
         </if>
         </where>
         order by cd.active_date desc
+    </select>
+
+    <select id="listWxPushCard" resultType="com.yunya.feign.report.domain.vo.WxCardEventVo">
+        select
+            bc.patient_id,
+            b.coupon_name,
+            bc.card_number,
+            date_format(bc.activation_deadline,'%Y-%m-%d') as activationDeadline,
+            date_format(bc.active_date,'%Y-%m-%d')         as activeDate
+        from base_card bc
+            inner join base_coupon b on bc.coupon_id = b.coupon_id
+        <if test="noticeType == 0">
+            where bc.status = 2
+            and date_format(date_add(bc.active_date, interval 2 month), '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+        </if>
+        <if test="noticeType == 1">
+            where bc.status in (2,3)
+            and date_format(date_sub(bc.activation_deadline, interval 30 day), '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+        </if>
+        <if test="noticeType == 2">
+            where date_format(date_add(bc.activation_deadline, interval 1 day), '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
+        </if>
     </select>
 </mapper>

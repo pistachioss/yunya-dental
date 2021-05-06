@@ -55,4 +55,13 @@
         union all
         select ci.id,ci.name,vc.is_share from coupon_common_info ci left join special_package_coupon vc on ci.id = vc.coupon_id where ci.type = 3 and (vc.activation_deadline is null or vc.activation_deadline >= now())
     </select>
+    <select id="findDown" resultType="com.yunya.models.discount.CouponCommonInfo">
+      select * from coupon_common_info
+      <where>
+          <if test="name != null and name != ''">
+              and name like CONCAT(CONCAT('%',#{name}),'%')
+          </if>
+      </where>
+    </select>
+
 </mapper>

@@ -40,10 +40,10 @@ public class PatientOriginActivityVo {
     private String patientNumber;
 
     /**
-     * 已收工作量合计
+     * 实收工作量合计
      */
-    @Excel(name = "已收工作量合计", cellType = Excel.ColumnType.NUMERIC)
-    @ApiModelProperty(value ="已收工作量合计",required = false)
+    @Excel(name = "实收工作量合计", cellType = Excel.ColumnType.NUMERIC)
+    @ApiModelProperty(value ="实收工作量合计",required = false)
     private BigDecimal receivedTotalWorkload = new BigDecimal(0);
 
     /**

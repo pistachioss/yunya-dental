@@ -1,9 +1,6 @@
 package com.yunya.modules.appointment.mapper;
 
-import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
-import com.yunya.feign.appointment.domain.query.AppointPatientRecordQuery;
-import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
-import com.yunya.feign.appointment.domain.query.AppointmentQuery;
+import com.yunya.feign.appointment.domain.query.*;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.models.appointment.Appointment;
@@ -276,4 +273,12 @@ public interface AppointmentMapper extends Mapper<Appointment> {
    * @return
    */
   Integer countAppointNotArrived(@Param("queryForm") AppointmentCurrentListQuery queryForm);
+
+  /**
+   * 根据条件查询取消预约明细表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  List<CancelAppointmentVO> cancelAppointmentList(@Param("query") CancelAppointmentQuery query);
 }

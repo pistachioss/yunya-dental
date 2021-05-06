@@ -129,4 +129,9 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    * @return
    */
   List<FirstVisitPersonalVO> firstVisitRecordPersonalList(FirstVisitPersonalQuery query);
+
+  /**
+   * 查询wx需要推送的预约未到且未确认的数据
+   */
+  List<WxAppointConfirmPushVo> listAppointConfirm();
 }

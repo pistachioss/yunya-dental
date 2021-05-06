@@ -29,14 +29,14 @@ public class PatientBillStatistics implements Serializable {
   /** 账单优惠合计 */
   @ApiModelProperty("账单优惠合计")
   private BigDecimal billTotalPrivilegePrice;
-  /** 账单实收合计 */
-  @ApiModelProperty("账单实收合计")
+  /** 账单应收合计 */
+  @ApiModelProperty("账单应收合计")
   private BigDecimal billTotalActualPrice;
   /** 账单欠费合计 */
   @ApiModelProperty("账单欠费合计")
   private BigDecimal billTotalArrears;
-  /** 已收金额合计 */
-  @ApiModelProperty("账单已收金额合计")
+  /** 实收金额合计 */
+  @ApiModelProperty("账单实收金额合计")
   private BigDecimal billTotalReceivedPrice;
   /** 免单支付合计 */
   @ApiModelProperty("免单支付合计")
