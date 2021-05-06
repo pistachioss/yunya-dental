@@ -599,6 +599,7 @@ public class BaseTreatmentProcessBiz
       model.setPatientId(obj.getPatientId());
       map.put(TemplateDataEnum.PATIENT_NAME.getArgName(), obj.getPatientName());
       map.put(TemplateDataEnum.APPOINT_DATE.getArgName(), getFormatDate(obj.getAppointDate()));
+      map.put(TemplateDataEnum.APPOINT_ID.getArgName(), obj.getAppointId());
       model.setTemplateEnum(APPOINT_CONFIRM);
       map.put("keyword1", obj.getAppointDate().format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm")));
       map.put("keyword2", obj.getAppointDuration() + "分钟");

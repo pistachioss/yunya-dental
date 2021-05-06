@@ -124,6 +124,10 @@ public class StatementBillChargeDetailExportVO implements Serializable {
   @Excel(name = "杭州市萧山医保", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("杭州市萧山医保")
   private BigDecimal hangZhouXiaoShanMedicalInsuranceAmount;
+  /** 招商信诺 */
+  @Excel(name = "招商信诺", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @ApiModelProperty("招商信诺")
+  private BigDecimal zhaoShangXinNuoAmount;
   /** Cigna */
   @Excel(name = "Cigna", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("Cigna")
@@ -148,6 +152,10 @@ public class StatementBillChargeDetailExportVO implements Serializable {
   @Excel(name = "艾维员工免单", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("艾维员工免单")
   private BigDecimal employeeWaiverAmount;
+  /** 2020年会员充值送 */
+  @Excel(name = "2020年会员充值送", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @ApiModelProperty("2020年会员充值送")
+  private BigDecimal memberRechargeAmount;
   /** 收费人姓名 */
   @Excel(name = "收费人")
   @ApiModelProperty("收费人姓名")

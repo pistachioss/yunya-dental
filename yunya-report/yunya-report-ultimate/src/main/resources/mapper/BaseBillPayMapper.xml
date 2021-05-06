@@ -1977,7 +1977,6 @@
         </if>
     </select>
 
-
     <!-- 查询免单订单支付记录 -->
     <select id="findMdBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
         select DISTINCT
