@@ -9,11 +9,15 @@ import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import com.yunya.feign.appointment.domain.query.*;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
+import com.yunya.feign.appointment.domain.query.CancelAppointmentQuery;
+import com.yunya.feign.appointment.vo.CancelAppointmentVO;
 import com.yunya.feign.sms.model.AppointmentSmsSendRecordModel;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.modules.appointment.biz.web.AppointmentBiz;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
@@ -282,4 +286,35 @@ public class AppointmentController {
     return appointmentBiz.sendAppointmentBatchSms(templateId, models);
   }
 
+  /**
+   * 根据条件查询取消预约明细表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("根据条件查询取消预约明细表")
+  @PostMapping(value = "/cancelAppointment/list", name = "公司端-运营报表-患者报表-取消预约明细表")
+  public ResponseResult<PageInfo<CancelAppointmentVO>> cancelAppointmentList(@RequestBody @Validated CancelAppointmentQuery query) {
+    PageInfo<CancelAppointmentVO> arrears = appointmentBiz.cancelAppointmentList(query);
+    if (StringHelper.isNotNull(arrears)) {
+      return ResponseUtil.success(arrears);
+    }
+    return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "暂无相关数据", null);
+  }
+
+  /**
+   * 根据条件导出取消预约明细表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("根据条件导出取消预约明细表")
+  @PostMapping(value = "/cancelAppointment/export", name = "公司端-运营报表-患者报表-取消预约明细表导出")
+  public ResponseResult<T> cancelAppointmentExport(
+          HttpServletResponse response, @RequestBody @Validated CancelAppointmentQuery query)
+          throws IOException {
+    appointmentBiz.cancelAppointmentExport(response, query);
+    return ResponseUtil.success(null);
+  }
 }

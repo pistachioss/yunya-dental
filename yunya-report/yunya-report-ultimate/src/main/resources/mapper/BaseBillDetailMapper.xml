@@ -475,12 +475,26 @@
         ewc.user_id
         ) ewc ON bup.user_id = ewc.user_id
         ) bup
+        WHERE
+        bup.actualWorkload > 0
+        or supplementWorkload > 0
+        or bup.receivedWorkload > 0
+        or bup.freePaymentWorkload > 0
+        or bup.refundWorkload > 0
+        or bup.processingFee > 0
+        or bup.orthodonticsFee > 0
+        or bup.baseWorkload > 0
+        or bup.largeMaterialCost > 0
         ORDER BY
         bup.actualWorkload DESC,
         bup.receivedWorkload DESC,
         bup.supplementWorkload DESC,
         bup.freePaymentWorkload DESC,
-        bup.refundWorkload DESC
+        bup.refundWorkload DESC,
+        bup.processingFee DESC,
+        bup.orthodonticsFee DESC,
+        bup.baseWorkload DESC,
+        bup.largeMaterialCost DESC
     </select>
 
     <!-- 根据条件查询员工工作量列表（运营报表） -->
@@ -847,12 +861,26 @@
         ewc.user_id
         ) ewc ON bup.user_id = ewc.user_id
         ) bup
+        WHERE
+        bup.actualWorkload > 0
+        or supplementWorkload > 0
+        or bup.receivedWorkload > 0
+        or bup.freePaymentWorkload > 0
+        or bup.refundWorkload > 0
+        or bup.processingFee > 0
+        or bup.orthodonticsFee > 0
+        or bup.baseWorkload > 0
+        or bup.largeMaterialCost > 0
         ORDER BY
         bup.actualWorkload DESC,
         bup.receivedWorkload DESC,
         bup.supplementWorkload DESC,
         bup.freePaymentWorkload DESC,
-        bup.refundWorkload DESC
+        bup.refundWorkload DESC,
+        bup.processingFee DESC,
+        bup.orthodonticsFee DESC,
+        bup.baseWorkload DESC,
+        bup.largeMaterialCost DESC
     </select>
 
     <!-- 根据条件查询项目分类收入汇总列表 -->
@@ -2710,7 +2738,7 @@
         bbd.quantity,
         bem.employee_name as regDentistName,
         be.employee_name as executorName,
-        IFNULL(bbd.price*bbd.quantity-bbd.discount_amount,0) amount,
+        IFNULL(bbd.price*bbd.quantity - bbd.discount_amount, 0) as amount,
         bp.name AS patientName,
         bp.patient_id as patientId,
         bp.mobile,
@@ -2725,17 +2753,13 @@
         LEFT JOIN base_employee be ON bbd.executor_id = be.user_id
         <where>
             AND bb.bill_date IS NOT NULL
-            AND bbd.source_type = 0
             <if test="query.orgId != null">
                 and btp.org_id = #{query.orgId}
                 and bb.org_id = #{query.orgId}
                 and bbd.org_id = #{query.orgId}
             </if>
-            <if test="query.executorIds!=null and query.executorIds.size()>0">
-                and bbd.executor_id in
-                <foreach collection="query.executorIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
+            <if test="query.executorId != null">
+                and bbd.executor_id = #{query.executorId}
             </if>
             <if test="query.keyword != null and query.keyword != ''">
                 and concat(IFNULL(bp.name, ''), IFNULL(bp.pinyin_name, ''), IFNULL(bp.mobile, '')) like
@@ -2749,9 +2773,6 @@
             </if>
             <if test="query.billEndDate != null and query.billEndDate != ''">
                 and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &lt;= #{query.billEndDate}
-            </if>
-            <if test="query.regDentistId != null">
-                and btp.registered_dentist_id = #{query.regDentistId}
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -2784,7 +2805,9 @@
                 and bbd.item_type = #{query.itemType}
             </if>
         </where>
-        order by bb.bill_date desc
+        order by
+        bb.bill_date desc,
+        bb.bill_num desc
     </select>
     <!-- 查询订单实收工作量总和 -->
     <select id="selectBillTotalWorkload" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
@@ -2983,6 +3006,19 @@
     <!-- 根据条件查询查询收费项目工作量列表信息 -->
     <select id="selectTariffWorkloadInfo"
             resultType="com.yunya.feign.report.domain.vo.BillItemTollAndWorkloadVO">
+        select
+        executorId,
+        executorName,
+        itemCategoryId,
+        itemCategoryName,
+        itemId,
+        itemName,
+        itemNum,
+        receivedWorkload,
+        freePayWorkload,
+        supplyWorkload,
+        refundWorkload
+        from (
         select bet.user_id as executorId,
         bet.employee_name as executorName,
         bet.category_id as itemCategoryId,
@@ -3189,6 +3225,12 @@
         bbd1.freePayWorkload DESC,
         bbd2.supplementWorkload DESC,
         brd.refundWorkload DESC
+        ) bet
+        where
+        bet.receivedWorkload > 0
+        or bet.freePayWorkload > 0
+        or bet.supplyWorkload > 0
+        or bet.refundWorkload > 0
     </select>
     <!-- 根据条件查询补入工作量列表 -->
     <select id="selectCouponWorkloadList" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
@@ -3255,7 +3297,6 @@
         SUM(bbd.quantity) AS quantity
         FROM base_bill_detail bbd
         <where>
-            bbd.source_type = 0
             <if test="query.itemType != null">
                 AND bbd.item_type = #{query.itemType}
             </if>
@@ -3276,79 +3317,6 @@
         <if test="column!=null and column!=''">
             , ${column}
         </if>
-    </select>
-
-    <!--给定月份中含免单支付的账单单id-->
-    <select id="billIdByMonthFreePayment" resultType="java.lang.Integer">
-        select
-        distinct bbd.bill_id AS billId
-        from base_bill_detail bbd
-        <where>
-            <if test="query.orgId != null">
-                and bbd.org_id = #{query.orgId}
-            </if>
-            AND EXISTS (
-            select bb.bill_id from base_bill bb where bbd.bill_id=bb.bill_id
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and DATE_FORMAT(bb.bill_date, '%Y-%m') = #{query.queryDate}
-            </if>
-            )
-            and EXISTS (
-            select bbp.bill_id from base_bill_pay bbp
-            where bbp.bill_id=bbd.bill_id
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.queryDate}
-            </if>
-            )
-        </where>
-        group by bbd.item_id,bbd.item_type,bbd.bill_id
-    </select>
-
-    <select id="nonMonthCategoryList" resultType="com.yunya.feign.report.domain.vo.NonMonthCategoryVO">
-        select
-        bbd.item_id AS itemId,
-        bbd.item_type AS itemType,
-        SUM(bbd.quantity*bbd.price) AS billAmount,
-        SUM(bbd.quantity*bbd.price-bbd.discount_amount) AS actualAmount,
-        SUM(bbd.coupon_workload) AS couponWorkload,
-        bbd.bill_id AS billId
-        from base_bill_detail bbd
-        <where>
-            <if test="query.orgId != null">
-                and bbd.org_id = #{query.orgId}
-            </if>
-            <if test="billIds!=null and billIds.size()>0">
-                and bbd.bill_id in
-                <foreach collection="billIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
-        group by bbd.item_id,bbd.item_type,bbd.bill_id
-    </select>
-
-    <select id="findBillIdsByNonMonth" resultType="java.lang.Integer">
-        SELECT
-        DISTINCT bb.bill_id
-        FROM base_bill bb
-        <where>
-            <if test="query.orgId != null">
-                and bb.org_id = #{query.orgId}
-            </if>
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;&gt; #{query.queryDate}
-            </if>
-            <if test="query.privilegeDate!=null and query.privilegeDate!=''">
-                and DATE_FORMAT(bb.privilege_date, '%Y-%m') = #{query.privilegeDate}
-            </if>
-            <if test="query.privilegeDate==null or query.privilegeDate==''">
-                and EXISTS (
-                select bbp.bill_id from base_bill_pay bbp
-                where bbp.bill_id=bb.bill_id AND DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.queryDate}
-                group by bill_id
-                )
-            </if>
-        </where>
     </select>
     <!-- 根据条件查询个人开单项目已收工作量明细 -->
     <select id="selectPersonalBillItemReceivedWorkloadDetail"
@@ -3469,6 +3437,129 @@
                 and concat(IFNULL(bbd.billNum, '')) like concat('%', #{query.billNum}, '%')
             </if>
         </where>
+    </select>
+
+    <!--给定月份中含免单支付的账单单id-->
+    <select id="billIdByMonthFreePayment" resultType="java.lang.Integer">
+        select
+        distinct bbd.bill_id AS billId
+        from base_bill_detail bbd
+        <where>
+            <if test="query.orgId != null">
+                and bbd.org_id = #{query.orgId}
+            </if>
+            AND EXISTS (
+            select bb.bill_id from base_bill bb where bbd.bill_id=bb.bill_id
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and DATE_FORMAT(bb.bill_date, '%Y-%m') = #{query.queryDate}
+            </if>
+            )
+            and EXISTS (
+            select bbp.bill_id from base_bill_pay bbp
+            where bbp.bill_id=bbd.bill_id
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.queryDate}
+            </if>
+            )
+        </where>
+        group by bbd.item_id,bbd.item_type,bbd.bill_id
+    </select>
+
+    <select id="nonMonthCategoryList" resultType="com.yunya.feign.report.domain.vo.NonMonthCategoryVO">
+        select
+        bbd.item_id AS itemId,
+        bbd.item_type AS itemType,
+        SUM(bbd.quantity*bbd.price) AS billAmount,
+        SUM(bbd.quantity*bbd.price-bbd.discount_amount) AS actualAmount,
+        SUM(bbd.coupon_workload) AS couponWorkload,
+        bbd.bill_id AS billId
+        from base_bill_detail bbd
+        <where>
+            <if test="query.orgId != null">
+                and bbd.org_id = #{query.orgId}
+            </if>
+            <if test="billIds!=null and billIds.size()>0">
+                and bbd.bill_id in
+                <foreach collection="billIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by bbd.item_id,bbd.item_type,bbd.bill_id
+    </select>
+
+    <select id="findBillIdsByNonMonth" resultType="java.lang.Integer">
+        SELECT
+            DISTINCT bb.bill_id
+        FROM base_bill bb
+        <where>
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;&gt; #{query.queryDate}
+            </if>
+            <if test="query.privilegeDate!=null and query.privilegeDate!=''">
+                and DATE_FORMAT(bb.privilege_date, '%Y-%m') = #{query.privilegeDate}
+            </if>
+            <if test="query.privilegeDate==null or query.privilegeDate==''">
+                and EXISTS (
+                    select bbp.bill_id from base_bill_pay bbp
+                    where bbp.bill_id=bb.bill_id AND DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.queryDate}
+                    group by bill_id
+                )
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件按月份分组补入工作量列表 -->
+    <select id="selectCouponWorkloadGroupByPrivilegeDate"
+            resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
+        select
+        sum(bbd.coupon_workload) as billTotalCouponWorkload,
+        bbd.org_id AS billOrgId,
+        DATE_FORMAT(bb.privilege_date,'%Y-%m') AS month
+        from base_bill_detail bbd
+        inner join base_bill bb on bbd.bill_id = bb.bill_id
+        <where>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                AND bbd.org_id IN
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bb.privilege_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.billIds!=null and query.billIds.size()>0">
+                and bbd.bill_id IN
+                <foreach collection="query.billIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by bbd.org_id, month
     </select>
     <!-- 根据条件查询个人开单项目免单工作量明细 -->
     <select id="selectPersonalBillItemFreeWorkloadDetail"
@@ -3776,54 +3867,5 @@
             </if>
         </where>
         group by bbd.billId
-    </select>
-
-    <!-- 根据条件按月份分组补入工作量列表 -->
-    <select id="selectCouponWorkloadGroupByPrivilegeDate" resultType="com.yunya.feign.report.domain.vo.BillRecordWorkloadVO">
-        select
-            sum(bbd.coupon_workload) as billTotalCouponWorkload,
-            bbd.org_id AS billOrgId,
-            DATE_FORMAT(bb.privilege_date,'%Y-%m') AS month
-        from base_bill_detail bbd
-        inner join base_bill bb on bbd.bill_id = bb.bill_id
-        <where>
-            <if test="query.orgIds != null and query.orgIds.length > 0">
-                AND bbd.org_id IN
-                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bb.privilege_date, '%Y-%m' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    AND DATE_FORMAT( bb.privilege_date, '%Y' ) &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    AND DATE_FORMAT( bb.privilege_date, '%Y' ) &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.billIds!=null and query.billIds.size()>0">
-                and bbd.bill_id IN
-                <foreach collection="query.billIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
-        group by bbd.org_id, month
     </select>
 </mapper>

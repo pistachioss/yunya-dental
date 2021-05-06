@@ -10,6 +10,7 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
@@ -17,6 +18,7 @@ import com.yunya.feign.treatment_other.domain.form.VisitingRemindForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingRemindModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRemindContentVo;
+import com.yunya.feign.treatment_other.domain.vo.VisitingRemindExecuteVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRemindVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
@@ -24,11 +26,15 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.modules.treatment.other.mapper.VisitingRemindMapper;
@@ -38,6 +44,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -555,21 +563,98 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @return 返回排序之后的列表
      */
     private List<VisitingRemindVo> sort(List<VisitingRemindVo> searchVisitingRemindVos) {
-        return searchVisitingRemindVos.stream().sorted(Comparator.comparing(VisitingRemindVo::getRemindTime,(obj1,obj2)->{
-            if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
-                return -1;
+        return searchVisitingRemindVos.stream()
+                .sorted(Comparator.comparing(VisitingRemindVo::getRemindTime,
+                (obj1,obj2)-> compareHourMinute(obj1, obj2)))
+                .collect(Collectors.toList());
+    }
+
+    private int compareHourMinute(String obj1, String obj2) {
+        if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
+            return -1;
+        }
+        String[] objSplit1 = obj1.trim().split(":");
+        Integer objMinute1 = Integer.parseInt(objSplit1[0]) * 60 + Integer.parseInt(objSplit1[1]);
+        String[] objSplit2 = obj2.trim().split(":");
+        Integer objMinute2 = Integer.parseInt(objSplit2[0]) * 60 + Integer.parseInt(objSplit2[1]);
+        if (objMinute1 < objMinute2){
+            return -1;
+        } else if (objMinute1 > objMinute2){
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * 根据条件导出执行提醒列表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public void executeRemindExport(HttpServletResponse response, VisitingRemindQuery query) throws IOException {
+        List<VisitingRemindExecuteVo> data = executeRemindList(query).getList();
+        ExcelUtil<VisitingRemindExecuteVo> excelUtil = new ExcelUtil<>(VisitingRemindExecuteVo.class);
+        String date = DateUtil.format(query.getRemindDate(), "yyyy-MM-dd");
+        OrganizationInfo orgInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
+        String abbreviation = "";
+        if (orgInfo != null) {
+             abbreviation = orgInfo.getAbbreviation();
+        }
+        String fileName = excelUtil.getFileName(date,"",abbreviation,"患者提醒事项报表");
+        excelUtil.exportExcel(response,data,"患者提醒事项报表",fileName);
+    }
+
+    /**
+     * 根据条件查询执行提醒列表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    private PageInfo<VisitingRemindExecuteVo> executeRemindList(VisitingRemindQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        String search = query.getSearch();
+        if (StringHelper.isNotEmpty(search)) {
+            PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
+            patientLikeQuery.setCondition(search);
+            patientLikeQuery.setWhetherPage(false);
+            // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容
+            List<PatientBaseInfoVo> patients = remotePatientCentralServiceFeign.findPatientByNameAndMobile(patientLikeQuery);
+            if (StringHelper.isNotEmpty(patients)) {
+                query.setPatientIds(patients.stream().map(PatientBaseInfoVo::getId).collect(Collectors.toList()));
             }
-            String[] objSplit1 = obj1.trim().split(":");
-            Integer objMinute1 = Integer.parseInt(objSplit1[0]) * 60 + Integer.parseInt(objSplit1[1]);
-            String[] objSplit2 = obj2.trim().split(":");
-            Integer objMinute2 = Integer.parseInt(objSplit2[0]) * 60 + Integer.parseInt(objSplit2[1]);
-            if (objMinute1 < objMinute2){
-                return -1;
-            } else if (objMinute1 > objMinute2){
-                return 1;
-            } else {
-                return 0;
-            }
-        })).collect(Collectors.toList());
+        }
+        query.setInservice(true);
+        List<VisitingRemindExecuteVo> result = new ArrayList<>();
+        List<VisitingRemind> reminds = mapper.findVisitingRemindByCondition(query);
+        PageInfo pageInfo = new PageInfo<>(reminds);
+        if (StringHelper.isNotEmpty(reminds)) {
+            reminds = reminds.stream().sorted((remind1, remind2)
+                    ->compareHourMinute(remind1.getRemindTime(), remind2.getRemindTime())).collect(Collectors.toList());
+            reminds.forEach(vo->{
+                VisitingRemindExecuteVo executeVo = new VisitingRemindExecuteVo();
+                Integer patientId = vo.getPatientId();
+                if (patientId != null) {
+                    PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(patientId);
+                    if (patient != null) {
+                        executeVo.setPatientName(patient.getName());
+                    }
+                }
+                Integer dentistId = vo.getDentistId();
+                if (dentistId != null) {
+                    SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(dentistId);
+                    if (employee != null) {
+                        executeVo.setDentistName(employee.getName());
+                    }
+                }
+                executeVo.setRemindDate(vo.getRemindDate());
+                executeVo.setRemindContent(vo.getRemindContent());
+                result.add(executeVo);
+            });
+        }
+        pageInfo.setList(result);
+        return pageInfo;
     }
 }

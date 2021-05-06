@@ -10,27 +10,14 @@ import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
 import com.yunya.feign.appointment.domain.model.AppointOperationModel;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
-import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
-import com.yunya.feign.appointment.domain.query.AppointListExportQuery;
-import com.yunya.feign.appointment.domain.query.AppointListQuery;
-import com.yunya.feign.appointment.domain.query.AppointOperationQuery;
-import com.yunya.feign.appointment.domain.query.AppointPatientRecordQuery;
-import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
-import com.yunya.feign.appointment.domain.query.AppointmentQuery;
-import com.yunya.feign.appointment.domain.query.AppointmentSplitQuery;
-import com.yunya.feign.appointment.domain.query.PatientDimensionByDayQuery;
+import com.yunya.feign.appointment.domain.query.*;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
 import com.yunya.feign.employee_attend.form.FieldInfoForm;
 import com.yunya.feign.employee_attend.form.LeaveInfoForm;
 import com.yunya.feign.employee_attend.form.WorkOvertimeInfoForm;
-import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
-import com.yunya.feign.employee_attend.vo.FieldInfoListVO;
-import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
-import com.yunya.feign.employee_attend.vo.UserWorkVO;
-import com.yunya.feign.employee_attend.vo.WorkDayVO;
-import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
+import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
 import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
@@ -3419,5 +3406,60 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         remoteSmsServiceFeign.batchSendModels(templateId, models);
         return ResponseUtil.success(null);
+    }
+
+    /**
+     * 根据条件查询取消预约明细表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public PageInfo<CancelAppointmentVO> cancelAppointmentList(CancelAppointmentQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<CancelAppointmentVO> list = mapper.cancelAppointmentList(query);
+        if (StringHelper.isNotEmpty(list)) {
+            list.forEach(vo->{
+                PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(vo.getPatientId());
+                if (patient != null) {
+                    vo.setPatientName(patient.getName());
+                }
+                SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(vo.getDentistId());
+                if (employee != null) {
+                    vo.setDentistName(employee.getName());
+                }
+                OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(vo.getOrgId());
+                if (org != null) {
+                    vo.setAbbreviation(org.getAbbreviation());
+                }
+            });
+        }
+        return new PageInfo<>(list);
+    }
+
+    /**
+     * 根据条件导出取消预约明细表
+     *
+     * @param response 响应
+     * @param query 查询条件
+     * @return
+     */
+    public void cancelAppointmentExport(HttpServletResponse response, CancelAppointmentQuery query) throws IOException {
+        query.setWhetherPage(false);
+        List<CancelAppointmentVO> data = cancelAppointmentList(query).getList();
+        ExcelUtil<CancelAppointmentVO> excelUtil = new ExcelUtil<>(CancelAppointmentVO.class);
+        String startDate = query.getStartDate();
+        String endDate = query.getEndDate();
+        if (startDate.equals(endDate)) {
+            endDate = null;
+        }
+        String abbreviation = null;
+        Integer[] orgIds = query.getOrgIds();
+        if (StringHelper.isNotEmpty(orgIds)) {
+            abbreviation = remoteSystemServiceFeign.findOrgInfoByOrgId(orgIds[0]).getAbbreviation();
+        }
+        String fileName = excelUtil.getFileName(startDate, endDate, abbreviation, "取消预约明细表");
+        excelUtil.exportExcel(response,data,"取消预约明细表",fileName);
     }
 }

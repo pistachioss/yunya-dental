@@ -10,7 +10,6 @@ import lombok.ToString;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.Collection;
 
 /**
  * 简介: 开单数量及金额统计明细查询参数
@@ -61,9 +60,6 @@ public class BillItemDetailQuery extends PageQuery implements Serializable {
   @ApiModelProperty("账单结束日期")
   private String billEndDate;
   /** 执行人ID列表 */
-  @ApiModelProperty("执行人ID列表")
-  private Collection<Integer> executorIds;
-  /** 挂号医生ID */
-  @ApiModelProperty(value = "挂号医生ID", required = true)
-  private Integer regDentistId;
+  @ApiModelProperty("执行人ID")
+  private Integer executorId;
 }

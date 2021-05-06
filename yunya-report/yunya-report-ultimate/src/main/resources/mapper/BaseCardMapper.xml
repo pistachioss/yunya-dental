@@ -692,7 +692,7 @@
         when ci.coupon_type = 1 then '折扣券'
         when ci.coupon_type = 2 then '兑换券'
         when ci.coupon_type = 3 then '套餐券'
-        when ci.coupon_type = 4 then '充值券'
+        when ci.coupon_type = 4 then '充值卡'
         else '' end as couponType,
         cd.card_number as cardNumber,
         case when cd.status in (0,1,2) then '否'

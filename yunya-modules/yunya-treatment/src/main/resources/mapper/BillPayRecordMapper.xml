@@ -81,7 +81,7 @@
                 AND br.org_id = #{query.orgId}
             </if>
             <if test="query.currentMonth != null and query.currentMonth != ''">
-                AND date_format(br.crt_time, '%Y-%m') = #{query.currentMonth}
+                AND date_format(bpr.crt_time, '%Y-%m') = #{query.currentMonth}
             </if>
         </where>
         order by bpr.crt_time

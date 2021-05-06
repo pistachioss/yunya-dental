@@ -37,10 +37,6 @@ public class OrderDetailPayRecordBiz
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   /** 患者服务 */
   @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
-  /** 价目表 */
-  @Autowired private BaseTariffBiz tariffBiz;
-  /** 商品表 */
-  @Autowired private BaseOralTariffBiz oralTariffBiz;
 
   /**
    * 查询账单优惠为0的订单金额

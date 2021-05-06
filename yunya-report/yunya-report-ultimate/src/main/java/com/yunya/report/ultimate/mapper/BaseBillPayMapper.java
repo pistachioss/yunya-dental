@@ -219,6 +219,14 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
       @Param("itemIds") List<Integer> itemIds);
 
   /**
+   * 根据条件查询门诊当月免单收费金额
+   *
+   * @param query 查询条件
+   * @return BigDecimal - 当月免单收费金额
+   */
+  BigDecimal selectCurrentMonthTotalFreePayAmount(@Param("query") StatementStatisticQuery query);
+
+  /**
    * 根据订单id查询免单支付记录
    *
    * @param baseBillIdList 订单id集合
@@ -232,18 +240,11 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
       @Param("itemIds") List<Integer> itemIds);
 
   /**
-   * 根据条件查询门诊当月免单收费金额
-   *
-   * @param query 查询条件
-   * @return BigDecimal - 当月免单收费金额
-   */
-  BigDecimal selectCurrentMonthTotalFreePayAmount(@Param("query") StatementStatisticQuery query);
-
-  /**
    * 根据月份分组求已收工作量合计
    *
    * @param query
    * @return
    */
-  List<BillWorkloadVO> selectRecievedWorkloadsGroupByMonth(@Param("query") DataStatisticsQuery query);
+  List<BillWorkloadVO> selectRecievedWorkloadsGroupByMonth(
+      @Param("query") DataStatisticsQuery query);
 }
