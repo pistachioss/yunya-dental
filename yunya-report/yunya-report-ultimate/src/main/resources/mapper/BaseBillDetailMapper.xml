@@ -2619,7 +2619,6 @@
                     bb.bill_id = #{billId}
                     AND bbd.executor_id > 0
                     AND bti.item_type = bbd.item_type
-                    AND bbd.executor_id > 0
                 ) t where workload > 0
     </select>
 
