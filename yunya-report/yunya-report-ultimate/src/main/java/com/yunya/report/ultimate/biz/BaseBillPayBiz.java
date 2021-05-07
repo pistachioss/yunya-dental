@@ -2,9 +2,7 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Table;
 import com.yunya.feign.report.domain.bo.ClinicWorkloadGroupInfoVO;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
@@ -27,10 +25,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
@@ -54,7 +52,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   @Autowired private BaseOrganizationMapper organizationMapper;
   /** 退费订单 */
   @Autowired private BaseRefundBiz refundBiz;
-  /** 账单信息*/
+  /** 账单信息 */
   @Autowired private BaseBillMapper baseBillMapper;
 
   @Resource(name = "customizeThreadPool")
@@ -210,8 +208,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           billPayIds.add(vo.getBillPayId());
         }
       }
-      List<BillRecordWorkloadVO> workloadInfos = findBillWorkloadInfoByBillIds(new ArrayList<>(billIds.keySet()));
-      List<BillPayFreePayAmountVO> freePayAmountList = findBillFreePayAmountList(new ArrayList<>(billPayIds));
+      List<BillRecordWorkloadVO> workloadInfos =
+          findBillWorkloadInfoByBillIds(new ArrayList<>(billIds.keySet()));
+      List<BillPayFreePayAmountVO> freePayAmountList =
+          findBillFreePayAmountList(new ArrayList<>(billPayIds));
 
       for (BillIdAndBillPayIdVO vo : vos) {
         Integer billId = vo.getBillId();
@@ -238,104 +238,110 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         if (billOrgId.equals(payeeOrgId)) {
           if (billDate.equals(payeeDate)) {
             firstReceivedWorkload =
-                    calculateReceivedWorkload(
-                            firstReceivedWorkload, receivedAmount, actualAmount, totalWorkload);
+                calculateReceivedWorkload(
+                    firstReceivedWorkload, receivedAmount, actualAmount, totalWorkload);
             firstFreePayWorkload =
-                    calculateFreePayWorkload(firstFreePayWorkload, freePayAmount, totalWorkload);
+                calculateFreePayWorkload(firstFreePayWorkload, freePayAmount, totalWorkload);
           } else {
             arrearsReceivedWorkload =
-                    calculateReceivedWorkload(
-                            arrearsReceivedWorkload, receivedAmount, actualAmount, totalWorkload);
+                calculateReceivedWorkload(
+                    arrearsReceivedWorkload, receivedAmount, actualAmount, totalWorkload);
             arrearsFreePayWorkload =
-                    calculateFreePayWorkload(arrearsFreePayWorkload, freePayAmount, totalWorkload);
+                calculateFreePayWorkload(arrearsFreePayWorkload, freePayAmount, totalWorkload);
           }
         } else {
           beCollectedReceivedWorkload =
-                  calculateReceivedWorkload(
-                          beCollectedReceivedWorkload, receivedAmount, actualAmount, totalWorkload);
+              calculateReceivedWorkload(
+                  beCollectedReceivedWorkload, receivedAmount, actualAmount, totalWorkload);
           beCollectedFreePayWorkload =
-                  calculateFreePayWorkload(beCollectedFreePayWorkload, freePayAmount, totalWorkload);
+              calculateFreePayWorkload(beCollectedFreePayWorkload, freePayAmount, totalWorkload);
         }
         ClinicWorkloadGroupInfoVO[] workloads = workloadMap.get(billOrgId);
         if (workloads == null) {
           workloads =
-                  new ClinicWorkloadGroupInfoVO[] {
-                          new ClinicWorkloadGroupInfoVO(true), new ClinicWorkloadGroupInfoVO(true)
-                  };
+              new ClinicWorkloadGroupInfoVO[] {
+                new ClinicWorkloadGroupInfoVO(true), new ClinicWorkloadGroupInfoVO(true)
+              };
         }
         ClinicWorkloadGroupInfoVO monthWorkload = workloads[0];
         monthWorkload.setFirstReceivedWorkload(
-                monthWorkload.getFirstReceivedWorkload().add(firstReceivedWorkload));
+            monthWorkload.getFirstReceivedWorkload().add(firstReceivedWorkload));
         monthWorkload.setFirstCouponWorkload(
-                monthWorkload.getFirstCouponWorkload().add(firstCouponWorkload));
+            monthWorkload.getFirstCouponWorkload().add(firstCouponWorkload));
         monthWorkload.setFirstFreePayWorkload(
-                monthWorkload.getFirstFreePayWorkload().add(firstFreePayWorkload));
+            monthWorkload.getFirstFreePayWorkload().add(firstFreePayWorkload));
         monthWorkload.setArrearsReceivedWorkload(
-                monthWorkload.getArrearsReceivedWorkload().add(arrearsReceivedWorkload));
+            monthWorkload.getArrearsReceivedWorkload().add(arrearsReceivedWorkload));
         monthWorkload.setArrearsCouponWorkload(
-                monthWorkload.getArrearsCouponWorkload().add(arrearsCouponWorkload));
+            monthWorkload.getArrearsCouponWorkload().add(arrearsCouponWorkload));
         monthWorkload.setArrearsFreePayWorkload(
-                monthWorkload.getArrearsFreePayWorkload().add(arrearsFreePayWorkload));
+            monthWorkload.getArrearsFreePayWorkload().add(arrearsFreePayWorkload));
         monthWorkload.setBeCollectedReceivedWorkload(
-                monthWorkload.getBeCollectedReceivedWorkload().add(beCollectedReceivedWorkload));
+            monthWorkload.getBeCollectedReceivedWorkload().add(beCollectedReceivedWorkload));
         monthWorkload.setBeCollectedCouponWorkload(
-                monthWorkload.getBeCollectedCouponWorkload().add(beCollectedCouponWorkload));
+            monthWorkload.getBeCollectedCouponWorkload().add(beCollectedCouponWorkload));
         monthWorkload.setBeCollectedFreePayWorkload(
-                monthWorkload.getBeCollectedFreePayWorkload().add(beCollectedFreePayWorkload));
+            monthWorkload.getBeCollectedFreePayWorkload().add(beCollectedFreePayWorkload));
         if (curDate.equals(DateUtil.format(payeeDate, "yyyy-MM-dd"))) { // 当天
           ClinicWorkloadGroupInfoVO curWorkload = workloads[1];
           curWorkload.setFirstReceivedWorkload(
-                  curWorkload.getFirstReceivedWorkload().add(firstReceivedWorkload));
+              curWorkload.getFirstReceivedWorkload().add(firstReceivedWorkload));
           curWorkload.setFirstCouponWorkload(
-                  curWorkload.getFirstCouponWorkload().add(firstCouponWorkload));
+              curWorkload.getFirstCouponWorkload().add(firstCouponWorkload));
           curWorkload.setFirstFreePayWorkload(
-                  curWorkload.getFirstFreePayWorkload().add(firstFreePayWorkload));
+              curWorkload.getFirstFreePayWorkload().add(firstFreePayWorkload));
           curWorkload.setArrearsReceivedWorkload(
-                  curWorkload.getArrearsReceivedWorkload().add(arrearsReceivedWorkload));
+              curWorkload.getArrearsReceivedWorkload().add(arrearsReceivedWorkload));
           curWorkload.setArrearsCouponWorkload(
-                  curWorkload.getArrearsCouponWorkload().add(arrearsCouponWorkload));
+              curWorkload.getArrearsCouponWorkload().add(arrearsCouponWorkload));
           curWorkload.setArrearsFreePayWorkload(
-                  curWorkload.getArrearsFreePayWorkload().add(arrearsFreePayWorkload));
+              curWorkload.getArrearsFreePayWorkload().add(arrearsFreePayWorkload));
           curWorkload.setBeCollectedReceivedWorkload(
-                  curWorkload.getBeCollectedReceivedWorkload().add(beCollectedReceivedWorkload));
+              curWorkload.getBeCollectedReceivedWorkload().add(beCollectedReceivedWorkload));
           curWorkload.setBeCollectedCouponWorkload(
-                  curWorkload.getBeCollectedCouponWorkload().add(beCollectedCouponWorkload));
+              curWorkload.getBeCollectedCouponWorkload().add(beCollectedCouponWorkload));
           curWorkload.setBeCollectedFreePayWorkload(
-                  curWorkload.getBeCollectedFreePayWorkload().add(beCollectedFreePayWorkload));
+              curWorkload.getBeCollectedFreePayWorkload().add(beCollectedFreePayWorkload));
         }
         workloadMap.put(billOrgId, workloads);
       }
-      long t1 = System.currentTimeMillis();
       List<BillRecordWorkloadVO> couponWorkloads = findCouponWorkloadList(query);
-      long t2 = System.currentTimeMillis();
-      System.out.println("===========ii=========" + (t2 - t1));
       if (StringHelper.isNotEmpty(couponWorkloads)) {
         for (BillRecordWorkloadVO info : couponWorkloads) {
           Integer billOrgId = info.getBillOrgId();
           ClinicWorkloadGroupInfoVO[] workloads = workloadMap.get(billOrgId);
           if (workloads == null) {
-            workloads = new ClinicWorkloadGroupInfoVO[] {new ClinicWorkloadGroupInfoVO(true), new ClinicWorkloadGroupInfoVO(true)};
+            workloads =
+                new ClinicWorkloadGroupInfoVO[] {
+                  new ClinicWorkloadGroupInfoVO(true), new ClinicWorkloadGroupInfoVO(true)
+                };
           }
           ClinicWorkloadGroupInfoVO monthWorkload = workloads[0];
           if (billOrgId.equals(info.getPrivilegeOrgId())) {
             if (info.getFirstPrivilege()) {
-              monthWorkload.setFirstCouponWorkload(calculateCouponWorkload(monthWorkload.getFirstCouponWorkload(), info));
+              monthWorkload.setFirstCouponWorkload(
+                  calculateCouponWorkload(monthWorkload.getFirstCouponWorkload(), info));
             } else {
-              monthWorkload.setArrearsCouponWorkload(calculateCouponWorkload(monthWorkload.getArrearsCouponWorkload(), info));
+              monthWorkload.setArrearsCouponWorkload(
+                  calculateCouponWorkload(monthWorkload.getArrearsCouponWorkload(), info));
             }
           } else {
-            monthWorkload.setBeCollectedCouponWorkload(calculateCouponWorkload(monthWorkload.getBeCollectedCouponWorkload(), info));
+            monthWorkload.setBeCollectedCouponWorkload(
+                calculateCouponWorkload(monthWorkload.getBeCollectedCouponWorkload(), info));
           }
           if (curDate.equals(DateUtil.format(info.getPrivilegeDate(), "yyyy-MM-dd"))) { // 当天
             ClinicWorkloadGroupInfoVO curWorkload = workloads[1];
             if (billOrgId.equals(info.getPrivilegeOrgId())) {
               if (info.getFirstPrivilege()) {
-                curWorkload.setFirstCouponWorkload(calculateCouponWorkload(curWorkload.getFirstCouponWorkload(), info));
+                curWorkload.setFirstCouponWorkload(
+                    calculateCouponWorkload(curWorkload.getFirstCouponWorkload(), info));
               } else {
-                curWorkload.setArrearsCouponWorkload(calculateCouponWorkload(curWorkload.getArrearsCouponWorkload(), info));
+                curWorkload.setArrearsCouponWorkload(
+                    calculateCouponWorkload(curWorkload.getArrearsCouponWorkload(), info));
               }
             } else {
-              curWorkload.setBeCollectedCouponWorkload(calculateCouponWorkload(curWorkload.getBeCollectedCouponWorkload(), info));
+              curWorkload.setBeCollectedCouponWorkload(
+                  calculateCouponWorkload(curWorkload.getBeCollectedCouponWorkload(), info));
             }
           }
           workloadMap.put(billOrgId, workloads);
@@ -345,245 +351,162 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     Map<Integer, BigDecimal[]> refundMap = new HashMap<>(16);
     if (StringHelper.isNotEmpty(refunds)) {
       refunds.forEach(
-              vo -> {
-                Integer orgId = vo.getOrgId();
-                BigDecimal totalRefundWorkload = vo.getTotalRefundWorkload();
-                Date refundDate = vo.getRefundDate();
-                BigDecimal[] refundWorkloads = refundMap.get(orgId);
-                if (refundWorkloads == null) {
-                  refundWorkloads = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO};
-                }
-                refundWorkloads[0] = refundWorkloads[0].add(totalRefundWorkload);
-                if (curDate.equals(DateUtil.format(refundDate, "yyyy-MM-dd"))) { // 当天
-                  refundWorkloads[1] = refundWorkloads[1].add(totalRefundWorkload);
-                }
-                refundMap.put(orgId, refundWorkloads);
-              });
+          vo -> {
+            Integer orgId = vo.getOrgId();
+            BigDecimal totalRefundWorkload = vo.getTotalRefundWorkload();
+            Date refundDate = vo.getRefundDate();
+            BigDecimal[] refundWorkloads = refundMap.get(orgId);
+            if (refundWorkloads == null) {
+              refundWorkloads = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO};
+            }
+            refundWorkloads[0] = refundWorkloads[0].add(totalRefundWorkload);
+            if (curDate.equals(DateUtil.format(refundDate, "yyyy-MM-dd"))) { // 当天
+              refundWorkloads[1] = refundWorkloads[1].add(totalRefundWorkload);
+            }
+            refundMap.put(orgId, refundWorkloads);
+          });
     }
     Map<Integer, BigDecimal[]> result = new HashMap<>(16);
     if (StringHelper.isNotEmpty(workloadMap)) {
       workloadMap.forEach(
-              (orgId, workloads) -> {
-                BigDecimal[] refundWorkloads = refundMap.get(orgId);
-                if (refundWorkloads == null) {
-                  refundWorkloads = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO};
-                }
-                BigDecimal monthActualWorkload =
-                        computeTotalClinicWorkload(workloads[0], refundWorkloads[0]);
-                BigDecimal curActualWorkload =
-                        computeTotalClinicWorkload(workloads[1], refundWorkloads[1]);
-                result.put(orgId, new BigDecimal[] {monthActualWorkload, curActualWorkload});
-              });
+          (orgId, workloads) -> {
+            BigDecimal[] refundWorkloads = refundMap.get(orgId);
+            if (refundWorkloads == null) {
+              refundWorkloads = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO};
+            }
+            BigDecimal monthActualWorkload =
+                computeTotalClinicWorkload(workloads[0], refundWorkloads[0]);
+            BigDecimal curActualWorkload =
+                computeTotalClinicWorkload(workloads[1], refundWorkloads[1]);
+            result.put(orgId, new BigDecimal[] {monthActualWorkload, curActualWorkload});
+          });
     }
     return result;
   }
 
-  public Map<String, Map<Integer, BigDecimal[]>> computeWorkloadGroupOrgId2(DataStatisticsQuery query) {
-    Map<String, Map<Integer, BigDecimal[]>> res = new HashMap<>(16);
-    Map<String,Map<Integer, ClinicWorkloadGroupInfoVO[]>> workloadMap = new HashMap<>(16);
-    List<BillOfRefundWorkloadVO> refunds = refundBiz.groupTotalRefundWorkload(query);
-    List<BillIdAndBillPayIdVO> vos = mapper.selectBillIdsAndBillPayIds(query);
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
-    String curDate = DateTime.now().toString("yyyy-MM-dd");
-    if (StringHelper.isNotEmpty(vos)) {
-      Map<Integer, Date> billIds = new HashMap<>(16);
-      Set<Integer> billPayIds = new HashSet<>();
-      for (BillIdAndBillPayIdVO vo : vos) {
-        billIds.put(vo.getBillId(), vo.getPayeeDate());
-        if (vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0) {
-          billPayIds.add(vo.getBillPayId());
-        }
-      }
-      List<BillRecordWorkloadVO> workloadInfos = findBillWorkloadInfoByBillIds(new ArrayList<>(billIds.keySet()));
-      List<BillPayFreePayAmountVO> freePayAmountList = findBillFreePayAmountList(new ArrayList<>(billPayIds));
+  public Map<String, Map<Integer, BigDecimal>> computeWorkloadGroupOrgIdAndMonth(
+      DataStatisticsQuery query) {
+    Map<String, Map<Integer, BigDecimal>> result = new HashMap<>(16);
+    // 月份分组求已收工作量合计
+    List<BillWorkloadVO> workloads = mapper.selectRecievedWorkloadsGroupByMonth(query);
+    Set<Integer> billIds =
+        workloads.stream().map(BillWorkloadVO::getBillId).collect(Collectors.toSet());
+    List<BillRecordWorkloadVO> workloadInfos =
+        findBillWorkloadInfoByBillIds(new ArrayList<>(billIds));
+    Map<Integer, BigDecimal> totalWorkloadMaps =
+        workloadInfos.stream()
+            .collect(
+                Collectors.toMap(
+                    BillRecordWorkloadVO::getBillId, BillRecordWorkloadVO::getBillTotalWorkload));
+    List<BillRecordWorkloadVO> couponWorkloads = findCouponWorkloadGroupByPrivilegeDate(query);
+    List<BillOfRefundWorkloadVO> totalRefundWorkload =
+        refundBiz.selectTotalRefundWorkloadGroupByMonth(query);
+    if (StringHelper.isNotEmpty(workloads)) {
+      workloads.forEach(
+          vo -> {
+            String month = vo.getMonth();
+            Integer orgId = vo.getBillOrgId();
+            BigDecimal totalWorkload = totalWorkloadMaps.get(vo.getBillId());
+            if (totalWorkload == null || totalWorkload.compareTo(BigDecimal.ZERO) <= 0) {
+              return;
+            }
+            BigDecimal actualAmount = vo.getActualAmount();
+            BigDecimal receivedAmount = vo.getReceivedAmount();
+            BigDecimal workloaded = BigDecimal.ZERO;
+            if (actualAmount.compareTo(BigDecimal.ZERO) > 0
+                && receivedAmount.compareTo(BigDecimal.ZERO) > 0) {
+              workloaded =
+                  totalWorkload
+                      .divide(actualAmount, 8, BigDecimal.ROUND_HALF_UP)
+                      .multiply(receivedAmount)
+                      .setScale(4, BigDecimal.ROUND_HALF_UP);
+            }
+            Map<Integer, BigDecimal> res = result.get(month);
+            if (res == null) {
+              res = new HashMap<>(16);
+            }
+            BigDecimal workload = res.get(orgId);
+            if (workload == null) {
+              workload = BigDecimal.ZERO;
+            }
+            res.put(orgId, workload.add(workloaded.subtract(vo.getFreePayAmount())));
+            result.put(month, res);
+          });
+    }
+    if (StringHelper.isNotEmpty(couponWorkloads)) {
+      couponWorkloads.forEach(
+          vo -> {
+            String month = vo.getMonth();
+            Integer orgId = vo.getBillOrgId();
+            Map<Integer, BigDecimal> res = result.get(month);
+            if (res == null) {
+              res = new HashMap<>(16);
+            }
+            BigDecimal workload = res.get(orgId);
+            if (workload == null) {
+              workload = BigDecimal.ZERO;
+            }
+            res.put(orgId, workload.add(vo.getBillTotalCouponWorkload()));
+            result.put(month, res);
+          });
+    }
+    if (StringHelper.isNotEmpty(totalRefundWorkload)) {
+      totalRefundWorkload.forEach(
+          vo -> {
+            String month = vo.getMonth();
+            Integer orgId = vo.getOrgId();
+            Map<Integer, BigDecimal> res = result.get(month);
+            if (res == null) {
+              res = new HashMap<>(16);
+            }
+            BigDecimal workload = res.get(orgId);
+            if (workload == null) {
+              workload = BigDecimal.ZERO;
+            }
+            res.put(orgId, workload.subtract(vo.getTotalRefundWorkload()));
+            result.put(month, res);
+          });
+    }
+    return result;
+  }
 
-      for (BillIdAndBillPayIdVO vo : vos) {
-        Integer billId = vo.getBillId();
-        Integer billOrgId = vo.getBillOrgId();
-        Date billDate = vo.getBillDate();
-        BigDecimal actualAmount = vo.getActualAmount();
-        Integer payeeOrgId = vo.getPayeeOrgId();
-        Date payeeDate = vo.getPayeeDate();
-        Integer billPayId = vo.getBillPayId();
-        BigDecimal receivedAmount = vo.getReceivedAmount();
-        BillRecordWorkloadVO workloadVO = getBillTotalWorkload(billId, workloadInfos);
-        BigDecimal totalWorkload = workloadVO.getBillTotalWorkload();
-        BillPayFreePayAmountVO freePayAmountVO = getBillPayFreeAmount(billPayId, freePayAmountList);
-        BigDecimal freePayAmount = freePayAmountVO.getFreePayAmount();
-        BigDecimal firstReceivedWorkload = BigDecimal.ZERO;
-        BigDecimal firstCouponWorkload = BigDecimal.ZERO;
-        BigDecimal firstFreePayWorkload = BigDecimal.ZERO;
-        BigDecimal arrearsReceivedWorkload = BigDecimal.ZERO;
-        BigDecimal arrearsCouponWorkload = BigDecimal.ZERO;
-        BigDecimal arrearsFreePayWorkload = BigDecimal.ZERO;
-        BigDecimal beCollectedReceivedWorkload = BigDecimal.ZERO;
-        BigDecimal beCollectedCouponWorkload = BigDecimal.ZERO;
-        BigDecimal beCollectedFreePayWorkload = BigDecimal.ZERO;
-        if (billOrgId.equals(payeeOrgId)) {
-          if (billDate.equals(payeeDate)) {
-            firstReceivedWorkload =
-                    calculateReceivedWorkload(
-                            firstReceivedWorkload, receivedAmount, actualAmount, totalWorkload);
-            firstFreePayWorkload =
-                    calculateFreePayWorkload(firstFreePayWorkload, freePayAmount, totalWorkload);
-          } else {
-            arrearsReceivedWorkload =
-                    calculateReceivedWorkload(
-                            arrearsReceivedWorkload, receivedAmount, actualAmount, totalWorkload);
-            arrearsFreePayWorkload =
-                    calculateFreePayWorkload(arrearsFreePayWorkload, freePayAmount, totalWorkload);
-          }
-        } else {
-          beCollectedReceivedWorkload =
-                  calculateReceivedWorkload(
-                          beCollectedReceivedWorkload, receivedAmount, actualAmount, totalWorkload);
-          beCollectedFreePayWorkload =
-                  calculateFreePayWorkload(beCollectedFreePayWorkload, freePayAmount, totalWorkload);
-        }
-        String date = DateUtil.format(payeeDate, sdf);
-        Map<Integer,ClinicWorkloadGroupInfoVO[]> map = workloadMap.get(date);
-        if (map == null) {
-          map = new HashMap<>(16);
-        }
-        ClinicWorkloadGroupInfoVO[] workloads = map.get(billOrgId);
-        if (workloads == null) {
-          workloads =
-                  new ClinicWorkloadGroupInfoVO[] {
-                          new ClinicWorkloadGroupInfoVO(true), new ClinicWorkloadGroupInfoVO(true)
-                  };
-        }
-        ClinicWorkloadGroupInfoVO monthWorkload = workloads[0];
-        monthWorkload.setFirstReceivedWorkload(
-                monthWorkload.getFirstReceivedWorkload().add(firstReceivedWorkload));
-        monthWorkload.setFirstCouponWorkload(
-                monthWorkload.getFirstCouponWorkload().add(firstCouponWorkload));
-        monthWorkload.setFirstFreePayWorkload(
-                monthWorkload.getFirstFreePayWorkload().add(firstFreePayWorkload));
-        monthWorkload.setArrearsReceivedWorkload(
-                monthWorkload.getArrearsReceivedWorkload().add(arrearsReceivedWorkload));
-        monthWorkload.setArrearsCouponWorkload(
-                monthWorkload.getArrearsCouponWorkload().add(arrearsCouponWorkload));
-        monthWorkload.setArrearsFreePayWorkload(
-                monthWorkload.getArrearsFreePayWorkload().add(arrearsFreePayWorkload));
-        monthWorkload.setBeCollectedReceivedWorkload(
-                monthWorkload.getBeCollectedReceivedWorkload().add(beCollectedReceivedWorkload));
-        monthWorkload.setBeCollectedCouponWorkload(
-                monthWorkload.getBeCollectedCouponWorkload().add(beCollectedCouponWorkload));
-        monthWorkload.setBeCollectedFreePayWorkload(
-                monthWorkload.getBeCollectedFreePayWorkload().add(beCollectedFreePayWorkload));
-        if (curDate.equals(DateUtil.format(payeeDate, "yyyy-MM-dd"))) { // 当天
-          ClinicWorkloadGroupInfoVO curWorkload = workloads[1];
-          curWorkload.setFirstReceivedWorkload(
-                  curWorkload.getFirstReceivedWorkload().add(firstReceivedWorkload));
-          curWorkload.setFirstCouponWorkload(
-                  curWorkload.getFirstCouponWorkload().add(firstCouponWorkload));
-          curWorkload.setFirstFreePayWorkload(
-                  curWorkload.getFirstFreePayWorkload().add(firstFreePayWorkload));
-          curWorkload.setArrearsReceivedWorkload(
-                  curWorkload.getArrearsReceivedWorkload().add(arrearsReceivedWorkload));
-          curWorkload.setArrearsCouponWorkload(
-                  curWorkload.getArrearsCouponWorkload().add(arrearsCouponWorkload));
-          curWorkload.setArrearsFreePayWorkload(
-                  curWorkload.getArrearsFreePayWorkload().add(arrearsFreePayWorkload));
-          curWorkload.setBeCollectedReceivedWorkload(
-                  curWorkload.getBeCollectedReceivedWorkload().add(beCollectedReceivedWorkload));
-          curWorkload.setBeCollectedCouponWorkload(
-                  curWorkload.getBeCollectedCouponWorkload().add(beCollectedCouponWorkload));
-          curWorkload.setBeCollectedFreePayWorkload(
-                  curWorkload.getBeCollectedFreePayWorkload().add(beCollectedFreePayWorkload));
-        }
-        map.put(billOrgId, workloads);
-        workloadMap.put(date, map);
-      }
-      long t1 = System.currentTimeMillis();
-      List<BillRecordWorkloadVO> couponWorkloads = findCouponWorkloadList(query);
-      long t2 = System.currentTimeMillis();
-      System.out.println("===========ii=========" + (t2 - t1));
-      if (StringHelper.isNotEmpty(couponWorkloads)) {
-        for (BillRecordWorkloadVO info : couponWorkloads) {
-          Integer billOrgId = info.getBillOrgId();
-          String date = DateUtil.format(info.getPrivilegeDate(), sdf);
-          Map<Integer, ClinicWorkloadGroupInfoVO[]> map = workloadMap.get(date);
-          if (map == null) {
-            map = new HashMap<>(16);
-          }
-          ClinicWorkloadGroupInfoVO[] workloads = map.get(billOrgId);
-          if (workloads == null) {
-            workloads = new ClinicWorkloadGroupInfoVO[] {new ClinicWorkloadGroupInfoVO(true), new ClinicWorkloadGroupInfoVO(true)};
-          }
-          ClinicWorkloadGroupInfoVO monthWorkload = workloads[0];
-          if (billOrgId.equals(info.getPrivilegeOrgId())) {
-            if (info.getFirstPrivilege()) {
-              monthWorkload.setFirstCouponWorkload(calculateCouponWorkload(monthWorkload.getFirstCouponWorkload(), info));
-            } else {
-              monthWorkload.setArrearsCouponWorkload(calculateCouponWorkload(monthWorkload.getArrearsCouponWorkload(), info));
-            }
-          } else {
-            monthWorkload.setBeCollectedCouponWorkload(calculateCouponWorkload(monthWorkload.getBeCollectedCouponWorkload(), info));
-          }
-          if (curDate.equals(DateUtil.format(info.getPrivilegeDate(), "yyyy-MM-dd"))) { // 当天
-            ClinicWorkloadGroupInfoVO curWorkload = workloads[1];
-            if (billOrgId.equals(info.getPrivilegeOrgId())) {
-              if (info.getFirstPrivilege()) {
-                curWorkload.setFirstCouponWorkload(calculateCouponWorkload(curWorkload.getFirstCouponWorkload(), info));
-              } else {
-                curWorkload.setArrearsCouponWorkload(calculateCouponWorkload(curWorkload.getArrearsCouponWorkload(), info));
-              }
-            } else {
-              curWorkload.setBeCollectedCouponWorkload(calculateCouponWorkload(curWorkload.getBeCollectedCouponWorkload(), info));
-            }
-          }
-          map.put(billOrgId, workloads);
-          workloadMap.put(date, map);
-        }
-      }
+  private List<BillRecordWorkloadVO> findCouponWorkloadGroupByPrivilegeDate(
+      DataStatisticsQuery dataQuery) {
+    EmployeeWorkloadQuery queryFrom = new EmployeeWorkloadQuery();
+    queryFrom.setOrgIds(dataQuery.getOrgIds());
+    queryFrom.setPrivilegeStartDate(dataQuery.getStartDate());
+    queryFrom.setPrivilegeEndDate(dataQuery.getEndDate());
+    queryFrom.setDateType(dataQuery.getDateType());
+    List<Integer> billIds = baseBillMapper.distinctBillIdByOrderDate(queryFrom);
+    if (StringHelper.isEmpty(billIds)) {
+      return null;
     }
-    Map<String, Map<Integer, BigDecimal[]>> refundMap = new HashMap<>(16);
-    if (StringHelper.isNotEmpty(refunds)) {
-      refunds.forEach(vo -> {
-        Integer orgId = vo.getOrgId();
-        BigDecimal totalRefundWorkload = vo.getTotalRefundWorkload();
-        Date refundDate = vo.getRefundDate();
-        String date = DateUtil.format(refundDate, sdf);
-        Map<Integer, BigDecimal[]> map = refundMap.get(date);
-        if (map == null) {
-          map = new HashMap<>(16);
-        }
-        BigDecimal[] refundWorkloads = map.get(orgId);
-        if (refundWorkloads == null) {
-          refundWorkloads = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO};
-        }
-        refundWorkloads[0] = refundWorkloads[0].add(totalRefundWorkload);
-        if (curDate.equals(DateUtil.format(refundDate, "yyyy-MM-dd"))) { // 当天
-          refundWorkloads[1] = refundWorkloads[1].add(totalRefundWorkload);
-        }
-        map.put(orgId, refundWorkloads);
-        refundMap.put(date, map);
-      });
+    List<List<Integer>> partition = Lists.partition(billIds, CUT_SLICE_500);
+    CountDownLatch downLatch = new CountDownLatch(partition.size());
+    List<BillRecordWorkloadVO> result = Lists.newCopyOnWriteArrayList();
+    for (List<Integer> ids : partition) {
+      DataStatisticsQuery query = new DataStatisticsQuery();
+      query.setBillIds(ids);
+      query.setStartDate(dataQuery.getStartDate());
+      query.setEndDate(dataQuery.getEndDate());
+      query.setOrgIds(dataQuery.getOrgIds());
+      query.setDateType(dataQuery.getDateType());
+      // 多线程异步插入
+      threadPool.execute(
+          () -> {
+            try {
+              result.addAll(billDetailBiz.findCouponWorkloadGroupByPrivilegeDate(query));
+              downLatch.countDown();
+            } catch (Exception e) {
+              downLatch.countDown();
+              e.printStackTrace();
+            }
+          });
     }
-    Map<String, Map<Integer, BigDecimal[]>> result = new HashMap<>(16);
-    if (StringHelper.isNotEmpty(workloadMap)) {
-      workloadMap.forEach((date, map) -> {
-        Map<Integer, BigDecimal[]> midMap = refundMap.get(date);
-        if (midMap == null) {
-          midMap = new HashMap<>(16);
-        }
-        Map<Integer, BigDecimal[]> mid = new HashMap<>();
-        for (Map.Entry<Integer, ClinicWorkloadGroupInfoVO[]> entry : map.entrySet()) {
-          Integer orgId = entry.getKey();
-          ClinicWorkloadGroupInfoVO[] workloads = entry.getValue();
-          BigDecimal[] refundWorkloads = midMap.get(orgId);
-          if (refundWorkloads == null) {
-            refundWorkloads = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO};
-          }
-          BigDecimal monthActualWorkload =
-                  computeTotalClinicWorkload(workloads[0], refundWorkloads[0]);
-          BigDecimal curActualWorkload =
-                  computeTotalClinicWorkload(workloads[1], refundWorkloads[1]);
-          mid.put(orgId, new BigDecimal[]{monthActualWorkload, curActualWorkload});
-        }
-        result.put(date, mid);
-      });
+    try {
+      downLatch.await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
     return result;
   }
@@ -600,7 +523,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     }
     List<List<Integer>> partition = Lists.partition(billIds, CUT_SLICE_500);
     CountDownLatch downLatch = new CountDownLatch(partition.size());
-    List<BillRecordWorkloadVO> result = new ArrayList<>();
+    List<BillRecordWorkloadVO> result = Lists.newCopyOnWriteArrayList();
     for (List<Integer> ids : partition) {
       DataStatisticsQuery query = new DataStatisticsQuery();
       query.setBillIds(ids);
@@ -608,16 +531,17 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       query.setEndDate(dataQuery.getEndDate());
       query.setOrgIds(dataQuery.getOrgIds());
       query.setDateType(dataQuery.getDateType());
-      //多线程异步插入
-      threadPool.execute(() -> {
-        try {
-          result.addAll(billDetailBiz.findCouponWorkloadList(query, "privilege_date"));
-          downLatch.countDown();
-        } catch (Exception e) {
-          downLatch.countDown();
-          e.printStackTrace();
-        }
-      });
+      // 多线程异步插入
+      threadPool.execute(
+          () -> {
+            try {
+              result.addAll(billDetailBiz.findCouponWorkloadList(query, "privilege_date"));
+              downLatch.countDown();
+            } catch (Exception e) {
+              downLatch.countDown();
+              e.printStackTrace();
+            }
+          });
     }
     try {
       downLatch.await();
@@ -630,18 +554,19 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   private List<BillRecordWorkloadVO> findBillWorkloadInfoByBillIds(List<Integer> list) {
     List<List<Integer>> partition = Lists.partition(list, CUT_SLICE_500);
     CountDownLatch downLatch = new CountDownLatch(partition.size());
-    List<BillRecordWorkloadVO> result = new ArrayList<>();
+    List<BillRecordWorkloadVO> result = Lists.newCopyOnWriteArrayList();
     for (List<Integer> ids : partition) {
-      //多线程异步插入
-      threadPool.execute(() -> {
-        try {
-          result.addAll(billDetailBiz.findBillWorkloadInfoByBillIds(ids));
-          downLatch.countDown();
-        } catch (Exception e) {
-          downLatch.countDown();
-          e.printStackTrace();
-        }
-      });
+      // 多线程异步插入
+      threadPool.execute(
+          () -> {
+            try {
+              result.addAll(billDetailBiz.findBillWorkloadInfoByBillIds(ids));
+              downLatch.countDown();
+            } catch (Exception e) {
+              downLatch.countDown();
+              e.printStackTrace();
+            }
+          });
     }
     try {
       downLatch.await();
@@ -654,18 +579,19 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   private List<BillPayFreePayAmountVO> findBillFreePayAmountList(List<Integer> list) {
     List<List<Integer>> partition = Lists.partition(list, CUT_SLICE_500);
     CountDownLatch downLatch = new CountDownLatch(partition.size());
-    List<BillPayFreePayAmountVO> result = new ArrayList<>(list.size());
+    List<BillPayFreePayAmountVO> result = Lists.newCopyOnWriteArrayList();
     for (List<Integer> ids : partition) {
-      //多线程异步插入
-      threadPool.execute(() -> {
-        try {
-          result.addAll(billPayDetailBiz.findBillFreePayAmountList(ids));
-          downLatch.countDown();
-        } catch (Exception e) {
-          downLatch.countDown();
-          e.printStackTrace();
-        }
-      });
+      // 多线程异步插入
+      threadPool.execute(
+          () -> {
+            try {
+              result.addAll(billPayDetailBiz.findBillFreePayAmountList(ids));
+              downLatch.countDown();
+            } catch (Exception e) {
+              downLatch.countDown();
+              e.printStackTrace();
+            }
+          });
     }
     try {
       downLatch.await();
@@ -1319,6 +1245,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
               case "杭州市萧山医保":
                 chargeDetailExport.setHangZhouXiaoShanMedicalInsuranceAmount(totalAmount);
                 break;
+              case "招商信诺":
+                chargeDetailExport.setZhaoShangXinNuoAmount(totalAmount);
+                break;
               case "Cigna":
                 chargeDetailExport.setCignaAmount(totalAmount);
                 break;
@@ -1336,6 +1265,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                 break;
               case "艾维员工免单":
                 chargeDetailExport.setEmployeeWaiverAmount(totalAmount);
+              case "2020年会员充值送":
+                chargeDetailExport.setMemberRechargeAmount(totalAmount);
                 break;
               default:
                 break;

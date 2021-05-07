@@ -8,6 +8,9 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
+
 /**
  * 简介: 报表会员卡充值vo
  *
@@ -21,75 +24,75 @@ import java.math.BigDecimal;
 @ApiModel("会员充值列表Vo")
 public class BaseMemberRechargeLogVo {
 
-    /** 操作id **/
-    @ApiModelProperty(value = "操作id")
-    private Integer occurLogId;
+  /** 操作id * */
+  @ApiModelProperty(value = "操作id")
+  private Integer occurLogId;
 
-    /** 充值日期 */
-    @Excel(name = "充值日期")
-    @ApiModelProperty(value = "充值日期")
-    private String occurDate;
+  /** 充值日期 */
+  @Excel(name = "充值日期")
+  @ApiModelProperty(value = "充值日期")
+  private String occurDate;
 
-    /** 患者姓名 */
-    @Excel(name = "患者姓名")
-    @ApiModelProperty(value = "患者姓名")
-    private String name;
+  /** 患者姓名 */
+  @Excel(name = "患者姓名")
+  @ApiModelProperty(value = "患者姓名")
+  private String name;
 
-    /** 手机号 */
-    @Excel(name = "手机号")
-    @ApiModelProperty(value = "手机号")
-    private String mobile;
+  /** 手机号 */
+  @Excel(name = "手机号")
+  @ApiModelProperty(value = "手机号")
+  private String mobile;
 
-    /** 会员卡号 */
-    @Excel(name = "会员卡号")
-    @ApiModelProperty(value = "会员卡号")
-    private String cardNumber;
+  /** 会员卡号 */
+  @Excel(name = "会员卡号")
+  @ApiModelProperty(value = "会员卡号")
+  private String cardNumber;
 
-    /** 会员级别id */
-    @ApiModelProperty(value = "会员级别id")
-    private Integer memberLevelId;
+  /** 会员级别id */
+  @ApiModelProperty(value = "会员级别id")
+  private Integer memberLevelId;
 
-    /** 会员卡级别名称 */
-    @Excel(name = "会员卡名称")
-    @ApiModelProperty(value = "会员卡名称")
-    private String memberLevelName;
+  /** 会员卡级别名称 */
+  @Excel(name = "会员卡名称")
+  @ApiModelProperty(value = "会员卡名称")
+  private String memberLevelName;
 
-    /** 充值本金金额 */
-    @Excel(name = "充值本金金额")
-    @ApiModelProperty(value = "充值本金金额")
-    private BigDecimal principalAmount = new BigDecimal(0);
+  /** 充值本金金额 */
+  @Excel(name = "充值本金金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty(value = "充值本金金额")
+  private BigDecimal principalAmount = new BigDecimal(0);
 
-    /** 充值赠金金额 */
-    @Excel(name = "充值赠金金额")
-    @ApiModelProperty(value = "充值赠金金额")
-    private BigDecimal bonusAmount = new BigDecimal(0);
+  /** 充值赠金金额 */
+  @Excel(name = "充值赠金金额", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty(value = "充值赠金金额")
+  private BigDecimal bonusAmount = new BigDecimal(0);
 
-    /** 充值后会员卡余额（本金） */
-    @Excel(name = "充值后会员卡余额（含赠送金额）")
-    @ApiModelProperty(value = "充值后会员卡余额（含赠送金额）")
-    private BigDecimal currentRechargePrincipal = new BigDecimal(0);
+  /** 充值后会员卡余额（本金） */
+  @Excel(name = "充值后会员卡余额（含赠送金额）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty(value = "充值后会员卡余额（含赠送金额）")
+  private BigDecimal currentRechargePrincipal = new BigDecimal(0);
 
-    /** 剩余会员卡余额（含赠送金额） */
-    @Excel(name = "剩余会员卡余额（含赠送金额）")
-    @ApiModelProperty(value = "剩余会员卡余额（含赠送金额）")
-    private BigDecimal currentAmount = new BigDecimal(0);
+  /** 剩余会员卡余额（含赠送金额） */
+  @Excel(name = "剩余会员卡余额（含赠送金额）", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty(value = "剩余会员卡余额（含赠送金额）")
+  private BigDecimal currentAmount = new BigDecimal(0);
 
-    /** 入账方式 */
-    @ApiModelProperty(value = "入账方式")
-    private Integer paymentId;
+  /** 入账方式 */
+  @ApiModelProperty(value = "入账方式")
+  private Integer paymentId;
 
-    /** 入账方式名称 */
-    @Excel(name = "入账方式")
-    @ApiModelProperty(value = "入账方式名称")
-    private String paymentManner;
+  /** 入账方式名称 */
+  @Excel(name = "入账方式")
+  @ApiModelProperty(value = "入账方式名称")
+  private String paymentManner;
 
-    /** 充值人 */
-    @Excel(name = "充值人")
-    @ApiModelProperty(value = "充值人")
-    private String operatorUserName;
+  /** 充值人 */
+  @Excel(name = "充值人")
+  @ApiModelProperty(value = "充值人")
+  private String operatorUserName;
 
-    /** 备注 */
-    @Excel(name = "备注")
-    @ApiModelProperty(value = "备注")
-    private String remarks;
+  /** 备注 */
+  @Excel(name = "备注")
+  @ApiModelProperty(value = "备注")
+  private String remarks;
 }

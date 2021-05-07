@@ -6,8 +6,14 @@ import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
-import com.yunya.feign.appointment.vo.*;
+import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
+import com.yunya.feign.appointment.vo.AppointmentItemVo;
+import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
+import com.yunya.feign.appointment.vo.AppointmentVo;
+import com.yunya.feign.appointment.vo.NextAppointsVo;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
+import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
@@ -18,7 +24,11 @@ import com.yunya.modules.appointment.biz.web.AppointmentBiz;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -217,6 +227,15 @@ public class AppointmentRest {
   @RequestMapping(value = "/appoint/detail/{id}", method = RequestMethod.GET)
   AppointmentVo findAppointmentDetailById(@PathVariable(value = "id") Integer id) {
     return this.appointmentBiz.findAppointmentById(id);
+  }
+
+  /**
+   * 微信用户确认预约
+   * @param model 预约
+   */
+  @RequestMapping(value = "/wx/appoint/confirm", method = RequestMethod.POST)
+  ResponseResult confirmWxAppoint(@RequestBody WxAppointConfirmModel model) {
+    return this.appointmentBiz.confirmWxAppointment(model);
   }
 
 }

@@ -1,5 +1,7 @@
 package com.yunya.modules.discount.form;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -13,9 +15,9 @@ import lombok.Data;
  * @param: $
  * @return: $
  */
+@ApiModel("全部卡券下拉框")
 @Data
 public class CouponCommonInfoFindDownForm {
-
+    @ApiModelProperty("卡券名称")
     private String name;
-
 }

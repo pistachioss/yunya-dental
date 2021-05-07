@@ -707,15 +707,15 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 model.setTemplateParam(object);
             }
         }
-//        batchSendByTemplateId(templateId, Integer.parseInt(BaseContextHandler.getUserID()),
-//                BaseContextHandler.getName(), orgId, models);
-        SmsTemplateIdRecordModel smsModel = new SmsTemplateIdRecordModel();
-        smsModel.setTemplateId(templateId);
-        smsModel.setName(BaseContextHandler.getName());
-        smsModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
-        smsModel.setOrgId(orgId);
-        smsModel.setModels(models);
-        redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE, smsModel);
+        batchSendByTemplateId(templateId, Integer.parseInt(BaseContextHandler.getUserID()),
+                BaseContextHandler.getName(), orgId, models);
+//        SmsTemplateIdRecordModel smsModel = new SmsTemplateIdRecordModel();
+//        smsModel.setTemplateId(templateId);
+//        smsModel.setName(BaseContextHandler.getName());
+//        smsModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
+//        smsModel.setOrgId(orgId);
+//        smsModel.setModels(models);
+//        redisUtils.lPush(RedisConstants.SMS_SEND_MESSAGE_QUEUE, smsModel);
         return ResponseUtil.success(null);
     }
 

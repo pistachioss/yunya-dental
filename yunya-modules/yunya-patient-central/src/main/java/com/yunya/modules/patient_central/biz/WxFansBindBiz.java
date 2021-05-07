@@ -2,19 +2,30 @@ package com.yunya.modules.patient_central.biz;
 
 
 import com.yunya.feign.patient_central.domain.query.WxFansBindForm;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
+import com.yunya.feign.wechat.RemoteWechatServiceFeign;
+import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
+import com.yunya.feign.wechat.enums.TemplateEnum;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.patient_central.WxFans;
 import com.yunya.models.patient_central.WxFansBind;
+import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import com.yunya.modules.patient_central.mapper.WxFansBindMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_EXIST;
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
 
 
 /**
@@ -29,11 +40,13 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_EX
  * @return: $
  */
 @Service
-@Transactional(rollbackFor = Exception.class)
+//@Transactional(rollbackFor = Exception.class)
 public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
     public static String BEN_REN = "本人";
     @Autowired private WxFansBiz wxFansBiz;
+    @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
 
+    @Autowired private RemoteWechatServiceFeign remoteWechatServiceFeign;
     public Integer batchInsert(List<WxFansBind> list){
         return mapper.batchInsert(list);
     }
@@ -82,9 +95,30 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
             wxFansBind.setIsOwner(false);
         }
         wxFansBiz.updateSelectiveById(wxFans);
-        return mapper.insert(wxFansBind);
+        int re = mapper.insert(wxFansBind);
+
+        //发送微信推送消息
+        WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+        wxTemplateMsgModel.setPatientId(wxFansBindForm.getPatientId());
+        wxTemplateMsgModel.setTemplateEnum(TemplateEnum.BIND_SUCCESS);
+
+        PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(wxFansBindForm.getPatientId());
+
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("first","有一位新的患者绑定成功，绑定信息如下:");
+        if(patientBaseInfoVo!=null){
+            paramMap.put("keyword1",patientBaseInfoVo.getName());
+            paramMap.put("keyword2",patientBaseInfoVo.getMobile());
+        }else{
+            throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
+        }
+        wxTemplateMsgModel.setParamMap(paramMap);
+        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
+
+        return re;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public int unbind(WxFansBindForm wxFansBindForm){
         WxFans wxFans = wxFansBiz.selectById(wxFansBindForm.getWxId());
 
@@ -110,6 +144,26 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         }
         //处理粉丝表中绑定状态，绑定时间以及卡主ID
         wxFansBiz.updateById(wxFans);
+
+        //发送微信推送消息
+        WxTemplateMsgModel wxTemplateMsgModel = new WxTemplateMsgModel();
+        wxTemplateMsgModel.setPatientId(wxFansBindForm.getPatientId());
+        wxTemplateMsgModel.setTemplateEnum(TemplateEnum.UNBIND_SUCCESS);
+
+        PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(wxFansBindForm.getPatientId());
+
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("first","您好，您的账号已经解绑，解绑账号信息如下:");
+        if(patientBaseInfoVo!=null){
+            paramMap.put("keyword1",patientBaseInfoVo.getName());
+            paramMap.put("keyword2",patientBaseInfoVo.getMobile());
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
+            paramMap.put("keyword3",sdf.format(new Date()));
+        }else{
+            throw new ClientServiceException("无此患者信息", DATA_NOT_EXIST);
+        }
+        wxTemplateMsgModel.setParamMap(paramMap);
+        remoteWechatServiceFeign.pushTemplate(wxTemplateMsgModel);
         return de;
     }
 

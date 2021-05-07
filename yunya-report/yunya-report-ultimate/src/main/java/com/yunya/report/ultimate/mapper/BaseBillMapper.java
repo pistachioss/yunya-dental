@@ -188,14 +188,18 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
 
   /**
    * 查询员工患者消费的订单号
+   *
    * @param query 条件
    * @param patientOriginEmployeeVoList 推荐人id
    * @return 订单号集合
    */
-    List<BillIdVo> findBillIdList(@Param("query") PatientOriginEmployeeQuery query,@Param("list") List<PatientOriginEmployeeVo> patientOriginEmployeeVoList);
+  List<BillIdVo> findBillIdList(
+      @Param("query") PatientOriginEmployeeQuery query,
+      @Param("list") List<PatientOriginEmployeeVo> patientOriginEmployeeVoList);
 
   /**
    * 查询活动患者消费的订单号
+   *
    * @param query 条件
    * @return 订单号集合
    */
@@ -203,12 +207,16 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
 
   /**
    * 根据推荐人id和支付记录时间查询订单id
+   *
    * @param query 条件
    * @param itemIds 支付方式
    * @param originType 推荐方式类型
    * @return 已收工作量信息
    */
-  List<Integer> findBaseBillIdList(@Param("query") ReceiverkLoadQuery query,@Param("itemIds") List<Integer> itemIds,@Param("originType") Integer originType);
+  List<Integer> findBaseBillIdList(
+      @Param("query") ReceiverkLoadQuery query,
+      @Param("itemIds") List<Integer> itemIds,
+      @Param("originType") Integer originType);
 
   /**
    * 查询账单列表实收金额总和
@@ -220,6 +228,7 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
 
   /**
    * 根据推荐人id 和 优惠时间 查询补入订单id
+   *
    * @param query 条件
    * @return 补入订单id
    */
@@ -227,6 +236,7 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
 
   /**
    * 查询补入工作量明细
+   *
    * @param query 条件
    * @param originType 推荐类型
    * @return 补入工作量明细
