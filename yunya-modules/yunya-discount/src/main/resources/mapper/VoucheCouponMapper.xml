@@ -58,6 +58,7 @@
     <select id="findDown" resultType="com.yunya.models.discount.CouponCommonInfo">
       select * from coupon_common_info
       <where>
+          is_inservice = 1
           <if test="name != null and name != ''">
               and name like CONCAT(CONCAT('%',#{name}),'%')
           </if>
