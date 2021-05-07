@@ -686,7 +686,9 @@
         from
             base_patient_member_occur_log bpmor
         where
-            bpmor.recharge_method = 0 -- 表示普通充值
+            <if test="rechargeMethod != null">
+                and bpmor.recharge_method = #{rechargeMethod}
+            </if>
             and bpmor.occur_type = #{occurType}
             and bpmor.occur_log_id = #{rechargeRecordId}
             and bpmor.type = #{cardType}

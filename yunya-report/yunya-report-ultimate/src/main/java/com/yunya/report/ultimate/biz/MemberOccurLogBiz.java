@@ -36,7 +36,6 @@ import static com.yunya.framework.common.constant.BusinessConstants.*;
  * @description:
  * @since: 1.0.0
  */
-
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class MemberOccurLogBiz
@@ -126,7 +125,7 @@ public class MemberOccurLogBiz
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BaseMemberExpendLogVo>  baseMemberExpendLogVos = mapper.selectMemberExpendtList(form);
+    List<BaseMemberExpendLogVo> baseMemberExpendLogVos = mapper.selectMemberExpendtList(form);
     ExcelUtil<BaseMemberExpendLogVo> excelUtil = new ExcelUtil<>(BaseMemberExpendLogVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
       BaseOrganization baseOrganization = new BaseOrganization();
@@ -210,7 +209,8 @@ public class MemberOccurLogBiz
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList = mapper.selectPrepaidRechargeList(form);
+    List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList =
+        mapper.selectPrepaidRechargeList(form);
     return new PageInfo<>(basePrepaidRechargeLogVoList);
   }
 
@@ -221,12 +221,13 @@ public class MemberOccurLogBiz
    * @param form 条件
    */
   public void exportPrepaidRechargeList(HttpServletResponse response, PrepaidQueryForm form)
-      throws  IOException {
+      throws IOException {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       String endDate = new DateTime(form.getEndDate()).plusDays(1).toString("yyyy-MM-dd");
       form.setEndDate(endDate);
     }
-    List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList = mapper.selectPrepaidRechargeList(form);
+    List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList =
+        mapper.selectPrepaidRechargeList(form);
     ExcelUtil<BasePrepaidRechargeLogVo> excelUtil = new ExcelUtil<>(BasePrepaidRechargeLogVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
       BaseOrganization baseOrganization = new BaseOrganization();
@@ -426,7 +427,7 @@ public class MemberOccurLogBiz
         Integer rechargeRecordId = vo.getRechargeRecordId();
         StatementPaymentVO statementPaymentVO =
             mapper.selectStatementPaymentByOperateRecordId(
-                rechargeRecordId, query.getCardType(), (byte) 1);
+                (byte) 0, rechargeRecordId, query.getCardType(), (byte) 1);
         // 设置充值记录支付方式金额
         if (null != statementPaymentVO) {
           setRechargeDetailAmountValue(statementPaymentVO, vo);
@@ -507,7 +508,7 @@ public class MemberOccurLogBiz
         Integer refundRecordId = vo.getRefundRecordId();
         StatementPaymentVO statementPaymentVO =
             mapper.selectStatementPaymentByOperateRecordId(
-                refundRecordId, query.getCardType(), (byte) 3);
+                null, refundRecordId, query.getCardType(), (byte) 3);
         if (null != statementPaymentVO) {
           setRefundDetailAmountValue(statementPaymentVO, vo);
         }
