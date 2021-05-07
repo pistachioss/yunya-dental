@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import tk.mybatis.spring.annotation.MapperScan;
 
@@ -22,6 +23,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 @MapperScan("com.yunya.report.ultimate.mapper")
 @EnableTransactionManagement
 @EnableDiscoveryClient
+@EnableScheduling
 @ComponentScan(basePackages = {"com.yunya.report.ultimate", "com.yunya.framework"})
 @EnableCustomSwagger2
 public class YunyaReportUltimateApplication {
