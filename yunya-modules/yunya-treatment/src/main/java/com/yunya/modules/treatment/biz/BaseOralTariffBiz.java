@@ -2,7 +2,6 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -24,11 +23,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseOralTariffCategory;
-import com.yunya.models.tariff.BaseOralTariffHistory;
-import com.yunya.models.tariff.ClinicOralTariff;
+import com.yunya.models.tariff.*;
 import com.yunya.modules.treatment.mapper.BaseOralTariffCategoryMapper;
 import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +47,6 @@ import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTariffInfo;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
 
 /**
  * 描述: 商品商品业务层
@@ -65,9 +59,6 @@ import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_
 @Transactional(rollbackFor = Exception.class)
 public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTariff> {
 
-  /** 缓存 */
-  @Autowired private RedisUtils redisUtils;
-  /** 消息对列 */
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 系统服务远程调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
@@ -135,12 +126,11 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<BaseOralTariffVO> resultList = mapper.selectBaseOralTariffList(queryForm);
-    resultList.forEach(
-        baseOralTariffVO -> {
-          BigDecimal price = baseOralTariffVO.getPrice();
-          BigDecimal bigDecimal = price.setScale(2, BigDecimal.ROUND_HALF_UP);
-          baseOralTariffVO.setPrice(bigDecimal);
-        });
+    resultList.forEach(baseOralTariffVO -> {
+      BigDecimal price = baseOralTariffVO.getPrice();
+      BigDecimal bigDecimal = price.setScale(2, BigDecimal.ROUND_HALF_UP);
+      baseOralTariffVO.setPrice(bigDecimal);
+    });
     return new PageInfo<>(resultList);
   }
 
@@ -317,7 +307,6 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     }
     // 发送消息同步中间表商品信息
     if (i > 0) {
-      redisUtils.delete(1 + REDIS_KEY_ITEM_INFO + id);
       rabbitMqServiceFeign.sendMessage(id, 1, 1, BaseTariffInfo);
     }
   }
@@ -1166,19 +1155,5 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     List<BaseOralTariffExportVO> resultList = mapper.selectExportBaseOralTariffList(queryForm);
     ExcelUtil<BaseOralTariffExportVO> excelUtil = new ExcelUtil<>(BaseOralTariffExportVO.class);
     excelUtil.exportExcel(response, resultList, "基础商品商品信息表");
-  }
-
-  /**
-   * 根据多个价目表ID查询价目表名称
-   *
-   * @param ids 字符串ID
-   * @return String
-   */
-  public String findBaseOralNamesByIds(String[] ids) {
-    if (StringHelper.isNotEmpty(ids)) {
-      Joiner joiner = Joiner.on(",");
-      return mapper.selectBaseOralNamesByIds(joiner.join(ids));
-    }
-    return null;
   }
 }

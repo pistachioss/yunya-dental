@@ -9,9 +9,6 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
-import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
-
 /**
  * 简介: 产品售出明细VO
  *
@@ -52,23 +49,23 @@ public class StatementProductSoldDetailVO implements Serializable {
   @ApiModelProperty("卡号")
   private String cardNum;
   /** 售出金额 */
-  @Excel(name = "售出金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "售出金额", cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("售出金额")
   private BigDecimal soldAmount;
   /** 现金 */
-  @Excel(name = "现金",  cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "现金", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("现金")
   private BigDecimal cashAmount;
   /** 支付宝 */
-  @Excel(name = "支付宝",  cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "支付宝", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("支付宝")
   private BigDecimal aliPayAmount;
   /** 微信 */
-  @Excel(name = "微信",  cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "微信", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("微信")
   private BigDecimal weChatAmount;
   /** 银行账户 */
-  @Excel(name = "银行账户",  cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "银行账户", scale = 2, cellType = Excel.ColumnType.NUMERIC)
   @ApiModelProperty("银行账户")
   private BigDecimal bankAmount;
   /** 售出人ID */

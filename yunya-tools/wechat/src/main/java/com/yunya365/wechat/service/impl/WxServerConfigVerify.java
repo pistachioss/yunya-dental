@@ -29,6 +29,10 @@ public class WxServerConfigVerify {
         return this.getEncryptedParams(sortedParams);
     }
 
+    public void getWxUserIfo() {
+
+    }
+
     private String getSortedParams(String timestamp, String nonce) {
         List<String> params = new ArrayList<>();
         params.add(wxConfig.getToken());

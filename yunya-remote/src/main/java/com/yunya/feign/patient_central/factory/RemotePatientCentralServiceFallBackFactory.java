@@ -166,8 +166,8 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     }
 
     @Override
-    public WxFans countRegister(String openId) {
-        return null;
+    public int countRegister(String openId) {
+        return 0;
     }
 
     @Override
@@ -192,21 +192,6 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
 
     @Override
     public List<WxCardUseVo> listPatientCardRecord(String cardNumber, Integer type) {
-        return null;
-    }
-
-    @Override
-    public MemberRelationVo findMemberBindingRelation(PatientMemberRelationQueryForm patientMemberRelationQueryForm) {
-        return null;
-    }
-
-    @Override
-    public WxFans getWxPushUser(Integer patientId) {
-        return null;
-    }
-
-    @Override
-    public List<WxFans> listWxPushUser(List<Integer> patientIds) {
         return null;
     }
 }

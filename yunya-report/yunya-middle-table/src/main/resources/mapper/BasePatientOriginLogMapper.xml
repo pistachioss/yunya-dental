@@ -55,9 +55,9 @@
 
   <!-- 患者来源关系批量删除 -->
   <delete id="deleteList">
-      delete from base_patient_origin_log where patient_id in
+      delete from base_patient_origin_log where id in
       <foreach collection="list" item="BasePatientOriginLog" open="(" separator="," close=")" >
-        #{BasePatientOriginLog.patientId}
+        #{BasePatientOriginLog.id}
       </foreach>
   </delete>
 </mapper>

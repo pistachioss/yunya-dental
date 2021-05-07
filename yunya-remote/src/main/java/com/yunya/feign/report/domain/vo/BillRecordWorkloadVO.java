@@ -44,6 +44,4 @@ public class BillRecordWorkloadVO implements Serializable {
   private Boolean firstPrivilege;
   /** 使用优惠日期*/
   private Date privilegeDate;
-  /** 月份*/
-  private String month;
 }

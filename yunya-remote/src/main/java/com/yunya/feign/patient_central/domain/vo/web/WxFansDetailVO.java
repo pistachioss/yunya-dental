@@ -29,7 +29,5 @@ public class WxFansDetailVO {
     private Integer dictionaryId;
     @ApiModelProperty("患者年龄")
     private Integer age;
-    @ApiModelProperty("患者年龄")
-    private String mobile;
 
 }

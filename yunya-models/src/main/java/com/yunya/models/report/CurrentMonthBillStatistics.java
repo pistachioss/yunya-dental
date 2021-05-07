@@ -45,12 +45,6 @@ public class CurrentMonthBillStatistics {
     private BigDecimal receivedAmount;
 
     /**
-     * 当月免单金额合计
-     */
-    @Column(name = "当月免单金额合计")
-    private BigDecimal freePayAmount;
-
-    /**
      * 当月账单欠费合计
      */
     @Column(name = "debt_amount")
@@ -162,24 +156,6 @@ public class CurrentMonthBillStatistics {
      */
     public void setReceivedAmount(BigDecimal receivedAmount) {
         this.receivedAmount = receivedAmount;
-    }
-
-    /**
-     * 获取当月免单金额合计
-     *
-     * @return freePayAmount - 当月免单金额合计
-     */
-    public BigDecimal getFreePayAmount() {
-        return freePayAmount;
-    }
-
-    /**
-     * 设置当月免单金额合计
-     *
-     * @param freePayAmount - 当月免单金额合计
-     */
-    public void setFreePayAmount(BigDecimal freePayAmount) {
-        this.freePayAmount = freePayAmount;
     }
 
     /**

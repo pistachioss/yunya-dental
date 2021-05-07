@@ -9,9 +9,6 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
-import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
-
 /**
  * 简介: 账单撤销收费记录VO
  *
@@ -62,9 +59,9 @@ public class BillRevokePayRecordVO implements Serializable {
   @Excel(name = "挂号医生")
   @ApiModelProperty("挂号医生姓名")
   private String regDentistName;
-  /** 应收金额 */
-  @Excel(name = "应收金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
-  @ApiModelProperty("应收金额")
+  /** 实收金额 */
+  @Excel(name = "实收金额")
+  @ApiModelProperty("实收金额")
   private BigDecimal actualAmount;
   /** 收费记录ID */
   private Integer billPayId;
@@ -73,7 +70,7 @@ public class BillRevokePayRecordVO implements Serializable {
   @ApiModelProperty("收费日期")
   private String chargeDate;
   /** 本次收费金额 */
-  @Excel(name = "本次收费金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @Excel(name = "本次收费金额")
   @ApiModelProperty("本次收费金额")
   private BigDecimal receivedAmount;
   /** 调整人ID */

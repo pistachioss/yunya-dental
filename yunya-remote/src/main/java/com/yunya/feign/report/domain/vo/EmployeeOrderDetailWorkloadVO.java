@@ -41,7 +41,7 @@ public class EmployeeOrderDetailWorkloadVO implements Serializable {
   /** 优惠金额 */
   @ApiModelProperty("优惠金额")
   private BigDecimal discountAmount;
-  /** 应收工作量 */
-  @ApiModelProperty("应收工作量")
+  /** 实收工作量 */
+  @ApiModelProperty("实收工作量")
   private BigDecimal actualWorkload;
 }

@@ -29,7 +29,7 @@ import java.net.ConnectException;
  * @date 2017/9/8
  */
 @Slf4j
-@ControllerAdvice({"com.yunya","com.yunya365"})
+@ControllerAdvice("com.yunya")
 @ResponseBody
 public class GlobalExceptionHandler {
 

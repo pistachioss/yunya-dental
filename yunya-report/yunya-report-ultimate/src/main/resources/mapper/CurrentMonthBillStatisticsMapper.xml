@@ -11,7 +11,6 @@
         <result column="actual_receivable_amount" property="actualReceivableAmount" jdbcType="DECIMAL"/>
         <result column="privelege_amount" property="privelegeAmount" jdbcType="DECIMAL"/>
         <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
-        <result column="free_pay_amount" property="freePayAmount" jdbcType="DECIMAL"/>
         <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL"/>
     </resultMap>
 
@@ -19,21 +18,20 @@
     <select id="selectCurrentMonthBillStatistics"
             resultType="com.yunya.feign.report.domain.vo.CurrentMonthBillStatisticVO">
         select
-        #{query.queryDate} as currentMonth,
-        #{query.orgId} as orgId,
-        ifnull(cmbs.actual_receivable_amount, 0) as currentMonthTotalActualAmount,
-        ifnull(cmbs.privelege_amount, 0) as currentMonthTotalDiscountAmount,
-        ifnull(cmbs.actual_receivable_amount - cmbs.debt_amount, 0) as currentMonthTotalReceivedAmount,
-        ifnull(cmbs.free_pay_amount, 0) as currentMonthTotalFreePayAmount,
-        ifnull(cmbs.debt_amount, 0) as currentMonthTotalDebtAmount
+            #{query.queryDate} as  currentMonth,
+            #{query.orgId} as orgId,
+            ifnull(cmbs.actual_receivable_amount, 0) as  currentMonthTotalActualAmount,
+            ifnull(cmbs.privelege_amount, 0) as currentMonthTotalDiscountAmount,
+            ifnull(cmbs.received_amount, 0) as  currentMonthTotalReceivedAmount,
+            ifnull(cmbs.debt_amount, 0) as  currentMonthTotalDebtAmount
         from
-        current_month_bill_statistics cmbs
+            current_month_bill_statistics cmbs
         <where>
             <if test="query.orgId != null">
                 and cmbs.org_id = #{query.orgId}
             </if>
             <if test="query.queryDate != null and query.queryDate != ''">
-                and DATE_FORMAT(cmbs.current_month, '%Y-%m') = #{query.queryDate}
+                and cmbs.current_month = #{query.queryDate}
             </if>
         </where>
     </select>

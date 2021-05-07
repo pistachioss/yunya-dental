@@ -370,8 +370,8 @@ public class CompanyReportOfFinanceController {
   @ApiOperation("公司端报表-财务报表-对账单导出")
   @PostMapping(value = "/statement/export", name = "根据条件导出门诊出入账对账单")
   public ResponseResult<T> inboundAndOutboundStatementExport(HttpServletResponse response,
-          @RequestBody @Validated InboundAndOutboundStatementQuery query) throws IOException {
-    accountItemBiz.inboundAndOutboundStatementExport(query, response);
+          @RequestBody @Validated InboundAndOutboundStatementQuery query) {
+    accountItemBiz.InboundAndOutboundStatementExport(query, response);
     return ResponseUtil.success(null);
   }
 

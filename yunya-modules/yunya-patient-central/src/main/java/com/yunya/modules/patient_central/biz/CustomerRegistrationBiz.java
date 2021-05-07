@@ -139,7 +139,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      * @return String 卡号
      */
     public String generateCardNumber(String mark, Integer orgId) {
-    String number = this.patientMemberInfoMapper.generateCardNumber4Prepay(39);
+    String number = this.patientMemberInfoMapper.generateCardNumber4Prepay(35);
         String suffix = String.format("%06d", Integer.parseInt(number) + 1);
         // 获取门诊简称
         OrganizationInfo organizationInfo =

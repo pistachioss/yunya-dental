@@ -2,23 +2,16 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
-import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentInfo4ListVO;
 import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
-import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
-import com.yunya.feign.wechat.domain.vo.WxAppointConfirmPushVo;
-import com.yunya.feign.wechat.enums.TemplateDataEnum;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -42,20 +35,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoField;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.yunya.feign.wechat.enums.TemplateEnum.*;
 
 /**
  * 简介: 就诊流程业务层
@@ -77,7 +58,6 @@ public class BaseTreatmentProcessBiz
   @Autowired private RemoteAppointmentFeign remoteAppointmentFeign;
   @Autowired private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
   @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
-  @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   @Autowired private BaseOrganizationMapper baseOrganizationMapper;
 
   /**
@@ -584,40 +564,5 @@ public class BaseTreatmentProcessBiz
                     BaseContextHandler.getUsername(),
                     "个人初诊统计表");
     excelUtil.exportExcel(response, list, "个人初诊统计表", fileName);
-  }
-
-  public List<WxTemplateMsgModel> listAppointConfirmPush() {
-    List<WxAppointConfirmPushVo> appointList = mapper.listAppointConfirm();
-    List<OrganizationInfoDetail> orgList = systemServiceFeign.findOrgInfoInIds(Lists.newArrayList(appointList.stream()
-            .map(WxAppointConfirmPushVo::getOrgId).collect(Collectors.toSet())));
-    Map<Integer, OrganizationInfoDetail> orgMap = orgList.stream()
-            .collect(Collectors.toMap(OrganizationInfoDetail::getId, Function.identity()));
-    return appointList.stream().map(obj -> {
-      OrganizationInfoDetail org = orgMap.get(obj.getOrgId());
-      WxTemplateMsgModel model = new WxTemplateMsgModel();
-      Map<String, Object> map = Maps.newHashMapWithExpectedSize(16);
-      model.setPatientId(obj.getPatientId());
-      map.put(TemplateDataEnum.PATIENT_NAME.getArgName(), obj.getPatientName());
-      map.put(TemplateDataEnum.APPOINT_DATE.getArgName(), getFormatDate(obj.getAppointDate()));
-      model.setTemplateEnum(APPOINT_CONFIRM);
-      map.put("keyword1", obj.getAppointDate().format(DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH:mm")));
-      map.put("keyword2", obj.getAppointDuration() + "分钟");
-      map.put("keyword3", obj.getOrgName());
-      map.put("keyword4", org.getAddress());
-      map.put(TemplateDataEnum.LINK_MOBILE.getArgName(), org.getTel());
-      model.setParamMap(map);
-      return model;
-    }).collect(Collectors.toList());
-  }
-
-  private String getFormatDate(LocalDateTime appointDate) {
-    int i = appointDate.get(ChronoField.AMPM_OF_DAY);
-    if (i == 0) {
-      return appointDate.format(DateTimeFormatter.ofPattern("MM月dd日上午HH:mm"));
-    }
-    if (i == 1) {
-      return appointDate.format(DateTimeFormatter.ofPattern("MM月dd日下午HH:mm"));
-    }
-    return "";
   }
 }

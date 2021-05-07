@@ -20,8 +20,8 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class BusinessCompletedWorkGoalVO implements Serializable {
-  /** 完成应收金额（元） */
-  @ApiModelProperty("完成应收金额（元）")
+  /** 完成实收金额（元） */
+  @ApiModelProperty("完成实收金额（元）")
   private BigDecimal actualReceivedAmountCompleted;
   /** 完成工作量（元） */
   @ApiModelProperty("完成工作量（元）")

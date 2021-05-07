@@ -157,9 +157,9 @@ public class PatientOriginActivityRelationsBiz
                   }
                   // 判断是全部工作量 还是 免单支付工作量
                   if (type) {
-                    patientOriginActivityVo.setReceivedTotalWorkload(patientOriginActivityVo.getReceivedTotalWorkload().add(multiply.setScale(2,BigDecimal.ROUND_HALF_UP)));
+                    patientOriginActivityVo.setReceivedTotalWorkload(patientOriginActivityVo.getReceivedTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
                   } else {
-                    patientOriginActivityVo.setFreeTotalWorkload(patientOriginActivityVo.getFreeTotalWorkload().add(multiply.setScale(2,BigDecimal.ROUND_HALF_UP)));
+                    patientOriginActivityVo.setFreeTotalWorkload(patientOriginActivityVo.getFreeTotalWorkload().add(multiply.setScale(1, BigDecimal.ROUND_HALF_UP)));
                   }
                 }
               }
@@ -330,7 +330,7 @@ public class PatientOriginActivityRelationsBiz
                 ReceivedWorkloadDetailsVo receivedWorkloadDetails = new ReceivedWorkloadDetailsVo();
                 BeanUtils.copyProperties(receivedWorkloadDetailsVo,receivedWorkloadDetails);
                 BigDecimal multiply = receivedWorkloadDetailsVo.getWorkload().multiply(baseBillPay.getReceivedAmount());
-                receivedWorkloadDetails.setWorkload(multiply.setScale(2,BigDecimal.ROUND_HALF_UP));
+                receivedWorkloadDetails.setWorkload(multiply.setScale(1, BigDecimal.ROUND_HALF_UP));
                 // 加入到结果返回集合中
                 receivedWorkloadDetailsListVo.add(receivedWorkloadDetails);
               }

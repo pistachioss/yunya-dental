@@ -262,7 +262,7 @@ public class BaseTreatmentProcessBiz
           treatmentProcess.setRegisteredTime(null);
           treatmentProcess.setTreatStatus(null);
           treatmentProcess.setRegisteredDate(null);
-          // mapper.updateRegisteredValueByAppointmentId(treatmentProcess.getAppointmentId());
+          //mapper.updateRegisteredValueByAppointmentId(treatmentProcess.getAppointmentId());
           mapper.updateByRegisteredId(registeredId, treatmentProcess);
         } else {
           mapper.deleteByRegisteredId(registeredId);
@@ -361,7 +361,6 @@ public class BaseTreatmentProcessBiz
     treatmentProcess.setRegisteredDentistId(registered.getDentistId());
     treatmentProcess.setRegisteredTime(registered.getRegTime());
     treatmentProcess.setRegisteredDate(registered.getCrtTime());
-    treatmentProcess.setPatientId(registered.getPatientId());
   }
 
   /**

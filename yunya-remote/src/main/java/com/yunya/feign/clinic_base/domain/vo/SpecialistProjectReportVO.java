@@ -19,9 +19,13 @@ import java.io.Serializable;
 @ToString
 public class SpecialistProjectReportVO implements Serializable {
 
-  /** 专科项目 */
-  private String specialistProjectName;
+    /**
+     * 专科项目
+     */
+    private String specialistProjectName;
 
-  /** 占比 */
-  private String percentage;
+    /**
+     * 占比
+     */
+    private String percentage;
 }
