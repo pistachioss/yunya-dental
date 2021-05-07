@@ -65,6 +65,23 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   private ExecutorService importExcelThreadPool;
 
   /**
+   * 更新开单明细
+   *
+   * @param msg 消息
+   */
+  public void updateBaseBillDetail(MessageModel msg) {
+    Integer dataId = (Integer) msg.getParamMap().get("id");
+    OrderDetail detail = orderDetailMapper.selectByPrimaryKey(dataId);
+    if (detail != null && detail.getInservice()) {
+      BaseBillDetail baseBillDetail = baseBillDetailMapper.selectByPrimaryKey(dataId);
+      if (baseBillDetail != null) {
+        baseBillDetail.setExecutorId(detail.getExecutorId());
+        baseBillDetailMapper.updateByPrimaryKeySelective(baseBillDetail);
+      }
+    }
+  }
+
+  /**
    * 根据消息操作中间表账单
    *
    * @param msg 消息

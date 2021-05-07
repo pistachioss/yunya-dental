@@ -9,6 +9,7 @@ import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectTargetVO;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
@@ -63,6 +64,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillDetail;
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
@@ -102,6 +104,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
   /** 门诊基础服务 */
   @Autowired private RemoteClinicBaseServiceFeign remoteClinicBaseServiceFeign;
+  /** 消息中间件 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
   @Resource(name = "treatmentThreadPool")
   private ExecutorService executorService;
@@ -481,7 +485,10 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                   "账单未完成收费,不允许修改执行人", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
             orderDetail.setExecutorId(executorId);
-            mapper.updateByPrimaryKey(orderDetail);
+            int i = mapper.updateByPrimaryKey(orderDetail);
+            if (i > 0) {
+              rabbitMqServiceFeign.sendMessage(orderDetail.getId(), 1, BaseBillDetail);
+            }
           }
         });
   }
@@ -574,53 +581,65 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return percentage
    */
   public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(
-          SpecialistProjectReportModel specialistProjectReportModel) throws Exception {
+      SpecialistProjectReportModel specialistProjectReportModel) throws Exception {
     AtomicInteger count = new AtomicInteger(0);
     List<SpecialistProjectReportVO> specialistProjectReportVOList = new ArrayList<>();
-    List<SpecialistProject> specialistProjects = specialistProjectReportModel.getSpecialistProjects();
-    List<SpecialistTariffProjectVO> specialistProjectVOs = mapper.selectTariffSpecialistPercentage(specialistProjectReportModel);
+    List<SpecialistProject> specialistProjects =
+        specialistProjectReportModel.getSpecialistProjects();
+    List<SpecialistTariffProjectVO> specialistProjectVOs =
+        mapper.selectTariffSpecialistPercentage(specialistProjectReportModel);
     CountDownLatch latch = new CountDownLatch(specialistProjects.size());
 
     List<Future<SpecialistProjectReportVO>> futureList = Lists.newArrayList();
 
     for (SpecialistProject specialistProject : specialistProjects) {
-      SpecialistProjectReportModel clone = (SpecialistProjectReportModel) specialistProjectReportModel.clone();
-      futureList.add(executorService.submit(()->{
-        try {
-          SpecialistProjectReportVO specialistProjectReportVO = new SpecialistProjectReportVO();
-          specialistProjectReportVO.setSpecialistProjectName(specialistProject.getName());
-          String tariffIds = specialistProject.getTariffIds();
-          if (tariffIds != null) {
-            List<String> billingItemIds = Arrays.asList(tariffIds.split(","));
-            if (billingItemIds.size() > 0) {
-              int numberOfItems = specialistProjectVOs.stream().filter(entity ->
-                      clone.getOrgIds().contains(
-                              entity.getOrgId()) && billingItemIds.contains(String.valueOf(entity.getBillingItemId())))
-                      .mapToInt(SpecialistTariffProjectVO::getQuantity).sum();
-              count.getAndAdd(numberOfItems);
-              specialistProjectReportVO.setPercentage(String.valueOf(numberOfItems));
-            }
-          }
-          return specialistProjectReportVO;
-        } finally {
-          latch.countDown();
-        }
-      }));
+      SpecialistProjectReportModel clone =
+          (SpecialistProjectReportModel) specialistProjectReportModel.clone();
+      futureList.add(
+          executorService.submit(
+              () -> {
+                try {
+                  SpecialistProjectReportVO specialistProjectReportVO =
+                      new SpecialistProjectReportVO();
+                  specialistProjectReportVO.setSpecialistProjectName(specialistProject.getName());
+                  String tariffIds = specialistProject.getTariffIds();
+                  if (tariffIds != null) {
+                    List<String> billingItemIds = Arrays.asList(tariffIds.split(","));
+                    if (billingItemIds.size() > 0) {
+                      int numberOfItems =
+                          specialistProjectVOs.stream()
+                              .filter(
+                                  entity ->
+                                      clone.getOrgIds().contains(entity.getOrgId())
+                                          && billingItemIds.contains(
+                                              String.valueOf(entity.getBillingItemId())))
+                              .mapToInt(SpecialistTariffProjectVO::getQuantity)
+                              .sum();
+                      count.getAndAdd(numberOfItems);
+                      specialistProjectReportVO.setPercentage(String.valueOf(numberOfItems));
+                    }
+                  }
+                  return specialistProjectReportVO;
+                } finally {
+                  latch.countDown();
+                }
+              }));
     }
 
     latch.await();
 
     if (StringHelper.isNotEmpty(futureList)) {
-      futureList.forEach(entity->{
-        try {
-          SpecialistProjectReportVO specialistProjectReportVO = entity.get();
-          specialistProjectReportVOList.add(specialistProjectReportVO);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        } catch (ExecutionException e) {
-          e.printStackTrace();
-        }
-      });
+      futureList.forEach(
+          entity -> {
+            try {
+              SpecialistProjectReportVO specialistProjectReportVO = entity.get();
+              specialistProjectReportVOList.add(specialistProjectReportVO);
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            } catch (ExecutionException e) {
+              e.printStackTrace();
+            }
+          });
     }
 
     BigDecimal numberOfItemsBD = null;
@@ -629,7 +648,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     if (countBD.intValue() > 0) {
       for (SpecialistProjectReportVO specialistProjectReportVO : specialistProjectReportVOList) {
         numberOfItemsBD = new BigDecimal(specialistProjectReportVO.getPercentage());
-        BigDecimal percentBD = numberOfItemsBD.multiply(percen100).divide(countBD, 2, RoundingMode.HALF_UP);
+        BigDecimal percentBD =
+            numberOfItemsBD.multiply(percen100).divide(countBD, 2, RoundingMode.HALF_UP);
         String percentage = percentBD.toString();
         specialistProjectReportVO.setPercentage(percentage);
       }

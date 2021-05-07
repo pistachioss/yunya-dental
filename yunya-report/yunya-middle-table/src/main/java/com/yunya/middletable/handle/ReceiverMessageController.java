@@ -6,7 +6,6 @@ import com.yunya.middletable.service.*;
 import com.yunya.middletable.service.patient.*;
 import com.yunya.middletable.service.treatment_other.BaseEmployeeScheduleBiz;
 import com.yunya.middletable.service.treatment_other.BaseVisitRemindBiz;
-import com.yunya.models.report.BasePatientOriginLog;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -108,6 +107,9 @@ public class ReceiverMessageController {
         case BaseBill:
           billBiz.operateBill(messageModel);
           break;
+        case BaseBillDetail:
+          billBiz.updateBaseBillDetail(messageModel);
+          break;
         case BaseBillPay:
           billPayBiz.operateBillPay(messageModel);
           break;
@@ -119,6 +121,7 @@ public class ReceiverMessageController {
           break;
         case BaseCardBatch:
           baseCardService.operateBatch(messageModel);
+          break;
         case BaseCardSingle:
           baseCardService.operateSingle(messageModel);
           break;
