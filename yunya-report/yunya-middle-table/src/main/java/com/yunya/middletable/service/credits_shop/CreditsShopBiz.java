@@ -287,11 +287,11 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
           if (!StringHelper.isEmpty(userInfo)) {
             if (null != creditsShop) {
               // 判断帐户积分是否够用
-              if ( creditsShop.getCredits() < addCreditConsumeParams.getCredits()){
+              if ( creditsShop.getCreditsAccount() < addCreditConsumeParams.getCredits()){
                 // 设置失败响应体
                 creditResult.setStatus("fail");
                 creditResult.setErrorMessage("帐户积分不足");
-                creditResult.setCredits(creditsShop.getCredits().toString());
+                creditResult.setCredits(creditsShop.getCreditsAccount().toString());
                 return creditResult;
               }
               // 新增患者积分变动信息
