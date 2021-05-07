@@ -81,8 +81,7 @@ public interface BasePatientMemberOccurLogMapper extends Mapper<BasePatientMembe
    * @param form 查询条件
    * @return List<BaseMemberBalanceInfoVo>
    */
-  List<BaseMemberBalanceInfoVo> selectMemberBalanceList(
-      @Param("form") MemberQueryForm form);
+  List<BaseMemberBalanceInfoVo> selectMemberBalanceList(@Param("form") MemberQueryForm form);
 
   /**
    * 根据条件查询患者储值卡（会员卡、预付款卡）充值记录详情
@@ -102,6 +101,7 @@ public interface BasePatientMemberOccurLogMapper extends Mapper<BasePatientMembe
    * @return StatementPaymentVO
    */
   StatementPaymentVO selectStatementPaymentByOperateRecordId(
+      @Param("rechargeMethod") Byte rechargeMethod,
       @Param("rechargeRecordId") Integer rechargeRecordId,
       @Param("cardType") Byte cardType,
       @Param("occurType") Byte occurType);

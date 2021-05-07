@@ -2728,6 +2728,7 @@
                 </foreach>
             </if>
         </where>
+        order by bbd.orgId,bbd.itemType,bbd.itemId
     </select>
 
     <select id="billItemStatisticsDetail" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsDetailVO">
