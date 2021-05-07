@@ -167,7 +167,7 @@
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    AND DATE_FORMAT( br.refund_date, '%Y-%m' ) = #{query.queryDate}
+                    AND DATE_FORMAT( br.refund_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
         </where>
