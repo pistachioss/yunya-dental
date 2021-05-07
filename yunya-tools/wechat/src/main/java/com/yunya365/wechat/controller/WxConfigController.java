@@ -37,7 +37,7 @@ public class WxConfigController {
      * @param echostr   随机字符串
      * @return 若确认此次GET请求来自微信服务器，请原样返回echostr参数内容
      */
-    @GetMapping("/CallBack/WeChatMsg")
+    @GetMapping("/callback/WeChatMsg")
     public String validateToken(@RequestParam("signature") String signature,
                                 @RequestParam("timestamp") String timestamp,
                                 @RequestParam("nonce") String nonce,
@@ -56,7 +56,7 @@ public class WxConfigController {
         }
     }
 
-    @PostMapping(value = "/CallBack/WeChatMsg", produces = MediaType.TEXT_XML_VALUE)
+    @PostMapping(value = "/callback/WeChatMsg", produces = MediaType.TEXT_XML_VALUE)
     public Object msgChat(@RequestBody WxUserMsgModel msg) throws Exception {
         //获取推送事件类型  可以拿到的事件: 1 关注/取消关注事件  2:扫描带参数二维码事件 3: 用户已经关注公众号 扫描带参数二维码事件 ...等等
         NotifyEnum notifyEnum = NotifyEnum.resolveEvent(msg.getMsgType(), msg.getEvent());
