@@ -47,6 +47,7 @@
         t.bill_id as billId,
         IFNULL(SUM(t.principal_amount), 0) AS principalAmount
         from base_bill_pay_detail t
+        left join base_bill_pay bbp on bbp.bill_pay_id=t.bill_pay_id
         <where>
             t.type = 2
             <if test="payIds!=null and payIds.size()>0">
@@ -55,11 +56,26 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="billIds!=null and billIds.size()>0">
+            <if test="query.billIds!=null and query.billIds.size()>0">
                 and t.bill_id in
-                <foreach item="item" index="index" collection="billIds" open="(" separator="," close=")">
+                <foreach item="item" index="index" collection="query.billIds" open="(" separator="," close=")">
                     #{item}
                 </foreach>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') = #{query.queryDate}
+                </if>
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.queryDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT(bbp.payee_date, '%Y') = #{query.queryDate}
+                </if>
             </if>
         </where>
         group by t.bill_id

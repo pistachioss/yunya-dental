@@ -892,17 +892,21 @@
                 </where>
                 group by bbt.order_detail_id
             ) bbt on bbd.bill_detail_id = bbt.order_detail_id-->
+            <where>
+                and bb.bill_date is not null
+                <if test="query.orgId != null">
+                    and bb.org_id = #{query.orgId}
+                </if>
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and date_format(bb.bill_date, '%Y-%m') = #{query.queryDate}
+                    and exists (
+                        select bill_id from base_bill_pay bbp where bb.bill_id = bbp.bill_id
+                        and date_format(bbp.payee_date, '%Y-%m') = #{query.queryDate}
+                    )
+                </if>
+            </where>
             order by bti.item_type, bti.category_id
         ) bdp
-        <where>
-            and bdp.billDate is not null
-            <if test="query.orgId != null">
-                and bdp.orgId = #{query.orgId}
-            </if>
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and bdp.billDate = #{query.queryDate}
-            </if>
-        </where>
         group by bdp.itemType, bdp.categoryId
     </select>
 

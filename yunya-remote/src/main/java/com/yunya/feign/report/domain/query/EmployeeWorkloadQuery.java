@@ -30,7 +30,7 @@ public class EmployeeWorkloadQuery extends PageQuery implements Serializable {
   @NotNull(message = "组织ID不能为空！")
   private Integer orgId;
   /** 查询结束时间 */
-  @ApiModelProperty(value = "时间类型:0-月；1-年", required = true)
+  @ApiModelProperty(value = "时间类型:0-月；1-年；2-日", required = true)
   @NotNull(message = "时间类型不能为空！")
   private Byte dateType;
   /** 查询时间 */

@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.BillDiscountAndFreePaymentQuery;
+import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.vo.BaseBillPayDetailVO;
 import com.yunya.feign.report.domain.vo.BillDiscountAndFreePaymentVO;
 import com.yunya.feign.report.domain.vo.BillPayFreePayAmountVO;
@@ -37,12 +38,12 @@ public interface BaseBillPayDetailMapper extends Mapper<BaseBillPayDetail> {
   /**
    * 根据billId分组，统计免单支付总额
    *
-   * @param billIds 账单id列表
+   * @param query 账单id列表
    * @param payIds 入账方式
    * @return
    */
   List<BaseBillPayDetailVO> sumPayDetailListByBillIds(
-      @Param("billIds") Collection<Integer> billIds, @Param("payIds") Collection<Integer> payIds);
+          @Param("query") EmployeeWorkloadQuery query, @Param("payIds") Collection<Integer> payIds);
 
   /**
    * 查询支付记录免单总额
