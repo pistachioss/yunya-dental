@@ -139,6 +139,7 @@ public class ReceiverMessageController {
           break;
         case BaseAppointmentModify:
           appointmentModifyBiz.operateAppointmentModify(messageModel);
+          break;
         case BasePatientOrigin:
           basePatientOriginBiz.operate(messageModel);
           break;
