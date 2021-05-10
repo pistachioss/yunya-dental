@@ -306,8 +306,30 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<CategoryInfoIncomeVO> resultList = mapper.selectCategoryIncomeList(query);
+    mergeOriginAmount(resultList, query);
     monthCategoryFreePayment(resultList, query);
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 查询当月账单的项目大类的原价，计算应收总额
+   *
+   * @param resultList
+   * @param query
+   */
+  private void mergeOriginAmount(List<CategoryInfoIncomeVO> resultList, BillCategoryIncomeQuery query) {
+    List<CategoryInfoIncomeVO> originList = mapper.selectOriginalAmountGroupByCategory(query);
+    if (StringHelper.isNotEmpty(originList) && StringHelper.isNotEmpty(resultList)) {
+      resultList.forEach(vo->{
+        originList.forEach(origin->{
+          if (vo.getCategoryId()==origin.getCategoryId() && vo.getCategoryType()==origin.getCategoryType()) {
+            BigDecimal totalOriginalAmount = origin.getTotalOriginalAmount();
+            vo.setTotalOriginalAmount(totalOriginalAmount);
+            vo.setTotalActualAmount(totalOriginalAmount.subtract(vo.getTotalDiscountAmount()));
+          }
+        });
+      });
+    }
   }
 
   /**

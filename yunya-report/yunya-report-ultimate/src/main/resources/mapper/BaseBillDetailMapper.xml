@@ -855,6 +855,27 @@
         bup.refundWorkload DESC
     </select>
 
+    <select id="selectOriginalAmountGroupByCategory" resultType="com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO">
+        select
+        bti.item_type as categoryType,
+        bti.category_id as categoryId,
+        sum(bbd.price * bbd.quantity) as totalOriginalAmount
+        from base_bill_detail bbd
+        left join base_tariff_info bti on bbd.item_id = bti.item_id
+        and bbd.item_type = bti.item_type
+        left join base_bill bb on bbd.bill_id = bb.bill_id
+        <where>
+            and bb.bill_date is not null
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and date_format(bb.bill_date, '%Y-%m') = #{query.queryDate}
+            </if>
+        </where>
+        group by bti.item_type, bti.category_id
+    </select>
+
     <!-- 根据条件查询项目分类收入汇总列表 -->
     <select id="selectCategoryIncomeList" resultType="com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO">
         select
@@ -867,31 +888,16 @@
         ifnull(SUM(bdp.supplementWorkload),0) AS totalCouponAmount
         from (
             select
-            bb.org_id as orgId,
             bti.item_type as itemType,
             bti.category_id as categoryId,
             bti.category_name as categoryName,
             bbd.discount_amount as discountAmount,
             bbd.price * bbd.quantity as totalOriginalAmount,
---             bbt.supplementWorkload AS supplementWorkload,
-            bbd.coupon_workload AS supplementWorkload,
-            date_format(bb.bill_date, '%Y-%m') as billDate
+            bbd.coupon_workload AS supplementWorkload
             from base_bill_detail bbd
             left join base_tariff_info bti on bbd.item_id = bti.item_id
             and bbd.item_type = bti.item_type
             left join base_bill bb on bbd.bill_id = bb.bill_id
-            <!--left join (
-                select bbt.order_detail_id,
-                sum(bci.workload_load) as supplementWorkload
-                from base_benefit bbt
-                inner join base_coupon_item bci on bbt.item_id = bci.item_id and bbt.coupon_id = bci.coupon_id
-                <where>
-                    <if test="query.queryDate != null and query.queryDate != ''">
-                        and DATE_FORMAT(bbt.use_date, '%Y-%m') = #{query.queryDate}
-                    </if>
-                </where>
-                group by bbt.order_detail_id
-            ) bbt on bbd.bill_detail_id = bbt.order_detail_id-->
             <where>
                 and bb.bill_date is not null
                 <if test="query.orgId != null">
@@ -899,10 +905,7 @@
                 </if>
                 <if test="query.queryDate != null and query.queryDate != ''">
                     and date_format(bb.bill_date, '%Y-%m') = #{query.queryDate}
-                    and exists (
-                        select bill_id from base_bill_pay bbp where bb.bill_id = bbp.bill_id
-                        and date_format(bbp.payee_date, '%Y-%m') = #{query.queryDate}
-                    )
+                    and date_format(bb.privilege_date, '%Y-%m') = #{query.queryDate}
                 </if>
             </where>
             order by bti.item_type, bti.category_id
