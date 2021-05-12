@@ -18,10 +18,6 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.models.report.BaseBillDetail;
-import com.yunya.models.report.BaseEmployee;
-import com.yunya.models.report.BaseOrganization;
-import com.yunya.report.ultimate.mapper.*;
 import com.yunya.models.report.*;
 import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
@@ -242,8 +238,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                     vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0
                         && userIds.containsKey(vo.getExecutorId() + "," + vo.getOrgId()))
             .collect(Collectors.toList());
-    Set<Integer> billIds = computePercentage(details);
-    Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(billIds);
+    query.setBillIds(computePercentage(details));
+    Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(query);
     details.forEach(
         detail -> {
           String key = detail.getExecutorId() + "," + detail.getOrgId();
@@ -312,8 +308,30 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<CategoryInfoIncomeVO> resultList = mapper.selectCategoryIncomeList(query);
+    mergeOriginAmount(resultList, query);
     monthCategoryFreePayment(resultList, query);
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 查询当月账单的项目大类的原价，计算应收总额
+   *
+   * @param resultList
+   * @param query
+   */
+  private void mergeOriginAmount(List<CategoryInfoIncomeVO> resultList, BillCategoryIncomeQuery query) {
+    List<CategoryInfoIncomeVO> originList = mapper.selectOriginalAmountGroupByCategory(query);
+    if (StringHelper.isNotEmpty(originList) && StringHelper.isNotEmpty(resultList)) {
+      resultList.forEach(vo->{
+        originList.forEach(origin->{
+          if (vo.getCategoryId()==origin.getCategoryId() && vo.getCategoryType()==origin.getCategoryType()) {
+            BigDecimal totalOriginalAmount = origin.getTotalOriginalAmount();
+            vo.setTotalOriginalAmount(totalOriginalAmount);
+            vo.setTotalActualAmount(totalOriginalAmount.subtract(vo.getTotalDiscountAmount()));
+          }
+        });
+      });
+    }
   }
 
   /**
@@ -752,13 +770,13 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   /**
    * 返回账单的所有免单支付金额
    *
-   * @param billIds
+   * @param query
    * @return
    */
-  private Map<Integer, BigDecimal> sumFreePaymentMap(Collection<Integer> billIds) {
+  private Map<Integer, BigDecimal> sumFreePaymentMap(EmployeeWorkloadQuery query) {
     Map<Integer, BigDecimal> result = new HashMap<>(16);
     List<BaseBillPayDetailVO> freePayments =
-        baseBillPayDetailMapper.sumPayDetailListByBillIds(billIds, FREE_PAYMENT_ID);
+        baseBillPayDetailMapper.sumPayDetailListByBillIds(query, FREE_PAYMENT_ID);
     freePayments.forEach(
         vo -> {
           Integer billId = vo.getBillId();
@@ -1896,20 +1914,22 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                 .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
                 .collect(Collectors.toList());
         computePercentage(details);
-        Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(billIds);
-        details.forEach(
-            detail -> {
-              String key = itemMap.get(detail.getItemType() + "," + detail.getItemId());
-              Integer billId = detail.getBillId();
-              BigDecimal free = freePaymentMap.get(billId);
-              BigDecimal amount =
-                  detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
-              BigDecimal freeAmount = frees.get(key);
-              if (freeAmount == null) {
-                freeAmount = BigDecimal.ZERO;
-              }
-              frees.put(key, freeAmount.add(amount));
-            });
+        EmployeeWorkloadQuery query = new EmployeeWorkloadQuery();
+        query.setDateType((byte)0);
+        query.setQueryDate(queryFrom.getQueryDate());
+        query.setBillIds(billIds);
+        Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(query);
+        details.forEach(detail -> {
+          String key = itemMap.get(detail.getItemType() + "," + detail.getItemId());
+          Integer billId = detail.getBillId();
+          BigDecimal free = freePaymentMap.get(billId);
+          BigDecimal amount = detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+          BigDecimal freeAmount = frees.get(key);
+          if (freeAmount == null) {
+            freeAmount = BigDecimal.ZERO;
+          }
+          frees.put(key, freeAmount.add(amount));
+        });
       }
       result.forEach(
           vo -> {

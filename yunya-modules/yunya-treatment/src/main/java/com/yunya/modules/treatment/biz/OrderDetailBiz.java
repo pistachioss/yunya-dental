@@ -9,6 +9,7 @@ import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectTargetVO;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
@@ -63,6 +64,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillDetail;
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
@@ -102,6 +104,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
   /** 门诊基础服务 */
   @Autowired private RemoteClinicBaseServiceFeign remoteClinicBaseServiceFeign;
+  /** 消息中间件 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
   @Resource(name = "treatmentThreadPool")
   private ExecutorService executorService;
@@ -481,7 +485,10 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                   "账单未完成收费,不允许修改执行人", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
             orderDetail.setExecutorId(executorId);
-            mapper.updateByPrimaryKey(orderDetail);
+            int i = mapper.updateByPrimaryKey(orderDetail);
+            if (i > 0) {
+              rabbitMqServiceFeign.sendMessage(orderDetail.getId(), 1, BaseBillDetail);
+            }
           }
         });
   }

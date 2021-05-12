@@ -167,7 +167,7 @@
             </if>
             <if test="query.dateType == 1">
                 <if test="query.queryDate != null and query.queryDate != ''">
-                    AND DATE_FORMAT( br.refund_date, '%Y-%m' ) = #{query.queryDate}
+                    AND DATE_FORMAT( br.refund_date, '%Y' ) = #{query.queryDate}
                 </if>
             </if>
         </where>
@@ -685,7 +685,7 @@
         base_refund_detail brd
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
         INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
-        AND bbd.executor_id is not null
+        AND bbd.executor_id > 0
         ) brd
         <where>
             <if test="query.orgIds != null and query.orgIds.length > 0">

@@ -1183,7 +1183,6 @@
 
     </select>
 
-
     <!-- 根据推荐人id 和 优惠时间 查询补入订单id -->
     <select id="selectMakeUpBillIdList" resultType="java.lang.Integer">
         select bill_id
