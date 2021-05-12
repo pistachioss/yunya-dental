@@ -476,9 +476,8 @@
         ) ewc ON bup.user_id = ewc.user_id
         ) bup
         WHERE
-        !FIND_IN_SET('医生', bup.postNames)
-        and bup.actualWorkload > 0
-        or supplementWorkload > 0
+        bup.actualWorkload > 0
+        or bup.supplementWorkload > 0
         or bup.receivedWorkload > 0
         or bup.freePaymentWorkload > 0
         or bup.refundWorkload > 0
@@ -864,7 +863,7 @@
         ) bup
         WHERE
         bup.actualWorkload > 0
-        or supplementWorkload > 0
+        or bup.supplementWorkload > 0
         or bup.receivedWorkload > 0
         or bup.freePaymentWorkload > 0
         or bup.refundWorkload > 0
