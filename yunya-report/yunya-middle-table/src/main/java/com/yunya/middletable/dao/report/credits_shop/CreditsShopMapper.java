@@ -1,7 +1,6 @@
 package com.yunya.middletable.dao.report.credits_shop;
 
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
-import com.yunya.models.credits_shop.CreditsShop;
 import com.yunya.models.report.BasePatientConsumptionCountVo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

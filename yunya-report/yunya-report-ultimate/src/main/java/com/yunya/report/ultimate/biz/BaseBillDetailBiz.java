@@ -1916,8 +1916,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                 .collect(Collectors.toList());
         computePercentage(details);
         EmployeeWorkloadQuery query = new EmployeeWorkloadQuery();
-        query.setDateType((byte)0);
-        query.setQueryDate(queryFrom.getQueryDate());
+        query.setDateType((byte)1);
+        query.setStartDate(queryFrom.getQueryDate());
+        query.setEndDate(queryFrom.getQueryDate());
         query.setBillIds(billIds);
         Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(query);
         details.forEach(detail -> {
