@@ -257,8 +257,8 @@
                 </if>
             </if>
             <if test="query.dateType == 2">
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bb.privilege_date, '%Y' ) &gt;= #{query.queryDate}
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bb.privilege_date, '%Y' ) &gt;= #{query.endDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
                     and DATE_FORMAT( bb.privilege_date, '%Y' ) &lt;= #{query.endDate}
@@ -273,7 +273,7 @@
         bbd.executor_id,
         CONVERT (
         SUM( bbd.billWorkload / bbd.actualAmount * bbd.receivedAmount ),
-        DECIMAL ( 19, 4 )) AS receivedWorkload
+        DECIMAL ( 19, 2 )) AS receivedWorkload
         FROM
         (
         SELECT
@@ -2366,14 +2366,6 @@
             </if>
             <if test="query.billDate != null and query.billDate != ''">
                 and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') = #{query.billDate}
-            </if>
-            <if test="query.queryDate != null and query.queryDate!= ''">
-                <if test="query.dateType == 0">
-                    and DATE_FORMAT(bbp.payee_date, '%Y-%m') = #{query.queryDate}
-                </if>
-                <if test="query.dateType == 1">
-                    and DATE_FORMAT(bbp.payee_date, '%Y') = #{query.queryDate}
-                </if>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
