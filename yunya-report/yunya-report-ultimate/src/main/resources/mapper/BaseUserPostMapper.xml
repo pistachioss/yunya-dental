@@ -417,9 +417,8 @@
         FROM
         (
         SELECT
-        bup.org_id AS orgId,
         bup.user_id AS employeeId,
-        IFNULL( be.employee_name, '--' ) AS employeeName,
+        IFNULL( bup.employee_name, '--' ) AS employeeName,
         IFNULL( bes.totalShiftTime, 0 ) AS totalShiftTime,
         IFNULL( btp.totalTreatmentTime, 0 ) AS totalTreatmentTime,
         IFNULL( btp.treatVisitsTimes, 0 ) AS treatVisitsTimes,
@@ -432,17 +431,28 @@
         IFNULL( btp6.totalActualAmount, 0 ) AS totalActualAmount
         FROM
         (
-        SELECT
-        bup.org_id,
-        bup.user_id
-        FROM
-        base_user_post bup
-        WHERE bup.group_id = 3
-        GROUP BY
-        bup.org_id,
-        bup.user_id
+        SELECT be.user_id,
+        be.employee_name
+        FROM base_employee be
+        LEFT JOIN base_user_post bup
+        ON bup.user_id = be.user_id
+        <where>
+            and bup.group_id = 3
+            <if test="query.dentistIds != null and query.dentistIds.length > 0">
+                and be.user_id in
+                <foreach collection="query.dentistIds" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.workStatus!=null and query.workStatus.size()>0">
+                and be.work_status in
+                <foreach collection="query.workStatus" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by be.user_id
         ) bup
-        LEFT JOIN base_employee be ON bup.user_id = be.user_id
         LEFT JOIN (
         SELECT
         bes.user_id,
@@ -451,6 +461,9 @@
         FROM
         base_employee_schedule bes
         <where>
+            <if test="query.orgId != null">
+                and bes.org_id = #{query.orgId}
+            </if>
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT( bes.schedule_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>
@@ -459,10 +472,8 @@
             </if>
         </where>
         GROUP BY
-        bes.org_id,
         bes.user_id
         ) bes ON bup.user_id = bes.user_id
-        AND bup.org_id = bes.org_id
         LEFT JOIN (
         SELECT
         btp.org_id,
@@ -479,6 +490,9 @@
         base_treatment_process btp
         <where>
             and btp.treat_end_time IS NOT NULL
+            <if test="query.orgId != null">
+                and btp.org_id = #{query.orgId}
+            </if>
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>
@@ -487,10 +501,8 @@
             </if>
         </where>
         GROUP BY
-        btp.org_id,
         btp.registered_dentist_id
         ) btp ON bup.user_id = btp.registered_dentist_id
-        AND bup.org_id = btp.org_id
         LEFT JOIN (
         SELECT
         btp.org_id,
@@ -501,6 +513,9 @@
         <where>
             and btp.treat_type = 0
             and btp.treat_end_time IS NOT NULL
+            <if test="query.orgId != null">
+                and btp.org_id = #{query.orgId}
+            </if>
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>
@@ -509,10 +524,8 @@
             </if>
         </where>
         GROUP BY
-        btp.org_id,
         btp.registered_dentist_id
         ) btp1 ON bup.user_id = btp1.registered_dentist_id
-        AND bup.org_id = btp1.org_id
         LEFT JOIN (
         SELECT
         btp.org_id,
@@ -522,6 +535,9 @@
         base_treatment_process btp
         <where>
             and btp.appoint_status != 2
+            <if test="query.orgId != null">
+                and btp.org_id = #{query.orgId}
+            </if>
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>
@@ -530,10 +546,8 @@
             </if>
         </where>
         GROUP BY
-        btp.org_id,
         btp.appoint_dentist_id
         ) btp2 ON bup.user_id = btp2.appoint_dentist_id
-        AND bup.org_id = btp2.org_id
         LEFT JOIN (
         SELECT
         btp.org_id,
@@ -542,6 +556,9 @@
         FROM
         base_appointment_modify btp
         <where>
+            <if test="query.orgId != null">
+                and btp.org_id = #{query.orgId}
+            </if>
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT( btp.appoint_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>
@@ -550,10 +567,8 @@
             </if>
         </where>
         GROUP BY
-        btp.org_id,
         btp.dentist_id
         ) btp3 ON bup.user_id = btp3.dentist_id
-        AND bup.org_id = btp3.org_id
         LEFT JOIN (
         SELECT
         btp.org_id,
@@ -563,6 +578,9 @@
         base_treatment_process btp
         <where>
             and btp.appoint_status = 2
+            <if test="query.orgId != null">
+                and btp.org_id = #{query.orgId}
+            </if>
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>
@@ -571,11 +589,8 @@
             </if>
         </where>
         GROUP BY
-        btp.org_id,
-        btp.registered_dentist_id,
         btp.appoint_dentist_id
         ) btp4 ON bup.user_id = btp4.appoint_dentist_id
-        AND bup.org_id = btp4.org_id
         LEFT JOIN (
         SELECT
         btp.org_id,
@@ -584,7 +599,10 @@
         FROM
         base_treatment_process btp
         <where>
-            and btp.appoint_dentist_id = btp.registered_dentist_id
+            and btp.registered_dentist_id > 0
+            <if test="query.orgId != null">
+                and btp.org_id = #{query.orgId}
+            </if>
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>
@@ -593,10 +611,8 @@
             </if>
         </where>
         GROUP BY
-        btp.org_id,
         btp.appoint_dentist_id
         ) btp5 ON bup.user_id = btp5.appoint_dentist_id
-        AND bup.org_id = btp5.org_id
         LEFT JOIN (
         SELECT
         btp.org_id,
@@ -611,20 +627,23 @@
         FROM
         base_treatment_process btp
         LEFT JOIN (
-            select IFNULL(bbd.price*bbd.quantity-bbd.discount_amount,0) as actualAmount,bbd.executor_id,bb.treatment_id
-            from base_bill_detail bbd
-            left join base_bill bb on bb.bill_id=bbd.bill_id
-            <where>
-                <if test="query.dentistIds != null and query.dentistIds.length > 0">
-                    and bbd.executor_id in
-                    <foreach collection="query.dentistIds" index="index" item="item" open="(" close=")" separator=",">
-                        #{item}
-                    </foreach>
-                </if>
-            </where>
+        select IFNULL(bbd.price*bbd.quantity-bbd.discount_amount,0) as actualAmount,bbd.executor_id,bb.treatment_id
+        from base_bill_detail bbd
+        left join base_bill bb on bb.bill_id=bbd.bill_id
+        <where>
+            <if test="query.dentistIds != null and query.dentistIds.length > 0">
+                and bbd.executor_id in
+                <foreach collection="query.dentistIds" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
         ) bb ON btp.treatment_id = bb.treatment_id and bb.executor_id=btp.registered_dentist_id
         <where>
             and btp.treat_end_time IS NOT NULL
+            <if test="query.orgId != null">
+                and btp.org_id = #{query.orgId}
+            </if>
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>
@@ -634,18 +653,8 @@
         </where>
         ) btp
         GROUP BY
-        btp.org_id,
         btp.registered_dentist_id
         ) btp6 ON bup.user_id = btp6.registered_dentist_id
-        AND bup.org_id = btp6.org_id
-        <where>
-            <if test="query.workStatus!=null and query.workStatus.size()>0">
-                and be.work_status in
-                <foreach collection="query.workStatus" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
         ) edi
         <where>
             edi.totalShiftTime > 0
@@ -654,21 +663,9 @@
             or edi.appointmentsNum > 0
             or edi.appointmentModifyTimes > 0
             or edi.appointmentCancelTimes > 0
-            <if test="query.orgId != null">
-                and edi.orgId = #{query.orgId}
-            </if>
-            <if test="query.dentistIds != null and query.dentistIds.length > 0">
-                and edi.employeeId in
-                <foreach collection="query.dentistIds" index="index" item="item" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
         </where>
-        GROUP BY
-        edi.orgId,
-        edi.employeeId
         ORDER BY
         edi.totalTreatmentTime DESC,
-        treatVisitsTimes DESC
+        edi.treatVisitsTimes DESC
     </select>
 </mapper>
