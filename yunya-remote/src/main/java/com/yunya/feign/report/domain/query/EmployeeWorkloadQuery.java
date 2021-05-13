@@ -29,14 +29,18 @@ public class EmployeeWorkloadQuery extends PageQuery implements Serializable {
   @ApiModelProperty(value = "组织id", required = true)
   @NotNull(message = "组织ID不能为空！")
   private Integer orgId;
-  /** 查询结束时间 */
-  @ApiModelProperty(value = "时间类型:0-月；1-年", required = true)
+  /** 时间类型 */
+  @ApiModelProperty(value = "时间类型:0-日（yyyy-MM-dd）；1-月(yyyy-MM)；2-年(yyyy)", required = true)
   @NotNull(message = "时间类型不能为空！")
   private Byte dateType;
   /** 查询时间 */
-  @ApiModelProperty(value = "查询时间", required = true)
-  @NotBlank(message = "查询时间不能为空！")
-  private String queryDate;
+  @ApiModelProperty(value = "查询开始时间", required = true)
+  @NotBlank(message = "查询开始时间不能为空！")
+  private String startDate;
+  /** 查询时间 */
+  @ApiModelProperty(value = "查询结束时间", required = true)
+  @NotBlank(message = "查询结束时间不能为空！")
+  private String endDate;
   /** 员工ID列表 */
   @ApiModelProperty("员工ID列表")
   private Integer[] employeeIds;
@@ -49,6 +53,7 @@ public class EmployeeWorkloadQuery extends PageQuery implements Serializable {
   /** 账单ID列表 */
   @ApiModelProperty("账单ID列表")
   private Collection<Integer> billIds;
+  /** 组织ID列表 */
   private Integer[] orgIds;
   /** 优惠使用开始时间 */
   private String privilegeStartDate;
