@@ -2369,26 +2369,26 @@
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{query.startDate},'%Y-%m-%d')
+                    and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{query.endDate},'%Y-%m-%d')
+                    and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(bbp.payee_date, '%Y-%m') &gt;= DATE_FORMAT(#{query.startDate},'%Y-%m')
+                    and DATE_FORMAT(bbp.payee_date, '%Y-%m') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(bbp.payee_date, '%Y-%m') &lt;= DATE_FORMAT(#{query.endDate},'%Y-%m')
+                    and DATE_FORMAT(bbp.payee_date, '%Y-%m') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 2">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(bbp.payee_date, '%Y') &gt;= DATE_FORMAT(#{query.startDate},'%Y')
+                    and DATE_FORMAT(bbp.payee_date, '%Y') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(bbp.payee_date, '%Y') &lt;= DATE_FORMAT(#{query.endDate},'%Y')
+                    and DATE_FORMAT(bbp.payee_date, '%Y') &lt;= #{query.endDate}
                 </if>
             </if>
         </where>
