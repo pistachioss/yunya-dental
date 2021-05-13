@@ -1,0 +1,30 @@
+# 测试环境
+spring:
+  datasource:
+    host: rm-bp18uejcrk63u04c9.mysql.rds.aliyuncs.com
+    port: 3306
+    username: sa
+    password: Admin001!
+    name: yunya_third_part
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.100.80:8848
+      config:
+        server-addr: 192.168.100.80:8848
+
+  redis:
+    database: 2
+    host: 192.168.100.79
+    port: 6379
+    password: foobared
+
+wechat:
+  token: "eqNnEgNijz26nqEO2lTfZiYgeHE4HeJl"
+  appId: "wxe5ef531249718521"
+  appSecret: "9844369cecae44acbb6da08b2c317f6e"
+  encodingAESKey: "Ei3GbonFb37BVPdz3bi33oi7BpbOAogIbvGeeDb3eES"
+
+mp:
+  domain: http://ivy2.yunya365.com

@@ -30,10 +30,10 @@ public class BillDiscountAndFreePaymentVO implements Serializable {
   /** 收费日期 */
   @Excel(name = "收费日期", dateFormat = "yyyy-MM-dd")
   @ApiModelProperty("收费日期")
-  @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
   private Date payeeDate;
 
-  /** 门诊*/
+  /** 门诊 */
   @Excel(name = "门诊")
   @ApiModelProperty("门诊")
   private String abbreviation;
@@ -45,7 +45,7 @@ public class BillDiscountAndFreePaymentVO implements Serializable {
   /** 账单日期 */
   @Excel(name = "账单日期", dateFormat = "yyyy-MM-dd")
   @ApiModelProperty("账单日期")
-  @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
   private Date billDate;
 
   /** 患者 */

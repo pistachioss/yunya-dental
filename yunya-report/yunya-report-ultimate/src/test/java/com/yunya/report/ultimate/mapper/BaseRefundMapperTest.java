@@ -60,7 +60,7 @@ public class BaseRefundMapperTest {
   @Test
   public void find1() {
     EmployeePersonalWorkloadDetailQuery query = new EmployeePersonalWorkloadDetailQuery();
-    query.setQueryDate("2021-01");
+    query.setStartDate("2021-01");
     query.setEmployeeId(88);
     query.setDateType((byte) 0);
     List<EmployeePersonalRefundWorkloadDetailVO> list =

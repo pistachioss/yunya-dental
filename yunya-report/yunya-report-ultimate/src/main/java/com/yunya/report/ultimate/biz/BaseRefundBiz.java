@@ -115,7 +115,10 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
     }
     String fileName =
         excelUtil.getFileName(
-            query.getOrderDate(), query.getQueryDate(), abbreviation, "退费工作量统计明细表");
+            query.getOrderDate(),
+            query.getStartDate() + "-" + query.getEndDate(),
+            abbreviation,
+            "退费工作量统计明细表");
     excelUtil.exportExcel(response, list, "员工账单退费明细表", fileName);
   }
 
@@ -295,7 +298,8 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
    * @param query
    * @return
    */
-  public List<BillOfRefundWorkloadVO> selectTotalRefundWorkloadGroupByMonth(DataStatisticsQuery query) {
+  public List<BillOfRefundWorkloadVO> selectTotalRefundWorkloadGroupByMonth(
+      DataStatisticsQuery query) {
     return mapper.selectTotalRefundWorkloadGroupByMonth(query);
   }
 }

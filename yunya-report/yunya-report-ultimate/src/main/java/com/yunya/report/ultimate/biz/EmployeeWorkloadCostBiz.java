@@ -4,10 +4,13 @@ import cn.hutool.core.date.DateTime;
 import com.yunya.feign.report.domain.model.EmployeeWorkloadCostModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.report.EmployeeWorkloadCost;
 import com.yunya.report.ultimate.mapper.EmployeeWorkloadCostMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
 /**
  * 简介: 员工工作量消耗成本业务层
@@ -28,8 +31,14 @@ public class EmployeeWorkloadCostBiz
    * @param model 工作量消耗成本模型
    */
   public void addOrModifyCost(EmployeeWorkloadCostModel model) {
+    if (model.getDateType() != 1) {
+      throw new ClientServiceException("按日查询不允许修改员工工作量费用！", PARAMETERS_IS_ILLEGAL);
+    }
+    if (!model.getEntryStartMonth().equals(model.getEntryEndMonth())) {
+      throw new ClientServiceException("跨月查询不允许修改员工工作量费用！", PARAMETERS_IS_ILLEGAL);
+    }
     EmployeeWorkloadCost employeeWorkloadCost = new EmployeeWorkloadCost();
-    DateTime dateTime = new DateTime(model.getEntryMonth(), "yyyy-MM");
+    DateTime dateTime = new DateTime(model.getEntryStartMonth(), "yyyy-MM");
     Integer employeeId = model.getEmployeeId();
     employeeWorkloadCost.setOrgId(model.getOrgId());
     employeeWorkloadCost.setEntryMonth(dateTime);

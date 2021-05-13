@@ -28,14 +28,18 @@ public class EmployeePersonalWorkloadDetailQuery extends PageQuery implements Se
   @ApiModelProperty(value = "组织ID", required = true)
   @NotNull(message = "组织ID不能为空！")
   private Integer orgId;
-  /** 日期类型 */
-  @ApiModelProperty(value = "时间类型：0-年月；1-年", required = true)
-  @NotNull(message = "日期类型不能为空！")
+  /** 时间类型 */
+  @ApiModelProperty(value = "时间类型:0-日（yyyy-MM-dd）；1-月(yyyy-MM)；2-年(yyyy)", required = true)
+  @NotNull(message = "时间类型不能为空！")
   private Byte dateType;
   /** 查询时间 */
-  @ApiModelProperty("查询时间")
-  @NotBlank(message = "查询时间不能为空！")
-  private String queryDate;
+  @ApiModelProperty(value = "查询开始时间", required = true)
+  @NotBlank(message = "查询开始时间不能为空！")
+  private String startDate;
+  /** 查询时间 */
+  @ApiModelProperty(value = "查询结束时间", required = true)
+  @NotBlank(message = "查询结束时间不能为空！")
+  private String endDate;
   /** 员工ID */
   @ApiModelProperty(value = "员工ID", required = true)
   @NotNull(message = "员工ID不能为空！")
@@ -52,7 +56,4 @@ public class EmployeePersonalWorkloadDetailQuery extends PageQuery implements Se
   /** 账单日期 */
   @ApiModelProperty("账单日期")
   private String billDate;
-
-  private String startDate;
-  private String endDate;
 }

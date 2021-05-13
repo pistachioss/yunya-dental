@@ -45,8 +45,8 @@ public class BillWorkloadVO implements Serializable {
   /** 是否首次收费进行优惠 */
   @ApiModelProperty("是否首次收费进行优惠")
   private Boolean firstPrivilege;
-  /** 使用优惠日期*/
+  /** 使用优惠日期 */
   private Date privilegeDate;
-  /** 月份*/
+  /** 月份 */
   private String month;
 }

@@ -15,7 +15,9 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 /**
  * 简介：非本月免单金额VO
  *
- * @author: chenlin @Description: 非本月免单金额明细 @Date: 2021/4/9 16:37
+ * @author: chenlin
+ * @Description: 非本月免单金额明细
+ * @Date: 2021/4/9 16:37
  * @since: 1.0.0
  */
 @ToString

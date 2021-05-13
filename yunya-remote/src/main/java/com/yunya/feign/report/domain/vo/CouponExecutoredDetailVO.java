@@ -15,7 +15,9 @@ import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
 /**
  * 简介：产品使用明细VO
  *
- * @author: chenlin @Description: @Date: 2021/3/29 10:07
+ * @author: chenlin
+ * @Description:
+ * @Date: 2021/3/29 10:07
  * @since: 1.0.0
  */
 @ApiModel("产品使用明细VO")
