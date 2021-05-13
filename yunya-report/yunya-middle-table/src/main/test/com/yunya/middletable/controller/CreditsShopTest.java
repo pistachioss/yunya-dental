@@ -5,7 +5,6 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.middletable.controller.report.credits_shop.ShopController;
 import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.middletable.utils.SignTool;
-import com.yunya.models.report.credits_shop.CreditResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
@@ -19,9 +18,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import sun.net.www.http.HttpClient;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.HashMap;

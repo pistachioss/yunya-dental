@@ -1,4 +1,4 @@
-package com.yunya.models.credits_shop;
+package com.yunya.models.report;
 
 import lombok.ToString;
 
