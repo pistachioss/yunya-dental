@@ -1,6 +1,10 @@
 package com.yunya.middletable.dao.report.credits_shop;
 
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
+<<<<<<< HEAD
+=======
+import com.yunya.models.report.CreditsShop;
+>>>>>>> wechat-shop
 import com.yunya.models.report.BasePatientConsumptionCountVo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

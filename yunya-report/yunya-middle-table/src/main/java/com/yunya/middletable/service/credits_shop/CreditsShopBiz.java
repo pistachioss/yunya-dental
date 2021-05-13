@@ -14,10 +14,14 @@ import com.yunya.middletable.dao.report.credits_shop.CreditsShop;
 import com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper;
 import com.yunya.middletable.utils.CreditTool;
 import com.yunya.middletable.utils.SignTool;
+<<<<<<< HEAD
+=======
+import com.yunya.models.report.CreditsShop;
+>>>>>>> wechat-shop
 import com.yunya.models.report.BasePatientConsumptionCountVo;
-import com.yunya.models.report.credits_shop.AddCreditsParams;
-import com.yunya.models.report.credits_shop.CreditConsumeParams;
-import com.yunya.models.report.credits_shop.CreditResult;
+import com.yunya.feign.report.domain.credits_shop.AddCreditsParams;
+import com.yunya.feign.report.domain.credits_shop.CreditConsumeParams;
+import com.yunya.feign.report.domain.credits_shop.CreditResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

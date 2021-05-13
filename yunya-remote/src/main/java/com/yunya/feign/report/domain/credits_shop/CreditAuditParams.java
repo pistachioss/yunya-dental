@@ -1,4 +1,4 @@
-package com.yunya.models.report.credits_shop;
+package com.yunya.feign.report.domain.credits_shop;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
