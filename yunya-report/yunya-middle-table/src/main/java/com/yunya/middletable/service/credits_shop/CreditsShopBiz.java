@@ -2,6 +2,9 @@ package com.yunya.middletable.service.credits_shop;
 
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
+import com.yunya.feign.report.domain.credits_shop.AddCreditsParams;
+import com.yunya.feign.report.domain.credits_shop.CreditConsumeParams;
+import com.yunya.feign.report.domain.credits_shop.CreditResult;
 import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -10,18 +13,11 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.middletable.config.DuiBaConfig;
-import com.yunya.middletable.dao.report.credits_shop.CreditsShop;
 import com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper;
 import com.yunya.middletable.utils.CreditTool;
 import com.yunya.middletable.utils.SignTool;
-<<<<<<< HEAD
-=======
-import com.yunya.models.report.CreditsShop;
->>>>>>> wechat-shop
 import com.yunya.models.report.BasePatientConsumptionCountVo;
-import com.yunya.feign.report.domain.credits_shop.AddCreditsParams;
-import com.yunya.feign.report.domain.credits_shop.CreditConsumeParams;
-import com.yunya.feign.report.domain.credits_shop.CreditResult;
+import com.yunya.models.report.CreditsShop;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

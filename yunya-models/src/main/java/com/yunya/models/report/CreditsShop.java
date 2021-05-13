@@ -1,8 +1,4 @@
-<<<<<<< HEAD:yunya-report/yunya-middle-table/src/main/java/com/yunya/middletable/dao/report/credits_shop/CreditsShop.java
-package com.yunya.middletable.dao.report.credits_shop;
-=======
 package com.yunya.models.report;
->>>>>>> wechat-shop:yunya-models/src/main/java/com/yunya/models/report/CreditsShop.java
 
 import lombok.ToString;
 

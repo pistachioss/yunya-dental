@@ -110,24 +110,24 @@
       `upd_time`
     )
     VALUES
-    <foreach collection="list" item="CreditsShop" index="index" separator=",">
+    <foreach collection="list" item="com.yunya.models.report.credits_shop.CreditsShop" index="index" separator=",">
       (
-      #{CreditsShop.patientId},
-      #{CreditsShop.type},
-      #{CreditsShop.channel},
-      #{CreditsShop.orderNum},
-      #{CreditsShop.creditsAccount},
-      #{CreditsShop.credits},
-      #{CreditsShop.creditsOption},
-      #{CreditsShop.actualPrice},
-      #{CreditsShop.itemCode},
-      #{CreditsShop.description},
-      #{CreditsShop.remarks},
-      #{CreditsShop.inservice},
-      #{CreditsShop.crtId},
-      #{CreditsShop.crtTime},
-      #{CreditsShop.updId},
-      #{CreditsShop.updTime}
+      #{com.yunya.models.report.credits_shop.CreditsShop.patientId},
+      #{com.yunya.models.report.credits_shop.CreditsShop.type},
+      #{com.yunya.models.report.credits_shop.CreditsShop.channel},
+      #{com.yunya.models.report.credits_shop.CreditsShop.orderNum},
+      #{com.yunya.models.report.credits_shop.CreditsShop.creditsAccount},
+      #{com.yunya.models.report.credits_shop.CreditsShop.credits},
+      #{com.yunya.models.report.credits_shop.CreditsShop.creditsOption},
+      #{com.yunya.models.report.credits_shop.CreditsShop.actualPrice},
+      #{com.yunya.models.report.credits_shop.CreditsShop.itemCode},
+      #{com.yunya.models.report.credits_shop.CreditsShop.description},
+      #{com.yunya.models.report.credits_shop.CreditsShop.remarks},
+      #{com.yunya.models.report.credits_shop.CreditsShop.inservice},
+      #{com.yunya.models.report.credits_shop.CreditsShop.crtId},
+      #{com.yunya.models.report.credits_shop.CreditsShop.crtTime},
+      #{com.yunya.models.report.credits_shop.CreditsShop.updId},
+      #{com.yunya.models.report.credits_shop.CreditsShop.updTime}
       )
     </foreach>
   </insert>
