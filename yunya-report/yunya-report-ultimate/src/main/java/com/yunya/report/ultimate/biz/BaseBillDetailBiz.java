@@ -319,18 +319,22 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param resultList
    * @param query
    */
-  private void mergeOriginAmount(List<CategoryInfoIncomeVO> resultList, BillCategoryIncomeQuery query) {
+  private void mergeOriginAmount(
+      List<CategoryInfoIncomeVO> resultList, BillCategoryIncomeQuery query) {
     List<CategoryInfoIncomeVO> originList = mapper.selectOriginalAmountGroupByCategory(query);
     if (StringHelper.isNotEmpty(originList) && StringHelper.isNotEmpty(resultList)) {
-      resultList.forEach(vo->{
-        originList.forEach(origin->{
-          if (vo.getCategoryId()==origin.getCategoryId() && vo.getCategoryType()==origin.getCategoryType()) {
-            BigDecimal totalOriginalAmount = origin.getTotalOriginalAmount();
-            vo.setTotalOriginalAmount(totalOriginalAmount);
-            vo.setTotalActualAmount(totalOriginalAmount.subtract(vo.getTotalDiscountAmount()));
-          }
-        });
-      });
+      resultList.forEach(
+          vo ->
+              originList.forEach(
+                  origin -> {
+                    if (vo.getCategoryId().equals(origin.getCategoryId())
+                        && vo.getCategoryType().equals(origin.getCategoryType())) {
+                      BigDecimal totalOriginalAmount = origin.getTotalOriginalAmount();
+                      vo.setTotalOriginalAmount(totalOriginalAmount);
+                      vo.setTotalActualAmount(
+                          totalOriginalAmount.subtract(vo.getTotalDiscountAmount()));
+                    }
+                  }));
     }
   }
 
@@ -1916,22 +1920,24 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                 .collect(Collectors.toList());
         computePercentage(details);
         EmployeeWorkloadQuery query = new EmployeeWorkloadQuery();
-        query.setDateType((byte)1);
+        query.setDateType((byte) 1);
         query.setStartDate(queryFrom.getQueryDate());
         query.setEndDate(queryFrom.getQueryDate());
         query.setBillIds(billIds);
         Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(query);
-        details.forEach(detail -> {
-          String key = itemMap.get(detail.getItemType() + "," + detail.getItemId());
-          Integer billId = detail.getBillId();
-          BigDecimal free = freePaymentMap.get(billId);
-          BigDecimal amount = detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
-          BigDecimal freeAmount = frees.get(key);
-          if (freeAmount == null) {
-            freeAmount = BigDecimal.ZERO;
-          }
-          frees.put(key, freeAmount.add(amount));
-        });
+        details.forEach(
+            detail -> {
+              String key = itemMap.get(detail.getItemType() + "," + detail.getItemId());
+              Integer billId = detail.getBillId();
+              BigDecimal free = freePaymentMap.get(billId);
+              BigDecimal amount =
+                  detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+              BigDecimal freeAmount = frees.get(key);
+              if (freeAmount == null) {
+                freeAmount = BigDecimal.ZERO;
+              }
+              frees.put(key, freeAmount.add(amount));
+            });
       }
       result.forEach(
           vo -> {
