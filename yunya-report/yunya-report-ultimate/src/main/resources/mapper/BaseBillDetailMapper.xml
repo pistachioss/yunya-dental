@@ -1398,8 +1398,8 @@
             <if test="query.billNum != null and query.billNum != ''">
                 AND bbp.billNum LIKE concat('%', #{query.billNum} ,'%')
             </if>
-            <if test="query.orderDate != null and query.orderDate != ''">
-                AND DATE_FORMAT(bbp.billDate, '%Y-%m-%d') = #{query.orderDate}
+            <if test="query.billDate != null and query.billDate != ''">
+                AND DATE_FORMAT(bbp.billDate, '%Y-%m-%d') = #{query.billDate}
             </if>
         </where>
         GROUP BY
@@ -1542,7 +1542,7 @@
                     and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= #{query.queryDate}
+                    and DATE_FORMAT( bb.privilege_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
@@ -1550,7 +1550,7 @@
                     and DATE_FORMAT( bb.privilege_date, '%Y-%m' ) &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bb.privilege_date, '%Y-%m' ) &lt;= #{query.queryDate}
+                    and DATE_FORMAT( bb.privilege_date, '%Y-%m' ) &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 2">

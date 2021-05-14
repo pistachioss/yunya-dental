@@ -348,15 +348,17 @@
         select btp.patient_id as patientId,
         max(btp.treatment_id) AS treatmentId
         from base_treatment_process btp
-        where btp.treat_end_time is not null
+        <where>
+            <if test="form.orgId != null">
+                and btp.org_id = #{form.orgId}
+            </if>
+            and btp.treat_end_time is not null
+        </where>
         group by btp.patient_id
         ) btp
         inner join base_treatment_process btp2 on btp.treatmentId = btp2.treatment_id
         left join base_employee be on btp2.registered_dentist_id = be.user_id
         <where>
-            <if test="form.orgId != null">
-                and btp2.org_id = #{form.orgId}
-            </if>
             <if test="form.startDate != null and form.startDate != ''">
                 and date_format(btp2.treat_end_time, '%Y-%m-%d') &gt;= #{form.startDate}
             </if>
