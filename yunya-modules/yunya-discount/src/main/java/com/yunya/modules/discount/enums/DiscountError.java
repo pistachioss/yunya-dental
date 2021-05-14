@@ -17,7 +17,7 @@ public enum DiscountError implements RestError {
     ORG_BATCH_ERROR(6, "数据异常，%s不属于当前生成批次"),
     COUPON_IS_LOCKED(7, "卡券正在生成分配中，无法提交"),
     CARD_SOLD_IS_LOCKED(8, "卡券正在售卖中，无法提交"),
-    COUPON_NOT_EXIST(9, "优惠券不存在"),
+    COUPON_NOT_EXIST(9, "优惠券不存在或已停用"),
     SOLD_DATE_RANGE_ERROR(10, "卡券不在售出时间范围内"),
     ORG_COUPON_NOT_ALLOCATE(11, "优惠券%s，%s未生成分配"),
     CARD_NOT_EXIST(12, "卡券不存在"),
