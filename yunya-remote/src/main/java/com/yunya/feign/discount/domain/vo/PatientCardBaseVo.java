@@ -31,4 +31,6 @@ public class PatientCardBaseVo implements Serializable {
     private String useDeadline;
     @ApiModelProperty(value = "激活时间")
     private LocalDate activeDate;
+    @ApiModelProperty(value = "产品是否停用 0-否 1-是")
+    private Integer couponEnable;
 }

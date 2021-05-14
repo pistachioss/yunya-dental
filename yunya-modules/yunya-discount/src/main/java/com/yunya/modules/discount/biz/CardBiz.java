@@ -643,9 +643,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         }
         CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(card.getCouponId());
         if (coupon == null) {
-            log.warn("优惠券不存在");
+            log.warn("优惠券不存在或已停用");
             vo.setCardQrCodeType(QR_CODE_OTHER.getCode());
-            vo.setErrorMsg("优惠券不存在");
+            vo.setErrorMsg("优惠券不存在或已停用");
             return vo;
         }
         int couponType = coupon.getType().intValue();
@@ -2185,7 +2185,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         RestErrorBo errorBo = RestErrorBo.getInstance();
         CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
         if (couponInfo == null || !couponInfo.getIsInservice()) {
-            log.warn("【激活失败】优惠券[{}]不存在", couponId);
+            log.warn("【激活失败】优惠券[{}]不存在或已停用", couponId);
             errorBo.setError(DiscountError.COUPON_NOT_EXIST);
             return errorBo;
         }
