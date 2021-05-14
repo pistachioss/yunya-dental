@@ -195,7 +195,7 @@
             <if test="query.billNum != null and query.billNum != ''">
                 AND brd.billNum like concat('%', #{query.billNum} ,'%')
             </if>
-            <if test="query.orderDate != null and query.orderDate != ''">
+            <if test="query.billDate != null and query.billDate != ''">
                 AND DATE_FORMAT(brd.billDate, '%Y-%m-%d') = #{query.billDate}
             </if>
             <if test="query.orderDate != null and query.orderDate != ''">
