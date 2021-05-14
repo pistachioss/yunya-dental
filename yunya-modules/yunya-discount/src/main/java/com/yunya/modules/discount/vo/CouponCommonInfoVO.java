@@ -1,7 +1,10 @@
 package com.yunya.modules.discount.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
 
@@ -12,6 +15,7 @@ import java.util.Date;
  * @date 2020/8/20 16:58
  */
 @Data
+@ApiModel(value = "卡券列表VO类")
 public class CouponCommonInfoVO {
 
     private Integer id;
@@ -25,4 +29,7 @@ public class CouponCommonInfoVO {
     private String path;
 
     private Boolean isShare;
+
+    @ApiModelProperty("是否启用")
+    private Boolean isInservice;
 }
