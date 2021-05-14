@@ -43,7 +43,7 @@ public interface BaseBillPayDetailMapper extends Mapper<BaseBillPayDetail> {
    * @return
    */
   List<BaseBillPayDetailVO> sumPayDetailListByBillIds(
-          @Param("query") EmployeeWorkloadQuery query, @Param("payIds") Collection<Integer> payIds);
+      @Param("query") EmployeeWorkloadQuery query, @Param("payIds") Collection<Integer> payIds);
 
   /**
    * 查询支付记录免单总额
