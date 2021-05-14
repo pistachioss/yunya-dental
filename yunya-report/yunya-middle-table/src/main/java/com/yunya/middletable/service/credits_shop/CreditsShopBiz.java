@@ -132,7 +132,15 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
       }
     }
     params.put("uid", URLEncoder.encode(uidStr));
+    String uid = params.get("uid");
     params.put("credits", credits.toString());
+    if(redisUtils.hasKey(uid)) {
+      CreditsShop creditsShop = redisUtils.get("uid", CreditsShop.class);
+      if (creditsShop != null) {
+        Long creditsPay = creditsShop.getCredits();
+        params.put("credits",((credits - creditsPay) > 0 ? (credits - creditsPay) : 0L)+"");
+      }
+    }
     params.put("appKey", duiBaConfig.getAppKey());
     params.put("appSecret", duiBaConfig.getAppSecret());
     params.put("timestamp", String.valueOf(System.currentTimeMillis()));
@@ -141,6 +149,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     String autoLoginUrl = SignTool.signRequestUrl(params, sign, duiBaConfig.getAutoLoginUrl());
     Map<String, String> result = new HashMap<>(16);
     result.put("url", autoLoginUrl);
+
     return ResponseUtil.success(result);
   }
 
