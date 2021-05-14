@@ -298,6 +298,7 @@
         base_treatment_process btp
         <where>
             AND btp.appointment_id IS NOT NULL
+            AND btp.appoint_status != 2
             AND btp.registered_id IS NULL
             AND CURRENT_DATE > btp.appoint_start_time
             <if test="query.orgIds != null and query.orgIds.length > 0">
