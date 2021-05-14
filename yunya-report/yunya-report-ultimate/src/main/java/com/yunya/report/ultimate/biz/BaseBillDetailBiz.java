@@ -18,10 +18,6 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.models.report.BaseBillDetail;
-import com.yunya.models.report.BaseEmployee;
-import com.yunya.models.report.BaseOrganization;
-import com.yunya.report.ultimate.mapper.*;
 import com.yunya.models.report.*;
 import com.yunya.report.ultimate.mapper.*;
 import org.joda.time.DateTime;
@@ -242,8 +238,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                     vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0
                         && userIds.containsKey(vo.getExecutorId() + "," + vo.getOrgId()))
             .collect(Collectors.toList());
-    Set<Integer> billIds = computePercentage(details);
-    Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(billIds);
+    query.setBillIds(computePercentage(details));
+    Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(query);
     details.forEach(
         detail -> {
           String key = detail.getExecutorId() + "," + detail.getOrgId();
@@ -271,7 +267,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeeWorkloadOfPersonnelVO> resultList = workloadList.getList();
     ExcelUtil<EmployeeWorkloadOfPersonnelVO> excelUtil =
         new ExcelUtil<>(EmployeeWorkloadOfPersonnelVO.class);
-    String fileName = query.getQueryDate() + "员工工作量统计";
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "员工工作量统计";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -293,7 +289,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeeWorkloadOfOperationVO> resultList = workloadList.getList();
     ExcelUtil<EmployeeWorkloadOfOperationVO> excelUtil =
         new ExcelUtil<>(EmployeeWorkloadOfOperationVO.class);
-    String fileName = query.getQueryDate() + "员工工作量统计";
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "员工工作量统计";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -312,8 +308,35 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<CategoryInfoIncomeVO> resultList = mapper.selectCategoryIncomeList(query);
+    mergeOriginAmount(resultList, query);
     monthCategoryFreePayment(resultList, query);
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 查询当月账单的项目大类的原价，计算应收总额
+   *
+   * @param resultList
+   * @param query
+   */
+  private void mergeOriginAmount(
+      List<CategoryInfoIncomeVO> resultList, BillCategoryIncomeQuery query) {
+    List<CategoryInfoIncomeVO> originList = mapper.selectOriginalAmountGroupByCategory(query);
+    if (StringHelper.isNotEmpty(originList) && StringHelper.isNotEmpty(resultList)) {
+      resultList.forEach(
+          vo -> {
+            originList.forEach(
+                origin -> {
+                  if (vo.getCategoryId() == origin.getCategoryId()
+                      && vo.getCategoryType() == origin.getCategoryType()) {
+                    BigDecimal totalOriginalAmount = origin.getTotalOriginalAmount();
+                    vo.setTotalOriginalAmount(totalOriginalAmount);
+                    vo.setTotalActualAmount(
+                        totalOriginalAmount.subtract(vo.getTotalDiscountAmount()));
+                  }
+                });
+          });
+    }
   }
 
   /**
@@ -360,7 +383,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeePersonalActualWorkloadDetailVO> resultList = pageInfo.getList();
     ExcelUtil<EmployeePersonalActualWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalActualWorkloadDetailVO.class);
-    String fileName = query.getQueryDate() + "实收工作量统计明细表";
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "实收工作量统计明细表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -412,7 +435,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     PageInfo<EmployeePersonalReceivedWorkloadDetailVO> pageInfo =
         findEmployeePersonalReceivedWorkloadDetailList(query);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
-    String fileName = query.getQueryDate() + "已收工作量统计明细表";
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "已收工作量统计明细表";
     if (null != organization) {
       fileName = organization.getAbbreviation();
     }
@@ -466,7 +489,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeePersonalSupplyWorkloadDetailVO> resultList = pageInfo.getList();
     ExcelUtil<EmployeePersonalSupplyWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalSupplyWorkloadDetailVO.class);
-    String fileName = query.getQueryDate() + "补入工作量统计明细表";
+    String fileName = query.getStartDate() + "-" + query.getEndDate() + "补入工作量统计明细表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName = organization.getAbbreviation() + fileName;
@@ -672,7 +695,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     EmployeeWorkloadQuery workloadQuery = new EmployeeWorkloadQuery();
     workloadQuery.setWhetherPage(false);
     workloadQuery.setDateType(query.getDateType());
-    workloadQuery.setQueryDate(query.getQueryDate());
+    workloadQuery.setStartDate(query.getStartDate());
+    workloadQuery.setEndDate(query.getEndDate());
     workloadQuery.setEmployeeIds(new Integer[] {query.getEmployeeId()});
     List<BaseBillDetail> billDetails = mapper.selectBillDetailByQuery(workloadQuery);
     if (StringHelper.isEmpty(billDetails)) {
@@ -752,13 +776,13 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   /**
    * 返回账单的所有免单支付金额
    *
-   * @param billIds
+   * @param query
    * @return
    */
-  private Map<Integer, BigDecimal> sumFreePaymentMap(Collection<Integer> billIds) {
+  private Map<Integer, BigDecimal> sumFreePaymentMap(EmployeeWorkloadQuery query) {
     Map<Integer, BigDecimal> result = new HashMap<>(16);
     List<BaseBillPayDetailVO> freePayments =
-        baseBillPayDetailMapper.sumPayDetailListByBillIds(billIds, FREE_PAYMENT_ID);
+        baseBillPayDetailMapper.sumPayDetailListByBillIds(query, FREE_PAYMENT_ID);
     freePayments.forEach(
         vo -> {
           Integer billId = vo.getBillId();
@@ -849,7 +873,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         new ExcelUtil<>(EmployeeFreepaymentWorkloadDetailVO.class);
     String fileName =
         excelUtil.getFileName(
-            query.getQueryDate(), null, organization.getAbbreviation(), "免单支付工作量明细");
+            query.getStartDate(), query.getEndDate(), organization.getAbbreviation(), "免单支付工作量明细");
     excelUtil.exportExcel(response, resultList, "免单支付工作量明细", fileName);
   }
 
@@ -950,7 +974,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     ExcelUtil<PersonalWorkloadVO> excelUtil = new ExcelUtil<>(PersonalWorkloadVO.class);
     String fileName =
         excelUtil.getFileName(
-            query.getQueryDate(), null, organization.getAbbreviation(), "员工工作量统计");
+            query.getStartDate(), query.getEndDate(), organization.getAbbreviation(), "员工工作量统计");
     excelUtil.exportExcel(response, resultList, "员工工作量统计", fileName);
   }
 
@@ -1896,7 +1920,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                 .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
                 .collect(Collectors.toList());
         computePercentage(details);
-        Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(billIds);
+        EmployeeWorkloadQuery query = new EmployeeWorkloadQuery();
+        query.setDateType((byte) 1);
+        query.setStartDate(queryFrom.getQueryDate());
+        query.setEndDate(queryFrom.getQueryDate());
+        query.setBillIds(billIds);
+        Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(query);
         details.forEach(
             detail -> {
               String key = itemMap.get(detail.getItemType() + "," + detail.getItemId());
@@ -1954,14 +1983,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       if (StringHelper.isNotEmpty(ids)) {
         List<NonMonthCategoryVO> coupons = mapper.nonMonthCategoryList(query, ids);
         if (StringHelper.isNotEmpty(coupons)) {
-          coupons.forEach(vo -> {
-            String key = vo.getBillId() + "," + categoryMap.get(vo.getItemType() + "," + vo.getItemId());
-            BigDecimal couponWorkload = couponMap.get(key);
-            if (couponWorkload == null) {
-              couponWorkload = BigDecimal.ZERO;
-            }
-            couponMap.put(key, couponWorkload.add(vo.getCouponWorkload()));
-          });
+          coupons.forEach(
+              vo -> {
+                String key =
+                    vo.getBillId() + "," + categoryMap.get(vo.getItemType() + "," + vo.getItemId());
+                BigDecimal couponWorkload = couponMap.get(key);
+                if (couponWorkload == null) {
+                  couponWorkload = BigDecimal.ZERO;
+                }
+                couponMap.put(key, couponWorkload.add(vo.getCouponWorkload()));
+              });
         }
       }
       Map<Integer, BigDecimal[]> billMap = new HashMap<>(16);
@@ -1978,8 +2009,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       Set<Integer> billIds = billMap.keySet();
       EmployeePersonalWorkloadDetailQuery queryForm = new EmployeePersonalWorkloadDetailQuery();
       queryForm.setOrgId(query.getOrgId());
-      queryForm.setQueryDate(query.getQueryDate());
-      queryForm.setDateType((byte) 0);
+      queryForm.setStartDate(query.getQueryDate());
+      queryForm.setEndDate(query.getQueryDate());
+      queryForm.setDateType((byte) 1);
       List<EmployeeFreepaymentWorkloadDetailVO> resultList =
           mapper.selectEmployeeFreepaymentWorkloadDetailList(queryForm, billIds, FREE_PAYMENT_ID);
       // 免单支付

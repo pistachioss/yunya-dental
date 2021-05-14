@@ -161,13 +161,27 @@
                 AND br.org_id = #{query.orgId}
             </if>
             <if test="query.dateType == 0">
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    AND DATE_FORMAT( br.refund_date, '%Y-%m' ) = #{query.queryDate}
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    AND DATE_FORMAT( br.refund_date, '%Y' ) = #{query.queryDate}
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( br.refund_date, '%Y' ) &lt;= #{query.endDate}
                 </if>
             </if>
         </where>

@@ -400,6 +400,13 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   List<Integer> findBillIdsByNonMonth(@Param("query") BillCategoryIncomeQuery query);
 
   /**
+   * 根据条件查询原价并按项目大类分组
+   * @param query
+   * @return
+   */
+  List<CategoryInfoIncomeVO> selectOriginalAmountGroupByCategory(@Param("query")BillCategoryIncomeQuery query);
+
+  /**
    * 根据条件按月份分组门诊补入工作量
    *
    * @param query

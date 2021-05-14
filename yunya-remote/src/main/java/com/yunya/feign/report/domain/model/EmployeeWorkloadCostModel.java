@@ -31,10 +31,17 @@ public class EmployeeWorkloadCostModel implements Serializable {
   @ApiModelProperty(value = "员工(用户)ID", required = true)
   @NotNull(message = "员工(用户)ID不能为空！")
   private Integer employeeId;
+  @ApiModelProperty("日期类型：0-日；1-月；2-年")
+  @NotNull(message = "日期类型不能为空！")
+  private Byte dateType;
   /** 键入年月 */
   @ApiModelProperty(value = "键入年月", required = true, example = "yyyy-MM")
   @NotBlank(message = "输入工作量成本消耗的年月不能为空！")
-  private String entryMonth;
+  private String entryStartMonth;
+  /** 键入年月 */
+  @ApiModelProperty(value = "键入年月", required = true, example = "yyyy-MM")
+  @NotBlank(message = "输入工作量成本消耗的年月不能为空！")
+  private String entryEndMonth;
   /** 加工费 */
   @ApiModelProperty("加工费")
   @Min(value = 0, message = "不能输入小于0的金额！")

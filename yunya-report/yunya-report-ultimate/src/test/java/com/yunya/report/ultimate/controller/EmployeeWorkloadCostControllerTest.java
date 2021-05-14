@@ -28,7 +28,7 @@ public class EmployeeWorkloadCostControllerTest {
   public void add() {
     EmployeeWorkloadCostModel model = new EmployeeWorkloadCostModel();
     model.setEmployeeId(514);
-    model.setEntryMonth("2020-10");
+    model.setEntryStartMonth("2020-10");
     model.setMaterialFee(BigDecimal.valueOf(200));
     model.setProcessingFee(BigDecimal.valueOf(200));
     ResponseResult<T> result = employeeWorkloadCostController.addOrModifyCost(model);

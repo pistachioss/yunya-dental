@@ -48,7 +48,8 @@ public class BaseBillDetailMapperTest {
     EmployeePersonalWorkloadDetailQuery query = new EmployeePersonalWorkloadDetailQuery();
     query.setOrgId(26);
     query.setDateType((byte) 0);
-    query.setQueryDate("2021-03");
+    query.setStartDate("2021-03-01");
+    query.setEndDate("2021-03-01");
     query.setEmployeeId(341);
     // query.setKeyword("三七");
     List<EmployeePersonalActualWorkloadDetailVO> vos =
