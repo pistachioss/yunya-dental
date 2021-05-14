@@ -663,6 +663,7 @@ public class BaseTreatmentProcessBiz
     Byte appointStatus = appointment.getAppointStatus();
     switch (appointStatus) {
       case 0:
+      case 1:
         process.setAppointStatus(appointment.getConfirmStatus() ? (byte) 1 : (byte) 0);
         break;
       case 2:

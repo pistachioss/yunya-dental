@@ -15,7 +15,7 @@
     <select id="selectClinicPatientDataStatistic"
             resultType="com.yunya.feign.report.domain.vo.PatientDataStatisticsVO">
         SELECT
-        bo.org_id,
+        bo.org_id as orgId,
         bo.abbreviation,
         IFNULL( btp.firstVisitPerNum, 0 ) AS firstVisitPerNum,
         IFNULL( btp1.repeatVisitsPerNum, 0 ) AS repeatVisitsPerNum,
