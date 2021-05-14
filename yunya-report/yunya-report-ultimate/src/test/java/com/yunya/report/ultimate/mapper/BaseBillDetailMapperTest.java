@@ -130,7 +130,8 @@ public class BaseBillDetailMapperTest {
     EmployeeWorkloadQuery query = new EmployeeWorkloadQuery();
     query.setOrgId(26);
     query.setDateType((byte) 0);
-    query.setQueryDate("2021-03");
+    query.setStartDate("2021-03-01");
+    query.setEndDate("2021-03-01");
     query.setEmployeeIds(new Integer[] {341, 541});
     query.setWorkStatus(new Integer[] {0, 1});
     List<EmployeeWorkloadOfPersonnelVO> vos =
@@ -143,7 +144,8 @@ public class BaseBillDetailMapperTest {
     EmployeeWorkloadQuery query = new EmployeeWorkloadQuery();
     query.setOrgId(28);
     query.setDateType((byte) 0);
-    query.setQueryDate("2021-03");
+    query.setStartDate("2021-03-01");
+    query.setEndDate("2021-03-01");
     query.setEmployeeIds(new Integer[] {72});
     query.setWorkStatus(new Integer[] {0, 1});
     List<EmployeeWorkloadOfOperationVO> vos =
@@ -156,7 +158,8 @@ public class BaseBillDetailMapperTest {
     EmployeePersonalWorkloadDetailQuery query = new EmployeePersonalWorkloadDetailQuery();
     query.setOrgId(26);
     query.setDateType((byte) 0);
-    query.setQueryDate("2021-03");
+    query.setStartDate("2021-03-01");
+    query.setEndDate("2021-03-01");
     query.setEmployeeId(341);
     List<EmployeePersonalReceivedWorkloadDetailVO> vos =
         baseBillDetailMapper.selectEmployeePersonalReceivedWorkloadDetailList(query);
@@ -180,7 +183,8 @@ public class BaseBillDetailMapperTest {
     query.setDateType((byte) 0);
     query.setEmployeeId(341);
     query.setOrgId(26);
-    query.setQueryDate("2021-03");
+    query.setStartDate("2021-03-01");
+    query.setEndDate("2021-03-01");
     // query.setKeyword("章佳萍");
     query.setBillNum("ZD00262103270034");
     List<EmployeePersonalSupplyWorkloadDetailVO> vos =
