@@ -1,5 +1,6 @@
 package com.yunya.middletable.service.credits_shop;
 
+import cn.hutool.json.JSONUtil;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.credits_shop.AddCreditsParams;
@@ -22,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sun.rmi.runtime.Log;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -128,7 +130,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     String uid = URLEncoder.encode(uidStr);
     params.put("uid", uid);
     // 设置积分余额
-    setCreditsBalance(uid,patientId,params);
+    params.put("credits",getCreditsAccount(uid,patientId).toString());
     params.put("appKey", duiBaConfig.getAppKey());
     params.put("appSecret", duiBaConfig.getAppSecret());
     params.put("timestamp", String.valueOf(System.currentTimeMillis()));
@@ -141,7 +143,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     return ResponseUtil.success(result);
   }
 
-  private void setCreditsBalance(String uid, String patientId, Map<String, String> params) {
+  private Long getCreditsAccount(String uid, String patientId) {
     Long credits = 0L;
     if (StringHelper.isNotBlank(patientId) && !"null".equals(patientId)) {
       CreditsShop creditsShop = mapper.selectLastCredits(Integer.parseInt(patientId));
@@ -149,19 +151,24 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         credits = creditsShop.getCreditsAccount();
       }
     }
+    Long creditsBalance = credits;
+    String parseUid = URLDecoder.decode(uid);
+    log.info("uid解析之前{}",uid);
+    log.info("redis中是否有相应的key({})：{}",parseUid,redisUtils.hasKey(parseUid));
+    log.info("redis中的value:{}",redisUtils.getJSONArray(uid,CreditsShop.class));
+    String redisKey = uid.replace("%2523", "%23");
     if(redisUtils.hasKey(uid)) {
       List<CreditsShop> unreceivedOrders = redisUtils.getJSONArray(uid, CreditsShop.class);
       if (StringHelper.isNotEmpty(unreceivedOrders)) {
-        Long creditsBalance = credits;
         for(CreditsShop creditsShop : unreceivedOrders) {
-          creditsBalance = credits - creditsShop.getCredits();
+          creditsBalance = creditsBalance - creditsShop.getCredits();
           if (creditsBalance <= 0) {
             break;
           }
         }
-        params.put("credits",creditsBalance.toString());
       }
     }
+    return creditsBalance;
   }
 
   /**
@@ -295,7 +302,8 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    */
   public CreditResult consumptionPoints(HttpServletRequest request) {
     CreditResult creditResult = new CreditResult();
-    Map<String, String> userInfo = creditTool.parseUid(request.getParameter("uid"));
+    String uid = request.getParameter("uid");
+    Map<String, String> userInfo = creditTool.parseUid(uid);
     String key = "patientId";
     String patientId = userInfo.get(key);
     if (null != patientId) {
@@ -305,21 +313,28 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
         if (null != addCreditConsumeParams) {
           if (!StringHelper.isEmpty(userInfo)) {
             if (null != creditsShop) {
+              // 用户积分余额（账户实际余额-订单总额）
+              Long creditsAccount = getCreditsAccount(uid, patientId);
               // 判断帐户积分是否够用
-              if ( creditsShop.getCreditsAccount() < addCreditConsumeParams.getCredits()){
+              if ( creditsAccount < addCreditConsumeParams.getCredits()){
                 // 设置失败响应体
                 creditResult.setStatus("fail");
                 creditResult.setErrorMessage("帐户积分不足");
-                creditResult.setCredits(creditsShop.getCreditsAccount().toString());
+                creditResult.setCredits(creditsShop.getCredits().toString());
+                log.info("====积分账户余额不足====");
+                log.info("==>当前账户余额：{}",creditsAccount);
+                log.info("==>需要支付积分: {}", addCreditConsumeParams.getCredits());
+                log.info("返回信息:{}",creditResult);
                 return creditResult;
               }
+              Long creditsBalance = creditsAccount - addCreditConsumeParams.getCredits();
               // 新增患者积分变动信息
               CreditsShop addCreditsShop = new CreditsShop();
               addCreditsShop.setPatientId(creditsShop.getPatientId());
               addCreditsShop.setType(addCreditConsumeParams.getType());
               addCreditsShop.setChannel((byte) 1);
               addCreditsShop.setOrderNum(addCreditConsumeParams.getOrderNum());
-              addCreditsShop.setCreditsAccount(creditsShop.getCreditsAccount() - addCreditConsumeParams.getCredits());
+              addCreditsShop.setCreditsAccount(creditsBalance);
               addCreditsShop.setCredits(addCreditConsumeParams.getCredits());
               addCreditsShop.setCreditsOption((byte) 1);
               String description = URLDecoder.decode(addCreditConsumeParams.getDescription(), "UTF-8");
@@ -331,12 +346,12 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
               addCreditsShop.setInservice(true);
               addCreditsShop.setCrtId(creditsShop.getPatientId());
               addCreditsShop.setCrtTime(new Date(System.currentTimeMillis()));
-
+              // 设置订单缓存
               setCache(addCreditConsumeParams.getUid(),addCreditsShop);
               // 设置成功响应体
               creditResult.setStatus("ok");
               creditResult.setBizId(addCreditConsumeParams.getOrderNum());
-              creditResult.setCredits(addCreditsShop.getCreditsAccount().toString());
+              creditResult.setCredits(creditsBalance.toString());
             }else {
               creditResult.setStatus("ok");
               creditResult.setCredits("0");
@@ -345,6 +360,8 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
           }
         }
       } catch (Exception e) {
+        log.info("==>错误信息: {}",e.getMessage());
+        log.info("==>错误栈信息:{}",e.getCause());
         // 设置失败响应体
         creditResult.setStatus("fail");
         creditResult.setErrorMessage(e.getMessage());
@@ -363,14 +380,19 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
   }
 
   private void setCache(String uid,CreditsShop creditsShop) {
-    List<CreditsShop> jsonArray;
+    List<CreditsShop> unreceivedOrders;
     if(redisUtils.hasKey(uid)) {
-      jsonArray = redisUtils.getJSONArray(uid, CreditsShop.class);
+      unreceivedOrders = redisUtils.getJSONArray(uid, CreditsShop.class);
     } else {
-      jsonArray = new ArrayList<>();
+      unreceivedOrders = new ArrayList<>();
     }
-    jsonArray.add(creditsShop);
-    redisUtils.set(uid ,jsonArray);
+    unreceivedOrders.add(creditsShop);
+    if (StringHelper.isNotEmpty(unreceivedOrders)) {
+
+      redisUtils.set(uid, unreceivedOrders);
+    }
+    log.info("积分兑换详细信息\n{}",creditsShop);
+    log.info("设置缓冲信息\n{}",redisUtils.get(uid));
   }
 
   /**
