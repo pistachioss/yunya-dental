@@ -216,6 +216,7 @@
                 end                                    as `cardNumber`,
             `cci`.`type`                               as `couponType`,
             `cci`.`product_type_id`,
+            `cci`.`is_inservice`                       as `couponEnable`,
             `c`.`sale_channel_id`,
             case
                 when `cci`.`type` = 2 then
@@ -284,8 +285,8 @@
             </if>
         from `card` `c`
              inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
-        where `cci`.`is_inservice` = 1
-            and `c`.`status` in (2,3,4)
+        where
+            `c`.`status` in (2,3,4)
             <!-- 0：自有产品 1：共享产品-->
             <if test="queryType != null and queryType == 0">
                 and `c`.`patient_id` = #{patientId}

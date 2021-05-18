@@ -12,6 +12,7 @@ import com.yunya.models.report.BaseCoupon;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -68,7 +69,9 @@ public class DiscountBiz {
                 query.getActiveEndDate(), query.getSoldWays(), query.getChargeStatus(), couponId);
         cardStatisticsVos.forEach(
                 vo -> {
-                    vo.setCardPassword(new String(Base64.getDecoder().decode(vo.getCardPassword().trim())));
+                    if (StringUtils.isNotBlank(vo.getCardPassword())) {
+                        vo.setCardPassword(new String(Base64.getDecoder().decode(vo.getCardPassword().trim())));
+                    }
                 }
         );
         return new PageInfo<>(page);

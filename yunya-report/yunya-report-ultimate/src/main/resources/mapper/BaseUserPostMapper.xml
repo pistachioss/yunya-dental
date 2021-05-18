@@ -614,31 +614,17 @@
         btp.appoint_dentist_id
         ) btp5 ON bup.user_id = btp5.appoint_dentist_id
         LEFT JOIN (
-        SELECT
-        btp.org_id,
+        SELECT btp.org_id,
         btp.registered_dentist_id,
-        SUM( btp.actualAmount ) AS totalActualAmount
-        FROM
-        (
-        SELECT
-        btp.registered_dentist_id,
+        SUM(btp.actualAmount) AS totalActualAmount
+        FROM (
+        SELECT btp.registered_dentist_id,
         btp.org_id,
-        IFNULL( bb.actualAmount, 0 ) AS actualAmount
-        FROM
-        base_treatment_process btp
-        LEFT JOIN (
-        select IFNULL(bbd.price*bbd.quantity-bbd.discount_amount,0) as actualAmount,bbd.executor_id,bb.treatment_id
-        from base_bill_detail bbd
-        left join base_bill bb on bb.bill_id=bbd.bill_id
-        <where>
-            <if test="query.dentistIds != null and query.dentistIds.length > 0">
-                and bbd.executor_id in
-                <foreach collection="query.dentistIds" index="index" item="item" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
-        ) bb ON btp.treatment_id = bb.treatment_id and bb.executor_id=btp.registered_dentist_id
+        IFNULL(bbd.price * bbd.quantity - bbd.discount_amount, 0) AS actualAmount
+        FROM base_treatment_process btp
+        left join base_bill bb on btp.treatment_id = bb.treatment_id
+        left join base_bill_detail bbd on bb.bill_id = bbd.bill_id and
+        btp.registered_dentist_id = bbd.executor_id
         <where>
             and btp.treat_end_time IS NOT NULL
             <if test="query.orgId != null">
@@ -650,7 +636,14 @@
             <if test="query.endDate != null and query.endDate != ''">
                 and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
             </if>
+            <if test="query.dentistIds != null and query.dentistIds.length > 0">
+                and btp.registered_dentist_id in
+                <foreach collection="query.dentistIds" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
+        GROUP BY btp.registered_dentist_id
         ) btp
         GROUP BY
         btp.registered_dentist_id
