@@ -119,6 +119,9 @@ public class RedisConstants implements Serializable {
   /** 患者信息  patient_base_info_{患者ID} */
   public static final String PATIENT_BASE_INFO = "patient_base_info_{}";
 
+  /** ---------------------------------积分商城------------------------------------------ */
+  public static final String CREDITS_SHOP_ORDER = "credits:shop:order:";
+
   /**
    * 设置key中的占位符
    * @param keyPrefix key前缀

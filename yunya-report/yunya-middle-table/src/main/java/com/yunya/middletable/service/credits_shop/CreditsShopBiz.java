@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -155,10 +156,9 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     String parseUid = URLDecoder.decode(uid);
     log.info("uid解析之前{}",uid);
     log.info("redis中是否有相应的key({})：{}",parseUid,redisUtils.hasKey(parseUid));
-    log.info("redis中的value:{}",redisUtils.getJSONArray(uid,CreditsShop.class));
-    String redisKey = uid.replace("%2523", "%23");
-    if(redisUtils.hasKey(uid)) {
-      List<CreditsShop> unreceivedOrders = redisUtils.getJSONArray(uid, CreditsShop.class);
+    log.info("redis中的value:{}",redisUtils.getJSONArray(RedisConstants.CREDITS_SHOP_ORDER + uid,CreditsShop.class));
+    if(redisUtils.hasKey(RedisConstants.CREDITS_SHOP_ORDER + uid)) {
+      List<CreditsShop> unreceivedOrders = redisUtils.getJSONArray(RedisConstants.CREDITS_SHOP_ORDER + uid, CreditsShop.class);
       if (StringHelper.isNotEmpty(unreceivedOrders)) {
         for(CreditsShop creditsShop : unreceivedOrders) {
           creditsBalance = creditsBalance - creditsShop.getCredits();
@@ -381,18 +381,18 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
 
   private void setCache(String uid,CreditsShop creditsShop) {
     List<CreditsShop> unreceivedOrders;
-    if(redisUtils.hasKey(uid)) {
-      unreceivedOrders = redisUtils.getJSONArray(uid, CreditsShop.class);
+    if(redisUtils.hasKey(RedisConstants.CREDITS_SHOP_ORDER + uid)) {
+      unreceivedOrders = redisUtils.getJSONArray(RedisConstants.CREDITS_SHOP_ORDER + uid, CreditsShop.class);
     } else {
       unreceivedOrders = new ArrayList<>();
     }
     unreceivedOrders.add(creditsShop);
     if (StringHelper.isNotEmpty(unreceivedOrders)) {
 
-      redisUtils.set(uid, unreceivedOrders);
+      redisUtils.set(RedisConstants.CREDITS_SHOP_ORDER + uid, unreceivedOrders);
     }
     log.info("积分兑换详细信息\n{}",creditsShop);
-    log.info("设置缓冲信息\n{}",redisUtils.get(uid));
+    log.info("设置缓冲信息\n{}",redisUtils.get(RedisConstants.CREDITS_SHOP_ORDER + uid));
   }
 
   /**
@@ -409,8 +409,8 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     String uid = request.getParameter("uid");
     String status = "true";
     if (status.equals(success)) {
-      if (redisUtils.hasKey(uid)) {
-        List<CreditsShop> jsonArray = redisUtils.getJSONArray(uid, CreditsShop.class);
+      if (redisUtils.hasKey(RedisConstants.CREDITS_SHOP_ORDER + uid)) {
+        List<CreditsShop> jsonArray = redisUtils.getJSONArray(RedisConstants.CREDITS_SHOP_ORDER + uid, CreditsShop.class);
         CreditsShop creditsShop = jsonArray.stream().filter(entity -> orderNum.equals(entity.getOrderNum())).findAny().get();
         jsonArray = jsonArray.stream().filter(entity -> !orderNum.equals(entity.getOrderNum())).collect(Collectors.toList());
         if (StringHelper.isNotEmpty(jsonArray)) {
@@ -420,10 +420,10 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
               return "fail";
             }
           } finally {
-            redisUtils.set(uid, jsonArray);
+            redisUtils.set(RedisConstants.CREDITS_SHOP_ORDER + uid, jsonArray);
           }
         } else {
-          redisUtils.delete(uid);
+          redisUtils.delete(RedisConstants.CREDITS_SHOP_ORDER + uid);
         }
       } else {
         return "fail";
