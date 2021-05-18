@@ -9,6 +9,7 @@ import com.yunya.feign.patient_central.domain.query.MemberReturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
@@ -16,9 +17,12 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -232,6 +236,21 @@ public class PatientMemberInfoController {
   }
 
   /**
+   * 消费记录-导出
+   * @param response 请求
+   * @param queryForm 条件
+   * @return 导出集合
+   * @throws IOException
+   */
+  @ApiOperation("消费记录-导出")
+  @PostMapping(value = "/expendList/export", name = "导出消费记录")
+  public ResponseResult<T> expendExport(
+          HttpServletResponse response, @RequestBody MemberExpendRecordQueryForm queryForm) throws IOException {
+    patientMemberInfoBiz.expendExport(response, queryForm);
+    return ResponseUtil.success(null);
+  }
+
+  /**
    * 会员卡消费
    *
    * @param model 消费model
@@ -255,5 +274,17 @@ public class PatientMemberInfoController {
   @RequestMapping(value = "/member/revocationFee", method = RequestMethod.POST)
   public ResponseResult revocationFee(@RequestBody MemberRevocationFeeModel model) {
     return patientMemberInfoBiz.revocationFee(model);
+  }
+
+  /**
+   * 查询已绑定主卡信息
+   * @param patientId 患者id
+   * @return 主卡人信息集合
+   */
+  @ApiOperation("查询已绑定主卡信息")
+  @GetMapping("/bindMembershipCard/{patientId}")
+  public ResponseResult<List<PatientCardOwnerInfoVo>> bindMembershipCard(@PathVariable(value = "patientId") Integer patientId) {
+    List<PatientCardOwnerInfoVo> patientCardOwnerInfoVos = patientMemberInfoBiz.findPatientCardOwnerInfo(patientId);
+    return ResponseUtil.success(patientCardOwnerInfoVos);
   }
 }
