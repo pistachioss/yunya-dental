@@ -638,24 +638,27 @@ public class ExcelUtil<T> {
    * @param column 列
    * @return
    */
-  public Cell createCell(String value, Row row, int column, Excel.ColumnType collumnType, String titleKey) {
+  public Cell createCell(String value, Row row, int column, Excel.ColumnType collumnType, CellStyle style) {
     // 创建列
     Cell cell = row.createCell(column);
-
-    switch (collumnType) {
-      case STRING:
-        cell.setCellValue(value);
-        break;
-      case NUMERIC:
-        cell.setCellValue(
-                StringUtils.contains(value, ".")
-                        ? Convert.toDouble(value)
-                        : Convert.toInt(value));
-        break;
-      default:
-        break;
+    try {
+      switch (collumnType) {
+        case STRING:
+          cell.setCellValue(value);
+          break;
+        case NUMERIC:
+          cell.setCellValue(
+                  StringUtils.contains(value, ".")
+                          ? Convert.toDouble(value)
+                          : Convert.toInt(value));
+          break;
+        default:
+          break;
+      }
+    } catch (Exception e) {
+      cell.setCellValue(value);
     }
-    cell.setCellStyle(styles.get(titleKey));
+    cell.setCellStyle(style);
     return cell;
   }
 
@@ -1102,7 +1105,7 @@ public class ExcelUtil<T> {
               "Content-Disposition",
               "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
       this.init(list, sheetName, Type.EXPORT);
-    exportExcelByRow(response.getOutputStream());
+      exportExcelByRow(response.getOutputStream());
   }
 
   /**
@@ -1117,27 +1120,28 @@ public class ExcelUtil<T> {
       for (int index = 0; index <= sheetNo; index++) {
         // 创建sheet工作表
         createSheet(sheetNo, index);
-        // 产生一行
-        Row row = sheet.createRow(0);
         if (Type.EXPORT.equals(type)) {
           int startNo = index * SHEET_SIZE;
           int endNo = Math.min(startNo + SHEET_SIZE, list.size());
           for (int i = startNo; i < endNo; i++) {
-            row = sheet.createRow(i - startNo);
+            Row row = sheet.createRow(i - startNo);
             // 得到导出对象.
             JSONObject obj = (JSONObject) list.get(i);
-            Integer width = (Integer) obj.remove(RowStyle.CELL_WiTH);
+            Integer width = (Integer) obj.remove(RowStyle.CELL_WIDTH);
             if (width == null) {
               width = 16;
             }
             CellStyle style = styles.get("data");
             Boolean isBold = (Boolean) obj.remove(RowStyle.IS_BOLD);
             if (isBold != null) {
+              CellStyle newStyle = wb.createCellStyle();
+              newStyle.cloneStyleFrom(style);
               Font dataFont = wb.createFont();
               dataFont.setFontName("宋体");
               dataFont.setFontHeightInPoints((short) 12);
               dataFont.setBold(isBold);
-              style.setFont(dataFont);
+              newStyle.setFont(dataFont);
+              style = newStyle;
             }
             Excel.ColumnType columnType = (Excel.ColumnType) obj.remove(RowStyle.COLUMN_TYPE);
             if (columnType == null) {
@@ -1150,7 +1154,7 @@ public class ExcelUtil<T> {
             int col = 0;
             for (Map.Entry<String, Object> entry : obj.entrySet()) {
               Object value = entry.getValue();
-              this.createCell(String.valueOf(value), row, col++, columnType,"data");
+              this.createCell(String.valueOf(value), row, col++, columnType,style);
             }
           }
         }
