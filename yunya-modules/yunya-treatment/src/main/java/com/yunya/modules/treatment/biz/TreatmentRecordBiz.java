@@ -93,6 +93,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Resource private OrderDetailMapper orderDetailMapper;
   /** 账单记录 */
   @Resource private BillRecordMapper billRecordMapper;
+  /** 收费记录 */
+  @Resource private BillPayRecordMapper billPayRecordMapper;
   /** 就诊关联助手 */
   @Resource private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
   /** 随访提醒，图片影像 */
@@ -166,7 +168,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     int i = mapper.insertSelective(entity);
     redisUtils.delete(treatingKey);
 
-   /* if (postType == 0) {
+    /* if (postType == 0) {
       AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
       matchingRecord.setOrgId(orgId);
       matchingRecord.setTreatmentRecordId(entity.getId());
@@ -664,6 +666,13 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         vo.setReceivedAmount(billRecord.getReceivedAmount());
         vo.setCheckOutTime(new DateTime(billRecord.getCrtTime()).toString("HH:mm"));
         vo.setBillNumber(billRecord.getBillNumber());
+        BillPayRecord payRecord = new BillPayRecord();
+        payRecord.setBillRecordId(billRecord.getId());
+        payRecord.setCrtTime(billRecord.getCrtTime());
+        BillPayRecord billPayRecord = billPayRecordMapper.selectOne(payRecord);
+        if (billPayRecord != null) {
+          vo.setBillPayRecordId(billPayRecord.getId());
+        }
       } else {
         vo.setPrivilegeAmount(BigDecimal.valueOf(0));
         vo.setReceivedAmount(BigDecimal.valueOf(0));
