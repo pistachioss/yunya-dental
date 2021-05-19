@@ -1009,16 +1009,6 @@
         distinct bb.bill_id as billId
         from base_bill bb
         <where>
-            <if test="query.dateType == 0">
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bb.order_date, '%Y-%m' ) = #{query.queryDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( bb.order_date, '%Y' ) = #{query.queryDate}
-                </if>
-            </if>
             <if test="query.orgIds!=null and query.orgIds.length>0">
                 AND bb.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
