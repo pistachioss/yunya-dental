@@ -669,6 +669,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         BillPayRecord payRecord = new BillPayRecord();
         payRecord.setBillRecordId(billRecord.getId());
         payRecord.setCrtTime(billRecord.getCrtTime());
+        payRecord.setInservice(true);
         BillPayRecord billPayRecord = billPayRecordMapper.selectOne(payRecord);
         if (billPayRecord != null) {
           vo.setBillPayRecordId(billPayRecord.getId());
@@ -1527,6 +1528,16 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (StringHelper.isNotEmpty(appointIds)) {
       return mapper.findTreatmentRecordListByAppointIds(appointIds);
     }
+    return null;
+  }
+
+  /**
+   * 批量打印患者账单记录
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public List<PatientBillPrintGroupInfoVO> findBillPrintInfoList(BillBatchPrintInfoQuery query) {
     return null;
   }
 }
