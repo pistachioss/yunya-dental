@@ -39,5 +39,30 @@ public interface ClinicOralTariffMapper extends Mapper<ClinicOralTariff> {
   List<BaseOralTariffVO> selectClinicOralTariffExportList(
       @Param("queryForm") ClinicOralTariffQueryForm queryForm);
 
-  List<ClinicOralTariff> selectClinicOralTariffInId(@Param("orgId") Integer orgId, @Param("tariffIds") List<Integer> tariffIds);
+  List<ClinicOralTariff> selectClinicOralTariffInId(
+      @Param("orgId") Integer orgId, @Param("tariffIds") List<Integer> tariffIds);
+
+  /**
+   * 根据商品表ID启用门诊商品表项目
+   *
+   * @param oralTariffId 商品表ID
+   * @param userId 操作人ID
+   * @param userName 操作人姓名
+   */
+  void enableClinicOralTariffByTariffId(
+          @Param("oralTariffId") Integer oralTariffId,
+          @Param("userId") Integer userId,
+          @Param("userName") String userName);
+
+  /**
+   * 根据商品表ID禁用门诊商品表项目
+   *
+   * @param oralTariffId 商品表ID
+   * @param userId 用户ID
+   * @param userName 操作人姓名
+   */
+  void disableClinicOralTariffByTariffId(
+          @Param("oralTariffId") Integer oralTariffId,
+          @Param("userId") Integer userId,
+          @Param("userName") String userName);
 }

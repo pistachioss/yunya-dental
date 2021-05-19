@@ -15,6 +15,16 @@
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
+    <!-- 根据商品表ID启用门诊商品表 -->
+    <update id="enableClinicOralTariffByTariffId">
+        update clinic_oral_tariff set inservice = 1 and upd_id = #{userId} and upd_name = #{userName} where oral_tariff_id = #{oralTariffId} and inservice = 0
+    </update>
+
+    <!-- 根据商品表ID禁用门诊商品表 -->
+    <update id="disableClinicOralTariffByTariffId">
+        update clinic_oral_tariff set inservice = 0 and upd_id = #{userId} and upd_name = #{userName} where oral_tariff_id = #{oralTariffId} and inservice = 1
+    </update>
+
     <!-- 根据门诊商品项目ID获取门诊商品项目信息 -->
     <select id="selectClinicOralTariffById" resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO">
         select

@@ -108,6 +108,22 @@ public class BaseTariffController {
   }
 
   /**
+   * 一键启用禁用基础价目表项目
+   *
+   * @param id 价目表ID
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("一键启用禁用价目表项目")
+  @GetMapping(value = "/operate/{id}/{switchType}", name = "一键启用禁用价目表项目")
+  public ResponseResult<T> operateBaseTariffStatus(
+      @PathVariable(value = "id") Integer id,
+      @PathVariable(value = "switchType") Boolean switchType) {
+    baseTariffBiz.operateBaseTariffStatus(id, switchType);
+    return ResponseUtil.success(null);
+  }
+
+  /**
    * 导入价目表
    *
    * @param excelFile 文件

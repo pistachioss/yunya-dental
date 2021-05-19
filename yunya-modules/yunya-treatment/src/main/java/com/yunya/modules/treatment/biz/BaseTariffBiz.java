@@ -370,6 +370,30 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
   }
 
   /**
+   * 一键启用禁用基础价目表
+   *
+   * @param id 价目表ID
+   * @param switchType 开关状态
+   */
+  public void operateBaseTariffStatus(Integer id, Boolean switchType) {
+    BaseTariff tariff = mapper.selectByPrimaryKey(id);
+    if (tariff == null) {
+      throw new ClientServiceException("操作失败，价目表不存在！", PARAMETERS_IS_ILLEGAL);
+    }
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String userName = BaseContextHandler.getName();
+    if (switchType) {
+      clinicTariffBiz.enableClinicTariffByTariffId(id, userId, userName);
+    } else {
+      clinicTariffBiz.disableClinicTariffByTariffId(id, userId, userName);
+    }
+    tariff.setInservice(switchType);
+    tariff.setUpdId(userId);
+    tariff.setUpdName(userName);
+    mapper.updateByPrimaryKey(tariff);
+  }
+
+  /**
    * 导入价目表列表
    *
    * @param excelFile 导入文件
