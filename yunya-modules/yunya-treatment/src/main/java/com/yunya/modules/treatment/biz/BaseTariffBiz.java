@@ -154,6 +154,23 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
   }
 
   /**
+   * 根据价目表分类ID生成价目表编号
+   *
+   * @param tariffCategoryId 价目表分类ID
+   * @return String - 价目表编号
+   */
+  public String generateBaseTariffNumber(Integer tariffCategoryId) {
+    BaseTariffCategory tariffCategory =
+        baseTariffCategoryMapper.selectByPrimaryKey(tariffCategoryId);
+    if (tariffCategory == null) {
+      throw new ClientServiceException("请选择正确的价目表分类进行新增！", PARAMETERS_IS_ILLEGAL);
+    }
+    String categoryNumber = tariffCategory.getNumber().substring(0, 3);
+    String number = mapper.selectMaxBaseTariffNumber(tariffCategoryId, categoryNumber);
+    return categoryNumber + String.format("%03d", Integer.parseInt(number) + 1);
+  }
+
+  /**
    * 新增价目表
    *
    * @param model 新增参数

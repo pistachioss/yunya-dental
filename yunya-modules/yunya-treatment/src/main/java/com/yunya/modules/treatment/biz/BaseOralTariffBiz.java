@@ -25,10 +25,7 @@ import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseOralTariffCategory;
-import com.yunya.models.tariff.BaseOralTariffHistory;
-import com.yunya.models.tariff.ClinicOralTariff;
+import com.yunya.models.tariff.*;
 import com.yunya.modules.treatment.mapper.BaseOralTariffCategoryMapper;
 import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -142,6 +139,23 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
           baseOralTariffVO.setPrice(bigDecimal);
         });
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据商品表分类ID生成商品表编号
+   *
+   * @param oralTariffCategoryId 商品表分类ID
+   * @return String - 商品表编号
+   */
+  public String generateBaseOralTariffNumber(Integer oralTariffCategoryId) {
+    BaseOralTariffCategory oralTariffCategory =
+        baseOralTariffCategoryMapper.selectByPrimaryKey(oralTariffCategoryId);
+    if (oralTariffCategory == null) {
+      throw new ClientServiceException("请选择正确的商品表分类进行新增！", PARAMETERS_IS_ILLEGAL);
+    }
+    String categoryNumber = oralTariffCategory.getNumber().substring(0, 3);
+    String number = mapper.selectMaxBaseOralTariffNumber(oralTariffCategoryId, categoryNumber);
+    return categoryNumber + String.format("%03d", Integer.parseInt(number) + 1);
   }
 
   /**
@@ -388,7 +402,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     if (oralTariff == null) {
       throw new ClientServiceException("操作失败，商品表不存在！", PARAMETERS_IS_ILLEGAL);
     }
-    //Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    // Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     Integer userId = 1;
     String userName = "Base";
     if (switchType) {

@@ -65,6 +65,20 @@ public class BaseOralTariffController {
   }
 
   /**
+   * 根据商品表分类ID获取当前商品表编号
+   *
+   * @param oralTariffCategoryId 商品表分类ID
+   * @return
+   */
+  @ApiOperation("根据商品表分类ID获取当前商品表编号")
+  @GetMapping(value = "/generate/number/{oralTariffCategoryId}", name = "根据商品表分类ID获取当前商品表编号")
+  public ResponseResult<String> getBaseOralTariffNumber(
+      @PathVariable("oralTariffCategoryId") Integer oralTariffCategoryId) {
+    String tariffNumber = baseOralTariffBiz.generateBaseOralTariffNumber(oralTariffCategoryId);
+    return ResponseUtil.success(tariffNumber);
+  }
+
+  /**
    * 新增商品项目
    *
    * @param model 新增参数

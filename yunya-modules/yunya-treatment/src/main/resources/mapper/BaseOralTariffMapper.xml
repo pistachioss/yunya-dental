@@ -37,6 +37,15 @@
         <result column="inservice" property="inservice" jdbcType="BIT"/>
     </resultMap>
 
+    <!-- 查询该分类下商品表最大编号后三位 -->
+    <select id="selectMaxBaseOralTariffNumber" resultType="java.lang.String">
+        select
+        IF(item_number is null, '000', substr(MAX(item_number), -3, 3)) as maxnum
+        from base_oral_tariff
+        where left(item_number, 3) = #{categoryNumber}
+        and oral_tariff_category_id = #{oralTariffCategoryId};
+    </select>
+
     <!-- 批量插入商品项目列表 -->
     <insert id="insertBaseItems">
         insert into base_oral_tariff
@@ -242,7 +251,7 @@
         from base_tariff_view
     </select>
 
-    <!-- 根据基础价目表ID列表查询价目表名字 -->
+    <!-- 根据基础商品表ID列表查询商品表名字 -->
     <select id="selectBaseOralNamesByIds" resultType="java.lang.String">
         SELECT
         GROUP_CONCAT( bt.`name` ) AS tariffItemName

@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.controller;
 
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.treatment.controller.web.BaseOralTariffController;
 import com.yunya.modules.treatment.controller.web.BaseTariffController;
 import org.junit.Test;
@@ -31,5 +32,17 @@ public class BaseTariffControllerTest {
   @Test
   public void test2() {
     baseOralTariffController.operateBaseOralTariffStatus(1, true);
+  }
+
+  @Test
+  public void test3() {
+    ResponseResult<String> number = baseTariffController.getBaseTariffNumber(1);
+    System.out.println(number);
+  }
+
+  @Test
+  public void test4() {
+    ResponseResult<String> number = baseOralTariffController.getBaseOralTariffNumber(1);
+    System.out.println(number);
   }
 }
