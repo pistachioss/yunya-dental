@@ -224,6 +224,20 @@ public class CompanyReportOfOperationController {
   }
 
   /**
+   * 根据条件导出门诊运营分析数据总览
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-数据总览导出")
+  @PostMapping(value = "/analysis/data/statistic/export", name = "根据条件导出门诊运营分析数据总览")
+  public ResponseResult<T> operationalAnalysisDataStatisticsExport(HttpServletResponse response,
+          @RequestBody @Validated DataStatisticsQuery query) throws IOException {
+    clinicDataStatisticsBiz.exportClinicDataStatisticsInfo(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
    * 根据条件查询门诊运营分析患者数据总览
    *
    * @param query 查询条件
