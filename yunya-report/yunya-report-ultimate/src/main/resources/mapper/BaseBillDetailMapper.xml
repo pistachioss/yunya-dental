@@ -2692,16 +2692,6 @@
             <if test="query.orgId != null">
                 and brd.org_id = #{query.orgId}
             </if>
-            <if test="query.dateType == 0">
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( brd.refund_date, '%Y-%m' ) = #{query.queryDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( brd.refund_date, '%Y' ) = #{query.queryDate}
-                </if>
-            </if>
         </where>
         GROUP BY
         brd.org_id,
@@ -2721,16 +2711,6 @@
         <where>
             <if test="query.orgId != null">
                 and ewc.org_id = #{query.orgId}
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( ewc.entry_month, '%Y-%m' ) = #{query.queryDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.queryDate != null and query.queryDate != ''">
-                    and DATE_FORMAT( ewc.entry_month, '%Y' ) = #{query.queryDate}
-                </if>
             </if>
         </where>
         GROUP BY
