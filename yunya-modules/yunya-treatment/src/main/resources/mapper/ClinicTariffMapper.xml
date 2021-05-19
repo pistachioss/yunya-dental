@@ -30,6 +30,16 @@
         </collection>
     </resultMap>
 
+    <!-- 根据价目表ID启用门诊价目表 -->
+    <update id="enableClinicTariffByTariffId">
+        update clinic_tariff set inservice = 1 and upd_id = #{userId} and upd_name = #{userName} where tariff_id = #{tariffId} and inservice = 0
+    </update>
+
+    <!-- 根据价目表ID禁用门诊价目表 -->
+    <update id="disableClinicTariffByTariffId">
+        update clinic_tariff set inservice = 0 and upd_id = #{userId} and upd_name = #{userName} where tariff_id = #{tariffId} and inservice = 1
+    </update>
+
     <!-- 根据门诊价目表ID获取门诊价目表信息 -->
     <select id="selectClinicTariffById" resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffVO">
         select
@@ -101,9 +111,9 @@
         FROM
         clinic_tariff ct
         <where>
-        <if test="queryForm.orgId != null">
-            and ct.clinic_id = #{queryForm.orgId}
-        </if>
+            <if test="queryForm.orgId != null">
+                and ct.clinic_id = #{queryForm.orgId}
+            </if>
         </where>
         ) ct ON bt.id = ct.tariff_id
         ) ct
@@ -250,11 +260,11 @@
 
     <select id="selectClinicTariffInId" resultType="com.yunya.models.tariff.ClinicTariff">
         select
-            t.id,
-            t.clinic_id as clinicId,
-            t.tariff_id as tariffId,
-            t.price,
-            t.inservice
+        t.id,
+        t.clinic_id as clinicId,
+        t.tariff_id as tariffId,
+        t.price,
+        t.inservice
         from clinic_tariff t
         where t.clinic_id = #{orgId}
         and t.tariff_id in

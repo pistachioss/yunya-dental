@@ -559,16 +559,19 @@
         ewc.user_id
         ) ewc ON bup.user_id = ewc.user_id
         ) bup
-        WHERE
-        bup.actualWorkload > 0
-        or bup.supplementWorkload > 0
-        or bup.receivedWorkload > 0
-        or bup.freePaymentWorkload > 0
-        or bup.refundWorkload > 0
-        or bup.processingFee > 0
-        or bup.orthodonticsFee > 0
-        or bup.baseWorkload > 0
-        or bup.largeMaterialCost > 0
+        <where>
+            <if test="query.enableFilter == 1">
+                bup.actualWorkload > 0
+                or bup.supplementWorkload > 0
+                or bup.receivedWorkload > 0
+                or bup.freePaymentWorkload > 0
+                or bup.refundWorkload > 0
+                or bup.processingFee > 0
+                or bup.orthodonticsFee > 0
+                or bup.baseWorkload > 0
+                or bup.largeMaterialCost > 0
+            </if>
+        </where>
         ORDER BY
         bup.actualWorkload DESC,
         bup.receivedWorkload DESC,

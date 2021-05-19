@@ -154,6 +154,23 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
   }
 
   /**
+   * 根据价目表分类ID生成价目表编号
+   *
+   * @param tariffCategoryId 价目表分类ID
+   * @return String - 价目表编号
+   */
+  public String generateBaseTariffNumber(Integer tariffCategoryId) {
+    BaseTariffCategory tariffCategory =
+        baseTariffCategoryMapper.selectByPrimaryKey(tariffCategoryId);
+    if (tariffCategory == null) {
+      throw new ClientServiceException("请选择正确的价目表分类进行新增！", PARAMETERS_IS_ILLEGAL);
+    }
+    String categoryNumber = tariffCategory.getNumber().substring(0, 3);
+    String number = mapper.selectMaxBaseTariffNumber(tariffCategoryId, categoryNumber);
+    return categoryNumber + String.format("%03d", Integer.parseInt(number) + 1);
+  }
+
+  /**
    * 新增价目表
    *
    * @param model 新增参数
@@ -367,6 +384,30 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(TariffId, 0, 2, BaseTariffInfo);
     }
+  }
+
+  /**
+   * 一键启用禁用基础价目表
+   *
+   * @param id 价目表ID
+   * @param switchType 开关状态
+   */
+  public void operateBaseTariffStatus(Integer id, Boolean switchType) {
+    BaseTariff tariff = mapper.selectByPrimaryKey(id);
+    if (tariff == null) {
+      throw new ClientServiceException("操作失败，价目表不存在！", PARAMETERS_IS_ILLEGAL);
+    }
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String userName = BaseContextHandler.getName();
+    if (switchType) {
+      clinicTariffBiz.enableClinicTariffByTariffId(id, userId, userName);
+    } else {
+      clinicTariffBiz.disableClinicTariffByTariffId(id, userId, userName);
+    }
+    tariff.setInservice(switchType);
+    tariff.setUpdId(userId);
+    tariff.setUpdName(userName);
+    mapper.updateByPrimaryKey(tariff);
   }
 
   /**

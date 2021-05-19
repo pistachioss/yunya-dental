@@ -26,10 +26,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.tariff.*;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseOralTariffCategory;
-import com.yunya.models.tariff.BaseOralTariffHistory;
-import com.yunya.models.tariff.ClinicOralTariff;
 import com.yunya.modules.treatment.mapper.BaseOralTariffCategoryMapper;
 import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +47,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTariffInfo;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
 
@@ -143,6 +139,23 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
           baseOralTariffVO.setPrice(bigDecimal);
         });
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据商品表分类ID生成商品表编号
+   *
+   * @param oralTariffCategoryId 商品表分类ID
+   * @return String - 商品表编号
+   */
+  public String generateBaseOralTariffNumber(Integer oralTariffCategoryId) {
+    BaseOralTariffCategory oralTariffCategory =
+        baseOralTariffCategoryMapper.selectByPrimaryKey(oralTariffCategoryId);
+    if (oralTariffCategory == null) {
+      throw new ClientServiceException("请选择正确的商品表分类进行新增！", PARAMETERS_IS_ILLEGAL);
+    }
+    String categoryNumber = oralTariffCategory.getNumber().substring(0, 3);
+    String number = mapper.selectMaxBaseOralTariffNumber(oralTariffCategoryId, categoryNumber);
+    return categoryNumber + String.format("%03d", Integer.parseInt(number) + 1);
   }
 
   /**
@@ -376,6 +389,31 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(oralTariffId, 1, 2, BaseTariffInfo);
     }
+  }
+
+  /**
+   * 一键启用禁用基础商品表
+   *
+   * @param id 商品表ID
+   * @param switchType 开关状态
+   */
+  public void operateBaseOralTariffStatus(Integer id, Boolean switchType) {
+    BaseOralTariff oralTariff = mapper.selectByPrimaryKey(id);
+    if (oralTariff == null) {
+      throw new ClientServiceException("操作失败，商品表不存在！", PARAMETERS_IS_ILLEGAL);
+    }
+    // Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    Integer userId = 1;
+    String userName = "Base";
+    if (switchType) {
+      clinicOralTariffBiz.enableClinicOralTariffByTariffId(id, userId, userName);
+    } else {
+      clinicOralTariffBiz.disableClinicOralTariffByTariffId(id, userId, userName);
+    }
+    oralTariff.setInservice(switchType);
+    oralTariff.setUpdId(userId);
+    oralTariff.setUpdName(userName);
+    mapper.updateByPrimaryKey(oralTariff);
   }
 
   /**
@@ -1170,7 +1208,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
   }
 
   /**
-   * 根据多个价目表ID查询价目表名称
+   * 根据多个商品表ID查询商品表名称
    *
    * @param ids 字符串ID
    * @return String
