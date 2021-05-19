@@ -6,10 +6,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
 import com.yunya.feign.patient_central.domain.model.*;
-import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
-import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
-import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
-import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
+import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
@@ -28,6 +25,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
@@ -37,6 +35,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -777,5 +777,29 @@ public class PatientPrepaymentRelationBiz
       return prepaidExpendRecordvo.getId();
     }
     return null;
+  }
+
+  /**
+   * 消费记录-导出
+   * @param response
+   * @param query
+   */
+  public void expendExport(HttpServletResponse response, PrepaidExpendRecordQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<PrepaidExpendRecordVo> workloadList = expendList(query);
+    List<PrepaidExpendRecordVo> resultList = workloadList.getList();
+    ExcelUtil<PrepaidExpendRecordVo> excelUtil =
+            new ExcelUtil<>(PrepaidExpendRecordVo.class);
+    String fileName =  "消费记录";
+    excelUtil.exportExcel(response, resultList, "消费记录", fileName);
+  }
+
+  /**
+   * 查询共享帐户
+   * @param patientId 患者id
+   * @return 共享帐户信息
+   */
+  public List<PatientPrepaymentsOwnerInfoVo> finishedAccount(Integer patientId) {
+    return prepaidExpendRecordMapper.finishedAccount(patientId);
   }
 }

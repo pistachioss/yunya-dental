@@ -27,27 +27,87 @@
 
     <!-- 查询预付款消费记录 -->
     <select id="expendList" resultType="com.yunya.feign.patient_central.domain.vo.web.PrepaidExpendRecordVo">
-        SELECT
-            perd.id,
-            perd.org_id orgId,
-            perd.prepaid_id prepaidId,
-            perd.patient_id patientId,
-            perd.expend_principal expendPrincipal,
-            perd.expend_gift expendGift,
-            perd.remarks remarks,
-            perd.crt_id operatorId,
-            perd.crt_name operatorName,
-            date_format(perd.crt_time,'%Y-%m-%d %H:%i') operatingTime,
-            perd.upt_id uptId,
-            perd.upd_name updName,
-            perd.upd_time updTime,
+
+			SELECT
+            per.id,
+            per.org_id orgId,
+            per.prepaid_id memberCard,
+            pbio.name consumerName,
+            (select name from patient_base_info where id = ppi.patient_id ) as masterCardName,
+            per.expend_principal expendPrincipal,
+            per.expend_gift expendGift,
+            per.remarks remarks,
+            per.crt_id operatorId,
+            per.crt_name operatorName,
+            date_format(per.crt_time,'%Y-%m-%d %H:%i') operatingTime,
+            per.upt_id uptId,
+            per.upd_name updName,
+            per.upd_time updTime,
             pbio.name expendName
         FROM
-            prepaid_expend_record perd
-            JOIN patient_base_info pbio ON perd.patient_id = pbio.id
+            prepaid_expend_record per
+            LEFT JOIN patient_base_info pbio ON per.patient_id = pbio.id
+            LEFT JOIN patient_prepayments_info ppi ON ppi.prepayment_number = per.prepaid_id
         WHERE
-            perd.prepaid_id = #{form.prepaidId}
-            and perd.inservice = 1
-        order by perd.crt_time desc
+            1 = 1
+            <if test="form.prepaidId != null || form.prepaidId != ''">
+                and per.prepaid_id = #{form.prepaidId}
+            </if>
+
+            <if test="form.prepaidId == null">
+                and per.prepaid_id  is null
+            </if>
+
+            and per.inservice = 1
+            and per.type = 0
+
+		UNION
+
+		SELECT
+            per.id,
+            per.org_id orgId,
+            per.prepaid_id memberCard,
+            pbio.name consumerName,
+            (select name from patient_base_info where id = ppi.patient_id ) as masterCardName,
+            per.expend_principal expendPrincipal,
+            per.expend_gift expendGift,
+            per.remarks remarks,
+            per.crt_id operatorId,
+            per.crt_name operatorName,
+            date_format(per.crt_time,'%Y-%m-%d %H:%i') operatingTime,
+            per.upt_id uptId,
+            per.upd_name updName,
+            per.upd_time updTime,
+            pbio.name expendName
+        FROM
+            prepaid_expend_record per
+            LEFT JOIN patient_base_info pbio ON per.patient_id = pbio.id
+            LEFT JOIN patient_prepayments_info ppi ON ppi.prepayment_number = per.prepaid_id
+        WHERE
+            1 = 1
+            <if test="form.patientId != null">
+                and per.patient_id = #{form.patientId}
+            </if>
+
+            <if test="form.patientId == null">
+                and per.patient_id is null
+            </if>
+            and per.inservice = 1
+            and per.type = 0
+    </select>
+
+    <select id="finishedAccount"
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsOwnerInfoVo">
+        SELECT
+          ppr.master_card_id masterCardId,
+            ppi.prepayment_number  prepaymentNumber,
+            pbi.name
+
+        FROM
+            patient_prepayment_relation ppr
+            JOIN patient_prepayments_info ppi ON ppi.patient_id = ppr.master_card_id
+            JOIN patient_base_info pbi ON pbi.id = ppr.master_card_id
+        WHERE
+            ppr.secondary_card_id = #{patientId}
     </select>
 </mapper>
