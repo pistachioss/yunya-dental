@@ -216,7 +216,9 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     List<ClinicItemPriceModel> clinicItemPriceModels = model.getClinicItemPriceModels();
 
     // 保存门诊价目表
-    saveClinicTariff(model.getPrice(), itemId, clinicItemPriceModels);
+    if (StringHelper.isNotEmpty(clinicItemPriceModels)) {
+      saveClinicTariff(model.getPrice(), itemId, clinicItemPriceModels);
+    }
 
     // 保存价目表新增历史记录
     BaseTariffHistory baseTariffHistory = new BaseTariffHistory();

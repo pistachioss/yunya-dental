@@ -208,7 +208,9 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     List<ClinicItemPriceModel> clinicItemPriceModels = model.getClinicItemPriceModels();
 
     // 保存门诊商品商品
-    saveClinicOralTariff(model.getPrice(), itemId, clinicItemPriceModels);
+    if (StringHelper.isNotEmpty(clinicItemPriceModels)) {
+      saveClinicOralTariff(model.getPrice(), itemId, clinicItemPriceModels);
+    }
 
     // 保存商品商品新增历史记录
     BaseOralTariffHistory baseOralTariffHistory = new BaseOralTariffHistory();
