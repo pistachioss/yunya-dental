@@ -3462,4 +3462,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         String fileName = excelUtil.getFileName(startDate, endDate, abbreviation, "取消预约明细表");
         excelUtil.exportExcel(response,data,"取消预约明细表",fileName);
     }
+
+    /**
+     * 根据预约申请ID查询预约记录
+     * @param onlineAppointmentId 预约申请ID
+     * @return
+     */
+    public Appointment findEntityByOnlineAppointmentId(Integer onlineAppointmentId) {
+        Appointment query = new Appointment();
+        query.setOnlineAppointmentId(onlineAppointmentId);
+        query.setInservice(true);
+        Appointment appointment = mapper.selectOne(query);
+        return appointment;
+    }
 }
