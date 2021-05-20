@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.treatment.domain.form.BaseTariffAssociationForm;
 import com.yunya.feign.treatment.domain.form.BaseTariffForm;
@@ -105,34 +106,25 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
   public BaseTariffInfoVO findBaseTariffInfoById(Integer id) {
     BaseTariffInfoVO resultData = mapper.selectBaseTariffInfoById(id);
     if (null != resultData) {
-      OrganizationModel orgModel = new OrganizationModel();
-      orgModel.setTypes(new Byte[] {2});
-      orgModel.setWhetherPage(false);
-      List<OrganizationInfoDetail> orgInfos = systemServiceFeign.findOrgInfoList(orgModel);
+      ClinicTariff clinicTariff = new ClinicTariff();
+      clinicTariff.setTariffId(id);
+      List<ClinicTariff> clinicTariffs = clinicTariffBiz.selectList(clinicTariff);
       List<ClinicItemPriceVO> itemInfos = new ArrayList<>();
-      if (StringHelper.isNotEmpty(orgInfos)) {
-        Integer resultDataId = resultData.getId();
-        BigDecimal resultDataPrice = resultData.getPrice();
-        ClinicTariff entity = new ClinicTariff();
-        entity.setTariffId(resultDataId);
-        orgInfos.forEach(
-            orgInfo -> {
-              entity.setClinicId(orgInfo.getId());
-              ClinicTariff resultClinicTariff = clinicTariffBiz.selectOne(entity);
-              ClinicItemPriceVO itemPriceVO = new ClinicItemPriceVO();
-              if (null != resultClinicTariff) {
-                itemPriceVO.setClinicItemId(resultClinicTariff.getId());
-                itemPriceVO.setClinicItemPrice(resultClinicTariff.getPrice());
-                itemPriceVO.setItemInservice(resultClinicTariff.getInservice());
-              } else {
-                itemPriceVO.setClinicItemPrice(resultDataPrice);
-                itemPriceVO.setItemInservice(true);
-              }
-              itemPriceVO.setOrgId(orgInfo.getId());
-              itemPriceVO.setOrgName(orgInfo.getAbbreviation());
-              itemPriceVO.setItemId(resultDataId);
-              itemInfos.add(itemPriceVO);
-            });
+      if (StringHelper.isNotEmpty(clinicTariffs)) {
+        for (ClinicTariff tariff : clinicTariffs) {
+          ClinicItemPriceVO clinicItem = new ClinicItemPriceVO();
+          clinicItem.setClinicItemId(tariff.getId());
+          Integer clinicId = tariff.getClinicId();
+          clinicItem.setOrgId(clinicId);
+          OrganizationInfo organizationInfo = systemServiceFeign.findOrgInfoByOrgId(clinicId);
+          if (organizationInfo != null) {
+            clinicItem.setOrgName(organizationInfo.getAbbreviation());
+          }
+          clinicItem.setItemId(tariff.getTariffId());
+          clinicItem.setClinicItemPrice(tariff.getPrice());
+          clinicItem.setItemInservice(tariff.getInservice());
+          itemInfos.add(clinicItem);
+        }
       }
       resultData.setClinicItemInfos(itemInfos);
     }

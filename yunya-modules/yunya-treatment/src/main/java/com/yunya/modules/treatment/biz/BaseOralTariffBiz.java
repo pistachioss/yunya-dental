@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.treatment.domain.form.BaseOralTariffForm;
 import com.yunya.feign.treatment.domain.form.ClinicItemPriceForm;
@@ -87,33 +88,25 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
   public BaseOralTariffInfoVO findBaseOralTariffInfoById(Integer id) {
     BaseOralTariffInfoVO resultData = mapper.selectBaseOralTariffInfoById(id);
     if (null != resultData) {
-      OrganizationModel orgModel = new OrganizationModel();
-      orgModel.setTypes(new Byte[] {2});
-      orgModel.setWhetherPage(false);
-      List<OrganizationInfoDetail> orgInfos = systemServiceFeign.findOrgInfoList(orgModel);
+      ClinicOralTariff clinicOralTariff = new ClinicOralTariff();
+      clinicOralTariff.setOralTariffId(id);
+      List<ClinicOralTariff> clinicTariffs = clinicOralTariffBiz.selectList(clinicOralTariff);
       List<ClinicItemPriceVO> itemInfos = new ArrayList<>();
-      if (StringHelper.isNotEmpty(orgInfos)) {
-        Integer resultDataId = resultData.getId();
-        BigDecimal resultDataPrice = resultData.getPrice();
-        ClinicOralTariff entity = new ClinicOralTariff();
-        entity.setOralTariffId(resultDataId);
-        orgInfos.forEach(
-            orgInfo -> {
-              entity.setClinicId(orgInfo.getId());
-              ClinicOralTariff resultClinicOralTariff = clinicOralTariffBiz.selectOne(entity);
-              ClinicItemPriceVO itemPriceVO = new ClinicItemPriceVO();
-              if (null != resultClinicOralTariff) {
-                itemPriceVO.setClinicItemId(resultClinicOralTariff.getId());
-                itemPriceVO.setClinicItemPrice(resultClinicOralTariff.getPrice());
-                itemPriceVO.setItemInservice(resultClinicOralTariff.getInservice());
-              } else {
-                itemPriceVO.setClinicItemPrice(resultDataPrice);
-                itemPriceVO.setItemInservice(true);
+      if (StringHelper.isNotEmpty(clinicTariffs)) {
+        clinicTariffs.forEach(
+            oralTariff -> {
+              ClinicItemPriceVO clinicItem = new ClinicItemPriceVO();
+              clinicItem.setClinicItemId(oralTariff.getId());
+              Integer clinicId = oralTariff.getClinicId();
+              clinicItem.setOrgId(clinicId);
+              OrganizationInfo organizationInfo = systemServiceFeign.findOrgInfoByOrgId(clinicId);
+              if (organizationInfo != null) {
+                clinicItem.setOrgName(organizationInfo.getAbbreviation());
               }
-              itemPriceVO.setOrgId(orgInfo.getId());
-              itemPriceVO.setOrgName(orgInfo.getAbbreviation());
-              itemPriceVO.setItemId(resultDataId);
-              itemInfos.add(itemPriceVO);
+              clinicItem.setItemId(oralTariff.getOralTariffId());
+              clinicItem.setClinicItemPrice(oralTariff.getPrice());
+              clinicItem.setItemInservice(oralTariff.getInservice());
+              itemInfos.add(clinicItem);
             });
       }
       resultData.setClinicItemInfos(itemInfos);
