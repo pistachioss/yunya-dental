@@ -409,7 +409,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     tariff.setInservice(switchType);
     tariff.setUpdId(userId);
     tariff.setUpdName(userName);
-    mapper.updateByPrimaryKey(tariff);
+    mapper.updateByPrimaryKeySelective(tariff);
   }
 
   /**

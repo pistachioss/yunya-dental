@@ -404,9 +404,8 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     if (oralTariff == null) {
       throw new ClientServiceException("操作失败，商品表不存在！", PARAMETERS_IS_ILLEGAL);
     }
-    // Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-    Integer userId = 1;
-    String userName = "Base";
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String userName = BaseContextHandler.getName();
     if (switchType) {
       clinicOralTariffBiz.enableClinicOralTariffByTariffId(id, userId, userName);
     } else {
@@ -415,7 +414,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     oralTariff.setInservice(switchType);
     oralTariff.setUpdId(userId);
     oralTariff.setUpdName(userName);
-    mapper.updateByPrimaryKey(oralTariff);
+    mapper.updateByPrimaryKeySelective(oralTariff);
   }
 
   /**

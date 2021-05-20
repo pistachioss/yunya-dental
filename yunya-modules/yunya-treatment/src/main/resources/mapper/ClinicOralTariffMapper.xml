@@ -60,16 +60,16 @@
     <select id="selectClinicOralTariffList" resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO">
         SELECT
         #{queryForm.orgId} as orgId,
-        oralTariffCategoryId,
-        oraltariffCategoryName,
-        oraltariffCategoryNumber,
-        oraltariffId,
-        `name`,
-        price,
-        englishName,
-        number,
-        unit,
-        inservice
+        cot.oralTariffCategoryId,
+        cot.oraltariffCategoryName,
+        cot.oraltariffCategoryNumber,
+        cot.oraltariffId,
+        cot.`name`,
+        cot.price,
+        cot.englishName,
+        cot.number,
+        cot.unit,
+        cot.inservice
         FROM
         (
         SELECT
