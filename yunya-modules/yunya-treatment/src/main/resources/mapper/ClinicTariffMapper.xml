@@ -32,12 +32,12 @@
 
     <!-- 根据价目表ID启用门诊价目表 -->
     <update id="enableClinicTariffByTariffId">
-        update clinic_tariff set inservice = 1 and upd_id = #{userId} and upd_name = #{userName} where tariff_id = #{tariffId} and inservice = 0
+        update clinic_tariff set inservice = 1 , upd_id = #{userId} , upd_name = #{userName} where tariff_id = #{tariffId} and inservice = 0
     </update>
 
     <!-- 根据价目表ID禁用门诊价目表 -->
     <update id="disableClinicTariffByTariffId">
-        update clinic_tariff set inservice = 0 and upd_id = #{userId} and upd_name = #{userName} where tariff_id = #{tariffId} and inservice = 1
+        update clinic_tariff set inservice = 0 , upd_id = #{userId} , upd_name = #{userName} where tariff_id = #{tariffId} and inservice = 1
     </update>
 
     <!-- 根据门诊价目表ID获取门诊价目表信息 -->

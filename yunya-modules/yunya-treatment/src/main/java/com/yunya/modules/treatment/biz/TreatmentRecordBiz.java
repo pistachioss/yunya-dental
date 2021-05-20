@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
@@ -1537,7 +1538,56 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param query 查询条件
    * @return list
    */
-  public List<PatientBillPrintGroupInfoVO> findBillPrintInfoList(BillBatchPrintInfoQuery query) {
-    return null;
+  public PatientBillPrintGroupInfoVO findBillPrintInfoList(BillBatchPrintInfoQuery query) {
+    Integer patientId = query.getPatientId();
+    PatientBillPrintGroupInfoVO resultData = new PatientBillPrintGroupInfoVO();
+    resultData.setPatientId(patientId);
+
+    // 设置患者账单打印患者信息
+    setBillPrintInfoPatientValue(patientId, resultData);
+
+    Integer[] billRecordIds = query.getBillRecordIds();
+    setBillPrintInfoBillDetailValue(patientId, billRecordIds, resultData);
+
+    // 设置诊所信息
+    setBillPrintInfoOrgValue(resultData);
+    return resultData;
+  }
+
+  private void setBillPrintInfoBillDetailValue(
+      Integer patientId, Integer[] billRecordIds, PatientBillPrintGroupInfoVO resultData) {
+    resultData.setBillDetailInfos(Lists.newArrayList());
+    List<PatientBillPrintInfoVO> resultList =
+        billRecordMapper.selectBillDetailListByIds(billRecordIds);
+    if (StringHelper.isNotEmpty(resultList)) {
+      resultData.setBillDetailInfos(resultList);
+    }
+  }
+
+  private void setBillPrintInfoOrgValue(PatientBillPrintGroupInfoVO resultData) {
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+    if (orgInfo != null) {
+      resultData.setClinicId(orgId);
+      resultData.setClinicName(orgInfo.getAbbreviation());
+      resultData.setClinicAddress(orgInfo.getClinicAddress());
+      resultData.setClinicMobile(orgInfo.getClinicMobile());
+    }
+  }
+
+  private void setBillPrintInfoPatientValue(
+      Integer patientId, PatientBillPrintGroupInfoVO resultData) {
+    PatientTotalInfoVo patientTotalInfo = patientServiceFeign.findPatientTotalInfo(patientId);
+    if (patientTotalInfo != null) {
+      resultData.setPatientName(patientTotalInfo.getName());
+      resultData.setMedicalNum(patientTotalInfo.getMedicalNumber());
+      Integer memberTypeId = patientTotalInfo.getMemberTypeId();
+      if (memberTypeId != null) {
+        MemberType memberType = systemServiceFeign.findMemberTypeById(memberTypeId);
+        if (memberType != null) {
+          resultData.setMemberType(memberType.getName());
+        }
+      }
+    }
   }
 }

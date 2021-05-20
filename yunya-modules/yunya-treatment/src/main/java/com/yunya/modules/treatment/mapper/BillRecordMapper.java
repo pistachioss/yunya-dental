@@ -46,7 +46,8 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
    * @param patientId 患者ID
    * @return
    */
-  PatientBillStatistics selectPatientBillStatistics(@Param("patientId") Integer patientId, @Param("payIds") Collection<Integer> payIds);
+  PatientBillStatistics selectPatientBillStatistics(
+      @Param("patientId") Integer patientId, @Param("payIds") Collection<Integer> payIds);
 
   /**
    * 根据患者ID查询患者账单统计数据列表
@@ -109,4 +110,12 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
   BigDecimal selectBusinessIncomeCompletedCount(
       @Param("query") BusinessGoalCompletedInfoQuery query);
 
+  /**
+   * 根据账单ID列表查询账单记录
+   *
+   * @param billRecordIds 账单ID列表
+   * @return list
+   */
+  List<PatientBillPrintInfoVO> selectBillDetailListByIds(
+      @Param("billRecordIds") Integer[] billRecordIds);
 }

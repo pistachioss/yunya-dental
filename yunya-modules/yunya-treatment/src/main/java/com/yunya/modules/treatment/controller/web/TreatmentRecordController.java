@@ -1,8 +1,8 @@
 package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.treatment.domain.query.BillBatchPrintInfoQuery;
 import com.yunya.feign.treatment.domain.model.TreatmentModel;
+import com.yunya.feign.treatment.domain.query.BillBatchPrintInfoQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentCountQuery;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
@@ -19,8 +19,6 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 简介: 患者接诊管理控制器
@@ -127,12 +125,13 @@ public class TreatmentRecordController {
    * @param query 请求参数
    * @return list
    */
+  @CurrentUser
   @ApiOperation("批量打印患者账单记录")
   @PostMapping(value = "/batch/print", name = "批量打印患者账单记录")
-  public ResponseResult<List<PatientBillPrintGroupInfoVO>> findBillPrintInfoList(
+  public ResponseResult<PatientBillPrintGroupInfoVO> findBillPrintInfoList(
       @RequestBody @Validated BillBatchPrintInfoQuery query) {
-    List<PatientBillPrintGroupInfoVO> resultList = treatmentRecordBiz.findBillPrintInfoList(query);
-    return ResponseUtil.success(resultList);
+    PatientBillPrintGroupInfoVO resultData = treatmentRecordBiz.findBillPrintInfoList(query);
+    return ResponseUtil.success(resultData);
   }
 
   /**
