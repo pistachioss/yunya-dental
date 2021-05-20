@@ -336,6 +336,8 @@ public class CreditTool {
 	public AddCreditsParams parseaddCredits(HttpServletRequest request) throws Exception {
 		String appKey = duiBaConfig.getAppKey();
 		String appSecret = duiBaConfig.getAppSecret();
+		String uid = request.getParameter("uid");
+		Map<String, String> uidMap = parseUid(uid);
 		if(!appKey.equals(request.getParameter("appKey"))){
 			throw new Exception("appKey不匹配");
 		}
@@ -346,9 +348,14 @@ public class CreditTool {
 		if(!verify){
 			throw new Exception("签名验证失败");
 		}
+		String patientId = uidMap.get("patientId");
+		if (patientId == null || patientId.equals("null")) {
+			throw new Exception("未绑定患者，请先绑定患者");
+		}
+
 		AddCreditsParams params=new AddCreditsParams();
 		params.setAppKey(appKey);
-		params.setUid(request.getParameter("uid"));
+		params.setUid(uid);
 		params.setCredits(Long.valueOf(request.getParameter("credits")));
 		params.setTimestamp(new Date(Long.valueOf(request.getParameter("timestamp"))));
 		params.setDescription(request.getParameter("description"));
