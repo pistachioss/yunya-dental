@@ -341,27 +341,17 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       Integer itemId, List<ClinicItemPriceForm> clinicItemPriceForms) {
     ClinicOralTariff clinicOralTariff = new ClinicOralTariff();
     clinicOralTariff.setOralTariffId(itemId);
+    clinicOralTariffBiz.delete(clinicOralTariff);
     if (StringHelper.isNotEmpty(clinicItemPriceForms)) {
       clinicItemPriceForms.forEach(
           form -> {
             clinicOralTariff.setClinicId(form.getOrgId());
             clinicOralTariff.setPrice(form.getItemPrice());
             clinicOralTariff.setInservice(form.getItemInservice());
-            Integer clinicItemId = form.getClinicItemId();
-            if (null == clinicItemId) {
-              clinicOralTariff.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-              clinicOralTariff.setCrtName(BaseContextHandler.getName());
-              clinicOralTariffBiz.insertSelective(clinicOralTariff);
-            } else {
-              clinicOralTariff.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-              clinicOralTariff.setUpdName(BaseContextHandler.getName());
-              clinicOralTariff.setUpdTime(new Date(System.currentTimeMillis()));
-              clinicOralTariff.setId(clinicItemId);
-              clinicOralTariffBiz.updateSelectiveById(clinicOralTariff);
-            }
+            clinicOralTariff.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            clinicOralTariff.setCrtName(BaseContextHandler.getName());
+            clinicOralTariffBiz.insertSelective(clinicOralTariff);
           });
-    } else {
-      clinicOralTariffBiz.delete(clinicOralTariff);
     }
   }
 

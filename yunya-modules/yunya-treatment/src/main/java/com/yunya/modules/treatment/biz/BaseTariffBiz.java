@@ -337,27 +337,17 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
   private void updateClinicTariff(Integer itemId, List<ClinicItemPriceForm> clinicItemPriceForms) {
     ClinicTariff clinicTariff = new ClinicTariff();
     clinicTariff.setTariffId(itemId);
+    clinicTariffBiz.delete(clinicTariff);
     if (StringHelper.isNotEmpty(clinicItemPriceForms)) {
       clinicItemPriceForms.forEach(
           form -> {
             clinicTariff.setClinicId(form.getOrgId());
             clinicTariff.setPrice(form.getItemPrice());
             clinicTariff.setInservice(form.getItemInservice());
-            Integer clinicItemId = form.getClinicItemId();
-            if (null == clinicItemId) {
-              clinicTariff.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-              clinicTariff.setCrtName(BaseContextHandler.getName());
-              clinicTariffBiz.insertSelective(clinicTariff);
-            } else {
-              clinicTariff.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-              clinicTariff.setUpdName(BaseContextHandler.getName());
-              clinicTariff.setUpdTime(new Date(System.currentTimeMillis()));
-              clinicTariff.setId(clinicItemId);
-              clinicTariffBiz.updateSelectiveById(clinicTariff);
-            }
+            clinicTariff.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            clinicTariff.setCrtName(BaseContextHandler.getName());
+            clinicTariffBiz.insertSelective(clinicTariff);
           });
-    } else {
-      clinicTariffBiz.delete(clinicTariff);
     }
   }
 
