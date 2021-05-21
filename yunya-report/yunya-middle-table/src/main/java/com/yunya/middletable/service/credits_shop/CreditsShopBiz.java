@@ -28,6 +28,7 @@ import sun.rmi.runtime.Log;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URLDecoder;
@@ -45,7 +46,6 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
 
   @Autowired private DuiBaConfig duiBaConfig;
@@ -64,6 +64,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    * @param creditsShop
    * @return 成功返回非0正整数
    */
+  @Transactional(rollbackFor = Exception.class)
   public Integer addCredits(CreditsShop creditsShop) {
     int insert = mapper.insert(creditsShop);
     return insert;
@@ -77,6 +78,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    * @param payId 患者支付ID
    * @return
    */
+  @Transactional(rollbackFor = Exception.class)
   public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, Integer payId) {
     CreditsShop creditsShop = mapper.selectLastCredits(patientId);
     Long creditsAccount = 0L;
@@ -146,30 +148,72 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
 
   private Long getCreditsAccount(String uid, String patientId) {
     Long credits = 0L;
+    Long creditsBalance = credits;
     if (StringHelper.isNotBlank(patientId) && !"null".equals(patientId)) {
       CreditsShop creditsShop = mapper.selectLastCredits(Integer.parseInt(patientId));
       if (creditsShop != null) {
         credits = creditsShop.getCreditsAccount();
+      } else {
+        return 0L;
       }
-    }
-    Long creditsBalance = credits;
-    String parseUid = URLDecoder.decode(uid);
-    log.info("uid解析之前{}",uid);
-    log.info("redis中是否有相应的key({})：{}",parseUid,redisUtils.hasKey(parseUid));
-    log.info("redis中的value:{}",redisUtils.getJSONArray(RedisConstants.CREDITS_SHOP_ORDER + uid,CreditsShop.class));
-    if(redisUtils.hasKey(RedisConstants.CREDITS_SHOP_ORDER + uid)) {
-      List<CreditsShop> unreceivedOrders = redisUtils.getJSONArray(RedisConstants.CREDITS_SHOP_ORDER + uid, CreditsShop.class);
-      if (StringHelper.isNotEmpty(unreceivedOrders)) {
-        for(CreditsShop creditsShop : unreceivedOrders) {
-          creditsBalance = creditsBalance - creditsShop.getCredits();
-          if (creditsBalance <= 0) {
-            break;
-          }
-        }
-      }
+      Long ordersPaymentAmount = ordersPaymentAmountByUid(uid);
+      creditsBalance = credits - ordersPaymentAmount;
     }
     return creditsBalance;
   }
+
+  /**
+   * 获取用户未签收订单总额（实际支付总额）
+   * @param uid 用户唯一标识  openId + # + 患者ID
+   * @return 实际支付总额
+   */
+  public Long ordersPaymentAmountByUid(String uid) {
+    Long ordersPaymentAmount = 0L;
+    String parseUid = URLDecoder.decode(uid);
+    String ordersCacheKey = RedisConstants.CREDITS_SHOP_ORDER + uid;
+    log.info("uid解析之前{}",uid);
+    log.info("redis中是否有相应的key({})：{}",parseUid,redisUtils.hasKey(parseUid));
+    log.info("redis中的value:{}",redisUtils.getJSONArray(ordersCacheKey,CreditsShop.class));
+    // 从redis缓存中获取订单支付总额
+    ordersPaymentAmount = getOrdersPaymentAmountFromCache(ordersCacheKey);
+    return ordersPaymentAmount;
+  }
+
+  /**
+   * 获取用户未签收订单总额（实际支付总额）
+   * @param patientId  患者ID
+   * @return 实际支付总额
+   */
+  public Long ordersPaymentAmountByPatientId(Integer patientId) {
+    Long ordersPaymentAmount = 0L;
+    Set<String> keys = redisUtils.keys("*" + patientId);
+    if (StringHelper.isEmpty(keys)) {
+      return ordersPaymentAmount;
+    }
+    String orderCacheKey = keys.stream().findAny().get();
+    // 从redis缓存中获取订单支付总额
+    ordersPaymentAmount = getOrdersPaymentAmountFromCache(orderCacheKey);
+    return ordersPaymentAmount;
+  }
+
+  /**
+   * 从redis缓存中获取订单支付总额
+   * @param key 缓存key
+   * @return 订单支付总额
+   */
+  private Long getOrdersPaymentAmountFromCache(String key) {
+    Long ordersPaymentAmount = 0L;
+    if(redisUtils.hasKey(key)) {
+      List<CreditsShop> unreceivedOrders = redisUtils.getJSONArray(key, CreditsShop.class);
+      if (StringHelper.isNotEmpty(unreceivedOrders)) {
+        for (CreditsShop creditsShop : unreceivedOrders) {
+          ordersPaymentAmount += creditsShop.getCredits();
+        }
+      }
+    }
+    return ordersPaymentAmount;
+  }
+
 
   /**
    * 查询患者积分
@@ -179,6 +223,13 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    */
   public ResponseResult<CreditsShop> lastPatientCredits(Integer patientId) {
     CreditsShop creditsShop = mapper.selectLastCredits(patientId);
+    if (creditsShop != null) {
+      Long ordersPaymentAmount = ordersPaymentAmountByPatientId(patientId);
+      creditsShop.setCreditsAccount(creditsShop.getCreditsAccount() - ordersPaymentAmount);
+    } else {
+      creditsShop = new CreditsShop();
+      creditsShop.setCreditsAccount(0L);
+    }
     return ResponseUtil.success(creditsShop);
   }
 
@@ -190,7 +241,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     if (basePatientConsumptionCountVos != null) {
       for (BasePatientConsumptionCountVo basePatientConsumptionCountVo :
           basePatientConsumptionCountVos) {
-        if (basePatientConsumptionCountVo.getIntegral().intValue() > 0) {
+        if (basePatientConsumptionCountVo.getIntegral() > 0) {
           CreditsShop creditsShop = new CreditsShop();
           creditsShop.setPatientId(basePatientConsumptionCountVo.getPatientId());
           creditsShop.setType("offlineConsume");
@@ -238,62 +289,93 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
   public CreditResult increasePoints(HttpServletRequest request) {
     CreditResult creditResult = new CreditResult();
     String uid = request.getParameter("uid");
-    Map<String, String> userInfo = creditTool.parseUid(request.getParameter("uid"));
+    Map<String, String> userInfo = creditTool.parseUid(uid);
     String key = "patientId";
-    String patientId = userInfo.get(key);
-    if (null != patientId) {
-      CreditsShop creditsShop = mapper.selectLastCredits(Integer.parseInt(patientId));;
-      try {
-        AddCreditsParams addCreditsParams = creditTool.parseaddCredits(request);
-        if (null != addCreditsParams) {
-          if (!StringHelper.isEmpty(userInfo)) {
-            if (null != creditsShop) {
-              // 新增患者积分变动信息
-              CreditsShop addCreditsShop = new CreditsShop();
-              addCreditsShop.setPatientId(creditsShop.getPatientId());
-              addCreditsShop.setType(addCreditsParams.getType());
-              addCreditsShop.setChannel((byte) 0);
-              addCreditsShop.setOrderNum(addCreditsParams.getOrderNum());
-              addCreditsShop.setCreditsAccount(creditsShop.getCreditsAccount() + addCreditsParams.getCredits());
-              addCreditsShop.setCredits(addCreditsParams.getCredits());
-              addCreditsShop.setCreditsOption((byte) 0);
-              String description = URLDecoder.decode(addCreditsParams.getDescription(), "UTF-8");
-              if (null != description){
-                addCreditsShop.setDescription(description);
-              }
-              addCreditsShop.setInservice(true);
-              addCreditsShop.setCrtId(creditsShop.getPatientId());
-              addCreditsShop.setCrtTime(new Date(System.currentTimeMillis()));
-              mapper.insertSelective(addCreditsShop);
-              // 设置成功响应体
-              creditResult.setStatus("ok");
-              creditResult.setBizId(addCreditsParams.getOrderNum());
-              creditResult.setCredits(addCreditsShop.getCreditsAccount().toString());
-            }else {
-              creditResult.setStatus("ok");
-              creditResult.setCredits("0");
-              return creditResult;
-            }
+    AddCreditsParams addCreditsParams = null;
+    CreditsShop creditsShop = null;
+    try {
+      Integer patientId = Integer.parseInt(userInfo.get(key));
+      creditsShop = mapper.selectLastCredits(patientId);
+      addCreditsParams = creditTool.parseaddCredits(request);
+      if (null != addCreditsParams) {
+        if (!StringHelper.isEmpty(userInfo)) {
+          // 新增患者积分变动信息
+          CreditsShop addCreditsShop = new CreditsShop();
+          if (null != creditsShop) {
+            setCreditsEntity(addCreditsShop,addCreditsParams,patientId,creditsShop.getCreditsAccount());
+          }else {
+            setCreditsEntity(addCreditsShop,addCreditsParams,patientId,0L);
           }
+          // 设置成功响应体
+          setCreditsResult(creditResult,"ok",
+                  addCreditsParams.getOrderNum(),
+                  addCreditsShop.getCreditsAccount().toString(),
+                  null);
+          mapper.insertSelective(addCreditsShop);
+          return creditResult;
         }
-      } catch (Exception e) {
-        // 设置失败响应体
-        creditResult.setStatus("fail");
-        creditResult.setErrorMessage(e.getMessage());
-        assert creditsShop != null;
-        creditResult.setCredits(creditsShop.getCredits().toString());
-        return creditResult;
       }
-    } else {
+    } catch (Exception e) {
+      log.info("异常信息===>{}",e.getMessage());
+      log.info("异常原因===>\n{}",e.getCause());
+      String orderNum = null;
+      if (addCreditsParams != null) {
+        orderNum = addCreditsParams.getOrderNum();
+      }
+      String creditsAccount = "0";
+      if (creditsShop != null) {
+        creditsAccount = creditsShop.getCreditsAccount().toString();
+      }
       // 设置失败响应体
-      creditResult.setStatus("fail");
-      creditResult.setErrorMessage("未关联患者");
-      creditResult.setCredits("0");
+      setCreditsResult(creditResult,"fail",
+              orderNum,
+              creditsAccount,
+              e.getMessage());
       return creditResult;
     }
 
     return creditResult;
   }
+
+  /**
+   * 设置积分信息
+   * @param addCreditsParams
+   * @param creditsShop
+   * @throws UnsupportedEncodingException
+   */
+  private void setCreditsEntity(CreditsShop creditsShop,AddCreditsParams addCreditsParams,Integer patientId,Long creditsAccount) throws UnsupportedEncodingException {
+    creditsShop.setPatientId(patientId);
+    creditsShop.setType(addCreditsParams.getType());
+    creditsShop.setChannel((byte) 0);
+    creditsShop.setOrderNum(addCreditsParams.getOrderNum());
+    creditsShop.setCreditsAccount(creditsAccount + addCreditsParams.getCredits());
+    creditsShop.setCredits(addCreditsParams.getCredits());
+    creditsShop.setCreditsOption((byte) 0);
+    String description = URLDecoder.decode(addCreditsParams.getDescription(), "UTF-8");
+    if (null != description){
+      creditsShop.setDescription(description);
+    }
+    creditsShop.setInservice(true);
+    creditsShop.setCrtId(patientId);
+    creditsShop.setCrtTime(new Date(System.currentTimeMillis()));
+  }
+
+  /**
+   * 设置积分返回结果
+   * @param creditResult
+   * @param status
+   * @param bizId
+   * @param credits
+   * @param errorMessage
+   */
+  private void setCreditsResult(CreditResult creditResult,String status, String bizId, String credits,String errorMessage) {
+    // 设置成功响应体
+    creditResult.setStatus(status);
+    creditResult.setBizId(bizId);
+    creditResult.setCredits(credits);
+    creditResult.setErrorMessage(errorMessage);
+  }
+
 
   /**
    * 消费积分
@@ -306,10 +388,13 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     Map<String, String> userInfo = creditTool.parseUid(uid);
     String key = "patientId";
     String patientId = userInfo.get(key);
-    if (null != patientId) {
+    if (!"null".equals(patientId)) {
       CreditsShop creditsShop = mapper.selectLastCredits(Integer.parseInt(patientId));
       try {
         CreditConsumeParams addCreditConsumeParams = creditTool.parseCreditConsume(request);
+        log.info("\n\n====================\n\n");
+        log.info("==>消费详情:{}\n\n",addCreditConsumeParams);
+        log.info("\n\n========================");
         if (null != addCreditConsumeParams) {
           if (!StringHelper.isEmpty(userInfo)) {
             if (null != creditsShop) {
@@ -388,7 +473,6 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     }
     unreceivedOrders.add(creditsShop);
     if (StringHelper.isNotEmpty(unreceivedOrders)) {
-
       redisUtils.set(RedisConstants.CREDITS_SHOP_ORDER + uid, unreceivedOrders);
     }
     log.info("积分兑换详细信息\n{}",creditsShop);
@@ -400,6 +484,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    * @param request 请求
    * @return 响应
    */
+  @Transactional
   public String exchangeResult(HttpServletRequest request) {
     if (!SignTool.signVerify(duiBaConfig.getAppSecret(), request)) {
       return "fail";
@@ -408,26 +493,27 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     String orderNum = request.getParameter("orderNum");
     String uid = request.getParameter("uid");
     String status = "true";
-    if (status.equals(success)) {
-      if (redisUtils.hasKey(RedisConstants.CREDITS_SHOP_ORDER + uid)) {
-        List<CreditsShop> jsonArray = redisUtils.getJSONArray(RedisConstants.CREDITS_SHOP_ORDER + uid, CreditsShop.class);
-        CreditsShop creditsShop = jsonArray.stream().filter(entity -> orderNum.equals(entity.getOrderNum())).findAny().get();
-        jsonArray = jsonArray.stream().filter(entity -> !orderNum.equals(entity.getOrderNum())).collect(Collectors.toList());
-        if (StringHelper.isNotEmpty(jsonArray)) {
-          try {
-            int i = mapper.insertSelective(creditsShop);
-            if (i <= 0) {
-              return "fail";
-            }
-          } finally {
-            redisUtils.set(RedisConstants.CREDITS_SHOP_ORDER + uid, jsonArray);
+    if (redisUtils.hasKey(RedisConstants.CREDITS_SHOP_ORDER + uid)) {
+      List<CreditsShop> jsonArray = redisUtils.getJSONArray(RedisConstants.CREDITS_SHOP_ORDER + uid, CreditsShop.class);
+      CreditsShop creditsShop = jsonArray.stream().filter(entity -> orderNum.equals(entity.getOrderNum())).findAny().get();
+      jsonArray = jsonArray.stream().filter(entity -> !orderNum.equals(entity.getOrderNum())).collect(Collectors.toList());
+      int i = 0;
+      if (status.equals(success)) {
+        i = mapper.insert(creditsShop);
+      }
+      if (StringHelper.isNotEmpty(jsonArray)) {
+        try {
+          if (i <= 0) {
+            return "fail";
           }
-        } else {
-          redisUtils.delete(RedisConstants.CREDITS_SHOP_ORDER + uid);
+        } finally {
+          redisUtils.set(RedisConstants.CREDITS_SHOP_ORDER + uid, jsonArray);
         }
       } else {
-        return "fail";
+        redisUtils.delete(RedisConstants.CREDITS_SHOP_ORDER + uid);
       }
+    } else {
+      return "fail";
     }
     return "ok";
   }
