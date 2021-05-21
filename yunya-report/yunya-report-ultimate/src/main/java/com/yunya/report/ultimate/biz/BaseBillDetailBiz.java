@@ -1028,7 +1028,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query 查询条件
    * @return PageInfo<BillingItemDetailVO>
    */
-  public PageInfo<BillItemStatisticsDetailVO> billItemStatiticsDetail(BillItemDetailQuery query) {
+  public PageInfo<BillItemStatisticsDetailVO> billItemStatisticsDetail(BillItemDetailQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
@@ -1043,10 +1043,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param response
    * @return PageInfo<BillingItemDetailVO>
    */
-  public void billItemStatiticsDetailExport(BillItemDetailQuery query, HttpServletResponse response)
+  public void billItemStatisticsDetailExport(BillItemDetailQuery query, HttpServletResponse response)
       throws IOException {
     query.setWhetherPage(false);
-    PageInfo<BillItemStatisticsDetailVO> pageInfo = billItemStatiticsDetail(query);
+    PageInfo<BillItemStatisticsDetailVO> pageInfo = billItemStatisticsDetail(query);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     List<BillItemStatisticsDetailVO> resultList = pageInfo.getList();
     ExcelUtil<BillItemStatisticsDetailVO> excelUtil =
