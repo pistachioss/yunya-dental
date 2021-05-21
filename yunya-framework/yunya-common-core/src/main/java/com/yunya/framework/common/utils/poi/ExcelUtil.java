@@ -344,7 +344,7 @@ public class ExcelUtil<T> {
         }
       }
     }
-    if (StringHelper.isNotEmpty(eDate)) {
+    if (!sDate.equals(eDate) && StringHelper.isNotEmpty(eDate)) {
       if (res.length() > 0) {
         res.append("-");
       }
