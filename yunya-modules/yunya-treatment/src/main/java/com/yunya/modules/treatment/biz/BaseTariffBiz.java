@@ -335,12 +335,12 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
    * @param clinicItemPriceForms 修改门诊价目表信息
    */
   private void updateClinicTariff(Integer itemId, List<ClinicItemPriceForm> clinicItemPriceForms) {
+    ClinicTariff clinicTariff = new ClinicTariff();
+    clinicTariff.setTariffId(itemId);
     if (StringHelper.isNotEmpty(clinicItemPriceForms)) {
       clinicItemPriceForms.forEach(
           form -> {
-            ClinicTariff clinicTariff = new ClinicTariff();
             clinicTariff.setClinicId(form.getOrgId());
-            clinicTariff.setTariffId(itemId);
             clinicTariff.setPrice(form.getItemPrice());
             clinicTariff.setInservice(form.getItemInservice());
             Integer clinicItemId = form.getClinicItemId();
@@ -356,6 +356,8 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
               clinicTariffBiz.updateSelectiveById(clinicTariff);
             }
           });
+    } else {
+      clinicTariffBiz.delete(clinicTariff);
     }
   }
 
