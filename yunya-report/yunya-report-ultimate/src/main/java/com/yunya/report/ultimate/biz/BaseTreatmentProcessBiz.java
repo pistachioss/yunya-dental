@@ -162,6 +162,7 @@ public class BaseTreatmentProcessBiz
    */
   public void exportTreatmentList(HttpServletResponse response, TreatmentRecordQuery query)
       throws IOException {
+    query.setWhetherPage(false);
     List<TreatmentRecordReportVO> list = findTreatmentList(query).getList();
     ExcelUtil<TreatmentRecordReportVO> excelUtil = new ExcelUtil<>(TreatmentRecordReportVO.class);
     String fileName = "就诊记录明细";
