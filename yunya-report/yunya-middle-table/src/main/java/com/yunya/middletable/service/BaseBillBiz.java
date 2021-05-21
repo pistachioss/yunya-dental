@@ -12,6 +12,10 @@ import com.yunya.middletable.dao.treatment.BillRecordMapper;
 import com.yunya.middletable.dao.treatment.OrderDetailMapper;
 import com.yunya.middletable.dao.treatment.OrderDetailPayRecordMapper;
 import com.yunya.middletable.dao.treatment.OrderRecordMapper;
+<<<<<<< HEAD
+=======
+import com.yunya.models.report.CreditsShop;
+>>>>>>> wechat-shop
 import com.yunya.models.report.BaseBill;
 import com.yunya.models.report.BaseBillDetail;
 import com.yunya.models.treatment.BillRecord;
@@ -20,7 +24,6 @@ import com.yunya.models.treatment.OrderDetailPayRecord;
 import com.yunya.models.treatment.OrderRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
