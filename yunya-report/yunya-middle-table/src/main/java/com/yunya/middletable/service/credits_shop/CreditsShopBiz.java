@@ -392,9 +392,6 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
       CreditsShop creditsShop = mapper.selectLastCredits(Integer.parseInt(patientId));
       try {
         CreditConsumeParams addCreditConsumeParams = creditTool.parseCreditConsume(request);
-        log.info("\n\n====================\n\n");
-        log.info("==>消费详情:{}\n\n",addCreditConsumeParams);
-        log.info("\n\n========================");
         if (null != addCreditConsumeParams) {
           if (!StringHelper.isEmpty(userInfo)) {
             if (null != creditsShop) {
@@ -499,6 +496,10 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
       jsonArray = jsonArray.stream().filter(entity -> !orderNum.equals(entity.getOrderNum())).collect(Collectors.toList());
       int i = 0;
       if (status.equals(success)) {
+        Map<String, String> parseUidMap = creditTool.parseUid(uid);
+        String patientId = parseUidMap.get("patientId");
+        CreditsShop oldCreditsShopInfo = mapper.selectLastCredits(Integer.valueOf(patientId));
+        creditsShop.setCreditsAccount(oldCreditsShopInfo.getCreditsAccount() - creditsShop.getCredits());
         i = mapper.insert(creditsShop);
       }
       if (StringHelper.isNotEmpty(jsonArray)) {
