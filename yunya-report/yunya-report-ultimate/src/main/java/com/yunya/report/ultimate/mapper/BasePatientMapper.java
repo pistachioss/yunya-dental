@@ -127,4 +127,12 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    * @return 患者数量
    */
   Integer selectNotAgeCount(@Param("form") PatientAnalysisQueryForm form);
+
+  /**
+   * 根据患者ID查询患者信息
+   *
+   * @param patientIds
+   * @return
+   */
+  List<BasePatient> findPatientInfoInId(@Param("patientIds") Collection<Integer> patientIds);
 }

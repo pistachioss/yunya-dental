@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.RemoteClinicBaseServiceFeign;
@@ -12,9 +13,11 @@ import com.yunya.feign.report.domain.query.OperationDataComplexQuery;
 import com.yunya.feign.report.domain.query.PatientFirstTreatOriginQuery;
 import com.yunya.feign.report.domain.query.VisitAndRemindCompletedInfoQuery;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.framework.common.annation.Excel;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
+import com.yunya.framework.common.utils.poi.RowStyle;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -355,5 +358,148 @@ public class ClinicDataStatisticsBiz {
       ratio = dividend.divide(divisor, 2, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
     }
     return divisor + "/" + dividend + "/" + ratio + "%";
+  }
+
+  /**
+   * 根据条件导出门诊运营分析数据总览
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public void exportClinicDataStatisticsInfo(DataStatisticsQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<JSONObject> resultList = reorganizeStructure(findClinicDataStatisticsInfo(query));
+    ExcelUtil<JSONObject> excelUtil = new ExcelUtil<>(JSONObject.class);
+    String mid = "";
+    for (Integer orgId : query.getOrgIds()) {
+      String abbreviation = organizationBiz.selectById(orgId).getAbbreviation();
+      if (mid.length() > 0) {
+        mid += ",";
+      }
+      mid += abbreviation;
+    }
+    String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), mid, "数据总览导出");
+    excelUtil.exportExcelByRow(response, resultList, "数据总览导出", fileName);
+  }
+
+  /**
+   * 重新组织结构
+   *
+   * @param clinicDataStatisticsInfoVO
+   * @return
+   */
+  private List<JSONObject> reorganizeStructure(ClinicDataStatisticsInfoVO clinicDataStatisticsInfoVO) {
+    List<JSONObject> resultList = new ArrayList<>();
+    resultList.add(crtObj("就诊人数","初诊人数","复诊人数","复诊人次","均次消费","人均消费"));
+    PatientDataStatisticsVO patientDataStatisticsVO = clinicDataStatisticsInfoVO.getPatientDataStatistics();
+    resultList.add(crtObj(patientDataStatisticsVO.getTreatPerNum(),patientDataStatisticsVO.getFirstVisitPerNum(),
+            patientDataStatisticsVO.getRepeatVisitsPerNum(),patientDataStatisticsVO.getRepeatVisitsPerTimes(),
+            patientDataStatisticsVO.getAverageConsumption().setScale(2,BigDecimal.ROUND_HALF_UP),
+            patientDataStatisticsVO.getPerCapitaConsumption().setScale(2,BigDecimal.ROUND_HALF_UP)));
+    resultList.add(crtEmptyObj());
+
+    resultList.add(crtObj("预约人数","预约人次","改约人次","取消预约人次","失约人次","就诊人次"));
+    resultList.add(crtObj(patientDataStatisticsVO.getAppointPerNum(),patientDataStatisticsVO.getAppointPerTimes(),
+            patientDataStatisticsVO.getAppointModifyPerTimes(),patientDataStatisticsVO.getAppointCancelPerTimes(),
+            patientDataStatisticsVO.getAppointMissedPerTimes(),patientDataStatisticsVO.getTreatPerTimes()));
+    resultList.add(crtEmptyObj());
+    TollDataStatisticsVO tollDataStatistics = clinicDataStatisticsInfoVO.getTollDataStatistics();
+    BillDataStatisticsVO billDataStatistics = clinicDataStatisticsInfoVO.getBillDataStatistics();
+
+    resultList.add(crtObj("原价合计","优惠金额合计","实收金额合计","其中含免单支付合计","欠费金额合计",""));
+    resultList.add(crtObj(billDataStatistics.getTotalOriginalAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+            billDataStatistics.getTotalDiscountAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+            tollDataStatistics.getTotalReceivedAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+            billDataStatistics.getTotalFreePaymentAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+            billDataStatistics.getTotalDebtAmount().setScale(2,BigDecimal.ROUND_HALF_UP),""));
+    resultList.add(crtEmptyObj());
+
+    resultList.add(crtObj("收欠费合计","实收金额合计","账单退费合计","门诊代收金额合计","门诊被代收金额合计",""));
+    resultList.add(crtObj(tollDataStatistics.getTotalReceivedDebtAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+            tollDataStatistics.getTotalReceivedAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+            tollDataStatistics.getTotalBillRefundAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+            tollDataStatistics.getTotalClinicCollectionAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+            tollDataStatistics.getTotalClinicCollectedAmount().setScale(2,BigDecimal.ROUND_HALF_UP),""));
+    resultList.add(crtEmptyObj());
+
+    WorkloadStatisticsVO workloadStatistic = clinicDataStatisticsInfoVO.getWorkloadStatistic();
+    resultList.add(crtObj("门诊实收工作量合计","账单退费工作量合计","","","",""));
+    resultList.add(crtObj(workloadStatistic.getTotalReceivedWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),
+            workloadStatistic.getTotalBillRefundWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),"","","",""));
+
+    resultList.add(crtObj("首次实收工作量合计","其中首次含免单支付工作量合计","首次补入工作量合计","","",""));
+    resultList.add(crtObj(workloadStatistic.getTotalClinicReceivedWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),
+            workloadStatistic.getTotalFreePaymentWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),
+            workloadStatistic.getTotalClinicCouponWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),"","",""));
+
+    resultList.add(crtObj("（被代收）实收工作量合计","（被代收）其中含免单支付工作量合计","（被代收）补入工作量合计","","",""));
+    resultList.add(crtObj(workloadStatistic.getTotalClinicBeCollectedReceivedWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),
+            workloadStatistic.getTotalClinicBeCollectedFreePaymentWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),
+            workloadStatistic.getTotalClinicBeCollectedCouponWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),"","",""));
+
+    resultList.add(crtObj("（收欠费）实收工作量合计","（收欠费）其中含免单支付工作量合计","（收欠费）补入工作量合计","","",""));
+    resultList.add(crtObj(workloadStatistic.getTotalClinicArrearsReceivedWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),
+            workloadStatistic.getTotalClinicArrearsFreePaymentWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),
+            workloadStatistic.getTotalClinicArrearsCouponWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),"","",""));
+    resultList.add(crtEmptyObj());
+
+    resultList.add(crtObj("（首次）门诊实收非工作量合计","（收欠费）门诊实收非工作量合计","（被代收）门诊实收非工作量合计","","",""));
+    resultList.add(crtObj(workloadStatistic.getTotalClinicReceivedNotWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),
+            workloadStatistic.getTotalClinicArrearsReceivedNotWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),
+            workloadStatistic.getTotalBeCollectedNotWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),"","",""));
+    resultList.add(crtEmptyObj());
+
+    MemberDataStatisticVO memberDataStatistic = clinicDataStatisticsInfoVO.getMemberDataStatistic();
+    resultList.add(crtObj("会员卡充值(本金+赠金)","会员卡消费(本金+赠金)","会员卡退费(本金+赠金)","","",""));
+    resultList.add(crtObj(memberDataStatistic.getTotalMemberRechargeAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+            memberDataStatistic.getTotalMemberExpendAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+            memberDataStatistic.getTotalMemberRefundAmount().setScale(2,BigDecimal.ROUND_HALF_UP),"","",""));
+    resultList.add(crtEmptyObj());
+
+    PrepaymentsDataStatisticVO prepaymentsDataStatistic = clinicDataStatisticsInfoVO.getPrepaymentsDataStatistic();
+    resultList.add(crtObj("预付款充值(本金+赠金)","预付款消费(本金+赠金)","预付款退费(本金+赠金)","","",""));
+    resultList.add(crtObj(prepaymentsDataStatistic.getTotalPrepaymentsRechargeAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+            prepaymentsDataStatistic.getTotalPrepaymentsExpendAmount().setScale(2,BigDecimal.ROUND_HALF_UP),
+            prepaymentsDataStatistic.getTotalPrepaymentsRefundAmount().setScale(2,BigDecimal.ROUND_HALF_UP),"","",""));
+    return resultList;
+  }
+
+  private JSONObject crtObj(String...value) {
+    return crtObj(true, null, value);
+  }
+
+  private JSONObject crtObj(Object...value) {
+    return crtObj(null, Excel.ColumnType.NUMERIC, value);
+  }
+
+  private JSONObject crtObj(Boolean isBlod, Excel.ColumnType columnType, Object...value) {
+    JSONObject obj = new JSONObject(true);
+    if (isBlod != null) {
+      obj.put(RowStyle.IS_BOLD, isBlod);
+    }
+    if (columnType != null) {
+      obj.put(RowStyle.COLUMN_TYPE, columnType);
+    }
+    obj.put(RowStyle.CELL_WIDTH, 38);
+    for (int i = 0; i < value.length; i++) {
+      obj.put(i+"", value[i]);
+    }
+    return obj;
+  }
+
+  /**
+   * 创建空元素
+   *
+   * @return
+   */
+  private JSONObject crtEmptyObj() {
+    JSONObject object = new JSONObject(true);
+    object.put("1","");
+    object.put("2","");
+    object.put("3","");
+    object.put("4","");
+    object.put("5","");
+    object.put("6","");
+    return object;
   }
 }
