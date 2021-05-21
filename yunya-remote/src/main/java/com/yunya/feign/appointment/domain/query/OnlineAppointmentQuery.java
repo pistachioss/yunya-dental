@@ -48,11 +48,18 @@ public class OnlineAppointmentQuery implements Serializable {
     private Integer patientId;
 
     /**
-     * 预约日期
+     * 预约开始日期
      */
-    @ApiModelProperty("预约日期")
+    @ApiModelProperty("预约开始日期")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
-    private String appointDate;
+    private String appointStartDate;
+
+    /**
+     * 预约结束日期
+     */
+    @ApiModelProperty("预约结束日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private String appointEndDate;
 
     /**
      * 就诊患者名字
@@ -67,9 +74,9 @@ public class OnlineAppointmentQuery implements Serializable {
     private String patientPhone;
 
     /**
-     * 预约申请状态 0-未确认；1-确认; 2-取消
+     * 预约申请状态 0-申请中；1-通过；2-取消
      */
-    @ApiModelProperty("预约状态 0-未确认；1-确认; 2-取消")
+    @ApiModelProperty("预约申请状态 0-申请中；1-通过；2-取消")
     private Byte status;
 
     /**

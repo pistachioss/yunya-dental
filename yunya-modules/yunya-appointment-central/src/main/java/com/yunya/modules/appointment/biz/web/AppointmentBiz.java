@@ -62,6 +62,7 @@ import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
+import com.yunya.modules.appointment.service.AppointmentLifecycle;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -150,6 +151,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /** 注入redis缓冲服务 */
     @Autowired
     private RedisUtils redisUtils;
+    @Resource
+    private AppointmentLifecycle appointmentLifecycle;
 
     @Resource(name = "poolExecutor")
     private ExecutorService poolExecutor;
@@ -208,6 +211,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
             //微信推送预约成功通知
             weChatServiceFeign.pushTemplate(generateModel(form));
+            // 预约添加成功回调
+            appointmentLifecycle.build(appointmentEntity);
             // 如果添加预约成功，则返回预约成功信息
             return ResponseUtil.success();
         }
@@ -260,6 +265,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointOperateRecordBiz.insertSelective(record);
             //微信推送预约成功通知
             weChatServiceFeign.pushTemplate(generateModel(form));
+            // 预约添加成功回调
+            appointmentLifecycle.build(build);
         }
         return ResponseUtil.success();
     }

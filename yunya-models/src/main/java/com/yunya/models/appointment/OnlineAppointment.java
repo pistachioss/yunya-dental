@@ -71,7 +71,7 @@ public class OnlineAppointment {
     private String patientPhone;
 
     /**
-     * 预约状态 0-未确认；1-确认; 2-取消
+     * 预约申请状态 0-申请中；1-通过；2-取消
      */
     private Byte status;
 
@@ -301,18 +301,18 @@ public class OnlineAppointment {
     }
 
     /**
-     * 获取预约状态 0-未确认；1-确认; 2-取消
+     * 获取预约申请状态 0-申请中；1-通过；2-取消
      *
-     * @return status - 预约状态 0-未确认；1-确认; 2-取消
+     * @return status - 预约申请状态 0-申请中；1-通过；2-取消
      */
     public Byte getStatus() {
         return status;
     }
 
     /**
-     * 设置预约状态 0-未确认；1-确认; 2-取消
+     * 设置预约申请状态 0-申请中；1-通过；2-取消
      *
-     * @param status 预约状态 0-未确认；1-确认; 2-取消
+     * @param status 预约申请状态 0-申请中；1-通过；2-取消
      */
     public void setStatus(Byte status) {
         this.status = status;

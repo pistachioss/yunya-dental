@@ -93,9 +93,9 @@ public class OnlineAppointmentModel implements Serializable {
     private String patientPhone;
 
     /**
-     * 预约申请状态 0-未确认；1-确认; 2-取消
+     * 预约申请状态 0-申请中；1-通过；2-取消
      */
-    @ApiModelProperty("预约状态 0-未确认；1-确认; 2-取消")
+    @ApiModelProperty("预约申请状态 0-申请中；1-通过；2-取消")
     private Byte status;
 
     /**

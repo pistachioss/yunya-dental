@@ -7,17 +7,17 @@ import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.app.OnlineAppointmentBiz;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -73,5 +73,12 @@ public class OnlineAppointmentController {
     public ResponseResult<PageInfo<OnlineAppointmentVo>> findByCondition(@RequestBody
                                                                      @Validated OnlineAppointmentQuery query) {
         return onlineAppointmentBiz.findByCondition(query);
+    }
+
+    @ApiOperation("导出预约申请")
+    @PostMapping("/export")
+    public ResponseResult<T> export(HttpServletResponse response, @Validated OnlineAppointmentQuery query) throws IOException {
+        onlineAppointmentBiz.export(response,query);
+        return ResponseUtil.success();
     }
 }
