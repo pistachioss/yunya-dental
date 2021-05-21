@@ -153,6 +153,8 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
       CreditsShop creditsShop = mapper.selectLastCredits(Integer.parseInt(patientId));
       if (creditsShop != null) {
         credits = creditsShop.getCreditsAccount();
+      } else {
+        return 0L;
       }
       Long ordersPaymentAmount = ordersPaymentAmountByUid(uid);
       creditsBalance = credits - ordersPaymentAmount;
