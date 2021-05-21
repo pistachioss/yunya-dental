@@ -58,4 +58,12 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
    */
   BigDecimal selectReceiptAmountOfPrepaid(
       @Param("billRecordId") Integer billRecordId, @Param("accountItemId") Integer accountItemId);
+
+  /**
+   * 根据账单ID查询免单金额
+   *
+   * @param billRecordId 账单ID
+   * @return
+   */
+  BigDecimal selectTotalFreePayAmountByBillId(@Param("billRecordId") Integer billRecordId);
 }

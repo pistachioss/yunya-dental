@@ -113,9 +113,10 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
   /**
    * 根据账单ID列表查询账单记录
    *
+   * @param patientId 患者ID
    * @param billRecordIds 账单ID列表
    * @return list
    */
   List<PatientBillPrintInfoVO> selectBillDetailListByIds(
-      @Param("billRecordIds") Integer[] billRecordIds);
+      @Param("patientId") Integer patientId, @Param("billRecordIds") Integer[] billRecordIds);
 }

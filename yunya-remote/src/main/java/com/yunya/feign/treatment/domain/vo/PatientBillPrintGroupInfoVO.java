@@ -33,7 +33,7 @@ public class PatientBillPrintGroupInfoVO implements Serializable {
   @ApiModelProperty("会员类型")
   private String memberType;
   /** 账单信息列表 */
-  private List<PatientBillPrintInfoVO> billPrintInfos;
+  private List<PatientBillPrintInfoVO> billDetailInfos;
   /** 门诊id */
   @ApiModelProperty("门诊ID")
   private Integer clinicId;
