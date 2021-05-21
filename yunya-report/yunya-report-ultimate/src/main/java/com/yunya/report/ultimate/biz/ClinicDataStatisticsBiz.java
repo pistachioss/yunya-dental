@@ -424,7 +424,7 @@ public class ClinicDataStatisticsBiz {
 
     WorkloadStatisticsVO workloadStatistic = clinicDataStatisticsInfoVO.getWorkloadStatistic();
     resultList.add(crtObj("门诊实收工作量合计","账单退费工作量合计","","","",""));
-    resultList.add(crtObj(workloadStatistic.getTotalClinicActualWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),
+    resultList.add(crtObj(workloadStatistic.getTotalReceivedWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),
             workloadStatistic.getTotalBillRefundWorkload().setScale(2,BigDecimal.ROUND_HALF_UP),"","","",""));
 
     resultList.add(crtObj("首次实收工作量合计","其中首次含免单支付工作量合计","首次补入工作量合计","","",""));
