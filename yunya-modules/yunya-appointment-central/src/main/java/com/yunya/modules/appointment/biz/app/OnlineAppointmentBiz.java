@@ -219,7 +219,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * 设置预约状态
      * @param onlineAppointmentId
      */
-    public void onlineAppointStatus(Integer onlineAppointmentId) {
+    public void onlineAppointStatus(Integer onlineAppointmentId,Integer patientId) {
         OnlineAppointment onlineAppointment = mapper.selectByPrimaryKey(onlineAppointmentId);
         if (onlineAppointment != null) {
             onlineAppointment.setStatus((byte) 1);
@@ -236,6 +236,6 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         sb.append("==> 新建预约完成\n");
         sb.append("==========================================");
         log.info(sb.toString());
-        onlineAppointStatus(appointment.getOnlineAppointmentId());
+        onlineAppointStatus(appointment.getOnlineAppointmentId(),appointment.getPatientId());
     }
 }

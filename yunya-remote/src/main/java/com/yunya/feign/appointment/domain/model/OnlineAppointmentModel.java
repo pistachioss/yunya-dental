@@ -41,6 +41,12 @@ public class OnlineAppointmentModel implements Serializable {
     private Integer patientId;
 
     /**
+     * 患者名字
+     */
+    @ApiModelProperty("患者名字")
+    private String patientName;
+
+    /**
      * 预约项目ID
      */
     @ApiModelProperty(value = "预约项目ID",required = true)
