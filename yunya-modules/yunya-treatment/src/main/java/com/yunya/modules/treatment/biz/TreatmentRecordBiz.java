@@ -1590,6 +1590,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         Integer billRecordId = vo.getBillRecordId();
         BigDecimal freeAmount = billPayDetailRecordBiz.sumBillTotalFreePayAmount(billRecordId);
         vo.setTotalFreePayAmount(freeAmount);
+        vo.setTotalReceivedAmount(vo.getTotalReceivedAmount().subtract(freeAmount));
       }
       resultData.setBillDetailInfos(resultList);
     }
