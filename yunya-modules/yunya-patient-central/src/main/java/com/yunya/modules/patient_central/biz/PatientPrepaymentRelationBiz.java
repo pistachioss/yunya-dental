@@ -795,11 +795,41 @@ public class PatientPrepaymentRelationBiz
   }
 
   /**
-   * 查询共享帐户
+   * 查询共享帐户绑定信息
    * @param patientId 患者id
    * @return 共享帐户信息
    */
   public List<PatientPrepaymentsOwnerInfoVo> finishedAccount(Integer patientId) {
     return prepaidExpendRecordMapper.finishedAccount(patientId);
+  }
+
+  /**
+   * 充值记录-导出
+   * @param response 请求
+   * @param query 条件
+   */
+  public void expendExportRechargeRecord(HttpServletResponse response, PrepaidRechargeRecordQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<PrepaidRechargeRecordVo> workloadList = rechargeRecord(query);
+    List<PrepaidRechargeRecordVo> resultList = workloadList.getList();
+    ExcelUtil<PrepaidRechargeRecordVo> excelUtil =
+            new ExcelUtil<>(PrepaidRechargeRecordVo.class);
+    String fileName =  "充值记录";
+    excelUtil.exportExcel(response, resultList, "充值记录", fileName);
+  }
+
+  /**
+   * 退费记录导出
+   * @param response  请求
+   * @param query 条件
+   */
+  public void expendExportRefundList(HttpServletResponse response, PrepaidMeturnRecordQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<PrepaidMeturnRecordVo> workloadList = refundList(query);
+    List<PrepaidMeturnRecordVo> resultList = workloadList.getList();
+    ExcelUtil<PrepaidMeturnRecordVo> excelUtil =
+            new ExcelUtil<>(PrepaidMeturnRecordVo.class);
+    String fileName =  "退费记录";
+    excelUtil.exportExcel(response, resultList, "退费记录", fileName);
   }
 }

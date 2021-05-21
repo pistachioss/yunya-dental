@@ -182,15 +182,30 @@ public class PatientMemberInfoController {
   /**
    * 充值记录
    *
-   * @param queryFormform 充值记录QueryForm
+   * @param query 充值记录QueryForm
    * @return ResponseResult<PageInfo<RechargeRecordVo>>
    */
   @CurrentUser
   @ApiOperation("充值记录")
   @PostMapping("/rechargeRecord")
   public ResponseResult<PageInfo<RechargeRecordVo>> rechargeRecord(
-      @RequestBody RechargeRecordQueryForm queryFormform) {
-    return ResponseUtil.success(patientMemberInfoBiz.rechargeRecord(queryFormform));
+      @RequestBody RechargeRecordQueryForm query) {
+    return ResponseUtil.success(patientMemberInfoBiz.rechargeRecord(query));
+  }
+
+  /**
+   * 充值记录-导出
+   * @param response 请求
+   * @param query 条件
+   * @return 导出集合
+   * @throws IOException
+   */
+  @ApiOperation("充值记录-导出")
+  @PostMapping(value = "/rechargeRecord/export", name = "导出充值记录")
+  public ResponseResult<T> expendExport(
+          HttpServletResponse response, @RequestBody RechargeRecordQueryForm query) throws IOException {
+    patientMemberInfoBiz.expendExportRechargeRecord(response, query);
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -219,6 +234,21 @@ public class PatientMemberInfoController {
   public ResponseResult<PageInfo<MemberReturnRecordVo>> refundList(
       @RequestBody MemberReturnRecordQueryForm queryForm) {
     return ResponseUtil.success(patientMemberInfoBiz.refundList(queryForm));
+  }
+
+  /**
+   * 退费记录-导出
+   * @param response 请求
+   * @param query 条件
+   * @return 导出集合
+   * @throws IOException
+   */
+  @ApiOperation("退费记录-导出")
+  @PostMapping(value = "/refundList/export", name = "导出退费记录")
+  public ResponseResult<T> expendExportRefundList(
+          HttpServletResponse response, @RequestBody MemberReturnRecordQueryForm query) throws IOException {
+    patientMemberInfoBiz.expendExportRefundList(response, query);
+    return ResponseUtil.success(null);
   }
 
   /**

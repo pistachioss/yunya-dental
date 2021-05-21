@@ -128,6 +128,21 @@ public class PatientPrepaymentRelationController {
   }
 
   /**
+   * 充值记录-导出
+   * @param response 请求
+   * @param queryForm 条件
+   * @return 导出集合
+   * @throws IOException
+   */
+  @ApiOperation("充值记录-导出")
+  @PostMapping(value = "/rechargeRecord/export", name = "导出充值记录")
+  public ResponseResult<T> expendExportRechargeRecord(
+          HttpServletResponse response, @RequestBody PrepaidRechargeRecordQueryForm queryForm) throws IOException {
+    patientPrepaymentBiz.expendExportRechargeRecord(response, queryForm);
+    return ResponseUtil.success(null);
+  }
+
+  /**
    * 账单退费
    *
    * @param prepaidBillRechargeModel 账单退费
@@ -155,6 +170,7 @@ public class PatientPrepaymentRelationController {
     return ResponseUtil.success();
   }
 
+
   @CurrentUser
   @ApiOperation("预付款消费")
   @RequestMapping(value = "/prepaid/expend",method = RequestMethod.POST)
@@ -173,6 +189,23 @@ public class PatientPrepaymentRelationController {
   public ResponseResult<PageInfo<PrepaidMeturnRecordVo>> refundList(@RequestBody PrepaidMeturnRecordQueryForm queryForm) {
     return ResponseUtil.success(patientPrepaymentBiz.refundList(queryForm));
   }
+
+
+  /**
+   * 退费记录-导出
+   * @param response 请求
+   * @param queryForm 条件
+   * @return 导出集合
+   * @throws IOException
+   */
+  @ApiOperation("退费记录-导出")
+  @PostMapping(value = "/refundList/export", name = "导出退费记录")
+  public ResponseResult<T> expendExportRefundList(
+          HttpServletResponse response, @RequestBody PrepaidMeturnRecordQueryForm queryForm) throws IOException {
+    patientPrepaymentBiz.expendExportRefundList(response, queryForm);
+    return ResponseUtil.success(null);
+  }
+
 
   /**
    * 消费记录
@@ -214,11 +247,11 @@ public class PatientPrepaymentRelationController {
   }
 
   /**
-   * 查询已绑定主卡信息
+   * 查询共享帐户绑定信息
    * @param patientId 患者id
    * @return 主卡人信息集合
    */
-  @ApiOperation("查询已绑定主卡信息")
+  @ApiOperation("查询共享帐户绑定信息")
   @GetMapping("/sharedAccount/{patientId}")
   public ResponseResult<List<PatientPrepaymentsOwnerInfoVo>> sharedAccount(@PathVariable(value = "patientId") Integer patientId) {
     List<PatientPrepaymentsOwnerInfoVo> patientCardOwnerInfoVos = patientPrepaymentBiz.finishedAccount(patientId);

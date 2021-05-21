@@ -1192,4 +1192,34 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     String fileName =  "消费记录";
     excelUtil.exportExcel(response, resultList, "消费记录", fileName);
   }
+
+  /**
+   * 充值记录-导出
+   * @param response 请求
+   * @param queryForm 条件
+   */
+    public void expendExportRechargeRecord(HttpServletResponse response, RechargeRecordQueryForm query) throws IOException {
+      query.setWhetherPage(false);
+      PageInfo<RechargeRecordVo> workloadList = rechargeRecord(query);
+      List<RechargeRecordVo> resultList = workloadList.getList();
+      ExcelUtil<RechargeRecordVo> excelUtil =
+              new ExcelUtil<>(RechargeRecordVo.class);
+      String fileName =  "充值记录";
+      excelUtil.exportExcel(response, resultList, "充值记录", fileName);
+    }
+
+  /**
+   * 退费记录-导出
+   * @param response 请求
+   * @param queryForm 条件
+   */
+  public void expendExportRefundList(HttpServletResponse response, MemberReturnRecordQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<MemberReturnRecordVo> workloadList = refundList(query);
+    List<MemberReturnRecordVo> resultList = workloadList.getList();
+    ExcelUtil<MemberReturnRecordVo> excelUtil =
+            new ExcelUtil<>(MemberReturnRecordVo.class);
+    String fileName =  "退费记录";
+    excelUtil.exportExcel(response, resultList, "退费记录", fileName);
+  }
 }
