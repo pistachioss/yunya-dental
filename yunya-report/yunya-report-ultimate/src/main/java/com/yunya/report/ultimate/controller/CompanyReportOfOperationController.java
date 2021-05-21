@@ -380,9 +380,9 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-开单项目数量-开单数量及金额明细")
   @PostMapping(value = "/billItem/statistics/detail", name = "根据条件查询开单数量及金额统计明细列表")
-  public ResponseResult<PageInfo<BillItemStatisticsDetailVO>> billItemStatiticsDetail(
+  public ResponseResult<PageInfo<BillItemStatisticsDetailVO>> billItemStatisticsDetail(
       @RequestBody @Validated BillItemDetailQuery query) {
-    PageInfo<BillItemStatisticsDetailVO> pageInfo = billDetailBiz.billItemStatiticsDetail(query);
+    PageInfo<BillItemStatisticsDetailVO> pageInfo = billDetailBiz.billItemStatisticsDetail(query);
     return ResponseUtil.success(pageInfo);
   }
 
@@ -394,10 +394,10 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-开单项目数量-开单数量及金额明细导出")
   @PostMapping(value = "/billItem/statistics/detail/export", name = "根据条件查询开单数量及金额统计明细列表导出")
-  public ResponseResult<T> billItemStatiticsDetailExport(
+  public ResponseResult<T> billItemStatisticsDetailExport(
       HttpServletResponse response, @RequestBody @Validated BillItemDetailQuery query)
       throws IOException {
-    billDetailBiz.billItemStatiticsDetailExport(query, response);
+    billDetailBiz.billItemStatisticsDetailExport(query, response);
     return ResponseUtil.success(null);
   }
 

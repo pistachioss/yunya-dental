@@ -192,7 +192,7 @@ public class BizTest {
         String param = "{\"keyword\":\"\",\"billNum\":\"\",\"executorIds\":[],\"orgId\":26,\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true,\"startDate\":\"2021-04\",\"endDate\":\"2021-04\",\"dateType\":1,\"itemId\":101,\"itemType\":1,\"regDentistId\":\"303\",\"showClinic\":true,\"toMan\":false}";
         BillItemDetailQuery query = JSONObject.parseObject(param, BillItemDetailQuery.class);
         long t1 = System.currentTimeMillis();
-        PageInfo<BillItemStatisticsDetailVO> result = baseBillDetailBiz.billItemStatiticsDetail(query);
+        PageInfo<BillItemStatisticsDetailVO> result = baseBillDetailBiz.billItemStatisticsDetail(query);
         System.out.println(System.currentTimeMillis() - t1);
         System.out.println(JSONObject.toJSON(result));
     }
