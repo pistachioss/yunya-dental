@@ -319,26 +319,14 @@
         be.employee_name as regDentistName,
         bb.order_amount as totalOriginalAmount,
         bb.actual_amount as totalActualAmount,
-        bb.actual_amount - bbp.receivedAmount as billReceivableAmount
+        bb.debt_amount as billReceivableAmount
         from base_bill bb
         left join base_patient bp on bb.patient_id = bp.patient_id
         left join base_treatment_process btp on bb.treatment_id = btp.treatment_id
         left join base_employee be on btp.registered_dentist_id = be.user_id
-        inner join (
-        select bbp.bill_id,
-        sum(bbp.received_amount) as receivedAmount
-        from base_bill_pay bbp
-        <where>
-            <if test="query.billDate != null and query.billDate != ''">
-                AND date_format(bbp.payee_date, '%Y-%m-%d') &lt;= #{query.billDate}
-            </if>
-        </where>
-        group by bbp.bill_id
-        ) bbp on bb.bill_id = bbp.bill_id
         <where>
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
-                and btp.org_id = #{query.orgId}
             </if>
             <if test="query.billDate != null and query.billDate != ''">
                 AND date_format(bb.bill_date, '%Y-%m-%d') &lt;= #{query.billDate}
