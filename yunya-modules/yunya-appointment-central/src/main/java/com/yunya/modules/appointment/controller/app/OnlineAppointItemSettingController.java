@@ -26,7 +26,7 @@ import javax.validation.constraints.NotNull;
  * @create: 2021-05-18 16:20
  **/
 @RestController
-@RequestMapping("/online/setting")
+@RequestMapping("/online/appoint/setting/item")
 @Api(tags = "在线预约设置相关接口(公司端/用户设置/运营设置/线上预约项目)")
 public class OnlineAppointItemSettingController {
 
@@ -37,21 +37,21 @@ public class OnlineAppointItemSettingController {
     @ApiImplicitParams(
             @ApiImplicitParam(name = "id", value = "预约项目ID",required = true, dataTypeClass = Integer.class)
     )
-    @GetMapping("/appoint/item/{id}")
+    @GetMapping("/{id}")
     public ResponseResult<OnlineAppointItemSettingModelVo> findOnlineAppointItemById(@PathVariable("id")
                                                                                      @NotNull(message = "预约项目ID不能为空") Integer id) {
         return appointItemSettingBiz.findOnlineAppointItemById(id);
     }
 
     @ApiOperation("新增在线预约项目")
-    @PostMapping("/appoint/item")
+    @PostMapping
     @CurrentUser
     public ResponseResult<T> addOnlineAppointItemSetting(@RequestBody @Validated OnlineAppointItemSettingModel model) {
         return appointItemSettingBiz.addOnlineAppointItemSetting(model);
     }
 
     @ApiOperation("修改在线预约项目")
-    @PutMapping("/appoint/item")
+    @PutMapping
     @CurrentUser
     public ResponseResult<T> updateOnlineAppointItemSetting(@RequestBody @Validated OnlineAppointItemSettingForm form) {
         return appointItemSettingBiz.updateOnlineAppointItemSetting(form);
@@ -61,14 +61,14 @@ public class OnlineAppointItemSettingController {
     @ApiImplicitParams(
             @ApiImplicitParam(name = "id", value = "预约项目ID",required = true, dataTypeClass = Integer.class)
     )
-    @DeleteMapping("/appoint/item/{id}")
+    @DeleteMapping("/{id}")
     @CurrentUser
     public ResponseResult<T> deleteOnlineAppointItemSettingById(@PathVariable("id") @NotNull(message = "预约项目ID不能为空") Integer id) {
         return appointItemSettingBiz.deleteOnlineAppointItemSettingById(id);
     }
 
     @ApiOperation("根据条件批量查询预约项目")
-    @PostMapping("/appoint/item/list")
+    @PostMapping("/list")
     public ResponseResult<PageInfo<OnlineAppointItemSettingModelVo>> findByCondition(@RequestBody
                                                                                  @Validated
                                                                                  OnlineAppointItemSettingQuery query) {
