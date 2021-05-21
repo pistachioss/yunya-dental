@@ -14,7 +14,7 @@
         </plugin>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://192.168.31.90:3306/yunya_appointment_central?useUnicode=true"
+                        connectionURL="jdbc:mysql://192.168.31.90:3306/dev_yunya_appointment_central?useUnicode=true"
                         userId="sa"
                         password="Admin001!">
         </jdbcConnection>
@@ -26,16 +26,18 @@
         <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
                              type="XMLMAPPER"/>
 
-        <table tableName="appoint_item" domainObjectName="AppointItem"/>
-        <table tableName="appoint_type" domainObjectName="AppointType"/>
-        <table tableName="appointment" domainObjectName="Appointment"/>
-        <table tableName="appointment_modify_record" domainObjectName="AppointmentModifyRecord"/>
-        <table tableName="appointment_operate_record" domainObjectName="AppointmentOperateRecord"/>
-        <table tableName="appointment_split" domainObjectName="AppointmentSplit"/>
-        <table tableName="clinic_appoint_item" domainObjectName="ClinicAppointItem"/>
-        <table tableName="appointment_split" domainObjectName="AppointmentSplit"/>
-        <table tableName="clinic_device_item" domainObjectName="ClinicDeviceItem"/>
-        <table tableName="clinic_device_type" domainObjectName="ClinicDeviceType"/>
-        <table tableName="clinic_appointment_setting" domainObjectName="ClinicAppointmentSetting"/>
+<!--        <table tableName="appoint_item" domainObjectName="AppointItem"/>-->
+<!--        <table tableName="appoint_type" domainObjectName="AppointType"/>-->
+<!--        <table tableName="appointment" domainObjectName="Appointment"/>-->
+<!--        <table tableName="appointment_modify_record" domainObjectName="AppointmentModifyRecord"/>-->
+<!--        <table tableName="appointment_operate_record" domainObjectName="AppointmentOperateRecord"/>-->
+<!--        <table tableName="appointment_split" domainObjectName="AppointmentSplit"/>-->
+<!--        <table tableName="clinic_appoint_item" domainObjectName="ClinicAppointItem"/>-->
+<!--        <table tableName="appointment_split" domainObjectName="AppointmentSplit"/>-->
+<!--        <table tableName="clinic_device_item" domainObjectName="ClinicDeviceItem"/>-->
+<!--        <table tableName="clinic_device_type" domainObjectName="ClinicDeviceType"/>-->
+<!--        <table tableName="clinic_appointment_setting" domainObjectName="ClinicAppointmentSetting"/>-->
+        <table tableName="online_appoint_item_setting" domainObjectName="OnlineAppointItemSetting"/>
+        <table tableName="online_appointment" domainObjectName="OnlineAppointment"/>
     </context>
 </generatorConfiguration>
