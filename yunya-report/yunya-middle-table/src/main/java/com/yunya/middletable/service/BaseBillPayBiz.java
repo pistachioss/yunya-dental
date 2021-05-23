@@ -4,6 +4,7 @@ import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.MemberExpendRecordMapper;
 import com.yunya.middletable.dao.patient.PrepaidExpendRecordMapper;
@@ -11,6 +12,7 @@ import com.yunya.middletable.dao.report.BaseBillPayDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillPayMapper;
 import com.yunya.middletable.dao.treatment.BillPayDetailRecordMapper;
 import com.yunya.middletable.dao.treatment.BillPayRecordMapper;
+import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
 import com.yunya.models.report.BaseBillPay;
@@ -19,6 +21,7 @@ import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +57,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
   /** 预付款消费记录 */
   @Autowired private PrepaidExpendRecordMapper prepaidExpendRecordMapper;
+  /** 积分商城业务层 */
+  @Autowired
+  private CreditsShopBiz creditsShopBiz;
   /** 线程池 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -71,11 +77,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       case 0:
       case 1:
       case 2:
+        BillPayRecord payRecord = billPayRecordMapper.selectByPrimaryKey(dataId);
+        Integer patientId = payRecord.getPatientId();
         mapper.deleteByPrimaryKey(dataId);
+        log.info("积分商城测试=======================\n\n{}", baseBillPay);
         if (null != baseBillPay) {
           mapper.insertSelective(baseBillPay);
           // 保存收费记录明细
           saveBillPayDetailRecord(dataId);
+          // 增加会员积分  1元=1积分
+          creditsShopBiz.ivyConsumeAddCredits(patientId,baseBillPay.getReceivedAmount(),baseBillPay.getBillPayId());
         } else {
           baseBillPayDetailMapper.deleteByBillPayId(dataId);
         }
