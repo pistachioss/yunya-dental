@@ -8,6 +8,7 @@
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="appoint_item_id" property="appointItemId" jdbcType="INTEGER" />
     <result column="appoint_item_name" property="appointItemName" jdbcType="VARCHAR" />
+    <result column="dentist_id" property="dentistId" jdbcType="INTEGER" />
     <result column="appoint_duration" property="appointDuration" jdbcType="INTEGER" />
     <result column="inservice" property="inservice" jdbcType="BIT" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />

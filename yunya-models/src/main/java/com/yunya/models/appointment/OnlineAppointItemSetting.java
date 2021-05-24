@@ -18,6 +18,12 @@ public class OnlineAppointItemSetting {
     private Integer appointItemId;
 
     /**
+     * 医生ID
+     */
+    @Column(name = "dentist_id")
+    private Integer dentistId;
+
+    /**
      * 预约项目名称
      */
     @Column(name = "appoint_item_name")
@@ -266,5 +272,21 @@ public class OnlineAppointItemSetting {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 获取医生ID
+     * @return 医生ID
+     */
+    public Integer getDentistId() {
+        return dentistId;
+    }
+
+    /**
+     * 设置医生ID
+     * @param dentistId  医生ID
+     */
+    public void setDentistId(Integer dentistId) {
+        this.dentistId = dentistId;
     }
 }

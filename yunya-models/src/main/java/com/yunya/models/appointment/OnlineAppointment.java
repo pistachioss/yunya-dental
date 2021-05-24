@@ -30,6 +30,12 @@ public class OnlineAppointment {
     private Integer patientId;
 
     /**
+     * 微信openID，微信用户唯一标识
+     */
+    @Column(name = "open_id")
+    private String openId;
+
+    /**
      * 预约项目ID
      */
     @Column(name = "appoint_item_id")
@@ -406,5 +412,21 @@ public class OnlineAppointment {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 获取微信openID，微信用户唯一标识
+     * @return 微信openID，微信用户唯一标识
+     */
+    public String getOpenId() {
+        return openId;
+    }
+
+    /**
+     * 设置微信openID，微信用户唯一标识
+     * @param openId 微信openID，微信用户唯一标识
+     */
+    public void setOpenId(String openId) {
+        this.openId = openId;
     }
 }
