@@ -77,7 +77,8 @@
         select DISTINCT
             pmr.master_card_id masterCardId,
             pbi.name,
-            pmi.card_number cardNumber
+            pmi.card_number cardNumber,
+            pmi.member_type_id memberTypeId
         from patient_member_relation pmr join patient_member_info pmi
         on pmr.master_card_id = pmi.patient_id
         join patient_base_info pbi

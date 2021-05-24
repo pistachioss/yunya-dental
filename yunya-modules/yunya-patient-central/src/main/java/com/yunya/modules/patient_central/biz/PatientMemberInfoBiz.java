@@ -1160,6 +1160,14 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       if (StringHelper.isNotEmpty(patientCardOwnerInfoVoList)){
         // 不为空查询绑定关系（权益和余额一起查询）
         for (PatientCardOwnerInfoVo patientCardOwnerInfoVo : patientCardOwnerInfoVoList) {
+          if (patientCardOwnerInfoVo.getMemberTypeId() != null) {
+            // 获取会员卡名称
+            MemberType memberType =
+                    this.remoteSystemServiceFeign.findMemberTypeById(patientCardOwnerInfoVo.getMemberTypeId());
+            if (memberType != null && memberType.getName() != null) {
+              patientCardOwnerInfoVo.setMemberTypeName(memberType.getName());
+            }
+          }
           // 假如和卡主即绑定了权益又绑定了余额，就会存在两条消息 一条BindType为0 一条为1
           List<PatientMemberRelation> patientMemberRelationList = patientMemberRelationMapper.isBindMember(patientCardOwnerInfoVo.getMasterCardId(),patientId);
           // 判断是否为空
