@@ -53,10 +53,10 @@
         <result column="clinicName" property="clinicName" jdbcType="VARCHAR"/>
         <result column="dentistId" property="dentistId" jdbcType="INTEGER"/>
         <result column="dentistName" property="dentistName" jdbcType="VARCHAR"/>
-        <result column="totalActualAmount" property="billActualAmount" jdbcType="DECIMAL"/>
-        <result column="totalFreePayAmount" property="billFreePayAmount" jdbcType="DECIMAL"/>
-        <result column="totalReceivedAmount" property="billReceivedAmount" jdbcType="DECIMAL"/>
-        <result column="totalDebtAmount" property="billDebtAmount" jdbcType="DECIMAL"/>
+        <result column="billActualAmount" property="billActualAmount" jdbcType="DECIMAL"/>
+        <result column="billFreePayAmount" property="billFreePayAmount" jdbcType="DECIMAL"/>
+        <result column="billReceivedAmount" property="billReceivedAmount" jdbcType="DECIMAL"/>
+        <result column="billDebtAmount" property="billDebtAmount" jdbcType="DECIMAL"/>
         <collection property="billDetails" resultMap="BillDetailChargeResult"/>
     </resultMap>
     <!-- 账单明细结果集 -->
