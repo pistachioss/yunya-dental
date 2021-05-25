@@ -186,7 +186,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    */
   public Long ordersPaymentAmountByPatientId(Integer patientId) {
     Long ordersPaymentAmount = 0L;
-    Set<String> keys = redisUtils.keys("*" + patientId);
+    Set<String> keys = redisUtils.keys(RedisConstants.CREDITS_SHOP_ORDER + "*" + patientId);
     if (StringHelper.isEmpty(keys)) {
       return ordersPaymentAmount;
     }
