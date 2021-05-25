@@ -78,28 +78,41 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    * @param payId 患者支付ID
    * @return
    */
-  @Transactional(rollbackFor = Exception.class)
   public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, Integer payId) {
-    CreditsShop creditsShop = mapper.selectLastCredits(patientId);
-    Long creditsAccount = 0L;
-    if (creditsShop != null) {
-      creditsAccount = creditsShop.getCreditsAccount();
+    Integer result = 0;
+    try {
+      CreditsShop creditsShop = mapper.selectLastCredits(patientId);
+      Long creditsAccount = 0L;
+      if (creditsShop != null) {
+        creditsAccount = creditsShop.getCreditsAccount();
+      }
+      CreditsShop entity = new CreditsShop();
+      entity.setPatientId(patientId);
+      // 艾维自有渠道
+      entity.setChannel((byte) 0);
+      long l = money.setScale(0, RoundingMode.HALF_UP).longValue();
+      entity.setCredits(l);
+      entity.setCreditsAccount(creditsAccount + l);
+      entity.setDescription("门店消费获取积分");
+      entity.setType("offlineConsume");
+      // 积分新增
+      entity.setCreditsOption((byte) 0);
+      entity.setRemarks(payId.toString());
+      entity.setCrtId(patientId);
+      entity.setCrtTime(new Date(System.currentTimeMillis()));
+      result = addCredits(entity);
+    } catch (Exception e) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("\n↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓艾维线下门店消费增加积分异常↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓\n");
+      sb.append("==>patientId: " + patientId +"\n");
+      sb.append("==>money: " + money.longValue() +"\n");
+      sb.append("==>payId: " + payId +"\n");
+      sb.append("错误原因: " + e.getMessage() + "\n");
+      sb.append("错误描述: " + e.getCause() + "\n");
+      sb.append("\n↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑\n");
+      log.info(sb.toString());
     }
-    CreditsShop entity = new CreditsShop();
-    entity.setPatientId(patientId);
-    // 艾维自有渠道
-    entity.setChannel((byte) 0);
-    long l = money.setScale(0, RoundingMode.HALF_UP).longValue();
-    entity.setCredits(l);
-    entity.setCreditsAccount(creditsAccount + l);
-    entity.setDescription("门店消费获取积分");
-    entity.setType("offlineConsume");
-    // 积分新增
-    entity.setCreditsOption((byte) 0);
-    entity.setRemarks(payId.toString());
-    entity.setCrtId(patientId);
-    entity.setCrtTime(new Date(System.currentTimeMillis()));
-    return addCredits(entity);
+    return result;
   }
 
   /**
