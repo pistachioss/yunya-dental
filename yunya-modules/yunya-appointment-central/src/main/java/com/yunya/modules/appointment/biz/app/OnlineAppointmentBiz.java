@@ -229,6 +229,10 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         }
     }
 
+    /**
+     * PC端新建预约完成时，通知微信预约申请服务更新预约状态
+     * @param appointment 预约信息
+     */
     @Override
     public void build(Appointment appointment) {
         StringBuilder sb = new StringBuilder();

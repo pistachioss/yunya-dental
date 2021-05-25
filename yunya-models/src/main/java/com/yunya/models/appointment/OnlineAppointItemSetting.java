@@ -24,16 +24,10 @@ public class OnlineAppointItemSetting {
     private Integer dentistId;
 
     /**
-     * 预约项目名称
+     * 门诊ID
      */
-    @Column(name = "appoint_item_name")
-    private String appointItemName;
-
-    /**
-     * 预约默认时长（分钟）
-     */
-    @Column(name = "appoint_duration")
-    private Integer appointDuration;
+    @Column(name = "org_id")
+    private Integer orgId;
 
     /**
      * 是否删除，是否有效；1-有效，0-无效
@@ -110,42 +104,6 @@ public class OnlineAppointItemSetting {
      */
     public void setAppointItemId(Integer appointItemId) {
         this.appointItemId = appointItemId;
-    }
-
-    /**
-     * 获取预约项目名称
-     *
-     * @return appoint_item_name - 预约项目名称
-     */
-    public String getAppointItemName() {
-        return appointItemName;
-    }
-
-    /**
-     * 设置预约项目名称
-     *
-     * @param appointItemName 预约项目名称
-     */
-    public void setAppointItemName(String appointItemName) {
-        this.appointItemName = appointItemName;
-    }
-
-    /**
-     * 获取预约默认时长（分钟）
-     *
-     * @return appoint_duration - 预约默认时长（分钟）
-     */
-    public Integer getAppointDuration() {
-        return appointDuration;
-    }
-
-    /**
-     * 设置预约默认时长（分钟）
-     *
-     * @param appointDuration 预约默认时长（分钟）
-     */
-    public void setAppointDuration(Integer appointDuration) {
-        this.appointDuration = appointDuration;
     }
 
     /**
@@ -288,5 +246,21 @@ public class OnlineAppointItemSetting {
      */
     public void setDentistId(Integer dentistId) {
         this.dentistId = dentistId;
+    }
+
+    /**
+     * 获取门诊ID
+     * @return 门诊ID
+     */
+    public Integer getOrgId() {
+        return orgId;
+    }
+
+    /**
+     * 设置门诊ID
+     * @param orgId 门诊ID
+     */
+    public void setOrgId(Integer orgId) {
+        this.orgId = orgId;
     }
 }

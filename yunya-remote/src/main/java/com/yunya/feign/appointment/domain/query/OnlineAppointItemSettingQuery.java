@@ -55,6 +55,18 @@ public class OnlineAppointItemSettingQuery implements Serializable {
     private Integer appointDuration;
 
     /**
+     * 医生ID
+     */
+    @ApiModelProperty("医生ID")
+    private Integer dentistId;
+
+    /**
+     * 门诊ID
+     */
+    @ApiModelProperty("门诊ID")
+    private Integer orgId;
+
+    /**
      * 是否删除，是否有效；1-有效，0-无效
      */
     @ApiModelProperty("是否删除，是否有效；1-有效，0-无效")

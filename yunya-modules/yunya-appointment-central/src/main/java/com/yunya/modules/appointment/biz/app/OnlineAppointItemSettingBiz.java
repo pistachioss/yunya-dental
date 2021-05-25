@@ -82,7 +82,6 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("id",form.getId());
         criteria.andEqualTo("appoint_item_id",form.getAppointItemId());
-        criteria.andEqualTo("appoint_item_name",form.getAppointItemName());
         List<OnlineAppointItemSetting> results = mapper.selectByExample(example);
         if (StringHelper.isNotEmpty(results)) {
             OnlineAppointItemSetting build = EntityUtils.build(form, OnlineAppointItemSetting.class);

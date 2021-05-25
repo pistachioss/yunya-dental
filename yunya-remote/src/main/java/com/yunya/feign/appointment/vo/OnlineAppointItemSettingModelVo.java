@@ -28,12 +28,6 @@ public class OnlineAppointItemSettingModelVo implements Serializable {
     private Integer appointItemId;
 
     /**
-     * 预约项目名称
-     */
-    @ApiModelProperty("预约项目名称")
-    private String appointItemName;
-
-    /**
      * 预约默认时长（分钟）
      */
     @ApiModelProperty("预约默认时长（分钟）")

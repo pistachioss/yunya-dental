@@ -21,6 +21,11 @@ import java.util.Date;
 @Data
 public class OnlineAppointmentModel implements Serializable {
     /**
+     * 预约申请ID,唯一标识;可能为空
+     */
+    @ApiModelProperty(value = "预约申请ID,唯一标识;可能为空")
+    private Integer id;
+    /**
      * 门诊ID
      */
     @ApiModelProperty(value = "门诊ID",required = true)

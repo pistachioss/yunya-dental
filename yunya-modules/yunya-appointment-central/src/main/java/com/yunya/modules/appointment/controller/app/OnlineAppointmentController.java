@@ -7,6 +7,7 @@ import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.app.OnlineAppointmentBiz;
 import io.swagger.annotations.*;
@@ -42,6 +43,19 @@ public class OnlineAppointmentController {
     public ResponseResult<OnlineAppointmentVo> findOnlineAppointmentById(@PathVariable("id")
                                                                                      @NotNull(message = "预约申请ID不能为空") Integer id) {
         return onlineAppointmentBiz.findOnlineAppointmentById(id);
+    }
+
+    @ApiOperation("预约申请(新增/修改)")
+    @PostMapping("/apply")
+    @CurrentUser
+    public ResponseResult<T> applyOnlineAppointment(@RequestBody @Validated OnlineAppointmentModel model) {
+        Integer id = model.getId();
+        if (id == null) {
+            return this.addOnlineAppointment(model);
+        } else {
+            OnlineAppointmentForm build = EntityUtils.build(model, OnlineAppointmentForm.class);
+            return this.updateOnlineAppointment(build);
+        }
     }
 
     @ApiOperation("新增在线预约申请")
