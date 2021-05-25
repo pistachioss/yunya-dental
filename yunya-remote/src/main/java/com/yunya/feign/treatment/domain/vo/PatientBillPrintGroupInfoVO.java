@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -34,6 +35,21 @@ public class PatientBillPrintGroupInfoVO implements Serializable {
   private String memberType;
   /** 账单信息列表 */
   private List<PatientBillPrintInfoVO> billDetailInfos;
+  /** 应收合计 */
+  @ApiModelProperty("应收合计")
+  private BigDecimal totalActualAmount;
+  /** 优惠合计 */
+  @ApiModelProperty("优惠合计")
+  private BigDecimal totalPrivilegeAmount;
+  /** 免单合计 */
+  @ApiModelProperty("免单合计")
+  private BigDecimal totalFreeAmount;
+  /** 实收合计 */
+  @ApiModelProperty("实收合计")
+  private BigDecimal totalReceivedAmount;
+  /** 欠费合计 */
+  @ApiModelProperty("欠费合计")
+  private BigDecimal totalDebtAmount;
   /** 门诊id */
   @ApiModelProperty("门诊ID")
   private Integer clinicId;
