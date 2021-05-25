@@ -689,6 +689,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         if (!StringHelper.isEmpty(memberRechargeTollRecordList)) {
           for (MemberRechargeTollRecord memberRechargeTollRecord : memberRechargeTollRecordList) {
             if (memberRechargeTollRecord.getPaymentId() != null) {
+              rechargeRecordVo.setPaymentId(memberRechargeTollRecord.getPaymentId());
               AccountItem accountItem =
                   remoteSystemServiceFeign.findAccountItemById(
                       memberRechargeTollRecord.getPaymentId());

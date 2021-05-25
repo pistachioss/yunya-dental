@@ -51,6 +51,13 @@ public class RechargeRecordVo implements Serializable {
     private BigDecimal rechargeBonus;
 
     /**
+     * 入账方式Id
+     */
+    @Excel(name = "入账方式Id")
+    @ApiModelProperty("入账方式Id")
+    private Integer paymentId;
+
+    /**
      * 入账方式
      */
     @Excel(name = "入账方式")

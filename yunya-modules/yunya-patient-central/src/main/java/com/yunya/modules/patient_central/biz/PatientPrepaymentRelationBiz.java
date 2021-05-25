@@ -6,7 +6,10 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
 import com.yunya.feign.patient_central.domain.model.*;
-import com.yunya.feign.patient_central.domain.query.*;
+import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
+import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
+import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
+import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
@@ -35,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -57,40 +61,40 @@ public class PatientPrepaymentRelationBiz
     extends BaseBiz<PatientPrepaymentRelationMapper, PatientPrepaymentRelation> {
 
   /** 注入预付款关联Mapper */
-  @Autowired PatientPrepaymentRelationMapper patientPrepaymentRelationMapper;
+  @Resource PatientPrepaymentRelationMapper patientPrepaymentRelationMapper;
 
   /** 注入付款基本信息Mapper */
-  @Autowired PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
+  @Resource PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
 
   /** 注入预付款充值记录Mapper */
-  @Autowired PrepaidRechargeTollRecordMapper prepaidRechargeTollRecordMapper;
+  @Resource PrepaidRechargeTollRecordMapper prepaidRechargeTollRecordMapper;
 
   /** 注入预付款充值记录明细Mapper */
-  @Autowired PrepaidRechargeRecordMapper prepaidRechargeRecordMapper;
+  @Resource PrepaidRechargeRecordMapper prepaidRechargeRecordMapper;
 
   /** 注入患者信息Mapper */
-  @Autowired PatientBaseInfoMapper patientBaseInfoMapper;
+  @Resource PatientBaseInfoMapper patientBaseInfoMapper;
 
   /** 注入系统服务 */
-  @Autowired RemoteSystemServiceFeign remoteSystemServiceFeign;
+  @Resource RemoteSystemServiceFeign remoteSystemServiceFeign;
 
   /** 注入服务 */
-  @Autowired RemoteDiscountFeign remoteDiscountFeign;
+  @Resource RemoteDiscountFeign remoteDiscountFeign;
 
   /** 注入预付款退款信息Mapper */
-  @Autowired PrepaidReturnRecordMapper prepaidReturnRecordMapper;
+  @Resource PrepaidReturnRecordMapper prepaidReturnRecordMapper;
 
   /** 注入预付款消费记录Mapper */
-  @Autowired PrepaidExpendRecordMapper prepaidExpendRecordMapper;
+  @Resource PrepaidExpendRecordMapper prepaidExpendRecordMapper;
 
   /** 注入服务 */
-  @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
+  @Resource private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
 
   /** 注入会员卡消费记录Mapper */
-  @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
+  @Resource private MemberExpendRecordMapper memberExpendRecordMapper;
 
   /** redis消息队列 */
-  @Autowired private RedisUtils redisUtils;
+  @Resource private RedisUtils redisUtils;
 
   /**
    * 患者预付款基本信息查询
