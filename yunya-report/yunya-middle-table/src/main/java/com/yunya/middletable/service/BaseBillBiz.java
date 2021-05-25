@@ -131,7 +131,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
        }else {
          // 没有患者积分帐户就新建
-         addPatientIntegral.setPatientId(patientCreditsShop.getPatientId());
+         addPatientIntegral.setPatientId(patientId);
          // recommend 患者推荐
          addPatientIntegral.setType("recommend");
          addPatientIntegral.setChannel((byte)0);
