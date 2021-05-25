@@ -53,10 +53,10 @@
         <result column="clinicName" property="clinicName" jdbcType="VARCHAR"/>
         <result column="dentistId" property="dentistId" jdbcType="INTEGER"/>
         <result column="dentistName" property="dentistName" jdbcType="VARCHAR"/>
-        <result column="totalActualAmount" property="totalActualAmount" jdbcType="DECIMAL"/>
-        <result column="totalFreePayAmount" property="totalFreePayAmount" jdbcType="DECIMAL"/>
-        <result column="totalReceivedAmount" property="totalReceivedAmount" jdbcType="DECIMAL"/>
-        <result column="totalDebtAmount" property="totalDebtAmount" jdbcType="DECIMAL"/>
+        <result column="billActualAmount" property="billActualAmount" jdbcType="DECIMAL"/>
+        <result column="billFreePayAmount" property="billFreePayAmount" jdbcType="DECIMAL"/>
+        <result column="billReceivedAmount" property="billReceivedAmount" jdbcType="DECIMAL"/>
+        <result column="billDebtAmount" property="billDebtAmount" jdbcType="DECIMAL"/>
         <collection property="billDetails" resultMap="BillDetailChargeResult"/>
     </resultMap>
     <!-- 账单明细结果集 -->
@@ -302,9 +302,9 @@
         bd.billDate,
         bd.clinicId,
         bd.dentistId,
-        bd.totalActualAmount,
-        bd.totalReceivedAmount,
-        bd.totalDebtAmount,
+        bd.billActualAmount,
+        bd.billReceivedAmount,
+        bd.billDebtAmount,
         bd.orderDetailId,
         bd.itemType,
         bd.billingItemId,
@@ -331,9 +331,9 @@
         date_format(br.crt_time, '%Y-%m-%d %H:%i') as billDate,
         br.org_id as clinicId,
         tr.dentist_id as dentistId,
-        br.actual_receivable_amount as totalActualAmount,
-        br.received_amount as totalReceivedAmount,
-        br.debt_amount as totalDebtAmount,
+        br.actual_receivable_amount as billActualAmount,
+        br.received_amount as billReceivedAmount,
+        br.debt_amount as billDebtAmount,
         od.orderDetailId,
         od.itemType,
         od.billingItemId,

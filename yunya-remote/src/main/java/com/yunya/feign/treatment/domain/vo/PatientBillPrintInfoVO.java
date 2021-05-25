@@ -39,18 +39,18 @@ public class PatientBillPrintInfoVO implements Serializable {
   /** 主治医生 */
   @ApiModelProperty("主治医生")
   private String dentistName;
-  /** 应收合计 */
-  @ApiModelProperty("应收合计")
-  private BigDecimal totalActualAmount;
-  /** 免单合计 */
-  @ApiModelProperty("免单合计")
-  private BigDecimal totalFreePayAmount;
-  /** 实收金额 */
-  @ApiModelProperty("实收金额")
-  private BigDecimal totalReceivedAmount;
-  /** 欠费金额 */
-  @ApiModelProperty("欠费金额")
-  private BigDecimal totalDebtAmount;
+  /** 账单应收合计 */
+  @ApiModelProperty("账单应收合计")
+  private BigDecimal billActualAmount;
+  /** 账单免单合计 */
+  @ApiModelProperty("账单免单合计")
+  private BigDecimal billFreePayAmount;
+  /** 账单实收金额 */
+  @ApiModelProperty("账单实收金额")
+  private BigDecimal billReceivedAmount;
+  /** 账单欠费金额 */
+  @ApiModelProperty("账单欠费金额")
+  private BigDecimal billDebtAmount;
   /** 账单明细 */
   private List<BillDetailChargeVO> billDetails;
 }

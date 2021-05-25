@@ -1575,6 +1575,11 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     resultData.setBillDetailInfos(Lists.newArrayList());
     List<PatientBillPrintInfoVO> resultList =
         billRecordMapper.selectBillDetailListByIds(patientId, billRecordIds);
+    BigDecimal totalActualAmount = new BigDecimal("0");
+    BigDecimal totalPrivilegeAmount = new BigDecimal("0");
+    BigDecimal totalFreeAmount = new BigDecimal("0");
+    BigDecimal totalReceivedAmount = new BigDecimal("0");
+    BigDecimal totalDebtAmount = new BigDecimal("0");
     if (StringHelper.isNotEmpty(resultList)) {
       for (PatientBillPrintInfoVO vo : resultList) {
         Integer clinicId = vo.getClinicId();
@@ -1587,13 +1592,48 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         if (employee != null) {
           vo.setDentistName(employee.getName());
         }
+        // 选中账单总应收
+        totalActualAmount = totalActualAmount.add(vo.getBillActualAmount());
+        List<BillDetailChargeVO> billDetails = vo.getBillDetails();
+        if (StringHelper.isNotEmpty(billDetails)) {
+          // 计算选中账单总优惠
+          totalPrivilegeAmount = calculateBillPrivilegeAmount(totalPrivilegeAmount, billDetails);
+        }
         Integer billRecordId = vo.getBillRecordId();
+        // 获取账单免单金额
         BigDecimal freeAmount = billPayDetailRecordBiz.sumBillTotalFreePayAmount(billRecordId);
-        vo.setTotalFreePayAmount(freeAmount);
-        vo.setTotalReceivedAmount(vo.getTotalReceivedAmount().subtract(freeAmount));
+        vo.setBillFreePayAmount(freeAmount);
+        // 计算账单总免单
+        totalFreeAmount = totalFreeAmount.add(freeAmount);
+        BigDecimal billReceivedAmount = vo.getBillReceivedAmount().subtract(freeAmount);
+        vo.setBillReceivedAmount(billReceivedAmount);
+        // 计算选中账单总实收（实际付费）
+        totalReceivedAmount = totalReceivedAmount.add(billReceivedAmount);
+        // 计算选中账单总欠费
+        totalDebtAmount = totalDebtAmount.add(vo.getBillDebtAmount());
       }
       resultData.setBillDetailInfos(resultList);
     }
+    resultData.setTotalActualAmount(totalActualAmount);
+    resultData.setTotalPrivilegeAmount(totalPrivilegeAmount);
+    resultData.setTotalFreeAmount(totalFreeAmount);
+    resultData.setTotalReceivedAmount(totalReceivedAmount);
+    resultData.setTotalDebtAmount(totalDebtAmount);
+  }
+
+  /**
+   * 计算账单优惠合计
+   *
+   * @param totalPrivilegeAmount 优惠总计
+   * @param billDetails 账单明细
+   * @return
+   */
+  private BigDecimal calculateBillPrivilegeAmount(
+      BigDecimal totalPrivilegeAmount, List<BillDetailChargeVO> billDetails) {
+    for (BillDetailChargeVO billDetail : billDetails) {
+      totalPrivilegeAmount = totalPrivilegeAmount.add(billDetail.getPrivilegeAmount());
+    }
+    return totalPrivilegeAmount;
   }
 
   /**
