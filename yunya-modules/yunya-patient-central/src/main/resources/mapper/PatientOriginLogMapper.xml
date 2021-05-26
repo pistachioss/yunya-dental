@@ -51,7 +51,7 @@
 
     <!-- 根据患者id查询患者来源推荐关系 -->
     <select id="selectIsReferralRelationship" resultType="com.yunya.models.patient_central.PatientOriginLog">
-        select * from patient_origin_log where patient_id = #{from.patientId}  and origin_id = #{from.originId}  and inservice = 1
+        select * from patient_origin_log where patient_id = #{from.id}  and origin_id = #{from.originId}  and inservice = 1
     </select>
 
     <!-- 患者来源关系批量删除 -->
