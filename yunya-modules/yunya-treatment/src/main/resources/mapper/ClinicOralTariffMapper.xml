@@ -15,6 +15,16 @@
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
+    <!-- 根据商品表ID启用门诊商品表 -->
+    <update id="enableClinicOralTariffByTariffId">
+        update clinic_oral_tariff set inservice = 1 , upd_id = #{userId} , upd_name = #{userName} where oral_tariff_id = #{oralTariffId} and inservice = 0
+    </update>
+
+    <!-- 根据商品表ID禁用门诊商品表 -->
+    <update id="disableClinicOralTariffByTariffId">
+        update clinic_oral_tariff set inservice = 0 , upd_id = #{userId} , upd_name = #{userName} where oral_tariff_id = #{oralTariffId} and inservice = 1
+    </update>
+
     <!-- 根据门诊商品项目ID获取门诊商品项目信息 -->
     <select id="selectClinicOralTariffById" resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO">
         select
@@ -50,16 +60,16 @@
     <select id="selectClinicOralTariffList" resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO">
         SELECT
         #{queryForm.orgId} as orgId,
-        oralTariffCategoryId,
-        oraltariffCategoryName,
-        oraltariffCategoryNumber,
-        oraltariffId,
-        `name`,
-        price,
-        englishName,
-        number,
-        unit,
-        inservice
+        cot.oralTariffCategoryId,
+        cot.oraltariffCategoryName,
+        cot.oraltariffCategoryNumber,
+        cot.oraltariffId,
+        cot.`name`,
+        cot.price,
+        cot.englishName,
+        cot.number,
+        cot.unit,
+        cot.inservice
         FROM
         (
         SELECT
@@ -90,7 +100,7 @@
                 and cot.clinic_id = #{queryForm.orgId}
             </if>
         </where>
-         ) cot ON bot.id = cot.oral_tariff_id
+        ) cot ON bot.id = cot.oral_tariff_id
         ) cot
         <where>
             <if test="queryForm.oralTariffCategoryId != null">
@@ -174,11 +184,11 @@
 
     <select id="selectClinicOralTariffInId" resultType="com.yunya.models.tariff.ClinicOralTariff">
         select
-            t.id,
-            t.clinic_id as clinicId,
-            t.oral_tariff_id as oralTariffId,
-            t.price,
-            t.inservice
+        t.id,
+        t.clinic_id as clinicId,
+        t.oral_tariff_id as oralTariffId,
+        t.price,
+        t.inservice
         from clinic_oral_tariff t
         where t.clinic_id = #{orgId}
         and t.oral_tariff_id in

@@ -2,6 +2,7 @@ package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
+import com.yunya.feign.patient_central.domain.vo.web.PatientCardOwnerInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
 import com.yunya.models.patient_central.PatientMemberRelation;
 import org.apache.ibatis.annotations.Param;
@@ -67,5 +68,18 @@ public interface PatientMemberRelationMapper extends Mapper<PatientMemberRelatio
      */
     List<SecondaryMemberInfoVo> findMemberInfo(@Param("form") PatientMemberInfoQueryForm form);
 
+    /**
+     * 根据患者id查询已绑定主卡信息
+     * @param patientId 患者id
+     * @return 已绑定主卡信息
+     */
+    List<PatientCardOwnerInfoVo> findPatientCardOwnerInfo(@Param("patientId") Integer patientId);
 
+    /**
+     * 查询是否存在绑定关系
+     * @param masterCardId 主卡人id
+     * @param patientId 副卡人id
+     * @return 绑定关系
+     */
+    List<PatientMemberRelation> isBindMember(@Param("masterCardId") String masterCardId, @Param("patientId") Integer patientId);
 }

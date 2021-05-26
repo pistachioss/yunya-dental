@@ -5,6 +5,7 @@ import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryFo
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.MemberBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientCardOwnerInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientMemberRelationVo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import org.apache.ibatis.annotations.Param;
@@ -97,4 +98,5 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
      * @return BigDecimal
      */
     BigDecimal sumMemberAndPrepaidRefundCash(@Param("query") CashReceiptOrRefundQuery query);
+
 }

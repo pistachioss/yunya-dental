@@ -493,4 +493,20 @@
         ) bp1 on bp1.patient_id = bp.patient_id
         where bp.birthday is null
     </select>
+
+    <select id="findPatientInfoInId" resultType="com.yunya.models.report.BasePatient">
+        SELECT
+            bp.patient_id AS patientId,
+            name
+        FROM
+            base_patient bp
+        <where>
+            <if test="patientIds!=null and patientIds.size()>0">
+                AND bp.patient_id in
+                <foreach collection="patientIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

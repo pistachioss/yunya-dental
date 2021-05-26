@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.CreditsShop">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="patient_id" jdbcType="INTEGER" property="patientId" />
+    <result column="type" jdbcType="VARCHAR" property="type" />
+    <result column="channel" jdbcType="TINYINT" property="channel" />
+    <result column="order_num" jdbcType="VARCHAR" property="orderNum" />
+    <result column="credits_account" jdbcType="BIGINT" property="creditsAccount" />
+    <result column="credits" jdbcType="BIGINT" property="credits" />
+    <result column="credits_option" jdbcType="TINYINT" property="creditsOption" />
+    <result column="actual_price" jdbcType="INTEGER" property="actualPrice" />
+    <result column="item_code" jdbcType="VARCHAR" property="itemCode" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
+    <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="upd_id" jdbcType="INTEGER" property="updId" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
+  </resultMap>
+
+  <sql id="baseColumns">
+    id,patient_id,type,`channel`,order_num,credits_account,credits,credits_option,actual_price,item_code,`description`,
+    remarks,inservice,crt_id,crt_time,upd_id,upd_time
+  </sql>
+
+  <!-- 获取患者最新积分信息 -->
+  <select id="selectLastCredits" resultMap="BaseResultMap">
+    select
+    <include refid="baseColumns"/>
+    from credits_shop
+    <where>
+      <if test="patientId != null">
+        patient_id = #{patientId}
+      </if>
+      order by id desc,crt_time desc
+    limit 1
+    </where>
+  </select>
+
+  <!-- 查询患者积分记录表 -->
+  <select id="selectPatientCreditsRecord" resultType="com.yunya.feign.report.domain.vo.CreditsRecordVO">
+    select
+      cs.patient_id as patientId,
+      case cs.type
+      when 'game' then '游戏'
+      when 'sign' then '签到'
+      when 'task' then 'PK赛'
+      when 'reSign' then '补签'
+      when 'hdtool' then '活动积分'
+      when 'alipay' then '支付宝'
+      when 'qb' then 'Q币'
+      when 'coupon' then '优惠券'
+      when 'object' then '实物'
+      when 'phonebill' then '话费'
+      when 'phoneflow' then '流量'
+      when 'virtual' then '虚拟商品'
+      when 'offlineConsume' then '门诊消费'
+      when 'refund' then '门店退费'
+      when 'recommend' then '患者介绍'
+      end as `type` ,
+      case cs.channel
+       when 0 then '艾维自有'
+       when 1 then '兑吧' end as `channel`,
+      concat(if(cs.credits_option=0,'+','-'),cs.credits) as `credits`,
+      date_format(cs.crt_time,'%Y-%m-%d %H:%i') as crtTime
+    from credits_shop cs
+    <where>
+      <if test="patientId != null">
+        cs.patient_id = #{patientId}
+      </if>
+    </where>
+  </select>
+
+  <!-- 查询患者总额 -->
+    <select id="selectPatientConsumptionCount"
+            resultType="com.yunya.models.report.BasePatientConsumptionCountVo">
+      select bb.patient_id patientId,sum(bbp.received_amount) integral from
+             base_bill bb
+      join base_patient bp on bb.patient_id = bp.patient_id
+      join base_bill_pay bbp on bbp.bill_id = bb.bill_id
+      where
+         DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) >= DATE_FORMAT( '2019-08-01', '%Y-%m-%d' )
+      GROUP BY bb.patient_id
+    </select>
+
+    <!-- 批量添加患者初始化积分信息 -->
+  <insert id="insetCreditsShopList">
+     INSERT INTO credits_shop (
+      `patient_id`,
+      `type`,
+      `channel`,
+      `order_num`,
+      `credits_account`,
+      `credits`,
+      `credits_option`,
+      `actual_price`,
+      `item_code`,
+      `description`,
+      `remarks`,
+      `inservice`,
+      `crt_id`,
+      `crt_time`,
+      `upd_id`,
+      `upd_time`
+    )
+    VALUES
+    <foreach collection="list" item="com.yunya.models.report.credits_shop.CreditsShop" index="index" separator=",">
+      (
+      #{com.yunya.models.report.credits_shop.CreditsShop.patientId},
+      #{com.yunya.models.report.credits_shop.CreditsShop.type},
+      #{com.yunya.models.report.credits_shop.CreditsShop.channel},
+      #{com.yunya.models.report.credits_shop.CreditsShop.orderNum},
+      #{com.yunya.models.report.credits_shop.CreditsShop.creditsAccount},
+      #{com.yunya.models.report.credits_shop.CreditsShop.credits},
+      #{com.yunya.models.report.credits_shop.CreditsShop.creditsOption},
+      #{com.yunya.models.report.credits_shop.CreditsShop.actualPrice},
+      #{com.yunya.models.report.credits_shop.CreditsShop.itemCode},
+      #{com.yunya.models.report.credits_shop.CreditsShop.description},
+      #{com.yunya.models.report.credits_shop.CreditsShop.remarks},
+      #{com.yunya.models.report.credits_shop.CreditsShop.inservice},
+      #{com.yunya.models.report.credits_shop.CreditsShop.crtId},
+      #{com.yunya.models.report.credits_shop.CreditsShop.crtTime},
+      #{com.yunya.models.report.credits_shop.CreditsShop.updId},
+      #{com.yunya.models.report.credits_shop.CreditsShop.updTime}
+      )
+    </foreach>
+  </insert>
+</mapper>

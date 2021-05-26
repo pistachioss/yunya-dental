@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.treatment.domain.form.BaseOralTariffForm;
 import com.yunya.feign.treatment.domain.form.ClinicItemPriceForm;
@@ -26,10 +27,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.tariff.*;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseOralTariffCategory;
-import com.yunya.models.tariff.BaseOralTariffHistory;
-import com.yunya.models.tariff.ClinicOralTariff;
 import com.yunya.modules.treatment.mapper.BaseOralTariffCategoryMapper;
 import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +48,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTariffInfo;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
 
@@ -91,33 +88,25 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
   public BaseOralTariffInfoVO findBaseOralTariffInfoById(Integer id) {
     BaseOralTariffInfoVO resultData = mapper.selectBaseOralTariffInfoById(id);
     if (null != resultData) {
-      OrganizationModel orgModel = new OrganizationModel();
-      orgModel.setTypes(new Byte[] {2});
-      orgModel.setWhetherPage(false);
-      List<OrganizationInfoDetail> orgInfos = systemServiceFeign.findOrgInfoList(orgModel);
+      ClinicOralTariff clinicOralTariff = new ClinicOralTariff();
+      clinicOralTariff.setOralTariffId(id);
+      List<ClinicOralTariff> clinicTariffs = clinicOralTariffBiz.selectList(clinicOralTariff);
       List<ClinicItemPriceVO> itemInfos = new ArrayList<>();
-      if (StringHelper.isNotEmpty(orgInfos)) {
-        Integer resultDataId = resultData.getId();
-        BigDecimal resultDataPrice = resultData.getPrice();
-        ClinicOralTariff entity = new ClinicOralTariff();
-        entity.setOralTariffId(resultDataId);
-        orgInfos.forEach(
-            orgInfo -> {
-              entity.setClinicId(orgInfo.getId());
-              ClinicOralTariff resultClinicOralTariff = clinicOralTariffBiz.selectOne(entity);
-              ClinicItemPriceVO itemPriceVO = new ClinicItemPriceVO();
-              if (null != resultClinicOralTariff) {
-                itemPriceVO.setClinicItemId(resultClinicOralTariff.getId());
-                itemPriceVO.setClinicItemPrice(resultClinicOralTariff.getPrice());
-                itemPriceVO.setItemInservice(resultClinicOralTariff.getInservice());
-              } else {
-                itemPriceVO.setClinicItemPrice(resultDataPrice);
-                itemPriceVO.setItemInservice(true);
+      if (StringHelper.isNotEmpty(clinicTariffs)) {
+        clinicTariffs.forEach(
+            oralTariff -> {
+              ClinicItemPriceVO clinicItem = new ClinicItemPriceVO();
+              clinicItem.setClinicItemId(oralTariff.getId());
+              Integer clinicId = oralTariff.getClinicId();
+              clinicItem.setOrgId(clinicId);
+              OrganizationInfo organizationInfo = systemServiceFeign.findOrgInfoByOrgId(clinicId);
+              if (organizationInfo != null) {
+                clinicItem.setOrgName(organizationInfo.getAbbreviation());
               }
-              itemPriceVO.setOrgId(orgInfo.getId());
-              itemPriceVO.setOrgName(orgInfo.getAbbreviation());
-              itemPriceVO.setItemId(resultDataId);
-              itemInfos.add(itemPriceVO);
+              clinicItem.setItemId(oralTariff.getOralTariffId());
+              clinicItem.setClinicItemPrice(oralTariff.getPrice());
+              clinicItem.setItemInservice(oralTariff.getInservice());
+              itemInfos.add(clinicItem);
             });
       }
       resultData.setClinicItemInfos(itemInfos);
@@ -143,6 +132,23 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
           baseOralTariffVO.setPrice(bigDecimal);
         });
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据商品表分类ID生成商品表编号
+   *
+   * @param oralTariffCategoryId 商品表分类ID
+   * @return String - 商品表编号
+   */
+  public String generateBaseOralTariffNumber(Integer oralTariffCategoryId) {
+    BaseOralTariffCategory oralTariffCategory =
+        baseOralTariffCategoryMapper.selectByPrimaryKey(oralTariffCategoryId);
+    if (oralTariffCategory == null) {
+      throw new ClientServiceException("请选择正确的商品表分类进行新增！", PARAMETERS_IS_ILLEGAL);
+    }
+    String categoryNumber = oralTariffCategory.getNumber().substring(0, 3);
+    String number = mapper.selectMaxBaseOralTariffNumber(oralTariffCategoryId, categoryNumber);
+    return categoryNumber + String.format("%03d", Integer.parseInt(number) + 1);
   }
 
   /**
@@ -195,7 +201,9 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     List<ClinicItemPriceModel> clinicItemPriceModels = model.getClinicItemPriceModels();
 
     // 保存门诊商品商品
-    saveClinicOralTariff(model.getPrice(), itemId, clinicItemPriceModels);
+    if (StringHelper.isNotEmpty(clinicItemPriceModels)) {
+      saveClinicOralTariff(model.getPrice(), itemId, clinicItemPriceModels);
+    }
 
     // 保存商品商品新增历史记录
     BaseOralTariffHistory baseOralTariffHistory = new BaseOralTariffHistory();
@@ -331,27 +339,19 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
    */
   private void updateClinicOralTariff(
       Integer itemId, List<ClinicItemPriceForm> clinicItemPriceForms) {
+    ClinicOralTariff clinicOralTariff = new ClinicOralTariff();
+    clinicOralTariff.setOralTariffId(itemId);
+    clinicOralTariffBiz.delete(clinicOralTariff);
     if (StringHelper.isNotEmpty(clinicItemPriceForms)) {
-      ClinicOralTariff clinicOralTariff;
-      for (ClinicItemPriceForm form : clinicItemPriceForms) {
-        clinicOralTariff = new ClinicOralTariff();
-        clinicOralTariff.setClinicId(form.getOrgId());
-        clinicOralTariff.setOralTariffId(itemId);
-        clinicOralTariff.setPrice(form.getItemPrice());
-        clinicOralTariff.setInservice(form.getItemInservice());
-        Integer clinicItemId = form.getClinicItemId();
-        if (null == clinicItemId) {
-          clinicOralTariff.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-          clinicOralTariff.setCrtName(BaseContextHandler.getName());
-          clinicOralTariffBiz.insertSelective(clinicOralTariff);
-        } else {
-          clinicOralTariff.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-          clinicOralTariff.setUpdName(BaseContextHandler.getName());
-          clinicOralTariff.setUpdTime(new Date(System.currentTimeMillis()));
-          clinicOralTariff.setId(clinicItemId);
-          clinicOralTariffBiz.updateSelectiveById(clinicOralTariff);
-        }
-      }
+      clinicItemPriceForms.forEach(
+          form -> {
+            clinicOralTariff.setClinicId(form.getOrgId());
+            clinicOralTariff.setPrice(form.getItemPrice());
+            clinicOralTariff.setInservice(form.getItemInservice());
+            clinicOralTariff.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            clinicOralTariff.setCrtName(BaseContextHandler.getName());
+            clinicOralTariffBiz.insertSelective(clinicOralTariff);
+          });
     }
   }
 
@@ -376,6 +376,30 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(oralTariffId, 1, 2, BaseTariffInfo);
     }
+  }
+
+  /**
+   * 一键启用禁用基础商品表
+   *
+   * @param id 商品表ID
+   * @param switchType 开关状态
+   */
+  public void operateBaseOralTariffStatus(Integer id, Boolean switchType) {
+    BaseOralTariff oralTariff = mapper.selectByPrimaryKey(id);
+    if (oralTariff == null) {
+      throw new ClientServiceException("操作失败，商品表不存在！", PARAMETERS_IS_ILLEGAL);
+    }
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String userName = BaseContextHandler.getName();
+    if (switchType) {
+      clinicOralTariffBiz.enableClinicOralTariffByTariffId(id, userId, userName);
+    } else {
+      clinicOralTariffBiz.disableClinicOralTariffByTariffId(id, userId, userName);
+    }
+    oralTariff.setInservice(switchType);
+    oralTariff.setUpdId(userId);
+    oralTariff.setUpdName(userName);
+    mapper.updateByPrimaryKeySelective(oralTariff);
   }
 
   /**
@@ -1170,7 +1194,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
   }
 
   /**
-   * 根据多个价目表ID查询价目表名称
+   * 根据多个商品表ID查询商品表名称
    *
    * @param ids 字符串ID
    * @return String
