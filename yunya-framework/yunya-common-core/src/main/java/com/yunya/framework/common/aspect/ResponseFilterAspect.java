@@ -1,16 +1,13 @@
 package com.yunya.framework.common.aspect;
 
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.StringHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 
 /**
@@ -33,7 +30,7 @@ public class ResponseFilterAspect {
         sb.append("\n\n----------------Response返回数据拦截start-----------------\n");
         sb.append("\n==> 【controller参数】: " + Arrays.asList(ret.getArgs()));
         sb.append("\n==> 【controller路径】: " + ret.getTarget());
-        sb.append("\n==> 【Response返回值】: " + responseResult.toString());
+//        sb.append("\n==> 【Response返回值】: " + responseResult.toString());
         sb.append("\n\n----------------------end-------------------------------\n\n");
         log.info("{}",sb.toString());
     }

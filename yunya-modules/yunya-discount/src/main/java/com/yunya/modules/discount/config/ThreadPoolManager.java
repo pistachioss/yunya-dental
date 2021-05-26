@@ -1,12 +1,22 @@
 package com.yunya.modules.discount.config;
 
-import lombok.extern.slf4j.*;
-import org.springframework.context.annotation.*;
-import org.springframework.stereotype.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.util.Queue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author xiangyang
@@ -14,6 +24,7 @@ import java.util.concurrent.atomic.*;
  */
 @Slf4j
 @Component
+@EnableAsync
 public class ThreadPoolManager {
 
     /**
@@ -40,6 +51,10 @@ public class ThreadPoolManager {
      * 线程名称
      */
     private static final String NAME_PREFIX = "yunya-discount-thread-";
+    /**
+     * 线程名称
+     */
+    private static final String METHOD_NAME_PREFIX = "method-discount-thread-";
     /**
      * 线程尾部id
      */
@@ -73,6 +88,24 @@ public class ThreadPoolManager {
                 customizeThreadFactory(), customizeRejectHandler());
     }
 
+    @Bean(name = "asyncServiceExecutor")
+    public Executor asyncServiceExecutor() {
+        log.info("start asyncServiceExecutor");
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        //配置核心线程数
+        executor.setCorePoolSize(CORE_POOL_SIZE);
+        //配置最大线程数
+        executor.setMaxPoolSize(MAXIMUM_POOL_SIZE);
+        //配置队列大小
+        executor.setQueueCapacity(10);
+        //配置线程池中的线程的名称前缀
+        executor.setThreadNamePrefix(METHOD_NAME_PREFIX);
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
+        //执行初始化
+        executor.initialize();
+        return executor;
+    }
+
     /**
      * 把任务移除等待队列
      *
@@ -89,6 +122,7 @@ public class ThreadPoolManager {
             Thread t = new Thread(null, r,
                     NAME_PREFIX + threadNumber.getAndIncrement(),
                     0);
+            log.info("线程名称：{}", t.getName());
             //守护线程
             if (t.isDaemon()) {
                 t.setDaemon(true);
@@ -99,12 +133,7 @@ public class ThreadPoolManager {
             }
 
             //处理未捕捉的异常
-            t.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    log.warn("线程工厂创建异常");
-                }
-            });
+            t.setUncaughtExceptionHandler((t1, e) -> log.warn("线程编号：{}，线程工厂创建异常：", t1.getName(), e));
             return t;
         };
     }
