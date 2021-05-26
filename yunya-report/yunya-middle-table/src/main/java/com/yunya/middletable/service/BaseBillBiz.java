@@ -145,7 +145,6 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setItemCode("");
          addPatientIntegral.setDescription("500");
          addPatientIntegral.setRemarks("患者推荐");
-         addPatientIntegral.setInservice(false);
          addPatientIntegral.setCrtId(patientId);
          addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
        }else {
@@ -157,12 +156,11 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setOrderNum("");
          addPatientIntegral.setCreditsAccount(500L);
          addPatientIntegral.setCredits(500L);
-         addPatientIntegral.setCreditsOption((byte)1);
+         addPatientIntegral.setCreditsOption((byte)0);
          addPatientIntegral.setActualPrice(0);
          addPatientIntegral.setItemCode("");
          addPatientIntegral.setDescription("500");
          addPatientIntegral.setRemarks("患者推荐");
-         addPatientIntegral.setInservice(false);
          addPatientIntegral.setCrtId(patientId);
          addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
        }
