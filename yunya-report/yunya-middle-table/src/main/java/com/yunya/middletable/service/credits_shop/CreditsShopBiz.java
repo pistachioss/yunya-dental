@@ -78,6 +78,10 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    */
   public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, Integer payId) {
     Integer result = 0;
+    // 免单不加积分
+    if (money.longValue() <= 0L) {
+      return result;
+    }
     try {
       CreditsShop creditsShop = mapper.selectLastCredits(patientId);
       Long creditsAccount = 0L;
