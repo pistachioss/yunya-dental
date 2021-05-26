@@ -7,6 +7,10 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 
 /**
  * 简介: 门诊当月调整账单VO
@@ -39,6 +43,10 @@ public class BillAdjustRecordVO implements Serializable {
   @Excel(name = "当月/非当月账单")
   @ApiModelProperty("当月/非当月账单")
   private String currentMonthBill;
+  /** 调整前欠费金额 */
+  @Excel(name = "调整前欠费金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @ApiModelProperty("调整前欠费金额")
+  private BigDecimal beforeAdjustDebtAmount;
   /** 患者ID */
   @ApiModelProperty("患者ID")
   private Integer patientId;
