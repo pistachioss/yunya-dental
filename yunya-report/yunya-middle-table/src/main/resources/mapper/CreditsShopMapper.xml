@@ -62,7 +62,7 @@
       when 'virtual' then '虚拟商品'
       when 'offlineConsume' then '门诊消费'
       when 'refund' then '门店退费'
-      when 'introduce' then '患者介绍'
+      when 'recommend' then '患者介绍'
       end as `type` ,
       case cs.channel
        when 0 then '艾维自有'
