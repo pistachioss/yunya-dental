@@ -323,7 +323,29 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       PatientOriginLog patientOriginLog =
           patientOriginLogMapper.selectIsReferralRelationship(patientBaseInfo);
       PatientOriginLog insertPatientOriginLog = new PatientOriginLog();
-      if (null == patientOriginLog) {
+      if (patientOriginLog != null) {
+        if (!patientOriginLog.getOriginId().equals(patientBaseInfo.getOriginId())) {
+          insertPatientOriginLog.setPatientId(patientBaseInfo.getId());
+          insertPatientOriginLog.setOriginType(patientBaseInfo.getOriginType());
+          insertPatientOriginLog.setOriginId(patientBaseInfo.getOriginId());
+          insertPatientOriginLog.setInservice(patientBaseInfo.getInservice());
+          insertPatientOriginLog.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+          insertPatientOriginLog.setCrtName(BaseContextHandler.getName());
+          insertPatientOriginLog.setCrtTime(new Date());
+          insertPatientOriginLog.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+          insertPatientOriginLog.setUpdName(BaseContextHandler.getName());
+          insertPatientOriginLog.setUpdTime(new Date());
+
+          // 修改推荐关系状态 并发送消息
+          patientOriginLog.setInservice(false);
+          patientOriginLogMapper.updateByPrimaryKey(patientOriginLog);
+          sendMemberRelationMessages(patientOriginLog.getId(), 1);
+          // 添加推荐关系 并发送消息
+          patientOriginLogMapper.insertSelective(insertPatientOriginLog);
+          remoteRabbitMqServiceFeign.sendMessage(
+              insertPatientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
+        }
+      } else {
         insertPatientOriginLog.setPatientId(patientBaseInfo.getId());
         insertPatientOriginLog.setOriginType(patientBaseInfo.getOriginType());
         insertPatientOriginLog.setOriginId(patientBaseInfo.getOriginId());
