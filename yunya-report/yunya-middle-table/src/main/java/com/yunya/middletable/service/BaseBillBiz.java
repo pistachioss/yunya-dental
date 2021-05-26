@@ -128,6 +128,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
      BasePatientOriginLog basePatientOrigin = new BasePatientOriginLog();
      basePatientOrigin.setPatientId(patientId);
      basePatientOrigin.setOriginType(2);
+     basePatientOrigin.setInservice(true);
      BasePatientOriginLog basePatientOriginLog = basePatientOriginLogMapper.selectOne(basePatientOrigin);
      if (basePatientOriginLog != null){
        CreditsShop patientCreditsShop = creditsShopMapper.selectLastCredits(basePatientOriginLog.getOriginId());
@@ -139,12 +140,11 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setOrderNum("");
          addPatientIntegral.setCreditsAccount(patientCreditsShop.getCreditsAccount()+500);
          addPatientIntegral.setCredits(500L);
-         addPatientIntegral.setCreditsOption((byte)1);
+         addPatientIntegral.setCreditsOption((byte)0);
          addPatientIntegral.setActualPrice(0);
          addPatientIntegral.setItemCode("");
          addPatientIntegral.setDescription("500");
          addPatientIntegral.setRemarks("患者推荐");
-         addPatientIntegral.setInservice(false);
          addPatientIntegral.setCrtId(patientId);
          addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
        }else {
@@ -156,12 +156,11 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setOrderNum("");
          addPatientIntegral.setCreditsAccount(500L);
          addPatientIntegral.setCredits(500L);
-         addPatientIntegral.setCreditsOption((byte)1);
+         addPatientIntegral.setCreditsOption((byte)0);
          addPatientIntegral.setActualPrice(0);
          addPatientIntegral.setItemCode("");
          addPatientIntegral.setDescription("500");
          addPatientIntegral.setRemarks("患者推荐");
-         addPatientIntegral.setInservice(false);
          addPatientIntegral.setCrtId(patientId);
          addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
        }
