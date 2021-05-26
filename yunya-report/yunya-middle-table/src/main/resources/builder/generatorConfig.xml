@@ -46,6 +46,6 @@
 <!--        <table tableName="base_treatment_process" domainObjectName="BaseTreatmentProcess"/>-->
 <!--        <table tableName="base_user_post" domainObjectName="BaseUserPost"/>-->
 <!--        <table tableName="base_visit_remind" domainObjectName="BaseVisitRemind"/>-->
-            <table tableName="credits_shop" domainObjectName="com.yunya.models.report.credits_shop.CreditsShop"/>
+            <table tableName="credits_shop" domainObjectName="CreditsShop"/>
     </context>
 </generatorConfiguration>

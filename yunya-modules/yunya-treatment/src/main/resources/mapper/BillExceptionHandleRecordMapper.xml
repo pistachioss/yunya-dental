@@ -301,24 +301,13 @@
         behdr.id AS billId,
         behdr.billDate,
         behdr.billNumber AS billNum,
-        behdr.beforeAdjustDebtAmount,
         behdr.patientId patientId,
         tr.dentist_id AS regDentistId,
         behr.crt_id AS operatorId,
         behr.crt_name AS operatorName
         FROM
-        (
-        SELECT
-        id,
-        org_id,
-        treatment_record_id,
-        crt_id,
-        crt_name,
-        crt_time
-        FROM bill_exception_handle_record
-        WHERE
-        operate_type = 2
-        ) behr
+        ( SELECT id, org_id, treatment_record_id, crt_id, crt_name, crt_time FROM bill_exception_handle_record WHERE
+        operate_type = 2 ) behr
         LEFT JOIN (
         SELECT
         behdr.bill_handle_record_id,
@@ -326,7 +315,6 @@
         br.patient_id AS patientId,
         br.org_id AS orgId,
         br.bill_number AS billNumber,
-        br.debt_amount AS beforeAdjustDebtAmount,
         DATE_FORMAT( br.crt_time, '%Y-%m-%d' ) AS billDate
         FROM
         bill_exception_handle_detail_record behdr

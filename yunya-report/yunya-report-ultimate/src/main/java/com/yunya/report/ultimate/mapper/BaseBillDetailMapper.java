@@ -414,12 +414,4 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<BillRecordWorkloadVO> selectCouponWorkloadGroupByPrivilegeDate(
       @Param("query") DataStatisticsQuery query);
-
-  /**
-   * 根据条件查询个人开单项目实收明细表
-   *
-   * @param query 查询条件
-   * @return PageInfo<BillItemStatisticsInfoVO>
-   */
-  List<BillItemStatisticsInfoVO> billItemStatiticsInfo(@Param("query")BillItemInfoQuery query);
 }

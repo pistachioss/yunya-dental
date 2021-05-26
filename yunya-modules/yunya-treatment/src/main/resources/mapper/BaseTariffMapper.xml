@@ -91,8 +91,7 @@
                 and bt.tariff_category_id = #{queryForm.tariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
-                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like
-                concat('%',
+                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like concat('%',
                 #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
@@ -117,8 +116,7 @@
                 and bt.tariff_category_id = #{queryForm.tariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
-                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like
-                concat('%',
+                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like concat('%',
                 #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
@@ -130,27 +128,26 @@
     <select id="selectBaseTariffAssociationList"
             resultType="com.yunya.feign.treatment.domain.vo.BaseTariffAssociationVO">
         select
-        bt.id,
-        bt.item_number as itemNumber,
-        bt.`name`,
-        bt.tariff_category_id as tariffCategoryId,
-        btc.`name` as tariffCategoryName,
-        btc.number as tariffCategoryNumber,
-        bt.english_name as englishName,
-        ifnull( bt.emr, '' ) as emr,
-        ifnull( bt.attention, '' ) as attention,
-        ifnull( bt.fellow_up, '' ) as fellowUp,
-        bt.inservice
+            bt.id,
+            bt.item_number as itemNumber,
+            bt.`name`,
+            bt.tariff_category_id as tariffCategoryId,
+            btc.`name` as tariffCategoryName,
+            btc.number as tariffCategoryNumber,
+            bt.english_name as englishName,
+            ifnull( bt.emr, '' ) as emr,
+            ifnull( bt.attention, '' ) as attention,
+            ifnull( bt.fellow_up, '' ) as fellowUp,
+            bt.inservice
         from
-        base_tariff bt
+            base_tariff bt
         left join base_tariff_category btc on bt.tariff_category_id = btc.id
         <where>
             <if test="queryForm.tariffCategoryId != null">
                 and bt.tariff_category_id = #{queryForm.tariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
-                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like
-                concat('%',
+                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like concat('%',
                 #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
@@ -178,8 +175,7 @@
                 and bt.tariff_category_id = #{queryForm.tariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
-                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like
-                concat('%',
+                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like concat('%',
                 #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
@@ -192,15 +188,6 @@
     <select id="selectBaseTariffView" resultType="com.yunya.models.tariff.BaseTariff">
         select id, tariff_category_id as tariffCategoryId, item_number as itemNumber, `name`
         from base_tariff_view
-    </select>
-
-    <!-- 查询该分类下价目表最大编号后三位 -->
-    <select id="selectMaxBaseTariffNumber" resultType="java.lang.String">
-        select
-        IF(item_number is null, '000', substr(MAX(item_number), -3, 3)) as maxnum
-        from base_tariff
-        where left(item_number, 3) = #{categoryNumber}
-        and tariff_category_id = #{tariffCategoryId};
     </select>
 
     <!-- 批量插入价目表 -->

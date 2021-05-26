@@ -1,7 +1,6 @@
 package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsOwnerInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PrepaidExpendRecordVo;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
 import org.apache.ibatis.annotations.Param;
@@ -20,11 +19,4 @@ public interface PrepaidExpendRecordMapper extends Mapper<PrepaidExpendRecord> {
      * @return List<PrepaidExpendRecordVo>
      */
     List<PrepaidExpendRecordVo> expendList(@Param("form") PrepaidExpendRecordQueryForm queryForm);
-
-    /**
-     * 查询共享帐户
-     * @param patientId 患者id
-     * @return 共享帐户信息
-     */
-    List<PatientPrepaymentsOwnerInfoVo> finishedAccount(@Param("patientId") Integer patientId);
 }

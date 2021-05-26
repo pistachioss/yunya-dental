@@ -54,7 +54,6 @@ public class BaseTariffController {
   /**
    * 根据条件查询基础价目表列表
    *
-   * @param queryForm 查询条件
    * @return
    */
   @ApiOperation("根据条件查询基础价目表列表(可分页)")
@@ -63,20 +62,6 @@ public class BaseTariffController {
       @RequestBody BaseTariffQueryForm queryForm) {
     PageInfo<BaseTariffVO> resultList = baseTariffBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
-  }
-
-  /**
-   * 根据价目表分类ID获取当前价目表编号
-   *
-   * @param tariffCategoryId 价目表分类ID
-   * @return
-   */
-  @ApiOperation("根据价目表分类ID获取当前价目表编号")
-  @GetMapping(value = "/generate/number/{tariffCategoryId}", name = "根据价目表分类ID获取当前价目表编号")
-  public ResponseResult<String> getBaseTariffNumber(
-      @PathVariable("tariffCategoryId") Integer tariffCategoryId) {
-    String tariffNumber = baseTariffBiz.generateBaseTariffNumber(tariffCategoryId);
-    return ResponseUtil.success(tariffNumber);
   }
 
   /**
@@ -119,22 +104,6 @@ public class BaseTariffController {
   @DeleteMapping("/delete/{id}")
   public ResponseResult<T> delete(@PathVariable(value = "id") Integer id) {
     baseTariffBiz.delete(id);
-    return ResponseUtil.success(null);
-  }
-
-  /**
-   * 一键启用禁用基础价目表项目
-   *
-   * @param id 价目表ID
-   * @return
-   */
-  @CurrentUser
-  @ApiOperation("一键启用禁用价目表项目")
-  @GetMapping(value = "/operate/{id}/{switchType}", name = "一键启用禁用价目表项目")
-  public ResponseResult<T> operateBaseTariffStatus(
-      @PathVariable(value = "id") Integer id,
-      @PathVariable(value = "switchType") Boolean switchType) {
-    baseTariffBiz.operateBaseTariffStatus(id, switchType);
     return ResponseUtil.success(null);
   }
 

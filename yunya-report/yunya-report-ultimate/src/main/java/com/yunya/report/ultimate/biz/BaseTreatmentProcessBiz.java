@@ -29,11 +29,11 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.report.BaseOrganization;
-import com.yunya.models.report.BasePatient;
-import com.yunya.models.report.BasePatientOrigin;
 import com.yunya.models.report.BaseTreatmentProcess;
 import com.yunya.models.treatment.TreatmentRecord;
-import com.yunya.report.ultimate.mapper.*;
+import com.yunya.report.ultimate.mapper.BaseEmployeeMapper;
+import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
+import com.yunya.report.ultimate.mapper.BaseTreatmentProcessMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,11 +45,17 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.yunya.feign.wechat.enums.TemplateEnum.APPOINT_CONFIRM;
+import static com.yunya.feign.wechat.enums.TemplateEnum.*;
 
 /**
  * 简介: 就诊流程业务层
@@ -73,8 +79,6 @@ public class BaseTreatmentProcessBiz
   @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   @Autowired private BaseOrganizationMapper baseOrganizationMapper;
-  @Autowired private BasePatientMapper basePatientMapper;
-  @Autowired private BasePatientOriginMapper basePatientOriginMapper;
 
   /**
    * 根据条件查询就诊记录报表
@@ -87,71 +91,7 @@ public class BaseTreatmentProcessBiz
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<TreatmentRecordReportVO> resultList = mapper.selectTreatmentRecordReportVOList(query);
-    assemblyOriginType(resultList);
     return new PageInfo<>(resultList);
-  }
-
-  /**
-   * 装配患者来源类型和患者来源
-   *
-   * @param resultList
-   */
-  private void assemblyOriginType(List<TreatmentRecordReportVO> resultList) {
-    if (StringHelper.isNotEmpty(resultList)) {
-      Map<Integer, String> fromPatients = new HashMap<>(16);
-      Map<Integer, String> fromEmployees = new HashMap<>(16);
-      Map<Integer, String> fromSecondTypes = new HashMap<>(16);
-      resultList.forEach(vo->{
-        Integer originType = vo.getOriginType();
-        Integer originId = vo.getOriginId();
-        if (originType == null) {
-          return;
-        }
-        if (originType == 1) {//员工转介绍
-          if (!fromEmployees.containsKey(vo.getOriginId())) {
-            fromEmployees.put(originId, null);
-          }
-        } else if (originType == 2) {//患者转介绍
-          if (!fromPatients.containsKey(vo.getOriginId())) {
-            fromPatients.put(originId, null);
-          }
-        } else {
-          if (!fromSecondTypes.containsKey(vo.getOriginId())) {
-            fromSecondTypes.put(originId, null);
-          }
-        }
-      });
-      if (StringHelper.isNotEmpty(fromEmployees)) {
-        List<SysUserInfoDetail> employees = employeeMapper.selectUserInfoByIds(fromEmployees.keySet());
-        employees.forEach(vo-> fromEmployees.put(vo.getUserId(), vo.getName()));
-        resultList.forEach(vo->{
-          Integer originType = vo.getOriginType();
-          if (originType!=null && originType==1) {
-            vo.setOriginSource(fromEmployees.get(vo.getOriginId()));
-          }
-        });
-      }
-      if (StringHelper.isNotEmpty(fromPatients)) {
-        List<BasePatient> basePatients = basePatientMapper.findPatientInfoInId(fromPatients.keySet());
-        basePatients.forEach(vo-> fromPatients.put(vo.getPatientId(), vo.getName()));
-        resultList.forEach(vo->{
-          Integer originType = vo.getOriginType();
-          if (originType!=null && originType==2) {
-            vo.setOriginSource(fromPatients.get(vo.getOriginId()));
-          }
-        });
-      }
-      if (StringHelper.isNotEmpty(fromSecondTypes)) {
-        List<BasePatientOrigin> origins = basePatientOriginMapper.selectPatientOriginInIds(fromSecondTypes.keySet());
-        origins.forEach(vo-> fromSecondTypes.put(vo.getId(), vo.getName()));
-        resultList.forEach(vo->{
-          Integer originType = vo.getOriginType();
-          if (originType!=null && originType>2) {
-            vo.setOriginSource(fromSecondTypes.get(vo.getOriginId()));
-          }
-        });
-      }
-    }
   }
 
   /**
@@ -162,8 +102,7 @@ public class BaseTreatmentProcessBiz
    */
   public void exportTreatmentList(HttpServletResponse response, TreatmentRecordQuery query)
       throws IOException {
-    query.setWhetherPage(false);
-    List<TreatmentRecordReportVO> list = findTreatmentList(query).getList();
+    List<TreatmentRecordReportVO> list = mapper.selectTreatmentRecordReportVOList(query);
     ExcelUtil<TreatmentRecordReportVO> excelUtil = new ExcelUtil<>(TreatmentRecordReportVO.class);
     String fileName = "就诊记录明细";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());

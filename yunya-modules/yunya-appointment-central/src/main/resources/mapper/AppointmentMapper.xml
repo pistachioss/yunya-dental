@@ -6,7 +6,6 @@
         <id column="id" jdbcType="INTEGER" property="id"/>
         <result column="patient_id" jdbcType="INTEGER" property="patientId"/>
         <result column="org_id" jdbcType="INTEGER" property="orgId"/>
-        <result column="online_appointment_id" jdbcType="INTEGER" property="onlineAppointmentId"/>
         <result column="dentist_id" jdbcType="INTEGER" property="dentistId"/>
         <result column="assistant_id" jdbcType="INTEGER" property="assistantId"/>
         <result column="dept_room_id" jdbcType="INTEGER" property="deptRoomId"/>
@@ -53,7 +52,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-    id, patient_id, org_id, dentist_id, online_appointment_id, assistant_id, dept_room_id, clinic_device_item_id,
+    id, patient_id, org_id, dentist_id, assistant_id, dept_room_id, clinic_device_item_id,
     clinic_appoint_item_id, appoint_duration, appoint_date, appoint_time, appoint_start_time,
     appoint_end_time, appoint_period, tooth_bit, appoint_content, appoint_type, confirm_status,
     appoint_status, remarks, cancel_reason, inservice, crt_id, crt_name, crt_time, upt_id, upd_name,

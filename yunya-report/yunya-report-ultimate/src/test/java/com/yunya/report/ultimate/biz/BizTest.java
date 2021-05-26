@@ -49,8 +49,6 @@ public class BizTest {
     private BaseTariffInfoBiz baseTariffInfoBiz;
     @Autowired
     private BaseBillPayBiz baseBillPayBiz;
-    @Autowired
-    private BaseTreatmentProcessBiz baseTreatmentProcessBiz;
 
     @Test
     public void test1() {
@@ -194,7 +192,7 @@ public class BizTest {
         String param = "{\"keyword\":\"\",\"billNum\":\"\",\"executorIds\":[],\"orgId\":26,\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true,\"startDate\":\"2021-04\",\"endDate\":\"2021-04\",\"dateType\":1,\"itemId\":101,\"itemType\":1,\"regDentistId\":\"303\",\"showClinic\":true,\"toMan\":false}";
         BillItemDetailQuery query = JSONObject.parseObject(param, BillItemDetailQuery.class);
         long t1 = System.currentTimeMillis();
-        PageInfo<BillItemStatisticsDetailVO> result = baseBillDetailBiz.billItemStatisticsDetail(query);
+        PageInfo<BillItemStatisticsDetailVO> result = baseBillDetailBiz.billItemStatiticsDetail(query);
         System.out.println(System.currentTimeMillis() - t1);
         System.out.println(JSONObject.toJSON(result));
     }
@@ -357,31 +355,5 @@ public class BizTest {
         PageInfo<NonMonthCategoryVO> resultList = baseBillDetailBiz.nonMonthCategoryList(query);
         System.out.println(System.currentTimeMillis() - t1);
         System.out.println(JSONObject.toJSON(resultList));
-    }
-
-    /**
-     * 个人开单项目实收明细表
-     */
-    @Test
-    public void testBillItemStatisticsInfo() {
-        String param = "{\"itemType\":0,\"categoryItems\":[],\"employeeIds\":[],\"dateType\":1,\"workStatus\":[],\"startDate\":\"2021-04\",\"endDate\":\"2021-04\",\"orgId\":26,\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
-        BillItemInfoQuery query = JSONObject.parseObject(param, BillItemInfoQuery.class);
-        long t1 = System.currentTimeMillis();
-        PageInfo<BillItemStatisticsInfoVO> result = baseBillDetailBiz.billItemStatisticsInfo(query);
-        System.out.println(System.currentTimeMillis() - t1);
-        System.out.println(JSONObject.toJSON(result));
-    }
-
-    /**
-     * 就诊记录列表
-     */
-    @Test
-    public void testFindTreatmentList() {
-        String param = "{\"keyWord\":\"\",\"orgId\":26,\"regDentistIds\":[],\"treatType\":null,\"treatEndDate\":\"2021-05-17\",\"treatStartDate\":\"2021-02-16\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":10}";
-        TreatmentRecordQuery query = JSONObject.parseObject(param, TreatmentRecordQuery.class);
-        long t1 = System.currentTimeMillis();
-        PageInfo<TreatmentRecordReportVO> result = baseTreatmentProcessBiz.findTreatmentList(query);
-        System.out.println(System.currentTimeMillis() - t1);
-        System.out.println(JSONObject.toJSON(result));
     }
 }

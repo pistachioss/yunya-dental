@@ -339,57 +339,48 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     // 检查是否有相同会员卡折扣
     checkMemberUniteDiscountForms(memberUniteDiscountForms);
     // 设置门诊价目表会员折扣价
-    Integer[] orgIds = form.getOrgIds();
-    if (StringHelper.isNotEmpty(orgIds)) {
-      Arrays.stream(orgIds)
-          .forEachOrdered(
-              orgId ->
-                  tariffIds.stream()
-                      .<Consumer<? super MemberUniteDiscountForm>>map(
-                          tariffId ->
-                              discountForm -> {
-                                ClinicTariffMemberPrice clinicTariffMemberPrice =
-                                    new ClinicTariffMemberPrice();
-                                clinicTariffMemberPrice.setClinicId(orgId);
-                                clinicTariffMemberPrice.setTariffId(tariffId);
-                                Integer memberType = discountForm.getMemberTypeId();
-                                clinicTariffMemberPrice.setMemberTypeId(memberType);
-                                ClinicTariffMemberPrice resultClinicTariffMemberPrice =
-                                    clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
-                                BigDecimal price;
-                                ClinicTariff entity = new ClinicTariff();
-                                entity.setClinicId(orgId);
-                                entity.setTariffId(tariffId);
-                                ClinicTariff resultData = mapper.selectOne(entity);
-                                if (null != resultData) {
-                                  price = resultData.getPrice();
-                                } else {
-                                  BaseTariff tariff = baseTariffMapper.selectByPrimaryKey(tariffId);
-                                  price = tariff.getPrice();
-                                }
-                                BigDecimal discountPrice =
-                                    price
-                                        .multiply(BigDecimal.valueOf(discountForm.getRate()))
-                                        .divide(BigDecimal.valueOf(100), 2);
-                                clinicTariffMemberPrice.setDiscountPrice(discountPrice);
-                                if (resultClinicTariffMemberPrice == null) {
-                                  clinicTariffMemberPrice.setCrtId(
-                                      Integer.valueOf(BaseContextHandler.getUserID()));
-                                  clinicTariffMemberPrice.setCrtName(BaseContextHandler.getName());
-                                  clinicTariffMemberPriceBiz.insertSelective(
-                                      clinicTariffMemberPrice);
-                                } else {
-                                  resultClinicTariffMemberPrice.setDiscountPrice(discountPrice);
-                                  resultClinicTariffMemberPrice.setUpdId(
-                                      Integer.valueOf(BaseContextHandler.getUserID()));
-                                  resultClinicTariffMemberPrice.setUpdName(
-                                      BaseContextHandler.getName());
-                                  clinicTariffMemberPriceBiz.updateSelectiveById(
-                                      resultClinicTariffMemberPrice);
-                                }
-                              })
-                      .forEachOrdered(memberUniteDiscountForms::forEach));
-    }
+    Integer orgId = form.getOrgId();
+    tariffIds.stream()
+        .<Consumer<? super MemberUniteDiscountForm>>map(
+            tariffId ->
+                discountForm -> {
+                  ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
+                  clinicTariffMemberPrice.setClinicId(orgId);
+                  clinicTariffMemberPrice.setTariffId(tariffId);
+                  Integer memberType = discountForm.getMemberTypeId();
+                  clinicTariffMemberPrice.setMemberTypeId(memberType);
+                  ClinicTariffMemberPrice resultClinicTariffMemberPrice =
+                      clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
+                  BigDecimal price;
+                  ClinicTariff entity = new ClinicTariff();
+                  entity.setClinicId(orgId);
+                  entity.setTariffId(tariffId);
+                  ClinicTariff resultData = mapper.selectOne(entity);
+                  if (null != resultData) {
+                    price = resultData.getPrice();
+                  } else {
+                    BaseTariff tariff = baseTariffMapper.selectByPrimaryKey(tariffId);
+                    price = tariff.getPrice();
+                  }
+                  BigDecimal discountPrice =
+                      price
+                          .multiply(BigDecimal.valueOf(discountForm.getRate()))
+                          .divide(BigDecimal.valueOf(100), 2);
+                  clinicTariffMemberPrice.setDiscountPrice(discountPrice);
+                  if (resultClinicTariffMemberPrice == null) {
+                    clinicTariffMemberPrice.setCrtId(
+                        Integer.valueOf(BaseContextHandler.getUserID()));
+                    clinicTariffMemberPrice.setCrtName(BaseContextHandler.getName());
+                    clinicTariffMemberPriceBiz.insertSelective(clinicTariffMemberPrice);
+                  } else {
+                    resultClinicTariffMemberPrice.setDiscountPrice(discountPrice);
+                    resultClinicTariffMemberPrice.setUpdId(
+                        Integer.valueOf(BaseContextHandler.getUserID()));
+                    resultClinicTariffMemberPrice.setUpdName(BaseContextHandler.getName());
+                    clinicTariffMemberPriceBiz.updateSelectiveById(resultClinicTariffMemberPrice);
+                  }
+                })
+        .forEachOrdered(memberUniteDiscountForms::forEach);
   }
 
   /**
@@ -451,27 +442,5 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    */
   public int insertEntities(List<ClinicTariff> list) {
     return mapper.insertEntities(list);
-  }
-
-  /**
-   * 根据价目表ID启用门诊价目表
-   *
-   * @param tariffId 价目表ID
-   * @param userId 操作人ID
-   * @param userName 操作人姓名
-   */
-  public void enableClinicTariffByTariffId(Integer tariffId, Integer userId, String userName) {
-    mapper.enableClinicTariffByTariffId(tariffId, userId, userName);
-  }
-
-  /**
-   * 根据价目表ID禁用门诊价目表
-   *
-   * @param tariffId 价目表ID
-   * @param userId 操作人ID
-   * @param userName 操作人姓名
-   */
-  public void disableClinicTariffByTariffId(Integer tariffId, Integer userId, String userName) {
-    mapper.disableClinicTariffByTariffId(tariffId, userId, userName);
   }
 }
