@@ -321,31 +321,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public void addPatientOrigin(PatientBaseInfo patientBaseInfo) {
     if (patientBaseInfo.getOriginId() != null) {
       PatientOriginLog patientOriginLog =
-          patientOriginLogMapper.selectByPatientId(patientBaseInfo.getId());
+          patientOriginLogMapper.selectIsReferralRelationship(patientBaseInfo);
       PatientOriginLog insertPatientOriginLog = new PatientOriginLog();
-      if (patientOriginLog != null) {
-        if (!patientBaseInfo.getOriginId().equals(patientOriginLog.getOriginId())) {
-          insertPatientOriginLog.setPatientId(patientBaseInfo.getId());
-          insertPatientOriginLog.setOriginType(patientBaseInfo.getOriginType());
-          insertPatientOriginLog.setOriginId(patientBaseInfo.getOriginId());
-          insertPatientOriginLog.setInservice(patientBaseInfo.getInservice());
-          insertPatientOriginLog.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-          insertPatientOriginLog.setCrtName(BaseContextHandler.getName());
-          insertPatientOriginLog.setCrtTime(new Date());
-          insertPatientOriginLog.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-          insertPatientOriginLog.setUpdName(BaseContextHandler.getName());
-          insertPatientOriginLog.setUpdTime(new Date());
-
-          // 修改推荐关系状态 并发送消息
-          patientOriginLog.setInservice(false);
-          patientOriginLogMapper.updateByPrimaryKey(patientOriginLog);
-          sendMemberRelationMessages(patientOriginLog.getId(), 1);
-          // 添加推荐关系 并发送消息
-          patientOriginLogMapper.insertSelective(insertPatientOriginLog);
-          remoteRabbitMqServiceFeign.sendMessage(
-              insertPatientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
-        }
-      } else {
+      if (null == patientOriginLog) {
         insertPatientOriginLog.setPatientId(patientBaseInfo.getId());
         insertPatientOriginLog.setOriginType(patientBaseInfo.getOriginType());
         insertPatientOriginLog.setOriginId(patientBaseInfo.getOriginId());
@@ -358,7 +336,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         insertPatientOriginLog.setUpdTime(new Date());
         patientOriginLogMapper.insertSelective(insertPatientOriginLog);
         remoteRabbitMqServiceFeign.sendMessage(
-            insertPatientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
+                insertPatientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
       }
     }
   }
