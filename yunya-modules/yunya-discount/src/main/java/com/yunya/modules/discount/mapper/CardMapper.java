@@ -1,14 +1,21 @@
 package com.yunya.modules.discount.mapper;
 
-import com.yunya.feign.discount.domain.bo.*;
-import com.yunya.feign.discount.domain.vo.*;
-import com.yunya.feign.patient_central.domain.query.*;
+import com.yunya.feign.discount.domain.bo.CouponItemUseBo;
+import com.yunya.feign.discount.domain.bo.CouponSaleBo;
+import com.yunya.feign.discount.domain.bo.PatientBenefitBo;
+import com.yunya.feign.discount.domain.bo.PatientCardBo;
+import com.yunya.feign.discount.domain.bo.UseClinicBo;
+import com.yunya.feign.discount.domain.bo.ViewAllocateBo;
+import com.yunya.feign.discount.domain.vo.CardActiveDetailVo;
+import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
+import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
-import com.yunya.models.discount.*;
-import org.apache.ibatis.annotations.*;
+import com.yunya.models.discount.Card;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
-import java.math.*;
-import java.util.*;
+import java.math.BigDecimal;
+import java.util.List;
 
 
 @Mapper
@@ -88,4 +95,6 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
      * 微信公众号-用户的礼包使用详情
      */
     WxCardUsageVo getCardUsage(@Param("cardId") Integer cardId);
+
+    void updateList(@Param("list") List<Card> list);
 }
