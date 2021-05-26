@@ -30,7 +30,7 @@ public class ResponseFilterAspect {
         sb.append("\n\n----------------Response返回数据拦截start-----------------\n");
         sb.append("\n==> 【controller参数】: " + Arrays.asList(ret.getArgs()));
         sb.append("\n==> 【controller路径】: " + ret.getTarget());
-//        sb.append("\n==> 【Response返回值】: " + responseResult.toString());
+        sb.append("\n==> 【Response返回值】: " + responseResult.toString());
         sb.append("\n\n----------------------end-------------------------------\n\n");
         log.info("{}",sb.toString());
     }
