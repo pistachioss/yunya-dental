@@ -16,4 +16,30 @@
     <result column="upd_name" jdbcType="VARCHAR" property="updName" />
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
+    <!-- 查询线上预约项目 -->
+    <select id="findOnlineAppointItemById" resultType="com.yunya.feign.appointment.vo.OnlineAppointItemVo">
+      select
+        oai.id,oai.name,oai.duration,oai.inservice
+      from online_appoint_item oai
+      <where>
+        <if test="id != null">
+          and oai.id = #{id}
+        </if>
+      </where>
+    </select>
+  <!-- 查询线上预约项目列表 -->
+  <select id="findOnlineAppointItemByCondition"
+          resultType="com.yunya.feign.appointment.vo.OnlineAppointItemVo">
+    select
+           oai.id,oai.name,oai.duration,oai.inservice
+    from online_appoint_item oai
+    <where>
+      <if test="query.name != null and query.name != ''">
+        and oai.name like concat('%',#{query.name},'%')
+      </if>
+      <if test="query.inservice != null">
+        and oai.inservice = true
+      </if>
+    </where>
+  </select>
 </mapper>

@@ -1,5 +1,7 @@
 package com.yunya.modules.appointment.controller.app;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointItemForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointItemQuery;
@@ -15,6 +17,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -32,14 +35,19 @@ public class OnlineAppointItemController {
 
     @ApiOperation("查询线上预约项目")
     @GetMapping("/{id}")
-    public ResponseResult<T> findOnlineAppointItemById(@PathVariable("id") @NotNull(message = "id不能为空") Integer id) {
+    public ResponseResult<OnlineAppointItemVo> findOnlineAppointItemById(@PathVariable("id") @NotNull(message = "id不能为空") Integer id) {
         return onlineAppointItemBiz.findOnlineAppointItemById(id);
     }
 
     @ApiOperation("查询线上预约项目列表")
     @PostMapping("/all")
-    public ResponseResult<OnlineAppointItemVo> findOnlineAppointItemByCondition(@RequestBody OnlineAppointItemQuery query) {
-        return onlineAppointItemBiz.findOnlineAppointItemByCondition(query);
+    public ResponseResult<PageInfo<OnlineAppointItemVo>> findOnlineAppointItemByCondition(@RequestBody OnlineAppointItemQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
+        List<OnlineAppointItemVo> data = onlineAppointItemBiz.findOnlineAppointItemByCondition(query);
+        return ResponseUtil.success(new PageInfo<>(data));
+
     }
 
     @ApiOperation("新增线上预约项目")

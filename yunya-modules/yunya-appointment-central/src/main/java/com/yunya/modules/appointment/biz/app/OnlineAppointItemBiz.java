@@ -1,15 +1,20 @@
 package com.yunya.modules.appointment.biz.app;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointItemForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointItemQuery;
 import com.yunya.feign.appointment.vo.OnlineAppointItemVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.appointment.OnlineAppointItem;
 import com.yunya.modules.appointment.mapper.OnlineAppointItemMapper;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -24,8 +29,9 @@ public class OnlineAppointItemBiz extends BaseBiz<OnlineAppointItemMapper, Onlin
      * @param id id
      * @return 查询结果
      */
-    public ResponseResult<T> findOnlineAppointItemById(Integer id) {
-        return null;
+    public ResponseResult<OnlineAppointItemVo> findOnlineAppointItemById(Integer id) {
+        OnlineAppointItemVo onlineAppointItemVo = mapper.findOnlineAppointItemById(id);
+        return ResponseUtil.success(onlineAppointItemVo);
     }
 
     /**
@@ -33,8 +39,11 @@ public class OnlineAppointItemBiz extends BaseBiz<OnlineAppointItemMapper, Onlin
      * @param query 查询条件
      * @return 查询结果
      */
-    public ResponseResult<OnlineAppointItemVo> findOnlineAppointItemByCondition(OnlineAppointItemQuery query) {
-        return null;
+    public List<OnlineAppointItemVo> findOnlineAppointItemByCondition(OnlineAppointItemQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
+        return mapper.findOnlineAppointItemByCondition(query);
     }
 
     /**
