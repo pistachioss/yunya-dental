@@ -2,6 +2,7 @@ package com.yunya.modules.appointment.controller.app;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointItemSettingForm;
+import com.yunya.feign.appointment.domain.model.OnlineAppointItemModel;
 import com.yunya.feign.appointment.domain.model.OnlineAppointItemSettingModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointItemSettingQuery;
 import com.yunya.feign.appointment.vo.OnlineAppointItemSettingModelVo;
@@ -26,7 +27,7 @@ import javax.validation.constraints.NotNull;
  * @create: 2021-05-18 16:20
  **/
 @RestController
-@RequestMapping("/online/appoint/setting/item")
+@RequestMapping("/online/appoint/item/setting")
 @Api(tags = "在线预约设置相关接口(公司端/用户设置/运营设置/线上预约项目)")
 public class OnlineAppointItemSettingController {
 
