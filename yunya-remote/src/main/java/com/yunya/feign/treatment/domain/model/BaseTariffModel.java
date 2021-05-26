@@ -56,7 +56,7 @@ public class BaseTariffModel implements Serializable {
   private BigDecimal price;
 
   /** 门诊基础价目表单价列表 */
-  @ApiModelProperty(value = "门诊基础价目表单价列表", required = true)
+  @ApiModelProperty(value = "门诊基础价目表单价列表")
   private List<ClinicItemPriceModel> clinicItemPriceModels;
 
   /** 数量 */

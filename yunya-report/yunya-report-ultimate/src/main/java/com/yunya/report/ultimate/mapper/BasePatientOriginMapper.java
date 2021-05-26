@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -28,4 +29,12 @@ public interface BasePatientOriginMapper extends Mapper<BasePatientOrigin> {
      * @return
      */
     List<BasePatientOrigin> selectPatientOriginList(@Param("query") ClinicPerformanceBusinessQuery query);
+
+    /**
+     * 根据主键ID查询患者来源
+     *
+     * @param ids
+     * @return
+     */
+    List<BasePatientOrigin> selectPatientOriginInIds(@Param("ids") Collection<Integer> ids);
 }
