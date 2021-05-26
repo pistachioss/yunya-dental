@@ -8,16 +8,12 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseBillDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillMapper;
-import com.yunya.middletable.dao.report.BasePatientOriginLogMapper;
-import com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper;
 import com.yunya.middletable.dao.treatment.BillRecordMapper;
 import com.yunya.middletable.dao.treatment.OrderDetailMapper;
 import com.yunya.middletable.dao.treatment.OrderDetailPayRecordMapper;
 import com.yunya.middletable.dao.treatment.OrderRecordMapper;
 import com.yunya.models.report.BaseBill;
 import com.yunya.models.report.BaseBillDetail;
-import com.yunya.models.report.BasePatientOriginLog;
-import com.yunya.models.report.CreditsShop;
 import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderDetailPayRecord;
@@ -31,7 +27,10 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -52,19 +51,15 @@ import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH
 public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
 
   /** 订单记录 */
-  @Resource private OrderRecordMapper orderRecordMapper;
+  @Autowired private OrderRecordMapper orderRecordMapper;
   /** 订单明细 */
-  @Resource private OrderDetailMapper orderDetailMapper;
+  @Autowired private OrderDetailMapper orderDetailMapper;
   /** 订单明细付款记录 */
-  @Resource private OrderDetailPayRecordMapper orderDetailPayRecordMapper;
+  @Autowired private OrderDetailPayRecordMapper orderDetailPayRecordMapper;
   /** 账单记录 */
-  @Resource private BillRecordMapper billRecordMapper;
+  @Autowired private BillRecordMapper billRecordMapper;
   /** 中间表账单详情 */
-  @Resource private BaseBillDetailMapper baseBillDetailMapper;
-  /** 患者推荐关系 */
-  @Resource private BasePatientOriginLogMapper basePatientOriginLogMapper;
-  /** 患者积分信息 */
-  @Resource private CreditsShopMapper creditsShopMapper;
+  @Autowired private BaseBillDetailMapper baseBillDetailMapper;
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -99,10 +94,6 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       case 0:
       case 2:
       case 1:
-        // 推荐积分
-        if (null != bill){
-          addPatientIntegral(bill.getPatientId());
-        }
         mapper.deleteByPrimaryKey(dataId);
         if (null != bill) {
           mapper.insertSelective(bill);
@@ -116,58 +107,6 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       default:
         break;
     }
-  }
-
-  /**
-   * 判断是否首次下单，若是则推荐者增加500积分
-   */
-  public void addPatientIntegral(Integer patientId){
-   Integer count =  mapper.selectCountByPatientId(patientId);
-   CreditsShop addPatientIntegral = new CreditsShop();
-   if (count <= 0){
-     BasePatientOriginLog basePatientOrigin = new BasePatientOriginLog();
-     basePatientOrigin.setPatientId(patientId);
-     basePatientOrigin.setOriginType(2);
-     basePatientOrigin.setInservice(true);
-     BasePatientOriginLog basePatientOriginLog = basePatientOriginLogMapper.selectOne(basePatientOrigin);
-     if (basePatientOriginLog != null){
-       CreditsShop patientCreditsShop = creditsShopMapper.selectLastCredits(basePatientOriginLog.getOriginId());
-       if (patientCreditsShop != null){
-         addPatientIntegral.setPatientId(patientCreditsShop.getPatientId());
-         // recommend 患者推荐
-         addPatientIntegral.setType("recommend");
-         addPatientIntegral.setChannel((byte)0);
-         addPatientIntegral.setOrderNum("");
-         addPatientIntegral.setCreditsAccount(patientCreditsShop.getCreditsAccount()+500);
-         addPatientIntegral.setCredits(500L);
-         addPatientIntegral.setCreditsOption((byte)0);
-         addPatientIntegral.setActualPrice(0);
-         addPatientIntegral.setItemCode("");
-         addPatientIntegral.setDescription("500");
-         addPatientIntegral.setRemarks("患者推荐");
-         addPatientIntegral.setCrtId(patientId);
-         addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
-       }else {
-         // 没有患者积分帐户就新建
-         addPatientIntegral.setPatientId(patientId);
-         // recommend 患者推荐
-         addPatientIntegral.setType("recommend");
-         addPatientIntegral.setChannel((byte)0);
-         addPatientIntegral.setOrderNum("");
-         addPatientIntegral.setCreditsAccount(500L);
-         addPatientIntegral.setCredits(500L);
-         addPatientIntegral.setCreditsOption((byte)0);
-         addPatientIntegral.setActualPrice(0);
-         addPatientIntegral.setItemCode("");
-         addPatientIntegral.setDescription("500");
-         addPatientIntegral.setRemarks("患者推荐");
-         addPatientIntegral.setCrtId(patientId);
-         addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
-       }
-       // 增加500积分
-       creditsShopMapper.insertSelective(addPatientIntegral);
-     }
-   }
   }
 
   /**

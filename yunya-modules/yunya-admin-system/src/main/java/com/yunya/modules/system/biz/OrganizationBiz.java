@@ -22,8 +22,6 @@ import com.yunya.modules.system.mapper.SysUserPostMapper;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
 import com.yunya.modules.system.vo.tree.OrganizationTreeVO;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,7 +49,6 @@ import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ORG_L
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class OrganizationBiz {
-  private Logger log = LoggerFactory.getLogger(this.getClass());
 
   /** 消息中间件 */
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
@@ -157,27 +154,12 @@ public class OrganizationBiz {
     // 添加组织类型为医疗机构，添加医疗机构扩展信息
     Integer companyId = company.getId();
     addClinicExtInfo(resource, companyId, type);
+    remoteSmsServiceFeign.initAutoSendEvent(companyId);
     redisUtils.delete(REDIS_KEY_ORG_LIST);
     // 发送消息，同步中间表数据
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(companyId, 0, BaseOrganization);
     }
-    asynInitSmsAutoSend(companyId);
-  }
-
-  /**
-   * 异步初始化给定门诊的短信自动发送设置
-   *
-   * @param companyId 门诊id
-   */
-  private void asynInitSmsAutoSend(Integer companyId) {
-    new Thread(()-> {
-      try {
-        remoteSmsServiceFeign.initAutoSendEvent(companyId);
-      } catch (Exception e) {
-        log.error("异步初始化门诊id为：" + companyId + "，的短信自动发送设置错误", e);
-      }
-    }).start();
   }
 
   /**

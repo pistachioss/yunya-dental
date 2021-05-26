@@ -70,24 +70,4 @@
     <select id="selectMemberRelationId" resultType="java.lang.Integer">
         select  id  from patient_member_relation where master_card_id =#{masterCardId} and secondary_card_id = #{secondaryCardId} and bind_type = #{bindType}
     </select>
-
-    <!-- 根据患者id查询已绑定主卡信息 -->
-    <select id="findPatientCardOwnerInfo"
-            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientCardOwnerInfoVo">
-        select DISTINCT
-            pmr.master_card_id masterCardId,
-            pbi.name,
-            pmi.card_number cardNumber,
-            pmi.member_type_id memberTypeId
-        from patient_member_relation pmr join patient_member_info pmi
-        on pmr.master_card_id = pmi.patient_id
-        join patient_base_info pbi
-        on pbi.id = pmi.patient_id
-        where pmr.secondary_card_id = #{patientId}
-    </select>
-
-    <!-- 查询是否存在绑定关系 -->
-    <select id="isBindMember" resultType="com.yunya.models.patient_central.PatientMemberRelation">
-        select bind_type bindType from `patient_member_relation` where master_card_id = #{masterCardId}  and secondary_card_id = #{patientId}
-    </select>
 </mapper>

@@ -620,15 +620,11 @@
         FROM (
         SELECT btp.registered_dentist_id,
         btp.org_id,
-        IFNULL(bb.actualAmount, 0) AS actualAmount
+        IFNULL(bbd.price * bbd.quantity - bbd.discount_amount, 0) AS actualAmount
         FROM base_treatment_process btp
-        LEFT JOIN (
-        select IFNULL(bbd.price * bbd.quantity - bbd.discount_amount, 0) as actualAmount,
-        bbd.executor_id,
-        bb.treatment_id
-        from base_bill_detail bbd
-        left join base_bill bb on bb.bill_id = bbd.bill_id
-        ) bb ON btp.treatment_id = bb.treatment_id and bb.executor_id = btp.registered_dentist_id
+        left join base_bill bb on btp.treatment_id = bb.treatment_id
+        left join base_bill_detail bbd on bb.bill_id = bbd.bill_id and
+        btp.registered_dentist_id = bbd.executor_id
         <where>
             and btp.treat_end_time IS NOT NULL
             <if test="query.orgId != null">
@@ -646,10 +642,10 @@
                     #{item}
                 </foreach>
             </if>
-
         </where>
+        GROUP BY btp.registered_dentist_id
         ) btp
-        GROUP BY btp.org_id,
+        GROUP BY
         btp.registered_dentist_id
         ) btp6 ON bup.user_id = btp6.registered_dentist_id
         ) edi

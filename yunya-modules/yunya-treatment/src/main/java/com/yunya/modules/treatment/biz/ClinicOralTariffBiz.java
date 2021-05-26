@@ -339,60 +339,51 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     // 校验是否有相同会员卡类型
     checkMemberUniteDiscountForms(memberUniteDiscountForms);
     // 设置门诊商品会员折扣价
-    Integer[] orgIds = form.getOrgIds();
-    if (StringHelper.isNotEmpty(orgIds)) {
-      Arrays.stream(orgIds)
-          .forEachOrdered(
-              orgId ->
-                  oralTariffIds.stream()
-                      .<Consumer<? super MemberUniteDiscountForm>>map(
-                          oralTariffId ->
-                              discountForm -> {
-                                ClinicOralTariffMemberPrice clinicOralTariffMemberPrice =
-                                    new ClinicOralTariffMemberPrice();
-                                clinicOralTariffMemberPrice.setClinicId(orgId);
-                                clinicOralTariffMemberPrice.setOralTariffId(oralTariffId);
-                                Integer memberType = discountForm.getMemberTypeId();
-                                clinicOralTariffMemberPrice.setMemberTypeId(memberType);
-                                ClinicOralTariffMemberPrice resultClinicOralTariffMemberPrice =
-                                    clinicOralTariffMemberPriceBiz.selectOne(
-                                        clinicOralTariffMemberPrice);
-                                ClinicOralTariff entity = new ClinicOralTariff();
-                                entity.setClinicId(orgId);
-                                entity.setOralTariffId(oralTariffId);
-                                ClinicOralTariff resultData = mapper.selectOne(entity);
-                                BigDecimal price;
-                                if (null != resultData) {
-                                  price = resultData.getPrice();
-                                } else {
-                                  BaseOralTariff oralTariff =
-                                      baseOralTariffMapper.selectByPrimaryKey(oralTariffId);
-                                  price = oralTariff.getPrice();
-                                }
-                                BigDecimal discountPrice =
-                                    price
-                                        .multiply(BigDecimal.valueOf(discountForm.getRate()))
-                                        .divide(BigDecimal.valueOf(100), 2);
-                                clinicOralTariffMemberPrice.setDiscountPrice(discountPrice);
-                                if (resultClinicOralTariffMemberPrice == null) {
-                                  clinicOralTariffMemberPrice.setCrtId(
-                                      Integer.valueOf(BaseContextHandler.getUserID()));
-                                  clinicOralTariffMemberPrice.setCrtName(
-                                      BaseContextHandler.getName());
-                                  clinicOralTariffMemberPriceBiz.insertSelective(
-                                      clinicOralTariffMemberPrice);
-                                } else {
-                                  resultClinicOralTariffMemberPrice.setDiscountPrice(discountPrice);
-                                  resultClinicOralTariffMemberPrice.setUpdId(
-                                      Integer.valueOf(BaseContextHandler.getUserID()));
-                                  resultClinicOralTariffMemberPrice.setUpdName(
-                                      BaseContextHandler.getName());
-                                  clinicOralTariffMemberPriceBiz.updateSelectiveById(
-                                      resultClinicOralTariffMemberPrice);
-                                }
-                              })
-                      .forEachOrdered(memberUniteDiscountForms::forEach));
-    }
+    Integer orgId = form.getOrgId();
+    oralTariffIds.stream()
+        .<Consumer<? super MemberUniteDiscountForm>>map(
+            oralTariffId ->
+                discountForm -> {
+                  ClinicOralTariffMemberPrice clinicOralTariffMemberPrice =
+                      new ClinicOralTariffMemberPrice();
+                  clinicOralTariffMemberPrice.setClinicId(orgId);
+                  clinicOralTariffMemberPrice.setOralTariffId(oralTariffId);
+                  Integer memberType = discountForm.getMemberTypeId();
+                  clinicOralTariffMemberPrice.setMemberTypeId(memberType);
+                  ClinicOralTariffMemberPrice resultClinicOralTariffMemberPrice =
+                      clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
+                  ClinicOralTariff entity = new ClinicOralTariff();
+                  entity.setClinicId(orgId);
+                  entity.setOralTariffId(oralTariffId);
+                  ClinicOralTariff resultData = mapper.selectOne(entity);
+                  BigDecimal price;
+                  if (null != resultData) {
+                    price = resultData.getPrice();
+                  } else {
+                    BaseOralTariff oralTariff =
+                        baseOralTariffMapper.selectByPrimaryKey(oralTariffId);
+                    price = oralTariff.getPrice();
+                  }
+                  BigDecimal discountPrice =
+                      price
+                          .multiply(BigDecimal.valueOf(discountForm.getRate()))
+                          .divide(BigDecimal.valueOf(100), 2);
+                  clinicOralTariffMemberPrice.setDiscountPrice(discountPrice);
+                  if (resultClinicOralTariffMemberPrice == null) {
+                    clinicOralTariffMemberPrice.setCrtId(
+                        Integer.valueOf(BaseContextHandler.getUserID()));
+                    clinicOralTariffMemberPrice.setCrtName(BaseContextHandler.getName());
+                    clinicOralTariffMemberPriceBiz.insertSelective(clinicOralTariffMemberPrice);
+                  } else {
+                    resultClinicOralTariffMemberPrice.setDiscountPrice(discountPrice);
+                    resultClinicOralTariffMemberPrice.setUpdId(
+                        Integer.valueOf(BaseContextHandler.getUserID()));
+                    resultClinicOralTariffMemberPrice.setUpdName(BaseContextHandler.getName());
+                    clinicOralTariffMemberPriceBiz.updateSelectiveById(
+                        resultClinicOralTariffMemberPrice);
+                  }
+                })
+        .forEachOrdered(memberUniteDiscountForms::forEach);
   }
 
   /**
@@ -428,29 +419,5 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     }
     ExcelUtil<ClinicOralTariffVO> excelUtil = new ExcelUtil<>(ClinicOralTariffVO.class);
     excelUtil.exportExcel(response, resultList, abbreviation + "_商品项目列表");
-  }
-
-  /**
-   * 根据价目表ID启用门诊商品表
-   *
-   * @param oralTariffId 商品ID
-   * @param userId 操作人ID
-   * @param userName 操作人姓名
-   */
-  public void enableClinicOralTariffByTariffId(
-      Integer oralTariffId, Integer userId, String userName) {
-    mapper.enableClinicOralTariffByTariffId(oralTariffId, userId, userName);
-  }
-
-  /**
-   * 根据价目表ID禁用门诊商品表
-   *
-   * @param oralTariffId 商品ID
-   * @param userId 操作人ID
-   * @param userName 操作人姓名
-   */
-  public void disableClinicOralTariffByTariffId(
-      Integer oralTariffId, Integer userId, String userName) {
-    mapper.disableClinicOralTariffByTariffId(oralTariffId, userId, userName);
   }
 }

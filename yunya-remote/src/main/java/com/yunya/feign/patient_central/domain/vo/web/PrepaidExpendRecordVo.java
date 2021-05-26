@@ -1,8 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
-import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -24,65 +22,55 @@ import java.util.Date;
 @ApiModel("返回预付款消费记录信息模型")
 public class PrepaidExpendRecordVo implements Serializable {
 
-    /** 预付款消费记录id */
-    @ApiModelProperty("预付款消费记录id")
+    /**
+     * 预付款消费记录id
+     */
     private Integer id;
 
-    /** 门诊id */
-    @ApiModelProperty("门诊id")
-    private Integer orgId;
-
-    /** 患者 */
-    @Excel(name = "患者")
-    @ApiModelProperty("患者")
-    private String consumerName;
-
-    /** 户主 */
-    @Excel(name = "户主")
-    @ApiModelProperty("户主")
-    private String masterCardName;
-
-    /** 消费时间 */
-    @Excel(name = "消费时间")
-    @ApiModelProperty("消费时间")
+    /**
+     * 操作时间
+     */
     private String operatingTime;
 
-    /** 消费本金 */
-    @Excel(name = "消费本金")
-    @ApiModelProperty("消费本金")
+    /**
+     * 消费本金
+     */
     private BigDecimal expendPrincipal;
 
-    /** 消费赠金 */
-    @Excel(name = "消费赠金")
-    @ApiModelProperty("消费赠金")
+    /**
+     * 消费赠金
+     */
     private BigDecimal expendGift;
 
-    /** 消费卡号 */
-    @Excel(name = "消费卡号")
-    @ApiModelProperty("消费卡号")
-    private String memberCard;
+    /**
+     * 门诊id
+     */
+    private Integer orgId;
 
-    /** 诊所 */
-    @Excel(name = "诊所")
-    @ApiModelProperty("诊所")
+    /**
+     * 诊所
+     */
     private String orgName;
 
-    /** 操作人id */
-    @ApiModelProperty("操作人id")
+    /**
+     * 操作人id
+     */
     private Integer operatorId;
 
-    /** 操作人员 */
-    @Excel(name = "操作人员")
-    @ApiModelProperty("操作人员")
+    /**
+     * 操作人员
+     */
     private String operatorName;
 
-    /** 消费者 */
-    @ApiModelProperty("消费者")
-    private String expendName;
-
-    /** 备注 */
-    @ApiModelProperty("备注")
+    /**
+     * 备注
+     */
     private String remarks;
+
+    /**
+     * 消费者
+     */
+    private String expendName;
 
 
 }

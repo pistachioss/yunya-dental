@@ -134,7 +134,6 @@ public class BaseBillDetailMapperTest {
     query.setEndDate("2021-03-01");
     query.setEmployeeIds(new Integer[] {341, 541});
     query.setWorkStatus(new Integer[] {0, 1});
-    query.setEnableFilter((byte) 1);
     List<EmployeeWorkloadOfPersonnelVO> vos =
         baseBillDetailMapper.selectEmployeeWorkloadListOfPersonnel(query);
     System.out.println(vos);

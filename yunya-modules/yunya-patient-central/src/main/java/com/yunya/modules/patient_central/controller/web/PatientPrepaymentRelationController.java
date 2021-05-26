@@ -10,18 +10,18 @@ import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentRelationVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PrepaidMeturnRecordVo;
+import com.yunya.feign.patient_central.domain.vo.web.PrepaidRechargeRecordVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientPrepaymentRelationBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -128,21 +128,6 @@ public class PatientPrepaymentRelationController {
   }
 
   /**
-   * 充值记录-导出
-   * @param response 请求
-   * @param queryForm 条件
-   * @return 导出集合
-   * @throws IOException
-   */
-  @ApiOperation("充值记录-导出")
-  @PostMapping(value = "/rechargeRecord/export", name = "导出充值记录")
-  public ResponseResult<T> expendExportRechargeRecord(
-          HttpServletResponse response, @RequestBody PrepaidRechargeRecordQueryForm queryForm) throws IOException {
-    patientPrepaymentBiz.expendExportRechargeRecord(response, queryForm);
-    return ResponseUtil.success(null);
-  }
-
-  /**
    * 账单退费
    *
    * @param prepaidBillRechargeModel 账单退费
@@ -170,7 +155,6 @@ public class PatientPrepaymentRelationController {
     return ResponseUtil.success();
   }
 
-
   @CurrentUser
   @ApiOperation("预付款消费")
   @RequestMapping(value = "/prepaid/expend",method = RequestMethod.POST)
@@ -190,48 +174,15 @@ public class PatientPrepaymentRelationController {
     return ResponseUtil.success(patientPrepaymentBiz.refundList(queryForm));
   }
 
-
-  /**
-   * 退费记录-导出
-   * @param response 请求
-   * @param queryForm 条件
-   * @return 导出集合
-   * @throws IOException
-   */
-  @ApiOperation("退费记录-导出")
-  @PostMapping(value = "/refundList/export", name = "导出退费记录")
-  public ResponseResult<T> expendExportRefundList(
-          HttpServletResponse response, @RequestBody PrepaidMeturnRecordQueryForm queryForm) throws IOException {
-    patientPrepaymentBiz.expendExportRefundList(response, queryForm);
-    return ResponseUtil.success(null);
-  }
-
-
   /**
    * 消费记录
    * @param queryForm 预付款消费QueryForm
    * @return ResponseResult
    */
-  @CurrentUser
   @ApiOperation("消费记录")
   @PostMapping("/expendList")
   public ResponseResult expendList(@RequestBody PrepaidExpendRecordQueryForm queryForm) {
     return ResponseUtil.success(patientPrepaymentBiz.expendList(queryForm));
-  }
-
-  /**
-   * 消费记录-导出
-   * @param response 请求
-   * @param queryForm 条件
-   * @return 导出集合
-   * @throws IOException
-   */
-  @ApiOperation("消费记录-导出")
-  @PostMapping(value = "/expendList/export", name = "导出消费记录")
-  public ResponseResult<T> expendExport(
-          HttpServletResponse response, @RequestBody PrepaidExpendRecordQueryForm queryForm) throws IOException {
-    patientPrepaymentBiz.expendExport(response, queryForm);
-    return ResponseUtil.success(null);
   }
 
   /**
@@ -244,18 +195,6 @@ public class PatientPrepaymentRelationController {
   @RequestMapping(value = "prepaid/revocationFee", method = RequestMethod.POST)
   public ResponseResult revocationFee(@RequestBody PrepaidRevocationFeeModel model) {
     return patientPrepaymentBiz.revocationFee(model);
-  }
-
-  /**
-   * 查询共享帐户绑定信息
-   * @param patientId 患者id
-   * @return 主卡人信息集合
-   */
-  @ApiOperation("查询共享帐户绑定信息")
-  @GetMapping("/sharedAccount/{patientId}")
-  public ResponseResult<List<PatientPrepaymentsOwnerInfoVo>> sharedAccount(@PathVariable(value = "patientId") Integer patientId) {
-    List<PatientPrepaymentsOwnerInfoVo> patientCardOwnerInfoVos = patientPrepaymentBiz.finishedAccount(patientId);
-    return ResponseUtil.success(patientCardOwnerInfoVos);
   }
 
 

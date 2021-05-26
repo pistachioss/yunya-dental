@@ -65,12 +65,6 @@ public enum AppointmentError {
     APPOINTMENT_LIST_EMPTY(31,"预约列表为空"),
     /** 11032-预约医生已离职,不可预约 */
     APPOINTMENT_DENTIST_LEAVE(32,"预约医生已离职,不可预约"),
-    /** 11033-预约项目已经存在 */
-    APPOINTMENT_ITEM_EXIST(33,"预约项目已经存在"),
-    /** 11034-预约项目不已经存在,编辑失败 */
-    APPOINTMENT_ITEM_EDIT_NOT_EXIST(34,"预约项目不已经存在,编辑失败"),
-    /** 11034-预约项目,编辑失败 */
-    APPOINTMENT_ITEM_EDIT_FAIL(35,"预约项目,编辑失败"),
 
 
     /**---------------------------------------- 外部服务异常提示 ----------------------------------------*/

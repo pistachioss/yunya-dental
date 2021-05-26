@@ -23,8 +23,6 @@ import com.yunya.modules.employeeattend.enums.*;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.mapper.AttendancePunchRecordMapper;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,7 +47,6 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMapper, AttendancePunchRecord> {
-    private Logger log = LoggerFactory.getLogger(this.getClass());
     /** 按天请假，时长固定8小时 */
     private static final String DAY_LEAVE_MINUTE = "8小时";
     /** 班次类型：休息 */
@@ -121,7 +118,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         String longitude = queryForm.getLongitude();
         String latitude = queryForm.getLatitude();
         if (StringHelper.isEmpty(macAddress) && (StringHelper.isEmpty(longitude) || StringHelper.isEmpty(latitude))) {
-            log.error("考勤地址或Wifi不能都为空", JSONObject.toJSONString(queryForm));
             throw new ClientServiceException("考勤地址或Wifi不能都为空！", PARAMETERS_IS_ILLEGAL);
         }
         Map<Integer, JSONObject> orgMap = getOrgMapByPosition(longitude, latitude, macAddress);
@@ -409,7 +405,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Date now = new Date(System.currentTimeMillis());
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         if (attendanceDeviceBindingBiz.findEmployeeBindingDevice(userId) == null) {
-            log.error("设备未绑定，请先绑定", JSONObject.toJSONString(attendancePunchRecordForm));
             throw new ClientServiceException("设备未绑定，请先绑定", OPERATION_NOT_ALLOW);
         }
         AttendancePunchRecordQueryForm queryForm = new AttendancePunchRecordQueryForm();
@@ -418,7 +413,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         queryForm.setWhetherPage(false);
         List<AttendancePunchRecordVO> attendancePunchRecordVOS = findAttendancePunchRecordList(queryForm);
         if (attendancePunchRecordVOS==null || attendancePunchRecordVOS.isEmpty()) {
-            log.error("打卡失败，请刷新页面", JSONObject.toJSONString(attendancePunchRecordForm));
             throw new ClientServiceException("打卡失败，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         AttendancePunchRecordVO onPunchRecord = null;
@@ -437,11 +431,9 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             }
         }
         if (onPunchRecord==null || offPunchRecord == null || dbPunchRecord==null) {
-            log.error("打卡失败，请刷新页面", JSONObject.toJSONString(attendancePunchRecordForm));
             throw new ClientServiceException("打卡失败，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         if (onDutyIspunch.equals(AttendanceIsPunchEnum.UNPUNCH.getCode()) && offPunchRecord.getPunchType().equals(AttendanceTypeEnum.ONDUTY.getCode())) {
-            log.error("未打上班卡，请刷新页面", JSONObject.toJSONString(attendancePunchRecordForm));
             throw new ClientServiceException("未打上班卡，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         AttendancePunchRecord attendancePunchRecord = new AttendancePunchRecord();
@@ -504,7 +496,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 ||AttendanceStatusEnum.LATER_PUNCH.getCode().equals(punchStatus))
                 && (AttendanceStatusEnum.ONDUTY_PUNCH.getCode().equals(oldPunchStatus)
                 ||AttendanceStatusEnum.LATER_PUNCH.getCode().equals(oldPunchStatus))) {// 上班更新不允许
-            log.error("上班卡已打，请刷新页面", JSONObject.toJSONString(attendancePunchRecordForm));
             throw new ClientServiceException("上班卡已打，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         attendancePunchRecord.setLongitude(attendancePunchRecordForm.getLongitude());
@@ -530,7 +521,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Map<Integer, JSONObject> orgMap = getOrgMapByPosition(queryForm.getLongitude(), queryForm.getLatitude(), queryForm.getWifiMacAddress());
         JSONObject object = orgMap.get(orgId);
         if (orgMap.isEmpty() || object==null) {
-            log.error("不在考勤范围，请刷新页面", JSONObject.toJSONString(queryForm));
             throw new ClientServiceException("不在考勤范围，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         return object.getInteger("addressId");
@@ -1281,29 +1271,26 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             }
         });
         //请假
-        Table<Integer,Integer, Integer[]> vacationLeaveMap = HashBasedTable.create();
         List<LeaveInfoVO> leaveInfoVOS = getLeaveInfoByQuery(queryForm);
         for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
             Integer userId = leaveInfoVO.getUserId();
             Integer orgId = leaveInfoVO.getOrgId();
-            Long diff;
-            int minute;
+            long diff;
             if (leaveInfoVO.getVacationStatus().equals(0)) { // 按班次请假
                 diff = leaveInfoVO.getEndTime().getTime() - leaveInfoVO.getStartTime().getTime();
-                minute = DateUtil.micro2Min(diff).intValue();
             } else { // 按天请假
+                int days;
                 try {
-                    minute = DateUtil.daysBetween(leaveInfoVO.getStartDate(), leaveInfoVO.getEndDate());
+                    days = DateUtil.daysBetween(leaveInfoVO.getStartDate(), leaveInfoVO.getEndDate());
                 } catch (ParseException e) {
                     throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
                 }
-                diff = DAY_LEAVE_MILLSEC * minute;
+                diff = DAY_LEAVE_MILLSEC * days;
             }
             userIds.add(userId);
             userOrgIds.add(userId + "," + orgId);
             incrMinute(leaveMinuteMap, userId, orgId, diff);
             incrNum(leaveCounts, userId, orgId);
-            incrVacationNum(vacationLeaveMap, userId, orgId, leaveInfoVO.getVacationId(), minute);
             isFullMap.put(userId, orgId, false);
         }
 
@@ -1491,7 +1478,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     invalidNum = 0;
                 }
                 statistics.setInvalidNum(invalidNum);
-                assemblyVacationNum(vacationLeaveMap, userId, orgId, statistics);
                 result.add(statistics);
             });
         }
@@ -1501,84 +1487,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         pageInfo.setPageSize(queryForm.getPageSize());
         pageInfo.setTotal(userPage.getTotal());
         return pageInfo;
-    }
-
-    /**
-     * 装配不同假期类型的请假次数
-     *
-     * @param vacationLeaveMap
-     * @param userId
-     * @param orgId
-     * @param statistics
-     */
-    private void assemblyVacationNum(Table<Integer, Integer, Integer[]> vacationLeaveMap, Integer userId, Integer orgId, AttendanceStatisticsVO statistics) {
-        Integer[] vacationNum = vacationLeaveMap.get(userId, orgId);
-        if (vacationNum == null) {
-            vacationNum = new Integer[]{0,0,0,0,0,0,0,0,0,0};
-        }
-        for (int i = 0; i < vacationNum.length; i++) {
-            Integer num = vacationNum[i];
-            switch (i) {
-                case 0:{//事假
-                    statistics.setPersonalLeaveMinute(num);
-                    break;
-                }
-                case 1:{//年假
-                    statistics.setAnnualLeaveMinute(num);
-                    break;
-                }
-                case 2:{//病假
-                    statistics.setSickLeaveMinute(num);
-                    break;
-                }
-                case 3:{//婚假
-                    statistics.setWeddingLeaveMinute(num);
-                    break;
-                }
-                case 4:{//丧假
-                    statistics.setFuneralLeaveMinute(num);
-                    break;
-                }
-                case 5:{//产假
-                    statistics.setMaternityLeaveMinute(num);
-                    break;
-                }
-                case 6:{//陪产假
-                    statistics.setPaternityLeaveMinute(num);
-                    break;
-                }
-                case 7:{//考试假
-                    statistics.setExamLeaveNum(num);
-                    break;
-                }
-                case 8:{//生日假
-                    statistics.setBirthdayLeaveNum(num);
-                    break;
-                }
-                case 9:{//调休
-                    statistics.setAjustRestNum(num);
-                    break;
-                }
-                default:break;
-            }
-        }
-    }
-
-    /**
-     * 累加不同假期类型的请假
-     *
-     * @param vacationLeaveMap
-     * @param userId
-     * @param orgId
-     * @param vacationId
-     */
-    private void incrVacationNum(Table<Integer, Integer, Integer[]> vacationLeaveMap, Integer userId, Integer orgId, Integer vacationId, Integer value) {
-        Integer[] vacationNum = vacationLeaveMap.get(userId, orgId);
-        if (vacationNum == null) {//假期类型
-            vacationNum =  new Integer[]{0,0,0,0,0,0,0,0,0,0};
-        }
-        vacationNum[vacationId - 1] += value;
-        vacationLeaveMap.put(userId, orgId, vacationNum);
     }
 
     private Table<Integer, Integer, Long> sumRestWorkOvertimeInfo(List<WorkOvertimeInfoVO> workOvertimeInfoVOS, Map<Integer, List<AttendancePunchRecordVO>> workOvertimeRecordMap, Table<Integer, Integer, Integer> restDateOverCounts) {

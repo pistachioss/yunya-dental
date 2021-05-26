@@ -41,8 +41,6 @@
            c.`type`,
            c.credit_code as creditCode,
            cei.clinic_number as clinicNumber,
-           cei.address as clinicAddress,
-           cei.tel as clinicMobile,
            case
                c.type
            when 0 then

@@ -1028,7 +1028,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query 查询条件
    * @return PageInfo<BillingItemDetailVO>
    */
-  public PageInfo<BillItemStatisticsDetailVO> billItemStatisticsDetail(BillItemDetailQuery query) {
+  public PageInfo<BillItemStatisticsDetailVO> billItemStatiticsDetail(BillItemDetailQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
@@ -1043,10 +1043,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param response
    * @return PageInfo<BillingItemDetailVO>
    */
-  public void billItemStatisticsDetailExport(BillItemDetailQuery query, HttpServletResponse response)
+  public void billItemStatiticsDetailExport(BillItemDetailQuery query, HttpServletResponse response)
       throws IOException {
     query.setWhetherPage(false);
-    PageInfo<BillItemStatisticsDetailVO> pageInfo = billItemStatisticsDetail(query);
+    PageInfo<BillItemStatisticsDetailVO> pageInfo = billItemStatiticsDetail(query);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     List<BillItemStatisticsDetailVO> resultList = pageInfo.getList();
     ExcelUtil<BillItemStatisticsDetailVO> excelUtil =
@@ -2279,49 +2279,5 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   public List<BillRecordWorkloadVO> findCouponWorkloadGroupByPrivilegeDate(
       DataStatisticsQuery query) {
     return mapper.selectCouponWorkloadGroupByPrivilegeDate(query);
-  }
-
-  /**
-   * 根据条件查询个人开单项目实收明细表
-   *
-   * @param query 查询条件
-   * @return PageInfo<BillItemStatisticsInfoVO>
-   */
-  public PageInfo<BillItemStatisticsInfoVO> billItemStatisticsInfo(BillItemInfoQuery query) {
-    if (query.getWhetherPage()) {
-      PageHelper.startPage(query.getPageNum(), query.getPageSize());
-    }
-    Collection<Integer[]> items = query.getCategoryItems();
-    if (StringHelper.isNotEmpty(items)) {
-      Set<Integer> categoryIds = new HashSet<>();
-      Set<Integer> itemIds = new HashSet<>();
-      items.forEach(
-              vo -> {
-                categoryIds.add(vo[0]);
-                itemIds.add(vo[1]);
-              });
-      query.setCategoryIds(categoryIds);
-      query.setItemIds(itemIds);
-    }
-    List<BillItemStatisticsInfoVO> resultList = mapper.billItemStatiticsInfo(query);
-    return new PageInfo<>(resultList);
-  }
-
-  /**
-   * 根据条件查询个人开单项目实收明细表导出
-   *
-   * @param query 查询条件
-   * @return
-   */
-  public void billItemStatisticsInfoExport(BillItemInfoQuery query, HttpServletResponse response) throws IOException {
-    query.setWhetherPage(false);
-    PageInfo<BillItemStatisticsInfoVO> pageInfo = billItemStatisticsInfo(query);
-    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
-    List<BillItemStatisticsInfoVO> resultList = pageInfo.getList();
-    ExcelUtil<BillItemStatisticsInfoVO> excelUtil = new ExcelUtil<>(BillItemStatisticsInfoVO.class);
-    String fileName =
-            excelUtil.getFileName(
-                    organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), "个人开单项目实收明细表");
-    excelUtil.exportExcel(response, resultList, "个人开单项目实收明细表", fileName);
   }
 }

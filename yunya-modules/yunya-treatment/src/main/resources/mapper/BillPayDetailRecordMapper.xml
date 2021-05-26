@@ -100,16 +100,16 @@
         order_detail_pay_record odpr
         LEFT JOIN order_detail od ON odpr.order_detail_id = od.id
         <where>
-            AND odpr.inservice = 1
-            <if test="query.startDate != null and query.startDate != ''">
-                AND DATE_FORMAT(odpr.crt_time, '%Y-%m') &gt;= #{query.startDate}
-            </if>
-            <if test="query.endDate != null and query.endDate != ''">
-                AND DATE_FORMAT(odpr.crt_time, '%Y-%m') &lt;= #{query.endDate}
-            </if>
-            <if test="query.orgId != null">
-                AND odpr.org_id = #{query.orgId}
-            </if>
+        AND odpr.inservice = 1
+        <if test="query.startDate != null and query.startDate != ''">
+            AND DATE_FORMAT(odpr.crt_time, '%Y-%m') &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+            AND DATE_FORMAT(odpr.crt_time, '%Y-%m') &lt;= #{query.endDate}
+        </if>
+        <if test="query.orgId != null">
+            AND odpr.org_id = #{query.orgId}
+        </if>
         </where>
         ) odpr
         WHERE
@@ -125,15 +125,5 @@
             inservice = 1
             and bill_record_id = #{billRecordId}
             and account_item_id = #{accountItemId}
-    </select>
-    <!-- 根据账单ID查询免单金额 -->
-    <select id="selectTotalFreePayAmountByBillId" resultType="java.math.BigDecimal">
-        SELECT
-            IFNULL(SUM(amount), 0)
-        FROM bill_pay_detail_record bpdr
-        WHERE
-            inservice = 1
-            and bill_record_id = #{billRecordId}
-            and account_item_id in (23, 26)
     </select>
 </mapper>

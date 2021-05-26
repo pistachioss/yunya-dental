@@ -5,7 +5,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -24,7 +23,6 @@ public class AttendancePunchRecordForm implements Serializable {
 
     /** 主键id */
     @ApiModelProperty(value = "主键id")
-    @NotNull(message = "考勤数据不存在")
     private Integer id;
 
     /** 用户id */

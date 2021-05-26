@@ -2,7 +2,6 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.google.common.collect.Lists;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
@@ -94,10 +93,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Resource private OrderDetailMapper orderDetailMapper;
   /** 账单记录 */
   @Resource private BillRecordMapper billRecordMapper;
-  /** 收费记录 */
-  @Resource private BillPayRecordMapper billPayRecordMapper;
-  /** 收费明细 */
-  @Resource private BillPayDetailRecordBiz billPayDetailRecordBiz;
   /** 就诊关联助手 */
   @Resource private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
   /** 随访提醒，图片影像 */
@@ -171,7 +166,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     int i = mapper.insertSelective(entity);
     redisUtils.delete(treatingKey);
 
-    /* if (postType == 0) {
+   /* if (postType == 0) {
       AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
       matchingRecord.setOrgId(orgId);
       matchingRecord.setTreatmentRecordId(entity.getId());
@@ -238,13 +233,13 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         resultData.setOrgName(organizationInfo.getAbbreviation());
       }
       Integer patientId = resultData.getPatientId();
-      // 从缓存中查询患者
+      // todo 从缓存中查询患者
       PatientBaseInfo patientBaseInfo = patientServiceFeign.findPatientInfoById(patientId);
       if (null != patientBaseInfo) {
         resultData.setPatientName(patientBaseInfo.getName());
       }
       Integer dentistId = resultData.getDentistId();
-      // 从缓存中查询员工
+      // todo 从缓存中查询员工
       SysEmployee employee = systemServiceFeign.findSysEmployeeById(dentistId);
       if (null != employee) {
         resultData.setDentistName(employee.getName());
@@ -669,14 +664,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         vo.setReceivedAmount(billRecord.getReceivedAmount());
         vo.setCheckOutTime(new DateTime(billRecord.getCrtTime()).toString("HH:mm"));
         vo.setBillNumber(billRecord.getBillNumber());
-        BillPayRecord payRecord = new BillPayRecord();
-        payRecord.setBillRecordId(billRecord.getId());
-        payRecord.setCrtTime(billRecord.getCrtTime());
-        payRecord.setInservice(true);
-        BillPayRecord billPayRecord = billPayRecordMapper.selectOne(payRecord);
-        if (billPayRecord != null) {
-          vo.setBillPayRecordId(billPayRecord.getId());
-        }
       } else {
         vo.setPrivilegeAmount(BigDecimal.valueOf(0));
         vo.setReceivedAmount(BigDecimal.valueOf(0));
@@ -747,7 +734,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       Integer regAssistantId = registered.getAssistantId();
       if (null != regAssistantId) {
         vo.setRegAssistantId(regAssistantId);
-        // 从缓存中查询用户信息
+        // todo 从缓存中查询用户信息
         SysUserInfoDetail regAssistantInfo =
             systemServiceFeign.findSysUserEmployeeInfoByUserId(regAssistantId);
         vo.setRegAssistantName(null != regAssistantInfo ? regAssistantInfo.getName() : "--");
@@ -756,7 +743,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       Integer regDeptRoomId = registered.getDeptRoomId();
       if (null != regDeptRoomId) {
         vo.setRegDeptRoomId(regDeptRoomId);
-        // 从缓存中查询科室信息
+        // todo 从缓存中查询科室信息
         DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(regDeptRoomId);
         vo.setRegDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
       }
@@ -774,7 +761,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Deprecated
   private void setTreatingInfo(TreatmentPatientInfoVO vo) {
     Integer treatDentistId = vo.getTreatDentistId();
-    // 从缓存中查询用户信息
+    // todo 从缓存中查询用户信息
     SysUserInfoDetail treatDentistInfo =
         systemServiceFeign.findSysUserEmployeeInfoByUserId(treatDentistId);
     vo.setTreatDentistName(null != treatDentistInfo ? treatDentistInfo.getName() : "--");
@@ -1047,7 +1034,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       PatientTreatmentRecordVO vo, List<AssistantMatchingRecord> assistantMatchingRecords) {
     for (AssistantMatchingRecord matchingRecord : assistantMatchingRecords) {
       Integer assistantId = matchingRecord.getAssistantId();
-      // 从缓存中查询用户
+      // todo 从缓存中查询用户
       SysEmployee assistant = systemServiceFeign.findSysEmployeeById(assistantId);
       if (null != assistant) {
         String assistantName = assistant.getName();
@@ -1150,7 +1137,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
             if (StringHelper.isNotEmpty(collect)) {
               Appointment appointment = collect.get(0);
               // 获取预约助手信息
-              assert assistantInfos != null;
               List<SysUserInfoDetail> assistantInfoList =
                   assistantInfos.stream()
                       .filter(
@@ -1533,144 +1519,5 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       return mapper.findTreatmentRecordListByAppointIds(appointIds);
     }
     return null;
-  }
-
-  /**
-   * 批量打印患者账单记录
-   *
-   * @param query 查询条件
-   * @return list
-   */
-  public PatientBillPrintGroupInfoVO findBillPrintInfoList(BillBatchPrintInfoQuery query) {
-    Integer patientId = query.getPatientId();
-    BillRecord bill = new BillRecord();
-    bill.setPatientId(patientId);
-    int count = billRecordMapper.selectCount(bill);
-    if (count <= 0) {
-      throw new ClientServiceException("账单打印失败，请选择有账单的患者进行打印！", PARAMETERS_IS_ILLEGAL);
-    }
-    PatientBillPrintGroupInfoVO resultData = new PatientBillPrintGroupInfoVO();
-    resultData.setPatientId(patientId);
-
-    // 设置患者账单打印患者信息
-    setBillPrintInfoPatientValue(patientId, resultData);
-    // 设置账单明细
-    Integer[] billRecordIds = query.getBillRecordIds();
-    setBillPrintInfoBillDetailValue(patientId, billRecordIds, resultData);
-
-    // 设置诊所信息
-    setBillPrintInfoOrgValue(resultData);
-    return resultData;
-  }
-
-  /**
-   * 设置账单打印信息账单明细属性
-   *
-   * @param patientId 患者ID
-   * @param billRecordIds 账单记录ID列表
-   * @param resultData 打印账单
-   */
-  private void setBillPrintInfoBillDetailValue(
-      Integer patientId, Integer[] billRecordIds, PatientBillPrintGroupInfoVO resultData) {
-    resultData.setBillDetailInfos(Lists.newArrayList());
-    List<PatientBillPrintInfoVO> resultList =
-        billRecordMapper.selectBillDetailListByIds(patientId, billRecordIds);
-    BigDecimal totalActualAmount = new BigDecimal("0");
-    BigDecimal totalPrivilegeAmount = new BigDecimal("0");
-    BigDecimal totalFreeAmount = new BigDecimal("0");
-    BigDecimal totalReceivedAmount = new BigDecimal("0");
-    BigDecimal totalDebtAmount = new BigDecimal("0");
-    if (StringHelper.isNotEmpty(resultList)) {
-      for (PatientBillPrintInfoVO vo : resultList) {
-        Integer clinicId = vo.getClinicId();
-        OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(clinicId);
-        if (orgInfo != null) {
-          vo.setClinicName(orgInfo.getAbbreviation());
-        }
-        Integer dentistId = vo.getDentistId();
-        SysEmployee employee = systemServiceFeign.findSysEmployeeById(dentistId);
-        if (employee != null) {
-          vo.setDentistName(employee.getName());
-        }
-        // 选中账单总应收
-        totalActualAmount = totalActualAmount.add(vo.getBillActualAmount());
-        List<BillDetailChargeVO> billDetails = vo.getBillDetails();
-        if (StringHelper.isNotEmpty(billDetails)) {
-          // 计算选中账单总优惠
-          totalPrivilegeAmount = calculateBillPrivilegeAmount(totalPrivilegeAmount, billDetails);
-        }
-        Integer billRecordId = vo.getBillRecordId();
-        // 获取账单免单金额
-        BigDecimal freeAmount = billPayDetailRecordBiz.sumBillTotalFreePayAmount(billRecordId);
-        vo.setBillFreePayAmount(freeAmount);
-        // 计算账单总免单
-        totalFreeAmount = totalFreeAmount.add(freeAmount);
-        BigDecimal billReceivedAmount = vo.getBillReceivedAmount().subtract(freeAmount);
-        vo.setBillReceivedAmount(billReceivedAmount);
-        // 计算选中账单总实收（实际付费）
-        totalReceivedAmount = totalReceivedAmount.add(billReceivedAmount);
-        // 计算选中账单总欠费
-        totalDebtAmount = totalDebtAmount.add(vo.getBillDebtAmount());
-      }
-      resultData.setBillDetailInfos(resultList);
-    }
-    resultData.setTotalActualAmount(totalActualAmount);
-    resultData.setTotalPrivilegeAmount(totalPrivilegeAmount);
-    resultData.setTotalFreeAmount(totalFreeAmount);
-    resultData.setTotalReceivedAmount(totalReceivedAmount);
-    resultData.setTotalDebtAmount(totalDebtAmount);
-  }
-
-  /**
-   * 计算账单优惠合计
-   *
-   * @param totalPrivilegeAmount 优惠总计
-   * @param billDetails 账单明细
-   * @return
-   */
-  private BigDecimal calculateBillPrivilegeAmount(
-      BigDecimal totalPrivilegeAmount, List<BillDetailChargeVO> billDetails) {
-    for (BillDetailChargeVO billDetail : billDetails) {
-      totalPrivilegeAmount = totalPrivilegeAmount.add(billDetail.getPrivilegeAmount());
-    }
-    return totalPrivilegeAmount;
-  }
-
-  /**
-   * 设置账单打印信息门诊属性
-   *
-   * @param resultData 打印账单
-   */
-  private void setBillPrintInfoOrgValue(PatientBillPrintGroupInfoVO resultData) {
-    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
-    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
-    if (orgInfo != null) {
-      resultData.setClinicId(orgId);
-      resultData.setClinicName(orgInfo.getAbbreviation());
-      resultData.setClinicAddress(orgInfo.getClinicAddress());
-      resultData.setClinicMobile(orgInfo.getClinicMobile());
-    }
-  }
-
-  /**
-   * 设置打印账单患者相关信息
-   *
-   * @param patientId 患者ID
-   * @param resultData 账单打印信息
-   */
-  private void setBillPrintInfoPatientValue(
-      Integer patientId, PatientBillPrintGroupInfoVO resultData) {
-    PatientTotalInfoVo patientTotalInfo = patientServiceFeign.findPatientTotalInfo(patientId);
-    if (patientTotalInfo != null) {
-      resultData.setPatientName(patientTotalInfo.getName());
-      resultData.setMedicalNum(patientTotalInfo.getMedicalNumber());
-      Integer memberTypeId = patientTotalInfo.getMemberTypeId();
-      if (memberTypeId != null) {
-        MemberType memberType = systemServiceFeign.findMemberTypeById(memberTypeId);
-        if (memberType != null) {
-          resultData.setMemberType(memberType.getName());
-        }
-      }
-    }
   }
 }

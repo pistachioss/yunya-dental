@@ -57,36 +57,10 @@ public interface ClinicTariffMapper extends Mapper<ClinicTariff> {
 
   /**
    * 批量插入数据
-   *
    * @param list 数据集合
    * @return 返回影响行数
    */
   int insertEntities(@Param("list") List<ClinicTariff> list);
 
-  List<ClinicTariff> selectClinicTariffInId(
-      @Param("orgId") Integer orgId, @Param("tariffIds") List<Integer> tariffIds);
-
-  /**
-   * 根据价目表ID启用门诊价目表项目
-   *
-   * @param tariffId 价目表ID
-   * @param userId 操作人ID
-   * @param userName 操作人姓名
-   */
-  void enableClinicTariffByTariffId(
-      @Param("tariffId") Integer tariffId,
-      @Param("userId") Integer userId,
-      @Param("userName") String userName);
-
-  /**
-   * 根据价目表ID禁用门诊价目表项目
-   *
-   * @param tariffId 价目表ID
-   * @param userId 用户ID
-   * @param userName 操作人姓名
-   */
-  void disableClinicTariffByTariffId(
-      @Param("tariffId") Integer tariffId,
-      @Param("userId") Integer userId,
-      @Param("userName") String userName);
+  List<ClinicTariff> selectClinicTariffInId(@Param("orgId") Integer orgId, @Param("tariffIds") List<Integer> tariffIds);
 }

@@ -1,8 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
-import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -26,75 +24,51 @@ public class RechargeRecordVo implements Serializable {
     /**
      * 会员充值记录id
      */
-    @ApiModelProperty("会员充值记录id")
     private Integer id;
 
     /**
      * 操作时间
      */
-    @Excel(name = "操作时间")
-    @ApiModelProperty("操作时间")
     private String operatingTime;
 
     /**
-     * 充值金额
+     * 充值本金
      */
-    @Excel(name = "充值金额")
-    @ApiModelProperty("充值金额")
     private BigDecimal rechargePrincipal;
 
     /**
-     * 赠送金额
+     * 充值赠金
      */
-    @Excel(name = "赠送金额")
-    @ApiModelProperty("赠送金额")
     private BigDecimal rechargeBonus;
-
-    /**
-     * 入账方式Id
-     */
-    @Excel(name = "入账方式Id")
-    @ApiModelProperty("入账方式Id")
-    private Integer paymentId;
 
     /**
      * 入账方式
      */
-    @Excel(name = "入账方式")
-    @ApiModelProperty("入账方式")
     private String payment;
 
     /**
      * 门诊id
      */
-    @ApiModelProperty("门诊id")
     private Integer orgId;
 
     /**
      * 诊所
      */
-    @Excel(name = "诊所")
-    @ApiModelProperty("诊所")
     private String orgName;
 
     /**
      * 操作人id
      */
-    @ApiModelProperty("操作人id")
     private Integer operatorId;
 
     /**
      * 操作人员
      */
-    @Excel(name = "操作人员")
-    @ApiModelProperty("操作人员")
     private String operatorName;
 
     /**
      * 备注
      */
-    @Excel(name = "备注")
-    @ApiModelProperty("备注")
     private String remarks;
 
 

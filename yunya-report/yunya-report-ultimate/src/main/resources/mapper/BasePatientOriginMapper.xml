@@ -67,27 +67,4 @@
 
   </select>
 
-  <select id="selectPatientOriginInIds" resultType="com.yunya.models.report.BasePatientOrigin">
-    SELECT
-      bpo.id,
-      bpo.parent_id,
-      bpo.name,
-      bpo.origin_type,
-      bpo.source_attribute,
-      bpo.qr_code_path,
-      bpo.allow_operate,
-      bpo.time_limit,
-      bpo.limit_start_date,
-      bpo.limit_end_date
-    FROM base_patient_origin bpo
-    <where>
-        <if test="ids!=null and ids.size()>0">
-            AND bpo.id in
-            <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
-                #{item}
-            </foreach>
-        </if>
-    </where>
-  </select>
-
 </mapper>

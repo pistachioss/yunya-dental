@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 简介: 门诊价目表统一折扣设置参数模型
@@ -25,9 +26,8 @@ public class ClinicTariffUniteDiscountForm implements Serializable {
 
   /** 组织ID */
   @ApiModelProperty(value = "组织ID", required = true)
-  @Size(min = 1, message = "请至少设置一个门诊！")
   @NotNull(message = "组织ID不能为空！")
-  private Integer[] orgIds;
+  private Integer orgId;
   /** 门诊价目表ID数组 */
   @ApiModelProperty(value = "价目表ID数组", required = true)
   @Size(min = 1, message = "价目表ID不能为空！")

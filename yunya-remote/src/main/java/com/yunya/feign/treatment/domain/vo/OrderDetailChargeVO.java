@@ -48,9 +48,6 @@ public class OrderDetailChargeVO implements Serializable {
   /** 应收原价合计 */
   @ApiModelProperty("应收原价合计（原价）")
   private BigDecimal receivableAmount;
-  /** 优惠金额 */
-  @ApiModelProperty("优惠金额")
-  private BigDecimal privilegeAmount;
   /** 牙位 */
   @ApiModelProperty("牙位")
   private String toothBit;

@@ -196,6 +196,4 @@
         </where>
         ) as total
     </select>
-
-
 </mapper>

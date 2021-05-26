@@ -45,35 +45,7 @@
             <result column="quantity" property="quantity" jdbcType="INTEGER"/>
         </collection>
     </resultMap>
-    <!-- 账单打印信息 -->
-    <resultMap id="PatientBillPrintResult" type="com.yunya.feign.treatment.domain.vo.PatientBillPrintInfoVO">
-        <id column="billRecordId" property="billRecordId" jdbcType="INTEGER"/>
-        <result column="billDate" property="billDate" jdbcType="VARCHAR"/>
-        <result column="clinicId" property="clinicId" jdbcType="INTEGER"/>
-        <result column="clinicName" property="clinicName" jdbcType="VARCHAR"/>
-        <result column="dentistId" property="dentistId" jdbcType="INTEGER"/>
-        <result column="dentistName" property="dentistName" jdbcType="VARCHAR"/>
-        <result column="billActualAmount" property="billActualAmount" jdbcType="DECIMAL"/>
-        <result column="billFreePayAmount" property="billFreePayAmount" jdbcType="DECIMAL"/>
-        <result column="billReceivedAmount" property="billReceivedAmount" jdbcType="DECIMAL"/>
-        <result column="billDebtAmount" property="billDebtAmount" jdbcType="DECIMAL"/>
-        <collection property="billDetails" resultMap="BillDetailChargeResult"/>
-    </resultMap>
-    <!-- 账单明细结果集 -->
-    <resultMap id="BillDetailChargeResult" type="com.yunya.feign.treatment.domain.vo.BillDetailChargeVO">
-        <id column="orderDetailId" property="orderDetailId" jdbcType="INTEGER"/>
-        <result column="itemType" property="itemType" jdbcType="TINYINT"/>
-        <result column="billingItemId" property="billingItemId" jdbcType="INTEGER"/>
-        <result column="billingItemName" property="billingItemName" jdbcType="VARCHAR"/>
-        <result column="billingItemEnglishName" property="billingItemEnglishName" jdbcType="VARCHAR"/>
-        <result column="unit" property="unit" jdbcType="VARCHAR"/>
-        <result column="price" property="price" jdbcType="DECIMAL"/>
-        <result column="quantity" property="quantity" jdbcType="INTEGER"/>
-        <result column="receivableAmount" property="receivableAmount" jdbcType="DECIMAL"/>
-        <result column="privilegeAmount" property="privilegeAmount" jdbcType="DECIMAL"/>
-        <result column="toothBit" property="toothBit" jdbcType="VARCHAR"/>
-        <result column="actualAmount" property="actualAmount" jdbcType="DECIMAL"/>
-    </resultMap>
+
 
     <!-- 查询门诊某天最大的账单编号 -->
     <select id="selectBillNumberByOrgId" resultType="java.lang.String">
@@ -135,16 +107,16 @@
         ifnull(sum(bpd.amount), 0) as freePaymentPrice
         from bill_record br
         left join (
-        select bill_record_id,sum(amount) amount from bill_pay_detail_record
-        where patient_id = #{patientId}
-        and inservice=true
-        <if test="payIds!=null and payIds.size()>0">
-            and account_item_id in
-            <foreach collection="payIds" item="id" open="(" separator="," close=")">
-                #{id}
-            </foreach>
-        </if>
-        group by bill_record_id
+            select bill_record_id,sum(amount) amount from bill_pay_detail_record
+            where patient_id = #{patientId}
+            and inservice=true
+            <if test="payIds!=null and payIds.size()>0">
+                and account_item_id in
+                <foreach collection="payIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+		    group by bill_record_id
         ) bpd on br.id=bpd.bill_record_id
         where br.patient_id = #{patientId} and inservice = true
     </select>
@@ -180,10 +152,10 @@
     <!-- PC照片影像小程序已结账列表 -->
     <select id="desktopBillingList" resultType="com.yunya.feign.treatment.domain.vo.DesktopMiniProgramVO">
         select br.treatment_record_id as id,
-        br.patient_id as patientId,
-        r.first_visit as firstVisit,
-        r.dentist_id as dentistId,
-        tr.treat_start_time as treatStartTime
+        br.patient_id          as patientId,
+        r.first_visit          as firstVisit,
+        r.dentist_id           as dentistId,
+        tr.treat_start_time    as treatStartTime
         from bill_record br
         left join treatment_record tr on tr.patient_id = br.patient_id and tr.id = br.treatment_record_id
         left join registered r on r.patient_id = br.patient_id and r.id = tr.registered_id
@@ -293,85 +265,5 @@
                 AND DATE_FORMAT(br.crt_time, '%Y-%m') &lt;= #{query.endDate}
             </if>
         </where>
-    </select>
-
-    <!-- 根据账单ID列表查询账单记录 -->
-    <select id="selectBillDetailListByIds" resultMap="PatientBillPrintResult">
-        select
-        bd.billRecordId,
-        bd.billDate,
-        bd.clinicId,
-        bd.dentistId,
-        bd.billActualAmount,
-        bd.billReceivedAmount,
-        bd.billDebtAmount,
-        bd.orderDetailId,
-        bd.itemType,
-        bd.billingItemId,
-        case bd.itemType
-        when 0 then bt.name
-        when 1 then bot.name
-        end as billingItemName,
-        case bd.itemType
-        when 0 then bt.english_name
-        when 1 then bot.english_name
-        end as billingItemEnglishName,
-        bd.price,
-        case bd.itemType
-        when 0 then bt.unit
-        when 1 then bot.unit
-        end as unit,
-        bd.quantity,
-        bd.receivableAmount,
-        bd.toothBit,
-        bd.privilegeAmount,
-        bd.actualAmount
-        from (
-        select br.id as billRecordId,
-        date_format(br.crt_time, '%Y-%m-%d %H:%i') as billDate,
-        br.org_id as clinicId,
-        tr.dentist_id as dentistId,
-        br.actual_receivable_amount as billActualAmount,
-        br.received_amount as billReceivedAmount,
-        br.debt_amount as billDebtAmount,
-        od.orderDetailId,
-        od.itemType,
-        od.billingItemId,
-        od.price,
-        od.quantity,
-        od.receivableAmount,
-        od.toothBit,
-        od.privilegeAmount,
-        od.actualAmount
-        from bill_record br
-        left join treatment_record tr on br.treatment_record_id = tr.id
-        left join (
-        select od.id as orderDetailId,
-        odpr.bill_record_id as billId,
-        od.order_record_id as orderId,
-        od.type as itemType,
-        od.billing_item_id as billingItemId,
-        od.price as price,
-        od.quantity as quantity,
-        od.receivable_amount as receivableAmount,
-        od.tooth_bit as toothBit,
-        ifnull(odpr.privilege_amount, 0) as privilegeAmount,
-        ifnull(odpr.actual_receivable, 0) as actualAmount
-        from order_detail od
-        left join order_detail_pay_record odpr on od.id = odpr.order_detail_id
-        ) od on od.billId = br.id and od.orderId = br.order_record_id
-        <where>
-            and br.inservice = 1
-            and br.patient_id = #{patientId}
-            <if test="billRecordIds != null and billRecordIds.length > 0">
-                and br.id in
-                <foreach collection="billRecordIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
-        ) bd
-        LEFT JOIN base_tariff bt on bt.id = bd.billingItemId
-        LEFT JOIN base_oral_tariff bot on bot.id = bd.billingItemId
     </select>
 </mapper>

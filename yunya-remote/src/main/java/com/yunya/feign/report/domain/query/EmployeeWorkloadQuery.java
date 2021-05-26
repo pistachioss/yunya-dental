@@ -50,9 +50,6 @@ public class EmployeeWorkloadQuery extends PageQuery implements Serializable {
   /** 就职状态列表：0-试用；1-正式；2-离职；3-实习 */
   @ApiModelProperty("就职状态列表：0-试用；1-正式；2-离职；3-实习")
   private Integer[] workStatus;
-  /** 是否过滤值全部为0的数据 */
-  @ApiModelProperty("是否启用过滤:0：否；1：是")
-  private Byte enableFilter;
   /** 账单ID列表 */
   @ApiModelProperty("账单ID列表")
   private Collection<Integer> billIds;

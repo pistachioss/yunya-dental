@@ -379,14 +379,4 @@ public class BillPayDetailRecordBiz
   public BigDecimal findBusinessWorkloadCompletedCount(BusinessGoalCompletedInfoQuery query) {
     return mapper.selectBusinessWorkloadCompletedCount(query);
   }
-
-  /**
-   * 查询账单全部免单金额
-   *
-   * @param billRecordId 账单ID
-   * @return
-   */
-  public BigDecimal sumBillTotalFreePayAmount(Integer billRecordId) {
-    return mapper.selectTotalFreePayAmountByBillId(billRecordId);
-  }
 }
