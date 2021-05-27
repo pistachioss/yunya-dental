@@ -9,11 +9,11 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.appointment.AppointmentMapper;
 import com.yunya.middletable.dao.appointment.AppointmentModifyRecordMapper;
+import com.yunya.middletable.dao.report.BasePatientMapper;
 import com.yunya.middletable.dao.report.BaseTreatmentProcessMapper;
 import com.yunya.middletable.dao.treatment.AssistantMatchingRecordMapper;
 import com.yunya.middletable.dao.treatment.RegisteredMapper;
 import com.yunya.middletable.dao.treatment.TreatmentRecordMapper;
-import com.yunya.middletable.service.patient.BasePatientBiz;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentModifyRecord;
 import com.yunya.models.report.BasePatient;
@@ -62,7 +62,7 @@ public class BaseTreatmentProcessBiz
   /** 接诊 */
   @Autowired private TreatmentRecordMapper treatmentRecordMapper;
   /** 患者信息 */
-  @Autowired private BasePatientBiz basePatientBiz;
+  @Autowired private BasePatientMapper basePatientMapper;
   /** 助手配诊 */
   @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
   /** 多线程 */
@@ -298,7 +298,7 @@ public class BaseTreatmentProcessBiz
       basePatient.setLastVisitDate(treatDate);
       basePatient.setLastVisitOutpatient(orgId.toString());
       basePatient.setLastVisitDoctors(dentistId);
-      basePatientBiz.updateSelectiveById(basePatient);
+      basePatientMapper.updateByPrimaryKeySelective(basePatient);
 
       treatmentProcess.setTreatType(treatType);
       treatmentProcess.setOrgId(orgId);
