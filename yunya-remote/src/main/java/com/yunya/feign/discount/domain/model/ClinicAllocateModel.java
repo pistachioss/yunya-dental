@@ -9,8 +9,7 @@ import javax.validation.constraints.*;
  * @author xiangyang
  * @date 2020/8/19
  */
-@Setter
-@Getter
+@Data
 @ApiModel(value = "门诊分配详情模型")
 public class ClinicAllocateModel {
     @ApiModelProperty(value = "配给对象", required = true)
