@@ -143,13 +143,12 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setCreditsOption((byte)0);
          addPatientIntegral.setActualPrice(0);
          addPatientIntegral.setItemCode("");
-         addPatientIntegral.setDescription("500");
-         addPatientIntegral.setRemarks("患者推荐");
+         addPatientIntegral.setDescription("患者推荐");
          addPatientIntegral.setCrtId(patientId);
          addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
        }else {
          // 没有患者积分帐户就新建
-         addPatientIntegral.setPatientId(patientId);
+         addPatientIntegral.setPatientId(basePatientOriginLog.getOriginId());
          // recommend 患者推荐
          addPatientIntegral.setType("recommend");
          addPatientIntegral.setChannel((byte)0);
