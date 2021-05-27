@@ -265,7 +265,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
           creditsShop.setCreditsOption((byte) 0);
           creditsShop.setActualPrice(0);
           creditsShop.setDescription("初始化积分");
-          creditsShop.setInservice(false);
+          creditsShop.setInservice(true);
           creditsShop.setCrtId(0);
           creditsShop.setCrtTime(new Date(System.currentTimeMillis()));
           creditsShop.setUpdId(0);
