@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.biz.app;
 
+import com.alibaba.csp.sentinel.init.InitExecutor;
 import com.yunya.feign.appointment.domain.form.OnlineAppointItemSettingForm;
 import com.yunya.feign.appointment.vo.EnableOnlineAppointDentistsVo;
 import com.yunya.feign.appointment.vo.OnlineAppointItemSettingVo;
@@ -47,10 +48,7 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
     public ResponseResult<T> deleteOnlineAppointItemSettingById(Integer id) {
         OnlineAppointItemSetting onlineAppointItemSetting = mapper.selectByPrimaryKey(id);
         if (onlineAppointItemSetting != null) {
-            onlineAppointItemSetting.setInservice(false);
-            // 设置日期，修改人，修改时间
-            setCommonProperties(onlineAppointItemSetting,"");
-            int status = mapper.updateByPrimaryKeySelective(onlineAppointItemSetting);
+            int status = mapper.delete(onlineAppointItemSetting);
             if (status > 0) {
                 return ResponseUtil.success();
             }
@@ -100,15 +98,27 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
      * @return 返回结果信息
      */
     public ResponseResult<T> addOrUpdateOnlineAppointItem(OnlineAppointItemSettingForm form) {
-        Integer orgId = form.getOrgId();
-        Integer dentistId = form.getDentistId();
         Integer itemSettingId = form.getItemSettingId();
+
+        OnlineAppointItemSetting query = new OnlineAppointItemSetting();
+        query.setOrgId(form.getOrgId());
+        query.setDentistId(form.getDentistId());
+        OnlineAppointItemSetting onlineAppointItemSetting = mapper.selectOne(query);
+
+        if (itemSettingId == null && onlineAppointItemSetting != null) {
+            onlineAppointItemSetting.setEnableAppointItemIds(listToStr(form.getLists()));
+            onlineAppointItemSetting.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+            onlineAppointItemSetting.setUpdName(BaseContextHandler.getUsername());
+            onlineAppointItemSetting.setUpdTime(new Date(System.currentTimeMillis()));
+            mapper.updateByPrimaryKey(onlineAppointItemSetting);
+            return ResponseUtil.success();
+        }
 
         if (itemSettingId == null) {
             // 新增
             OnlineAppointItemSetting model = new OnlineAppointItemSetting();
-            model.setOrgId(orgId);
-            model.setDentistId(dentistId);
+            model.setOrgId(form.getOrgId());
+            model.setDentistId(form.getDentistId());
             String sb = listToStr(form.getLists());
             model.setEnableAppointItemIds(sb.toString());
             model.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -116,12 +126,12 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
             mapper.insertSelective(model);
         } else {
             // 更新
-            OnlineAppointItemSetting onlineAppointItemSetting = mapper.selectByPrimaryKey(itemSettingId);
-            onlineAppointItemSetting.setEnableAppointItemIds(listToStr(form.getLists()));
-            onlineAppointItemSetting.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-            onlineAppointItemSetting.setUpdName(BaseContextHandler.getUsername());
-            onlineAppointItemSetting.setUpdTime(new Date(System.currentTimeMillis()));
-            mapper.updateByPrimaryKey(onlineAppointItemSetting);
+            OnlineAppointItemSetting entity = mapper.selectByPrimaryKey(itemSettingId);
+            entity.setEnableAppointItemIds(listToStr(form.getLists()));
+            entity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+            entity.setUpdName(BaseContextHandler.getUsername());
+            entity.setUpdTime(new Date(System.currentTimeMillis()));
+            mapper.updateByPrimaryKey(entity);
         }
         return ResponseUtil.success();
     }

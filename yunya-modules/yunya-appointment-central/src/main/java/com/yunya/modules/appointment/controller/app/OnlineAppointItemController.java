@@ -43,7 +43,7 @@ public class OnlineAppointItemController {
 
     @ApiOperation("查询线上预约项目列表")
     @PostMapping("/all")
-    public ResponseResult<PageInfo<OnlineAppointItemVo>> findOnlineAppointItemByCondition(@RequestBody OnlineAppointItemQuery query) {
+    public ResponseResult<PageInfo<OnlineAppointItemVo>> findOnlineAppointItemByCondition(@RequestBody @Validated OnlineAppointItemQuery query) {
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }

@@ -25,4 +25,5 @@ public interface OnlineAppointItemSettingMapper extends Mapper<OnlineAppointItem
      * @return 返回可预约医生列表
      */
     List<EnableOnlineAppointDentistsVo> findDentistsByAppointItem(@Param("orgId") Integer orgId, @Param("itemId") Integer itemId);
+
 }
