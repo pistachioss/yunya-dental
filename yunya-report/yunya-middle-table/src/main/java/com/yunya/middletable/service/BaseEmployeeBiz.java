@@ -12,7 +12,6 @@ import com.yunya.models.system.SysEmployee;
 import com.yunya.models.system.SysUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
@@ -26,7 +25,6 @@ import java.util.List;
  * @since: 1.0.0
  */
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class BaseEmployeeBiz extends BaseBiz<BaseEmployeeMapper, BaseEmployee> {
 
   /** 用户信息 */

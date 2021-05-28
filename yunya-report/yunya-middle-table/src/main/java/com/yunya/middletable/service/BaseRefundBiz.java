@@ -33,7 +33,6 @@ import java.util.Map;
  * @since: 1.0.0
  */
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
 
   /** 退费记录 */

@@ -9,12 +9,14 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.appointment.AppointmentMapper;
 import com.yunya.middletable.dao.appointment.AppointmentModifyRecordMapper;
+import com.yunya.middletable.dao.report.BasePatientMapper;
 import com.yunya.middletable.dao.report.BaseTreatmentProcessMapper;
 import com.yunya.middletable.dao.treatment.AssistantMatchingRecordMapper;
 import com.yunya.middletable.dao.treatment.RegisteredMapper;
 import com.yunya.middletable.dao.treatment.TreatmentRecordMapper;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentModifyRecord;
+import com.yunya.models.report.BasePatient;
 import com.yunya.models.report.BaseTreatmentProcess;
 import com.yunya.models.treatment.AssistantMatchingRecord;
 import com.yunya.models.treatment.Registered;
@@ -25,11 +27,11 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -46,7 +48,6 @@ import java.util.concurrent.Future;
  */
 @Slf4j
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class BaseTreatmentProcessBiz
     extends BaseBiz<BaseTreatmentProcessMapper, BaseTreatmentProcess> {
 
@@ -58,6 +59,8 @@ public class BaseTreatmentProcessBiz
   @Autowired private RegisteredMapper registeredMapper;
   /** 接诊 */
   @Autowired private TreatmentRecordMapper treatmentRecordMapper;
+  /** 患者信息 */
+  @Autowired private BasePatientMapper basePatientMapper;
   /** 助手配诊 */
   @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
   /** 多线程 */
@@ -202,30 +205,6 @@ public class BaseTreatmentProcessBiz
       log.info("=============开始插入中间表就诊记录（更新预约）============{}", treatmentProcess);
       mapper.insertSelective(treatmentProcess);
     }
-
-    /*BaseTreatmentProcess treatmentProcess = mapper.selectOneByAppointmentId(appointmentId);
-      log.info("==> treatmentProcess:{}", treatmentProcess);
-      if (null != treatmentProcess) {
-        setTreatmentProcessAppointmentValue(treatmentProcess, appointment);
-        setTreatmentProcessRegisteredValue(treatmentProcess, appointmentId);
-        TreatmentRecord treatmentRecord = new TreatmentRecord();
-        treatmentRecord.setAppointmentId(appointmentId);
-        setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
-        mapper.updateByAppointmentId(appointmentId, treatmentProcess);
-      } else {
-        mapper.deleteByAppointmentId(appointmentId);
-        treatmentProcess = new BaseTreatmentProcess();
-        setTreatmentProcessAppointmentValue(treatmentProcess, appointment);
-        setTreatmentProcessRegisteredValue(treatmentProcess, appointmentId);
-        TreatmentRecord treatmentRecord = new TreatmentRecord();
-        treatmentRecord.setAppointmentId(appointmentId);
-        setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
-        log.info("=============开始插入中间表就诊记录（更新预约）============{}", treatmentProcess);
-        mapper.insertSelective(treatmentProcess);
-      }
-    } else {
-      mapper.deleteByAppointmentId(appointmentId);
-    }*/
   }
 
   /**
@@ -262,7 +241,6 @@ public class BaseTreatmentProcessBiz
           treatmentProcess.setRegisteredTime(null);
           treatmentProcess.setTreatStatus(null);
           treatmentProcess.setRegisteredDate(null);
-          // mapper.updateRegisteredValueByAppointmentId(treatmentProcess.getAppointmentId());
           mapper.updateByRegisteredId(registeredId, treatmentProcess);
         } else {
           mapper.deleteByRegisteredId(registeredId);
@@ -302,10 +280,29 @@ public class BaseTreatmentProcessBiz
         default:
           break;
       }
-      treatmentProcess.setTreatType(treatmentRecordResult.getType());
-      treatmentProcess.setOrgId(treatmentRecordResult.getOrgId());
+
+      Byte treatType = treatmentRecordResult.getType();
+      // 更新患者初诊/复诊相关信息
+      BasePatient basePatient = new BasePatient();
+      basePatient.setPatientId(treatmentRecordResult.getPatientId());
+      Date treatDate = treatmentRecordResult.getCrtTime();
+      String dentistId = treatmentRecordResult.getDentistId().toString();
+      Integer orgId = treatmentRecordResult.getOrgId();
+      if (treatType == 0) {
+        basePatient.setFirstVisitDate(treatDate);
+        basePatient.setFirstVisitOutpatient(orgId.toString());
+        basePatient.setFirstVisitDoctors(dentistId);
+      }
+      basePatient.setLastVisitDate(treatDate);
+      basePatient.setLastVisitOutpatient(orgId.toString());
+      basePatient.setLastVisitDoctors(dentistId);
+      basePatientMapper.updateByPrimaryKeySelective(basePatient);
+
+      treatmentProcess.setTreatType(treatType);
+      treatmentProcess.setOrgId(orgId);
       treatmentProcess.setTreatStartTime(treatmentRecordResult.getTreatStartTime());
       treatmentProcess.setTreatEndTime(treatmentRecordResult.getTreatEndTime());
+      // 设置中间表账单关联助手
       setBaseTreatmentProcessAssistantValue(treatmentRecordId, treatmentProcess);
     }
   }

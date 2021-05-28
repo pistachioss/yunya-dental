@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -34,7 +33,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 简介: 中间表收费记录处理业务层
@@ -46,7 +44,6 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @Slf4j
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
 
   /** 账单收费记录 */

@@ -24,9 +24,7 @@ import com.yunya.models.treatment.OrderDetailPayRecord;
 import com.yunya.models.treatment.OrderRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -48,7 +46,6 @@ import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH
  */
 @Slf4j
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
 
   /** 订单记录 */
