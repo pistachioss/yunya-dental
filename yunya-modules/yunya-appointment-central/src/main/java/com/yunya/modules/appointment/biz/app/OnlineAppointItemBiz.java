@@ -4,9 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.yunya.feign.appointment.domain.form.OnlineAppointItemForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointItemModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointItemQuery;
-import com.yunya.feign.appointment.domain.query.OnlineAppointItemSettingQuery;
 import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
-import com.yunya.feign.appointment.vo.OnlineAppointItemSettingVo;
 import com.yunya.feign.appointment.vo.OnlineAppointItemVo;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -72,11 +70,10 @@ public class OnlineAppointItemBiz extends BaseBiz<OnlineAppointItemMapper, Onlin
      * @return 新增结果
      */
     public ResponseResult<T> addItem(OnlineAppointItemModel model) {
-        Example example = new Example(OnlineAppointItemModel.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("name",model.getName());
-        List<OnlineAppointItem> onlineAppointItems = mapper.selectByExample(example);
-        if (StringHelper.isNotEmpty(onlineAppointItems)) {
+        OnlineAppointItem example = new OnlineAppointItem();
+        example.setName(model.getName());
+        int count = mapper.selectCount(example);
+        if (count > 0) {
             return ResponseUtil.fail(AppointmentError.APPOINTMENT_ITEM_EXIST.getCode(),
                     AppointmentError.APPOINTMENT_ITEM_EXIST.getMessage(),null);
         }
@@ -125,6 +122,9 @@ public class OnlineAppointItemBiz extends BaseBiz<OnlineAppointItemMapper, Onlin
             return ResponseUtil.fail(AppointmentError.APPOINTMENT_ITEM_EDIT_NOT_EXIST.getCode(),
                     AppointmentError.APPOINTMENT_ITEM_EDIT_NOT_EXIST.getMessage(),null);
         }
+        onlineAppointItem.setName(form.getName());
+        onlineAppointItem.setInservice(form.getInservice());
+        onlineAppointItem.setDuration(form.getDuration());
         onlineAppointItem.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
         onlineAppointItem.setUpdName(BaseContextHandler.getUsername());
         onlineAppointItem.setUpdTime(new Date(System.currentTimeMillis()));

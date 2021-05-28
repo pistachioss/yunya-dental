@@ -20,11 +20,20 @@ import java.util.Date;
 @ApiModel(value = "OnlineAppointmentVo",description = "在线预约申请参数")
 @Data
 public class OnlineAppointmentModel implements Serializable {
+
     /**
-     * 预约申请ID,唯一标识;可能为空
+     * 预约申请ID
      */
-    @ApiModelProperty(value = "预约申请ID,唯一标识;可能为空")
+    @ApiModelProperty("预约申请ID")
     private Integer id;
+
+    /**
+     * 微信唯一标识openId,唯一标识
+     */
+    @ApiModelProperty(value = "openId,唯一标识")
+    @NotNull(message = "openId不能为空")
+    @NotBlank(message = "openId不能为空")
+    private String openId;
     /**
      * 门诊ID
      */
@@ -96,16 +105,4 @@ public class OnlineAppointmentModel implements Serializable {
     @NotNull(message = "手机号不能为null")
     @NotBlank(message = "手机号不能为空")
     private String patientPhone;
-
-    /**
-     * 预约申请状态 0-申请中；1-通过；2-取消
-     */
-    @ApiModelProperty("预约申请状态 0-申请中；1-通过；2-取消")
-    private Byte status;
-
-    /**
-     * 是否有效，是否删除(默认有效) 1-有效；0删除
-     */
-    @ApiModelProperty("是否有效，是否删除(默认有效) 1-有效；0删除")
-    private Boolean inservice;
 }

@@ -67,17 +67,17 @@
             a.confirm_status as confirmStatus
         from online_appointment oa inner join appointment a on a.online_appointment_id = oa.id and a.inservice = true
         <where>
-            <if test="query.id != null">
-                and oa.id = #{query.id}
-            </if>
             <if test="query.orgId != null">
                 and oa.org_id = #{query.orgId}
             </if>
             <if test="query.dentistId != null">
                 and oa.dentist_id = #{query.dentistId}
             </if>
-            <if test="query.appointStartDate != null and query.appointEndDate != '' and query.appointStartDate != null and query.appointEndDate != ''">
-                and oa.appoint_date between #{query.appointStartDate} and #{query.appointEndDate}
+            <if test="query.appointStartDate != null and query.appointStartDate != null">
+                and date_format(oa.appoint_date,'%Y-%m-%d') &gt;= #{query.appointStartDate}
+            </if>
+            <if test="query.appointEndDate != null and query.appointEndDate != ''">
+                and date_format(oa.appoint_date,'%Y-%m-%d') &lt;= #{query.appointEndDate}
             </if>
             <if test="query.patientName != null and query.patientName != ''">
                 and oa.patient_name like concat('%',#{query.patientName},'%')
