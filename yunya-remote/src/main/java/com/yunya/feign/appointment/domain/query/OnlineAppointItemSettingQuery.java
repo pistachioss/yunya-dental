@@ -34,13 +34,13 @@ public class OnlineAppointItemSettingQuery implements Serializable {
      * 主键
      */
     @ApiModelProperty("主键")
-    private Integer id;
+    private Integer itemSettingId;
 
     /**
      * 预约项目ID
      */
     @ApiModelProperty(value = "预约项目ID")
-    private Integer appointItemId;
+    private Integer itemId;
 
     /**
      * 预约项目名称
@@ -55,8 +55,20 @@ public class OnlineAppointItemSettingQuery implements Serializable {
     private Integer appointDuration;
 
     /**
-     * 是否删除，是否有效；1-有效，0-无效
+     * 医生ID
      */
-    @ApiModelProperty("是否删除，是否有效；1-有效，0-无效")
-    private Boolean inservice;
+    @ApiModelProperty("医生ID")
+    private Integer dentistId;
+
+    /**
+     * 门诊ID
+     */
+    @ApiModelProperty("门诊ID")
+    private Integer orgId;
+
+    /**
+     * 线上预约项目状态；1-启动预约项目；0-不启用预约项目
+     */
+    @ApiModelProperty("线上预约项目状态；1-启动预约项目；0-不启用预约项目")
+    private Boolean status;
 }

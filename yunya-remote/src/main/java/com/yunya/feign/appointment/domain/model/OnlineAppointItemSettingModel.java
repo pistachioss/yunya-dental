@@ -8,6 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -22,32 +23,32 @@ public class OnlineAppointItemSettingModel implements Serializable {
      * 主键
      */
     @ApiModelProperty("主键")
-    private Integer id;
+    private Integer itemSettingId;
 
     /**
-     * 预约项目ID
+     * 医生ID
      */
-    @ApiModelProperty(value = "预约项目ID",required = true)
-    @NotNull(message = "预约项目不能为空")
-    private Integer appointItemId;
+    @ApiModelProperty(value = "医生ID",required = true)
+    @NotNull(message = "医生ID不能为空")
+    private Integer patientId;
 
     /**
-     * 预约项目名称
+     * 门诊ID
      */
-    @ApiModelProperty(value = "预约项目名称",required = true)
-    @NotBlank(message = "预约项目名称")
-    private String appointItemName;
-
-    /**
-     * 预约默认时长（分钟）
-     */
-    @ApiModelProperty(value = "预约默认时长（分钟）", required = true)
-    @NotNull(message = "预约默认时长（分钟）")
-    private Integer appointDuration;
+    @ApiModelProperty(value = "门诊ID",required = true)
+    @NotBlank(message = "门诊ID不能为空")
+    private Integer orgId;
 
     /**
      * 是否删除，是否有效；1-有效，0-无效
      */
-    @ApiModelProperty("是否删除，是否有效；1-有效，0-无效")
-    private Boolean inservice;
+    @ApiModelProperty(value = "是否删除，是否有效；1-有效，0-无效",required = true)
+    private Boolean inservice = true;
+
+    /**
+     * 线上可预约项目
+     */
+    @ApiModelProperty("线上可预约项目")
+    private List<OnlineAppointItemDentistModel> lists;
+
 }

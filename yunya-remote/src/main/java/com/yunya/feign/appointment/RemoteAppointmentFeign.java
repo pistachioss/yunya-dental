@@ -2,6 +2,7 @@ package com.yunya.feign.appointment;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
+import com.yunya.feign.appointment.domain.form.OnlineAppointItemSettingForm;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
@@ -13,11 +14,15 @@ import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.appointment.vo.NextAppointsVo;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
+import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -176,4 +181,11 @@ public interface RemoteAppointmentFeign {
    */
   @RequestMapping(value = "/api/wx/appoint/confirm", method = RequestMethod.POST)
   ResponseResult confirmWxAppoint(@RequestBody WxAppointConfirmModel model);
+
+  /**
+   * 新增、更新线上预约设置
+   * @param form
+   */
+  @RequestMapping(value = "api/online/appoint/",method = RequestMethod.POST)
+  ResponseResult addOrUpdateOnlineAppointItem(@RequestBody @Validated OnlineAppointItemSettingForm form);
 }

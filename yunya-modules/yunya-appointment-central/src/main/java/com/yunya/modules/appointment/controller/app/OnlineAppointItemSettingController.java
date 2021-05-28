@@ -1,12 +1,14 @@
 package com.yunya.modules.appointment.controller.app;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointItemSettingForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointItemSettingModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointItemSettingQuery;
-import com.yunya.feign.appointment.vo.OnlineAppointItemSettingModelVo;
+import com.yunya.feign.appointment.vo.OnlineAppointItemSettingVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.app.OnlineAppointItemSettingBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -18,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -26,52 +29,39 @@ import javax.validation.constraints.NotNull;
  * @create: 2021-05-18 16:20
  **/
 @RestController
-@RequestMapping("/online/setting")
-@Api(tags = "在线预约设置相关接口(公司端/用户设置/运营设置/线上预约项目)")
+@RequestMapping("/online/appoint/item/setting")
+@Api(tags = "线上预约设置相关接口(门诊端)")
 public class OnlineAppointItemSettingController {
 
     @Autowired
     private OnlineAppointItemSettingBiz appointItemSettingBiz;
 
-    @ApiOperation("根据id查询线上预约项目")
-    @ApiImplicitParams(
-            @ApiImplicitParam(name = "id", value = "预约项目ID",required = true, dataTypeClass = Integer.class)
+    @ApiOperation("查询医生线上可预约项目(门诊端-诊所设置-员工设置)")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "patientId", value = "医生ID",required = true, dataTypeClass = Integer.class),
+            @ApiImplicitParam(name = "orgId", value = "门诊ID",required = true, dataTypeClass = Integer.class)}
     )
-    @GetMapping("/appoint/item/{id}")
-    public ResponseResult<OnlineAppointItemSettingModelVo> findOnlineAppointItemById(@PathVariable("id")
-                                                                                     @NotNull(message = "预约项目ID不能为空") Integer id) {
-        return appointItemSettingBiz.findOnlineAppointItemById(id);
+    @GetMapping("/{dentistId}/{orgId}")
+    public ResponseResult<List<Integer>> findOnlineAppointItemById(@PathVariable("dentistId")
+                                                                                     @NotNull(message = "医生ID不能为空") Integer dentistId,
+                                                                                @PathVariable("orgId") @NotNull(message = "门诊不能为空") Integer orgId) {
+        return appointItemSettingBiz.findItemSettingByDentistId(dentistId,orgId);
     }
-
-    @ApiOperation("新增在线预约项目")
-    @PostMapping("/appoint/item")
+    @ApiOperation("新增、更新线上预约设置")
+    @PostMapping
     @CurrentUser
-    public ResponseResult<T> addOnlineAppointItemSetting(@RequestBody @Validated OnlineAppointItemSettingModel model) {
-        return appointItemSettingBiz.addOnlineAppointItemSetting(model);
-    }
-
-    @ApiOperation("修改在线预约项目")
-    @PutMapping("/appoint/item")
-    @CurrentUser
-    public ResponseResult<T> updateOnlineAppointItemSetting(@RequestBody @Validated OnlineAppointItemSettingForm form) {
-        return appointItemSettingBiz.updateOnlineAppointItemSetting(form);
+    public ResponseResult<T> addOrUpdateOnlineAppointItem(@RequestBody @Validated OnlineAppointItemSettingForm form) {
+        return appointItemSettingBiz.addOrUpdateOnlineAppointItem(form);
     }
 
     @ApiOperation("删除预约项目")
     @ApiImplicitParams(
-            @ApiImplicitParam(name = "id", value = "预约项目ID",required = true, dataTypeClass = Integer.class)
+            @ApiImplicitParam(name = "itemSettingId", value = "预约项目ID",required = true, dataTypeClass = Integer.class)
     )
-    @DeleteMapping("/appoint/item/{id}")
+    @DeleteMapping("/{itemSettingId}")
     @CurrentUser
-    public ResponseResult<T> deleteOnlineAppointItemSettingById(@PathVariable("id") @NotNull(message = "预约项目ID不能为空") Integer id) {
-        return appointItemSettingBiz.deleteOnlineAppointItemSettingById(id);
+    public ResponseResult<T> deleteOnlineAppointItemSettingById(@PathVariable("itemSettingId") @NotNull(message = "预约项目ID不能为空") Integer itemSettingId) {
+        return appointItemSettingBiz.deleteOnlineAppointItemSettingById(itemSettingId);
     }
 
-    @ApiOperation("根据条件批量查询预约项目")
-    @PostMapping("/appoint/item/list")
-    public ResponseResult<PageInfo<OnlineAppointItemSettingModelVo>> findByCondition(@RequestBody
-                                                                                 @Validated
-                                                                                 OnlineAppointItemSettingQuery query) {
-        return appointItemSettingBiz.findByCondition(query);
-    }
 }

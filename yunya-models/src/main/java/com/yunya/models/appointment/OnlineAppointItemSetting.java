@@ -9,25 +9,26 @@ public class OnlineAppointItemSetting {
      * 主键
      */
     @Id
-    private Integer id;
+    @Column(name = "item_setting_id")
+    private Integer itemSettingId;
 
     /**
-     * 预约项目ID
+     * 医生ID
      */
-    @Column(name = "appoint_item_id")
-    private Integer appointItemId;
+    @Column(name = "dentist_id")
+    private Integer dentistId;
 
     /**
-     * 预约项目名称
+     * 门诊ID
      */
-    @Column(name = "appoint_item_name")
-    private String appointItemName;
+    @Column(name = "org_id")
+    private Integer orgId;
 
     /**
-     * 预约默认时长（分钟）
+     * 线上预约项目ID，ID之间用“,”隔开
      */
-    @Column(name = "appoint_duration")
-    private Integer appointDuration;
+    @Column(name = "enable_appoint_item_ids")
+    private String enableAppointItemIds;
 
     /**
      * 是否删除，是否有效；1-有效，0-无效
@@ -73,73 +74,37 @@ public class OnlineAppointItemSetting {
     /**
      * 获取主键
      *
-     * @return id - 主键
+     * @return itemSettingId - 主键
      */
-    public Integer getId() {
-        return id;
+    public Integer getItemSettingId() {
+        return itemSettingId;
     }
 
     /**
      * 设置主键
      *
-     * @param id 主键
+     * @param itemSettingId 主键
      */
-    public void setId(Integer id) {
-        this.id = id;
+    public void setItemSettingId(Integer itemSettingId) {
+        this.itemSettingId = itemSettingId;
     }
 
     /**
      * 获取预约项目ID
      *
-     * @return appoint_item_id - 预约项目ID
+     * @return itemId - 预约项目ID
      */
-    public Integer getAppointItemId() {
-        return appointItemId;
+    public String getEnableAppointItemIds() {
+        return enableAppointItemIds;
     }
 
     /**
      * 设置预约项目ID
      *
-     * @param appointItemId 预约项目ID
+     * @param enableAppointItemIds 预约项目ID
      */
-    public void setAppointItemId(Integer appointItemId) {
-        this.appointItemId = appointItemId;
-    }
-
-    /**
-     * 获取预约项目名称
-     *
-     * @return appoint_item_name - 预约项目名称
-     */
-    public String getAppointItemName() {
-        return appointItemName;
-    }
-
-    /**
-     * 设置预约项目名称
-     *
-     * @param appointItemName 预约项目名称
-     */
-    public void setAppointItemName(String appointItemName) {
-        this.appointItemName = appointItemName;
-    }
-
-    /**
-     * 获取预约默认时长（分钟）
-     *
-     * @return appoint_duration - 预约默认时长（分钟）
-     */
-    public Integer getAppointDuration() {
-        return appointDuration;
-    }
-
-    /**
-     * 设置预约默认时长（分钟）
-     *
-     * @param appointDuration 预约默认时长（分钟）
-     */
-    public void setAppointDuration(Integer appointDuration) {
-        this.appointDuration = appointDuration;
+    public void setEnableAppointItemIds(String enableAppointItemIds) {
+        this.enableAppointItemIds = enableAppointItemIds;
     }
 
     /**
@@ -266,5 +231,37 @@ public class OnlineAppointItemSetting {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 获取医生ID
+     * @return 医生ID
+     */
+    public Integer getDentistId() {
+        return dentistId;
+    }
+
+    /**
+     * 设置医生ID
+     * @param dentistId  医生ID
+     */
+    public void setDentistId(Integer dentistId) {
+        this.dentistId = dentistId;
+    }
+
+    /**
+     * 获取门诊ID
+     * @return 门诊ID
+     */
+    public Integer getOrgId() {
+        return orgId;
+    }
+
+    /**
+     * 设置门诊ID
+     * @param orgId 门诊ID
+     */
+    public void setOrgId(Integer orgId) {
+        this.orgId = orgId;
     }
 }

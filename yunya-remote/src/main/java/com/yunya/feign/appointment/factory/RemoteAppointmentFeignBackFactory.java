@@ -3,6 +3,7 @@ package com.yunya.feign.appointment.factory;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
+import com.yunya.feign.appointment.domain.form.OnlineAppointItemSettingForm;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
@@ -107,6 +108,11 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
 
     @Override
     public ResponseResult confirmWxAppoint(WxAppointConfirmModel model) {
+        return null;
+    }
+
+    @Override
+    public ResponseResult addOrUpdateOnlineAppointItem(OnlineAppointItemSettingForm form) {
         return null;
     }
 

@@ -1,27 +1,26 @@
 package com.yunya.modules.appointment.biz.app;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointItemSettingForm;
-import com.yunya.feign.appointment.domain.model.OnlineAppointItemSettingModel;
-import com.yunya.feign.appointment.domain.query.OnlineAppointItemSettingQuery;
-import com.yunya.feign.appointment.vo.OnlineAppointItemSettingModelVo;
+import com.yunya.feign.appointment.vo.OnlineAppointItemSettingVo;
+import com.yunya.feign.appointment.vo.OnlineAppointItemVo;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.OnlineAppointItemSetting;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.OnlineAppointItemSettingMapper;
 import org.apache.poi.ss.formula.functions.T;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @program: yunya-dental
@@ -32,73 +31,11 @@ import java.util.List;
 @Service
 public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettingMapper, OnlineAppointItemSetting> {
 
-    /**
-     * 根据id查询预约项目
-     * @param id 预约项目ID
-     * @return 返回结果
-     */
-    public ResponseResult<OnlineAppointItemSettingModelVo> findOnlineAppointItemById(Integer id) {
-        OnlineAppointItemSetting onlineAppointItemSetting = mapper.selectByPrimaryKey(id);
-        if (onlineAppointItemSetting == null) {
-            return ResponseUtil.success();
-        }
-        OnlineAppointItemSettingModelVo build = EntityUtils.build(onlineAppointItemSetting, OnlineAppointItemSettingModelVo.class);
-        return ResponseUtil.success(build);
-    }
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
-
-    /**
-     *
-     * 新增预约项目设置
-     * @param model  预约项目参数
-     * @return 返回设置结果
-     */
-    @Transactional
-    public ResponseResult<T> addOnlineAppointItemSetting(OnlineAppointItemSettingModel model) {
-        Example example = new Example(OnlineAppointItemSetting.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("appointItemName",model.getAppointItemName());
-        List<OnlineAppointItemSetting> results = mapper.selectByExample(example);
-        if (StringHelper.isEmpty(results)) {
-            OnlineAppointItemSetting build = EntityUtils.build(model, OnlineAppointItemSetting.class);
-            // 设置日期，创建人
-            setCommonProperties(build,"add");
-            int i = mapper.insertSelective(build);
-            if (i > 0) {
-                return ResponseUtil.success();
-            }
-        }
-        return ResponseUtil.fail(AppointmentError.APPOINTMENT_ITEM_EXIST.getCode(),AppointmentError.APPOINTMENT_ITEM_EXIST.getMessage(),null);
-    }
-
-    /**
-     * 修改预约项目设置
-     * @param form
-     * @return
-     */
-    @Transactional
-    public ResponseResult<T> updateOnlineAppointItemSetting(OnlineAppointItemSettingForm form) {
-        Example example = new Example(OnlineAppointItemSetting.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("id",form.getId());
-        criteria.andEqualTo("appoint_item_id",form.getAppointItemId());
-        criteria.andEqualTo("appoint_item_name",form.getAppointItemName());
-        List<OnlineAppointItemSetting> results = mapper.selectByExample(example);
-        if (StringHelper.isNotEmpty(results)) {
-            OnlineAppointItemSetting build = EntityUtils.build(form, OnlineAppointItemSetting.class);
-            // 设置日期，修改人，修改时间
-            setCommonProperties(build,"");
-            int status = mapper.updateByPrimaryKeySelective(build);
-            if (status > 0) {
-                return ResponseUtil.success();
-            } else {
-                return ResponseUtil.fail(AppointmentError.APPOINTMENT_ITEM_EDIT_FAIL.getCode(),
-                        AppointmentError.APPOINTMENT_ITEM_EDIT_FAIL.getMessage(),null);
-            }
-        }
-        return ResponseUtil.fail(AppointmentError.APPOINTMENT_ITEM_EDIT_NOT_EXIST.getCode(),
-                AppointmentError.APPOINTMENT_ITEM_EDIT_NOT_EXIST.getMessage(),null);
-    }
+    @Autowired
+    private OnlineAppointItemBiz onlineAppointItemBiz;
 
     /**
      * 删除预约项目
@@ -138,15 +75,65 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
     }
 
     /**
-     * 根据条件批量查询预约项目
-     * @param query 查询条件
-     * @return 返回结果
+     * 根据医生ID查询线上可预约项目
+     * @param dentistId 医生ID
+     * @return 返回查询结果
      */
-    public ResponseResult<PageInfo<OnlineAppointItemSettingModelVo>> findByCondition(OnlineAppointItemSettingQuery query) {
-        if (query.getWhetherPage()) {
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+    public ResponseResult<List<Integer>> findItemSettingByDentistId(Integer dentistId,Integer orgId) {
+        OnlineAppointItemSettingVo itemSettingInfo = mapper.findItemSettingByDentistId(dentistId,orgId);
+        List<OnlineAppointItemVo> lists = itemSettingInfo.getLists();
+        List<Integer> result = null;
+        if (StringHelper.isNotEmpty(lists)) {
+            result = lists.stream().mapToInt(
+                    OnlineAppointItemVo::getItemId).boxed().collect(Collectors.toList());
         }
-        List<OnlineAppointItemSettingModelVo> result = mapper.selectByCondition(query);
-        return ResponseUtil.success(new PageInfo<OnlineAppointItemSettingModelVo>(result));
+        if (result == null) {
+            result = new ArrayList<>();
+        }
+        return ResponseUtil.success(result);
+    }
+
+    /**
+     * 新增、更新线上预约设置
+     * @param form 参数
+     * @return 返回结果信息
+     */
+    public ResponseResult<T> addOrUpdateOnlineAppointItem(OnlineAppointItemSettingForm form) {
+        Integer orgId = form.getOrgId();
+        Integer dentistId = form.getDentistId();
+        Integer itemSettingId = form.getItemSettingId();
+
+        if (itemSettingId == null) {
+            // 新增
+            OnlineAppointItemSetting model = new OnlineAppointItemSetting();
+            model.setOrgId(orgId);
+            model.setDentistId(dentistId);
+            String sb = listToStr(form.getLists());
+            model.setEnableAppointItemIds(sb.toString());
+            model.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            model.setCrtName(BaseContextHandler.getUsername());
+            mapper.insertSelective(model);
+        } else {
+            // 更新
+            OnlineAppointItemSetting onlineAppointItemSetting = mapper.selectByPrimaryKey(itemSettingId);
+            onlineAppointItemSetting.setEnableAppointItemIds(listToStr(form.getLists()));
+            onlineAppointItemSetting.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+            onlineAppointItemSetting.setUpdName(BaseContextHandler.getUsername());
+            onlineAppointItemSetting.setUpdTime(new Date(System.currentTimeMillis()));
+            mapper.updateByPrimaryKey(onlineAppointItemSetting);
+        }
+        return ResponseUtil.success();
+    }
+
+    private String listToStr(List<Integer> lists) {
+        StringBuilder sb = new StringBuilder();
+        if (StringHelper.isNotEmpty(lists)) {
+            lists.forEach(e->{
+                sb.append(e);
+                sb.append(",");
+            });
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
     }
 }

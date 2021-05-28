@@ -68,9 +68,11 @@ public enum AppointmentError {
     /** 11033-预约项目已经存在 */
     APPOINTMENT_ITEM_EXIST(33,"预约项目已经存在"),
     /** 11034-预约项目不已经存在,编辑失败 */
-    APPOINTMENT_ITEM_EDIT_NOT_EXIST(34,"预约项目不已经存在,编辑失败"),
-    /** 11034-预约项目,编辑失败 */
+    APPOINTMENT_ITEM_EDIT_NOT_EXIST(34,"预约项目已经不存在,编辑失败"),
+    /** 11035-预约项目,编辑失败 */
     APPOINTMENT_ITEM_EDIT_FAIL(35,"预约项目,编辑失败"),
+    /** 11036-预约项目使用中，请勿删除 */
+    APPOINTMENT_ITEM_IS_GOING_ON(36,"预约项目使用中，请勿删除"),
 
 
     /**---------------------------------------- 外部服务异常提示 ----------------------------------------*/

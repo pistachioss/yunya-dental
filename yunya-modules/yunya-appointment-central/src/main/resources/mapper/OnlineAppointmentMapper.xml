@@ -9,6 +9,7 @@
     <result column="org_id" property="orgId" jdbcType="INTEGER" />
     <result column="dentist_id" property="dentistId" jdbcType="INTEGER" />
     <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="open_id" property="openId" jdbcType="INTEGER" />
     <result column="appoint_item_id" property="appointItemId" jdbcType="INTEGER" />
     <result column="appoint_content" property="appointContent" jdbcType="VARCHAR" />
     <result column="appoint_date" property="appointDate" jdbcType="DATE" />

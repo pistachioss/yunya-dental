@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.controller.app;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointmentForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
@@ -7,6 +8,7 @@ import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.app.OnlineAppointmentBiz;
 import io.swagger.annotations.*;
@@ -28,7 +30,7 @@ import java.util.List;
  **/
 @RestController
 @RequestMapping("/online/appoint")
-@Api(tags = "在线预约相关接口")
+@Api(tags = "线上预约相关接口")
 public class OnlineAppointmentController {
 
     @Autowired
@@ -42,6 +44,19 @@ public class OnlineAppointmentController {
     public ResponseResult<OnlineAppointmentVo> findOnlineAppointmentById(@PathVariable("id")
                                                                                      @NotNull(message = "预约申请ID不能为空") Integer id) {
         return onlineAppointmentBiz.findOnlineAppointmentById(id);
+    }
+
+    @ApiOperation("预约申请(新增/修改)")
+    @PostMapping("/apply")
+    @CurrentUser
+    public ResponseResult<T> applyOnlineAppointment(@RequestBody @Validated OnlineAppointmentModel model) {
+        Integer id = model.getId();
+        if (id == null) {
+            return this.addOnlineAppointment(model);
+        } else {
+            OnlineAppointmentForm build = EntityUtils.build(model, OnlineAppointmentForm.class);
+            return this.updateOnlineAppointment(build);
+        }
     }
 
     @ApiOperation("新增在线预约申请")
@@ -72,7 +87,11 @@ public class OnlineAppointmentController {
     @PostMapping("/list")
     public ResponseResult<PageInfo<OnlineAppointmentVo>> findByCondition(@RequestBody
                                                                      @Validated OnlineAppointmentQuery query) {
-        return onlineAppointmentBiz.findByCondition(query);
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
+        List<OnlineAppointmentVo> results = onlineAppointmentBiz.findByCondition(query);
+        return ResponseUtil.success(new PageInfo<OnlineAppointmentVo>(results));
     }
 
     @ApiOperation("导出预约申请")
