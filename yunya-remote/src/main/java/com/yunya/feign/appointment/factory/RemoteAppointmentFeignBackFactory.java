@@ -15,11 +15,13 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -113,6 +115,16 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
 
     @Override
     public ResponseResult addOrUpdateOnlineAppointItem(OnlineAppointItemSettingForm form) {
+        return null;
+    }
+
+    @Override
+    public EnableOnlineAppointItemVo findOnlineAppointItemById(Integer dentistId, Integer orgId) {
+        return null;
+    }
+
+    @Override
+    public ResponseResult<T> deleteOnlineAppointItemSetting(Integer dentistId, Integer orgId) {
         return null;
     }
 
