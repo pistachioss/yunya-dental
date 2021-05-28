@@ -1,6 +1,7 @@
 package com.yunya.modules.appointment.biz.app;
 
 import com.yunya.feign.appointment.domain.form.OnlineAppointItemSettingForm;
+import com.yunya.feign.appointment.vo.EnableOnlineAppointDentistsVo;
 import com.yunya.feign.appointment.vo.OnlineAppointItemSettingVo;
 import com.yunya.feign.appointment.vo.OnlineAppointItemVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -135,5 +136,17 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
         }
         sb.deleteCharAt(sb.length() - 1);
         return sb.toString();
+    }
+
+    /**
+     * 查询可预约医生列表
+     * @param orgId 门诊ID
+     * @param itemId 可预约项目ID
+     * @return 返回可预约医生列表
+     */
+    public ResponseResult<T> findDentistsByAppointItem(Integer orgId, Integer itemId) {
+        List<EnableOnlineAppointDentistsVo> dentistsVos = mapper.findDentistsByAppointItem(orgId,itemId);
+
+        return ResponseUtil.success();
     }
 }

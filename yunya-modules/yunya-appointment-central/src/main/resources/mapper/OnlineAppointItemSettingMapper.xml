@@ -39,4 +39,9 @@
     from online_appoint_item_setting oais left join online_appoint_item oai on FIND_IN_SET(oai.item_id,oais.enable_appoint_item_ids)
     where oais.dentist_id = #{dentistId} and oais.org_id = #{orgId}
   </select>
+
+  <!-- 查询可预约医生列表 -->
+  <select id="findDentistsByAppointItem"
+          resultType="com.yunya.feign.appointment.vo.EnableOnlineAppointDentistsVo">
+  </select>
 </mapper>
