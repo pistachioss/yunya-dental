@@ -3,9 +3,11 @@ package com.yunya.modules.appointment.controller.app;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointItemForm;
+import com.yunya.feign.appointment.domain.model.OnlineAppointItemModel;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointItemQuery;
 import com.yunya.feign.appointment.vo.OnlineAppointItemVo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.app.OnlineAppointItemBiz;
@@ -27,7 +29,7 @@ import java.util.List;
  **/
 @RestController
 @RequestMapping("/online/appoint/item")
-@Api(value = "线上预约项目(公司端-用户设置-运营设置-线上预约项目)")
+@Api(tags = "线上预约项目(公司端-用户设置-运营设置-线上预约项目)")
 public class OnlineAppointItemController {
     @Autowired
     private OnlineAppointItemBiz onlineAppointItemBiz;
@@ -52,18 +54,21 @@ public class OnlineAppointItemController {
 
     @ApiOperation("新增线上预约项目")
     @PostMapping
-    public ResponseResult<T> addItem(@RequestBody @Validated OnlineAppointmentModel model) {
+    @CurrentUser
+    public ResponseResult<T> addItem(@RequestBody @Validated OnlineAppointItemModel model) {
         return onlineAppointItemBiz.addItem(model);
     }
 
     @ApiOperation("删除线上预约项目")
-    @DeleteMapping("/{id}")
-    public ResponseResult<T> deleteItemById(@PathVariable("id") @NotNull(message = "id不能为空") Integer id) {
-        return onlineAppointItemBiz.deleteItemById(id);
+    @DeleteMapping("/{itemId}")
+    @CurrentUser
+    public ResponseResult<T> deleteItemById(@PathVariable("itemId") @NotNull(message = "id不能为空") Integer itemId) {
+        return onlineAppointItemBiz.deleteItemById(itemId);
     }
 
     @ApiOperation("修改线上预约项目")
     @PutMapping
+    @CurrentUser
     public ResponseResult<T> updateItem(@RequestBody @Validated OnlineAppointItemForm form) {
         return onlineAppointItemBiz.updateItem(form);
     }

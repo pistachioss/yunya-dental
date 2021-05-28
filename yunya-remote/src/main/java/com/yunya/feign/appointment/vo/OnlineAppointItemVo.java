@@ -17,11 +17,10 @@ import javax.validation.constraints.NotNull;
 @ApiModel(value = "OnlineAppointItemVo",description = "预约申请参数")
 @Data
 public class OnlineAppointItemVo {
-    /**
-     * 主键
-     */
+
+    /** 主键 */
     @ApiModelProperty("主键ID")
-    private Integer id;
+    private Integer itemId;
 
     /**
      * 申请预约项目名称
@@ -34,10 +33,4 @@ public class OnlineAppointItemVo {
      */
     @ApiModelProperty(value = "预约时长(单位: 分钟)")
     private Integer duration;
-
-    /**
-     * 是否可用 0-不可以；1-可用
-     */
-    @ApiModelProperty("是否可用 0-不可以；1-可用")
-    private Boolean inservice;
 }

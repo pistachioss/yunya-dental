@@ -5,7 +5,7 @@
     <!--
       WARNING - @mbg.generated
     -->
-    <id column="id" jdbcType="INTEGER" property="id" />
+    <id column="item_id" jdbcType="INTEGER" property="itemId" />
     <result column="name" jdbcType="VARCHAR" property="name" />
     <result column="duration" jdbcType="INTEGER" property="duration" />
     <result column="inservice" jdbcType="BIT" property="inservice" />
@@ -19,11 +19,11 @@
     <!-- 查询线上预约项目 -->
     <select id="findOnlineAppointItemById" resultType="com.yunya.feign.appointment.vo.OnlineAppointItemVo">
       select
-        oai.id,oai.name,oai.duration,oai.inservice
+        oai.item_id as itemId,oai.name,oai.duration,oai.inservice
       from online_appoint_item oai
       <where>
         <if test="id != null">
-          and oai.id = #{id}
+          and oai.item_id = #{id}
         </if>
       </where>
     </select>
@@ -31,7 +31,7 @@
   <select id="findOnlineAppointItemByCondition"
           resultType="com.yunya.feign.appointment.vo.OnlineAppointItemVo">
     select
-           oai.id,oai.name,oai.duration,oai.inservice
+           oai.item_id as itemId,oai.name,oai.duration,oai.inservice
     from online_appoint_item oai
     <where>
       <if test="query.name != null and query.name != ''">

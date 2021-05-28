@@ -1,7 +1,7 @@
 package com.yunya.modules.appointment.mapper;
 
 import com.yunya.feign.appointment.domain.query.OnlineAppointItemSettingQuery;
-import com.yunya.feign.appointment.vo.OnlineAppointItemSettingModelVo;
+import com.yunya.feign.appointment.vo.OnlineAppointItemSettingVo;
 import com.yunya.models.appointment.OnlineAppointItemSetting;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -14,5 +14,12 @@ public interface OnlineAppointItemSettingMapper extends Mapper<OnlineAppointItem
      * @param querys 查询条件
      * @return 返回结果列表
      */
-    List<OnlineAppointItemSettingModelVo> selectByCondition(@Param("querys") OnlineAppointItemSettingQuery querys);
+    List<OnlineAppointItemSettingVo> selectByCondition(@Param("querys") OnlineAppointItemSettingQuery querys);
+
+    /**
+     * 根据医生ID查询线上可预约项目
+     * @param dentistId 医生ID
+     * @return 返回查询结果
+     */
+    OnlineAppointItemSettingVo findItemSettingByDentistId(@Param("dentistId") Integer dentistId, @Param("orgId") Integer orgId);
 }

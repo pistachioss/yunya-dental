@@ -12,7 +12,8 @@ public class OnlineAppointItem {
      * 主键
      */
     @Id
-    private Integer id;
+    @Column(name = "item_id")
+    private Integer itemId;
 
     /**
      * 申请预约项目名称
@@ -68,19 +69,19 @@ public class OnlineAppointItem {
     /**
      * 获取主键
      *
-     * @return id - 主键
+     * @return itemId - 主键
      */
-    public Integer getId() {
-        return id;
+    public Integer getItemId() {
+        return itemId;
     }
 
     /**
      * 设置主键
      *
-     * @param id 主键
+     * @param itemId 主键
      */
-    public void setId(Integer id) {
-        this.id = id;
+    public void setItemId(Integer itemId) {
+        this.itemId = itemId;
     }
 
     /**

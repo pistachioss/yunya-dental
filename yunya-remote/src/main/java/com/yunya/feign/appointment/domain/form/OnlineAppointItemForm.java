@@ -22,7 +22,7 @@ public class OnlineAppointItemForm {
      */
     @ApiModelProperty(value = "主键ID",required = true)
     @NotNull(message = "id不能为空")
-    private Integer id;
+    private Integer itemId;
 
     /**
      * 申请预约项目名称

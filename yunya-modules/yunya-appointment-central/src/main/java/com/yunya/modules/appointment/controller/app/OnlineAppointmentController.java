@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.controller.app;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointmentForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
@@ -29,7 +30,7 @@ import java.util.List;
  **/
 @RestController
 @RequestMapping("/online/appoint")
-@Api(tags = "在线预约相关接口")
+@Api(tags = "线上预约相关接口")
 public class OnlineAppointmentController {
 
     @Autowired
@@ -86,7 +87,11 @@ public class OnlineAppointmentController {
     @PostMapping("/list")
     public ResponseResult<PageInfo<OnlineAppointmentVo>> findByCondition(@RequestBody
                                                                      @Validated OnlineAppointmentQuery query) {
-        return onlineAppointmentBiz.findByCondition(query);
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
+        List<OnlineAppointmentVo> results = onlineAppointmentBiz.findByCondition(query);
+        return ResponseUtil.success(new PageInfo<OnlineAppointmentVo>(results));
     }
 
     @ApiOperation("导出预约申请")

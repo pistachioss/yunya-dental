@@ -25,7 +25,7 @@ public class OnlineAppointItemModel {
      * 主键
      */
     @ApiModelProperty("主键ID")
-    private Integer id;
+    private Integer itemId;
 
     /**
      * 申请预约项目名称

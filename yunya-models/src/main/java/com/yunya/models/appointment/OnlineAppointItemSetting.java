@@ -9,13 +9,8 @@ public class OnlineAppointItemSetting {
      * 主键
      */
     @Id
-    private Integer id;
-
-    /**
-     * 预约项目ID
-     */
-    @Column(name = "appoint_item_id")
-    private Integer appointItemId;
+    @Column(name = "item_setting_id")
+    private Integer itemSettingId;
 
     /**
      * 医生ID
@@ -28,6 +23,12 @@ public class OnlineAppointItemSetting {
      */
     @Column(name = "org_id")
     private Integer orgId;
+
+    /**
+     * 线上预约项目ID，ID之间用“,”隔开
+     */
+    @Column(name = "enable_appoint_item_ids")
+    private String enableAppointItemIds;
 
     /**
      * 是否删除，是否有效；1-有效，0-无效
@@ -73,37 +74,37 @@ public class OnlineAppointItemSetting {
     /**
      * 获取主键
      *
-     * @return id - 主键
+     * @return itemSettingId - 主键
      */
-    public Integer getId() {
-        return id;
+    public Integer getItemSettingId() {
+        return itemSettingId;
     }
 
     /**
      * 设置主键
      *
-     * @param id 主键
+     * @param itemSettingId 主键
      */
-    public void setId(Integer id) {
-        this.id = id;
+    public void setItemSettingId(Integer itemSettingId) {
+        this.itemSettingId = itemSettingId;
     }
 
     /**
      * 获取预约项目ID
      *
-     * @return appoint_item_id - 预约项目ID
+     * @return itemId - 预约项目ID
      */
-    public Integer getAppointItemId() {
-        return appointItemId;
+    public String getEnableAppointItemIds() {
+        return enableAppointItemIds;
     }
 
     /**
      * 设置预约项目ID
      *
-     * @param appointItemId 预约项目ID
+     * @param enableAppointItemIds 预约项目ID
      */
-    public void setAppointItemId(Integer appointItemId) {
-        this.appointItemId = appointItemId;
+    public void setEnableAppointItemIds(String enableAppointItemIds) {
+        this.enableAppointItemIds = enableAppointItemIds;
     }
 
     /**

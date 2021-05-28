@@ -3,10 +3,13 @@ package com.yunya.feign.appointment.domain.form;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -17,37 +20,30 @@ import java.io.Serializable;
 @Data
 @ApiModel(value = "OnlineAppointItemSettingModel",description = "在线预约项目设置")
 public class OnlineAppointItemSettingForm implements Serializable {
-    /**
-     * 主键
-     */
-    @ApiModelProperty(value = "主键",required = true)
-    @NotNull(message = "预约项目ID不能为空")
-    private Integer id;
 
     /**
-     * 预约项目ID
+     * 线上项目设置主键
      */
-    @ApiModelProperty(value = "预约项目ID",required = true)
-    @NotNull(message = "预约项目不能为空")
-    private Integer appointItemId;
+    @ApiModelProperty("线上项目设置主键")
+    private Integer itemSettingId;
 
     /**
-     * 预约项目名称
+     * 门诊ID
      */
-    @ApiModelProperty(value = "预约项目名称",required = true)
-    @NotBlank(message = "预约项目名称")
-    private String appointItemName;
+    @ApiModelProperty(value = "门诊ID",required = true)
+    @NotNull(message = "门诊ID不能为空")
+    private Integer orgId;
 
     /**
-     * 预约默认时长（分钟）
+     * 医生ID
      */
-    @ApiModelProperty(value = "预约默认时长（分钟）", required = true)
-    @NotNull(message = "预约默认时长（分钟）")
-    private Integer appointDuration;
+    @ApiModelProperty(value = "医生ID",required = true)
+    @NotNull(message = "医生ID不能为空")
+    private Integer dentistId;
 
     /**
-     * 是否删除，是否有效；1-有效，0-无效
+     * 线上预约项目
      */
-    @ApiModelProperty("是否删除，是否有效；1-有效，0-无效")
-    private Boolean inservice;
+    @ApiModelProperty("线上预约项目")
+    private List<Integer> lists;
 }

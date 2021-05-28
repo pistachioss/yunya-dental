@@ -1,11 +1,9 @@
 package com.yunya.modules.appointment.biz.app;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointmentForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
-import com.yunya.feign.appointment.vo.CancelAppointmentVO;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
@@ -14,7 +12,6 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -22,11 +19,9 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.OnlineAppointment;
-import com.yunya.modules.appointment.biz.web.AppointmentBiz;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.OnlineAppointmentMapper;
 import com.yunya.modules.appointment.service.AppointmentLifecycle;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,12 +30,10 @@ import org.springframework.validation.annotation.Validated;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * @program: yunya-dental
@@ -136,17 +129,14 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param query 查询参数
      * @return 结果列表
      */
-    public ResponseResult<PageInfo<OnlineAppointmentVo>> findByCondition(OnlineAppointmentQuery query) {
-        if (query.getWhetherPage()) {
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
-        }
+    public List<OnlineAppointmentVo> findByCondition(OnlineAppointmentQuery query) {
         List<OnlineAppointmentVo> results = mapper.findByCondition(query);
         if (StringHelper.isNotEmpty(results)) {
             setDentistInfo(results);
             setOrgInfo(results);
             setPatientInfo(results);
         }
-        return ResponseUtil.success(new PageInfo<OnlineAppointmentVo>(results));
+        return results;
     }
 
     /**
@@ -203,8 +193,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
     public void export(HttpServletResponse response, @Validated OnlineAppointmentQuery query) throws IOException {
         query.setWhetherPage(false);
         ExcelUtil<OnlineAppointmentVo> excelUtil = new ExcelUtil<>(OnlineAppointmentVo.class);
-        ResponseResult<PageInfo<OnlineAppointmentVo>> responseResult = this.findByCondition(query);
-        List<OnlineAppointmentVo> data = responseResult.getData().getList();
+        List<OnlineAppointmentVo> data = this.findByCondition(query);
         Integer orgId = query.getOrgId();
         String orgName = "";
         if (orgId != null) {

@@ -5,10 +5,10 @@
     <!--
       WARNING - @mbg.generated
     -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="appoint_item_id" property="appointItemId" jdbcType="INTEGER" />
+    <id column="item_setting_id" property="itemSettingId" jdbcType="INTEGER" />
     <result column="dentist_id" property="dentistId" jdbcType="INTEGER" />
     <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="enable_appoint_item_ids" property="enableAppointItemIds" jdbcType="BIT" />
     <result column="inservice" property="inservice" jdbcType="BIT" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
@@ -18,39 +18,25 @@
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
-  <resultMap id="BaseResultMapVo" type="com.yunya.feign.appointment.vo.OnlineAppointItemSettingModelVo" >
+  <resultMap id="BaseResultMapVo" type="com.yunya.feign.appointment.vo.OnlineAppointItemSettingVo" >
     <!--
       WARNING - @mbg.generated
     -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="appoint_item_id" property="appointItemId" jdbcType="INTEGER" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <id column="item_setting_id" property="itemSettingId" jdbcType="INTEGER" />
+    <result column="dentist_id" property="dentistId" jdbcType="INTEGER" />
+    <collection property="lists" ofType="com.yunya.feign.appointment.vo.OnlineAppointItemVo">
+      <id column="item_id" jdbcType="INTEGER" property="itemId" />
+      <result column="name" jdbcType="VARCHAR" property="name" />
+      <result column="duration" jdbcType="INTEGER" property="duration" />
+    </collection>
   </resultMap>
 
-  <sql id="baseFieldVo">
-    id,appoint_item_id,inservice
-  </sql>
-
-    <!-- 根据条件批量查询预约项目 -->
-    <select id="selectByCondition" resultMap="BaseResultMapVo">
-      select <include refid="baseFieldVo"/>
-      from online_appoint_item_setting
-      <where>
-        <if test="querys.id != null">
-          and id = ${querys.id}
-        </if>
-        <if test="querys.dentistId != null">
-          and dentist_id = ${querys.dentistId}
-        </if>
-        <if test="querys.orgId != null">
-          and oais.org_id = ${querys.orgId}
-        </if>
-        <if test="querys.appointItemId != null">
-          and oais.appoint_item_id = ${querys.appointItemId}
-        </if>
-        <if test="querys.inservice != null">
-          and oais.inservice = ${querys.inservice}
-        </if>
-      </where>
-    </select>
+  <!-- 根据医生ID查询线上可预约项目 -->
+  <select id="findItemSettingByDentistId"
+          resultMap="BaseResultMapVo">
+    select
+      oais.item_setting_id,oais.dentist_id,oai.name,oai.duration,oais.enable_appoint_item_ids,oai.item_id
+    from online_appoint_item_setting oais left join online_appoint_item oai on FIND_IN_SET(oai.item_id,oais.enable_appoint_item_ids)
+    where oais.dentist_id = #{dentistId} and oais.org_id = #{orgId}
+  </select>
 </mapper>

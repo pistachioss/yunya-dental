@@ -36,6 +36,12 @@ public class OnlineAppointmentQuery implements Serializable {
     private Integer orgId;
 
     /**
+     * 预约项目ID
+     */
+    @ApiModelProperty(value = "预约项目ID",hidden = true)
+    private Integer itemId;
+
+    /**
      * 微信用户唯一标识
      */
     @ApiModelProperty("微信用户唯一标识")
