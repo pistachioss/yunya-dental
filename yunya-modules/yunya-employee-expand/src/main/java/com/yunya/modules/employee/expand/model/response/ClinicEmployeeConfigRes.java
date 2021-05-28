@@ -1,9 +1,12 @@
 package com.yunya.modules.employee.expand.model.response;
 
+import com.yunya.feign.appointment.vo.EnableOnlineAppointItemVo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 /**
  * @author bruce
@@ -25,4 +28,6 @@ public class ClinicEmployeeConfigRes {
     private Integer enableAppoint;
     @ApiModelProperty("是否可挂号 1 可挂号")
     private Integer enableRegistry;
+    @ApiModelProperty("线上可预约项目")
+    private EnableOnlineAppointItemVo onlineAppointItemInfo;
 }

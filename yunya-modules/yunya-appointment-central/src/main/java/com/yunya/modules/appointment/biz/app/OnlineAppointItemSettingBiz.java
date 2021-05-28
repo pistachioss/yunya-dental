@@ -3,6 +3,7 @@ package com.yunya.modules.appointment.biz.app;
 import com.alibaba.csp.sentinel.init.InitExecutor;
 import com.yunya.feign.appointment.domain.form.OnlineAppointItemSettingForm;
 import com.yunya.feign.appointment.vo.EnableOnlineAppointDentistsVo;
+import com.yunya.feign.appointment.vo.EnableOnlineAppointItemVo;
 import com.yunya.feign.appointment.vo.OnlineAppointItemSettingVo;
 import com.yunya.feign.appointment.vo.OnlineAppointItemVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -39,14 +40,19 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
     @Autowired
     private OnlineAppointItemBiz onlineAppointItemBiz;
 
+
     /**
-     * 删除预约项目
-     * @param id 预约项目ID
-     * @return 返回结果
+     * 删除预约项目配置
+     * @param dentistId 医生ID
+     * @param orgId  门诊ID
+     * @return
      */
     @Transactional
-    public ResponseResult<T> deleteOnlineAppointItemSettingById(Integer id) {
-        OnlineAppointItemSetting onlineAppointItemSetting = mapper.selectByPrimaryKey(id);
+    public ResponseResult<T> deleteOnlineAppointItemSetting(Integer dentistId,Integer orgId) {
+        OnlineAppointItemSetting query = new OnlineAppointItemSetting();
+        query.setDentistId(dentistId);
+        query.setOrgId(orgId);
+        OnlineAppointItemSetting onlineAppointItemSetting = mapper.selectOne(query);
         if (onlineAppointItemSetting != null) {
             int status = mapper.delete(onlineAppointItemSetting);
             if (status > 0) {
@@ -78,18 +84,9 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
      * @param dentistId 医生ID
      * @return 返回查询结果
      */
-    public ResponseResult<List<Integer>> findItemSettingByDentistId(Integer dentistId,Integer orgId) {
+    public OnlineAppointItemSettingVo findItemSettingByDentistId(Integer dentistId, Integer orgId) {
         OnlineAppointItemSettingVo itemSettingInfo = mapper.findItemSettingByDentistId(dentistId,orgId);
-        List<OnlineAppointItemVo> lists = itemSettingInfo.getLists();
-        List<Integer> result = null;
-        if (StringHelper.isNotEmpty(lists)) {
-            result = lists.stream().mapToInt(
-                    OnlineAppointItemVo::getItemId).boxed().collect(Collectors.toList());
-        }
-        if (result == null) {
-            result = new ArrayList<>();
-        }
-        return ResponseUtil.success(result);
+        return itemSettingInfo;
     }
 
     /**

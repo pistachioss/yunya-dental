@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.biz.app;
 
+import cn.hutool.extra.qrcode.QrCodeUtil;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointmentForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
@@ -12,6 +13,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -130,6 +132,13 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @return 结果列表
      */
     public List<OnlineAppointmentVo> findByCondition(OnlineAppointmentQuery query) {
+
+        String searchStr = query.getSearchStr();
+        if (searchStr.matches(BusinessConstants.MOBILE_REGEXP)) {
+            query.setPhone(searchStr);
+        } else {
+            query.setPatientName(searchStr);
+        }
         List<OnlineAppointmentVo> results = mapper.findByCondition(query);
         if (StringHelper.isNotEmpty(results)) {
             setDentistInfo(results);

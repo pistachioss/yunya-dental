@@ -82,8 +82,8 @@
             <if test="query.patientName != null and query.patientName != ''">
                 and oa.patient_name like concat('%',#{query.patientName},'%')
             </if>
-            <if test="query.patientPhone != null and query.patientPhone != ''">
-                and oa.patient_phone = #{query.patientPhone}
+            <if test="query.phone != null and query.phone != ''">
+                and oa.patient_phone = #{query.phone}
             </if>
             <if test="query.status != null">
                 and oa.status = #{query.status}

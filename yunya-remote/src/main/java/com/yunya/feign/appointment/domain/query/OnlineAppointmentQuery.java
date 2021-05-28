@@ -74,16 +74,22 @@ public class OnlineAppointmentQuery implements Serializable {
     private String appointEndDate;
 
     /**
-     * 就诊患者名字
+     * 患者名字/手机号
      */
-    @ApiModelProperty("就诊患者名字")
+    @ApiModelProperty("患者名字/手机号")
+    private String searchStr;
+
+    /**
+     * 患者名字
+     */
+    @ApiModelProperty(value = "患者名字",hidden = true)
     private String patientName;
 
     /**
-     * 患者手机号
+     * 手机号
      */
-    @ApiModelProperty("患者手机号")
-    private String patientPhone;
+    @ApiModelProperty(value = "手机号",hidden = true)
+    private String phone;
 
     /**
      * 预约申请状态 0-申请中；1-通过；2-取消
@@ -107,6 +113,6 @@ public class OnlineAppointmentQuery implements Serializable {
     /**
      * 预约确认状态
      */
-    @ApiModelProperty("预约确认状态")
+    @ApiModelProperty("预约确认状态 ")
     private Boolean confirmStatus;
 }

@@ -7,11 +7,7 @@ import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.factory.RemoteAppointmentFeignBackFactory;
-import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
-import com.yunya.feign.appointment.vo.AppointmentItemVo;
-import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
-import com.yunya.feign.appointment.vo.AppointmentVo;
-import com.yunya.feign.appointment.vo.NextAppointsVo;
+import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -23,10 +19,7 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -188,4 +181,24 @@ public interface RemoteAppointmentFeign {
    */
   @RequestMapping(value = "api/online/appoint/",method = RequestMethod.POST)
   ResponseResult addOrUpdateOnlineAppointItem(@RequestBody @Validated OnlineAppointItemSettingForm form);
+
+  /**
+   * 查询医生线上可预约项目(门诊端-诊所设置-员工设置)
+   * @param dentistId 医生ID
+   * @param orgId 门诊ID
+   * @return
+   */
+  @RequestMapping(value = "api/online/appoint/setting/{dentistId}/{orgId}",method = RequestMethod.GET)
+  EnableOnlineAppointItemVo findOnlineAppointItemById(@PathVariable(value = "dentistId") Integer dentistId,
+                                                      @PathVariable(value = "orgId")Integer orgId);
+
+  /**
+   * 删除预约项目配置
+   * @param dentistId 医生ID
+   * @param orgId 门诊ID
+   * @return 返回状态
+   */
+  @RequestMapping(value = "api/online/appoint/setting/{dentistId}/{orgId}",method = RequestMethod.DELETE)
+  ResponseResult<T> deleteOnlineAppointItemSetting(@PathVariable(value = "dentistId") Integer dentistId,
+                                                              @PathVariable(value = "orgId") Integer orgId);
 }
