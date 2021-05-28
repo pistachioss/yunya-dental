@@ -10,6 +10,8 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberBillRechargeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidBillRechargeModel;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.model.*;
@@ -108,7 +110,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @return resultData 账单详情信息
    */
   public BillDetailGroupVO findOrderDetailAndBillDetail(Integer orderRecordId) {
-    BillRecord billRecord  = new BillRecord();
+    BillRecord billRecord = new BillRecord();
     billRecord.setOrderRecordId(orderRecordId);
     billRecord.setInservice(true);
     BillRecord billRecordAll = mapper.selectOne(billRecord);
@@ -136,7 +138,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
             List<BillPayDetailRecordVO> billPayDetailRecords =
                 billPayDetailRecordBiz.findBillPayDetailRecordByBillPayRecordId(billPayRecordId);
             billPayRecord.setBillPayDetailRecords(billPayDetailRecords);
-            billPayRecord.setBillNumber( billRecordAll.getBillNumber());
+            billPayRecord.setBillNumber(billRecordAll.getBillNumber());
           });
     } else {
       billPayRecords = new ArrayList<>();
@@ -536,7 +538,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @return
    */
   public PatientBillStatistics statisticsBill(Integer patientId) {
-    PatientBillStatistics patientBillStatistics = mapper.selectPatientBillStatistics(patientId, FREE_PAYMENT_ID);
+    PatientBillStatistics patientBillStatistics =
+        mapper.selectPatientBillStatistics(patientId, FREE_PAYMENT_ID);
     return patientBillStatistics;
   }
 
@@ -609,25 +612,38 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
 
   /**
    * 患者档案-账单详情-编辑备注提交
+   *
    * @param orderDetails 账单明细
    * @return Integer
    */
   public ResponseResult<T> editRemarks(List<OrderDetailChargeVO> orderDetails) {
     if (StringHelper.isEmpty(orderDetails)) {
-      return ResponseUtil.success("账单详情不能为空！",null);
+      return ResponseUtil.success("账单详情不能为空！", null);
     }
     String userID = BaseContextHandler.getUserID();
     String name = BaseContextHandler.getName();
-    orderDetails.forEach(entity->{
-      String remarks = entity.getRemarks();
-      OrderDetail orderDetail = new OrderDetail();
-      orderDetail.setId(entity.getOrderDetailId());
-      orderDetail.setRemarks(remarks);
-      orderDetail.setUpdId(Integer.valueOf(userID));
-      orderDetail.setUpdTime(new Date(System.currentTimeMillis()));
-      orderDetail.setUptName(name);
-      orderDetailBiz.updateOrderDetail(orderDetail);
-    });
+    orderDetails.forEach(
+        entity -> {
+          String remarks = entity.getRemarks();
+          OrderDetail orderDetail = new OrderDetail();
+          orderDetail.setId(entity.getOrderDetailId());
+          orderDetail.setRemarks(remarks);
+          orderDetail.setUpdId(Integer.valueOf(userID));
+          orderDetail.setUpdTime(new Date(System.currentTimeMillis()));
+          orderDetail.setUptName(name);
+          orderDetailBiz.updateOrderDetail(orderDetail);
+        });
     return ResponseUtil.success();
+  }
+
+  /**
+   * 根据条件查询门诊应收账款余额表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public List<BillRestReceivableAmountVO> findDebtList(BillOfReceivableQuery query) {
+
+    return null;
   }
 }

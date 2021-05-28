@@ -1,5 +1,7 @@
 package com.yunya.modules.treatment.controller.web;
 
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.treatment.domain.model.BillRefundModel;
 import com.yunya.feign.treatment.domain.vo.BillDetailGroupVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
@@ -55,21 +57,18 @@ public class BillRecordController {
     return ResponseUtil.success(resultList);
   }
 
-
   /**
    * 患者档案-账单详情-编辑备注提交
+   *
    * @param orderDetails 账单明细
    * @return
    */
   @ApiOperation("患者档案-账单详情-编辑备注提交")
-  @PostMapping(value = "/edit/remarks",name = "患者档案-账单详情-编辑备注提交")
+  @PostMapping(value = "/edit/remarks", name = "患者档案-账单详情-编辑备注提交")
   @CurrentUser
   public ResponseResult<T> editRemarks(@RequestBody List<OrderDetailChargeVO> orderDetails) {
     return billRecordBiz.editRemarks(orderDetails);
   }
-
-
-
 
   /**
    * 账单退费
@@ -104,5 +103,19 @@ public class BillRecordController {
       @PathVariable(value = "patientId") Integer patientId) {
     PatientBillStatistics statistics = billRecordBiz.statisticsBill(patientId);
     return ResponseUtil.success(statistics);
+  }
+
+  /**
+   * 根据条件查询应收账款余额表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端报表-财务报表-应收账款余额表")
+  @PostMapping(value = "/debt/list", name = "公司端报表-财务报表-应收账款余额表")
+  public ResponseResult<List<BillRestReceivableAmountVO>> findDebtList(
+      @RequestBody @Validated BillOfReceivableQuery query) {
+    List<BillRestReceivableAmountVO> resultList = billRecordBiz.findDebtList(query);
+    return ResponseUtil.success(resultList);
   }
 }
