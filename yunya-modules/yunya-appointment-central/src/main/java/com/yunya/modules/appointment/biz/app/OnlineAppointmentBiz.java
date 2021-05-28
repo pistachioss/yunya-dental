@@ -134,7 +134,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
     public List<OnlineAppointmentVo> findByCondition(OnlineAppointmentQuery query) {
 
         String searchStr = query.getSearchStr();
-        if (searchStr.matches(BusinessConstants.MOBILE_REGEXP)) {
+        if (searchStr != null && searchStr.matches(BusinessConstants.MOBILE_REGEXP)) {
             query.setPhone(searchStr);
         } else {
             query.setPatientName(searchStr);

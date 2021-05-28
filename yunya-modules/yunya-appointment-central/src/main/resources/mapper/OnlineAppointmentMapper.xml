@@ -65,7 +65,7 @@
             date_format(oa.crt_time,'%Y-%m-%d') as crtTime,
             a.id as appointmentId,
             a.confirm_status as confirmStatus
-        from online_appointment oa inner join appointment a on a.online_appointment_id = oa.id and a.inservice = true
+        from online_appointment oa LEFT join appointment a on a.online_appointment_id = oa.id and a.inservice = true
         <where>
             <if test="query.orgId != null">
                 and oa.org_id = #{query.orgId}
