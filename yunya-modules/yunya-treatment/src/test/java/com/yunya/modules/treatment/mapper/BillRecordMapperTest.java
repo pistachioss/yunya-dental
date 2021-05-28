@@ -1,5 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.vo.PatientBillPrintInfoVO;
 import org.junit.Test;
@@ -48,6 +50,15 @@ public class BillRecordMapperTest {
   public void find3() {
     List<PatientBillPrintInfoVO> vos =
         billRecordMapper.selectBillDetailListByIds(66458, new Integer[] {441328});
+    System.out.println(vos);
+  }
+
+  @Test
+  public void selectDebtList() {
+    BillOfReceivableQuery query = new BillOfReceivableQuery();
+    query.setOrgId(26);
+    query.setBillDate("2021-03-30");
+    List<BillRestReceivableAmountVO> vos = billRecordMapper.selectDebtList(query);
     System.out.println(vos);
   }
 }

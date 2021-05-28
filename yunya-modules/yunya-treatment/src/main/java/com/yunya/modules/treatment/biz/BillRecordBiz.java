@@ -643,6 +643,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @return list
    */
   public List<BillRestReceivableAmountVO> findDebtList(BillOfReceivableQuery query) {
+    List<BillRestReceivableAmountVO> resultList = mapper.selectDebtList(query);
 
     return null;
   }
