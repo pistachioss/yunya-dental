@@ -27,7 +27,6 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -49,7 +48,6 @@ import java.util.concurrent.Future;
  */
 @Slf4j
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class BaseTreatmentProcessBiz
     extends BaseBiz<BaseTreatmentProcessMapper, BaseTreatmentProcess> {
 
