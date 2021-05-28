@@ -75,6 +75,7 @@
         cs.patient_id = #{patientId}
       </if>
     </where>
+    order by cs.crt_time desc
   </select>
 
   <!-- 查询患者总额 -->

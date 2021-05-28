@@ -1,10 +1,9 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.patient_central.domain.query.ReceiverkLoadQuery;
-import com.yunya.feign.report.domain.query.BillPayRecordQuery;
-import com.yunya.feign.report.domain.query.DataStatisticsQuery;
-import com.yunya.feign.report.domain.query.StatementBillChargeDetailInfoQuery;
-import com.yunya.feign.report.domain.query.StatementStatisticQuery;
+import com.yunya.feign.patient_central.domain.vo.web.MarketRecommendationDetailedVo;
+import com.yunya.feign.patient_central.domain.vo.web.MarketRecommendationVo;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseBillPay;
 import org.apache.ibatis.annotations.Param;
@@ -248,4 +247,37 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    */
   List<BillWorkloadVO> selectRecievedWorkloadsGroupByMonth(
       @Param("query") DataStatisticsQuery query);
+
+  /**
+   * 查询活动推荐患者人数
+   * @param queryFrom 条件
+   * @return 动推荐患者人数
+   */
+    List<MarketRecommendationVo> selectActivityRecommendationNumber(@Param("query") MarketRecommendationQueryFrom queryFrom);
+
+  /**
+   * 根据条件查询实收合计
+   * @param marketRecommendationVo 活动
+   * @param queryFrom 时间
+   * @param itemIds 支付类型
+   * @return 实收合计
+   */
+    BigDecimal selectTotalAmountPaid(@Param("form") MarketRecommendationVo marketRecommendationVo,
+                                     @Param("query") MarketRecommendationQueryFrom queryFrom,
+                                     @Param("itemIds") List<Integer> itemIds);
+
+  /**
+   * 根据条件查询退费合计
+   * @param marketRecommendationVo 活动
+   * @param queryFrom 时间
+   * @return 退费合计
+   */
+  BigDecimal selectTotalRefundAmount(@Param("form") MarketRecommendationVo marketRecommendationVo, @Param("query") MarketRecommendationQueryFrom queryFrom);
+
+  /**
+   * 公司端/门诊端-报表统计-市场报表-市场推荐列表详情
+   * @param query 请求
+   * @return 市场推荐列表详情
+   */
+  List<MarketRecommendationDetailedVo> selectMarketRecommendationDetailed(@Param("query") MarketRecommendationDetailedQueryFrom query);
 }

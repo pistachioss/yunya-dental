@@ -17,9 +17,9 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("市场推荐查询模板")
+@ApiModel("市场推荐查询详情模板")
 @Data
-public class MarketRecommendationQueryFrom implements Serializable {
+public class MarketRecommendationDetailedQueryFrom implements Serializable {
 
     @ApiModelProperty(value = "是否分页", required = true)
     private Boolean whetherPage = true;
@@ -45,6 +45,6 @@ public class MarketRecommendationQueryFrom implements Serializable {
      * 活动id
      */
     @ApiModelProperty(value ="活动id",required = false)
-    private List<Integer> activityIds;
+    private Integer activityIds;
 
 }
