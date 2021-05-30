@@ -41,6 +41,7 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 
@@ -114,8 +115,8 @@ public class CardController {
     @ApiOperation(value = "产品售卖--查看配给-卡券售出")
     @PutMapping("/coupon/card/sale")
     @CurrentUser
-    public ResponseResult soldCard(@Valid @RequestBody CardSoldForm form) {
-        return cardBiz.soldCard(form);
+    public ResponseResult soldCard(@Valid @RequestBody CardSoldForm form) throws ExecutionException, InterruptedException {
+        return  cardBiz.soldCard(form);
     }
 
     @ApiOperation(value = "卡券二维码页面打开")

@@ -24,9 +24,7 @@ import com.yunya.models.treatment.OrderDetailPayRecord;
 import com.yunya.models.treatment.OrderRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -48,7 +46,6 @@ import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH
  */
 @Slf4j
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
 
   /** 订单记录 */
@@ -143,13 +140,12 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
          addPatientIntegral.setCreditsOption((byte)0);
          addPatientIntegral.setActualPrice(0);
          addPatientIntegral.setItemCode("");
-         addPatientIntegral.setDescription("500");
-         addPatientIntegral.setRemarks("患者推荐");
+         addPatientIntegral.setDescription("患者推荐");
          addPatientIntegral.setCrtId(patientId);
          addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
        }else {
          // 没有患者积分帐户就新建
-         addPatientIntegral.setPatientId(patientId);
+         addPatientIntegral.setPatientId(basePatientOriginLog.getOriginId());
          // recommend 患者推荐
          addPatientIntegral.setType("recommend");
          addPatientIntegral.setChannel((byte)0);

@@ -25,8 +25,8 @@
   </resultMap>
 
   <sql id="baseColumns">
-    id,patient_id,type,`channel`,order_num,credits_account,credits,credits_option,actual_price,item_code,`description`,
-    remarks,inservice,crt_id,crt_time,upd_id,upd_time
+    id,patient_id ,type,`channel`,order_num ,credits_account,credits,credits_option ,actual_price ,item_code ,`description`,
+    remarks,inservice,crt_id ,crt_time ,upd_id ,upd_time
   </sql>
 
   <!-- 获取患者最新积分信息 -->
@@ -75,6 +75,7 @@
         cs.patient_id = #{patientId}
       </if>
     </where>
+    order by cs.crt_time desc
   </select>
 
   <!-- 查询患者总额 -->
