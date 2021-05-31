@@ -1,19 +1,16 @@
 package com.yunya.modules.patient_central.controller.web;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.query.WxFansDetailForm;
-import com.yunya.feign.patient_central.domain.query.WxFansQueryForm;
-import com.yunya.feign.patient_central.domain.query.WxFansSaveForm;
-import com.yunya.feign.patient_central.domain.query.WxFansUpdateForm;
+import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO;
 import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.WxFans;
 import com.yunya.modules.patient_central.biz.WxFansBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_NOT_ALLOW;
 
 /**
  * 简介:公司微信公众号粉丝控制层
@@ -94,4 +93,19 @@ public class WxFansController {
         return ResponseUtil.success(wxFansBiz.update(wxFansUpdateForm));
     }
 
+    /**
+     * 根据openId或患者ID获取微信公众号的粉丝（判断用户是否关注了微信公众号）
+     *
+     * @param query
+     * @return
+     */
+    @ApiOperation("根据openId或患者ID获取微信公众号的粉丝（判断用户是否关注了微信公众号）")
+    @PostMapping("/getOwnWxFans")
+    public ResponseResult<WxFans> getOwnWxFans(@RequestBody WxUserQuery query) {
+        WxFans ownWxFans = wxFansBiz.getOwnWxFans(query);
+        if (ownWxFans == null) {
+            throw new ClientServiceException("非关注公众号用户请先关注艾维口腔公众号！",OPERATION_NOT_ALLOW);
+        }
+        return ResponseUtil.success(ownWxFans);
+    }
 }
