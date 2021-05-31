@@ -1,6 +1,8 @@
 package com.yunya.modules.patient_central.controller.web;
 
 import com.yunya.feign.patient_central.domain.query.WxFansBindForm;
+import com.yunya.feign.patient_central.domain.query.WxUserQuery;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * 简介:微信公众号粉丝与患者绑定关系业务层
@@ -60,4 +64,15 @@ public class WxFanBindController {
         return ResponseUtil.success(wxFansBindBiz.unbind(wxFansBindForm));
     }
 
+    /**
+     * 根据openId或患者id查询其绑定的患者列表
+     *
+     * @param query
+     * @return
+     */
+    @ApiOperation("根据openId或患者id查询其绑定的患者列表")
+    @PostMapping("/bindPatientList")
+    public ResponseResult<List<PatientBaseInfoVo>> wxFansBindPatientList(@RequestBody WxUserQuery query) {
+        return ResponseUtil.success(wxFansBindBiz.wxFansBindPatientList(query));
+    }
 }
