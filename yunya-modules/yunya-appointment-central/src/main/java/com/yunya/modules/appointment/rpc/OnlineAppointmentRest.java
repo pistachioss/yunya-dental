@@ -43,7 +43,6 @@ public class OnlineAppointmentRest {
      * @return
      */
     @RequestMapping(value = "/",method = RequestMethod.POST)
-    @CurrentUser
     public ResponseResult<T> addOrUpdateOnlineAppointItem(@RequestBody @Validated OnlineAppointItemSettingForm form) {
         return appointItemSettingBiz.addOrUpdateOnlineAppointItem(form);
     }

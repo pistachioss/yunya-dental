@@ -2,6 +2,7 @@ package com.yunya.modules.patient_central.biz;
 
 
 import com.yunya.feign.patient_central.domain.query.WxFansBindForm;
+import com.yunya.feign.patient_central.domain.query.WxUserQuery;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.wechat.RemoteWechatServiceFeign;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
@@ -167,4 +168,7 @@ public class WxFansBindBiz extends BaseBiz<WxFansBindMapper, WxFansBind> {
         return de;
     }
 
+    public List<PatientBaseInfoVo> wxFansBindPatientList(WxUserQuery query) {
+        return mapper.wxFansBindPatientList(query);
+    }
 }
