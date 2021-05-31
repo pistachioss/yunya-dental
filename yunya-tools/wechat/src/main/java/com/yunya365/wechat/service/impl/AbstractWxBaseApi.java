@@ -5,6 +5,7 @@ import com.yunya.feign.wechat.domain.model.WxTemplatePushModel;
 import com.yunya.feign.wechat.domain.vo.WxKfAllVo;
 import com.yunya.feign.wechat.domain.vo.WxKfListVo;
 import com.yunya.feign.wechat.domain.vo.WxKfOnlineVo;
+import com.yunya.feign.wechat.domain.vo.WxSignatureVo;
 import com.yunya.framework.common.constant.WXConstant;
 import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -16,6 +17,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -121,6 +126,21 @@ public abstract class AbstractWxBaseApi {
         return jsonObject.getString("openid");
     }
 
+    public WxSignatureVo getSignInfo(String url) {
+        String redisKey = String.format(WXConstant.JSAPI_TICKET_KEY, wxConfig.getAppId());
+        String ticket = redisUtils.get(redisKey);
+        String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
+        String sortedParams = this.getSortedParams(ticket, url, timestamp);
+        String sign = this.getEncryptedParams(sortedParams);
+        WxSignatureVo vo = new WxSignatureVo();
+        vo.setSignature(sign);
+        vo.setAppId(wxConfig.getAppId());
+        vo.setNonceStr(wxConfig.getEncodingAESKey());
+        vo.setTimeStamp(timestamp);
+        log.info("js-sdk的config验证信息：{}", vo);
+        return vo;
+    }
+
     private void checkWxResult(JSONObject jsonObject) {
         if (jsonObject == null) {
             throw new ClientServiceException(WeChatError.USER_NOT_FOLLOW);
@@ -138,5 +158,26 @@ public abstract class AbstractWxBaseApi {
         if (!subscribe) {
             throw new ClientServiceException(WeChatError.USER_NOT_FOLLOW);
         }
+    }
+
+    private String getSortedParams(String jsTicket, String url, String timestamp) {
+        StringBuilder validateString = new StringBuilder();
+        validateString.append("jsapi_ticket=").append(jsTicket)
+               .append("&noncestr=").append(wxConfig.getEncodingAESKey())
+               .append("&timestamp=").append(System.currentTimeMillis() / 1000)
+               .append("&url=").append(url);
+        return validateString.toString();
+    }
+
+    private String getEncryptedParams(String sortedParams) {
+        MessageDigest crypt = null;
+        try {
+            crypt = MessageDigest.getInstance("SHA-1");
+            crypt.reset();
+            crypt.update(sortedParams.getBytes("UTF-8"));
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return new BigInteger(1, crypt.digest()).toString(16);
     }
 }
