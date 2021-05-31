@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointmentForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
+import com.yunya.feign.appointment.vo.OnlineAppointNewMessageNoticeVo;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
@@ -24,6 +25,7 @@ import com.yunya.models.appointment.OnlineAppointment;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.OnlineAppointmentMapper;
 import com.yunya.modules.appointment.service.AppointmentLifecycle;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,10 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -225,6 +231,25 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
             onlineAppointment.setUpdTime(new Date(System.currentTimeMillis()));
             mapper.updateByPrimaryKeySelective(onlineAppointment);
         }
+    }
+
+    /**
+     * 预约消息通知
+     * @param orgId  门诊ID
+     * @param lastTimeStamp 上一次查询时间戳
+     * @return 返回结果
+     */
+    public OnlineAppointNewMessageNoticeVo newMessageNotice(Integer orgId, Long lastTimeStamp) {
+        Date date = new Date(lastTimeStamp);
+       // TODO
+        SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        System.out.println("date = " + dateFormater.format(date));
+        int count = mapper.countNewMessageNotice(orgId,dateFormater.format(date));
+        System.out.println(count);
+        OnlineAppointNewMessageNoticeVo result = new OnlineAppointNewMessageNoticeVo();
+        result.setLastTimeStamp(System.currentTimeMillis());
+        result.setCount(count);
+        return result;
     }
 
     /**

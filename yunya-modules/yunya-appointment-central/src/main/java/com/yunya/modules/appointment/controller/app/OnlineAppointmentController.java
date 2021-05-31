@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointmentForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
+import com.yunya.feign.appointment.vo.OnlineAppointNewMessageNoticeVo;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -99,5 +100,17 @@ public class OnlineAppointmentController {
     public ResponseResult<T> export(HttpServletResponse response, @Validated OnlineAppointmentQuery query) throws IOException {
         onlineAppointmentBiz.export(response,query);
         return ResponseUtil.success();
+    }
+
+    @ApiOperation("预约消息通知")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "orgId",value = "门诊ID",required = true,dataTypeClass = Integer.class),
+            @ApiImplicitParam(name = "lastTimeStamp",value = "上一次查询时间戳",required = true,dataTypeClass = Long.class)
+    })
+    @GetMapping("/message/notice/{orgId}/{lastTimeStamp}")
+    public ResponseResult<OnlineAppointNewMessageNoticeVo> newMessageNotice(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId,
+                                              @PathVariable("lastTimeStamp") Long lastTimeStamp) {
+        OnlineAppointNewMessageNoticeVo result = onlineAppointmentBiz.newMessageNotice(orgId,lastTimeStamp);
+        return ResponseUtil.success(result);
     }
 }

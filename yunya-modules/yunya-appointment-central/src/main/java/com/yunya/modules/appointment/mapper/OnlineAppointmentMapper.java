@@ -6,6 +6,8 @@ import com.yunya.models.appointment.OnlineAppointment;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import javax.xml.crypto.Data;
+import java.util.Date;
 import java.util.List;
 
 public interface OnlineAppointmentMapper extends Mapper<OnlineAppointment> {
@@ -23,4 +25,6 @@ public interface OnlineAppointmentMapper extends Mapper<OnlineAppointment> {
      * @return 返回查询信息列表
      */
     List<OnlineAppointmentVo> findByCondition(@Param("query") OnlineAppointmentQuery query);
+
+    int countNewMessageNotice(@Param("orgId") Integer orgId, @Param("lastTimeStamp") String lastTimeStamp);
 }
