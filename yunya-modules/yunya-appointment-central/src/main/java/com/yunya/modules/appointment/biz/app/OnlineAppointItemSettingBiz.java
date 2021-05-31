@@ -134,8 +134,8 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
                 sb.append(e);
                 sb.append(",");
             });
+            sb.deleteCharAt(sb.length() - 1);
         }
-        sb.deleteCharAt(sb.length() - 1);
         return sb.toString();
     }
 
