@@ -1036,7 +1036,58 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     }
     return new PageInfo<>(resultList);
   }
-
+  /**
+   * 根据条件查询患者就诊记录列表(只显示与登录人有关的就诊记录 医生或助手都是如此)
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  public PageInfo<PatientTreatmentRecordVO> screenFindPatientTreatList(
+          PatientTreatmentRecordQueryForm queryForm) {
+    if (queryForm.getWhetherPage()) {
+      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+    }
+    queryForm.setPayIds(FREE_PAYMENT_ID);
+    List<PatientTreatmentRecordVO> resultList = mapper.selectPatientTreatmentRecordList(queryForm);
+    if (StringHelper.isNotEmpty(resultList)) {
+      resultList.forEach(
+              vo -> {
+                // 查询组织信息
+                OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(vo.getOrgId());
+                if (null != orgInfo) {
+                  vo.setOrgName(orgInfo.getAbbreviation());
+                }
+                Integer dentistId = vo.getDentistId();
+                // 从缓存中查询用户
+                SysEmployee employee = systemServiceFeign.findSysEmployeeById(dentistId);
+                if (null != employee) {
+                  vo.setDentistName(employee.getName());
+                }
+                // 就诊助手信息
+                AssistantMatchingRecord assistantMatchingRecord = new AssistantMatchingRecord();
+                assistantMatchingRecord.setTreatmentRecordId(vo.getTreatmentRecordId());
+                List<AssistantMatchingRecord> assistantMatchingRecords =
+                        assistantMatchingRecordMapper.select(assistantMatchingRecord);
+                if (StringHelper.isNotEmpty(assistantMatchingRecords)) {
+                  setTreatmentRecordAssistantInfo(vo, assistantMatchingRecords);
+                }
+              });
+    } else {
+      resultList = new ArrayList<>();
+    }
+    //根据登录人身份信息筛选
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    List<PatientTreatmentRecordVO> resultFinalList = new ArrayList<>();
+    resultList.forEach(z ->{
+      if(userId.equals(z.getDentistId())||
+         userId.equals(z.getAssistantId1())||
+         userId.equals(z.getAssistantId2())||
+         userId.equals(z.getAssistantId3())){
+        resultFinalList.add(z);
+      }
+    });
+    return new PageInfo<>(resultFinalList);
+  }
   /**
    * 设置就诊记录助手信息
    *
