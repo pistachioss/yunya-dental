@@ -56,7 +56,7 @@ public class OnlineAppointmentQuery implements Serializable {
     /**
      * 患者ID,可能为空
      */
-    @ApiModelProperty("患者ID,可能为空")
+    @ApiModelProperty(value = "患者ID,可能为空")
     private Integer patientId;
 
     /**

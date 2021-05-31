@@ -74,6 +74,9 @@
             <if test="query.dentistId != null">
                 and oa.dentist_id = #{query.dentistId}
             </if>
+            <if test="query.patientId != null">
+                and oa.patient_id = #{query.patientId}
+            </if>
             <if test="query.appointStartDate != null and query.appointStartDate != null">
                 and date_format(oa.appoint_date,'%Y-%m-%d') &gt;= #{query.appointStartDate}
             </if>
