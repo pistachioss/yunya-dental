@@ -59,16 +59,18 @@ public class OnlineAppointmentRest {
                                                                @PathVariable(value = "orgId")Integer orgId) {
         EnableOnlineAppointItemVo enableOnlineAppointItemVo = new EnableOnlineAppointItemVo();
         OnlineAppointItemSettingVo itemSettingVo = appointItemSettingBiz.findItemSettingByDentistId(dentistId, orgId);
-        List<OnlineAppointItemVo> lists = itemSettingVo.getLists();
-        if (StringHelper.isNotEmpty(lists)) {
-            List<Integer> collect = lists.stream().mapToInt(OnlineAppointItemVo::getItemId).boxed().collect(Collectors.toList());
-            enableOnlineAppointItemVo.setLists(collect);
-        }else {
-            enableOnlineAppointItemVo.setLists(new ArrayList<>());
+        if (itemSettingVo != null) {
+            List<OnlineAppointItemVo> lists = itemSettingVo.getLists();
+            if (StringHelper.isNotEmpty(lists)) {
+                List<Integer> collect = lists.stream().mapToInt(OnlineAppointItemVo::getItemId).boxed().collect(Collectors.toList());
+                enableOnlineAppointItemVo.setLists(collect);
+            } else {
+                enableOnlineAppointItemVo.setLists(new ArrayList<>());
+            }
+            enableOnlineAppointItemVo.setItemSettingId(itemSettingVo.getItemSettingId());
+            enableOnlineAppointItemVo.setDentistId(dentistId);
+            enableOnlineAppointItemVo.setOrgId(orgId);
         }
-        enableOnlineAppointItemVo.setItemSettingId(itemSettingVo.getItemSettingId());
-        enableOnlineAppointItemVo.setDentistId(dentistId);
-        enableOnlineAppointItemVo.setOrgId(orgId);
         return enableOnlineAppointItemVo;
     }
 
