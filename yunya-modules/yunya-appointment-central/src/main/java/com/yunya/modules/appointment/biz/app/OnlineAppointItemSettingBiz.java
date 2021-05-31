@@ -104,8 +104,6 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
 
         if (itemSettingId == null && onlineAppointItemSetting != null) {
             onlineAppointItemSetting.setEnableAppointItemIds(listToStr(form.getLists()));
-            onlineAppointItemSetting.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-            onlineAppointItemSetting.setUpdName(BaseContextHandler.getUsername());
             onlineAppointItemSetting.setUpdTime(new Date(System.currentTimeMillis()));
             mapper.updateByPrimaryKey(onlineAppointItemSetting);
             return ResponseUtil.success();
@@ -118,15 +116,11 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
             model.setDentistId(form.getDentistId());
             String sb = listToStr(form.getLists());
             model.setEnableAppointItemIds(sb.toString());
-            model.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-            model.setCrtName(BaseContextHandler.getUsername());
             mapper.insertSelective(model);
         } else {
             // 更新
             OnlineAppointItemSetting entity = mapper.selectByPrimaryKey(itemSettingId);
             entity.setEnableAppointItemIds(listToStr(form.getLists()));
-            entity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-            entity.setUpdName(BaseContextHandler.getUsername());
             entity.setUpdTime(new Date(System.currentTimeMillis()));
             mapper.updateByPrimaryKey(entity);
         }

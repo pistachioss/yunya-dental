@@ -43,7 +43,7 @@
             date_format(oa.crt_time,'%Y-%m-%d') as crtTime,
             a.id as appointmentId,
             a.confirm_status as confirmStatus
-        from online_appointment oa inner join appointment a on a.online_appointment_id = oa.id and a.inservice = true
+        from online_appointment oa left join appointment a on a.online_appointment_id = oa.id and a.inservice = true
         where oa.id = #{id} and oa.inservice = true
     </select>
 
@@ -55,17 +55,18 @@
             oa.dentist_id as dentistId,
             oa.patient_id as patientId,
             oa.appoint_item_id as appointItemId,
+            oaitem.name as appointItemName,
             oa.appoint_content as appointContent,
             date_format(oa.appoint_date,'%Y-%m-%d') as appointDate,
             oa.appoint_time as appointTime,
-            oa.duration as duration,
+            oaitem.duration as duration,
             oa.patient_name as patientName,
             oa.patient_phone as patientPhone,
             oa.status as status,
             date_format(oa.crt_time,'%Y-%m-%d') as crtTime,
             a.id as appointmentId,
             a.confirm_status as confirmStatus
-        from online_appointment oa LEFT join appointment a on a.online_appointment_id = oa.id and a.inservice = true
+        from online_appointment oa left join online_appoint_item oaitem on oaitem.item_id = oa.appoint_item_id LEFT join appointment a on a.online_appointment_id = oa.id and a.inservice = true
         <where>
             <if test="query.orgId != null">
                 and oa.org_id = #{query.orgId}

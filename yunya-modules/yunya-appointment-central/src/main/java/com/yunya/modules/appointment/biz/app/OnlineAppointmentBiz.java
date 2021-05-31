@@ -1,7 +1,5 @@
 package com.yunya.modules.appointment.biz.app;
 
-import cn.hutool.extra.qrcode.QrCodeUtil;
-import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointmentForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
@@ -21,11 +19,11 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.appointment.Appointment;
+import com.yunya.models.appointment.OnlineAppointItem;
 import com.yunya.models.appointment.OnlineAppointment;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.OnlineAppointmentMapper;
 import com.yunya.modules.appointment.service.AppointmentLifecycle;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,10 +33,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,6 +52,8 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
     private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
     @Autowired
     private RemoteSystemServiceFeign systemServiceFeign;
+    @Autowired
+    private OnlineAppointItemBiz onlineAppointItemBiz;
 
     /**
      * 根据id查询线上预约申请
@@ -78,9 +75,14 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @return 结果
      */
     public ResponseResult<T> addOnlineAppointment(OnlineAppointmentModel model) {
-
         OnlineAppointment build = EntityUtils.build(model, OnlineAppointment.class);
         build.setCrtName(build.getPatientName());
+        OnlineAppointItem item = new OnlineAppointItem();
+        item.setItemId(model.getAppointItemId());
+        OnlineAppointItem onlineAppointItem = onlineAppointItemBiz.selectOne(item);
+        if (onlineAppointItem != null) {
+            build.setDuration(onlineAppointItem.getDuration());
+        }
         int status = mapper.insertSelective(build);
         if (status <= 0) {
             ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
@@ -105,6 +107,12 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         OnlineAppointment build = EntityUtils.build(form, OnlineAppointment.class);
         build.setUpdName(build.getPatientName());
         build.setUpdTime(new Date(System.currentTimeMillis()));
+        OnlineAppointItem item = new OnlineAppointItem();
+        item.setItemId(form.getAppointItemId());
+        OnlineAppointItem onlineAppointItem = onlineAppointItemBiz.selectOne(item);
+        if (onlineAppointItem != null) {
+            build.setDuration(onlineAppointItem.getDuration());
+        }
         int status = mapper.updateByPrimaryKey(build);
         if (status <= 0) {
             return ResponseUtil.fail(AppointmentError.APPOINT_EDIT_FAIL.getCode(),AppointmentError.APPOINT_EDIT_FAIL.getMessage(),null);

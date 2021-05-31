@@ -35,6 +35,7 @@ public class ClinicEmployeeController {
    */
   @ApiOperation("门诊端-诊所设置-员工设置-员工配置")
   @PutMapping("clinic/employee/config/{clinicId}/{employeeId}")
+  @CurrentUser
   public ResponseResult<T> modifyEmployeeConfig(
       @PathVariable("clinicId") Integer clinicId,
       @PathVariable("employeeId") Integer employeeId,
