@@ -70,6 +70,8 @@ public class OnlineAppointmentRest {
             enableOnlineAppointItemVo.setItemSettingId(itemSettingVo.getItemSettingId());
             enableOnlineAppointItemVo.setDentistId(dentistId);
             enableOnlineAppointItemVo.setOrgId(orgId);
+        } else {
+            enableOnlineAppointItemVo.setLists(new ArrayList<>());
         }
         return enableOnlineAppointItemVo;
     }
