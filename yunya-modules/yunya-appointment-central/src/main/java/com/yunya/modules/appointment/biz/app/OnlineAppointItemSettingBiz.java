@@ -128,7 +128,7 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
     }
 
     private String listToStr(List<Integer> lists) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder("");
         if (StringHelper.isNotEmpty(lists)) {
             lists.forEach(e->{
                 sb.append(e);
