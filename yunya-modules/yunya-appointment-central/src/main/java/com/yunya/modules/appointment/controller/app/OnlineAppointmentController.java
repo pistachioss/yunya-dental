@@ -113,4 +113,17 @@ public class OnlineAppointmentController {
         OnlineAppointNewMessageNoticeVo result = onlineAppointmentBiz.newMessageNotice(orgId,lastTimeStamp);
         return ResponseUtil.success(result);
     }
+
+    /**
+     * 查询预约时间列表
+     * @param orgId 门诊ID
+     * @param itemId 预约项目ID
+     * @return
+     */
+    @ApiOperation("查询预约时间列表")
+    @GetMapping("/time/list/{orgId}/{itemId}")
+    public ResponseResult<List<String>>  appointTimeList(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId,
+                                              @PathVariable("itemId") @NotNull(message = "项目ID不能为空") Integer itemId) {
+        return onlineAppointmentBiz.appointTimeList(orgId,itemId);
+    }
 }

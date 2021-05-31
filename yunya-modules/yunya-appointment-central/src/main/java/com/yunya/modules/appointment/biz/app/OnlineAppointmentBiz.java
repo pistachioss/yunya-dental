@@ -8,12 +8,14 @@ import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -34,7 +36,9 @@ import tk.mybatis.mapper.entity.Example;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -258,6 +262,33 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         result.setLastTimeStamp(System.currentTimeMillis());
         result.setCount(count);
         return result;
+    }
+
+    /**
+     * 查询预约时间列表
+     * @param orgId 门诊ID
+     * @param itemId 预约项目ID
+     * @return
+     */
+    public ResponseResult<List<String>> appointTimeList(Integer orgId, Integer itemId) {
+        List<String> timeList = new ArrayList<>();
+        OnlineAppointItem itemQuery = new OnlineAppointItem();
+        itemQuery.setItemId(itemId);
+        OnlineAppointItem onlineAppointItem = onlineAppointItemBiz.selectOne(itemQuery);
+        Integer duration = onlineAppointItem.getDuration();
+        MedicalOrganizationInfoVO clinicInfoDetail = systemServiceFeign.clinicExtInfoByCompanyId(orgId);
+        String startTime = clinicInfoDetail.getBusinessStartTime();
+        String endTime = clinicInfoDetail.getBusinessEndTime();
+        timeList.add(startTime);
+        while(true) {
+            startTime = DateUtil.timeAdd(startTime, duration, DateUtil.MINUTE);
+            int result = DateUtil.compareTime(startTime, endTime);
+            if (result > 0) {
+                break;
+            }
+            timeList.add(startTime);
+        }
+        return ResponseUtil.success(timeList);
     }
 
     /**
