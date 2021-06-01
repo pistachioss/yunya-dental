@@ -36,10 +36,7 @@ import tk.mybatis.mapper.entity.Example;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -270,7 +267,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param itemId 预约项目ID
      * @return
      */
-    public ResponseResult<List<String>> appointTimeList(Integer orgId, Integer itemId) {
+    public ResponseResult<Map<String,List<String>>> appointTimeList(Integer orgId, Integer itemId) {
         List<String> timeList = new ArrayList<>();
         OnlineAppointItem itemQuery = new OnlineAppointItem();
         itemQuery.setItemId(itemId);
@@ -288,7 +285,9 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
             }
             timeList.add(startTime);
         }
-        return ResponseUtil.success(timeList);
+        Map<String,List<String>> result = new HashMap<>();
+        result.put("timeList",timeList);
+        return ResponseUtil.success(result);
     }
 
     /**

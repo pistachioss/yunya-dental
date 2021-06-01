@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @program: yunya-dental
@@ -122,8 +123,8 @@ public class OnlineAppointmentController {
      */
     @ApiOperation("查询预约时间列表")
     @GetMapping("/time/list/{orgId}/{itemId}")
-    public ResponseResult<List<String>>  appointTimeList(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId,
-                                              @PathVariable("itemId") @NotNull(message = "项目ID不能为空") Integer itemId) {
+    public ResponseResult<Map<String,List<String>>>  appointTimeList(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId,
+                                                                     @PathVariable("itemId") @NotNull(message = "项目ID不能为空") Integer itemId) {
         return onlineAppointmentBiz.appointTimeList(orgId,itemId);
     }
 }
