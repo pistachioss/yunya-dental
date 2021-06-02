@@ -515,7 +515,7 @@
         br.receivable_amount as totalOriginalAmount,
         if(date_format(br.privilege_date, '%Y-%m-%d') > #{query.queryDate}, br.receivable_amount,
         br.actual_receivable_amount) as totalActualAmount,
-        br.received_amount as receivedAmount
+        br.debt_amount as billReceivableAmount
         from (
         select behr.handled_record_id as treatmentId,
         behdr.associate_record_id as orderRecordId
