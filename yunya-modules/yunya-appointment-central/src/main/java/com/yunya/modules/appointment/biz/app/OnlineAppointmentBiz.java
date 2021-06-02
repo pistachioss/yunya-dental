@@ -21,6 +21,7 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.OnlineAppointItem;
 import com.yunya.models.appointment.OnlineAppointment;
@@ -36,13 +37,11 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @program: yunya-dental
@@ -82,6 +81,13 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      */
     public ResponseResult<T> addOnlineAppointment(OnlineAppointmentModel model) {
         OnlineAppointment build = EntityUtils.build(model, OnlineAppointment.class);
+
+        // 判断预约申请是否已满
+        boolean allowApply = checkApplyRules(model.getOrgId(), model.getAppointItemId(), model.getAppointDate(), model.getAppointTime());
+        if (!allowApply) {
+            return ResponseUtil.fail(AppointmentError.ONLINE_APPOINT_OUT_OF_CAPACITY.getCode(),
+                    AppointmentError.ONLINE_APPOINT_OUT_OF_CAPACITY.getMessage(),null);
+        }
         build.setCrtName(build.getPatientName());
         OnlineAppointItem item = new OnlineAppointItem();
         item.setItemId(model.getAppointItemId());
@@ -94,6 +100,25 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
             ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
         }
         return ResponseUtil.success();
+    }
+
+    /**
+     * 判断预约申请是否已满,默认同一时间之能有一个患者
+     * @param orgId
+     * @param itemId
+     * @param date
+     * @param time
+     * @return
+     */
+    private boolean checkApplyRules(Integer orgId, Integer itemId, Date date, String time) {
+        String dateStr = date.toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        Map<String, List<CountOnlineAppointVo>> timeListObj = appointTimeList(orgId, itemId, dateStr);
+        List<CountOnlineAppointVo> timeList = timeListObj.get("timeList");
+        if (StringHelper.isNotEmpty(timeList)) {
+            // 判断预约申请是否已满,默认同一时间之能有一个患者
+            return timeList.stream().anyMatch(vo -> vo.getTime().equals(time.trim()) && vo.getCount().equals(0));
+        }
+        return true;
     }
 
     /**
@@ -204,6 +229,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param results 预约申请列表
      */
     private void setDentistInfo(List<OnlineAppointmentVo> results) {
+        log.info("线上预约导出===>\n{}",results);
         List<Integer> dentistIds = results.stream().mapToInt(OnlineAppointmentVo::getDentistId).boxed().collect(Collectors.toList());
         List<SysUserInfoDetail> dentistInfos = systemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
         if (StringHelper.isNotEmpty(dentistInfos)) {
@@ -253,7 +279,6 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @return 返回结果
      */
     public OnlineAppointNewMessageNoticeVo newMessageNotice(Integer orgId) {
-       // TODO
         int count = mapper.countNewMessageNotice(orgId);
         System.out.println(count);
         OnlineAppointNewMessageNoticeVo result = new OnlineAppointNewMessageNoticeVo();
@@ -268,7 +293,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param itemId 预约项目ID
      * @return
      */
-    public ResponseResult<Map<String,List<CountOnlineAppointVo>>> appointTimeList(Integer orgId, Integer itemId, String date) {
+    public Map<String,List<CountOnlineAppointVo>> appointTimeList(Integer orgId, Integer itemId, String date) {
         List<CountOnlineAppointVo> timeList = new ArrayList<>(16);
         OnlineAppointItem itemQuery = new OnlineAppointItem();
         itemQuery.setItemId(itemId);
@@ -295,7 +320,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         countOnlineAppointSameTime(timeList,orgId,date);
         Map<String,List<CountOnlineAppointVo>> result = new HashMap<>();
         result.put("timeList",timeList);
-        return ResponseUtil.success(result);
+        return result;
     }
 
     /**

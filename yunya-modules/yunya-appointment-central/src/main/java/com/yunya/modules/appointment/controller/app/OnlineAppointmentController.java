@@ -127,6 +127,7 @@ public class OnlineAppointmentController {
                                                                                    @PathVariable("itemId") @NotNull(message = "项目ID不能为空") Integer itemId,
                                                                                    @RequestParam("date") @NotNull(message = "日期不能为空")
                                                                          @NotBlank(message = "日期不能为空") String date) {
-        return onlineAppointmentBiz.appointTimeList(orgId,itemId,date);
+        Map<String, List<CountOnlineAppointVo>> result = onlineAppointmentBiz.appointTimeList(orgId, itemId, date);
+        return ResponseUtil.success(result);
     }
 }

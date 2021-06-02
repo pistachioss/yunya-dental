@@ -54,8 +54,8 @@ public class OnlineAppointmentVo implements Serializable {
     /**
      * 医生名字
      */
-    @Excel(name = "医生")
-    @ApiModelProperty(value = "医生名字",hidden = true)
+    @Excel(name = "医生名字")
+    @ApiModelProperty(value = "医生名字")
     private String dentistName;
 
     /**
@@ -73,14 +73,14 @@ public class OnlineAppointmentVo implements Serializable {
     /**
      * 预约项目
      */
-    @Excel(name = "预约项目")
-    @ApiModelProperty(value = "预约项目",hidden = true)
+    @Excel(name = "预约项目名称")
+    @ApiModelProperty(value = "预约项目名称")
     private String appointItemName;
 
     /**
      * 预约内容
      */
-    @ApiModelProperty("预约内容")
+    @ApiModelProperty(value = "预约内容",hidden = true)
     private String appointContent;
 
     /**
@@ -123,21 +123,21 @@ public class OnlineAppointmentVo implements Serializable {
     /**
      * 预约申请状态 0-申请中；1-通过；2-取消
      */
-    @Excel(name = "预约申请状态",readConverterExp = "0=申请中,1=通过,2=取消")
-    @ApiModelProperty("预约申请状态 0-申请中；1-通过；2-取消")
+    @Excel(name = "线上预约状态",readConverterExp = "0=申请中,1=通过,2=取消")
+    @ApiModelProperty("线上预约状态 0-申请中；1-通过；2-取消")
     private Byte status;
 
     /**
      * 是否有效，是否删除(默认有效) 1-有效；0删除
      */
-    @ApiModelProperty("是否有效，是否删除(默认有效) 1-有效；0删除")
+    @ApiModelProperty(value = "是否有效，是否删除(默认有效) 1-有效；0删除",hidden = true)
     private Boolean inservice;
 
     /**
      * 预约申请时间
      */
     @Excel(name = "预约申请时间")
-    @ApiModelProperty("预约申请时间")
+    @ApiModelProperty("创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private String crtTime;
 
@@ -151,7 +151,7 @@ public class OnlineAppointmentVo implements Serializable {
     /**
      * 预约确认状态
      */
-    @Excel(name = "预约确认状态",readConverterExp = "0=未确认,1=已确认")
-    @ApiModelProperty("预约确认状态 0=未确认,1=已确认")
+    @Excel(name = "预状态约",readConverterExp = "0=未确认,1=已确认")
+    @ApiModelProperty("预状态约 0=未确认,1=已确认")
     private Boolean confirmStatus;
 }
