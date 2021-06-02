@@ -53,8 +53,8 @@ public class MarketRecommendationBiz extends BaseBiz<BasePatientOriginMapper, Ba
         List<MarketRecommendationVo> marketRecommendationVos = baseBillPayMapper.selectActivityRecommendationNumber(queryFrom);
         if (StringHelper.isNotEmpty(marketRecommendationVos)){
             for (MarketRecommendationVo marketRecommendationVo : marketRecommendationVos) {
-                marketRecommendationVo.setTotalAmountPaid(baseBillPayMapper.selectTotalAmountPaid(marketRecommendationVo,queryFrom, BusinessConstants.FREE_PAYMENT_ID));
-                marketRecommendationVo.setTotalFreePayment(baseBillPayMapper.selectTotalAmountPaid(marketRecommendationVo,queryFrom, null));
+                marketRecommendationVo.setTotalAmountPaid(baseBillPayMapper.selectTotalAmountPaid(marketRecommendationVo,queryFrom, null));
+                marketRecommendationVo.setTotalFreePayment(baseBillPayMapper.selectTotalAmountPaid(marketRecommendationVo,queryFrom, BusinessConstants.FREE_PAYMENT_ID));
                 marketRecommendationVo.setTotalRefundAmount(baseBillPayMapper.selectTotalRefundAmount(marketRecommendationVo,queryFrom));
             }
         }

@@ -2162,7 +2162,10 @@
         select
         bpo.id activityIds,
         bpo.name activityName
-        from base_patient_origin bpo where 1 = 1
+        from base_patient_origin bpo
+        where
+        bpo.origin_type = 3
+        and bpo.parent_id != 0
         <if test="query.activityIds != null and query.activityIds.size() > 0">
             and bpo.id in
             <foreach collection="query.activityIds" item="activityId" open="(" separator="," close=")">
@@ -2174,7 +2177,12 @@
 
     <!-- 根据条件查询实收合计 -->
     <select id="selectTotalAmountPaid" resultType="java.math.BigDecimal">
-        select IFNULL(sum(bbp.received_amount),0)
+        SELECT
+        IFNULL( sum( t.receivedAmount ), 0 )
+        FROM (
+
+        SELECT
+        IFNULL( bbp.received_amount , 0 )  receivedAmount
         from base_bill_pay bbp
         join (
             select
@@ -2211,6 +2219,9 @@
                 </foreach>
             </if>
 
+        GROUP BY bbp.bill_pay_id
+        ) t
+
     </select>
 
     <!-- 根据条件查询退费合计 -->
@@ -2236,13 +2247,17 @@
         bp.name patientName,
         bp.medical_number medicalRecordNumber,
         bbp.bill_pay_id as billPayId ,
-        bbp.payee_date payDate,
-        bb.order_date orderDate,
+        date_format(bbp.payee_date, '%Y-%m-%d') as payDate,
+        date_format(bb.order_date, '%Y-%m-%d') as orderDate,
         bbp.received_amount actualAmount,
-        case when bbpd.account_item_id = 23 then bbpd.principal_amount
-                 when bbpd.account_item_id = 26 then bbpd.principal_amount
-                 else 0 end
-        as freePayment,
+        sum(
+        CASE
+        WHEN bbpd.account_item_id = 23 THEN
+        bbpd.principal_amount
+        WHEN bbpd.account_item_id = 26 THEN
+        bbpd.principal_amount ELSE 0
+        END
+        )  AS freePayment,
         null as refundAmount
 
         from
@@ -2261,8 +2276,6 @@
             AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
         </if>
 
-        GROUP BY bbp.bill_pay_id
-
         union
 
         select
@@ -2270,7 +2283,7 @@
         bp.medical_number medicalRecordNumber,
         null as billPayId,
         null as payDate,
-        bb.order_date orderDate,
+        date_format(bb.order_date, '%Y-%m-%d') as orderDate,
         null as actualAmount,
         null as freePayment,
         br.refund_amount refundAmount
