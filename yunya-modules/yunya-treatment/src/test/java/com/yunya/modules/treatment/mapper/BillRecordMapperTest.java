@@ -57,7 +57,7 @@ public class BillRecordMapperTest {
   public void selectDebtList() {
     BillOfReceivableQuery query = new BillOfReceivableQuery();
     query.setOrgId(26);
-    query.setBillDate("2021-03-30");
+    query.setQueryDate("2021-03-30");
     List<BillRestReceivableAmountVO> vos = billRecordMapper.selectDebtList(query);
     System.out.println(vos);
   }
