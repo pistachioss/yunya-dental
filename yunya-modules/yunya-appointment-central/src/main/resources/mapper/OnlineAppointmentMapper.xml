@@ -101,6 +101,7 @@
         </where>
     </select>
 
+    <!-- 获取消息通知 -->
     <select id="countNewMessageNotice" resultType="java.lang.Integer">
         select count(oa.id) from online_appointment oa where oa.org_id = #{orgId} and oa.status = 0 and oa.inservice = 1
     </select>

@@ -250,7 +250,6 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
     /**
      * 预约消息通知
      * @param orgId  门诊ID
-     * @param lastTimeStamp 上一次查询时间戳
      * @return 返回结果
      */
     public OnlineAppointNewMessageNoticeVo newMessageNotice(Integer orgId) {
