@@ -259,12 +259,10 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    * 根据条件查询实收合计
    * @param marketRecommendationVo 活动
    * @param queryFrom 时间
-   * @param itemIds 支付类型
    * @return 实收合计
    */
     BigDecimal selectTotalAmountPaid(@Param("form") MarketRecommendationVo marketRecommendationVo,
-                                     @Param("query") MarketRecommendationQueryFrom queryFrom,
-                                     @Param("itemIds") List<Integer> itemIds);
+                                     @Param("query") MarketRecommendationQueryFrom queryFrom);
 
   /**
    * 根据条件查询退费合计
@@ -280,4 +278,13 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    * @return 市场推荐列表详情
    */
   List<MarketRecommendationDetailedVo> selectMarketRecommendationDetailed(@Param("query") MarketRecommendationDetailedQueryFrom query);
+
+  /**
+   * 根据条件查询免单合计
+   * @param marketRecommendationVo 活动
+   * @param queryFrom 时间条件
+   * @param freePaymentId 支付类型
+   * @return 免单金额合计
+   */
+  BigDecimal selectTotalFreePayment(@Param("form")MarketRecommendationVo marketRecommendationVo,@Param("query") MarketRecommendationQueryFrom queryFrom,@Param("itemIds") List<Integer> freePaymentId);
 }

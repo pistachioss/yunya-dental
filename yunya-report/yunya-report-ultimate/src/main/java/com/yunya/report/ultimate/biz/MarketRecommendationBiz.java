@@ -4,10 +4,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.vo.web.MarketRecommendationDetailedVo;
 import com.yunya.feign.patient_central.domain.vo.web.MarketRecommendationVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientOriginActivityVo;
 import com.yunya.feign.report.domain.query.MarketRecommendationDetailedQueryFrom;
 import com.yunya.feign.report.domain.query.MarketRecommendationQueryFrom;
-import com.yunya.feign.report.domain.vo.ExcelBaseMemberBalanceInfoVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.model.ResponseResult;
@@ -18,7 +16,6 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BasePatientOrigin;
 import com.yunya.report.ultimate.mapper.BaseBillPayMapper;
 import com.yunya.report.ultimate.mapper.BasePatientOriginMapper;
-import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,8 +50,8 @@ public class MarketRecommendationBiz extends BaseBiz<BasePatientOriginMapper, Ba
         List<MarketRecommendationVo> marketRecommendationVos = baseBillPayMapper.selectActivityRecommendationNumber(queryFrom);
         if (StringHelper.isNotEmpty(marketRecommendationVos)){
             for (MarketRecommendationVo marketRecommendationVo : marketRecommendationVos) {
-                marketRecommendationVo.setTotalAmountPaid(baseBillPayMapper.selectTotalAmountPaid(marketRecommendationVo,queryFrom, null));
-                marketRecommendationVo.setTotalFreePayment(baseBillPayMapper.selectTotalAmountPaid(marketRecommendationVo,queryFrom, BusinessConstants.FREE_PAYMENT_ID));
+                marketRecommendationVo.setTotalAmountPaid(baseBillPayMapper.selectTotalAmountPaid(marketRecommendationVo,queryFrom));
+                marketRecommendationVo.setTotalFreePayment(baseBillPayMapper.selectTotalFreePayment(marketRecommendationVo,queryFrom, BusinessConstants.FREE_PAYMENT_ID));
                 marketRecommendationVo.setTotalRefundAmount(baseBillPayMapper.selectTotalRefundAmount(marketRecommendationVo,queryFrom));
             }
         }
