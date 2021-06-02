@@ -2,6 +2,7 @@ package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
+import com.yunya.feign.report.domain.query.PatientManageQuery;
 import com.yunya.feign.report.domain.vo.PatientDataVo;
 import com.yunya.feign.report.domain.vo.PatientInfoVO;
 import com.yunya.framework.common.model.ResponseResult;
@@ -53,5 +54,12 @@ public class PatientBaseInfoController {
   public ResponseResult<PatientDataVo> patientInfo(@PathVariable("patientId") Integer patientId) {
     PatientDataVo patientDataVo = patientBaseInfoBiz.patientDataVo(patientId);
     return ResponseUtil.success(patientDataVo);
+  }
+
+  @ApiOperation("客服中心-患者管理")
+  @PostMapping("/manage/page")
+  public ResponseResult<PatientDataVo> patientInfo(@RequestBody PatientManageQuery query) {
+    patientBaseInfoBiz.getPatientManagePage(query);
+    return ResponseUtil.success(null);
   }
 }

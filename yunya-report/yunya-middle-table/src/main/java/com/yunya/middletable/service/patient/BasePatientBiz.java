@@ -82,7 +82,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
         break;
       case 1:
         assert patient != null;
-        mapper.updateByPrimaryKeySelective(getPatientInfo(patient));
+        mapper.updateByPrimaryKeySelective(patient);
         break;
       case 2:
         PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(patientId);
@@ -95,32 +95,6 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
       default:
         break;
     }
-  }
-
-  /**
-   * 获取患者初末诊日期
-   * @param patient 患者信息
-   * @return 患者信息
-   */
-  private BasePatient getPatientInfo(BasePatient patient) {
-    if (patient != null){
-      // 初诊信息
-      PatientTreatInfoVo firstTreatInfo = mapper.selectFirstVisitInfo(patient.getPatientId());
-      if (null != firstTreatInfo) {
-        patient.setFirstVisitDate(getDateTime(firstTreatInfo.getTreatDate()));
-        patient.setFirstVisitDoctors(firstTreatInfo.getTreatDentistName());
-        patient.setFirstVisitOutpatient(firstTreatInfo.getTreatOutpatient());
-      }
-      // 末诊信息
-      PatientTreatInfoVo lastTreatInfo = mapper.selectLastVisitInfo(patient.getPatientId());
-      if (null != lastTreatInfo) {
-        patient.setLastVisitDate(getDateTime(lastTreatInfo.getTreatDate()));
-        patient.setLastVisitDoctors(lastTreatInfo.getTreatDentistName());
-        patient.setLastVisitOutpatient(lastTreatInfo.getTreatOutpatient());
-      }
-      return patient;
-    }
-   return null;
   }
 
   public Date getDateTime(String dateStr){
@@ -276,23 +250,6 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     Map<Integer, PatientTreatInfoVo> lastTreatInfoMap = getLastTreatInfoMap();
 
     if (!StringHelper.isEmpty(patientIdList)){
-     for (BasePatient  basePatient : patientIdList) {
-         // 获取初诊信息
-         PatientTreatInfoVo firstInfo = firstInfoMap.get(basePatient.getPatientId());
-         if (null != firstInfo.getPatientId()){
-             basePatient.setFirstVisitDate(getDateTime(firstInfo.getTreatDate()));
-             basePatient.setFirstVisitDoctors(firstInfo.getTreatDentistName());
-             basePatient.setFirstVisitOutpatient(firstInfo.getTreatOutpatient());
-           }
-         // 获取末诊信息
-         PatientTreatInfoVo lastTreatInfo = lastTreatInfoMap.get(basePatient.getPatientId());
-         if (null != lastTreatInfo.getPatientId()){
-             basePatient.setLastVisitDate(getDateTime(lastTreatInfo.getTreatDate()));
-             basePatient.setLastVisitDoctors(lastTreatInfo.getTreatDentistName());
-             basePatient.setLastVisitOutpatient(lastTreatInfo.getTreatOutpatient());
-           }
-     }
-
      List<List<BasePatient>> partitionLists = Lists.partition(patientIdList, 100);
      CountDownLatch countDownLatch = new CountDownLatch(partitionLists.size());
      long start = System.currentTimeMillis();

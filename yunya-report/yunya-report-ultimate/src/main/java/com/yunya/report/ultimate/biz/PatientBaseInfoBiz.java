@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
+import com.yunya.feign.report.domain.query.PatientManageQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.report.BasePatient;
@@ -122,5 +123,9 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
    */
   public List<BaseTreatmentProcessVO> firstVisitPatientList(ClinicPerformanceBusinessQuery query) {
     return mapper.firstVisitPatientList(query);
+  }
+
+  public PageInfo<PatientManageVo> getPatientManagePage(PatientManageQuery query) {
+    return null;
   }
 }
