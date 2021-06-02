@@ -122,6 +122,7 @@ public class OnlineAppointmentController {
      * @return
      */
     @ApiOperation("查询预约时间列表")
+
     @GetMapping("/time/list/{orgId}/{itemId}")
     public ResponseResult<Map<String,List<CountOnlineAppointVo>>>  appointTimeList(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId,
                                                                                    @PathVariable("itemId") @NotNull(message = "项目ID不能为空") Integer itemId,

@@ -7,6 +7,7 @@ import com.yunya.feign.appointment.vo.EnableOnlineAppointItemVo;
 import com.yunya.feign.appointment.vo.OnlineAppointItemSettingVo;
 import com.yunya.feign.appointment.vo.OnlineAppointItemVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -145,9 +147,23 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
      * @param itemId 可预约项目ID
      * @return 返回可预约医生列表
      */
-    public ResponseResult<T> findDentistsByAppointItem(Integer orgId, Integer itemId) {
+    public ResponseResult<List<EnableOnlineAppointDentistsVo>> findDentistsByAppointItem(Integer orgId, Integer itemId) {
         List<EnableOnlineAppointDentistsVo> dentistsVos = mapper.findDentistsByAppointItem(orgId,itemId);
+        if (StringHelper.isNotEmpty(dentistsVos)) {
+            List<Integer> dentistIds = dentistsVos.stream().mapToInt(
+                    EnableOnlineAppointDentistsVo::getDentistId).boxed().collect(Collectors.toList());
+            List<SysUserInfoDetail> dentistInfos = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
+            if (StringHelper.isNotEmpty(dentistInfos)) {
+                dentistsVos.forEach(dentistObj->{
+                    dentistInfos.stream().filter(
+                            employee -> employee.getUserId().equals(dentistObj.getDentistId()))
+                            .findAny()
+                            .ifPresent(sysUserInfoDetail -> dentistObj.setDentistName(sysUserInfoDetail.getUsername()));
 
-        return ResponseUtil.success();
+                });
+            }
+
+        }
+        return ResponseUtil.success(dentistsVos);
     }
 }
