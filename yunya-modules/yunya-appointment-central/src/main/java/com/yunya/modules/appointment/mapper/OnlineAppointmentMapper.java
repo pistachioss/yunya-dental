@@ -1,11 +1,14 @@
 package com.yunya.modules.appointment.mapper;
 
 import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
+import com.yunya.feign.appointment.vo.CountOnlineAppointVo;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.models.appointment.OnlineAppointment;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import javax.xml.crypto.Data;
+import java.util.Date;
 import java.util.List;
 
 public interface OnlineAppointmentMapper extends Mapper<OnlineAppointment> {
@@ -23,4 +26,19 @@ public interface OnlineAppointmentMapper extends Mapper<OnlineAppointment> {
      * @return 返回查询信息列表
      */
     List<OnlineAppointmentVo> findByCondition(@Param("query") OnlineAppointmentQuery query);
+
+    /**
+     * 获取消息通知
+     * @param orgId
+     * @return
+     */
+    int countNewMessageNotice(@Param("orgId") Integer orgId);
+
+    /**
+     * 获取同一时间预约数量
+     * @param orgId
+     * @param date
+     * @return
+     */
+    List<CountOnlineAppointVo> countOnlineAppointSameTime(@Param("orgId") Integer orgId, @Param("date") String date);
 }

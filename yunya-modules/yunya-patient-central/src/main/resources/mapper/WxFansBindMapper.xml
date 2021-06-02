@@ -41,4 +41,25 @@
         </foreach>
         and wfb.`bind` = 1
     </select>
+  
+    <select id="wxFansBindPatientList" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
+        SELECT
+            pbi.name,
+            pbi.mobile
+        FROM wx_fans_bind wfb
+        LEFT JOIN patient_base_info pbi ON pbi.id=wfb.patient_id
+        <where>
+            wfb.bind = true
+          <if test="query.openId!=null and query.openId!=''">
+            AND wfb.open_id = #{query.openId}
+          </if>
+          <if test="query.patientId != null">
+            AND EXISTS (
+                SELECT wf.open_id FROM wx_fans wf
+                WHERE wf.open_id=wfb.open_id
+                AND wf.patient_id = #{query.patientId}
+            )
+          </if>
+        </where>
+    </select>
 </mapper>

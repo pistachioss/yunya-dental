@@ -15,6 +15,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.OnlineAppointItem;
 import com.yunya.models.appointment.OnlineAppointItemSetting;
+import com.yunya.models.appointment.OnlineAppointment;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.OnlineAppointItemMapper;
 import org.apache.poi.ss.formula.functions.T;
@@ -142,12 +143,14 @@ public class OnlineAppointItemBiz extends BaseBiz<OnlineAppointItemMapper, Onlin
      * @return 可以删除-true；否则返回false
      */
     private boolean checkEnableDelete(Integer itemId) {
-        OnlineAppointmentQuery onlineAppointQuery = new OnlineAppointmentQuery();
-        onlineAppointQuery.setItemId(itemId);
-        onlineAppointQuery.setInservice(true);
-        onlineAppointQuery.setAppointStartDate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.CHINESE)));
-        List<OnlineAppointmentVo> onlineAppointmentList = onlineAppointmentBiz.findByCondition(onlineAppointQuery);
-        if (StringHelper.isNotEmpty(onlineAppointmentList)) {
+        Example example1 = new Example(OnlineAppointment.class);
+        Example.Criteria criteria1 = example1.createCriteria();
+        criteria1.andEqualTo("appointItemId",itemId);
+        criteria1.andEqualTo("inservice",true);
+        criteria1.andGreaterThan("appointDate",LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.CHINESE)));
+        int count1 = onlineAppointmentBiz.selectCountByExample(example1);
+
+        if (count1 > 0) {
             return false;
         }
         Example example = new Example(OnlineAppointItemSetting.class);

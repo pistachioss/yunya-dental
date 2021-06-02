@@ -1,25 +1,28 @@
 package com.yunya.modules.appointment.biz.app;
 
-import cn.hutool.extra.qrcode.QrCodeUtil;
-import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointmentForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
+import com.yunya.feign.appointment.vo.CountOnlineAppointVo;
+import com.yunya.feign.appointment.vo.OnlineAppointNewMessageNoticeVo;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.appointment.Appointment;
+import com.yunya.models.appointment.OnlineAppointItem;
 import com.yunya.models.appointment.OnlineAppointment;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.OnlineAppointmentMapper;
@@ -33,9 +36,13 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @program: yunya-dental
@@ -51,6 +58,8 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
     private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
     @Autowired
     private RemoteSystemServiceFeign systemServiceFeign;
+    @Autowired
+    private OnlineAppointItemBiz onlineAppointItemBiz;
 
     /**
      * 根据id查询线上预约申请
@@ -72,9 +81,14 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @return 结果
      */
     public ResponseResult<T> addOnlineAppointment(OnlineAppointmentModel model) {
-
         OnlineAppointment build = EntityUtils.build(model, OnlineAppointment.class);
         build.setCrtName(build.getPatientName());
+        OnlineAppointItem item = new OnlineAppointItem();
+        item.setItemId(model.getAppointItemId());
+        OnlineAppointItem onlineAppointItem = onlineAppointItemBiz.selectOne(item);
+        if (onlineAppointItem != null) {
+            build.setDuration(onlineAppointItem.getDuration());
+        }
         int status = mapper.insertSelective(build);
         if (status <= 0) {
             ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
@@ -99,6 +113,12 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         OnlineAppointment build = EntityUtils.build(form, OnlineAppointment.class);
         build.setUpdName(build.getPatientName());
         build.setUpdTime(new Date(System.currentTimeMillis()));
+        OnlineAppointItem item = new OnlineAppointItem();
+        item.setItemId(form.getAppointItemId());
+        OnlineAppointItem onlineAppointItem = onlineAppointItemBiz.selectOne(item);
+        if (onlineAppointItem != null) {
+            build.setDuration(onlineAppointItem.getDuration());
+        }
         int status = mapper.updateByPrimaryKey(build);
         if (status <= 0) {
             return ResponseUtil.fail(AppointmentError.APPOINT_EDIT_FAIL.getCode(),AppointmentError.APPOINT_EDIT_FAIL.getMessage(),null);
@@ -224,6 +244,73 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
             onlineAppointment.setUpdName(onlineAppointment.getPatientName());
             onlineAppointment.setUpdTime(new Date(System.currentTimeMillis()));
             mapper.updateByPrimaryKeySelective(onlineAppointment);
+        }
+    }
+
+    /**
+     * 预约消息通知
+     * @param orgId  门诊ID
+     * @return 返回结果
+     */
+    public OnlineAppointNewMessageNoticeVo newMessageNotice(Integer orgId) {
+       // TODO
+        int count = mapper.countNewMessageNotice(orgId);
+        System.out.println(count);
+        OnlineAppointNewMessageNoticeVo result = new OnlineAppointNewMessageNoticeVo();
+        result.setLastTimeStamp(System.currentTimeMillis());
+        result.setCount(count);
+        return result;
+    }
+
+    /**
+     * 查询预约时间列表
+     * @param orgId 门诊ID
+     * @param itemId 预约项目ID
+     * @return
+     */
+    public ResponseResult<Map<String,List<CountOnlineAppointVo>>> appointTimeList(Integer orgId, Integer itemId, String date) {
+        List<CountOnlineAppointVo> timeList = new ArrayList<>(16);
+        OnlineAppointItem itemQuery = new OnlineAppointItem();
+        itemQuery.setItemId(itemId);
+        OnlineAppointItem onlineAppointItem = onlineAppointItemBiz.selectOne(itemQuery);
+        Integer duration = onlineAppointItem.getDuration();
+        MedicalOrganizationInfoVO clinicInfoDetail = systemServiceFeign.clinicExtInfoByCompanyId(orgId);
+        String startTime = clinicInfoDetail.getBusinessStartTime();
+        String endTime = clinicInfoDetail.getBusinessEndTime();
+        CountOnlineAppointVo countOnlineAppointVo = new CountOnlineAppointVo();
+        countOnlineAppointVo.setTime(startTime);
+        countOnlineAppointVo.setCount(0);
+        timeList.add(countOnlineAppointVo);
+        while(true) {
+            startTime = DateUtil.timeAdd(startTime, duration, DateUtil.MINUTE);
+            int result = DateUtil.compareTime(startTime, endTime);
+            if (result > 0) {
+                break;
+            }
+            CountOnlineAppointVo item = new CountOnlineAppointVo();
+            item.setTime(startTime);
+            item.setCount(0);
+            timeList.add(item);
+        }
+        countOnlineAppointSameTime(timeList,orgId,date);
+        Map<String,List<CountOnlineAppointVo>> result = new HashMap<>();
+        result.put("timeList",timeList);
+        return ResponseUtil.success(result);
+    }
+
+    /**
+     * 设置同一时间内预约人数
+     * @param params  预约时间表
+     * @param orgId 门诊ID
+     * @param date 预约日期
+     */
+    private void countOnlineAppointSameTime(List<CountOnlineAppointVo> params, Integer orgId, String date) {
+        List<CountOnlineAppointVo> result = mapper.countOnlineAppointSameTime(orgId,date);
+        if (StringHelper.isNotEmpty(result)) {
+            for (CountOnlineAppointVo vo: result) {
+                Optional<CountOnlineAppointVo> onlineAppointOptional = params.stream().filter(e -> e.getTime().equals(vo.getTime())).findAny();
+                onlineAppointOptional.ifPresent(countOnlineAppointVo -> countOnlineAppointVo.setCount(vo.getCount()));
+            }
         }
     }
 

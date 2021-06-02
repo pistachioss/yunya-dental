@@ -5,6 +5,8 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointmentForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
+import com.yunya.feign.appointment.vo.CountOnlineAppointVo;
+import com.yunya.feign.appointment.vo.OnlineAppointNewMessageNoticeVo;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -18,9 +20,11 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @program: yunya-dental
@@ -99,5 +103,30 @@ public class OnlineAppointmentController {
     public ResponseResult<T> export(HttpServletResponse response, @Validated OnlineAppointmentQuery query) throws IOException {
         onlineAppointmentBiz.export(response,query);
         return ResponseUtil.success();
+    }
+
+    @ApiOperation("预约消息通知")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "orgId",value = "门诊ID",required = true,dataTypeClass = Integer.class)
+    })
+    @GetMapping("/message/notice/{orgId}")
+    public ResponseResult<OnlineAppointNewMessageNoticeVo> newMessageNotice(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId) {
+        OnlineAppointNewMessageNoticeVo result = onlineAppointmentBiz.newMessageNotice(orgId);
+        return ResponseUtil.success(result);
+    }
+
+    /**
+     * 查询预约时间列表
+     * @param orgId 门诊ID
+     * @param itemId 预约项目ID
+     * @return
+     */
+    @ApiOperation("查询预约时间列表")
+    @GetMapping("/time/list/{orgId}/{itemId}")
+    public ResponseResult<Map<String,List<CountOnlineAppointVo>>>  appointTimeList(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId,
+                                                                                   @PathVariable("itemId") @NotNull(message = "项目ID不能为空") Integer itemId,
+                                                                                   @RequestParam("date") @NotNull(message = "日期不能为空")
+                                                                         @NotBlank(message = "日期不能为空") String date) {
+        return onlineAppointmentBiz.appointTimeList(orgId,itemId,date);
     }
 }

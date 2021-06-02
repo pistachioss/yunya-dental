@@ -13,7 +13,7 @@
     <result column="appoint_item_id" property="appointItemId" jdbcType="INTEGER" />
     <result column="appoint_content" property="appointContent" jdbcType="VARCHAR" />
     <result column="appoint_date" property="appointDate" jdbcType="DATE" />
-    <result column="appoint_time" property="appointTime" jdbcType="VARCHAR" />
+    <result column="appoint_time" property="appointTime" jdbcType="TIME" />
     <result column="duration" property="duration" jdbcType="INTEGER" />
     <result column="patient_name" property="patientName" jdbcType="VARCHAR" />
     <result column="patient_phone" property="patientPhone" jdbcType="VARCHAR" />
@@ -43,7 +43,7 @@
             date_format(oa.crt_time,'%Y-%m-%d') as crtTime,
             a.id as appointmentId,
             a.confirm_status as confirmStatus
-        from online_appointment oa inner join appointment a on a.online_appointment_id = oa.id and a.inservice = true
+        from online_appointment oa left join appointment a on a.online_appointment_id = oa.id and a.inservice = true
         where oa.id = #{id} and oa.inservice = true
     </select>
 
@@ -55,23 +55,27 @@
             oa.dentist_id as dentistId,
             oa.patient_id as patientId,
             oa.appoint_item_id as appointItemId,
+            oaitem.name as appointItemName,
             oa.appoint_content as appointContent,
             date_format(oa.appoint_date,'%Y-%m-%d') as appointDate,
             oa.appoint_time as appointTime,
-            oa.duration as duration,
+            oaitem.duration as duration,
             oa.patient_name as patientName,
             oa.patient_phone as patientPhone,
             oa.status as status,
             date_format(oa.crt_time,'%Y-%m-%d') as crtTime,
             a.id as appointmentId,
             a.confirm_status as confirmStatus
-        from online_appointment oa LEFT join appointment a on a.online_appointment_id = oa.id and a.inservice = true
+        from online_appointment oa left join online_appoint_item oaitem on oaitem.item_id = oa.appoint_item_id LEFT join appointment a on a.online_appointment_id = oa.id and a.inservice = true
         <where>
             <if test="query.orgId != null">
                 and oa.org_id = #{query.orgId}
             </if>
             <if test="query.dentistId != null">
                 and oa.dentist_id = #{query.dentistId}
+            </if>
+            <if test="query.patientId != null">
+                and oa.patient_id = #{query.patientId}
             </if>
             <if test="query.appointStartDate != null and query.appointStartDate != null">
                 and date_format(oa.appoint_date,'%Y-%m-%d') &gt;= #{query.appointStartDate}
@@ -95,6 +99,16 @@
                 and a.confirm_status = #{query.confirmStatus}
             </if>
         </where>
+    </select>
+
+    <!-- 获取消息通知 -->
+    <select id="countNewMessageNotice" resultType="java.lang.Integer">
+        select count(oa.id) from online_appointment oa where oa.org_id = #{orgId} and oa.status = 0 and oa.inservice = 1
+    </select>
+
+    <!-- 获取同一时间预约数量 -->
+    <select id="countOnlineAppointSameTime" resultType="com.yunya.feign.appointment.vo.CountOnlineAppointVo">
+        SELECT date_format(a.appoint_time,'%H:%i') as time, count(appoint_time) as count FROM `online_appointment` a where DATE_FORMAT(a.appoint_date,'%Y-%m-%d') = date_format(#{date},'%Y-%m-%d') and a.org_id = #{orgId} GROUP BY a.appoint_time ASC
     </select>
 
 </mapper>
