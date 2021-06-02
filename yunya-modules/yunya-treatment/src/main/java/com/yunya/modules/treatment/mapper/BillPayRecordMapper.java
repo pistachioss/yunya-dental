@@ -1,6 +1,8 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
+import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillCollectionDebtVO;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillPayRecordVO;
 import com.yunya.models.treatment.BillPayRecord;
@@ -36,4 +38,13 @@ public interface BillPayRecordMapper extends Mapper<BillPayRecord> {
    */
   List<CurrentMonthBillPayRecordVO> selectCurrentMonthBillPayRecord(
       @Param("query") CurrentMonthBillInfoQuery query);
+
+  /**
+   * 根据条件查询收费时间在某个时间点后账单时间在某个时间节点之前的账单列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<BillRestReceivableAmountVO> selectFollowUpBillReceivedList(
+      @Param("query") BillOfReceivableQuery query);
 }

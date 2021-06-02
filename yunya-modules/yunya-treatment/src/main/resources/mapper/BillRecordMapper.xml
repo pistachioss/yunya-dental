@@ -382,18 +382,19 @@
         br.patient_id as patientId,
         tr.dentist_id as regDentistId,
         br.receivable_amount as totalOriginalAmount,
-        if(date_format(br.privilege_date, '%Y-%m-%d') > date_format(br.crt_time, '%Y-%m-%d'), br.receivable_amount,
+        if(date_format(br.privilege_date, '%Y-%m-%d') > date_format(#{query.billDate}, '%Y-%m-%d'), br.receivable_amount,
         br.actual_receivable_amount) as totalActualAmount,
         br.received_amount as receivedAmount
         from bill_record br
         left join treatment_record tr on br.treatment_record_id = tr.id
         <where>
             and br.debt_amount > 0
+            and br.inservice = 1
             <if test="query.orgId != null">
                 and br.org_id = #{query.orgId}
             </if>
-            <if test="query.billDate != null and query.billDate != ''">
-                and date_format(br.crt_time, '%Y-%m-%d') &lt;= #{query.billDate}
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and date_format(br.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
             </if>
             <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
                 and tr.dentist_id in

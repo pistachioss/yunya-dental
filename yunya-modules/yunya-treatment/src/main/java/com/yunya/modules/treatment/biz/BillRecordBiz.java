@@ -23,7 +23,6 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.*;
 import org.apache.poi.ss.formula.functions.T;
@@ -65,6 +64,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   @Autowired private RemoteDiscountFeign discountFeign;
   /** 开单详情 */
   @Autowired private OrderDetailBiz orderDetailBiz;
+  /** 账单收费记录 */
+  @Autowired private BillPayRecordBiz billPayRecordBiz;
   /** 账单支付明细 */
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
   /** 账单明细收费记录 */
@@ -87,8 +88,6 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   @Autowired private TreatmentRecordMapper treatmentRecordMapper;
   /** 账单 */
   @Autowired private OrderRecordMapper orderRecordMapper;
-  /** 缓存 */
-  @Autowired private RedisUtils redisUtils;
 
   /**
    * 生成账单编号
@@ -643,7 +642,15 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @return list
    */
   public List<BillRestReceivableAmountVO> findDebtList(BillOfReceivableQuery query) {
+    // 查询时间节点前欠费患者列表
     List<BillRestReceivableAmountVO> resultList = mapper.selectDebtList(query);
+    // 查询时间节点后门诊被调整的应收账款余额列表
+    List<BillRestReceivableAmountVO> adjustedList =
+        billExceptionHandleRecordMapper.selectFollowUpBillAdjustList(query);
+    // 查询时间节点后门诊收欠费账单日期在时间节点前的应收账款列表
+    List<BillRestReceivableAmountVO> receivedDebtList =
+        billPayRecordBiz.findFollowUpBillReceivedList(query);
+    // 查询时间节点后撤销收费
 
     return null;
   }

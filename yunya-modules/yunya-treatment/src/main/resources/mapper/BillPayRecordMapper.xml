@@ -86,4 +86,9 @@
         </where>
         order by bpr.crt_time
     </select>
+    <!-- 根据条件查询收费时间在某个时间点后账单时间在某个时间节点之前的账单列表 -->
+    <select id="selectFollowUpBillReceivedList"
+            resultType="com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO">
+
+    </select>
 </mapper>

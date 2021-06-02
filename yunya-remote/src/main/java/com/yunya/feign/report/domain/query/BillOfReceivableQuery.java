@@ -29,9 +29,9 @@ public class BillOfReceivableQuery extends PageQuery implements Serializable {
   @NotNull(message = "组织ID不能为空！")
   private Integer orgId;
   /** 账单日期 */
-  @ApiModelProperty(value = "账单日期", required = true)
-  @NotBlank(message = "账单日期不能为空！")
-  private String billDate;
+  @ApiModelProperty(value = "查询日期", required = true)
+  @NotBlank(message = "查询日期不能为空！")
+  private String queryDate;
   /** 患者关键字 */
   @ApiModelProperty("患者关键字：姓名/姓名拼音/手机号")
   private String keyword;
