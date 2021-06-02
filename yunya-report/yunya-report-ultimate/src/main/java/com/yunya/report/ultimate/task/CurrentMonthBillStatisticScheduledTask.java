@@ -46,7 +46,7 @@ public class CurrentMonthBillStatisticScheduledTask {
   /** 当前月账单统计 */
   @Autowired private CurrentMonthBillStatisticsMapper billStatisticsMapper;
 
-  /** 每月最后一天23:59分存档当月账单信息（本月实收合计、本月优惠合计、本月账单已收合计、本月账单欠费合计） */
+  /** 每月最后一天23:59分存档当月账单信息（本月实收合计、本月优惠合计、本月免单合计、本月账单已收合计、本月账单欠费合计） */
   @Scheduled(cron = "0 59 23 28-31 * ?")
   public void execute() {
     final Calendar c = Calendar.getInstance();
@@ -66,7 +66,6 @@ public class CurrentMonthBillStatisticScheduledTask {
             BigDecimal totalFreePayAmount =
                 billPayMapper.selectCurrentMonthTotalFreePayAmount(query);
             CurrentMonthBillStatistics billStatistics = new CurrentMonthBillStatistics();
-            billStatistics.setId(statisticVO.getOrgId());
             billStatistics.setOrgId(statisticVO.getOrgId());
             billStatistics.setCurrentMonth(new DateTime(statisticVO.getCurrentMonth()).toDate());
             billStatistics.setActualReceivableAmount(
