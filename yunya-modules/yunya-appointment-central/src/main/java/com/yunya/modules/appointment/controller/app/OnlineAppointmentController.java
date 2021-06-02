@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.OnlineAppointmentForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
+import com.yunya.feign.appointment.vo.CountOnlineAppointVo;
 import com.yunya.feign.appointment.vo.OnlineAppointNewMessageNoticeVo;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -19,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.List;
@@ -123,8 +125,10 @@ public class OnlineAppointmentController {
      */
     @ApiOperation("查询预约时间列表")
     @GetMapping("/time/list/{orgId}/{itemId}")
-    public ResponseResult<Map<String,List<String>>>  appointTimeList(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId,
-                                                                     @PathVariable("itemId") @NotNull(message = "项目ID不能为空") Integer itemId) {
-        return onlineAppointmentBiz.appointTimeList(orgId,itemId);
+    public ResponseResult<Map<String,List<CountOnlineAppointVo>>>  appointTimeList(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId,
+                                                                                   @PathVariable("itemId") @NotNull(message = "项目ID不能为空") Integer itemId,
+                                                                                   @RequestParam("date") @NotNull(message = "日期不能为空")
+                                                                         @NotBlank(message = "日期不能为空") String date) {
+        return onlineAppointmentBiz.appointTimeList(orgId,itemId,date);
     }
 }
