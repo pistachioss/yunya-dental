@@ -3,6 +3,7 @@ package com.yunya.modules.appointment.biz.app;
 import com.yunya.feign.appointment.domain.form.OnlineAppointmentForm;
 import com.yunya.feign.appointment.domain.model.OnlineAppointmentModel;
 import com.yunya.feign.appointment.domain.query.OnlineAppointmentQuery;
+import com.yunya.feign.appointment.vo.CountOnlineAppointVo;
 import com.yunya.feign.appointment.vo.OnlineAppointNewMessageNoticeVo;
 import com.yunya.feign.appointment.vo.OnlineAppointmentVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
@@ -36,8 +37,12 @@ import tk.mybatis.mapper.entity.Example;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @program: yunya-dental
@@ -245,15 +250,11 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
     /**
      * 预约消息通知
      * @param orgId  门诊ID
-     * @param lastTimeStamp 上一次查询时间戳
      * @return 返回结果
      */
-    public OnlineAppointNewMessageNoticeVo newMessageNotice(Integer orgId, Long lastTimeStamp) {
-        Date date = new Date(lastTimeStamp);
+    public OnlineAppointNewMessageNoticeVo newMessageNotice(Integer orgId) {
        // TODO
-        SimpleDateFormat dateFormater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        System.out.println("date = " + dateFormater.format(date));
-        int count = mapper.countNewMessageNotice(orgId,dateFormater.format(date));
+        int count = mapper.countNewMessageNotice(orgId);
         System.out.println(count);
         OnlineAppointNewMessageNoticeVo result = new OnlineAppointNewMessageNoticeVo();
         result.setLastTimeStamp(System.currentTimeMillis());
@@ -267,8 +268,8 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param itemId 预约项目ID
      * @return
      */
-    public ResponseResult<Map<String,List<String>>> appointTimeList(Integer orgId, Integer itemId) {
-        List<String> timeList = new ArrayList<>();
+    public ResponseResult<Map<String,List<CountOnlineAppointVo>>> appointTimeList(Integer orgId, Integer itemId, String date) {
+        List<CountOnlineAppointVo> timeList = new ArrayList<>(16);
         OnlineAppointItem itemQuery = new OnlineAppointItem();
         itemQuery.setItemId(itemId);
         OnlineAppointItem onlineAppointItem = onlineAppointItemBiz.selectOne(itemQuery);
@@ -276,18 +277,41 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         MedicalOrganizationInfoVO clinicInfoDetail = systemServiceFeign.clinicExtInfoByCompanyId(orgId);
         String startTime = clinicInfoDetail.getBusinessStartTime();
         String endTime = clinicInfoDetail.getBusinessEndTime();
-        timeList.add(startTime);
+        CountOnlineAppointVo countOnlineAppointVo = new CountOnlineAppointVo();
+        countOnlineAppointVo.setTime(startTime);
+        countOnlineAppointVo.setCount(0);
+        timeList.add(countOnlineAppointVo);
         while(true) {
             startTime = DateUtil.timeAdd(startTime, duration, DateUtil.MINUTE);
             int result = DateUtil.compareTime(startTime, endTime);
             if (result > 0) {
                 break;
             }
-            timeList.add(startTime);
+            CountOnlineAppointVo item = new CountOnlineAppointVo();
+            item.setTime(startTime);
+            item.setCount(0);
+            timeList.add(item);
         }
-        Map<String,List<String>> result = new HashMap<>();
+        countOnlineAppointSameTime(timeList,orgId,date);
+        Map<String,List<CountOnlineAppointVo>> result = new HashMap<>();
         result.put("timeList",timeList);
         return ResponseUtil.success(result);
+    }
+
+    /**
+     * 设置同一时间内预约人数
+     * @param params  预约时间表
+     * @param orgId 门诊ID
+     * @param date 预约日期
+     */
+    private void countOnlineAppointSameTime(List<CountOnlineAppointVo> params, Integer orgId, String date) {
+        List<CountOnlineAppointVo> result = mapper.countOnlineAppointSameTime(orgId,date);
+        if (StringHelper.isNotEmpty(result)) {
+            for (CountOnlineAppointVo vo: result) {
+                Optional<CountOnlineAppointVo> onlineAppointOptional = params.stream().filter(e -> e.getTime().equals(vo.getTime())).findAny();
+                onlineAppointOptional.ifPresent(countOnlineAppointVo -> countOnlineAppointVo.setCount(vo.getCount()));
+            }
+        }
     }
 
     /**

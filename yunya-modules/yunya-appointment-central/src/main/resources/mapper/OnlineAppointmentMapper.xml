@@ -13,7 +13,7 @@
     <result column="appoint_item_id" property="appointItemId" jdbcType="INTEGER" />
     <result column="appoint_content" property="appointContent" jdbcType="VARCHAR" />
     <result column="appoint_date" property="appointDate" jdbcType="DATE" />
-    <result column="appoint_time" property="appointTime" jdbcType="VARCHAR" />
+    <result column="appoint_time" property="appointTime" jdbcType="TIME" />
     <result column="duration" property="duration" jdbcType="INTEGER" />
     <result column="patient_name" property="patientName" jdbcType="VARCHAR" />
     <result column="patient_phone" property="patientPhone" jdbcType="VARCHAR" />
@@ -101,8 +101,14 @@
         </where>
     </select>
 
+    <!-- 获取消息通知 -->
     <select id="countNewMessageNotice" resultType="java.lang.Integer">
-        select count(oa.id) from online_appointment oa where oa.org_id = #{orgId} and DATE_FORMAT(oa.crt_time,'%y-%m-%d %i:%m:%s') &gt;= DATE_FORMAT(#{lastTimeStamp},'%y-%m-%d %i:%m:%s') and oa.crt_time &lt; DATE_ADD(CURDATE(),INTERVAL 1 DAY)
+        select count(oa.id) from online_appointment oa where oa.org_id = #{orgId} and oa.status = 0 and oa.inservice = 1
+    </select>
+
+    <!-- 获取同一时间预约数量 -->
+    <select id="countOnlineAppointSameTime" resultType="com.yunya.feign.appointment.vo.CountOnlineAppointVo">
+        SELECT date_format(a.appoint_time,'%H:%i') as time, count(appoint_time) as count FROM `online_appointment` a where DATE_FORMAT(a.appoint_date,'%Y-%m-%d') = date_format(#{date},'%Y-%m-%d') and a.org_id = #{orgId} GROUP BY a.appoint_time ASC
     </select>
 
 </mapper>

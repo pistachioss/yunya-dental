@@ -57,7 +57,7 @@ public class OnlineAppointment {
      * 预约时间
      */
     @Column(name = "appoint_time")
-    private String appointTime;
+    private Date appointTime;
 
     /**
      * 预约时长
@@ -241,7 +241,7 @@ public class OnlineAppointment {
      *
      * @return appointTime - 预约时间
      */
-    public String getAppointTime() {
+    public Date getAppointTime() {
         return appointTime;
     }
 
@@ -250,7 +250,7 @@ public class OnlineAppointment {
      *
      * @param appointTime 预约时间
      */
-    public void setAppointTime(String appointTime) {
+    public void setAppointTime(Date appointTime) {
         this.appointTime = appointTime;
     }
 
