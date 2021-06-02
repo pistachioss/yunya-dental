@@ -328,8 +328,8 @@
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
-            <if test="query.billDate != null and query.billDate != ''">
-                AND date_format(bb.bill_date, '%Y-%m-%d') &lt;= #{query.billDate}
+            <if test="query.queryDate != null and query.queryDate != ''">
+                AND date_format(bb.bill_date, '%Y-%m-%d') &lt;= #{query.queryDate}
             </if>
             <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
                 and btp.registered_dentist_id in
