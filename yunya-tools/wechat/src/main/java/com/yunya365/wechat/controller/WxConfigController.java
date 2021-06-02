@@ -70,8 +70,8 @@ public class WxConfigController {
         return infoType.weChatNotify(msg);
     }
 
-    @GetMapping(value = "/wxVip/jsApi/ticket")
-    public ResponseResult<WxSignatureVo> getAccessToken(@RequestParam(required = true) String url) {
+    @GetMapping(value = "/wxVip/jsApi/sign")
+    public ResponseResult<WxSignatureVo> jsApiSign(@RequestParam(required = true) String url) {
         return ResponseUtil.success(wxService.getSignInfo(url));
     }
 

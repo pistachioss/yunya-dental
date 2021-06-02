@@ -493,4 +493,90 @@
         ) bp1 on bp1.patient_id = bp.patient_id
         where bp.birthday is null
     </select>
+
+    <select id="listPatientByKeys" resultType="com.yunya.feign.report.domain.vo.PatientManageVo">
+        select
+            bp.patient_id,
+            bp.`name`                                   as patientName,
+            bp.medical_number                           as medicalNumber,
+            timestampdiff(year, bp.birthday, curdate()) as age,
+            bp.gender,
+            bp.mobile,
+            sum(bb.received_amount)                     as totalConsumeAmount,
+            sum(bb.debt_amount)                         as totalOweAmount,
+            temp1.membertype                            as memberTypeName,
+            temp1.memberbalance                         as memberBalance,
+            temp1.principbalance                        as principalBalance,
+            bp.origin_id,
+            bp.origin_type_name                         as patientOrionTypeName,
+            bp.first_visit_date                         as firstVisitDate,
+            bp.first_visit_outpatient                   as firstVisitOutpatient,
+            bp.first_visit_doctors                      as firstVisitDoctors,
+            bp.last_visit_date                          as lastVisitDate,
+            bp.last_visit_doctors                       as lastVisitDoctors,
+            temp2.treatQuantity
+        from base_patient bp
+             inner join base_employee be on be.user_id = bp.first_visit_doctors
+             inner join base_employee be1 on be1.user_id = bp.last_visit_doctors
+             inner join base_bill bb on bb.patient_id = bp.patient_id
+             inner join (select
+                             bpm.patient_id,
+                             min(type) as membertype,
+                             max(member_level_name) as membertypeName,
+                             sum(case bpm.type
+                                     when 0 then (bpm.principal_amount + bonus_amount)
+                                     else 0 end) as                                           memberbalance,
+                             sum(case bpm.type
+                                     when 1 then (bpm.principal_amount + bonus_amount)
+                                     else 0 end) as                                           principbalance
+                         from base_patient_member bpm
+                         where bpm.member_level_id = 1
+                         group by bpm.patient_id) temp1 on temp1.patient_id = bp.patient_id
+             inner join (select
+                             btp.patient_id,
+                             count(*) as treatQuantity
+                         from base_treatment_process btp
+                         where isnull(btp.treat_start_time) = 0
+                         group by btp.patient_id) temp2
+                        on temp2.patient_id = bp.patient_id
+        <where>
+            <if test="query.patientKeyWord != null and patientKeyword != ''">
+                bp.name like concat('%', #{query.patientKeyWord}, '%')
+                or bp.mobile like concat('%', #{query.patientKeyWord}, '%')
+                or bp.medical_number like concat('%', #{query.patientKeyWord}, '%')
+                or bp.pinyin_name like concat('%', #{query.patientKeyWord}, '%')
+            </if>
+            <if test="query.memberType != null">
+                and temp1.membertype = #{query.memberType}
+            </if>
+            <if test="query.gender != null">
+                and bp.gender = #{query.gender}
+            </if>
+            <if test="query.firstOrgId != null">
+                and bp.first_visit_outpatient = #{query.firstOrgId}
+            </if>
+            <if test="query.firstDentistName != null and query.firstDentistName !=''">
+                and be.employee_name like concat('%', #{query.firstDentistName}, '%')
+            </if>
+            <if test="query.lastDentistName != null and query.lastDentistName !=''">
+                and be1.employee_name like concat('%', #{query.lastDentistName}, '%')
+            </if>
+            <if test="query.startOweAmount != null and query.endOweAmount != null">
+                and bp.first_visit_outpatient = #{query.startOweAmount}
+            </if>
+            <if test="query.startPrincipalBalance != null and query.endPrincipalBalance != null">
+                and temp1.first_visit_outpatient = #{query.startOweAmount}
+            </if>
+            <if test="query.startMemberBalance != null and query.endMemberBalance != null">
+                and bp.first_visit_outpatient = #{query.startOweAmount}
+            </if>
+            <if test="query.startConsumeAmount != null and query.endConsumeAmount != null">
+                and bp.first_visit_outpatient = #{query.startOweAmount}
+            </if>
+            <if test="query.startTreatQuantity != null and query.endTreatQuantity != null">
+                and bp.first_visit_outpatient = #{query.startOweAmount}
+            </if>
+        </where>
+        group by bp.patient_id
+    </select>
 </mapper>

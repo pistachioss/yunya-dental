@@ -127,6 +127,7 @@ public abstract class AbstractWxBaseApi {
     }
 
     public WxSignatureVo getSignInfo(String url) {
+        log.info("js-api传入的url：{}", url);
         String redisKey = String.format(WXConstant.JSAPI_TICKET_KEY, wxConfig.getAppId());
         String ticket = redisUtils.get(redisKey);
         String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
@@ -164,7 +165,7 @@ public abstract class AbstractWxBaseApi {
         StringBuilder validateString = new StringBuilder();
         validateString.append("jsapi_ticket=").append(jsTicket)
                .append("&noncestr=").append(wxConfig.getEncodingAESKey())
-               .append("&timestamp=").append(System.currentTimeMillis() / 1000)
+               .append("&timestamp=").append(timestamp)
                .append("&url=").append(url);
         return validateString.toString();
     }
