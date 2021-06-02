@@ -43,7 +43,7 @@
   <!-- 查询可预约医生列表 -->
   <select id="findDentistsByAppointItem"
           resultType="com.yunya.feign.appointment.vo.EnableOnlineAppointDentistsVo">
-    select oais.dentist_id
+    select oais.dentist_id as dentistId
     from online_appoint_item_setting oais
     <where>
       <if test="orgId != null">
