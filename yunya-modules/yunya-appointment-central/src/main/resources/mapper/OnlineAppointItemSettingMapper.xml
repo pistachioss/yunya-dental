@@ -43,5 +43,15 @@
   <!-- 查询可预约医生列表 -->
   <select id="findDentistsByAppointItem"
           resultType="com.yunya.feign.appointment.vo.EnableOnlineAppointDentistsVo">
+    select oais.dentist_id
+    from online_appoint_item_setting oais
+    <where>
+      <if test="orgId != null">
+        and oais.org_id = #{orgId}
+      </if>
+      <if test="itemId != null">
+        and FIND_IN_SET(#{itemId},oais.enable_appoint_item_ids)
+      </if>
+    </where>
   </select>
 </mapper>

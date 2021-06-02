@@ -1,6 +1,7 @@
 package com.yunya.modules.appointment.controller.app;
 
 import com.yunya.feign.appointment.domain.form.OnlineAppointItemSettingForm;
+import com.yunya.feign.appointment.vo.EnableOnlineAppointDentistsVo;
 import com.yunya.feign.appointment.vo.OnlineAppointItemSettingVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -56,9 +57,9 @@ public class OnlineAppointItemSettingController {
             @ApiImplicitParam(name = "orgId",value = "门诊ID",required = true,dataTypeClass = Integer.class),
             @ApiImplicitParam(name = "itemId",value = "预约项目ID",required = true,dataTypeClass = Integer.class)
     })
-    @GetMapping("/enableDentists/{orgId}/{itemId}")
-    public ResponseResult<T> findDentistsByAppointItem(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId,
-                                                      @PathVariable("itemId") @NotNull(message = "预约项目ID不能为空") Integer itemId) {
+    @GetMapping("/enableDentists/{orgId}")
+    public ResponseResult<List<EnableOnlineAppointDentistsVo>> findDentistsByAppointItem(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId,
+                                                                                         @RequestParam("itemId") Integer itemId) {
         return appointItemSettingBiz.findDentistsByAppointItem(orgId,itemId);
     }
 

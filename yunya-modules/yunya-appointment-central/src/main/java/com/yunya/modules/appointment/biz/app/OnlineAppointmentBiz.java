@@ -194,17 +194,22 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
     }
 
     /**
-     * 设置门诊信息
+     * 设置患者信息
      * @param results 预约申请列表
      */
     private void setPatientInfo(List<OnlineAppointmentVo> results) {
-        List<Integer> patientIds = results.stream().mapToInt(
-                OnlineAppointmentVo::getPatientId).boxed().collect(Collectors.toList());
+        log.info("====> 患者信息\n{}",results);
+        List<Integer> patientIds =  results.stream().filter(entity-> null != entity.getPatientId())
+                .mapToInt(OnlineAppointmentVo::getPatientId)
+                .boxed()
+                .collect(Collectors.toList());
         List<PatientBaseInfoVo> patientInfos = remotePatientCentralServiceFeign.findPatientInfoByIds(patientIds);
         if (StringHelper.isNotEmpty(patientInfos)) {
-            results.stream().forEach(onlineAppointmentVo -> {
-                PatientBaseInfoVo patientBaseInfoVo = patientInfos.stream().filter(e -> e.getId().equals(onlineAppointmentVo.getPatientId())).findFirst().get();
-                onlineAppointmentVo.setMedicalNumber(patientBaseInfoVo.getMedicalNumber());
+            results.forEach(onlineAppointmentVo -> {
+                patientInfos.stream().filter(
+                        e -> e.getId().equals(onlineAppointmentVo.getPatientId()))
+                        .findAny()
+                        .ifPresent(entity->onlineAppointmentVo.setMedicalNumber(entity.getMedicalNumber()));
             });
         }
     }
@@ -332,10 +337,10 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
     private void countOnlineAppointSameTime(List<CountOnlineAppointVo> params, Integer orgId, String date) {
         List<CountOnlineAppointVo> result = mapper.countOnlineAppointSameTime(orgId,date);
         if (StringHelper.isNotEmpty(result)) {
-            for (CountOnlineAppointVo vo: result) {
+            result.forEach (vo-> {
                 Optional<CountOnlineAppointVo> onlineAppointOptional = params.stream().filter(e -> e.getTime().equals(vo.getTime())).findAny();
-                onlineAppointOptional.ifPresent(countOnlineAppointVo -> countOnlineAppointVo.setCount(vo.getCount()));
-            }
+                onlineAppointOptional.ifPresent(countOnlineAppointVo -> vo.setCount(countOnlineAppointVo.getCount()));
+            });
         }
     }
 
