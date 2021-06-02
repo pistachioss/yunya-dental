@@ -2276,6 +2276,9 @@
             AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
         </if>
 
+        GROUP BY
+        bbp.bill_pay_id
+
         union
 
         select
