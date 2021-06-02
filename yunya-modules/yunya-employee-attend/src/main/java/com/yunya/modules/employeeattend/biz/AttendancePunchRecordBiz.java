@@ -1334,8 +1334,14 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         first = last;
                         last = list.get(0);
                     }
-                    Date onPunchTime = first.getPunchTime();
-                    Date offPunchTime = last.getPunchTime();
+                    Date onPunchTime = null;
+                    Date offPunchTime = null;
+                    try {
+                        onPunchTime = DateUtil.timeToDate(first.getPunchDate(), first.getPunchTime());
+                        offPunchTime = DateUtil.timeToDate(last.getPunchDate(),last.getPunchTime());
+                    } catch (ParseException e) {
+                        throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+                    }
                     if (AttendanceStatusEnum.LATER_PUNCH.getCode().equals(first.getPunchStatus())) {
                         diff -= onPunchTime.getTime() - sTime.getTime();
                     }
@@ -1343,7 +1349,12 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         diff -= eTime.getTime() - offPunchTime.getTime();
                     }
                 } else {
-                    Date punchTime = first.getPunchTime();
+                    Date punchTime = null;
+                    try {
+                        punchTime = DateUtil.timeToDate(first.getPunchDate(),first.getPunchTime());
+                    } catch (ParseException e) {
+                        throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+                    }
                     if (AttendanceStatusEnum.LATER_PUNCH.getCode().equals(first.getPunchStatus())) {//迟到
                         diff -= punchTime.getTime() - sTime.getTime();
                     } else if (AttendanceStatusEnum.EARLY_PUNCH.getCode().equals(first.getPunchStatus())) {//早退
