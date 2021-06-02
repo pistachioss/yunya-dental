@@ -1,10 +1,13 @@
 package com.yunya.report.ultimate.controller;
 
+import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.query.PatientManageQuery;
+import com.yunya.feign.report.domain.vo.CouponActiveVo;
 import com.yunya.feign.report.domain.vo.PatientDataVo;
 import com.yunya.feign.report.domain.vo.PatientInfoVO;
+import com.yunya.feign.report.domain.vo.PatientManageVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.PatientBaseInfoBiz;
@@ -12,6 +15,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * 简介:
@@ -58,8 +64,18 @@ public class PatientBaseInfoController {
 
   @ApiOperation("客服中心-患者管理")
   @PostMapping("/manage/page")
-  public ResponseResult<PatientDataVo> patientInfo(@RequestBody PatientManageQuery query) {
-    patientBaseInfoBiz.getPatientManagePage(query);
-    return ResponseUtil.success(null);
+  public ResponseResult<PageInfo<PatientManageVo>> patientInfo(@RequestBody PatientManageQuery query) {
+    PageInfo<PatientManageVo> page = patientBaseInfoBiz.getPatientManagePage(query);
+    return ResponseUtil.success(page);
   }
+
+  @ApiOperation(value = "客服中心-患者管理-导出")
+  @PostMapping("/manage/page/export")
+  public void exportCouponActivation(HttpServletResponse response, @RequestBody PatientManageQuery query) throws IOException {
+    patientBaseInfoBiz.buildResponse(response, "患者报表");
+    EasyExcel.write(response.getOutputStream(), CouponActiveVo.class)
+            .sheet("sheet").doWrite(patientBaseInfoBiz.listPatientManage(query));
+
+  }
+
 }

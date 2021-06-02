@@ -502,11 +502,11 @@
             timestampdiff(year, bp.birthday, curdate()) as age,
             bp.gender,
             bp.mobile,
-            sum(bb.received_amount)                     as totalConsumeAmount,
-            sum(bb.debt_amount)                         as totalOweAmount,
-            temp1.membertype                            as memberTypeName,
-            temp1.memberbalance                         as memberBalance,
-            temp1.principbalance                        as principalBalance,
+            pm.cumulative_consumption                   as totalConsumeAmount,
+            pm.total_arrears                            as totalOweAmount,
+            pm.member_level_name                        as memberTypeName,
+            pm.member_balance                           as memberBalance,
+            pm.principal_balance                        as principalBalance,
             bp.origin_id,
             bp.origin_type_name                         as patientOrionTypeName,
             bp.first_visit_date                         as firstVisitDate,
@@ -514,31 +514,11 @@
             bp.first_visit_doctors                      as firstVisitDoctors,
             bp.last_visit_date                          as lastVisitDate,
             bp.last_visit_doctors                       as lastVisitDoctors,
-            temp2.treatQuantity
+            pm.number_of_visits                         as treatQuantity
         from base_patient bp
-             inner join base_employee be on be.user_id = bp.first_visit_doctors
-             inner join base_employee be1 on be1.user_id = bp.last_visit_doctors
-             inner join base_bill bb on bb.patient_id = bp.patient_id
-             inner join (select
-                             bpm.patient_id,
-                             min(type) as membertype,
-                             max(member_level_name) as membertypeName,
-                             sum(case bpm.type
-                                     when 0 then (bpm.principal_amount + bonus_amount)
-                                     else 0 end) as                                           memberbalance,
-                             sum(case bpm.type
-                                     when 1 then (bpm.principal_amount + bonus_amount)
-                                     else 0 end) as                                           principbalance
-                         from base_patient_member bpm
-                         where bpm.member_level_id = 1
-                         group by bpm.patient_id) temp1 on temp1.patient_id = bp.patient_id
-             inner join (select
-                             btp.patient_id,
-                             count(*) as treatQuantity
-                         from base_treatment_process btp
-                         where isnull(btp.treat_start_time) = 0
-                         group by btp.patient_id) temp2
-                        on temp2.patient_id = bp.patient_id
+            inner join base_employee be on be.user_id = bp.first_visit_doctors
+            inner join base_employee be1 on be1.user_id = bp.last_visit_doctors
+            left join patient_manage pm on bp.patient_id = pm.patient_id
         <where>
             <if test="query.patientKeyWord != null and patientKeyword != ''">
                 bp.name like concat('%', #{query.patientKeyWord}, '%')
@@ -546,8 +526,14 @@
                 or bp.medical_number like concat('%', #{query.patientKeyWord}, '%')
                 or bp.pinyin_name like concat('%', #{query.patientKeyWord}, '%')
             </if>
+            <if test="startAge != null and endAge != null">
+                and bp.birthday &gt;= #{startAge} and bp.birthday &lt;= #{endAge}
+            </if>
+            <if test="query.patientType != null">
+                and bp.vip_logo = #{query.patientType}
+            </if>
             <if test="query.memberType != null">
-                and temp1.membertype = #{query.memberType}
+                and pm.member_level_id = #{query.memberType}
             </if>
             <if test="query.gender != null">
                 and bp.gender = #{query.gender}
@@ -562,21 +548,20 @@
                 and be1.employee_name like concat('%', #{query.lastDentistName}, '%')
             </if>
             <if test="query.startOweAmount != null and query.endOweAmount != null">
-                and bp.first_visit_outpatient = #{query.startOweAmount}
+                and pm.total_arrears &gt;= #{query.startOweAmount} and pm.total_arrears &lt;= #{query.endOweAmount}
             </if>
             <if test="query.startPrincipalBalance != null and query.endPrincipalBalance != null">
-                and temp1.first_visit_outpatient = #{query.startOweAmount}
+                and pm.principal_balance &gt;= #{query.startPrincipalBalance} and pm.total_arrears &lt;= #{query.endPrincipalBalance}
             </if>
             <if test="query.startMemberBalance != null and query.endMemberBalance != null">
-                and bp.first_visit_outpatient = #{query.startOweAmount}
+                and pm.member_balance &gt;= #{query.startMemberBalance} and pm.member_balance &lt;= #{query.endMemberBalance}
             </if>
             <if test="query.startConsumeAmount != null and query.endConsumeAmount != null">
-                and bp.first_visit_outpatient = #{query.startOweAmount}
+                and pm.cumulative_consumption &gt;= #{query.startConsumeAmount} and pm.cumulative_consumption &lt;= #{query.endConsumeAmount}
             </if>
             <if test="query.startTreatQuantity != null and query.endTreatQuantity != null">
-                and bp.first_visit_outpatient = #{query.startOweAmount}
+                and pm.number_of_visits &gt;= #{query.startTreatQuantity} and pm.number_of_visits &lt;= #{query.endTreatQuantity}
             </if>
         </where>
-        group by bp.patient_id
     </select>
 </mapper>

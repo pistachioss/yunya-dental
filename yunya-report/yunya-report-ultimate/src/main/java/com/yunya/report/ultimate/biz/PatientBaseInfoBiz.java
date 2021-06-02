@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.biz;
 
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
@@ -15,7 +16,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -126,6 +131,25 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
   }
 
   public PageInfo<PatientManageVo> getPatientManagePage(PatientManageQuery query) {
-    return null;
+    LocalDate now = LocalDate.now();
+    String startAge = now.minusDays(query.getEndAge()).toString();
+    String endAge = now.minusDays(query.getStartAge()).toString();
+    Page<PatientManageVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    mapper.listPatientByKeys(query, startAge, endAge);
+    return new PageInfo<>(page);
+  }
+
+  public List<PatientManageVo> listPatientManage(PatientManageQuery query) {
+    LocalDate now = LocalDate.now();
+    String startAge = now.minusDays(query.getEndAge()).toString();
+    String endAge = now.minusDays(query.getStartAge()).toString();
+    return mapper.listPatientByKeys(query, startAge, endAge);
+  }
+
+  public void buildResponse(HttpServletResponse response, String fileName) throws UnsupportedEncodingException {
+    response.setContentType("application/vnd.ms-excel");
+    response.setCharacterEncoding("utf-8");
+    String encodeFileName = URLEncoder.encode(fileName, "UTF-8");
+    response.setHeader("Content-disposition", "attachment;filename=" + encodeFileName + ".xlsx");
   }
 }
