@@ -17,10 +17,16 @@ import java.math.BigDecimal;
 public class PatientManageQuery extends PageQuery {
     @ApiModelProperty(value = "患者")
     private String patientKeyWord;
+    @ApiModelProperty(value = "患者类型")
+    private Integer patientType;
     @ApiModelProperty(value = "会员卡")
     private Integer memberType;
     @ApiModelProperty(value = "性别 0-男；1-女")
     private Integer gender;
+    @ApiModelProperty(value = "年龄初")
+    private Integer startAge;
+    @ApiModelProperty(value = "年龄末")
+    private Integer endAge;
     @ApiModelProperty(value = "初诊门诊")
     private Integer firstOrgId;
     @ApiModelProperty(value = "初诊医生")
