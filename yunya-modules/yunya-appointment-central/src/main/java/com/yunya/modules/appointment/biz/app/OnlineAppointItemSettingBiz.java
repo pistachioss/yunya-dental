@@ -1,11 +1,8 @@
 package com.yunya.modules.appointment.biz.app;
 
-import com.alibaba.csp.sentinel.init.InitExecutor;
 import com.yunya.feign.appointment.domain.form.OnlineAppointItemSettingForm;
 import com.yunya.feign.appointment.vo.EnableOnlineAppointDentistsVo;
-import com.yunya.feign.appointment.vo.EnableOnlineAppointItemVo;
 import com.yunya.feign.appointment.vo.OnlineAppointItemSettingVo;
-import com.yunya.feign.appointment.vo.OnlineAppointItemVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -16,15 +13,14 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.OnlineAppointItemSetting;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.OnlineAppointItemSettingMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -34,6 +30,7 @@ import java.util.stream.Collectors;
  * @create: 2021-05-18 16:58
  **/
 @Service
+@Slf4j
 public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettingMapper, OnlineAppointItemSetting> {
 
     @Autowired
@@ -150,15 +147,18 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
     public ResponseResult<List<EnableOnlineAppointDentistsVo>> findDentistsByAppointItem(Integer orgId, Integer itemId) {
         List<EnableOnlineAppointDentistsVo> dentistsVos = mapper.findDentistsByAppointItem(orgId,itemId);
         if (StringHelper.isNotEmpty(dentistsVos)) {
+            log.info("\n====>线上预约信息列表\n{}",dentistsVos);
             List<Integer> dentistIds = dentistsVos.stream().mapToInt(
                     EnableOnlineAppointDentistsVo::getDentistId).boxed().collect(Collectors.toList());
             List<SysUserInfoDetail> dentistInfos = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
+            log.info("====>查询线上可预约医生详细信息\n{}",dentistInfos);
             if (StringHelper.isNotEmpty(dentistInfos)) {
+
                 dentistsVos.forEach(dentistObj->{
                     dentistInfos.stream().filter(
                             employee -> employee.getUserId().equals(dentistObj.getDentistId()))
                             .findAny()
-                            .ifPresent(sysUserInfoDetail -> dentistObj.setDentistName(sysUserInfoDetail.getUsername()));
+                            .ifPresent(sysUserInfoDetail -> dentistObj.setDentistName(sysUserInfoDetail.getName()));
 
                 });
             }

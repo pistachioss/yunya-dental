@@ -122,7 +122,11 @@ public class OnlineAppointmentController {
      * @return
      */
     @ApiOperation("查询预约时间列表")
-
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "门诊ID",value = "orgId",required = true,dataTypeClass = Integer.class),
+            @ApiImplicitParam(name = "项目ID",value = "itemId",required = true,dataTypeClass = Integer.class),
+            @ApiImplicitParam(name = "预约日期",value = "date",required = true,dataTypeClass = String.class,defaultValue = "2021-06-01"),
+    })
     @GetMapping("/time/list/{orgId}/{itemId}")
     public ResponseResult<Map<String,List<CountOnlineAppointVo>>>  appointTimeList(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId,
                                                                                    @PathVariable("itemId") @NotNull(message = "项目ID不能为空") Integer itemId,

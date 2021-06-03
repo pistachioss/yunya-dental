@@ -203,14 +203,16 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
                 .mapToInt(OnlineAppointmentVo::getPatientId)
                 .boxed()
                 .collect(Collectors.toList());
-        List<PatientBaseInfoVo> patientInfos = remotePatientCentralServiceFeign.findPatientInfoByIds(patientIds);
-        if (StringHelper.isNotEmpty(patientInfos)) {
-            results.forEach(onlineAppointmentVo -> {
-                patientInfos.stream().filter(
-                        e -> e.getId().equals(onlineAppointmentVo.getPatientId()))
-                        .findAny()
-                        .ifPresent(entity->onlineAppointmentVo.setMedicalNumber(entity.getMedicalNumber()));
-            });
+        if (StringHelper.isNotEmpty(patientIds)) {
+            List<PatientBaseInfoVo> patientInfos = remotePatientCentralServiceFeign.findPatientInfoByIds(patientIds);
+            if (StringHelper.isNotEmpty(patientInfos)) {
+                results.forEach(onlineAppointmentVo -> {
+                    patientInfos.stream().filter(
+                            e -> e.getId().equals(onlineAppointmentVo.getPatientId()))
+                            .findAny()
+                            .ifPresent(entity -> onlineAppointmentVo.setMedicalNumber(entity.getMedicalNumber()));
+                });
+            }
         }
     }
 
@@ -269,6 +271,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param onlineAppointmentId
      */
     public void onlineAppointStatus(Integer onlineAppointmentId,Integer patientId) {
+        log.info("===》预约ID:{}",onlineAppointmentId);
         OnlineAppointment onlineAppointment = mapper.selectByPrimaryKey(onlineAppointmentId);
         if (onlineAppointment != null) {
             onlineAppointment.setStatus((byte) 1);
@@ -276,6 +279,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
             onlineAppointment.setUpdTime(new Date(System.currentTimeMillis()));
             mapper.updateByPrimaryKeySelective(onlineAppointment);
         }
+
     }
 
     /**
@@ -353,6 +357,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         StringBuilder sb = new StringBuilder();
         sb.append("\n=================预约生命周期=============\n");
         sb.append("==> 新建预约完成\n");
+        sb.append(appointment.toString());
         sb.append("==========================================");
         log.info(sb.toString());
         onlineAppointStatus(appointment.getOnlineAppointmentId(),appointment.getPatientId());

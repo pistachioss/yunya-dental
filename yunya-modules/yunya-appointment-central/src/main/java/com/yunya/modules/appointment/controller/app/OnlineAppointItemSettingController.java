@@ -59,7 +59,7 @@ public class OnlineAppointItemSettingController {
     })
     @GetMapping("/enableDentists/{orgId}")
     public ResponseResult<List<EnableOnlineAppointDentistsVo>> findDentistsByAppointItem(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId,
-                                                                                         @RequestParam("itemId") Integer itemId) {
+                                                                                         Integer itemId) {
         return appointItemSettingBiz.findDentistsByAppointItem(orgId,itemId);
     }
 
