@@ -500,7 +500,11 @@
             bp.`name`                                   as patientName,
             bp.medical_number                           as medicalNumber,
             timestampdiff(year, bp.birthday, curdate()) as age,
-            bp.gender,
+            case
+                when bp.gender = 0 then '男'
+                when bp.gender = 1 then '女'
+                else '未知'
+                end                                     as gender,
             bp.mobile,
             bp.vip_logo                                 as patientType,
             pm.cumulative_consumption                   as totalConsumeAmount,
