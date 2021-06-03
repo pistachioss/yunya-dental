@@ -141,8 +141,8 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
 
   public List<PatientManageVo> listPatientManage(PatientManageQuery query) {
     LocalDate now = LocalDate.now();
-    Integer startAge = now.minusDays(query.getEndAge()).getYear();
-    Integer endAge = now.minusDays(query.getStartAge()).getYear();
+    Integer startAge = now.minusYears(query.getEndAge()).getYear();
+    Integer endAge = now.minusYears(query.getStartAge()).getYear();
     return mapper.listPatientByKeys(query, startAge, endAge);
   }
 

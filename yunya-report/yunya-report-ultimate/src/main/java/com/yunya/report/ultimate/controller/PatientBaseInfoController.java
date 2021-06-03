@@ -4,7 +4,6 @@ import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.query.PatientManageQuery;
-import com.yunya.feign.report.domain.vo.CouponActiveVo;
 import com.yunya.feign.report.domain.vo.PatientDataVo;
 import com.yunya.feign.report.domain.vo.PatientInfoVO;
 import com.yunya.feign.report.domain.vo.PatientManageVo;
@@ -71,9 +70,9 @@ public class PatientBaseInfoController {
 
   @ApiOperation(value = "客服中心-患者管理-导出")
   @PostMapping("/manage/page/export")
-  public void exportCouponActivation(HttpServletResponse response, @RequestBody PatientManageQuery query) throws IOException {
+  public void exportPatientManage(HttpServletResponse response, @RequestBody PatientManageQuery query) throws IOException {
     patientBaseInfoBiz.buildResponse(response, "患者报表");
-    EasyExcel.write(response.getOutputStream(), CouponActiveVo.class)
+    EasyExcel.write(response.getOutputStream(), PatientManageVo.class)
             .sheet("sheet").doWrite(patientBaseInfoBiz.listPatientManage(query));
 
   }
