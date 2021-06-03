@@ -138,8 +138,8 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    */
   List<BasePatient> findPatientInfoInId(@Param("patientIds") Collection<Integer> patientIds);
 
-  List<PatientManageVo> listPatientByKeys(@Param("query") PatientManageQuery query, @Param("startAge") String startAge,
-                                          @Param("endAge") String endAge);
+  List<PatientManageVo> listPatientByKeys(@Param("query") PatientManageQuery query, @Param("startAge") Integer startAge,
+                                          @Param("endAge") Integer endAge);
   /**
    * 更新患者初次就诊信息
    */
