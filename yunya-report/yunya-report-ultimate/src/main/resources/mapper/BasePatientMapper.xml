@@ -536,7 +536,7 @@
             inner join base_employee be1 on be1.user_id = bp.last_visit_doctors
             left join patient_manage pm on bp.patient_id = pm.patient_id
         <where>
-            <if test="query.patientKeyWord != null and patientKeyword != ''">
+            <if test="query.patientKeyWord != null and query.patientKeyWord != ''">
                 bp.name like concat('%', #{query.patientKeyWord}, '%')
                 or bp.mobile like concat('%', #{query.patientKeyWord}, '%')
                 or bp.medical_number like concat('%', #{query.patientKeyWord}, '%')
