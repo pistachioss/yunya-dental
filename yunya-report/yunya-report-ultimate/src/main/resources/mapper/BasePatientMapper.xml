@@ -518,6 +518,7 @@
             timestampdiff(year, bp.birthday, curdate()) as age,
             bp.gender,
             bp.mobile,
+            bp.vip_logo                                 as patientType,
             pm.cumulative_consumption                   as totalConsumeAmount,
             pm.total_arrears                            as totalOweAmount,
             pm.member_level_name                        as memberTypeName,
@@ -525,25 +526,27 @@
             pm.principal_balance                        as principalBalance,
             bp.origin_id,
             bp.origin_type_name                         as patientOrionTypeName,
-            bp.first_visit_date                         as firstVisitDate,
+            bpo.name                                    as patientOrionName,
+            date_format(bp.first_visit_date, '%Y/%m/%d')as firstVisitDate,
             bp.first_visit_outpatient                   as firstVisitOutpatient,
             bp.first_visit_doctors                      as firstVisitDoctors,
-            bp.last_visit_date                          as lastVisitDate,
+            date_format(bp.last_visit_date, '%Y/%m/%d') as lastVisitDate,
             bp.last_visit_doctors                       as lastVisitDoctors,
             pm.number_of_visits                         as treatQuantity
         from base_patient bp
             inner join base_employee be on be.user_id = bp.first_visit_doctors
             inner join base_employee be1 on be1.user_id = bp.last_visit_doctors
+            inner join base_patient_origin bpo on bpo.id = bp.origin_id
             left join patient_manage pm on bp.patient_id = pm.patient_id
         <where>
             <if test="query.patientKeyWord != null and query.patientKeyWord != ''">
-                bp.name like concat('%', #{query.patientKeyWord}, '%')
+                (bp.name like concat('%', #{query.patientKeyWord}, '%')
                 or bp.mobile like concat('%', #{query.patientKeyWord}, '%')
                 or bp.medical_number like concat('%', #{query.patientKeyWord}, '%')
-                or bp.pinyin_name like concat('%', #{query.patientKeyWord}, '%')
+                or bp.pinyin_name like concat('%', #{query.patientKeyWord}, '%'))
             </if>
             <if test="startAge != null and endAge != null">
-                and bp.birthday &gt;= #{startAge} and bp.birthday &lt;= #{endAge}
+                and date_format(bp.birthday, '%Y') &gt;= #{startAge} and date_format(bp.birthday, '%Y') &lt;= #{endAge}
             </if>
             <if test="query.patientType != null">
                 and bp.vip_logo = #{query.patientType}
