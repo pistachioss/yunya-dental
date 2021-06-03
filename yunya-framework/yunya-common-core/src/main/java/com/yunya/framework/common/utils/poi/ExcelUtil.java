@@ -30,6 +30,8 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER;
+
 /**
  * Excel相关处理
  *
@@ -342,7 +344,7 @@ public class ExcelUtil<T> {
         }
       }
     }
-    if (StringHelper.isNotEmpty(eDate)) {
+    if (!sDate.equals(eDate) && StringHelper.isNotEmpty(eDate)) {
       if (res.length() > 0) {
         res.append("-");
       }
@@ -526,7 +528,7 @@ public class ExcelUtil<T> {
     // 写入各条记录,每条记录对应excel表中的一行
     Map<String, CellStyle> styles = new HashMap<>(16);
     CellStyle style = wb.createCellStyle();
-    style.setAlignment(HorizontalAlignment.CENTER);
+    style.setAlignment(CENTER);
     style.setVerticalAlignment(VerticalAlignment.CENTER);
     style.setBorderRight(BorderStyle.THIN);
     style.setRightBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
@@ -545,7 +547,7 @@ public class ExcelUtil<T> {
 
     style = wb.createCellStyle();
     style.cloneStyleFrom(styles.get("data"));
-    style.setAlignment(HorizontalAlignment.CENTER);
+    style.setAlignment(CENTER);
     style.setVerticalAlignment(VerticalAlignment.CENTER);
     style.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.getIndex());
     style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -559,7 +561,7 @@ public class ExcelUtil<T> {
     styles.put("header", style);
 
     style = wb.createCellStyle();
-    style.setAlignment(HorizontalAlignment.CENTER);
+    style.setAlignment(CENTER);
     style.setVerticalAlignment(VerticalAlignment.CENTER);
     Font totalFont = wb.createFont();
     totalFont.setFontName("宋体");
@@ -574,7 +576,7 @@ public class ExcelUtil<T> {
 
     style = wb.createCellStyle();
     style.cloneStyleFrom(styles.get("data"));
-    style.setAlignment(HorizontalAlignment.CENTER);
+    style.setAlignment(CENTER);
     styles.put("data2", style);
 
     style = wb.createCellStyle();
@@ -625,6 +627,38 @@ public class ExcelUtil<T> {
       cell.setCellValue(value);
     }
     cell.setCellStyle(styles.get(titleKey));
+    return cell;
+  }
+
+  /**
+   * 创建单元格
+   *
+   * @param value 属性
+   * @param row 行
+   * @param column 列
+   * @return
+   */
+  public Cell createCell(String value, Row row, int column, Excel.ColumnType collumnType, CellStyle style) {
+    // 创建列
+    Cell cell = row.createCell(column);
+    try {
+      switch (collumnType) {
+        case STRING:
+          cell.setCellValue(value);
+          break;
+        case NUMERIC:
+          cell.setCellValue(
+                  StringUtils.contains(value, ".")
+                          ? Convert.toDouble(value)
+                          : Convert.toInt(value));
+          break;
+        default:
+          break;
+      }
+    } catch (Exception e) {
+      cell.setCellValue(value);
+    }
+    cell.setCellStyle(style);
     return cell;
   }
 
@@ -1060,6 +1094,93 @@ public class ExcelUtil<T> {
   public void mergeRegion() {
     if (StringHelper.isNotEmpty(regions)) {
       regions.forEach(cellRangeAddress -> sheet.addMergedRegion(cellRangeAddress));
+    }
+  }
+
+  public void exportExcelByRow(HttpServletResponse response, List<T> list, String sheetName, String fileName)
+          throws IOException {
+      response.setContentType("application/vnd.ms-excel");
+      response.setCharacterEncoding("utf-8");
+      response.setHeader(
+              "Content-Disposition",
+              "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
+      this.init(list, sheetName, Type.EXPORT);
+      exportExcelByRow(response.getOutputStream());
+  }
+
+  /**
+   * 按数据行的相关格式导出
+   *
+   * @param outputStream
+   */
+  public void exportExcelByRow(OutputStream outputStream) {
+    try {
+      // 取出一共有多少个sheet.
+      double sheetNo = Math.ceil(list.size() / SHEET_SIZE);
+      for (int index = 0; index <= sheetNo; index++) {
+        // 创建sheet工作表
+        createSheet(sheetNo, index);
+        if (Type.EXPORT.equals(type)) {
+          int startNo = index * SHEET_SIZE;
+          int endNo = Math.min(startNo + SHEET_SIZE, list.size());
+          for (int i = startNo; i < endNo; i++) {
+            Row row = sheet.createRow(i - startNo);
+            // 得到导出对象.
+            JSONObject obj = (JSONObject) list.get(i);
+            Integer width = (Integer) obj.remove(RowStyle.CELL_WIDTH);
+            if (width == null) {
+              width = 16;
+            }
+            CellStyle style = styles.get("data");
+            Boolean isBold = (Boolean) obj.remove(RowStyle.IS_BOLD);
+            if (isBold != null) {
+              CellStyle newStyle = wb.createCellStyle();
+              newStyle.cloneStyleFrom(style);
+              Font dataFont = wb.createFont();
+              dataFont.setFontName("宋体");
+              dataFont.setFontHeightInPoints((short) 12);
+              dataFont.setBold(isBold);
+              newStyle.setFont(dataFont);
+              style = newStyle;
+            }
+            Excel.ColumnType columnType = (Excel.ColumnType) obj.remove(RowStyle.COLUMN_TYPE);
+            if (columnType == null) {
+              columnType = Excel.ColumnType.STRING;
+            }
+            int column = 0;
+            for (int k = 0; k < obj.size(); k++) {
+              sheet.setColumnWidth(column++, (int) ((width + 0.72) * 256));
+            }
+            int col = 0;
+            for (Map.Entry<String, Object> entry : obj.entrySet()) {
+              Object value = entry.getValue();
+              this.createCell(String.valueOf(value), row, col++, columnType,style);
+            }
+          }
+        }
+      }
+      // 设置表格合并
+      this.mergeRegion();
+      wb.write(outputStream);
+    } catch (Exception e) {
+      log.error("导出Excel异常{}", e.getMessage());
+      log.error("导出Excel异常{}", e);
+    } finally {
+      if (wb != null) {
+        try {
+          wb.close();
+        } catch (IOException e1) {
+          e1.printStackTrace();
+        }
+      }
+      if (outputStream != null) {
+        try {
+          outputStream.close();
+        } catch (IOException e1) {
+          e1.printStackTrace();
+        }
+      }
+      log.info("导出完成");
     }
   }
 }

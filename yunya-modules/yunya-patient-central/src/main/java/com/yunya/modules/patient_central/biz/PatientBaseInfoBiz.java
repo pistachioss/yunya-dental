@@ -321,10 +321,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public void addPatientOrigin(PatientBaseInfo patientBaseInfo) {
     if (patientBaseInfo.getOriginId() != null) {
       PatientOriginLog patientOriginLog =
-          patientOriginLogMapper.selectByPatientId(patientBaseInfo.getId());
+          patientOriginLogMapper.selectIsReferralRelationship(patientBaseInfo);
       PatientOriginLog insertPatientOriginLog = new PatientOriginLog();
       if (patientOriginLog != null) {
-        if (!patientBaseInfo.getOriginId().equals(patientOriginLog.getOriginId())) {
+        if (!patientOriginLog.getOriginId().equals(patientBaseInfo.getOriginId())) {
           insertPatientOriginLog.setPatientId(patientBaseInfo.getId());
           insertPatientOriginLog.setOriginType(patientBaseInfo.getOriginType());
           insertPatientOriginLog.setOriginId(patientBaseInfo.getOriginId());
@@ -358,7 +358,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         insertPatientOriginLog.setUpdTime(new Date());
         patientOriginLogMapper.insertSelective(insertPatientOriginLog);
         remoteRabbitMqServiceFeign.sendMessage(
-            insertPatientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
+                insertPatientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
       }
     }
   }

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseFirstVisitDetailMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseFirstVisitDetail" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_name" property="orgName" jdbcType="VARCHAR" />
+    <result column="first_visit_time" property="firstVisitTime" jdbcType="VARCHAR" />
+    <result column="registered_dentist_id" property="registeredDentistId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="patient_name" property="patientName" jdbcType="VARCHAR" />
+    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+    <result column="origin_type_name" property="originTypeName" jdbcType="VARCHAR" />
+    <result column="origin_name" property="originName" jdbcType="VARCHAR" />
+    <result column="next_appointment_time" property="nextAppointmentTime" jdbcType="VARCHAR" />
+    <result column="next_appoint_content" property="nextAppointContent" jdbcType="VARCHAR" />
+    <result column="next_remind_time" property="nextRemindTime" jdbcType="VARCHAR" />
+    <result column="next_remind_content" property="nextRemindContent" jdbcType="VARCHAR" />
+  </resultMap>
+
+    <!-- 批量插入中间表初诊明细 -->
+    <insert id="batchIntert">
+        INSERT INTO base_first_visit_detail (
+        org_id,
+        org_name,
+        first_visit_time,
+        registered_dentist_id,
+        patient_id,
+        patient_name,
+        mobile,
+        origin_type_name,
+        origin_name,
+        next_appointment_time,
+        next_appoint_content,
+        next_remind_time,
+        next_remind_content
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.orgId},#{item.orgName}, #{item.firstVisitTime},#{item.registeredDentistId}, #{item.patientId},
+            #{item.patientName}, #{item.mobile}, #{item.originTypeName},
+            #{item.originName}, #{item.nextAppointmentTime}, #{item.nextAppointContent},
+            #{item.nextRemindTime}, #{item.nextRemindcontent})
+        </foreach>
+    </insert>
+    <delete id="deleteAll">
+         delete from base_first_visit_detail
+    </delete>
+</mapper>

@@ -65,6 +65,20 @@ public class BaseOralTariffController {
   }
 
   /**
+   * 根据商品表分类ID获取当前商品表编号
+   *
+   * @param oralTariffCategoryId 商品表分类ID
+   * @return
+   */
+  @ApiOperation("根据商品表分类ID获取当前商品表编号")
+  @GetMapping(value = "/generate/number/{oralTariffCategoryId}", name = "根据商品表分类ID获取当前商品表编号")
+  public ResponseResult<String> getBaseOralTariffNumber(
+      @PathVariable("oralTariffCategoryId") Integer oralTariffCategoryId) {
+    String tariffNumber = baseOralTariffBiz.generateBaseOralTariffNumber(oralTariffCategoryId);
+    return ResponseUtil.success(tariffNumber);
+  }
+
+  /**
    * 新增商品项目
    *
    * @param model 新增参数
@@ -108,13 +122,30 @@ public class BaseOralTariffController {
   }
 
   /**
-   * 导入商品项目价目表
+   * 一键启用禁用基础商品表项目
+   *
+   * @param id 商品表ID
+   * @param switchType 启用开关
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("一键启用禁用商品表项目")
+  @GetMapping(value = "/operate/{id}/{switchType}", name = "一键启用禁用商品表项目")
+  public ResponseResult<T> operateBaseOralTariffStatus(
+      @PathVariable(value = "id") Integer id,
+      @PathVariable(value = "switchType") Boolean switchType) {
+    baseOralTariffBiz.operateBaseOralTariffStatus(id, switchType);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 导入商品项目商品表
    *
    * @param excelFile 文件
    * @return
    */
   @CurrentUser
-  @ApiOperation("导入商品项目价目表")
+  @ApiOperation("导入商品项目商品表")
   @PostMapping("/import")
   public ResponseResult<String> importExcel(MultipartFile excelFile) throws Exception {
     String resultStr = baseOralTariffBiz.importExcel(excelFile);
@@ -122,13 +153,13 @@ public class BaseOralTariffController {
   }
 
   /**
-   * 根据条件导出商品项目价目表
+   * 根据条件导出商品项目商品表
    *
    * @param response http响应
    * @param queryForm 查询条件
    * @throws Exception
    */
-  @ApiOperation("根据条件导出商品项目价目表")
+  @ApiOperation("根据条件导出商品项目商品表")
   @PostMapping("/export")
   public ResponseResult<T> exportExcel(
       HttpServletResponse response, @RequestBody BaseOralTariffQueryForm queryForm)

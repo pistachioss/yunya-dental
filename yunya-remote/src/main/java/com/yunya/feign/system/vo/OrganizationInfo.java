@@ -36,4 +36,10 @@ public class OrganizationInfo implements Serializable {
   /** 诊所简称 */
   @ApiModelProperty("诊所简称")
   private String abbreviation;
+  /** 诊所地址 */
+  @ApiModelProperty("诊所地址")
+  private String clinicAddress;
+  /** 诊所电话 */
+  @ApiModelProperty("诊所电话")
+  private String clinicMobile;
 }

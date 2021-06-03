@@ -11,6 +11,7 @@ import com.yunya.middletable.dao.report.BaseBillPayDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillPayMapper;
 import com.yunya.middletable.dao.treatment.BillPayDetailRecordMapper;
 import com.yunya.middletable.dao.treatment.BillPayRecordMapper;
+import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
 import com.yunya.models.report.BaseBillPay;
@@ -21,15 +22,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 简介: 中间表收费记录处理业务层
@@ -41,7 +44,6 @@ import java.util.concurrent.Future;
  */
 @Slf4j
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
 
   /** 账单收费记录 */
@@ -54,9 +56,17 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
   /** 预付款消费记录 */
   @Autowired private PrepaidExpendRecordMapper prepaidExpendRecordMapper;
+  /** 积分商城业务层 */
+  @Autowired
+  private CreditsShopBiz creditsShopBiz;
   /** 线程池 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
+
+  /** 本次免单支付 */
+  private final Integer PAYMENT_BY_CUSTOMER_FREE = 23;
+  /** 艾维员工免单 */
+  private final Integer PAYMENT_BY_EMPLOYEE_FREE = 26;
 
   /**
    * 根据消息类型操作（新增/修改/删除）中间表入账方式
@@ -101,6 +111,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       billPayDetail.setBillPayId(billPayRecordId);
       baseBillPayDetailMapper.delete(billPayDetail);
       log.info("BaseBillPayBiz_saveBillPayDetailRecord_收费记录明细列表---:{}", billPayDetailRecords);
+      AtomicInteger patientId = new AtomicInteger(0);
+      AtomicInteger creditsAtomic = new AtomicInteger(0);
+      AtomicInteger billPayId = new AtomicInteger(0);
       billPayDetailRecords.forEach(
           payDetailRecord -> {
             BaseBillPayDetail baseBillPayDetail = new BaseBillPayDetail();
@@ -158,7 +171,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                 break;
             }
             baseBillPayDetailMapper.insertSelective(baseBillPayDetail);
+            // 设置患者消费积分
+            if(!payDetailRecord.getAccountItemId().equals(PAYMENT_BY_CUSTOMER_FREE)
+                    && !payDetailRecord.getAccountItemId().equals(PAYMENT_BY_EMPLOYEE_FREE)) {
+              creditsAtomic.addAndGet(baseBillPayDetail.getPrincipalAmount().setScale(0, RoundingMode.HALF_UP).intValue());
+            }
+            patientId.set(payDetailRecord.getPatientId());
+            billPayId.set(baseBillPayDetail.getBillPayId());
           });
+      // 增加会员积分  1元=1积分
+      creditsShopBiz.ivyConsumeAddCredits(patientId.get(),new BigDecimal(creditsAtomic.get()),billPayId.get());
     }
   }
 

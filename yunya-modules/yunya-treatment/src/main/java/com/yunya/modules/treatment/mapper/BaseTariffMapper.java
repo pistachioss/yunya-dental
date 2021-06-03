@@ -84,4 +84,15 @@ public interface BaseTariffMapper extends Mapper<BaseTariff> {
    * @return List<BaseTariff>
    */
   List<BaseTariff> selectBaseTariffView();
+
+  /**
+   * 根据价目表分类ID查询该分类下最大价目表编号
+   *
+   * @param tariffCategoryId 价目表分类ID
+   * @param categoryNumber 分类编号
+   * @return String
+   */
+  String selectMaxBaseTariffNumber(
+      @Param("tariffCategoryId") Integer tariffCategoryId,
+      @Param("categoryNumber") String categoryNumber);
 }

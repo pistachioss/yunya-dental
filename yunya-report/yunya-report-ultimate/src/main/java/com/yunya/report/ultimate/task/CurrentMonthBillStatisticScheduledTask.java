@@ -1,14 +1,14 @@
 package com.yunya.report.ultimate.task;
 
+import com.yunya.feign.report.domain.query.FirstVisitDetailQuery;
 import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillStatisticVO;
+import com.yunya.feign.report.domain.vo.FirstVisitDetailVO;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseOrganization;
-import com.yunya.report.ultimate.mapper.BaseBillMapper;
-import com.yunya.report.ultimate.mapper.BaseBillPayMapper;
-import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
-import com.yunya.report.ultimate.mapper.CurrentMonthBillStatisticsMapper;
+import com.yunya.report.ultimate.mapper.*;
 import com.yunya.models.report.CurrentMonthBillStatistics;
+import io.swagger.annotations.ApiModelProperty;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +18,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -45,6 +46,11 @@ public class CurrentMonthBillStatisticScheduledTask {
   @Autowired private BaseBillPayMapper billPayMapper;
   /** 当前月账单统计 */
   @Autowired private CurrentMonthBillStatisticsMapper billStatisticsMapper;
+  /** 初诊明细 */
+  @Autowired private BaseFirstVisitDetailMapper baseFirstVisitDetailMapper;
+  /** 初诊明细 */
+  @Autowired private BaseTreatmentProcessMapper baseTreatmentProcessMapper;
+
 
   /** 每月最后一天23:59分存档当月账单信息（本月实收合计、本月优惠合计、本月账单已收合计、本月账单欠费合计） */
   @Scheduled(cron = "0 59 23 28-31 * ?")
@@ -81,4 +87,29 @@ public class CurrentMonthBillStatisticScheduledTask {
       }
     }
   }
+  /** 每天23:59分存档当天之前的初诊信息*/
+  @Scheduled(cron = "0 0 23 * * ?")
+  public void firstVisitdetail() {
+    List<FirstVisitDetailVO>list =  baseTreatmentProcessMapper.findFirstVisitRecordDetail();
+    int size = list.size();
+    int temp = size / 5000 + 1;
+    boolean result = size % 5000 == 0;
+    List<List<FirstVisitDetailVO>> subList = new ArrayList<>();
+    for (int i = 0; i < temp; i++) {
+      if (i == temp - 1) {
+        if (result) {
+          break;
+        }
+        subList.add(list.subList(5000 * i, size)) ;
+      } else {
+        subList.add(list.subList(5000 * i, 5000 * (i + 1))) ;
+      }
+    }
+    baseFirstVisitDetailMapper.deleteAll();
+    for(List<FirstVisitDetailVO>relist:subList){
+      baseFirstVisitDetailMapper.batchIntert(relist);
+    }
+  }
+
+
 }

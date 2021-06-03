@@ -9,21 +9,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.yunya.feign.discount.domain.bo.AllocateNumBo;
-import com.yunya.feign.discount.domain.bo.BenefitUseBo;
-import com.yunya.feign.discount.domain.bo.CouponItemUseBo;
-import com.yunya.feign.discount.domain.bo.CouponSaleBo;
-import com.yunya.feign.discount.domain.bo.GenerateAllocatePageBo;
-import com.yunya.feign.discount.domain.bo.ItemBenefitUseDetailBo;
-import com.yunya.feign.discount.domain.bo.ItemUseBenefitBo;
-import com.yunya.feign.discount.domain.bo.OrderItemChangeBo;
-import com.yunya.feign.discount.domain.bo.OrderItemUseBo;
-import com.yunya.feign.discount.domain.bo.OrgCouponAllocateBo;
-import com.yunya.feign.discount.domain.bo.PatientBenefitBo;
-import com.yunya.feign.discount.domain.bo.PatientCardBo;
-import com.yunya.feign.discount.domain.bo.PatientUseBenefitBo;
-import com.yunya.feign.discount.domain.bo.UseClinicBo;
-import com.yunya.feign.discount.domain.bo.ViewAllocateBo;
+import com.yunya.feign.discount.domain.bo.*;
 import com.yunya.feign.discount.domain.form.CardSoldForm;
 import com.yunya.feign.discount.domain.form.ConfigSharerForm;
 import com.yunya.feign.discount.domain.form.OtherCardActiveForm;
@@ -74,21 +60,7 @@ import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.discount.Card;
-import com.yunya.models.discount.CardBenefit;
-import com.yunya.models.discount.CardCancelLog;
-import com.yunya.models.discount.CouponAllocate;
-import com.yunya.models.discount.CouponCommonInfo;
-import com.yunya.models.discount.DiscountCoupon;
-import com.yunya.models.discount.PackageCoupon;
-import com.yunya.models.discount.PackageCouponItem;
-import com.yunya.models.discount.ProductType;
-import com.yunya.models.discount.RechargeCard;
-import com.yunya.models.discount.SalesChannel;
-import com.yunya.models.discount.SpecialPackageCoupon;
-import com.yunya.models.discount.SpecialPackageCouponItem;
-import com.yunya.models.discount.VoucheCoupon;
-import com.yunya.models.discount.VoucherDiscountItem;
+import com.yunya.models.discount.*;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.tariff.BaseOralTariff;
@@ -104,21 +76,7 @@ import com.yunya.modules.discount.enums.SoldTypeEnum;
 import com.yunya.modules.discount.enums.SoldWayEnum;
 import com.yunya.modules.discount.enums.TrueFalseEnum;
 import com.yunya.modules.discount.enums.UseWayEnum;
-import com.yunya.modules.discount.mapper.CardBenefitMapper;
-import com.yunya.modules.discount.mapper.CardCancelLogMapper;
-import com.yunya.modules.discount.mapper.CardMapper;
-import com.yunya.modules.discount.mapper.CouponAllocateMapper;
-import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
-import com.yunya.modules.discount.mapper.DiscountCouponMapper;
-import com.yunya.modules.discount.mapper.PackageCouponItemMapper;
-import com.yunya.modules.discount.mapper.PackageCouponMapper;
-import com.yunya.modules.discount.mapper.ProductTypeMapper;
-import com.yunya.modules.discount.mapper.RechargeCardMapper;
-import com.yunya.modules.discount.mapper.SalesChannelMapper;
-import com.yunya.modules.discount.mapper.SpecialPackageCouponItemMapper;
-import com.yunya.modules.discount.mapper.SpecialPackageCouponMapper;
-import com.yunya.modules.discount.mapper.VoucheCouponMapper;
-import com.yunya.modules.discount.mapper.VoucherDiscountItemMapper;
+import com.yunya.modules.discount.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.SetUtils;
@@ -128,6 +86,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
 
@@ -139,18 +99,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -517,12 +470,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @return res
      */
     @Transactional
-    public ResponseResult soldCard(CardSoldForm form) {
+    public ResponseResult soldCard(CardSoldForm form) throws ExecutionException, InterruptedException {
+        List<Integer> cardIds = form.getCardIds();
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        List<Integer> cardIds = form.getCardIds();
-        log.info("卡券售卖开始提交：[{}]", cardIds);
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         RestErrorBo errorBo;
+        long start = System.currentTimeMillis();
         try {
             SalesChannel salesChannel = new SalesChannel();
             salesChannel.setName(selfChannel);
@@ -532,54 +486,108 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             }
             //获取组织名
             String orgName = getOrgName(orgId);
-            LocalDateTime now = LocalDateTime.now();
             StringBuilder cardNos = new StringBuilder();
             StringBuilder cardSecrets = new StringBuilder();
-            for (Integer cardId : cardIds) {
-                //2. 检查卡券
-                Card card = mapper.selectByPrimaryKey(cardId);
-                errorBo = checkCardForSale(cardId, card, orgId, orgName);
-                if (errorBo.getError() != null) {
-                    return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
-                }
-                Integer couponId = card.getCouponId();
-                //3. 检查优惠券
-                CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(card.getCouponId());
-                errorBo = checkCouponForSale(couponId, couponInfo);
-                if (errorBo.getError() != null) {
-                    return ResponseUtil.error(errorBo.getError());
-                }
-                //4. 检查优惠券分配
-                OrgCouponAllocateBo orgAllocateBo = allocateMapper.getOrgAllocateByParam(couponId, orgId);
-                if (orgAllocateBo == null) {
-                    log.warn("【售卖失败】[{}]，[{}]未生成分配", couponInfo.getName(), orgName);
-                    return ResponseUtil.error(DiscountError.ORG_COUPON_NOT_ALLOCATE, orgName, couponInfo.getName());
-                }
-                //检查该组织该优惠券售卖数量
-                int forSaleCount = mapper.getOrgCardSoldInfoByParam(couponId, orgId);
-                if (forSaleCount <= 0) {
-                    log.warn("【售卖失败】[{}]，的[{}]已全部售出，", orgName, couponInfo.getName());
-                    return ResponseUtil.error(DiscountError.CARD_SOLD_OUT, orgName, couponInfo.getName());
-                }
-                //5. 卡券售卖
-                this.updateCardForSold(card, form, loginUserId, now, salesChannel.getId());
-                mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
-                log.info("【售卖卡券发送消息成功】：卡券id[{}]", cardId);
-                if (cardNos.length() > 0) {
-                    cardNos.append(",");
-                }
-                cardNos.append(card.getCardNumber());
-                if (cardSecrets.length() > 0) {
-                    cardSecrets.append(",");
-                }
-                cardSecrets.append(new String(Base64.getDecoder().decode(card.getCardPassword())));
+            //校验优惠券信息
+            Card cardCheck = mapper.selectByPrimaryKey(cardIds.get(0));
+            Integer couponId = cardCheck.getCouponId();
+            CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
+            errorBo = checkCouponForSale(couponId, couponInfo);
+            if (errorBo.getError() != null) {
+                return ResponseUtil.error(errorBo.getError());
             }
-            sendMessage(form, cardNos, cardSecrets);
+            //检查优惠券分配
+            OrgCouponAllocateBo orgAllocateBo = allocateMapper.getOrgAllocateByParam(couponId, orgId);
+            if (orgAllocateBo == null) {
+                log.warn("【售卖失败】[{}]，[{}]未生成分配", couponInfo.getName(), orgName);
+                return ResponseUtil.error(DiscountError.ORG_COUPON_NOT_ALLOCATE, orgName, couponInfo.getName());
+            }
+            //检查该组织该优惠券售卖数量
+            int forSaleCount = mapper.getOrgCardSoldInfoByParam(couponId, orgId);
+            if (forSaleCount <= 0) {
+                log.warn("【售卖失败】[{}]，的[{}]已全部售出，", orgName, couponInfo.getName());
+                return ResponseUtil.error(DiscountError.CARD_SOLD_OUT, orgName, couponInfo.getName());
+            }
+            // 并行检查卡券
+            CompletableFuture<List<Card>> queryCf = this.parallelQuery(cardIds, orgId, orgName);
+            // 并行售卖卡券
+            SalesChannel finalSalesChannel = salesChannel;
+            queryCf.thenComposeAsync(cf -> this.parallelSoldCard(cardIds, form, loginUserId, finalSalesChannel.getId(), requestAttributes), cardThreadPool)
+                    .thenAcceptAsync(cardList -> {
+                        if (form.getSendText() == 1) {
+                            for (Card card : cardList) {
+                                if (cardNos.length() > 0) {
+                                    cardNos.append(",");
+                                }
+                                cardNos.append(card.getCardNumber());
+                                if (cardSecrets.length() > 0) {
+                                    cardSecrets.append(",");
+                                }
+                                cardSecrets.append(new String(Base64.getDecoder().decode(card.getCardPassword())));
+                            }
+                            sendMessage(form, cardNos, cardSecrets);
+                        }
+                    }, cardThreadPool).handle((res, ex) -> {
+                        if (ex != null) {
+                            throw (CompletionException)ex;
+                        }
+                        return res;
+            });
             return ResponseUtil.success();
         } finally {
-            manualUnLock(loginUserId, RedisConstants.LOCK_CARD_SOLD);
-            log.info("【卡券售卖】解锁成功");
+            CompletableFuture.runAsync(() -> {
+                manualUnLock(loginUserId, RedisConstants.LOCK_CARD_SOLD);
+                log.info("【卡券售卖】解锁成功");
+                log.info("全部时长：{}", (System.currentTimeMillis() - start) / 1000);
+            }, cardThreadPool);
         }
+    }
+
+    private CompletableFuture<List<Card>> parallelQuery(List<Integer> cardIds, int orgId, String orgName) {
+        CompletableFuture<List<Card>> cf = CompletableFuture.supplyAsync(() -> {
+            Example example = new Example(Card.class);
+            example.createCriteria().andIn("id", cardIds);
+            return mapper.selectByExample(example);
+        }).thenApplyAsync(cardList -> {
+            cardList.forEach(card -> {
+                RestErrorBo errorBo = checkCardForSale(card.getId(), card, orgId, orgName);
+                if (errorBo.getError() != null) {
+                    throw new ClientServiceException(errorBo.getError(), errorBo.getMsg());
+                }
+            });
+            return cardList;
+        }, cardThreadPool);
+        return cf;
+    }
+
+    private CompletableFuture<List<Card>> parallelSoldCard(List<Integer> cardIds, CardSoldForm form, Integer loginUserId, Integer channelId,
+                                                           RequestAttributes requestAttributes) {
+        LocalDateTime now = LocalDateTime.now();
+        List<CompletableFuture<Card>> queryCardFutures = Lists.newArrayListWithCapacity(cardIds.size());
+        for (Integer cardId : cardIds) {
+            queryCardFutures.add(CompletableFuture.supplyAsync(() -> {
+                return this.updateCardForSold(cardId, form, loginUserId, now, channelId);
+            }, cardThreadPool));
+        }
+        CompletableFuture<Void> allFuture = CompletableFuture.allOf(queryCardFutures.toArray(new CompletableFuture[0]));
+        //阻塞构建更新卡券对象集合
+        return allFuture.thenApplyAsync(cf ->
+                        queryCardFutures.stream().map(CompletableFuture::join).collect(toList())
+                    , cardThreadPool)
+                .thenApplyAsync(cardList -> {
+                        //更新卡券信息
+                        List<List<Card>> partition = Lists.partition(cardList, 100);
+                        partition.forEach(list1 -> CompletableFuture.runAsync(() -> mapper.updateList(list1), cardThreadPool));
+                        return cardList;
+                    }, cardThreadPool)
+                .thenApplyAsync(cardList -> {
+                    cardList.forEach(card -> {
+                        RequestContextHolder.setRequestAttributes(requestAttributes);
+                        mqServiceFeign.sendMessage(card.getId(), UPDATE, BaseCardSingle);
+                        log.info("【售卖卡券发送消息成功】：卡券id[{}]", card.getId());
+                    });
+                    return cardList;
+                });
     }
 
     /**
@@ -653,7 +661,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         vo = checkCouponDeadline(card.getCouponId(), couponType);
         if (QR_CODE_NORMAL.equals(vo.getCardQrCodeType())) {
             vo.setCouponName(coupon.getName());
-            vo.setQrCode(card.getLink());
+            vo.setQrCode(Base64.getEncoder().encodeToString(Joiner.on(":").join(new BCryptPasswordEncoder(UserConstant.PW_ENCODER_SALT)
+                    .encode(Joiner.on(":").join(card.getCardNumber(), card.getCardPassword())), card.getId())
+                    .getBytes()));
         }
         return vo;
     }
@@ -2015,21 +2025,20 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return vo;
     }
 
-    private void updateCardForSold(Card card, CardSoldForm form, Integer loginUserId, LocalDateTime now, Integer saleChannelId) {
+    private Card updateCardForSold(Integer cardId, CardSoldForm form, Integer loginUserId, LocalDateTime now, Integer saleChannelId) {
         Card updateCard = BeanCopierUtils.generalCopyBean(form, Card.class);
         updateCard.setStatus(ACTIVE_PENDING.getCode());
-        if (SOLD.equals(form.getSoldType())) {
-            updateCard.setPay(TRUE.equals(form.getSoldAndPay()) ? TRUE.getCode() : FALSE.getCode());
-        }
         if (SOLD.equals(form.getSoldType())) {
             if (ONE.equals(form.getSoldAndPay())) {
                 updateCard.setSoldAndPay(ONE);
                 updateCard.setPayId(form.getPayId());
                 updateCard.setPayDate(now);
+                updateCard.setPay(TRUE.getCode());
             }
             if (ZERO.equals(form.getSoldAndPay())) {
                 updateCard.setSoldAndPay(ZERO);
                 updateCard.setPayId(null);
+                updateCard.setPay(FALSE.getCode());
             }
         } else {
             updateCard.setSoldAndPay(null);
@@ -2038,13 +2047,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         updateCard.setSoldDate(now);
         updateCard.setSellerUserId(loginUserId);
         updateCard.setUpdId(loginUserId);
-        updateCard.setId(card.getId());
-        //卡券二维码签名
-        updateCard.setLink(Base64.getEncoder().encodeToString(Joiner.on(":").join(new BCryptPasswordEncoder(UserConstant.PW_ENCODER_SALT)
-                .encode(Joiner.on(":").join(card.getCardNumber(), card.getCardPassword())), card.getId())
-                .getBytes()));
+        updateCard.setId(cardId);
         updateCard.setSaleChannelId(saleChannelId);
-        mapper.updateByPrimaryKeySelective(updateCard);
+        return updateCard;
     }
 
     private void updateCardForCancel(Card card) {
@@ -2206,7 +2211,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
             //优惠券是否与人共享使用
             Boolean shareStatus = getShareStatus(couponInfo.getType().intValue(), couponId);
-            if (!shareStatus ) {
+            if (!shareStatus) {
                 log.warn("{}不能与他人共享", couponInfo.getName());
                 errorBo.setError(DiscountError.COUPON_NOT_ALLOW_SHARE);
             }
@@ -2226,7 +2231,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         //校验卡券基础信息
         RestErrorBo errorBo = checkCardBaseInfo(cardId, card, orgId, orgName);
         if (!SALE_PENDING.equals(card.getStatus())) {
-            log.warn("【取消售卖失败】卡券[{}]售卖状态异常", card.getCardNumber());
+            log.warn("【售卖失败】卡券[{}]售卖状态异常", card.getCardNumber());
             errorBo.setError(DiscountError.CARD_SOLD_STATUS_ERROR);
             return errorBo;
         }
