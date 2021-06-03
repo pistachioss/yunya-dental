@@ -296,7 +296,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     excelUtil.exportExcel(response, resultList, "员工工作量（运营报表）", fileName);
   }
-
   /**
    * 根据条件查询项目分类收入汇总列表
    *
@@ -307,10 +306,43 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    List<CategoryInfoIncomeVO> resultList = mapper.selectCategoryIncomeList(query);
+    List<ItemCategoryInfoVO> categoryList = baseTariffInfoBiz.findItemCategoryList();
+    List<CategoryInfoIncomeVO> resultList = findCategoryIncomeList(categoryList, query);
     mergeOriginAmount(resultList, query);
     monthCategoryFreePayment(resultList, query);
     return new PageInfo<>(resultList);
+  }
+
+  private List<CategoryInfoIncomeVO> findCategoryIncomeList(List<ItemCategoryInfoVO> categoryList, BillCategoryIncomeQuery query) {
+    List<CategoryInfoIncomeVO> resultList = new ArrayList<>();
+    List<CategoryInfoIncomeVO> billList = mapper.selectCategoryIncomeList(query);
+    Map<String, CategoryInfoIncomeVO> billMap = new HashMap<>(16);
+    billList.forEach(vo-> billMap.put(vo.getCategoryType() + "," +vo.getCategoryId(), vo));
+    categoryList.forEach(vo->{
+      Integer categoryId = vo.getCategoryId();
+      Byte categoryType = vo.getItemType();
+      CategoryInfoIncomeVO infoIncomeVO = new CategoryInfoIncomeVO();
+      infoIncomeVO.setCategoryId(categoryId);
+      infoIncomeVO.setCategoryName(vo.getCategoryName());
+      infoIncomeVO.setCategoryType(categoryType);
+      CategoryInfoIncomeVO billVO = billMap.get(categoryType + "," + categoryId);
+      BigDecimal totalDiscountAmount = BigDecimal.ZERO;
+      BigDecimal totalCouponAmount = BigDecimal.ZERO;
+      BigDecimal totalOriginalAmount = BigDecimal.ZERO;
+      BigDecimal totalActualAmount = BigDecimal.ZERO;
+      if (billVO != null) {
+        totalDiscountAmount = billVO.getTotalDiscountAmount();
+        totalCouponAmount = billVO.getTotalCouponAmount();
+        totalOriginalAmount = billVO.getTotalOriginalAmount();
+        totalActualAmount = billVO.getTotalActualAmount();
+      }
+      infoIncomeVO.setTotalDiscountAmount(totalDiscountAmount);
+      infoIncomeVO.setTotalCouponAmount(totalCouponAmount);
+      infoIncomeVO.setTotalOriginalAmount(totalOriginalAmount);
+      infoIncomeVO.setTotalActualAmount(totalActualAmount);
+      resultList.add(infoIncomeVO);
+    });
+    return resultList;
   }
 
   /**
