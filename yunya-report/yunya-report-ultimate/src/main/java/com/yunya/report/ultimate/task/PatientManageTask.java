@@ -2,25 +2,12 @@ package com.yunya.report.ultimate.task;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.yunya.models.report.BaseBill;
-import com.yunya.models.report.BaseBillPay;
-import com.yunya.models.report.BasePatient;
-import com.yunya.models.report.BasePatientMember;
-import com.yunya.models.report.BasePatientMemberOccurLog;
-import com.yunya.models.report.BaseTreatmentProcess;
-import com.yunya.models.report.PatientManage;
-import com.yunya.report.ultimate.mapper.BaseBillMapper;
-import com.yunya.report.ultimate.mapper.BaseBillPayMapper;
-import com.yunya.report.ultimate.mapper.BasePatientMapper;
-import com.yunya.report.ultimate.mapper.BasePatientMemberMapper;
-import com.yunya.report.ultimate.mapper.BasePatientMemberOccurLogMapper;
-import com.yunya.report.ultimate.mapper.BaseTreatmentProcessMapper;
-import com.yunya.report.ultimate.mapper.PatientManageMapper;
+import com.yunya.models.report.*;
+import com.yunya.report.ultimate.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -34,7 +21,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.reducing;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * @description:
@@ -43,7 +36,6 @@ import static java.util.stream.Collectors.*;
  **/
 @Component
 @Slf4j
-@RestController
 public class PatientManageTask {
     @Resource
     private BasePatientMapper basePatientMapper;
@@ -61,9 +53,8 @@ public class PatientManageTask {
     private PatientManageMapper patientManageMapper;
     @Resource(name = "customizeThreadPool")
     private ExecutorService taskThreadPool;
-// 00 01 00 * * ?
-//    @Scheduled(cron = "00 30 16 * * ?")
-    @GetMapping("/test")
+
+    @Scheduled(cron = "00 01 00 * * ?")
     public void patientTask() {
         long start = System.currentTimeMillis();
         Integer countTable = patientManageMapper.countTable();
