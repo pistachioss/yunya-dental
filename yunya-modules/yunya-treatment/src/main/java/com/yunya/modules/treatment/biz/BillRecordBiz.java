@@ -669,11 +669,10 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       Integer billId = vo.getBillId();
       BigDecimal totalActualAmount = vo.getTotalActualAmount();
       BigDecimal payAmount = payMap.get(billId);
-      BigDecimal debtAmount = new BigDecimal(0);
-      if (payAmount != null) {
-        debtAmount = totalActualAmount.subtract(payAmount);
+      if (payAmount == null) {
+        payAmount = BigDecimal.ZERO;
       }
-      vo.setBillReceivableAmount(debtAmount);
+      vo.setBillReceivableAmount(totalActualAmount.subtract(payAmount));
     });
     resultList = resultList.stream().sorted((vo1,vo2)-> DateUtil.compareDate(vo2.getBillDate(),vo1.getBillDate())).collect(Collectors.toList());
     PageInfo<BillRestReceivableAmountVO> pageInfo = new PageInfo<>(resultList);
