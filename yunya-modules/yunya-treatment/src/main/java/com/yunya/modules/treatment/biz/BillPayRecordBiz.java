@@ -6,7 +6,9 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberRevocationFeeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidRevocationFeeModel;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
+import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillCollectionDebtVO;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillPayRecordVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -316,5 +318,16 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     ExcelUtil<CurrentMonthBillPayRecordVO> excelUtil =
         new ExcelUtil<>(CurrentMonthBillPayRecordVO.class);
     excelUtil.exportExcel(response, resultList, "门诊当月收费记录", fileName);
+  }
+
+  /**
+   * 根据条件查询收费在某个节点后账单日期在某个节点之前的收欠费
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public List<BillRestReceivableAmountVO> findFollowUpBillReceivedList(
+      BillOfReceivableQuery query) {
+    return mapper.selectFollowUpBillReceivedList(query);
   }
 }

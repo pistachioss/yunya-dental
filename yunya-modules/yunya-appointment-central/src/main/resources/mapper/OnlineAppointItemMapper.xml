@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.appointment.mapper.OnlineAppointItemMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.appointment.OnlineAppointItem">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="item_id" jdbcType="INTEGER" property="itemId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="duration" jdbcType="INTEGER" property="duration" />
+    <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+    <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="upd_id" jdbcType="INTEGER" property="updId" />
+    <result column="upd_name" jdbcType="VARCHAR" property="updName" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
+  </resultMap>
+    <!-- 查询线上预约项目 -->
+    <select id="findOnlineAppointItemById" resultType="com.yunya.feign.appointment.vo.OnlineAppointItemVo">
+      select
+        oai.item_id as itemId,oai.name,oai.duration,oai.inservice
+      from online_appoint_item oai
+      <where>
+        <if test="id != null">
+          and oai.item_id = #{id}
+        </if>
+      </where>
+    </select>
+  <!-- 查询线上预约项目列表 -->
+  <select id="findOnlineAppointItemByCondition"
+          resultType="com.yunya.feign.appointment.vo.OnlineAppointItemVo">
+    select
+           oai.item_id as itemId,oai.name,oai.duration,oai.inservice
+    from online_appoint_item oai
+    <where>
+      <if test="query.name != null and query.name != ''">
+        and oai.name like concat('%',#{query.name},'%')
+      </if>
+      <if test="query.inservice != null">
+        and oai.inservice = true
+      </if>
+    </where>
+  </select>
+</mapper>

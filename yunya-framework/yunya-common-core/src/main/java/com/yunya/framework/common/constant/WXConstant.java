@@ -10,6 +10,8 @@ public interface WXConstant {
      * 微信公众号access_token_key 用于保存在redis中的key
      */
     String ACCESS_TOKEN_KEY = "wechat:accessToken:%s";
+
+    String JSAPI_TICKET_KEY = "wechat:jsApiTicket:%s";
     /**
      * 微信openId key
      */
@@ -67,4 +69,6 @@ public interface WXConstant {
      * 所有模板列表
      */
     String WX_TEMPLATE_URL = "https://api.weixin.qq.com/cgi-bin/template/get_all_private_template?access_token=%s";
+
+    String JSAPI_TICKET_URL = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=%s&type=jsapi";
 }

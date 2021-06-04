@@ -135,6 +135,41 @@ public class BasePatient {
     @Column(name = "origin_type_name")
     private String originTypeName;
 
+    /**
+     * 年平均就诊次数
+     */
+    @Column(name = "visit_rate")
+    private String visitRate;
+
+    /**
+     * 会员得分
+     */
+    @Column(name = "vip_score")
+    private String vipScore;
+
+    /**
+     * 本次统计的会员级别
+     */
+    @Column(name = "vip_logo")
+    private String vipLogo;
+
+    /**
+     * 年平均就诊次数(上一次结果，旧)
+     */
+    @Column(name = "visit_rate_old")
+    private String visitRateOld;
+
+    /**
+     * 会员得分(上一次结果，旧)
+     */
+    @Column(name = "vip_score_old")
+    private String vipScoreOld;
+
+    /**
+     * 本次统计的会员级别(上一次结果，旧)
+     */
+    @Column(name = "vip_logo_old")
+    private String vipLogoOld;
 
     /**
      * 获取患者来源名称
@@ -514,5 +549,53 @@ public class BasePatient {
 
     public void setNumberOfVisits(Integer numberOfVisits) {
         this.numberOfVisits = numberOfVisits;
+    }
+
+    public String getVisitRate() {
+        return visitRate;
+    }
+
+    public void setVisitRate(String visitRate) {
+        this.visitRate = visitRate;
+    }
+
+    public String getVipScore() {
+        return vipScore;
+    }
+
+    public void setVipScore(String vipScore) {
+        this.vipScore = vipScore;
+    }
+
+    public String getVipLogo() {
+        return vipLogo;
+    }
+
+    public void setVipLogo(String vipLogo) {
+        this.vipLogo = vipLogo;
+    }
+
+    public String getVisitRateOld() {
+        return visitRateOld;
+    }
+
+    public void setVisitRateOld(String visitRateOld) {
+        this.visitRateOld = visitRateOld;
+    }
+
+    public String getVipScoreOld() {
+        return vipScoreOld;
+    }
+
+    public void setVipScoreOld(String vipScoreOld) {
+        this.vipScoreOld = vipScoreOld;
+    }
+
+    public String getVipLogoOld() {
+        return vipLogoOld;
+    }
+
+    public void setVipLogoOld(String vipLogoOld) {
+        this.vipLogoOld = vipLogoOld;
     }
 }

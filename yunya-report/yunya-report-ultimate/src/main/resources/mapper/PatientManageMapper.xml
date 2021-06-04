@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.PatientManageMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.PatientManage" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="patient_type" property="patientType" jdbcType="VARCHAR" />
+    <result column="member_level_id" property="memberLevelId" jdbcType="INTEGER" />
+    <result column="member_level_name" property="memberLevelName" jdbcType="VARCHAR" />
+    <result column="member_balance" property="memberBalance" jdbcType="DECIMAL" />
+    <result column="principal_balance" property="principalBalance" jdbcType="DECIMAL" />
+    <result column="cumulative_consumption" property="cumulativeConsumption" jdbcType="DECIMAL" />
+    <result column="total_arrears" property="totalArrears" jdbcType="DECIMAL" />
+    <result column="number_of_visits" property="numberOfVisits" jdbcType="INTEGER" />
+  </resultMap>
+  <insert id="insertList" parameterType="List">
+    insert into
+      `patient_manage`
+      (`patient_id`, `member_level_id`, `member_level_name`,`member_balance`, `principal_balance`, `cumulative_consumption`
+      , `total_arrears`, `number_of_visits`)
+    values
+    <foreach collection="list" item="item" separator=",">
+      (#{item.patientId}, #{item.memberLevelId}, #{item.memberLevelName},#{item.memberBalance}, #{item.principalBalance}
+      , #{item.cumulativeConsumption}, #{item.totalArrears}, #{item.numberOfVisits})
+    </foreach>
+  </insert>
+
+  <update id="updateList" parameterType="java.util.List">
+    update `patient_manage`
+    <trim prefix="set" suffixOverrides=",">
+      <trim prefix="member_level_id = case" suffix="end,">
+        <foreach collection="list" item="item" index="index">
+          <if test="item.memberLevelId != null">
+            when `patient_id` = #{item.patientId} then #{item.memberLevelId}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="member_level_name = case" suffix="end,">
+        <foreach collection="list" item="item" index="index">
+          <if test="item.memberLevelName != null">
+            when `patient_id` = #{item.patientId} then #{item.memberLevelName}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="member_balance = case" suffix="end,">
+        <foreach collection="list" item="item" index="index">
+          <if test="item.memberBalance != null">
+            when `patient_id` = #{item.patientId} then #{item.memberBalance}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="principal_balance = case" suffix="end,">
+        <foreach collection="list" item="item" index="index">
+          <if test="item.principalBalance != null">
+            when `patient_id` = #{item.patientId} then #{item.principalBalance}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="cumulative_consumption = case" suffix="end,">
+        <foreach collection="list" item="item" index="index">
+          <if test="item.cumulativeConsumption != null">
+            when `patient_id` = #{item.patientId} then #{item.cumulativeConsumption}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="total_arrears = case" suffix="end,">
+        <foreach collection="list" item="item" index="index">
+          <if test="item.totalArrears != null">
+            when `patient_id` = #{item.patientId} then #{item.totalArrears}
+          </if>
+        </foreach>
+      </trim>
+      <trim prefix="number_of_visits = case" suffix="end,">
+        <foreach collection="list" item="item" index="index">
+          <if test="item.numberOfVisits != null">
+            when `patient_id` = #{item.patientId} then #{item.numberOfVisits}
+          </if>
+        </foreach>
+      </trim>
+    </trim>
+    where `patient_id` in
+    <foreach collection="list" item="item" open="(" separator="," close=")">
+      #{item.patientId}
+    </foreach>
+  </update>
+
+  <select id="countTable" resultType="integer">
+     select count(*) from patient_manage
+  </select>
+</mapper>

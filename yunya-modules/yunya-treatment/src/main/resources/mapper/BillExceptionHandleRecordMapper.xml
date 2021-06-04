@@ -503,4 +503,44 @@
         </where>
         ORDER BY behr.billRefundRecordId DESC
     </select>
+    <!-- 查询门诊在查询时间点后的被调整应收账款列表 -->
+    <select id="selectFollowUpBillAdjustList"
+            resultType="com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO">
+        select
+        br.id as billId,
+        date_format(br.crt_time, '%Y-%m-%d') as billDate,
+        br.bill_number as billNum,
+        br.patient_id as patientId,
+        tr.dentist_id as regDentistId,
+        br.receivable_amount as totalOriginalAmount,
+        if(date_format(br.privilege_date, '%Y-%m-%d') > #{query.queryDate}, br.receivable_amount,
+        br.actual_receivable_amount) as totalActualAmount,
+        br.debt_amount as billReceivableAmount
+        from (
+        select behr.handled_record_id as treatmentId,
+        behdr.associate_record_id as orderRecordId
+        from bill_exception_handle_record behr
+        left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
+        <where>
+            and behr.operate_type = 2
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and date_format(behr.crt_time, '%Y-%m-%d') > #{query.queryDate}
+            </if>
+        </where>
+        ) behr
+        left join bill_record br on br.order_record_id = behr.orderRecordId
+        left join treatment_record tr on tr.id = behr.treatmentId
+        <where>
+            and br.debt_amount > 0
+            <if test="query.orgId != null">
+                and br.org_id = #{query.orgId}
+            </if>
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                and tr.dentist_id in
+                <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

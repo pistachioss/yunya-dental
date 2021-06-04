@@ -689,6 +689,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         if (!StringHelper.isEmpty(memberRechargeTollRecordList)) {
           for (MemberRechargeTollRecord memberRechargeTollRecord : memberRechargeTollRecordList) {
             if (memberRechargeTollRecord.getPaymentId() != null) {
+              rechargeRecordVo.setPaymentId(memberRechargeTollRecord.getPaymentId());
               AccountItem accountItem =
                   remoteSystemServiceFeign.findAccountItemById(
                       memberRechargeTollRecord.getPaymentId());
@@ -1160,6 +1161,14 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       if (StringHelper.isNotEmpty(patientCardOwnerInfoVoList)){
         // 不为空查询绑定关系（权益和余额一起查询）
         for (PatientCardOwnerInfoVo patientCardOwnerInfoVo : patientCardOwnerInfoVoList) {
+          if (patientCardOwnerInfoVo.getMemberTypeId() != null) {
+            // 获取会员卡名称
+            MemberType memberType =
+                    this.remoteSystemServiceFeign.findMemberTypeById(patientCardOwnerInfoVo.getMemberTypeId());
+            if (memberType != null && memberType.getName() != null) {
+              patientCardOwnerInfoVo.setMemberTypeName(memberType.getName());
+            }
+          }
           // 假如和卡主即绑定了权益又绑定了余额，就会存在两条消息 一条BindType为0 一条为1
           List<PatientMemberRelation> patientMemberRelationList = patientMemberRelationMapper.isBindMember(patientCardOwnerInfoVo.getMasterCardId(),patientId);
           // 判断是否为空
@@ -1192,5 +1201,35 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
             new ExcelUtil<>(MemberExpendRecordVo.class);
     String fileName =  "消费记录";
     excelUtil.exportExcel(response, resultList, "消费记录", fileName);
+  }
+
+  /**
+   * 充值记录-导出
+   * @param response 请求
+   * @param queryForm 条件
+   */
+    public void expendExportRechargeRecord(HttpServletResponse response, RechargeRecordQueryForm query) throws IOException {
+      query.setWhetherPage(false);
+      PageInfo<RechargeRecordVo> workloadList = rechargeRecord(query);
+      List<RechargeRecordVo> resultList = workloadList.getList();
+      ExcelUtil<RechargeRecordVo> excelUtil =
+              new ExcelUtil<>(RechargeRecordVo.class);
+      String fileName =  "充值记录";
+      excelUtil.exportExcel(response, resultList, "充值记录", fileName);
+    }
+
+  /**
+   * 退费记录-导出
+   * @param response 请求
+   * @param queryForm 条件
+   */
+  public void expendExportRefundList(HttpServletResponse response, MemberReturnRecordQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<MemberReturnRecordVo> workloadList = refundList(query);
+    List<MemberReturnRecordVo> resultList = workloadList.getList();
+    ExcelUtil<MemberReturnRecordVo> excelUtil =
+            new ExcelUtil<>(MemberReturnRecordVo.class);
+    String fileName =  "退费记录";
+    excelUtil.exportExcel(response, resultList, "退费记录", fileName);
   }
 }

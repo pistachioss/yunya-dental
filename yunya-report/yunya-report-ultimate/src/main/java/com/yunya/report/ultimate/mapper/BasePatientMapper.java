@@ -3,7 +3,9 @@ package com.yunya.report.ultimate.mapper;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
+import com.yunya.feign.report.domain.query.PatientManageQuery;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
+import com.yunya.feign.report.domain.query.VipLogoQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BasePatient;
 import org.apache.ibatis.annotations.Param;
@@ -135,4 +137,47 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    * @return
    */
   List<BasePatient> findPatientInfoInId(@Param("patientIds") Collection<Integer> patientIds);
+
+  List<PatientManageVo> listPatientByKeys(@Param("query") PatientManageQuery query, @Param("startAge") Integer startAge,
+                                          @Param("endAge") Integer endAge);
+  /**
+   * 更新患者初次就诊信息
+   */
+  void updateFirstVisitInfo();
+
+  /**
+   * 更新患者末次就诊信息
+   */
+  void updateLastVisitInfo();
+
+  /**
+   * 更新患者就诊次数
+   */
+  void updateNumberOfVisit();
+
+  /**
+   * 更新患者累计消费，欠费
+   */
+  void updateTotalAmount();
+
+  /**
+   * 备份患者会员标识
+   */
+  void updateVipLogoOld();
+
+  /**
+   * 更新患者会员标识
+   */
+  void updateVipLogo();
+
+  /**
+   * 查询会员情况
+   */
+  List<VipLogoVo> findVipLogoList(@Param("form") VipLogoQueryForm form);
+
+
+  /**
+   * 查询会员占比
+   */
+  List<VipRateVo> getVipRate();
 }

@@ -92,7 +92,7 @@ public class BaseBillMapperTest {
   public void find7() {
     BillOfReceivableQuery query = new BillOfReceivableQuery();
     query.setOrgId(26);
-    query.setBillDate("2021-03-31");
+    query.setQueryDate("2021-03-31");
     query.setKeyword("陈凌云");
     query.setRegDentistIds(new Integer[] {341});
     // query.setWhetherPage(false);
