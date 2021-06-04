@@ -711,6 +711,8 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                     build.setExecutorName(name);
                     build.setExecuteDate(date);
                     mapper.updateByPrimaryKeySelective(build);
+                    // 发送消息-完成随访
+                    remoteRabbitMqServiceFeign.sendMessage(build.getId(),0,1, MsgCategoryEnum.BaseVisitRemind);
                 });
             }
             return ResponseUtil.success();
