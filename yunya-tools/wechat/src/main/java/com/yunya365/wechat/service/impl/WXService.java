@@ -51,6 +51,7 @@ import com.yunya.framework.common.constant.WXConstant;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.WxFans;
@@ -65,12 +66,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -84,6 +87,7 @@ import java.util.function.Function;
 
 import static com.alibaba.fastjson.serializer.SerializerFeature.*;
 import static com.yunya.feign.wechat.enums.TemplateDataEnum.*;
+import static com.yunya.framework.common.constant.WXConstant.GZH_SESSION_KEY;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -137,6 +141,23 @@ public class WXService extends AbstractWxBaseApi {
         }
         log.info("用户注册授权信息：{}", vo);
         return vo;
+    }
+
+    /**
+     * 获取用户信息并且判断用户是否已关注公众号
+     * @param code
+     * @return
+     */
+    public ResponseResult<WxAuthVo> getAuthInfoAndCheckUser(String code, HttpServletRequest request) {
+        //根据code获取access_token和openid(非基础的那个)
+        String openId = super.getAuthOpenId(code);
+        String userInfo = super.getAndCheckUserInfo(openId);
+        WxFans wxFans = this.assembleWxFans(userInfo);
+        WxAuthVo vo = new WxAuthVo();
+        vo.setIsRegister(true);
+        vo.setOpenId(wxFans.getOpenId());
+        request.getSession().setAttribute(GZH_SESSION_KEY, vo.getOpenId());
+        return ResponseUtil.success(vo);
     }
 
     private void authSaveRedis(Object object, String openId) {
