@@ -654,7 +654,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     List<BillRestReceivableAmountVO> resultList = mapper.selectDebtList(query);
     // 查询时间节点后门诊被调整的应收账款余额列表
     List<BillRestReceivableAmountVO> adjustedList =
-        billExceptionHandleRecordMapper.selectFollowUpBillAdjustList(query);
+            billExceptionHandleRecordMapper.selectFollowUpBillAdjustList(query);
     resultList.addAll(adjustedList);
     // 查询时间节点前的撤销收费ID列表
     List<Integer> payIds = billExceptionHandleRecordMapper.selectBeforeRevokeBillPayIds(query);
@@ -663,19 +663,18 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     query.setBillRecordIds(billRecordIds);
     // 查询时间节点后门诊收欠费账单日期在时间节点前的应收账款列表
     List<BillRestReceivableAmountVO> receivedDebtList =
-        billPayRecordBiz.findFollowUpBillReceivedList(query);
+            billPayRecordBiz.findFollowUpBillReceivedList(query);
     Map<Integer, BigDecimal> payMap = receivedDebtList.stream().collect(Collectors.toMap(BillRestReceivableAmountVO::getBillId, BillRestReceivableAmountVO::getTotalActualAmount));
     resultList.forEach(vo->{
       Integer billId = vo.getBillId();
       BigDecimal totalActualAmount = vo.getTotalActualAmount();
       BigDecimal payAmount = payMap.get(billId);
-      BigDecimal debtAmount = new BigDecimal(0);
-      if (payAmount != null) {
-        debtAmount = totalActualAmount.subtract(payAmount);
+      if (payAmount == null) {
+        payAmount = BigDecimal.ZERO;
       }
-      vo.setBillReceivableAmount(debtAmount);
+      vo.setBillReceivableAmount(totalActualAmount.subtract(payAmount));
     });
-    resultList = resultList.stream().sorted((vo1,vo2)->DateUtil.compareDate(vo2.getBillDate(),vo1.getBillDate())).collect(Collectors.toList());
+    resultList = resultList.stream().sorted((vo1,vo2)-> DateUtil.compareDate(vo2.getBillDate(),vo1.getBillDate())).collect(Collectors.toList());
     PageInfo<BillRestReceivableAmountVO> pageInfo = new PageInfo<>(resultList);
     if (query.getWhetherPage()) {
       pageInfo = PageUtl.doPage(query.getPageNum(), query.getPageSize(), resultList);
