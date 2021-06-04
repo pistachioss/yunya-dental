@@ -1,7 +1,6 @@
 package com.yunya.framework.common.utils;
 
 import cn.hutool.core.date.DateTime;
-import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -613,6 +612,19 @@ public class DateUtil {
     }
     c.add(Calendar.MONTH, -range);
     return sdf.format(c.getTime());
+  }
+
+  public static int compareDate(String firstDate, String secondDate) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    Date d1 = null;
+    Date d2 = null;
+    try {
+      d1 = sdf.parse(firstDate);
+      d2 = sdf.parse(secondDate);
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    return d1.compareTo(d2);
   }
 
   public static int compareMonth(String firstMonth, String secondMonth) {

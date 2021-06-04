@@ -535,11 +535,30 @@
             <if test="query.orgId != null">
                 and br.org_id = #{query.orgId}
             </if>
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and date_format(br.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
+            </if>
             <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
                 and tr.dentist_id in
                 <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectBeforeRevokeBillPayIds" resultType="java.lang.Integer">
+        SELECT
+        DISTINCT behr.handled_record_id
+        FROM bill_exception_handle_record behr
+        left join bill_record br on br.treatment_record_id = behr.treatment_record_id
+        <where>
+            and behr.operate_type = 1
+            <if test="query.orgId != null">
+                and br.org_id = #{query.orgId}
+            </if>
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and date_format(behr.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
             </if>
         </where>
     </select>

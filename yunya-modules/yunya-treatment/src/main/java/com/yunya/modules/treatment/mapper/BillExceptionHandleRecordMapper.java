@@ -101,4 +101,12 @@ public interface BillExceptionHandleRecordMapper extends Mapper<BillExceptionHan
    */
   List<BillRestReceivableAmountVO> selectFollowUpBillAdjustList(
       @Param("query") BillOfReceivableQuery query);
+
+  /**
+   * 根据条件查询门诊在查询时间点前的撤销收费ID列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<Integer> selectBeforeRevokeBillPayIds(@Param("query") BillOfReceivableQuery query);
 }
