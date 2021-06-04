@@ -98,6 +98,9 @@
             <if test="query.confirmStatus != null">
                 and a.confirm_status = #{query.confirmStatus}
             </if>
+            <if test="query.openId != null and query.openId != ''">
+                and oa.open_id = #{query.openId}
+            </if>
         </where>
     </select>
 

@@ -38,6 +38,7 @@ import tk.mybatis.mapper.entity.Example;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -112,7 +113,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      */
     private boolean checkApplyRules(Integer orgId, Integer itemId, Date date, String time) {
         String dateStr = date.toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        Map<String, List<CountOnlineAppointVo>> timeListObj = appointTimeList(orgId, itemId, dateStr);
+        Map<String, List<CountOnlineAppointVo>> timeListObj = appointTimeList(orgId, itemId, dateStr,null);
         List<CountOnlineAppointVo> timeList = timeListObj.get("timeList");
         if (StringHelper.isNotEmpty(timeList)) {
             // 判断预约申请是否已满,默认同一时间之能有一个患者
@@ -302,7 +303,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param itemId 预约项目ID
      * @return
      */
-    public Map<String,List<CountOnlineAppointVo>> appointTimeList(Integer orgId, Integer itemId, String date) {
+    public Map<String,List<CountOnlineAppointVo>> appointTimeList(Integer orgId, Integer itemId, String date,String time) {
         List<CountOnlineAppointVo> timeList = new ArrayList<>(16);
         OnlineAppointItem itemQuery = new OnlineAppointItem();
         itemQuery.setItemId(itemId);
@@ -313,6 +314,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         String endTime = clinicInfoDetail.getBusinessEndTime();
         CountOnlineAppointVo countOnlineAppointVo = new CountOnlineAppointVo();
         countOnlineAppointVo.setTime(startTime);
+        countOnlineAppointVo.setDuration(duration);
         countOnlineAppointVo.setCount(0);
         timeList.add(countOnlineAppointVo);
         while(true) {
@@ -324,12 +326,40 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
             CountOnlineAppointVo item = new CountOnlineAppointVo();
             item.setTime(startTime);
             item.setCount(0);
+            item.setDuration(duration);
             timeList.add(item);
         }
         countOnlineAppointSameTime(timeList,orgId,date);
+        if (StringHelper.isNotBlank(time)) {
+            // 根据当前时间渲染时间列表中相应的时间块
+            this.drawGreenBlock(timeList,time);
+        }
         Map<String,List<CountOnlineAppointVo>> result = new HashMap<>();
         result.put("timeList",timeList);
         return result;
+    }
+
+    /**
+     * 根据时间渲染时间列表
+     * @param timeVoList
+     * @param time
+     */
+    private void drawGreenBlock(List<CountOnlineAppointVo> timeVoList, String time) {
+        if (StringHelper.isNotEmpty(timeVoList)) {
+            LocalTime appointStartLocalTime = LocalTime.parse(time, DateTimeFormatter.ISO_LOCAL_TIME);
+            for (CountOnlineAppointVo vo: timeVoList) {
+                LocalTime appointEndlocalTime = appointStartLocalTime.plusMinutes(vo.getDuration());
+                LocalTime startLocalTime = LocalTime.parse(vo.getTime(), DateTimeFormatter.ISO_LOCAL_TIME);
+                LocalTime endLocalTime = LocalTime.parse(vo.getTime(), DateTimeFormatter.ISO_LOCAL_TIME).plusMinutes(vo.getDuration());
+                if ((appointStartLocalTime.isAfter(startLocalTime) || appointStartLocalTime.equals(startLocalTime)) && appointStartLocalTime.isBefore(endLocalTime)) {
+                    vo.setSelected(true);
+                }
+                if ((appointEndlocalTime.isBefore(endLocalTime) || appointEndlocalTime.equals(endLocalTime)) && appointEndlocalTime.isAfter(startLocalTime)) {
+                    vo.setSelected(true);
+                    break;
+                }
+            }
+        }
     }
 
     /**

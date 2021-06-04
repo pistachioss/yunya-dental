@@ -220,7 +220,7 @@
     <insert id="insertAppointment" keyProperty="id" parameterType="com.yunya.models.appointment.Appointment"
             useGeneratedKeys="true">
       insert into appointment (patient_id, org_id, dentist_id,
-        assistant_id, dept_room_id, clinic_device_item_id,
+        assistant_id, dept_room_id, clinic_device_item_id,online_appointment_id,
         clinic_appoint_item_id, appoint_duration, appoint_date,
         appoint_time, appoint_start_time, appoint_end_time,
         appoint_period, tooth_bit, appoint_content,
@@ -229,7 +229,7 @@
         crt_name, crt_time, upt_id,
         upd_name, upd_time)
       values (#{patientId}, #{orgId}, #{dentistId},
-        #{assistantId}, #{deptRoomId}, #{clinicDeviceItemId},
+        #{assistantId}, #{deptRoomId}, #{clinicDeviceItemId},#{onlineAppointmentId},
         #{clinicAppointItemId}, #{appointDuration}, #{appointDate},
         #{appointTime}, #{appointStartTime}, #{appointEndTime},
         #{appointPeriod}, #{toothBit}, #{appointContent},
