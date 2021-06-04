@@ -53,8 +53,8 @@ public class PatientManageTask {
     private PatientManageMapper patientManageMapper;
     @Resource(name = "customizeThreadPool")
     private ExecutorService taskThreadPool;
-// 00 01 00 * * ?
-    @Scheduled(cron = "00 10 10 * * ?")
+
+    @Scheduled(cron = "00 01 00 * * ?")
     public void patientTask() {
         long start = System.currentTimeMillis();
         Integer countTable = patientManageMapper.countTable();
