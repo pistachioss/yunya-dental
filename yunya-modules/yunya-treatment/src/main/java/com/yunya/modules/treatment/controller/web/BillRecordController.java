@@ -1,5 +1,8 @@
 package com.yunya.modules.treatment.controller.web;
 
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.treatment.domain.model.BillRefundModel;
 import com.yunya.feign.treatment.domain.vo.BillDetailGroupVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
@@ -17,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -104,5 +109,33 @@ public class BillRecordController {
       @PathVariable(value = "patientId") Integer patientId) {
     PatientBillStatistics statistics = billRecordBiz.statisticsBill(patientId);
     return ResponseUtil.success(statistics);
+  }
+
+  /**
+   * 根据条件查询应收款余额表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端报表-财务报表-应收款余额表")
+  @PostMapping(value = "/debt/list", name = "公司端报表-财务报表-应收款余额表")
+  public ResponseResult<PageInfo<BillRestReceivableAmountVO>> findDebtList(
+          @RequestBody @Validated BillOfReceivableQuery query) {
+    PageInfo<BillRestReceivableAmountVO> pageInfo = billRecordBiz.findDebtList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出应收款余额表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端报表-财务报表-应收款余额表导出")
+  @PostMapping(value = "/debt/list/export", name = "公司端报表-财务报表-应收款余额表导出")
+  public ResponseResult<T> exportDebtList(HttpServletResponse response,
+                                          @RequestBody @Validated BillOfReceivableQuery query) throws IOException {
+    billRecordBiz.exportDebtList(query, response);
+    return ResponseUtil.success(null);
   }
 }
