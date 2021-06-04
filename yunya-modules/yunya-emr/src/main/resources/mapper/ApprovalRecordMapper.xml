@@ -81,6 +81,7 @@
           and `event_type` = 1
           and `apply_type` = 0
           and `status` = 1
+          and  dead_time >= date_format(now(), '%Y-%m-%d')
     </select>
 
     <select id="findMedicalChangeRecord" resultMap="BaseResultMap">
