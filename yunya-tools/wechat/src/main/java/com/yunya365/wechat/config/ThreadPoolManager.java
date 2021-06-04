@@ -1,6 +1,7 @@
 package com.yunya365.wechat.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
@@ -70,7 +71,12 @@ public class ThreadPoolManager {
          */
         return new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
                 KEEP_ALIVE, TimeUnit.SECONDS, new LinkedBlockingDeque<>(),
-                customizeThreadFactory(), customizeRejectHandler());
+                customizeThreadFactory(null), customizeRejectHandler());
+    }
+
+    @Bean(value = "scheduledPool")
+    public ScheduledThreadPoolExecutor getScheduledExecutor() {
+        return new ScheduledThreadPoolExecutor(CORE_POOL_SIZE, customizeThreadFactory("refresh-wx-access-token-1"));
     }
 
     /**
@@ -84,11 +90,18 @@ public class ThreadPoolManager {
         }
     }
 
-    private ThreadFactory customizeThreadFactory() {
+    private ThreadFactory customizeThreadFactory(String threadName) {
         return (r) -> {
-            Thread t = new Thread(null, r,
-                    NAME_PREFIX + threadNumber.getAndIncrement(),
-                    0);
+            Thread t;
+            if (StringUtils.isNotBlank(threadName)) {
+                t = new Thread(null, r,
+                        threadName,
+                        0);
+            } else {
+               t = new Thread(null, r,
+                        NAME_PREFIX + threadNumber.getAndIncrement(),
+                        0);
+            }
             //守护线程
             if (t.isDaemon()) {
                 t.setDaemon(true);

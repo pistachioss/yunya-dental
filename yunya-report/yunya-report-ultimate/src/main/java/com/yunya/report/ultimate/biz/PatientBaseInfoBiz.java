@@ -1,9 +1,11 @@
 package com.yunya.report.ultimate.biz;
 
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
+import com.yunya.feign.report.domain.query.PatientManageQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.report.BasePatient;
@@ -14,7 +16,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -122,5 +128,28 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
    */
   public List<BaseTreatmentProcessVO> firstVisitPatientList(ClinicPerformanceBusinessQuery query) {
     return mapper.firstVisitPatientList(query);
+  }
+
+  public PageInfo<PatientManageVo> getPatientManagePage(PatientManageQuery query) {
+    LocalDate now = LocalDate.now();
+    Integer startAge = now.minusYears(query.getEndAge()).getYear();
+    Integer endAge = now.minusYears(query.getStartAge()).getYear();
+    Page<PatientManageVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    mapper.listPatientByKeys(query, startAge, endAge);
+    return new PageInfo<>(page);
+  }
+
+  public List<PatientManageVo> listPatientManage(PatientManageQuery query) {
+    LocalDate now = LocalDate.now();
+    Integer startAge = now.minusYears(query.getEndAge()).getYear();
+    Integer endAge = now.minusYears(query.getStartAge()).getYear();
+    return mapper.listPatientByKeys(query, startAge, endAge);
+  }
+
+  public void buildResponse(HttpServletResponse response, String fileName) throws UnsupportedEncodingException {
+    response.setContentType("application/vnd.ms-excel");
+    response.setCharacterEncoding("utf-8");
+    String encodeFileName = URLEncoder.encode(fileName, "UTF-8");
+    response.setHeader("Content-disposition", "attachment;filename=" + encodeFileName + ".xlsx");
   }
 }

@@ -687,6 +687,7 @@ public class WXService extends AbstractWxBaseApi {
     private void jsonToFans(WxFans wxFans, String userInfoStr) {
         JSONObject userJson = JSONObject.parseObject(userInfoStr);
         JSONArray tagList = userJson.getJSONArray("tagid_list");
+        wxFans.setSubscribeTime(new Date(userJson.getLongValue("subscribe_time") * 1000));
         wxFans.setTagidList(Joiner.on(",").join(tagList));
     }
 }

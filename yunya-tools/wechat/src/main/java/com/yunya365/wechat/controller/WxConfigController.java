@@ -1,9 +1,13 @@
 package com.yunya365.wechat.controller;
 
 import com.yunya.feign.wechat.domain.model.WxUserMsgModel;
+import com.yunya.feign.wechat.domain.vo.WxSignatureVo;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.wechat.config.NotifyFactory;
 import com.yunya365.wechat.enums.NotifyEnum;
 import com.yunya365.wechat.service.WeChatNotify;
+import com.yunya365.wechat.service.impl.WXService;
 import com.yunya365.wechat.service.impl.WxServerConfigVerify;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -27,6 +31,8 @@ public class WxConfigController {
     private WxServerConfigVerify serverConfigVerify;
     @Resource
     private NotifyFactory notifyFactory;
+    @Resource
+    private WXService wxService;
 
     /**
      * Validate Token
@@ -62,6 +68,11 @@ public class WxConfigController {
         NotifyEnum notifyEnum = NotifyEnum.resolveEvent(msg.getMsgType(), msg.getEvent());
         WeChatNotify infoType = notifyFactory.loadWeChatNotify(notifyEnum);
         return infoType.weChatNotify(msg);
+    }
+
+    @GetMapping(value = "/wxVip/jsApi/sign")
+    public ResponseResult<WxSignatureVo> jsApiSign(@RequestParam(required = true) String url) {
+        return ResponseUtil.success(wxService.getSignInfo(url));
     }
 
 }
