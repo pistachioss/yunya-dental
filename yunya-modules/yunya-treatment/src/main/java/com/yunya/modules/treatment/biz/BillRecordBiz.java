@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
+import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
@@ -9,11 +10,13 @@ import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberBillRechargeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidBillRechargeModel;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.vo.*;
@@ -21,8 +24,11 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.*;
 import org.apache.poi.ss.formula.functions.T;
@@ -31,11 +37,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseRefund;
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
@@ -641,17 +649,82 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @param query 查询条件
    * @return list
    */
-  public List<BillRestReceivableAmountVO> findDebtList(BillOfReceivableQuery query) {
+  public PageInfo<BillRestReceivableAmountVO> findDebtList(BillOfReceivableQuery query) {
     // 查询时间节点前欠费患者列表
     List<BillRestReceivableAmountVO> resultList = mapper.selectDebtList(query);
     // 查询时间节点后门诊被调整的应收账款余额列表
     List<BillRestReceivableAmountVO> adjustedList =
         billExceptionHandleRecordMapper.selectFollowUpBillAdjustList(query);
+    resultList.addAll(adjustedList);
+    // 查询时间节点前的撤销收费ID列表
+    List<Integer> payIds = billExceptionHandleRecordMapper.selectBeforeRevokeBillPayIds(query);
+    query.setNotInPayIds(payIds);
+    Set<Integer> billRecordIds = resultList.stream().map(BillRestReceivableAmountVO::getBillId).collect(Collectors.toSet());
+    query.setBillRecordIds(billRecordIds);
     // 查询时间节点后门诊收欠费账单日期在时间节点前的应收账款列表
     List<BillRestReceivableAmountVO> receivedDebtList =
         billPayRecordBiz.findFollowUpBillReceivedList(query);
-    // 查询时间节点后撤销收费
+    Map<Integer, BigDecimal> payMap = receivedDebtList.stream().collect(Collectors.toMap(BillRestReceivableAmountVO::getBillId, BillRestReceivableAmountVO::getTotalActualAmount));
+    resultList.forEach(vo->{
+      Integer billId = vo.getBillId();
+      BigDecimal totalActualAmount = vo.getTotalActualAmount();
+      BigDecimal payAmount = payMap.get(billId);
+      BigDecimal debtAmount = new BigDecimal(0);
+      if (payAmount != null) {
+        debtAmount = totalActualAmount.subtract(payAmount);
+      }
+      vo.setBillReceivableAmount(debtAmount);
+    });
+    resultList = resultList.stream().sorted((vo1,vo2)->DateUtil.compareDate(vo2.getBillDate(),vo1.getBillDate())).collect(Collectors.toList());
+    PageInfo<BillRestReceivableAmountVO> pageInfo = new PageInfo<>(resultList);
+    if (query.getWhetherPage()) {
+      pageInfo = PageUtl.doPage(query.getPageNum(), query.getPageSize(), resultList);
+    }
+    findPatientAndRegDetist(pageInfo);
+    return pageInfo;
+  }
 
-    return null;
+  /**
+   * 查找患者信息和挂号医生信息
+   * @param pageInfo
+   */
+  private void findPatientAndRegDetist(PageInfo<BillRestReceivableAmountVO> pageInfo) {
+    List<BillRestReceivableAmountVO> result = pageInfo.getList();
+    List<Integer> patientIds = result.stream().map(BillRestReceivableAmountVO::getPatientId).collect(Collectors.toList());
+    List<PatientBaseInfoVo> patients = patientCentralServiceFeign.findPatientInfoByIds(patientIds);
+    Map<Integer, PatientBaseInfoVo> patientMap = patients.stream().collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
+    result.forEach(vo->{
+      Integer patientId = vo.getPatientId();
+      PatientBaseInfoVo patient = patientMap.get(patientId);
+      if (patient != null) {
+        vo.setPatientName(patient.getName());
+        vo.setMobile(patient.getMobile());
+      }
+    });
+    List<Integer> userIds = result.stream().map(BillRestReceivableAmountVO::getRegDentistId).collect(Collectors.toList());
+    List<SysUserInfoDetail> users = systemServiceFeign.findSysUserEmployeeInfoByUserIds(userIds);
+    Map<Integer, String> userMap = users.stream().collect(Collectors.toMap(SysUserInfoDetail::getUserId,SysUserInfoDetail::getName));
+    result.forEach(vo->{
+      Integer regDentistId = vo.getRegDentistId();
+      vo.setRegDentistName(userMap.get(regDentistId));
+    });
+  }
+
+  /**
+   * 根据条件导出门诊应收账款余额表
+   *
+   * @param query 查询条件
+   */
+  public void exportDebtList(BillOfReceivableQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<BillRestReceivableAmountVO> resultList = findDebtList(query).getList();
+    ExcelUtil<BillRestReceivableAmountVO> excelUtil =
+            new ExcelUtil<>(BillRestReceivableAmountVO.class);
+    String fileName = query.getQueryDate() + "应收款余额表";
+    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
+    if (null != orgInfo) {
+      fileName = orgInfo.getAbbreviation() + fileName;
+    }
+    excelUtil.exportExcel(response, resultList, "应收款余额表", fileName);
   }
 }
