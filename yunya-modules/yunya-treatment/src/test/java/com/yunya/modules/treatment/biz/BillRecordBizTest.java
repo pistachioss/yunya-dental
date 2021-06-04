@@ -2,7 +2,9 @@ package com.yunya.modules.treatment.biz;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
+import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.PatientBillStatistics;
@@ -65,5 +67,20 @@ public class BillRecordBizTest {
     BaseContextHandler.setUserID("635");
     BaseContextHandler.setName("测试-chenlin");
     billPayRecordBiz.revoke(280587);
+  }
+
+
+  @Test
+  public void testFindDebtList() {
+    BillOfReceivableQuery query = new BillOfReceivableQuery();
+    query.setPageNum(1);
+    query.setPageSize(20);
+    query.setOrgId(26);
+    query.setQueryDate("2021-03-28");
+    long t1 = System.currentTimeMillis();
+    PageInfo<BillRestReceivableAmountVO> debtList = billRecordBiz.findDebtList(query);
+    long t2 = System.currentTimeMillis();
+    System.out.println("耗时：" + (t2 - t1));
+    System.out.println("数据：" + JSONObject.toJSON(debtList));
   }
 }

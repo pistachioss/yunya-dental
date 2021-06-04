@@ -10,6 +10,7 @@ import lombok.ToString;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * 简介: 应收帐款余额查询参数模型
@@ -38,4 +39,10 @@ public class BillOfReceivableQuery extends PageQuery implements Serializable {
   /** 挂号医生列表 */
   @ApiModelProperty("挂号医生列表")
   private Integer[] regDentistIds;
+  /** 账单ID列表*/
+  @ApiModelProperty("账单ID列表")
+  private Collection<Integer> billRecordIds;
+  /** 不属于的收费ID列表*/
+  @ApiModelProperty("不属于的收费ID列表")
+  private Collection<Integer> notInPayIds;
 }

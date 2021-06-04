@@ -86,4 +86,31 @@
         </where>
         order by bpr.crt_time
     </select>
+
+    <!-- 根据条件查询收费时间在某个时间点后账单时间在某个时间节点之前的账单列表 -->
+    <select id="selectFollowUpBillReceivedList"
+            resultType="com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO">
+        SELECT
+        bpr.bill_record_id AS billId,
+        IFNULL(SUM(bpr.received_amount),0) AS totalActualAmount
+        FROM bill_pay_record bpr
+        <where>
+            <if test="query.billRecordIds!=null and query.billRecordIds.size()>0">
+                AND bpr.bill_record_id in
+                <foreach collection="query.billRecordIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.notInPayIds!=null and query.notInPayIds.size()>0">
+                AND bpr.id not in
+                <foreach collection="query.notInPayIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and date_format(bpr.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
+            </if>
+        </where>
+        GROUP BY bpr.bill_record_id
+    </select>
 </mapper>
