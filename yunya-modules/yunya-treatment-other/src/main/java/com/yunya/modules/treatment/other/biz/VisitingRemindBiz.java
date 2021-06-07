@@ -496,6 +496,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 if (result <= 0){
                     return ResponseUtil.success("修改提醒状态失败!");
                 }
+                // 发送消息-完成提醒
+                remoteRabbitMqServiceFeign.sendMessage(visitingRemind.getId(),1,1, MsgCategoryEnum.BaseVisitRemind);
                 return ResponseUtil.success();
             } finally {
                 redisUtils.unlock(RedisConstants.LOCK_VISITING_REMIND,String.valueOf(id));

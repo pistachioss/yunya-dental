@@ -14,7 +14,7 @@
         </plugin>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://192.168.31.90:3306/yunya_report?useUnicode=true"
+                        connectionURL="jdbc:mysql://192.168.31.90:3306/dev_yunya_report?useUnicode=true"
                         userId="sa"
                         password="Admin001!">
         </jdbcConnection>
@@ -26,7 +26,7 @@
         <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
                              type="XMLMAPPER"/>
 
-       <table tableName="current_month_bill_statistics" domainObjectName="CurrentMonthBillStatistics"/>
+       <!--<table tableName="current_month_bill_statistics" domainObjectName="CurrentMonthBillStatistics"/>-->
 <!--        <table tableName="base_bill" domainObjectName="BaseBill"/>-->
 <!--        <table tableName="base_bill_detail" domainObjectName="BaseBillDetail"/>-->
 <!--        <table tableName="base_bill_pay" domainObjectName="BaseBillPay"/>-->
@@ -46,5 +46,6 @@
 <!--        <table tableName="base_treatment_process" domainObjectName="BaseTreatmentProcess"/>-->
 <!--        <table tableName="base_user_post" domainObjectName="BaseUserPost"/>-->
 <!--        <table tableName="base_visit_remind" domainObjectName="BaseVisitRemind"/>-->
+        <table tableName="base_first_visit_detail" domainObjectName="BaseFirstVisitDetail"/>
     </context>
 </generatorConfiguration>

@@ -105,6 +105,10 @@ public class AppointmentBaseModel implements Serializable {
     @Length(max = 500,message = "预约内容不能超过500个字符")
     private String remarks;
 
+    /** 线上预约ID */
+    @ApiModelProperty("线上预约ID")
+    private Integer onlineAppointmentId;
+
     /** 时长分解列表 */
     @ApiModelProperty(value = "时长分解列表")
     @Valid

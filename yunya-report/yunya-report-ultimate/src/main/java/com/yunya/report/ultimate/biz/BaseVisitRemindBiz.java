@@ -39,6 +39,7 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
               .multiply(new BigDecimal(100))
               .setScale(2, BigDecimal.ROUND_HALF_UP));
     }
+    resultData.setWaitingForCompletedCount(waitingForCompletedCount-completedCount);
     return resultData;
   }
 }

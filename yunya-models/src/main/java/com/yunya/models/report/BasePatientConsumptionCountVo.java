@@ -18,10 +18,10 @@ public class BasePatientConsumptionCountVo {
     /**
      * 患者id
      */
-   private Integer patientId;
+    private Integer patientId;
 
     /**
      * 积分总额
      */
-   private Integer integral;
+    private Integer integral;
 }

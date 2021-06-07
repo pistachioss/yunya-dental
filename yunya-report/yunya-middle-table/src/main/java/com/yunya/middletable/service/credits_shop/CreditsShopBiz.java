@@ -1,9 +1,12 @@
 package com.yunya.middletable.service.credits_shop;
 
+import cn.hutool.json.JSONUtil;
 import com.github.pagehelper.PageHelper;
 import com.google.common.collect.Lists;
+import com.yunya.feign.report.domain.credits_shop.AddCreditsParams;
+import com.yunya.feign.report.domain.credits_shop.CreditConsumeParams;
+import com.yunya.feign.report.domain.credits_shop.CreditResult;
 import com.yunya.feign.report.domain.query.PatientCreditsRecordQuery;
-import com.yunya.models.report.BasePatientConsumptionCountVo;
 import com.yunya.feign.report.domain.vo.CreditsRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.RedisConstants;
@@ -15,14 +18,13 @@ import com.yunya.middletable.config.DuiBaConfig;
 import com.yunya.middletable.dao.report.credits_shop.CreditsShopMapper;
 import com.yunya.middletable.utils.CreditTool;
 import com.yunya.middletable.utils.SignTool;
+import com.yunya.models.report.BasePatientConsumptionCountVo;
 import com.yunya.models.report.CreditsShop;
-import com.yunya.feign.report.domain.credits_shop.AddCreditsParams;
-import com.yunya.feign.report.domain.credits_shop.CreditConsumeParams;
-import com.yunya.feign.report.domain.credits_shop.CreditResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sun.rmi.runtime.Log;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -78,10 +80,6 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    */
   public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, Integer payId) {
     Integer result = 0;
-    // 免单不加积分
-    if (money.longValue() <= 0L) {
-      return result;
-    }
     try {
       CreditsShop creditsShop = mapper.selectLastCredits(patientId);
       Long creditsAccount = 0L;

@@ -1,12 +1,14 @@
 package com.yunya.framework.common.utils;
 
 import cn.hutool.core.date.DateTime;
+import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -24,6 +26,18 @@ public class DateUtil {
   /** 最大秒*/
   public static final int MAX_SECOND = 59;
   private final static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
+  /** 年 */
+  public static final int YEAR = 1;
+  /** 月 */
+  public static final int MONTH = 2;
+  /** 日 */
+  public static final int DAY = 3;
+  /** 时 */
+  public static final int HOURS = 4;
+  /** 分 */
+  public static final int MINUTE = 5;
+  /** 秒 */
+  public static final int SECONDS = 6;
 
   private DateUtil() {}
 
@@ -624,5 +638,66 @@ public class DateUtil {
       e.printStackTrace();
     }
     return d1.compareTo(d2);
+  }
+
+  /**
+   * 时间加法计算
+   * @param time   时间 HH:mm:ss 或 HH:mm
+   * @param expr  加数
+   * @param unit 单位
+   * @return 返回结果
+   */
+  public static String timeAdd(String time,int expr,int unit) {
+    checkTimeFormat(time);
+    LocalTime localTime = LocalTime.parse(time, DateTimeFormatter.ISO_LOCAL_TIME);
+    if (unit == DateUtil.HOURS) {
+      return localTime.plusHours(expr).toString();
+    } else if (unit == DateUtil.MINUTE) {
+      return localTime.plusMinutes(expr).toString();
+    } else if (unit == DateUtil.SECONDS){
+      return localTime.plusSeconds(expr).toString();
+    }
+    return "";
+  }
+
+  /**
+   * 比较时间
+   * @param time1
+   * @param time2
+   * @return the comparator value, negative if less, positive if greater
+   */
+  public static int compareTime(String time1,String time2) {
+    checkTimeFormat(time1);
+    checkTimeFormat(time2);
+    LocalTime localTime1 = LocalTime.parse(time1, DateTimeFormatter.ISO_LOCAL_TIME);
+    LocalTime localTime2 = LocalTime.parse(time2, DateTimeFormatter.ISO_LOCAL_TIME);
+    return localTime1.compareTo(localTime2);
+  }
+
+  /**
+   * 校验时间格式
+   * @param time 时间
+   */
+  private static void checkTimeFormat(String time) {
+    try {
+      if (time == null || time.equals("")) {
+        throw new ClientServiceException("时间格式不正确" + time, CommonConstants.ILLEGAL_PARAMETERS_CODE);
+      }
+      String[] times = time.split(":");
+      for (int i = 0; i < times.length; i++) {
+        if (i == 0) {
+          Integer hours = Integer.valueOf(times[0]);
+          if (hours < 0 || hours >= 24) {
+            throw new ClientServiceException("时间格式不正确" + time, CommonConstants.ILLEGAL_PARAMETERS_CODE);
+          }
+        } else {
+          if (Integer.parseInt(times[1]) < 0 || Integer.parseInt(times[1]) > 59) {
+            throw new ClientServiceException("时间格式不正确" + time, CommonConstants.ILLEGAL_PARAMETERS_CODE);
+          }
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 }

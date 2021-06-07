@@ -566,22 +566,69 @@
     </select>
     <select id="firstVisitRecordDetail" resultType="com.yunya.feign.report.domain.vo.FirstVisitDetailVO">
         SELECT distinct
+        bf.org_name as orgName,
+        bf.first_visit_time AS firstVisitTime,
+        bf.patient_id AS patientId,
+        bf.patient_name AS patient_name,
+        bf.mobile AS mobile,
+        bf.origin_type_name AS originTypeName,
+        bf.origin_name AS originName,
+        bf.next_appointment_time AS nextAppointmentTime,
+        bf.next_appoint_content AS nextAppointContent,
+        bf.next_remind_time AS nextRemindTime,
+        bf.next_remind_content AS nextRemindcontent
+        FROM
+        base_first_visit_detail bf
+        LEFT JOIN base_employee be ON bf.registered_dentist_id = be.user_id
+        LEFT JOIN base_patient bp ON bf.patient_id = bp.patient_id
+        <where>
+            <if test="orgId != null">
+                AND bf.org_id = #{orgId}
+            </if>
+            <if test="registeredDentistIds != null and registeredDentistIds.size > 0">
+                AND bf.registered_dentist_id in
+                <foreach collection="registeredDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="userStatus != null and userStatus.length > 0">
+                AND be.work_status in
+                <foreach collection="userStatus" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND DATE_FORMAT( bf.first_visit_time, '%Y-%m-%d' ) &gt;= #{startDate}
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND DATE_FORMAT( bf.first_visit_time, '%Y-%m-%d' ) &lt;= #{endDate}
+            </if>
+            AND concat(IFNULL(bp.`name`,''),
+            IFNULL(bp.medical_number,''),
+            IFNULL(bp.pinyin_name,''),
+            IFNULL(bp.mobile,''))
+            like concat(concat('%', rtrim(#{patientName})), '%')
+        </where>
+        order by bf.first_visit_time
+    </select>
+    <select id="findFirstVisitRecordDetail" resultType="com.yunya.feign.report.domain.vo.FirstVisitDetailVO">
+  SELECT distinct
+        bo.org_id as orgId,
         bo.abbreviation AS orgName,
         DATE_FORMAT(btp.treat_start_time, '%Y-%m-%d') AS firstVisitTime,
         btp.patient_id as patientId,
         bp.`name` AS patientName,
         bp.mobile,
         bp.origin_type_name AS originTypeName,
-
         case when bp.origin_type = 1 then betwo.employee_name
              when bp.origin_type = 2 then bptwo.name
              ELSE bpo.`name` END
              AS originName,
-
         ntp.appoint_content as nextAppointContent,
         DATE_FORMAT(ntp.appoint_start_time, '%Y-%m-%d') as nextAppointmentTime,
         vtp.content as nextRemindcontent,
-        DATE_FORMAT(vtp.time, '%Y-%m-%d') as nextRemindTime
+        DATE_FORMAT(vtp.time, '%Y-%m-%d') as nextRemindTime,
+        btp.registered_dentist_id as registeredDentistId
         FROM
         base_treatment_process btp
         LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
@@ -602,37 +649,9 @@
         select DISTINCT patient_id,content,time FROM base_visit_remind
         where time > NOW() and type = 1 and (patient_id,time) in
         (select patient_id,min(time) FROM base_visit_remind where time > NOW() and type = 1  GROUP BY patient_id)) vtp on btp.patient_id = vtp.patient_id
-        <where>
-            btp.treat_status IN (3, 4)
+    where
+    btp.treat_status IN (3, 4)
             and btp.treat_type = 0
-            <if test="orgId != null">
-                AND btp.org_id = #{orgId}
-            </if>
-            <if test="registeredDentistIds.size > 0">
-                AND btp.registered_dentist_id in
-                <foreach collection="registeredDentistIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="userStatus.length > 0">
-                AND be.work_status in
-                <foreach collection="userStatus" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="startDate != null and startDate != ''">
-                AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{startDate}
-            </if>
-            <if test="endDate != null and endDate != ''">
-                AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{endDate}
-            </if>
-            AND concat(IFNULL(bp.`name`,''),
-            IFNULL(bp.medical_number,''),
-            IFNULL(bp.pinyin_name,''),
-            IFNULL(bp.mobile,''))
-            like concat(concat('%', rtrim(#{patientName})), '%')
-        </where>
-        order by btp.treat_start_time
     </select>
     <select id="firstVisitRecordPersonalList" resultType="com.yunya.feign.report.domain.vo.FirstVisitPersonalVO">
         SELECT distinct

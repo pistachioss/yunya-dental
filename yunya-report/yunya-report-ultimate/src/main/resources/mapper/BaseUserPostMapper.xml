@@ -646,6 +646,7 @@
                     #{item}
                 </foreach>
             </if>
+
         </where>
         ) btp
         GROUP BY btp.org_id,
