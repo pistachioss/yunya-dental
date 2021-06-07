@@ -41,7 +41,7 @@ public class OnlineAppointmentVo implements Serializable {
     /**
      * 门诊名称
      */
-    @ApiModelProperty(value = "门诊名称",hidden = true)
+    @ApiModelProperty(value = "门诊名称")
     @Excel(name = "门诊名称")
     private String orgName;
 
