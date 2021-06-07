@@ -43,7 +43,7 @@ public class PatientManageQuery extends PageQuery {
     private BigDecimal endOweAmount;
     @ApiModelProperty(value = "预付款余额初")
     private BigDecimal startPrincipalBalance;
-    @ApiModelProperty(value = "预付款余额初")
+    @ApiModelProperty(value = "预付款余额末")
     private BigDecimal endPrincipalBalance;
     @ApiModelProperty(value = "会员卡余额初")
     private BigDecimal startMemberBalance;
