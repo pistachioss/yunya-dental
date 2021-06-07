@@ -503,6 +503,7 @@
         </where>
         ORDER BY behr.billRefundRecordId DESC
     </select>
+
     <!-- 查询门诊在查询时间点后的被调整应收账款列表 -->
     <select id="selectFollowUpBillAdjustList"
             resultType="com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO">

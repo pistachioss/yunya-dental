@@ -93,6 +93,7 @@ public interface BillExceptionHandleRecordMapper extends Mapper<BillExceptionHan
   List<BillOfRefundRecordVO> selectBillRefundRecordList(
       @Param("query") BillRefundRecordQuery query);
 
+
   /**
    * 根据条件查询门诊在查询时间点后的被调整欠费账单列表
    *
@@ -100,7 +101,7 @@ public interface BillExceptionHandleRecordMapper extends Mapper<BillExceptionHan
    * @return list
    */
   List<BillRestReceivableAmountVO> selectFollowUpBillAdjustList(
-      @Param("query") BillOfReceivableQuery query);
+          @Param("query") BillOfReceivableQuery query);
 
   /**
    * 根据条件查询门诊在查询时间点前的撤销收费ID列表

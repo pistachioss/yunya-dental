@@ -320,6 +320,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     excelUtil.exportExcel(response, resultList, "门诊当月收费记录", fileName);
   }
 
+
   /**
    * 根据条件查询收费在某个节点后账单日期在某个节点之前的收欠费
    *
@@ -327,7 +328,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
    * @return list
    */
   public List<BillRestReceivableAmountVO> findFollowUpBillReceivedList(
-      BillOfReceivableQuery query) {
+          BillOfReceivableQuery query) {
     return mapper.selectFollowUpBillReceivedList(query);
   }
 }

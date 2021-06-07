@@ -69,6 +69,7 @@ public class BillRecordBizTest {
     billPayRecordBiz.revoke(280587);
   }
 
+
   @Test
   public void testFindDebtList() {
     BillOfReceivableQuery query = new BillOfReceivableQuery();

@@ -374,6 +374,7 @@
         LEFT JOIN base_tariff bt on bt.id = bd.billingItemId
         LEFT JOIN base_oral_tariff bot on bot.id = bd.billingItemId
     </select>
+
     <!-- 根据条件查询应收账款列表 -->
     <select id="selectDebtList" resultType="com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO">
         select br.id as billId,
