@@ -239,7 +239,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
     }
 
     /**
-     * 获取第三方卡券激活模板接口
+     * 获取第三方卡券激活模板接口数据
      *
      * @param
      * @return
