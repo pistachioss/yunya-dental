@@ -227,7 +227,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         if (StringHelper.isNotEmpty(orgInfos)) {
             results.stream().forEach(onlineAppointmentVo -> {
                 OrganizationInfoDetail orgInfo = orgInfos.stream().filter(e -> e.getId().equals(onlineAppointmentVo.getOrgId())).findFirst().get();
-                onlineAppointmentVo.setOrgName(orgInfo.getName());
+                onlineAppointmentVo.setOrgName(orgInfo.getBrandName() + "(" + orgInfo.getAbbreviation() + ")");
             });
         }
     }
