@@ -32,7 +32,7 @@ public class OnlineAppointmentQuery implements Serializable {
     /**
      * 门诊ID
      */
-    @ApiModelProperty(value = "门诊ID",required = true)
+    @ApiModelProperty(value = "门诊ID")
     private Integer orgId;
 
     /**
@@ -62,14 +62,14 @@ public class OnlineAppointmentQuery implements Serializable {
     /**
      * 预约开始日期
      */
-    @ApiModelProperty(value = "预约开始日期",required = true)
+    @ApiModelProperty(value = "预约开始日期")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private String appointStartDate;
 
     /**
      * 预约结束日期
      */
-    @ApiModelProperty(value = "预约结束日期",required = true)
+    @ApiModelProperty(value = "预约结束日期")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private String appointEndDate;
 
