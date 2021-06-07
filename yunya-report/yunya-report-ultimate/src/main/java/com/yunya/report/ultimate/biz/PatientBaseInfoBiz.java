@@ -132,8 +132,12 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
 
   public PageInfo<PatientManageVo> getPatientManagePage(PatientManageQuery query) {
     LocalDate now = LocalDate.now();
-    Integer startAge = now.minusYears(query.getEndAge()).getYear();
-    Integer endAge = now.minusYears(query.getStartAge()).getYear();
+    Integer startAge = null;
+    Integer endAge = null;
+    if (query.getStartAge() != null && query.getEndAge() != null) {
+      startAge = now.minusYears(query.getEndAge()).getYear();
+      endAge = now.minusYears(query.getStartAge()).getYear();
+    }
     Page<PatientManageVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
     mapper.listPatientByKeys(query, startAge, endAge);
     return new PageInfo<>(page);
@@ -141,8 +145,12 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
 
   public List<PatientManageVo> listPatientManage(PatientManageQuery query) {
     LocalDate now = LocalDate.now();
-    Integer startAge = now.minusYears(query.getEndAge()).getYear();
-    Integer endAge = now.minusYears(query.getStartAge()).getYear();
+    Integer startAge = null;
+    Integer endAge = null;
+    if (query.getStartAge() != null && query.getEndAge() != null) {
+      startAge = now.minusYears(query.getEndAge()).getYear();
+      endAge = now.minusYears(query.getStartAge()).getYear();
+    }
     return mapper.listPatientByKeys(query, startAge, endAge);
   }
 
