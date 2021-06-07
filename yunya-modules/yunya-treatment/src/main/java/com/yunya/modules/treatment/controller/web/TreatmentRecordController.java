@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.model.TreatmentModel;
+import com.yunya.feign.treatment.domain.query.BillBatchPrintInfoQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentCountQuery;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
@@ -116,6 +117,21 @@ public class TreatmentRecordController {
     PageInfo<PatientTreatmentRecordVO> resultList =
         treatmentRecordBiz.findPatientTreatList(queryForm);
     return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 批量打印患者账单记录
+   *
+   * @param query 请求参数
+   * @return list
+   */
+  @CurrentUser
+  @ApiOperation("批量打印患者账单记录")
+  @PostMapping(value = "/batch/print", name = "批量打印患者账单记录")
+  public ResponseResult<PatientBillPrintGroupInfoVO> findBillPrintInfoList(
+      @RequestBody @Validated BillBatchPrintInfoQuery query) {
+    PatientBillPrintGroupInfoVO resultData = treatmentRecordBiz.findBillPrintInfoList(query);
+    return ResponseUtil.success(resultData);
   }
 
   /**

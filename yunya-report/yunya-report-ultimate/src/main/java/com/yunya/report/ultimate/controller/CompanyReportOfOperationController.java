@@ -224,6 +224,20 @@ public class CompanyReportOfOperationController {
   }
 
   /**
+   * 根据条件导出门诊运营分析数据总览
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-运营分析-数据总览导出")
+  @PostMapping(value = "/analysis/data/statistic/export", name = "根据条件导出门诊运营分析数据总览")
+  public ResponseResult<T> operationalAnalysisDataStatisticsExport(HttpServletResponse response,
+          @RequestBody @Validated DataStatisticsQuery query) throws IOException {
+    clinicDataStatisticsBiz.exportClinicDataStatisticsInfo(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
    * 根据条件查询门诊运营分析患者数据总览
    *
    * @param query 查询条件
@@ -380,9 +394,9 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-开单项目数量-开单数量及金额明细")
   @PostMapping(value = "/billItem/statistics/detail", name = "根据条件查询开单数量及金额统计明细列表")
-  public ResponseResult<PageInfo<BillItemStatisticsDetailVO>> billItemStatiticsDetail(
+  public ResponseResult<PageInfo<BillItemStatisticsDetailVO>> billItemStatisticsDetail(
       @RequestBody @Validated BillItemDetailQuery query) {
-    PageInfo<BillItemStatisticsDetailVO> pageInfo = billDetailBiz.billItemStatiticsDetail(query);
+    PageInfo<BillItemStatisticsDetailVO> pageInfo = billDetailBiz.billItemStatisticsDetail(query);
     return ResponseUtil.success(pageInfo);
   }
 
@@ -394,10 +408,10 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-开单项目数量-开单数量及金额明细导出")
   @PostMapping(value = "/billItem/statistics/detail/export", name = "根据条件查询开单数量及金额统计明细列表导出")
-  public ResponseResult<T> billItemStatiticsDetailExport(
+  public ResponseResult<T> billItemStatisticsDetailExport(
       HttpServletResponse response, @RequestBody @Validated BillItemDetailQuery query)
       throws IOException {
-    billDetailBiz.billItemStatiticsDetailExport(query, response);
+    billDetailBiz.billItemStatisticsDetailExport(query, response);
     return ResponseUtil.success(null);
   }
 
@@ -758,6 +772,35 @@ public class CompanyReportOfOperationController {
       @RequestBody @Validated PersonalBillItemTollAndWorkloadQuery query)
       throws IOException {
     billDetailBiz.exportPersonalBillItemRefundWorkloadList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询个人开单项目实收明细表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillItemStatisticsInfoVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-个人开单项目实收明细表")
+  @PostMapping(value = "/billItem/statistics/info", name = "根据条件查询个人开单项目实收明细表")
+  public ResponseResult<PageInfo<BillItemStatisticsInfoVO>> billItemStatisticsInfo(
+          @RequestBody @Validated BillItemInfoQuery query) {
+    PageInfo<BillItemStatisticsInfoVO> pageInfo = billDetailBiz.billItemStatisticsInfo(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询个人开单项目实收明细表导出
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-个人开单项目应收明细表导出")
+  @PostMapping(value = "/billItem/statistics/info/export", name = "根据条件查询个人开单项目实收明细表导出")
+  public ResponseResult<T> billItemStatisticsInfoExport(
+          HttpServletResponse response, @RequestBody @Validated BillItemInfoQuery query)
+          throws IOException {
+    billDetailBiz.billItemStatisticsInfoExport(query, response);
     return ResponseUtil.success(null);
   }
 }

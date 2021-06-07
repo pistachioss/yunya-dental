@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.treatment.domain.form.BaseTariffAssociationForm;
 import com.yunya.feign.treatment.domain.form.BaseTariffForm;
@@ -105,34 +106,25 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
   public BaseTariffInfoVO findBaseTariffInfoById(Integer id) {
     BaseTariffInfoVO resultData = mapper.selectBaseTariffInfoById(id);
     if (null != resultData) {
-      OrganizationModel orgModel = new OrganizationModel();
-      orgModel.setTypes(new Byte[] {2});
-      orgModel.setWhetherPage(false);
-      List<OrganizationInfoDetail> orgInfos = systemServiceFeign.findOrgInfoList(orgModel);
+      ClinicTariff clinicTariff = new ClinicTariff();
+      clinicTariff.setTariffId(id);
+      List<ClinicTariff> clinicTariffs = clinicTariffBiz.selectList(clinicTariff);
       List<ClinicItemPriceVO> itemInfos = new ArrayList<>();
-      if (StringHelper.isNotEmpty(orgInfos)) {
-        Integer resultDataId = resultData.getId();
-        BigDecimal resultDataPrice = resultData.getPrice();
-        ClinicTariff entity = new ClinicTariff();
-        entity.setTariffId(resultDataId);
-        orgInfos.forEach(
-            orgInfo -> {
-              entity.setClinicId(orgInfo.getId());
-              ClinicTariff resultClinicTariff = clinicTariffBiz.selectOne(entity);
-              ClinicItemPriceVO itemPriceVO = new ClinicItemPriceVO();
-              if (null != resultClinicTariff) {
-                itemPriceVO.setClinicItemId(resultClinicTariff.getId());
-                itemPriceVO.setClinicItemPrice(resultClinicTariff.getPrice());
-                itemPriceVO.setItemInservice(resultClinicTariff.getInservice());
-              } else {
-                itemPriceVO.setClinicItemPrice(resultDataPrice);
-                itemPriceVO.setItemInservice(true);
-              }
-              itemPriceVO.setOrgId(orgInfo.getId());
-              itemPriceVO.setOrgName(orgInfo.getAbbreviation());
-              itemPriceVO.setItemId(resultDataId);
-              itemInfos.add(itemPriceVO);
-            });
+      if (StringHelper.isNotEmpty(clinicTariffs)) {
+        for (ClinicTariff tariff : clinicTariffs) {
+          ClinicItemPriceVO clinicItem = new ClinicItemPriceVO();
+          clinicItem.setClinicItemId(tariff.getId());
+          Integer clinicId = tariff.getClinicId();
+          clinicItem.setOrgId(clinicId);
+          OrganizationInfo organizationInfo = systemServiceFeign.findOrgInfoByOrgId(clinicId);
+          if (organizationInfo != null) {
+            clinicItem.setOrgName(organizationInfo.getAbbreviation());
+          }
+          clinicItem.setItemId(tariff.getTariffId());
+          clinicItem.setClinicItemPrice(tariff.getPrice());
+          clinicItem.setItemInservice(tariff.getInservice());
+          itemInfos.add(clinicItem);
+        }
       }
       resultData.setClinicItemInfos(itemInfos);
     }
@@ -151,6 +143,23 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     }
     List<BaseTariffVO> resultList = mapper.selectBaseTariffList(queryForm);
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据价目表分类ID生成价目表编号
+   *
+   * @param tariffCategoryId 价目表分类ID
+   * @return String - 价目表编号
+   */
+  public String generateBaseTariffNumber(Integer tariffCategoryId) {
+    BaseTariffCategory tariffCategory =
+        baseTariffCategoryMapper.selectByPrimaryKey(tariffCategoryId);
+    if (tariffCategory == null) {
+      throw new ClientServiceException("请选择正确的价目表分类进行新增！", PARAMETERS_IS_ILLEGAL);
+    }
+    String categoryNumber = tariffCategory.getNumber().substring(0, 3);
+    String number = mapper.selectMaxBaseTariffNumber(tariffCategoryId, categoryNumber);
+    return categoryNumber + String.format("%03d", Integer.parseInt(number) + 1);
   }
 
   /**
@@ -199,7 +208,9 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     List<ClinicItemPriceModel> clinicItemPriceModels = model.getClinicItemPriceModels();
 
     // 保存门诊价目表
-    saveClinicTariff(model.getPrice(), itemId, clinicItemPriceModels);
+    if (StringHelper.isNotEmpty(clinicItemPriceModels)) {
+      saveClinicTariff(model.getPrice(), itemId, clinicItemPriceModels);
+    }
 
     // 保存价目表新增历史记录
     BaseTariffHistory baseTariffHistory = new BaseTariffHistory();
@@ -324,26 +335,18 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
    * @param clinicItemPriceForms 修改门诊价目表信息
    */
   private void updateClinicTariff(Integer itemId, List<ClinicItemPriceForm> clinicItemPriceForms) {
+    ClinicTariff clinicTariff = new ClinicTariff();
+    clinicTariff.setTariffId(itemId);
+    clinicTariffBiz.delete(clinicTariff);
     if (StringHelper.isNotEmpty(clinicItemPriceForms)) {
       clinicItemPriceForms.forEach(
           form -> {
-            ClinicTariff clinicTariff = new ClinicTariff();
             clinicTariff.setClinicId(form.getOrgId());
-            clinicTariff.setTariffId(itemId);
             clinicTariff.setPrice(form.getItemPrice());
             clinicTariff.setInservice(form.getItemInservice());
-            Integer clinicItemId = form.getClinicItemId();
-            if (null == clinicItemId) {
-              clinicTariff.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-              clinicTariff.setCrtName(BaseContextHandler.getName());
-              clinicTariffBiz.insertSelective(clinicTariff);
-            } else {
-              clinicTariff.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-              clinicTariff.setUpdName(BaseContextHandler.getName());
-              clinicTariff.setUpdTime(new Date(System.currentTimeMillis()));
-              clinicTariff.setId(clinicItemId);
-              clinicTariffBiz.updateSelectiveById(clinicTariff);
-            }
+            clinicTariff.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            clinicTariff.setCrtName(BaseContextHandler.getName());
+            clinicTariffBiz.insertSelective(clinicTariff);
           });
     }
   }
@@ -367,6 +370,30 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(TariffId, 0, 2, BaseTariffInfo);
     }
+  }
+
+  /**
+   * 一键启用禁用基础价目表
+   *
+   * @param id 价目表ID
+   * @param switchType 开关状态
+   */
+  public void operateBaseTariffStatus(Integer id, Boolean switchType) {
+    BaseTariff tariff = mapper.selectByPrimaryKey(id);
+    if (tariff == null) {
+      throw new ClientServiceException("操作失败，价目表不存在！", PARAMETERS_IS_ILLEGAL);
+    }
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String userName = BaseContextHandler.getName();
+    if (switchType) {
+      clinicTariffBiz.enableClinicTariffByTariffId(id, userId, userName);
+    } else {
+      clinicTariffBiz.disableClinicTariffByTariffId(id, userId, userName);
+    }
+    tariff.setInservice(switchType);
+    tariff.setUpdId(userId);
+    tariff.setUpdName(userName);
+    mapper.updateByPrimaryKeySelective(tariff);
   }
 
   /**

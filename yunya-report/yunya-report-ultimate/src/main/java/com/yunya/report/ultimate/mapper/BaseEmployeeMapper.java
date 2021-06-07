@@ -5,6 +5,7 @@ import com.yunya.models.report.BaseEmployee;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface BaseEmployeeMapper extends Mapper<BaseEmployee> {
@@ -23,5 +24,5 @@ public interface BaseEmployeeMapper extends Mapper<BaseEmployee> {
    * @param userIds 用户ID列表
    * @return List<SysUserInfoDetail>
    */
-  List<SysUserInfoDetail> selectUserInfoByIds(@Param("userIds") List<Integer> userIds);
+  List<SysUserInfoDetail> selectUserInfoByIds(@Param("userIds") Collection<Integer> userIds);
 }

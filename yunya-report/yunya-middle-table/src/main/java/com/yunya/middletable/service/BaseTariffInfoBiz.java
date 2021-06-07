@@ -32,7 +32,6 @@ import java.util.Map;
  * @since: 1.0.0
  */
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffInfo> {
 
   /** 价目表分类 */
