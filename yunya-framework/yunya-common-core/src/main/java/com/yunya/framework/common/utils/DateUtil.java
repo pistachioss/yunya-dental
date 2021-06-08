@@ -651,11 +651,11 @@ public class DateUtil {
     checkTimeFormat(time);
     LocalTime localTime = LocalTime.parse(time, DateTimeFormatter.ISO_LOCAL_TIME);
     if (unit == DateUtil.HOURS) {
-      return localTime.plusHours(expr).toString();
+      return localTime.plusHours(expr).format(DateTimeFormatter.ofPattern("HH:mm"));
     } else if (unit == DateUtil.MINUTE) {
-      return localTime.plusMinutes(expr).toString();
+      return localTime.plusMinutes(expr).format(DateTimeFormatter.ofPattern("HH:mm"));
     } else if (unit == DateUtil.SECONDS){
-      return localTime.plusSeconds(expr).toString();
+      return localTime.plusSeconds(expr).format(DateTimeFormatter.ofPattern("HH:mm"));
     }
     return "";
   }
