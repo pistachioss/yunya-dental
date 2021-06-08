@@ -145,7 +145,7 @@ public class OnlineAppointmentVo implements Serializable {
     @Excel(name = "预约申请时间")
     @ApiModelProperty("创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
-    private String crtTime;
+    private Date crtTime;
 
     /**
      * 病历编号
