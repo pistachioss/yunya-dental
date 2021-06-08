@@ -27,6 +27,12 @@ public class OnlineAppointmentVo implements Serializable {
     private Integer id;
 
     /**
+     * 微信用户唯一标识
+     */
+    @ApiModelProperty("微信用户唯一标识")
+    private String openId;
+
+    /**
      * 预约ID (appointment表中主键ID)
      */
     @ApiModelProperty("预约ID,可能为空")
