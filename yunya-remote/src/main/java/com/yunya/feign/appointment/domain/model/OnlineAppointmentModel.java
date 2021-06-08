@@ -30,7 +30,7 @@ public class OnlineAppointmentModel implements Serializable {
     /**
      * 微信唯一标识openId,唯一标识
      */
-    @ApiModelProperty(value = "openId,唯一标识")
+    @ApiModelProperty(value = "openId,唯一标识",required = true)
     @NotNull(message = "openId不能为空")
     @NotBlank(message = "openId不能为空")
     private String openId;
