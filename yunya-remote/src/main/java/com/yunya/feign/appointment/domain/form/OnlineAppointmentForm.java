@@ -41,6 +41,14 @@ public class OnlineAppointmentForm implements Serializable {
     private Integer dentistId;
 
     /**
+     * 微信用户唯一标识
+     */
+    @ApiModelProperty(value = "微信用户唯一标识",required = true)
+    @NotBlank(message = "openId不能为空")
+    @NotNull(message = "openId不能为空")
+    private String openId;
+
+    /**
      * 患者ID,可能为空
      */
     @ApiModelProperty("患者ID,可能为空")

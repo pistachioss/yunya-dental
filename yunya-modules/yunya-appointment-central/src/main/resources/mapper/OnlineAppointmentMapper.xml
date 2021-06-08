@@ -33,6 +33,7 @@
             oa.dentist_id as dentistId,
             oa.patient_id as patientId,
             oa.appoint_item_id as appointItemId,
+            oa.open_id as openId,
             oai.name as appointItemName,
             oa.appoint_content as appointContent,
             date_format(oa.appoint_date,'%Y-%m-%d') as appointDate,
@@ -52,6 +53,7 @@
     <select id="findByCondition" resultType="com.yunya.feign.appointment.vo.OnlineAppointmentVo">
         select
             oa.id as id,
+            oa.open_id as openId,
             oa.org_id as orgId,
             oa.dentist_id as dentistId,
             oa.patient_id as patientId,
