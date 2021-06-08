@@ -38,6 +38,7 @@ import tk.mybatis.mapper.entity.Example;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -67,10 +68,14 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @return 返回预约申请信息
      */
     public ResponseResult<OnlineAppointmentVo> findOnlineAppointmentById(Integer id) {
-
         OnlineAppointmentVo onlineAppointment = mapper.selectEntityById(id);
         if (onlineAppointment == null) {
             return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
+        }
+        Integer dentistId = onlineAppointment.getDentistId();
+        SysUserInfoDetail dentistInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
+        if (dentistInfo != null) {
+            onlineAppointment.setDentistName(dentistInfo.getName());
         }
         return ResponseUtil.success(onlineAppointment);
     }
@@ -111,13 +116,14 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param time
      * @return
      */
-    private boolean checkApplyRules(Integer orgId, Integer itemId, Date date, String time) {
+    private boolean checkApplyRules(Integer orgId, Integer itemId, Date date, Date time) {
         String dateStr = date.toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         Map<String, List<CountOnlineAppointVo>> timeListObj = appointTimeList(orgId, itemId, dateStr,null);
         List<CountOnlineAppointVo> timeList = timeListObj.get("timeList");
         if (StringHelper.isNotEmpty(timeList)) {
             // 判断预约申请是否已满,默认同一时间之能有一个患者
-            return timeList.stream().anyMatch(vo -> vo.getTime().equals(time.trim()) && vo.getCount().equals(0));
+            String timeStr = time.toInstant().atZone(ZoneId.systemDefault()).toLocalTime().toString();
+            return timeList.stream().anyMatch(vo -> vo.getTime().equals(timeStr.trim()) && vo.getCount().equals(0));
         }
         return true;
     }

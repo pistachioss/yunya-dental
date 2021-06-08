@@ -33,6 +33,7 @@
             oa.dentist_id as dentistId,
             oa.patient_id as patientId,
             oa.appoint_item_id as appointItemId,
+            oai.name as appointItemName,
             oa.appoint_content as appointContent,
             date_format(oa.appoint_date,'%Y-%m-%d') as appointDate,
             oa.appoint_time as appointTime,
@@ -43,7 +44,7 @@
             date_format(oa.crt_time,'%Y-%m-%d') as crtTime,
             a.id as appointmentId,
             a.confirm_status as confirmStatus
-        from online_appointment oa left join appointment a on a.online_appointment_id = oa.id and a.inservice = true
+        from online_appointment oa left join appointment a on a.online_appointment_id = oa.id and a.inservice = true left join online_appoint_item oai on  oai.item_id = oa.appoint_item_id
         where oa.id = #{id} and oa.inservice = true
     </select>
 
