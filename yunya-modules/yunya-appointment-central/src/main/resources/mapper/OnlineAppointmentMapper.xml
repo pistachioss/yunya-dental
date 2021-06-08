@@ -37,7 +37,7 @@
             oai.name as appointItemName,
             oa.appoint_content as appointContent,
             date_format(oa.appoint_date,'%Y-%m-%d') as appointDate,
-            oa.appoint_time as appointTime,
+            date_format(oa.appoint_time,'%H:%i') as appointTime,
             oa.duration as duration,
             oa.patient_name as patientName,
             oa.patient_phone as patientPhone,
@@ -46,7 +46,7 @@
             a.id as appointmentId,
             a.confirm_status as confirmStatus
         from online_appointment oa left join appointment a on a.online_appointment_id = oa.id and a.inservice = true left join online_appoint_item oai on  oai.item_id = oa.appoint_item_id
-        where oa.id = #{id} and oa.inservice = true
+        where oa.id = #{id}
     </select>
 
     <!-- 根据条件批量查询预约申请 -->

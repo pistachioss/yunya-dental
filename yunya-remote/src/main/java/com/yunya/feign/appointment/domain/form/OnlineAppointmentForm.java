@@ -81,7 +81,7 @@ public class OnlineAppointmentForm implements Serializable {
     @ApiModelProperty(value = "预约时间",required = true)
     @NotNull(message = "预约时间不能为空")
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
-    private String appointTime;
+    private Date appointTime;
 
     /**
      * 预约时长

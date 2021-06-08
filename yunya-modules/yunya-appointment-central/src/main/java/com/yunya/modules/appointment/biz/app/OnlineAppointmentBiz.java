@@ -143,6 +143,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
             return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
         }
         OnlineAppointment build = EntityUtils.build(form, OnlineAppointment.class);
+
         build.setUpdName(build.getPatientName());
         build.setUpdTime(new Date(System.currentTimeMillis()));
         OnlineAppointItem item = new OnlineAppointItem();
@@ -151,7 +152,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         if (onlineAppointItem != null) {
             build.setDuration(onlineAppointItem.getDuration());
         }
-        int status = mapper.updateByPrimaryKeySelective(build);
+        int status = mapper.updateByPrimaryKey(build);
         if (status <= 0) {
             return ResponseUtil.fail(AppointmentError.APPOINT_EDIT_FAIL.getCode(),AppointmentError.APPOINT_EDIT_FAIL.getMessage(),null);
         }
