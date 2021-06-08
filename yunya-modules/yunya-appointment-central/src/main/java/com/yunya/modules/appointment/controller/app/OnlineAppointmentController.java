@@ -52,7 +52,6 @@ public class OnlineAppointmentController {
 
     @ApiOperation("预约申请(新增/修改)")
     @PostMapping("/apply")
-    @CurrentUser
     public ResponseResult<T> applyOnlineAppointment(@RequestBody @Validated OnlineAppointmentModel model) {
         Integer id = model.getId();
         if (id == null) {
@@ -65,14 +64,12 @@ public class OnlineAppointmentController {
 
     @ApiOperation("新增在线预约申请")
     @PostMapping
-    @CurrentUser
     public ResponseResult<T> addOnlineAppointment(@RequestBody @Validated OnlineAppointmentModel model) {
         return onlineAppointmentBiz.addOnlineAppointment(model);
     }
 
     @ApiOperation("修改在线预约申请")
     @PutMapping
-    @CurrentUser
     public ResponseResult<T> updateOnlineAppointment(@RequestBody @Validated OnlineAppointmentForm form) {
         return onlineAppointmentBiz.updateOnlineAppointment(form);
     }
