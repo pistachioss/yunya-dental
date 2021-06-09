@@ -538,10 +538,10 @@
             be1.employee_name                           as lastVisitDoctors,
             pm.number_of_visits                         as treatQuantity
         from base_patient bp
-            inner join base_employee be on be.user_id = bp.first_visit_doctors
-            inner join base_employee be1 on be1.user_id = bp.last_visit_doctors
-            inner join base_patient_origin bpo on bpo.id = bp.origin_id
-            inner join base_organization bo on bo.org_id = bp.first_visit_outpatient
+            left join base_employee be on be.user_id = bp.first_visit_doctors
+            left join base_employee be1 on be1.user_id = bp.last_visit_doctors
+            left join base_patient_origin bpo on bpo.id = bp.origin_id
+            left join base_organization bo on bo.org_id = bp.first_visit_outpatient
             left join patient_manage pm on bp.patient_id = pm.patient_id
         <where>
             <if test="query.patientKeyWord != null and query.patientKeyWord != ''">
