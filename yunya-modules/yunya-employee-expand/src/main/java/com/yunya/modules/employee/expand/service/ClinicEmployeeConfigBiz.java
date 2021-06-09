@@ -25,6 +25,7 @@ import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigReq;
 import com.yunya.modules.employee.expand.model.response.ClinicEmployeeConfigRes;
 import com.yunya.modules.employee.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.modules.employee.expand.model.response.EnableEmployeeRes;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,7 @@ import static com.yunya.framework.common.constant.BusinessConstants.USER_RESIGNA
  * @create 2020-05-27 9:59
  */
 @Service
+@Slf4j
 public class ClinicEmployeeConfigBiz
     extends BaseBiz<ClinicEmployeeConfigMapper, ClinicEmployeeConfig> {
 
@@ -109,10 +111,12 @@ public class ClinicEmployeeConfigBiz
     ClinicEmployeeConfig config = mapper.selectOneByExample(example);
     // 线上预约信息
     EnableOnlineAppointItemVo enableAppointItems = remoteAppointmentFeign.findOnlineAppointItemById(employeeId, req.getClinicId());
-    result.setOnlineAppointItemInfo(enableAppointItems);
+    log.info("====>员工设置线上预约信息\n{}",enableAppointItems);
     if (config == null) {
       result.setEnableAppoint(1);
       result.setEnableRegistry(1);
+      // 线上预约员工设置信息
+      result.setOnlineAppointItemInfo(enableAppointItems);
       return result;
     }
     result = EntityUtils.build(config, ClinicEmployeeConfigRes.class);
@@ -125,6 +129,8 @@ public class ClinicEmployeeConfigBiz
             : systemServiceFeign.findDepartmentRoomById(result.getClinicDepartmentRoomId());
     result.setAssistantName(assistantEmployee == null ? null : assistantEmployee.getName());
     result.setClinicDepartmentRoomName(room == null ? null : room.getName());
+    // 线上预约员工设置信息
+    result.setOnlineAppointItemInfo(enableAppointItems);
     return result;
   }
 

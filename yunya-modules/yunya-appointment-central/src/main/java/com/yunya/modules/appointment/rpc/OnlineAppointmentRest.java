@@ -73,6 +73,7 @@ public class OnlineAppointmentRest {
             return enableOnlineAppointItemVo;
         }
         enableOnlineAppointItemVo.setLists(new ArrayList<Integer>());
+        log.info("====>rpc线上预约信息\n{}",enableOnlineAppointItemVo);
         return enableOnlineAppointItemVo;
     }
 
