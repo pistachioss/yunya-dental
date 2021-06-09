@@ -105,6 +105,9 @@
                 and oa.open_id = #{query.openId}
             </if>
         </where>
+        <if test="query.openId != null and query.openId != ''">
+            order by oa.id desc
+        </if>
     </select>
 
     <!-- 获取消息通知 -->
