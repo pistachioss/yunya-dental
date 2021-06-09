@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -36,6 +38,7 @@ import static java.util.stream.Collectors.toSet;
  **/
 @Component
 @Slf4j
+@RestController
 public class PatientManageTask {
     @Resource
     private BasePatientMapper basePatientMapper;
@@ -55,6 +58,7 @@ public class PatientManageTask {
     private ExecutorService taskThreadPool;
 
     @Scheduled(cron = "00 01 00 * * ?")
+    @RequestMapping("/white/patientManage")
     public void patientTask() {
         long start = System.currentTimeMillis();
         Integer countTable = patientManageMapper.countTable();
