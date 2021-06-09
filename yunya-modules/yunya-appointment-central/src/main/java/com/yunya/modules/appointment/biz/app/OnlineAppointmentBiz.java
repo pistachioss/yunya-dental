@@ -152,7 +152,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         if (onlineAppointItem != null) {
             build.setDuration(onlineAppointItem.getDuration());
         }
-        int status = mapper.updateByPrimaryKey(build);
+        int status = mapper.updateByPrimaryKeySelective(build);
         if (status <= 0) {
             return ResponseUtil.fail(AppointmentError.APPOINT_EDIT_FAIL.getCode(),AppointmentError.APPOINT_EDIT_FAIL.getMessage(),null);
         }
