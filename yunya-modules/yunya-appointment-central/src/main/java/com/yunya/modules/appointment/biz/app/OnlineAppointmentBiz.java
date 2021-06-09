@@ -38,6 +38,8 @@ import tk.mybatis.mapper.entity.Example;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -66,10 +68,14 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @return 返回预约申请信息
      */
     public ResponseResult<OnlineAppointmentVo> findOnlineAppointmentById(Integer id) {
-
         OnlineAppointmentVo onlineAppointment = mapper.selectEntityById(id);
         if (onlineAppointment == null) {
             return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
+        }
+        Integer dentistId = onlineAppointment.getDentistId();
+        SysUserInfoDetail dentistInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
+        if (dentistInfo != null) {
+            onlineAppointment.setDentistName(dentistInfo.getName());
         }
         return ResponseUtil.success(onlineAppointment);
     }
@@ -110,13 +116,14 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param time
      * @return
      */
-    private boolean checkApplyRules(Integer orgId, Integer itemId, Date date, String time) {
+    private boolean checkApplyRules(Integer orgId, Integer itemId, Date date, Date time) {
         String dateStr = date.toInstant().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        Map<String, List<CountOnlineAppointVo>> timeListObj = appointTimeList(orgId, itemId, dateStr);
+        Map<String, List<CountOnlineAppointVo>> timeListObj = appointTimeList(orgId, itemId, dateStr,null);
         List<CountOnlineAppointVo> timeList = timeListObj.get("timeList");
         if (StringHelper.isNotEmpty(timeList)) {
             // 判断预约申请是否已满,默认同一时间之能有一个患者
-            return timeList.stream().anyMatch(vo -> vo.getTime().equals(time.trim()) && vo.getCount().equals(0));
+            String timeStr = time.toInstant().atZone(ZoneId.systemDefault()).toLocalTime().toString();
+            return timeList.stream().anyMatch(vo -> vo.getTime().equals(timeStr.trim()) && vo.getCount().equals(0));
         }
         return true;
     }
@@ -136,6 +143,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
             return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
         }
         OnlineAppointment build = EntityUtils.build(form, OnlineAppointment.class);
+
         build.setUpdName(build.getPatientName());
         build.setUpdTime(new Date(System.currentTimeMillis()));
         OnlineAppointItem item = new OnlineAppointItem();
@@ -144,7 +152,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         if (onlineAppointItem != null) {
             build.setDuration(onlineAppointItem.getDuration());
         }
-        int status = mapper.updateByPrimaryKey(build);
+        int status = mapper.updateByPrimaryKeySelective(build);
         if (status <= 0) {
             return ResponseUtil.fail(AppointmentError.APPOINT_EDIT_FAIL.getCode(),AppointmentError.APPOINT_EDIT_FAIL.getMessage(),null);
         }
@@ -226,7 +234,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         if (StringHelper.isNotEmpty(orgInfos)) {
             results.stream().forEach(onlineAppointmentVo -> {
                 OrganizationInfoDetail orgInfo = orgInfos.stream().filter(e -> e.getId().equals(onlineAppointmentVo.getOrgId())).findFirst().get();
-                onlineAppointmentVo.setOrgName(orgInfo.getName());
+                onlineAppointmentVo.setOrgName(orgInfo.getBrandName() + "(" + orgInfo.getAbbreviation() + ")");
             });
         }
     }
@@ -302,7 +310,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param itemId 预约项目ID
      * @return
      */
-    public Map<String,List<CountOnlineAppointVo>> appointTimeList(Integer orgId, Integer itemId, String date) {
+    public Map<String,List<CountOnlineAppointVo>> appointTimeList(Integer orgId, Integer itemId, String date,String time) {
         List<CountOnlineAppointVo> timeList = new ArrayList<>(16);
         OnlineAppointItem itemQuery = new OnlineAppointItem();
         itemQuery.setItemId(itemId);
@@ -313,6 +321,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         String endTime = clinicInfoDetail.getBusinessEndTime();
         CountOnlineAppointVo countOnlineAppointVo = new CountOnlineAppointVo();
         countOnlineAppointVo.setTime(startTime);
+        countOnlineAppointVo.setDuration(duration);
         countOnlineAppointVo.setCount(0);
         timeList.add(countOnlineAppointVo);
         while(true) {
@@ -324,12 +333,40 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
             CountOnlineAppointVo item = new CountOnlineAppointVo();
             item.setTime(startTime);
             item.setCount(0);
+            item.setDuration(duration);
             timeList.add(item);
         }
         countOnlineAppointSameTime(timeList,orgId,date);
+        if (StringHelper.isNotBlank(time)) {
+            // 根据当前时间渲染时间列表中相应的时间块
+            this.drawGreenBlock(timeList,time);
+        }
         Map<String,List<CountOnlineAppointVo>> result = new HashMap<>();
         result.put("timeList",timeList);
         return result;
+    }
+
+    /**
+     * 根据时间渲染时间列表
+     * @param timeVoList
+     * @param time
+     */
+    private void drawGreenBlock(List<CountOnlineAppointVo> timeVoList, String time) {
+        if (StringHelper.isNotEmpty(timeVoList)) {
+            LocalTime appointStartLocalTime = LocalTime.parse(time, DateTimeFormatter.ISO_LOCAL_TIME);
+            for (CountOnlineAppointVo vo: timeVoList) {
+                LocalTime appointEndlocalTime = appointStartLocalTime.plusMinutes(vo.getDuration());
+                LocalTime startLocalTime = LocalTime.parse(vo.getTime(), DateTimeFormatter.ISO_LOCAL_TIME);
+                LocalTime endLocalTime = LocalTime.parse(vo.getTime(), DateTimeFormatter.ISO_LOCAL_TIME).plusMinutes(vo.getDuration());
+                if ((appointStartLocalTime.isAfter(startLocalTime) || appointStartLocalTime.equals(startLocalTime)) && appointStartLocalTime.isBefore(endLocalTime)) {
+                    vo.setSelected(true);
+                }
+                if ((appointEndlocalTime.isBefore(endLocalTime) || appointEndlocalTime.equals(endLocalTime)) && appointEndlocalTime.isAfter(startLocalTime)) {
+                    vo.setSelected(true);
+                    break;
+                }
+            }
+        }
     }
 
     /**

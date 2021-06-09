@@ -52,7 +52,6 @@ public class OnlineAppointmentController {
 
     @ApiOperation("预约申请(新增/修改)")
     @PostMapping("/apply")
-    @CurrentUser
     public ResponseResult<T> applyOnlineAppointment(@RequestBody @Validated OnlineAppointmentModel model) {
         Integer id = model.getId();
         if (id == null) {
@@ -65,14 +64,12 @@ public class OnlineAppointmentController {
 
     @ApiOperation("新增在线预约申请")
     @PostMapping
-    @CurrentUser
     public ResponseResult<T> addOnlineAppointment(@RequestBody @Validated OnlineAppointmentModel model) {
         return onlineAppointmentBiz.addOnlineAppointment(model);
     }
 
     @ApiOperation("修改在线预约申请")
     @PutMapping
-    @CurrentUser
     public ResponseResult<T> updateOnlineAppointment(@RequestBody @Validated OnlineAppointmentForm form) {
         return onlineAppointmentBiz.updateOnlineAppointment(form);
     }
@@ -123,16 +120,17 @@ public class OnlineAppointmentController {
      */
     @ApiOperation("查询预约时间列表")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "门诊ID",value = "orgId",required = true,dataTypeClass = Integer.class),
-            @ApiImplicitParam(name = "项目ID",value = "itemId",required = true,dataTypeClass = Integer.class),
-            @ApiImplicitParam(name = "预约日期",value = "date",required = true,dataTypeClass = String.class,defaultValue = "2021-06-01"),
+            @ApiImplicitParam(name = "orgId",value = "门诊ID",required = true,dataTypeClass = Integer.class),
+            @ApiImplicitParam(name = "itemId",value = "项目ID",required = true,dataTypeClass = Integer.class),
+            @ApiImplicitParam(name = "date",value = "预约日期",required = true,dataTypeClass = String.class,defaultValue = "2021-06-01"),
+            @ApiImplicitParam(name = "time",value = "预约时间，如果传入时间，会将该时间渲染到时间列表指定时间段",required = false,dataTypeClass = String.class,defaultValue = "")
     })
     @GetMapping("/time/list/{orgId}/{itemId}")
     public ResponseResult<Map<String,List<CountOnlineAppointVo>>>  appointTimeList(@PathVariable("orgId") @NotNull(message = "门诊ID不能为空") Integer orgId,
                                                                                    @PathVariable("itemId") @NotNull(message = "项目ID不能为空") Integer itemId,
                                                                                    @RequestParam("date") @NotNull(message = "日期不能为空")
-                                                                         @NotBlank(message = "日期不能为空") String date) {
-        Map<String, List<CountOnlineAppointVo>> result = onlineAppointmentBiz.appointTimeList(orgId, itemId, date);
+                                                                         @NotBlank(message = "日期不能为空") String date, String time) {
+        Map<String, List<CountOnlineAppointVo>> result = onlineAppointmentBiz.appointTimeList(orgId, itemId, date,time);
         return ResponseUtil.success(result);
     }
 }

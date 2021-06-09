@@ -27,6 +27,12 @@ public class OnlineAppointmentVo implements Serializable {
     private Integer id;
 
     /**
+     * 微信用户唯一标识
+     */
+    @ApiModelProperty("微信用户唯一标识")
+    private String openId;
+
+    /**
      * 预约ID (appointment表中主键ID)
      */
     @ApiModelProperty("预约ID,可能为空")
@@ -41,7 +47,7 @@ public class OnlineAppointmentVo implements Serializable {
     /**
      * 门诊名称
      */
-    @ApiModelProperty(value = "门诊名称",hidden = true)
+    @ApiModelProperty(value = "门诊名称")
     @Excel(name = "门诊名称")
     private String orgName;
 
@@ -139,7 +145,7 @@ public class OnlineAppointmentVo implements Serializable {
     @Excel(name = "预约申请时间")
     @ApiModelProperty("创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
-    private String crtTime;
+    private Date crtTime;
 
     /**
      * 病历编号
