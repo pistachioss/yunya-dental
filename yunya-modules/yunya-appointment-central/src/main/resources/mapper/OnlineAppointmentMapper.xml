@@ -117,7 +117,7 @@
 
     <!-- 获取同一时间预约数量 -->
     <select id="countOnlineAppointSameTime" resultType="com.yunya.feign.appointment.vo.CountOnlineAppointVo">
-        SELECT date_format(a.appoint_time,'%H:%i') as time, count(appoint_time) as count FROM `online_appointment` a where DATE_FORMAT(a.appoint_date,'%Y-%m-%d') = date_format(#{date},'%Y-%m-%d') and a.org_id = #{orgId} GROUP BY a.appoint_time ASC
+        SELECT date_format(a.appoint_time,'%H:%i') as time, count(a.id) as `count` FROM `online_appointment` a where DATE_FORMAT(a.appoint_date,'%Y-%m-%d') = date_format(#{date},'%Y-%m-%d') and a.org_id = #{orgId} GROUP BY a.appoint_time ASC
     </select>
 
 </mapper>
