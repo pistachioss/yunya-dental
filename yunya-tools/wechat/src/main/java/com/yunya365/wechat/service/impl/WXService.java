@@ -217,12 +217,10 @@ public class WXService extends AbstractWxBaseApi {
             return null;
         }
         List<BenefitItemVo> voList = Lists.newArrayList();
-        List<String> list = Lists.newArrayList("938  IVY365 kids（新）", "937  IVY365 Youngs（新）", "936 IVY365 Adults（新）");
+        List<String> list = Lists.newArrayList("905 IVY 365 KIDS 2021版", "906 IVY 365卡 2021版", "907 IVY 1365卡 2021版", "908 IVY 2365家庭卡 2021版");
         if (list.contains(couponName)) {
-            voList.add(fixedItem("初/复诊检查费"));
-            voList.add(fixedItem("影像检查"));
-            voList.add(fixedItem("口腔卫生宣教"));
             voList.add(fixedItem("口腔健康管理咨询"));
+            voList.add(fixedItem("口腔健康管理档案"));
         }
         List<BenefitItemVo> benefitItemVos = reportServiceFeign.listWxCouponsUseItem(cardId);
         if (CollectionUtils.isNotEmpty(benefitItemVos)) {
