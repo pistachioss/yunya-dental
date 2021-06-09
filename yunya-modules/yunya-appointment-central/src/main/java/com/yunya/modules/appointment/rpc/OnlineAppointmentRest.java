@@ -12,6 +12,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,8 @@ public class OnlineAppointmentRest {
     public EnableOnlineAppointItemVo findOnlineAppointItemById(@PathVariable(value = "dentistId") Integer dentistId,
                                                                @PathVariable(value = "orgId")Integer orgId) {
         EnableOnlineAppointItemVo enableOnlineAppointItemVo = new EnableOnlineAppointItemVo();
+        enableOnlineAppointItemVo.setDentistId(dentistId);
+        enableOnlineAppointItemVo.setOrgId(orgId);
         OnlineAppointItemSettingVo itemSettingVo = appointItemSettingBiz.findItemSettingByDentistId(dentistId, orgId);
         if (itemSettingVo != null) {
             List<OnlineAppointItemVo> lists = itemSettingVo.getLists();
@@ -67,11 +70,9 @@ public class OnlineAppointmentRest {
                 enableOnlineAppointItemVo.setLists(new ArrayList<>());
             }
             enableOnlineAppointItemVo.setItemSettingId(itemSettingVo.getItemSettingId());
-            enableOnlineAppointItemVo.setDentistId(dentistId);
-            enableOnlineAppointItemVo.setOrgId(orgId);
-        } else {
-            enableOnlineAppointItemVo.setLists(new ArrayList<>());
+            return enableOnlineAppointItemVo;
         }
+        enableOnlineAppointItemVo.setLists(new ArrayList<Integer>());
         return enableOnlineAppointItemVo;
     }
 
