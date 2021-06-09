@@ -107,6 +107,9 @@ public class ClinicEmployeeConfigBiz
         .andEqualTo("clinicId", req.getClinicId())
         .andEqualTo("employeeId", employeeId);
     ClinicEmployeeConfig config = mapper.selectOneByExample(example);
+    // 线上预约信息
+    EnableOnlineAppointItemVo enableAppointItems = remoteAppointmentFeign.findOnlineAppointItemById(employeeId, req.getClinicId());
+    result.setOnlineAppointItemInfo(enableAppointItems);
     if (config == null) {
       result.setEnableAppoint(1);
       result.setEnableRegistry(1);
@@ -122,10 +125,6 @@ public class ClinicEmployeeConfigBiz
             : systemServiceFeign.findDepartmentRoomById(result.getClinicDepartmentRoomId());
     result.setAssistantName(assistantEmployee == null ? null : assistantEmployee.getName());
     result.setClinicDepartmentRoomName(room == null ? null : room.getName());
-    // 线上预约信息
-    EnableOnlineAppointItemVo enableAppointItems = remoteAppointmentFeign.findOnlineAppointItemById(employeeId, req.getClinicId());
-    result.setOnlineAppointItemInfo(enableAppointItems);
-
     return result;
   }
 
