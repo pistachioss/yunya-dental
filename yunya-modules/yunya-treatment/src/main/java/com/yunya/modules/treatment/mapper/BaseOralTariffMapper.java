@@ -66,4 +66,15 @@ public interface BaseOralTariffMapper extends Mapper<BaseOralTariff> {
    * @return String
    */
   String selectBaseOralNamesByIds(@Param("ids") String ids);
+
+  /**
+   * 根据商品表分类ID查询该分类下最大商品表编号
+   *
+   * @param oralTariffCategoryId 商品表分类ID
+   * @param categoryNumber 分类编号
+   * @return String
+   */
+  String selectMaxBaseOralTariffNumber(
+      @Param("oralTariffCategoryId") Integer oralTariffCategoryId,
+      @Param("categoryNumber") String categoryNumber);
 }

@@ -11,6 +11,7 @@ import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
+import com.yunya.feign.report.domain.vo.EmployeeWorkloadOfPersonnelVO;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.sms.model.SmsAutoEventSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
@@ -33,8 +34,10 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
+import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.*;
@@ -45,6 +48,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -684,6 +689,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         if (!StringHelper.isEmpty(memberRechargeTollRecordList)) {
           for (MemberRechargeTollRecord memberRechargeTollRecord : memberRechargeTollRecordList) {
             if (memberRechargeTollRecord.getPaymentId() != null) {
+              rechargeRecordVo.setPaymentId(memberRechargeTollRecord.getPaymentId());
               AccountItem accountItem =
                   remoteSystemServiceFeign.findAccountItemById(
                       memberRechargeTollRecord.getPaymentId());
@@ -738,6 +744,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberReturnRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       memberReturnRecord.setUpdName(BaseContextHandler.getName());
       memberReturnRecord.setActualReturnAmount(model.getReturnPayAmount());
+      memberReturnRecord.setRemarks(model.getReturnReason());
       memberReturnRecordMapper.insertSelective(memberReturnRecord);
       sendMemberLogMessages(memberReturnRecord.getId(), 0, 0, 3);
       return ResponseUtil.success();
@@ -907,18 +914,25 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
+    return new PageInfo<>(getOrgInfo(queryForm));
+  }
+
+  /**
+   * 查询消费记录并获取门诊名称
+   */
+  public List<MemberExpendRecordVo> getOrgInfo(MemberExpendRecordQueryForm queryForm){
     List<MemberExpendRecordVo> resultList = memberExpendRecordMapper.expendList(queryForm);
     if (!StringHelper.isEmpty(resultList)) {
       for (MemberExpendRecordVo memberExpendRecordVo : resultList) {
         // 获取门诊简称
         OrganizationInfo organizationInfo =
-            remoteSystemServiceFeign.findOrgInfoByOrgId(memberExpendRecordVo.getOrgId());
+                remoteSystemServiceFeign.findOrgInfoByOrgId(memberExpendRecordVo.getOrgId());
         if (organizationInfo != null) {
           memberExpendRecordVo.setOrgName(organizationInfo.getAbbreviation());
         }
       }
     }
-    return new PageInfo<>(resultList);
+    return resultList;
   }
 
   /**
@@ -1133,5 +1147,89 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    */
   public BigDecimal sumMemberAndPrepaidRefundCash(CashReceiptOrRefundQuery query) {
     return mapper.sumMemberAndPrepaidRefundCash(query);
+  }
+
+  /**
+   * 查询已绑定主卡信息
+   * @param patientId
+   * @return
+   */
+    public List<PatientCardOwnerInfoVo> findPatientCardOwnerInfo(Integer patientId) {
+      // 先查询是否已存在绑定关系（不管是什么类型）
+      List<PatientCardOwnerInfoVo> patientCardOwnerInfoVoList = patientMemberRelationMapper.findPatientCardOwnerInfo(patientId);
+      // 判断是否为空
+      if (StringHelper.isNotEmpty(patientCardOwnerInfoVoList)){
+        // 不为空查询绑定关系（权益和余额一起查询）
+        for (PatientCardOwnerInfoVo patientCardOwnerInfoVo : patientCardOwnerInfoVoList) {
+          if (patientCardOwnerInfoVo.getMemberTypeId() != null) {
+            // 获取会员卡名称
+            MemberType memberType =
+                    this.remoteSystemServiceFeign.findMemberTypeById(patientCardOwnerInfoVo.getMemberTypeId());
+            if (memberType != null && memberType.getName() != null) {
+              patientCardOwnerInfoVo.setMemberTypeName(memberType.getName());
+            }
+          }
+          // 假如和卡主即绑定了权益又绑定了余额，就会存在两条消息 一条BindType为0 一条为1
+          List<PatientMemberRelation> patientMemberRelationList = patientMemberRelationMapper.isBindMember(patientCardOwnerInfoVo.getMasterCardId(),patientId);
+          // 判断是否为空
+          if (StringHelper.isNotEmpty(patientMemberRelationList)){
+            // 循环判断绑定关系
+            for (PatientMemberRelation patientMemberRelation : patientMemberRelationList) {
+              // 如果存在权益绑定就设置为true,反之就是余额绑定,默认为false
+              if (patientMemberRelation.getBindType() == 0){
+                patientCardOwnerInfoVo.setIsDiscount(true);
+              }else {
+                patientCardOwnerInfoVo.setIsMoney(true);
+              }
+            }
+          }
+        }
+      }
+      return patientCardOwnerInfoVoList;
+    }
+
+  /**
+   * 消费记录-导出
+   * @param response
+   * @param queryForm
+   */
+  public void expendExport(HttpServletResponse response, MemberExpendRecordQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<MemberExpendRecordVo> workloadList = expendList(query);
+    List<MemberExpendRecordVo> resultList = workloadList.getList();
+    ExcelUtil<MemberExpendRecordVo> excelUtil =
+            new ExcelUtil<>(MemberExpendRecordVo.class);
+    String fileName =  "消费记录";
+    excelUtil.exportExcel(response, resultList, "消费记录", fileName);
+  }
+
+  /**
+   * 充值记录-导出
+   * @param response 请求
+   * @param queryForm 条件
+   */
+    public void expendExportRechargeRecord(HttpServletResponse response, RechargeRecordQueryForm query) throws IOException {
+      query.setWhetherPage(false);
+      PageInfo<RechargeRecordVo> workloadList = rechargeRecord(query);
+      List<RechargeRecordVo> resultList = workloadList.getList();
+      ExcelUtil<RechargeRecordVo> excelUtil =
+              new ExcelUtil<>(RechargeRecordVo.class);
+      String fileName =  "充值记录";
+      excelUtil.exportExcel(response, resultList, "充值记录", fileName);
+    }
+
+  /**
+   * 退费记录-导出
+   * @param response 请求
+   * @param queryForm 条件
+   */
+  public void expendExportRefundList(HttpServletResponse response, MemberReturnRecordQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<MemberReturnRecordVo> workloadList = refundList(query);
+    List<MemberReturnRecordVo> resultList = workloadList.getList();
+    ExcelUtil<MemberReturnRecordVo> excelUtil =
+            new ExcelUtil<>(MemberReturnRecordVo.class);
+    String fileName =  "退费记录";
+    excelUtil.exportExcel(response, resultList, "退费记录", fileName);
   }
 }

@@ -1,6 +1,8 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.vo.*;
@@ -46,7 +48,8 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
    * @param patientId 患者ID
    * @return
    */
-  PatientBillStatistics selectPatientBillStatistics(@Param("patientId") Integer patientId, @Param("payIds") Collection<Integer> payIds);
+  PatientBillStatistics selectPatientBillStatistics(
+      @Param("patientId") Integer patientId, @Param("payIds") Collection<Integer> payIds);
 
   /**
    * 根据患者ID查询患者账单统计数据列表
@@ -109,4 +112,21 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
   BigDecimal selectBusinessIncomeCompletedCount(
       @Param("query") BusinessGoalCompletedInfoQuery query);
 
+  /**
+   * 根据账单ID列表查询账单记录
+   *
+   * @param patientId 患者ID
+   * @param billRecordIds 账单ID列表
+   * @return list
+   */
+  List<PatientBillPrintInfoVO> selectBillDetailListByIds(
+      @Param("patientId") Integer patientId, @Param("billRecordIds") Integer[] billRecordIds);
+
+  /**
+   * 根据条件查询应收账款余额列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<BillRestReceivableAmountVO> selectDebtList(@Param("query") BillOfReceivableQuery query);
 }

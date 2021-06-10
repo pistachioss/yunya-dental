@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.mapper;
 
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientOriginLog;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -13,12 +14,6 @@ public interface PatientOriginLogMapper extends Mapper<PatientOriginLog> {
      */
     void insertList(@Param("list") List<PatientOriginLog> patientOriginLogList);
 
-    /**
-     * 根据患者id查询患者来源推荐关系
-     * @param id 患者id
-     * @return 患者来源推荐关系
-     */
-    PatientOriginLog selectByPatientId(@Param("patientId") Integer id);
 
     /**
      * 批量删除

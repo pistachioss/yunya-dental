@@ -33,12 +33,12 @@ public class FirstVisitDetailQuery extends PageQuery implements Serializable {
 
     /** 查询初诊开始时间 */
     @ApiModelProperty(value = "初诊开始时间", example = "2020-01-01", required = true)
-    @NotBlank(message = "开始时间不能为空！")
+//    @NotBlank(message = "开始时间不能为空！")
     private String startDate;
 
     /** 查询就诊结束时间 */
     @ApiModelProperty(value = "初诊结束时间", example = "2021-01-01", required = true)
-    @NotBlank(message = "结束时间不能为空！")
+//    @NotBlank(message = "结束时间不能为空！")
     private String endDate;
 
     /** 挂号医生ID列表 */

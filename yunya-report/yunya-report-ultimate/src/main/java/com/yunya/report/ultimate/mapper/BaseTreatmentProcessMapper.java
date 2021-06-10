@@ -132,6 +132,13 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
   List<FirstVisitDetailVO> firstVisitRecordDetail(FirstVisitDetailQuery query);
 
   /**
+   * 查询初诊报表查看明细
+   * @param
+   * @return
+   */
+  List<FirstVisitDetailVO> findFirstVisitRecordDetail();
+
+  /**
    * 查询个人初诊报表查看明细
    * @param query
    * @return

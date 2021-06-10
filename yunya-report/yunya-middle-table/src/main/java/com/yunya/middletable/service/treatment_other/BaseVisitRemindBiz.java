@@ -60,9 +60,8 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         break;
       case 1:
         BaseVisitRemind updBaseVisitRemind = getBaseVisitRemindInfo(id, type);
-        if (StringHelper.isNotNull(updBaseVisitRemind)) {
-          mapper.updateByPrimaryKeySelective(updBaseVisitRemind);
-        }
+        updBaseVisitRemind.setTime(new Date());
+        mapper.updateByPrimaryKeySelective(updBaseVisitRemind);
         break;
       case 2:
         BaseVisitRemind baseVisitRemind = new BaseVisitRemind();
@@ -154,7 +153,7 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         } catch (ParseException e) {
           log.error("时间转换错误", e);
         }
-        baseVisitRemind.setTime(time);
+//        baseVisitRemind.setTime(time);
         baseVisitRemind.setContent(visitingRecord.getReason());
         baseVisitRemind.setCrtTime(visitingRecord.getCrtTime());
         return baseVisitRemind;
@@ -176,7 +175,7 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         } catch (ParseException e) {
           log.error("时间转换错误", e);
         }
-        baseVisitRemind.setTime(time);
+//        baseVisitRemind.setTime(time);
         baseVisitRemind.setContent(visitingRemind.getRemindContent());
         baseVisitRemind.setCrtTime(visitingRemind.getCrtTime());
         return baseVisitRemind;

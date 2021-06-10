@@ -18,9 +18,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.ConnectException;
+import java.util.concurrent.CompletionException;
 
 /**
  * 全局异常处理
@@ -117,5 +119,18 @@ public class GlobalExceptionHandler {
   public ResponseResult connectException(ConnectException e, HttpServletRequest request) {
     logger.error("error in \n url:{} \n msg:{}",request.getRequestURL(),e.getCause());
     return ResponseUtil.fail(CommonConstants.CONNECTION_REFUSED_CODE,"服务器繁忙！请稍后重试",null);
+  }
+
+  @ExceptionHandler(CompletionException.class)
+  public ResponseResult handleCompleteException(
+          HttpServletResponse response, CompletionException ex) {
+    response.setStatus(200);
+    log.error("CompletableFuture异常：{}",ex.getMessage(), ex);
+    Throwable cause = ex.getCause();
+    if (cause instanceof ClientServiceException) {
+      ClientServiceException cex = (ClientServiceException) ex.getCause();
+      return ResponseUtil.fail(cex.getStatus(), cex.getMessage(), null);
+    }
+    return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, cause.getMessage(), null);
   }
 }
