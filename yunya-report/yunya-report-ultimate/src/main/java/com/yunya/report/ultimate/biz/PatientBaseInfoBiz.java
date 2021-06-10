@@ -12,6 +12,7 @@ import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BasePatient;
 import com.yunya.models.report.BasePatientOrigin;
 import com.yunya.report.ultimate.mapper.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
@@ -167,6 +168,7 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
 
   private void assembleOrigin(List<PatientManageVo> list) {
     Map<String, List<PatientManageVo>> originMap = list.stream()
+            .filter(obj -> StringUtils.isNotBlank(obj.getPatientOrionTypeName()))
             .collect(Collectors
                     .groupingBy(PatientManageVo::getPatientOrionTypeName, Collectors.toList()));
     originMap.forEach((k, v) -> {
