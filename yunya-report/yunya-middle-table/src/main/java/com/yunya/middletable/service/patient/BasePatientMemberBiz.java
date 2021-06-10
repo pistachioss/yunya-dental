@@ -7,17 +7,20 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.PatientMemberInfoMapper;
 import com.yunya.middletable.dao.patient.PatientPrepaymentsInfoMapper;
 import com.yunya.middletable.dao.report.BasePatientMemberMapper;
+import com.yunya.middletable.dao.report.PatientManageMapper;
 import com.yunya.middletable.dao.system.MemberTypeMapper;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.models.patient_central.PatientPrepaymentsInfo;
 import com.yunya.models.report.BasePatientMember;
+import com.yunya.models.report.PatientManage;
 import com.yunya.models.system.MemberType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -40,6 +43,9 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
 
   /** 注入会员卡名称查询对象 */
   @Autowired private MemberTypeMapper memberTypeMapper;
+
+  @Resource
+  private PatientManageMapper patientManageMapper;
 
   /**
    * 患者会员/预付款信息操作
@@ -181,6 +187,8 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
       basePatientMember.setBonusAmount(patientMemberInfo.getBonusAmount());
       basePatientMember.setPatientId(patientMemberInfo.getPatientId());
       basePatientMember.setCardOpeningDate(patientMemberInfo.getCrtTime());
+      //更新患者管理信息
+      this.updatePatientManage(basePatientMember);
       return basePatientMember;
     }
     // 预付款信息
@@ -197,5 +205,16 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
       return basePatientMember;
     }
     return null;
+  }
+
+  private void updatePatientManage(BasePatientMember basePatientMember) {
+    Example example = new Example(PatientManage.class);
+    example.createCriteria().andEqualTo("patientId", basePatientMember.getPatientId());
+    PatientManage patientManage = patientManageMapper.selectOneByExample(example);
+    if (patientManage != null) {
+      patientManage.setMemberLevelId(basePatientMember.getMemberLevelId());
+      patientManage.setMemberLevelName(basePatientMember.getMemberLevelName());
+      patientManageMapper.updateByPrimaryKeySelective(patientManage);
+    }
   }
 }
