@@ -39,6 +39,7 @@ public interface BillPayRecordMapper extends Mapper<BillPayRecord> {
   List<CurrentMonthBillPayRecordVO> selectCurrentMonthBillPayRecord(
       @Param("query") CurrentMonthBillInfoQuery query);
 
+
   /**
    * 根据条件查询收费时间在某个时间点后账单时间在某个时间节点之前的账单列表
    *
@@ -46,5 +47,5 @@ public interface BillPayRecordMapper extends Mapper<BillPayRecord> {
    * @return list
    */
   List<BillRestReceivableAmountVO> selectFollowUpBillReceivedList(
-      @Param("query") BillOfReceivableQuery query);
+          @Param("query") BillOfReceivableQuery query);
 }

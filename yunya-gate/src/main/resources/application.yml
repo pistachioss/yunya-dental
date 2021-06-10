@@ -224,7 +224,7 @@ management:
 # 忽略网关鉴权的请求路径（需要忽略的路径前缀 /white）
 gate:
   ignore:
-    startWith: /white,/auth/jwt,/v2/api-docs,/callback/,/central/paizhaohuidiao,/coupon/card/QRCode/init,/registration/permit/add,/registration/permit/userExistsFind,/dict/permit/item/list,/unlock,/user/authorization/code,/user/forget/password,/smsSignatureSet/signSmsReport,/smsTemplateSet/templateSmsReport,/smsSendMessage/smsReport,/smsChargeOrder/notifyUrl,/smsChargeOrder/redirectUrl,/wxVip,/duiba/shop,/appointment/online/,/wxFans/getOwnWxFans,/wxFansBind/bindPatientList,/organization/list
+    startWith: /white,/auth/jwt,/v2/api-docs,/callback/,/central/paizhaohuidiao,/coupon/card/QRCode/init,/registration/permit/add,/registration/permit/userExistsFind,/dict/permit/item/list,/unlock,/user/authorization/code,/user/forget/password,/smsSignatureSet/signSmsReport,/smsTemplateSet/templateSmsReport,/smsSendMessage/smsReport,/smsChargeOrder/notifyUrl,/smsChargeOrder/redirectUrl,/wxVip,/duiba/shop
 
 auth:
   serviceId: yunya-auth

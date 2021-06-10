@@ -60,18 +60,21 @@ public class BillRecordController {
     return ResponseUtil.success(resultList);
   }
 
+
   /**
    * 患者档案-账单详情-编辑备注提交
-   *
    * @param orderDetails 账单明细
    * @return
    */
   @ApiOperation("患者档案-账单详情-编辑备注提交")
-  @PostMapping(value = "/edit/remarks", name = "患者档案-账单详情-编辑备注提交")
+  @PostMapping(value = "/edit/remarks",name = "患者档案-账单详情-编辑备注提交")
   @CurrentUser
   public ResponseResult<T> editRemarks(@RequestBody List<OrderDetailChargeVO> orderDetails) {
     return billRecordBiz.editRemarks(orderDetails);
   }
+
+
+
 
   /**
    * 账单退费
@@ -117,7 +120,7 @@ public class BillRecordController {
   @ApiOperation("公司端报表-财务报表-应收款余额表")
   @PostMapping(value = "/debt/list", name = "公司端报表-财务报表-应收款余额表")
   public ResponseResult<PageInfo<BillRestReceivableAmountVO>> findDebtList(
-      @RequestBody @Validated BillOfReceivableQuery query) {
+          @RequestBody @Validated BillOfReceivableQuery query) {
     PageInfo<BillRestReceivableAmountVO> pageInfo = billRecordBiz.findDebtList(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -131,7 +134,7 @@ public class BillRecordController {
   @ApiOperation("公司端报表-财务报表-应收款余额表导出")
   @PostMapping(value = "/debt/list/export", name = "公司端报表-财务报表-应收款余额表导出")
   public ResponseResult<T> exportDebtList(HttpServletResponse response,
-          @RequestBody @Validated BillOfReceivableQuery query) throws IOException {
+                                          @RequestBody @Validated BillOfReceivableQuery query) throws IOException {
     billRecordBiz.exportDebtList(query, response);
     return ResponseUtil.success(null);
   }

@@ -192,7 +192,7 @@ public class PatientManageTask {
         }, taskThreadPool).thenApplyAsync(log -> {
             Example example = new Example(BasePatientMember.class);
             example.selectProperties("memberLevelId", "memberLevelName", "principalAmount", "bonusAmount", "type", "patientId");
-            example.createCriteria().andIn("patientId", log);
+            example.createCriteria().andIn("patientId", log).orGreaterThanOrEqualTo("cardOpeningDate", startDate);
             return basePatientMemberMapper.selectByExample(example);
         });
         CompletableFuture<List<BaseBill>> cf3 = CompletableFuture.supplyAsync(() -> {
