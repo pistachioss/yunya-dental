@@ -165,7 +165,6 @@
         a.crt_time as crtTime
         from appointment a
         <where>
-            a.appoint_status &lt;&gt; 2
             <if test="query.orgId != null">
                 and a.org_id = #{query.orgId}
             </if>
@@ -212,6 +211,7 @@
             <if test="query.confirmStatus != null">
                 and a.confirmStatus = #{query.confirmStatus}
             </if>
+            and a.appoint_status &lt;&gt; 2
         </where>
         order by a.appoint_start_time asc
     </select>

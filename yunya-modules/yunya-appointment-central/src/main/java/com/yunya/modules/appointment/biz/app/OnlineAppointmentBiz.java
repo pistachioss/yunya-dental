@@ -182,7 +182,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         patientQuery.setName(form.getPatientName());
         patientQuery.setMobile(form.getPatientPhone());
         List<PatientBaseInfo> patients = remotePatientCentralServiceFeign.findPatientInfo(patientQuery);
-        if (StringHelper.isEmpty(patients) || patients.size() > 1) {
+        if (StringHelper.isNotEmpty(patients) && patients.size() == 1) {
             build.setPatientId(patients.get(0).getId());
         } else {
             build.setPatientId(null);
