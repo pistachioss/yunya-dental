@@ -25,6 +25,8 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.OnlineAppointItem;
 import com.yunya.models.appointment.OnlineAppointment;
+import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.system.CompanyDepartment;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.OnlineAppointmentMapper;
 import com.yunya.modules.appointment.service.AppointmentLifecycle;
@@ -77,6 +79,19 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         if (dentistInfo != null) {
             onlineAppointment.setDentistName(dentistInfo.getName());
         }
+        // 设置门诊信息
+        List<OrganizationInfoDetail> orgInfoList = systemServiceFeign.findOrgInfoInIds(Arrays.asList(onlineAppointment.getOrgId()));
+        if (StringHelper.isNotEmpty(orgInfoList)) {
+            onlineAppointment.setBrandName(orgInfoList.get(0).getBrandName());
+            onlineAppointment.setOrgName(orgInfoList.get(0).getAbbreviation());
+            onlineAppointment.setAddr(orgInfoList.get(0).getAddress());
+        }
+        // 设置门诊扩展信息
+        MedicalOrganizationInfoVO medicalOrganizationInfoVO = systemServiceFeign.clinicExtInfoByCompanyId(onlineAppointment.getOrgId());
+        if (medicalOrganizationInfoVO != null) {
+            onlineAppointment.setWorkingHours(medicalOrganizationInfoVO.getBusinessStartTime());
+            onlineAppointment.setOffworkingHours(medicalOrganizationInfoVO.getBusinessEndTime());
+        }
         return ResponseUtil.success(onlineAppointment);
     }
 
@@ -100,6 +115,16 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         OnlineAppointItem onlineAppointItem = onlineAppointItemBiz.selectOne(item);
         if (onlineAppointItem != null) {
             build.setDuration(onlineAppointItem.getDuration());
+        }
+        // 是否已经建立患者档案
+        PatientBaseInfo patientQuery = new PatientBaseInfo();
+        patientQuery.setName(model.getPatientName());
+        patientQuery.setMobile(model.getPatientPhone());
+        List<PatientBaseInfo> patients = remotePatientCentralServiceFeign.findPatientInfo(patientQuery);
+        if (StringHelper.isNotEmpty(patients) && patients.size() == 1) {
+            build.setPatientId(patients.get(0).getId());
+        } else {
+            build.setPatientId(null);
         }
         int status = mapper.insertSelective(build);
         if (status <= 0) {
@@ -151,6 +176,16 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         OnlineAppointItem onlineAppointItem = onlineAppointItemBiz.selectOne(item);
         if (onlineAppointItem != null) {
             build.setDuration(onlineAppointItem.getDuration());
+        }
+        // 患者是否已经建立档案
+        PatientBaseInfo patientQuery = new PatientBaseInfo();
+        patientQuery.setName(form.getPatientName());
+        patientQuery.setMobile(form.getPatientPhone());
+        List<PatientBaseInfo> patients = remotePatientCentralServiceFeign.findPatientInfo(patientQuery);
+        if (StringHelper.isNotEmpty(patients) && patients.size() == 1) {
+            build.setPatientId(patients.get(0).getId());
+        } else {
+            build.setPatientId(null);
         }
         int status = mapper.updateByPrimaryKeySelective(build);
         if (status <= 0) {
@@ -336,6 +371,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
             item.setDuration(duration);
             timeList.add(item);
         }
+        // 设置同一时间内预约人数
         countOnlineAppointSameTime(timeList,orgId,date);
         if (StringHelper.isNotBlank(time)) {
             // 根据当前时间渲染时间列表中相应的时间块
@@ -380,7 +416,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         if (StringHelper.isNotEmpty(result)) {
             result.forEach (vo-> {
                 Optional<CountOnlineAppointVo> onlineAppointOptional = params.stream().filter(e -> e.getTime().equals(vo.getTime())).findAny();
-                onlineAppointOptional.ifPresent(countOnlineAppointVo -> vo.setCount(countOnlineAppointVo.getCount()));
+                onlineAppointOptional.ifPresent(countOnlineAppointVo -> countOnlineAppointVo.setCount(vo.getCount()));
             });
         }
     }
