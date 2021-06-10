@@ -74,6 +74,9 @@
             <if test="query.orgId != null">
                 and oa.org_id = #{query.orgId}
             </if>
+            <if test="query.openId != null and query.openId != ''">
+                and oa.open_id = #{query.openId}
+            </if>
             <if test="query.dentistId != null">
                 and oa.dentist_id = #{query.dentistId}
             </if>
@@ -100,9 +103,6 @@
             </if>
             <if test="query.confirmStatus != null">
                 and a.confirm_status = #{query.confirmStatus}
-            </if>
-            <if test="query.openId != null and query.openId != ''">
-                and oa.open_id = #{query.openId}
             </if>
         </where>
         <if test="query.openId != null and query.openId != ''">
