@@ -147,11 +147,9 @@ public class OnlineAppointItemSettingBiz extends BaseBiz<OnlineAppointItemSettin
     public ResponseResult<List<EnableOnlineAppointDentistsVo>> findDentistsByAppointItem(Integer orgId, Integer itemId) {
         List<EnableOnlineAppointDentistsVo> dentistsVos = mapper.findDentistsByAppointItem(orgId,itemId);
         if (StringHelper.isNotEmpty(dentistsVos)) {
-            log.info("\n====>线上预约信息列表\n{}",dentistsVos);
             List<Integer> dentistIds = dentistsVos.stream().mapToInt(
                     EnableOnlineAppointDentistsVo::getDentistId).boxed().collect(Collectors.toList());
             List<SysUserInfoDetail> dentistInfos = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
-            log.info("====>查询线上可预约医生详细信息\n{}",dentistInfos);
             if (StringHelper.isNotEmpty(dentistInfos)) {
 
                 dentistsVos.forEach(dentistObj->{
