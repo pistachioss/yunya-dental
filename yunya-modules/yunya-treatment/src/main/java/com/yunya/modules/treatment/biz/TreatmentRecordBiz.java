@@ -410,7 +410,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           vo.setPatientKind(patientData.getPatientKindName());
           String medicalNumber = patientData.getMedicalNumber();
           vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
-          vo.setAllergen(patientData.getAllergens());
+          vo.setAllergen(patientData.getAllergensDescriptions());
           // 设置后续预约未到数量
           if (StringHelper.isNotEmpty(nextAppointsVos)) {
             List<NextAppointsVo> nextAppoints =

@@ -129,9 +129,9 @@ public class TreatmentRecordController {
   @PostMapping(value = "/patient/screenList", name = "患者就诊记录列表")
   @CurrentUser
   public ResponseResult<PageInfo<PatientTreatmentRecordVO>> screenPatientTreatmentRecordList(
-          @RequestBody @Validated PatientTreatmentRecordQueryForm queryForm) {
+      @RequestBody @Validated PatientTreatmentRecordQueryForm queryForm) {
     PageInfo<PatientTreatmentRecordVO> resultList =
-            treatmentRecordBiz.screenFindPatientTreatList(queryForm);
+        treatmentRecordBiz.screenFindPatientTreatList(queryForm);
     return ResponseUtil.success(resultList);
   }
 
