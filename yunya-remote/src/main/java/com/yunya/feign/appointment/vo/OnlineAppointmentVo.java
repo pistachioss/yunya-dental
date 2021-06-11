@@ -106,7 +106,7 @@ public class OnlineAppointmentVo implements Serializable {
     /**
      * 预约时长
      */
-    @Excel(name = "预约时长")
+    @Excel(name = "预约时长",cellType = Excel.ColumnType.NUMERIC)
     @ApiModelProperty("预约时长")
     private Integer duration;
 
