@@ -2416,7 +2416,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     String medicalNumber = patientTotalInfoVo.getMedicalNumber();
                     patientEntity.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
                     patientEntity.setAllergenDescription(patientTotalInfoVo.getAllergensDescriptions());
-                    patientEntity.setAllergen(patientTotalInfoVo.getAllergens());
+                    patientEntity.setAllergen(patientTotalInfoVo.getAllergensDescriptions());
                     patientEntity.setPatientKind(patientTotalInfoVo.getPatientKindName());
                     // 设置会员类型图标
                     if (StringHelper.isNotEmpty(memberTypeByIds)) {
@@ -3079,7 +3079,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 build.setPatientId(patientInfo.getId());
                 build.setPatientName(patientInfo.getName());
                 build.setPatientRemark(StringHelper.isBlank(patientInfo.getRemarks()) ? "--" : patientInfo.getRemarks());
-                build.setAllergen(patientInfo.getAllergens());
+                build.setAllergen(patientInfo.getAllergensDescriptions());
                 build.setPinyinName(patientInfo.getPinyinName());
                 build.setPatientKind(patientInfo.getPatientKindName());
                 // 设置会员卡图标类型
