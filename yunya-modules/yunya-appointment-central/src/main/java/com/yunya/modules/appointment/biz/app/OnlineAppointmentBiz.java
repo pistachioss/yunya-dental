@@ -27,6 +27,7 @@ import com.yunya.models.appointment.OnlineAppointItem;
 import com.yunya.models.appointment.OnlineAppointment;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.CompanyDepartment;
+import com.yunya.modules.appointment.biz.web.AppointmentBiz;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.OnlineAppointmentMapper;
 import com.yunya.modules.appointment.service.AppointmentLifecycle;
@@ -63,6 +64,8 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
     private RemoteSystemServiceFeign systemServiceFeign;
     @Autowired
     private OnlineAppointItemBiz onlineAppointItemBiz;
+    @Autowired
+    private AppointmentBiz appointmentBiz;
 
     /**
      * 根据id查询线上预约申请
@@ -227,7 +230,28 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         } else {
             query.setPatientName(searchStr);
         }
+
         List<OnlineAppointmentVo> results = mapper.findByCondition(query);
+        if (StringHelper.isNotEmpty(results)) {
+            Example example = new Example(Appointment.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("orgId",query.getOrgId());
+            criteria.andIn("onlineAppointmentId",results.stream()
+                    .mapToInt(OnlineAppointmentVo::getId).boxed().collect(Collectors.toList()));
+            List<Appointment> appointments = appointmentBiz.selectByExample(example);
+            if (StringHelper.isNotEmpty(appointments)) {
+                appointments.forEach(entity->{
+                    Integer onlineAppointmentId = entity.getOnlineAppointmentId();
+                    results.stream().filter(e->
+                            e.getId().equals(onlineAppointmentId))
+                            .findFirst()
+                            .ifPresent(o->{
+                                o.setConfirmStatus(entity.getConfirmStatus() ? 1 : 0);
+                                o.setAppointmentId(entity.getId());});
+                });
+            }
+        }
+
         if (StringHelper.isNotEmpty(results)) {
             setDentistInfo(results);
             setOrgInfo(results);
