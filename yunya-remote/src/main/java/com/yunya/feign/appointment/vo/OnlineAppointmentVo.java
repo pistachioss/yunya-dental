@@ -6,8 +6,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -150,16 +148,16 @@ public class OnlineAppointmentVo implements Serializable {
     /**
      * 病历编号
      */
-    @Excel(name = "病历编号")
+    @Excel(name = "病历编号",defaultValue = "--")
     @ApiModelProperty("病历编号")
     private String medicalNumber = "--";
 
     /**
      * 预约确认状态
      */
-    @Excel(name = "预状态约",readConverterExp = "0=未确认,1=已确认")
-    @ApiModelProperty("预状态约 0=未确认,1=已确认")
-    private Boolean confirmStatus;
+    @Excel(name = "预状态约",defaultValue = "待确认",readConverterExp = "0=待确认,1=已确认")
+    @ApiModelProperty("预状态约 0=待确认,1=已确认")
+    private Integer confirmStatus;
 
     /**
      * 品牌名称
