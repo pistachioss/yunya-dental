@@ -241,7 +241,6 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param results 预约申请列表
      */
     private void setPatientInfo(List<OnlineAppointmentVo> results) {
-        log.info("====> 患者信息\n{}",results);
         List<Integer> patientIds =  results.stream().filter(entity-> null != entity.getPatientId())
                 .mapToInt(OnlineAppointmentVo::getPatientId)
                 .boxed()
@@ -279,7 +278,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param results 预约申请列表
      */
     private void setDentistInfo(List<OnlineAppointmentVo> results) {
-        log.info("线上预约导出===>\n{}",results);
+        log.info("线上预约导出===>");
         List<Integer> dentistIds = results.stream().mapToInt(OnlineAppointmentVo::getDentistId).boxed().collect(Collectors.toList());
         List<SysUserInfoDetail> dentistInfos = systemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
         if (StringHelper.isNotEmpty(dentistInfos)) {
@@ -317,6 +316,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         log.info("===》预约ID:{}",onlineAppointmentId);
         OnlineAppointment onlineAppointment = mapper.selectByPrimaryKey(onlineAppointmentId);
         if (onlineAppointment != null) {
+            onlineAppointment.setPatientId(patientId);
             onlineAppointment.setStatus((byte) 1);
             onlineAppointment.setUpdName(onlineAppointment.getPatientName());
             onlineAppointment.setUpdTime(new Date(System.currentTimeMillis()));
@@ -431,7 +431,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         sb.append("\n=================预约生命周期=============\n");
         sb.append("==> 新建预约完成\n");
         sb.append(appointment.toString());
-        sb.append("==========================================");
+        sb.append("\n==========================================");
         log.info(sb.toString());
         onlineAppointStatus(appointment.getOnlineAppointmentId(),appointment.getPatientId());
     }
