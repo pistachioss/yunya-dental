@@ -291,7 +291,7 @@
         if((`bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) &lt; 0
         ,0,`bci`.`quantity` - ifnull(`temp`.`useCount`, 0)) as `remainingQuantity`
         from `base_card` `c`
-             left join `base_coupon_item` `bci` on `bci`.`coupon_id` = `c`.`coupon_id`
+             inner join `base_coupon_item` `bci` on `bci`.`coupon_id` = `c`.`coupon_id`
              left join `base_tariff_info` `bti` on `bti`.`item_id` = `bci`.`item_id`
                                             and `bti`.`item_type` = `bci`.`type`
              left join (select
