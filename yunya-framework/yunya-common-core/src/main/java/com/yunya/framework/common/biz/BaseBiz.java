@@ -235,5 +235,4 @@ public abstract class BaseBiz<M extends Mapper<T>, T> {
     }
     return example;
   }
-
 }

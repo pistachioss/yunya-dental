@@ -135,7 +135,6 @@ public class TreatmentRecordController {
     return ResponseUtil.success(resultList);
   }
 
-
   /**
    * 批量打印患者账单记录
    *

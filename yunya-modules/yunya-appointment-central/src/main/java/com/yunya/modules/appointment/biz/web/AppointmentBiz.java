@@ -3079,7 +3079,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 build.setPatientId(patientInfo.getId());
                 build.setPatientName(patientInfo.getName());
                 build.setPatientRemark(StringHelper.isBlank(patientInfo.getRemarks()) ? "--" : patientInfo.getRemarks());
-                build.setAllergen(patientInfo.getAllergens());
+                build.setAllergen(patientInfo.getAllergensDescriptions());
                 build.setPinyinName(patientInfo.getPinyinName());
                 build.setPatientKind(patientInfo.getPatientKindName());
                 // 设置会员卡图标类型
