@@ -150,16 +150,16 @@ public class OnlineAppointmentVo implements Serializable {
     /**
      * 病历编号
      */
-    @Excel(name = "病历编号")
+    @Excel(name = "病历编号",defaultValue = "--")
     @ApiModelProperty("病历编号")
-    private String medicalNumber = "--";
+    private String medicalNumber;
 
     /**
      * 预约确认状态
      */
-    @Excel(name = "预状态约",readConverterExp = "0=未确认,1=已确认")
+    @Excel(name = "预状态约",defaultValue = "--",readConverterExp = "0=未确认,1=已确认")
     @ApiModelProperty("预状态约 0=未确认,1=已确认")
-    private Boolean confirmStatus;
+    private Integer confirmStatus;
 
     /**
      * 品牌名称
