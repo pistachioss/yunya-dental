@@ -51,7 +51,7 @@
 
     <!-- 根据条件批量查询预约申请 -->
     <select id="findByCondition" resultType="com.yunya.feign.appointment.vo.OnlineAppointmentVo">
-        select
+        select distinct
             oa.id as id,
             oa.open_id as openId,
             oa.org_id as orgId,
@@ -69,7 +69,7 @@
             date_format(oa.crt_time,'%Y-%m-%d') as crtTime,
             a.id as appointmentId,
             a.confirm_status as confirmStatus
-        from online_appointment oa left join online_appoint_item oaitem on oaitem.item_id = oa.appoint_item_id LEFT join appointment a on a.online_appointment_id = oa.id and a.inservice = true
+        from online_appointment oa left join online_appoint_item oaitem on oaitem.item_id = oa.appoint_item_id LEFT join appointment a on a.online_appointment_id = oa.id and oa.patient_id = a.patient_id and a.inservice = true
         <where>
             <if test="query.orgId != null">
                 and oa.org_id = #{query.orgId}

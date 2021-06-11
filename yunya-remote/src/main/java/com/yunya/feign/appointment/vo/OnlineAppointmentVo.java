@@ -87,7 +87,7 @@ public class OnlineAppointmentVo implements Serializable {
      * 预约内容
      */
     @ApiModelProperty(value = "预约内容",hidden = true)
-    private String appointContent;
+    private String appointContent = "--";
 
     /**
      * 预约日期
@@ -127,7 +127,7 @@ public class OnlineAppointmentVo implements Serializable {
     private String patientPhone;
 
     /**
-     * 预约申请状态 0-申请中；1-通过；2-取消
+     * 线上预约状态 0-申请中；1-通过；2-取消
      */
     @Excel(name = "线上预约状态",readConverterExp = "0=申请中,1=通过,2=取消")
     @ApiModelProperty("线上预约状态 0-申请中；1-通过；2-取消")
@@ -142,7 +142,7 @@ public class OnlineAppointmentVo implements Serializable {
     /**
      * 预约申请时间
      */
-    @Excel(name = "预约申请时间")
+    @Excel(name = "预约申请时间",dateFormat="yyyy-MM-dd")
     @ApiModelProperty("创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date crtTime;
@@ -152,7 +152,7 @@ public class OnlineAppointmentVo implements Serializable {
      */
     @Excel(name = "病历编号")
     @ApiModelProperty("病历编号")
-    private String medicalNumber;
+    private String medicalNumber = "--";
 
     /**
      * 预约确认状态
