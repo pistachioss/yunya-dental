@@ -189,11 +189,14 @@ public class PatientManageTask {
                 return list.stream().map(BasePatientMemberOccurLog::getPatientId).collect(toSet());
             }
             return Sets.newHashSet();
-        }, taskThreadPool).thenApplyAsync(log -> {
-            Example example = new Example(BasePatientMember.class);
-            example.selectProperties("memberLevelId", "memberLevelName", "principalAmount", "bonusAmount", "type", "patientId");
-            example.createCriteria().andIn("patientId", log).orGreaterThanOrEqualTo("cardOpeningDate", startDate);
-            return basePatientMemberMapper.selectByExample(example);
+        }, taskThreadPool).thenApplyAsync(patientIds -> {
+            if (CollectionUtils.isNotEmpty(patientIds)) {
+                Example example = new Example(BasePatientMember.class);
+                example.selectProperties("memberLevelId", "memberLevelName", "principalAmount", "bonusAmount", "type", "patientId");
+                example.createCriteria().andIn("patientId", patientIds).orGreaterThanOrEqualTo("cardOpeningDate", startDate);
+                return basePatientMemberMapper.selectByExample(example);
+            }
+            return Lists.newArrayList();
         });
         CompletableFuture<List<BaseBill>> cf3 = CompletableFuture.supplyAsync(() -> {
             Example example = new Example(BaseBillPay.class);
@@ -205,16 +208,22 @@ public class PatientManageTask {
             }
             return Sets.newHashSet();
         }, taskThreadPool).thenApplyAsync(billIds -> {
-            Example example = new Example(BaseBill.class);
-            example.selectProperties("patientId");
-            example.createCriteria().andIn("billId", billIds);
-            List<BaseBill> baseBills = baseBillMapper.selectByExample(example);
-            return baseBills.stream().map(BaseBill::getPatientId).collect(toSet());
+            if (CollectionUtils.isNotEmpty(billIds)) {
+                Example example = new Example(BaseBill.class);
+                example.selectProperties("patientId");
+                example.createCriteria().andIn("billId", billIds);
+                List<BaseBill> baseBills = baseBillMapper.selectByExample(example);
+                return baseBills.stream().map(BaseBill::getPatientId).collect(toSet());
+            }
+            return Lists.newArrayList();
         }).thenApplyAsync(patientIds -> {
-            Example example = new Example(BaseBill.class);
-            example.selectProperties("patientId", "receivedAmount", "debtAmount");
-            example.createCriteria().andIn("patientId", patientIds);
-            return baseBillMapper.selectByExample(example);
+            if (CollectionUtils.isNotEmpty(patientIds)) {
+                Example example = new Example(BaseBill.class);
+                example.selectProperties("patientId", "receivedAmount", "debtAmount");
+                example.createCriteria().andIn("patientId", patientIds);
+                return baseBillMapper.selectByExample(example);
+            }
+            return Lists.newArrayList();
         });
         CompletableFuture<List<BaseTreatmentProcess>> cf4 = CompletableFuture.supplyAsync(() -> {
             Example example = new Example(BaseTreatmentProcess.class);
@@ -223,12 +232,15 @@ public class PatientManageTask {
             List<BaseTreatmentProcess> list = baseTreatmentProcessMapper.selectByExample(example);
             return list.stream().map(BaseTreatmentProcess::getPatientId).collect(toSet());
         }, taskThreadPool).thenApplyAsync(patientIds -> {
-            Example example = new Example(BaseTreatmentProcess.class);
-            example.selectProperties("patientId");
-            example.createCriteria().andIn("patientId", patientIds)
-                    .andIsNotNull("treatStartTime");
-            return baseTreatmentProcessMapper.selectByExample(example);
-        });;
+            if (CollectionUtils.isNotEmpty(patientIds)) {
+                Example example = new Example(BaseTreatmentProcess.class);
+                example.selectProperties("patientId");
+                example.createCriteria().andIn("patientId", patientIds)
+                        .andIsNotNull("treatStartTime");
+                return baseTreatmentProcessMapper.selectByExample(example);
+            }
+            return Lists.newArrayList();
+        });
         CompletableFuture<List<PatientManage>> cf5 = CompletableFuture.supplyAsync(() -> {
             return patientManageMapper.selectAll();
         }, taskThreadPool);
@@ -246,7 +258,6 @@ public class PatientManageTask {
         List<PatientManage> manages = cf5.join();
         Map<Integer, PatientManage> collect = manages.stream().collect(toMap(PatientManage::getPatientId, Function.identity()));
         Set<Integer> addIds = cf1Res.stream().map(BasePatient::getPatientId).collect(toSet());
-        log.info("需要新增的患者数量：{}", addIds.size());
         //新增的患者
         if (CollectionUtils.isNotEmpty(addIds)) {
             List<PatientManage> insertList = addIds.stream()
@@ -270,13 +281,13 @@ public class PatientManageTask {
                         }
                         return patientManage;
                     }).collect(toList());
+            log.info("需要新增的患者数量：{}", insertList.size());
             this.insertList(insertList);
         }
         Set<Integer> updateIds = Sets.newHashSet(billMap.keySet());
         updateIds.addAll(memberMap.keySet());
         updateIds.addAll(billMap.keySet());
         updateIds.addAll(processMap.keySet());
-        log.info("需要更新的患者数量：{}", updateIds.size());
         List<PatientManage> updateList = updateIds.stream()
                 .filter(id -> collect.get(id) != null)
                 .map(id -> {
@@ -297,6 +308,7 @@ public class PatientManageTask {
                     }
                     return update;
                 }).collect(toList());
+        log.info("需要更新的患者数量：{}", updateList.size());
         this.updateList(updateList);
     }
 
