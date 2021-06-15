@@ -241,8 +241,8 @@
 
     <!-- 计算百分比 -->
     <select id="calculateAgePercentage" resultType="java.lang.String">
-    select concat( format( ${countAge} / ${count} * 100, 2 ),'%') percentage
-  </select>
+        select concat( format( ${countAge} / ${count} * 100, 2 ),'%') percentage
+    </select>
 
     <!-- 根据患者id查询患者预约信息 -->
     <select id="findPatientDataVo" resultType="com.yunya.feign.report.domain.vo.PatientDataVo">
@@ -508,5 +508,272 @@
                 </foreach>
             </if>
         </where>
+    </select>
+
+    <select id="listPatientByKeys" resultType="com.yunya.feign.report.domain.vo.PatientManageVo">
+        select
+            bp.patient_id,
+            bp.`name`                                   as patientName,
+            bp.medical_number                           as medicalNumber,
+            timestampdiff(year, bp.birthday, curdate()) as age,
+            case
+                when bp.gender = 0 then '男'
+                when bp.gender = 1 then '女'
+                else '未知'
+                end                                     as gender,
+            bp.mobile,
+            bp.vip_logo                                 as patientType,
+            pm.cumulative_consumption                   as totalConsumeAmount,
+            pm.total_arrears                            as totalOweAmount,
+            pm.member_level_name                        as memberTypeName,
+            pm.member_balance                           as memberBalance,
+            pm.principal_balance                        as principalBalance,
+            bp.origin_id                                as patientOrionName,
+            bp.origin_type_name                         as patientOrionTypeName,
+            date_format(bp.first_visit_date, '%Y/%m/%d')as firstVisitDate,
+            bo.abbreviation                             as firstVisitOutpatient,
+            be.employee_name                            as firstVisitDoctors,
+            date_format(bp.last_visit_date, '%Y/%m/%d') as lastVisitDate,
+            be1.employee_name                           as lastVisitDoctors,
+            pm.number_of_visits                         as treatQuantity
+        from base_patient bp
+            left join base_employee be on be.user_id = bp.first_visit_doctors
+            left join base_employee be1 on be1.user_id = bp.last_visit_doctors
+            left join base_organization bo on bo.org_id = bp.first_visit_outpatient
+            left join patient_manage pm on bp.patient_id = pm.patient_id
+        <where>
+            <if test="query.patientKeyWord != null and query.patientKeyWord != ''">
+                (bp.name like concat('%', #{query.patientKeyWord}, '%')
+                or bp.mobile like concat('%', #{query.patientKeyWord}, '%')
+                or bp.medical_number like concat('%', #{query.patientKeyWord}, '%')
+                or bp.pinyin_name like concat('%', #{query.patientKeyWord}, '%'))
+            </if>
+            <if test="startAge != null and endAge != null">
+                and date_format(bp.birthday, '%Y') &gt;= #{startAge} and date_format(bp.birthday, '%Y') &lt;= #{endAge}
+            </if>
+            <if test="query.patientType != null">
+                and bp.vip_logo = #{query.patientType}
+            </if>
+            <if test="query.memberType != null">
+                and pm.member_level_id = #{query.memberType}
+            </if>
+            <if test="query.gender != null">
+                and bp.gender = #{query.gender}
+            </if>
+            <if test="query.firstOrgId != null">
+                and bp.first_visit_outpatient = #{query.firstOrgId}
+            </if>
+            <if test="query.firstDentistName != null and query.firstDentistName !=''">
+                and be.employee_name like concat('%', #{query.firstDentistName}, '%')
+            </if>
+            <if test="query.lastDentistName != null and query.lastDentistName !=''">
+                and be1.employee_name like concat('%', #{query.lastDentistName}, '%')
+            </if>
+            <if test="query.startOweAmount != null and query.endOweAmount != null">
+                and pm.total_arrears &gt;= #{query.startOweAmount} and pm.total_arrears &lt;= #{query.endOweAmount}
+            </if>
+            <if test="query.startPrincipalBalance != null and query.endPrincipalBalance != null">
+                and pm.principal_balance &gt;= #{query.startPrincipalBalance} and pm.principal_balance &lt;= #{query.endPrincipalBalance}
+            </if>
+            <if test="query.startMemberBalance != null and query.endMemberBalance != null">
+                and pm.member_balance &gt;= #{query.startMemberBalance} and pm.member_balance &lt;= #{query.endMemberBalance}
+            </if>
+            <if test="query.startConsumeAmount != null and query.endConsumeAmount != null">
+                and pm.cumulative_consumption &gt;= #{query.startConsumeAmount} and pm.cumulative_consumption &lt;= #{query.endConsumeAmount}
+            </if>
+            <if test="query.startTreatQuantity != null and query.endTreatQuantity != null">
+                and pm.number_of_visits &gt;= #{query.startTreatQuantity} and pm.number_of_visits &lt;= #{query.endTreatQuantity}
+            </if>
+        </where>
+    </select>
+
+    <select id="updateFirstVisitInfo">
+        update base_patient p
+        inner join (
+        select t.patient_id, min(t.treatment_id) as 'treatment_id'
+        from base_treatment_process t
+        group by t.patient_id
+        ) t1 on p.patient_id = t1.patient_id
+        inner join base_treatment_process t2 on t1.treatment_id = t2.treatment_id
+        set p.first_visit_date = t2.treat_start_time
+        , p.first_visit_doctors = t2.registered_dentist_id
+        , p.first_visit_outpatient = t2.org_id
+        where p.first_visit_outpatient is null
+    </select>
+
+    <select id="updateLastVisitInfo">
+        update base_patient p
+        inner join (
+        select t.patient_id, max(t.treatment_id) as 'treatment_id'
+        from base_treatment_process t
+        group by t.patient_id
+        ) t1 on p.patient_id = t1.patient_id
+        inner join base_treatment_process t2 on t1.treatment_id = t2.treatment_id
+        set p.last_visit_date = t2.treat_start_time
+        , p.last_visit_doctors = t2.registered_dentist_id
+        , p.last_visit_outpatient = t2.org_id
+        where p.first_visit_outpatient is not null
+    </select>
+
+    <select id="updateNumberOfVisit">
+        update base_patient p
+        inner join (
+        select t.patient_id, count(0) as 'qty'
+        from base_treatment_process t
+        where t.treatment_id is not null
+        group by t.patient_id
+        ) t on p.patient_id = t.patient_id
+        set p.number_of_visits = t.qty
+    </select>
+
+    <select id="updateTotalAmount">
+        update base_patient p
+        inner join (
+        select b.patient_id, sum(b.actual_amount) as 'total_amount', sum(b.debt_amount) as 'unpaid_amount'
+        from base_bill b
+        group by b.patient_id
+        ) b on p.patient_id = b.patient_id
+        set p.total_arrears = b.unpaid_amount
+        , p.cumulative_consumption = b.total_amount
+    </select>
+
+    <select id="updateVipLogoOld">
+        update base_patient bp
+        set bp.visit_rate_old = bp.visit_rate
+        , bp.vip_score_old = bp.vip_score
+        , bp.vip_logo_old = bp.vip_logo
+    </select>
+
+    <select id="updateVipLogo">
+        update base_patient bp
+        inner join (
+        select p.patient_id
+        , p.qty
+        , (case when p.qty >= 3 then 100 when p.qty >= 2 then 80 else 60 end) * 0.6
+        + (case when p.amount >= 10000 then 100 when p.amount >= 5000 then 80 else 60 end) * 0.4 as 'score'
+        , (case when p.member = '365' then '365' else '' end) as 'member'
+        from (
+        select p.patient_id
+        , ROUND(p.number_of_visits / (datediff(now(), p.first_visit_date) / 365)) as 'qty'
+        , p.cumulative_consumption as 'amount'
+        , p.member
+        from (
+        SELECT p.patient_id
+        , p.first_visit_date
+        , p.number_of_visits
+        , p.cumulative_consumption
+        , (case when m.member_level_name is not null then '123' when c.coupon_name is not null then '365' end) as
+        'member'
+        FROM base_patient p
+        left join (
+        select m.patient_id, m.member_level_name
+        from base_patient_member m
+        where m.type = 0 and m.member_level_id &lt; 4
+        ) m on p.patient_id = m.patient_id
+        left join (
+        select c.patient_id, max(g.coupon_name) as 'coupon_name'
+        from base_card c
+        left join base_coupon g on c.coupon_id = g.coupon_id
+        where c.status > 1 and g.coupon_name like '%365%'
+        group by c.patient_id
+        ) c on p.patient_id = c.patient_id
+        ) p
+        where p.member is not null
+        ) p
+        ) p on p.patient_id = bp.patient_id
+        set bp.visit_rate = p.qty
+        , bp.vip_score = p.score
+        , bp.vip_logo = concat((case when p.score >= 90 then 'A' when p.score >= 80 then 'B' else 'C' end), p.member)
+    </select>
+
+    <select id="findVipLogoList" resultType="com.yunya.feign.report.domain.vo.VipLogoVo">
+        SELECT p.patient_id
+        , p.name as 'patientName'
+        , p.mobile
+        , p.gender
+        , TimeStampDiff(YEAR, p.birthday, now()) as 'age'
+        , p.medical_number
+        , lo.abbreviation
+        , p.vip_logo
+        , ifnull(p.visit_rate, 0) as 'visit_rate'
+        , ifnull(p.cumulative_consumption, 0) as 'cumulative_consumption'
+        , p.vip_score
+        , date_format(p.last_visit_date, '%Y-%m-%d') as 'last_visit_date'
+        , ifnull(t.appoint_start_time, '') as 'nextAppointTime'
+        , ifnull(v.remind_time, '') as 'nextRemindTime'
+        , m.member_level_name
+        , c.coupon_name
+        , p.vip_logo_old
+        FROM base_patient p
+        left join (
+        select m.patient_id, m.member_level_name, m.member_level_id
+        from base_patient_member m
+        where m.type = 0 and m.member_level_id &lt; 4
+        ) m on p.patient_id = m.patient_id
+        left join (
+        select c.patient_id, max(g.coupon_name) as 'coupon_name'
+        from base_card c
+        left join base_coupon g on c.coupon_id = g.coupon_id
+        where c.status > 1 and (g.coupon_name like '%365%' or g.product_type_name in ('青藤', '银藤', '金藤'))
+        group by c.patient_id
+        ) c on p.patient_id = c.patient_id
+        left join base_organization lo on p.last_visit_outpatient = lo.org_id
+        left join (
+        select t.patient_id, date_format(min(t.appoint_start_time), '%Y-%m-%d') as 'appoint_start_time'
+        from base_treatment_process t
+        where t.appointment_id is not null
+        and t.treatment_id is null
+        and t.appoint_start_time >= date_add(date_format(now(), '%Y-%m-%d'), INTERVAL 1 DAY)
+        group by t.patient_id
+        ) t on p.patient_id = t.patient_id
+        left join (
+        select v.patient_id, date_format(min(v.time), '%Y-%m-%d') as 'remind_time'
+        from base_visit_remind v
+        where v.type = 1
+        and v.time >= date_add(date_format(now(), '%Y-%m-%d'), INTERVAL 1 DAY)
+        group by v.patient_id
+        ) v on p.patient_id = v.patient_id
+        <where>
+            p.vip_logo is not null
+            <if test="form.combination != null and form.combination != ''">
+                and concat(ifnull(p.name, ''), ifnull(p.pinyin_name, ''), ifnull(p.mobile, '')) like
+                concat('%', #{form.combination}, '%')
+            </if>
+            <if test="form.orgIds != null and form.orgIds.length > 0">
+                and p.last_visit_outpatient in
+                <foreach collection="form.orgIds" item="item" index="index" open="(" close=")"
+                         separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="form.vipLogos != null and form.vipLogos.length > 0">
+                and p.vip_logo in
+                <foreach collection="form.vipLogos" item="item" index="index" open="(" close=")"
+                         separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="form.vipLogoOlds != null and form.vipLogoOlds.length > 0">
+                and p.vip_logo_old in
+                <foreach collection="form.vipLogoOlds" item="item" index="index" open="(" close=")"
+                         separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="form.memberLevelIds != null and form.memberLevelIds.length > 0">
+                and m.member_level_id in
+                <foreach collection="form.memberLevelIds" item="item" index="index" open="(" close=")"
+                         separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getVipRate" resultType="com.yunya.feign.report.domain.vo.VipRateVo">
+        select p.vip_logo, count(*) as 'vip_qty'
+        from base_patient p
+        where p.vip_logo is not null and p.vip_logo != ''
+        group by p.vip_logo
     </select>
 </mapper>

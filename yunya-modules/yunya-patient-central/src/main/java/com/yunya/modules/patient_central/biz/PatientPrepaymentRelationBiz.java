@@ -28,6 +28,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
@@ -37,6 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -57,40 +61,40 @@ public class PatientPrepaymentRelationBiz
     extends BaseBiz<PatientPrepaymentRelationMapper, PatientPrepaymentRelation> {
 
   /** 注入预付款关联Mapper */
-  @Autowired PatientPrepaymentRelationMapper patientPrepaymentRelationMapper;
+  @Resource PatientPrepaymentRelationMapper patientPrepaymentRelationMapper;
 
   /** 注入付款基本信息Mapper */
-  @Autowired PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
+  @Resource PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
 
   /** 注入预付款充值记录Mapper */
-  @Autowired PrepaidRechargeTollRecordMapper prepaidRechargeTollRecordMapper;
+  @Resource PrepaidRechargeTollRecordMapper prepaidRechargeTollRecordMapper;
 
   /** 注入预付款充值记录明细Mapper */
-  @Autowired PrepaidRechargeRecordMapper prepaidRechargeRecordMapper;
+  @Resource PrepaidRechargeRecordMapper prepaidRechargeRecordMapper;
 
   /** 注入患者信息Mapper */
-  @Autowired PatientBaseInfoMapper patientBaseInfoMapper;
+  @Resource PatientBaseInfoMapper patientBaseInfoMapper;
 
   /** 注入系统服务 */
-  @Autowired RemoteSystemServiceFeign remoteSystemServiceFeign;
+  @Resource RemoteSystemServiceFeign remoteSystemServiceFeign;
 
   /** 注入服务 */
-  @Autowired RemoteDiscountFeign remoteDiscountFeign;
+  @Resource RemoteDiscountFeign remoteDiscountFeign;
 
   /** 注入预付款退款信息Mapper */
-  @Autowired PrepaidReturnRecordMapper prepaidReturnRecordMapper;
+  @Resource PrepaidReturnRecordMapper prepaidReturnRecordMapper;
 
   /** 注入预付款消费记录Mapper */
-  @Autowired PrepaidExpendRecordMapper prepaidExpendRecordMapper;
+  @Resource PrepaidExpendRecordMapper prepaidExpendRecordMapper;
 
   /** 注入服务 */
-  @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
+  @Resource private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
 
   /** 注入会员卡消费记录Mapper */
-  @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
+  @Resource private MemberExpendRecordMapper memberExpendRecordMapper;
 
   /** redis消息队列 */
-  @Autowired private RedisUtils redisUtils;
+  @Resource private RedisUtils redisUtils;
 
   /**
    * 患者预付款基本信息查询
@@ -777,5 +781,59 @@ public class PatientPrepaymentRelationBiz
       return prepaidExpendRecordvo.getId();
     }
     return null;
+  }
+
+  /**
+   * 消费记录-导出
+   * @param response
+   * @param query
+   */
+  public void expendExport(HttpServletResponse response, PrepaidExpendRecordQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<PrepaidExpendRecordVo> workloadList = expendList(query);
+    List<PrepaidExpendRecordVo> resultList = workloadList.getList();
+    ExcelUtil<PrepaidExpendRecordVo> excelUtil =
+            new ExcelUtil<>(PrepaidExpendRecordVo.class);
+    String fileName =  "消费记录";
+    excelUtil.exportExcel(response, resultList, "消费记录", fileName);
+  }
+
+  /**
+   * 查询共享帐户绑定信息
+   * @param patientId 患者id
+   * @return 共享帐户信息
+   */
+  public List<PatientPrepaymentsOwnerInfoVo> finishedAccount(Integer patientId) {
+    return prepaidExpendRecordMapper.finishedAccount(patientId);
+  }
+
+  /**
+   * 充值记录-导出
+   * @param response 请求
+   * @param query 条件
+   */
+  public void expendExportRechargeRecord(HttpServletResponse response, PrepaidRechargeRecordQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<PrepaidRechargeRecordVo> workloadList = rechargeRecord(query);
+    List<PrepaidRechargeRecordVo> resultList = workloadList.getList();
+    ExcelUtil<PrepaidRechargeRecordVo> excelUtil =
+            new ExcelUtil<>(PrepaidRechargeRecordVo.class);
+    String fileName =  "充值记录";
+    excelUtil.exportExcel(response, resultList, "充值记录", fileName);
+  }
+
+  /**
+   * 退费记录导出
+   * @param response  请求
+   * @param query 条件
+   */
+  public void expendExportRefundList(HttpServletResponse response, PrepaidMeturnRecordQueryForm query) throws IOException {
+    query.setWhetherPage(false);
+    PageInfo<PrepaidMeturnRecordVo> workloadList = refundList(query);
+    List<PrepaidMeturnRecordVo> resultList = workloadList.getList();
+    ExcelUtil<PrepaidMeturnRecordVo> excelUtil =
+            new ExcelUtil<>(PrepaidMeturnRecordVo.class);
+    String fileName =  "退费记录";
+    excelUtil.exportExcel(response, resultList, "退费记录", fileName);
   }
 }

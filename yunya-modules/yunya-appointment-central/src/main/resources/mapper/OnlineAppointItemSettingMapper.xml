@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.appointment.mapper.OnlineAppointItemSettingMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.appointment.OnlineAppointItemSetting" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="item_setting_id" property="itemSettingId" jdbcType="INTEGER" />
+    <result column="dentist_id" property="dentistId" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="enable_appoint_item_ids" property="enableAppointItemIds" jdbcType="BIT" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <resultMap id="BaseResultMapVo" type="com.yunya.feign.appointment.vo.OnlineAppointItemSettingVo" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="item_setting_id" property="itemSettingId" jdbcType="INTEGER" />
+    <result column="dentist_id" property="dentistId" jdbcType="INTEGER" />
+    <collection property="lists" ofType="com.yunya.feign.appointment.vo.OnlineAppointItemVo">
+      <id column="item_id" jdbcType="INTEGER" property="itemId" />
+      <result column="name" jdbcType="VARCHAR" property="name" />
+      <result column="duration" jdbcType="INTEGER" property="duration" />
+    </collection>
+  </resultMap>
+
+  <!-- 根据医生ID查询线上可预约项目 -->
+  <select id="findItemSettingByDentistId"
+          resultMap="BaseResultMapVo">
+    select
+      oais.item_setting_id,oais.dentist_id,oai.name,oai.duration,oais.enable_appoint_item_ids,oai.item_id
+    from online_appoint_item_setting oais left join online_appoint_item oai on FIND_IN_SET(oai.item_id,oais.enable_appoint_item_ids)
+    where oais.dentist_id = #{dentistId} and oais.org_id = #{orgId}
+  </select>
+
+  <!-- 查询可预约医生列表 -->
+  <select id="findDentistsByAppointItem"
+          resultType="com.yunya.feign.appointment.vo.EnableOnlineAppointDentistsVo">
+    select oais.dentist_id as dentistId
+    from online_appoint_item_setting oais
+    <where>
+      <if test="orgId != null">
+        and oais.org_id = #{orgId}
+      </if>
+      <if test="itemId != null">
+        and FIND_IN_SET(#{itemId},oais.enable_appoint_item_ids)
+      </if>
+    </where>
+  </select>
+</mapper>

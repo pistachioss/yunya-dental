@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.middletable.dao.report.PatientManageMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.PatientManage" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="patient_type" property="patientType" jdbcType="VARCHAR" />
+    <result column="member_level_id" property="memberLevelId" jdbcType="INTEGER" />
+    <result column="member_level_name" property="memberLevelName" jdbcType="VARCHAR" />
+    <result column="member_balance" property="memberBalance" jdbcType="DECIMAL" />
+    <result column="principal_balance" property="principalBalance" jdbcType="DECIMAL" />
+    <result column="cumulative_consumption" property="cumulativeConsumption" jdbcType="DECIMAL" />
+    <result column="total_arrears" property="totalArrears" jdbcType="DECIMAL" />
+    <result column="number_of_visits" property="numberOfVisits" jdbcType="INTEGER" />
+  </resultMap>
+</mapper>

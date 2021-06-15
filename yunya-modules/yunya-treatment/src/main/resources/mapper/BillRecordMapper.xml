@@ -374,4 +374,37 @@
         LEFT JOIN base_tariff bt on bt.id = bd.billingItemId
         LEFT JOIN base_oral_tariff bot on bot.id = bd.billingItemId
     </select>
+    <!-- 根据条件查询应收账款列表 -->
+    <select id="selectDebtList" resultType="com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO">
+        select br.id as billId,
+        date_format(br.crt_time, '%Y-%m-%d') as billDate,
+        br.bill_number as billNum,
+        br.patient_id as patientId,
+        tr.dentist_id as regDentistId,
+        br.receivable_amount as totalOriginalAmount,
+        if(date_format(br.privilege_date, '%Y-%m-%d') > date_format(#{query.queryDate}, '%Y-%m-%d'), br.receivable_amount,
+        br.actual_receivable_amount) as totalActualAmount,
+        br.debt_amount as billReceivableAmount
+        from bill_record br
+        left join treatment_record tr on br.treatment_record_id = tr.id
+        <where>
+            and br.debt_amount > 0
+            and br.inservice = true
+            <if test="query.orgId != null">
+                and br.org_id = #{query.orgId}
+            </if>
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and date_format(br.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
+            </if>
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                and tr.dentist_id in
+                <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by
+        br.crt_time desc,
+        br.debt_amount desc
+    </select>
 </mapper>

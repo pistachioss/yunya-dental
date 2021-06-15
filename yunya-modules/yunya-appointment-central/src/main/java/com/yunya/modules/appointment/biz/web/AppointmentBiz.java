@@ -62,6 +62,7 @@ import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
+import com.yunya.modules.appointment.service.AppointmentLifecycle;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -150,6 +151,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /** 注入redis缓冲服务 */
     @Autowired
     private RedisUtils redisUtils;
+    @Resource
+    private AppointmentLifecycle appointmentLifecycle;
 
     @Resource(name = "poolExecutor")
     private ExecutorService poolExecutor;
@@ -208,6 +211,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
             //微信推送预约成功通知
             weChatServiceFeign.pushTemplate(generateModel(form));
+            // 预约添加成功回调
+            appointmentLifecycle.build(appointmentEntity);
             // 如果添加预约成功，则返回预约成功信息
             return ResponseUtil.success();
         }
@@ -260,6 +265,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointOperateRecordBiz.insertSelective(record);
             //微信推送预约成功通知
             weChatServiceFeign.pushTemplate(generateModel(form));
+            // 预约添加成功回调
+            appointmentLifecycle.build(build);
         }
         return ResponseUtil.success();
     }
@@ -2409,7 +2416,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     String medicalNumber = patientTotalInfoVo.getMedicalNumber();
                     patientEntity.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
                     patientEntity.setAllergenDescription(patientTotalInfoVo.getAllergensDescriptions());
-                    patientEntity.setAllergen(patientTotalInfoVo.getAllergens());
+                    patientEntity.setAllergen(patientTotalInfoVo.getAllergensDescriptions());
                     patientEntity.setPatientKind(patientTotalInfoVo.getPatientKindName());
                     // 设置会员类型图标
                     if (StringHelper.isNotEmpty(memberTypeByIds)) {
@@ -3072,7 +3079,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 build.setPatientId(patientInfo.getId());
                 build.setPatientName(patientInfo.getName());
                 build.setPatientRemark(StringHelper.isBlank(patientInfo.getRemarks()) ? "--" : patientInfo.getRemarks());
-                build.setAllergen(patientInfo.getAllergens());
+                build.setAllergen(patientInfo.getAllergensDescriptions());
                 build.setPinyinName(patientInfo.getPinyinName());
                 build.setPatientKind(patientInfo.getPatientKindName());
                 // 设置会员卡图标类型
@@ -3461,5 +3468,18 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         String fileName = excelUtil.getFileName(startDate, endDate, abbreviation, "取消预约明细表");
         excelUtil.exportExcel(response,data,"取消预约明细表",fileName);
+    }
+
+    /**
+     * 根据预约申请ID查询预约记录
+     * @param onlineAppointmentId 预约申请ID
+     * @return
+     */
+    public Appointment findEntityByOnlineAppointmentId(Integer onlineAppointmentId) {
+        Appointment query = new Appointment();
+        query.setOnlineAppointmentId(onlineAppointmentId);
+        query.setInservice(true);
+        Appointment appointment = mapper.selectOne(query);
+        return appointment;
     }
 }

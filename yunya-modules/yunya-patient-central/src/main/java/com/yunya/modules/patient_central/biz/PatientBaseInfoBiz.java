@@ -34,6 +34,7 @@ import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
+import io.lettuce.core.ScriptOutputType;
 import org.apache.commons.httpclient.NameValuePair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -320,11 +321,14 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    */
   public void addPatientOrigin(PatientBaseInfo patientBaseInfo) {
     if (patientBaseInfo.getOriginId() != null) {
-      PatientOriginLog patientOriginLog =
-          patientOriginLogMapper.selectIsReferralRelationship(patientBaseInfo);
+      PatientOriginLog patientOriginLog = new PatientOriginLog();
+      patientOriginLog.setPatientId(patientBaseInfo.getId());
+      patientOriginLog.setInservice(true);
+      PatientOriginLog patientOriginLogVo =
+          patientOriginLogMapper.selectOne(patientOriginLog);
       PatientOriginLog insertPatientOriginLog = new PatientOriginLog();
-      if (patientOriginLog != null) {
-        if (!patientOriginLog.getOriginId().equals(patientBaseInfo.getOriginId())) {
+      if (patientOriginLogVo != null) {
+        if (!patientOriginLogVo.getOriginId().equals(patientBaseInfo.getOriginId())) {
           insertPatientOriginLog.setPatientId(patientBaseInfo.getId());
           insertPatientOriginLog.setOriginType(patientBaseInfo.getOriginType());
           insertPatientOriginLog.setOriginId(patientBaseInfo.getOriginId());
@@ -337,9 +341,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
           insertPatientOriginLog.setUpdTime(new Date());
 
           // 修改推荐关系状态 并发送消息
-          patientOriginLog.setInservice(false);
-          patientOriginLogMapper.updateByPrimaryKey(patientOriginLog);
-          sendMemberRelationMessages(patientOriginLog.getId(), 1);
+          patientOriginLogVo.setInservice(false);
+          patientOriginLogMapper.updateByPrimaryKey(patientOriginLogVo);
+          sendMemberRelationMessages(patientOriginLogVo.getId(), 1);
           // 添加推荐关系 并发送消息
           patientOriginLogMapper.insertSelective(insertPatientOriginLog);
           remoteRabbitMqServiceFeign.sendMessage(

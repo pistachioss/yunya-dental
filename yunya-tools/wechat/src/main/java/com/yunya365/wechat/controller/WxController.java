@@ -62,6 +62,12 @@ public class WxController {
         return ResponseUtil.success(authInfo);
     }
 
+    @GetMapping(value = "/wxVip/auth/online/appointment")
+    @ApiOperation(value = "线上预约获取用户授权信息")
+    public ResponseResult<WxAuthVo> getAuthInfoAndCheckUser(@RequestParam String code,HttpServletRequest request) {
+        return wxService.getAuthInfoAndCheckUser(code,request);
+    }
+
     @PostMapping(value = "/wxVip/home/register")
     @ApiOperation(value = "会员注册")
     public ResponseResult<WxRegisterVo> wxRegister(HttpServletRequest request, @Valid @RequestBody WxRegisterModel model) {

@@ -31,6 +31,8 @@ public class FirstVisitDetailVO {
     @ApiModelProperty("初诊日期")
     @Excel(name = "初诊日期")
     private String firstVisitTime;
+    @ApiModelProperty("门诊ID")
+    private Integer orgId;
     @ApiModelProperty("患者ID")
     private Integer patientId;
     @ApiModelProperty("患者姓名")
@@ -57,4 +59,6 @@ public class FirstVisitDetailVO {
     @ApiModelProperty("下次提醒内容")
     @Excel(name = "提醒内容")
     private String nextRemindcontent;
+    @ApiModelProperty("初诊医生ID")
+    private Integer registeredDentistId;
 }

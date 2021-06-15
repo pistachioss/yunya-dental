@@ -1,6 +1,8 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.vo.*;
@@ -119,4 +121,12 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
    */
   List<PatientBillPrintInfoVO> selectBillDetailListByIds(
       @Param("patientId") Integer patientId, @Param("billRecordIds") Integer[] billRecordIds);
+
+  /**
+   * 根据条件查询应收账款余额列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<BillRestReceivableAmountVO> selectDebtList(@Param("query") BillOfReceivableQuery query);
 }

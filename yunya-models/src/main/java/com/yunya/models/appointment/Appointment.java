@@ -26,6 +26,12 @@ public class Appointment {
     private Integer orgId;
 
     /**
+     * 在线预约申请ID,可能为空
+     */
+    @Column(name = "online_appointment_id")
+    private Integer onlineAppointmentId;
+
+    /**
      * 医生ID
      */
     @Column(name = "dentist_id")
@@ -225,6 +231,22 @@ public class Appointment {
      */
     public void setOrgId(Integer orgId) {
         this.orgId = orgId;
+    }
+
+    /**
+     * 获取在线预约申请ID
+     * @return 在线预约申请ID
+     */
+    public Integer getOnlineAppointmentId() {
+        return onlineAppointmentId;
+    }
+
+    /**
+     * 设置在线预约申请ID
+     * @param onlineAppointmentId 在线预约申请ID
+     */
+    public void setOnlineAppointmentId(Integer onlineAppointmentId) {
+        this.onlineAppointmentId = onlineAppointmentId;
     }
 
     /**
@@ -673,5 +695,40 @@ public class Appointment {
      */
     public void setCancelReason(String cancelReason) {
         this.cancelReason = cancelReason;
+    }
+
+    @Override
+    public String toString() {
+        return "Appointment{" +
+                "id=" + id +
+                ", patientId=" + patientId +
+                ", orgId=" + orgId +
+                ", onlineAppointmentId=" + onlineAppointmentId +
+                ", dentistId=" + dentistId +
+                ", assistantId=" + assistantId +
+                ", deptRoomId=" + deptRoomId +
+                ", clinicDeviceItemId=" + clinicDeviceItemId +
+                ", clinicAppointItemId=" + clinicAppointItemId +
+                ", appointDuration=" + appointDuration +
+                ", appointDate=" + appointDate +
+                ", appointTime='" + appointTime + '\'' +
+                ", appointStartTime=" + appointStartTime +
+                ", appointEndTime=" + appointEndTime +
+                ", appointPeriod='" + appointPeriod + '\'' +
+                ", toothBit='" + toothBit + '\'' +
+                ", appointContent='" + appointContent + '\'' +
+                ", appointType=" + appointType +
+                ", confirmStatus=" + confirmStatus +
+                ", appointStatus=" + appointStatus +
+                ", remarks='" + remarks + '\'' +
+                ", cancelReason='" + cancelReason + '\'' +
+                ", inservice=" + inservice +
+                ", crtId=" + crtId +
+                ", crtName='" + crtName + '\'' +
+                ", crtTime=" + crtTime +
+                ", uptId=" + uptId +
+                ", updName='" + updName + '\'' +
+                ", updTime=" + updTime +
+                '}';
     }
 }

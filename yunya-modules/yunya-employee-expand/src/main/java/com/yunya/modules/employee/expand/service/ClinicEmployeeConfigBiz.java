@@ -1,6 +1,9 @@
 package com.yunya.modules.employee.expand.service;
 
 import com.google.common.base.Objects;
+import com.yunya.feign.appointment.RemoteAppointmentFeign;
+import com.yunya.feign.appointment.domain.form.OnlineAppointItemSettingForm;
+import com.yunya.feign.appointment.vo.EnableOnlineAppointItemVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.EmployeeInfoQueryForm;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
@@ -9,7 +12,9 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.expand.ClinicEmployeeConfig;
@@ -20,6 +25,7 @@ import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigReq;
 import com.yunya.modules.employee.expand.model.response.ClinicEmployeeConfigRes;
 import com.yunya.modules.employee.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.modules.employee.expand.model.response.EnableEmployeeRes;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,12 +49,15 @@ import static com.yunya.framework.common.constant.BusinessConstants.USER_RESIGNA
  * @create 2020-05-27 9:59
  */
 @Service
+@Slf4j
 public class ClinicEmployeeConfigBiz
     extends BaseBiz<ClinicEmployeeConfigMapper, ClinicEmployeeConfig> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClinicEmployeeConfigBiz.class);
 
   @Resource private RemoteSystemServiceFeign systemServiceFeign;
+
+  @Resource private RemoteAppointmentFeign remoteAppointmentFeign;
 
   /**
    * 门诊端 员工配置
@@ -77,6 +86,12 @@ public class ClinicEmployeeConfigBiz
       BeanUtils.copyProperties(configRequest, clinicEmployeeConfig);
       mapper.updateByPrimaryKey(clinicEmployeeConfig);
     }
+    // 更新线上可预约项目
+    OnlineAppointItemSettingForm form = configRequest.getOnlineAppointItemInfo();
+    ResponseResult responseResult = remoteAppointmentFeign.addOrUpdateOnlineAppointItem(form);
+    if (responseResult.getStatus() > 0) {
+      throw new ClientServiceException(responseResult.getMsg(),responseResult.getStatus());
+    }
   }
 
   /**
@@ -94,9 +109,14 @@ public class ClinicEmployeeConfigBiz
         .andEqualTo("clinicId", req.getClinicId())
         .andEqualTo("employeeId", employeeId);
     ClinicEmployeeConfig config = mapper.selectOneByExample(example);
+    // 线上预约信息
+    EnableOnlineAppointItemVo enableAppointItems = remoteAppointmentFeign.findOnlineAppointItemById(employeeId, req.getClinicId());
+    log.info("====>员工设置线上预约信息\n{}",enableAppointItems);
     if (config == null) {
       result.setEnableAppoint(1);
       result.setEnableRegistry(1);
+      // 线上预约员工设置信息
+      result.setOnlineAppointItemInfo(enableAppointItems);
       return result;
     }
     result = EntityUtils.build(config, ClinicEmployeeConfigRes.class);
@@ -109,6 +129,8 @@ public class ClinicEmployeeConfigBiz
             : systemServiceFeign.findDepartmentRoomById(result.getClinicDepartmentRoomId());
     result.setAssistantName(assistantEmployee == null ? null : assistantEmployee.getName());
     result.setClinicDepartmentRoomName(room == null ? null : room.getName());
+    // 线上预约员工设置信息
+    result.setOnlineAppointItemInfo(enableAppointItems);
     return result;
   }
 
@@ -295,6 +317,7 @@ public class ClinicEmployeeConfigBiz
    */
   public Integer deleteClinicEmployeeConfig(Integer employeeId, Integer clinicId) {
     if (employeeId != null && clinicId != null) {
+      remoteAppointmentFeign.deleteOnlineAppointItemSetting(employeeId,clinicId);
       return mapper.deleteEmployeeConfig(employeeId, clinicId);
     }
     return 0;

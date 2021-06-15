@@ -1,6 +1,8 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
+import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.models.treatment.BillExceptionHandleRecord;
@@ -90,4 +92,22 @@ public interface BillExceptionHandleRecordMapper extends Mapper<BillExceptionHan
    */
   List<BillOfRefundRecordVO> selectBillRefundRecordList(
       @Param("query") BillRefundRecordQuery query);
+
+
+  /**
+   * 根据条件查询门诊在查询时间点后的被调整欠费账单列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<BillRestReceivableAmountVO> selectFollowUpBillAdjustList(
+          @Param("query") BillOfReceivableQuery query);
+
+  /**
+   * 根据条件查询门诊在查询时间点前的撤销收费ID列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  List<Integer> selectBeforeRevokeBillPayIds(@Param("query") BillOfReceivableQuery query);
 }

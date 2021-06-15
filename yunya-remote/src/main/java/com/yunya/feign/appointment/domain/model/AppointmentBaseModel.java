@@ -34,7 +34,7 @@ public class AppointmentBaseModel implements Serializable {
 
     /** 患者id */
     @ApiModelProperty(value = "患者id",required = true)
-    @NotNull(message = "患者id为空！")
+    @NotNull(message = "没有该患者，请先添加患者")
     private Integer patientId;
 
     /** 门诊id */
@@ -104,6 +104,10 @@ public class AppointmentBaseModel implements Serializable {
     @ApiModelProperty(value = "备注")
     @Length(max = 500,message = "预约内容不能超过500个字符")
     private String remarks;
+
+    /** 线上预约ID */
+    @ApiModelProperty("线上预约ID")
+    private Integer onlineAppointmentId;
 
     /** 时长分解列表 */
     @ApiModelProperty(value = "时长分解列表")

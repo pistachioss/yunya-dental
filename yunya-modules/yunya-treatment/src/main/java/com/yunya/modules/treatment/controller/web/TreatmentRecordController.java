@@ -120,6 +120,22 @@ public class TreatmentRecordController {
   }
 
   /**
+   * 根据条件查询患者就诊记录列表(只显示与登录人有关的就诊记录 医生或助手都是如此)
+   *
+   * @param queryForm 查询条件
+   * @return resultList
+   */
+  @ApiOperation("根据条件查询患者就诊记录列表(患者档案就诊列表(只显示与登录人有关的就诊记录 医生或助手都是如此))")
+  @PostMapping(value = "/patient/screenList", name = "患者就诊记录列表")
+  @CurrentUser
+  public ResponseResult<PageInfo<PatientTreatmentRecordVO>> screenPatientTreatmentRecordList(
+      @RequestBody @Validated PatientTreatmentRecordQueryForm queryForm) {
+    PageInfo<PatientTreatmentRecordVO> resultList =
+        treatmentRecordBiz.screenFindPatientTreatList(queryForm);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
    * 批量打印患者账单记录
    *
    * @param query 请求参数

@@ -30,6 +30,75 @@
         SELECT
             merd.id,
             merd.org_id orgId,
+            merd.member_id memberCard,
+            pbio.name consumerName,
+            (select name from patient_base_info where id = pmi.patient_id ) as masterCardName,
+            merd.expend_principal expendPrincipal,
+            merd.expend_gift expendGift,
+            merd.remarks remarks,
+            merd.crt_id operatorId,
+            merd.crt_name operatorName,
+            date_format(merd.crt_time,'%Y-%m-%d %H:%i') operatingTime,
+            merd.upt_id uptId,
+            merd.upd_name updName,
+            merd.upd_time updTime,
+            pbio.name expendName
+        FROM
+            member_expend_record merd
+            LEFT JOIN patient_base_info pbio ON merd.patient_id = pbio.id
+            LEFT JOIN patient_member_info pmi ON pmi.card_number = merd.member_id
+        WHERE
+            1 = 1
+            <if test="form.memberId != null || form.memberId != ''">
+              and  merd.member_id = #{form.memberId}
+            </if>
+
+            <if test="form.memberId == null">
+              and  merd.member_id is null
+            </if>
+
+            and merd.inservice = 1
+            and type = 0
+
+		UNION
+
+		SELECT
+            merd.id,
+            merd.org_id orgId,
+            merd.member_id memberCard,
+            pbio.name consumerName,
+            (select name from patient_base_info where id = pmi.patient_id ) as masterCardName,
+            merd.expend_principal expendPrincipal,
+            merd.expend_gift expendGift,
+            merd.remarks remarks,
+            merd.crt_id operatorId,
+            merd.crt_name operatorName,
+            date_format(merd.crt_time,'%Y-%m-%d %H:%i') operatingTime,
+            merd.upt_id uptId,
+            merd.upd_name updName,
+            merd.upd_time updTime,
+            pbio.name expendName
+        FROM
+            member_expend_record merd
+            left JOIN patient_base_info pbio ON merd.patient_id = pbio.id
+			left JOIN patient_member_info pmi ON pmi.card_number = merd.member_id
+        WHERE
+            1 = 1
+            <if test="form.patientId != null">
+               and merd.patient_id = #{form.patientId}
+            </if>
+
+            <if test="form.patientId == null">
+               and merd.patient_id is null
+            </if>
+            and merd.inservice = 1
+            and type = 0
+    </select>
+
+   <!-- <select id="expendList1" resultType="com.yunya.feign.patient_central.domain.vo.web.MemberExpendRecordVo">
+        SELECT
+            merd.id,
+            merd.org_id orgId,
             merd.member_id memberId,
             merd.patient_id patientId,
             merd.expend_principal expendPrincipal,
@@ -50,6 +119,6 @@
             and merd.inservice = 1
             and type = 0
             order by merd.crt_time desc
-    </select>
+    </select>-->
 
 </mapper>

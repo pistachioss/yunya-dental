@@ -14,12 +14,6 @@ public interface PatientOriginLogMapper extends Mapper<PatientOriginLog> {
      */
     void insertList(@Param("list") List<PatientOriginLog> patientOriginLogList);
 
-    /**
-     * 根据患者id查询患者来源推荐关系
-     * @param patientBaseInfo 患者信息
-     * @return 患者来源推荐关系
-     */
-    PatientOriginLog selectIsReferralRelationship(@Param("from") PatientBaseInfo patientBaseInfo);
 
     /**
      * 批量删除

@@ -107,7 +107,9 @@
         else '其他' end as abbreviation,
         ccb.brandName,
         ccb.tel,
-        ccb.address
+        ccb.address,
+        ccb.businessStartTime,
+        ccb.businessEndTime
         FROM
         (
         SELECT
@@ -121,7 +123,9 @@
         cb.clinic_number AS clinicNumber,
         cb.brandName,
         cb.tel,
-        cb.address
+        cb.address,
+        cb.business_start_time AS businessStartTime,
+        cb.business_end_time AS businessEndTime
         FROM
         company c
         LEFT JOIN (
@@ -131,6 +135,8 @@
         cei.clinic_number,
         cei.tel,
         cei.address,
+        cei.business_start_time,
+        cei.business_end_time,
         (
         SELECT
         GROUP_CONCAT( b.`name` )
@@ -177,6 +183,7 @@
            cei.tel,
            cei.address,
            cei.clinic_number as clinicNumber,
+           b.`name` as brandName,
            case
                c.type
            when 0 then
@@ -188,7 +195,7 @@
            end as abbreviation
         from
 	        company c
-	    left join clinic_ext_info cei ON c.id = cei.company_id
+	    left join clinic_ext_info cei ON c.id = cei.company_id left join brand b on find_in_set(b.id,cei.brand_ids)
         where c.id in
         <foreach item="item" index="index" collection="orgIds" open="(" separator="," close=")">
             #{item}
