@@ -49,6 +49,16 @@
         where oa.id = #{id}
     </select>
 
+    <!-- 获取消息通知 -->
+    <select id="countNewMessageNotice" resultType="java.lang.Integer">
+        select count(oa.id) from online_appointment oa where oa.org_id = #{orgId} and oa.status = 0 and oa.inservice = 1
+    </select>
+
+    <!-- 获取同一时间预约数量 -->
+    <select id="countOnlineAppointSameTime" resultType="com.yunya.feign.appointment.vo.CountOnlineAppointVo">
+        SELECT date_format(a.appoint_time,'%H:%i') as time, count(a.id) as `count` FROM `online_appointment` a where DATE_FORMAT(a.appoint_date,'%Y-%m-%d') = date_format(#{date},'%Y-%m-%d') and a.org_id = #{orgId} GROUP BY a.appoint_time ASC
+    </select>
+
     <!-- 根据条件批量查询预约申请 -->
     <select id="findByCondition" resultType="com.yunya.feign.appointment.vo.OnlineAppointmentVo">
         select distinct
@@ -66,10 +76,8 @@
             oa.patient_name as patientName,
             oa.patient_phone as patientPhone,
             oa.status as status,
-            date_format(oa.crt_time,'%Y-%m-%d') as crtTime,
-            a.id as appointmentId,
-            a.confirm_status as confirmStatus
-        from online_appointment oa left join online_appoint_item oaitem on oaitem.item_id = oa.appoint_item_id LEFT join appointment a on a.online_appointment_id = oa.id
+            date_format(oa.crt_time,'%Y-%m-%d') as crtTime
+        from online_appointment oa inner join online_appoint_item oaitem on oaitem.item_id = oa.appoint_item_id
         <where>
             <if test="query.orgId != null">
                 and oa.org_id = #{query.orgId}
@@ -101,23 +109,7 @@
             <if test="query.inservice != null">
                 and oa.inservice = #{query.inservice}
             </if>
-            <if test="query.confirmStatus != null">
-                and a.confirm_status = #{query.confirmStatus}
-            </if>
         </where>
-        <if test="query.openId != null and query.openId != ''">
-            order by oa.id desc
-        </if>
-    </select>
-
-    <!-- 获取消息通知 -->
-    <select id="countNewMessageNotice" resultType="java.lang.Integer">
-        select count(oa.id) from online_appointment oa where oa.org_id = #{orgId} and oa.status = 0 and oa.inservice = 1
-    </select>
-
-    <!-- 获取同一时间预约数量 -->
-    <select id="countOnlineAppointSameTime" resultType="com.yunya.feign.appointment.vo.CountOnlineAppointVo">
-        SELECT date_format(a.appoint_time,'%H:%i') as time, count(a.id) as `count` FROM `online_appointment` a where DATE_FORMAT(a.appoint_date,'%Y-%m-%d') = date_format(#{date},'%Y-%m-%d') and a.org_id = #{orgId} GROUP BY a.appoint_time ASC
     </select>
 
 </mapper>
