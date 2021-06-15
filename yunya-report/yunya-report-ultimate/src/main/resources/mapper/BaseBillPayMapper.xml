@@ -2290,8 +2290,8 @@
         join base_patient bp on bp.patient_id = br.patient_id
         join base_bill bb 	 on bb.bill_id = br.bill_id
         where
-        and bp.origin_type = 3
         bp.origin_id = #{query.activityIds}
+        and bp.origin_type = 3
         <if test="query.startDate != null and query.startDate != ''">
             AND DATE_FORMAT( br.refund_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
         </if>
