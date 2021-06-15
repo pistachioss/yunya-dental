@@ -189,11 +189,14 @@ public class PatientManageTask {
                 return list.stream().map(BasePatientMemberOccurLog::getPatientId).collect(toSet());
             }
             return Sets.newHashSet();
-        }, taskThreadPool).thenApplyAsync(log -> {
+        }, taskThreadPool).thenApplyAsync(patientIds -> {
             Example example = new Example(BasePatientMember.class);
             example.selectProperties("memberLevelId", "memberLevelName", "principalAmount", "bonusAmount", "type", "patientId");
-            example.createCriteria().andIn("patientId", log).orGreaterThanOrEqualTo("cardOpeningDate", startDate);
-            return basePatientMemberMapper.selectByExample(example);
+            if (CollectionUtils.isNotEmpty(patientIds)) {
+                example.createCriteria().andIn("patientId", patientIds).orGreaterThanOrEqualTo("cardOpeningDate", startDate);
+                return basePatientMemberMapper.selectByExample(example);
+            }
+            return Lists.newArrayList();
         });
         CompletableFuture<List<BaseBill>> cf3 = CompletableFuture.supplyAsync(() -> {
             Example example = new Example(BaseBillPay.class);
@@ -223,11 +226,14 @@ public class PatientManageTask {
             List<BaseTreatmentProcess> list = baseTreatmentProcessMapper.selectByExample(example);
             return list.stream().map(BaseTreatmentProcess::getPatientId).collect(toSet());
         }, taskThreadPool).thenApplyAsync(patientIds -> {
-            Example example = new Example(BaseTreatmentProcess.class);
-            example.selectProperties("patientId");
-            example.createCriteria().andIn("patientId", patientIds)
-                    .andIsNotNull("treatStartTime");
-            return baseTreatmentProcessMapper.selectByExample(example);
+            if (CollectionUtils.isNotEmpty(patientIds)) {
+                Example example = new Example(BaseTreatmentProcess.class);
+                example.selectProperties("patientId");
+                example.createCriteria().andIn("patientId", patientIds)
+                        .andIsNotNull("treatStartTime");
+                return baseTreatmentProcessMapper.selectByExample(example);
+            }
+            return Lists.newArrayList();
         });;
         CompletableFuture<List<PatientManage>> cf5 = CompletableFuture.supplyAsync(() -> {
             return patientManageMapper.selectAll();
