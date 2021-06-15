@@ -258,7 +258,6 @@ public class PatientManageTask {
         List<PatientManage> manages = cf5.join();
         Map<Integer, PatientManage> collect = manages.stream().collect(toMap(PatientManage::getPatientId, Function.identity()));
         Set<Integer> addIds = cf1Res.stream().map(BasePatient::getPatientId).collect(toSet());
-        log.info("需要新增的患者数量：{}", addIds.size());
         //新增的患者
         if (CollectionUtils.isNotEmpty(addIds)) {
             List<PatientManage> insertList = addIds.stream()
@@ -282,13 +281,13 @@ public class PatientManageTask {
                         }
                         return patientManage;
                     }).collect(toList());
+            log.info("需要新增的患者数量：{}", insertList.size());
             this.insertList(insertList);
         }
         Set<Integer> updateIds = Sets.newHashSet(billMap.keySet());
         updateIds.addAll(memberMap.keySet());
         updateIds.addAll(billMap.keySet());
         updateIds.addAll(processMap.keySet());
-        log.info("需要更新的患者数量：{}", updateIds.size());
         List<PatientManage> updateList = updateIds.stream()
                 .filter(id -> collect.get(id) != null)
                 .map(id -> {
@@ -309,6 +308,7 @@ public class PatientManageTask {
                     }
                     return update;
                 }).collect(toList());
+        log.info("需要更新的患者数量：{}", updateList.size());
         this.updateList(updateList);
     }
 
