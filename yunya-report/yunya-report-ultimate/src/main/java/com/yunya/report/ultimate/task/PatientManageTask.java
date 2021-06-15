@@ -190,9 +190,9 @@ public class PatientManageTask {
             }
             return Sets.newHashSet();
         }, taskThreadPool).thenApplyAsync(patientIds -> {
-            Example example = new Example(BasePatientMember.class);
-            example.selectProperties("memberLevelId", "memberLevelName", "principalAmount", "bonusAmount", "type", "patientId");
             if (CollectionUtils.isNotEmpty(patientIds)) {
+                Example example = new Example(BasePatientMember.class);
+                example.selectProperties("memberLevelId", "memberLevelName", "principalAmount", "bonusAmount", "type", "patientId");
                 example.createCriteria().andIn("patientId", patientIds).orGreaterThanOrEqualTo("cardOpeningDate", startDate);
                 return basePatientMemberMapper.selectByExample(example);
             }
@@ -208,16 +208,22 @@ public class PatientManageTask {
             }
             return Sets.newHashSet();
         }, taskThreadPool).thenApplyAsync(billIds -> {
-            Example example = new Example(BaseBill.class);
-            example.selectProperties("patientId");
-            example.createCriteria().andIn("billId", billIds);
-            List<BaseBill> baseBills = baseBillMapper.selectByExample(example);
-            return baseBills.stream().map(BaseBill::getPatientId).collect(toSet());
+            if (CollectionUtils.isNotEmpty(billIds)) {
+                Example example = new Example(BaseBill.class);
+                example.selectProperties("patientId");
+                example.createCriteria().andIn("billId", billIds);
+                List<BaseBill> baseBills = baseBillMapper.selectByExample(example);
+                return baseBills.stream().map(BaseBill::getPatientId).collect(toSet());
+            }
+            return Lists.newArrayList();
         }).thenApplyAsync(patientIds -> {
-            Example example = new Example(BaseBill.class);
-            example.selectProperties("patientId", "receivedAmount", "debtAmount");
-            example.createCriteria().andIn("patientId", patientIds);
-            return baseBillMapper.selectByExample(example);
+            if (CollectionUtils.isNotEmpty(patientIds)) {
+                Example example = new Example(BaseBill.class);
+                example.selectProperties("patientId", "receivedAmount", "debtAmount");
+                example.createCriteria().andIn("patientId", patientIds);
+                return baseBillMapper.selectByExample(example);
+            }
+            return Lists.newArrayList();
         });
         CompletableFuture<List<BaseTreatmentProcess>> cf4 = CompletableFuture.supplyAsync(() -> {
             Example example = new Example(BaseTreatmentProcess.class);
@@ -234,7 +240,7 @@ public class PatientManageTask {
                 return baseTreatmentProcessMapper.selectByExample(example);
             }
             return Lists.newArrayList();
-        });;
+        });
         CompletableFuture<List<PatientManage>> cf5 = CompletableFuture.supplyAsync(() -> {
             return patientManageMapper.selectAll();
         }, taskThreadPool);
