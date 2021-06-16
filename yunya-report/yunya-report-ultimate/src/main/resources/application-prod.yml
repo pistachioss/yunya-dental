@@ -25,4 +25,4 @@ spring:
 logging:
   level:
     # tk.mybatis: DEBUG
-    com.yunya.report.ultimate: error
+    com.yunya.report.ultimate: info
