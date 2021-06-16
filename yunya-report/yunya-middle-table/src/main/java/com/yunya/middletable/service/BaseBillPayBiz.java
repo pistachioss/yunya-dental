@@ -81,16 +81,11 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       case 0:
       case 1:
       case 2:
-        BillPayRecord payRecord = billPayRecordMapper.selectByPrimaryKey(dataId);
-        Integer patientId = payRecord.getPatientId();
         mapper.deleteByPrimaryKey(dataId);
-        log.info("积分商城测试=======================\n\n{}", baseBillPay);
         if (null != baseBillPay) {
           mapper.insertSelective(baseBillPay);
           // 保存收费记录明细
           saveBillPayDetailRecord(dataId);
-          // 增加会员积分  1元=1积分
-          creditsShopBiz.ivyConsumeAddCredits(patientId,baseBillPay.getReceivedAmount(),baseBillPay.getBillPayId());
         } else {
           baseBillPayDetailMapper.deleteByBillPayId(dataId);
         }
