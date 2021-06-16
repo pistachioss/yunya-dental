@@ -35,10 +35,10 @@
                 AND bvr.type = #{query.businessType}
             </if>
             <if test="query.startDate != null and query.startDate != ''">
-                AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &gt;= #{query.startDate}
+                AND DATE_FORMAT(bvr.visiting_remind_time, '%Y-%m') &gt;= #{query.startDate}
             </if>
             <if test="query.endDate != null and query.endDate != ''">
-                AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &lt;= #{query.endDate}
+                AND DATE_FORMAT(bvr.visiting_remind_time, '%Y-%m') &lt;= #{query.endDate}
             </if>
         </where>
         ) bvr,
@@ -56,10 +56,10 @@
                 AND bvr.type = #{query.businessType}
             </if>
             <if test="query.startDate != null and query.startDate != ''">
-                AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &gt;= #{query.startDate}
+                AND DATE_FORMAT(bvr.visiting_remind_time, '%Y-%m') &gt;= #{query.startDate}
             </if>
             <if test="query.endDate != null and query.endDate != ''">
-                AND DATE_FORMAT(bvr.crt_time, '%Y-%m') &lt;= #{query.endDate}
+                AND DATE_FORMAT(bvr.visiting_remind_time, '%Y-%m') &lt;= #{query.endDate}
             </if>
         </where>
         ) bvr1

@@ -53,6 +53,19 @@ public class BaseVisitRemind {
      */
     @Column(name = "crt_time")
     private Date crtTime;
+    /**
+     * 计划进行提醒（随访）时间
+     */
+    @Column(name = "visiting_remind_time")
+    private Date visitingRemindTime;
+
+    public Date getVisitingRemindTime() {
+        return visitingRemindTime;
+    }
+
+    public void setVisitingRemindTime(Date visitingRemindTime) {
+        this.visitingRemindTime = visitingRemindTime;
+    }
 
     /**
      * 获取随访/提醒ID

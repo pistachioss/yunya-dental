@@ -53,6 +53,7 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
     switch (operateType) {
       case 0:
         BaseVisitRemind insertBaseVisitRemind = getBaseVisitRemindInfo(id, type);
+        insertBaseVisitRemind.setTime(null);
         if (StringHelper.isNotNull(insertBaseVisitRemind)) {
           mapper.delete(insertBaseVisitRemind);
           mapper.insertSelective(insertBaseVisitRemind);
@@ -60,7 +61,6 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         break;
       case 1:
         BaseVisitRemind updBaseVisitRemind = getBaseVisitRemindInfo(id, type);
-        updBaseVisitRemind.setTime(new Date());
         mapper.updateByPrimaryKeySelective(updBaseVisitRemind);
         break;
       case 2:
@@ -147,13 +147,14 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         baseVisitRemind.setPatientId(visitingRecord.getPatientId());
         baseVisitRemind.setType((byte) type.intValue());
         baseVisitRemind.setUserId(visitingRecord.getCrtId());
-        Date time = null;
-        try {
-          time = DateUtil.timeToDate(visitingRecord.getVisitingDate(),visitingRecord.getVisitingTime());
-        } catch (ParseException e) {
-          log.error("时间转换错误", e);
-        }
-//        baseVisitRemind.setTime(time);
+//        Date time = null;
+//        try {
+//          time = DateUtil.timeToDate(visitingRecord.getExecuteDate(),visitingRecord.getExecuteDate());
+//        } catch (ParseException e) {
+//          log.error("时间转换错误", e);
+//        }
+        baseVisitRemind.setTime(visitingRecord.getExecuteDate());
+        baseVisitRemind.setVisitingRemindTime(visitingRecord.getVisitingDate());
         baseVisitRemind.setContent(visitingRecord.getReason());
         baseVisitRemind.setCrtTime(visitingRecord.getCrtTime());
         return baseVisitRemind;
@@ -169,13 +170,14 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         baseVisitRemind.setPatientId(visitingRemind.getPatientId());
         baseVisitRemind.setType((byte) type.intValue());
         baseVisitRemind.setUserId(visitingRemind.getCrtId());
-        Date time = null;
-        try {
-          time = DateUtil.timeToDate(visitingRemind.getRemindDate(),visitingRemind.getRemindTime());
-        } catch (ParseException e) {
-          log.error("时间转换错误", e);
-        }
-//        baseVisitRemind.setTime(time);
+//        Date time = null;
+//        try {
+//          time = DateUtil.timeToDate(visitingRemind.getRemindDate(),visitingRemind.getRemindTime());
+//        } catch (ParseException e) {
+//          log.error("时间转换错误", e);
+//        }
+        baseVisitRemind.setTime(new Date());
+        baseVisitRemind.setVisitingRemindTime(visitingRemind.getRemindDate());
         baseVisitRemind.setContent(visitingRemind.getRemindContent());
         baseVisitRemind.setCrtTime(visitingRemind.getCrtTime());
         return baseVisitRemind;
