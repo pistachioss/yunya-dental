@@ -1,6 +1,8 @@
 package com.yunya.feign.treatment_other;
 
+import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.vo.FindAllRemindRecordVO;
 import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.feign.treatment_other.factory.RemoteTreatmentOtherFactory;
@@ -99,4 +101,14 @@ public interface RemoteTreatmentOtherFeign {
       method = RequestMethod.POST)
   List<XRayFilm> findXRayFilmListByPatientIds(
       @RequestBody List<Integer> patientIds, @PathVariable("currentDate") String currentDate);
+
+  /**
+   * 查询全部随访提醒记录
+   *
+   */
+  @ApiOperation(value = "查询全部随访提醒记录")
+  @RequestMapping(
+          value = "api/treatment/other/visiting/findAllRecord",
+          method = RequestMethod.POST)
+  FindAllRemindRecordVO findAllRecord(PullForm pullForm);
 }

@@ -1,8 +1,12 @@
 package com.yunya.middletable.dao.report;
 
 import com.yunya.models.report.BaseVisitRemind;
+import com.yunya.models.treatment_other.VisitingRecord;
+import com.yunya.models.treatment_other.VisitingRemind;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
+
+import java.util.List;
 
 public interface BaseVisitRemindMapper extends Mapper<BaseVisitRemind> {
 
@@ -12,4 +16,15 @@ public interface BaseVisitRemindMapper extends Mapper<BaseVisitRemind> {
      * @param type 类型
      */
     void deleteByPrimaryKeyAndType(@Param("id") Integer id, @Param("type") Integer type);
+
+    /**
+     * 导入计划提醒时间
+     * @return
+     */
+    int insertVisitingRemindTime(List<VisitingRemind>list);
+    /**
+     * 导入计划随访时间
+     * @return
+     */
+    int insertVisitingRecordTime(List<VisitingRecord>list);
 }

@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.other.mapper;
 
+import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
@@ -93,4 +94,10 @@ public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
    * @return
    */
   VisitingStatusCountVO countVisiting(@Param("patientId") Integer patientId);
+
+  /**
+   * 查询随访数据
+   * @return
+   */
+  List<VisitingRecord>selectList(PullForm pullForm);
 }

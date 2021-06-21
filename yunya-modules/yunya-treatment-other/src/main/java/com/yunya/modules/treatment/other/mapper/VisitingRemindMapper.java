@@ -1,7 +1,9 @@
 package com.yunya.modules.treatment.other.mapper;
 
+import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery;
 import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
+import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.VisitingRemind;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -38,4 +40,10 @@ public interface VisitingRemindMapper extends Mapper<VisitingRemind> {
    */
   List<NextVisitingRecordVo> countNextVisitingListByIds(
       @Param("patientIds") List<Integer> patientIds, @Param("currentDate") String currentDate);
+
+  /**
+   * 查询提醒数据
+   * @return
+   */
+  List<VisitingRemind>selectList(PullForm pullForm);
 }

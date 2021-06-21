@@ -2,6 +2,8 @@ package com.yunya.middletable.service.treatment_other;
 
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
+import com.yunya.feign.treatment_other.domain.vo.FindAllRemindRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -40,6 +42,8 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
   @Autowired VisitingRecordMapper visitingRecordMapper;
   /** 提醒mapper */
   @Autowired VisitingRemindMapper visitingRemindMapper;
+  @Autowired
+  private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
 
   /**
    * 随访提醒中间表-操作
@@ -197,5 +201,21 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
       return visitingRemind;
     }
     return null;
+  }
+
+  /**
+   * 随访提醒中间表导入计划时间的字段数据
+   */
+  public int dsj(PullForm pullForm){
+  FindAllRemindRecordVO findAllRemindRecordVO = remoteTreatmentOtherFeign.findAllRecord(pullForm);
+    int a = 0;
+    int b = 0;
+    if(findAllRemindRecordVO.getRecordList()!=null && findAllRemindRecordVO.getRecordList().size()>0){
+      a =  mapper.insertVisitingRecordTime(findAllRemindRecordVO.getRecordList());
+    }
+    if(findAllRemindRecordVO.getRemindList() !=null && findAllRemindRecordVO.getRemindList().size()>0){
+      b = mapper.insertVisitingRemindTime(findAllRemindRecordVO.getRemindList());
+    }
+    return a+b;
   }
 }
