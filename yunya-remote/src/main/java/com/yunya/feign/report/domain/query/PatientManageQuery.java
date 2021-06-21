@@ -12,14 +12,14 @@ import java.math.BigDecimal;
  * @author: xy
  * @date 2021/5/31 17:44
  **/
-@ApiModel(value = "产品售出统计-产品维度参数")
+@ApiModel(value = "公司端-患者管理参数")
 @Data
 public class PatientManageQuery extends PageQuery {
     @ApiModelProperty(value = "患者")
     private String patientKeyWord;
     @ApiModelProperty(value = "患者类型")
-    private Integer patientType;
-    @ApiModelProperty(value = "会员卡")
+    private String patientType;
+    @ApiModelProperty(value = "会员卡 1-金藤卡  2-银藤卡  3-青藤卡  4-艾维会员")
     private Integer memberType;
     @ApiModelProperty(value = "性别 0-男；1-女")
     private Integer gender;
@@ -43,7 +43,7 @@ public class PatientManageQuery extends PageQuery {
     private BigDecimal endOweAmount;
     @ApiModelProperty(value = "预付款余额初")
     private BigDecimal startPrincipalBalance;
-    @ApiModelProperty(value = "预付款余额初")
+    @ApiModelProperty(value = "预付款余额末")
     private BigDecimal endPrincipalBalance;
     @ApiModelProperty(value = "会员卡余额初")
     private BigDecimal startMemberBalance;

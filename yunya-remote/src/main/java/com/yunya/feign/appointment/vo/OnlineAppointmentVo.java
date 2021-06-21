@@ -6,8 +6,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -27,6 +25,12 @@ public class OnlineAppointmentVo implements Serializable {
     private Integer id;
 
     /**
+     * 微信用户唯一标识
+     */
+    @ApiModelProperty("微信用户唯一标识")
+    private String openId;
+
+    /**
      * 预约ID (appointment表中主键ID)
      */
     @ApiModelProperty("预约ID,可能为空")
@@ -41,7 +45,7 @@ public class OnlineAppointmentVo implements Serializable {
     /**
      * 门诊名称
      */
-    @ApiModelProperty(value = "门诊名称",hidden = true)
+    @ApiModelProperty(value = "门诊名称")
     @Excel(name = "门诊名称")
     private String orgName;
 
@@ -81,7 +85,7 @@ public class OnlineAppointmentVo implements Serializable {
      * 预约内容
      */
     @ApiModelProperty(value = "预约内容",hidden = true)
-    private String appointContent;
+    private String appointContent = "--";
 
     /**
      * 预约日期
@@ -121,7 +125,7 @@ public class OnlineAppointmentVo implements Serializable {
     private String patientPhone;
 
     /**
-     * 预约申请状态 0-申请中；1-通过；2-取消
+     * 线上预约状态 0-申请中；1-通过；2-取消
      */
     @Excel(name = "线上预约状态",readConverterExp = "0=申请中,1=通过,2=取消")
     @ApiModelProperty("线上预约状态 0-申请中；1-通过；2-取消")
@@ -136,22 +140,46 @@ public class OnlineAppointmentVo implements Serializable {
     /**
      * 预约申请时间
      */
-    @Excel(name = "预约申请时间")
+    @Excel(name = "预约申请时间",dateFormat="yyyy-MM-dd")
     @ApiModelProperty("创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
-    private String crtTime;
+    private Date crtTime;
 
     /**
      * 病历编号
      */
-    @Excel(name = "病历编号")
+    @Excel(name = "病历编号",defaultValue = "--")
     @ApiModelProperty("病历编号")
-    private String medicalNumber;
+    private String medicalNumber = "--";
 
     /**
      * 预约确认状态
      */
-    @Excel(name = "预状态约",readConverterExp = "0=未确认,1=已确认")
-    @ApiModelProperty("预状态约 0=未确认,1=已确认")
-    private Boolean confirmStatus;
+    @Excel(name = "预状态约",defaultValue = "待确认",readConverterExp = "0=待确认,1=已确认")
+    @ApiModelProperty("预状态约 0=待确认,1=已确认")
+    private Integer confirmStatus;
+
+    /**
+     * 品牌名称
+     */
+    @ApiModelProperty("品牌名称")
+    private String brandName;
+
+    /**
+     * 门诊地址
+     */
+    @ApiModelProperty("门诊地址")
+    private String addr;
+
+    /**
+     * 上班时间
+     */
+    @ApiModelProperty("上班时间")
+    private String workingHours;
+
+    /**
+     * 下班时间
+     */
+    @ApiModelProperty("下班时间")
+    private String offworkingHours;
 }

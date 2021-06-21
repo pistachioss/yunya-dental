@@ -34,7 +34,7 @@ public class AppointmentBaseModel implements Serializable {
 
     /** 患者id */
     @ApiModelProperty(value = "患者id",required = true)
-    @NotNull(message = "患者id为空！")
+    @NotNull(message = "没有该患者，请先添加患者")
     private Integer patientId;
 
     /** 门诊id */

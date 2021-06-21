@@ -28,7 +28,7 @@ public class MarketRecommendationVo implements Serializable {
     private Integer activityIds;
 
     /** 活动名称 */
-    @Excel(name = "活动名称", cellType = STRING, isStatistics = true, type = EXPORT)
+    @Excel(name = "活动名称")
     @ApiModelProperty(value = "活动名称", required = false)
     private String activityName;
 

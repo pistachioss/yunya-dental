@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -36,6 +38,7 @@ import static java.util.stream.Collectors.toSet;
  **/
 @Component
 @Slf4j
+@RestController
 public class PatientManageTask {
     @Resource
     private BasePatientMapper basePatientMapper;
@@ -55,6 +58,7 @@ public class PatientManageTask {
     private ExecutorService taskThreadPool;
 
     @Scheduled(cron = "00 01 00 * * ?")
+    @RequestMapping("/white/patientManage")
     public void patientTask() {
         long start = System.currentTimeMillis();
         Integer countTable = patientManageMapper.countTable();
@@ -173,45 +177,70 @@ public class PatientManageTask {
         CompletableFuture<List<BasePatient>> cf1 = CompletableFuture.supplyAsync(() -> {
             Example example = new Example(BasePatient.class);
             example.selectProperties("patientId");
-            example.createCriteria().andGreaterThan("patientCrtTime", startDate);
+            example.createCriteria().andGreaterThanOrEqualTo("patientCrtTime", startDate);
             return basePatientMapper.selectByExample(example);
         }, taskThreadPool);
         CompletableFuture<List<BasePatientMember>> cf2 = CompletableFuture.supplyAsync(() -> {
             Example example = new Example(BasePatientMemberOccurLog.class);
             example.selectProperties("patientId");
-            example.createCriteria().andGreaterThan("occurDate", startDate);
+            example.createCriteria().andGreaterThanOrEqualTo("occurDate", startDate);
             List<BasePatientMemberOccurLog> list = patientMemberOccurLogMapper.selectByExample(example);
             if (CollectionUtils.isNotEmpty(list)) {
                 return list.stream().map(BasePatientMemberOccurLog::getPatientId).collect(toSet());
             }
             return Sets.newHashSet();
-        }, taskThreadPool).thenApplyAsync(log -> {
-            Example example = new Example(BasePatientMember.class);
-            example.selectProperties("memberLevelId", "memberLevelName", "principalAmount", "bonusAmount", "type", "patientId");
-            example.createCriteria().andIn("patientId", log);
-            return basePatientMemberMapper.selectByExample(example);
+        }, taskThreadPool).thenApplyAsync(patientIds -> {
+            if (CollectionUtils.isNotEmpty(patientIds)) {
+                Example example = new Example(BasePatientMember.class);
+                example.selectProperties("memberLevelId", "memberLevelName", "principalAmount", "bonusAmount", "type", "patientId");
+                example.createCriteria().andIn("patientId", patientIds).orGreaterThanOrEqualTo("cardOpeningDate", startDate);
+                return basePatientMemberMapper.selectByExample(example);
+            }
+            return Lists.newArrayList();
         });
         CompletableFuture<List<BaseBill>> cf3 = CompletableFuture.supplyAsync(() -> {
             Example example = new Example(BaseBillPay.class);
             example.selectProperties("billId");
-            example.createCriteria().andGreaterThan("payeeDate", startDate);
+            example.createCriteria().andGreaterThanOrEqualTo("payeeDate", startDate);
             List<BaseBillPay> list = baseBillPayMapper.selectByExample(example);
             if (CollectionUtils.isNotEmpty(list)) {
                 return list.stream().map(BaseBillPay::getBillId).collect(toSet());
             }
             return Sets.newHashSet();
         }, taskThreadPool).thenApplyAsync(billIds -> {
-            Example example = new Example(BaseBill.class);
-            example.selectProperties("patientId", "receivedAmount", "debtAmount");
-            example.createCriteria().andIn("billId", billIds);
-            return baseBillMapper.selectByExample(example);
+            if (CollectionUtils.isNotEmpty(billIds)) {
+                Example example = new Example(BaseBill.class);
+                example.selectProperties("patientId");
+                example.createCriteria().andIn("billId", billIds);
+                List<BaseBill> baseBills = baseBillMapper.selectByExample(example);
+                return baseBills.stream().map(BaseBill::getPatientId).collect(toSet());
+            }
+            return Lists.newArrayList();
+        }).thenApplyAsync(patientIds -> {
+            if (CollectionUtils.isNotEmpty(patientIds)) {
+                Example example = new Example(BaseBill.class);
+                example.selectProperties("patientId", "receivedAmount", "debtAmount");
+                example.createCriteria().andIn("patientId", patientIds);
+                return baseBillMapper.selectByExample(example);
+            }
+            return Lists.newArrayList();
         });
         CompletableFuture<List<BaseTreatmentProcess>> cf4 = CompletableFuture.supplyAsync(() -> {
             Example example = new Example(BaseTreatmentProcess.class);
             example.selectProperties("patientId");
-            example.createCriteria().andGreaterThan("treatStartTime", startDate);
-            return baseTreatmentProcessMapper.selectByExample(example);
-        }, taskThreadPool);
+            example.createCriteria().andGreaterThanOrEqualTo("treatStartTime", startDate);
+            List<BaseTreatmentProcess> list = baseTreatmentProcessMapper.selectByExample(example);
+            return list.stream().map(BaseTreatmentProcess::getPatientId).collect(toSet());
+        }, taskThreadPool).thenApplyAsync(patientIds -> {
+            if (CollectionUtils.isNotEmpty(patientIds)) {
+                Example example = new Example(BaseTreatmentProcess.class);
+                example.selectProperties("patientId");
+                example.createCriteria().andIn("patientId", patientIds)
+                        .andIsNotNull("treatStartTime");
+                return baseTreatmentProcessMapper.selectByExample(example);
+            }
+            return Lists.newArrayList();
+        });
         CompletableFuture<List<PatientManage>> cf5 = CompletableFuture.supplyAsync(() -> {
             return patientManageMapper.selectAll();
         }, taskThreadPool);
@@ -229,7 +258,6 @@ public class PatientManageTask {
         List<PatientManage> manages = cf5.join();
         Map<Integer, PatientManage> collect = manages.stream().collect(toMap(PatientManage::getPatientId, Function.identity()));
         Set<Integer> addIds = cf1Res.stream().map(BasePatient::getPatientId).collect(toSet());
-        log.info("需要新增的患者数量：{}", addIds.size());
         //新增的患者
         if (CollectionUtils.isNotEmpty(addIds)) {
             List<PatientManage> insertList = addIds.stream()
@@ -253,21 +281,23 @@ public class PatientManageTask {
                         }
                         return patientManage;
                     }).collect(toList());
+            log.info("需要新增的患者数量：{}", insertList.size());
             this.insertList(insertList);
         }
         Set<Integer> updateIds = Sets.newHashSet(billMap.keySet());
         updateIds.addAll(memberMap.keySet());
         updateIds.addAll(billMap.keySet());
         updateIds.addAll(processMap.keySet());
-        log.info("需要更新的患者数量：{}", updateIds.size());
         List<PatientManage> updateList = updateIds.stream()
                 .filter(id -> collect.get(id) != null)
                 .map(id -> {
                     PatientManage update = collect.get(id);
                     PatientManage member = memberMap.get(id);
                     PatientManage bill = billMap.get(id);
-                    Long treatCount = processMap.getOrDefault(id, 0L);
-                    update.setNumberOfVisits(update.getNumberOfVisits() + treatCount.intValue());
+                    Long treatCount = processMap.get(id);
+                    if (treatCount != null) {
+                        update.setNumberOfVisits(treatCount.intValue());
+                    }
                     if (member != null) {
                         update.setMemberLevelId(member.getMemberLevelId());
                         update.setMemberLevelName(member.getMemberLevelName());
@@ -280,6 +310,7 @@ public class PatientManageTask {
                     }
                     return update;
                 }).collect(toList());
+        log.info("需要更新的患者数量：{}", updateList.size());
         this.updateList(updateList);
     }
 

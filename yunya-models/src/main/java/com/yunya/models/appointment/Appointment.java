@@ -696,4 +696,39 @@ public class Appointment {
     public void setCancelReason(String cancelReason) {
         this.cancelReason = cancelReason;
     }
+
+    @Override
+    public String toString() {
+        return "Appointment{" +
+                "id=" + id +
+                ", patientId=" + patientId +
+                ", orgId=" + orgId +
+                ", onlineAppointmentId=" + onlineAppointmentId +
+                ", dentistId=" + dentistId +
+                ", assistantId=" + assistantId +
+                ", deptRoomId=" + deptRoomId +
+                ", clinicDeviceItemId=" + clinicDeviceItemId +
+                ", clinicAppointItemId=" + clinicAppointItemId +
+                ", appointDuration=" + appointDuration +
+                ", appointDate=" + appointDate +
+                ", appointTime='" + appointTime + '\'' +
+                ", appointStartTime=" + appointStartTime +
+                ", appointEndTime=" + appointEndTime +
+                ", appointPeriod='" + appointPeriod + '\'' +
+                ", toothBit='" + toothBit + '\'' +
+                ", appointContent='" + appointContent + '\'' +
+                ", appointType=" + appointType +
+                ", confirmStatus=" + confirmStatus +
+                ", appointStatus=" + appointStatus +
+                ", remarks='" + remarks + '\'' +
+                ", cancelReason='" + cancelReason + '\'' +
+                ", inservice=" + inservice +
+                ", crtId=" + crtId +
+                ", crtName='" + crtName + '\'' +
+                ", crtTime=" + crtTime +
+                ", uptId=" + uptId +
+                ", updName='" + updName + '\'' +
+                ", updTime=" + updTime +
+                '}';
+    }
 }

@@ -17,7 +17,7 @@ import java.util.Date;
  * @author: LHB
  * @create: 2021-05-19 10:02
  **/
-@ApiModel(value = "OnlineAppointmentVo",description = "在线预约申请参数")
+@ApiModel(value = "OnlineAppointmentModel",description = "在线预约申请参数")
 @Data
 public class OnlineAppointmentModel implements Serializable {
 
@@ -30,7 +30,7 @@ public class OnlineAppointmentModel implements Serializable {
     /**
      * 微信唯一标识openId,唯一标识
      */
-    @ApiModelProperty(value = "openId,唯一标识")
+    @ApiModelProperty(value = "openId,唯一标识",required = true)
     @NotNull(message = "openId不能为空")
     @NotBlank(message = "openId不能为空")
     private String openId;
@@ -62,18 +62,11 @@ public class OnlineAppointmentModel implements Serializable {
     private Integer appointItemId;
 
     /**
-     * 预约内容
-     */
-    @ApiModelProperty("预约内容")
-    private String appointContent;
-
-    /**
      * 预约日期
      */
     @ApiModelProperty(value = "预约日期",required = true)
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     @NotNull(message = "预约日期不能为空")
-    @Future(message = "预约日期必须是当天之后")
     private Date appointDate;
 
     /**
@@ -82,13 +75,7 @@ public class OnlineAppointmentModel implements Serializable {
     @ApiModelProperty(value = "预约时间",required = true)
     @NotNull(message = "预约时间不能为空")
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
-    private String appointTime;
-
-    /**
-     * 预约时长
-     */
-    @ApiModelProperty("预约时长")
-    private Integer duration;
+    private Date appointTime;
 
     /**
      * 就诊患者名字

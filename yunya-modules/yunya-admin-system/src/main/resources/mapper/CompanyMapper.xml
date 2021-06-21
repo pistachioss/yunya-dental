@@ -183,6 +183,7 @@
            cei.tel,
            cei.address,
            cei.clinic_number as clinicNumber,
+           b.`name` as brandName,
            case
                c.type
            when 0 then
@@ -194,7 +195,7 @@
            end as abbreviation
         from
 	        company c
-	    left join clinic_ext_info cei ON c.id = cei.company_id
+	    left join clinic_ext_info cei ON c.id = cei.company_id left join brand b on find_in_set(b.id,cei.brand_ids)
         where c.id in
         <foreach item="item" index="index" collection="orgIds" open="(" separator="," close=")">
             #{item}

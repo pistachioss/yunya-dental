@@ -76,7 +76,7 @@ public class BillRecordBizTest {
     query.setPageNum(1);
     query.setPageSize(20);
     query.setOrgId(26);
-    query.setQueryDate("2021-03-28");
+    query.setQueryDate("2021-06-02");
     long t1 = System.currentTimeMillis();
     PageInfo<BillRestReceivableAmountVO> debtList = billRecordBiz.findDebtList(query);
     long t2 = System.currentTimeMillis();

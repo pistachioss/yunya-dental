@@ -13,7 +13,7 @@ import java.math.BigDecimal;
  * @date 2021/5/31 16:14
  **/
 @Data
-@ApiModel(value = "公司端/门诊端-产品激活明细返回")
+@ApiModel(value = "公司端-患者管理返回")
 public class PatientManageVo {
     @ApiModelProperty(value = "病历编号")
     @ExcelProperty(value = "病历编号")

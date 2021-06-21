@@ -8,12 +8,14 @@ import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.query.PatientManageQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BasePatient;
-import com.yunya.report.ultimate.mapper.BaseBillMapper;
-import com.yunya.report.ultimate.mapper.BasePatientMapper;
-import com.yunya.report.ultimate.mapper.BaseTreatmentProcessMapper;
+import com.yunya.models.report.BasePatientOrigin;
+import com.yunya.report.ultimate.mapper.*;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -23,6 +25,9 @@ import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 简介:患者信息业务层
@@ -39,6 +44,10 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
   @Resource private BaseTreatmentProcessMapper baseTreatmentProcessMapper;
 
   @Resource private BaseBillMapper billMapper;
+
+  @Resource private BaseEmployeeMapper baseEmployeeMapper;
+
+  @Resource private BasePatientOriginMapper basePatientOriginMapper;
 
   /**
    * 查询患者预约信息
@@ -132,18 +141,61 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
 
   public PageInfo<PatientManageVo> getPatientManagePage(PatientManageQuery query) {
     LocalDate now = LocalDate.now();
-    Integer startAge = now.minusYears(query.getEndAge()).getYear();
-    Integer endAge = now.minusYears(query.getStartAge()).getYear();
+    Integer startAge = null;
+    Integer endAge = null;
+    if (query.getStartAge() != null && query.getEndAge() != null) {
+      startAge = now.minusYears(query.getEndAge()).getYear();
+      endAge = now.minusYears(query.getStartAge()).getYear();
+    }
     Page<PatientManageVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
     mapper.listPatientByKeys(query, startAge, endAge);
+    this.assembleOrigin(page.getResult());
     return new PageInfo<>(page);
   }
 
   public List<PatientManageVo> listPatientManage(PatientManageQuery query) {
     LocalDate now = LocalDate.now();
-    Integer startAge = now.minusYears(query.getEndAge()).getYear();
-    Integer endAge = now.minusYears(query.getStartAge()).getYear();
-    return mapper.listPatientByKeys(query, startAge, endAge);
+    Integer startAge = null;
+    Integer endAge = null;
+    if (query.getStartAge() != null && query.getEndAge() != null) {
+      startAge = now.minusYears(query.getEndAge()).getYear();
+      endAge = now.minusYears(query.getStartAge()).getYear();
+    }
+    List<PatientManageVo> list = mapper.listPatientByKeys(query, startAge, endAge);
+    this.assembleOrigin(list);
+    return list;
+  }
+
+  private void assembleOrigin(List<PatientManageVo> list) {
+    Map<String, List<PatientManageVo>> originMap = list.stream()
+            .filter(obj -> StringUtils.isNotBlank(obj.getPatientOrionTypeName()))
+            .collect(Collectors
+                    .groupingBy(PatientManageVo::getPatientOrionTypeName, Collectors.toList()));
+    originMap.forEach((k, v) -> {
+      Example example;
+      Map<Integer, String> collect;
+      Set<Integer> originIds = v.stream().map(obj -> Integer.valueOf(obj.getPatientOrionName())).collect(Collectors.toSet());
+      if ("员工转介绍".equals(k)) {
+        example = new Example(BaseEmployee.class);
+        example.selectProperties("userId","employeeName");
+        example.createCriteria().andIn("userId", originIds);
+        List<BaseEmployee> list1 = baseEmployeeMapper.selectByExample(example);
+        collect = list1.stream().collect(Collectors.toMap(BaseEmployee::getUserId, BaseEmployee::getEmployeeName));
+      } else if ("患者转介绍".equals(k)) {
+        example = new Example(BasePatient.class);
+        example.selectProperties("patientId","name");
+        example.createCriteria().andIn("patientId", originIds);
+        List<BasePatient> list1 = mapper.selectByExample(example);
+        collect = list1.stream().collect(Collectors.toMap(BasePatient::getPatientId, BasePatient::getName));
+      } else {
+        example = new Example(BasePatientOrigin.class);
+        example.selectProperties("id","name");
+        example.createCriteria().andIn("id", originIds);
+        List<BasePatientOrigin> list1 = basePatientOriginMapper.selectByExample(example);
+        collect = list1.stream().collect(Collectors.toMap(BasePatientOrigin::getId, BasePatientOrigin::getName));
+      }
+      v.forEach(obj -> obj.setPatientOrionName(collect.get(Integer.valueOf(obj.getPatientOrionName()))));
+    });
   }
 
   public void buildResponse(HttpServletResponse response, String fileName) throws UnsupportedEncodingException {

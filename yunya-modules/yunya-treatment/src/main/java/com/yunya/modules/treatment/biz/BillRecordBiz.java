@@ -674,7 +674,13 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       }
       vo.setBillReceivableAmount(totalActualAmount.subtract(payAmount));
     });
-    resultList = resultList.stream().sorted((vo1,vo2)-> DateUtil.compareDate(vo2.getBillDate(),vo1.getBillDate())).collect(Collectors.toList());
+    resultList = resultList.stream().sorted((vo1,vo2)-> {
+      int result = DateUtil.compareDate(vo2.getBillDate(),vo1.getBillDate());
+      if (result == 0) {
+        result = vo2.getBillReceivableAmount().subtract(vo1.getBillReceivableAmount()).intValue();
+      }
+      return result;
+    }).collect(Collectors.toList());
     PageInfo<BillRestReceivableAmountVO> pageInfo = new PageInfo<>(resultList);
     if (query.getWhetherPage()) {
       pageInfo = PageUtl.doPage(query.getPageNum(), query.getPageSize(), resultList);
