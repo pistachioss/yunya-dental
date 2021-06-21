@@ -19,10 +19,12 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.modules.appointment.biz.web.AppointmentBiz;
+import com.yunya.modules.appointment.biz.web.ClinicAppointSettingBiz;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
 import io.swagger.annotations.*;
 import org.apache.poi.ss.formula.functions.T;
+import org.omg.CORBA.INTERNAL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,7 @@ import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -54,6 +57,9 @@ public class AppointmentController {
   @Autowired private AppointmentBiz appointmentBiz;
 
   @Autowired EmployeeAttendServiceFeign employeeAttendServiceFeign;
+
+  @Autowired
+  private ClinicAppointSettingBiz clinicAppointSettingBiz;
 
   /**
    * 添加预约（有冲突检测）
@@ -316,5 +322,19 @@ public class AppointmentController {
           throws IOException {
     appointmentBiz.cancelAppointmentExport(response, query);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 获取门诊营业时间
+   * @param orgId 门诊ID
+   * @return 返回营业时间
+   */
+  @ApiOperation("获取门诊营业时间")
+  @GetMapping("/{orgId}/businessHours")
+  @ApiImplicitParams({
+          @ApiImplicitParam(name = "orgId",value = "门诊ID", required = true, dataTypeClass = Integer.class, defaultValue = "26")
+  })
+  public ResponseResult<Map<String,Map<String,String>>> orgBusinessHours(@PathVariable("orgId") @NotNull(message = "请选择门诊") Integer orgId) {
+    return clinicAppointSettingBiz.orgBusinessHours(orgId);
   }
 }

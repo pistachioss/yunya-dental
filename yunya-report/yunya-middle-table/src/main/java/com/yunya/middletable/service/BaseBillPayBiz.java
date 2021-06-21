@@ -7,6 +7,7 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.MemberExpendRecordMapper;
 import com.yunya.middletable.dao.patient.PrepaidExpendRecordMapper;
+import com.yunya.middletable.dao.report.BaseBillMapper;
 import com.yunya.middletable.dao.report.BaseBillPayDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillPayMapper;
 import com.yunya.middletable.dao.treatment.BillPayDetailRecordMapper;
@@ -14,6 +15,7 @@ import com.yunya.middletable.dao.treatment.BillPayRecordMapper;
 import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
+import com.yunya.models.report.BaseBill;
 import com.yunya.models.report.BaseBillPay;
 import com.yunya.models.report.BaseBillPayDetail;
 import com.yunya.models.treatment.BillPayDetailRecord;
@@ -59,6 +61,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   /** 积分商城业务层 */
   @Autowired
   private CreditsShopBiz creditsShopBiz;
+  @Autowired
+  private BaseBillMapper baseBillMapper;
   /** 线程池 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -171,13 +175,17 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                 break;
             }
             baseBillPayDetailMapper.insertSelective(baseBillPayDetail);
-            // 设置患者消费积分
-            if(!payDetailRecord.getAccountItemId().equals(PAYMENT_BY_CUSTOMER_FREE)
-                    && !payDetailRecord.getAccountItemId().equals(PAYMENT_BY_EMPLOYEE_FREE)) {
-              creditsAtomic.addAndGet(baseBillPayDetail.getPrincipalAmount().setScale(0, RoundingMode.HALF_UP).intValue());
+            BaseBill baseBill = baseBillMapper.selectByPrimaryKey(baseBillPayDetail.getBillId());
+            if (baseBill == null || baseBill.getBillStatus() <= 0) {
+              // 设置患者消费积分
+              if (!payDetailRecord.getAccountItemId().equals(PAYMENT_BY_CUSTOMER_FREE)
+                      && !payDetailRecord.getAccountItemId().equals(PAYMENT_BY_EMPLOYEE_FREE)) {
+                creditsAtomic.addAndGet(baseBillPayDetail.getPrincipalAmount().setScale(0, RoundingMode.HALF_UP).intValue());
+              }
+              patientId.set(payDetailRecord.getPatientId());
+              billPayId.set(baseBillPayDetail.getBillPayId());
             }
-            patientId.set(payDetailRecord.getPatientId());
-            billPayId.set(baseBillPayDetail.getBillPayId());
+
           });
       // 增加会员积分  1元=1积分
       creditsShopBiz.ivyConsumeAddCredits(patientId.get(),new BigDecimal(creditsAtomic.get()),billPayId.get());
