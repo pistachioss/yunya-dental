@@ -36,4 +36,6 @@ public interface CouponAllocateMapper extends Mapper<CouponAllocate> {
      * 查询是否有生成分配的配给计划
      */
     int findAllocate(CouponAllocate couponAllocate);
+
+    int countCouponAllocate(@Param("couponId") Integer couponId);
 }

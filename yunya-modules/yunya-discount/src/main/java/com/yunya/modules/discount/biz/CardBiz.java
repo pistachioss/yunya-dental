@@ -317,7 +317,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         //所有组织卡券总数
         int sumAllocate = allocateList.stream().mapToInt(ClinicAllocateModel::getAllocateNum).sum();
         //该产品卡券已生成数量
-        int sumGenerateNum = mapper.getSumNumByCouponId(couponId);
+        int sumGenerateNum = allocateMapper.countCouponAllocate(couponId);
         CountDownLatch boLatch = new CountDownLatch(allocateList.size());
         //1. 计算每个组织卡券信息
         List<Future<AllocateNumBo>> boFutureList = calculateNumber(allocateList, sumGenerateNum, boLatch);
@@ -1515,6 +1515,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         }
         OrderRecord record = treatmentServiceFeign.findOrderRecordById(query.getOrderId());
         return getPatientBenefit(query.getPatientId(), query.getOrderId(), record.getOrgId());
+    }
+
+    public List<Integer> listPatientAllCard(Integer patientId) {
+        return mapper.listPatientAllCard(patientId);
     }
 
     private PatientOptionalBenefitVo getPatientBenefit(Integer patientId, Integer orderId, Integer orgId) {

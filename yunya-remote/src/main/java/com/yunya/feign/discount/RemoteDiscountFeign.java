@@ -63,4 +63,7 @@ public interface RemoteDiscountFeign {
 
     @PostMapping("/card/{cardId}/usage")
     WxCardUsageVo getUserCardUsage(@PathVariable(value = "cardId") Integer cardId);
+
+    @GetMapping("/patient/{patientId}/cards")
+    List<Integer> listPatientAllCard(@PathVariable(value = "patientId") Integer patientId);
 }

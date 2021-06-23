@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
+import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
@@ -43,6 +44,8 @@ public class DiscountBiz {
     private BaseBenefitMapper benefitMapper;
     @Resource
     private BaseOrganizationMapper orgMapper;
+    @Resource
+    private RemoteDiscountFeign discountFeign;
 
     /**
      * 产品售出激活统计
@@ -479,5 +482,11 @@ public class DiscountBiz {
         }
         List<CardActiveRecoedVO> resultList = cardMapper.getCardActiveRecoedPage(query);
         return new PageInfo<>(resultList);
+    }
+
+    public List<BenefitItemVo> listCouponRemainItem(Integer patientId) {
+        //查询患者可用卡券
+        List<Integer> cardIds = discountFeign.listPatientAllCard(patientId);
+        return benefitMapper.listAllItemUse(cardIds);
     }
 }

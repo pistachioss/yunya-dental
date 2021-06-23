@@ -9,6 +9,11 @@ import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectTargetVO;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
+import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
@@ -18,8 +23,10 @@ import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.form.BillPrintInfoForm;
 import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
+import com.yunya.feign.treatment.domain.model.GeneralDiscountModel;
 import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
+import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -47,6 +54,7 @@ import com.yunya.models.treatment.OrderRecord;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import com.yunya.modules.treatment.mapper.OrderDetailMapper;
 import com.yunya.modules.treatment.mapper.OrderRecordMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,7 +74,9 @@ import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillDetail;
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
-import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
 
@@ -102,10 +112,12 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   @Autowired private RemoteDiscountFeign discountFeign;
   /** 支付方式 */
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
+  @Autowired private TollBiz tollBiz;
   /** 门诊基础服务 */
   @Autowired private RemoteClinicBaseServiceFeign remoteClinicBaseServiceFeign;
   /** 消息中间件 */
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+  @Resource  private RemotePatientCentralServiceFeign patientFeign;
 
   @Resource(name = "treatmentThreadPool")
   private ExecutorService executorService;
@@ -215,9 +227,60 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       throw new ClientServiceException("收费失败，当前就诊正在收费中！", PARAMETERS_IS_ILLEGAL);
     }
     List<OrderDetailChargeVO> chargeOrderDetailList = getChargeOrderDetailList(orderRecordId);
+    List<OrderDetailChargeVO> chargeVOS = this.buildMember(orderRecordId);
     // 设置10分钟（该段时间内不允许其他用户重复收费，解锁）
     redisUtils.set(redisKey, orderRecordId + ":" + userId, 600);
+    if (chargeVOS == null) {
+      chargeOrderDetailList = chargeVOS;
+    }
     return chargeOrderDetailList;
+  }
+
+  private List<OrderDetailChargeVO> buildMember(Integer orderRecordId) {
+    OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
+    int maxType = getPatientMemberCards(orderRecord.getPatientId());
+    if (maxType != 0) {
+      OrderPrivilegeQuery query = new OrderPrivilegeQuery();
+      GeneralDiscountModel generalDiscountModel = new GeneralDiscountModel();
+      generalDiscountModel.setMemberTypeId(1111);
+      query.setOrderRecordId(orderRecordId);
+      query.setDiscountType((byte) maxType);
+      query.setGeneralDiscountModel(generalDiscountModel);
+      return tollBiz.matchOrderTailPrivilege(query);
+    }
+    return null;
+  }
+
+  /**
+   * 获取患者的会员卡信息
+   *
+   * @param patientId patientId
+   * @return Byte
+   */
+  private int getPatientMemberCards(Integer patientId) {
+    PatientMemberInfoQueryForm form = new PatientMemberInfoQueryForm();
+    form.setPatientId(patientId);
+    form.setBindType(0);
+    //查询患者的会员卡集合
+    MemberInfoVo memberInfo = patientFeign.findMemberInfo(form);
+    int maxTypeSec = 0;
+    int maxTypeMaster = 0;
+    if (memberInfo != null) {
+      MasertMemberInfoVo masertMemberInfoVo = memberInfo.getMasertMemberInfoVo();
+      List<SecondaryMemberInfoVo> secondaryMemberInfoVos = memberInfo.getSecondaryMemberInfoVos();
+      if (CollectionUtils.isNotEmpty(secondaryMemberInfoVos)) {
+        Optional<SecondaryMemberInfoVo> max = secondaryMemberInfoVos.stream()
+                .min(Comparator.comparing(SecondaryMemberInfoVo::getSecondaryMemberTypeId));
+        if (max.isPresent()) {
+          maxTypeSec = max.get().getSecondaryMemberTypeId();
+        }
+      }
+      if (masertMemberInfoVo != null) {
+        maxTypeMaster = masertMemberInfoVo.getMasterCardTypeId();
+      }
+      return Math.min(maxTypeSec, maxTypeMaster);
+    }
+    return 0;
   }
 
   /**

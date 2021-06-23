@@ -48,4 +48,9 @@ public interface BaseBenefitMapper extends Mapper<BaseBenefit> {
 	 * 产品使用统计-使用详情
 	 */
 	List<CardUsedDetailVo> listCardUsedDetailByBillId(@Param("query") CardUsedDetailQuery query);
+
+	/**
+	 * 查询患者所有卡券项目的使用详情
+	 */
+	List<BenefitItemVo> listAllItemUse(@Param("cardIds") List<Integer> cardIds);
 }
