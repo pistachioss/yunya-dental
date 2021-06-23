@@ -230,7 +230,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     List<OrderDetailChargeVO> chargeVOS = this.buildMember(orderRecordId);
     // 设置10分钟（该段时间内不允许其他用户重复收费，解锁）
     redisUtils.set(redisKey, orderRecordId + ":" + userId, 600);
-    if (chargeVOS == null) {
+    if (chargeVOS != null) {
       chargeOrderDetailList = chargeVOS;
     }
     return chargeOrderDetailList;
@@ -242,9 +242,9 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     if (maxType != 0) {
       OrderPrivilegeQuery query = new OrderPrivilegeQuery();
       GeneralDiscountModel generalDiscountModel = new GeneralDiscountModel();
-      generalDiscountModel.setMemberTypeId(1111);
+      generalDiscountModel.setMemberTypeId(maxType);
       query.setOrderRecordId(orderRecordId);
-      query.setDiscountType((byte) maxType);
+      query.setDiscountType((byte) 1);
       query.setGeneralDiscountModel(generalDiscountModel);
       return tollBiz.matchOrderTailPrivilege(query);
     }
@@ -263,9 +263,9 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     form.setBindType(0);
     //查询患者的会员卡集合
     MemberInfoVo memberInfo = patientFeign.findMemberInfo(form);
-    int maxTypeSec = 0;
-    int maxTypeMaster = 0;
     if (memberInfo != null) {
+      int maxTypeSec = 0;
+      int maxTypeMaster = 0;
       MasertMemberInfoVo masertMemberInfoVo = memberInfo.getMasertMemberInfoVo();
       List<SecondaryMemberInfoVo> secondaryMemberInfoVos = memberInfo.getSecondaryMemberInfoVos();
       if (CollectionUtils.isNotEmpty(secondaryMemberInfoVos)) {
@@ -278,7 +278,13 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       if (masertMemberInfoVo != null) {
         maxTypeMaster = masertMemberInfoVo.getMasterCardTypeId();
       }
-      return Math.min(maxTypeSec, maxTypeMaster);
+      if (maxTypeSec == 0) {
+        return maxTypeMaster;
+      } else if (maxTypeMaster == 0) {
+        return maxTypeSec;
+      } else {
+        return Math.min(maxTypeSec, maxTypeMaster);
+      }
     }
     return 0;
   }
