@@ -80,6 +80,15 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    */
   public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, Integer payId) {
     Integer result = 0;
+    // 如果已经加过积分则不增加
+    CreditsShop t = new CreditsShop();
+    t.setPatientId(patientId);
+    t.setChannel((byte) 0);
+    t.setRemarks(payId.toString());
+    int count = mapper.selectCount(t);
+    if (count >= 1) {
+      return result;
+    }
     try {
       CreditsShop creditsShop = mapper.selectLastCredits(patientId);
       Long creditsAccount = 0L;

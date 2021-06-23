@@ -294,8 +294,10 @@ public class PatientManageTask {
                     PatientManage update = collect.get(id);
                     PatientManage member = memberMap.get(id);
                     PatientManage bill = billMap.get(id);
-                    Long treatCount = processMap.getOrDefault(id, 0L);
-                    update.setNumberOfVisits(treatCount.intValue());
+                    Long treatCount = processMap.get(id);
+                    if (treatCount != null) {
+                        update.setNumberOfVisits(treatCount.intValue());
+                    }
                     if (member != null) {
                         update.setMemberLevelId(member.getMemberLevelId());
                         update.setMemberLevelName(member.getMemberLevelName());
