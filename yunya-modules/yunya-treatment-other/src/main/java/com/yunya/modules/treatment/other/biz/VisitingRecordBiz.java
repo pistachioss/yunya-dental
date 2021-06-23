@@ -618,13 +618,14 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         // 设置就诊信息
         Integer treatmentId = visitingRecord.getTreatmentId();
         if (treatmentId != null){
+            // 就诊完成系统自动创建的随访
             TreatmentRecord treatmentRecord = remoteTreatmentServiceFeign.findTreatmentRecordById(treatmentId);
             if (treatmentRecord != null){
                 build.setTreatmentDate(treatmentRecord.getTreatEndTime());
                 build.setFirstVisit(treatmentRecord.getType());
             }
         } else {
-            // 手动添加随访
+            // 手动通过按钮添加的随访
             int times = remoteTreatmentServiceFeign.patientTreatmentTimes(patientId);
             build.setFirstVisit(times == 1 ? (byte) 0 : (byte)1);
             // 设置末诊时间

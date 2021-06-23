@@ -87,9 +87,14 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       case 2:
         mapper.deleteByPrimaryKey(dataId);
         if (null != baseBillPay) {
-          mapper.insertSelective(baseBillPay);
+          int result = mapper.insertSelective(baseBillPay);
+          if (result >= 1) {
+            // 增加会员积分
+            addCredits(baseBillPay.getReceivedAmount(),baseBillPay.getBillPayId(),baseBillPay.getBillId());
+          }
           // 保存收费记录明细
           saveBillPayDetailRecord(dataId);
+
         } else {
           baseBillPayDetailMapper.deleteByBillPayId(dataId);
         }
@@ -114,10 +119,6 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       BaseBillPayDetail billPayDetail = new BaseBillPayDetail();
       billPayDetail.setBillPayId(billPayRecordId);
       baseBillPayDetailMapper.delete(billPayDetail);
-      log.info("BaseBillPayBiz_saveBillPayDetailRecord_收费记录明细列表---:{}", billPayDetailRecords);
-      AtomicInteger patientId = new AtomicInteger(0);
-      AtomicInteger creditsAtomic = new AtomicInteger(0);
-      AtomicInteger billPayId = new AtomicInteger(0);
       billPayDetailRecords.forEach(
           payDetailRecord -> {
             BaseBillPayDetail baseBillPayDetail = new BaseBillPayDetail();
@@ -175,22 +176,21 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                 break;
             }
             baseBillPayDetailMapper.insertSelective(baseBillPayDetail);
-            BaseBill baseBill = baseBillMapper.selectByPrimaryKey(baseBillPayDetail.getBillId());
-            if (baseBill == null || baseBill.getBillStatus() <= 0) {
-              // 设置患者消费积分
-              if (!payDetailRecord.getAccountItemId().equals(PAYMENT_BY_CUSTOMER_FREE)
-                      && !payDetailRecord.getAccountItemId().equals(PAYMENT_BY_EMPLOYEE_FREE)) {
-                creditsAtomic.addAndGet(baseBillPayDetail.getPrincipalAmount().setScale(0, RoundingMode.HALF_UP).intValue());
-              }
-              patientId.set(payDetailRecord.getPatientId());
-              billPayId.set(baseBillPayDetail.getBillPayId());
-            }
-
           });
-      // 增加会员积分  1元=1积分
-      creditsShopBiz.ivyConsumeAddCredits(patientId.get(),new BigDecimal(creditsAtomic.get()),billPayId.get());
     }
   }
+
+  /**
+   * 增加会员积分
+   * @param receivedAmount 应收金额
+   * @param baseBillPayId 支付记录ID
+   */
+  private void addCredits(BigDecimal receivedAmount, Integer baseBillPayId,Integer billId) {
+    BaseBill baseBill = baseBillMapper.selectByPrimaryKey(billId);
+    // 增加会员积分  1元=1积分
+    creditsShopBiz.ivyConsumeAddCredits(baseBill.getPatientId(),receivedAmount,baseBillPayId);
+  }
+
 
   /**
    * 构建中间表收费记录
