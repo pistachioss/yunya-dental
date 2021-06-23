@@ -4,6 +4,7 @@ import com.yunya.feign.appointment.domain.form.AppointSettingForm;
 import com.yunya.feign.appointment.domain.model.AppointSettingModel;
 import com.yunya.feign.appointment.domain.query.AppointSettingQuery;
 import com.yunya.feign.appointment.vo.AppointSettingVo;
+import com.yunya.feign.appointment.vo.ClinicBusinessHoursVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
@@ -43,10 +44,6 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
     /** 系统服务 */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
-
-    final String BUSINESS_START_TIME = "businessStartTime";
-    final String BUSINESS_END_TIME = "businessEndTime";
-    final String BUSINESS_HOURS = "businessHours";
 
     /**
      * 编辑(添加)设置
@@ -149,20 +146,19 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
      * @param orgId 门诊ID
      * @return 返回门诊营业时间
      */
-    public ResponseResult<Map<String,Map<String,String>>> orgBusinessHours(Integer orgId) {
-        Map<String,String> hours = new HashMap<>(16);
+    public ResponseResult<ClinicBusinessHoursVo> orgBusinessHours(Integer orgId) {
         MedicalOrganizationInfoVO orgExtInfo = remoteSystemServiceFeign.clinicExtInfoByCompanyId(orgId);
-        if (orgExtInfo != null) {
-            String businessStartTime = orgExtInfo.getBusinessStartTime();
-            String businessEndTime = orgExtInfo.getBusinessEndTime();
-            hours.put(BUSINESS_START_TIME, StringHelper.isEmpty(businessStartTime) ? "8:45" : businessStartTime);
-            hours.put(BUSINESS_END_TIME,StringHelper.isEmpty(businessEndTime) ? "17:45" : businessEndTime);
-        } else {
+        ClinicBusinessHoursVo clinicBusinessHours = new ClinicBusinessHoursVo();
+        if (orgExtInfo == null) {
             return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"数据不存在",null);
         }
-        Map<String,Map<String,String>> result = new HashMap<>(16);
-        result.put(BUSINESS_HOURS,hours);
-        return ResponseUtil.success(result);
+        String businessStartTime = orgExtInfo.getBusinessStartTime();
+        String businessEndTime = orgExtInfo.getBusinessEndTime();
+        if (StringHelper.isNotEmpty(businessStartTime) && StringHelper.isNotEmpty(businessEndTime)) {
+            clinicBusinessHours.setBusinessStartTime(businessStartTime);
+            clinicBusinessHours.setBusinessEndTime(businessEndTime);
+        }
+        return ResponseUtil.success(clinicBusinessHours);
     }
 
 }

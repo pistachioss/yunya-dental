@@ -334,7 +334,7 @@ public class AppointmentController {
   @ApiImplicitParams({
           @ApiImplicitParam(name = "orgId",value = "门诊ID", required = true, dataTypeClass = Integer.class, defaultValue = "26")
   })
-  public ResponseResult<Map<String,Map<String,String>>> orgBusinessHours(@PathVariable("orgId") @NotNull(message = "请选择门诊") Integer orgId) {
+  public ResponseResult<ClinicBusinessHoursVo> orgBusinessHours(@PathVariable("orgId") @NotNull(message = "请选择门诊") Integer orgId) {
     return clinicAppointSettingBiz.orgBusinessHours(orgId);
   }
 }
