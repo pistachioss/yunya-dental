@@ -234,4 +234,9 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   public OrderDetailInfoVO findOrderInfoByTreatmentId(Integer treatmentRecordId) {
     return null;
   }
+
+  @Override
+  public int patientTreatmentTimes(Integer patientId) {
+    return 0;
+  }
 }
