@@ -225,16 +225,6 @@ public class PatientPrepaymentRelationBiz
    * @param model
    */
   public ResponseResult recharge(PrepaidRechargeModel model) {
-    if (model.getRechargeCardNumber() == null) {
-      // 判断充值本金和入账金额是否相等
-      if (model
-              .getRechargePrincipal()
-              .compareTo(model.getPrepaidRechargeTollRecordModel().getCreditAmount())
-          != 0) {
-        return ResponseUtil.fail(
-            OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "充值金额与入账金额不相等!", null);
-      }
-    }
     // 查询预付款余额 增加余额
     PatientPrepaymentsInfo patientPrepaymentsInfo =
         patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidCard());
