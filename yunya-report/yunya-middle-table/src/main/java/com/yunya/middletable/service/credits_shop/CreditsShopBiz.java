@@ -75,16 +75,16 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    *
    * @param patientId 患者ID
    * @param money 患者消费金额
-   * @param payId 患者支付ID
+   * @param remark baseBillPayId+billId {baseBillPayId:[1,23],billId:45}
    * @return
    */
-  public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, Integer payId) {
+  public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, String remark) {
     Integer result = 0;
     // 如果已经加过积分则不增加
     CreditsShop t = new CreditsShop();
     t.setPatientId(patientId);
     t.setChannel((byte) 0);
-    t.setRemarks(payId.toString());
+    t.setRemarks(remark);
     int count = mapper.selectCount(t);
     if (count >= 1) {
       return result;
@@ -106,7 +106,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
       entity.setType("offlineConsume");
       // 积分新增
       entity.setCreditsOption((byte) 0);
-      entity.setRemarks(payId.toString());
+      entity.setRemarks(remark);
       entity.setCrtId(patientId);
       entity.setCrtTime(new Date(System.currentTimeMillis()));
       result = addCredits(entity);
@@ -115,7 +115,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
       sb.append("\n↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓艾维线下门店消费增加积分异常↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓\n");
       sb.append("==>patientId: " + patientId +"\n");
       sb.append("==>money: " + money.longValue() +"\n");
-      sb.append("==>payId: " + payId +"\n");
+      sb.append("==>remark: " + remark +"\n");
       sb.append("错误原因: " + e.getMessage() + "\n");
       sb.append("错误描述: " + e.getCause() + "\n");
       sb.append("\n↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑\n");

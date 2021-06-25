@@ -1,5 +1,6 @@
 package com.yunya.middletable.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -7,6 +8,7 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.MemberExpendRecordMapper;
 import com.yunya.middletable.dao.patient.PrepaidExpendRecordMapper;
+import com.yunya.middletable.dao.report.BaseBillDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillMapper;
 import com.yunya.middletable.dao.report.BaseBillPayDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillPayMapper;
@@ -16,10 +18,12 @@ import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
 import com.yunya.models.report.BaseBill;
+import com.yunya.models.report.BaseBillDetail;
 import com.yunya.models.report.BaseBillPay;
 import com.yunya.models.report.BaseBillPayDetail;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +39,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * 简介: 中间表收费记录处理业务层
@@ -63,6 +68,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   private CreditsShopBiz creditsShopBiz;
   @Autowired
   private BaseBillMapper baseBillMapper;
+  @Autowired
+  private BaseBillDetailMapper baseBillDetailMapper;
+  @Autowired
+  private BaseBillPayMapper baseBillPayMapper;
   /** 线程池 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -87,14 +96,11 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       case 2:
         mapper.deleteByPrimaryKey(dataId);
         if (null != baseBillPay) {
-          int result = mapper.insertSelective(baseBillPay);
-          if (result >= 1) {
-            // 增加会员积分
-            addCredits(baseBillPay.getReceivedAmount(),baseBillPay.getBillPayId(),baseBillPay.getBillId());
-          }
+          mapper.insertSelective(baseBillPay);
           // 保存收费记录明细
           saveBillPayDetailRecord(dataId);
-
+          // 增加会员积分
+          addCredits(baseBillPay.getReceivedAmount(),baseBillPay.getBillPayId(),baseBillPay.getBillId());
         } else {
           baseBillPayDetailMapper.deleteByBillPayId(dataId);
         }
@@ -186,9 +192,53 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    * @param baseBillPayId 支付记录ID
    */
   private void addCredits(BigDecimal receivedAmount, Integer baseBillPayId,Integer billId) {
-    BaseBill baseBill = baseBillMapper.selectByPrimaryKey(billId);
-    // 增加会员积分  1元=1积分
-    creditsShopBiz.ivyConsumeAddCredits(baseBill.getPatientId(),receivedAmount,baseBillPayId);
+    if (billId != null) {
+      BaseBill baseBill = baseBillMapper.selectByPrimaryKey(billId);
+      if (baseBill == null || baseBill.getBillStatus() == 0) {
+        return ;
+      } else if (receivedAmount != null && baseBillPayId != null) {
+        receivedAmount = baseBill.getReceivedAmount();
+        // 从总的收费中过滤出医疗费用（不包含医疗护理用品和其他商品）
+        BigDecimal medicalExpenses = medicalExpenses(receivedAmount, billId);
+        // 增加会员积分  1元=1积分
+        JSONObject jsonObject = new JSONObject();
+
+        BaseBillPay query = new BaseBillPay();
+        query.setBillId(billId);
+        List<BaseBillPay> baseBillPays = baseBillPayMapper.select(query);
+        if (StringHelper.isNotEmpty(baseBillPays)) {
+          List<Integer> baseBillPayIds = baseBillPays.stream().mapToInt(BaseBillPay::getBillPayId).boxed().collect(Collectors.toList());
+          jsonObject.put("baseBillPayId",baseBillPayIds);
+          jsonObject.put("baseBillId",billId);
+        }
+        creditsShopBiz.ivyConsumeAddCredits(baseBill.getPatientId(), medicalExpenses, jsonObject.toJSONString());
+      }
+    }
+  }
+
+  /**
+   * 从总的收费中过滤出医疗费用（不包含医疗护理用品和其他商品）
+   * @param receivedAmount 订单总费用
+   * @param billId  订单编号
+   * @return  返回医疗总费用（不包含医疗护理用品和其他商品）
+   */
+  private BigDecimal medicalExpenses(BigDecimal receivedAmount, Integer billId) {
+    BaseBillDetail bb = new BaseBillDetail();
+    bb.setBillId(billId);
+    List<BaseBillDetail> billDetails = baseBillDetailMapper.select(bb);
+    BigDecimal pPCPsExpenses = new BigDecimal(0);
+    if (StringHelper.isNotEmpty(billDetails)) {
+      for (BaseBillDetail item: billDetails) {
+        Byte itemType = item.getItemType();
+        if (itemType.intValue() == 1) {
+          pPCPsExpenses = pPCPsExpenses.add(item.getReceivedAmount() == null ? new BigDecimal(0) : item.getReceivedAmount());
+        }
+      }
+    }
+    if (receivedAmount != null && receivedAmount.compareTo(pPCPsExpenses) >= 0) {
+      return receivedAmount.subtract(pPCPsExpenses);
+    }
+    return new BigDecimal(0);
   }
 
 
