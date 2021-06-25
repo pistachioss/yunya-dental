@@ -22,6 +22,9 @@
     <result column="use_collutory" property="useCollutory" jdbcType="BIT" />
     <result column="use_floss" property="useFloss" jdbcType="BIT" />
     <result column="bruxism" property="bruxism" jdbcType="BIT" />
+    <result column="pregnancy_week" property="pregnancyWeek" jdbcType="INTEGER" />
+    <result column="is_feed_baby" property="feedBaby" jdbcType="BIT" />
+    <result column="guardian" property="guardian" jdbcType="VARCHAR" />
     <result column="address" property="address" jdbcType="VARCHAR" />
     <result column="province" property="province" jdbcType="VARCHAR" />
     <result column="city" property="city" jdbcType="VARCHAR" />
