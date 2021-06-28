@@ -86,7 +86,7 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
     t.setChannel((byte) 0);
     t.setRemarks(remark);
     int count = mapper.selectCount(t);
-    if (count >= 1) {
+    if (count >= 1 || money.intValue() == 0) {
       return result;
     }
     try {
