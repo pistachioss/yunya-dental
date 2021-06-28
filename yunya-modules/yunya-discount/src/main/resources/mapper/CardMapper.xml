@@ -857,4 +857,12 @@
             #{item.id}
         </foreach>
     </update>
+
+    <select id="listPatientAllCard" resultType="integer">
+        select
+            `c`.`id`
+        from `card` `c`
+        where `c`.`patient_id` = #{patientId}
+           or find_in_set( #{patientId}, `c`.`sharer`)
+    </select>
 </mapper>
