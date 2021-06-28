@@ -132,34 +132,20 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
        if (patientCreditsShop != null){
          addPatientIntegral.setPatientId(patientCreditsShop.getPatientId());
          // recommend 患者推荐
-         addPatientIntegral.setType("recommend");
-         addPatientIntegral.setChannel((byte)0);
-         addPatientIntegral.setOrderNum("");
          addPatientIntegral.setCreditsAccount(patientCreditsShop.getCreditsAccount()+500);
-         addPatientIntegral.setCredits(500L);
-         addPatientIntegral.setCreditsOption((byte)0);
-         addPatientIntegral.setActualPrice(0);
-         addPatientIntegral.setItemCode("");
-         addPatientIntegral.setDescription("患者推荐");
-         addPatientIntegral.setCrtId(patientId);
-         addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
        }else {
          // 没有患者积分帐户就新建
          addPatientIntegral.setPatientId(basePatientOriginLog.getOriginId());
          // recommend 患者推荐
-         addPatientIntegral.setType("recommend");
-         addPatientIntegral.setChannel((byte)0);
-         addPatientIntegral.setOrderNum("");
          addPatientIntegral.setCreditsAccount(500L);
-         addPatientIntegral.setCredits(500L);
-         addPatientIntegral.setCreditsOption((byte)0);
-         addPatientIntegral.setActualPrice(0);
-         addPatientIntegral.setItemCode("");
-         addPatientIntegral.setDescription("500");
-         addPatientIntegral.setRemarks("患者推荐");
-         addPatientIntegral.setCrtId(patientId);
-         addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
        }
+       addPatientIntegral.setCreditsOption((byte)0);
+       addPatientIntegral.setChannel((byte)0);
+       addPatientIntegral.setType("recommend");
+       addPatientIntegral.setCredits(500L);
+       addPatientIntegral.setDescription("患者推荐");
+       addPatientIntegral.setCrtId(patientId);
+       addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
        // 增加500积分
        creditsShopMapper.insertSelective(addPatientIntegral);
      }
