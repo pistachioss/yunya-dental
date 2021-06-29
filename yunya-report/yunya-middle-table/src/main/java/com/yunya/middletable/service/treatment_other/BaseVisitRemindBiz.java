@@ -65,6 +65,9 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         break;
       case 1:
         BaseVisitRemind updBaseVisitRemind = getBaseVisitRemindInfo(id, type);
+//        if(!updBaseVisitRemind.getStatus()){
+//          updBaseVisitRemind.setTime(null);
+//        }
         mapper.updateByPrimaryKeySelective(updBaseVisitRemind);
         break;
       case 2:
@@ -157,7 +160,8 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
 //        } catch (ParseException e) {
 //          log.error("时间转换错误", e);
 //        }
-        baseVisitRemind.setTime(visitingRecord.getExecuteDate());
+//        baseVisitRemind.setStatus(visitingRecord.getStatus());
+//        baseVisitRemind.setTime(visitingRecord.getExecuteDate());
         baseVisitRemind.setVisitingRemindTime(visitingRecord.getVisitingDate());
         baseVisitRemind.setContent(visitingRecord.getReason());
         baseVisitRemind.setCrtTime(visitingRecord.getCrtTime());
@@ -180,7 +184,8 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
 //        } catch (ParseException e) {
 //          log.error("时间转换错误", e);
 //        }
-        baseVisitRemind.setTime(new Date());
+//        baseVisitRemind.setStatus(visitingRemind.getStatus());
+//        baseVisitRemind.setTime(new Date());
         baseVisitRemind.setVisitingRemindTime(visitingRemind.getRemindDate());
         baseVisitRemind.setContent(visitingRemind.getRemindContent());
         baseVisitRemind.setCrtTime(visitingRemind.getCrtTime());
