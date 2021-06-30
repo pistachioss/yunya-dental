@@ -608,8 +608,8 @@
         SELECT
         bup.user_id AS employeeId,
         bup.employee_name AS employeeName,
-        ifnull(ifnull(bbd.abbreviation,bbd1.abbreviation),bbd2.abbreviation) as abbreviation,
-        ifnull(ifnull(bbd.org_id,bbd1.org_id),bbd2.org_id) as orgId,
+        ifnull(ifnull(ifnull(ifnull(bbd.abbreviation,bbd1.abbreviation),bbd2.abbreviation),bbd3.abbreviation),brd.abbreviation) as abbreviation,
+        ifnull(ifnull(ifnull(ifnull(bbd.org_id,bbd1.org_id),bbd2.org_id),bbd3.org_id),brd.org_id) as orgId,
         bup.work_status AS workStatus,
         bup.post_names AS postNames,
         IFNULL( bbd.actualWorkload, 0 ) AS actualWorkload,
@@ -880,6 +880,8 @@
         ) bbd2 ON bup.user_id = bbd2.executor_id
         LEFT JOIN (
         SELECT
+        bbd.org_id,
+        bbd.abbreviation,
         bbd.executor_id,
         CONVERT (
         SUM( bbd.billWorkload / bbd.billTotalWorkload * bbd.freePayAmount ),
@@ -891,12 +893,16 @@
         IF
         ( bbp.freePayAmount > bbp.billTotalWorkload, bbp.billTotalWorkload, bbp.freePayAmount ) AS freePayAmount,
         bbd.billWorkload,
-        bbd.executor_id
+        bbd.executor_id,
+        bbp.org_id,
+        bbp.abbreviation
         FROM
         (
         SELECT
         bbpd.bill_id,
         bbpd.bill_pay_id,
+        bbp.org_id,
+        bbp.abbreviation,
         SUM( bbpd.principal_amount ) AS freePayAmount,
         bbp.billTotalWorkload
         FROM
@@ -904,9 +910,12 @@
         INNER JOIN (
         SELECT
         bbp.bill_pay_id,
-        bbd.billTotalWorkload
+        bbd.billTotalWorkload,
+        bo.org_id,
+        bo.abbreviation
         FROM
         base_bill_pay bbp
+        left JOIN base_organization bo ON bbp.org_id = bo.org_id
         INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
         INNER JOIN (
         SELECT
@@ -1011,11 +1020,14 @@
         LEFT JOIN (
         SELECT
         SUM( brd.refund_amount ) AS refundWorkload,
-        brd.executor_id
+        brd.executor_id,
+        brd.org_id,
+        brd.abbreviation
         FROM
         (
         SELECT
         br.org_id,
+        bo.abbreviation,
         br.refund_date,
         brd.refund_amount,
         bbd.executor_id
@@ -1023,6 +1035,7 @@
         base_refund_detail brd
         INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
+        left JOIN base_organization bo ON br.org_id = bo.org_id
         ) brd
         <where>
             and brd.executor_id > 0
