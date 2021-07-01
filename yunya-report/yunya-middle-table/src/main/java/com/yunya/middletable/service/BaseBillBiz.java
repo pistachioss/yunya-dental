@@ -96,16 +96,14 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       case 0:
       case 2:
       case 1:
-        // 推荐积分
-        if (null != bill){
-          addPatientIntegral(bill.getPatientId());
-        }
         mapper.deleteByPrimaryKey(dataId);
         if (null != bill) {
           mapper.insertSelective(bill);
           baseBillDetailMapper.deleteByBillId(dataId);
           // 保存账单明细
           saveBaseBillDetail(dataId);
+          // 推荐积分
+          addPatientIntegral(bill.getPatientId());
         } else {
           baseBillDetailMapper.deleteByBillId(dataId);
         }
