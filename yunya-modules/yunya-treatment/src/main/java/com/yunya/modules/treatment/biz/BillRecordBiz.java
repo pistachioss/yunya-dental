@@ -670,7 +670,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       });
     });
     resultList = resultList.stream().filter(vo-> vo.getBillReceivableAmount().compareTo(BigDecimal.ZERO)>0)
-            .filter(vo-> DateUtil.compareDate(vo.getBillDate(),"2017-10-01")>=0)
+//            .filter(vo-> DateUtil.compareDate(vo.getBillDate(),"2017-10-01")>=0)
             .sorted((vo1, vo2)-> {
       int result = DateUtil.compareDate(vo2.getBillDate(),vo1.getBillDate());
       if (result == 0) {
