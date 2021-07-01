@@ -2,6 +2,8 @@ package com.yunya.middletable.service.treatment_other;
 
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
+import com.yunya.feign.treatment_other.domain.vo.FindAllRemindRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -40,6 +42,8 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
   @Autowired VisitingRecordMapper visitingRecordMapper;
   /** 提醒mapper */
   @Autowired VisitingRemindMapper visitingRemindMapper;
+  @Autowired
+  private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
 
   /**
    * 随访提醒中间表-操作
@@ -53,6 +57,7 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
     switch (operateType) {
       case 0:
         BaseVisitRemind insertBaseVisitRemind = getBaseVisitRemindInfo(id, type);
+        insertBaseVisitRemind.setTime(null);
         if (StringHelper.isNotNull(insertBaseVisitRemind)) {
           mapper.delete(insertBaseVisitRemind);
           mapper.insertSelective(insertBaseVisitRemind);
@@ -60,7 +65,6 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         break;
       case 1:
         BaseVisitRemind updBaseVisitRemind = getBaseVisitRemindInfo(id, type);
-        updBaseVisitRemind.setTime(new Date());
         mapper.updateByPrimaryKeySelective(updBaseVisitRemind);
         break;
       case 2:
@@ -147,13 +151,7 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         baseVisitRemind.setPatientId(visitingRecord.getPatientId());
         baseVisitRemind.setType((byte) type.intValue());
         baseVisitRemind.setUserId(visitingRecord.getCrtId());
-        Date time = null;
-        try {
-          time = DateUtil.timeToDate(visitingRecord.getVisitingDate(),visitingRecord.getVisitingTime());
-        } catch (ParseException e) {
-          log.error("时间转换错误", e);
-        }
-//        baseVisitRemind.setTime(time);
+        baseVisitRemind.setVisitingRemindTime(visitingRecord.getVisitingDate());
         baseVisitRemind.setContent(visitingRecord.getReason());
         baseVisitRemind.setCrtTime(visitingRecord.getCrtTime());
         return baseVisitRemind;
@@ -169,13 +167,7 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         baseVisitRemind.setPatientId(visitingRemind.getPatientId());
         baseVisitRemind.setType((byte) type.intValue());
         baseVisitRemind.setUserId(visitingRemind.getCrtId());
-        Date time = null;
-        try {
-          time = DateUtil.timeToDate(visitingRemind.getRemindDate(),visitingRemind.getRemindTime());
-        } catch (ParseException e) {
-          log.error("时间转换错误", e);
-        }
-//        baseVisitRemind.setTime(time);
+        baseVisitRemind.setVisitingRemindTime(visitingRemind.getRemindDate());
         baseVisitRemind.setContent(visitingRemind.getRemindContent());
         baseVisitRemind.setCrtTime(visitingRemind.getCrtTime());
         return baseVisitRemind;
@@ -195,5 +187,21 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
       return visitingRemind;
     }
     return null;
+  }
+
+  /**
+   * 随访提醒中间表导入计划时间的字段数据
+   */
+  public int dsj(PullForm pullForm){
+  FindAllRemindRecordVO findAllRemindRecordVO = remoteTreatmentOtherFeign.findAllRecord(pullForm);
+    int a = 0;
+    int b = 0;
+    if(findAllRemindRecordVO.getRecordList()!=null && findAllRemindRecordVO.getRecordList().size()>0){
+      a =  mapper.insertVisitingRecordTime(findAllRemindRecordVO.getRecordList());
+    }
+    if(findAllRemindRecordVO.getRemindList() !=null && findAllRemindRecordVO.getRemindList().size()>0){
+      b = mapper.insertVisitingRemindTime(findAllRemindRecordVO.getRemindList());
+    }
+    return a+b;
   }
 }

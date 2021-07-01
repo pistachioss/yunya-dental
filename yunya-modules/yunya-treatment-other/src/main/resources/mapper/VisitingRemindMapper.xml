@@ -129,4 +129,10 @@
         GROUP BY
         vm.patient_id
     </select>
+
+    <select id="selectList" resultType="com.yunya.models.treatment_other.VisitingRemind">
+        select id,remind_date from visiting_remind
+        where DATE_FORMAT(remind_date,'%Y-%m') between #{startDate}
+        and #{endDate}
+    </select>
 </mapper>

@@ -244,7 +244,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 build.setUpdName(BaseContextHandler.getName());
                 build.setUpdTime(new Date(System.currentTimeMillis()));
                 mapper.updateByPrimaryKeySelective(build);
-                // 发送消息-删除提醒
+                // 发送消息
                 remoteRabbitMqServiceFeign.sendMessage(build.getId(),0,1, MsgCategoryEnum.BaseVisitRemind);
             } finally {
                 // 释放锁

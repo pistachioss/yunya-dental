@@ -1,8 +1,10 @@
 package com.yunya.feign.treatment_other.factory;
 
+import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.vo.FindAllRemindRecordVO;
 import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.models.treatment_other.VisitingRecord;
@@ -49,6 +51,11 @@ public class RemoteTreatmentOtherFactory implements RemoteTreatmentOtherFeign {
 
     @Override
     public List<XRayFilm> findXRayFilmListByPatientIds(List<Integer> patientIds, String currentDate) {
+        return null;
+    }
+
+    @Override
+    public FindAllRemindRecordVO findAllRecord(PullForm pullForm) {
         return null;
     }
 

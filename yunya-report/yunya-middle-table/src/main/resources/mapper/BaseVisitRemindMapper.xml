@@ -19,4 +19,24 @@
     <delete id="deleteByPrimaryKeyAndType">
       delete from base_visit_remind where record_id = #{id} and type = #{type}
     </delete>
+
+  <update id="insertVisitingRemindTime" parameterType="java.util.List">
+    <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+      update base_visit_remind
+      <set >
+        visiting_remind_time = #{item.remindDate},
+      </set>
+      where type = 1 and record_id = #{item.id}
+    </foreach>
+  </update>
+
+  <update id="insertVisitingRecordTime" parameterType="java.util.List">
+    <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+      update base_visit_remind
+      <set >
+        visiting_remind_time = #{item.visitingDate},
+      </set>
+      where type = 0 and record_id = #{item.id}
+    </foreach>
+  </update>
 </mapper>
