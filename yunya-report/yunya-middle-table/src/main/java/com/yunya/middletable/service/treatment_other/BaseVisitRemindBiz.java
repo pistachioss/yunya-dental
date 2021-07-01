@@ -65,9 +65,6 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         break;
       case 1:
         BaseVisitRemind updBaseVisitRemind = getBaseVisitRemindInfo(id, type);
-//        if(!updBaseVisitRemind.getStatus()){
-//          updBaseVisitRemind.setTime(null);
-//        }
         mapper.updateByPrimaryKeySelective(updBaseVisitRemind);
         break;
       case 2:
