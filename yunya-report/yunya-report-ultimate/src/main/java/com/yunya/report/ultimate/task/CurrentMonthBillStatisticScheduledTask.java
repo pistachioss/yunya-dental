@@ -87,7 +87,7 @@ public class CurrentMonthBillStatisticScheduledTask {
     }
   }
   /** 每天23:59分存档当天之前的初诊信息*/
-  @Scheduled(cron = "0 0 23 * * ?")
+  @Scheduled(cron = "0 45 9 * * ?")
   public void firstVisitdetail() {
     List<FirstVisitDetailVO>list =  baseTreatmentProcessMapper.findFirstVisitRecordDetail();
     int size = list.size();
