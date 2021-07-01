@@ -13,7 +13,9 @@ import com.yunya.feign.patient_central.domain.model.PrepaidBillRechargeModel;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
+import com.yunya.feign.report.domain.vo.CurrentMonthBillStatisticVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -656,25 +658,20 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     List<BillRestReceivableAmountVO> adjustedList =
             billExceptionHandleRecordMapper.selectFollowUpBillAdjustList(query);
     resultList.addAll(adjustedList);
-    // 查询时间节点前的撤销收费ID列表
-    List<Integer> payIds = billExceptionHandleRecordMapper.selectBeforeRevokeBillPayIds(query);
-    query.setNotInPayIds(payIds);
-    Set<Integer> billRecordIds = resultList.stream().map(BillRestReceivableAmountVO::getBillId).collect(Collectors.toSet());
-    query.setBillRecordIds(billRecordIds);
-    // 查询时间节点后门诊收欠费账单日期在时间节点前的应收账款列表
-    List<BillRestReceivableAmountVO> receivedDebtList =
-            billPayRecordBiz.findFollowUpBillReceivedList(query);
-    Map<Integer, BigDecimal> payMap = receivedDebtList.stream().collect(Collectors.toMap(BillRestReceivableAmountVO::getBillId, BillRestReceivableAmountVO::getTotalActualAmount));
+    // 查询时间节点后的撤销收费ID列表
+    List<BillRestReceivableAmountVO> revokes = billExceptionHandleRecordMapper.selectBeforeRevokeBillPayIds(query);
     resultList.forEach(vo->{
       Integer billId = vo.getBillId();
-      BigDecimal totalActualAmount = vo.getTotalActualAmount();
-      BigDecimal payAmount = payMap.get(billId);
-      if (payAmount == null) {
-        payAmount = BigDecimal.ZERO;
-      }
-      vo.setBillReceivableAmount(totalActualAmount.subtract(payAmount));
+      BigDecimal billReceivableAmount = vo.getBillReceivableAmount();
+      revokes.forEach(revoke->{
+        if (revoke.getBillId().equals(billId)) {
+          vo.setBillReceivableAmount(billReceivableAmount.subtract(revoke.getBillReceivableAmount()));
+        }
+      });
     });
-    resultList = resultList.stream().sorted((vo1,vo2)-> {
+    resultList = resultList.stream().filter(vo-> vo.getBillReceivableAmount().compareTo(BigDecimal.ZERO)>0)
+            .filter(vo-> DateUtil.compareDate(vo.getBillDate(),"2017-10-01")>=0)
+            .sorted((vo1, vo2)-> {
       int result = DateUtil.compareDate(vo2.getBillDate(),vo1.getBillDate());
       if (result == 0) {
         result = vo2.getBillReceivableAmount().subtract(vo1.getBillReceivableAmount()).intValue();
@@ -731,5 +728,49 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       fileName = orgInfo.getAbbreviation() + fileName;
     }
     excelUtil.exportExcel(response, resultList, "应收款余额表", fileName);
+  }
+
+  /**
+   * 根据条件查询本月金额合计
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public CurrentMonthBillStatisticVO findCurrentMonthStatementStatistic(StatementStatisticQuery query) {
+    CurrentMonthBillStatisticVO result = new CurrentMonthBillStatisticVO();
+    // 撤销优惠合计
+    BigDecimal adjustDiscountAmount =mapper.selectBillAdjustDiscountAmount(query);
+    // 优惠合计
+    BigDecimal discountAmount = mapper.selectBillDiscountAmount(query);
+    discountAmount = discountAmount.subtract(adjustDiscountAmount);
+    // 调整原价合计
+    BigDecimal adjustOriginalAmount = mapper.selectBillAdjustOriginalAmount(query);
+    // 原价合计
+    BigDecimal originalAmount = mapper.selectBillOriginalAmount(query);
+    originalAmount = originalAmount.subtract(discountAmount).subtract(adjustOriginalAmount);
+    // 撤销实收合计
+    BigDecimal revokeReceivedAmount = mapper.selectBillRevokeReceivedAmount(query);
+    // 实收合计
+    BigDecimal receivedAmount = mapper.selectBillReceivedAmount(query);
+    // 免单合计
+    BigDecimal freePayAmount = mapper.selectBillFreePayAmount(query);
+    // 撤销收费记录ID
+    List<Integer> payIds = billPayRecordBiz.selectRevokePayIds(query);
+    // 调整收费方式
+    payIds.addAll(billPayRecordBiz.selectAdjustPayIds(query));
+    if (StringHelper.isNotEmpty(payIds)) {
+      // 撤销或调整免单合计
+      BigDecimal subtractFreePayAmount = billPayDetailRecordBiz.selectDeductionFreePayAmount(payIds);
+      freePayAmount = freePayAmount.subtract(subtractFreePayAmount);
+    }
+    receivedAmount = receivedAmount.subtract(revokeReceivedAmount);
+    result.setCurrentMonth(query.getQueryDate());
+    result.setOrgId(query.getOrgId());
+    result.setCurrentMonthTotalActualAmount(originalAmount);
+    result.setCurrentMonthTotalDiscountAmount(discountAmount);
+    result.setCurrentMonthTotalReceivedAmount(receivedAmount);
+    result.setCurrentMonthTotalFreePayAmount(freePayAmount);
+    result.setCurrentMonthTotalDebtAmount(originalAmount.subtract(receivedAmount));
+    return result;
   }
 }

@@ -4,7 +4,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
+import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
+import com.yunya.feign.report.domain.vo.CurrentMonthBillStatisticVO;
 import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.PatientBillStatistics;
@@ -15,6 +17,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Arrays;
 
 /**
  * 简介:
@@ -74,13 +78,23 @@ public class BillRecordBizTest {
   public void testFindDebtList() {
     BillOfReceivableQuery query = new BillOfReceivableQuery();
     query.setPageNum(1);
-    query.setPageSize(20);
-    query.setOrgId(26);
-    query.setQueryDate("2021-06-02");
+    query.setPageSize(5);
+    query.setOrgId(31);
+    query.setBillRecordIds(Arrays.asList(439647));
+    query.setQueryDate("2021-02-28");
     long t1 = System.currentTimeMillis();
     PageInfo<BillRestReceivableAmountVO> debtList = billRecordBiz.findDebtList(query);
     long t2 = System.currentTimeMillis();
     System.out.println("耗时：" + (t2 - t1));
     System.out.println("数据：" + JSONObject.toJSON(debtList));
+  }
+
+  @Test
+  public void testFindCurrentMonthStatementStatistic(){
+    StatementStatisticQuery query = new StatementStatisticQuery();
+    query.setOrgId(29);
+    query.setQueryDate("2021-03");
+    CurrentMonthBillStatisticVO currentMonthStatementStatistic = billRecordBiz.findCurrentMonthStatementStatistic(query);
+    System.out.println(JSONObject.toJSON(currentMonthStatementStatistic));
   }
 }

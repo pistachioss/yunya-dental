@@ -66,4 +66,12 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
    * @return
    */
   BigDecimal selectTotalFreePayAmountByBillId(@Param("billRecordId") Integer billRecordId);
+
+  /**
+   * 撤销或调整免单合计
+   *
+   * @param payIds
+   * @return
+   */
+  BigDecimal selectDeductionFreePayAmount(@Param("payIds") List<Integer> payIds);
 }
