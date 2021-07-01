@@ -17,14 +17,12 @@ import com.yunya.middletable.dao.treatment.BillPayRecordMapper;
 import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
-import com.yunya.models.report.BaseBill;
-import com.yunya.models.report.BaseBillDetail;
-import com.yunya.models.report.BaseBillPay;
-import com.yunya.models.report.BaseBillPayDetail;
+import com.yunya.models.report.*;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +32,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -95,6 +94,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       case 1:
       case 2:
         mapper.deleteByPrimaryKey(dataId);
+        log.info("\n\n\n==============撤销收费==============\n");
+        log.info("====> dataId = {}\n",dataId);
+        log.info("====>  baseBillPay = \n{}",baseBillPay);
+        log.info("=======================================\n\n\n");
         if (null != baseBillPay) {
           mapper.insertSelective(baseBillPay);
           // 保存收费记录明细
@@ -102,6 +105,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           // 增加会员积分
           addCredits(baseBillPay.getReceivedAmount(),baseBillPay.getBillPayId(),baseBillPay.getBillId());
         } else {
+          // 撤销积分
+          scrapCredits(dataId);
           baseBillPayDetailMapper.deleteByBillPayId(dataId);
         }
         break;
@@ -194,7 +199,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   private void addCredits(BigDecimal receivedAmount, Integer baseBillPayId,Integer billId) {
     if (billId != null) {
       BaseBill baseBill = baseBillMapper.selectByPrimaryKey(billId);
-      if (baseBill == null || baseBill.getBillStatus() == 0) {
+
+      if (baseBill == null || baseBill.getBillStatus() == 0 || hasScrapedCredits(baseBill.getPatientId())) {
         return ;
       } else if (receivedAmount != null && baseBillPayId != null) {
         receivedAmount = baseBill.getReceivedAmount();
@@ -210,9 +216,56 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           List<Integer> baseBillPayIds = baseBillPays.stream().mapToInt(BaseBillPay::getBillPayId).boxed().collect(Collectors.toList());
           jsonObject.put("baseBillPayId",baseBillPayIds);
           jsonObject.put("baseBillId",billId);
+          jsonObject.put("scrapCharges",0);
         }
-        creditsShopBiz.ivyConsumeAddCredits(baseBill.getPatientId(), medicalExpenses, jsonObject.toJSONString());
+        creditsShopBiz.ivyConsumeAddCredits(baseBill.getPatientId(), medicalExpenses, jsonObject.toJSONString(),(byte) 0);
       }
+    }
+  }
+
+  /**
+   * 是否有过调整收费
+   * @param patientId 患者ID
+   * @return 调整过账单返回true 否则返回false
+   */
+  private boolean hasScrapedCredits(Integer patientId) {
+    CreditsShop lastCreditsInfo = creditsShopBiz.lastPatientCredits(patientId).getData();
+    String remarks = lastCreditsInfo.getRemarks();
+    JSONObject jsonObject = JSONObject.parseObject(remarks);
+    Integer scrapCharges = jsonObject.getInteger("scrapCharges");
+    return scrapCharges == 1;
+  }
+
+  /**
+   * 撤销积分
+   * @param baseBillPayId 支付记录ID
+   */
+  private void scrapCredits(Integer baseBillPayId) {
+    BaseBillPay baseBillPay = baseBillPayMapper.selectByPrimaryKey(baseBillPayId);
+    BaseBill baseBill = baseBillMapper.selectByPrimaryKey(baseBillPay.getBillId());
+    Integer patientId = baseBill.getPatientId();
+    Integer billId = baseBillPay.getBillId();
+    Example example = new Example(CreditsShop.class);
+    Example.Criteria criteria = example.createCriteria();
+    criteria.andEqualTo("patientId",patientId);
+    criteria.andEqualTo("type","offlineConsume");
+    criteria.andEqualTo("channel",0);
+    criteria.andEqualTo("creditsOption",0);
+    String remarks = "{\"baseBillId\":"+billId+",\"baseBillPayId\":";
+    criteria.andLike("remarks",remarks);
+    example.orderBy("id").desc();
+    List<CreditsShop> creditsShops = creditsShopBiz.selectByExample(example);
+    if (StringHelper.isNotEmpty(creditsShops)) {
+      CreditsShop creditsShop = creditsShops.get(0);
+      String jsonRemarks = creditsShop.getRemarks();
+      if (StringHelper.isNotBlank(jsonRemarks)) {
+        JSONObject jsonObject = JSONObject.parseObject(jsonRemarks);
+        jsonObject.put("scrapCharges",1);
+        creditsShop.setRemarks(jsonObject.toJSONString());
+      }
+      creditsShop.setUpdId(patientId);
+      creditsShop.setUpdTime(new Date(System.currentTimeMillis()));
+      creditsShopBiz.updateSelectiveById(creditsShop);
     }
   }
 
