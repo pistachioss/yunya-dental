@@ -241,8 +241,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    * @param baseBillPayId 支付记录ID
    */
   private void scrapCredits(Integer baseBillPayId) {
-    BaseBillPay baseBillPay = baseBillPayMapper.selectByPrimaryKey(baseBillPayId);
+    BaseBillPayDetail baseBillPayQuery = new BaseBillPayDetail();
+    baseBillPayQuery.setBillPayId(baseBillPayId);
+    BaseBillPayDetail baseBillPay = baseBillPayDetailMapper.selectOne(baseBillPayQuery);
+    log.info("\n\n====================scrapCredits===============\n");
+    log.info("===========> baseBillPayId:{}\n",baseBillPayId);
+    log.info("===========> baseBillPay: {}\n",baseBillPay);
+    log.info("===========> baseBillPay.billId: {}\n", baseBillPay != null ? baseBillPay.getBillId() : "");
     BaseBill baseBill = baseBillMapper.selectByPrimaryKey(baseBillPay.getBillId());
+    log.info("===========> baseBill: {}\n",baseBill);
+    log.info("======================================================\n\n");
     Integer patientId = baseBill.getPatientId();
     Integer billId = baseBillPay.getBillId();
     Example example = new Example(CreditsShop.class);
