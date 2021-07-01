@@ -109,5 +109,5 @@ public interface BillExceptionHandleRecordMapper extends Mapper<BillExceptionHan
    * @param query 查询条件
    * @return list
    */
-  List<Integer> selectBeforeRevokeBillPayIds(@Param("query") BillOfReceivableQuery query);
+  List<BillRestReceivableAmountVO> selectBeforeRevokeBillPayIds(@Param("query") BillOfReceivableQuery query);
 }

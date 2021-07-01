@@ -508,59 +508,80 @@
     <select id="selectFollowUpBillAdjustList"
             resultType="com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO">
         select
-        br.id as billId,
-        date_format(br.crt_time, '%Y-%m-%d') as billDate,
-        br.bill_number as billNum,
-        br.patient_id as patientId,
-        tr.dentist_id as regDentistId,
-        br.receivable_amount as totalOriginalAmount,
-        if(date_format(br.privilege_date, '%Y-%m-%d') > #{query.queryDate}, br.receivable_amount,
-        br.actual_receivable_amount) as totalActualAmount,
-        br.debt_amount as billReceivableAmount
-        from (
-        select behr.handled_record_id as treatmentId,
-        behdr.associate_record_id as orderRecordId
-        from bill_exception_handle_record behr
-        left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
+        billId,
+        billDate,
+        billNum,
+        patientId,
+        regDentistId,
+        totalOriginalAmount,
+        totalActualAmount,
+        totalActualAmount-received_amount AS billReceivableAmount from
+        (
+            select
+            br.id as billId,
+            date_format(br.crt_time, '%Y-%m-%d') as billDate,
+            br.bill_number as billNum,
+            br.patient_id as patientId,
+            tr.dentist_id as regDentistId,
+            br.receivable_amount as totalOriginalAmount,
+            if(date_format(br.privilege_date, '%Y-%m-%d') > #{query.queryDate}, br.receivable_amount,
+            br.actual_receivable_amount) as totalActualAmount,
+            ifnull(bpr.received_amount, 0) received_amount
+            from (
+            select behr.handled_record_id as treatmentId,
+            behdr.associate_record_id as orderRecordId
+            from bill_exception_handle_record behr
+            left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
+            <where>
+                and behr.operate_type = 2
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and date_format(behr.crt_time, '%Y-%m-%d') > #{query.queryDate}
+                </if>
+            </where>
+            ) behr
+            left join bill_record br on br.order_record_id = behr.orderRecordId
+            left join treatment_record tr on tr.id = behr.treatmentId
+            LEFT JOIN (
+            SELECT bpr.bill_record_id,sum(bpr.received_amount) received_amount FROM bill_pay_record bpr WHERE
+            bpr.inservice=true
+            AND date_format(bpr.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
+            GROUP BY bpr.bill_record_id
+            ) bpr on br.id=bpr.bill_record_id
+            <where>
+                and br.debt_amount > 0
+                <if test="query.orgId != null">
+                    and br.org_id = #{query.orgId}
+                </if>
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and date_format(br.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
+                </if>
+                <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                    and tr.dentist_id in
+                    <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+        ) t where totalActualAmount>received_amount
+    </select>
+
+    <select id="selectBeforeRevokeBillPayIds" resultType="com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO">
+        SELECT
+        bpr.bill_record_id AS billId,
+        SUM(bpr.received_amount) AS billReceivableAmount
+        FROM
+        bill_exception_handle_record behr
+        LEFT JOIN bill_pay_record bpr ON bpr.id = behr.handled_record_id
+        LEFT JOIN bill_record br ON br.id = bpr.bill_record_id
         <where>
-            and behr.operate_type = 2
+            and behr.operate_type = 1
+            <if test="query.orgId != null">
+                AND br.org_id = #{query.orgId}
+            </if>
             <if test="query.queryDate != null and query.queryDate != ''">
                 and date_format(behr.crt_time, '%Y-%m-%d') > #{query.queryDate}
             </if>
         </where>
-        ) behr
-        left join bill_record br on br.order_record_id = behr.orderRecordId
-        left join treatment_record tr on tr.id = behr.treatmentId
-        <where>
-            and br.debt_amount > 0
-            <if test="query.orgId != null">
-                and br.org_id = #{query.orgId}
-            </if>
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and date_format(br.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
-            </if>
-            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
-                and tr.dentist_id in
-                <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
-    </select>
-
-    <select id="selectBeforeRevokeBillPayIds" resultType="java.lang.Integer">
-        SELECT
-        DISTINCT behr.handled_record_id
-        FROM bill_exception_handle_record behr
-        left join bill_record br on br.treatment_record_id = behr.treatment_record_id
-        <where>
-            and behr.operate_type = 1
-            <if test="query.orgId != null">
-                and br.org_id = #{query.orgId}
-            </if>
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and date_format(behr.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
-            </if>
-        </where>
+        group by bpr.bill_record_id
     </select>
 </mapper>

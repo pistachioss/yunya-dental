@@ -389,4 +389,14 @@ public class BillPayDetailRecordBiz
   public BigDecimal sumBillTotalFreePayAmount(Integer billRecordId) {
     return mapper.selectTotalFreePayAmountByBillId(billRecordId);
   }
+
+  /**
+   * 撤销或调整免单合计
+   *
+   * @param payIds
+   * @return
+   */
+  public BigDecimal selectDeductionFreePayAmount(List<Integer> payIds) {
+    return mapper.selectDeductionFreePayAmount(payIds);
+  }
 }
