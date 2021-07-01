@@ -111,7 +111,7 @@
 
     <select id="countCouponAllocate" resultType="Integer">
        select
-            sum(allocate_num)
+            ifnull(sum(allocate_num),0)
         from
             coupon_allocate
         where
