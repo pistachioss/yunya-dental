@@ -160,5 +160,12 @@ public class PatientExpInfoModel implements Serializable {
     @ApiModelProperty(value = "是否启用")
     private Boolean inservice;
 
+    @ApiModelProperty(value = "孕龄时长")
+    private Integer pregnancyWeek;
 
+    @ApiModelProperty(value = "是否哺乳")
+    private Boolean feedBaby;
+
+    @ApiModelProperty(value = "监护人")
+    private String guardian;
 }

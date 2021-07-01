@@ -22,6 +22,7 @@ import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
@@ -530,5 +531,19 @@ public class TreatmentServiceRest {
   public OrderDetailInfoVO findOrderInfoByTreatmentId(
           @PathVariable(value = "treatmentRecordId") Integer treatmentRecordId) {
     return orderRecordBiz.findOrderDetailInfoVO(treatmentRecordId);
+  }
+
+  /**
+   * 患者就诊次数
+   * @param patientId 患者ID
+   * @return 返回就诊次数
+   */
+  @GetMapping("/{patientId}/treatment/times")
+  public int patientTreatmentTimes(@PathVariable(value = "patientId") Integer patientId) {
+    Example example = new Example(TreatmentRecord.class);
+    Example.Criteria criteria = example.createCriteria();
+    criteria.andEqualTo("patientId",patientId);
+    criteria.andEqualTo("inservice",1);
+    return treatmentRecordBiz.selectCountByExample(example);
   }
 }

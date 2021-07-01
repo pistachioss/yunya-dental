@@ -10,10 +10,7 @@ import com.yunya.report.ultimate.biz.DiscountBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -309,6 +306,13 @@ public class DiscountController {
 		discountBiz.buildResponse(response, "产品激活记录");
 		EasyExcel.write(response.getOutputStream(), CardActiveRecoedVO.class)
 				.sheet("sheet").doWrite(discountBiz.getCardActiveRecoedPage(query).getList());
+	}
+
+	@ApiOperation(value = "剩余产品查看")
+	@GetMapping("/patient/{patientId}/remaining/coupon/item")
+	public ResponseResult<List<BenefitItemVo>> getUseRecord(@PathVariable(value = "patientId") Integer patientId) {
+		List<BenefitItemVo> list = discountBiz.listCouponRemainItem(patientId);
+		return ResponseUtil.success(list);
 	}
 
 }
