@@ -226,13 +226,15 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     if (StringHelper.isNotBlank(redisValue) && !redisValue.equals(orderRecordId + ":" + userId)) {
       throw new ClientServiceException("收费失败，当前就诊正在收费中！", PARAMETERS_IS_ILLEGAL);
     }
-    List<OrderDetailChargeVO> chargeOrderDetailList = getChargeOrderDetailList(orderRecordId);
+    List<OrderDetailChargeVO> chargeOrderDetailList;
     List<OrderDetailChargeVO> chargeVOS = this.buildMember(orderRecordId);
-    // 设置10分钟（该段时间内不允许其他用户重复收费，解锁）
-    redisUtils.set(redisKey, orderRecordId + ":" + userId, 600);
     if (chargeVOS != null) {
       chargeOrderDetailList = chargeVOS;
+    } else {
+      chargeOrderDetailList = getChargeOrderDetailList(orderRecordId);
     }
+    // 设置10分钟（该段时间内不允许其他用户重复收费，解锁）
+    redisUtils.set(redisKey, orderRecordId + ":" + userId, 600);
     return chargeOrderDetailList;
   }
 
