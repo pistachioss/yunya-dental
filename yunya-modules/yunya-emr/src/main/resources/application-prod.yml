@@ -25,4 +25,4 @@ spring:
 logging:
   level:
     # tk.mybatis: DEBUG
-    com.yunya.auth: error
+    com.yunya.modules.emr: error
