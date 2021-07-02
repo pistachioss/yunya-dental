@@ -75,7 +75,7 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
                 return ResponseUtil.fail(AppointmentError.APPOINT_SETTING_FAIL.getCode(),AppointmentError.APPOINT_SETTING_FAIL.getMessage(),null);
             }
         }
-        return ResponseUtil.success();
+        return ResponseUtil.success(build);
     }
 
     /**
