@@ -199,6 +199,9 @@ public class BillCreditsCallbackImpl implements BillCreditsCallback {
         try {
             CreditsShop lastCreditsInfo = creditsShopBiz.lastPatientCredits(patientId).getData();
             String remarks = lastCreditsInfo.getRemarks();
+            if (StringHelper.isBlank(remarks)) {
+                return false;
+            }
             JSONObject jsonObject = JSONObject.parseObject(remarks);
             Integer scrapCharges = jsonObject.getInteger("scrapCharges");
             Integer billId = jsonObject.getInteger("baseBillId");
