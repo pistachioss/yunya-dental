@@ -242,7 +242,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   private List<OrderDetailChargeVO> buildMember(Integer orderRecordId) {
     OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
     Map<Integer, String> maxType = getPatientMemberCards(orderRecord.getPatientId());
-    if (maxType != null) {
+    if (maxType != null && maxType.size() > 0) {
       OrderPrivilegeQuery query = new OrderPrivilegeQuery();
       GeneralDiscountModel generalDiscountModel = new GeneralDiscountModel();
       generalDiscountModel.setMemberTypeId(Lists.newArrayList(maxType.keySet()).get(0));
