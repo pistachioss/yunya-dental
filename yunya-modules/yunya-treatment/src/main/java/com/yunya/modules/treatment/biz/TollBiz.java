@@ -302,7 +302,9 @@ public class TollBiz {
     BigDecimal actualReceivableAmount = totalAmount.subtract(privilegeAmount);
     // 比较实际应收与总入账金额
     BigDecimal outstandingAmount = model.getOutstandingAmount();
-    checkTotalChargeAndDebtAmount(totalCharge, actualReceivableAmount, outstandingAmount);
+    if (discountType != 0) {
+      checkTotalChargeAndDebtAmount(totalCharge, actualReceivableAmount, outstandingAmount);
+    }
     // 开始收费
     Integer patientId = orderRecord.getPatientId();
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();

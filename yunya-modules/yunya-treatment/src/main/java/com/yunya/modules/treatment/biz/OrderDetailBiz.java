@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.yunya.feign.clinic_base.RemoteClinicBaseServiceFeign;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
@@ -240,15 +241,25 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
   private List<OrderDetailChargeVO> buildMember(Integer orderRecordId) {
     OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
-    int maxType = getPatientMemberCards(orderRecord.getPatientId());
-    if (maxType != 0) {
+    Map<Integer, String> maxType = getPatientMemberCards(orderRecord.getPatientId());
+    if (maxType != null) {
       OrderPrivilegeQuery query = new OrderPrivilegeQuery();
       GeneralDiscountModel generalDiscountModel = new GeneralDiscountModel();
-      generalDiscountModel.setMemberTypeId(maxType);
+      generalDiscountModel.setMemberTypeId(Lists.newArrayList(maxType.keySet()).get(0));
       query.setOrderRecordId(orderRecordId);
       query.setDiscountType((byte) 1);
       query.setGeneralDiscountModel(generalDiscountModel);
-      return tollBiz.matchOrderTailPrivilege(query);
+      List<OrderDetailChargeVO> chargeVOS = tollBiz.matchOrderTailPrivilege(query);
+      System.out.println("订单自动勾选优惠" + chargeVOS);
+      if (CollectionUtils.isNotEmpty(chargeVOS)) {
+        chargeVOS.stream()
+                .filter(obj -> CollectionUtils.isNotEmpty(obj.getDiscountAppliesCoupons()))
+                .forEach(obj -> obj.getDiscountAppliesCoupons()
+                        .stream()
+                        .filter(benefit -> benefit.getCouponType() == 99)
+                        .forEach(benefit -> benefit.setCardNumber(Lists.newArrayList(maxType.values()).get(0))));
+        return chargeVOS;
+      }
     }
     return null;
   }
@@ -259,36 +270,38 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param patientId patientId
    * @return Byte
    */
-  private int getPatientMemberCards(Integer patientId) {
+  private Map<Integer, String> getPatientMemberCards(Integer patientId) {
     PatientMemberInfoQueryForm form = new PatientMemberInfoQueryForm();
     form.setPatientId(patientId);
     form.setBindType(0);
     //查询患者的会员卡集合
     MemberInfoVo memberInfo = patientFeign.findMemberInfo(form);
+    Map<Integer, String> map = Maps.newHashMap();
     if (memberInfo != null) {
-      int maxTypeSec = 0;
-      int maxTypeMaster = 0;
+      int minTypeSec = 0;
       MasertMemberInfoVo masertMemberInfoVo = memberInfo.getMasertMemberInfoVo();
       List<SecondaryMemberInfoVo> secondaryMemberInfoVos = memberInfo.getSecondaryMemberInfoVos();
       if (CollectionUtils.isNotEmpty(secondaryMemberInfoVos)) {
-        Optional<SecondaryMemberInfoVo> max = secondaryMemberInfoVos.stream()
+        Optional<SecondaryMemberInfoVo> min = secondaryMemberInfoVos.stream()
                 .min(Comparator.comparing(SecondaryMemberInfoVo::getSecondaryMemberTypeId));
-        if (max.isPresent()) {
-          maxTypeSec = max.get().getSecondaryMemberTypeId();
+        if (min.isPresent()) {
+          SecondaryMemberInfoVo secondaryMemberInfoVo = min.get();
+          minTypeSec = secondaryMemberInfoVo.getSecondaryMemberTypeId();
+          map.put(minTypeSec, secondaryMemberInfoVo.getSecondaryCardNumber());
         }
       }
       if (masertMemberInfoVo != null) {
-        maxTypeMaster = masertMemberInfoVo.getMasterCardTypeId();
+        int secType = masertMemberInfoVo.getMasterCardTypeId();
+        if (minTypeSec == 0) {
+          map.put(secType, masertMemberInfoVo.getMasterCardNumber());
+        } else if (minTypeSec > secType) {
+          map.remove(minTypeSec);
+          map.put(secType, masertMemberInfoVo.getMasterCardNumber());
+        }
       }
-      if (maxTypeSec == 0) {
-        return maxTypeMaster;
-      } else if (maxTypeMaster == 0) {
-        return maxTypeSec;
-      } else {
-        return Math.min(maxTypeSec, maxTypeMaster);
-      }
+      return map;
     }
-    return 0;
+    return null;
   }
 
   /**
