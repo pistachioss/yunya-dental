@@ -9,6 +9,7 @@ import com.yunya.middletable.dao.report.*;
 import com.yunya.middletable.dao.treatment.BillRefundOrderDetailMapper;
 import com.yunya.middletable.dao.treatment.BillRefundPayDetailRecordMapper;
 import com.yunya.middletable.dao.treatment.BillRefundRecordMapper;
+import com.yunya.middletable.service.credits_shop.BillCreditsCallback;
 import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.models.report.*;
 import com.yunya.models.treatment.BillRefundOrderDetail;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -50,12 +52,8 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
   @Autowired private BaseRefundDetailMapper refundDetailMapper;
 
   @Autowired private BaseRefundPayDetailMapper refundPayDetailMapper;
-  @Autowired private BaseBillMapper baseBillMapper;
-  @Autowired private BaseBillPayDetailMapper baseBillPayDetailMapper;
-  @Autowired private BaseBillPayMapper baseBillPayMapper;
-  @Autowired private CreditsShopBiz creditsShopBiz;
-  @Autowired private BaseBillDetailMapper baseBillDetailMapper;
-  @Autowired private BaseRefundDetailMapper baseRefundDetailMapper;
+  @Resource(name = "billCreditsCallbackImpl")
+  private BillCreditsCallback billCreditsCallback;
 
   /**
    * 根据消息更新中间表退费信息
@@ -74,7 +72,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
           mapper.insertSelective(refund);
           saveBaseRefundDetail(dataId);
           // 回滚积分记录
-          callbackCredits(dataId,refund.getBillId());
+          billCreditsCallback.refundCredits(dataId,refund.getBillId());
         }
         break;
       case 1:
@@ -89,7 +87,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
             updateBaseRefundDetail(dataId);
           }
           // 回滚积分记录
-          callbackCredits(dataId,refund.getBillId());
+          billCreditsCallback.refundCredits(dataId,refund.getBillId());
         } else {
           mapper.deleteByPrimaryKey(dataId);
         }
@@ -104,7 +102,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
           saveBaseRefundDetail(dataId);
         }
         // 回滚积分记录
-        callbackCredits(dataId,refund.getBillId());
+        billCreditsCallback.refundCredits(dataId,refund.getBillId());
         break;
       default:
         break;
@@ -256,42 +254,6 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
                   refundDetailMapper.deleteByRefundId(refundRecordId);
                 }
               });
-    }
-  }
-
-  /**
-   * 回滚会员积分
-   * @param refundId 退费记录ID
-   * @param billId 账单ID
-   */
-  private void callbackCredits(Integer refundId,Integer billId) {
-    if (refundId != null && billId != null) {
-      BaseRefundDetail query = new BaseRefundDetail();
-      query.setRefundId(refundId);
-      List<BaseRefundDetail> bfds = baseRefundDetailMapper.select(query);
-      BaseBillDetail bbdQuery = new BaseBillDetail();
-      bbdQuery.setBillId(billId);
-      List<BaseBillDetail> bbds = baseBillDetailMapper.select(bbdQuery);
-      if (StringHelper.isNotEmpty(bfds) && StringHelper.isNotEmpty(bbds)) {
-        // 过滤出非商品账单项目ID集合
-        List<Integer> medicalBillDetailIds = bbds.stream().filter(item -> item.getItemType().intValue() == 0).mapToInt(BaseBillDetail::getBillDetailId).boxed().collect(Collectors.toList());
-        if (StringHelper.isNotEmpty(medicalBillDetailIds)) {
-          // 过滤出退费项目是非商品的所有项目
-          List<BaseRefundDetail> medicalBaseRefunds = bfds.stream().filter(item -> medicalBillDetailIds.contains(item.getBillDetailId())).collect(Collectors.toList());
-          if (StringHelper.isNotEmpty(medicalBaseRefunds)) {
-            // 非商品类项目退款总额
-            BigDecimal refundMedicalMony = new BigDecimal(0);
-            for (BaseRefundDetail item: medicalBaseRefunds) {
-              refundMedicalMony = refundMedicalMony.add(item.getRefundAmount());
-            }
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("refundId",refundId);
-            BaseRefund baseRefund = mapper.selectByPrimaryKey(refundId);
-            // 增加会员积分  1元=1积分
-            creditsShopBiz.ivyConsumeAddCredits(baseRefund.getPatientId(), refundMedicalMony, jsonObject.toJSONString(),(byte) 1);
-          }
-        }
-      }
     }
   }
 

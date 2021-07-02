@@ -14,6 +14,7 @@ import com.yunya.middletable.dao.treatment.BillRecordMapper;
 import com.yunya.middletable.dao.treatment.OrderDetailMapper;
 import com.yunya.middletable.dao.treatment.OrderDetailPayRecordMapper;
 import com.yunya.middletable.dao.treatment.OrderRecordMapper;
+import com.yunya.middletable.service.credits_shop.BillCreditsCallback;
 import com.yunya.models.report.BaseBill;
 import com.yunya.models.report.BaseBillDetail;
 import com.yunya.models.report.BasePatientOriginLog;
@@ -65,6 +66,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
+  @Resource(name = "billCreditsCallbackImpl")
+  private BillCreditsCallback baseBillPayCallback;
 
   /**
    * 更新开单明细
@@ -104,6 +107,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           saveBaseBillDetail(dataId);
           // 推荐积分
           addPatientIntegral(bill.getPatientId());
+          // 回调收费增加积分
+          baseBillPayCallback.baseBillBizHandlerFinish(bill.getBillId());
         } else {
           baseBillDetailMapper.deleteByBillId(dataId);
         }

@@ -1,5 +1,6 @@
 package com.yunya.middletable.service;
 
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
@@ -14,15 +15,14 @@ import com.yunya.middletable.dao.report.BaseBillPayDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillPayMapper;
 import com.yunya.middletable.dao.treatment.BillPayDetailRecordMapper;
 import com.yunya.middletable.dao.treatment.BillPayRecordMapper;
+import com.yunya.middletable.service.credits_shop.BillCreditsCallback;
 import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
 import com.yunya.models.report.*;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MapUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,14 +30,12 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -62,18 +60,11 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
   /** 预付款消费记录 */
   @Autowired private PrepaidExpendRecordMapper prepaidExpendRecordMapper;
-  /** 积分商城业务层 */
-  @Autowired
-  private CreditsShopBiz creditsShopBiz;
-  @Autowired
-  private BaseBillMapper baseBillMapper;
-  @Autowired
-  private BaseBillDetailMapper baseBillDetailMapper;
-  @Autowired
-  private BaseBillPayMapper baseBillPayMapper;
   /** 线程池 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
+  @Resource(name = "billCreditsCallbackImpl")
+  private BillCreditsCallback billCreditsCallback;
 
   /** 本次免单支付 */
   private final Integer PAYMENT_BY_CUSTOMER_FREE = 23;
@@ -94,19 +85,13 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       case 1:
       case 2:
         mapper.deleteByPrimaryKey(dataId);
-        log.info("\n\n\n==============撤销收费==============\n");
-        log.info("====> dataId = {}\n",dataId);
-        log.info("====>  baseBillPay = \n{}",baseBillPay);
-        log.info("=======================================\n\n\n");
         if (null != baseBillPay) {
           mapper.insertSelective(baseBillPay);
           // 保存收费记录明细
           saveBillPayDetailRecord(dataId);
-          // 增加会员积分
-          addCredits(baseBillPay.getReceivedAmount(),baseBillPay.getBillPayId(),baseBillPay.getBillId());
         } else {
           // 撤销积分
-          scrapCredits(dataId);
+          billCreditsCallback.scrapCredits(dataId);
           baseBillPayDetailMapper.deleteByBillPayId(dataId);
         }
         break;
@@ -190,118 +175,6 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           });
     }
   }
-
-  /**
-   * 增加会员积分
-   * @param receivedAmount 应收金额
-   * @param baseBillPayId 支付记录ID
-   */
-  private void addCredits(BigDecimal receivedAmount, Integer baseBillPayId,Integer billId) {
-    if (billId != null) {
-      BaseBill baseBill = baseBillMapper.selectByPrimaryKey(billId);
-
-      if (baseBill == null || baseBill.getBillStatus() == 0 || hasScrapedCredits(baseBill.getPatientId())) {
-        return ;
-      } else if (receivedAmount != null && baseBillPayId != null) {
-        receivedAmount = baseBill.getReceivedAmount();
-        // 从总的收费中过滤出医疗费用（不包含医疗护理用品和其他商品）
-        BigDecimal medicalExpenses = medicalExpenses(receivedAmount, billId);
-        // 增加会员积分  1元=1积分
-        JSONObject jsonObject = new JSONObject();
-
-        BaseBillPay query = new BaseBillPay();
-        query.setBillId(billId);
-        List<BaseBillPay> baseBillPays = baseBillPayMapper.select(query);
-        if (StringHelper.isNotEmpty(baseBillPays)) {
-          List<Integer> baseBillPayIds = baseBillPays.stream().mapToInt(BaseBillPay::getBillPayId).boxed().collect(Collectors.toList());
-          jsonObject.put("baseBillPayId",baseBillPayIds);
-          jsonObject.put("baseBillId",billId);
-          jsonObject.put("scrapCharges",0);
-        }
-        creditsShopBiz.ivyConsumeAddCredits(baseBill.getPatientId(), medicalExpenses, jsonObject.toJSONString(),(byte) 0);
-      }
-    }
-  }
-
-  /**
-   * 是否有过调整收费
-   * @param patientId 患者ID
-   * @return 调整过账单返回true 否则返回false
-   */
-  private boolean hasScrapedCredits(Integer patientId) {
-    CreditsShop lastCreditsInfo = creditsShopBiz.lastPatientCredits(patientId).getData();
-    String remarks = lastCreditsInfo.getRemarks();
-    JSONObject jsonObject = JSONObject.parseObject(remarks);
-    Integer scrapCharges = jsonObject.getInteger("scrapCharges");
-    return scrapCharges == 1;
-  }
-
-  /**
-   * 撤销积分
-   * @param baseBillPayId 支付记录ID
-   */
-  private void scrapCredits(Integer baseBillPayId) {
-    BaseBillPayDetail baseBillPayQuery = new BaseBillPayDetail();
-    baseBillPayQuery.setBillPayId(baseBillPayId);
-    BaseBillPayDetail baseBillPay = baseBillPayDetailMapper.selectOne(baseBillPayQuery);
-    log.info("\n\n====================scrapCredits===============\n");
-    log.info("===========> baseBillPayId:{}\n",baseBillPayId);
-    log.info("===========> baseBillPay: {}\n",baseBillPay);
-    log.info("===========> baseBillPay.billId: {}\n", baseBillPay != null ? baseBillPay.getBillId() : "");
-    BaseBill baseBill = baseBillMapper.selectByPrimaryKey(baseBillPay.getBillId());
-    log.info("===========> baseBill: {}\n",baseBill);
-    log.info("======================================================\n\n");
-    Integer patientId = baseBill.getPatientId();
-    Integer billId = baseBillPay.getBillId();
-    Example example = new Example(CreditsShop.class);
-    Example.Criteria criteria = example.createCriteria();
-    criteria.andEqualTo("patientId",patientId);
-    criteria.andEqualTo("type","offlineConsume");
-    criteria.andEqualTo("channel",0);
-    criteria.andEqualTo("creditsOption",0);
-    String remarks = "{\"baseBillId\":"+billId+",\"baseBillPayId\":";
-    criteria.andLike("remarks",remarks);
-    example.orderBy("id").desc();
-    List<CreditsShop> creditsShops = creditsShopBiz.selectByExample(example);
-    if (StringHelper.isNotEmpty(creditsShops)) {
-      CreditsShop creditsShop = creditsShops.get(0);
-      String jsonRemarks = creditsShop.getRemarks();
-      if (StringHelper.isNotBlank(jsonRemarks)) {
-        JSONObject jsonObject = JSONObject.parseObject(jsonRemarks);
-        jsonObject.put("scrapCharges",1);
-        creditsShop.setRemarks(jsonObject.toJSONString());
-      }
-      creditsShop.setUpdId(patientId);
-      creditsShop.setUpdTime(new Date(System.currentTimeMillis()));
-      creditsShopBiz.updateSelectiveById(creditsShop);
-    }
-  }
-
-  /**
-   * 从总的收费中过滤出医疗费用（不包含医疗护理用品和其他商品）
-   * @param receivedAmount 订单总费用
-   * @param billId  订单编号
-   * @return  返回医疗总费用（不包含医疗护理用品和其他商品）
-   */
-  private BigDecimal medicalExpenses(BigDecimal receivedAmount, Integer billId) {
-    BaseBillDetail bb = new BaseBillDetail();
-    bb.setBillId(billId);
-    List<BaseBillDetail> billDetails = baseBillDetailMapper.select(bb);
-    BigDecimal pPCPsExpenses = new BigDecimal(0);
-    if (StringHelper.isNotEmpty(billDetails)) {
-      for (BaseBillDetail item: billDetails) {
-        Byte itemType = item.getItemType();
-        if (itemType.intValue() == 1) {
-          pPCPsExpenses = pPCPsExpenses.add(item.getReceivedAmount() == null ? new BigDecimal(0) : item.getReceivedAmount());
-        }
-      }
-    }
-    if (receivedAmount != null && receivedAmount.compareTo(pPCPsExpenses) >= 0) {
-      return receivedAmount.subtract(pPCPsExpenses);
-    }
-    return new BigDecimal(0);
-  }
-
 
   /**
    * 构建中间表收费记录
