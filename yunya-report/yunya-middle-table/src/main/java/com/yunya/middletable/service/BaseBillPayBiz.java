@@ -1,7 +1,5 @@
 package com.yunya.middletable.service;
 
-import com.alibaba.fastjson.JSONException;
-import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -9,17 +7,15 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.MemberExpendRecordMapper;
 import com.yunya.middletable.dao.patient.PrepaidExpendRecordMapper;
-import com.yunya.middletable.dao.report.BaseBillDetailMapper;
-import com.yunya.middletable.dao.report.BaseBillMapper;
 import com.yunya.middletable.dao.report.BaseBillPayDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillPayMapper;
 import com.yunya.middletable.dao.treatment.BillPayDetailRecordMapper;
 import com.yunya.middletable.dao.treatment.BillPayRecordMapper;
 import com.yunya.middletable.service.credits_shop.BillCreditsCallback;
-import com.yunya.middletable.service.credits_shop.CreditsShopBiz;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
-import com.yunya.models.report.*;
+import com.yunya.models.report.BaseBillPay;
+import com.yunya.models.report.BaseBillPayDetail;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
 import lombok.extern.slf4j.Slf4j;
@@ -29,14 +25,11 @@ import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 
 /**
  * 简介: 中间表收费记录处理业务层
