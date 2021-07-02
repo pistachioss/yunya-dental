@@ -39,4 +39,4 @@ spring:
 logging:
     level:
         # tk.mybatis: DEBUG
-        com.yunya.auth: error
+        com.yunya.middletable: error
