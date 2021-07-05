@@ -2,7 +2,9 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
+import com.yunya.feign.report.domain.vo.CurrentMonthBillStatisticVO;
 import com.yunya.feign.treatment.domain.model.BillRefundModel;
 import com.yunya.feign.treatment.domain.vo.BillDetailGroupVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
@@ -123,6 +125,20 @@ public class BillRecordController {
           @RequestBody @Validated BillOfReceivableQuery query) {
     PageInfo<BillRestReceivableAmountVO> pageInfo = billRecordBiz.findDebtList(query);
     return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询本月金额合计
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("公司端报表-对账单-本月金额合计")
+  @PostMapping(value = "/statistic/list", name = "公司端报表-对账单-本月金额合计")
+  public ResponseResult<CurrentMonthBillStatisticVO> findCurrentMonthStatementStatistic(
+          @RequestBody @Validated StatementStatisticQuery query) {
+    CurrentMonthBillStatisticVO resultData = billRecordBiz.findCurrentMonthStatementStatistic(query);
+    return ResponseUtil.success(resultData);
   }
 
   /**

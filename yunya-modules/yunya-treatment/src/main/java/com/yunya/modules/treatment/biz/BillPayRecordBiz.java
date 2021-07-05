@@ -8,6 +8,7 @@ import com.yunya.feign.patient_central.domain.model.PrepaidRevocationFeeModel;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
+import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillCollectionDebtVO;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillPayRecordVO;
@@ -322,7 +323,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
 
 
   /**
-   * 根据条件查询收费在某个节点后账单日期在某个节点之前的收欠费
+   * 有效账单中收费在查询日期之前，且不包含查询日期之前的撤销收费的收费记录
    *
    * @param query 查询条件
    * @return list
@@ -330,5 +331,25 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
   public List<BillRestReceivableAmountVO> findFollowUpBillReceivedList(
           BillOfReceivableQuery query) {
     return mapper.selectFollowUpBillReceivedList(query);
+  }
+
+  /**
+   * 撤销收费记录ID
+   *
+   * @param query
+   * @return
+   */
+  public List<Integer> selectRevokePayIds(StatementStatisticQuery query) {
+    return mapper.selectRevokePayIds(query);
+  }
+
+  /**
+   * 调整收费方式
+   *
+   * @param query
+   * @return
+   */
+  public List<Integer> selectAdjustPayIds(StatementStatisticQuery query) {
+    return mapper.selectAdjustPayIds(query);
   }
 }

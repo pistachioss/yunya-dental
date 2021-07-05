@@ -376,35 +376,145 @@
     </select>
     <!-- 根据条件查询应收账款列表 -->
     <select id="selectDebtList" resultType="com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO">
-        select br.id as billId,
-        date_format(br.crt_time, '%Y-%m-%d') as billDate,
-        br.bill_number as billNum,
-        br.patient_id as patientId,
-        tr.dentist_id as regDentistId,
-        br.receivable_amount as totalOriginalAmount,
-        if(date_format(br.privilege_date, '%Y-%m-%d') > date_format(#{query.queryDate}, '%Y-%m-%d'), br.receivable_amount,
-        br.actual_receivable_amount) as totalActualAmount,
-        br.debt_amount as billReceivableAmount
-        from bill_record br
-        left join treatment_record tr on br.treatment_record_id = tr.id
-        <where>
-            and br.debt_amount > 0
-            and br.inservice = true
-            <if test="query.orgId != null">
-                and br.org_id = #{query.orgId}
-            </if>
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and date_format(br.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
-            </if>
-            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
-                and tr.dentist_id in
-                <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
-        order by
-        br.crt_time desc,
-        br.debt_amount desc
+        select
+            billId,
+            billDate,
+            billNum,
+            patientId,
+            regDentistId,
+            totalOriginalAmount,
+            totalActualAmount,
+            totalActualAmount-received_amount AS billReceivableAmount from
+        (
+            select br.id as billId,
+            date_format(br.crt_time, '%Y-%m-%d') as billDate,
+            br.bill_number as billNum,
+            br.patient_id as patientId,
+            tr.dentist_id as regDentistId,
+            br.receivable_amount as totalOriginalAmount,
+            if(date_format(br.privilege_date, '%Y-%m-%d') > date_format(#{query.queryDate}, '%Y-%m-%d'),
+            br.receivable_amount,
+            br.actual_receivable_amount) as totalActualAmount,
+            ifnull(bpr.received_amount, 0) received_amount
+            from bill_record br
+            left join treatment_record tr on br.treatment_record_id = tr.id
+            LEFT JOIN (
+            SELECT bpr.bill_record_id,sum(bpr.received_amount) received_amount FROM bill_pay_record bpr WHERE
+            bpr.inservice=true
+            AND date_format(bpr.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
+            GROUP BY bpr.bill_record_id
+            ) bpr on br.id=bpr.bill_record_id
+            <where>
+                and br.inservice = true
+                <if test="query.orgId != null">
+                    and br.org_id = #{query.orgId}
+                </if>
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and date_format(br.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
+                </if>
+                <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                    and tr.dentist_id in
+                    <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+            order by
+            br.crt_time desc,
+            br.debt_amount desc
+        ) t where totalActualAmount>received_amount
+    </select>
+
+    <!--撤销优惠合计-->
+    <select id="selectBillAdjustDiscountAmount" resultType="java.math.BigDecimal">
+        select IFNULL(sum(privilege_amount),0)
+        from bill_record
+        where order_record_id in (
+            select behdr.associate_record_id as orderRecordId
+            from bill_exception_handle_record behr
+                     left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
+            where operate_type = 2
+              and date_format(behr.crt_time, '%Y-%m') = #{query.queryDate}
+        )  and org_id = #{query.orgId}
+        and date_format(crt_time, '%Y-%m') = #{query.queryDate}
+    </select>
+
+    <!--优惠合计-->
+    <select id="selectBillDiscountAmount" resultType="java.math.BigDecimal">
+        select IFNULL(sum(privilege_amount),0)
+        from bill_record
+        where date_format(crt_time, '%Y-%m') =  #{query.queryDate}
+          and date_format(privilege_date, '%Y-%m') =  #{query.queryDate}
+          and org_id = #{query.orgId}
+    </select>
+
+    <!--调整原价合计-->
+    <select id="selectBillAdjustOriginalAmount" resultType="java.math.BigDecimal">
+        select IFNULL(sum(receivable_amount),0)
+        from bill_record
+        where order_record_id in (
+            select behdr.associate_record_id as orderRecordId
+            from bill_exception_handle_record behr
+                     left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
+            where operate_type = 2
+              and date_format(behr.crt_time, '%Y-%m') =#{query.queryDate}
+        )
+          and org_id = #{query.orgId}
+          and date_format(crt_time, '%Y-%m') = #{query.queryDate}
+    </select>
+
+    <!--原价合计-->
+    <select id="selectBillOriginalAmount" resultType="java.math.BigDecimal">
+        select IFNULL(sum(receivable_amount),0)
+        from bill_record
+        where date_format(crt_time, '%Y-%m') = #{query.queryDate}
+          and org_id =#{query.orgId}
+    </select>
+
+    <!--撤销实收合计-->
+    <select id="selectBillRevokeReceivedAmount" resultType="java.math.BigDecimal">
+        select IFNULL(sum(bpr.received_amount),0)
+        from bill_pay_record bpr
+        left join bill_record br on br.id = bpr.bill_record_id
+        where
+        br.org_id = #{query.orgId}
+        and bpr.id in (
+            select behdr.associate_record_id as billPayRecordId
+            from bill_exception_handle_record behr
+                     left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
+            where operate_type = 1
+              and date_format(behr.crt_time, '%Y-%m') = #{query.queryDate}
+        )
+        and date_format(bpr.crt_time, '%Y-%m') = #{query.queryDate}
+        and date_format(br.crt_time, '%Y-%m') = #{query.queryDate}
+    </select>
+
+    <!--实收合计-->
+    <select id="selectBillReceivedAmount" resultType="java.math.BigDecimal">
+        select IFNULL(sum(bpr.received_amount),0)
+        from bill_pay_record bpr
+                 left join bill_record br on bpr.bill_record_id = br.id
+        where date_format(bpr.crt_time, '%Y-%m') = #{query.queryDate}
+          and date_format(br.crt_time, '%Y-%m') = #{query.queryDate}
+          and br.org_id = #{query.orgId}
+    </select>
+
+    <!--免单合计-->
+    <select id="selectBillFreePayAmount" resultType="java.math.BigDecimal">
+        select IFNULL(sum(amount),0)
+        from bill_pay_detail_record bpdr
+        where date_format(bpdr.crt_time, '%Y-%m') = #{query.queryDate}
+          and bpdr.account_item_id in (23, 26)
+          and bpdr.bill_pay_record_id in (
+            select bpr.id
+            from bill_pay_record bpr
+            where date_format(bpr.crt_time, '%Y-%m') = #{query.queryDate}
+              and bpr.bill_record_id in (
+                select br.id
+                from bill_record br
+                where br.org_id = #{query.orgId}
+                  and date_format(br.crt_time, '%Y-%m') = #{query.queryDate}
+            )
+        );
     </select>
 </mapper>
