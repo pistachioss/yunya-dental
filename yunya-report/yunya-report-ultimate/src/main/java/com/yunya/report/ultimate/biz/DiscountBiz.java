@@ -13,6 +13,7 @@ import com.yunya.models.report.BaseCoupon;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -485,8 +486,12 @@ public class DiscountBiz {
     }
 
     public List<BenefitItemVo> listCouponRemainItem(Integer patientId) {
+        List<BenefitItemVo> list = null;
         //查询患者可用卡券
         List<Integer> cardIds = discountFeign.listPatientAllCard(patientId);
-        return benefitMapper.listAllItemUse(cardIds);
+        if (CollectionUtils.isNotEmpty(cardIds)) {
+            list = benefitMapper.listAllItemUse(cardIds);
+        }
+        return list;
     }
 }
