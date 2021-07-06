@@ -345,7 +345,7 @@
                                and `bci`.`item_id` = `temp`.`item_id`
                                and `temp`.`item_type` = `bci`.`type`
         where `c`.`status` in (2, 3)
-            and `bco`.`coupon_type` != 4
+            and `bco`.`coupon_type` in (2, 3)
             and (
             isnull(`c`.`activation_deadline`)
                 or `c`.`activation_deadline` >= date_format(now(), '%y-%m-%d')
