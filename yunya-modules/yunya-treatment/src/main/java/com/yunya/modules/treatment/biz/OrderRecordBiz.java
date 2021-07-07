@@ -20,6 +20,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
 import com.yunya.models.tariff.ClinicTariffMemberPrice;
 import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
@@ -81,6 +82,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
   /** 门诊价目表会员价 */
   @Autowired private ClinicTariffMemberPriceBiz clinicTariffMemberPriceBiz;
+  /** 门诊商品项目会员价 */
+  @Autowired private ClinicOralTariffMemberPriceBiz clinicOralTariffMemberPriceBiz;
   /**
    * 根据就诊ID查询开单详情信息
    *
@@ -120,14 +123,58 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
         orderDetails.forEach(
                 tariffVO -> {
                   Map<Integer, Object> memberPrices = new HashMap<>(16);
-                  // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
-                  setClinicTariffMemberPrice(memberPrices, memberTypes, orderRecord.getOrgId(), tariffVO);
+                  if(tariffVO.getType()==0){
+                    // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
+                    setClinicTariffMemberPrice(memberPrices, memberTypes, orderRecord.getOrgId(), tariffVO);
+                  }else{
+                    setClinicOralTariffMemberPrice(memberPrices, memberTypes, orderRecord.getOrgId(), tariffVO);
+                  }
+
                 });
       }
     }
     resultData.setOrderDetails(orderDetails);
     resultData.setAssistants(assistants);
     return resultData;
+  }
+
+  /**
+   * 设置门诊商品项目会员价
+   *
+   * @param memberPrices 会员价
+   * @param memberTypes 会员类型列表
+   * @param orgId 组织ID
+   * @param tariffVO 门诊商品项目信息
+   */
+  private void setClinicOralTariffMemberPrice(
+          Map<Integer, Object> memberPrices,
+          List<MemberType> memberTypes,
+          Integer orgId,
+          OrderDetailVO tariffVO) {
+    ClinicOralTariffMemberPrice clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
+    clinicOralTariffMemberPrice.setClinicId(orgId);
+    Integer oralTariffId = tariffVO.getBillingItemId();
+    clinicOralTariffMemberPrice.setOralTariffId(oralTariffId);
+    for (MemberType memberType : memberTypes) {
+      Integer memberTypeId;
+      BigDecimal memberPrice;
+      clinicOralTariffMemberPrice.setMemberTypeId(memberType.getId());
+      ClinicOralTariffMemberPrice memberPriceResult =
+              clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
+      if (null != memberPriceResult) {
+        memberTypeId = memberPriceResult.getMemberTypeId();
+        memberPrice = memberPriceResult.getDiscountPrice();
+      } else {
+        memberTypeId = memberType.getId();
+        memberPrice =
+                (tariffVO
+                        .getPrice()
+                        .multiply(BigDecimal.valueOf(memberType.getRate()))
+                        .divide(BigDecimal.valueOf(100), 2));
+      }
+      memberPrices.put(memberTypeId, memberPrice.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+    tariffVO.setMemberPrices(memberPrices);
   }
 
 

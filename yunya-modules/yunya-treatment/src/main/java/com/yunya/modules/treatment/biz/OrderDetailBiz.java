@@ -119,6 +119,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   @Resource  private RemotePatientCentralServiceFeign patientFeign;
   /** 门诊价目表会员价 */
   @Autowired private ClinicTariffMemberPriceBiz clinicTariffMemberPriceBiz;
+  /** 门诊商品项目会员价 */
+  @Autowired private ClinicOralTariffMemberPriceBiz clinicOralTariffMemberPriceBiz;
   @Resource(name = "treatmentThreadPool")
   private ExecutorService executorService;
   /**
@@ -236,13 +238,12 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         chargeVOS.forEach(
                 tariffVO -> {
                   Map<Integer, Object> memberPrices = new HashMap<>(16);
-                  // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
-                  System.out.println("==============================================");
-                  System.out.println("==============================================");
-                  System.out.println("==============================================");
-                  System.out.println(BaseContextHandler.getOrgId());
-                  System.out.println(Integer.getInteger(BaseContextHandler.getOrgId()));
-                  setClinicTariffMemberPrice(memberPrices, memberTypes, Integer.valueOf(BaseContextHandler.getOrgId()), tariffVO);
+                  if(tariffVO.getType()==0) {
+                    // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
+                    setClinicTariffMemberPrice(memberPrices, memberTypes, Integer.valueOf(BaseContextHandler.getOrgId()), tariffVO);
+                  }else{
+                    setClinicOralTariffMemberPrice(memberPrices, memberTypes, Integer.valueOf(BaseContextHandler.getOrgId()), tariffVO);
+                  }
                 });
       }
     }
@@ -256,7 +257,44 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     redisUtils.set(redisKey, orderRecordId + ":" + userId, 600);
     return chargeOrderDetailList;
   }
-
+  /**
+   * 设置门诊商品项目会员价
+   *
+   * @param memberPrices 会员价
+   * @param memberTypes 会员类型列表
+   * @param orgId 组织ID
+   * @param tariffVO 门诊商品项目信息
+   */
+  private void setClinicOralTariffMemberPrice(
+          Map<Integer, Object> memberPrices,
+          List<MemberType> memberTypes,
+          Integer orgId,
+          OrderDetailChargeVO tariffVO) {
+    ClinicOralTariffMemberPrice clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
+    clinicOralTariffMemberPrice.setClinicId(orgId);
+    Integer oralTariffId = tariffVO.getBillingItemId();
+    clinicOralTariffMemberPrice.setOralTariffId(oralTariffId);
+    for (MemberType memberType : memberTypes) {
+      Integer memberTypeId;
+      BigDecimal memberPrice;
+      clinicOralTariffMemberPrice.setMemberTypeId(memberType.getId());
+      ClinicOralTariffMemberPrice memberPriceResult =
+              clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
+      if (null != memberPriceResult) {
+        memberTypeId = memberPriceResult.getMemberTypeId();
+        memberPrice = memberPriceResult.getDiscountPrice();
+      } else {
+        memberTypeId = memberType.getId();
+        memberPrice =
+                (tariffVO
+                        .getPrice()
+                        .multiply(BigDecimal.valueOf(memberType.getRate()))
+                        .divide(BigDecimal.valueOf(100), 2));
+      }
+      memberPrices.put(memberTypeId, memberPrice.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+    tariffVO.setMemberPrices(memberPrices);
+  }
 
   /**
    * 设置门诊价目表会员价
