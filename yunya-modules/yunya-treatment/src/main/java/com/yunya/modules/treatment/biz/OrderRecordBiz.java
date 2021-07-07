@@ -19,6 +19,8 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.system.MemberType;
+import com.yunya.models.tariff.ClinicTariffMemberPrice;
 import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.mapper.*;
@@ -28,9 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -79,7 +79,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   @Autowired private BillExceptionHandleDetailRecordMapper billExceptionHandleDetailRecordMapper;
   /** 患者服务 */
   @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
-
+  /** 门诊价目表会员价 */
+  @Autowired private ClinicTariffMemberPriceBiz clinicTariffMemberPriceBiz;
   /**
    * 根据就诊ID查询开单详情信息
    *
@@ -112,10 +113,68 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (StringHelper.isEmpty(assistants)) {
       assistants = new ArrayList<>();
     }
+    //处理门诊价目表价格
+    if (StringHelper.isNotEmpty(orderDetails)) {
+      List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
+      if (StringHelper.isNotEmpty(memberTypes)) {
+        orderDetails.forEach(
+                tariffVO -> {
+                  Map<Integer, Object> memberPrices = new HashMap<>(16);
+                  // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
+                  setClinicTariffMemberPrice(memberPrices, memberTypes, orderRecord.getOrgId(), tariffVO);
+                });
+      }
+    }
     resultData.setOrderDetails(orderDetails);
     resultData.setAssistants(assistants);
     return resultData;
   }
+
+
+  /**
+   * 设置门诊价目表会员价
+   *
+   * @param memberPrices 会员价
+   * @param memberTypes 会员类型列表
+   * @param orgId 组织ID
+   * @param tariffVO 门诊价目表信息
+   */
+  private void setClinicTariffMemberPrice(
+          Map<Integer, Object> memberPrices,
+          List<MemberType> memberTypes,
+          Integer orgId,
+          OrderDetailVO tariffVO) {
+    ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
+    clinicTariffMemberPrice.setClinicId(orgId);
+    clinicTariffMemberPrice.setTariffId(tariffVO.getBillingItemId());
+    for (MemberType memberType : memberTypes) {
+      Integer memberTypeId;
+      BigDecimal memberPrice;
+      clinicTariffMemberPrice.setMemberTypeId(memberType.getId());
+      ClinicTariffMemberPrice memberPriceResult =
+              clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
+      if (null != memberPriceResult) {
+        memberTypeId = memberPriceResult.getMemberTypeId();
+        memberPrice = memberPriceResult.getDiscountPrice().setScale(2, BigDecimal.ROUND_HALF_UP);
+      } else {
+        memberTypeId = memberType.getId();
+        memberPrice =
+                (tariffVO
+                        .getPrice()
+                        .multiply(BigDecimal.valueOf(memberType.getRate()))
+                        .divide(BigDecimal.valueOf(100), 2))
+                        .setScale(2, BigDecimal.ROUND_HALF_UP);
+      }
+      memberPrices.put(memberTypeId, memberPrice);
+    }
+    // 设置价格精度小数点后两位四舍五入，没有在上个方法中设置精度是为了保证会员价计算精确
+//    tariffVO.setPrice(tariffVO.getPrice().setScale(2, BigDecimal.ROUND_HALF_UP));
+    tariffVO.setMemberPrices(memberPrices);
+  }
+
+
+
+
 
   /**
    * 暂存开单信息
