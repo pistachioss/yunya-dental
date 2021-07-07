@@ -4,22 +4,32 @@ import com.yunya.feign.appointment.domain.form.AppointSettingForm;
 import com.yunya.feign.appointment.domain.model.AppointSettingModel;
 import com.yunya.feign.appointment.domain.query.AppointSettingQuery;
 import com.yunya.feign.appointment.vo.AppointSettingVo;
+import com.yunya.feign.appointment.vo.ClinicBusinessHoursVo;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.MapUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.ClinicAppointmentSetting;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.ClinicAppointmentSettingMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 预约显示设置
@@ -31,6 +41,9 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMapper, ClinicAppointmentSetting> {
+    /** 系统服务 */
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
     /**
      * 编辑(添加)设置
@@ -62,7 +75,7 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
                 return ResponseUtil.fail(AppointmentError.APPOINT_SETTING_FAIL.getCode(),AppointmentError.APPOINT_SETTING_FAIL.getMessage(),null);
             }
         }
-        return ResponseUtil.success();
+        return ResponseUtil.success(build);
     }
 
     /**
@@ -126,6 +139,26 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
             throw new ClientServiceException("删除失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
         }
         return ResponseUtil.success();
+    }
+
+    /**
+     * 门诊营业时间
+     * @param orgId 门诊ID
+     * @return 返回门诊营业时间
+     */
+    public ResponseResult<ClinicBusinessHoursVo> orgBusinessHours(Integer orgId) {
+        MedicalOrganizationInfoVO orgExtInfo = remoteSystemServiceFeign.clinicExtInfoByCompanyId(orgId);
+        ClinicBusinessHoursVo clinicBusinessHours = new ClinicBusinessHoursVo();
+        if (orgExtInfo == null) {
+            return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"数据不存在",null);
+        }
+        String businessStartTime = orgExtInfo.getBusinessStartTime();
+        String businessEndTime = orgExtInfo.getBusinessEndTime();
+        if (StringHelper.isNotEmpty(businessStartTime) && StringHelper.isNotEmpty(businessEndTime)) {
+            clinicBusinessHours.setBusinessStartTime(businessStartTime);
+            clinicBusinessHours.setBusinessEndTime(businessEndTime);
+        }
+        return ResponseUtil.success(clinicBusinessHours);
     }
 
 }

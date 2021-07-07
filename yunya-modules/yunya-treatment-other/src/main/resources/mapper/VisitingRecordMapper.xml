@@ -226,5 +226,10 @@
     from visiting_record
     where patient_id = #{patientId}
   </select>
+    <select id="selectList" resultType="com.yunya.models.treatment_other.VisitingRecord">
+        select id,visiting_date from visiting_record
+        where DATE_FORMAT(visiting_date,'%Y-%m') between #{startDate}
+        and #{endDate}
+    </select>
 
 </mapper>

@@ -32,4 +32,6 @@ public class PrivilegeCouponInfoVO implements Serializable {
   /** 优惠金额 */
   @ApiModelProperty("优惠金额")
   private BigDecimal benefitAmount;
+  @ApiModelProperty("会员卡卡号")
+  private String cardNumber;
 }

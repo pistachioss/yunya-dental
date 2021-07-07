@@ -10,17 +10,19 @@ import com.yunya.middletable.dao.report.BaseRefundPayDetailMapper;
 import com.yunya.middletable.dao.treatment.BillRefundOrderDetailMapper;
 import com.yunya.middletable.dao.treatment.BillRefundPayDetailRecordMapper;
 import com.yunya.middletable.dao.treatment.BillRefundRecordMapper;
+import com.yunya.middletable.service.credits_shop.BillCreditsCallback;
 import com.yunya.models.report.BaseRefund;
 import com.yunya.models.report.BaseRefundDetail;
 import com.yunya.models.report.BaseRefundPayDetail;
 import com.yunya.models.treatment.BillRefundOrderDetail;
 import com.yunya.models.treatment.BillRefundPayDetailRecord;
 import com.yunya.models.treatment.BillRefundRecord;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +35,7 @@ import java.util.Map;
  * @since: 1.0.0
  */
 @Service
+@Slf4j
 public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
 
   /** 退费记录 */
@@ -47,6 +50,8 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
   @Autowired private BaseRefundDetailMapper refundDetailMapper;
 
   @Autowired private BaseRefundPayDetailMapper refundPayDetailMapper;
+  @Resource(name = "billCreditsCallbackImpl")
+  private BillCreditsCallback billCreditsCallback;
 
   /**
    * 根据消息更新中间表退费信息
@@ -64,6 +69,8 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
         if (null != refund) {
           mapper.insertSelective(refund);
           saveBaseRefundDetail(dataId);
+          // 回滚积分记录
+          billCreditsCallback.refundCredits(dataId,refund.getBillId());
         }
         break;
       case 1:
@@ -77,6 +84,8 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
             mapper.updateByPrimaryKeySelective(refund);
             updateBaseRefundDetail(dataId);
           }
+          // 回滚积分记录
+          billCreditsCallback.refundCredits(dataId,refund.getBillId());
         } else {
           mapper.deleteByPrimaryKey(dataId);
         }
@@ -90,6 +99,8 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
           mapper.insertSelective(refund);
           saveBaseRefundDetail(dataId);
         }
+        // 回滚积分记录
+        billCreditsCallback.refundCredits(dataId,refund.getBillId());
         break;
       default:
         break;
@@ -243,4 +254,5 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
               });
     }
   }
+
 }

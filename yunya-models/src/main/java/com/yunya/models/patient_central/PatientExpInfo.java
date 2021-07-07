@@ -106,6 +106,21 @@ public class PatientExpInfo {
     private Boolean bruxism;
 
     /**
+     * 孕龄时长
+     */
+    private Integer pregnancyWeek;
+
+    /**
+     * 是否哺乳
+     */
+    private Boolean feedBaby;
+
+    /**
+     * 监护人
+     */
+    private String guardian;
+
+    /**
      * 家庭详细地址
      */
     private String address;
@@ -691,5 +706,29 @@ public class PatientExpInfo {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    public Integer getPregnancyWeek() {
+        return pregnancyWeek;
+    }
+
+    public void setPregnancyWeek(Integer pregnancyWeek) {
+        this.pregnancyWeek = pregnancyWeek;
+    }
+
+    public Boolean getFeedBaby() {
+        return feedBaby;
+    }
+
+    public void setFeedBaby(Boolean feedBaby) {
+        this.feedBaby = feedBaby;
+    }
+
+    public String getGuardian() {
+        return guardian;
+    }
+
+    public void setGuardian(String guardian) {
+        this.guardian = guardian;
     }
 }

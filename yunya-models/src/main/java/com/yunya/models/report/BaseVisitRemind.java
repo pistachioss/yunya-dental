@@ -1,11 +1,14 @@
 package com.yunya.models.report;
 
+import lombok.Data;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
 
 @Table(name = "base_visit_remind")
+@Data
 public class BaseVisitRemind {
     /**
      * 随访/提醒ID
@@ -53,6 +56,19 @@ public class BaseVisitRemind {
      */
     @Column(name = "crt_time")
     private Date crtTime;
+    /**
+     * 计划进行提醒（随访）时间
+     */
+    @Column(name = "visiting_remind_time")
+    private Date visitingRemindTime;
+
+    public Date getVisitingRemindTime() {
+        return visitingRemindTime;
+    }
+
+    public void setVisitingRemindTime(Date visitingRemindTime) {
+        this.visitingRemindTime = visitingRemindTime;
+    }
 
     /**
      * 获取随访/提醒ID
