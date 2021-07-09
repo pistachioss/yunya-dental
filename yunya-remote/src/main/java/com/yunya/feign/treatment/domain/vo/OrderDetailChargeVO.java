@@ -8,6 +8,7 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 简介: 收费订单详情VO
@@ -77,4 +78,6 @@ public class OrderDetailChargeVO implements Serializable {
   private String remarks;
   /** 优惠适用卡券列表 */
   private List<PrivilegeCouponInfoVO> discountAppliesCoupons;
+  /** 会员价 */
+  private Map<Integer, Object> memberPrices;
 }
