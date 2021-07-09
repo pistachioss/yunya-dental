@@ -655,8 +655,15 @@
         from (
         select p.patient_id
         , ROUND(p.number_of_visits / (datediff(now(), p.first_visit_date) / 365)) as 'qty'
+        , p.amount
+        , p.member
+        , ROUND(p.number_of_visits / (p.subday / 365)) as 'qty'
+        from (
+        select p.patient_id
+        , if(datediff(now(), p.first_visit_date) &lt; 365, 365, datediff(now(), p.first_visit_date)) as 'subday'
         , p.cumulative_consumption as 'amount'
         , p.member
+        , p.number_of_visits
         from (
         SELECT p.patient_id
         , p.first_visit_date
@@ -664,6 +671,7 @@
         , p.cumulative_consumption
         , (case when m.member_level_name is not null then '123' when c.coupon_name is not null then '365' end) as
         'member'
+        , (case when m.member_level_name is not null then '123' when c.coupon_name is not null then '365' end) as 'member'
         FROM base_patient p
         left join (
         select m.patient_id, m.member_level_name
@@ -679,6 +687,7 @@
         ) c on p.patient_id = c.patient_id
         ) p
         where p.member is not null
+        ) p
         ) p
         ) p on p.patient_id = bp.patient_id
         set bp.visit_rate = p.qty
