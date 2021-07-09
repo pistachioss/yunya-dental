@@ -152,6 +152,7 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         baseVisitRemind.setType((byte) type.intValue());
         baseVisitRemind.setUserId(visitingRecord.getCrtId());
         baseVisitRemind.setVisitingRemindTime(visitingRecord.getVisitingDate());
+        baseVisitRemind.setTime(visitingRecord.getExecuteDate());
         baseVisitRemind.setContent(visitingRecord.getReason());
         baseVisitRemind.setCrtTime(visitingRecord.getCrtTime());
         return baseVisitRemind;
@@ -168,6 +169,9 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         baseVisitRemind.setType((byte) type.intValue());
         baseVisitRemind.setUserId(visitingRemind.getCrtId());
         baseVisitRemind.setVisitingRemindTime(visitingRemind.getRemindDate());
+        if(visitingRemind.getStatus()){
+          baseVisitRemind.setTime(visitingRemind.getUpdTime());
+        }
         baseVisitRemind.setContent(visitingRemind.getRemindContent());
         baseVisitRemind.setCrtTime(visitingRemind.getCrtTime());
         return baseVisitRemind;
