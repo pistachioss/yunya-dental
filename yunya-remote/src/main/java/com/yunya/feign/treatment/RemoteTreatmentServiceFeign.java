@@ -409,4 +409,12 @@ public interface RemoteTreatmentServiceFeign {
   @GetMapping("/rpc/list/{treatmentRecordId}")
   OrderDetailInfoVO findOrderInfoByTreatmentId(
           @PathVariable(value = "treatmentRecordId") Integer treatmentRecordId);
+
+  /**
+   * 患者就诊次数
+   * @param patientId 患者ID
+   * @return 返回就诊次数
+   */
+  @GetMapping("/rpc/{patientId}/treatment/times")
+  int patientTreatmentTimes(@PathVariable(value = "patientId") Integer patientId);
 }

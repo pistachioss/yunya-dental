@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
+import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
@@ -12,6 +13,7 @@ import com.yunya.models.report.BaseCoupon;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +45,8 @@ public class DiscountBiz {
     private BaseBenefitMapper benefitMapper;
     @Resource
     private BaseOrganizationMapper orgMapper;
+    @Resource
+    private RemoteDiscountFeign discountFeign;
 
     /**
      * 产品售出激活统计
@@ -479,5 +483,15 @@ public class DiscountBiz {
         }
         List<CardActiveRecoedVO> resultList = cardMapper.getCardActiveRecoedPage(query);
         return new PageInfo<>(resultList);
+    }
+
+    public List<BenefitItemVo> listCouponRemainItem(Integer patientId) {
+        List<BenefitItemVo> list = null;
+        //查询患者可用卡券
+        List<Integer> cardIds = discountFeign.listPatientAllCard(patientId);
+        if (CollectionUtils.isNotEmpty(cardIds)) {
+            list = benefitMapper.listAllItemUse(cardIds);
+        }
+        return list;
     }
 }

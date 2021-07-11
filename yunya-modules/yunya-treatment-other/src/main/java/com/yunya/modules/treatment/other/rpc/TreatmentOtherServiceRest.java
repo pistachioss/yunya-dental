@@ -1,10 +1,13 @@
 package com.yunya.modules.treatment.other.rpc;
 
+import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.vo.FindAllRemindRecordVO;
 import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment_other.VisitingRecord;
+import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.models.treatment_other.XRayFilm;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import com.yunya.modules.treatment.other.biz.XRayFilmBiz;
@@ -152,4 +155,20 @@ public class TreatmentOtherServiceRest {
     }
     return resultList;
   }
+
+  /**
+   * 查询所有随访提醒记录
+   * @return
+   */
+  @ApiOperation(value = "查询所有随访提醒记录")
+  @RequestMapping(value = "/visiting/findAllRecord", method = RequestMethod.POST)
+  public FindAllRemindRecordVO findAllRecord(@RequestBody PullForm pullForm){
+    List<VisitingRecord>list1 = visitingRecordMapper.selectList(pullForm);
+    List<VisitingRemind>list2 = visitingRemindMapper.selectList(pullForm);
+    FindAllRemindRecordVO findAllRemindRecordVO = new FindAllRemindRecordVO();
+    findAllRemindRecordVO.setRecordList(list1);
+    findAllRemindRecordVO.setRemindList(list2);
+    return findAllRemindRecordVO;
+  }
+
 }

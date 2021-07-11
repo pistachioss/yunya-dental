@@ -97,4 +97,6 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
     WxCardUsageVo getCardUsage(@Param("cardId") Integer cardId);
 
     void updateList(@Param("list") List<Card> list);
+
+    List<Integer> listPatientAllCard(@Param("patientId") Integer patientId);
 }

@@ -27,7 +27,7 @@ import java.util.Collection;
 public class EmployeeWorkloadQuery extends PageQuery implements Serializable {
   /** 组织ID */
   @ApiModelProperty(value = "组织id", required = true)
-  @NotNull(message = "组织ID不能为空！")
+//  @NotNull(message = "组织ID不能为空！")
   private Integer orgId;
   /** 时间类型 */
   @ApiModelProperty(value = "时间类型:0-日（yyyy-MM-dd）；1-月(yyyy-MM)；2-年(yyyy)", required = true)
@@ -57,6 +57,7 @@ public class EmployeeWorkloadQuery extends PageQuery implements Serializable {
   @ApiModelProperty("账单ID列表")
   private Collection<Integer> billIds;
   /** 组织ID列表 */
+//  @NotNull(message = "组织ID不能为空！")
   private Integer[] orgIds;
   /** 优惠使用开始时间 */
   private String privilegeStartDate;

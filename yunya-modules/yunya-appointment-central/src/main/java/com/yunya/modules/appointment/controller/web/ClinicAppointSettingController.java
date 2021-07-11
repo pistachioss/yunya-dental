@@ -55,7 +55,7 @@ public class ClinicAppointSettingController {
 
     /**
      * 根据条件查询预约显示设置
-     * @param query
+     * @param userId
      * @return
      */
     @ApiOperation(value = "根据条件查询预约显示设置")

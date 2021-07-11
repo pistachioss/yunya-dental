@@ -109,4 +109,14 @@
     AND allocate_date IS NOT NULL
     </select>
 
+    <select id="countCouponAllocate" resultType="Integer">
+       select
+            ifnull(sum(allocate_num),0)
+        from
+            coupon_allocate
+        where
+            coupon_id = #{couponId}
+            and isnull(allocate_date) = 0
+    </select>
+
 </mapper>

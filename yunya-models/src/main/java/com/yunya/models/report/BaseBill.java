@@ -1,6 +1,7 @@
 package com.yunya.models.report;
 
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -491,5 +492,31 @@ public class BaseBill {
      */
     public void setCheckerId(Integer checkerId) {
         this.checkerId = checkerId;
+    }
+
+    @Override
+    public String toString() {
+        return "BaseBill{" +
+                "billId=" + billId +
+                ", orgId=" + orgId +
+                ", patientId=" + patientId +
+                ", treatmentId=" + treatmentId +
+                ", billStatus=" + billStatus +
+                ", orderNum='" + orderNum + '\'' +
+                ", orderAmount=" + orderAmount +
+                ", orderDate=" + orderDate +
+                ", billDate=" + billDate +
+                ", privilegeType=" + privilegeType +
+                ", privilegeOrgId=" + privilegeOrgId +
+                ", firstPrivilege=" + firstPrivilege +
+                ", privilegeAmount=" + privilegeAmount +
+                ", privilegeDate=" + privilegeDate +
+                ", billNum='" + billNum + '\'' +
+                ", actualAmount=" + actualAmount +
+                ", receivedAmount=" + receivedAmount +
+                ", debtAmount=" + debtAmount +
+                ", billerId=" + billerId +
+                ", checkerId=" + checkerId +
+                '}';
     }
 }

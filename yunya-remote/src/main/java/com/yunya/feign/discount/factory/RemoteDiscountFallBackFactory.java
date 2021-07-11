@@ -62,4 +62,9 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     public WxCardUsageVo getUserCardUsage(Integer cardId) {
         return null;
     }
+
+    @Override
+    public List<Integer> listPatientAllCard(Integer patientId) {
+        return null;
+    }
 }

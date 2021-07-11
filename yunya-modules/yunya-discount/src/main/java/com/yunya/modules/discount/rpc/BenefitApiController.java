@@ -94,4 +94,9 @@ public class BenefitApiController {
     public WxCardUsageVo getUserCardUsage(@PathVariable(value = "cardId") Integer cardId) {
         return cardBiz.getWxUserCardUsage(cardId);
     }
+
+    @GetMapping("/patient/{patientId}/cards")
+    public List<Integer> listPatientAllCard(@PathVariable(value = "patientId") Integer patientId) {
+        return cardBiz.listPatientAllCard(patientId);
+    }
 }

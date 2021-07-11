@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.yunya.feign.clinic_base.RemoteClinicBaseServiceFeign;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
@@ -9,6 +10,11 @@ import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectTargetVO;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
+import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
@@ -18,8 +24,10 @@ import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.form.BillPrintInfoForm;
 import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
+import com.yunya.feign.treatment.domain.model.GeneralDiscountModel;
 import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
+import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -35,11 +43,9 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.clinic_base.SpecialistProject;
 import com.yunya.models.system.AccountItem;
+import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseTariff;
-import com.yunya.models.tariff.ClinicOralTariff;
-import com.yunya.models.tariff.ClinicTariff;
+import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.OrderDetail;
@@ -47,6 +53,7 @@ import com.yunya.models.treatment.OrderRecord;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import com.yunya.modules.treatment.mapper.OrderDetailMapper;
 import com.yunya.modules.treatment.mapper.OrderRecordMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,7 +73,9 @@ import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillDetail;
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
-import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
 
@@ -102,11 +111,16 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   @Autowired private RemoteDiscountFeign discountFeign;
   /** 支付方式 */
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
+  @Autowired private TollBiz tollBiz;
   /** 门诊基础服务 */
   @Autowired private RemoteClinicBaseServiceFeign remoteClinicBaseServiceFeign;
   /** 消息中间件 */
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
-
+  @Resource  private RemotePatientCentralServiceFeign patientFeign;
+  /** 门诊价目表会员价 */
+  @Autowired private ClinicTariffMemberPriceBiz clinicTariffMemberPriceBiz;
+  /** 门诊商品项目会员价 */
+  @Autowired private ClinicOralTariffMemberPriceBiz clinicOralTariffMemberPriceBiz;
   @Resource(name = "treatmentThreadPool")
   private ExecutorService executorService;
   /**
@@ -214,10 +228,180 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     if (StringHelper.isNotBlank(redisValue) && !redisValue.equals(orderRecordId + ":" + userId)) {
       throw new ClientServiceException("收费失败，当前就诊正在收费中！", PARAMETERS_IS_ILLEGAL);
     }
-    List<OrderDetailChargeVO> chargeOrderDetailList = getChargeOrderDetailList(orderRecordId);
+    List<OrderDetailChargeVO> chargeOrderDetailList;
+    List<OrderDetailChargeVO> chargeVOS = this.buildMember(orderRecordId);
+
+    //处理门诊价目表价格
+    if (StringHelper.isNotEmpty(chargeVOS)) {
+      List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
+      if (StringHelper.isNotEmpty(memberTypes)) {
+        chargeVOS.forEach(
+                tariffVO -> {
+                  Map<Integer, Object> memberPrices = new HashMap<>(16);
+                  if(tariffVO.getType()==0) {
+                    // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
+                    setClinicTariffMemberPrice(memberPrices, memberTypes, Integer.valueOf(BaseContextHandler.getOrgId()), tariffVO);
+                  }else{
+                    setClinicOralTariffMemberPrice(memberPrices, memberTypes, Integer.valueOf(BaseContextHandler.getOrgId()), tariffVO);
+                  }
+                });
+      }
+    }
+
+    if (chargeVOS != null) {
+      chargeOrderDetailList = chargeVOS;
+    } else {
+      chargeOrderDetailList = getChargeOrderDetailList(orderRecordId);
+    }
     // 设置10分钟（该段时间内不允许其他用户重复收费，解锁）
     redisUtils.set(redisKey, orderRecordId + ":" + userId, 600);
     return chargeOrderDetailList;
+  }
+  /**
+   * 设置门诊商品项目会员价
+   *
+   * @param memberPrices 会员价
+   * @param memberTypes 会员类型列表
+   * @param orgId 组织ID
+   * @param tariffVO 门诊商品项目信息
+   */
+  private void setClinicOralTariffMemberPrice(
+          Map<Integer, Object> memberPrices,
+          List<MemberType> memberTypes,
+          Integer orgId,
+          OrderDetailChargeVO tariffVO) {
+    ClinicOralTariffMemberPrice clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
+    clinicOralTariffMemberPrice.setClinicId(orgId);
+    Integer oralTariffId = tariffVO.getBillingItemId();
+    clinicOralTariffMemberPrice.setOralTariffId(oralTariffId);
+    for (MemberType memberType : memberTypes) {
+      Integer memberTypeId;
+      BigDecimal memberPrice;
+      clinicOralTariffMemberPrice.setMemberTypeId(memberType.getId());
+      ClinicOralTariffMemberPrice memberPriceResult =
+              clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
+      if (null != memberPriceResult) {
+        memberTypeId = memberPriceResult.getMemberTypeId();
+        memberPrice = memberPriceResult.getDiscountPrice();
+      } else {
+        memberTypeId = memberType.getId();
+        memberPrice =
+                (tariffVO
+                        .getPrice()
+                        .multiply(BigDecimal.valueOf(memberType.getRate()))
+                        .divide(BigDecimal.valueOf(100), 2));
+      }
+      memberPrices.put(memberTypeId, memberPrice.setScale(2, BigDecimal.ROUND_HALF_UP));
+    }
+    tariffVO.setMemberPrices(memberPrices);
+  }
+
+  /**
+   * 设置门诊价目表会员价
+   *
+   * @param memberPrices 会员价
+   * @param memberTypes 会员类型列表
+   * @param orgId 组织ID
+   * @param tariffVO 门诊价目表信息
+   */
+  private void setClinicTariffMemberPrice(
+          Map<Integer, Object> memberPrices,
+          List<MemberType> memberTypes,
+          Integer orgId,
+          OrderDetailChargeVO tariffVO) {
+    ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
+    clinicTariffMemberPrice.setClinicId(orgId);
+    clinicTariffMemberPrice.setTariffId(tariffVO.getBillingItemId());
+    for (MemberType memberType : memberTypes) {
+      Integer memberTypeId;
+      BigDecimal memberPrice;
+      clinicTariffMemberPrice.setMemberTypeId(memberType.getId());
+      ClinicTariffMemberPrice memberPriceResult =
+              clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
+      if (null != memberPriceResult) {
+        memberTypeId = memberPriceResult.getMemberTypeId();
+        memberPrice = memberPriceResult.getDiscountPrice().setScale(2, BigDecimal.ROUND_HALF_UP);
+      } else {
+        memberTypeId = memberType.getId();
+        memberPrice =
+                (tariffVO
+                        .getPrice()
+                        .multiply(BigDecimal.valueOf(memberType.getRate()))
+                        .divide(BigDecimal.valueOf(100), 2))
+                        .setScale(2, BigDecimal.ROUND_HALF_UP);
+      }
+      memberPrices.put(memberTypeId, memberPrice);
+    }
+    // 设置价格精度小数点后两位四舍五入，没有在上个方法中设置精度是为了保证会员价计算精确
+//    tariffVO.setPrice(tariffVO.getPrice().setScale(2, BigDecimal.ROUND_HALF_UP));
+    tariffVO.setMemberPrices(memberPrices);
+  }
+
+
+
+  private List<OrderDetailChargeVO> buildMember(Integer orderRecordId) {
+    OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
+    Map<Integer, String> maxType = getPatientMemberCards(orderRecord.getPatientId());
+    if (maxType != null && maxType.size() > 0) {
+      OrderPrivilegeQuery query = new OrderPrivilegeQuery();
+      GeneralDiscountModel generalDiscountModel = new GeneralDiscountModel();
+      generalDiscountModel.setMemberTypeId(Lists.newArrayList(maxType.keySet()).get(0));
+      query.setOrderRecordId(orderRecordId);
+      query.setDiscountType((byte) 1);
+      query.setGeneralDiscountModel(generalDiscountModel);
+      List<OrderDetailChargeVO> chargeVOS = tollBiz.matchOrderTailPrivilege(query);
+      System.out.println("订单自动勾选优惠" + chargeVOS);
+      if (CollectionUtils.isNotEmpty(chargeVOS)) {
+        chargeVOS.stream()
+                .filter(obj -> CollectionUtils.isNotEmpty(obj.getDiscountAppliesCoupons()))
+                .forEach(obj -> obj.getDiscountAppliesCoupons()
+                        .stream()
+                        .filter(benefit -> benefit.getCouponType() == 99)
+                        .forEach(benefit -> benefit.setCardNumber(Lists.newArrayList(maxType.values()).get(0))));
+        return chargeVOS;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * 获取患者的会员卡信息
+   *
+   * @param patientId patientId
+   * @return Byte
+   */
+  private Map<Integer, String> getPatientMemberCards(Integer patientId) {
+    PatientMemberInfoQueryForm form = new PatientMemberInfoQueryForm();
+    form.setPatientId(patientId);
+    form.setBindType(0);
+    //查询患者的会员卡集合
+    MemberInfoVo memberInfo = patientFeign.findMemberInfo(form);
+    Map<Integer, String> map = Maps.newHashMap();
+    if (memberInfo != null) {
+      int minTypeSec = 0;
+      MasertMemberInfoVo masertMemberInfoVo = memberInfo.getMasertMemberInfoVo();
+      List<SecondaryMemberInfoVo> secondaryMemberInfoVos = memberInfo.getSecondaryMemberInfoVos();
+      if (CollectionUtils.isNotEmpty(secondaryMemberInfoVos)) {
+        Optional<SecondaryMemberInfoVo> min = secondaryMemberInfoVos.stream()
+                .min(Comparator.comparing(SecondaryMemberInfoVo::getSecondaryMemberTypeId));
+        if (min.isPresent()) {
+          SecondaryMemberInfoVo secondaryMemberInfoVo = min.get();
+          minTypeSec = secondaryMemberInfoVo.getSecondaryMemberTypeId();
+          map.put(minTypeSec, secondaryMemberInfoVo.getSecondaryCardNumber());
+        }
+      }
+      if (masertMemberInfoVo != null) {
+        int secType = masertMemberInfoVo.getMasterCardTypeId();
+        if (minTypeSec == 0) {
+          map.put(secType, masertMemberInfoVo.getMasterCardNumber());
+        } else if (minTypeSec > secType) {
+          map.remove(minTypeSec);
+          map.put(secType, masertMemberInfoVo.getMasterCardNumber());
+        }
+      }
+      return map;
+    }
+    return null;
   }
 
   /**

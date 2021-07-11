@@ -588,7 +588,8 @@
     <select id="selectEmployeeWorkloadListOfOperation"
             resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadOfOperationVO">
         SELECT
-        #{query.orgId} AS orgId,
+        orgId,
+        abbreviation,
         employeeId,
         employeeName,
         workStatus,
@@ -607,6 +608,8 @@
         SELECT
         bup.user_id AS employeeId,
         bup.employee_name AS employeeName,
+        ifnull(ifnull(ifnull(ifnull(bbd.abbreviation,bbd1.abbreviation),bbd2.abbreviation),bbd3.abbreviation),brd.abbreviation) as abbreviation,
+        ifnull(ifnull(ifnull(ifnull(bbd.org_id,bbd1.org_id),bbd2.org_id),bbd3.org_id),brd.org_id) as orgId,
         bup.work_status AS workStatus,
         bup.post_names AS postNames,
         IFNULL( bbd.actualWorkload, 0 ) AS actualWorkload,
@@ -654,22 +657,33 @@
         LEFT JOIN (
         SELECT
         bbd.executor_id,
+        bbd.abbreviation,
+        bbd.org_id,
         SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS actualWorkload
         FROM
         (
         SELECT
         bbd.executor_id,
         bbd.discount_amount,
+        bbd.org_id,
+        bo.abbreviation,
         bbd.price,
         bbd.quantity
         FROM
         base_bill_detail bbd
         INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+        left JOIN base_organization bo ON bbd.org_id = bo.org_id
         <where>
             bbd.executor_id > 0
             AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and bb.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -703,18 +717,29 @@
         LEFT JOIN (
         SELECT
         bbd.executor_id,
+        bbd.org_id,
+        bbd.abbreviation,
         SUM(bbd.coupon_workload) AS supplementWorkload
         FROM (
         SELECT
         bbd.executor_id,
+        bbd.org_id,
+        bo.abbreviation,
         bbd.coupon_workload
         FROM base_bill_detail bbd
         INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+        LEFT JOIN base_organization bo ON bbd.org_id = bo.org_id
         <where>
             bbd.executor_id > 0
             AND bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and bb.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -747,6 +772,8 @@
         LEFT JOIN (
         SELECT
         bbd.executor_id,
+        bbd.org_id,
+        bbd.abbreviation,
         CONVERT (
         SUM( bbd.billWorkload / bbd.actualAmount * bbd.receivedAmount ),
         DECIMAL ( 19, 2 )) AS receivedWorkload
@@ -755,6 +782,8 @@
         SELECT
         bbp.actualAmount,
         bbp.receivedAmount,
+        bbd.org_id,
+        bbd.abbreviation,
         bbd.billWorkload,
         bbd.executor_id
         FROM
@@ -762,11 +791,14 @@
         SELECT
         bb.bill_id AS billId,
         bb.actual_amount AS actualAmount,
+        bo.org_id AS org_id,
+        bo.abbreviation AS abbreviation,
         bbp.bill_pay_id AS billPayId,
         bbp.received_amount AS receivedAmount
         FROM
         base_bill_pay bbp
         INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
+        LEFT JOIN base_organization bo ON bbp.org_id = bo.org_id
         <where>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -797,11 +829,19 @@
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and bb.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         ) bbp
         INNER JOIN (
         SELECT
         bbd.bill_id,
+        bbd.org_id,
+        bbd.abbreviation,
         bbd.executor_id,
         bbd.billWorkload
         FROM
@@ -809,13 +849,22 @@
         SELECT
         bbd.bill_id,
         bbd.executor_id,
+        bo.org_id AS org_id,
+        bo.abbreviation AS abbreviation,
         SUM( bbd.price * bbd.quantity - bbd.discount_amount ) AS billWorkload
         FROM
         base_bill_detail bbd
+        left JOIN base_organization bo ON bbd.org_id = bo.org_id
         <where>
             AND bbd.executor_id > 0
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
+            </if>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and bbd.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
         </where>
         GROUP BY
@@ -831,6 +880,8 @@
         ) bbd2 ON bup.user_id = bbd2.executor_id
         LEFT JOIN (
         SELECT
+        bbd.org_id,
+        bbd.abbreviation,
         bbd.executor_id,
         CONVERT (
         SUM( bbd.billWorkload / bbd.billTotalWorkload * bbd.freePayAmount ),
@@ -842,12 +893,16 @@
         IF
         ( bbp.freePayAmount > bbp.billTotalWorkload, bbp.billTotalWorkload, bbp.freePayAmount ) AS freePayAmount,
         bbd.billWorkload,
-        bbd.executor_id
+        bbd.executor_id,
+        bbp.org_id,
+        bbp.abbreviation
         FROM
         (
         SELECT
         bbpd.bill_id,
         bbpd.bill_pay_id,
+        bbp.org_id,
+        bbp.abbreviation,
         SUM( bbpd.principal_amount ) AS freePayAmount,
         bbp.billTotalWorkload
         FROM
@@ -855,9 +910,12 @@
         INNER JOIN (
         SELECT
         bbp.bill_pay_id,
-        bbd.billTotalWorkload
+        bbd.billTotalWorkload,
+        bo.org_id,
+        bo.abbreviation
         FROM
         base_bill_pay bbp
+        left JOIN base_organization bo ON bbp.org_id = bo.org_id
         INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
         INNER JOIN (
         SELECT
@@ -869,6 +927,12 @@
             AND bbd.executor_id > 0
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
+            </if>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and bbd.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
         </where>
         GROUP BY
@@ -904,6 +968,12 @@
             <if test="query.orgId != null">
                 AND bb.org_id = #{query.orgId}
             </if>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and bb.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         ) bbp ON bbpd.bill_pay_id = bbp.bill_pay_id
         WHERE
@@ -929,6 +999,12 @@
             <if test="query.orgId != null">
                 AND bbd.org_id = #{query.orgId}
             </if>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and bbd.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         GROUP BY
         bbd.bill_id,
@@ -944,11 +1020,14 @@
         LEFT JOIN (
         SELECT
         SUM( brd.refund_amount ) AS refundWorkload,
-        brd.executor_id
+        brd.executor_id,
+        brd.org_id,
+        brd.abbreviation
         FROM
         (
         SELECT
         br.org_id,
+        bo.abbreviation,
         br.refund_date,
         brd.refund_amount,
         bbd.executor_id
@@ -956,11 +1035,18 @@
         base_refund_detail brd
         INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
+        left JOIN base_organization bo ON br.org_id = bo.org_id
         ) brd
         <where>
             and brd.executor_id > 0
             <if test="query.orgId != null">
                 and brd.org_id = #{query.orgId}
+            </if>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and brd.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -1002,6 +1088,12 @@
         <where>
             <if test="query.orgId != null">
                 and ewc.org_id = #{query.orgId}
+            </if>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and ewc.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">

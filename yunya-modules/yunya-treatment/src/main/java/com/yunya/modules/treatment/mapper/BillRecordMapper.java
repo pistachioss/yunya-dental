@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
@@ -129,4 +130,60 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
    * @return list
    */
   List<BillRestReceivableAmountVO> selectDebtList(@Param("query") BillOfReceivableQuery query);
+
+  /**
+   * 撤销优惠合计
+   *
+   * @param query
+   * @return
+   */
+  BigDecimal selectBillAdjustDiscountAmount(@Param("query") StatementStatisticQuery query);
+
+  /**
+   * 优惠合计
+   *
+   * @param query
+   * @return
+   */
+  BigDecimal selectBillDiscountAmount(@Param("query") StatementStatisticQuery query);
+
+  /**
+   * 撤销原价合计
+   *
+   * @param query
+   * @return
+   */
+  BigDecimal selectBillAdjustOriginalAmount(@Param("query") StatementStatisticQuery query);
+
+  /**
+   * 原价合计
+   *
+   * @param query
+   * @return
+   */
+  BigDecimal selectBillOriginalAmount(@Param("query") StatementStatisticQuery query);
+
+  /**
+   * 撤销实收合计
+   *
+   * @param query
+   * @return
+   */
+  BigDecimal selectBillRevokeReceivedAmount(@Param("query") StatementStatisticQuery query);
+
+  /**
+   * 实收合计
+   *
+   * @param query
+   * @return
+   */
+  BigDecimal selectBillReceivedAmount(@Param("query") StatementStatisticQuery query);
+
+  /**
+   * 免单合计
+   *
+   * @param query
+   * @return
+   */
+  BigDecimal selectBillFreePayAmount(@Param("query") StatementStatisticQuery query);
 }

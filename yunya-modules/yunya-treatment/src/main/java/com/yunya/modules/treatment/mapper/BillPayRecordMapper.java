@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
+import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillCollectionDebtVO;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillPayRecordVO;
@@ -48,4 +49,20 @@ public interface BillPayRecordMapper extends Mapper<BillPayRecord> {
    */
   List<BillRestReceivableAmountVO> selectFollowUpBillReceivedList(
           @Param("query") BillOfReceivableQuery query);
+
+  /**
+   * 撤销收费记录ID
+   *
+   * @param query
+   * @return
+   */
+  List<Integer> selectRevokePayIds(@Param("query") StatementStatisticQuery query);
+
+  /**
+   * 调整收费方式
+   *
+   * @param query
+   * @return
+   */
+  List<Integer> selectAdjustPayIds(@Param("query") StatementStatisticQuery query);
 }

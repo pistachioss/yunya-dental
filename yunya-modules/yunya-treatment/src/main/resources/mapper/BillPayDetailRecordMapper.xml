@@ -136,4 +136,16 @@
             and bill_record_id = #{billRecordId}
             and account_item_id in (23, 26)
     </select>
+
+    <!--撤销或调整免单合计-->
+    <select id="selectDeductionFreePayAmount" resultType="java.math.BigDecimal">
+        select IFNULL(sum(amount),0)
+        from bill_pay_detail_record
+        where bill_pay_record_id in
+        <foreach collection="payIds" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+          and account_item_id in (23, 26)
+          and inservice = 0
+    </select>
 </mapper>

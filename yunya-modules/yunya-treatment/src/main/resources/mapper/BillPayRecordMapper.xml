@@ -87,7 +87,7 @@
         order by bpr.crt_time
     </select>
 
-    <!-- 根据条件查询收费时间在某个时间点后账单时间在某个时间节点之前的账单列表 -->
+    <!-- 有效账单中收费在查询日期之前，且不包含查询日期之前的撤销收费的收费记录-->
     <select id="selectFollowUpBillReceivedList"
             resultType="com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO">
         SELECT
@@ -102,7 +102,7 @@
                 </foreach>
             </if>
             <if test="query.notInPayIds!=null and query.notInPayIds.size()>0">
-                AND bpr.id not in
+                AND bpr.id in
                 <foreach collection="query.notInPayIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
@@ -112,5 +112,34 @@
             </if>
         </where>
         GROUP BY bpr.bill_record_id
+    </select>
+
+    <!--撤销收费记录ID-->
+    <select id="selectRevokePayIds" resultType="java.lang.Integer">
+        select bpr.id
+        from bill_pay_record bpr
+                 left join bill_record br on br.id = bpr.bill_record_id
+        where br.org_id = #{query.orgId}
+          and bpr.id in (
+            select behdr.associate_record_id as billPayRecordId
+            from bill_exception_handle_record behr
+                     left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
+            where operate_type = 1
+              and date_format(behr.crt_time, '%Y-%m') = #{query.queryDate}
+        );
+    </select>
+
+    <!--调整收费方式-->
+    <select id="selectAdjustPayIds" resultType="java.lang.Integer">
+        select bpr.id
+        from bill_pay_record bpr
+                 left join bill_record br on bpr.bill_record_id = br.id
+        where br.org_id = #{query.orgId}
+        AND bpr.id in (select behr.handled_record_id
+                     from bill_exception_handle_record behr
+                              left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
+                     where behr.operate_type = 0
+                       and date_format(behr.crt_time, '%Y-%m') = #{query.queryDate}
+                     group by behr.handled_record_id)
     </select>
 </mapper>

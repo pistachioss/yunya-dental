@@ -14,6 +14,7 @@ import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
+import com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.feign.treatment_other.domain.form.FinishVisitingForm;
 import com.yunya.feign.treatment_other.domain.form.VisitingRecordForm;
@@ -47,6 +48,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -239,7 +244,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 build.setUpdName(BaseContextHandler.getName());
                 build.setUpdTime(new Date(System.currentTimeMillis()));
                 mapper.updateByPrimaryKeySelective(build);
-                // 发送消息-删除提醒
+                // 发送消息
                 remoteRabbitMqServiceFeign.sendMessage(build.getId(),0,1, MsgCategoryEnum.BaseVisitRemind);
             } finally {
                 // 释放锁
@@ -613,11 +618,20 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         // 设置就诊信息
         Integer treatmentId = visitingRecord.getTreatmentId();
         if (treatmentId != null){
+            // 就诊完成系统自动创建的随访
             TreatmentRecord treatmentRecord = remoteTreatmentServiceFeign.findTreatmentRecordById(treatmentId);
             if (treatmentRecord != null){
                 build.setTreatmentDate(treatmentRecord.getTreatEndTime());
                 build.setFirstVisit(treatmentRecord.getType());
             }
+        } else {
+            // 手动通过按钮添加的随访
+            int times = remoteTreatmentServiceFeign.patientTreatmentTimes(patientId);
+            build.setFirstVisit(times == 1 ? (byte) 0 : (byte)1);
+            // 设置末诊时间
+            LastTreatmentInfoVO lastTreatmentRecord = remoteTreatmentServiceFeign.findLastTreatmentRecord(patientId);
+            Date treatmentDate = Date.from(LocalDate.parse(lastTreatmentRecord.getTreatmentDate()).atStartOfDay(ZoneOffset.ofHours(8)).toInstant());
+            build.setTreatmentDate(treatmentDate);
         }
         return ResponseUtil.success(build);
     }

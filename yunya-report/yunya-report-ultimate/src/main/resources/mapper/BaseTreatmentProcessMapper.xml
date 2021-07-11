@@ -646,9 +646,9 @@
         base_treatment_process
         where appoint_start_time > NOW()  and appoint_status in (0,1)   GROUP BY patient_id)) ntp on btp.patient_id = ntp.patient_id
         LEFT JOIN (
-        select DISTINCT patient_id,content,time FROM base_visit_remind
-        where time > NOW() and type = 1 and (patient_id,time) in
-        (select patient_id,min(time) FROM base_visit_remind where time > NOW() and type = 1  GROUP BY patient_id)) vtp on btp.patient_id = vtp.patient_id
+        select DISTINCT patient_id,content,visiting_remind_time as time FROM base_visit_remind
+        where visiting_remind_time > NOW() and type = 1 and (patient_id,visiting_remind_time) in
+        (select patient_id,min(visiting_remind_time) FROM base_visit_remind where visiting_remind_time > NOW() and type = 1  GROUP BY patient_id)) vtp on btp.patient_id = vtp.patient_id
     where
     btp.treat_status IN (3, 4)
             and btp.treat_type = 0

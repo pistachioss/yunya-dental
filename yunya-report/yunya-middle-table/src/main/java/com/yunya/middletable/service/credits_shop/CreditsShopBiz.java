@@ -75,11 +75,21 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    *
    * @param patientId 患者ID
    * @param money 患者消费金额
-   * @param payId 患者支付ID
+   * @param type 0-积分增加场景；1-积分回滚场景
+   * @param remark baseBillPayId+billId {baseBillPayId:[1,23],billId:45}
    * @return
    */
-  public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, Integer payId) {
+  public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, String remark, byte type) {
     Integer result = 0;
+    // 如果已经加过积分则不增加
+    CreditsShop t = new CreditsShop();
+    t.setPatientId(patientId);
+    t.setChannel((byte) 0);
+    t.setRemarks(remark);
+    int count = mapper.selectCount(t);
+    if (count >= 1 || money.intValue() == 0) {
+      return result;
+    }
     try {
       CreditsShop creditsShop = mapper.selectLastCredits(patientId);
       Long creditsAccount = 0L;
@@ -92,21 +102,27 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
       entity.setChannel((byte) 0);
       long l = money.setScale(0, RoundingMode.HALF_UP).longValue();
       entity.setCredits(l);
-      entity.setCreditsAccount(creditsAccount + l);
-      entity.setDescription("门店消费获取积分");
-      entity.setType("offlineConsume");
+      if (type == 0) {
+        entity.setCreditsAccount(creditsAccount + l);
+        entity.setDescription("门店消费获取积分");
+        entity.setType("offlineConsume");
+      } else if (type == 1) {
+        entity.setCreditsAccount((creditsAccount - l) > 0 ? (creditsAccount - l) : 0);
+        entity.setDescription("门店退费");
+        entity.setType("refund");
+      }
       // 积分新增
-      entity.setCreditsOption((byte) 0);
-      entity.setRemarks(payId.toString());
+      entity.setCreditsOption(type);
+      entity.setRemarks(remark);
       entity.setCrtId(patientId);
       entity.setCrtTime(new Date(System.currentTimeMillis()));
       result = addCredits(entity);
     } catch (Exception e) {
       StringBuilder sb = new StringBuilder();
-      sb.append("\n↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓艾维线下门店消费增加积分异常↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓\n");
+      sb.append("\n↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓艾维线下门店消费积分异常↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓\n");
       sb.append("==>patientId: " + patientId +"\n");
       sb.append("==>money: " + money.longValue() +"\n");
-      sb.append("==>payId: " + payId +"\n");
+      sb.append("==>remark: " + remark +"\n");
       sb.append("错误原因: " + e.getMessage() + "\n");
       sb.append("错误描述: " + e.getCause() + "\n");
       sb.append("\n↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑\n");
