@@ -113,6 +113,7 @@ public class PatientExpInfo {
     /**
      * 是否哺乳
      */
+    @Column(name = "is_feed_baby")
     private Boolean feedBaby;
 
     /**
