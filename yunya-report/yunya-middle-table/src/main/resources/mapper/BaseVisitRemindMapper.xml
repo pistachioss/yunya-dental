@@ -15,7 +15,7 @@
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
-  <!-- 根据 操作id和类型进行删除 -->
+    <!-- 根据 操作id和类型进行删除 -->
     <delete id="deleteByPrimaryKeyAndType">
       delete from base_visit_remind where record_id = #{id} and type = #{type}
     </delete>
@@ -39,4 +39,34 @@
       where type = 0 and record_id = #{item.id}
     </foreach>
   </update>
+
+  <!-- 批量插入 -->
+  <insert id="insertList">
+     insert into base_visit_remind
+     (
+        record_id,
+        org_id,
+        patient_id,
+        type,
+        user_id,
+        time,
+        visiting_remind_time,
+        content,
+        crt_time
+     )
+    VALUES
+    <foreach collection="list" item="baseVisitRemind" separator=",">
+      (
+      #{baseVisitRemind.recordId},
+      #{baseVisitRemind.orgId},
+      #{baseVisitRemind.patientId},
+      #{baseVisitRemind.type},
+      #{baseVisitRemind.userId},
+      #{baseVisitRemind.time},
+      #{baseVisitRemind.visitingRemindTime},
+      #{baseVisitRemind.content},
+      #{baseVisitRemind.crtTime}
+      )
+    </foreach>
+  </insert>
 </mapper>

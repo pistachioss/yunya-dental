@@ -1,5 +1,6 @@
 package com.yunya.middletable.service.treatment_other;
 
+import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
@@ -10,6 +11,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseVisitRemindMapper;
 import com.yunya.middletable.dao.treatment_other.VisitingRecordMapper;
 import com.yunya.middletable.dao.treatment_other.VisitingRemindMapper;
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.report.BaseVisitRemind;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.VisitingRemind;
@@ -21,9 +23,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+
+import static com.yunya.middletable.constant.SynConstant.CUT_SLICE_100;
 
 /**
  * 简介:
@@ -39,11 +47,16 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
   private Logger log = LoggerFactory.getLogger(BaseVisitRemindBiz.class);
 
   /** 随访mapper */
-  @Autowired VisitingRecordMapper visitingRecordMapper;
+  @Resource VisitingRecordMapper visitingRecordMapper;
+
   /** 提醒mapper */
-  @Autowired VisitingRemindMapper visitingRemindMapper;
-  @Autowired
-  private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
+  @Resource VisitingRemindMapper visitingRemindMapper;
+
+  @Resource private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
+
+  /** 多线程 */
+  @Resource(name = "customizeThreadPool")
+  private ExecutorService importExcelThreadPool;
 
   /**
    * 随访提醒中间表-操作
@@ -83,7 +96,8 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
    *
    * @param form 拉取时间
    */
-  public void pullPatientData(PullForm form) {
+  public void pullPatientData(PullForm form) throws InterruptedException {
+    List<BaseVisitRemind> baseVisitRemindLists = new ArrayList<>();
     Integer type = form.getDataType();
     // 随访
     if (type == 0) {
@@ -97,15 +111,12 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
               "crt_time < '" + new DateTime(endDate).plusDays(1).toString("yyyy-MM-dd") + "'");
       List<VisitingRecord> visitingRecordList = visitingRecordMapper.selectByExample(emp);
       if (StringHelper.isNotEmpty(visitingRecordList)) {
-        visitingRecordList.forEach(
-            visitingRecord -> {
-              Integer id = visitingRecord.getId();
-              mapper.deleteByPrimaryKeyAndType(id, type);
-              BaseVisitRemind baseVisitRemindInfo = getBaseVisitRemindInfo(id, type);
-              if (baseVisitRemindInfo != null) {
-                mapper.insertSelective(baseVisitRemindInfo);
-              }
-            });
+        for (VisitingRecord visitingRecord :visitingRecordList ){
+          mapper.deleteByPrimaryKeyAndType(visitingRecord.getId(), type);
+          BaseVisitRemind baseVisitRemindInfo = getBaseVisitRemindInfo(visitingRecord,null, type);
+          baseVisitRemindLists.add(baseVisitRemindInfo);
+        }
+        insertList(baseVisitRemindLists);
       }
     }
 
@@ -119,25 +130,92 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
           .andCondition("crt_time >= '" + new DateTime(startDate).toString("yyyy-MM-dd") + "'")
           .andCondition(
               "crt_time < '" + new DateTime(endDate).plusDays(1).toString("yyyy-MM-dd") + "'");
-      List<VisitingRecord> visitingRecordList = visitingRecordMapper.selectByExample(emp);
-      if (StringHelper.isNotEmpty(visitingRecordList)) {
-        visitingRecordList.forEach(
-            visitingRecord -> {
-              Integer id = visitingRecord.getId();
-              mapper.deleteByPrimaryKeyAndType(id, type);
-              BaseVisitRemind baseVisitRemindInfo = getBaseVisitRemindInfo(id, type);
-              if (baseVisitRemindInfo != null) {
-                mapper.insertSelective(baseVisitRemindInfo);
-              }
-            });
+      List<VisitingRemind> visitingReminds = visitingRemindMapper.selectByExample(emp);
+      if (StringHelper.isNotEmpty(visitingReminds)) {
+        for (VisitingRemind visitingRemind :visitingReminds ){
+          mapper.deleteByPrimaryKeyAndType(visitingRemind.getId(), type);
+          BaseVisitRemind baseVisitRemindInfo = getBaseVisitRemindInfo(null,visitingRemind, type);
+          baseVisitRemindLists.add(baseVisitRemindInfo);
+        }
+        insertList(baseVisitRemindLists);
       }
     }
   }
 
   /**
+   * 批量插入随访提醒
+   * @param baseVisitRemindLists 数据
+   */
+  public void insertList(List<BaseVisitRemind> baseVisitRemindLists) throws InterruptedException {
+    List<List<BaseVisitRemind>> baseVisitRemindList = Lists.partition(baseVisitRemindLists, CUT_SLICE_100);
+    CountDownLatch countDownLatch = new CountDownLatch(baseVisitRemindList.size());
+    long start = System.currentTimeMillis();
+    for (List<BaseVisitRemind> baseVisitReminds : baseVisitRemindList) {
+
+      importExcelThreadPool.execute(
+              () -> {
+                try {
+                  mapper.insertList(baseVisitReminds);
+                } catch (Exception e) {
+                  log.info("提醒随访迁移入库异常",e);
+                  e.printStackTrace();
+                }finally {
+                  countDownLatch.countDown();
+                }
+              });
+    }
+    countDownLatch.await();
+    long end = System.currentTimeMillis();
+    log.info("随访/提醒信息入库，时长：[{}]秒", (end - start) / 1000);
+  }
+
+  /**
    * 获取-提醒/随访-基础信息-封装到中间表-返回
    *
-   * @param id 提醒 or 随访 id
+   * @param type 提醒/随访
+   * @return BaseVisitRemind
+   */
+  private BaseVisitRemind getBaseVisitRemindInfo(VisitingRecord visitingRecord,VisitingRemind visitingRemind, Integer type) {
+    if (type == 0) {
+      if (StringHelper.isNotNull(visitingRecord)) {
+        BaseVisitRemind baseVisitRemind = new BaseVisitRemind();
+        baseVisitRemind.setRecordId(visitingRecord.getId());
+        baseVisitRemind.setOrgId(visitingRecord.getOrgId());
+        baseVisitRemind.setPatientId(visitingRecord.getPatientId());
+        baseVisitRemind.setType((byte) type.intValue());
+        baseVisitRemind.setUserId(visitingRecord.getCrtId());
+        baseVisitRemind.setTime(visitingRecord.getExecuteDate());
+        baseVisitRemind.setVisitingRemindTime(visitingRecord.getVisitingDate());
+        baseVisitRemind.setContent(visitingRecord.getReason());
+        baseVisitRemind.setCrtTime(visitingRecord.getCrtTime());
+        return baseVisitRemind;
+      }
+      return null;
+    }
+    if (type == 1) {
+      if (StringHelper.isNotNull(visitingRemind)) {
+        BaseVisitRemind baseVisitRemind = new BaseVisitRemind();
+        baseVisitRemind.setRecordId(visitingRemind.getId());
+        baseVisitRemind.setOrgId(visitingRemind.getOrgId());
+        baseVisitRemind.setPatientId(visitingRemind.getPatientId());
+        baseVisitRemind.setType((byte) type.intValue());
+        baseVisitRemind.setUserId(visitingRemind.getCrtId());
+        if (visitingRemind.getStatus()){
+          baseVisitRemind.setTime(visitingRemind.getUpdTime());
+        }
+        baseVisitRemind.setVisitingRemindTime(visitingRemind.getRemindDate());
+        baseVisitRemind.setContent(visitingRemind.getRemindContent());
+        baseVisitRemind.setCrtTime(visitingRemind.getCrtTime());
+        return baseVisitRemind;
+      }
+      return null;
+    }
+    return null;
+  }
+
+  /**
+   * 获取-提醒/随访-基础信息-封装到中间表-返回
+   *
    * @param type 提醒/随访
    * @return BaseVisitRemind
    */
