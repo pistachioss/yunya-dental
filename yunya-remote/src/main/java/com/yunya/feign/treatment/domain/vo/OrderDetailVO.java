@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * 简介: 开单详情VO
@@ -67,4 +68,8 @@ public class OrderDetailVO implements Serializable {
   /** 备注 */
   @ApiModelProperty("备注")
   private String remarks;
+
+
+  /** 会员价 */
+  private Map<Integer, Object> memberPrices;
 }
