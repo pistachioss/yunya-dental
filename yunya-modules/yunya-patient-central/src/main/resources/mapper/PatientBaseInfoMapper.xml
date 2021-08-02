@@ -224,6 +224,13 @@
         AND LENGTH(medical_number) = 15
     </select>
 
+    <!-- 根据门诊编号获取病历号后六位 -->
+    <select id="findMedicalNumberByClinNum" resultType="java.lang.Integer">
+        SELECT CONVERT(SUBSTR(medical_number, 10, 6), UNSIGNED INTEGER) as medical_number
+        FROM patient_base_info
+        WHERE LENGTH(medical_number) = 15 AND LEFT(medical_number, 3) = #{clinNum}
+    </select>
+
     <!-- 根据患者id查询患者信息 -->
     <select id="selectOneById" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
