@@ -24,5 +24,6 @@ spring:
 # 日志打印级别
 logging:
   level:
-    # tk.mybatis: DEBUG
-    com.yunya.modules.clinic_base: error
+    tk.mybatis: INFO
+    com.yunya: INFO
+    com.yunya365: INFO

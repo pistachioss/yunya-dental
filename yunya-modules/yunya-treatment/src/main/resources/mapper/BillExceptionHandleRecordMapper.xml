@@ -579,6 +579,7 @@
                 AND br.org_id = #{query.orgId}
             </if>
             <if test="query.queryDate != null and query.queryDate != ''">
+                and date_format(bpr.crt_time, '%Y-%m-%d') &lt; #{query.queryDate}
                 and date_format(behr.crt_time, '%Y-%m-%d') > #{query.queryDate}
             </if>
         </where>

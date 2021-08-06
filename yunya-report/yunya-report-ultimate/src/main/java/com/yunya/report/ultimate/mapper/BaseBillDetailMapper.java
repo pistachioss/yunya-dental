@@ -399,6 +399,14 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<Integer> findBillIdsByNonMonth(@Param("query") BillCategoryIncomeQuery query);
 
+
+  /**
+   * 根据条件查询非当月优惠金额列表
+   * @param query
+   * @return
+   */
+  List<NonDiscountVO> nonDiscountList(@Param("query") BillCategoryIncomeQuery query);
+
   /**
    * 根据条件查询原价并按项目大类分组
    * @param query

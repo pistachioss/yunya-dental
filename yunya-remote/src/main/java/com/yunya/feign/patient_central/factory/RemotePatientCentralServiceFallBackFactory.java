@@ -77,6 +77,11 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     }
 
     @Override
+    public Integer findMedicalNumberByClinNum(String clinNum) {
+        return null;
+    }
+
+    @Override
     public ResponseResult recharge(MemberRechargeModel memberRechargeModel) {
         return null;
     }

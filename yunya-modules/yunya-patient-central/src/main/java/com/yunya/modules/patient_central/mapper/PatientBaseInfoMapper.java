@@ -128,6 +128,14 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
   String findMedicalNumberByOrgId(@Param("orgId") Integer orgId);
 
   /**
+   * 根据门诊编号获取病历号后六位
+   *
+   * @param clinNum 门诊编号
+   * @return String
+   */
+  List<Integer> findMedicalNumberByClinNum(@Param("clinNum") String clinNum);
+
+  /**
    * 根据患者id查询患者信息
    *
    * @param id 患者id

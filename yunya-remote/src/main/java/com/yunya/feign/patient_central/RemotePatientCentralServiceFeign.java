@@ -115,6 +115,15 @@ import java.util.*;
   String findMedicalNumberByOrgId(@PathVariable(value = "orgId") Integer orgId);
 
   /**
+   * 根据门诊编号获取可用病历号后六位
+   *
+   * @param clinNum 条件
+   * @return String
+   */
+  @RequestMapping(value = "/api/medical2/{clinNum}", method = RequestMethod.GET)
+  Integer findMedicalNumberByClinNum(@PathVariable(value = "clinNum") String clinNum);
+
+  /**
    * 会员卡充值
    *
    * @param memberRechargeModel 会员卡充值Model
