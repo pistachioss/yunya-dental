@@ -2444,7 +2444,7 @@
             </where>
             )
             <if test="query.orgId != null">
-                and bbp.org_id = #{query.orgId}
+                and bb.org_id = #{query.orgId}
             </if>
             <if test="billIds!=null and billIds.size()>0">
                 and bbp.bill_id in
