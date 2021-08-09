@@ -45,11 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -61,7 +57,6 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMET
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK;
-
 /**
  * 简介: 就诊收费业务层
  *
@@ -571,7 +566,8 @@ public class TollBiz {
       orderDetail.setInservice(true);
       List<OrderDetail> orderDetails = orderDetailBiz.selectList(orderDetail);
       List<PatientItemBenefitVo> benefitVos = benefitVo.getItemList();
-      if (StringHelper.isNotEmpty(benefitVos)) {
+      // TODO: bug3210 要求去掉优惠判断
+//      if (StringHelper.isNotEmpty(benefitVos)) {
         for (OrderDetail detail : orderDetails) {
           OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
           detailPayRecord.setOrgId(orgId);
@@ -620,9 +616,9 @@ public class TollBiz {
           detailPayRecord.setUpdName(name);
           orderDetailPayRecordBiz.insertSelective(detailPayRecord);
         }
-      } else {
-        throw new ClientServiceException("收费失败，当前选择卡券未匹配任何优惠！", PARAMETERS_IS_ILLEGAL);
-      }
+//      } else {
+//        throw new ClientServiceException("收费失败，当前选择卡券未匹配任何优惠！", PARAMETERS_IS_ILLEGAL);
+//      }
     } else {
       throw new ClientServiceException(result.getMsg(), result.getStatus());
     }
@@ -1262,6 +1258,12 @@ public class TollBiz {
   public TollConfirmVO collectDebt(TollDebtModel model) {
     Integer treatmentId = model.getTreatmentRecordId();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
+//    // TODO: bug3210 未收费走收欠费流程
+//    if(null == generalDiscount.getMemberTypeId() && null == generalDiscount.getDiscountCouponId() ) {
+//      if(null == generalDiscount.getCouponDiscountInfoModels() || generalDiscount.getCouponDiscountInfoModels().size() == 0) {
+//        generalDiscount = null;
+//      }
+//    }
     AccreditDiscountModel accreditDiscount = model.getAccreditDiscountModel();
     // 校验收欠费参数合法性
     BillRecord billRecordResult =

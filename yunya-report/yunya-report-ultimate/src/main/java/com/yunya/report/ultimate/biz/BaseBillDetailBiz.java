@@ -1992,144 +1992,146 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return
    */
   public PageInfo<NonMonthCategoryVO> nonMonthCategoryList(BillCategoryIncomeQuery query) {
-    List<Integer> ids = mapper.findBillIdsByNonMonth(query);
-    List<NonMonthCategoryVO> vos = mapper.nonMonthCategoryList(query, ids);
     List<NonMonthCategoryVO> res = new ArrayList<>();
-    if (StringHelper.isNotEmpty(vos)) {
-      Map<String, String> categoryMap = new HashMap<>(16);
-      Map<String, String> categoryName = new HashMap<>(16);
-      List<BaseTariffInfo> items = baseTariffInfoBiz.selectListAll();
-      if (StringHelper.isNotEmpty(items)) {
-        items.forEach(
-            vo -> {
-              categoryMap.put(
-                  vo.getItemType() + "," + vo.getItemId(),
-                  vo.getItemType() + "," + vo.getCategoryId());
-              categoryName.put(vo.getItemType() + "," + vo.getCategoryId(), vo.getCategoryName());
-            });
-      }
-      Map<String, BigDecimal> couponMap = new HashMap<>(16);
-      query.setPrivilegeDate(query.getQueryDate());
-      ids = mapper.findBillIdsByNonMonth(query);
-      if (StringHelper.isNotEmpty(ids)) {
-        List<NonMonthCategoryVO> coupons = mapper.nonMonthCategoryList(query, ids);
-        if (StringHelper.isNotEmpty(coupons)) {
-          coupons.forEach(
-              vo -> {
-                String key =
-                    vo.getBillId() + "," + categoryMap.get(vo.getItemType() + "," + vo.getItemId());
-                BigDecimal couponWorkload = couponMap.get(key);
-                if (couponWorkload == null) {
-                  couponWorkload = BigDecimal.ZERO;
-                }
-                couponMap.put(key, couponWorkload.add(vo.getCouponWorkload()));
-              });
+    List<Integer> ids = mapper.findBillIdsByNonMonth(query);
+    if (StringHelper.isNotEmpty(ids)){
+      List<NonMonthCategoryVO> vos = mapper.nonMonthCategoryList(query, ids);
+      if (StringHelper.isNotEmpty(vos)) {
+        Map<String, String> categoryMap = new HashMap<>(16);
+        Map<String, String> categoryName = new HashMap<>(16);
+        List<BaseTariffInfo> items = baseTariffInfoBiz.selectListAll();
+        if (StringHelper.isNotEmpty(items)) {
+          items.forEach(
+                  vo -> {
+                    categoryMap.put(
+                            vo.getItemType() + "," + vo.getItemId(),
+                            vo.getItemType() + "," + vo.getCategoryId());
+                    categoryName.put(vo.getItemType() + "," + vo.getCategoryId(), vo.getCategoryName());
+                  });
         }
-      }
-      Map<Integer, BigDecimal[]> billMap = new HashMap<>(16);
-      for (NonMonthCategoryVO vo : vos) {
-        Integer billId = vo.getBillId();
-        BigDecimal[] amounts = billMap.get(billId);
-        if (amounts == null) {
-          amounts = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
-        }
-        amounts[0] = amounts[0].add(vo.getActualAmount()); // 实收
-        amounts[1] = amounts[1].add(vo.getBillAmount()); // 原价
-        billMap.put(billId, amounts);
-      }
-      Set<Integer> billIds = billMap.keySet();
-      EmployeePersonalWorkloadDetailQuery queryForm = new EmployeePersonalWorkloadDetailQuery();
-      queryForm.setOrgId(query.getOrgId());
-      queryForm.setStartDate(query.getQueryDate());
-      queryForm.setEndDate(query.getQueryDate());
-      queryForm.setDateType((byte) 1);
-      List<EmployeeFreepaymentWorkloadDetailVO> resultList =
-          mapper.selectEmployeeFreepaymentWorkloadDetailList(queryForm, billIds, FREE_PAYMENT_ID);
-      // 免单支付
-      if (StringHelper.isNotEmpty(resultList)) {
-        Map<Integer, EmployeeFreepaymentWorkloadDetailVO> billPayIds =
-            resultList.stream()
-                .collect(
-                    Collectors.toMap(
-                        EmployeeFreepaymentWorkloadDetailVO::getBillPayId, Function.identity()));
-        billIds =
-            resultList.stream()
-                .map(EmployeeFreepaymentWorkloadDetailVO::getBillId)
-                .collect(Collectors.toSet());
-        List<BaseBillDetail> details = mapper.selectBillDetailByBillIds(billIds);
-        details =
-            details.stream()
-                .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
-                .collect(Collectors.toList());
-        computePercentage(details);
-        Map<Integer, List<BaseBillPayDetailVO>> freePaymentMap =
-            sumFreePaymentMapByBillPayIds(billPayIds.keySet());
-        Map<String, BigDecimal> freeMap = new LinkedHashMap<>(16);
-        details.forEach(
-            detail -> {
-              Integer billId = detail.getBillId();
-              String cid = categoryMap.get(detail.getItemType() + "," + detail.getItemId());
-              List<BaseBillPayDetailVO> list = freePaymentMap.get(billId);
-              if (StringHelper.isNotEmpty(list)) {
-                list.forEach(
+        Map<String, BigDecimal> couponMap = new HashMap<>(16);
+        query.setPrivilegeDate(query.getQueryDate());
+        ids = mapper.findBillIdsByNonMonth(query);
+        if (StringHelper.isNotEmpty(ids)) {
+          List<NonMonthCategoryVO> coupons = mapper.nonMonthCategoryList(query, ids);
+          if (StringHelper.isNotEmpty(coupons)) {
+            coupons.forEach(
                     vo -> {
-                      Integer billPayId = vo.getBillPayId();
-                      String key = billId + "," + billPayId + "," + cid;
-                      BigDecimal free = vo.getPrincipalAmount();
-                      BigDecimal amount =
-                          detail
-                              .getDiscountAmount()
-                              .multiply(free == null ? BigDecimal.ZERO : free);
-                      BigDecimal freeAmount = freeMap.get(key);
-                      if (freeAmount == null) {
-                        freeAmount = BigDecimal.ZERO;
+                      String key =
+                              vo.getBillId() + "," + categoryMap.get(vo.getItemType() + "," + vo.getItemId());
+                      BigDecimal couponWorkload = couponMap.get(key);
+                      if (couponWorkload == null) {
+                        couponWorkload = BigDecimal.ZERO;
                       }
-                      freeMap.put(key, freeAmount.add(amount));
-                      BigDecimal[] billAmounts = billMap.get(billId);
-                      if (billAmounts == null) {
-                        billAmounts =
-                            new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
-                      }
-                      billAmounts[2] = billAmounts[2].add(amount);
-                      billMap.put(billId, billAmounts);
+                      couponMap.put(key, couponWorkload.add(vo.getCouponWorkload()));
                     });
-              }
-            });
+          }
+        }
+        Map<Integer, BigDecimal[]> billMap = new HashMap<>(16);
+        for (NonMonthCategoryVO vo : vos) {
+          Integer billId = vo.getBillId();
+          BigDecimal[] amounts = billMap.get(billId);
+          if (amounts == null) {
+            amounts = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+          }
+          amounts[0] = amounts[0].add(vo.getActualAmount()); // 实收
+          amounts[1] = amounts[1].add(vo.getBillAmount()); // 原价
+          billMap.put(billId, amounts);
+        }
+        Set<Integer> billIds = billMap.keySet();
+        EmployeePersonalWorkloadDetailQuery queryForm = new EmployeePersonalWorkloadDetailQuery();
+        queryForm.setOrgId(query.getOrgId());
+        queryForm.setStartDate(query.getQueryDate());
+        queryForm.setEndDate(query.getQueryDate());
+        queryForm.setDateType((byte) 1);
+        List<EmployeeFreepaymentWorkloadDetailVO> resultList =
+                mapper.selectEmployeeFreepaymentWorkloadDetailList(queryForm, billIds, FREE_PAYMENT_ID);
+        // 免单支付
+        if (StringHelper.isNotEmpty(resultList)) {
+          Map<Integer, EmployeeFreepaymentWorkloadDetailVO> billPayIds =
+                  resultList.stream()
+                          .collect(
+                                  Collectors.toMap(
+                                          EmployeeFreepaymentWorkloadDetailVO::getBillPayId, Function.identity()));
+          billIds =
+                  resultList.stream()
+                          .map(EmployeeFreepaymentWorkloadDetailVO::getBillId)
+                          .collect(Collectors.toSet());
+          List<BaseBillDetail> details = mapper.selectBillDetailByBillIds(billIds);
+          details =
+                  details.stream()
+                          .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
+                          .collect(Collectors.toList());
+          computePercentage(details);
+          Map<Integer, List<BaseBillPayDetailVO>> freePaymentMap =
+                  sumFreePaymentMapByBillPayIds(billPayIds.keySet());
+          Map<String, BigDecimal> freeMap = new LinkedHashMap<>(16);
+          details.forEach(
+                  detail -> {
+                    Integer billId = detail.getBillId();
+                    String cid = categoryMap.get(detail.getItemType() + "," + detail.getItemId());
+                    List<BaseBillPayDetailVO> list = freePaymentMap.get(billId);
+                    if (StringHelper.isNotEmpty(list)) {
+                      list.forEach(
+                              vo -> {
+                                Integer billPayId = vo.getBillPayId();
+                                String key = billId + "," + billPayId + "," + cid;
+                                BigDecimal free = vo.getPrincipalAmount();
+                                BigDecimal amount =
+                                        detail
+                                                .getDiscountAmount()
+                                                .multiply(free == null ? BigDecimal.ZERO : free);
+                                BigDecimal freeAmount = freeMap.get(key);
+                                if (freeAmount == null) {
+                                  freeAmount = BigDecimal.ZERO;
+                                }
+                                freeMap.put(key, freeAmount.add(amount));
+                                BigDecimal[] billAmounts = billMap.get(billId);
+                                if (billAmounts == null) {
+                                  billAmounts =
+                                          new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+                                }
+                                billAmounts[2] = billAmounts[2].add(amount);
+                                billMap.put(billId, billAmounts);
+                              });
+                    }
+                  });
 
-        for (Map.Entry<String, BigDecimal> entry : freeMap.entrySet()) {
-          String[] keys = entry.getKey().split(",");
-          Integer billId = Integer.parseInt(keys[0]);
-          Integer billPayId = Integer.parseInt(keys[1]);
-          Integer itemType = Integer.parseInt(keys[2]);
-          Integer categoryId = Integer.parseInt(keys[3]);
-          BigDecimal freeAmount = entry.getValue();
-          if (freeAmount == null) {
-            freeAmount = BigDecimal.ZERO;
+          for (Map.Entry<String, BigDecimal> entry : freeMap.entrySet()) {
+            String[] keys = entry.getKey().split(",");
+            Integer billId = Integer.parseInt(keys[0]);
+            Integer billPayId = Integer.parseInt(keys[1]);
+            Integer itemType = Integer.parseInt(keys[2]);
+            Integer categoryId = Integer.parseInt(keys[3]);
+            BigDecimal freeAmount = entry.getValue();
+            if (freeAmount == null) {
+              freeAmount = BigDecimal.ZERO;
+            }
+            BigDecimal[] billAmounts = billMap.get(billId);
+            if (billAmounts == null) {
+              billAmounts = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+            }
+            NonMonthCategoryVO vo = new NonMonthCategoryVO();
+            vo.setFreeAmount(freeAmount);
+            vo.setActualAmount(billAmounts[0]);
+            vo.setBillAmount(billAmounts[1]);
+            vo.setFreeBillAmount(billAmounts[2]);
+            vo.setCategoryId(categoryId);
+            vo.setCategoryName(categoryName.get(itemType + "," + categoryId));
+            EmployeeFreepaymentWorkloadDetailVO workload = billPayIds.get(billPayId);
+            if (workload != null) {
+              vo.setPatientName(workload.getPatientName());
+              vo.setFreeDate(workload.getChargeDate());
+              vo.setAbbreviation(workload.getAbbreviation());
+              vo.setBillDate(workload.getBillDate());
+            }
+            BigDecimal couponWorkload = couponMap.get(billId + "," + itemType + "," + categoryId);
+            if (couponWorkload == null) {
+              couponWorkload = BigDecimal.ZERO;
+            }
+            vo.setCouponWorkload(couponWorkload);
+            res.add(vo);
           }
-          BigDecimal[] billAmounts = billMap.get(billId);
-          if (billAmounts == null) {
-            billAmounts = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
-          }
-          NonMonthCategoryVO vo = new NonMonthCategoryVO();
-          vo.setFreeAmount(freeAmount);
-          vo.setActualAmount(billAmounts[0]);
-          vo.setBillAmount(billAmounts[1]);
-          vo.setFreeBillAmount(billAmounts[2]);
-          vo.setCategoryId(categoryId);
-          vo.setCategoryName(categoryName.get(itemType + "," + categoryId));
-          EmployeeFreepaymentWorkloadDetailVO workload = billPayIds.get(billPayId);
-          if (workload != null) {
-            vo.setPatientName(workload.getPatientName());
-            vo.setFreeDate(workload.getChargeDate());
-            vo.setAbbreviation(workload.getAbbreviation());
-            vo.setBillDate(workload.getBillDate());
-          }
-          BigDecimal couponWorkload = couponMap.get(billId + "," + itemType + "," + categoryId);
-          if (couponWorkload == null) {
-            couponWorkload = BigDecimal.ZERO;
-          }
-          vo.setCouponWorkload(couponWorkload);
-          res.add(vo);
         }
       }
     }
@@ -2138,6 +2140,21 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     return new PageInfo<>(res);
   }
+
+
+  /**
+   * 根据条件查询非当月优惠金额列表
+   * @param query
+   * @return
+   */
+  public PageInfo<NonDiscountVO> nonDiscountList(BillCategoryIncomeQuery query) {
+    List<NonDiscountVO> res = mapper.nonDiscountList(query);
+    if (query.getWhetherPage()) {
+      return PageUtl.doPage(query.getPageNum(), query.getPageSize(), res);
+    }
+    return new PageInfo<>(res);
+  }
+
 
   /**
    * 根据条件导出非本月免单金额明细列表
@@ -2156,6 +2173,24 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         excelUtil.getFileName(
             query.getQueryDate(), "", organization.getAbbreviation(), "非本月免单金额明细");
     excelUtil.exportExcel(response, list, "非本月免单金额明细", fileName);
+  }
+
+  /**
+   * 根据条件导出非当月优惠金额列表
+   * @param response
+   * @param query
+   * @throws IOException
+   */
+  public void nonDiscountExport(HttpServletResponse response, BillCategoryIncomeQuery query)
+          throws IOException {
+    query.setWhetherPage(false);
+    List<NonDiscountVO> list = nonDiscountList(query).getList();
+    ExcelUtil<NonDiscountVO> excelUtil = new ExcelUtil<>(NonDiscountVO.class);
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    String fileName =
+            excelUtil.getFileName(
+                    query.getQueryDate(), "", organization.getAbbreviation(), "非本月优惠金额明细");
+    excelUtil.exportExcel(response, list, "非本月优惠金额明细", fileName);
   }
 
   /**
