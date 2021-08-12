@@ -1290,7 +1290,7 @@ public class TollBiz {
       BigDecimal actualReceivableAmount = billRecordResult.getActualReceivableAmount();
       BigDecimal receivedAmount = billRecordResult.getReceivedAmount();
       patientId = billRecordResult.getPatientId();
-      boolean usePrivilege = false;
+//      boolean usePrivilege = false; // bug3218:　未使用优惠或者未收过金额，不代表下次就一定使用优惠，该标记无效。
       if (receivedAmount.compareTo(BigDecimal.valueOf(0)) > 0
           || billRecordResult.getPrivilegeType() != discountType) {
         // 计算并校验收欠费入账总额
@@ -1303,14 +1303,18 @@ public class TollBiz {
         // 避免原来的优惠被覆盖
         discountType = billRecordResult.getPrivilegeType();
       } else {
-        usePrivilege = true;
+//        usePrivilege = true;
         // 计算并校验收欠费入账总额
         totalCharge =
             calculateAndCheckReceivedAmount(
                 prepaymentAccounts, memberAccounts, paymentModels, (byte) 1);
         // 账单未使用过优惠，重新使用优惠
         orderRecordId = billRecordResult.getOrderRecordId();
-        discountType = saveDiscountDetail(generalDiscount, accreditDiscount, discountType);
+
+        // bug3218 : 挂账后没有使用优惠，再收欠费时，优惠设置为0;
+        discountType = model.getDiscountType();
+        // discountType = saveDiscountDetail(generalDiscount, accreditDiscount, discountType);
+
         privilegeAmount =
             calculatePrivilegeAmount(
                 discountType, orderRecordId, generalDiscount, accreditDiscount);
@@ -1345,7 +1349,7 @@ public class TollBiz {
       billRecordId = billRecordResult.getId();
       billNUmber = billRecordResult.getBillNumber();
       orderRecordId = billRecordResult.getOrderRecordId();
-      if (usePrivilege) {
+      if (0 != discountType) {
         // 保存优惠明细
         savePrivilegeDetail(
             discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
