@@ -1366,7 +1366,11 @@ public class TollBiz {
       BigDecimal totalAmount = orderRecordResult.getTotalAmount();
       orderRecordId = orderRecordResult.getId();
       patientId = orderRecordResult.getPatientId();
-      discountType = saveDiscountDetail(generalDiscount, accreditDiscount, discountType);
+
+      // bug3218 : 挂账后没有使用优惠，再收欠费时，优惠设置为0;
+      discountType = model.getDiscountType();
+      // discountType = saveDiscountDetail(generalDiscount, accreditDiscount, discountType);
+
       // 计算优惠总额
       BigDecimal privilegeAmount =
           calculatePrivilegeAmount(discountType, orderRecordId, generalDiscount, accreditDiscount);
