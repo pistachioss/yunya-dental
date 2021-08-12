@@ -11,8 +11,3 @@ spring:
     port: 5672
     username: admin
     password: admin
-# 日志打印级别
-logging:
-  level:
-    # tk.mybatis: DEBUG
-    com.yunya.auth: debug
