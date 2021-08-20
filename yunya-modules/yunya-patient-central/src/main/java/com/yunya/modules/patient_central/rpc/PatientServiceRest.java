@@ -128,6 +128,12 @@ public class PatientServiceRest {
     return patientBaseInfoBiz.findMedicalNumberByOrgId(orgId);
   }
 
+  @ApiOperation("根据门诊编号获取可用的病历号后六位")
+  @RequestMapping(value = "/medical2/{clinNum}", method = RequestMethod.GET)
+  public Integer findMedicalNumberByClinNum(@PathVariable(value = "clinNum") String clinNum) {
+    return patientBaseInfoBiz.findMedicalNumberByClinNum(clinNum);
+  }
+
   @CurrentUser
   @ApiOperation("会员卡充值")
   @RequestMapping(value = "/patientMember/recharge", method = RequestMethod.POST)

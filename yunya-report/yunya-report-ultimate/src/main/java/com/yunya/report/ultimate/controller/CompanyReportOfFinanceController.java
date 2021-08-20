@@ -885,6 +885,15 @@ public class CompanyReportOfFinanceController {
     return ResponseUtil.success(resultList);
   }
 
+
+  @ApiOperation("公司端报表-财务报表-分类收入汇总-非本月优惠金额明细")
+  @PostMapping(value = "/category/nonDiscount/list", name = "根据条件查询非本月优惠金额明细列表")
+  public ResponseResult<PageInfo<NonDiscountVO>> nonDiscountList(
+          @RequestBody @Validated BillCategoryIncomeQuery query) {
+    PageInfo<NonDiscountVO> resultList = billDetailBiz.nonDiscountList(query);
+    return ResponseUtil.success(resultList);
+  }
+
   /**
    * 根据条件导出非本月免单金额明细列表
    *
@@ -898,6 +907,22 @@ public class CompanyReportOfFinanceController {
           HttpServletResponse response, @RequestBody @Validated BillCategoryIncomeQuery query)
           throws IOException {
     billDetailBiz.nonMonthCategoryExport(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件导出非本月优惠金额明细列表
+   * @param response
+   * @param query
+   * @return
+   * @throws IOException
+   */
+  @ApiOperation("公司端报表-财务报表-分类收入汇总-导出非本月优惠金额明细")
+  @PostMapping(value = "/category/nonDiscount/export", name = "根据条件导出非本月优惠金额明细列表")
+  public ResponseResult<T> nonDiscountExport(
+          HttpServletResponse response, @RequestBody @Validated BillCategoryIncomeQuery query)
+          throws IOException {
+    billDetailBiz.nonDiscountExport(response, query);
     return ResponseUtil.success(null);
   }
 }

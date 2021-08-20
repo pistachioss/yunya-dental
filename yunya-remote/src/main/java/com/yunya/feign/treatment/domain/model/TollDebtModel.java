@@ -52,4 +52,7 @@ public class TollDebtModel implements Serializable {
 
   /** 发票信息 */
   private InvoiceModel invoiceModel;
+
+  /** 优惠方式 */
+  private byte discountType;
 }

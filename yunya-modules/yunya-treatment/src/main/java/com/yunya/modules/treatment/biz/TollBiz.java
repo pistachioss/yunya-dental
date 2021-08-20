@@ -45,11 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -61,7 +57,6 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMET
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK;
-
 /**
  * 简介: 就诊收费业务层
  *
@@ -571,7 +566,8 @@ public class TollBiz {
       orderDetail.setInservice(true);
       List<OrderDetail> orderDetails = orderDetailBiz.selectList(orderDetail);
       List<PatientItemBenefitVo> benefitVos = benefitVo.getItemList();
-      if (StringHelper.isNotEmpty(benefitVos)) {
+      // TODO: bug3210 要求去掉优惠判断
+//      if (StringHelper.isNotEmpty(benefitVos)) {
         for (OrderDetail detail : orderDetails) {
           OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
           detailPayRecord.setOrgId(orgId);
@@ -620,9 +616,9 @@ public class TollBiz {
           detailPayRecord.setUpdName(name);
           orderDetailPayRecordBiz.insertSelective(detailPayRecord);
         }
-      } else {
-        throw new ClientServiceException("收费失败，当前选择卡券未匹配任何优惠！", PARAMETERS_IS_ILLEGAL);
-      }
+//      } else {
+//        throw new ClientServiceException("收费失败，当前选择卡券未匹配任何优惠！", PARAMETERS_IS_ILLEGAL);
+//      }
     } else {
       throw new ClientServiceException(result.getMsg(), result.getStatus());
     }
@@ -1262,6 +1258,12 @@ public class TollBiz {
   public TollConfirmVO collectDebt(TollDebtModel model) {
     Integer treatmentId = model.getTreatmentRecordId();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
+//    // TODO: bug3210 未收费走收欠费流程
+//    if(null == generalDiscount.getMemberTypeId() && null == generalDiscount.getDiscountCouponId() ) {
+//      if(null == generalDiscount.getCouponDiscountInfoModels() || generalDiscount.getCouponDiscountInfoModels().size() == 0) {
+//        generalDiscount = null;
+//      }
+//    }
     AccreditDiscountModel accreditDiscount = model.getAccreditDiscountModel();
     // 校验收欠费参数合法性
     BillRecord billRecordResult =
@@ -1288,7 +1290,7 @@ public class TollBiz {
       BigDecimal actualReceivableAmount = billRecordResult.getActualReceivableAmount();
       BigDecimal receivedAmount = billRecordResult.getReceivedAmount();
       patientId = billRecordResult.getPatientId();
-      boolean usePrivilege = false;
+      boolean usePrivilege = false; // bug3218:　未使用优惠或者未收过金额，不代表下次就一定使用优惠，该标记无效。
       if (receivedAmount.compareTo(BigDecimal.valueOf(0)) > 0
           || billRecordResult.getPrivilegeType() != discountType) {
         // 计算并校验收欠费入账总额
@@ -1308,7 +1310,11 @@ public class TollBiz {
                 prepaymentAccounts, memberAccounts, paymentModels, (byte) 1);
         // 账单未使用过优惠，重新使用优惠
         orderRecordId = billRecordResult.getOrderRecordId();
-        discountType = saveDiscountDetail(generalDiscount, accreditDiscount, discountType);
+
+        // bug3218 : 挂账后没有使用优惠，再收欠费时，优惠设置为0;
+        discountType = model.getDiscountType();
+        // discountType = saveDiscountDetail(generalDiscount, accreditDiscount, discountType);
+
         privilegeAmount =
             calculatePrivilegeAmount(
                 discountType, orderRecordId, generalDiscount, accreditDiscount);
@@ -1364,7 +1370,11 @@ public class TollBiz {
       BigDecimal totalAmount = orderRecordResult.getTotalAmount();
       orderRecordId = orderRecordResult.getId();
       patientId = orderRecordResult.getPatientId();
-      discountType = saveDiscountDetail(generalDiscount, accreditDiscount, discountType);
+
+      // bug3218 : 挂账后没有使用优惠，再收欠费时，优惠设置为0;
+      discountType = model.getDiscountType();
+      // discountType = saveDiscountDetail(generalDiscount, accreditDiscount, discountType);
+
       // 计算优惠总额
       BigDecimal privilegeAmount =
           calculatePrivilegeAmount(discountType, orderRecordId, generalDiscount, accreditDiscount);

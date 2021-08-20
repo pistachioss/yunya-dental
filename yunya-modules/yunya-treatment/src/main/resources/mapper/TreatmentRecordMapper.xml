@@ -136,7 +136,8 @@
         br.id AS billRecordId,
         br.actual_receivable_amount AS actualReceivableAmount,
         br.debt_amount AS debtAmount,
-        br.freePaymentPrice
+        br.freePaymentPrice,
+        br.privilege_type as privilegeType
         FROM
         treatment_record tr
         LEFT JOIN (
@@ -155,7 +156,8 @@
         br.id,
         br.actual_receivable_amount,
         br.debt_amount,
-        ifnull(bpd.amount, 0) as freePaymentPrice
+        ifnull(bpd.amount, 0) as freePaymentPrice,
+        br.privilege_type
         from bill_record br
         left join (
             select bill_record_id,sum(amount) amount from bill_pay_detail_record

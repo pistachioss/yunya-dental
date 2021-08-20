@@ -28,3 +28,10 @@ wechat:
 
 mp:
   domain: http://ivy2.yunya365.com
+
+# 日志打印级别
+logging:
+  level:
+    tk.mybatis: INFO
+    com.yunya: INFO
+    com.yunya365: INFO
