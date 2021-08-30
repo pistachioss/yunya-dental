@@ -2444,7 +2444,7 @@
             </where>
             )
             <if test="query.orgId != null">
-                and bbp.org_id = #{query.orgId}
+                and bb.org_id = #{query.orgId}
             </if>
             <if test="billIds!=null and billIds.size()>0">
                 and bbp.bill_id in
@@ -3808,6 +3808,57 @@
                 )
             </if>
         </where>
+    </select>
+
+    <select id="nonDiscountList" resultType="com.yunya.feign.report.domain.vo.NonDiscountVO">
+        select x.category_id
+            , x.item_id
+            , x.item_type
+            , x.bill_id
+            , x.abbreviation
+            , date_format(x.bill_date, '%Y-%m-%d') as bill_date
+            , x.patient_name
+            , x.bill_amount
+            , x.actual_amount
+            , x.category_id
+            , x.category_name
+            , x.free_bill_amount
+            , date_format(x.free_date, '%Y-%m-%d') as free_date
+            , sum(x.free_amount) as free_amount
+        from (
+            select bd.item_id
+                , bd.item_type
+                , br.bill_id
+                , bo.abbreviation
+                , br.bill_date
+                , bp.name as patient_name
+                , br.order_amount as bill_amount
+                , br.actual_amount
+                , bt.category_id
+                , bt.category_name
+                , br.privilege_amount as free_bill_amount
+                , br.privilege_date as free_date
+                , ifnull(bd.discount_amount, br.privilege_amount) as free_amount
+            from base_bill br
+            left join base_bill_detail bd on br.bill_id = bd.bill_id and bd.discount_amount != 0
+            left join base_organization bo on br.org_id = bo.org_id
+            left join base_patient bp on br.patient_id = bp.patient_id
+            left join base_tariff_info bt on bd.item_id = bt.item_id and bd.item_type = bt.item_type
+            <where>
+                and br.privilege_amount != 0
+                and date_format(br.privilege_date, '%Y-%m') != date_format(br.bill_date, '%Y-%m')
+                <if test="query.orgId != null">
+                    and br.org_id = #{query.orgId}
+                </if>
+                <if test="query.queryDate!=null and query.queryDate!=''">
+                    and date_format(br.privilege_date, '%Y-%m') = #{query.queryDate}
+                    and date_format(br.bill_date, '%Y-%m') &lt; #{query.queryDate}
+                </if>
+            </where>
+            order by br.privilege_date
+        ) x
+        group by x.abbreviation, x.bill_date, x.patient_name, x.category_id, category_name
+        order by x.free_date
     </select>
 
     <!-- 根据条件按月份分组补入工作量列表 -->

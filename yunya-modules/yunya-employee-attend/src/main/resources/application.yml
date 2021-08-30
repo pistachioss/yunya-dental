@@ -1,3 +1,8 @@
+logging:
+  level:
+    com.yunya: DEBUG
+    com.yunya365: DEBUG
+
 feign:
   httpclient:
     enabled: false

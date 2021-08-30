@@ -20,7 +20,7 @@
             bai.account_item_id AS accountItemId,
             bai.account_item_name AS accountItemName,
             IFNULL( bbpd.principal_amount, 0 ) AS totalAmount,
-            IFNULL(bbpd.bonus_amount, 0) AS bonusAmount
+            IFNULL(SUM(bbpd.bonus_amount), 0) AS bonusAmount
         FROM
             base_account_item bai
             LEFT JOIN (

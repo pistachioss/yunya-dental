@@ -1,7 +1,8 @@
 logging:
   level:
-    #        tk.mybatis: DEBUG
-    com.yunya.report.ultimate: DEBUG
+    com.yunya: DEBUG
+    com.yunya365: DEBUG
+
 spring:
   application:
     name: yunya-report-ultimate
