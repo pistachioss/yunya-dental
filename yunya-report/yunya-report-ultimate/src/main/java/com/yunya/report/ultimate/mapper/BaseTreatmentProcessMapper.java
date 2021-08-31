@@ -1,5 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.report.domain.query.AppointmentCountQuery;
 import com.yunya.feign.report.domain.query.AssistantMatchingDetailQuery;
 import com.yunya.feign.report.domain.query.FirstVisitDetailQuery;
@@ -149,4 +151,12 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    * 查询wx需要推送的预约未到且未确认的数据
    */
   List<WxAppointConfirmPushVo> listAppointConfirm();
+
+  /**
+   * 查询在条件门诊就诊过的患者
+   * @param form 条件
+   * @param orgId 门诊id
+   * @return
+   */
+    List<PatientBaseInfoVo> findPatientLikePatientInfo(@Param("form") PatientLikeFinleQueryForm form, @Param("orgId") Integer orgId);
 }
