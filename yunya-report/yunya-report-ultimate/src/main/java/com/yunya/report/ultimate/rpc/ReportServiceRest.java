@@ -38,7 +38,6 @@ public class ReportServiceRest {
 
     @RequestMapping(value = "/patient/likePatient",method = RequestMethod.POST)
     List<PatientBaseInfoVo> findPatientLikePatientInfo(@RequestBody PatientLikeFinleQueryForm form) {
-        //return baseTreatmentProcessBiz.findPatientLikePatientInfo(form);
-        return null;
+        return baseTreatmentProcessBiz.findPatientLikePatientInfo(form);
     }
 }

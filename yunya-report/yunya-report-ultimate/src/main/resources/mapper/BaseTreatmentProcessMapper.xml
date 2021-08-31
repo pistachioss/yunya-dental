@@ -702,4 +702,35 @@
           and isnull(btp.appointment_id) = 0
           and isnull(registered_id)
     </select>
+
+    <!-- 查询在条件门诊就诊过的患者 -->
+    <select id="findPatientLikePatientInfo"
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
+        SELECT
+        pbi.patient_id id,
+        pbi.`name`,
+        pbi.face_url AS faceUrl,
+        pbi.mobile AS mobile,
+        pbi.medical_number AS medicalNumber,
+        pbi.gender,
+        TIMESTAMPDIFF(YEAR,pbi.birthday,CURDATE()) AS age,
+		date_format(max(btp.treat_end_time),'%Y-%m-%d') lastVisitTime,
+		bee.employee_name lastVisit
+        FROM
+        base_patient pbi
+		join base_treatment_process btp on btp.patient_id = pbi.patient_id
+		left join base_employee bee on bee.user_id = btp.registered_dentist_id
+        WHERE
+			btp.org_id = #{orgId}
+			and
+            concat(IFNULL(pbi.`name`,''),
+            IFNULL(pbi.medical_number,''),
+            IFNULL(pbi.pinyin_name,''),
+            IFNULL(pbi.mobile,''))
+            like concat(concat('%', rtrim(#{form.condition})), '%')
+			GROUP BY pbi.patient_id
+        ORDER BY
+        ABS(
+        LENGTH( pbi.`name` ) - LENGTH(#{form.condition}))
+    </select>
 </mapper>

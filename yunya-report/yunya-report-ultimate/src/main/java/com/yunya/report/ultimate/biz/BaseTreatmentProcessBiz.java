@@ -6,6 +6,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
@@ -682,4 +684,17 @@ public class BaseTreatmentProcessBiz
     }
     return "";
   }
+
+
+  /**
+   * 查询在条件门诊就诊过的患者
+   * @param form 条件
+   * @return
+   */
+    public List<PatientBaseInfoVo> findPatientLikePatientInfo(PatientLikeFinleQueryForm form) {
+      if (form.getWhetherPage()) {
+        PageHelper.startPage(form.getPageNum(), form.getPageSize());
+      }
+      return mapper.findPatientLikePatientInfo(form,34);
+    }
 }
