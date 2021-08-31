@@ -13,6 +13,7 @@ import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -39,12 +40,12 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -67,92 +68,98 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     /**
      * 注入redis
      */
-    @Autowired
+    @Resource
     private RedisUtils redisUtils;
 
     /**
      * 注入患者信息Mapper
      */
-    @Autowired
+    @Resource
     private PatientBaseInfoMapper patientBaseInfoMapper;
 
     /**
      * 注入患者其他信息Mapper
      */
-    @Autowired
+    @Resource
     private PatientExtInfoMapper patientExtInfoMapper;
 
     /**
      * 注入患者扩展信息Mapper
      */
-    @Autowired
+    @Resource
     private PatientExpInfoMapper patientExpInfoMapper;
 
     /**
      * 注入系统服务
      */
-    @Autowired
+    @Resource
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
     /**
      * 注入wo平台对象
      */
-    @Autowired
+    @Resource
     private WoPersonBiz woPersonBiz;
 
     /**
      * 注入预付款Mapper
      */
-    @Autowired
+    @Resource
     private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
 
     /**
      * 注入会员卡对象
      */
-    @Autowired
+    @Resource
     private PatientMemberInfoBiz patientMemberInfoBiz;
 
     /**
      * 注入患者来源Mapper
      */
-    @Autowired
+    @Resource
     private PatientOriginMapper patientOriginMapper;
 
     /**
      * 注入会员卡Mapper
      */
-    @Autowired
+    @Resource
     private PatientMemberInfoMapper patientMemberInfoMapper;
 
     /**
      * 注入患者照片Mapper
      */
-    @Autowired
+    @Resource
     private PatientImgMapper patientImgMapper;
 
     /**
      * 设备心跳回调
      */
-    @Autowired
+    @Resource
     private InformationCallbackBiz informationCallbackBiz;
 
     /**
      * 注入服务
      */
-    @Autowired
+    @Resource
     private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
 
     /**
      * 标签Mapper
      */
-    @Autowired
+    @Resource
     private PatientLabelRecordMapper patientLabelRecordMapper;
 
     /**
      * 就诊服务
      */
-    @Autowired
+    @Resource
     private RemoteTreatmentServiceFeign treatmentServiceFeign;
+
+    /**
+     * 报表服务
+     */
+    @Resource
+    private RemoteReportServiceFeign remoteReportServiceFeign;
 
     /**
      * 患者来源绑定关系
@@ -582,24 +589,32 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
      * @param form 患者模糊查询模板
      * @return List<PatientBaseInfoVo>
      */
-    public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
+    public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form){
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        List<PatientBaseInfoVo> patients = patientBaseInfoMapper.findPatientByNameAndMobile(form);
-        // 调用就诊服务查询患者末次就诊记录
-        if (StringHelper.isNotEmpty(patients)) {
-            for (PatientBaseInfoVo patient : patients) {
-                LastTreatmentInfoVO treatmentRecord =
-                        treatmentServiceFeign.findLastTreatmentRecord(patient.getId());
-                patient.setLastVisitTime(treatmentRecord.getTreatmentDate());
-                patient.setLastVisit(treatmentRecord.getDentistName());
+        String ywOrgId = "34";
+        List<PatientBaseInfoVo> patients = null;
+        if (ywOrgId.equals(BaseContextHandler.getOrgId())){
+            patients = remoteReportServiceFeign.findPatientLikePatientInfo(form);
+            }else {
+            patients = patientBaseInfoMapper.findPatientByNameAndMobile(form);
+            if (StringHelper.isNotEmpty(patients)){
+                // 调用就诊服务查询患者末次就诊记录
+                if (StringHelper.isNotEmpty(patients)) {
+                    for (PatientBaseInfoVo patient : patients) {
+                        LastTreatmentInfoVO treatmentRecord =
+                                treatmentServiceFeign.findLastTreatmentRecord(patient.getId());
+                        patient.setLastVisitTime(treatmentRecord.getTreatmentDate());
+                        patient.setLastVisit(treatmentRecord.getDentistName());
+                    }
+                    return patients.stream()
+                            .filter(
+                                    entity ->
+                                            !(null != entity.getMedicalNumber() && entity.getMedicalNumber().contains("*")))
+                            .collect(Collectors.toList());
+                }
             }
-            return patients.stream()
-                    .filter(
-                            entity ->
-                                    !(null != entity.getMedicalNumber() && entity.getMedicalNumber().contains("*")))
-                    .collect(Collectors.toList());
         }
         return patients;
     }

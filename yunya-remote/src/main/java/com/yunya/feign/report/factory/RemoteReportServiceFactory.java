@@ -1,6 +1,8 @@
 package com.yunya.feign.report.factory;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
@@ -34,5 +36,11 @@ public class RemoteReportServiceFactory implements RemoteReportServiceFeign {
     public List<WxTemplateMsgModel> listPushConfirmAppoint() {
         return null;
     }
+
+    @Override
+    public List<PatientBaseInfoVo> findPatientLikePatientInfo(PatientLikeFinleQueryForm form) {
+        return null;
+    }
+
 
 }
