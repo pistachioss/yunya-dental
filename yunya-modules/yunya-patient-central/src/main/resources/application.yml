@@ -1,6 +1,6 @@
 logging:
   level:
-    root: DEBUG
+    root: info
     tk.mybatis: DEBUG
     com.yunya: DEBUG
     com.yunya365: DEBUG

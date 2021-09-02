@@ -597,7 +597,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         List<PatientBaseInfoVo> patients = null;
         if (ywOrgId.equals(BaseContextHandler.getOrgId())){
             patients = remoteReportServiceFeign.findPatientLikePatientInfo(form);
-            }else {
+        }else {
             patients = patientBaseInfoMapper.findPatientByNameAndMobile(form);
             if (StringHelper.isNotEmpty(patients)){
                 // 调用就诊服务查询患者末次就诊记录
