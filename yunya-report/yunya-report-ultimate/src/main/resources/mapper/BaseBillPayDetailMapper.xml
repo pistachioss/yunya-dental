@@ -19,22 +19,24 @@
         SELECT
             bai.account_item_id AS accountItemId,
             bai.account_item_name AS accountItemName,
-            IFNULL( bbpd.principal_amount, 0 ) AS totalAmount,
+            IFNULL(SUM(bbpd.principal_amount), 0 ) AS totalAmount,
             IFNULL(SUM(bbpd.bonus_amount), 0) AS bonusAmount
         FROM
             base_account_item bai
             LEFT JOIN (
             SELECT
             bbpd.account_item_id,
-            bbpd.principal_amount,
-            bbpd.bonus_amount
+            SUM(bbpd.principal_amount) AS principal_amount,
+            SUM(bbpd.bonus_amount) AS bonus_amount
             FROM
             base_bill_pay_detail bbpd
             WHERE
             bbpd.bill_pay_id = #{billPayId}
+            GROUP BY bbpd.bill_pay_id
             ) bbpd ON bai.account_item_id = bbpd.account_item_id
         GROUP BY
             bai.account_type_id,
+            bai.account_item_id,
             bai.account_item_name,
             bbpd.principal_amount
         ORDER BY
