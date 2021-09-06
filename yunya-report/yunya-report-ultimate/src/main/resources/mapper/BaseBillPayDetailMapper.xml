@@ -34,7 +34,7 @@
             bbpd.bill_pay_id = #{billPayId}
             GROUP BY
             bbpd.bill_pay_id,
-            account_item_id
+            bbpd.account_item_id
             ) bbpd ON bai.account_item_id = bbpd.account_item_id
         GROUP BY
             bai.account_type_id,
