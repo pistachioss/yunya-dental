@@ -1,7 +1,5 @@
 package com.yunya.modules.appointment;
 
-import com.alibaba.nacos.api.annotation.NacosProperties;
-import com.alibaba.nacos.api.config.annotation.NacosConfigurationProperties;
 import com.yunya.feign.EnableYunyaFeignClients;
 import com.yunya.framework.swagger.EnableCustomSwagger2;
 import org.springframework.boot.SpringApplication;
@@ -12,9 +10,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import tk.mybatis.spring.annotation.MapperScan;
 
 /**
- * 云牙系统患者预约服务启动器
+ * 云牙系统患者预约服务启动器 @Author 李慧斌
  *
- * @Author 李慧斌
  * @create 2020年7月20日
  */
 @SpringBootApplication
@@ -25,7 +22,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 @EnableTransactionManagement
 @EnableDiscoveryClient
 public class YunyaAppointmentApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(YunyaAppointmentApplication.class, args);
-    }
+  public static void main(String[] args) {
+    SpringApplication.run(YunyaAppointmentApplication.class, args);
+  }
 }

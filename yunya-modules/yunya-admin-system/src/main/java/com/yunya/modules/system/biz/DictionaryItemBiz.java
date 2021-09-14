@@ -52,7 +52,6 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
           "添加的字典明细'" + name + "失败，'所属的字典类型不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
     DictionaryItem entity = new DictionaryItem();
-    entity.setDictionaryTypeId(dictTypeId);
     entity.setName(name);
     int count = mapper.selectCount(entity);
     if (count > 0) {
@@ -80,7 +79,6 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
     if (!resultData.getName().equals(form.getName())) {
       String name = form.getName();
       resultData = new DictionaryItem();
-      resultData.setDictionaryTypeId(resultData.getDictionaryTypeId());
       resultData.setName(name);
       int count = mapper.selectCount(resultData);
       if (count > 0) {

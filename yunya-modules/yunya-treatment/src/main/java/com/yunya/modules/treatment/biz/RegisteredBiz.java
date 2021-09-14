@@ -148,7 +148,8 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
       List<PatientBaseInfoVo> patsxList =
           remotePatientCentralServiceFeign.findPatientByNameAndMobile(patientLikeFinleQueryForm);
       if (StringHelper.isNotEmpty(patsxList)) {
-        referredForm.setPatIds(patsxList.stream().map(p -> p.getId()).collect(Collectors.toList()));
+        referredForm.setPatIds(
+            patsxList.stream().map(PatientBaseInfoVo::getId).collect(Collectors.toList()));
       }
     }
 
@@ -157,27 +158,28 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
     // 转诊记录包含的患者信息
     List<PatientTotalInfoVo> patList =
         remotePatientCentralServiceFeign.findPatientTotalInfo(
-            reList.stream().map(p -> p.getPatientId()).collect(Collectors.toList()));
-    Map<String, PatientTotalInfoVo> patMap = new HashMap(16);
+            reList.stream().map(ReferredInfoVO::getPatientId).collect(Collectors.toList()));
+    Map<String, PatientTotalInfoVo> patMap = new HashMap<>(16);
     patList.forEach(z -> patMap.put(z.getId() + "", z));
 
     // 转诊记录包含的员工信息
     SysUserEmployeeModel model = new SysUserEmployeeModel();
     model.setWhetherPage(false);
-    List<Integer> userList = reList.stream().map(p -> p.getUserId()).collect(Collectors.toList());
+    List<Integer> userList =
+        reList.stream().map(ReferredInfoVO::getUserId).collect(Collectors.toList());
     List<Integer> refList =
-        reList.stream().map(p -> p.getReferredId()).collect(Collectors.toList());
+        reList.stream().map(ReferredInfoVO::getReferredId).collect(Collectors.toList());
     List<Integer> emList = new ArrayList<>();
     emList.addAll(userList);
     emList.addAll(refList);
     model.setUserIds(emList);
     List<SysUserInfoDetail> employees = systemServiceFeign.findSysUserEmployeeInfoList(model);
-    Map<String, SysUserInfoDetail> employeesMap = new HashMap(16);
+    Map<String, SysUserInfoDetail> employeesMap = new HashMap<>(16);
     employees.forEach(z -> employeesMap.put(z.getUserId() + "", z));
 
     // 科室信息
     List<DepartmentRoom> detList = systemServiceFeign.findDepartmentRoomList(new DepartmentRoom());
-    Map<String, DepartmentRoom> detMap = new HashMap(16);
+    Map<String, DepartmentRoom> detMap = new HashMap<>(16);
     detList.forEach(z -> detMap.put(z.getId() + "", z));
 
     if (StringHelper.isNotEmpty(reList)) {
@@ -204,7 +206,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
     SysUserEmployeeModel model = new SysUserEmployeeModel();
     model.setWhetherPage(false);
     List<SysUserInfoDetail> employees = systemServiceFeign.findSysUserEmployeeInfoList(model);
-    Map<String, SysUserInfoDetail> employeesMap = new HashMap(16);
+    Map<String, SysUserInfoDetail> employeesMap = new HashMap<>(16);
     employees.forEach(z -> employeesMap.put(z.getUserId() + "", z));
 
     if (referredRrportForm.getUserStatus().length > 0) {
@@ -216,13 +218,12 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
     // p.getReferredId()).collect(Collectors.toList());
     //        emList.addAll(userList);
     //        emList.addAll(refList);
-    List<Integer> emList = new ArrayList<>();
-    emList.addAll(referredRrportForm.getUserIds());
+    List<Integer> emList = new ArrayList<>(referredRrportForm.getUserIds());
     model.setUserIds(emList);
     List<SysUserInfoDetail> employeesTwo = systemServiceFeign.findSysUserEmployeeInfoList(model);
 
     List<Integer> employList =
-        employeesTwo.stream().map(p -> p.getUserId()).collect(Collectors.toList());
+        employeesTwo.stream().map(SysUserInfoDetail::getUserId).collect(Collectors.toList());
     List<ReferredRrportVO> reList = new ArrayList<>();
     if (employList.size() == 0) {
       return reList;
@@ -233,7 +234,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
 
     // 科室信息
     List<DepartmentRoom> detList = systemServiceFeign.findDepartmentRoomList(new DepartmentRoom());
-    Map<String, DepartmentRoom> detMap = new HashMap(16);
+    Map<String, DepartmentRoom> detMap = new HashMap<>(16);
     detList.forEach(z -> detMap.put(z.getId() + "", z));
 
     if (StringHelper.isNotEmpty(reList)) {

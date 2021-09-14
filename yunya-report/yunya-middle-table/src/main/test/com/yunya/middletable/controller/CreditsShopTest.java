@@ -42,8 +42,8 @@ public class CreditsShopTest {
     @Test
     public void ivyConsumeAddCreditsTest() {
         BigDecimal bigDecimal = new BigDecimal(1400);
-        Integer integer = creditsShopBiz.ivyConsumeAddCredits(1008611, bigDecimal, 45);
-        System.out.println(integer);
+        /*Integer integer = creditsShopBiz.ivyConsumeAddCredits(1008611, bigDecimal, 45);
+        System.out.println(integer);*/
     }
 
     @Test
