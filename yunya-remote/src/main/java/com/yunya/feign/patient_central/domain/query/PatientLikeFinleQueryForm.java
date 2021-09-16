@@ -30,6 +30,4 @@ public class PatientLikeFinleQueryForm extends PageQuery implements Serializable
     @ApiModelProperty(value = "患者查询条件(姓名or姓名拼音or手机号)", required = true)
     @NotBlank(message = "患者查询条件不能为空！")
     private String condition;
-
-
 }

@@ -48,7 +48,7 @@ public class BaseVisitRemindController {
      */
     @ApiOperation("根据时间段批量拉取提醒随访信息")
     @PostMapping(value = "/batch", name = "PatientBaseInfoBiz")
-    public ResponseResult<T> pullPatientData(@RequestBody PullForm form) {
+    public ResponseResult<T> pullPatientData(@RequestBody PullForm form) throws InterruptedException {
         baseVisitRemindBiz.pullPatientData(form);
         return ResponseUtil.success(null);
     }

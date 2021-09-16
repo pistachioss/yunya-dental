@@ -1,7 +1,5 @@
 package com.yunya.modules.appointment.config;
 
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.yunya.framework.common.handler.GlobalExceptionHandler;
 import com.yunya.framework.common.interceptor.RepeatSubmitInterceptor;
@@ -14,9 +12,6 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.swing.*;
-import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,8 +24,7 @@ import java.util.List;
 @Primary
 public class WebConfiguration implements WebMvcConfigurer {
 
-  @Autowired
-  RepeatSubmitInterceptor repeatSubmitInterceptor;
+  @Autowired RepeatSubmitInterceptor repeatSubmitInterceptor;
 
   @Bean
   GlobalExceptionHandler getGlobalExceptionHandler() {
@@ -54,7 +48,6 @@ public class WebConfiguration implements WebMvcConfigurer {
     converter.setSupportedMediaTypes(supportedMediaTypes);
     converters.add(converter);
   }
-
 
   /**
    * 获取当前用户信息拦截器

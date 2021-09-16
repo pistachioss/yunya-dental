@@ -27,4 +27,10 @@ public interface BaseVisitRemindMapper extends Mapper<BaseVisitRemind> {
      * @return
      */
     int insertVisitingRecordTime(List<VisitingRecord>list);
+
+    /**
+     * 批量插入
+     * @param baseVisitReminds 集合
+     */
+    void insertList(@Param("list") List<BaseVisitRemind> baseVisitReminds);
 }
