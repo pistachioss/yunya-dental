@@ -140,4 +140,15 @@ public class BaseAccountItemMapperTest {
         accountItemMapper.selectClinicIsAcceptedPaymentInfoNotThisMonth(query);
     System.out.println(vos);
   }
+
+  @Test
+  public void find10() {
+    InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
+    query.setOrgId(42);
+    query.setDateType((byte) 2);
+    query.setStartDate("2020");
+    query.setEndDate("2020");
+    List<StatementPaymentVO> resultList = accountItemMapper.selectMemberRefundPaymentInfo(query);
+    System.out.println(resultList);
+  }
 }

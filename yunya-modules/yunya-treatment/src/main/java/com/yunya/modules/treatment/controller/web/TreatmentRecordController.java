@@ -207,4 +207,17 @@ public class TreatmentRecordController {
         treatmentRecordBiz.findDesktopTreatListItem(queryForm);
     return ResponseUtil.success(desktopTreatListItems);
   }
+
+  /**
+   * 门诊下班前5分钟内的就诊状态统计：候诊中/就诊中/治疗完成
+   * 前台角色可见
+   *
+   * @return
+   */
+  @ApiOperation("门诊下班前5分钟内的就诊状态统计：候诊中/就诊中/治疗完成")
+  @PostMapping(value = "/treatmentStatus/count")
+  @CurrentUser
+  public ResponseResult<CountTreatmentRecordVO> treatmentStatusCount() {
+    return treatmentRecordBiz.treatmentStatusCount();
+  }
 }

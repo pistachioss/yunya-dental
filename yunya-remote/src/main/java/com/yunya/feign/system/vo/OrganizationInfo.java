@@ -42,4 +42,10 @@ public class OrganizationInfo implements Serializable {
   /** 诊所电话 */
   @ApiModelProperty("诊所电话")
   private String clinicMobile;
+  /** 营业开始时间 */
+  @ApiModelProperty("营业开始时间")
+  private String businessStartTime;
+  /** 营业结束时间 */
+  @ApiModelProperty("营业结束时间")
+  private String businessEndTime;
 }
