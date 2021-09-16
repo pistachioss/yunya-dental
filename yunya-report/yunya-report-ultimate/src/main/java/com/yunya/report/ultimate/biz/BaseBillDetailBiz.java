@@ -2349,7 +2349,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-   * 根据条件查询个人开单项目实收明细表
+   * 根据条件查询个人开单项目应收明细表
    *
    * @param query 查询条件
    * @return PageInfo<BillItemStatisticsInfoVO>
@@ -2358,6 +2358,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
+    queryCategoryItem(query);
+    List<BillItemStatisticsInfoVO> resultList = mapper.billItemStatiticsInfo(query);
+    return new PageInfo<>(resultList);
+  }
+
+  private void queryCategoryItem(BillItemInfoQuery query) {
     Collection<Integer[]> items = query.getCategoryItems();
     if (StringHelper.isNotEmpty(items)) {
       Set<Integer> categoryIds = new HashSet<>();
@@ -2370,12 +2376,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       query.setCategoryIds(categoryIds);
       query.setItemIds(itemIds);
     }
-    List<BillItemStatisticsInfoVO> resultList = mapper.billItemStatiticsInfo(query);
-    return new PageInfo<>(resultList);
   }
 
   /**
-   * 根据条件查询个人开单项目实收明细表导出
+   * 根据条件查询个人开单项目应收明细表导出
    *
    * @param query 查询条件
    * @return
@@ -2388,7 +2392,28 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     ExcelUtil<BillItemStatisticsInfoVO> excelUtil = new ExcelUtil<>(BillItemStatisticsInfoVO.class);
     String fileName =
             excelUtil.getFileName(
-                    organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), "个人开单项目实收明细表");
-    excelUtil.exportExcel(response, resultList, "个人开单项目实收明细表", fileName);
+                    organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), "个人开单项目应收明细表");
+    excelUtil.exportExcel(response, resultList, "个人开单项目应收明细表", fileName);
+  }
+
+  public PageInfo<BillItemReceivedStatisticsVO> billItemReceivedStatistics(BillItemInfoQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    queryCategoryItem(query);
+    List<BillItemStatisticsInfoVO> resultList = mapper.billItemStatiticsInfo(query);
+    return null;
+//    return new PageInfo<>(resultList);
+  }
+
+  public void billItemReceivedStatisticsExport(BillItemInfoQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<BillItemReceivedStatisticsVO> resultList = billItemReceivedStatistics(query).getList();
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    ExcelUtil<BillItemReceivedStatisticsVO> excelUtil = new ExcelUtil<>(BillItemReceivedStatisticsVO.class);
+    String fileName =
+            excelUtil.getFileName(
+                    organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), "个人开单项目实收金额统计明细表");
+    excelUtil.exportExcel(response, resultList, "个人开单项目实收金额统计明细表", fileName);
   }
 }
