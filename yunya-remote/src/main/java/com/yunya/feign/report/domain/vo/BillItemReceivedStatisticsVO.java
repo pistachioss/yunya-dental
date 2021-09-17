@@ -24,10 +24,16 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 @Data
 @ToString
 public class BillItemReceivedStatisticsVO implements Serializable {
+  @ApiModelProperty("账单收费id")
+  private Integer billPayId;
   /** 收费门诊 */
   @Excel(name = "收费门诊")
   @ApiModelProperty("收费门诊")
   private String abbreviation;
+  /** 账单日期 */
+  @Excel(name = "收费日期")
+  @ApiModelProperty("收费日期")
+  private String payeeDate;
   /** 账单日期 */
   @Excel(name = "账单日期")
   @ApiModelProperty("账单日期")
@@ -56,6 +62,14 @@ public class BillItemReceivedStatisticsVO implements Serializable {
   @Excel(name = "实收金额",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("实收金额")
   private BigDecimal amount;
+  /** 免单支付 */
+  @Excel(name = "免单支付",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("免单支付")
+  private BigDecimal freePaymentAmount = BigDecimal.ZERO;
+  /** 补入工作量 */
+  @Excel(name = "补入工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("补入工作量")
+  private BigDecimal supplyWorkload;
   /** 执行人 */
   @Excel(name = "执行人")
   @ApiModelProperty("执行人")
