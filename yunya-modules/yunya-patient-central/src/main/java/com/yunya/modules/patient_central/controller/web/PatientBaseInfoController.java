@@ -136,6 +136,7 @@ public class PatientBaseInfoController {
    * @param patientBaseInfoQueryForm 患者模糊查询模板
    * @return ResponseResult
    */
+  @CurrentUser
   @ApiOperation("根据姓名/病例编号/手机号/姓名拼音模糊查询患者")
   @PostMapping("/likePatient")
   public ResponseResult findPatientByNameAndMobile(
