@@ -10,21 +10,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.yunya.feign.discount.domain.bo.*;
-import com.yunya.feign.discount.domain.form.CardSoldForm;
-import com.yunya.feign.discount.domain.form.ConfigSharerForm;
-import com.yunya.feign.discount.domain.form.OtherCardActiveForm;
-import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
-import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
+import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.ClinicAllocateModel;
 import com.yunya.feign.discount.domain.model.GenerateAllocateModel;
-import com.yunya.feign.discount.domain.query.CardActiveQuery;
-import com.yunya.feign.discount.domain.query.CardSaleQuery;
-import com.yunya.feign.discount.domain.query.CouponAllocateQuery;
-import com.yunya.feign.discount.domain.query.CouponSaleQuery;
-import com.yunya.feign.discount.domain.query.GenerateAllocateCardQuery;
-import com.yunya.feign.discount.domain.query.GenerateAllocateDetailQuery;
-import com.yunya.feign.discount.domain.query.PatientBenefitQuery;
-import com.yunya.feign.discount.domain.query.PatientCardQuery;
+import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
@@ -69,13 +58,7 @@ import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
 import com.yunya.models.tariff.ClinicTariffMemberPrice;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
-import com.yunya.modules.discount.enums.CardStatusEnum;
-import com.yunya.modules.discount.enums.CouponTypeEnum;
-import com.yunya.modules.discount.enums.DiscountError;
-import com.yunya.modules.discount.enums.SoldTypeEnum;
-import com.yunya.modules.discount.enums.SoldWayEnum;
-import com.yunya.modules.discount.enums.TrueFalseEnum;
-import com.yunya.modules.discount.enums.UseWayEnum;
+import com.yunya.modules.discount.enums.*;
 import com.yunya.modules.discount.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -97,16 +80,12 @@ import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -2135,9 +2114,21 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         insertOtherCard.setSharer(form.getSharerIdStr());
         insertOtherCard.setCrtId(loginUserId);
         insertOtherCard.setUpdId(loginUserId);
-        insertOtherCard.setActiveDate(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        if (isAiYa(form.getCouponId())) {
+            insertOtherCard.setActiveDate(LocalDateTime.of(LocalDate.now().with(TemporalAdjusters.firstDayOfYear())
+                    , LocalTime.MIN));
+        } else {
+            insertOtherCard.setActiveDate(LocalDateTime.now());
+        }
         mapper.insertSelective(insertOtherCard);
         return insertOtherCard;
+    }
+
+    private boolean isAiYa(Integer couponId) {
+        CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
+        ProductType productType = productTypeMapper.selectByPrimaryKey(couponInfo.getProductTypeId());
+        return productType != null && "套餐有效期至12.31".equals(productType.getName());
     }
 
     private Card configShareVoConvertCard(Integer cardId, ConfigSharerForm form) {
