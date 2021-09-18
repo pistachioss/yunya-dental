@@ -2128,7 +2128,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private boolean isAiYa(Integer couponId) {
         CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
         ProductType productType = productTypeMapper.selectByPrimaryKey(couponInfo.getProductTypeId());
-        return productType != null && "艾芽".equals(productType.getName());
+        return productType != null && "套餐有效期至12.31".equals(productType.getName());
     }
 
     private Card configShareVoConvertCard(Integer cardId, ConfigSharerForm form) {
