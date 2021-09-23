@@ -3029,7 +3029,7 @@
         </where>
         order by bbd.orgId,bbd.itemType,bbd.itemId
     </select>
-
+    <!-- 根据条件查询开单明细 -->
     <select id="billItemStatisticsDetail" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsDetailVO">
         SELECT
         DATE_FORMAT(bb.bill_date, '%Y-%m-%d') AS billDate,
@@ -3038,6 +3038,7 @@
         bem.employee_name as regDentistName,
         be.employee_name as executorName,
         IFNULL(bbd.price*bbd.quantity - bbd.discount_amount, 0) as amount,
+        bbd.remark,
         bp.name AS patientName,
         bp.patient_id as patientId,
         bp.mobile,

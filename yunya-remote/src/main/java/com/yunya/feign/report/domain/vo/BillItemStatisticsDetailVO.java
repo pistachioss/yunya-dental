@@ -27,7 +27,6 @@ public class BillItemStatisticsDetailVO implements Serializable {
   /** 门诊 */
   @ApiModelProperty("门诊")
   private String abbreviation;
-
   /** 账单日期 */
   @Excel(name = "账单日期")
   @ApiModelProperty("账单日期")
