@@ -811,7 +811,7 @@ public class CompanyReportOfOperationController {
    * @return PageInfo<BillItemStatisticsInfoVO>
    */
   @ApiOperation("公司端报表-报表统计-运营报表-个人开单项目实收明细表")
-  @PostMapping(value = "/billItem/receivabe/statistics", name = "根据条件查询个人开单项目实收明细表")
+  @PostMapping(value = "/billItem/receivable/statistics", name = "根据条件查询个人开单项目实收明细表")
   public ResponseResult<PageInfo<BillItemReceivedStatisticsVO>> billItemReceivableStatistics(
           @RequestBody @Validated BillItemInfoQuery query) {
     PageInfo<BillItemReceivedStatisticsVO> pageInfo = billDetailBiz.billItemReceivedStatistics(query);

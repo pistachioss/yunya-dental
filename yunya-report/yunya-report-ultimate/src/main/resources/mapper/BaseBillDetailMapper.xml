@@ -4332,7 +4332,40 @@
         bp.mobile,
         bo.abbreviation
         FROM base_bill_pay bbp
-        LEFT JOIN base_bill bb ON bbp.bill_id = bb.bill_id
+        LEFT JOIN (
+            select bb.bill_id, bb.bill_date, bb.bill_num, bb.treatment_id, bb.patient_id from base_bill bb
+            where bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+            and EXISTS (
+                select bbp.bill_id from base_bill_pay bbp where bbp.bill_id=bb.bill_id
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bbp.payee_date, '%Y-%m') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bbp.payee_date, '%Y-%m') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bbp.payee_date, '%Y') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bbp.payee_date, '%Y') &lt;= #{query.endDate}
+                    </if>
+                </if>
+            )
+        ) bb ON bbp.bill_id = bb.bill_id
         LEFT JOIN base_bill_detail bbd ON bbd.bill_id = bb.bill_id
         LEFT JOIN base_treatment_process btp ON bb.treatment_id = btp.treatment_id
         LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
@@ -4341,7 +4374,6 @@
         LEFT JOIN base_employee be ON bbd.executor_id = be.user_id
         LEFT JOIN base_tariff_info bti ON bbd.item_id = bti.item_id AND bbd.item_type = bti.item_type
         <where>
-            bb.bill_date IS NOT NULL
             <if test="query.itemIds!=null and query.itemIds.size()>0">
                 and bbd.item_id in
                 <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
@@ -4354,7 +4386,6 @@
             <if test="query.orgId != null">
                 and btp.org_id = #{query.orgId}
                 and bbd.org_id = #{query.orgId}
-                and bb.org_id = #{query.orgId}
             </if>
             <if test="query.employeeIds!=null and query.employeeIds.size()>0">
                 AND bbd.executor_id in
