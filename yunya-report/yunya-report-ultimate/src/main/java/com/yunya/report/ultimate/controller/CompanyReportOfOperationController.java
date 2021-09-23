@@ -776,13 +776,13 @@ public class CompanyReportOfOperationController {
   }
 
   /**
-   * 根据条件查询个人开单项目实收明细表
+   * 根据条件查询个人开单项目应收明细表
    *
    * @param query 查询条件
    * @return PageInfo<BillItemStatisticsInfoVO>
    */
-  @ApiOperation("公司端报表-报表统计-运营报表-个人开单项目实收明细表")
-  @PostMapping(value = "/billItem/statistics/info", name = "根据条件查询个人开单项目实收明细表")
+  @ApiOperation("公司端报表-报表统计-运营报表-个人开单项目应收明细表")
+  @PostMapping(value = "/billItem/statistics/info", name = "根据条件查询个人开单项目应收明细表")
   public ResponseResult<PageInfo<BillItemStatisticsInfoVO>> billItemStatisticsInfo(
           @RequestBody @Validated BillItemInfoQuery query) {
     PageInfo<BillItemStatisticsInfoVO> pageInfo = billDetailBiz.billItemStatisticsInfo(query);
@@ -790,17 +790,46 @@ public class CompanyReportOfOperationController {
   }
 
   /**
-   * 根据条件查询个人开单项目实收明细表导出
+   * 根据条件导出个人开单项目应收明细表
    *
    * @param query 查询条件
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-个人开单项目应收明细表导出")
-  @PostMapping(value = "/billItem/statistics/info/export", name = "根据条件查询个人开单项目实收明细表导出")
+  @PostMapping(value = "/billItem/statistics/info/export", name = "根据条件查询个人开单项目应收明细表导出")
   public ResponseResult<T> billItemStatisticsInfoExport(
           HttpServletResponse response, @RequestBody @Validated BillItemInfoQuery query)
           throws IOException {
     billDetailBiz.billItemStatisticsInfoExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询个人开单项目实收明细表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillItemStatisticsInfoVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-个人开单项目实收明细表")
+  @PostMapping(value = "/billItem/receivable/statistics", name = "根据条件查询个人开单项目实收明细表")
+  public ResponseResult<PageInfo<BillItemReceivedStatisticsVO>> billItemReceivableStatistics(
+          @RequestBody @Validated BillItemInfoQuery query) {
+    PageInfo<BillItemReceivedStatisticsVO> pageInfo = billDetailBiz.billItemReceivedStatistics(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出个人开单项目实收明细表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-个人开单项目实收明细表")
+  @PostMapping(value = "/billItem/receivable/statistics/export", name = "根据条件导出个人开单项目实收明细表")
+  public ResponseResult<T> billItemReceivableStatisticsInfoExport(
+          HttpServletResponse response, @RequestBody @Validated BillItemInfoQuery query)
+          throws IOException {
+    billDetailBiz.billItemReceivedStatisticsExport(query, response);
     return ResponseUtil.success(null);
   }
 }
