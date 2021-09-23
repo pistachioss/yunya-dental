@@ -653,6 +653,7 @@
     <select id="listCardActive" resultType="com.yunya.feign.report.domain.vo.CardActiveVo">
         select
         `bp`.`name` as `patientName`,
+        `bp`.first_visit_date as firstTreatDate,
         `bc`.`card_number`,
         date_format(`bc`.`active_date`, '%Y-%m-%d') as `activeDate`,
         (select
