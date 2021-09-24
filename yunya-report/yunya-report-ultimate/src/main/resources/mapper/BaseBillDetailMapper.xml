@@ -3140,7 +3140,7 @@
         FROM
         base_bill_detail bbd
         <where>
-            bbd.item_type = 1
+            bbd.executor_id is null
             <if test="billIds != null and billIds.size > 0">
                 AND bbd.bill_id IN
                 <foreach collection="billIds" index="index" item="item" open="(" separator="," close=")">
