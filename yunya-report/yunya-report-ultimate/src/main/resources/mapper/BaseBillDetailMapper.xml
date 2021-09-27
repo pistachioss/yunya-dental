@@ -4327,8 +4327,8 @@
         bbd.quantity,
         bem.employee_name AS regDentistName,
         be.employee_name AS executorName,
-        (( bbd.quantity * bbd.price - bbd.discount_amount)/bb.actual_amount)*bbp.received_amount AS amount,
-        (( bbd.quantity * bbd.price - bbd.discount_amount)/bb.actual_amount) AS freePaymentAmount,
+        TRUNCATE(((bbd.quantity*bbd.price-bbd.discount_amount)/bb.actual_amount)*bbp.received_amount,2) AS amount,
+        TRUNCATE(((bbd.quantity*bbd.price-bbd.discount_amount)/bb.actual_amount),2) AS freePaymentAmount,
         if(bb.privilege_date=bbp.payee_date,bbd.coupon_workload,0) AS supplyWorkload,
         bp.NAME AS patientName,
         bp.patient_id AS patientId,
@@ -4341,7 +4341,7 @@
         bbp.received_amount-ifnull(bbpd.principal_amount,0) AS received_amount
         from base_bill_pay bbp
         left join (
-        select principal_amount,bill_pay_id from base_bill_pay_detail where type=2 and account_item_id in (23,26)
+        select sum(principal_amount) AS principal_amount,bill_pay_id from base_bill_pay_detail where type=2 and account_item_id in (23,26) group by bill_pay_id
         ) bbpd on bbp.bill_pay_id=bbpd.bill_pay_id
         ) bbp
         LEFT JOIN (
