@@ -2416,7 +2416,14 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       List<BillPayFreePayAmountVO> freePayAmounts = baseBillPayDetailBiz.findBillFreePayAmountList(billPayIds);
       if (StringHelper.isNotEmpty(freePayAmounts)) {
         Map<Integer, BigDecimal> freePaymentMap = freePayAmounts.stream().collect(toMap(BillPayFreePayAmountVO::getBillPayId, BillPayFreePayAmountVO::getFreePayAmount));
-        resultList.forEach(vo-> vo.setFreePaymentAmount(freePaymentMap.get(vo.getBillPayId())));
+        resultList.forEach(vo->{
+          BigDecimal free = vo.getFreePaymentAmount();
+          BigDecimal freeTotal = freePaymentMap.get(vo.getBillPayId());
+          if (free!=null && freeTotal!=null) {
+            free = free.multiply(freeTotal);
+          }
+          vo.setFreePaymentAmount(free);
+        });
       }
     }
     return new PageInfo<>(resultList);

@@ -4327,15 +4327,25 @@
         bbd.quantity,
         bem.employee_name AS regDentistName,
         be.employee_name AS executorName,
-        IFNULL(bbd.received_amount,0) AS amount,
-        bbd.coupon_workload AS supplyWorkload,
+        (( bbd.quantity * bbd.price - bbd.discount_amount)/bb.actual_amount)*bbp.received_amount AS amount,
+        (( bbd.quantity * bbd.price - bbd.discount_amount)/bb.actual_amount) AS freePaymentAmount,
+        if(bb.privilege_date=bbp.payee_date,bbd.coupon_workload,0) AS supplyWorkload,
         bp.NAME AS patientName,
         bp.patient_id AS patientId,
         bp.mobile,
         bo.abbreviation
-        FROM base_bill_pay bbp
+        FROM (
+        select bbp.bill_pay_id,
+        bbp.payee_date,
+        bbp.bill_id,
+        bbp.received_amount-ifnull(bbpd.principal_amount,0) AS received_amount
+        from base_bill_pay bbp
+        left join (
+        select principal_amount,bill_pay_id from base_bill_pay_detail where type=2 and account_item_id in (23,26)
+        ) bbpd on bbp.bill_pay_id=bbpd.bill_pay_id
+        ) bbp
         LEFT JOIN (
-            select bb.bill_id, bb.bill_date, bb.bill_num, bb.treatment_id, bb.patient_id from base_bill bb
+            select bill_id, bill_date, bill_num, treatment_id, patient_id, actual_amount,privilege_date from base_bill bb
             where bb.bill_date IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
