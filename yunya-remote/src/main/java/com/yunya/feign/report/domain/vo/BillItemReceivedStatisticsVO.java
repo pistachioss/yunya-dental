@@ -13,21 +13,27 @@ import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
 import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 
 /**
- * 简介: 个人开单项目应收金额及数量VO
+ * 简介: 个人开单项目实收金额统计VO
  *
  * @author: chenl
  * @date: 2021/05/17 14:26
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("个人开单项目应收金额及数量VO")
+@ApiModel("个人开单项目实收金额统计VO")
 @Data
 @ToString
-public class BillItemStatisticsInfoVO implements Serializable {
-  /** 门诊 */
-  @Excel(name = "门诊")
-  @ApiModelProperty("门诊")
+public class BillItemReceivedStatisticsVO implements Serializable {
+  @ApiModelProperty("账单收费id")
+  private Integer billPayId;
+  /** 收费门诊 */
+  @Excel(name = "收费门诊")
+  @ApiModelProperty("收费门诊")
   private String abbreviation;
+  /** 账单日期 */
+  @Excel(name = "收费日期")
+  @ApiModelProperty("收费日期")
+  private String payeeDate;
   /** 账单日期 */
   @Excel(name = "账单日期")
   @ApiModelProperty("账单日期")
@@ -52,10 +58,18 @@ public class BillItemStatisticsInfoVO implements Serializable {
   @Excel(name = "开单数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("开单数量")
   private Integer quantity;
-  /** 应收金额 */
-  @Excel(name = "应收金额",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty("应收金额")
+  /** 实收金额 */
+  @Excel(name = "实收金额",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("实收金额")
   private BigDecimal amount;
+  /** 免单支付 */
+  @Excel(name = "免单支付",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("免单支付")
+  private BigDecimal freePaymentAmount = BigDecimal.ZERO;
+  /** 补入工作量 */
+  @Excel(name = "补入工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("补入工作量")
+  private BigDecimal supplyWorkload;
   /** 执行人 */
   @Excel(name = "执行人")
   @ApiModelProperty("执行人")

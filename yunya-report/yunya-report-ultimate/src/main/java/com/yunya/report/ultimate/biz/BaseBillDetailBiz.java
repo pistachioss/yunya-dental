@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介: 账单开单详情业务层
@@ -53,6 +54,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   @Autowired private BaseBillMapper baseBillMapper;
   /** 收费记录 */
   @Autowired private BaseBillPayBiz baseBillPayBiz;
+  /** 收费明细记录 */
+  @Autowired private BaseBillPayDetailBiz baseBillPayDetailBiz;
   /** 账单收费明细 */
   @Autowired private BaseBillPayDetailMapper baseBillPayDetailMapper;
   /** 诊所基础信息 */
@@ -746,7 +749,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       Map<Integer, BigDecimal> billPayIdMap =
           resultList.stream()
               .collect(
-                  Collectors.toMap(
+                  toMap(
                       EmployeeFreepaymentWorkloadDetailVO::getBillPayId, v -> BigDecimal.ZERO));
       billIds =
           resultList.stream()
@@ -1290,7 +1293,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<BusinessGoalVO> goalVOS = clinicBaseServiceFeign.businessGoalList(query);
     if (StringHelper.isNotEmpty(goalVOS)) {
       return goalVOS.stream()
-          .collect(Collectors.toMap(BusinessGoalVO::getBelongId, BusinessGoalVO::getBusinessGoal));
+          .collect(toMap(BusinessGoalVO::getBelongId, BusinessGoalVO::getBusinessGoal));
     }
     return new HashMap<>(16);
   }
@@ -2051,7 +2054,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           Map<Integer, EmployeeFreepaymentWorkloadDetailVO> billPayIds =
                   resultList.stream()
                           .collect(
-                                  Collectors.toMap(
+                                  toMap(
                                           EmployeeFreepaymentWorkloadDetailVO::getBillPayId, Function.identity()));
           billIds =
                   resultList.stream()
@@ -2349,7 +2352,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-   * 根据条件查询个人开单项目实收明细表
+   * 根据条件查询个人开单项目应收明细表
    *
    * @param query 查询条件
    * @return PageInfo<BillItemStatisticsInfoVO>
@@ -2358,6 +2361,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
+    queryCategoryItem(query);
+    List<BillItemStatisticsInfoVO> resultList = mapper.billItemStatiticsInfo(query);
+    return new PageInfo<>(resultList);
+  }
+
+  private void queryCategoryItem(BillItemInfoQuery query) {
     Collection<Integer[]> items = query.getCategoryItems();
     if (StringHelper.isNotEmpty(items)) {
       Set<Integer> categoryIds = new HashSet<>();
@@ -2370,12 +2379,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       query.setCategoryIds(categoryIds);
       query.setItemIds(itemIds);
     }
-    List<BillItemStatisticsInfoVO> resultList = mapper.billItemStatiticsInfo(query);
-    return new PageInfo<>(resultList);
   }
 
   /**
-   * 根据条件查询个人开单项目实收明细表导出
+   * 根据条件查询个人开单项目应收明细表导出
    *
    * @param query 查询条件
    * @return
@@ -2386,6 +2393,46 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     List<BillItemStatisticsInfoVO> resultList = pageInfo.getList();
     ExcelUtil<BillItemStatisticsInfoVO> excelUtil = new ExcelUtil<>(BillItemStatisticsInfoVO.class);
+    String fileName =
+            excelUtil.getFileName(
+                    organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), "个人开单项目应收明细表");
+    excelUtil.exportExcel(response, resultList, "个人开单项目应收明细表", fileName);
+  }
+
+  /**
+   * 根据条件查询个人开单项目实收金额统计明细表
+   *
+   * @param query
+   * @return
+   */
+  public PageInfo<BillItemReceivedStatisticsVO> billItemReceivedStatistics(BillItemInfoQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    queryCategoryItem(query);
+    List<BillItemReceivedStatisticsVO> resultList = mapper.billItemReceivedStatistics(query);
+    if (StringHelper.isNotEmpty(resultList)) {
+      Set<Integer> billPayIds = resultList.stream().map(BillItemReceivedStatisticsVO::getBillPayId).collect(Collectors.toSet());
+      List<BillPayFreePayAmountVO> freePayAmounts = baseBillPayDetailBiz.findBillFreePayAmountList(billPayIds);
+      if (StringHelper.isNotEmpty(freePayAmounts)) {
+        Map<Integer, BigDecimal> freePaymentMap = freePayAmounts.stream().collect(toMap(BillPayFreePayAmountVO::getBillPayId, BillPayFreePayAmountVO::getFreePayAmount));
+        resultList.forEach(vo-> vo.setFreePaymentAmount(freePaymentMap.get(vo.getBillPayId())));
+      }
+    }
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出个人开单项目实收明细表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public void billItemReceivedStatisticsExport(BillItemInfoQuery query, HttpServletResponse response) throws IOException {
+    query.setWhetherPage(false);
+    List<BillItemReceivedStatisticsVO> resultList = billItemReceivedStatistics(query).getList();
+    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    ExcelUtil<BillItemReceivedStatisticsVO> excelUtil = new ExcelUtil<>(BillItemReceivedStatisticsVO.class);
     String fileName =
             excelUtil.getFileName(
                     organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), "个人开单项目实收明细表");

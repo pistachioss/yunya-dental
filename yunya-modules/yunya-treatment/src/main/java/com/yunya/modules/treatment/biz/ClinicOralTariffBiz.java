@@ -229,10 +229,10 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
    * @param form 修改参数
    */
   public void modify(ClinicOralTariffForm form) {
-    List<ClinicItemMemberPriceForm> memberPrices = form.getClinicItemMemberPrices();
+    /*List<ClinicItemMemberPriceForm> memberPrices = form.getClinicItemMemberPrices();
     if (StringHelper.isEmpty(memberPrices)) {
       throw new ClientServiceException("修改失败，门诊价目表会员卡价格不能为空！", PARAMETERS_IS_ILLEGAL);
-    }
+    }*/
     Integer oralTariffId = form.getOralTariffId();
     BaseOralTariff oralTariff = baseOralTariffMapper.selectByPrimaryKey(oralTariffId);
     if (null == oralTariff) {
@@ -262,30 +262,31 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
         mapper.updateByPrimaryKeySelective(resultData);
       }
     }
-
-    memberPrices.forEach(
-        memberPrice -> {
-          ClinicOralTariffMemberPrice clinicOralTariffMemberPrice =
-              new ClinicOralTariffMemberPrice();
-          clinicOralTariffMemberPrice.setClinicId(orgId);
-          clinicOralTariffMemberPrice.setOralTariffId(oralTariffId);
-          Integer memberTypeId = memberPrice.getMemberTypeId();
-          clinicOralTariffMemberPrice.setMemberTypeId(memberTypeId);
-          BigDecimal discountPrice = memberPrice.getDiscountPrice();
-          ClinicOralTariffMemberPrice resultClinicOralTariffMemberPrice =
-              clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
-          clinicOralTariffMemberPrice.setDiscountPrice(discountPrice);
-          if (null != resultClinicOralTariffMemberPrice) {
-            clinicOralTariffMemberPrice.setUpdId(userId);
-            clinicOralTariffMemberPrice.setUpdName(name);
-            clinicOralTariffMemberPrice.setId(resultClinicOralTariffMemberPrice.getId());
-            clinicOralTariffMemberPriceBiz.updateSelectiveById(clinicOralTariffMemberPrice);
-          } else {
-            clinicOralTariffMemberPrice.setCrtId(userId);
-            clinicOralTariffMemberPrice.setCrtName(name);
-            clinicOralTariffMemberPriceBiz.insertSelective(clinicOralTariffMemberPrice);
-          }
-        });
+    List<ClinicItemMemberPriceForm> memberPrices = form.getClinicItemMemberPrices();
+    if (StringHelper.isNotEmpty(memberPrices)) {
+      ClinicOralTariffMemberPrice clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
+      memberPrices.forEach(
+          memberPrice -> {
+            clinicOralTariffMemberPrice.setClinicId(orgId);
+            clinicOralTariffMemberPrice.setOralTariffId(oralTariffId);
+            Integer memberTypeId = memberPrice.getMemberTypeId();
+            clinicOralTariffMemberPrice.setMemberTypeId(memberTypeId);
+            BigDecimal discountPrice = memberPrice.getDiscountPrice();
+            ClinicOralTariffMemberPrice resultClinicOralTariffMemberPrice =
+                clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
+            clinicOralTariffMemberPrice.setDiscountPrice(discountPrice);
+            if (null != resultClinicOralTariffMemberPrice) {
+              clinicOralTariffMemberPrice.setUpdId(userId);
+              clinicOralTariffMemberPrice.setUpdName(name);
+              clinicOralTariffMemberPrice.setId(resultClinicOralTariffMemberPrice.getId());
+              clinicOralTariffMemberPriceBiz.updateSelectiveById(clinicOralTariffMemberPrice);
+            } else {
+              clinicOralTariffMemberPrice.setCrtId(userId);
+              clinicOralTariffMemberPrice.setCrtName(name);
+              clinicOralTariffMemberPriceBiz.insertSelective(clinicOralTariffMemberPrice);
+            }
+          });
+    }
   }
 
   /**
