@@ -2421,6 +2421,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           BigDecimal freeTotal = freePaymentMap.get(vo.getBillPayId());
           if (free!=null && freeTotal!=null) {
             free = free.multiply(freeTotal);
+          } else {
+            free = BigDecimal.ZERO;
           }
           vo.setFreePaymentAmount(free);
         });
