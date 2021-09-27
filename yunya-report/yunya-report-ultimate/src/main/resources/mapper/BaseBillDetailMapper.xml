@@ -4327,7 +4327,7 @@
         bbd.quantity,
         bem.employee_name AS regDentistName,
         be.employee_name AS executorName,
-        IFNULL(bbp.received_amount,0) AS amount,
+        IFNULL(bbd.received_amount,0) AS amount,
         bbd.coupon_workload AS supplyWorkload,
         bp.NAME AS patientName,
         bp.patient_id AS patientId,
