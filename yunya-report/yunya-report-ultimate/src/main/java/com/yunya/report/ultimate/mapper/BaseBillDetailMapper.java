@@ -424,10 +424,18 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") DataStatisticsQuery query);
 
   /**
-   * 根据条件查询个人开单项目实收明细表
+   * 根据条件查询个人开单项目应收明细表
    *
    * @param query 查询条件
    * @return PageInfo<BillItemStatisticsInfoVO>
    */
   List<BillItemStatisticsInfoVO> billItemStatiticsInfo(@Param("query")BillItemInfoQuery query);
+
+  /**
+   * 根据条件查询个人开单项目实收金额统计明细表
+   *
+   * @param query
+   * @return
+   */
+  List<BillItemReceivedStatisticsVO> billItemReceivedStatistics(@Param("query") BillItemInfoQuery query);
 }

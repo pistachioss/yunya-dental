@@ -275,6 +275,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     baseBillDetail.setDiscountAmount(new BigDecimal("0"));
     baseBillDetail.setCouponWorkload(new BigDecimal("0"));
     baseBillDetail.setReceivedAmount(new BigDecimal("0"));
+    baseBillDetail.setRemark(detail.getRemarks());
     OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
     detailPayRecord.setOrderDetailId(detailId);
     detailPayRecord.setInservice(true);
@@ -423,6 +424,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       baseBillDetail.setDiscountAmount(new BigDecimal("0"));
       baseBillDetail.setCouponWorkload(new BigDecimal("0"));
       baseBillDetail.setReceivedAmount(new BigDecimal("0"));
+      baseBillDetail.setRemark(detail.getRemarks());
       billDetails.add(baseBillDetail);
     }
     return billDetails;

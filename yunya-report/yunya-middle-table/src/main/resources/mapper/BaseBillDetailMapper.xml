@@ -17,6 +17,7 @@
         <result column="quantity" property="quantity" jdbcType="INTEGER"/>
         <result column="price" property="price" jdbcType="DECIMAL"/>
         <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!-- 批量插入中间表订单明细 -->
@@ -33,14 +34,16 @@
         source_type,
         quantity,
         price,
-        received_amount
+        received_amount,
+        remark
         )
         VALUES
         <foreach collection="baseBillDetails" item="item" separator=",">
             (#{item.billDetailId}, #{item.orgId}, #{item.billId},
             #{item.discountAmount}, #{item.couponWorkload}, #{item.executorId},
             #{item.itemId}, #{item.itemType}, #{item.sourceType},
-            #{item.quantity}, #{item.price}, #{item.receivedAmount})
+            #{item.quantity}, #{item.price}, #{item.receivedAmount},
+            #{item.remark})
         </foreach>
     </insert>
 

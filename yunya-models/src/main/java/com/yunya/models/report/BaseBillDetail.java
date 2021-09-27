@@ -79,6 +79,11 @@ public class BaseBillDetail {
     private BigDecimal receivedAmount;
 
     /**
+     * 开单备注
+     */
+    private String remark;
+
+    /**
      * 获取账单明细ID
      *
      * @return bill_detail_id - 账单明细ID
@@ -292,5 +297,13 @@ public class BaseBillDetail {
      */
     public void setReceivedAmount(BigDecimal receivedAmount) {
         this.receivedAmount = receivedAmount;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 }
