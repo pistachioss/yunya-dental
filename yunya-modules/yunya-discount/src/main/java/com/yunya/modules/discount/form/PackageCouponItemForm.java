@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.persistence.Id;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -16,78 +17,57 @@ import java.util.Date;
  */
 @Data
 public class PackageCouponItemForm {
-    /**
-     * 主键
-     */
-    @Id
-    private Integer id;
+  /** 主键 */
+  @Id private Integer id;
 
-    /**
-     * 优惠券id
-     */
-    @NotNull(message = "优惠券id不能为空")
-    @ApiModelProperty("优惠券id")
-    private Integer couponId;
+  /** 优惠券id */
+  @NotNull(message = "优惠券id不能为空")
+  @ApiModelProperty("优惠券id")
+  private Integer couponId;
 
-    /**
-     * 类型 0:基础价目表,1:基础商品表
-     */
-    @NotNull(message = "项目类型不能为空")
-    @ApiModelProperty("项目类型  0:基础价目表,1:基础商品表")
-    private Integer type;
+  /** 类型 0:基础价目表,1:基础商品表 */
+  @NotNull(message = "项目类型不能为空")
+  @ApiModelProperty("项目类型  0:基础价目表,1:基础商品表")
+  private Integer type;
 
-    /**
-     * 明细ID
-     */
-    @NotNull(message = "明细ID不能为空")
-    @ApiModelProperty("明细ID")
-    private Integer itemId;
+  /** 明细ID */
+  @NotNull(message = "明细ID不能为空")
+  @ApiModelProperty("明细ID")
+  private Integer itemId;
 
-    /**
-     * 售出单价
-     */
-    @ApiModelProperty("售出单价")
-    @NotNull(message = "售出单价不能为空")
-    private BigDecimal saleUnitPrice;
+  /** 售出单价 */
+  @ApiModelProperty("售出单价")
+  @NotNull(message = "售出单价不能为空")
+  @Min(value = 0, message = "售出单价不能小于0")
+  private BigDecimal saleUnitPrice;
 
-    /**
-     * 售出金额
-     */
-    @ApiModelProperty("售出金额")
-    @NotNull(message = "售出金额不能为空")
-    private BigDecimal saleAmount;
+  /** 售出金额 */
+  @ApiModelProperty("售出金额")
+  @NotNull(message = "售出金额不能为空")
+  @Min(value = 0, message = "售出金额不能小于0")
+  private BigDecimal saleAmount;
 
-    /**
-     * 数量
-     */
-    @ApiModelProperty("数量")
-    @NotNull(message = "数量不能为空")
-    private Integer count;
+  /** 数量 */
+  @ApiModelProperty("数量")
+  @NotNull(message = "数量不能为空")
+  @Min(value = 0, message = "数量不能小于0")
+  private Integer count;
 
-    /**
-     * 单个明细工作量
-     */
-    @ApiModelProperty("单个明细工作量")
-    @NotNull(message = "单个明细工作量不能为空")
-    private Integer workloadRate;
+  /** 单个明细工作量 */
+  @ApiModelProperty("单个明细工作量")
+  @NotNull(message = "单个明细工作量不能为空")
+  @Min(value = 0, message = "补入工作量不能小于0")
+  private BigDecimal workloadRate;
 
-    /**
-     * 创建人
-     */
-    private Integer crtId;
+  /** 创建人 */
+  private Integer crtId;
 
-    /**
-     * 创建时间
-     */
-    private Date crtTime;
+  /** 创建时间 */
+  private Date crtTime;
 
-    /**
-     * 更新人
-     */
-    private Integer updId;
+  /** 更新人 */
+  private Integer updId;
 
-    /**
-     * 更新时间
-     */
-    private Date updTime;
+  /** 更新时间 */
+  private Date updTime;
 }
