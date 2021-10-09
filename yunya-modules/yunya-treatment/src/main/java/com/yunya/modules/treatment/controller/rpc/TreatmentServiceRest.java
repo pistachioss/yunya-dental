@@ -546,4 +546,15 @@ public class TreatmentServiceRest {
     criteria.andEqualTo("inservice",1);
     return treatmentRecordBiz.selectCountByExample(example);
   }
+
+  /**
+   * 根据多个商品表ID查询商品表名称
+   *
+   * @param ids 字符串ID
+   * @return String
+   */
+  @RequestMapping(value = "/oral/name", method = RequestMethod.POST)
+  public String findBaseOralNamesByIds(@RequestBody @NotEmpty String[] ids) {
+    return baseOralTariffBiz.findBaseOralNamesByIds(ids);
+  }
 }

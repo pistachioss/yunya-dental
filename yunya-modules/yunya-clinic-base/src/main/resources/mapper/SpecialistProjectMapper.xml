@@ -8,6 +8,7 @@
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="name" property="name" jdbcType="VARCHAR"/>
         <result column="tariff_ids" property="tariffIds" jdbcType="VARCHAR"/>
+        <result column="oral_ids" property="oralIds" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
@@ -24,6 +25,7 @@
         sp.id,
         sp.`name` AS specialistProjectName,
         sp.tariff_ids AS tariffItemIds
+        sp.oral_ids AS oralIds
         FROM
         specialist_project sp
         <where>

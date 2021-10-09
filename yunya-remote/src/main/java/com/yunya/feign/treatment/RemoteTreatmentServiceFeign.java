@@ -417,4 +417,14 @@ public interface RemoteTreatmentServiceFeign {
    */
   @GetMapping("/rpc/{patientId}/treatment/times")
   int patientTreatmentTimes(@PathVariable(value = "patientId") Integer patientId);
+
+
+  /**
+   * 根据多个商品表ID查询商品表名称
+   *
+   * @param ids 字符串ID
+   * @return String
+   */
+  @RequestMapping(value = "/rpc/oral/name", method = RequestMethod.POST)
+  String findBaseOralNamesByIds(@RequestBody @NotEmpty String[] ids);
 }

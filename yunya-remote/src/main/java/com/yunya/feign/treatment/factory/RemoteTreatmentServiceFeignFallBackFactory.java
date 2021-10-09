@@ -239,4 +239,9 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   public int patientTreatmentTimes(Integer patientId) {
     return 0;
   }
+
+  @Override
+  public String findBaseOralNamesByIds(@NotEmpty String[] ids) {
+    return null;
+  }
 }
