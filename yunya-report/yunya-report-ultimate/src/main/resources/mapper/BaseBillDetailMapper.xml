@@ -1174,8 +1174,8 @@
         bdp.categoryId,
         bdp.itemType AS categoryType,
         bdp.categoryName,
-        ifnull(sum(bdp.totalOriginalAmount),0) AS totalOriginalAmount,
-        sum(bdp.totalOriginalAmount) - sum(bdp.discountAmount) as totalActualAmount,
+        0 AS totalOriginalAmount,
+        0 AS totalActualAmount,
         ifnull(sum(bdp.discountAmount),0) as totalDiscountAmount,
         ifnull(SUM(bdp.supplementWorkload),0) AS totalCouponAmount
         from (
