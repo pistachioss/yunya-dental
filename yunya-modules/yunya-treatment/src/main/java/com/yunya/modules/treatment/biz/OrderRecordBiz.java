@@ -116,21 +116,22 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (StringHelper.isEmpty(assistants)) {
       assistants = new ArrayList<>();
     }
-    //处理门诊价目表价格
+    // 处理门诊价目表价格
     if (StringHelper.isNotEmpty(orderDetails)) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
       if (StringHelper.isNotEmpty(memberTypes)) {
         orderDetails.forEach(
-                tariffVO -> {
-                  Map<Integer, Object> memberPrices = new HashMap<>(16);
-                  if(tariffVO.getType()==0){
-                    // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
-                    setClinicTariffMemberPrice(memberPrices, memberTypes, orderRecord.getOrgId(), tariffVO);
-                  }else{
-                    setClinicOralTariffMemberPrice(memberPrices, memberTypes, orderRecord.getOrgId(), tariffVO);
-                  }
-
-                });
+            tariffVO -> {
+              Map<Integer, Object> memberPrices = new HashMap<>(16);
+              if (tariffVO.getType() == 0) {
+                // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
+                setClinicTariffMemberPrice(
+                    memberPrices, memberTypes, orderRecord.getOrgId(), tariffVO);
+              } else {
+                setClinicOralTariffMemberPrice(
+                    memberPrices, memberTypes, orderRecord.getOrgId(), tariffVO);
+              }
+            });
       }
     }
     resultData.setOrderDetails(orderDetails);
@@ -147,10 +148,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @param tariffVO 门诊商品项目信息
    */
   private void setClinicOralTariffMemberPrice(
-          Map<Integer, Object> memberPrices,
-          List<MemberType> memberTypes,
-          Integer orgId,
-          OrderDetailVO tariffVO) {
+      Map<Integer, Object> memberPrices,
+      List<MemberType> memberTypes,
+      Integer orgId,
+      OrderDetailVO tariffVO) {
     ClinicOralTariffMemberPrice clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
     clinicOralTariffMemberPrice.setClinicId(orgId);
     Integer oralTariffId = tariffVO.getBillingItemId();
@@ -160,23 +161,22 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       BigDecimal memberPrice;
       clinicOralTariffMemberPrice.setMemberTypeId(memberType.getId());
       ClinicOralTariffMemberPrice memberPriceResult =
-              clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
+          clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
       if (null != memberPriceResult) {
         memberTypeId = memberPriceResult.getMemberTypeId();
         memberPrice = memberPriceResult.getDiscountPrice();
       } else {
         memberTypeId = memberType.getId();
         memberPrice =
-                (tariffVO
-                        .getPrice()
-                        .multiply(BigDecimal.valueOf(memberType.getRate()))
-                        .divide(BigDecimal.valueOf(100), 2));
+            (tariffVO
+                .getPrice()
+                .multiply(BigDecimal.valueOf(memberType.getRate()))
+                .divide(BigDecimal.valueOf(100), 2));
       }
       memberPrices.put(memberTypeId, memberPrice.setScale(2, BigDecimal.ROUND_HALF_UP));
     }
     tariffVO.setMemberPrices(memberPrices);
   }
-
 
   /**
    * 设置门诊价目表会员价
@@ -187,10 +187,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @param tariffVO 门诊价目表信息
    */
   private void setClinicTariffMemberPrice(
-          Map<Integer, Object> memberPrices,
-          List<MemberType> memberTypes,
-          Integer orgId,
-          OrderDetailVO tariffVO) {
+      Map<Integer, Object> memberPrices,
+      List<MemberType> memberTypes,
+      Integer orgId,
+      OrderDetailVO tariffVO) {
     ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
     clinicTariffMemberPrice.setClinicId(orgId);
     clinicTariffMemberPrice.setTariffId(tariffVO.getBillingItemId());
@@ -199,29 +199,25 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       BigDecimal memberPrice;
       clinicTariffMemberPrice.setMemberTypeId(memberType.getId());
       ClinicTariffMemberPrice memberPriceResult =
-              clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
+          clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
       if (null != memberPriceResult) {
         memberTypeId = memberPriceResult.getMemberTypeId();
         memberPrice = memberPriceResult.getDiscountPrice().setScale(2, BigDecimal.ROUND_HALF_UP);
       } else {
         memberTypeId = memberType.getId();
         memberPrice =
-                (tariffVO
-                        .getPrice()
-                        .multiply(BigDecimal.valueOf(memberType.getRate()))
-                        .divide(BigDecimal.valueOf(100), 2))
-                        .setScale(2, BigDecimal.ROUND_HALF_UP);
+            (tariffVO
+                    .getPrice()
+                    .multiply(BigDecimal.valueOf(memberType.getRate()))
+                    .divide(BigDecimal.valueOf(100), 2))
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
       }
       memberPrices.put(memberTypeId, memberPrice);
     }
     // 设置价格精度小数点后两位四舍五入，没有在上个方法中设置精度是为了保证会员价计算精确
-//    tariffVO.setPrice(tariffVO.getPrice().setScale(2, BigDecimal.ROUND_HALF_UP));
+    //    tariffVO.setPrice(tariffVO.getPrice().setScale(2, BigDecimal.ROUND_HALF_UP));
     tariffVO.setMemberPrices(memberPrices);
   }
-
-
-
-
 
   /**
    * 暂存开单信息
@@ -447,7 +443,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       throw new ClientServiceException("解锁失败，当前账单处于收费中，与相关工作人员联系并关闭收费后可继续解锁账单！", SAME_DATA_EXIST);
     }
 
-    redisUtils.set(orderKey, orderRecordId, 30);
+    redisUtils.set(orderKey, orderRecordId, 600);
     orderRecord.setStatus((byte) 0);
     orderRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     orderRecord.setUpdName(BaseContextHandler.getName());
