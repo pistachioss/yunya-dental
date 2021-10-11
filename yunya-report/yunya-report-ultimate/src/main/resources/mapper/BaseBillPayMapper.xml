@@ -1951,7 +1951,8 @@
 
     <!-- 查询订单支付记录 -->
     <select id="findBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
-        select DISTINCT bbp.bill_id billId,bbp.bill_pay_id billPayId,bbp.received_amount receivedAmount  from base_bill_pay bbp
+        select DISTINCT bbp.bill_id billId,bbp.bill_pay_id billPayId,bbp.received_amount receivedAmount from
+        base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
         <if test="itemIds != null">
@@ -1980,10 +1981,10 @@
     <!-- 查询免单订单支付记录 -->
     <select id="findMdBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
         select DISTINCT
-            bbpd.bill_pay_detail_record_id billPayDetailRecordId,
-            bbp.bill_id billId,
-            bbp.bill_pay_id billPayId,
-            bbpd.principal_amount + bbpd.bonus_amount receivedAmount
+        bbpd.bill_pay_detail_record_id billPayDetailRecordId,
+        bbp.bill_id billId,
+        bbp.bill_pay_id billPayId,
+        bbpd.principal_amount + bbpd.bonus_amount receivedAmount
         from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
@@ -2012,7 +2013,8 @@
 
     <!-- 根据订单id查询支付记录 -->
     <select id="selectBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
-        select DISTINCT bbp.bill_id billId,bbp.bill_pay_id billPayId,bbp.received_amount receivedAmount from base_bill_pay bbp
+        select DISTINCT bbp.bill_id billId,bbp.bill_pay_id billPayId,bbp.received_amount receivedAmount from
+        base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
         <if test=" billIdList != null and billIdList.size() > 0">
@@ -2040,7 +2042,8 @@
 
     <!-- 根据订单id查询免单支付记录 -->
     <select id="selectMdBaseBillPayInfoList" resultType="com.yunya.models.report.BaseBillPay">
-        select DISTINCT bbpd.bill_pay_detail_record_id billPayDetailRecordId,bbp.bill_id billId,bbp.bill_pay_id billPayId,bbpd.principal_amount + bbpd.bonus_amount receivedAmount from base_bill_pay bbp
+        select DISTINCT bbpd.bill_pay_detail_record_id billPayDetailRecordId,bbp.bill_id billId,bbp.bill_pay_id
+        billPayId,bbpd.principal_amount + bbpd.bonus_amount receivedAmount from base_bill_pay bbp
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
         <if test=" billIdList != null and billIdList.size() > 0">
@@ -2094,28 +2097,28 @@
         FROM
         base_bill_pay bbp
         LEFT JOIN (
-            SELECT
-            bb.org_id,
-            bb.bill_id,
-            bb.bill_date,
-            bb.actual_amount
-            FROM
-            base_bill bb
-            <where>
-                AND bb.bill_date IS NOT NULL
-                AND bb.actual_amount &gt; 0
-                <if test="query.orgIds != null and query.orgIds.length > 0">
-                    AND bb.org_id IN
-                    <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                </if>
-            </where>
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date,
+        bb.actual_amount
+        FROM
+        base_bill bb
+        <where>
+            AND bb.bill_date IS NOT NULL
+            AND bb.actual_amount &gt; 0
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                AND bb.org_id IN
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
         ) bb ON bbp.bill_id = bb.bill_id
         LEFT JOIN (
-            SELECT bill_pay_id,IFNULL(SUM(principal_amount),0) AS freePayAmount FROM base_bill_pay_detail
-            WHERE account_item_id IN (23,26) AND type=2
-            GROUP BY bill_pay_id
+        SELECT bill_pay_id,IFNULL(SUM(principal_amount),0) AS freePayAmount FROM base_bill_pay_detail
+        WHERE account_item_id IN (23,26) AND type=2
+        GROUP BY bill_pay_id
         ) bbpd ON bbpd.bill_pay_id=bbp.bill_pay_id
         <where>
             AND bbp.received_amount &gt; 0
@@ -2182,36 +2185,36 @@
         FROM (
 
         SELECT
-        IFNULL( bbp.received_amount , 0 )  receivedAmount
+        IFNULL( bbp.received_amount , 0 ) receivedAmount
         from base_bill_pay bbp
         join (
-            select
-            bb.bill_id
-            from
-            base_bill_pay bbp
-            join base_bill bb 	 on bb.bill_id = bbp.bill_id
-            join base_patient bp on bp.patient_id = bb.patient_id
-            where
-            bp.origin_id = #{form.activityIds}
-            and bp.origin_type = 3
-            <if test="query.startDate != null and query.startDate != ''">
-                AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
-            </if>
-            <if test="query.endDate != null and query.endDate != ''">
-                AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
-            </if>
-            GROUP BY bb.bill_id
-            ) t   on t.bill_id = bbp.bill_id
-            join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
+        select
+        bb.bill_id
+        from
+        base_bill_pay bbp
+        join base_bill bb on bb.bill_id = bbp.bill_id
+        join base_patient bp on bp.patient_id = bb.patient_id
+        where
+        bp.origin_id = #{form.activityIds}
+        and bp.origin_type = 3
+        <if test="query.startDate != null and query.startDate != ''">
+            AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+            AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+        </if>
+        GROUP BY bb.bill_id
+        ) t on t.bill_id = bbp.bill_id
+        join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
 
-            <if test="query.startDate != null and query.startDate != ''">
-                AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
-            </if>
+        <if test="query.startDate != null and query.startDate != ''">
+            AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+        </if>
 
-            <if test="query.endDate != null and query.endDate != ''">
-                AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
-            </if>
+        <if test="query.endDate != null and query.endDate != ''">
+            AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+        </if>
 
         GROUP BY bbp.bill_pay_id
         ) t
@@ -2252,12 +2255,12 @@
         WHEN bbpd.account_item_id = 26 THEN
         bbpd.principal_amount ELSE 0
         END
-        )  AS freePayment,
+        ) AS freePayment,
         null as refundAmount
 
         from
         base_bill_pay bbp
-        join base_bill bb 	 on bb.bill_id = bbp.bill_id
+        join base_bill bb on bb.bill_id = bbp.bill_id
         join base_patient bp on bp.patient_id = bb.patient_id
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
 
@@ -2288,7 +2291,7 @@
         br.refund_amount refundAmount
         from base_refund br
         join base_patient bp on bp.patient_id = br.patient_id
-        join base_bill bb 	 on bb.bill_id = br.bill_id
+        join base_bill bb on bb.bill_id = br.bill_id
         where
         bp.origin_id = #{query.activityIds}
         and bp.origin_type = 3
@@ -2307,14 +2310,14 @@
         FROM (
 
         SELECT
-        IFNULL( bbpd.principal_amount + bbpd.bonus_amount , 0 )  receivedAmount
+        IFNULL( bbpd.principal_amount + bbpd.bonus_amount , 0 ) receivedAmount
         from base_bill_pay bbp
         join (
         select
         bb.bill_id
         from
         base_bill_pay bbp
-        join base_bill bb 	 on bb.bill_id = bbp.bill_id
+        join base_bill bb on bb.bill_id = bbp.bill_id
         join base_patient bp on bp.patient_id = bb.patient_id
         where
         bp.origin_id = #{form.activityIds}
@@ -2326,7 +2329,7 @@
             AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
         </if>
         GROUP BY bb.bill_id
-        ) t   on t.bill_id = bbp.bill_id
+        ) t on t.bill_id = bbp.bill_id
         join base_bill_pay_detail bbpd on bbpd.bill_pay_id = bbp.bill_pay_id
         where 1 = 1
 

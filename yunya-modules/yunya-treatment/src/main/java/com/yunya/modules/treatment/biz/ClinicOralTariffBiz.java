@@ -454,4 +454,13 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
       Integer oralTariffId, Integer userId, String userName) {
     mapper.disableClinicOralTariffByTariffId(oralTariffId, userId, userName);
   }
+
+  /**
+   * 批量插入门诊商品价目表
+   *
+   * @param list 商品列表
+   */
+  public void batchInsert(List<ClinicOralTariff> list) {
+    mapper.batchInsert(list);
+  }
 }

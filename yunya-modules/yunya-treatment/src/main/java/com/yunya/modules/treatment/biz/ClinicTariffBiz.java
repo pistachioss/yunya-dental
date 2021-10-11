@@ -476,4 +476,13 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
   public void disableClinicTariffByTariffId(Integer tariffId, Integer userId, String userName) {
     mapper.disableClinicTariffByTariffId(tariffId, userId, userName);
   }
+
+  /**
+   * 批量插入门诊价目表列表
+   *
+   * @param clinicTariffs 门诊价目表列表
+   */
+  public void batchInsert(List<ClinicTariff> clinicTariffs) {
+    mapper.batchInsert(clinicTariffs);
+  }
 }

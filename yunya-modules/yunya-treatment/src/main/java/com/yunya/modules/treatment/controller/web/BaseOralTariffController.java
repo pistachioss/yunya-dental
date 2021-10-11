@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.form.BaseOralTariffForm;
+import com.yunya.feign.treatment.domain.form.TariffUnitePriceForm;
 import com.yunya.feign.treatment.domain.model.BaseOralTariffModel;
 import com.yunya.feign.treatment.domain.query.BaseOralTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffInfoVO;
@@ -15,7 +16,14 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -23,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * 描述: 商品项目管理控制器
  *
- * @author GaoLuding
+ * @author chow
  * @create 2020-05-19 13:28
  */
 @Api(tags = "商品项目管理")
@@ -42,7 +50,7 @@ public class BaseOralTariffController {
    * 根据ID获取商品项目信息
    *
    * @param id 商品项目ID
-   * @return
+   * @return R
    */
   @ApiOperation("根据ID(商品项目ID)获取商品项目信息(包含门诊商品项目价格)")
   @GetMapping("/one/{id}")
@@ -54,7 +62,8 @@ public class BaseOralTariffController {
   /**
    * 根据条件查询商品项目列表
    *
-   * @return
+   * @param queryForm 请求参数
+   * @return R
    */
   @ApiOperation("根据条件查询商品项目列表(可分页)")
   @PostMapping("/list")
@@ -68,7 +77,7 @@ public class BaseOralTariffController {
    * 根据商品表分类ID获取当前商品表编号
    *
    * @param oralTariffCategoryId 商品表分类ID
-   * @return
+   * @return R
    */
   @ApiOperation("根据商品表分类ID获取当前商品表编号")
   @GetMapping(value = "/generate/number/{oralTariffCategoryId}", name = "根据商品表分类ID获取当前商品表编号")
@@ -82,7 +91,7 @@ public class BaseOralTariffController {
    * 新增商品项目
    *
    * @param model 新增参数
-   * @return
+   * @return R
    */
   @RepeatSubmit
   @CurrentUser
@@ -97,7 +106,7 @@ public class BaseOralTariffController {
    * 修改商品项目
    *
    * @param form 修改参数
-   * @return
+   * @return R
    */
   @CurrentUser
   @ApiOperation("修改公司商品")
@@ -118,6 +127,20 @@ public class BaseOralTariffController {
   @DeleteMapping("/delete/{id}")
   public ResponseResult<T> delete(@PathVariable(value = "id") Integer id) {
     baseOralTariffBiz.delete(id);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 统一设置门诊商品价格
+   *
+   * @param form 价目表信息
+   * @return R
+   */
+  @CurrentUser
+  @ApiOperation("统一设置商品价格")
+  @PostMapping(value = "/unite/price", name = "统一设置价目表（商品）价格")
+  public ResponseResult<T> uniteOralTariffPrice(@RequestBody @Validated TariffUnitePriceForm form) {
+    baseOralTariffBiz.uniteOralTariffPrice(form);
     return ResponseUtil.success(null);
   }
 

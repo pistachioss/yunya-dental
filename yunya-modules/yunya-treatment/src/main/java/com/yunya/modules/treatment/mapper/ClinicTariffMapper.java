@@ -89,4 +89,11 @@ public interface ClinicTariffMapper extends Mapper<ClinicTariff> {
       @Param("tariffId") Integer tariffId,
       @Param("userId") Integer userId,
       @Param("userName") String userName);
+
+  /**
+   * 批量插入门诊价目表列表
+   *
+   * @param list 门诊价目表列表
+   */
+  void batchInsert(@Param("list") List<ClinicTariff> list);
 }
