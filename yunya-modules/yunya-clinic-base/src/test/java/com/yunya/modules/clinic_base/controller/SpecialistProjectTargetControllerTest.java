@@ -1,15 +1,23 @@
 package com.yunya.modules.clinic_base.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.clinic_base.domain.form.SpecialistProjectForm;
+import com.yunya.feign.clinic_base.domain.model.SpecialistProjectModel;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectTargetModel;
 import com.yunya.feign.clinic_base.domain.model.TargetOfMonthModel;
+import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectTargetQuery;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectWorkGoalQuery;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectWorkGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
 import com.yunya.feign.report.domain.query.SpecialistProjectTargetCompletedInfoQuery;
 import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.modules.clinic_base.biz.SpecialistProjectBiz;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +42,12 @@ import java.util.Set;
 public class SpecialistProjectTargetControllerTest {
 
   @Autowired private SpecialistProjectTargetController specialistProjectTargetController;
+  @Autowired private SpecialistProjectBiz specialistProjectBiz;
+
+  @Before
+  public void before() {
+    BaseContextHandler.setUserID("659");
+  }
 
   @Test
   public void save() {
@@ -98,5 +112,27 @@ public class SpecialistProjectTargetControllerTest {
     ResponseResult<List<SpecialistProjectCompletedInfoVO>> result =
         specialistProjectTargetController.specialistProjectTargetCompletedInfo(query);
     System.out.println(result);
+  }
+
+  @Test
+  public void testFind() {
+    String param = "{\"specialistProjectName\":null,\"pageNum\":1,\"pageSize\":50,\"whetherPage\":true}";
+    SpecialistProjectQuery query = JSONObject.parseObject(param, SpecialistProjectQuery.class);
+    PageInfo<SpecialistProjectVO> result = specialistProjectBiz.findSpecialistProjectList(query);
+    System.out.println(JSONObject.toJSON(result));
+  }
+
+  @Test
+  public void testAdd() {
+    String param = "{\"specialistProjectName\":\"测试商品表1\",\"tariffItemIds\":[201,260,,308,486],\"oralIds\":[1,4,65,4]}";
+    SpecialistProjectModel model = JSONObject.parseObject(param,SpecialistProjectModel.class);
+    specialistProjectBiz.save(model);
+  }
+
+  @Test
+  public void testEdit() {
+    String param = "{\"id\":27,\"specialistProjectName\":\"洁牙1\",\"tariffItemIds\":[201,202,203,204,408,410,424,425,427,679,707,709,710,711,712,727,730,733,205,235,236,237,238,239,240,241,242,243,794,260,261,279,280,301,302,303,304,305,306,307,308,486,399,421,708]}";
+    SpecialistProjectForm model = JSONObject.parseObject(param,SpecialistProjectForm.class);
+    specialistProjectBiz.updateSpecialistProject(27, model);
   }
 }

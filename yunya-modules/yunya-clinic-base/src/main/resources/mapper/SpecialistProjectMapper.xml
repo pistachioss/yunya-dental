@@ -24,7 +24,7 @@
         SELECT
         sp.id,
         sp.`name` AS specialistProjectName,
-        sp.tariff_ids AS tariffItemIds
+        sp.tariff_ids AS tariffItemIds,
         sp.oral_ids AS oralIds
         FROM
         specialist_project sp

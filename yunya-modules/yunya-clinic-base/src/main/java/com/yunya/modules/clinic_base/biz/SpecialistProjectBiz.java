@@ -104,9 +104,13 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
     Joiner joiner = Joiner.on(',');
     if (StringHelper.isNotEmpty(tariffItemIds)) {
       entity.setTariffIds(joiner.join(tariffItemIds));
+    } else {
+      entity.setTariffIds(null);
     }
     if (StringHelper.isNotEmpty(oralIds)) {
       entity.setOralIds(joiner.join(oralIds));
+    } else {
+      entity.setOralIds(null);
     }
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
@@ -167,15 +171,19 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
     Joiner joiner = Joiner.on(',');
     if (StringHelper.isNotEmpty(tariffItemIds)) {
       specialistProject.setTariffIds(joiner.join(tariffItemIds));
+    } else {
+      specialistProject.setTariffIds(null);
     }
     if (StringHelper.isNotEmpty(oralIds)) {
       specialistProject.setOralIds(joiner.join(oralIds));
+    } else {
+      specialistProject.setOralIds(null);
     }
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     specialistProject.setUpdId(userId);
     specialistProject.setUpdName(name);
-    mapper.updateByPrimaryKeySelective(specialistProject);
+    mapper.updateByPrimaryKey(specialistProject);
   }
 
   /**
