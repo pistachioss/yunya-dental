@@ -124,15 +124,15 @@ public class SpecialistProjectTargetControllerTest {
 
   @Test
   public void testAdd() {
-    String param = "{\"specialistProjectName\":\"测试商品表1\",\"tariffItemIds\":[201,260,,308,486],\"oralIds\":[1,4,65,4]}";
+    String param = "{\"specialistProjectName\":\"测试商品表3\", \"oralIds\":[1]}";
     SpecialistProjectModel model = JSONObject.parseObject(param,SpecialistProjectModel.class);
     specialistProjectBiz.save(model);
   }
 
   @Test
   public void testEdit() {
-    String param = "{\"id\":27,\"specialistProjectName\":\"洁牙1\",\"tariffItemIds\":[201,202,203,204,408,410,424,425,427,679,707,709,710,711,712,727,730,733,205,235,236,237,238,239,240,241,242,243,794,260,261,279,280,301,302,303,304,305,306,307,308,486,399,421,708]}";
+    String param = "{\"id\":28,\"specialistProjectName\":\"洁牙6\",\"oralIds\":[1,5,9]}";
     SpecialistProjectForm model = JSONObject.parseObject(param,SpecialistProjectForm.class);
-    specialistProjectBiz.updateSpecialistProject(27, model);
+    specialistProjectBiz.updateSpecialistProject(28, model);
   }
 }

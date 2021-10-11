@@ -128,7 +128,7 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
    */
   private void checkSpecialistProjectItem(Integer[] tariffItemIds, Integer[] oralIds) {
     if (StringHelper.isEmpty(tariffItemIds) && StringHelper.isEmpty(oralIds)) {
-      throw new ClientServiceException("专科项目的项目不能为空", PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("专科项目的项目列表不能为空", PARAMETERS_IS_ILLEGAL);
     }
   }
 
