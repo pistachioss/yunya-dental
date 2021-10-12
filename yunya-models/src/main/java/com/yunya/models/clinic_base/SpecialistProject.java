@@ -1,7 +1,9 @@
 package com.yunya.models.clinic_base;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "specialist_project")
 public class SpecialistProject {
@@ -17,10 +19,16 @@ public class SpecialistProject {
     private String name;
 
     /**
-     * 项目ID列表
+     * 价目项目ID列表
      */
     @Column(name = "tariff_ids")
     private String tariffIds;
+
+    /**
+     * 商品项目ID列表
+     */
+    @Column(name = "oral_ids")
+    private String oralIds;
 
     /**
      * 是否有效/是否启用
@@ -115,6 +123,14 @@ public class SpecialistProject {
      */
     public void setTariffIds(String tariffIds) {
         this.tariffIds = tariffIds;
+    }
+
+    public void setOralIds(String oralIds) {
+        this.oralIds = oralIds;
+    }
+
+    public String getOralIds() {
+        return oralIds;
     }
 
     /**

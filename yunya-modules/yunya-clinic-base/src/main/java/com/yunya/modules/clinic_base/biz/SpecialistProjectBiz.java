@@ -65,9 +65,17 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
       resultList.forEach(
           vo -> {
             String tariffItemIds = vo.getTariffItemIds();
-            String[] ids = tariffItemIds.split(",");
-            String tariffItemName = treatmentServiceFeign.findBaseTariffNamesByIds(ids);
-            vo.setTariffItemName(tariffItemName);
+            if (StringHelper.isNotEmpty(tariffItemIds)) {
+              String[] ids = tariffItemIds.split(",");
+              String tariffItemName = treatmentServiceFeign.findBaseTariffNamesByIds(ids);
+              vo.setTariffItemName(tariffItemName);
+            }
+            String oralIds = vo.getOralIds();
+            if (StringHelper.isNotEmpty(oralIds)) {
+              String[] ids = oralIds.split(",");
+              String oralName = treatmentServiceFeign.findBaseOralNamesByIds(ids);
+              vo.setOralName(oralName);
+            }
           });
     }
     return new PageInfo<>(resultList);
@@ -91,16 +99,36 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
     String specialistProjectName = model.getSpecialistProjectName();
     SpecialistProject entity = checkSpecialistProjectName(specialistProjectName);
     Integer[] tariffItemIds = model.getTariffItemIds();
+    Integer[] oralIds = model.getOralIds();
+    checkSpecialistProjectItem(tariffItemIds, oralIds);
+    Joiner joiner = Joiner.on(',');
     if (StringHelper.isNotEmpty(tariffItemIds)) {
-      Joiner joiner = Joiner.on(',');
       entity.setTariffIds(joiner.join(tariffItemIds));
-      Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-      String name = BaseContextHandler.getName();
-      entity.setCrtId(userId);
-      entity.setCrtName(name);
-      entity.setUpdId(userId);
-      entity.setUpdName(name);
-      mapper.insertSelective(entity);
+    } else {
+      entity.setTariffIds(null);
+    }
+    if (StringHelper.isNotEmpty(oralIds)) {
+      entity.setOralIds(joiner.join(oralIds));
+    } else {
+      entity.setOralIds(null);
+    }
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    entity.setCrtId(userId);
+    entity.setCrtName(name);
+    entity.setUpdId(userId);
+    entity.setUpdName(name);
+    mapper.insertSelective(entity);
+  }
+
+  /**
+   * 校验专科项目的项目明细是否为空
+   * @param tariffItemIds
+   * @param oralIds
+   */
+  private void checkSpecialistProjectItem(Integer[] tariffItemIds, Integer[] oralIds) {
+    if (StringHelper.isEmpty(tariffItemIds) && StringHelper.isEmpty(oralIds)) {
+      throw new ClientServiceException("专科项目的项目列表不能为空", PARAMETERS_IS_ILLEGAL);
     }
   }
 
@@ -138,15 +166,24 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
     }
     specialistProject.setName(specialistProjectName);
     Integer[] tariffItemIds = form.getTariffItemIds();
+    Integer[] oralIds = form.getOralIds();
+    checkSpecialistProjectItem(tariffItemIds, oralIds);
+    Joiner joiner = Joiner.on(',');
     if (StringHelper.isNotEmpty(tariffItemIds)) {
-      Joiner joiner = Joiner.on(',');
       specialistProject.setTariffIds(joiner.join(tariffItemIds));
-      Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-      String name = BaseContextHandler.getName();
-      specialistProject.setUpdId(userId);
-      specialistProject.setUpdName(name);
-      mapper.updateByPrimaryKeySelective(specialistProject);
+    } else {
+      specialistProject.setTariffIds(null);
     }
+    if (StringHelper.isNotEmpty(oralIds)) {
+      specialistProject.setOralIds(joiner.join(oralIds));
+    } else {
+      specialistProject.setOralIds(null);
+    }
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    specialistProject.setUpdId(userId);
+    specialistProject.setUpdName(name);
+    mapper.updateByPrimaryKey(specialistProject);
   }
 
   /**

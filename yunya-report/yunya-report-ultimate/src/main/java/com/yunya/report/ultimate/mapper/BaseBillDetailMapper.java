@@ -373,11 +373,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * 统计每组开单项目的数量
    *
    * @param query
-   * @param column
+   * @param column1 分组字段1
+   * @param column2 分组字段2
    * @return
    */
   List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(
-      @Param("query") ClinicPerformanceBusinessQuery query, @Param("column") String column);
+      @Param("query") ClinicPerformanceBusinessQuery query, @Param("column1") String column1, @Param("column2") String column2);
 
   List<Integer> billIdByMonthFreePayment(@Param("query") BillCategoryIncomeQuery query);
 

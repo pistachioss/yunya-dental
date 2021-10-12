@@ -1664,21 +1664,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<SpecialistProjectVO> specialItems = pageInfo.getList();
     DynamicHeaderPageInfo resPageInfo = new DynamicHeaderPageInfo();
     if (StringHelper.isNotEmpty(specialItems)) {
-      List<Integer> itemIds = new ArrayList<>();
-      specialItems.forEach(
-          vo -> {
-            String[] itemIdStr = vo.getTariffItemIds().split(",");
-            for (String id : itemIdStr) {
-              itemIds.add(Integer.parseInt(id));
-            }
-          });
-      if (query.getWhetherPage()) {
-        PageHelper.clearPage();
-      }
-      query.setItemIds(itemIds);
-      List<BillItemStatisticsVO> list = billItemStatisticsGroupByOrgId(query, "item_id");
-      Map<String, Integer> dataMap = new HashMap<>(16);
-      list.forEach(vo -> dataMap.put(vo.getItemId() + "," + vo.getOrgId(), vo.getQuantity()));
+      Map<String, Integer> dataMap = mapQuantityGroupOrgItemId(findBillItemStatistics(query, specialItems));
       List<BaseOrganization> orgs = getOrganization(query);
       List<JSONObject> result = new ArrayList<>();
       if (StringHelper.isNotEmpty(specialItems)) {
@@ -1688,22 +1674,14 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         for (SpecialistProjectVO item : specialItems) {
           JSONObject object = new JSONObject();
           init(object, startDate, endDate, item.getSpecialistProjectName());
-          String[] ids = item.getTariffItemIds().split(",");
           Integer total = 0;
           for (BaseOrganization org : orgs) {
             Integer orgId = org.getOrgId();
             String key = orgId + "";
-            int count = 0;
-            for (String id : ids) {
-              Integer quantity = dataMap.get(id + "," + orgId);
-              if (quantity == null) {
-                quantity = 0;
-              }
-              count += quantity;
-            }
+            int count = computeSpecialNum(item, dataMap, key);
             object.put(key, count);
-            map.put(key, org.getAbbreviation());
             total += count;
+            map.put(key, org.getAbbreviation());
           }
           object.put("total", total);
           result.add(object);
@@ -1719,16 +1697,136 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return resPageInfo;
   }
 
-  private List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(
-      ClinicPerformanceBusinessQuery query) {
-    return billItemStatisticsGroupByOrgId(query, null);
+  /**
+   * 分组统计各个项目在各门诊的数量
+   * @param list
+   * @return
+   */
+  private Map<String, Integer> mapQuantityGroupOrgItemId(List<BillItemStatisticsVO> list) {
+    Map<String, Integer> dataMap = new HashMap<>(16);
+    if (StringHelper.isNotEmpty(list)) {
+      list.forEach(vo -> dataMap.put(vo.getItemType() + "," + vo.getItemId() + "," + vo.getOrgId(), vo.getQuantity()));
+    }
+    return dataMap;
+  }
+
+  /**
+   * 统计专科项目数量
+   *
+   * @param item
+   * @param dataMap
+   * @param orgId
+   * @return
+   */
+  private int computeSpecialNum(SpecialistProjectVO item, Map<String, Integer> dataMap, String orgId) {
+    String[] ids = StringHelper.split(item.getTariffItemIds(), ",");
+    String[] oralIds = StringHelper.split(item.getOralIds(), ",");
+    int count = getQuantityById(dataMap, "0", ids, orgId);
+    count += getQuantityById(dataMap, "1", oralIds, orgId);
+    return count;
+  }
+
+  /**
+   * 获取当前项目在给定门诊下的数量
+   * @param dataMap
+   * @param itemType
+   * @param ids
+   * @param orgId
+   * @return
+   */
+  private int getQuantityById(Map<String, Integer> dataMap, String itemType, String[] ids, String orgId) {
+    int count = 0;
+    if (StringHelper.isNotEmpty(ids)) {
+      for (String id : ids) {
+        Integer quantity = dataMap.get(itemType + "," + id + "," + orgId);
+        if (quantity == null) {
+          quantity = 0;
+        }
+        count += quantity;
+      }
+    }
+    return count;
+  }
+
+  /**
+   * 查找专科项目数量列表统计
+   *
+   * @param query
+   * @param specialItems
+   * @return
+   */
+  private List<BillItemStatisticsVO> findBillItemStatistics(ClinicPerformanceBusinessQuery query, List<SpecialistProjectVO> specialItems) {
+    List<Integer> itemIds = new ArrayList<>();
+    List<Integer> oralIds = new ArrayList<>();
+    specialItems.forEach(vo -> {
+      String[] itemIdStr = StringHelper.split(vo.getTariffItemIds(), ",");
+      if (StringHelper.isNotEmpty(itemIdStr)) {
+        for (String id : itemIdStr) {
+          itemIds.add(Integer.parseInt(id));
+        }
+      }
+      String[] oralIdStr = StringHelper.split(vo.getOralIds(), ",");
+      if (StringHelper.isNotEmpty(oralIdStr)) {
+        for (String id : oralIdStr) {
+          oralIds.add(Integer.parseInt(id));
+        }
+      }
+    });
+    if (query.getWhetherPage()) {
+      PageHelper.clearPage();
+    }
+    List<BillItemStatisticsVO> list = new ArrayList<>();
+    setDistinctBillIds(query);
+    // 价目表
+    loadSpecailProjectItemList(list, query, 0, itemIds);
+    // 商品表
+    loadSpecailProjectItemList(list, query, 1, oralIds);
+    return list;
+  }
+
+  /**
+   * 设置当前条件下的账单id列表
+   *
+   * @param query
+   */
+  private void setDistinctBillIds(ClinicPerformanceBusinessQuery query) {
+    List<Integer> billIds = baseBillMapper.distinctBillIds(query);
+    if (StringHelper.isEmpty(billIds)) {
+      billIds.add(-1);// 查不到
+    }
+    query.setBillIds(billIds);
+  }
+
+  /**
+   * 加载专科项目的项目列表
+   *
+   * @param list
+   * @param query
+   * @param itemType
+   * @param itemIds
+   */
+  private void loadSpecailProjectItemList(List<BillItemStatisticsVO> list, ClinicPerformanceBusinessQuery query, int itemType, List<Integer> itemIds) {
+    Collection<Integer> specailistProjectIds = query.getSpecailistProjectIds();
+    // 当前端不传 专科项目id列表 或者 专科项目id列表非空时查询
+    if (StringHelper.isEmpty(specailistProjectIds) || StringHelper.isNotEmpty(itemIds)) {
+      query.setItemType(itemType);
+      query.setItemIds(itemIds);
+      List<BillItemStatisticsVO> tariffs = mapper.billItemStatisticsGroupByOrgId(query, "item_type", "item_id");
+      if (StringHelper.isNotEmpty(tariffs)) {
+        list.addAll(tariffs);
+      }
+    }
   }
 
   private List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(
-      ClinicPerformanceBusinessQuery query, String column) {
-    List<Integer> billIds = baseBillMapper.distinctBillIds(query);
-    query.setBillIds(billIds);
-    return mapper.billItemStatisticsGroupByOrgId(query, column);
+      ClinicPerformanceBusinessQuery query) {
+    return billItemStatisticsGroupByOrgId(query, null, null);
+  }
+
+  private List<BillItemStatisticsVO> billItemStatisticsGroupByOrgId(
+      ClinicPerformanceBusinessQuery query, String column1, String column2) {
+    setDistinctBillIds(query);
+    return mapper.billItemStatisticsGroupByOrgId(query, column1, column2);
   }
 
   private PageInfo<SpecialistProjectVO> getSpecialProjectList(
@@ -2416,7 +2514,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       List<BillPayFreePayAmountVO> freePayAmounts = baseBillPayDetailBiz.findBillFreePayAmountList(billPayIds);
       if (StringHelper.isNotEmpty(freePayAmounts)) {
         Map<Integer, BigDecimal> freePaymentMap = freePayAmounts.stream().collect(toMap(BillPayFreePayAmountVO::getBillPayId, BillPayFreePayAmountVO::getFreePayAmount));
-        resultList.forEach(vo-> vo.setFreePaymentAmount(freePaymentMap.get(vo.getBillPayId())));
+        resultList.forEach(vo->{
+          BigDecimal free = vo.getFreePaymentAmount();
+          BigDecimal freeTotal = freePaymentMap.get(vo.getBillPayId());
+          if (free!=null && freeTotal!=null) {
+            free = free.multiply(freeTotal);
+          } else {
+            free = BigDecimal.ZERO;
+          }
+          vo.setFreePaymentAmount(free);
+        });
       }
     }
     return new PageInfo<>(resultList);

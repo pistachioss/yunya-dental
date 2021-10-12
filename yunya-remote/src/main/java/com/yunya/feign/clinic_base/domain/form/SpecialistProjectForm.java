@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
@@ -26,9 +24,10 @@ public class SpecialistProjectForm implements Serializable {
   @ApiModelProperty(value = "专科项目名称", required = true)
   @NotBlank(message = "专科项目名称不能为空！")
   private String specialistProjectName;
-  /** 项目组成ID列表 */
-  @ApiModelProperty(value = "项目组成ID列表", required = true)
-  @NotEmpty(message = "专科项目价目表ID不能为空！")
-  @Size(min = 1, message = "专科项目价目表ID数组长度至少为1！")
+  /** 价目项目组成ID列表 */
+  @ApiModelProperty(value = "价目项目组成ID列表")
   private Integer[] tariffItemIds;
+  /** 商品项目组成ID列表 */
+  @ApiModelProperty(value = "商品项目组成ID列表")
+  private Integer[] oralIds;
 }

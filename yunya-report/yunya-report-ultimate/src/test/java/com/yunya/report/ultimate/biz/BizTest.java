@@ -318,7 +318,7 @@ public class BizTest {
      */
     @Test
     public void testClinicSpecialItemList() {
-        String param = "{\"dateType\":1,\"endDate\":\"2021-05-01\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-03-01\",\"whetherPage\":true}";
+        String param = "{\"dateType\":1,\"pageNum\":1,\"pageSize\":50,\"startDate\":\"2021-01\",\"endDate\":\"2021-12\",\"whetherPage\":true}";
         ClinicPerformanceBusinessQuery query = JSONObject.parseObject(param,ClinicPerformanceBusinessQuery.class);
         long t1 = System.currentTimeMillis();
         DynamicHeaderPageInfo<JSONObject> pageInfo = baseBillDetailBiz.clinicSpecialItemList(query);
