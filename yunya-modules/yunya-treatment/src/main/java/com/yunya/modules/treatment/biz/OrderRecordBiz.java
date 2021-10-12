@@ -501,7 +501,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (BusinessConstants.ORDER_LOCK_STATUS.equals(status)) {
       throw new ClientServiceException("修改开单失败，无法修改锁定的账单！", OBJECT_EDIT_FAIL);
     }
-
+    
     if (ORDER_FINISH_STATUS.equals(status)) {
       throw new ClientServiceException("修改开单失败，无法修改已完成结算的账单！", OBJECT_EDIT_FAIL);
     }
