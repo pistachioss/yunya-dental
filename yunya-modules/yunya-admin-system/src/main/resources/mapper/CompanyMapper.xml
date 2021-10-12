@@ -43,6 +43,8 @@
            cei.clinic_number as clinicNumber,
            cei.address as clinicAddress,
            cei.tel as clinicMobile,
+           cei.business_start_time as businessStartTime,
+           cei.business_end_time as businessEndTime,
            case
                c.type
            when 0 then

@@ -25,4 +25,6 @@ public class CountTreatmentRecordVO implements Serializable {
     private Integer treatCompleted;
     @ApiModelProperty("已结账人数统计")
     private Integer checkedOut;
+    @ApiModelProperty("未结账人数统计")
+    private Integer unCheckedOut;
 }
