@@ -63,6 +63,6 @@ public class TreatmentServiceRestTest {
   public void find3() {
     BaseContextHandler.setOrgId("26");
     BaseContextHandler.setUserID("635");
-    treatmentRecordController.treatmentStatusCount();
+    treatmentRecordController.treatmentStatusCount(26);
   }
 }
