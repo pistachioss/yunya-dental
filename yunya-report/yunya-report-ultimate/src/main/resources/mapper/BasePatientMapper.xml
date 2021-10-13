@@ -400,7 +400,7 @@
         count(bvr.patient_id) AS visitCount
         FROM base_visit_remind bvr
         WHERE bvr.type = 1
-        AND DATE_FORMAT(bvr.time, '%Y-%m-%d') > current_date
+        AND DATE_FORMAT(bvr.visiting_remind_time, '%Y-%m-%d') > current_date
         GROUP BY patient_id
         ) bvr ON bp.patient_id = bvr.patient_id
         <where>
