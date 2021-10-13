@@ -5,6 +5,7 @@ import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.controller.rpc.TreatmentServiceRest;
@@ -56,5 +57,12 @@ public class TreatmentServiceRestTest {
     ResponseResult<PageInfo<PatientTreatmentRecordVO>> result =
         treatmentRecordController.patientTreatmentRecordList(query);
     System.out.println(result);
+  }
+
+  @Test
+  public void find3() {
+    BaseContextHandler.setOrgId("26");
+    BaseContextHandler.setUserID("635");
+    treatmentRecordController.treatmentStatusCount();
   }
 }
