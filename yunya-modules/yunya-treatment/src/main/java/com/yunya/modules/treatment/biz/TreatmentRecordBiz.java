@@ -1745,10 +1745,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   /**
    * 门诊下班前5分钟内的就诊状态统计：候诊中/就诊中/治疗完成
    * 前台角色可见
+   * @param orgId
    * @return
    */
-  public ResponseResult<CountTreatmentRecordVO> treatmentStatusCount() {
-    Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+  public ResponseResult<CountTreatmentRecordVO> treatmentStatusCount(Integer orgId) {
     Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
     SysUserEmployeeModel model = new SysUserEmployeeModel();
     model.setWhetherPage(false);
@@ -1757,7 +1757,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     model.setOrgIds(Arrays.asList(orgId));
     List<SysUserInfoDetail> employee = systemServiceFeign.findSysUserEmployeeInfoList(model);
     if (StringHelper.isEmpty(employee)) {
-      // 用户无权限
+      // 无权限
       return ResponseUtil.success(null);
     }
     String currentDate = DateTime.now().toString();
@@ -1769,8 +1769,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
             + resultData.getTreatCompleted()
             + resultData.getTreatReceiving();
     if (unCheckedOut <= 0) {
-      // 无数据
-      return ResponseUtil.success(null);
+      return ResponseUtil.fail(DATA_NOT_EXIST,"门诊无数据",null);
     }
     resultData.setUnCheckedOut(unCheckedOut);
     return ResponseUtil.success(resultData);
