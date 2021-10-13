@@ -1751,6 +1751,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
     Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
     SysUserEmployeeModel model = new SysUserEmployeeModel();
+    model.setWhetherPage(false);
     model.setUserId(userId);
     model.setPostGroupId(Collections.singletonList(RECEPTIONIST_ID));
     model.setOrgIds(Arrays.asList(orgId));
