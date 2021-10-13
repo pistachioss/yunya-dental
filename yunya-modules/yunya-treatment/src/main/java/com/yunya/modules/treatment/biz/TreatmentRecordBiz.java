@@ -1757,8 +1757,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     model.setOrgIds(Arrays.asList(orgId));
     List<SysUserInfoDetail> employee = systemServiceFeign.findSysUserEmployeeInfoList(model);
     if (StringHelper.isEmpty(employee)) {
-      //无权限
-      return ResponseUtil.fail(OPERATION_NOT_ALLOW,"用户无权限", null);
+      // 用户无权限
+      return ResponseUtil.success(null);
     }
     String currentDate = DateTime.now().toString();
     TreatmentCountQuery query = new TreatmentCountQuery();
@@ -1769,7 +1769,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
             + resultData.getTreatCompleted()
             + resultData.getTreatReceiving();
     if (unCheckedOut <= 0) {
-      return ResponseUtil.fail(DATA_NOT_EXIST,"门诊无数据",null);
+      // 无数据
+      return ResponseUtil.success(null);
     }
     resultData.setUnCheckedOut(unCheckedOut);
     return ResponseUtil.success(resultData);
