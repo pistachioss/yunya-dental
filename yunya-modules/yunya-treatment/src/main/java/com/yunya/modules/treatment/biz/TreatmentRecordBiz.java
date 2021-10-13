@@ -1745,19 +1745,20 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   /**
    * 门诊下班前5分钟内的就诊状态统计：候诊中/就诊中/治疗完成
    * 前台角色可见
+   * @param orgId
    * @return
    */
-  public ResponseResult<CountTreatmentRecordVO> treatmentStatusCount() {
-    Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+  public ResponseResult<CountTreatmentRecordVO> treatmentStatusCount(Integer orgId) {
     Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
     SysUserEmployeeModel model = new SysUserEmployeeModel();
+    model.setWhetherPage(false);
     model.setUserId(userId);
     model.setPostGroupId(Collections.singletonList(RECEPTIONIST_ID));
     model.setOrgIds(Arrays.asList(orgId));
     List<SysUserInfoDetail> employee = systemServiceFeign.findSysUserEmployeeInfoList(model);
     if (StringHelper.isEmpty(employee)) {
-      //无权限
-      return ResponseUtil.fail(OPERATION_NOT_ALLOW,"用户无权限", null);
+      // 无权限
+      return ResponseUtil.success(null);
     }
     String currentDate = DateTime.now().toString();
     TreatmentCountQuery query = new TreatmentCountQuery();
@@ -1768,7 +1769,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
             + resultData.getTreatCompleted()
             + resultData.getTreatReceiving();
     if (unCheckedOut <= 0) {
-      return ResponseUtil.fail(DATA_NOT_EXIST,"门诊无数据",null);
+      // 无数据
+      return ResponseUtil.success(null);
     }
     resultData.setUnCheckedOut(unCheckedOut);
     return ResponseUtil.success(resultData);
