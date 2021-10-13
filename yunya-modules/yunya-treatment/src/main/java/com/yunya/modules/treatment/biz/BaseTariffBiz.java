@@ -12,13 +12,20 @@ import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.treatment.domain.form.BaseTariffAssociationForm;
 import com.yunya.feign.treatment.domain.form.BaseTariffForm;
 import com.yunya.feign.treatment.domain.form.ClinicItemPriceForm;
+import com.yunya.feign.treatment.domain.form.TariffUnitePriceForm;
 import com.yunya.feign.treatment.domain.model.BaseTariffAssociationImportModel;
 import com.yunya.feign.treatment.domain.model.BaseTariffImportModel;
 import com.yunya.feign.treatment.domain.model.BaseTariffModel;
 import com.yunya.feign.treatment.domain.model.ClinicItemPriceModel;
+import com.yunya.feign.treatment.domain.model.TariffUniteModel;
 import com.yunya.feign.treatment.domain.query.BaseTariffAssociationQueryForm;
 import com.yunya.feign.treatment.domain.query.BaseTariffQueryForm;
-import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.feign.treatment.domain.vo.BaseTariffAssociationExportVO;
+import com.yunya.feign.treatment.domain.vo.BaseTariffAssociationVO;
+import com.yunya.feign.treatment.domain.vo.BaseTariffExportVO;
+import com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO;
+import com.yunya.feign.treatment.domain.vo.BaseTariffVO;
+import com.yunya.feign.treatment.domain.vo.ClinicItemPriceVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -38,13 +45,21 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -53,7 +68,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTariffInfo;
-import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
+import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
+import static com.yunya.framework.common.constant.OperationCodeConstants.OBJECT_EDIT_FAIL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY;
+import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
 
 /**
@@ -1430,5 +1450,43 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     ExcelUtil<BaseTariffAssociationExportVO> excelUtil =
         new ExcelUtil<>(BaseTariffAssociationExportVO.class);
     excelUtil.exportExcel(response, resultList, "价目表开单关联信息");
+  }
+
+  /**
+   * 统一设置门诊价目表价格
+   *
+   * @param form
+   */
+  public void uniteTariffPrice(TariffUnitePriceForm form) {
+    Set<Integer> orgIds = form.getOrgIds();
+    Set<TariffUniteModel> tariffUniteModels = form.getTariffUniteModels();
+    if (CollectionUtils.isEmpty(orgIds)) {
+      throw new ClientServiceException("请至少选择一个门诊", PARAM_NOT_ALLOW_EMPTY);
+    }
+    if (CollectionUtils.isEmpty(tariffUniteModels)) {
+      throw new ClientServiceException("请至少选择一个价目表项目", PARAM_NOT_ALLOW_EMPTY);
+    }
+    if (!CollectionUtils.isEmpty(orgIds) && !CollectionUtils.isEmpty(tariffUniteModels)) {
+      Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+      String name = BaseContextHandler.getName();
+      List<ClinicTariff> clinicTariffs = Lists.newArrayList();
+      for (TariffUniteModel model : tariffUniteModels) {
+        for (Integer orgId : orgIds) {
+          ClinicTariff tariff = new ClinicTariff();
+          tariff.setClinicId(orgId);
+          tariff.setTariffId(model.getId());
+          clinicTariffBiz.delete(tariff);
+          tariff.setPrice(model.getPrice());
+          tariff.setCrtId(userId);
+          tariff.setCrtName(name);
+          tariff.setUpdId(userId);
+          tariff.setUpdName(name);
+          clinicTariffs.add(tariff);
+        }
+      }
+      if (!CollectionUtils.isEmpty(clinicTariffs)) {
+        clinicTariffBiz.batchInsert(clinicTariffs);
+      }
+    }
   }
 }

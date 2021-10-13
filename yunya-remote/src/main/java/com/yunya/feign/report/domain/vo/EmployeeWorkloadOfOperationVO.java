@@ -24,9 +24,12 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 @Data
 @ToString
 public class EmployeeWorkloadOfOperationVO implements Serializable {
+  /** 组织ID */
   @ApiModelProperty("组织ID")
   private Integer orgId;
-  @ApiModelProperty("组织名称")
+  /** 组织名称 */
+  @Excel(name = "门诊名称")
+  @ApiModelProperty("门诊名称")
   private String abbreviation;
   /** 员工ID */
   @ApiModelProperty("员工ID")

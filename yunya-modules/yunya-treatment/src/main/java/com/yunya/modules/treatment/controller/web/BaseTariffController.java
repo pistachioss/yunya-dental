@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.form.BaseTariffForm;
+import com.yunya.feign.treatment.domain.form.TariffUnitePriceForm;
 import com.yunya.feign.treatment.domain.model.BaseTariffModel;
 import com.yunya.feign.treatment.domain.query.BaseTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO;
@@ -15,7 +16,14 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -119,6 +127,20 @@ public class BaseTariffController {
   @DeleteMapping("/delete/{id}")
   public ResponseResult<T> delete(@PathVariable(value = "id") Integer id) {
     baseTariffBiz.delete(id);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 统一设置门诊价目表价格
+   *
+   * @param form 价目表信息
+   * @return R
+   */
+  @CurrentUser
+  @ApiOperation("统一设置门诊价目表价格")
+  @PostMapping(value = "/unite/price", name = "统一设置门诊价目表价格")
+  public ResponseResult<T> uniteTariffPrice(@RequestBody @Validated TariffUnitePriceForm form) {
+    baseTariffBiz.uniteTariffPrice(form);
     return ResponseUtil.success(null);
   }
 
