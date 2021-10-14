@@ -735,6 +735,18 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         List<Integer> enableDentistIds = this.enableAppointDentistIds(query.getOrgId());
         // 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
         appointmentDimensionVos = this.dimensionAppointInfo(query,enableDentistIds);
+        for(AppointmentDimensionVo a:appointmentDimensionVos){
+            if(a.getDentistScheduleVos().size()>0){
+                for(EmpScheduleVo empScheduleVo:a.getDentistScheduleVos()){
+                    a.setType(empScheduleVo.getType());
+                    if(empScheduleVo.getType()==1){
+                        break;
+                    }else{
+                        a.setType(0);
+                    }
+                }
+            }
+        }
         // 最后进行排序
         return this.sort(appointmentDimensionVos, query.getOrder(), query.getOrderBy());
     }
@@ -1273,6 +1285,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 降序
         String ORDER_BY_DESC = "desc";
         if (StringHelper.isNotEmpty(appointmentDimensionVoList)) {
+            List regulationOrder = Arrays.asList(1,0,2,3,4);
+
             if (ORDER_PATIENTNUM.equals(field) && ORDER_BY_ASC.equals(orderBy)) {
                 return appointmentDimensionVoList
                         .stream()
@@ -1284,7 +1298,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 return appointmentDimensionVoList
                         .stream()
                         .sorted(Comparator.comparing(AppointmentDimensionVo::getPatientNum,
-                                Comparator.nullsFirst(Integer::compareTo)).reversed()).collect(Collectors.toList());
+                                Comparator.nullsFirst(Integer::compareTo)).reversed()
+                                .thenComparing(AppointmentDimensionVo::getType,
+                                        Comparator.nullsLast(Integer::compareTo))).collect(Collectors.toList());
             } else if (ORDER_DATE.equals(field) && ORDER_BY_ASC.equals(orderBy)) {
                 // 按日期升序排列
                 return appointmentDimensionVoList

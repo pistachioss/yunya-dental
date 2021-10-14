@@ -57,6 +57,9 @@ public class  AppointmentDimensionVo implements Serializable {
     @ApiModelProperty(value = "分解助手信息")
     private List<AppointmentDimensionVo> appointmentAssistants;
 
+    @ApiModelProperty("0-无排班 1-有排班 2-请假 3-加班 4-外勤")
+    private Integer type;
+
 //    /** 员工请假信息 */
 //    @ApiModelProperty(value = "员工请假信息")
 //    private List<EmpScheduleVo> leaveInfos;
