@@ -7,10 +7,8 @@ import com.yunya.feign.report.domain.query.PatientReportQueryForm;
 import com.yunya.feign.report.domain.vo.AnalysisVo;
 import com.yunya.feign.report.domain.vo.ArrearsStatisticsVo;
 import com.yunya.feign.report.domain.vo.BasePatientNotSeenVo;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseEmployee;
 import com.yunya.report.ultimate.biz.PatientReportBiz;
 import io.swagger.annotations.Api;
@@ -18,7 +16,12 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -63,11 +66,7 @@ public class PatientReportController {
       @RequestBody PatientReportQueryForm patientReportQueryForm) {
     PageInfo<BasePatientNotSeenVo> basePatientNotSeenVoList =
         patientReportBiz.notSeenList(patientReportQueryForm);
-    if (StringHelper.isNotNull(basePatientNotSeenVoList)) {
-      return ResponseUtil.success(basePatientNotSeenVoList);
-    }
-    return ResponseUtil.fail(
-        OperationCodeConstants.RETURN_VALUE_ISNULL, "暂无相关数据", null);
+    return ResponseUtil.success(basePatientNotSeenVoList);
   }
 
   /**
@@ -95,12 +94,10 @@ public class PatientReportController {
    */
   @ApiOperation("欠费查询")
   @PostMapping("/arrears")
-  public ResponseResult<ArrearsStatisticsVo> arrears(@RequestBody ArrearsQueryForm arrearsQueryForm) {
+  public ResponseResult<ArrearsStatisticsVo> arrears(
+      @RequestBody ArrearsQueryForm arrearsQueryForm) {
     ArrearsStatisticsVo arrears = patientReportBiz.findArrears(arrearsQueryForm);
-    if (StringHelper.isNotNull(arrears)) {
-      return ResponseUtil.success(arrears);
-    }
-    return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "暂无相关数据", null);
+    return ResponseUtil.success(arrears);
   }
 
   /**
@@ -118,7 +115,6 @@ public class PatientReportController {
     patientReportBiz.exportArrearsList(response, arrearsQueryForm);
     return ResponseUtil.success(null);
   }
-
 
   /**
    * 就诊患者分析
