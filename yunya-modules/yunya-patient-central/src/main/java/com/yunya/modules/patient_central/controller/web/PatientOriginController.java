@@ -59,7 +59,13 @@ public class PatientOriginController {
   @ApiOperation("查询患者来源树状结构列表")
   @GetMapping("/initPatientOriginTree")
   public ResponseResult<List<PatientOriginTreeVo>> initPatientOriginTree() {
-    return ResponseUtil.success(this.patientOriginBiz.initPatientOriginTree());
+    List<PatientOriginTreeVo>list = this.patientOriginBiz.initPatientOriginTree();
+    PatientOriginTreeVo patientOriginTreeVo = new PatientOriginTreeVo();
+    patientOriginTreeVo.setInservice(true);
+    patientOriginTreeVo.setOriginType(0);
+    patientOriginTreeVo.setName("未知来源");
+    list.add(patientOriginTreeVo);
+    return ResponseUtil.success(list);
   }
 
   /**
