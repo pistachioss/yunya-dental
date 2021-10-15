@@ -445,13 +445,13 @@
 
     <select id="clinicFirstVisitSourceList" resultType="com.yunya.feign.report.domain.vo.PatientFirstVisitSourceVO">
         SELECT
-        IFNULL(bp.origin_type,0) AS originType,
+        IFNULL(bp.origin_type,12) AS originType,
         bp.org_id AS orgId,
         count(bp.patient_id) firstVisitCount
         FROM base_patient bp
         <where>
             <if test="query.originTypes!=null and query.originTypes.size()>0">
-                AND  IFNULL( bp.origin_type,0) in
+                AND  IFNULL( bp.origin_type,12) in
                 <foreach collection="query.originTypes" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
