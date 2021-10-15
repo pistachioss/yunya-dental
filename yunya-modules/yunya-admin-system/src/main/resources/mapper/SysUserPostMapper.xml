@@ -125,7 +125,7 @@
             </if>
         </where>
         order by
-        case when workStatus = 2 then 2 else 1 end,
+        case when sup.workStatus = 2 then 2 else 1 end,
         convert(sup.name using gbk)
     </select>
     <!-- 根据组织ID、用户ID查询岗位列表(员工管理-可登录组织列表) -->
