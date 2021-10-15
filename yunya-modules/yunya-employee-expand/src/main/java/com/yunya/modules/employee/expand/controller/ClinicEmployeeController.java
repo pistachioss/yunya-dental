@@ -13,17 +13,16 @@ import com.yunya.modules.employee.expand.service.ClinicEmployeeConfigBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
-
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-
-import java.text.Collator;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 
 
 /**
@@ -81,9 +80,6 @@ public class ClinicEmployeeController {
       @PathVariable(value = "orgId") Integer orgId, Boolean isContainLeaver) {
     List<EnableChooseEmployeeRes> resultList =
         clinicEmployeeConfigBiz.findEnableAppointEmployeeList(orgId,isContainLeaver);
-
-    Comparator comparator = Collator.getInstance(Locale.CHINA);
-    resultList.sort(Comparator.comparing(EnableChooseEmployeeRes::getEmployeeName,comparator));
     return ResponseUtil.success(resultList);
   }
 
