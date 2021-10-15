@@ -24,7 +24,9 @@ import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.system.DepartmentRoom;
@@ -41,11 +43,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
-import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.OBJECT_EDIT_FAIL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_REGISTERED;
 
 /**
@@ -732,5 +742,25 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
       }
     }
     return vos;
+  }
+
+  /**
+   * 导出转诊列表
+   *
+   * @param response
+   * @param referredForm
+   * @throws IOException
+   */
+  public void exportReferredList(HttpServletResponse response, ReferredInfoForm referredForm)
+      throws IOException {
+    List<ReferredInfoVO> relist = referredInfo(referredForm);
+    ExcelUtil<ReferredInfoVO> excelUtil = new ExcelUtil<>(ReferredInfoVO.class);
+    String fileName =
+        excelUtil.getFileName(
+            DateUtil.format(referredForm.getStartTime(), "yyyy-MM-dd"),
+            DateUtil.format(referredForm.getStartTime(), "yyyy-MM-dd"),
+            "-",
+            "转诊统计");
+    excelUtil.exportExcel(response, relist, "转诊统计", fileName);
   }
 }
