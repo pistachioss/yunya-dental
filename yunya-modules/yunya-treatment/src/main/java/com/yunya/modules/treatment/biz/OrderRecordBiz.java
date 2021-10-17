@@ -11,9 +11,14 @@ import com.yunya.feign.treatment.domain.model.BillAdjustDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.feign.treatment.domain.query.OrderProcessQuery;
-import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.feign.treatment.domain.vo.AssistantInfoVO;
+import com.yunya.feign.treatment.domain.vo.OrderBill4AppVO;
+import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
+import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
+import com.yunya.feign.treatment.domain.vo.OrderProcessVO;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
@@ -22,25 +27,49 @@ import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
 import com.yunya.models.tariff.ClinicTariffMemberPrice;
-import com.yunya.models.treatment.*;
+import com.yunya.models.treatment.AssistantMatchingRecord;
+import com.yunya.models.treatment.BillExceptionHandleDetailRecord;
+import com.yunya.models.treatment.BillExceptionHandleRecord;
+import com.yunya.models.treatment.BillPayRecord;
+import com.yunya.models.treatment.BillRecord;
+import com.yunya.models.treatment.OrderDetail;
+import com.yunya.models.treatment.OrderRecord;
+import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.models.treatment_other.VisitingRecord;
-import com.yunya.modules.treatment.mapper.*;
+import com.yunya.modules.treatment.mapper.BillExceptionHandleDetailRecordMapper;
+import com.yunya.modules.treatment.mapper.BillExceptionHandleRecordMapper;
+import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
+import com.yunya.modules.treatment.mapper.BillRecordMapper;
+import com.yunya.modules.treatment.mapper.OrderRecordMapper;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
-import static com.yunya.framework.common.constant.BusinessConstants.*;
-import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static com.yunya.framework.common.constant.RedisConstants.*;
+import static com.yunya.framework.common.constant.BusinessConstants.ORDER_CHARGING_STATUS;
+import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
+import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESSING_STATUS;
+import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESS_ORDER_STATUS;
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
+import static com.yunya.framework.common.constant.OperationCodeConstants.OBJECT_EDIT_FAIL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY;
+import static com.yunya.framework.common.constant.OperationCodeConstants.SAME_DATA_EXIST;
+import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
+import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CREATE;
+import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK;
 
 /**
  * 简介: 患者就诊开单业务层
@@ -116,21 +145,22 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (StringHelper.isEmpty(assistants)) {
       assistants = new ArrayList<>();
     }
-    //处理门诊价目表价格
+    // 处理门诊价目表价格
     if (StringHelper.isNotEmpty(orderDetails)) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
       if (StringHelper.isNotEmpty(memberTypes)) {
         orderDetails.forEach(
-                tariffVO -> {
-                  Map<Integer, Object> memberPrices = new HashMap<>(16);
-                  if(tariffVO.getType()==0){
-                    // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
-                    setClinicTariffMemberPrice(memberPrices, memberTypes, orderRecord.getOrgId(), tariffVO);
-                  }else{
-                    setClinicOralTariffMemberPrice(memberPrices, memberTypes, orderRecord.getOrgId(), tariffVO);
-                  }
-
-                });
+            tariffVO -> {
+              Map<Integer, Object> memberPrices = new HashMap<>(16);
+              if (tariffVO.getType() == 0) {
+                // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
+                setClinicTariffMemberPrice(
+                    memberPrices, memberTypes, orderRecord.getOrgId(), tariffVO);
+              } else {
+                setClinicOralTariffMemberPrice(
+                    memberPrices, memberTypes, orderRecord.getOrgId(), tariffVO);
+              }
+            });
       }
     }
     resultData.setOrderDetails(orderDetails);
@@ -147,10 +177,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @param tariffVO 门诊商品项目信息
    */
   private void setClinicOralTariffMemberPrice(
-          Map<Integer, Object> memberPrices,
-          List<MemberType> memberTypes,
-          Integer orgId,
-          OrderDetailVO tariffVO) {
+      Map<Integer, Object> memberPrices,
+      List<MemberType> memberTypes,
+      Integer orgId,
+      OrderDetailVO tariffVO) {
     ClinicOralTariffMemberPrice clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
     clinicOralTariffMemberPrice.setClinicId(orgId);
     Integer oralTariffId = tariffVO.getBillingItemId();
@@ -160,23 +190,22 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       BigDecimal memberPrice;
       clinicOralTariffMemberPrice.setMemberTypeId(memberType.getId());
       ClinicOralTariffMemberPrice memberPriceResult =
-              clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
+          clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
       if (null != memberPriceResult) {
         memberTypeId = memberPriceResult.getMemberTypeId();
         memberPrice = memberPriceResult.getDiscountPrice();
       } else {
         memberTypeId = memberType.getId();
         memberPrice =
-                (tariffVO
-                        .getPrice()
-                        .multiply(BigDecimal.valueOf(memberType.getRate()))
-                        .divide(BigDecimal.valueOf(100), 2));
+            (tariffVO
+                .getPrice()
+                .multiply(BigDecimal.valueOf(memberType.getRate()))
+                .divide(BigDecimal.valueOf(100), 2));
       }
       memberPrices.put(memberTypeId, memberPrice.setScale(2, BigDecimal.ROUND_HALF_UP));
     }
     tariffVO.setMemberPrices(memberPrices);
   }
-
 
   /**
    * 设置门诊价目表会员价
@@ -187,10 +216,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @param tariffVO 门诊价目表信息
    */
   private void setClinicTariffMemberPrice(
-          Map<Integer, Object> memberPrices,
-          List<MemberType> memberTypes,
-          Integer orgId,
-          OrderDetailVO tariffVO) {
+      Map<Integer, Object> memberPrices,
+      List<MemberType> memberTypes,
+      Integer orgId,
+      OrderDetailVO tariffVO) {
     ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
     clinicTariffMemberPrice.setClinicId(orgId);
     clinicTariffMemberPrice.setTariffId(tariffVO.getBillingItemId());
@@ -199,29 +228,25 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       BigDecimal memberPrice;
       clinicTariffMemberPrice.setMemberTypeId(memberType.getId());
       ClinicTariffMemberPrice memberPriceResult =
-              clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
+          clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
       if (null != memberPriceResult) {
         memberTypeId = memberPriceResult.getMemberTypeId();
         memberPrice = memberPriceResult.getDiscountPrice().setScale(2, BigDecimal.ROUND_HALF_UP);
       } else {
         memberTypeId = memberType.getId();
         memberPrice =
-                (tariffVO
-                        .getPrice()
-                        .multiply(BigDecimal.valueOf(memberType.getRate()))
-                        .divide(BigDecimal.valueOf(100), 2))
-                        .setScale(2, BigDecimal.ROUND_HALF_UP);
+            (tariffVO
+                    .getPrice()
+                    .multiply(BigDecimal.valueOf(memberType.getRate()))
+                    .divide(BigDecimal.valueOf(100), 2))
+                .setScale(2, BigDecimal.ROUND_HALF_UP);
       }
       memberPrices.put(memberTypeId, memberPrice);
     }
     // 设置价格精度小数点后两位四舍五入，没有在上个方法中设置精度是为了保证会员价计算精确
-//    tariffVO.setPrice(tariffVO.getPrice().setScale(2, BigDecimal.ROUND_HALF_UP));
+    //    tariffVO.setPrice(tariffVO.getPrice().setScale(2, BigDecimal.ROUND_HALF_UP));
     tariffVO.setMemberPrices(memberPrices);
   }
-
-
-
-
 
   /**
    * 暂存开单信息
@@ -447,7 +472,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       throw new ClientServiceException("解锁失败，当前账单处于收费中，与相关工作人员联系并关闭收费后可继续解锁账单！", SAME_DATA_EXIST);
     }
 
-    redisUtils.set(orderKey, orderRecordId, 30);
+    redisUtils.set(orderKey, orderRecordId, 600);
     orderRecord.setStatus((byte) 0);
     orderRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     orderRecord.setUpdName(BaseContextHandler.getName());
@@ -471,8 +496,12 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       throw new ClientServiceException(
           "修改开单失败，系统未查询到ID为'" + orderRecordId + "'的账单信息！", SAME_DATA_EXIST);
     }
-
+    
     Byte status = orderRecord.getStatus();
+    if (BusinessConstants.ORDER_LOCK_STATUS.equals(status)) {
+      throw new ClientServiceException("修改开单失败，无法修改锁定的账单！", OBJECT_EDIT_FAIL);
+    }
+    
     if (ORDER_FINISH_STATUS.equals(status)) {
       throw new ClientServiceException("修改开单失败，无法修改已完成结算的账单！", OBJECT_EDIT_FAIL);
     }
@@ -482,7 +511,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       throw new ClientServiceException("修改开单失败，请至少提交一条开单项目！", PARAM_NOT_ALLOW_EMPTY);
     }
 
-    redisUtils.set(LOCK_ORDER_PROCESSING_UNLOCK, orderRecordId, 30);
+    redisUtils.set(LOCK_ORDER_PROCESSING_UNLOCK, orderRecordId, 300);
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
     Integer orgId = orderRecord.getOrgId();
     OrderDetail orderDetail = new OrderDetail();

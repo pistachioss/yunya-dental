@@ -20,6 +20,8 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * 简介: 患者接诊管理控制器
  *
@@ -206,5 +208,18 @@ public class TreatmentRecordController {
     PageInfo<DesktopMiniProgramVO> desktopTreatListItems =
         treatmentRecordBiz.findDesktopTreatListItem(queryForm);
     return ResponseUtil.success(desktopTreatListItems);
+  }
+
+  /**
+   * 门诊下班前5分钟内的就诊状态统计：候诊中/就诊中/治疗完成
+   * 前台角色可见
+   *
+   * @return
+   */
+  @ApiOperation("门诊下班前5分钟内的就诊状态统计：候诊中/就诊中/治疗完成")
+  @PostMapping(value = "/treatmentStatus/count")
+  @CurrentUser
+  public ResponseResult<CountTreatmentRecordVO> treatmentStatusCount(@NotNull @RequestParam Integer orgId) {
+    return treatmentRecordBiz.treatmentStatusCount(orgId);
   }
 }

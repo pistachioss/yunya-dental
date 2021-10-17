@@ -15,6 +15,20 @@
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
+    <!-- 批量插入门诊商品价格列表 -->
+    <insert id="batchInsert">
+        insert into clinic_oral_tariff (
+        clinic_id, oral_tariff_id, price, crt_id, crt_name, upd_id, upd_name
+        )
+        values
+        <foreach collection="list" item="obj" separator=",">
+            (
+            #{obj.clinicId}, #{obj.oralTariffId}, #{obj.price}, #{obj.crtId},
+            #{obj.crtName}, #{obj.updId}, #{obj.updName}
+            )
+        </foreach>
+    </insert>
+
     <!-- 根据商品表ID启用门诊商品表 -->
     <update id="enableClinicOralTariffByTariffId">
         update clinic_oral_tariff set inservice = 1 , upd_id = #{userId} , upd_name = #{userName} where oral_tariff_id = #{oralTariffId} and inservice = 0

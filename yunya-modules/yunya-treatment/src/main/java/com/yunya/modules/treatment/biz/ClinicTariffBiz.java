@@ -230,10 +230,6 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    * @param form 修改参数
    */
   public void modify(ClinicTariffForm form) {
-    /*List<ClinicItemMemberPriceForm> memberPrices = form.getClinicItemMemberPrices();
-    if (StringHelper.isEmpty(memberPrices)) {
-      throw new ClientServiceException("修改失败，门诊价目表会员卡价格不能为空！", PARAMETERS_IS_ILLEGAL);
-    }*/
     Integer tariffId = form.getTariffId();
     BaseTariff tariff = baseTariffMapper.selectByPrimaryKey(tariffId);
     if (null == tariff) {
@@ -241,8 +237,8 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     }
     Integer orgId = form.getOrgId();
     BigDecimal formPrice = form.getPrice();
-    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-    String name = BaseContextHandler.getName();
+    Integer userId = 1;
+    String name = "22";
     ClinicTariff entity = new ClinicTariff();
     entity.setClinicId(orgId);
     entity.setTariffId(tariffId);
@@ -256,7 +252,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       mapper.insertSelective(entity);
     } else {
       BigDecimal resultDataPrice = resultData.getPrice();
-      if (!resultDataPrice.equals(formPrice)) {
+      if (resultDataPrice.compareTo(formPrice) != 0) {
         resultData.setPrice(formPrice);
         resultData.setUpdId(userId);
         resultData.setUpdName(name);
@@ -272,16 +268,16 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
             clinicTariffMemberPrice.setTariffId(tariffId);
             Integer memberTypeId = memberPrice.getMemberTypeId();
             clinicTariffMemberPrice.setMemberTypeId(memberTypeId);
-            BigDecimal discountPrice = memberPrice.getDiscountPrice();
             ClinicTariffMemberPrice resultClinicTariffMemberPrice =
                 clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
-            clinicTariffMemberPrice.setDiscountPrice(discountPrice);
+            BigDecimal discountPrice = memberPrice.getDiscountPrice();
             if (null != resultClinicTariffMemberPrice) {
-              clinicTariffMemberPrice.setUpdId(userId);
-              clinicTariffMemberPrice.setUpdName(name);
-              clinicTariffMemberPrice.setId(resultClinicTariffMemberPrice.getId());
-              clinicTariffMemberPriceBiz.updateSelectiveById(clinicTariffMemberPrice);
+              resultClinicTariffMemberPrice.setDiscountPrice(discountPrice);
+              resultClinicTariffMemberPrice.setUpdId(userId);
+              resultClinicTariffMemberPrice.setUpdName(name);
+              clinicTariffMemberPriceBiz.updateSelectiveById(resultClinicTariffMemberPrice);
             } else {
+              clinicTariffMemberPrice.setDiscountPrice(discountPrice);
               clinicTariffMemberPrice.setCrtId(userId);
               clinicTariffMemberPrice.setCrtName(name);
               clinicTariffMemberPriceBiz.insertSelective(clinicTariffMemberPrice);
@@ -475,5 +471,14 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    */
   public void disableClinicTariffByTariffId(Integer tariffId, Integer userId, String userName) {
     mapper.disableClinicTariffByTariffId(tariffId, userId, userName);
+  }
+
+  /**
+   * 批量插入门诊价目表列表
+   *
+   * @param clinicTariffs 门诊价目表列表
+   */
+  public void batchInsert(List<ClinicTariff> clinicTariffs) {
+    mapper.batchInsert(clinicTariffs);
   }
 }

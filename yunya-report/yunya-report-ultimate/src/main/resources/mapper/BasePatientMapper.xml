@@ -400,7 +400,7 @@
         count(bvr.patient_id) AS visitCount
         FROM base_visit_remind bvr
         WHERE bvr.type = 1
-        AND DATE_FORMAT(bvr.time, '%Y-%m-%d') > current_date
+        AND DATE_FORMAT(bvr.visiting_remind_time, '%Y-%m-%d') > current_date
         GROUP BY patient_id
         ) bvr ON bp.patient_id = bvr.patient_id
         <where>
@@ -445,13 +445,13 @@
 
     <select id="clinicFirstVisitSourceList" resultType="com.yunya.feign.report.domain.vo.PatientFirstVisitSourceVO">
         SELECT
-        bp.origin_type AS originType,
+        IFNULL(bp.origin_type,12) AS originType,
         bp.org_id AS orgId,
         count(bp.patient_id) firstVisitCount
         FROM base_patient bp
         <where>
             <if test="query.originTypes!=null and query.originTypes.size()>0">
-                AND bp.origin_type in
+                AND  IFNULL( bp.origin_type,12) in
                 <foreach collection="query.originTypes" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>

@@ -17,6 +17,7 @@ import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.model.TreatmentModel;
@@ -27,6 +28,7 @@ import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
@@ -1738,5 +1740,39 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         }
       }
     }
+  }
+
+  /**
+   * 门诊下班前5分钟内的就诊状态统计：候诊中/就诊中/治疗完成
+   * 前台角色可见
+   * @param orgId
+   * @return
+   */
+  public ResponseResult<CountTreatmentRecordVO> treatmentStatusCount(Integer orgId) {
+    Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+    SysUserEmployeeModel model = new SysUserEmployeeModel();
+    model.setWhetherPage(false);
+    model.setUserId(userId);
+    model.setPostGroupId(Collections.singletonList(RECEPTIONIST_ID));
+    model.setOrgIds(Arrays.asList(orgId));
+    List<SysUserInfoDetail> employee = systemServiceFeign.findSysUserEmployeeInfoList(model);
+    if (StringHelper.isEmpty(employee)) {
+      // 无权限
+      return ResponseUtil.success(null);
+    }
+    String currentDate = DateTime.now().toString();
+    TreatmentCountQuery query = new TreatmentCountQuery();
+    query.setOrgId(orgId);
+    query.setQueryDate(currentDate);
+    CountTreatmentRecordVO resultData = mapper.selectTreatCountByExample(query);
+    Integer unCheckedOut = resultData.getWaitingForTreat()
+            + resultData.getTreatCompleted()
+            + resultData.getTreatReceiving();
+    if (unCheckedOut <= 0) {
+      // 无数据
+      return ResponseUtil.success(null);
+    }
+    resultData.setUnCheckedOut(unCheckedOut);
+    return ResponseUtil.success(resultData);
   }
 }

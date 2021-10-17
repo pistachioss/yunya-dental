@@ -50,9 +50,9 @@ public interface ClinicOralTariffMapper extends Mapper<ClinicOralTariff> {
    * @param userName 操作人姓名
    */
   void enableClinicOralTariffByTariffId(
-          @Param("oralTariffId") Integer oralTariffId,
-          @Param("userId") Integer userId,
-          @Param("userName") String userName);
+      @Param("oralTariffId") Integer oralTariffId,
+      @Param("userId") Integer userId,
+      @Param("userName") String userName);
 
   /**
    * 根据商品表ID禁用门诊商品表项目
@@ -62,7 +62,14 @@ public interface ClinicOralTariffMapper extends Mapper<ClinicOralTariff> {
    * @param userName 操作人姓名
    */
   void disableClinicOralTariffByTariffId(
-          @Param("oralTariffId") Integer oralTariffId,
-          @Param("userId") Integer userId,
-          @Param("userName") String userName);
+      @Param("oralTariffId") Integer oralTariffId,
+      @Param("userId") Integer userId,
+      @Param("userName") String userName);
+
+  /**
+   * 批量插入门诊价目表列表
+   *
+   * @param list 门诊商品价格列表
+   */
+  void batchInsert(@Param("list") List<ClinicOralTariff> list);
 }

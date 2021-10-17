@@ -109,6 +109,8 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
         patientOrigin.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientOrigin.setCrtName(BaseContextHandler.getName());
         mapper.insertSelective(patientOrigin);
+        remoteRabbitMqServiceFeign.sendMessage(
+                patientOrigin.getId(), 0, MsgCategoryEnum.BasePatientOrigin);
       }
     } else {
       PatientOrigin patientOrig =

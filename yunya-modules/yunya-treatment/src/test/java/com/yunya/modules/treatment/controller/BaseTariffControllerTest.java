@@ -1,14 +1,20 @@
 package com.yunya.modules.treatment.controller;
 
+import com.yunya.feign.treatment.domain.form.TariffUnitePriceForm;
+import com.yunya.feign.treatment.domain.model.TariffUniteModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.treatment.controller.web.BaseOralTariffController;
 import com.yunya.modules.treatment.controller.web.BaseTariffController;
+import org.apache.poi.ss.formula.functions.T;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 简介: 价目表控制层测试
@@ -44,5 +50,41 @@ public class BaseTariffControllerTest {
   public void test4() {
     ResponseResult<String> number = baseOralTariffController.getBaseOralTariffNumber(1);
     System.out.println(number);
+  }
+
+  @Test
+  public void test5() {
+    TariffUnitePriceForm form = new TariffUnitePriceForm();
+    Set<Integer> orgIds = new HashSet<>();
+    orgIds.add(26);
+    orgIds.add(27);
+    orgIds.add(28);
+    form.setOrgIds(orgIds);
+    Set<TariffUniteModel> objects = new HashSet<>();
+    TariffUniteModel model = new TariffUniteModel();
+    model.setId(106);
+    model.setPrice(BigDecimal.valueOf(90L));
+    // objects.add(model);
+    form.setTariffUniteModels(objects);
+    ResponseResult<T> result = baseOralTariffController.uniteOralTariffPrice(form);
+    System.out.println(result);
+  }
+
+  @Test
+  public void test6() {
+    TariffUnitePriceForm form = new TariffUnitePriceForm();
+    Set<Integer> orgIds = new HashSet<>();
+    orgIds.add(26);
+    orgIds.add(27);
+    orgIds.add(28);
+    form.setOrgIds(orgIds);
+    Set<TariffUniteModel> objects = new HashSet<>();
+    TariffUniteModel model = new TariffUniteModel();
+    model.setId(1653);
+    model.setPrice(BigDecimal.valueOf(90L));
+    objects.add(model);
+    form.setTariffUniteModels(objects);
+    ResponseResult<T> result = baseTariffController.uniteTariffPrice(form);
+    System.out.println(result);
   }
 }

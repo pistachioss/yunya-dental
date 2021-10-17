@@ -11,9 +11,11 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.treatment.domain.form.BaseOralTariffForm;
 import com.yunya.feign.treatment.domain.form.ClinicItemPriceForm;
+import com.yunya.feign.treatment.domain.form.TariffUnitePriceForm;
 import com.yunya.feign.treatment.domain.model.BaseOralTariffImportModel;
 import com.yunya.feign.treatment.domain.model.BaseOralTariffModel;
 import com.yunya.feign.treatment.domain.model.ClinicItemPriceModel;
+import com.yunya.feign.treatment.domain.model.TariffUniteModel;
 import com.yunya.feign.treatment.domain.query.BaseOralTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffExportVO;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffInfoVO;
@@ -26,7 +28,10 @@ import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.tariff.*;
+import com.yunya.models.tariff.BaseOralTariff;
+import com.yunya.models.tariff.BaseOralTariffCategory;
+import com.yunya.models.tariff.BaseOralTariffHistory;
+import com.yunya.models.tariff.ClinicOralTariff;
 import com.yunya.modules.treatment.mapper.BaseOralTariffCategoryMapper;
 import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -34,13 +39,19 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -49,7 +60,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTariffInfo;
-import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
+import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
+import static com.yunya.framework.common.constant.OperationCodeConstants.OBJECT_EDIT_FAIL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY;
+import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
 
 /**
@@ -516,10 +532,9 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       StringBuilder failureMsg,
       CountDownLatch latch) {
     dataNum.set(0);
-    List<Future> resultFutures = new ArrayList<>();
-    models.forEach(
-        model ->
-            resultFutures.add(
+    return models.stream()
+        .map(
+            model ->
                 importExcelThreadPool.submit(
                     () -> {
                       try {
@@ -541,8 +556,8 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
                       } finally {
                         latch.countDown();
                       }
-                    })));
-    return resultFutures;
+                    }))
+        .collect(Collectors.toList());
   }
 
   /**
@@ -660,7 +675,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
                       .append("数据错误，Excel表中第")
                       .append(dataNum)
                       .append("'条数据的商品编号与数据库一致但商品名称不一致");
-                  // todo 将该行数据加入到错误数据集合中
+                  // 将该行数据加入到错误数据集合中
                   throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
                 }
               } else {
@@ -669,7 +684,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
                       .append("数据错误，Excel表中第")
                       .append(dataNum)
                       .append("'条数据的商品编号与数据库不一致但商品名称一致");
-                  // todo 将该行数据加入到错误数据集合中
+                  // 将该行数据加入到错误数据集合中
                   throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
                 }
               }
@@ -1205,5 +1220,43 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       return mapper.selectBaseOralNamesByIds(joiner.join(ids));
     }
     return null;
+  }
+
+  /**
+   * 统一设置商品单价（多门诊）
+   *
+   * @param form 价格参数
+   */
+  public void uniteOralTariffPrice(TariffUnitePriceForm form) {
+    Set<Integer> orgIds = form.getOrgIds();
+    Set<TariffUniteModel> tariffUniteModels = form.getTariffUniteModels();
+    if (CollectionUtils.isEmpty(orgIds)) {
+      throw new ClientServiceException("请至少选择一个门诊", PARAM_NOT_ALLOW_EMPTY);
+    }
+    if (CollectionUtils.isEmpty(tariffUniteModels)) {
+      throw new ClientServiceException("请至少选择一个商品项目", PARAM_NOT_ALLOW_EMPTY);
+    }
+    if (!CollectionUtils.isEmpty(orgIds) && !CollectionUtils.isEmpty(tariffUniteModels)) {
+      Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+      String name = BaseContextHandler.getName();
+      List<ClinicOralTariff> clinicOralTariffs = Lists.newArrayList();
+      for (TariffUniteModel model : tariffUniteModels) {
+        for (Integer orgId : orgIds) {
+          ClinicOralTariff oralTariff = new ClinicOralTariff();
+          oralTariff.setClinicId(orgId);
+          oralTariff.setOralTariffId(model.getId());
+          clinicOralTariffBiz.delete(oralTariff);
+          oralTariff.setPrice(model.getPrice());
+          oralTariff.setCrtId(userId);
+          oralTariff.setCrtName(name);
+          oralTariff.setUpdId(userId);
+          oralTariff.setUpdName(name);
+          clinicOralTariffs.add(oralTariff);
+        }
+      }
+      if (!CollectionUtils.isEmpty(clinicOralTariffs)) {
+        clinicOralTariffBiz.batchInsert(clinicOralTariffs);
+      }
+    }
   }
 }

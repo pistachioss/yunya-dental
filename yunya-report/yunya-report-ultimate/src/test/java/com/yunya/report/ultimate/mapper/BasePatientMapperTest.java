@@ -1,4 +1,5 @@
 package com.yunya.report.ultimate.mapper;
+import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
 import com.yunya.feign.report.domain.vo.BasePatientNotSeenVo;
@@ -35,10 +36,8 @@ public class BasePatientMapperTest {
 
   @Test
   public void find1() {
-    PatientReportQueryForm query = new PatientReportQueryForm();
-    query.setOrgId(26);
-    query.setStartDate("2021-03-01");
-    query.setEndDate("2021-04-15");
+    String param = "{\"orgId\":29,\"type\":\"day\",\"time\":[\"2021-09-01\",\"2021-09-30\"],\"treatTypes\":[],\"date\":null,\"attendingDoctors\":[],\"registeredDentistIds\":[],\"combination\":null,\"monthDay\":null,\"year\":null,\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true,\"startDate\":\"2021-09-01\",\"endDate\":\"2021-09-30\"}";
+    PatientReportQueryForm query = JSONObject.parseObject(param,PatientReportQueryForm.class);
     List<BasePatientNotSeenVo> vos = patientMapper.selectNotSeenList(query);
     System.out.println(vos);
   }

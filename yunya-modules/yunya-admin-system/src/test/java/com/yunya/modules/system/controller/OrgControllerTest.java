@@ -1,6 +1,8 @@
 package com.yunya.modules.system.controller;
 
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.modules.system.domain.form.OrganizationForm;
 import com.yunya.modules.system.domain.query.OrganizationQueryForm;
 import org.junit.Test;
@@ -8,6 +10,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ORG_ID;
 
 /**
  * 简介: 组织控制器测试
@@ -23,6 +27,8 @@ public class OrgControllerTest {
 
   /** 注入对象 */
   @Autowired private OrganizationController organizationController;
+
+  @Autowired private RedisUtils redisUtils;
 
   /** 根据条件查询组织列表信息 */
   @Test
@@ -42,6 +48,16 @@ public class OrgControllerTest {
     entity.setCrtName("含哭哭");
     System.out.println(entity.getId());
     ResponseResult result = organizationController.addOrganization(entity);
+    System.out.println(result);
+  }
+
+  @Test
+  public void testOne() {
+    Integer[] orgIds = {21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43};
+    for (Integer orgId : orgIds) {
+      redisUtils.delete(REDIS_KEY_ORG_ID + orgId);
+    }
+    ResponseResult<OrganizationInfo> result = organizationController.findById(26);
     System.out.println(result);
   }
 }

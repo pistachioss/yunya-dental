@@ -1174,8 +1174,8 @@
         bdp.categoryId,
         bdp.itemType AS categoryType,
         bdp.categoryName,
-        ifnull(sum(bdp.totalOriginalAmount),0) AS totalOriginalAmount,
-        sum(bdp.totalOriginalAmount) - sum(bdp.discountAmount) as totalActualAmount,
+        0 AS totalOriginalAmount,
+        0 AS totalActualAmount,
         ifnull(sum(bdp.discountAmount),0) as totalDiscountAmount,
         ifnull(SUM(bdp.supplementWorkload),0) AS totalCouponAmount
         from (
@@ -3591,8 +3591,11 @@
     <select id="billItemStatisticsGroupByOrgId" resultType="com.yunya.feign.report.domain.vo.BillItemStatisticsVO">
         SELECT
         bbd.org_id AS orgId,
-        <if test="column!=null and column!=''">
-            ${column} AS itemId,
+        <if test="column1!=null and column1!=''">
+            ${column1} AS itemType,
+        </if>
+        <if test="column2!=null and column2!=''">
+            ${column2} AS itemId,
         </if>
         SUM(bbd.quantity) AS quantity
         FROM base_bill_detail bbd
@@ -3614,8 +3617,11 @@
             </if>
         </where>
         group by bbd.org_id
-        <if test="column!=null and column!=''">
-            , ${column}
+        <if test="column1!=null and column1!=''">
+            , ${column1}
+        </if>
+        <if test="column2!=null and column2!=''">
+            , ${column2}
         </if>
     </select>
     <!-- 根据条件查询个人开单项目已收工作量明细 -->
@@ -4327,9 +4333,9 @@
         bbd.quantity,
         bem.employee_name AS regDentistName,
         be.employee_name AS executorName,
-        TRUNCATE(((bbd.quantity*bbd.price-bbd.discount_amount)/bb.actual_amount)*bbp.received_amount,2) AS amount,
+        IFNULL(TRUNCATE(((bbd.quantity*bbd.price-bbd.discount_amount)/bb.actual_amount)*bbp.received_amount,2),0) AS amount,
         TRUNCATE(((bbd.quantity*bbd.price-bbd.discount_amount)/bb.actual_amount),2) AS freePaymentAmount,
-        if(bb.privilege_date=bbp.payee_date,bbd.coupon_workload,0) AS supplyWorkload,
+        if(bb.privilege_date=bbp.payee_date,TRUNCATE(IFNULL(bbd.coupon_workload,0),2),0) AS supplyWorkload,
         bp.NAME AS patientName,
         bp.patient_id AS patientId,
         bp.mobile,

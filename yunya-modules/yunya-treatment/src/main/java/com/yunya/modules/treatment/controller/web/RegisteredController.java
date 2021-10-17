@@ -71,7 +71,7 @@ public class RegisteredController {
   @ApiOperation("转诊")
   @PostMapping("/referred")
   public ResponseResult referred(@RequestBody @Validated ReferredForm referredForm) {
-    return ResponseUtil.success( registeredBiz.referred(referredForm));
+    return ResponseUtil.success(registeredBiz.referred(referredForm));
   }
 
   /**
@@ -83,7 +83,8 @@ public class RegisteredController {
   @CurrentUser
   @ApiOperation("门诊端转诊记录")
   @PostMapping("/referredInfo")
-  public ResponseResult<PageInfo<ReferredInfoVO>> referredInfo(@RequestBody @Validated ReferredInfoForm referredForm) {
+  public ResponseResult<PageInfo<ReferredInfoVO>> referredInfo(
+      @RequestBody @Validated ReferredInfoForm referredForm) {
     List<ReferredInfoVO> relist = registeredBiz.referredInfo(referredForm);
     if (referredForm.getWhetherPage()) {
       Integer pageNum = referredForm.getPageNum();
@@ -93,15 +94,12 @@ public class RegisteredController {
       pageInfo.setPageNum(pageNum);
       pageInfo.setPageSize(pageSize);
       pageInfo.setTotal(total);
-      int a  = pageSize * (pageNum - 1);
+      int a = pageSize * (pageNum - 1);
       List<ReferredInfoVO> list = new ArrayList<>();
-      if(a>total){
-        list =  relist.subList(
-                        0, (Math.min((pageSize * pageNum), total)));
-      }else{
-        list =
-                relist.subList(
-                        a, (Math.min((pageSize * pageNum), total)));
+      if (a > total) {
+        list = relist.subList(0, (Math.min((pageSize * pageNum), total)));
+      } else {
+        list = relist.subList(a, (Math.min((pageSize * pageNum), total)));
       }
       pageInfo.setList(list);
       return ResponseUtil.success(pageInfo);
@@ -114,19 +112,12 @@ public class RegisteredController {
    * @param
    * @return
    */
-  @CurrentUser
   @ApiOperation("导出门诊端转诊记录")
   @PostMapping("/referredInfo/export")
-  public ResponseResult<T> exportReferredInfo(HttpServletResponse response,@RequestBody @Validated ReferredInfoForm referredForm) throws IOException {
-    List<ReferredInfoVO> relist = registeredBiz.referredInfo(referredForm);
-    ExcelUtil<ReferredInfoVO> excelUtil = new ExcelUtil<>(ReferredInfoVO.class);
-    String fileName =
-            excelUtil.getFileName(
-                    null,
-                    null,
-                    null,
-                    "转诊统计");
-    excelUtil.exportExcel(response, relist, "转诊统计", fileName);
+  public ResponseResult<T> exportReferredInfo(
+      HttpServletResponse response, @RequestBody @Validated ReferredInfoForm referredForm)
+      throws IOException {
+    registeredBiz.exportReferredList(response, referredForm);
     return ResponseUtil.success(null);
   }
 
@@ -139,22 +130,22 @@ public class RegisteredController {
   @CurrentUser
   @ApiOperation("转诊报表")
   @PostMapping("/referredReport")
-  public ResponseResult<PageInfo<ReferredRrportVO>> referredReport(@RequestBody @Validated ReferredRrportForm referredRrportForm) {
-      List<ReferredRrportVO> relist = registeredBiz.referredReport(referredRrportForm);
-      if (referredRrportForm.getWhetherPage()) {
-          Integer pageNum = referredRrportForm.getPageNum();
-          Integer pageSize = referredRrportForm.getPageSize();
-          int total = relist.size();
-          PageInfo<ReferredRrportVO> pageInfo = new PageInfo<>();
-          pageInfo.setPageNum(pageNum);
-          pageInfo.setPageSize(pageSize);
-          pageInfo.setTotal(total);
-          List<ReferredRrportVO> list =
-                  relist.subList(
-                          pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
-          pageInfo.setList(list);
-          return ResponseUtil.success(pageInfo);
-      }
+  public ResponseResult<PageInfo<ReferredRrportVO>> referredReport(
+      @RequestBody @Validated ReferredRrportForm referredRrportForm) {
+    List<ReferredRrportVO> relist = registeredBiz.referredReport(referredRrportForm);
+    if (referredRrportForm.getWhetherPage()) {
+      Integer pageNum = referredRrportForm.getPageNum();
+      Integer pageSize = referredRrportForm.getPageSize();
+      int total = relist.size();
+      PageInfo<ReferredRrportVO> pageInfo = new PageInfo<>();
+      pageInfo.setPageNum(pageNum);
+      pageInfo.setPageSize(pageSize);
+      pageInfo.setTotal(total);
+      List<ReferredRrportVO> list =
+          relist.subList(pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+      pageInfo.setList(list);
+      return ResponseUtil.success(pageInfo);
+    }
     return ResponseUtil.success(new PageInfo<>(relist));
   }
 
@@ -167,15 +158,12 @@ public class RegisteredController {
   @CurrentUser
   @ApiOperation("导出转诊报表")
   @PostMapping("/referredReport/export")
-  public ResponseResult<T> exportReferredReport(HttpServletResponse response,@RequestBody @Validated ReferredRrportForm referredRrportForm) throws IOException {
+  public ResponseResult<T> exportReferredReport(
+      HttpServletResponse response, @RequestBody @Validated ReferredRrportForm referredRrportForm)
+      throws IOException {
     List<ReferredRrportVO> relist = registeredBiz.referredReport(referredRrportForm);
     ExcelUtil<ReferredRrportVO> excelUtil = new ExcelUtil<>(ReferredRrportVO.class);
-    String fileName =
-            excelUtil.getFileName(
-                    null,
-                    null,
-                    null,
-                    "转诊报表");
+    String fileName = excelUtil.getFileName(null, null, null, "转诊报表");
     excelUtil.exportExcel(response, relist, "转诊报表", fileName);
     return ResponseUtil.success(null);
   }
