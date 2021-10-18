@@ -75,11 +75,11 @@
         <include refid="baseResultMapField"></include>
         from order_record
         where
-            inservice = true
-            and treatment_record_id in
-            <foreach collection="treatmentRecordIds" item="treatmentRecordId" open="(" separator="," close=")">
-                #{treatmentRecordId}
-            </foreach>
+        inservice = true
+        and treatment_record_id in
+        <foreach collection="treatmentRecordIds" item="treatmentRecordId" open="(" separator="," close=")">
+            #{treatmentRecordId}
+        </foreach>
     </select>
 
     <!-- 查询当前订单可用预付款支付金额 -->
@@ -91,5 +91,19 @@
                             0)) as decimal(19, 2)) as enablePrepaymentAmount
         from order_record o1
         where o1.id = #{orderRecordId}
+    </select>
+
+    <!-- 查询全部未结账开单记录列表 -->
+    <select id="selectAllUnCheckedOrderRecords" resultType="com.yunya.models.treatment.OrderRecord">
+        select
+        id,
+        total_amount
+        from order_record
+        where inservice = true
+        and status = 1
+        and treatment_record_id in
+        <foreach collection="treatmentRecordIds" item="item" index="index" separator="," open="(" close=")">
+            #{item}
+        </foreach>
     </select>
 </mapper>

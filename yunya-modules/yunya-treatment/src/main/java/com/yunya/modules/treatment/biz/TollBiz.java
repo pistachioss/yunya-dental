@@ -431,7 +431,6 @@ public class TollBiz {
     OrderDetail orderDetail = new OrderDetail();
     orderDetail.setOrderRecordId(orderRecordId);
     List<OrderDetail> orderDetails = orderDetailBiz.selectList(orderDetail);
-    String res = null;
     String tariffNames = baseTariffBiz.findBaseTariffNamesByIds(orderDetails.stream()
             .filter(obj -> obj.getType() == 0)
             .map(obj -> String.valueOf(obj.getBillingItemId())).toArray(String[]::new));
@@ -1469,7 +1468,7 @@ public class TollBiz {
    * @param orderRecordOrgId 订单组织ID
    * @return BillRecord
    */
-  private BillRecord generateBillRecord(
+  private synchronized BillRecord generateBillRecord(
       Integer treatmentId, Integer patientId, Integer orderRecordId, Integer orderRecordOrgId) {
     BillRecord billRecord = new BillRecord();
     billRecord.setOrgId(orderRecordOrgId);

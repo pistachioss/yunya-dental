@@ -496,12 +496,12 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       throw new ClientServiceException(
           "修改开单失败，系统未查询到ID为'" + orderRecordId + "'的账单信息！", SAME_DATA_EXIST);
     }
-    
+
     Byte status = orderRecord.getStatus();
     if (BusinessConstants.ORDER_LOCK_STATUS.equals(status)) {
       throw new ClientServiceException("修改开单失败，无法修改锁定的账单！", OBJECT_EDIT_FAIL);
     }
-    
+
     if (ORDER_FINISH_STATUS.equals(status)) {
       throw new ClientServiceException("修改开单失败，无法修改已完成结算的账单！", OBJECT_EDIT_FAIL);
     }
@@ -767,5 +767,15 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    */
   public BigDecimal currentOrderEnablePrepayment(Integer orderRecordId) {
     return mapper.currentOrderEnablePrepayment(orderRecordId);
+  }
+
+  /**
+   * 获取未结账订单记录列表
+   *
+   * @param treatmentRecordIds 就诊记录ID列表
+   * @return list
+   */
+  public List<OrderRecord> getUnCheckedOrderRecords(List<Integer> treatmentRecordIds) {
+    return mapper.selectAllUnCheckedOrderRecords(treatmentRecordIds);
   }
 }
