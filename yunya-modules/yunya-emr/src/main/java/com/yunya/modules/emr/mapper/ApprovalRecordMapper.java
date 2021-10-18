@@ -71,7 +71,16 @@ public interface ApprovalRecordMapper extends tk.mybatis.mapper.common.Mapper<Ap
     List<ApprovalRecord> listMedicalByParam(@Param("medicalIds") List<Integer> medicalIds, @Param("submitTime") String submitTime,
                                           @Param("loginUserId") Integer loginUserId, @Param("eventType") Integer eventType,
                                           @Param("auditStatus") Integer auditStatus);
-
+    /**
+     * 根据条件查询病例审核数据集合（新）
+     * @param medicalIds
+     * @param submitTime
+     * @return
+     */
+    List<ApprovalRecord> listMedicalNewByParam(@Param("medicalIds") List<Integer> medicalIds, @Param("startTime") String submitTime,
+                                                @Param("endTime") String endTime,
+                                            @Param("loginUserId") Integer loginUserId, @Param("eventType") Integer eventType,
+                                            @Param("auditStatus") Integer auditStatus);
     /**
      * 根据草稿病例提交时间查询电子病例id集合
      * @param submitTime
