@@ -62,7 +62,7 @@ public class  AppointmentDimensionVo implements Serializable {
 //    @ApiModelProperty(value = "员工请假信息")
 //    private List<EmpScheduleVo> leaveInfos;
 
-    /** 医生在职状态*/
-    @ApiModelProperty("医生在职状态")
-    private boolean isWorking = true;
+    /** 医生在职状态: true-在职，false-离职*/
+    @ApiModelProperty("医生在职状态: true-在职，false-离职")
+    private Boolean workStatus = true;
 }
