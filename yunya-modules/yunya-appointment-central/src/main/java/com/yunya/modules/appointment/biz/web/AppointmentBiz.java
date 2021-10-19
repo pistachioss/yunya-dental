@@ -735,6 +735,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         List<Integer> enableDentistIds = this.enableAppointDentistIds(query.getOrgId());
         // 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
         appointmentDimensionVos = this.dimensionAppointInfo(query,enableDentistIds);
+        dentistSchedule(appointmentDimensionVos);
+        // 最后进行排序
+        return this.sort(appointmentDimensionVos, query.getOrder(), query.getOrderBy());
+    }
+
+    /**
+     * 设置预约列表中医生是否排班
+     *
+     * @param appointmentDimensionVos
+     */
+    private void dentistSchedule(List<AppointmentDimensionVo> appointmentDimensionVos) {
         for(AppointmentDimensionVo a:appointmentDimensionVos){
             if(a.getDentistScheduleVos().size()>0){
                 for(EmpScheduleVo empScheduleVo:a.getDentistScheduleVos()){
@@ -747,8 +758,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 }
             }
         }
-        // 最后进行排序
-        return this.sort(appointmentDimensionVos, query.getOrder(), query.getOrderBy());
     }
 
     /**
@@ -1196,6 +1205,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 WorkDayVO workDayVO = new WorkDayVO();
                 // 获取离职员工下预约的患者是哪一天的
                 AppointmentDimensionVo appointmentDimensionVo = appointmentDimensionCommInfos.stream().filter(appointInfo -> appointInfo.getDentistId().equals(entity.getUserId())).findFirst().get();
+                // 标识离职状态
+                appointmentDimensionVo.setWorking(false);
                 Date currentDate = appointmentDimensionVo.getCurrentDate();
                 // 给离职员工创建空的离职排班
                 List<WorkDayVO> workDayVOS = new ArrayList<>();
@@ -1381,7 +1392,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
             // 批量获取患者就诊信息
             List<TreatmentRecord> treatmentRecordList = remoteTreatmentServiceFeign.findTreatmentRecordListByAppointIds(appointIds);
-
+            dentistSchedule(appointmentDimensionVos);
+            appointmentDimensionVos = sort(appointmentDimensionVos, query.getOrder(), query.getOrderBy());
             // 根据大医生id查询相关助手信息并且设置助手信息
             appointmentDimensionVos.forEach(appointmentDimensionVo -> {
                 // 组合患者预约维度信息（预约患者信息+医生排班信息）
@@ -1397,17 +1409,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
 
         // 按患者数量对医生降序排序
-        Collections.sort(appointmentDentistDimensionVoList, (o1, o2) -> {
-            if (o1.getPatientNum() != null && o2.getPatientNum() != null){
-                if (o1.getPatientNum() > o2.getPatientNum()) {
-                    return -1;
-                }
-                if (o1.getPatientNum() < o2.getPatientNum()) {
-                    return 1;
-                }
-            }
-            return 0;
-        });
+//        Collections.sort(appointmentDentistDimensionVoList, (o1, o2) -> {
+//            if (o1.getPatientNum() != null && o2.getPatientNum() != null){
+//                if (o1.getPatientNum() > o2.getPatientNum()) {
+//                    return -1;
+//                }
+//                if (o1.getPatientNum() < o2.getPatientNum()) {
+//                    return 1;
+//                }
+//            }
+//            return 0;
+//        });
         // 设置分页
         PageUtil<AppointmentDimensionVo> paging = new PageUtil<>(query.getPageNum(), query.getPageSize());
         Page<AppointmentDimensionVo> pageAssistantData = paging.getPageAssistantData(appointmentDentistDimensionVoList);
