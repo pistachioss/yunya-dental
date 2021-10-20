@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.other.mapper.TreatPlanMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment_other.TreatPlan" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <!--根据条件查询治疗计划列表-->
+  <select id="selectTreatPlanList" resultType="com.yunya.feign.treatment_other.domain.vo.TreatPlanVO">
+    SELECT
+      tp.id,
+      tp.patient_id AS patientId,
+      xuf.id AS fileId,
+      xuf.file_name AS fileName,
+      xuf.file_type AS fileType,
+      xuf.file_location AS fileLocation,
+      xuf.upload_time AS uploadTime,
+      xuf.crt_time AS crtTime,
+      xuf.upd_time AS updTime
+    FROM treat_plan tp
+    LEFT JOIN x_upload_file xuf ON xuf.source_id=tp.id AND xuf.source_type=1
+    <where>
+      tp.inservice = true
+      AND xuf.inservice = true
+      <if test="query.patientId != null">
+        and tp.patient_id = #{query.patientId}
+      </if>
+    </where>
+    order by tp.crt_time desc
+  </select>
+</mapper>

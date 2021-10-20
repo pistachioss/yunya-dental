@@ -60,11 +60,11 @@ public class PatientOriginController {
   @GetMapping("/initPatientOriginTree")
   public ResponseResult<List<PatientOriginTreeVo>> initPatientOriginTree() {
     List<PatientOriginTreeVo>list = this.patientOriginBiz.initPatientOriginTree();
-    PatientOriginTreeVo patientOriginTreeVo = new PatientOriginTreeVo();
-    patientOriginTreeVo.setInservice(true);
-    patientOriginTreeVo.setOriginType(0);
-    patientOriginTreeVo.setName("未知来源");
-    list.add(patientOriginTreeVo);
+//    PatientOriginTreeVo patientOriginTreeVo = new PatientOriginTreeVo();
+//    patientOriginTreeVo.setInservice(true);
+//    patientOriginTreeVo.setOriginType(0);
+//    patientOriginTreeVo.setName("未知来源");
+//    list.add(patientOriginTreeVo);
     return ResponseUtil.success(list);
   }
 
