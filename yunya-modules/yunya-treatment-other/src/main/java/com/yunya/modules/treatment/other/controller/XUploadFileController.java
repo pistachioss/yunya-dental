@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.other.controller;
 
+import com.yunya.feign.treatment_other.domain.form.XUploadFileForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -9,10 +10,8 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 简介：
@@ -30,6 +29,26 @@ public class XUploadFileController {
     @Autowired
     private XUploadFileBiz xUploadFileBiz;
 
+    /**
+     * 根据文件ID编辑上传日期
+     *
+     * @param form
+     * @return
+     */
+    @ApiOperation("根据文件ID编辑上传日期")
+    @PutMapping("/edit/uploadTime")
+    @CurrentUser
+    public ResponseResult editUploadTime(@Validated @RequestBody XUploadFileForm form) {
+        xUploadFileBiz.editUploadTime(form);
+        return ResponseUtil.success();
+    }
+
+    /**
+     * 根据文件ID删除文件信息
+     *
+     * @param fileId
+     * @return
+     */
     @ApiOperation("根据文件ID删除文件信息")
     @DeleteMapping("/del/{fileId}")
     @CurrentUser

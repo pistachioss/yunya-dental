@@ -2,7 +2,9 @@ package com.yunya.modules.treatment.other.utils;
 
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.DateUtil;
 
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -34,10 +36,20 @@ public class TreatmentOtherUtils {
      * @param crtTime 创建时间
      */
     public static void enableEditImage(Date crtTime) {
-        long deadLineInMillis = TreatmentOtherUtils.currentTimeInMillis(crtTime);
-        long systemTimeInMillis = System.currentTimeMillis();
-        if (systemTimeInMillis > deadLineInMillis) {
+        Date deadLineDate = null;
+        try {
+            deadLineDate = DateUtil.timeToDate(crtTime,"23:59:59");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        Date now = DateUtil.getCurrentDate();
+        if (now.after(deadLineDate)) {
             throw new ClientServiceException("已经错过修改日期，不允许修改", OperationCodeConstants.OBJECT_EDIT_FAIL);
         }
+//        long deadLineInMillis = TreatmentOtherUtils.currentTimeInMillis(crtTime);
+//        long systemTimeInMillis = System.currentTimeMillis();
+//        if (systemTimeInMillis > deadLineInMillis) {
+//            throw new ClientServiceException("已经错过修改日期，不允许修改", OperationCodeConstants.OBJECT_EDIT_FAIL);
+//        }
     }
 }

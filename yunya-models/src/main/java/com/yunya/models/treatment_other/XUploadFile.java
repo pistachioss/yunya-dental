@@ -47,6 +47,12 @@ public class XUploadFile {
     private String filePath;
 
     /**
+     * 上传时间
+     */
+    @Column(name = "upload_time")
+    private Date uploadTime;
+
+    /**
      * 是否启用
      */
     private Boolean inservice;
@@ -195,6 +201,24 @@ public class XUploadFile {
      */
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    /**
+     * 设置上传时间
+     *
+     * @param uploadTime 上传时间
+     */
+    public void setUploadTime(Date uploadTime) {
+        this.uploadTime = uploadTime;
+    }
+
+    /**
+     * 获取上传时间
+     *
+     * @return
+     */
+    public Date getUploadTime() {
+        return uploadTime;
     }
 
     /**

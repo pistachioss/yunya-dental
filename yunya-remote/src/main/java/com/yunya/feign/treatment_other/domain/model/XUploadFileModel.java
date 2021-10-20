@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment_other.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -27,4 +28,9 @@ public class XUploadFileModel implements Serializable {
     @ApiModelProperty(value = "文件名称",required = true)
     @NotBlank(message = "文件名称不能为空")
     private String fileName;
+
+    /** 上传日期*/
+    @ApiModelProperty(value = "上传日期,不传默认当前日期")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private String uploadTime;
 }
