@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.other.mapper.XUploadFileMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment_other.XUploadFile" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="file_name" property="fileName" jdbcType="VARCHAR" />
+    <result column="file_type" property="fileType" jdbcType="TINYINT" />
+    <result column="source_id" property="sourceId" jdbcType="INTEGER" />
+    <result column="source_type" property="sourceType" jdbcType="TINYINT" />
+    <result column="file_location" property="fileLocation" jdbcType="VARCHAR" />
+    <result column="file_path" property="filePath" jdbcType="VARCHAR" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <!-- 批量添加文件 -->
+  <insert id="addBatch" parameterType="list" keyProperty="id" useGeneratedKeys="true">
+    insert into x_upload_file
+    (file_type,file_name,file_location,source_id,source_type,file_path,
+    crt_id,crt_time,upd_id,upd_time)
+    values
+    <foreach collection="files" item="obj" separator=",">
+      (#{obj.fileType},#{obj.fileName},#{obj.fileLocation},#{obj.sourceId},#{obj.sourceType},
+      #{obj.filePath},#{obj.crtId},#{obj.crtTime},#{obj.updId},#{obj.updTime})
+    </foreach>
+  </insert>
+</mapper>
