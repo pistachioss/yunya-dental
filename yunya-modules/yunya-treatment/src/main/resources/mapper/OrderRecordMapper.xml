@@ -97,7 +97,10 @@
     <select id="selectAllUnCheckedOrderRecords" resultType="com.yunya.models.treatment.OrderRecord">
         select
         id,
-        total_amount
+        org_id as orgId,
+        patient_id as patientId,
+        treatment_record_id as treatmentRecordId,
+        total_amount as totalAmount
         from order_record
         where inservice = true
         and status = 1

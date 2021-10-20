@@ -482,7 +482,7 @@
         id
         from treatment_record
         where inservice = 1
-        and date_format(tr.crt_time, '%Y-%m-%d') = #{treatDate}
+        and date_format(crt_time, '%Y-%m-%d') = #{treatDate}
         and status = #{treatmentProcessedStatus}
     </select>
 </mapper>

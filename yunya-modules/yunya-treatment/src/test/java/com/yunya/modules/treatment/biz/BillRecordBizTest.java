@@ -12,6 +12,7 @@ import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.PatientBillStatistics;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.modules.treatment.task.AutoChargeTask;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +32,11 @@ import java.util.Arrays;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 public class BillRecordBizTest {
-  @Autowired BillRecordBiz billRecordBiz;
+  @Autowired private BillRecordBiz billRecordBiz;
   @Autowired private TreatmentRecordBiz treatmentRecordBiz;
   @Autowired private OrderDetailBiz orderDetailBiz;
-  @Autowired BillPayRecordBiz billPayRecordBiz;
+  @Autowired private BillPayRecordBiz billPayRecordBiz;
+  @Autowired private AutoChargeTask autoChargeTask;
 
   @Test
   public void getNum() {
@@ -96,5 +98,10 @@ public class BillRecordBizTest {
     query.setQueryDate("2021-03");
     CurrentMonthBillStatisticVO currentMonthStatementStatistic = billRecordBiz.findCurrentMonthStatementStatistic(query);
     System.out.println(JSONObject.toJSON(currentMonthStatementStatistic));
+  }
+
+  @Test
+  public void autoCharge() throws InterruptedException {
+    autoChargeTask.autoCharge();
   }
 }

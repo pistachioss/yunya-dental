@@ -258,7 +258,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     // 校验开单参数
     TreatmentRecord treatmentRecord = checkOrderParam(treatmentRecordId);
     String orderKey = LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId;
-    redisUtils.set(orderKey, treatmentRecordId, 5);
+    redisUtils.set(orderKey, treatmentRecordId, 300);
     List<OrderDetailModel> models = model.getOrderDetails();
     Integer treatmentRecordOrgId = treatmentRecord.getOrgId();
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
@@ -365,7 +365,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @param orgId 组织ID
    * @return
    */
-  private String generateOrderRecordNumber(Integer orgId) {
+  private synchronized String generateOrderRecordNumber(Integer orgId) {
     String number = mapper.selectOrderNumberByOrgId(orgId, new Date(System.currentTimeMillis()));
     String suffix = String.format("%04d", Integer.parseInt(number) + 1);
     return String.format(
@@ -777,5 +777,58 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    */
   public List<OrderRecord> getUnCheckedOrderRecords(List<Integer> treatmentRecordIds) {
     return mapper.selectAllUnCheckedOrderRecords(treatmentRecordIds);
+  }
+
+  /**
+   * 更新开单状态
+   *
+   * @param orderRecord 开单记录
+   * @return int
+   */
+  public int updateOrderStatus(OrderRecord orderRecord) {
+    return mapper.updateByPrimaryKeySelective(orderRecord);
+  }
+
+  /**
+   * 自动开单（开免单）
+   *
+   * @param treatmentRecordId 就诊记录ID
+   * @param patientId 患者ID
+   */
+  public OrderRecord autoOpenOrder(Integer treatmentRecordId, Integer patientId) {
+    OrderRecord order = new OrderRecord();
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    order.setOrgId(orgId);
+    order.setPatientId(patientId);
+    order.setTreatmentRecordId(treatmentRecordId);
+    String number = generateOrderRecordNumber(orgId);
+    order.setOrderRecordNum(number);
+    order.setStatus((byte) 1);
+    order.setTotalAmount(new BigDecimal("0"));
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    order.setCrtId(userId);
+    String name = BaseContextHandler.getName();
+    order.setCrtName(name);
+    order.setUpdId(userId);
+    order.setUpdName(name);
+    mapper.insertSelective(order);
+    OrderDetail detail = new OrderDetail();
+    detail.setOrgId(orgId);
+    detail.setTreatmentRecordId(treatmentRecordId);
+    detail.setOrderRecordId(order.getId());
+    detail.setType((byte) 0);
+    detail.setBillingItemId(BusinessConstants.FREE_TARIFF_ITEM_ID);
+    detail.setPrice(new BigDecimal("0"));
+    detail.setQuantity(1);
+    detail.setReceivableAmount(new BigDecimal("0"));
+    detail.setToothBit("");
+    detail.setExecutorId(0);
+    detail.setSourceType((byte) 0);
+    detail.setCrtId(userId);
+    detail.setCrtName(name);
+    detail.setUpdId(userId);
+    detail.setUptName(name);
+    orderDetailBiz.insertSelective(detail);
+    return order;
   }
 }

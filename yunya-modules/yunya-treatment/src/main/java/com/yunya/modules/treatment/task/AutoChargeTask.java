@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.task;
 
+import com.yunya.feign.treatment.domain.model.InvoiceModel;
 import com.yunya.feign.treatment.domain.model.TollModel;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.utils.DateUtil;
@@ -7,6 +8,7 @@ import com.yunya.models.treatment.OrderRecord;
 import com.yunya.modules.treatment.biz.OrderRecordBiz;
 import com.yunya.modules.treatment.biz.TollBiz;
 import com.yunya.modules.treatment.biz.TreatmentRecordBiz;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -26,6 +28,7 @@ import java.util.concurrent.ExecutorService;
  * @since: 1.0.0
  */
 @Component
+@EnableScheduling
 public class AutoChargeTask {
 
   /** 线程池 */
@@ -38,8 +41,8 @@ public class AutoChargeTask {
   /** 收费业务层 */
   @Resource private TollBiz tollBiz;
 
-  @Scheduled(cron = "0 0 13 * * ?")
-  public void autoCharge() {
+  @Scheduled(cron = "0 15 09 * * ?")
+  public void autoCharge() throws InterruptedException {
     // 获取当天全部就诊完成数据列表
     List<Integer> treatmentRecordIds =
         treatmentRecordBiz.getTreatCompletedList(
@@ -48,22 +51,26 @@ public class AutoChargeTask {
     if (!CollectionUtils.isEmpty(treatmentRecordIds)) {
       List<OrderRecord> orderRecords = orderRecordBiz.getUnCheckedOrderRecords(treatmentRecordIds);
       if (!CollectionUtils.isEmpty(orderRecords)) {
-        CountDownLatch categoryLatch = new CountDownLatch(orderRecords.size());
-        TollModel model = new TollModel();
-        model.setDiscountType((byte) 0);
+        CountDownLatch countDownLatch = new CountDownLatch(orderRecords.size());
         orderRecords.forEach(
-            orderRecord -> {
-              model.setOrderRecordId(orderRecord.getId());
-              model.setOutstandingAmount(orderRecord.getTotalAmount());
-              executorService.submit(
-                  () -> {
-                    try {
-                      tollBiz.confirmCharge(model);
-                    } finally {
-                      categoryLatch.countDown();
-                    }
-                  });
-            });
+            orderRecord ->
+                executorService.submit(
+                    () -> {
+                      try {
+                        TollModel model = new TollModel();
+                        model.setOrderRecordId(orderRecord.getId());
+                        model.setDiscountType((byte) 0);
+                        model.setOutstandingAmount(orderRecord.getTotalAmount());
+                        InvoiceModel invoiceModel = new InvoiceModel();
+                        invoiceModel.setInvoice(false);
+                        model.setInvoiceModel(invoiceModel);
+                        model.setIsAutoChecked(true);
+                        tollBiz.confirmCharge(model);
+                      } finally {
+                        countDownLatch.countDown();
+                      }
+                    }));
+        countDownLatch.await();
       }
     }
   }

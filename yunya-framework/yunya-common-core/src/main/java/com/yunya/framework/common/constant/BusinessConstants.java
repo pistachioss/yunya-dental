@@ -15,7 +15,10 @@ public class BusinessConstants {
 
   /** ---------------------菜单权限相关常量--------------------------------- */
   /** 系统管理员默认账号 */
+  public static final Integer ADMIN_ID = 1;
+
   public static final String ADMIN_ACCOUNT = "admin";
+  public static final String ADMIN_NAME = "系统管理员";
   /** 默认顶级父ID */
   public static final Integer DEFAULT_PARENT_ID = 0;
   /** 目录 */
@@ -56,7 +59,7 @@ public class BusinessConstants {
   /** 银行账户支付方式名称 */
   public static final String ACCOUNT_ITEM_OF_BANK = "银行账户";
   /** 免单支付入账方式id */
-  public static final List<Integer> FREE_PAYMENT_ID = Arrays.asList(23,26);
+  public static final List<Integer> FREE_PAYMENT_ID = Arrays.asList(23, 26);
   /*************************** 岗位组系统初始化参数 ***********************/
   /** 医生岗位组 */
   public static final Integer DENTIST_GROUP_ID = 3;
@@ -81,6 +84,8 @@ public class BusinessConstants {
   public static final Long HOUR_GAP = 24L;
 
   public static final Long MEDICAL_APPLY_LOCK_SEC = 600L;
+  /** 免单项目ID */
+  public static final Integer FREE_TARIFF_ITEM_ID = 679;
 
   /** 电子待审批状态 */
   public static Integer MEDICAL_AUDIT_PENDING_STATUS = 1;
@@ -125,7 +130,7 @@ public class BusinessConstants {
   /********************************预约中心正则*****************************/
   /** 手机号正则表达式 */
   public static final String MOBILE_REGEXP =
-          "^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\\d{8}$";
+      "^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\\d{8}$";
   /** 名字正则表达式 */
   public static final String NAME_REGEXP = "^[\\u4e00-\\u9fa5]{0,}$";
   /** 拼音名字正则表达式 */
