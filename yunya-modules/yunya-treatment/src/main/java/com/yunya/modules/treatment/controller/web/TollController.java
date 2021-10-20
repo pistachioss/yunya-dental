@@ -56,6 +56,21 @@ public class TollController {
   }
 
   /**
+   * 一键结账
+   *
+   * @param treatmentRecordId 就诊记录ID
+   * @return R
+   */
+  @CurrentUser
+  @ApiOperation("一键免单")
+  @GetMapping(value = "/autoCheck/{treatmentRecordId}", name = "自动结账")
+  public ResponseResult<T> autoCheckOut(
+      @PathVariable(value = "treatmentRecordId") Integer treatmentRecordId) {
+    tollBiz.autoCheckOut(treatmentRecordId);
+    return ResponseUtil.success(null);
+  }
+
+  /**
    * 确认收费
    *
    * @param model 收费参数

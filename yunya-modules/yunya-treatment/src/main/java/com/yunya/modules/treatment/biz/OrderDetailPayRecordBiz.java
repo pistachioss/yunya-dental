@@ -39,6 +39,15 @@ public class OrderDetailPayRecordBiz
   @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
 
   /**
+   * 批量插入开单明细收费记录
+   *
+   * @param orderDetailPayRecords 开单明细收费记录列表
+   */
+  public void batchInsert(List<OrderDetailPayRecord> orderDetailPayRecords) {
+    mapper.batchInsert(orderDetailPayRecords);
+  }
+
+  /**
    * 查询账单优惠为0的订单金额
    *
    * @param billRecordId 账单记录ID

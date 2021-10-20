@@ -27,4 +27,11 @@ public interface OrderDetailPayRecordMapper extends Mapper<OrderDetailPayRecord>
    */
   List<CurrentMonthBillDetailVO> selectCurrentMonthBillDetail(
       @Param("query") CurrentMonthBillInfoQuery query);
+
+  /**
+   * 批量插入开单明细收费记录
+   *
+   * @param orderDetailPayRecords 开单明细收费记录
+   */
+  void batchInsert(@Param("list") List<OrderDetailPayRecord> orderDetailPayRecords);
 }

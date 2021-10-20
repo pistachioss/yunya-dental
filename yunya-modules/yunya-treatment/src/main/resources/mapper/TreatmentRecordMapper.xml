@@ -160,20 +160,20 @@
         br.privilege_type
         from bill_record br
         left join (
-            select bill_record_id,sum(amount) amount from bill_pay_detail_record
-            <where>
-                inservice=true
-                <if test="queryForm.patientId != null">
-                    and patient_id = #{queryForm.patientId}
-                </if>
-                <if test="queryForm.payIds!=null and queryForm.payIds.size()>0">
-                    and account_item_id in
-                    <foreach collection="queryForm.payIds" item="id" open="(" separator="," close=")">
-                        #{id}
-                    </foreach>
-                </if>
-            </where>
-            group by bill_record_id
+        select bill_record_id,sum(amount) amount from bill_pay_detail_record
+        <where>
+            inservice=true
+            <if test="queryForm.patientId != null">
+                and patient_id = #{queryForm.patientId}
+            </if>
+            <if test="queryForm.payIds!=null and queryForm.payIds.size()>0">
+                and account_item_id in
+                <foreach collection="queryForm.payIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        group by bill_record_id
         ) bpd on br.id=bpd.bill_record_id
         WHERE
         br.inservice = 1
@@ -264,23 +264,23 @@
     <!-- PC照片影像小程序就诊中 -->
     <select id="desktopTreatingList" resultType="com.yunya.feign.treatment.domain.vo.DesktopMiniProgramVO">
         select
-            tr.id,
-            tr.dentist_id as dentistId,
-            tr.patient_id as patientId,
-            r.first_visit as firstVisit,
-            tr.treat_start_time as treatStarTime
+        tr.id,
+        tr.dentist_id as dentistId,
+        tr.patient_id as patientId,
+        r.first_visit as firstVisit,
+        tr.treat_start_time as treatStarTime
         from
-            treatment_record tr left join registered r on tr.registered_id = r.id
+        treatment_record tr left join registered r on tr.registered_id = r.id
         where
-              date_format(tr.treat_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d')
-          and tr.inservice = 1
-          <if test="status != null and status.length > 0">
-              and tr.status in
-              <foreach collection="status" index="idx" item="itemStat" open="(" separator="," close=")">
-                  #{itemStat}
-              </foreach>
-          </if>
-          and tr.org_id = #{orgId}
+        date_format(tr.treat_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d')
+        and tr.inservice = 1
+        <if test="status != null and status.length > 0">
+            and tr.status in
+            <foreach collection="status" index="idx" item="itemStat" open="(" separator="," close=")">
+                #{itemStat}
+            </foreach>
+        </if>
+        and tr.org_id = #{orgId}
     </select>
 
     <!-- 根据患者姓名、手机号、病历号查询影像小程序列表中患者信息 -->
@@ -466,13 +466,23 @@
     <select id="findTreatmentRecordListByAppointIds" resultMap="BaseResultMap">
         select tr.* from treatment_record tr
         <where>
-          <if test="appointIds != null and appointIds.size() > 0">
-              tr.appointment_id in
-              <foreach collection="appointIds" item="appointId" open="(" separator="," close=")">
-                  #{appointId}
-              </foreach>
-          </if>
-          and tr.inservice = true
+            <if test="appointIds != null and appointIds.size() > 0">
+                tr.appointment_id in
+                <foreach collection="appointIds" item="appointId" open="(" separator="," close=")">
+                    #{appointId}
+                </foreach>
+            </if>
+            and tr.inservice = true
         </where>
+    </select>
+
+    <!-- 获取全部就诊完成列表 -->
+    <select id="selectAllTreatCompletedList" resultType="java.lang.Integer">
+        select
+        id
+        from treatment_record
+        where inservice = 1
+        and date_format(crt_time, '%Y-%m-%d') = #{treatDate}
+        and status = #{treatmentProcessedStatus}
     </select>
 </mapper>

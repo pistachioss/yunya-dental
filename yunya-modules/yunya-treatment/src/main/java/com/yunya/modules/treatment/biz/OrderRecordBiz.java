@@ -258,7 +258,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     // 校验开单参数
     TreatmentRecord treatmentRecord = checkOrderParam(treatmentRecordId);
     String orderKey = LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId;
-    redisUtils.set(orderKey, treatmentRecordId, 5);
+    redisUtils.set(orderKey, treatmentRecordId, 300);
     List<OrderDetailModel> models = model.getOrderDetails();
     Integer treatmentRecordOrgId = treatmentRecord.getOrgId();
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
@@ -365,7 +365,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @param orgId 组织ID
    * @return
    */
-  private String generateOrderRecordNumber(Integer orgId) {
+  private synchronized String generateOrderRecordNumber(Integer orgId) {
     String number = mapper.selectOrderNumberByOrgId(orgId, new Date(System.currentTimeMillis()));
     String suffix = String.format("%04d", Integer.parseInt(number) + 1);
     return String.format(
@@ -496,12 +496,12 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       throw new ClientServiceException(
           "修改开单失败，系统未查询到ID为'" + orderRecordId + "'的账单信息！", SAME_DATA_EXIST);
     }
-    
+
     Byte status = orderRecord.getStatus();
     if (BusinessConstants.ORDER_LOCK_STATUS.equals(status)) {
       throw new ClientServiceException("修改开单失败，无法修改锁定的账单！", OBJECT_EDIT_FAIL);
     }
-    
+
     if (ORDER_FINISH_STATUS.equals(status)) {
       throw new ClientServiceException("修改开单失败，无法修改已完成结算的账单！", OBJECT_EDIT_FAIL);
     }
@@ -767,5 +767,68 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    */
   public BigDecimal currentOrderEnablePrepayment(Integer orderRecordId) {
     return mapper.currentOrderEnablePrepayment(orderRecordId);
+  }
+
+  /**
+   * 获取未结账订单记录列表
+   *
+   * @param treatmentRecordIds 就诊记录ID列表
+   * @return list
+   */
+  public List<OrderRecord> getUnCheckedOrderRecords(List<Integer> treatmentRecordIds) {
+    return mapper.selectAllUnCheckedOrderRecords(treatmentRecordIds);
+  }
+
+  /**
+   * 更新开单状态
+   *
+   * @param orderRecord 开单记录
+   * @return int
+   */
+  public int updateOrderStatus(OrderRecord orderRecord) {
+    return mapper.updateByPrimaryKeySelective(orderRecord);
+  }
+
+  /**
+   * 自动开单（开免单）
+   *
+   * @param treatmentRecordId 就诊记录ID
+   * @param patientId 患者ID
+   */
+  public OrderRecord autoOpenOrder(Integer treatmentRecordId, Integer patientId) {
+    OrderRecord order = new OrderRecord();
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    order.setOrgId(orgId);
+    order.setPatientId(patientId);
+    order.setTreatmentRecordId(treatmentRecordId);
+    String number = generateOrderRecordNumber(orgId);
+    order.setOrderRecordNum(number);
+    order.setStatus((byte) 1);
+    order.setTotalAmount(new BigDecimal("0"));
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    order.setCrtId(userId);
+    String name = BaseContextHandler.getName();
+    order.setCrtName(name);
+    order.setUpdId(userId);
+    order.setUpdName(name);
+    mapper.insertSelective(order);
+    OrderDetail detail = new OrderDetail();
+    detail.setOrgId(orgId);
+    detail.setTreatmentRecordId(treatmentRecordId);
+    detail.setOrderRecordId(order.getId());
+    detail.setType((byte) 0);
+    detail.setBillingItemId(BusinessConstants.FREE_TARIFF_ITEM_ID);
+    detail.setPrice(new BigDecimal("0"));
+    detail.setQuantity(1);
+    detail.setReceivableAmount(new BigDecimal("0"));
+    detail.setToothBit("");
+    detail.setExecutorId(0);
+    detail.setSourceType((byte) 0);
+    detail.setCrtId(userId);
+    detail.setCrtName(name);
+    detail.setUpdId(userId);
+    detail.setUptName(name);
+    orderDetailBiz.insertSelective(detail);
+    return order;
   }
 }
