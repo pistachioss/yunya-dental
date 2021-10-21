@@ -57,7 +57,7 @@ public class AutoChargeTask {
    *
    * @throws InterruptedException
    */
-  @Scheduled(cron = "0 30 14 * * ?")
+  @Scheduled(cron = "0 35 14 * * ?")
   public void autoCharge() throws InterruptedException {
     // 获取当天全部就诊完成数据列表
     List<Integer> treatmentRecordIds =
