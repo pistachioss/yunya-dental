@@ -1,6 +1,5 @@
 package com.yunya.modules.treatment.task;
 
-import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.treatment.BillRecord;
@@ -14,7 +13,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -22,9 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
 
 /**
  * 简介: 自动收费定时任务
@@ -49,15 +44,13 @@ public class AutoChargeTask {
   @Resource private TollBiz tollBiz;
   /** 账单业务层 */
   @Resource private BillRecordBiz billRecordBiz;
-  /** 消息队列 */
-  @Resource private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
   /**
    * 定时任务自动收费
    *
    * @throws InterruptedException
    */
-  @Scheduled(cron = "0 30 14 * * ?")
+  @Scheduled(cron = "0 50 16 * * ?")
   public void autoCharge() throws InterruptedException {
     // 获取当天全部就诊完成数据列表
     List<Integer> treatmentRecordIds =
@@ -68,25 +61,17 @@ public class AutoChargeTask {
       List<OrderRecord> orderRecords = orderRecordBiz.getUnCheckedOrderRecords(treatmentRecordIds);
       if (!CollectionUtils.isEmpty(orderRecords)) {
         CountDownLatch countDownLatch = new CountDownLatch(orderRecords.size());
+        TreatmentRecord treatmentRecord = new TreatmentRecord();
         orderRecords.forEach(
             orderRecord ->
                 executorService.submit(
                     () -> {
                       try {
                         // 更新就诊记录状态为离店
-                        TreatmentRecord treatmentRecord =
-                            treatmentRecordBiz.selectById(orderRecord.getTreatmentRecordId());
+                        treatmentRecord.setId(orderRecord.getTreatmentRecordId());
                         treatmentRecord.setStatus(
                             BusinessConstants.TREATMENT_PROCESS_FINISH_STATUS);
                         treatmentRecordBiz.updateTreatmentStatus(treatmentRecord);
-                        Integer appointmentId = treatmentRecord.getAppointmentId();
-                        if (!ObjectUtils.isEmpty(appointmentId)) {
-                          rabbitMqServiceFeign.sendMessage(
-                              appointmentId, 0, 1, BaseTreatmentProcess);
-                        } else {
-                          rabbitMqServiceFeign.sendMessage(
-                              treatmentRecord.getRegisteredId(), 1, 1, BaseTreatmentProcess);
-                        }
                         // 保存账单记录
                         BillRecord billRecord = buildBillRecord(orderRecord);
                         billRecordBiz.insertBillRecord(billRecord);
@@ -95,10 +80,7 @@ public class AutoChargeTask {
                             BigDecimal.ZERO, orderRecord.getId(), billRecord.getId(), true);
                         // 更新开单状态为结账
                         orderRecord.setStatus(BusinessConstants.ORDER_FINISH_STATUS);
-                        int updateOrderStatus = orderRecordBiz.updateOrderStatus(orderRecord);
-                        if (updateOrderStatus > 0) {
-                          rabbitMqServiceFeign.sendMessage(orderRecord.getId(), 1, BaseBill);
-                        }
+                        orderRecordBiz.updateOrderStatus(orderRecord);
                       } finally {
                         countDownLatch.countDown();
                       }
@@ -121,6 +103,7 @@ public class AutoChargeTask {
             orderRecord.getPatientId(),
             orderRecord.getId(),
             orderRecord.getOrgId());
+    billRecord.setPrivilegeType((byte) 0);
     BigDecimal totalAmount = orderRecord.getTotalAmount();
     billRecord.setReceivableAmount(totalAmount);
     billRecord.setPrivilegeAmount(BigDecimal.ZERO);
