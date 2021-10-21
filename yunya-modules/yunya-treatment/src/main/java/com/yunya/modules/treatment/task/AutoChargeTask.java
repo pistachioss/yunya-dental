@@ -89,7 +89,7 @@ public class AutoChargeTask {
                         }
                         // 保存账单记录
                         BillRecord billRecord = buildBillRecord(orderRecord);
-                        billRecordBiz.insertSelective(billRecord);
+                        billRecordBiz.insertBillRecord(billRecord);
                         // 保存开单明细收费记录
                         tollBiz.saveOrderDetailPayRecordWithNoDiscount(
                             BigDecimal.ZERO, orderRecord.getId(), billRecord.getId(), true);
