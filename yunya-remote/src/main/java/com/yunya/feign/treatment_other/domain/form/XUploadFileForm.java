@@ -18,7 +18,7 @@ import java.io.Serializable;
 public class XUploadFileForm implements Serializable {
     /** 文件ID*/
     @ApiModelProperty("文件ID")
-    private Integer id;
+    private Integer fileId;
 
     @ApiModelProperty(value = "上传时间",required = true)
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
