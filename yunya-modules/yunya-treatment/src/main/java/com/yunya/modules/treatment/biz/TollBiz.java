@@ -312,6 +312,7 @@ public class TollBiz {
     OrderRecord orderRecord =
         orderRecordBiz.autoOpenOrder(treatmentRecordId, treatmentRecord.getPatientId());
     treatmentRecord.setStatus(BusinessConstants.TREATMENT_PROCESSED_STATUS);
+    treatmentRecord.setTreatEndTime(new Date(System.currentTimeMillis()));
     treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
     TollModel tollModel = new TollModel();
     tollModel.setOrderRecordId(orderRecord.getId());

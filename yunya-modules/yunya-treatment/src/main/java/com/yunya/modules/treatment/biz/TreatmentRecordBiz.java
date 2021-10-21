@@ -1638,4 +1638,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   public List<Integer> getTreatCompletedList(String treatDate, Byte treatmentProcessedStatus) {
     return mapper.selectAllTreatCompletedList(treatDate, treatmentProcessedStatus);
   }
+
+  public void updateTreatmentStatus(TreatmentRecord treatmentRecord) {
+    mapper.updateByPrimaryKeySelective(treatmentRecord);
+  }
 }
