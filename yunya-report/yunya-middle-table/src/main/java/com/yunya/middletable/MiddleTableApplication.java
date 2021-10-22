@@ -6,12 +6,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
 @MapperScan(basePackages = "com.yunya.middletable.dao")
 @EnableYunyaFeignClients
 @EnableDiscoveryClient
+@EnableScheduling
 @EnableCustomSwagger2
 @ComponentScan(basePackages = {"com.yunya.middletable","com.yunya.framework.common","com.yunya.framework.redis"})
 public class MiddleTableApplication {
