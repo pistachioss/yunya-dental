@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutorService;
  *
  * @author: chow
  * @date: 2021/10/18 09:27
- * @description: 所有就诊完成的未收费的订单，当天23点（23:00）自动收费确认
+ * @description: 所有就诊完成的未收费的订单，当天23点（23:50）自动收费确认
  * @since: 1.0.0
  */
 @Component
@@ -61,13 +61,13 @@ public class AutoChargeTask {
       List<OrderRecord> orderRecords = orderRecordBiz.getUnCheckedOrderRecords(treatmentRecordIds);
       if (!CollectionUtils.isEmpty(orderRecords)) {
         CountDownLatch countDownLatch = new CountDownLatch(orderRecords.size());
-        TreatmentRecord treatmentRecord = new TreatmentRecord();
         orderRecords.forEach(
             orderRecord ->
                 executorService.submit(
                     () -> {
                       try {
                         // 更新就诊记录状态为离店
+                        TreatmentRecord treatmentRecord = new TreatmentRecord();
                         treatmentRecord.setId(orderRecord.getTreatmentRecordId());
                         treatmentRecord.setStatus(
                             BusinessConstants.TREATMENT_PROCESS_FINISH_STATUS);
