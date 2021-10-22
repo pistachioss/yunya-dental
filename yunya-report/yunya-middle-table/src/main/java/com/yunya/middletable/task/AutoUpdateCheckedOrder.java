@@ -37,7 +37,7 @@ public class AutoUpdateCheckedOrder {
   /** 订单 */
   @Resource private BillRecordMapper billRecordMapper;
 
-  @Scheduled(cron = "0 30 13 * * ?")
+  @Scheduled(cron = "0 50 13 * * ?")
   public void autoUpdateOrderAndTreatment() throws InterruptedException {
     BaseTreatmentProcess treatmentProcess = new BaseTreatmentProcess();
     treatmentProcess.setTreatStatus((byte) 3);
