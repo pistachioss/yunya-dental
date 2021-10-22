@@ -84,7 +84,7 @@ public class XUploadFileBiz extends BaseBiz<XUploadFileMapper, XUploadFile> {
      * @param form 文件信息
      */
     public Integer editUploadTime(XUploadFileForm form) {
-        XUploadFile file = fileIsExists(form.getId());
+        XUploadFile file = fileIsExists(form.getFileId());
         // 判断图片是否可以编辑
         TreatmentOtherUtils.enableEditImage(file.getCrtTime());
         Integer updId = Integer.valueOf(BaseContextHandler.getUserID());
