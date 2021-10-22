@@ -822,7 +822,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     detail.setQuantity(1);
     detail.setReceivableAmount(new BigDecimal("0"));
     detail.setToothBit("");
-    detail.setExecutorId(0);
     detail.setSourceType((byte) 0);
     detail.setCrtId(userId);
     detail.setCrtName(name);

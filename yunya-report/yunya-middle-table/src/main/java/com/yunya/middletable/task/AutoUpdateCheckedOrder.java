@@ -1,19 +1,15 @@
 package com.yunya.middletable.task;
 
-import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.middletable.dao.treatment.BillRecordMapper;
-import com.yunya.middletable.dao.treatment.TreatmentRecordMapper;
 import com.yunya.middletable.service.BaseBillBiz;
 import com.yunya.middletable.service.BaseTreatmentProcessBiz;
 import com.yunya.models.report.BaseBill;
 import com.yunya.models.report.BaseTreatmentProcess;
 import com.yunya.models.treatment.BillRecord;
-import com.yunya.models.treatment.TreatmentRecord;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -34,8 +30,6 @@ public class AutoUpdateCheckedOrder {
   /** 线程池 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
-  /** 接诊 */
-  @Resource private TreatmentRecordMapper treatmentRecordMapper;
   /** 中间吧就诊流程 */
   @Resource private BaseTreatmentProcessBiz treatmentProcessBiz;
   /** 中间表账单 */
@@ -43,7 +37,7 @@ public class AutoUpdateCheckedOrder {
   /** 订单 */
   @Resource private BillRecordMapper billRecordMapper;
 
-  @Scheduled(cron = "0 55 16 * * ?")
+  @Scheduled(cron = "0 30 13 * * ?")
   public void autoUpdateOrderAndTreatment() throws InterruptedException {
     BaseTreatmentProcess treatmentProcess = new BaseTreatmentProcess();
     treatmentProcess.setTreatStatus((byte) 3);
@@ -51,25 +45,19 @@ public class AutoUpdateCheckedOrder {
         treatmentProcessBiz.selectList(treatmentProcess);
     if (!CollectionUtils.isEmpty(treatmentProcesses)) {
       CountDownLatch countDownLatch = new CountDownLatch(treatmentProcesses.size());
-      BillRecord bill = new BillRecord();
-      BaseBill baseBill = new BaseBill();
       importExcelThreadPool.submit(
           () -> {
             try {
               treatmentProcesses.forEach(
                   process -> {
-                    Integer treatmentId = process.getTreatmentId();
-                    TreatmentRecord treatmentRecord =
-                        treatmentRecordMapper.selectByPrimaryKey(treatmentId);
-                    if (BusinessConstants.TREATMENT_PROCESS_FINISH_STATUS.equals(
-                        treatmentRecord.getStatus())) {
-                      process.setTreatStatus((byte) 4);
-                    }
-                    treatmentProcessBiz.updateSelectiveById(treatmentProcess);
-                    bill.setTreatmentRecordId(treatmentId);
+                    treatmentProcessBiz.updateTreatProcessByRegisteredId(process.getRegisteredId());
+                    BillRecord bill = new BillRecord();
+                    bill.setTreatmentRecordId(process.getTreatmentId());
                     bill.setInservice(true);
                     BillRecord billRecord = billRecordMapper.selectOne(bill);
-                    if (!ObjectUtils.isEmpty(billRecord)) {
+                    if (billRecord != null) {
+                      baseBillBiz.addPatientIntegral(billRecord.getPatientId());
+                      BaseBill baseBill = new BaseBill();
                       baseBill.setBillId(billRecord.getOrderRecordId());
                       baseBill.setFirstPrivilege(billRecord.getFirstPrivilege());
                       baseBill.setBillDate(billRecord.getCrtTime());
@@ -78,7 +66,7 @@ public class AutoUpdateCheckedOrder {
                       baseBill.setReceivedAmount(billRecord.getReceivedAmount());
                       baseBill.setDebtAmount(billRecord.getDebtAmount());
                       baseBill.setCheckerId(billRecord.getCrtId());
-                      baseBillBiz.updateSelectiveById(baseBill);
+                      baseBillBiz.updateBaseBill(baseBill);
                     }
                   });
             } finally {
