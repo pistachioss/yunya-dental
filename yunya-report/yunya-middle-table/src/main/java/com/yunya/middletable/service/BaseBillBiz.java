@@ -66,6 +66,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
+
   @Resource(name = "billCreditsCallbackImpl")
   private BillCreditsCallback baseBillPayCallback;
 
@@ -118,41 +119,41 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     }
   }
 
-  /**
-   * 判断是否首次下单，若是则推荐者增加500积分
-   */
-  public void addPatientIntegral(Integer patientId){
-   Integer count =  mapper.selectCountByPatientId(patientId);
-   CreditsShop addPatientIntegral = new CreditsShop();
-   if (count <= 0){
-     BasePatientOriginLog basePatientOrigin = new BasePatientOriginLog();
-     basePatientOrigin.setPatientId(patientId);
-     basePatientOrigin.setOriginType(2);
-     basePatientOrigin.setInservice(true);
-     BasePatientOriginLog basePatientOriginLog = basePatientOriginLogMapper.selectOne(basePatientOrigin);
-     if (basePatientOriginLog != null){
-       CreditsShop patientCreditsShop = creditsShopMapper.selectLastCredits(basePatientOriginLog.getOriginId());
-       if (patientCreditsShop != null){
-         addPatientIntegral.setPatientId(patientCreditsShop.getPatientId());
-         // recommend 患者推荐
-         addPatientIntegral.setCreditsAccount(patientCreditsShop.getCreditsAccount()+500);
-       }else {
-         // 没有患者积分帐户就新建
-         addPatientIntegral.setPatientId(basePatientOriginLog.getOriginId());
-         // recommend 患者推荐
-         addPatientIntegral.setCreditsAccount(500L);
-       }
-       addPatientIntegral.setCreditsOption((byte)0);
-       addPatientIntegral.setChannel((byte)0);
-       addPatientIntegral.setType("recommend");
-       addPatientIntegral.setCredits(500L);
-       addPatientIntegral.setDescription("患者推荐");
-       addPatientIntegral.setCrtId(patientId);
-       addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
-       // 增加500积分
-       creditsShopMapper.insertSelective(addPatientIntegral);
-     }
-   }
+  /** 判断是否首次下单，若是则推荐者增加500积分 */
+  public void addPatientIntegral(Integer patientId) {
+    Integer count = mapper.selectCountByPatientId(patientId);
+    CreditsShop addPatientIntegral = new CreditsShop();
+    if (count <= 0) {
+      BasePatientOriginLog basePatientOrigin = new BasePatientOriginLog();
+      basePatientOrigin.setPatientId(patientId);
+      basePatientOrigin.setOriginType(2);
+      basePatientOrigin.setInservice(true);
+      BasePatientOriginLog basePatientOriginLog =
+          basePatientOriginLogMapper.selectOne(basePatientOrigin);
+      if (basePatientOriginLog != null) {
+        CreditsShop patientCreditsShop =
+            creditsShopMapper.selectLastCredits(basePatientOriginLog.getOriginId());
+        if (patientCreditsShop != null) {
+          addPatientIntegral.setPatientId(patientCreditsShop.getPatientId());
+          // recommend 患者推荐
+          addPatientIntegral.setCreditsAccount(patientCreditsShop.getCreditsAccount() + 500);
+        } else {
+          // 没有患者积分帐户就新建
+          addPatientIntegral.setPatientId(basePatientOriginLog.getOriginId());
+          // recommend 患者推荐
+          addPatientIntegral.setCreditsAccount(500L);
+        }
+        addPatientIntegral.setCreditsOption((byte) 0);
+        addPatientIntegral.setChannel((byte) 0);
+        addPatientIntegral.setType("recommend");
+        addPatientIntegral.setCredits(500L);
+        addPatientIntegral.setDescription("患者推荐");
+        addPatientIntegral.setCrtId(patientId);
+        addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
+        // 增加500积分
+        creditsShopMapper.insertSelective(addPatientIntegral);
+      }
+    }
   }
 
   /**
@@ -461,5 +462,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       }
     }
     return baseBills;
+  }
+
+  public void updateBaseBill(BaseBill baseBill) {
+    mapper.updateByPrimaryKeySelective(baseBill);
   }
 }

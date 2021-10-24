@@ -26,6 +26,20 @@
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
+    <!-- 批量插入开单明细收费记录 -->
+    <insert id="batchInsert">
+        insert into order_detail_pay_record (
+        org_id, patient_id, treatment_record_id, order_record_id,order_detail_id, bill_record_id, receivable_amount,
+        privilege_amount,actual_receivable, received_amount, coupon_workload, crt_id, crt_name, upd_id, upd_name
+        ) values
+        <foreach collection="list" index="index" item="obj" separator=",">
+            (#{obj.orgId},#{obj.patientId},#{obj.treatmentRecordId},#{obj.orderRecordId},#{obj.orderDetailId},
+            #{obj.billRecordId},#{obj.receivableAmount},#{obj.privilegeAmount},#{obj.actualReceivable},
+            #{obj.receivedAmount},#{obj.couponWorkload},#{obj.crtId},#{obj.crtName},#{obj.updId},
+            #{obj.updName})
+        </foreach>
+    </insert>
+
     <!-- 查询账单优惠为0的明细总额 -->
     <select id="selectNoDiscountAmount" resultType="java.math.BigDecimal">
         SELECT

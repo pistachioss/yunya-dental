@@ -27,20 +27,31 @@ public interface OrderRecordMapper extends Mapper<OrderRecord> {
    * @return 订单处理列表
    */
   List<OrderProcessVO> selectOrderProcess(
-      @Param("orderRecordNum") String orderRecordNum,
-      @Param("orgIds") Integer[] orgIds);
+      @Param("orderRecordNum") String orderRecordNum, @Param("orgIds") Integer[] orgIds);
 
   /**
    * 根据就诊记录D集合查询订单记录信息列表
+   *
    * @param treatmentRecordIds 就诊记录ID集合
    * @return 订单记录列表
    */
-  List<OrderRecord> selectOrderRecordByTreatmentIds(@Param("treatmentRecordIds") List<Integer> treatmentRecordIds);
+  List<OrderRecord> selectOrderRecordByTreatmentIds(
+      @Param("treatmentRecordIds") List<Integer> treatmentRecordIds);
 
   /**
    * 查询当前订单可用预付款支付金额
+   *
    * @param orderRecordId 订单记录ID
    * @return
    */
   BigDecimal currentOrderEnablePrepayment(@Param("orderRecordId") Integer orderRecordId);
+
+  /**
+   * 获取全部未结账开单记录列表
+   *
+   * @param treatmentRecordIds 就诊记录ID
+   * @return list
+   */
+  List<OrderRecord> selectAllUnCheckedOrderRecords(
+      @Param("treatmentRecordIds") List<Integer> treatmentRecordIds);
 }

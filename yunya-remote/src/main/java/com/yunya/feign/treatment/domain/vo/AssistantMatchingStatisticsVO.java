@@ -26,6 +26,9 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 public class AssistantMatchingStatisticsVO implements Serializable {
   /** 组织ID */
   private Integer orgId;
+  @ApiModelProperty("门诊名称")
+  @Excel(name = "门诊名称")
+  private String orgName;
   /** 员工ID */
   @ApiModelProperty("员工ID")
   private Integer assistantId;

@@ -34,7 +34,6 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.*;
-import org.apache.poi.ss.formula.functions.T;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -108,7 +107,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @param orgId 组织ID
    * @return String 账单编号
    */
-  public String generateBillNumber(Integer orgId) {
+  public synchronized String generateBillNumber(Integer orgId) {
     String number = mapper.selectBillNumberByOrgId(orgId, new Date(System.currentTimeMillis()));
     String suffix = String.format("%04d", Integer.parseInt(number) + 1);
     return String.format(
@@ -122,7 +121,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @return resultData 账单详情信息
    */
   public BillDetailGroupVO findOrderDetailAndBillDetail(Integer orderRecordId) {
-    BillRecord billRecord  = new BillRecord();
+    BillRecord billRecord = new BillRecord();
     billRecord.setOrderRecordId(orderRecordId);
     billRecord.setInservice(true);
     BillRecord billRecordAll = mapper.selectOne(billRecord);
@@ -150,7 +149,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
             List<BillPayDetailRecordVO> billPayDetailRecords =
                 billPayDetailRecordBiz.findBillPayDetailRecordByBillPayRecordId(billPayRecordId);
             billPayRecord.setBillPayDetailRecords(billPayDetailRecords);
-            billPayRecord.setBillNumber( billRecordAll.getBillNumber());
+            billPayRecord.setBillNumber(billRecordAll.getBillNumber());
           });
     } else {
       billPayRecords = new ArrayList<>();
@@ -550,8 +549,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @return
    */
   public PatientBillStatistics statisticsBill(Integer patientId) {
-    PatientBillStatistics patientBillStatistics = mapper.selectPatientBillStatistics(patientId, FREE_PAYMENT_ID);
-    return patientBillStatistics;
+    return mapper.selectPatientBillStatistics(patientId, FREE_PAYMENT_ID);
   }
 
   /**
@@ -623,25 +621,27 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
 
   /**
    * 患者档案-账单详情-编辑备注提交
+   *
    * @param orderDetails 账单明细
    * @return Integer
    */
-  public ResponseResult<T> editRemarks(List<OrderDetailChargeVO> orderDetails) {
+  public ResponseResult editRemarks(List<OrderDetailChargeVO> orderDetails) {
     if (StringHelper.isEmpty(orderDetails)) {
-      return ResponseUtil.success("账单详情不能为空！",null);
+      return ResponseUtil.success("账单详情不能为空！", null);
     }
     String userID = BaseContextHandler.getUserID();
     String name = BaseContextHandler.getName();
-    orderDetails.forEach(entity->{
-      String remarks = entity.getRemarks();
-      OrderDetail orderDetail = new OrderDetail();
-      orderDetail.setId(entity.getOrderDetailId());
-      orderDetail.setRemarks(remarks);
-      orderDetail.setUpdId(Integer.valueOf(userID));
-      orderDetail.setUpdTime(new Date(System.currentTimeMillis()));
-      orderDetail.setUptName(name);
-      orderDetailBiz.updateOrderDetail(orderDetail);
-    });
+    orderDetails.forEach(
+        entity -> {
+          String remarks = entity.getRemarks();
+          OrderDetail orderDetail = new OrderDetail();
+          orderDetail.setId(entity.getOrderDetailId());
+          orderDetail.setRemarks(remarks);
+          orderDetail.setUpdId(Integer.valueOf(userID));
+          orderDetail.setUpdTime(new Date(System.currentTimeMillis()));
+          orderDetail.setUptName(name);
+          orderDetailBiz.updateOrderDetail(orderDetail);
+        });
     return ResponseUtil.success();
   }
 
@@ -656,28 +656,39 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     List<BillRestReceivableAmountVO> resultList = mapper.selectDebtList(query);
     // 查询时间节点后门诊被调整的应收账款余额列表
     List<BillRestReceivableAmountVO> adjustedList =
-            billExceptionHandleRecordMapper.selectFollowUpBillAdjustList(query);
+        billExceptionHandleRecordMapper.selectFollowUpBillAdjustList(query);
     resultList.addAll(adjustedList);
     // 查询时间节点后的撤销收费ID列表
-    List<BillRestReceivableAmountVO> revokes = billExceptionHandleRecordMapper.selectBeforeRevokeBillPayIds(query);
-    resultList.forEach(vo->{
-      Integer billId = vo.getBillId();
-      BigDecimal billReceivableAmount = vo.getBillReceivableAmount();
-      revokes.forEach(revoke->{
-        if (revoke.getBillId().equals(billId)) {
-          vo.setBillReceivableAmount(billReceivableAmount.subtract(revoke.getBillReceivableAmount()));
-        }
-      });
-    });
-    resultList = resultList.stream().filter(vo-> vo.getBillReceivableAmount().compareTo(BigDecimal.ZERO)>0)
-//            .filter(vo-> DateUtil.compareDate(vo.getBillDate(),"2017-10-01")>=0)
-            .sorted((vo1, vo2)-> {
-      int result = DateUtil.compareDate(vo2.getBillDate(),vo1.getBillDate());
-      if (result == 0) {
-        result = vo2.getBillReceivableAmount().subtract(vo1.getBillReceivableAmount()).intValue();
-      }
-      return result;
-    }).collect(Collectors.toList());
+    List<BillRestReceivableAmountVO> revokes =
+        billExceptionHandleRecordMapper.selectBeforeRevokeBillPayIds(query);
+    resultList.forEach(
+        vo -> {
+          Integer billId = vo.getBillId();
+          BigDecimal billReceivableAmount = vo.getBillReceivableAmount();
+          revokes.forEach(
+              revoke -> {
+                if (revoke.getBillId().equals(billId)) {
+                  vo.setBillReceivableAmount(
+                      billReceivableAmount.subtract(revoke.getBillReceivableAmount()));
+                }
+              });
+        });
+    resultList =
+        resultList.stream()
+            .filter(vo -> vo.getBillReceivableAmount().compareTo(BigDecimal.ZERO) > 0)
+            //            .filter(vo-> DateUtil.compareDate(vo.getBillDate(),"2017-10-01")>=0)
+            .sorted(
+                (vo1, vo2) -> {
+                  int result = DateUtil.compareDate(vo2.getBillDate(), vo1.getBillDate());
+                  if (result == 0) {
+                    result =
+                        vo2.getBillReceivableAmount()
+                            .subtract(vo1.getBillReceivableAmount())
+                            .intValue();
+                  }
+                  return result;
+                })
+            .collect(Collectors.toList());
     PageInfo<BillRestReceivableAmountVO> pageInfo = new PageInfo<>(resultList);
     if (query.getWhetherPage()) {
       pageInfo = PageUtl.doPage(query.getPageNum(), query.getPageSize(), resultList);
@@ -688,28 +699,38 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
 
   /**
    * 查找患者信息和挂号医生信息
+   *
    * @param pageInfo
    */
   private void findPatientAndRegDetist(PageInfo<BillRestReceivableAmountVO> pageInfo) {
     List<BillRestReceivableAmountVO> result = pageInfo.getList();
-    List<Integer> patientIds = result.stream().map(BillRestReceivableAmountVO::getPatientId).collect(Collectors.toList());
+    List<Integer> patientIds =
+        result.stream().map(BillRestReceivableAmountVO::getPatientId).collect(Collectors.toList());
     List<PatientBaseInfoVo> patients = patientCentralServiceFeign.findPatientInfoByIds(patientIds);
-    Map<Integer, PatientBaseInfoVo> patientMap = patients.stream().collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
-    result.forEach(vo->{
-      Integer patientId = vo.getPatientId();
-      PatientBaseInfoVo patient = patientMap.get(patientId);
-      if (patient != null) {
-        vo.setPatientName(patient.getName());
-        vo.setMobile(patient.getMobile());
-      }
-    });
-    List<Integer> userIds = result.stream().map(BillRestReceivableAmountVO::getRegDentistId).collect(Collectors.toList());
+    Map<Integer, PatientBaseInfoVo> patientMap =
+        patients.stream().collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
+    result.forEach(
+        vo -> {
+          Integer patientId = vo.getPatientId();
+          PatientBaseInfoVo patient = patientMap.get(patientId);
+          if (patient != null) {
+            vo.setPatientName(patient.getName());
+            vo.setMobile(patient.getMobile());
+          }
+        });
+    List<Integer> userIds =
+        result.stream()
+            .map(BillRestReceivableAmountVO::getRegDentistId)
+            .collect(Collectors.toList());
     List<SysUserInfoDetail> users = systemServiceFeign.findSysUserEmployeeInfoByUserIds(userIds);
-    Map<Integer, String> userMap = users.stream().collect(Collectors.toMap(SysUserInfoDetail::getUserId,SysUserInfoDetail::getName));
-    result.forEach(vo->{
-      Integer regDentistId = vo.getRegDentistId();
-      vo.setRegDentistName(userMap.get(regDentistId));
-    });
+    Map<Integer, String> userMap =
+        users.stream()
+            .collect(Collectors.toMap(SysUserInfoDetail::getUserId, SysUserInfoDetail::getName));
+    result.forEach(
+        vo -> {
+          Integer regDentistId = vo.getRegDentistId();
+          vo.setRegDentistName(userMap.get(regDentistId));
+        });
   }
 
   /**
@@ -717,11 +738,12 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    *
    * @param query 查询条件
    */
-  public void exportDebtList(BillOfReceivableQuery query, HttpServletResponse response) throws IOException {
+  public void exportDebtList(BillOfReceivableQuery query, HttpServletResponse response)
+      throws IOException {
     query.setWhetherPage(false);
     List<BillRestReceivableAmountVO> resultList = findDebtList(query).getList();
     ExcelUtil<BillRestReceivableAmountVO> excelUtil =
-            new ExcelUtil<>(BillRestReceivableAmountVO.class);
+        new ExcelUtil<>(BillRestReceivableAmountVO.class);
     String fileName = query.getQueryDate() + "应收款余额表";
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
     if (null != orgInfo) {
@@ -736,10 +758,11 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @param query 查询条件
    * @return list
    */
-  public CurrentMonthBillStatisticVO findCurrentMonthStatementStatistic(StatementStatisticQuery query) {
+  public CurrentMonthBillStatisticVO findCurrentMonthStatementStatistic(
+      StatementStatisticQuery query) {
     CurrentMonthBillStatisticVO result = new CurrentMonthBillStatisticVO();
     // 撤销优惠合计
-    BigDecimal adjustDiscountAmount =mapper.selectBillAdjustDiscountAmount(query);
+    BigDecimal adjustDiscountAmount = mapper.selectBillAdjustDiscountAmount(query);
     // 优惠合计
     BigDecimal discountAmount = mapper.selectBillDiscountAmount(query);
     discountAmount = discountAmount.subtract(adjustDiscountAmount);
@@ -760,7 +783,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     payIds.addAll(billPayRecordBiz.selectAdjustPayIds(query));
     if (StringHelper.isNotEmpty(payIds)) {
       // 撤销或调整免单合计
-      BigDecimal subtractFreePayAmount = billPayDetailRecordBiz.selectDeductionFreePayAmount(payIds);
+      BigDecimal subtractFreePayAmount =
+          billPayDetailRecordBiz.selectDeductionFreePayAmount(payIds);
       freePayAmount = freePayAmount.subtract(subtractFreePayAmount);
     }
     receivedAmount = receivedAmount.subtract(revokeReceivedAmount);
@@ -772,5 +796,9 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     result.setCurrentMonthTotalFreePayAmount(freePayAmount);
     result.setCurrentMonthTotalDebtAmount(originalAmount.subtract(receivedAmount));
     return result;
+  }
+
+  public void insertBillRecord(BillRecord billRecord) {
+    mapper.insertSelective(billRecord);
   }
 }

@@ -212,7 +212,7 @@ public class BaseTreatmentProcessBiz
    *
    * @param registeredId 挂号ID
    */
-  private void updateTreatProcessByRegisteredId(Integer registeredId) {
+  public void updateTreatProcessByRegisteredId(Integer registeredId) {
     Registered registered = registeredMapper.selectByPrimaryKey(registeredId);
     if (null != registered) {
       BaseTreatmentProcess treatmentProcess = mapper.selectOneByRegisteredId(registeredId);

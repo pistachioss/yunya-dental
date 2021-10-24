@@ -534,6 +534,8 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     private ApprovePageBo getApproveBo(MedicalApproveQuery query, Integer auditStatus) {
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         String submitTime = query.getSubmitTime();
+        String startTime = query.getStartTime();
+        String endTime = query.getEndTime();
         String keyword = query.getKeyword();
         List<ApprovalRecord> list = new ArrayList<>();
         //初始化bo
@@ -543,14 +545,14 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         if (StringUtils.isBlank(keyword)) {
             page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
             //根据病例提交时间查询审批数据
-            list = mapper.listMedicalByParam(null, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
+            list = mapper.listMedicalNewByParam(null, startTime, endTime,loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
             if (CollectionUtils.isNotEmpty(list)) {
                 //构建bo
                 buildPatientAndTreatment(list, loginUserId, approveBo);
             }
         } else {
             //根据条件查询登录人所有的申请记录集合
-            List<ApprovalRecord> loginUserApproveList = mapper.listMedicalByParam(null, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
+            List<ApprovalRecord> loginUserApproveList = mapper.listMedicalNewByParam(null, startTime, endTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
             if (CollectionUtils.isNotEmpty(loginUserApproveList)) {
                 //查询登录人草稿审批的患者ids映射
                 AuditMedicalBo auditMedicalBo = getDraftPatientIdsByApplyType(loginUserApproveList);
@@ -559,7 +561,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 //根据电子病例Ids和病例提交时间查询审批数据
                 if (CollectionUtils.isNotEmpty(medicalIds)) {
                     page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-                    list = mapper.listMedicalByParam(medicalIds, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
+                    list = mapper.listMedicalNewByParam(medicalIds, startTime, endTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
                 }
             }
         }

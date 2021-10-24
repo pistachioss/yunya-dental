@@ -47,6 +47,8 @@ public class TollModel implements Serializable {
   @NotNull(message = "挂帐金额不能为空！")
   private BigDecimal outstandingAmount;
   /** 发票信息 */
-  @Valid
-  private InvoiceModel invoiceModel;
+  @Valid private InvoiceModel invoiceModel;
+  /** 是否自动收费 */
+  @ApiModelProperty(hidden = true)
+  private Boolean isAutoChecked = false;
 }

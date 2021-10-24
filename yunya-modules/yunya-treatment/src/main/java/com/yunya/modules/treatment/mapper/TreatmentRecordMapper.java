@@ -156,7 +156,8 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    * @param queryForm 查询条件
    * @return CountTreatmentRecordVO
    */
-  CountTreatmentRecordVO selectTreatCountByExample(@Param("queryForm") TreatmentCountQuery queryForm);
+  CountTreatmentRecordVO selectTreatCountByExample(
+      @Param("queryForm") TreatmentCountQuery queryForm);
 
   /**
    * 根据预约ID查询患者接诊记录
@@ -164,5 +165,17 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    * @param appointIds 预约记录
    * @return List<TreatmentRecord>
    */
-  public List<TreatmentRecord> findTreatmentRecordListByAppointIds(@Param("appointIds") List<Integer> appointIds);
+  List<TreatmentRecord> findTreatmentRecordListByAppointIds(
+      @Param("appointIds") List<Integer> appointIds);
+
+  /**
+   * 获取全部就诊完成列表
+   *
+   * @param treatDate 就诊日期
+   * @param treatmentProcessedStatus 就诊状态
+   * @return list
+   */
+  List<Integer> selectAllTreatCompletedList(
+      @Param("treatDate") String treatDate,
+      @Param("treatmentProcessedStatus") Byte treatmentProcessedStatus);
 }

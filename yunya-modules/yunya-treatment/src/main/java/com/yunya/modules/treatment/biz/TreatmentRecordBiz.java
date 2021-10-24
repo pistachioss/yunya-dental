@@ -207,24 +207,18 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    */
   private String generateMedicalRecordNumber(Integer orgId) {
 
-
     String number = patientServiceFeign.findMedicalNumberByOrgId(orgId);
     String suffix = String.format("%06d", Integer.parseInt(number) + 1);
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
     return String.format("%03d", Integer.parseInt(orgInfo.getClinicNumber()))
-            + new DateTime().toString("yyMMdd")
-            + suffix;
-//    TODO: make medical number
-    /**
-    // 获取门诊编号
-    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
-    String clinNum = String.format("%03d", Integer.parseInt(orgInfo.getClinicNumber()));
-    // 获取可用的病历编号后6位
-    Integer number = patientServiceFeign.findMedicalNumberByClinNum(clinNum);
-    String suffix = String.format("%06d", number);
-    return clinNum
         + new DateTime().toString("yyMMdd")
         + suffix;
+    //    TODO: make medical number
+    /**
+     * // 获取门诊编号 OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId); String
+     * clinNum = String.format("%03d", Integer.parseInt(orgInfo.getClinicNumber())); // 获取可用的病历编号后6位
+     * Integer number = patientServiceFeign.findMedicalNumberByClinNum(clinNum); String suffix =
+     * String.format("%06d", number); return clinNum + new DateTime().toString("yyMMdd") + suffix;
      */
   }
 
@@ -698,149 +692,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         vo.setReceivedAmount(BigDecimal.valueOf(0));
         vo.setCheckOutTime("--");
       }
-    }
-  }
-
-  /**
-   * 设置候诊患者预约信息（优化前）
-   *
-   * @param vo 患者候诊信息
-   */
-  @Deprecated
-  private void setAppointmentInfo(TreatmentPatientInfoVO vo) {
-    Integer appointmentId = vo.getAppointmentId();
-    if (null != appointmentId) {
-      Appointment appointment = appointmentFeign.findAppointmentById(appointmentId);
-      if (null != appointment) {
-        Integer appointmentDentistId = appointment.getDentistId();
-        vo.setAppointDentistId(appointmentDentistId);
-        SysUserInfoDetail dentistInfo =
-            systemServiceFeign.findSysUserEmployeeInfoByUserId(appointmentDentistId);
-        vo.setAppointDentistName(null != dentistInfo ? dentistInfo.getName() : "--");
-        Integer appointAssistantId = vo.getAppointAssistantId();
-        if (null != appointAssistantId) {
-          vo.setAppointAssistantId(appointAssistantId);
-          // todo 从缓存中查询用户信息
-          SysUserInfoDetail assistantInfo =
-              systemServiceFeign.findSysUserEmployeeInfoByUserId(appointAssistantId);
-          vo.setAppointAssistantName(null != assistantInfo ? assistantInfo.getName() : "--");
-        }
-        Integer appointDeptRoomId = vo.getAppointDeptRoomId();
-        if (null != appointDeptRoomId) {
-          vo.setAppointDeptRoomId(appointDeptRoomId);
-          // todo 从缓存中查询科室信息
-          DepartmentRoom departmentRoom =
-              systemServiceFeign.findDepartmentRoomById(appointDeptRoomId);
-          vo.setAppointDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
-        }
-        vo.setAppointTime(appointment.getAppointTime());
-        vo.setAppointDuration(appointment.getAppointDuration());
-        vo.setAppointContent(appointment.getAppointContent());
-        vo.setAppointRemark(appointment.getRemarks());
-        vo.setAppointType(appointment.getAppointType());
-        vo.setAppointStatus(appointment.getAppointStatus());
-        vo.setConfirmStatus(appointment.getConfirmStatus());
-      }
-    }
-  }
-
-  /**
-   * 设置候诊患者挂号信息（优化前）
-   *
-   * @param vo 患者候诊信息
-   */
-  @Deprecated
-  private void setRegisteredInfo(TreatmentPatientInfoVO vo) {
-    Integer registeredId = vo.getRegisteredId();
-    Registered registered = registeredMapper.selectByPrimaryKey(registeredId);
-    if (null != registered) {
-      Integer regDentistId = registered.getDentistId();
-      vo.setRegDentistId(regDentistId);
-      SysUserInfoDetail regDentistInfo =
-          systemServiceFeign.findSysUserEmployeeInfoByUserId(regDentistId);
-      vo.setRegDentistName(null != regDentistInfo ? regDentistInfo.getName() : "--");
-
-      Integer regAssistantId = registered.getAssistantId();
-      if (null != regAssistantId) {
-        vo.setRegAssistantId(regAssistantId);
-        // 从缓存中查询用户信息
-        SysUserInfoDetail regAssistantInfo =
-            systemServiceFeign.findSysUserEmployeeInfoByUserId(regAssistantId);
-        vo.setRegAssistantName(null != regAssistantInfo ? regAssistantInfo.getName() : "--");
-      }
-
-      Integer regDeptRoomId = registered.getDeptRoomId();
-      if (null != regDeptRoomId) {
-        vo.setRegDeptRoomId(regDeptRoomId);
-        // 从缓存中查询科室信息
-        DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(regDeptRoomId);
-        vo.setRegDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
-      }
-      vo.setRegDate(new DateTime(registered.getCrtTime()).toString("yyyy-MM-dd"));
-      vo.setRegTime(new DateTime(registered.getRegTime()).toString("HH:mm"));
-      vo.setFirstVisit(registered.getFirstVisit());
-    }
-  }
-
-  /**
-   * 设置接诊信息(优化前)
-   *
-   * @param vo 候诊患者信息
-   */
-  @Deprecated
-  private void setTreatingInfo(TreatmentPatientInfoVO vo) {
-    Integer treatDentistId = vo.getTreatDentistId();
-    // 从缓存中查询用户信息
-    SysUserInfoDetail treatDentistInfo =
-        systemServiceFeign.findSysUserEmployeeInfoByUserId(treatDentistId);
-    vo.setTreatDentistName(null != treatDentistInfo ? treatDentistInfo.getName() : "--");
-    Integer patientId = vo.getPatientId();
-    // 查询患者欠费总额
-    PatientBillStatistics billStatistics =
-        billRecordMapper.selectPatientBillStatistics(patientId, Arrays.asList(-1));
-    vo.setArrears(billStatistics.getBillTotalArrears());
-  }
-
-  /**
-   * 设置开单信息（账单）--(优化前)
-   *
-   * @param vo 就诊患者信息
-   */
-  @Deprecated
-  private void setOrderInfo(TreatmentPatientInfoVO vo) {
-    Integer id = vo.getId();
-    OrderRecord orderRecord = new OrderRecord();
-    orderRecord.setTreatmentRecordId(id);
-    orderRecord.setInservice(true);
-    OrderRecord orderRecordResult = orderRecordMapper.selectOne(orderRecord);
-    if (null != orderRecordResult) {
-      vo.setOrderRecordId(orderRecordResult.getId());
-      vo.setOriginalPrice(orderRecordResult.getTotalAmount());
-      vo.setOrderStatus(orderRecordResult.getStatus());
-    }
-  }
-
-  /**
-   * 设置收费信息(收费金额)---(优化前)
-   *
-   * @param vo 就诊患者信息
-   */
-  @Deprecated
-  private void setChargeInfo(TreatmentPatientInfoVO vo) {
-    Integer id = vo.getId();
-    BillRecord billRecord = new BillRecord();
-    billRecord.setTreatmentRecordId(id);
-    billRecord.setInservice(true);
-    BillRecord record = billRecordMapper.selectOne(billRecord);
-    if (null != record) {
-      vo.setPrivilegeAmount(record.getPrivilegeAmount());
-      vo.setReceivedAmount(record.getReceivedAmount());
-      vo.setCheckOutTime(new DateTime(record.getCrtTime()).toString("HH:mm"));
-      vo.setBillNumber(record.getBillNumber());
-    } else {
-      vo.setPrivilegeAmount(BigDecimal.valueOf(0));
-      vo.setReceivedAmount(BigDecimal.valueOf(0));
-      vo.setCheckOutTime("--");
     }
   }
 
@@ -1743,8 +1594,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   }
 
   /**
-   * 门诊下班前5分钟内的就诊状态统计：候诊中/就诊中/治疗完成
-   * 前台角色可见
+   * 门诊下班前5分钟内的就诊状态统计：候诊中/就诊中/治疗完成 前台角色可见
+   *
    * @param orgId
    * @return
    */
@@ -1754,7 +1605,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     model.setWhetherPage(false);
     model.setUserId(userId);
     model.setPostGroupId(Collections.singletonList(RECEPTIONIST_ID));
-    model.setOrgIds(Arrays.asList(orgId));
+    model.setOrgIds(Collections.singletonList(orgId));
     List<SysUserInfoDetail> employee = systemServiceFeign.findSysUserEmployeeInfoList(model);
     if (StringHelper.isEmpty(employee)) {
       // 无权限
@@ -1765,7 +1616,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     query.setOrgId(orgId);
     query.setQueryDate(currentDate);
     CountTreatmentRecordVO resultData = mapper.selectTreatCountByExample(query);
-    Integer unCheckedOut = resultData.getWaitingForTreat()
+    int unCheckedOut =
+        resultData.getWaitingForTreat()
             + resultData.getTreatCompleted()
             + resultData.getTreatReceiving();
     if (unCheckedOut <= 0) {
@@ -1774,5 +1626,20 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     }
     resultData.setUnCheckedOut(unCheckedOut);
     return ResponseUtil.success(resultData);
+  }
+
+  /**
+   * 获取就诊完成记录id列表
+   *
+   * @param treatDate 就诊日期
+   * @param treatmentProcessedStatus 就诊状态
+   * @return list
+   */
+  public List<Integer> getTreatCompletedList(String treatDate, Byte treatmentProcessedStatus) {
+    return mapper.selectAllTreatCompletedList(treatDate, treatmentProcessedStatus);
+  }
+
+  public void updateTreatmentStatus(TreatmentRecord treatmentRecord) {
+    mapper.updateByPrimaryKeySelective(treatmentRecord);
   }
 }
