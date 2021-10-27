@@ -53,7 +53,7 @@ public class CompanyReportOfPersonnelController {
    * @return list
    */
   @ApiOperation("公司端报表-人事报表-员工工作量")
-  @PostMapping(value = "/employee/workload/list", name = "根据条件查询员工工作量列表")
+  @PostMapping(value = "/employee/workload/list/single", name = "根据条件查询员工工作量列表")
   public ResponseResult<PageInfo<EmployeeWorkloadOfPersonnelVO>> employeeWorkloadOfPersonnel(
       @RequestBody @Validated EmployeeWorkloadQuery query) {
     PageInfo<EmployeeWorkloadOfPersonnelVO> result =
@@ -69,7 +69,7 @@ public class CompanyReportOfPersonnelController {
    * @return void
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-导出")
-  @PostMapping(value = "/employee/workload/export", name = "根据条件导出员工工作量列表")
+  @PostMapping(value = "/employee/workload/export/single", name = "根据条件导出员工工作量列表")
   public ResponseResult<T> exportEmployeeWorkloadListOfPersonnel(
       HttpServletResponse response, @RequestBody @Validated EmployeeWorkloadQuery query)
       throws IOException {

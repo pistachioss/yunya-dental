@@ -1,5 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.MultiClinicEmployeeQuery;
+import com.yunya.feign.report.domain.vo.ClinicEmployeBonusCoefficientVO;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.models.report.BaseEmployee;
 import org.apache.ibatis.annotations.Param;
@@ -25,4 +27,12 @@ public interface BaseEmployeeMapper extends Mapper<BaseEmployee> {
    * @return List<SysUserInfoDetail>
    */
   List<SysUserInfoDetail> selectUserInfoByIds(@Param("userIds") Collection<Integer> userIds);
+
+  /**
+   * 查询员工和门诊的笛卡尔积
+   *
+   * @param query
+   * @return
+   */
+  List<ClinicEmployeBonusCoefficientVO> selectClinicEmployeeCartesianProduct(@Param("query") MultiClinicEmployeeQuery query);
 }
