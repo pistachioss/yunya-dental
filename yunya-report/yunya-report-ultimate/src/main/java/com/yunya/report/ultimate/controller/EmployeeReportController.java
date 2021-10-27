@@ -7,6 +7,7 @@ import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfPersonnelVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.EmployeeWorkloadBiz;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * 简介：
+ * 简介：员工报表控制层
  *
  * @author: chenlin
- * @Description:
+ * @Description: 员工报表控制层
  * @Date: 2021/10/25 16:12
  * @since: 1.0.0
  */
+@Api(tags = "报表-员工报表")
 @RestController
 public class EmployeeReportController {
     /** 员工工作量*/
