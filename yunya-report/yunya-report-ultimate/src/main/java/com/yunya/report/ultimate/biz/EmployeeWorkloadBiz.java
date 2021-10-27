@@ -3,10 +3,7 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.query.MultiClinicEmployeeQuery;
-import com.yunya.feign.report.domain.vo.ClinicEmployeBonusCoefficientVO;
-import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfOperationVO;
-import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfPersonnelVO;
-import com.yunya.feign.report.domain.vo.EmployeeWorkloadVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.SortUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -439,5 +436,12 @@ public class EmployeeWorkloadBiz {
         String fileName = query.getStartDate() + "-" + query.getEndDate() + "员工工作量统计";
         excelUtil.exportExcel(response, resultList, "员工工作量（人事报表）", fileName);
 
+    }
+
+    public PageInfo<BillItemTollAndWorkloadVO> findStatisticsTariffPaymentWorkloadList(BillItemTollAndWorkloadQuery query) {
+        return null;
+    }
+
+    public void exportTariffPaymentWorkloadList(HttpServletResponse response, BillItemTollAndWorkloadQuery query) {
     }
 }
