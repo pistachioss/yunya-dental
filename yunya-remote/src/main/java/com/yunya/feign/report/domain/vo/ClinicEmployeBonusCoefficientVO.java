@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -7,6 +8,9 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+
+import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
+import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 
 /**
  * 简介：员工奖金系数VO

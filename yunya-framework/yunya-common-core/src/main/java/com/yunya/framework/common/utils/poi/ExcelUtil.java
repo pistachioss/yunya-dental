@@ -968,9 +968,7 @@ public class ExcelUtil<T> {
   /** 得到所有定义字段 */
   private void createExcelField() {
     this.fields = new ArrayList<>();
-    List<Field> tempFields = new ArrayList<>();
-    tempFields.addAll(Arrays.asList(clazz.getSuperclass().getDeclaredFields()));
-    tempFields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+    List<Field> tempFields = getFieldList();
     tempFields.forEach(
         field -> {
           // 单注解
@@ -990,6 +988,56 @@ public class ExcelUtil<T> {
             .collect(Collectors.toList());
     this.maxHeight = getRowHeight();
   }
+
+  private List<Field> getFieldList() {
+    Map<String, Field> fieldMap = new LinkedHashMap<>();
+    List<Class<? super T>> superclass = getAllClass(clazz);
+    if (StringHelper.isNotEmpty(superclass)) {
+      superclass.forEach(vo->{
+        Field[] fields = vo.getDeclaredFields();
+        for (Field field : fields) {
+          // 重复字段，后添加的覆盖前面的
+          String name = field.getName();
+          if (fieldMap.containsKey(name)) {
+            fieldMap.remove(name);
+          }
+          fieldMap.put(name, field);
+        }
+      });
+    }
+    return new ArrayList<>(fieldMap.values());
+  }
+
+  /**
+   * 返回所有父类（不包含Object）和自己
+   * @param clazz
+   * @param <T>
+   * @return
+   */
+  private static  <T> List<Class<? super T>> getAllClass(Class<? super T> clazz) {
+    List<Class<? super T>> result = new ArrayList<>();
+    putSupperClass(clazz, result);
+    return result;
+  }
+
+  /**
+   * 递归查找父类并添加到result
+   *
+   * @param clazz
+   * @param result
+   * @param <T>
+   */
+  private static  <T> void putSupperClass(Class<? super T> clazz, List<Class<? super T>> result) {
+    Class<? super T> superclass = clazz.getSuperclass();
+    if (superclass.getName().equals("java.lang.Object")) {
+      result.add(clazz);
+      return;
+    } else {
+      putSupperClass(superclass, result);
+    }
+    result.add(clazz);
+  }
+
 
   /** 根据注解获取最大行高 */
   public short getRowHeight() {

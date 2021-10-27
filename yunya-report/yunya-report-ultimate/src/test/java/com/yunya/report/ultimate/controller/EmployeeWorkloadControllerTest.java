@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
@@ -45,5 +46,15 @@ public class EmployeeWorkloadControllerTest {
     ResponseResult<PageInfo<ClinicEmployeeWorkloadOfPersonnelVO>> result = employeeReportController.employeeWorkloadListOfPersonnel(query);
     System.out.println("总耗时：" + (System.currentTimeMillis() - t1));
     System.out.println(JSONObject.toJSON(result.getData()));
+  }
+
+  @Test
+  public void exportEmployeeWorkloadListOfPersonnel() throws Exception {
+    // 26,27,28,29,30,31,32,33
+    String param = "{\"dateType\":1,\"employeeIds\":[],\"postIds\":[],\"workStatus\":[],\"enableFilter\":1,\"orgIds\":[26],\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-01\",\"endDate\":\"2021-12\",\"whetherPage\":true}";
+    ClinicEmployeeWorkloadQuery query = JSONObject.parseObject(param, ClinicEmployeeWorkloadQuery.class);
+    long t1 = System.currentTimeMillis();
+    employeeReportController.exportEmployeeWorkloadListOfPersonnel(new MockHttpServletResponse(), query);
+    System.out.println("总耗时：" + (System.currentTimeMillis() - t1));
   }
 }
