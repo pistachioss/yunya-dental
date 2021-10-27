@@ -54,7 +54,7 @@ public class EmployeeReportController {
      * @return
      */
     @ApiOperation("公司端报表-报表统计-运营报表-员工报表-员工工作量-导出")
-    @PostMapping(value = "/workload/list/export", name = "根据条件导出运营报表的员工工作量报表")
+    @PostMapping(value = "/operation/workload/list/export", name = "根据条件导出运营报表的员工工作量报表")
     public ResponseResult<T> exportEmployeeWorkloadListOfOperationVO(
             HttpServletResponse response, @RequestBody @Validated ClinicEmployeeWorkloadQuery query)
             throws Exception {
@@ -85,7 +85,7 @@ public class EmployeeReportController {
      * @return void
      */
     @ApiOperation("公司端报表-人事报表-员工工作量-导出")
-    @PostMapping(value = "/employee/workload/export", name = "根据条件导出人事报表的员工工作量列表")
+    @PostMapping(value = "/personnel/employee/workload/export", name = "根据条件导出人事报表的员工工作量列表")
     public ResponseResult<T> exportEmployeeWorkloadListOfPersonnel(
             HttpServletResponse response, @RequestBody @Validated ClinicEmployeeWorkloadQuery query)
             throws Exception {
