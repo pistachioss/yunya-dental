@@ -803,7 +803,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     order.setTreatmentRecordId(treatmentRecordId);
     String number = generateOrderRecordNumber(orgId);
     order.setOrderRecordNum(number);
-    order.setStatus((byte) 1);
+    order.setStatus(BusinessConstants.ORDER_LOCK_STATUS);
     order.setTotalAmount(new BigDecimal("0"));
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     order.setCrtId(userId);
@@ -827,7 +827,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     detail.setCrtName(name);
     detail.setUpdId(userId);
     detail.setUptName(name);
-    orderDetailBiz.insertSelective(detail);
+    int result = orderDetailBiz.insertSelective(detail);
+    if (result > 0) {
+      rabbitMqServiceFeign.sendMessage(order.getId(), 0, BaseBill);
+    }
     return order;
   }
 }
