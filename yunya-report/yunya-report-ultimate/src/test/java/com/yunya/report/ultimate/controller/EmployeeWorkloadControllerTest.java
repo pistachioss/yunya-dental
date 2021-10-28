@@ -2,7 +2,9 @@ package com.yunya.report.ultimate.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.BillItemTollWorkloadQuery;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
+import com.yunya.feign.report.domain.vo.BillItemTollAndWorkloadVO;
 import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfOperationVO;
 import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfPersonnelVO;
 import com.yunya.framework.common.model.ResponseResult;
@@ -44,6 +46,17 @@ public class EmployeeWorkloadControllerTest {
     ClinicEmployeeWorkloadQuery query = JSONObject.parseObject(param, ClinicEmployeeWorkloadQuery.class);
     long t1 = System.currentTimeMillis();
     ResponseResult<PageInfo<ClinicEmployeeWorkloadOfPersonnelVO>> result = employeeReportController.employeeWorkloadListOfPersonnel(query);
+    System.out.println("总耗时：" + (System.currentTimeMillis() - t1));
+    System.out.println(JSONObject.toJSON(result.getData()));
+  }
+
+  @Test
+  public void tariffPaymentWorkloadStatistics() throws Exception {
+    // 26,27,28,29,30,31,32,33
+    String param = "{\"categoryItems\":[],\"employeeIds\":[],\"workStatus\":[],\"startDate\":\"2021-01-01\",\"endDate\":\"2021-12-31\",\"orgIds\":[26],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+    BillItemTollWorkloadQuery query = JSONObject.parseObject(param, BillItemTollWorkloadQuery.class);
+    long t1 = System.currentTimeMillis();
+    ResponseResult<PageInfo<BillItemTollAndWorkloadVO>> result = employeeReportController.tariffPaymentWorkloadStatistics(query);
     System.out.println("总耗时：" + (System.currentTimeMillis() - t1));
     System.out.println(JSONObject.toJSON(result.getData()));
   }

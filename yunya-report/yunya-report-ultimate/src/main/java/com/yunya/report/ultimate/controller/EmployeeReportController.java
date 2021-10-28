@@ -1,7 +1,9 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.BillItemTollWorkloadQuery;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
+import com.yunya.feign.report.domain.vo.BillItemTollAndWorkloadVO;
 import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfOperationVO;
 import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfPersonnelVO;
 import com.yunya.framework.common.model.ResponseResult;
@@ -92,6 +94,37 @@ public class EmployeeReportController {
             HttpServletResponse response, @RequestBody @Validated ClinicEmployeeWorkloadQuery query)
             throws Exception {
         employeeWorkloadBiz.exportEmployeeWorkloadListOfPersonnel(response, query);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 根据条件查询项目收费工作量
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目工作量统计")
+    @PostMapping(value = "/operation/tariff/pay/workload/list", name = "公司端报表-报表统计-运营报表-收费项目工作量统计")
+    public ResponseResult<PageInfo<BillItemTollAndWorkloadVO>> tariffPaymentWorkloadStatistics(
+            @RequestBody @Validated BillItemTollWorkloadQuery query) throws Exception {
+        PageInfo<BillItemTollAndWorkloadVO> pageInfo =
+                employeeWorkloadBiz.findStatisticsTariffPaymentWorkloadList(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件导出项目收费及工作量列表
+     *
+     * @param response http响应
+     * @param query 查询参数
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目工作量统计-导出")
+    @PostMapping(value = "/operation/tariff/pay/workload/list/export", name = "导出项目收费金额及工作量")
+    public ResponseResult<T> exportTariffPaymentWorkloadList(
+            HttpServletResponse response, @RequestBody @Validated BillItemTollWorkloadQuery query)
+            throws Exception {
+        employeeWorkloadBiz.exportTariffPaymentWorkloadList(response, query);
         return ResponseUtil.success(null);
     }
 }

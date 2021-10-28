@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.vo.ItemCategoryInfoVO;
+import com.yunya.feign.report.domain.vo.ItemCategoryVO;
 import com.yunya.feign.report.domain.vo.ItemInfoVO;
 import com.yunya.models.report.BaseTariffInfo;
 import org.apache.ibatis.annotations.Param;
@@ -43,4 +44,6 @@ public interface BaseTariffInfoMapper extends Mapper<BaseTariffInfo> {
    * @return List<ItemInfoVO>
    */
   List<ItemInfoVO> selectItemListByCategoryId(@Param("itemType") Integer itemType, @Param("categoryId") Integer categoryId);
+
+  List<ItemCategoryVO> selectItemCategoryListByCategoryId(@Param("itemType")Integer itemType, @Param("categoryId") Integer categoryId);
 }

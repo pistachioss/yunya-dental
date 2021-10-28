@@ -1,12 +1,10 @@
 package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.BillItemTollWorkloadQuery;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.query.MultiClinicEmployeeQuery;
-import com.yunya.feign.report.domain.vo.ClinicEmployeBonusCoefficientVO;
-import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfOperationVO;
-import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfPersonnelVO;
-import com.yunya.feign.report.domain.vo.EmployeeWorkloadVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.SortUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -16,6 +14,7 @@ import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
 import com.yunya.report.ultimate.mapper.BaseEmployeeMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -23,7 +22,10 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介：员工工作量服务层
@@ -47,6 +49,9 @@ public class EmployeeWorkloadBiz {
 
     @Autowired
     private EmployeeWorkloadCostBiz employeeWorkloadCostBiz;
+
+    @Autowired
+    private BaseTariffInfoBiz baseTariffInfoBiz;
 
 
     /**
@@ -95,7 +100,7 @@ public class EmployeeWorkloadBiz {
         // 过滤
         result = enableFilter(query.getEnableFilter(), result);
         // 排序
-        return SortUtil.sort(result, comparatorList());
+        return SortUtil.sort(result, employeeWorkloadCmpList());
     }
 
     /**
@@ -140,7 +145,7 @@ public class EmployeeWorkloadBiz {
      *
      * @return
      */
-    private Comparator comparatorList() {
+    private Comparator employeeWorkloadCmpList() {
         return SortUtil.comparing(
                 ClinicEmployeeWorkloadOfOperationVO::getActualWorkload,
                 ClinicEmployeeWorkloadOfOperationVO::getReceivedWorkload,
@@ -317,14 +322,25 @@ public class EmployeeWorkloadBiz {
     }
 
     /**
-     * 转换成员工map
+     * 转换成员工工作量map
      *
      * @param workloads
      * @return
      */
     private Map<String, BigDecimal> mapEmployeeWorkload(List<EmployeeWorkloadVO> workloads) {
         Map<String, BigDecimal> result = new HashMap<>();
-        workloads.forEach(vo-> result.put(vo.getEmployeeId()+","+vo.getOrgId(), vo.getWorkload()));
+        workloads.forEach(vo->result.put(vo.getEmployeeId()+","+vo.getOrgId(), vo.getWorkload()));
+        return result;
+    }
+
+    /**
+     * 转换为员工工作量map
+     * @param workloads
+     * @return
+     */
+    private Map<String, EmployeeTariffWorkloadVO> mapEmployeeWorkloadVO(List<EmployeeTariffWorkloadVO> workloads) {
+        Map<String, EmployeeTariffWorkloadVO> result = new HashMap<>();
+        workloads.forEach(vo-> result.put(vo.getEmployeeId()+","+vo.getOrgId()+"."+vo.getItemId(), vo));
         return result;
     }
 
@@ -439,5 +455,203 @@ public class EmployeeWorkloadBiz {
         String fileName = query.getStartDate() + "-" + query.getEndDate() + "员工工作量统计";
         excelUtil.exportExcel(response, resultList, "员工工作量（人事报表）", fileName);
 
+    }
+
+    public PageInfo<BillItemTollAndWorkloadVO> findStatisticsTariffPaymentWorkloadList(BillItemTollWorkloadQuery query) throws Exception {
+        // 执行人的项目实收工作量
+        Future<Map<String, EmployeeTariffWorkloadVO>> receivedWorkload = findClinicExecutorTariffReceivedWorkload(query);
+
+        // 执行人的项目免单支付金额
+        Future<Map<String, EmployeeTariffWorkloadVO>> freePaymentAmount = findClinicExecutorTariffFreePaymentAmount(query);
+
+        // 执行人的项目补入工作量
+        Future<Map<String, EmployeeTariffWorkloadVO>> supplementWorkload = findClinicExecutorTariffFreeSupplementWorkload(query);
+
+        // 执行人的项目退费工作量
+        Future<Map<String, EmployeeTariffWorkloadVO>> refundWorkload = findClinicExecutorTariffRefundWorkload(query);
+
+        // 查询价目表
+        Future<Map<Integer, ItemCategoryVO>> tariffMap = findTariffInfoMap();
+
+        // 门诊员工
+        Future<List<ClinicEmployeBonusCoefficientVO>> employees = findClinicEmployeeCartesianProduct(query);
+
+        // 数据合并组装
+        List<BillItemTollAndWorkloadVO> result = mergeExecutorTariffWorkload(receivedWorkload, freePaymentAmount, supplementWorkload, refundWorkload, employees, tariffMap);
+        // 分页
+        return PageUtl.doPage(query.getPageNum(), query.getPageSize(), result, query.getWhetherPage());
+    }
+
+    private List<BillItemTollAndWorkloadVO> mergeExecutorTariffWorkload(
+            Future<Map<String, EmployeeTariffWorkloadVO>> receivedWorkload, Future<Map<String, EmployeeTariffWorkloadVO>> freePaymentAmount,
+            Future<Map<String, EmployeeTariffWorkloadVO>> supplementWorkload, Future<Map<String, EmployeeTariffWorkloadVO>> refundWorkload,
+            Future<List<ClinicEmployeBonusCoefficientVO>> employeeFutrue, Future<Map<Integer, ItemCategoryVO>> tariffFuture) throws Exception {
+        Map<String, EmployeeTariffWorkloadVO> receivedMap = receivedWorkload.get();
+        Map<String, EmployeeTariffWorkloadVO> freePaymentMap = freePaymentAmount.get();
+        Map<String, EmployeeTariffWorkloadVO> supplementMap = supplementWorkload.get();
+        Map<String, EmployeeTariffWorkloadVO> refundMap = refundWorkload.get();
+        List<ClinicEmployeBonusCoefficientVO> employees = employeeFutrue.get();
+        Map<String, ClinicEmployeBonusCoefficientVO> employeeMap = new HashMap<>(16);
+        employees.forEach(vo-> employeeMap.put(vo.getEmployeeId()+","+vo.getOrgId(),vo));
+        Map<Integer, ItemCategoryVO> tariffMap= tariffFuture.get();
+        Map<String, BillItemTollAndWorkloadVO> resultMap = new HashMap<>(16);
+        receivedMap.forEach((key, vo)->{
+            BigDecimal workload = vo.getWorkload();
+            if (workload.compareTo(BigDecimal.ZERO)>0) {
+                BillItemTollAndWorkloadVO entity = resultMap.get(key);
+                if (ObjectUtils.isEmpty(entity)) {
+                    entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
+                }
+                entity.setReceivedWorkload(workload);
+                resultMap.put(key, entity);
+            }
+        });
+        freePaymentMap.forEach((key, vo)->{
+            BigDecimal workload = vo.getWorkload();
+            if (workload.compareTo(BigDecimal.ZERO)>0) {
+                BillItemTollAndWorkloadVO entity = resultMap.get(key);
+                if (ObjectUtils.isEmpty(entity)) {
+                    entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
+                }
+                entity.setFreePayWorkload(workload);
+                resultMap.put(key, entity);
+            }
+        });
+        supplementMap.forEach((key, vo)->{
+            BigDecimal workload = vo.getWorkload();
+            if (workload.compareTo(BigDecimal.ZERO)>0) {
+                BillItemTollAndWorkloadVO entity = resultMap.get(key);
+                if (ObjectUtils.isEmpty(entity)) {
+                    entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
+                }
+                entity.setSupplyWorkload(workload);
+                resultMap.put(key, entity);
+            }
+        });
+        refundMap.forEach((key, vo)->{
+            BigDecimal workload = vo.getWorkload();
+            if (workload.compareTo(BigDecimal.ZERO)>0) {
+                BillItemTollAndWorkloadVO entity = resultMap.get(key);
+                if (ObjectUtils.isEmpty(entity)) {
+                    entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
+                }
+                entity.setRefundWorkload(workload);
+                resultMap.put(key, entity);
+            }
+        });
+
+        // 排序
+        return SortUtil.sort(new ArrayList<>(resultMap.values()), itemWorkloadCmpList());
+    }
+
+    /**
+     * 填充基础信息
+     *
+     * @param key
+     * @param employeeMap
+     * @param tariffMap
+     * @return
+     */
+    private BillItemTollAndWorkloadVO createWorkloadBaseInfo(String key,
+         Map<String, ClinicEmployeBonusCoefficientVO> employeeMap, Map<Integer, ItemCategoryVO> tariffMap) {
+        String[] keys = key.split("\\.");
+        BillItemTollAndWorkloadVO entity = new BillItemTollAndWorkloadVO();
+        ClinicEmployeBonusCoefficientVO employee = employeeMap.get(keys[0]);
+        if (!ObjectUtils.isEmpty(employee)) {
+            entity.setAbbreviation(employee.getAbbreviation());
+            entity.setOrgId(employee.getOrgId());
+            entity.setExecutorName(employee.getEmployeeName());
+            entity.setExecutorId(employee.getEmployeeId());
+        }
+        ItemCategoryVO item = tariffMap.get(Integer.parseInt(keys[1]));
+        if (!ObjectUtils.isEmpty(item)) {
+            entity.setItemName(item.getItemName());
+            entity.setItemId(item.getItemId());
+            entity.setItemNum(item.getItemNum());
+            entity.setItemCategoryName(item.getCategoryName());
+            entity.setItemCategoryId(item.getCategoryId());
+        }
+        return entity;
+    }
+
+    private Future<Map<Integer, ItemCategoryVO>> findTariffInfoMap() {
+        return threadPool.submit(()->{
+            List<ItemCategoryVO> itemList = baseTariffInfoBiz.findItemCategoryInfoList(0);
+            return itemList.stream().collect(toMap(ItemInfoVO::getItemId, Function.identity()));
+        });
+    }
+
+    /**
+     * 多线程查询执行人的项目退费工作量
+     *
+     * @param query
+     * @return
+     */
+    private Future<Map<String, EmployeeTariffWorkloadVO>> findClinicExecutorTariffRefundWorkload(BillItemTollWorkloadQuery query) {
+        return threadPool.submit(()->{
+            List<EmployeeTariffWorkloadVO> workload = baseBillDetailMapper.selectClinicExecutorTariffRefundWorkload(query);
+            return mapEmployeeWorkloadVO(workload);
+        });
+    }
+
+    /**
+     * 多线程查询执行人的项目补入工作量
+     *
+     * @param query
+     * @return
+     */
+    private Future<Map<String, EmployeeTariffWorkloadVO>> findClinicExecutorTariffFreeSupplementWorkload(BillItemTollWorkloadQuery query) {
+        return threadPool.submit(()->{
+            List<EmployeeTariffWorkloadVO> workload = baseBillDetailMapper.selectClinicExecutorTariffSupplementWorkload(query);
+            return mapEmployeeWorkloadVO(workload);
+        });
+    }
+
+    /**
+     * 多线程查询执行人的项目免单支付金额
+     *
+     * @param query
+     * @return
+     */
+    private Future<Map<String, EmployeeTariffWorkloadVO>> findClinicExecutorTariffFreePaymentAmount(BillItemTollWorkloadQuery query) {
+        return threadPool.submit(()->{
+            List<EmployeeTariffWorkloadVO> amount = baseBillDetailMapper.selectClinicExecutorTariffFreepaymentAmount(query);
+            return mapEmployeeWorkloadVO(amount);
+        });
+    }
+
+    /**
+     * 多线程查询执行人的项目实收工作量
+     * @param query
+     * @return
+     */
+    private Future<Map<String, EmployeeTariffWorkloadVO>> findClinicExecutorTariffReceivedWorkload(BillItemTollWorkloadQuery query) {
+        return threadPool.submit(()->{
+            List<EmployeeTariffWorkloadVO> workload = baseBillDetailMapper.selectClinicExecutorTariffWorkload(query);
+            return mapEmployeeWorkloadVO(workload);
+        });
+    }
+
+    /**
+     * 返回项目收费数量&金额的排序规则
+     *
+     * @return
+     */
+    private Comparator itemWorkloadCmpList() {
+        return SortUtil.comparing(
+                BillItemTollAndWorkloadVO::getReceivedWorkload,
+                BillItemTollAndWorkloadVO::getFreePayWorkload,
+                BillItemTollAndWorkloadVO::getSupplyWorkload,
+                BillItemTollAndWorkloadVO::getRefundWorkload
+        ).reversed();
+    }
+
+    public void exportTariffPaymentWorkloadList(HttpServletResponse response, BillItemTollWorkloadQuery query) throws Exception {
+        query.setWhetherPage(false);
+        String fileName = query.getStartDate() + "-" + query.getEndDate() + "收费项目及工作量列表";
+        List<BillItemTollAndWorkloadVO> resultList =
+                findStatisticsTariffPaymentWorkloadList(query).getList();
+        ExcelUtil<BillItemTollAndWorkloadVO> excelUtil = new ExcelUtil<>(BillItemTollAndWorkloadVO.class);
+        excelUtil.exportExcel(response, resultList, "收费项目及工作量列表", fileName);
     }
 }

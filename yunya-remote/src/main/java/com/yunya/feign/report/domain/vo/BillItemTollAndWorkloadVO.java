@@ -24,6 +24,13 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 @Data
 @ToString
 public class BillItemTollAndWorkloadVO implements Serializable {
+  /** 门诊ID */
+  @ApiModelProperty("门诊ID")
+  private Integer orgId;
+  /** 门诊名称 */
+  @Excel(name = "门诊名称")
+  @ApiModelProperty("门诊名称")
+  private String abbreviation;
   /** 项目分类ID */
   @ApiModelProperty("项目分类ID")
   private Integer itemCategoryId;
@@ -52,17 +59,17 @@ public class BillItemTollAndWorkloadVO implements Serializable {
   /** 实收工作量 */
   @Excel(name = "实收工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("实收工作量")
-  private BigDecimal receivedWorkload;
+  private BigDecimal receivedWorkload = BigDecimal.ZERO;
   /** 免单工作量 */
   @Excel(name = "其中免单工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("免单工作量")
-  private BigDecimal freePayWorkload;
+  private BigDecimal freePayWorkload = BigDecimal.ZERO;
   /** 补入工作量 */
   @Excel(name = "补入工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("补入工作量")
-  private BigDecimal supplyWorkload;
+  private BigDecimal supplyWorkload = BigDecimal.ZERO;
   /** 退费工作量 */
   @Excel(name = "退费工作量",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
   @ApiModelProperty("退费工作量")
-  private BigDecimal refundWorkload;
+  private BigDecimal refundWorkload = BigDecimal.ZERO;
 }
