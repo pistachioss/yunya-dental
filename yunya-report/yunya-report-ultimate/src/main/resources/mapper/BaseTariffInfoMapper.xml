@@ -46,9 +46,29 @@
             item_id AS itemId,
             item_type AS itemType,
             item_name AS itemName,
-            item_num as itemNum
+            item_num AS itemNum
         FROM
         base_tariff_info
+        <where>
+            <if test="itemType != null">
+                and item_type = #{itemType}
+            </if>
+            <if test="categoryId != null">
+                and category_id = #{categoryId}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectItemCategoryListByCategoryId"
+            resultType="com.yunya.feign.report.domain.vo.ItemCategoryVO">
+        SELECT
+            item_id AS itemId,
+            item_type AS itemType,
+            item_name AS itemName,
+            item_num AS itemNum,
+            category_id AS categoryId,
+            category_name AS category_Name
+        FROM base_tariff_info
         <where>
             <if test="itemType != null">
                 and item_type = #{itemType}

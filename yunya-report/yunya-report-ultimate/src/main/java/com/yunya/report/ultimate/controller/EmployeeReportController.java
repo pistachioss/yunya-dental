@@ -1,8 +1,8 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.BillItemTollWorkloadQuery;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
-import com.yunya.feign.report.domain.vo.BillItemTollAndWorkloadQuery;
 import com.yunya.feign.report.domain.vo.BillItemTollAndWorkloadVO;
 import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfOperationVO;
 import com.yunya.feign.report.domain.vo.ClinicEmployeeWorkloadOfPersonnelVO;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * 简介：员工报表控制层
@@ -107,7 +106,7 @@ public class EmployeeReportController {
     @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目工作量统计")
     @PostMapping(value = "/tariff/pay/workload/list", name = "公司端报表-报表统计-运营报表-收费项目工作量统计")
     public ResponseResult<PageInfo<BillItemTollAndWorkloadVO>> tariffPaymentWorkloadStatistics(
-            @RequestBody @Validated BillItemTollAndWorkloadQuery query) {
+            @RequestBody @Validated BillItemTollWorkloadQuery query) throws Exception {
         PageInfo<BillItemTollAndWorkloadVO> pageInfo =
                 employeeWorkloadBiz.findStatisticsTariffPaymentWorkloadList(query);
         return ResponseUtil.success(pageInfo);
@@ -123,8 +122,8 @@ public class EmployeeReportController {
     @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目工作量统计-导出")
     @PostMapping(value = "/tariff/pay/workload/list/export", name = "导出项目收费金额及工作量")
     public ResponseResult<T> exportTariffPaymentWorkloadList(
-            HttpServletResponse response, @RequestBody @Validated BillItemTollAndWorkloadQuery query)
-            throws IOException {
+            HttpServletResponse response, @RequestBody @Validated BillItemTollWorkloadQuery query)
+            throws Exception {
         employeeWorkloadBiz.exportTariffPaymentWorkloadList(response, query);
         return ResponseUtil.success(null);
     }
