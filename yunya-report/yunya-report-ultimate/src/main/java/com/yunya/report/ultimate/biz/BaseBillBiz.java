@@ -388,7 +388,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     resultData.setCurrentMonthTotalReceivedAmount(new BigDecimal("0"));
     resultData.setCurrentMonthTotalFreePayAmount(new BigDecimal("0"));
     resultData.setCurrentMonthTotalDebtAmount(new BigDecimal("0"));
-    String currentDate = DateUtil.parseObjectToStr("yyyy-MM", new Date());
+    String currentDate = DateUtil.parseDateToStr("yyyy-MM", new Date());
     CurrentMonthBillStatisticVO statisticVO;
     if (currentDate.equals(queryDate)) {
       statisticVO = mapper.selectRealBillStatistic(query);

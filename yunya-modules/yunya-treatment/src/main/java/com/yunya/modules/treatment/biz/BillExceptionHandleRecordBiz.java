@@ -404,7 +404,7 @@ public class BillExceptionHandleRecordBiz
           vo.setRegDentistName(dentist.getName());
         }
         String currentMonth =
-            DateUtil.parseObjectToStr("yyyy-MM", new Date(System.currentTimeMillis()));
+            DateUtil.parseDateToStr("yyyy-MM", new Date(System.currentTimeMillis()));
         String billDate = new DateTime(vo.getBillDate()).toString("yyyy-MM");
         vo.setCurrentMonthBill(currentMonth.equals(billDate) ? "当月账单" : "非当月账单");
       }
