@@ -53,7 +53,7 @@ public class EmployeeWorkloadControllerTest {
   @Test
   public void tariffPaymentWorkloadStatistics() throws Exception {
     // 26,27,28,29,30,31,32,33
-    String param = "{\"categoryItems\":[],\"employeeIds\":[],\"workStatus\":[],\"startDate\":\"2021-01-01\",\"endDate\":\"2021-12-31\",\"orgIds\":[26],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+    String param = "{\"categoryItems\":[],\"employeeIds\":[],\"workStatus\":[],\"startDate\":\"2021-01-01\",\"endDate\":\"2021-01-31\",\"orgIds\":[],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
     BillItemTollWorkloadQuery query = JSONObject.parseObject(param, BillItemTollWorkloadQuery.class);
     long t1 = System.currentTimeMillis();
     ResponseResult<PageInfo<BillItemTollAndWorkloadVO>> result = employeeReportController.tariffPaymentWorkloadStatistics(query);
