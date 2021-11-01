@@ -61,7 +61,7 @@ public class DateUtil {
    * @param date
    * @return
    */
-  public static String parseObjectToStr(final String format, final Date date) {
+  public static String parseDateToStr(final String format, final Date date) {
     return new SimpleDateFormat(format).format(date);
   }
 

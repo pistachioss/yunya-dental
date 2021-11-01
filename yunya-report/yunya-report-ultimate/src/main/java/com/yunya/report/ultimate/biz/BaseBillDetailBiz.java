@@ -1287,7 +1287,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return
    */
   private Map<Integer, BigDecimal> workloadMonthGoal() {
-    String date = DateUtil.parseObjectToStr("yyyy-MM", new Date());
+    String date = DateUtil.parseDateToStr("yyyy-MM", new Date());
     BusinessGoalCompletedInfoQuery query = new BusinessGoalCompletedInfoQuery();
     query.setBusinessType((byte) 1); // 工作量
     query.setBusinessTypes(new Byte[] {1}); // 工作量
