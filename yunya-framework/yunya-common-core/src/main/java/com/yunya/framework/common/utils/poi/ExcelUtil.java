@@ -1,6 +1,6 @@
 package com.yunya.framework.common.utils.poi;
 
-import cn.hutool.core.date.DateUtil;
+import com.yunya.framework.common.utils.DateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.yunya.framework.common.annation.Excel;
 import com.yunya.framework.common.annation.Excel.Type;
@@ -198,7 +198,7 @@ public class ExcelUtil<T> {
           val = Convert.toBigDecimal(val);
         } else if (Date.class == fieldType) {
           if (val instanceof String) {
-            val = DateUtil.parse((String) val);
+            val = cn.hutool.core.date.DateUtil.parse((String) val);
           } else if (val instanceof Double) {
             val = new DateTime(val).toDate();
           }
@@ -737,7 +737,7 @@ public class ExcelUtil<T> {
         String readConverterExp = attr.readConverterExp();
         String separator = attr.separator();
         if (StringHelper.isNotEmpty(dateFormat) && StringHelper.isNotNull(value)) {
-          cell.setCellValue(DateUtil.format((Date) value, dateFormat));
+          cell.setCellValue(DateUtil.parseObjectToStr(dateFormat, value));
         } else if (StringHelper.isNotEmpty(readConverterExp) && StringHelper.isNotNull(value)) {
           cell.setCellValue(convertByExp(Convert.toStr(value), readConverterExp, separator));
         } else if (value instanceof BigDecimal && -1 != attr.scale()) {
