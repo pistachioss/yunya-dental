@@ -4686,7 +4686,7 @@
                     SELECT
                         bbp.bill_pay_id,
                         bbd.billTotalWorkload,
-                        bbp.org_id
+                        bb.org_id
                     FROM base_bill_pay bbp
                     INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
                     INNER JOIN (
