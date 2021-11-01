@@ -41,6 +41,19 @@ public class DateUtil {
 
   private DateUtil() {}
 
+  public static String parseObjectToStr(final String format, final Object dateObj) throws ParseException {
+    Date date = null;
+    if (dateObj instanceof Date) {
+      date = (Date) dateObj;
+    } else if (dateObj instanceof String) {
+      String dateStr = (String) dateObj;
+      date = parse(dateStr, format);
+    } else {
+      throw new ClientServiceException("时间日期数据类型错误", CommonConstants.ILLEGAL_PARAMETERS_CODE);
+    }
+    return format(date, format);
+  }
+
   /**
    * 格式化指定格式字符串日期
    *
@@ -48,7 +61,7 @@ public class DateUtil {
    * @param date
    * @return
    */
-  public static String parseDateToStr(final String format, final Date date) {
+  public static String parseObjectToStr(final String format, final Date date) {
     return new SimpleDateFormat(format).format(date);
   }
 

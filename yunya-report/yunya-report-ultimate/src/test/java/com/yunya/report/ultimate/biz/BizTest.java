@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.FileOutputStream;
@@ -83,12 +84,11 @@ public class BizTest {
     }
 
     @Test
-    public void test4() {
-        String param = "{\"billNum\":\"\",\"dateType\":0,\"employeeId\":612,\"keyword\":\"\",\"billDate\":\"\",\"orgId\":35,\"queryDate\":\"2021-04\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":10}";
+    public void test4() throws IOException {
+        String param = "{\"billNum\":\"\",\"dateType\":1,\"employeeId\":69,\"keyword\":\"\",\"billDate\":\"\",\"orgId\":26,\"queryDate\":\"\",\"whetherPage\":false,\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-10\",\"endDate\":\"2021-11\"}";
         EmployeePersonalWorkloadDetailQuery query = JSONObject.parseObject(param, EmployeePersonalWorkloadDetailQuery.class);
-        PageInfo<EmployeeFreepaymentWorkloadDetailVO> pageInfo =
-                baseBillDetailBiz.findEmployeeFreepaymentWorkloadDetailList(query);
-        System.out.println(JSONObject.toJSON(pageInfo));
+        baseBillDetailBiz.exportEmployeeFreepaymentdWorkloadDetailList(new MockHttpServletResponse(), query);
+//        System.out.println(JSONObject.toJSON(pageInfo));
     }
 
     @Test

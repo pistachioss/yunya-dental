@@ -404,7 +404,7 @@ public class BillExceptionHandleRecordBiz
           vo.setRegDentistName(dentist.getName());
         }
         String currentMonth =
-            DateUtil.parseDateToStr("yyyy-MM", new Date(System.currentTimeMillis()));
+            DateUtil.parseObjectToStr("yyyy-MM", new Date(System.currentTimeMillis()));
         String billDate = new DateTime(vo.getBillDate()).toString("yyyy-MM");
         vo.setCurrentMonthBill(currentMonth.equals(billDate) ? "当月账单" : "非当月账单");
       }
@@ -430,7 +430,7 @@ public class BillExceptionHandleRecordBiz
     List<BillRevokePayRecordVO> resultList = mapper.selectCurrentMonthBillRevokePayRecord(query);
     if (StringHelper.isNotEmpty(resultList)) {
       String currentMonth =
-          DateUtil.parseDateToStr("yyyy-MM", new Date(System.currentTimeMillis()));
+          DateUtil.parseObjectToStr("yyyy-MM", new Date(System.currentTimeMillis()));
       for (BillRevokePayRecordVO vo : resultList) {
         Integer patientId = vo.getPatientId();
         PatientBaseInfo patientInfo = patientCentralServiceFeign.findPatientInfoById(patientId);

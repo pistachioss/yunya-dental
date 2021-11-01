@@ -114,11 +114,16 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
       abbreviation = organization.getAbbreviation();
     }
     String fileName =
-        excelUtil.getFileName(
-            query.getOrderDate(),
-            query.getStartDate() + "-" + query.getEndDate(),
-            abbreviation,
-            "退费工作量统计明细表");
+            excelUtil.getFileName(
+                    query.getStartDate(),
+                    query.getEndDate(),
+                    abbreviation,
+                    "退费工作量统计明细表");
+    String orderDate = query.getOrderDate();
+    if (StringHelper.isNotEmpty(orderDate)) {
+      fileName = excelUtil.getFileName(orderDate,null,abbreviation, "退费工作量统计明细表");
+    }
+
     excelUtil.exportExcel(response, list, "员工账单退费明细表", fileName);
   }
 
