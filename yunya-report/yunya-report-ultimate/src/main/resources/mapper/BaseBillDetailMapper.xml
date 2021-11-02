@@ -4874,6 +4874,18 @@
                             #{item}
                         </foreach>
                     </if>
+                    <if test="query.employeeIds!=null and query.employeeIds.length>0">
+                        and bbd.executor_id in
+                        <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                    <if test="query.itemIds!=null and query.itemIds.size()>0">
+                        and bbd.item_id in
+                        <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
                 </where>
             ) bbd ON bbp.bill_id = bbd.billId
             <where>
@@ -4952,6 +4964,18 @@
                                 #{item}
                             </foreach>
                         </if>
+                        <if test="query.employeeIds!=null and query.employeeIds.length>0">
+                            and bbd.executor_id in
+                            <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                                #{item}
+                            </foreach>
+                        </if>
+                        <if test="query.itemIds!=null and query.itemIds.size()>0">
+                            and bbd.item_id in
+                            <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                                #{item}
+                            </foreach>
+                        </if>
                     </where>
                     GROUP BY bbd.bill_id
                 ) bbd1 ON bbd.bill_id = bbd1.bill_id
@@ -4996,6 +5020,18 @@
             <if test="query.endDate != null and query.endDate != ''">
                 and DATE_FORMAT(bb.privilege_date, '%Y-%m-%d') &lt;= #{query.endDate}
             </if>
+            <if test="query.employeeIds!=null and query.employeeIds.length>0">
+                and bbd.executor_id in
+                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.itemIds!=null and query.itemIds.size()>0">
+                and bbd.item_id in
+                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
             AND bbd.coupon_workload > 0
         </where>
         GROUP BY bbd.executor_id,bbd.item_id,bbd.org_id
@@ -5037,7 +5073,22 @@
                     </if>
                 </where>
             ) br ON brd.refund_id = br.refund_id
-            WHERE bbd.item_type = 0
+            <where>
+                bbd.item_type = 0
+                AND bbd.executor_id > 0
+                <if test="query.employeeIds!=null and query.employeeIds.length>0">
+                    and bbd.executor_id in
+                    <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="query.itemIds!=null and query.itemIds.size()>0">
+                    and bbd.item_id in
+                    <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
         ) brd
         WHERE
         brd.executorId IS NOT NULL
