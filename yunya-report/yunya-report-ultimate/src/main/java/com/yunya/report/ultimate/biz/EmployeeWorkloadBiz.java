@@ -458,6 +458,7 @@ public class EmployeeWorkloadBiz {
     }
 
     public PageInfo<BillItemTollAndWorkloadVO> findStatisticsTariffPaymentWorkloadList(BillItemTollWorkloadQuery query) throws Exception {
+        resolveItemIds(query);
         // 执行人的项目实收工作量
         Future<Map<String, EmployeeTariffWorkloadVO>> receivedWorkload = findClinicExecutorTariffReceivedWorkload(query);
 
@@ -480,6 +481,26 @@ public class EmployeeWorkloadBiz {
         List<BillItemTollAndWorkloadVO> result = mergeExecutorTariffWorkload(receivedWorkload, freePaymentAmount, supplementWorkload, refundWorkload, employees, tariffMap);
         // 分页
         return PageUtl.doPage(query.getPageNum(), query.getPageSize(), result, query.getWhetherPage());
+    }
+
+    /**
+     * 解析出itemId
+     *
+     * @param query
+     */
+    private void resolveItemIds(BillItemTollWorkloadQuery query) {
+        Collection<Integer[]> items = query.getCategoryItems();
+        if (StringHelper.isNotEmpty(items)) {
+            Set<Integer> categoryIds = new HashSet<>();
+            Set<Integer> itemIds = new HashSet<>();
+            items.forEach(
+                    vo -> {
+                        categoryIds.add(vo[0]);
+                        itemIds.add(vo[1]);
+                    });
+            query.setCategoryIds(categoryIds);
+            query.setItemIds(itemIds);
+        }
     }
 
     private List<BillItemTollAndWorkloadVO> mergeExecutorTariffWorkload(
