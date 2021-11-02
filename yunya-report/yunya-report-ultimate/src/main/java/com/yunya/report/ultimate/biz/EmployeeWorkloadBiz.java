@@ -523,8 +523,10 @@ public class EmployeeWorkloadBiz {
                 if (ObjectUtils.isEmpty(entity)) {
                     entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
                 }
-                entity.setReceivedWorkload(workload);
-                resultMap.put(key, entity);
+                if (!ObjectUtils.isEmpty(entity)) {
+                    entity.setReceivedWorkload(workload);
+                    resultMap.put(key, entity);
+                }
             }
         });
         freePaymentMap.forEach((key, vo)->{
@@ -534,8 +536,10 @@ public class EmployeeWorkloadBiz {
                 if (ObjectUtils.isEmpty(entity)) {
                     entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
                 }
-                entity.setFreePayWorkload(workload);
-                resultMap.put(key, entity);
+                if (!ObjectUtils.isEmpty(entity)) {
+                    entity.setFreePayWorkload(workload);
+                    resultMap.put(key, entity);
+                }
             }
         });
         supplementMap.forEach((key, vo)->{
@@ -545,8 +549,10 @@ public class EmployeeWorkloadBiz {
                 if (ObjectUtils.isEmpty(entity)) {
                     entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
                 }
-                entity.setSupplyWorkload(workload);
-                resultMap.put(key, entity);
+                if (!ObjectUtils.isEmpty(entity)) {
+                    entity.setSupplyWorkload(workload);
+                    resultMap.put(key, entity);
+                }
             }
         });
         refundMap.forEach((key, vo)->{
@@ -556,8 +562,10 @@ public class EmployeeWorkloadBiz {
                 if (ObjectUtils.isEmpty(entity)) {
                     entity = createWorkloadBaseInfo(key, employeeMap, tariffMap);
                 }
-                entity.setRefundWorkload(workload);
-                resultMap.put(key, entity);
+                if (!ObjectUtils.isEmpty(entity)) {
+                    entity.setRefundWorkload(workload);
+                    resultMap.put(key, entity);
+                }
             }
         });
 
@@ -583,6 +591,8 @@ public class EmployeeWorkloadBiz {
             entity.setOrgId(employee.getOrgId());
             entity.setExecutorName(employee.getEmployeeName());
             entity.setExecutorId(employee.getEmployeeId());
+        } else {
+            return null;
         }
         ItemCategoryVO item = tariffMap.get(Integer.parseInt(keys[1]));
         if (!ObjectUtils.isEmpty(item)) {
@@ -591,6 +601,8 @@ public class EmployeeWorkloadBiz {
             entity.setItemNum(item.getItemNum());
             entity.setItemCategoryName(item.getCategoryName());
             entity.setItemCategoryId(item.getCategoryId());
+        } else {
+            return null;
         }
         return entity;
     }
