@@ -4996,6 +4996,7 @@
             <if test="query.endDate != null and query.endDate != ''">
                 and DATE_FORMAT(bb.privilege_date, '%Y-%m-%d') &lt;= #{query.endDate}
             </if>
+            AND bbd.coupon_workload > 0
         </where>
         GROUP BY bbd.executor_id,bbd.item_id,bbd.org_id
     </select>
