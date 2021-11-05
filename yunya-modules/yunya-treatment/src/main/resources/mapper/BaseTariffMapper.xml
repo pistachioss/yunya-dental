@@ -203,6 +203,72 @@
         and tariff_category_id = #{tariffCategoryId};
     </select>
 
+    <!--查询全部项目表（包含价目表和商品表）-->
+    <select id="selectAllTariffList" resultType="com.yunya.feign.treatment.domain.vo.BaseTariffVO">
+        select
+            bt.id,
+            bt.tariff_category_id as tariffCategoryId,
+            btc.`name` as tariffCategoryName,
+            '0' as tariffCategoryNumber,
+            bt.item_number as itemNumber,
+            bt.`name`,
+            bt.pinyin,
+            bt.english_name as englishName,
+            bt.unit,
+            bt.price,
+            bt.inservice
+        from base_tariff bt
+        left join base_tariff_category btc on bt.tariff_category_id = btc.id
+        <where>
+            <if test="queryForm.id != null">
+                and bt.id = #{queryForm.id}
+            </if>
+            <if test="queryForm.tariffCategoryId != null">
+                and bt.tariff_category_id = #{queryForm.tariffCategoryId}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
+                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like
+                concat('%',
+                #{queryForm.keyWord}, '%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and bt.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+        union all
+        select
+            bot.id,
+            bot.oral_tariff_category_id as tariffCategoryId,
+            botc.`name` as tariffCategoryName,
+            '1' as tariffCategoryNumber,
+            bot.item_number as itemNumber,
+            bot.`name`,
+            bot.pinyin,
+            bot.english_name as englishName,
+            bot.unit,
+            bot.price,
+            bot.inservice
+        from
+        base_oral_tariff bot
+        left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
+        <where>
+            <if test="queryForm.id != null">
+                and bot.id = #{queryForm.id}
+            </if>
+            <if test="queryForm.tariffCategoryId != null">
+                and bot.oral_tariff_category_id = #{queryForm.oralTariffCategoryId}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
+                and CONCAT(IFNULL( bot.name, '' ), IFNULL( bot.item_number, '' ), IFNULL( bot.pinyin, '' )) like
+                concat('%',
+                #{queryForm.keyWord}, '%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and bot.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+
     <!-- 批量插入价目表 -->
     <insert id="insertBaseItems" useGeneratedKeys="true" keyProperty="id">
         insert into base_tariff

@@ -95,4 +95,12 @@ public interface BaseTariffMapper extends Mapper<BaseTariff> {
   String selectMaxBaseTariffNumber(
       @Param("tariffCategoryId") Integer tariffCategoryId,
       @Param("categoryNumber") String categoryNumber);
+
+  /**
+   * 查询全部项目表（包含价目表和商品表）
+   *
+   * @param queryForm
+   * @return
+   */
+  List<BaseTariffVO> selectAllTariffList(@Param("queryForm") BaseTariffQueryForm queryForm);
 }

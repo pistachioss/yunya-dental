@@ -770,7 +770,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     BigDecimal adjustOriginalAmount = mapper.selectBillAdjustOriginalAmount(query);
     // 原价合计
     BigDecimal originalAmount = mapper.selectBillOriginalAmount(query);
-    originalAmount = originalAmount.subtract(discountAmount).subtract(adjustOriginalAmount);
+    originalAmount = originalAmount.subtract(adjustOriginalAmount).subtract(discountAmount);
     // 撤销实收合计
     BigDecimal revokeReceivedAmount = mapper.selectBillRevokeReceivedAmount(query);
     // 实收合计

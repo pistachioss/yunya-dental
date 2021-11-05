@@ -110,4 +110,36 @@
           and `benefit_type` = 1
           and `is_deleted` = 0
     </select>
+
+    <!--查询门诊项目分类的优惠金额合计和补入工作量合计-->
+    <select id="selectClinicTariffCategoryDiscountCoupon"
+            resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO">
+        SELECT
+            org_id AS orgId,
+            item_id AS itemId,
+            item_type AS itemType,
+            benefit_amount AS discountAmount,
+            supply_workload AS supplyWorkload
+        FROM card_benefit cb
+        <where>
+            cb.order_id in
+            <foreach collection="query.orderRecordIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+        UNION ALL
+        SELECT
+            org_id AS orgId,
+            item_id AS itemId,
+            item_type AS itemType,
+            benefit_amount AS discountAmount,
+            0 AS supplyWorkload
+        FROM auth_discount_benefit adb
+        <where>
+            adb.order_id in
+            <foreach collection="query.orderRecordIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
 </mapper>

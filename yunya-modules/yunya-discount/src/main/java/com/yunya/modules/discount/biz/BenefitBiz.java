@@ -11,6 +11,7 @@ import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.AuthItemBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
+import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
@@ -19,34 +20,19 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.discount.AuthDiscountBenefit;
-import com.yunya.models.discount.Card;
-import com.yunya.models.discount.CardBenefit;
-import com.yunya.models.discount.CouponCommonInfo;
-import com.yunya.models.discount.DiscountCoupon;
-import com.yunya.models.discount.OrderBenefit;
-import com.yunya.models.discount.PackageCouponItem;
-import com.yunya.models.discount.SpecialPackageCouponItem;
-import com.yunya.models.discount.VoucheCoupon;
+import com.yunya.models.discount.*;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.modules.discount.enums.DiscountError;
-import com.yunya.modules.discount.mapper.AuthDiscountBenefitMapper;
-import com.yunya.modules.discount.mapper.CardBenefitMapper;
-import com.yunya.modules.discount.mapper.CardMapper;
-import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
-import com.yunya.modules.discount.mapper.DiscountCouponMapper;
-import com.yunya.modules.discount.mapper.OrderBenefitMapper;
-import com.yunya.modules.discount.mapper.PackageCouponItemMapper;
-import com.yunya.modules.discount.mapper.SpecialPackageCouponItemMapper;
-import com.yunya.modules.discount.mapper.VoucheCouponMapper;
+import com.yunya.modules.discount.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
@@ -63,15 +49,20 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBenefit;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCardSingle;
 import static com.yunya.framework.common.constant.BusinessConstants.*;
-import static com.yunya.modules.discount.enums.BenefitOperateEnum.*;
-import static com.yunya.modules.discount.enums.BenefitTypeEnum.*;
+import static com.yunya.modules.discount.enums.BenefitOperateEnum.CHARGE;
+import static com.yunya.modules.discount.enums.BenefitOperateEnum.MODIFY_BILL;
+import static com.yunya.modules.discount.enums.BenefitTypeEnum.COUPON_TYPE;
+import static com.yunya.modules.discount.enums.BenefitTypeEnum.MEMBER_TYPE;
 import static com.yunya.modules.discount.enums.CardStatusEnum.*;
-import static com.yunya.modules.discount.enums.ChoiceBenefitTypeEnum.*;
+import static com.yunya.modules.discount.enums.ChoiceBenefitTypeEnum.AUTH_BENEFIT;
+import static com.yunya.modules.discount.enums.ChoiceBenefitTypeEnum.CARD_BENEFIT;
 import static com.yunya.modules.discount.enums.CouponTypeEnum.*;
-import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
-import static com.yunya.modules.discount.enums.UseWayEnum.*;
+import static com.yunya.modules.discount.enums.TrueFalseEnum.FALSE;
+import static com.yunya.modules.discount.enums.TrueFalseEnum.TRUE;
+import static com.yunya.modules.discount.enums.UseWayEnum.ONE_TIME_USE;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -668,5 +659,15 @@ public class BenefitBiz {
         example.createCriteria().andEqualTo("orderId", orderId)
                 .andEqualTo("deleted", ZERO);
         return orderBenefitMapper.selectCountByExample(example);
+    }
+
+    /**
+     * 查询门诊项目分类的优惠金额合计和补入工作量合计
+     *
+     * @param queryForm
+     * @return
+     */
+    public List<ClinicTariffDiscountCouponVO> findClinicTariffCategoryDiscountCoupon(DiscountCouponQuery queryForm) {
+        return cardBenefitMapper.selectClinicTariffCategoryDiscountCoupon(queryForm);
     }
 }
