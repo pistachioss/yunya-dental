@@ -468,7 +468,6 @@
         select IFNULL(sum(receivable_amount),0)
         from bill_record
         where date_format(crt_time, '%Y-%m') = #{query.queryDate}
-        and inservice=1
         and org_id =#{query.orgId}
     </select>
 
