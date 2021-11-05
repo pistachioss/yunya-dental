@@ -481,6 +481,10 @@
                 <foreach collection="query.orgIds" item="item" index="index" open="(" separator="," close=")">
                     #{item}
                 </foreach>
+                AND odpr.org_id IN
+                <foreach collection="query.orgIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>
