@@ -1075,25 +1075,29 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     Map<String, CategoryInfoIncomeVO> resultMap = createEntityBaseMap(orgList, baseTariffVOS, categoryMap);
 
     // 填充项目分类的原价
-    for (ClinicTariffCategoryAmountVO vo : originals) {
-      CategoryInfoIncomeVO income = resultMap.get(vo.getType()+","+vo.getCategoryId()+"."+vo.getOrgId());
-      BigDecimal originalAmount = vo.getAmount();
-      income.setTotalOriginalAmount(originalAmount);
-      income.setTotalActualAmount(originalAmount);
-      income.setTotalAmount(originalAmount);
+    if (StringHelper.isNotEmpty(originals)) {
+      originals.forEach(vo->{
+        CategoryInfoIncomeVO income = resultMap.get(vo.getType()+","+vo.getCategoryId()+"."+vo.getOrgId());
+        BigDecimal originalAmount = vo.getAmount();
+        income.setTotalOriginalAmount(originalAmount);
+        income.setTotalActualAmount(originalAmount);
+        income.setTotalAmount(originalAmount);
+      });
     }
 
     // 统计项目分类的优惠和补入、应收
-    for (ClinicTariffDiscountCouponVO vo : discountCoupons) {
-      String categoryKey = categoryMap.get(vo.getItemType()+","+vo.getItemId());
-      CategoryInfoIncomeVO income = resultMap.get(categoryKey + "." + vo.getOrgId());
-      BigDecimal totalDiscountAmount = income.getTotalDiscountAmount().add(vo.getDiscountAmount());
-      income.setTotalDiscountAmount(totalDiscountAmount);
-      BigDecimal couponAmount = income.getTotalCouponAmount().add(vo.getSupplyWorkload());
-      income.setTotalCouponAmount(couponAmount);
-      BigDecimal actualAmount = income.getTotalOriginalAmount().subtract(totalDiscountAmount);
-      income.setTotalActualAmount(actualAmount);
-      income.setTotalAmount(actualAmount.add(couponAmount));
+    if (StringHelper.isNotEmpty(discountCoupons)) {
+      discountCoupons.forEach(vo->{
+        String categoryKey = categoryMap.get(vo.getItemType()+","+vo.getItemId());
+        CategoryInfoIncomeVO income = resultMap.get(categoryKey + "." + vo.getOrgId());
+        BigDecimal totalDiscountAmount = income.getTotalDiscountAmount().add(vo.getDiscountAmount());
+        income.setTotalDiscountAmount(totalDiscountAmount);
+        BigDecimal couponAmount = income.getTotalCouponAmount().add(vo.getSupplyWorkload());
+        income.setTotalCouponAmount(couponAmount);
+        BigDecimal actualAmount = income.getTotalOriginalAmount().subtract(totalDiscountAmount);
+        income.setTotalActualAmount(actualAmount);
+        income.setTotalAmount(actualAmount.add(couponAmount));
+      });
     }
 
     // 统计项目分类的当月免单
@@ -1266,7 +1270,6 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     return executorService.submit(()->{
       BaseTariffQueryForm queryForm = new BaseTariffQueryForm();
       queryForm.setWhetherPage(false);
-      queryForm.setInservice(true);
       return baseTariffBiz.findAllTariffList(queryForm).getList();
     });
   }
