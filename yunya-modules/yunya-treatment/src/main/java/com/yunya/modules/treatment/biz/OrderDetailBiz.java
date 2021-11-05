@@ -1010,8 +1010,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     // 项目表（价目表 + 价目表）
     Future<List<BaseTariffVO>> tariffFuture = multiFindAllTariffList();
 
-    // 项目分类的原价合计
-    Future<List<ClinicTariffCategoryAmountVO>> originalFuture = multiFindTariffCategoryOriginalAmount(query);
+    // 项目的原价合计
+    Future<List<ClinicTariffOrderVO>> originalFuture = multiFindTariffCategoryOriginalAmount(query);
 
     // 项目的当月免单
     Future<Map<String, BigDecimal>> freePaymentFuture = multiFindTariffCategoryFreePaymentAmount(query);
@@ -1064,21 +1064,22 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @throws Exception
    */
   private List<CategoryInfoIncomeVO> mergeCategoryIncomeList(Future<List<BaseTariffVO>> tariffFuture,
-                                                             Future<List<ClinicTariffCategoryAmountVO>> originalFuture,
+                                                             Future<List<ClinicTariffOrderVO>> originalFuture,
                                                              List<ClinicTariffDiscountCouponVO> discountCoupons,
                                                              Future<Map<String, BigDecimal>> freePaymentFuture,
                                                              List<OrganizationInfoDetail> orgList) throws Exception{
     Map<String, String> categoryMap = new HashMap<>(16);
     List<BaseTariffVO> baseTariffVOS = tariffFuture.get();
-    List<ClinicTariffCategoryAmountVO> originals = originalFuture.get();
+    List<ClinicTariffOrderVO> originals = originalFuture.get();
     Map<String, BigDecimal> freePaymentMap = freePaymentFuture.get();
     Map<String, CategoryInfoIncomeVO> resultMap = createEntityBaseMap(orgList, baseTariffVOS, categoryMap);
 
     // 填充项目分类的原价
     if (StringHelper.isNotEmpty(originals)) {
       originals.forEach(vo->{
-        CategoryInfoIncomeVO income = resultMap.get(vo.getType()+","+vo.getCategoryId()+"."+vo.getOrgId());
-        BigDecimal originalAmount = vo.getAmount();
+        String categoryKey = categoryMap.get(vo.getType()+","+vo.getBillingItemId());
+        CategoryInfoIncomeVO income = resultMap.get(categoryKey+"."+vo.getOrgId());
+        BigDecimal originalAmount = vo.getAmount().add(income.getTotalOriginalAmount());
         income.setTotalOriginalAmount(originalAmount);
         income.setTotalActualAmount(originalAmount);
         income.setTotalAmount(originalAmount);
@@ -1257,8 +1258,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param query
    * @return
    */
-  private Future<List<ClinicTariffCategoryAmountVO>> multiFindTariffCategoryOriginalAmount(BillCategoryIncomeQuery query) {
-    return executorService.submit(()->mapper.selectClinicTariffCategoryOriginalAmount(query));
+  private Future<List<ClinicTariffOrderVO>> multiFindTariffCategoryOriginalAmount(BillCategoryIncomeQuery query) {
+    return executorService.submit(()-> mapper.selectClinicTariffCategoryOriginalAmount(query));
   }
 
   /**
@@ -1272,18 +1273,6 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       queryForm.setWhetherPage(false);
       return baseTariffBiz.findAllTariffList(queryForm).getList();
     });
-  }
-
-  /**
-   * 转换成项目分类金额map
-   *
-   * @param workloads
-   * @return
-   */
-  private Map<String, BigDecimal> mapCategoryAmount(List<ClinicTariffCategoryAmountVO> workloads) {
-    Map<String, BigDecimal> result = new HashMap<>();
-    workloads.forEach(vo->result.put(vo.getType()+","+vo.getCategoryId()+"."+vo.getOrgId(), vo.getAmount()));
-    return result;
   }
 
   /**
