@@ -1075,16 +1075,16 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     Map<String, CategoryInfoIncomeVO> resultMap = createEntityBaseMap(orgList, baseTariffVOS, categoryMap);
 
     // 填充项目分类的原价
-    originals.forEach((vo)->{
+    for (ClinicTariffCategoryAmountVO vo : originals) {
       CategoryInfoIncomeVO income = resultMap.get(vo.getType()+","+vo.getCategoryId()+"."+vo.getOrgId());
       BigDecimal originalAmount = vo.getAmount();
       income.setTotalOriginalAmount(originalAmount);
       income.setTotalActualAmount(originalAmount);
       income.setTotalAmount(originalAmount);
-    });
+    }
 
     // 统计项目分类的优惠和补入、应收
-    discountCoupons.forEach(vo->{
+    for (ClinicTariffDiscountCouponVO vo : discountCoupons) {
       String categoryKey = categoryMap.get(vo.getItemType()+","+vo.getItemId());
       CategoryInfoIncomeVO income = resultMap.get(categoryKey + "." + vo.getOrgId());
       BigDecimal totalDiscountAmount = income.getTotalDiscountAmount().add(vo.getDiscountAmount());
@@ -1094,17 +1094,19 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       BigDecimal actualAmount = income.getTotalOriginalAmount().subtract(totalDiscountAmount);
       income.setTotalActualAmount(actualAmount);
       income.setTotalAmount(actualAmount.add(couponAmount));
-    });
+    }
 
     // 统计项目分类的当月免单
-    freePaymentMap.forEach((key, freePayment)->{
-      String[] keys = key.split("\\.");
-      String categoryKey = categoryMap.get(keys[0]);
-      CategoryInfoIncomeVO income = resultMap.get(categoryKey + "." + keys[1]);
-      BigDecimal freePaymentAmount = income.getTotalFreePaymentAmount().add(freePayment);
-      income.setTotalFreePaymentAmount(freePaymentAmount);
-      income.setTotalAmount(income.getTotalAmount().subtract(freePaymentAmount));
-    });
+    if (StringHelper.isNotEmpty(freePaymentMap)) {
+      freePaymentMap.forEach((key, freePayment) -> {
+        String[] keys = key.split("\\.");
+        String categoryKey = categoryMap.get(keys[0]);
+        CategoryInfoIncomeVO income = resultMap.get(categoryKey + "." + keys[1]);
+        BigDecimal freePaymentAmount = income.getTotalFreePaymentAmount().add(freePayment);
+        income.setTotalFreePaymentAmount(freePaymentAmount);
+        income.setTotalAmount(income.getTotalAmount().subtract(freePaymentAmount));
+      });
+    }
     // 排序
     return SortUtil.sort(new ArrayList<>(resultMap.values()), categoryIncomeCmpList());
   }
