@@ -104,7 +104,7 @@ public interface OrderDetailMapper extends Mapper<OrderDetail> {
    * @param query
    * @return
    */
-  List<ClinicTariffCategoryAmountVO> selectClinicTariffCategoryOriginalAmount(@Param("query") BillCategoryIncomeQuery query);
+  List<ClinicTariffOrderVO> selectClinicTariffCategoryOriginalAmount(@Param("query") BillCategoryIncomeQuery query);
 
   /**
    * 查询门诊下开单项目的应收列表
