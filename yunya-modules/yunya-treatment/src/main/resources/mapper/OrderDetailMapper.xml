@@ -455,11 +455,17 @@
             od.order_record_id AS orderRecordId,
             od.type,
             od.billing_item_id AS billingItemId,
-            od.receivable_amount AS receivableAmount
+            odpr.actual_receivable AS receivableAmount
         FROM order_detail od
+        INNER JOIN order_detail_pay_record odpr ON odpr.order_detail_id=od.id
         INNER JOIN bill_pay_record bpr ON od.order_record_id=bpr.order_record_id
+        INNER JOIN bill_pay_detail_record bpdr ON bpr.id=bpdr.bill_pay_record_id
         INNER JOIN bill_record br ON od.order_record_id=br.order_record_id
         <where>
+            AND odpr.actual_receivable > 0
+            AND bpr.received_amount > 0
+            AND br.actual_receivable_amount > 0
+            AND bpdr.account_item_id in (23, 26)
             <if test="payIds != null and payIds.size() > 0">
                 AND bpr.id NOT IN
                 <foreach collection="payIds" item="item" index="index" open="(" separator="," close=")">
