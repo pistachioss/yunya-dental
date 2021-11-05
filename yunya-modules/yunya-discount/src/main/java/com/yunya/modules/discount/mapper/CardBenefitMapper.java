@@ -2,6 +2,8 @@ package com.yunya.modules.discount.mapper;
 
 import com.yunya.feign.discount.domain.bo.BillUsedCouponBo;
 import com.yunya.feign.discount.domain.bo.CardUseBo;
+import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
+import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
 import com.yunya.models.discount.CardBenefit;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -28,4 +30,12 @@ public interface CardBenefitMapper extends tk.mybatis.mapper.common.Mapper<CardB
     List<BillUsedCouponBo> getBillCoupons(@Param("orderId") Integer orderId);
 
     int countCardUsed(@Param("cardId") Integer cardId);
+
+    /**
+     * 查询门诊项目分类的优惠金额合计和补入工作量合计
+     *
+     * @param queryForm
+     * @return
+     */
+    List<ClinicTariffDiscountCouponVO> selectClinicTariffCategoryDiscountCoupon(@Param("query") DiscountCouponQuery queryForm);
 }

@@ -2,7 +2,9 @@ package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
+import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
+import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -74,4 +76,13 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
    * @return
    */
   BigDecimal selectDeductionFreePayAmount(@Param("payIds") List<Integer> payIds);
+
+  /**
+   * 查询门诊账单的免单收费列表
+   *
+   * @param query
+   * @param payIds 不属于的收费id
+   * @return
+   */
+  List<OrderDetailInfoVO> selectBillPayDetailByFreePayment(@Param("query") BillCategoryIncomeQuery query, @Param("payIds") List<Integer> payIds);
 }

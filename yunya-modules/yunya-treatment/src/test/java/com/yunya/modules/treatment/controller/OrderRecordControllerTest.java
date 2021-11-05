@@ -1,9 +1,15 @@
 package com.yunya.modules.treatment.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
+import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.modules.treatment.controller.web.OrderDetailController;
 import com.yunya.modules.treatment.controller.web.OrderRecordController;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +34,10 @@ public class OrderRecordControllerTest {
   /** 注入对象 */
   @Autowired private OrderRecordController orderRecordController;
 
+  @Autowired private OrderDetailController orderDetailController;
+
+  @Autowired private RemoteDiscountFeign discountFeign;
+
   @Test
   public void save() {
     OrderRecordModel model = new OrderRecordModel();
@@ -47,5 +57,15 @@ public class OrderRecordControllerTest {
   public void test(){
     ResponseResult info = orderRecordController.findOrderInfoByTreatmentId(11);
     System.out.println(info);
+  }
+
+  @Test
+  public void categoryIncomeList() throws Exception {
+    String param = "{\"orgIds\":[30],\"queryDate\":\"2021-10\",\"whetherPage\":false}";
+    BillCategoryIncomeQuery query = JSONObject.parseObject(param, BillCategoryIncomeQuery.class);
+    long l = System.currentTimeMillis();
+    PageInfo<CategoryInfoIncomeVO> pageInfo = orderDetailController.categoryIncomeList(query).getData();
+    System.out.println("耗时：" + (System.currentTimeMillis() - l));
+    System.out.println(JSONObject.toJSON(pageInfo));
   }
 }
