@@ -411,19 +411,14 @@
 
     <!--查询门诊下项目分类的原价合计-->
     <select id="selectClinicTariffCategoryOriginalAmount"
-            resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffCategoryAmountVO">
+            resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffOrderVO">
         SELECT
             od.org_id AS orgId,
-            bt.type,
-            bt.categoryId,
+            od.type,
+            od.billing_item_id AS billingItemId,
             IFNULL(SUM(od.price*od.quantity),0) amount
         FROM order_detail od
         INNER JOIN bill_record br on br.order_record_id=od.order_record_id
-        INNER JOIN (
-            SELECT id,tariff_category_id AS categoryId,0 AS type FROM base_tariff WHERE inservice=1
-            UNION ALL
-            SELECT id,oral_tariff_category_id AS categoryId,1 AS type FROM base_oral_tariff WHERE inservice=1
-        ) bt on bt.id = od.billing_item_id and bt.type=od.type
         WHERE
         NOT EXISTS (
             SELECT
@@ -445,7 +440,7 @@
         <if test="query.queryDate != null and query.queryDate != ''">
             AND DATE_FORMAT(br.crt_time, '%Y-%m') = #{query.queryDate}
         </if>
-        GROUP BY od.org_id, bt.type, bt.categoryId
+        GROUP BY od.org_id, od.type, od.billing_item_id
     </select>
 
     <!--查询门诊下开单项目的应收-->
@@ -466,6 +461,7 @@
             AND bpr.received_amount > 0
             AND br.actual_receivable_amount > 0
             AND bpdr.account_item_id in (23, 26)
+            AND bpdr.type = 2
             <if test="payIds != null and payIds.size() > 0">
                 AND bpr.id NOT IN
                 <foreach collection="payIds" item="item" index="index" open="(" separator="," close=")">
