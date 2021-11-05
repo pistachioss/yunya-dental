@@ -1,7 +1,9 @@
 package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
+import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
 import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.treatment.domain.form.BillPrintInfoForm;
 import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
@@ -165,6 +167,38 @@ public class OrderDetailController {
   specialistProjectTargetCompletedExport(
           HttpServletResponse response, @RequestBody @Validated DataStatisticsQuery query) throws IOException {
     orderDetailBiz.specialistProjectTargetCompletedExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+
+  /**
+   * 根据条件查询项目分类收入汇总列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<CategoryInfoIncomeVO>
+   */
+  @ApiOperation("公司端报表-财务报表-分类收入汇总")
+  @PostMapping(value = "/category/income/list", name = "billDetailBiz")
+  public ResponseResult<PageInfo<CategoryInfoIncomeVO>> categoryIncomeList(
+          @RequestBody @Validated BillCategoryIncomeQuery query) throws Exception {
+    PageInfo<CategoryInfoIncomeVO> resultList = orderDetailBiz.findCategoryIncomeList(query);
+    return ResponseUtil.success(resultList);
+  }
+
+
+  /**
+   * 根据条件导出项目分类收入汇总列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return void
+   */
+  @ApiOperation("公司端报表-财务报表-分类收入汇总-导出")
+  @PostMapping(value = "/category/income/export", name = "根据条件导出项目分类收入汇总列表")
+  public ResponseResult<T> exportCategoryIncome(
+          HttpServletResponse response, @RequestBody @Validated BillCategoryIncomeQuery query)
+          throws Exception {
+    orderDetailBiz.exportCategoryIncome(response, query);
     return ResponseUtil.success(null);
   }
 }

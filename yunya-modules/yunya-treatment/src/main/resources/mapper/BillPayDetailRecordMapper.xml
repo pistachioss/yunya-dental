@@ -148,4 +148,36 @@
           and account_item_id in (23, 26)
           and inservice = 0
     </select>
+
+    <!--查询门诊账单的免单收费列表-->
+    <select id="selectBillPayDetailByFreePayment"
+            resultType="com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO">
+        SELECT
+            bpdr.order_record_id AS orderRecordId,
+            IFNULL(sum(bpdr.amount),0) AS totalAmount
+        FROM bill_pay_detail_record bpdr
+        INNER JOIN bill_pay_record bpr ON bpr.id = bpdr.bill_pay_record_id
+        INNER JOIN bill_record br ON br.id = bpr.bill_record_id
+        <where>
+            date_format(bpdr.crt_time, '%Y-%m') = #{query.queryDate}
+            AND bpdr.account_item_id in (23, 26)
+            <if test="payIds!=null and payIds.size()>0">
+                AND bpdr.bill_pay_record_id not in
+                <foreach collection="payIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.orgIds != null and query.orgIds.size() > 0">
+                AND br.org_id IN
+                <foreach collection="query.orgIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.queryDate!=null and query.queryDate!=''">
+                AND date_format(bpr.crt_time, '%Y-%m') = #{query.queryDate}
+                AND date_format(br.crt_time, '%Y-%m') = #{query.queryDate}
+            </if>
+        </where>
+        GROUP by bpdr.order_record_id
+    </select>
 </mapper>

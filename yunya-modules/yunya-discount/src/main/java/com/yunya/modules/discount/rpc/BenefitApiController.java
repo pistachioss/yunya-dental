@@ -3,12 +3,14 @@ package com.yunya.modules.discount.rpc;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
+import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
+import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -98,5 +100,16 @@ public class BenefitApiController {
     @GetMapping("/patient/{patientId}/cards")
     public List<Integer> listPatientAllCard(@PathVariable(value = "patientId") Integer patientId) {
         return cardBiz.listPatientAllCard(patientId);
+    }
+
+    /**
+     * 查询门诊项目分类的优惠金额合计和补入工作量合计
+     *
+     * @param queryForm
+     * @return
+     */
+    @PostMapping("/benefit/tariffCategory/discountCoupon")
+    public List<ClinicTariffDiscountCouponVO> findClinicTariffCategoryDiscountCoupon(@RequestBody DiscountCouponQuery queryForm) {
+        return benefitBiz.findClinicTariffCategoryDiscountCoupon(queryForm);
     }
 }

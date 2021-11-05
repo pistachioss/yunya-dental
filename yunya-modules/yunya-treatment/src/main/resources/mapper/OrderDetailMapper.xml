@@ -408,4 +408,74 @@
         </where>
         group by od.org_id, od.billing_item_id
     </select>
+
+    <!--查询门诊下项目分类的原价合计-->
+    <select id="selectClinicTariffCategoryOriginalAmount"
+            resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffCategoryAmountVO">
+        SELECT
+            od.org_id AS orgId,
+            bt.type,
+            bt.categoryId,
+            IFNULL(SUM(od.price*od.quantity),0) amount
+        FROM order_detail od
+        INNER JOIN bill_record br on br.order_record_id=od.order_record_id
+        INNER JOIN (
+            SELECT id,tariff_category_id AS categoryId,0 AS type FROM base_tariff WHERE inservice=1
+            UNION ALL
+            SELECT id,oral_tariff_category_id AS categoryId,1 AS type FROM base_oral_tariff WHERE inservice=1
+        ) bt on bt.id = od.billing_item_id and bt.type=od.type
+        WHERE
+        NOT EXISTS (
+            SELECT
+                behdr.associate_record_id
+            FROM bill_exception_handle_record behr
+            LEFT JOIN bill_exception_handle_detail_record behdr ON behr.id = behdr.bill_handle_record_id
+            WHERE operate_type = 2
+            <if test="query.queryDate != null and query.queryDate != ''">
+                AND DATE_FORMAT(behr.crt_time, '%Y-%m') = #{query.queryDate}
+            </if>
+            AND behdr.associate_record_id=br.order_record_id
+        )
+        <if test="query.orgIds != null and query.orgIds.size() > 0">
+            AND br.org_id IN
+            <foreach collection="query.orgIds" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="query.queryDate != null and query.queryDate != ''">
+            AND DATE_FORMAT(br.crt_time, '%Y-%m') = #{query.queryDate}
+        </if>
+        GROUP BY od.org_id, bt.type, bt.categoryId
+    </select>
+
+    <!--查询门诊下开单项目的应收-->
+    <select id="selectClinicOrderDetailList" resultType="com.yunya.models.treatment.OrderDetail">
+        SELECT
+            od.org_id AS orgId,
+            od.order_record_id AS orderRecordId,
+            od.type,
+            od.billing_item_id AS billingItemId,
+            od.receivable_amount AS receivableAmount
+        FROM order_detail od
+        INNER JOIN bill_pay_record bpr ON od.order_record_id=bpr.order_record_id
+        INNER JOIN bill_record br ON od.order_record_id=br.order_record_id
+        <where>
+            <if test="payIds != null and payIds.size() > 0">
+                AND bpr.id NOT IN
+                <foreach collection="payIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and DATE_FORMAT(bpr.crt_time, '%Y-%m') = #{query.queryDate}
+                and DATE_FORMAT(br.crt_time, '%Y-%m') = #{query.queryDate}
+            </if>
+            <if test="query.orgIds != null and query.orgIds.size() > 0">
+                AND br.org_id IN
+                <foreach collection="query.orgIds" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>
