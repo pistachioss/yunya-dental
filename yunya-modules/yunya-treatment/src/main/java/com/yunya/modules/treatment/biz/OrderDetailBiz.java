@@ -1164,10 +1164,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       List<Integer> payIds = billPayRecordMapper.selectRevokePayIds(queryForm);
       // 调整收费方式
       payIds.addAll(billPayRecordMapper.selectAdjustPayIds(queryForm));
-      long l2 = System.currentTimeMillis();
       // 有效账单的项目应收
       List<OrderDetail> orderDetails = mapper.selectClinicOrderDetailList(query, payIds);
-      System.out.println("账单应收：" + (System.currentTimeMillis()-l2));
       // 有效账单的免单收费总价
       List<OrderDetailInfoVO> freePaymentTotal = billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, payIds);
       return shareTariffFreePayment(orderDetails, freePaymentTotal);
