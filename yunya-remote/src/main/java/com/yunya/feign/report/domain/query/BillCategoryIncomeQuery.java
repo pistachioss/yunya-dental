@@ -10,6 +10,7 @@ import lombok.ToString;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 简介: 分类收入汇总列表查询参数模型
@@ -28,6 +29,9 @@ public class BillCategoryIncomeQuery extends PageQuery implements Serializable {
   @ApiModelProperty(value = "组织ID", required = true)
   @NotNull(message = "门诊ID不能为空！")
   private Integer orgId;
+  /** 组织ID列表 */
+  @ApiModelProperty(value = "组织ID列表")
+  private List<Integer> orgIds;
   /** 查询时间 */
   @ApiModelProperty(value = "查询时间", example = "yyyy-MM", required = true)
   @NotBlank(message = "查询时间不能为空！")

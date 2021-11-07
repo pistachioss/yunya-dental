@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
+import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
@@ -186,4 +187,12 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
    * @return
    */
   BigDecimal selectBillFreePayAmount(@Param("query") StatementStatisticQuery query);
+
+  /**
+   * 查询撤销优惠的orderRecordId列表
+   *
+   * @return
+   * @param query
+   */
+  List<Integer> selectRemoveBillAdjustDiscountOrderIds(@Param("query") BillCategoryIncomeQuery query);
 }

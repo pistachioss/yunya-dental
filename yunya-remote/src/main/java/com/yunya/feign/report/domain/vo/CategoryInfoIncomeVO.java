@@ -24,6 +24,13 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 @Data
 @ToString
 public class CategoryInfoIncomeVO implements Serializable {
+
+  /** 组织ID */
+  @ApiModelProperty("组织ID")
+  private Integer orgId;
+  /** 组织简称 */
+  @ApiModelProperty("组织简称")
+  private String abbreviation;
   /** 项目分类ID */
   @ApiModelProperty("项目分类ID")
   private Integer categoryId;
@@ -38,25 +45,25 @@ public class CategoryInfoIncomeVO implements Serializable {
   /** 原价合计 */
   @Excel(name = "原价合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("原价合计")
-  private BigDecimal totalOriginalAmount;
+  private BigDecimal totalOriginalAmount = BigDecimal.ZERO;
   /** 优惠金额合计 */
   @Excel(name = "优惠金额合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("优惠金额合计")
-  private BigDecimal totalDiscountAmount;
+  private BigDecimal totalDiscountAmount = BigDecimal.ZERO;
   /** 应收金额合计 */
   @Excel(name = "应收金额合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("应收金额合计")
-  private BigDecimal totalActualAmount;
+  private BigDecimal totalActualAmount = BigDecimal.ZERO;
   /** 当月免单金额*/
   @Excel(name = "当月免单金额", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("当月免单金额")
-  private BigDecimal totalFreePaymentAmount;
+  private BigDecimal totalFreePaymentAmount = BigDecimal.ZERO;
   /** 项目补入工作量合计 */
   @Excel(name = "项目补入工作量合计", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("项目补入工作量合计")
-  private BigDecimal totalCouponAmount;
+  private BigDecimal totalCouponAmount = BigDecimal.ZERO;
   /** 合计收入 = 应收金额合计-当月免单金额+项目补入工作量合计 */
   @Excel(name = "合计收入", cellType = NUMERIC, type = EXPORT, isStatistics = true)
   @ApiModelProperty("合计收入")
-  private BigDecimal totalAmount;
+  private BigDecimal totalAmount = BigDecimal.ZERO;
 }

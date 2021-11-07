@@ -18,4 +18,49 @@
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <!--查询员工的加工费、正畸加工费、大额材料费-->
+  <select id="selectClinicEmployeeWorkCost" resultType="com.yunya.models.report.EmployeeWorkloadCost">
+    SELECT
+      SUM(ewc.processing_fee) AS processingFee,
+      SUM(ewc.orthodontics_fee) AS orthodonticsFee,
+      SUM(ewc.base_workload) AS baseWorkload,
+      SUM(ewc.material_fee) AS materialFee,
+      ewc.user_id AS userId,
+      ewc.org_id AS orgId
+    FROM employee_workload_cost ewc
+    <where>
+    <if test="query.orgIds != null and query.orgIds.length > 0">
+      and ewc.org_id in
+      <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+        #{item}
+      </foreach>
+    </if>
+      <if test="query.dateType == 0">
+        <if test="query.startDate != null and query.startDate != ''">
+          and DATE_FORMAT( ewc.entry_month, '%Y-%m-%d' ) &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          and DATE_FORMAT( ewc.entry_month, '%Y-%m-%d' ) &lt;= #{query.endDate}
+        </if>
+      </if>
+      <if test="query.dateType == 1">
+        <if test="query.startDate != null and query.startDate != ''">
+          and DATE_FORMAT( ewc.entry_month, '%Y-%m' ) &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          and DATE_FORMAT( ewc.entry_month, '%Y-%m' ) &lt;= #{query.endDate}
+        </if>
+      </if>
+      <if test="query.dateType == 2">
+        <if test="query.startDate != null and query.startDate != ''">
+          and DATE_FORMAT( ewc.entry_month, '%Y' ) &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          and DATE_FORMAT( ewc.entry_month, '%Y' ) &lt;= #{query.endDate}
+        </if>
+      </if>
+    </where>
+    GROUP BY ewc.user_id, ewc.org_id
+  </select>
 </mapper>

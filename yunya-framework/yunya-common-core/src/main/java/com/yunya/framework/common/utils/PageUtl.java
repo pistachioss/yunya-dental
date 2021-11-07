@@ -16,14 +16,30 @@ public class PageUtl<T> {
 
 
     /**
-     * 手动分页
+     * 手动分页（默认分页）
      *
-     * @param pageNum
-     * @param pageSize
-     * @param resultList
+     * @param pageNum 第几页
+     * @param pageSize 条数
+     * @param resultList 数据集
      * @return
      */
     public static <T> PageInfo<T> doPage(Integer pageNum, Integer pageSize, List<T> resultList) {
+        return doPage(pageNum, pageSize, resultList, true);
+    }
+
+    /**
+     * 手动分页
+     *
+     * @param pageNum 第几页
+     * @param pageSize 条数
+     * @param resultList 数据集
+     * @param whetherPage 是否分页
+     * @return
+     */
+    public static <T> PageInfo<T> doPage(Integer pageNum, Integer pageSize, List<T> resultList, Boolean whetherPage) {
+        if (!whetherPage || StringHelper.isEmpty(resultList)) {
+            return new PageInfo<>(resultList);
+        }
         int total = resultList.size();
         PageInfo<T> pageInfo = new PageInfo<>();
         pageInfo.setPageNum(pageNum);

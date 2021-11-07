@@ -54,7 +54,7 @@ public class CompanyReportOfOperationController {
    * @return PageInfo<EmployeeWorkloadOfOperationVO>
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-员工工作量")
-  @PostMapping(value = "/employee/workload/list", name = "根据条件查询员工工作量列表")
+  @PostMapping(value = "/employee/workload/list/single", name = "根据条件查询员工工作量列表")
   public ResponseResult<PageInfo<EmployeeWorkloadOfOperationVO>> employeeWorkloadListOfOperation(
       @RequestBody @Validated EmployeeWorkloadQuery query) {
     PageInfo<EmployeeWorkloadOfOperationVO> pageInfo =
@@ -70,7 +70,7 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-员工工作量-导出")
-  @PostMapping(value = "/workload/list/export", name = "根据条件导出员工工作量报表")
+  @PostMapping(value = "/workload/list/export/single", name = "根据条件导出员工工作量报表")
   public ResponseResult<T> exportEmployeeWorkloadListOfOperationVO(
       HttpServletResponse response, @RequestBody @Validated EmployeeWorkloadQuery query)
       throws IOException {
@@ -479,7 +479,7 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目工作量统计")
-  @PostMapping(value = "/tariff/pay/workload/list", name = "公司端报表-报表统计-运营报表-收费项目工作量统计")
+  @PostMapping(value = "/tariff/pay/workload/list/single", name = "公司端报表-报表统计-运营报表-收费项目工作量统计")
   public ResponseResult<PageInfo<BillItemTollAndWorkloadVO>> tariffPaymentWorkloadStatistics(
       @RequestBody @Validated BillItemTollAndWorkloadQuery query) {
     PageInfo<BillItemTollAndWorkloadVO> pageInfo =
@@ -495,7 +495,7 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-收费项目工作量统计-导出")
-  @PostMapping(value = "/tariff/pay/workload/list/export", name = "导出项目收费金额及工作量")
+  @PostMapping(value = "/tariff/pay/workload/list/export/single", name = "导出项目收费金额及工作量")
   public ResponseResult<T> exportTariffPaymentWorkloadList(
       HttpServletResponse response, @RequestBody @Validated BillItemTollAndWorkloadQuery query)
       throws IOException {

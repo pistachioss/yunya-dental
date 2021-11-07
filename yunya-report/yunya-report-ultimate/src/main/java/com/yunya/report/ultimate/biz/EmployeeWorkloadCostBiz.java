@@ -2,6 +2,7 @@ package com.yunya.report.ultimate.biz;
 
 import cn.hutool.core.date.DateTime;
 import com.yunya.feign.report.domain.model.EmployeeWorkloadCostModel;
+import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -9,6 +10,8 @@ import com.yunya.models.report.EmployeeWorkloadCost;
 import com.yunya.report.ultimate.mapper.EmployeeWorkloadCostMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
@@ -57,5 +60,15 @@ public class EmployeeWorkloadCostBiz
       employeeWorkloadCost.setCrtId(userId);
       mapper.insertSelective(employeeWorkloadCost);
     }
+  }
+
+  /**
+   * 查询员工的加工费、正畸加工费、大额材料费
+   *
+   * @param query
+   * @return
+   */
+  public List<EmployeeWorkloadCost> findClinicEmployeeWorkCost(ClinicEmployeeWorkloadQuery query) {
+    return mapper.selectClinicEmployeeWorkCost(query);
   }
 }

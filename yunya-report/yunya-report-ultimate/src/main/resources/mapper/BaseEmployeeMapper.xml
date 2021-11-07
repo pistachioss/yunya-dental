@@ -43,4 +43,37 @@
             </if>
         </where>
     </select>
+
+    <!--查询员工和门诊的笛卡尔积-->
+    <select id="selectClinicEmployeeCartesianProduct"
+            resultType="com.yunya.feign.report.domain.vo.ClinicEmployeBonusCoefficientVO">
+        SELECT
+            be.user_id AS employeeId,
+            be.employee_name AS employeeName,
+            IFNULL(be.bonus_coefficient, 0) AS bonusCoefficient,
+            bo.org_id AS orgId,
+            bo.abbreviation
+        FROM base_employee be, base_organization bo
+        <where>
+            AND bo.org_type = 2
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and bo.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.employeeIds != null and query.employeeIds.length > 0">
+                and be.user_id in
+                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.workStatus!=null and query.workStatus.length > 0">
+                and be.work_status in
+                <foreach collection="query.workStatus" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

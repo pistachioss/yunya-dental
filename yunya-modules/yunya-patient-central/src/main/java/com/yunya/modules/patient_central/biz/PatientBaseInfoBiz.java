@@ -5,13 +5,25 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
-import com.yunya.feign.patient_central.domain.model.*;
+import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
+import com.yunya.feign.patient_central.domain.model.PatientExtInfoModel;
+import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
+import com.yunya.feign.patient_central.domain.model.PatientLabelRecordModel;
+import com.yunya.feign.patient_central.domain.model.PicturesCallbackInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLabelRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientExpInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientExtInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientExtendInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientImgVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientLabelRecordVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientVisitInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
@@ -30,11 +42,27 @@ import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.patient_central.*;
+import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.patient_central.PatientExpInfo;
+import com.yunya.models.patient_central.PatientExtInfo;
+import com.yunya.models.patient_central.PatientImg;
+import com.yunya.models.patient_central.PatientLabelRecord;
+import com.yunya.models.patient_central.PatientMemberInfo;
+import com.yunya.models.patient_central.PatientOrigin;
+import com.yunya.models.patient_central.PatientOriginLog;
+import com.yunya.models.patient_central.PatientPrepaymentsInfo;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
-import com.yunya.modules.patient_central.mapper.*;
+import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
+import com.yunya.modules.patient_central.mapper.PatientExpInfoMapper;
+import com.yunya.modules.patient_central.mapper.PatientExtInfoMapper;
+import com.yunya.modules.patient_central.mapper.PatientImgMapper;
+import com.yunya.modules.patient_central.mapper.PatientLabelRecordMapper;
+import com.yunya.modules.patient_central.mapper.PatientMemberInfoMapper;
+import com.yunya.modules.patient_central.mapper.PatientOriginLogMapper;
+import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
+import com.yunya.modules.patient_central.mapper.PatientPrepaymentsInfoMapper;
 import org.apache.commons.httpclient.NameValuePair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -45,8 +73,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.RedisConstants.PATIENT_BASE_INFO;
@@ -539,28 +572,21 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    String ywOrgId = "34";
-    List<PatientBaseInfoVo> patients = null;
-    if (ywOrgId.equals(BaseContextHandler.getOrgId())) {
-      patients = remoteReportServiceFeign.findPatientLikePatientInfo(form);
-    } else {
-      patients = patientBaseInfoMapper.findPatientByNameAndMobile(form);
+    List<PatientBaseInfoVo> patients = patientBaseInfoMapper.findPatientByNameAndMobile(form);
+    if (StringHelper.isNotEmpty(patients)) {
+      // 调用就诊服务查询患者末次就诊记录
       if (StringHelper.isNotEmpty(patients)) {
-        // 调用就诊服务查询患者末次就诊记录
-        if (StringHelper.isNotEmpty(patients)) {
-          for (PatientBaseInfoVo patient : patients) {
-            LastTreatmentInfoVO treatmentRecord =
-                treatmentServiceFeign.findLastTreatmentRecord(patient.getId());
-            patient.setLastVisitTime(treatmentRecord.getTreatmentDate());
-            patient.setLastVisit(treatmentRecord.getDentistName());
-          }
-          return patients.stream()
-              .filter(
-                  entity ->
-                      !(null != entity.getMedicalNumber()
-                          && entity.getMedicalNumber().contains("*")))
-              .collect(Collectors.toList());
+        for (PatientBaseInfoVo patient : patients) {
+          LastTreatmentInfoVO treatmentRecord =
+              treatmentServiceFeign.findLastTreatmentRecord(patient.getId());
+          patient.setLastVisitTime(treatmentRecord.getTreatmentDate());
+          patient.setLastVisit(treatmentRecord.getDentistName());
         }
+        return patients.stream()
+            .filter(
+                entity ->
+                    !(null != entity.getMedicalNumber() && entity.getMedicalNumber().contains("*")))
+            .collect(Collectors.toList());
       }
     }
     return patients;
@@ -697,16 +723,26 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (StringHelper.isNotEmpty(ids)) {
       List<PatientTotalInfoVo> patientTotalInfoVos = mapper.selectPatientDataByIds(ids);
       if (StringHelper.isNotEmpty(patientTotalInfoVos)) {
-        List<Integer> patientKinds = patientTotalInfoVos.stream().map(PatientTotalInfoVo::getPatientKind).collect(Collectors.toList());
+        List<Integer> patientKinds =
+            patientTotalInfoVos.stream()
+                .map(PatientTotalInfoVo::getPatientKind)
+                .collect(Collectors.toList());
         if (StringHelper.isNotEmpty(patientKinds)) {
-          List<DictionaryItem> dictionaryItems = this.remoteSystemServiceFeign.findDictionaryItemByIds(patientKinds);
+          List<DictionaryItem> dictionaryItems =
+              this.remoteSystemServiceFeign.findDictionaryItemByIds(patientKinds);
           patientTotalInfoVos.forEach(
               patientTotalInfoVo -> {
                 Integer patientKind = patientTotalInfoVo.getPatientKind();
                 if (patientKind != null) {
-                  boolean b = dictionaryItems.stream().anyMatch(departmentRoom -> departmentRoom.getId().equals(patientKind));
+                  boolean b =
+                      dictionaryItems.stream()
+                          .anyMatch(departmentRoom -> departmentRoom.getId().equals(patientKind));
                   if (b) {
-                    DictionaryItem dictionaryItem = dictionaryItems.stream().filter(entity -> entity.getId().equals(patientKind)).findAny().get();
+                    DictionaryItem dictionaryItem =
+                        dictionaryItems.stream()
+                            .filter(entity -> entity.getId().equals(patientKind))
+                            .findAny()
+                            .get();
                     String name = dictionaryItem.getName();
                     if (StringHelper.isNotBlank(name)) {
                       patientTotalInfoVo.setPatientKindName(name);
@@ -762,7 +798,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       StringBuilder allergensDescriptions = new StringBuilder(16);
       for (PatientExtInfo extInfo : extInfos) {
         Byte type = extInfo.getType();
-        if (StringHelper.isNotNull(extInfo.getDescription())){
+        if (StringHelper.isNotNull(extInfo.getDescription())) {
           if (type == 2) {
             allergensDescriptions.append(extInfo.getDescription());
             allergensDescriptions.append(",");

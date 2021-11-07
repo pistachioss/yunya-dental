@@ -309,19 +309,32 @@ public class TollBiz {
       throw new ClientServiceException("该就诊已开单，不能进行一键免单", PARAMETERS_IS_ILLEGAL);
     }
     // 自动开单
-    OrderRecord orderRecord =
-        orderRecordBiz.autoOpenOrder(treatmentRecordId, treatmentRecord.getPatientId());
+    orderRecordBiz.autoOpenOrder(treatmentRecordId, treatmentRecord.getPatientId());
     treatmentRecord.setStatus(BusinessConstants.TREATMENT_PROCESSED_STATUS);
     treatmentRecord.setTreatEndTime(new Date(System.currentTimeMillis()));
-    treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
-    TollModel tollModel = new TollModel();
+    updateTreatmentStatus(treatmentRecord);
+    // 因需求改成自动开单，自动结束治疗，故取消收费相关代码
+    /*TollModel tollModel = new TollModel();
     tollModel.setOrderRecordId(orderRecord.getId());
     tollModel.setDiscountType((byte) 0);
     tollModel.setOutstandingAmount(new BigDecimal("0"));
     InvoiceModel invoiceModel = new InvoiceModel();
     invoiceModel.setInvoice(false);
     tollModel.setInvoiceModel(invoiceModel);
-    confirmCharge(tollModel);
+    confirmCharge(tollModel);*/
+  }
+
+  private void updateTreatmentStatus(TreatmentRecord treatmentRecord) {
+    int i = treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
+    if (i > 0) {
+      Integer appointmentId = treatmentRecord.getAppointmentId();
+      if (null != appointmentId) {
+        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+      } else {
+        rabbitMqServiceFeign.sendMessage(
+            treatmentRecord.getRegisteredId(), 1, 1, BaseTreatmentProcess);
+      }
+    }
   }
 
   /**
@@ -481,17 +494,7 @@ public class TollBiz {
     treatmentRecord.setStatus(BusinessConstants.TREATMENT_PROCESS_FINISH_STATUS);
     treatmentRecord.setUpdId(userId);
     treatmentRecord.setUpdName(name);
-    int treatmentUpdateResult = treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
-    // 发送消息同步就诊数据
-    if (treatmentUpdateResult > 0) {
-      Integer appointmentId = treatmentRecord.getAppointmentId();
-      if (null != appointmentId) {
-        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
-      } else {
-        rabbitMqServiceFeign.sendMessage(
-            treatmentRecord.getRegisteredId(), 1, 1, BaseTreatmentProcess);
-      }
-    }
+    updateTreatmentStatus(treatmentRecord);
   }
 
   private WxTemplateMsgModel chargePushMsg(BillPayRecord billPayRecord) {

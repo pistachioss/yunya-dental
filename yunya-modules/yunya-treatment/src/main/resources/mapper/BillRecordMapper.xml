@@ -468,7 +468,7 @@
         select IFNULL(sum(receivable_amount),0)
         from bill_record
         where date_format(crt_time, '%Y-%m') = #{query.queryDate}
-          and org_id =#{query.orgId}
+        and org_id =#{query.orgId}
     </select>
 
     <!--撤销实收合计-->
@@ -516,5 +516,31 @@
                   and date_format(br.crt_time, '%Y-%m') = #{query.queryDate}
             )
         );
+    </select>
+
+    <!--去掉撤销优惠后的orderRecordId列表-->
+    <select id="selectRemoveBillAdjustDiscountOrderIds" resultType="java.lang.Integer">
+        select distinct order_record_id
+        from bill_record br
+        where not exists (
+            select behdr.associate_record_id as orderRecordId
+            from bill_exception_handle_record behr
+            left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
+            where operate_type = 2
+                <if test="query.queryDate!=null and query.queryDate!=''">
+                and date_format(behr.crt_time, '%Y-%m') = #{query.queryDate}
+                </if>
+            and br.order_record_id = behdr.associate_record_id
+        )
+        <if test="query.orgIds != null and query.orgIds.size() > 0">
+            AND br.org_id IN
+            <foreach collection="query.orgIds" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="query.queryDate!=null and query.queryDate!=''">
+            and date_format(crt_time, '%Y-%m') = #{query.queryDate}
+            and date_format(privilege_date, '%Y-%m') =  #{query.queryDate}
+        </if>
     </select>
 </mapper>

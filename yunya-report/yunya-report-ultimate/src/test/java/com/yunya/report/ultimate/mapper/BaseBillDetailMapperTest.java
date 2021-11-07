@@ -143,6 +143,7 @@ public class BaseBillDetailMapperTest {
   @Test
   public void find5() {
     EmployeeWorkloadQuery query = new EmployeeWorkloadQuery();
+    query.setEnableFilter((byte)0);
     query.setOrgId(28);
     query.setDateType((byte) 0);
     query.setStartDate("2021-03-01");
