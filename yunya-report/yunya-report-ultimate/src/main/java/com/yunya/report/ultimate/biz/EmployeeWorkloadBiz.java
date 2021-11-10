@@ -388,6 +388,8 @@ public class EmployeeWorkloadBiz {
                 BigDecimal baseWorkload = vo.getBaseWorkload();
                 // 已收工作量
                 BigDecimal receivedWorkload = vo.getReceivedWorkload();
+                // 免单支付工作量
+                BigDecimal freePaymentWorkload = vo.getFreePaymentWorkload();
                 BigDecimal actualBonusBase =
                         actualWorkload
                                 .add(supplementWorkload)
@@ -395,7 +397,8 @@ public class EmployeeWorkloadBiz {
                                 .subtract(processingFee)
                                 .subtract(orthodonticsFee)
                                 .subtract(largeMaterialCost)
-                                .subtract(baseWorkload);
+                                .subtract(baseWorkload)
+                                .subtract(freePaymentWorkload);
                 workloadVO.setActualBonusBase(actualBonusBase);
                 workloadVO.setActualBonus(actualBonusBase.multiply(bonusCoefficient));
                 BigDecimal receivedBonusBase =
@@ -405,7 +408,8 @@ public class EmployeeWorkloadBiz {
                                 .subtract(processingFee)
                                 .subtract(orthodonticsFee)
                                 .subtract(largeMaterialCost)
-                                .subtract(baseWorkload);
+                                .subtract(baseWorkload)
+                                .subtract(freePaymentWorkload);
                 workloadVO.setReceivedBonusBase(receivedBonusBase);
                 workloadVO.setReceivedBonus(receivedBonusBase.multiply(bonusCoefficient));
                 result.add(workloadVO);
