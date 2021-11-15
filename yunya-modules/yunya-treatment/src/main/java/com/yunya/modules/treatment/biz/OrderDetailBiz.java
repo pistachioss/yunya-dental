@@ -478,7 +478,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           tariff = baseTariffBiz.selectById(billingItemId);
           redisUtils.set(itemKey, tariff);
         }
-        vo.setBillingItemName(tariff.getName());
+        //需求修改 查询当时存储的名称 不为实时名称
+//        vo.setBillingItemName(tariff.getName());
         vo.setBillingItemEnglishName(tariff.getEnglishName());
         vo.setUnit(tariff.getUnit());
         break;
@@ -488,7 +489,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           oralTariff = baseOralTariffBiz.selectById(billingItemId);
           redisUtils.set(itemKey, oralTariff);
         }
-        vo.setBillingItemName(oralTariff.getName());
+//        vo.setBillingItemName(oralTariff.getName());
         vo.setBillingItemEnglishName(oralTariff.getEnglishName());
         vo.setUnit(oralTariff.getUnit());
         break;
@@ -590,6 +591,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         entity.setType(type);
         Integer itemId = detail.getBillingItemId();
         entity.setBillingItemId(itemId);
+        //记录当时的开单项目名称
+        entity.setBillingItemName(detail.getBillingItemName());
         String itemKey = type + REDIS_KEY_ITEM_INFO + itemId;
         // 从缓存查询开单项目
         switch (type) {
