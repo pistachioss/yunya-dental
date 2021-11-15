@@ -310,4 +310,12 @@ public class BaseBillDetail {
     public void setRemark(String remark) {
         this.remark = remark;
     }
+
+    public Integer getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(Integer itemName) {
+        this.itemName = itemName;
+    }
 }
