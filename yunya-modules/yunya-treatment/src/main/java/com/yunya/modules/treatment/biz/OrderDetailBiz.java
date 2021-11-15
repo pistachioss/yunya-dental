@@ -634,7 +634,9 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         entity.setQuantity(quantity);
         BigDecimal detailTotal = price.multiply(BigDecimal.valueOf(quantity));
         entity.setReceivableAmount(detailTotal);
+        //测试修改
         entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        entity.setCrtId(712);
         entity.setCrtName(BaseContextHandler.getName());
         orderDetails.add(entity);
       }

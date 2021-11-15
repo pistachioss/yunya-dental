@@ -261,6 +261,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     redisUtils.set(orderKey, treatmentRecordId, 300);
     List<OrderDetailModel> models = model.getOrderDetails();
     Integer treatmentRecordOrgId = treatmentRecord.getOrgId();
+    //测试修改
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     // 将model转换成entity
@@ -290,6 +291,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
               orderDetailBiz.insertSelective(detail);
             });
         if (result > 0) {
+          //测试修改
           rabbitMqServiceFeign.sendMessage(orderRecordId, 0, BaseBill);
         }
       }
@@ -329,6 +331,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
     } else {
       Integer registeredId = treatmentRecord.getRegisteredId();
+      //测试修改
       rabbitMqServiceFeign.sendMessage(registeredId, 1, 1, BaseTreatmentProcess);
     }
     redisUtils.delete(orderKey);
@@ -351,7 +354,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
         && !status.equals(TREATMENT_PROCESS_ORDER_STATUS)) {
       throw new ClientServiceException("开单失败，当前就诊处于开单完成或结算状态，无法重复开单！", PARAMETERS_IS_ILLEGAL);
     }
-
+  //测试修改
     String recordId = redisUtils.get(LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId);
     if (StringHelper.isNotBlank(recordId)) {
       throw new ClientServiceException("开单失败，当前就诊记录处于正在开单状态，无法同时开单！", SAME_DATA_EXIST);

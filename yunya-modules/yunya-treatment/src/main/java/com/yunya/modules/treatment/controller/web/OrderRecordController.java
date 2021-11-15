@@ -73,7 +73,7 @@ public class OrderRecordController {
    * @param model 开单信息
    * @return
    */
-  @CurrentUser
+//  @CurrentUser
   @ApiOperation("提交并治疗完成")
   @PostMapping("/submit")
   public ResponseResult<T> submitAndCompleteOrder(@RequestBody @Validated OrderRecordModel model) {

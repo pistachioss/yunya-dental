@@ -734,6 +734,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       throw new ClientServiceException("结束治疗失败,当前就诊未进行开单，请至少开单一个项目！", DATA_NOT_EXIST);
     }
     orderRecord.setStatus((byte) 1);
+    //测试修改
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     orderRecord.setUpdId(userId);
@@ -744,6 +745,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     treatmentRecord.setUpdId(userId);
     treatmentRecord.setUpdName(name);
     int i = mapper.updateByPrimaryKeySelective(treatmentRecord);
+    //测试修改
     if (i > 0) {
       // 发送消息更新账单
       rabbitMqServiceFeign.sendMessage(orderRecord.getId(), 1, BaseBill);
