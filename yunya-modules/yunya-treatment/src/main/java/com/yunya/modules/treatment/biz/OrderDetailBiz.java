@@ -196,7 +196,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                   tariff = baseTariffBiz.selectById(billingItemId);
                   redisUtils.set(itemKey, tariff);
                 }
-                vo.setBillingItemName(tariff.getName());
+                //不查询实时名称 需求修改
+//                vo.setBillingItemName(tariff.getName());
                 vo.setUnit(tariff.getUnit());
                 break;
               case 1:
@@ -205,7 +206,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                   oralTariff = baseOralTariffBiz.selectById(billingItemId);
                   redisUtils.set(itemKey, oralTariff);
                 }
-                vo.setBillingItemName(oralTariff.getName());
+//                vo.setBillingItemName(oralTariff.getName());
                 vo.setUnit(oralTariff.getUnit());
                 break;
               default:
@@ -478,7 +479,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           tariff = baseTariffBiz.selectById(billingItemId);
           redisUtils.set(itemKey, tariff);
         }
-        //需求修改 查询当时存储的名称 不为实时名称
+        //不查询实时名称 需求修改
 //        vo.setBillingItemName(tariff.getName());
         vo.setBillingItemEnglishName(tariff.getEnglishName());
         vo.setUnit(tariff.getUnit());

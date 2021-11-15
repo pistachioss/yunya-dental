@@ -60,6 +60,7 @@
         od.id as orderDetailId,
         od.`type`,
         od.billing_item_id as billingItemId,
+        od.billing_item_name AS billingItemName,
         od.price,
         od.quantity,
         od.receivable_amount as receivableAmount,
