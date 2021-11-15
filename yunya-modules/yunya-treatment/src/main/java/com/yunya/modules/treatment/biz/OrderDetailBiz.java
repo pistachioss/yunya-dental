@@ -592,7 +592,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         entity.setType(type);
         Integer itemId = detail.getBillingItemId();
         entity.setBillingItemId(itemId);
-        //记录当时的开单项目名称
+        //记录当时的开单项目名称 需求修改
         entity.setBillingItemName(detail.getBillingItemName());
         String itemKey = type + REDIS_KEY_ITEM_INFO + itemId;
         // 从缓存查询开单项目
