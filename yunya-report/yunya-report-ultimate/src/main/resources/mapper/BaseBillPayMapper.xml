@@ -2088,7 +2088,15 @@
 
     <select id="selectRecievedWorkloadsGroupByMonth" resultType="com.yunya.feign.report.domain.vo.BillWorkloadVO">
         SELECT
-        DATE_FORMAT(bbp.payee_date,'%Y-%m') AS month,
+        <if test="query.dateType == 0">
+            DATE_FORMAT(bbp.payee_date,'%Y-%m-%d') AS month,
+        </if>
+        <if test="query.dateType == 1">
+            DATE_FORMAT(bbp.payee_date,'%Y-%m') AS month,
+        </if>
+        <if test="query.dateType == 2">
+            DATE_FORMAT(bbp.payee_date,'%Y') AS month,
+        </if>
         bb.bill_id AS billId,
         bb.org_id AS billOrgId,
         IFNULL(bb.actual_amount,0) AS actualAmount,

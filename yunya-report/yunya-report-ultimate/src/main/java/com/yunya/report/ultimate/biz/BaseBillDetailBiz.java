@@ -1360,49 +1360,46 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public DynamicHeaderPageInfo<JSONObject> clinicPerformanceList(
       ClinicPerformanceBusinessQuery queryForm) {
-    String startDate = queryForm.getStartDate().substring(0, 7);
-    String endDate = queryForm.getEndDate().substring(0, 7);
-    String year = startDate.substring(0, 4); // 年份
-    if (!year.equals(endDate.substring(0, 4))) {
-      throw new ClientServiceException("查询月份不能跨年", PARAMETERS_IS_ILLEGAL);
-    }
-    String sMonth = startDate.substring(5, 7); // 月份
-    String eMonth = endDate.substring(5, 7); // 月份
-    List<BaseOrganization> orgs = getOrganization(queryForm);
-    Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
-    DataStatisticsQuery query = new DataStatisticsQuery();
-    query.setDateType(queryForm.getDateType());
-    query.setOrgIds(orgIds);
-    List<String> curMonthList = DateUtil.sliceUpDateRange(startDate, endDate);
-    Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
-    // 同比：去年+查询月份范围
-    String preYear = DateUtil.preYear(year);
-    String chainSMonth = preYear + "-" + sMonth;
-    String chainEMonth = preYear + "-" + eMonth;
-    String minMonth = chainSMonth;
-    List<String> chainMonthList = DateUtil.sliceUpDateRange(chainSMonth, chainEMonth);
+      // 门诊的目标工作量
+      Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
+      List<BaseOrganization> orgs = getOrganization(queryForm);
+      Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
+      String startDate = queryForm.getStartDate();
+      String endDate = queryForm.getEndDate();
+      String year = checkCrossYear(startDate, endDate);
 
-    // 环比：查询条件的开始月份 + 查询月份范围的跨度值
-    int range = 1; // 默认1个月
-    if (!startDate.equals(endDate)) {
-      range += Integer.parseInt(eMonth) - Integer.parseInt(sMonth);
-    }
-    String preSMonth = DateUtil.preMonth(startDate, range);
-    String preEMonth = DateUtil.preMonth(endDate, range);
-    if (DateUtil.compareMonth(preSMonth, minMonth) < 0) {
-      minMonth = preSMonth;
-    }
-    List<String> preMonthList = DateUtil.sliceUpDateRange(preSMonth, preEMonth);
+      DataStatisticsQuery query = new DataStatisticsQuery();
+      query.setDateType(queryForm.getDateType());
+      query.setOrgIds(orgIds);
+      List<String> curMonthList = DateUtil.sliceUpDateRange(startDate, endDate);
 
-    // 年度工作量
-    String yearSMonth = year + "-01";
-    String yearEMonth = year + "-12";
-    if (DateUtil.compareMonth(yearSMonth, minMonth) < 0) {
-      minMonth = yearSMonth;
-    }
-    query.setStartDate(minMonth);
-    query.setEndDate(yearEMonth);
-    List<String> yearMonthList = DateUtil.sliceUpDateRange(yearSMonth, yearEMonth);
+      // 同比：去年+查询月份范围
+      String chainSMonth = DateUtil.chainDate(startDate);
+      String chainEMonth = DateUtil.chainDate(endDate);
+      String minMonth = chainSMonth;
+      List<String> chainDateList = DateUtil.sliceUpDateRange(chainSMonth, chainEMonth);
+
+      // 环比：查询条件的开始月份 + 查询月份范围的跨度值
+      int range = 1; // 默认差值：1
+      if (!startDate.equals(endDate)) {
+          range += DateUtil.dateFieldDiff(startDate, endDate);
+      }
+      String preSMonth = DateUtil.preDate(startDate, range);
+      String preEMonth = DateUtil.preDate(endDate, range);
+      if (DateUtil.compareDate(minMonth, preSMonth) < 0) {
+          minMonth = preSMonth;
+      }
+      List<String> preDateList = DateUtil.sliceUpDateRange(preSMonth, preEMonth);
+
+      // 年度工作量
+      String yearSMonth = DateUtil.yearStart(startDate);
+      String yearEMonth = DateUtil.yearEnd(endDate);
+      if (DateUtil.compareDate(minMonth, yearSMonth) < 0) {
+          minMonth = yearSMonth;
+      }
+      query.setStartDate(minMonth);
+      query.setEndDate(yearEMonth);
+      List<String> yearDateList = DateUtil.sliceUpDateRange(yearSMonth, yearEMonth);
     Map<String, Map<Integer, BigDecimal>> workloadMap =
         baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(query);
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
@@ -1414,18 +1411,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       BigDecimal chainTotal = BigDecimal.ZERO;
       BigDecimal preTotal = BigDecimal.ZERO;
       BigDecimal yearTotal = BigDecimal.ZERO;
-      JSONObject actual = new JSONObject();
-      init(actual, startDate, endDate, "实际值");
-      JSONObject goals = new JSONObject();
-      init(goals, startDate, endDate, "目标值");
-      JSONObject completed = new JSONObject();
-      init(completed, startDate, endDate, "完成度");
-      JSONObject preDiff = new JSONObject(); // 环比
-      init(preDiff, preSMonth, preEMonth, "环比值");
-      JSONObject chainDiff = new JSONObject(); // 同比
-      init(chainDiff, chainSMonth, chainEMonth, "同比值");
-      JSONObject curYear = new JSONObject(); // 年度总工作量
-      init(curYear, year, year, "年度总工作量");
+      JSONObject actual = init(startDate, endDate, "实际值");
+      JSONObject goals = init(startDate, endDate, "目标值");
+      JSONObject completed = init(startDate, endDate, "完成度");
+      JSONObject preDiff = init(preSMonth, preEMonth, "环比值");
+      JSONObject chainDiff = init(chainSMonth, chainEMonth, "同比值");
+      JSONObject curYear = init(year, year, "年度总工作量");
       Map<String, String> map = new LinkedHashMap<>();
       map.put("date", "时间");
       map.put("name", "工作量");
@@ -1446,9 +1437,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         actual.put(key, workloads.setScale(2, BigDecimal.ROUND_HALF_UP));
         goals.put(key, goal);
         completed.put(key, completedPercentage.toString() + "%");
-        BigDecimal chainWorkload = computeOrgWorkload(orgId, chainMonthList, workloadMap);
-        BigDecimal preWorkload = computeOrgWorkload(orgId, preMonthList, workloadMap);
-        BigDecimal yearWorkload = computeOrgWorkload(orgId, yearMonthList, workloadMap);
+        BigDecimal chainWorkload = computeOrgWorkload(orgId, chainDateList, workloadMap);
+        BigDecimal preWorkload = computeOrgWorkload(orgId, preDateList, workloadMap);
+        BigDecimal yearWorkload = computeOrgWorkload(orgId, yearDateList, workloadMap);
         chainDiff.put(key, chainWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
         preDiff.put(key, preWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
         curYear.put(key, yearWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
@@ -1479,14 +1470,29 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       result.add(curYear);
       pageInfo.setMap(map);
     }
-    pageInfo.setPageNum(query.getPageNum());
-    pageInfo.setPageSize(query.getPageSize());
+    pageInfo.setPageNum(queryForm.getPageNum());
+    pageInfo.setPageSize(queryForm.getPageSize());
     pageInfo.setTotal(result.size());
     pageInfo.setList(result);
     return pageInfo;
   }
 
-  private BigDecimal computeOrgWorkload(
+    /**
+     * 检查日期是否跨年
+     *
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    private String checkCrossYear(String startDate, String endDate) {
+        String year = startDate.substring(0, 4); // 年份
+        if (!year.equals(endDate.substring(0, 4))) {
+            throw new ClientServiceException("查询日期不能跨年！", PARAMETERS_IS_ILLEGAL);
+        }
+        return year;
+    }
+
+    private BigDecimal computeOrgWorkload(
       Integer orgId,
       List<String> chainMonthList,
       Map<String, Map<Integer, BigDecimal>> workloadMap) {
@@ -1517,18 +1523,19 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   /**
    * 初始化
    *
-   * @param object
    * @param sMonth
    * @param eMonth
    * @param value
    */
-  private void init(JSONObject object, String sMonth, String eMonth, String value) {
+  private JSONObject init(String sMonth, String eMonth, String value) {
+    JSONObject object = new JSONObject();
     String month = sMonth.replaceAll("-", ".");
     if (!sMonth.equals(eMonth)) {
       month = month + "-" + eMonth.replaceAll("-", ".");
     }
     object.put("date", month);
     object.put("name", value);
+    return object;
   }
 
   /**
@@ -1595,8 +1602,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       map.put("date", "时间");
       map.put("name", "患者来源");
       for (BasePatientOrigin vo : origins) {
-        JSONObject object = new JSONObject();
-        init(object, startDate, endDate, vo.getName());
+        JSONObject object = init(startDate, endDate, vo.getName());
         object.put(
             "total", computeOrgPatientCount(vo.getOriginType() + "", object, map, orgs, originMap));
         result.add(object);
@@ -1683,8 +1689,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         map.put("date", "时间");
         map.put("name", "专科项目");
         for (SpecialistProjectVO item : specialItems) {
-          JSONObject object = new JSONObject();
-          init(object, startDate, endDate, item.getSpecialistProjectName());
+          JSONObject object = init(startDate, endDate, item.getSpecialistProjectName());
           Integer total = 0;
           for (BaseOrganization org : orgs) {
             Integer orgId = org.getOrgId();

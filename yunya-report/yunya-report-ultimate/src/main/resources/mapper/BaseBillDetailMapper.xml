@@ -3875,7 +3875,15 @@
         select
         sum(bbd.coupon_workload) as billTotalCouponWorkload,
         bbd.org_id AS billOrgId,
-        DATE_FORMAT(bb.privilege_date,'%Y-%m') AS month
+        <if test="query.dateType == 0">
+            DATE_FORMAT(bb.privilege_date,'%Y-%m-%d') AS month
+        </if>
+        <if test="query.dateType == 1">
+            DATE_FORMAT(bb.privilege_date,'%Y-%m') AS month
+        </if>
+        <if test="query.dateType == 2">
+            DATE_FORMAT(bb.privilege_date,'%Y') AS month
+        </if>
         from base_bill_detail bbd
         inner join base_bill bb on bbd.bill_id = bb.bill_id
         <where>

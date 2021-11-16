@@ -9,10 +9,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
 
@@ -615,42 +612,84 @@ public class DateUtil {
     return sdf.format(c.getTime());
   }
 
-  public static String preMonth(String month, int range) {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+  /**
+   * 环比日期，即上一个日期（年、月、日）
+   *
+   * @param date 日期
+   * @param diff 差值
+   * @return
+   */
+  public static String preDate(String date, int diff) {
+    String[] dates = date.split("-");
+    if (dates.length == 2) {// 月
+      return preDate(date, diff, "yyyy-MM", Calendar.MONTH);
+    } else if (dates.length == 1) {// 年
+      return preDate(date, diff, "yyyy", Calendar.YEAR);
+    }
+    return preDate(date, diff, "yyyy-MM-dd", Calendar.DATE);
+  }
+
+  /**
+   * 环比日期，即上一个日期（年、月、日）
+   * @param date 日期
+   * @param diff 差值
+   * @param format 年月日的格式
+   * @param dateField 年月日的增加字段
+   * @return
+   */
+  public static String preDate(String date, int diff, String format, int dateField) {
+    SimpleDateFormat sdf = new SimpleDateFormat(format);
     Calendar c = Calendar.getInstance();
     try {
-      c.setTime(sdf.parse(month));
+      c.setTime(sdf.parse(date));
     } catch (ParseException e) {
       e.printStackTrace();
     }
-    c.add(Calendar.MONTH, -range);
+    c.add(dateField, -diff);
     return sdf.format(c.getTime());
   }
 
-  public static int compareDate(String firstDate, String secondDate) {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-    Date d1 = null;
-    Date d2 = null;
-    try {
-      d1 = sdf.parse(firstDate);
-      d2 = sdf.parse(secondDate);
-    } catch (ParseException e) {
-      e.printStackTrace();
+  /**
+   * 日期字段差值：
+   *
+   * @param startDate
+   * @param endDate
+   * @return
+   */
+  public static int dateFieldDiff(String startDate, String endDate) {
+    String[] sDates = startDate.split("-");
+    String[] eDates = endDate.split("-");
+    if (sDates.length == 2) {// 月
+      return Integer.parseInt(sDates[1]) - Integer.parseInt(eDates[1]);
+    } else if (sDates.length == 1) {// 年
+      return Integer.parseInt(sDates[1]) - Integer.parseInt(eDates[1]);
     }
-    return d1.compareTo(d2);
+    return compareDate(startDate, endDate)-1; // 日
   }
 
-  public static int compareMonth(String firstMonth, String secondMonth) {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+  public static int compareDate(String firstDate, String secondDate) {
+    int count = StringHelper.countChild("-", firstDate);
+    String pattern = "yyyy-MM-dd";
+    if (count == 1) {// 月
+      pattern = "yyyy-MM";
+    } else if (count == 0) {
+      pattern = "yyyy";
+    }
+    return compareDate(firstDate, secondDate, pattern);
+  }
+
+  public static int compareDate(String firstMonth, String secondMonth, String pattern) {
+    SimpleDateFormat sdf = new SimpleDateFormat(pattern);
     Date d1 = null;
     Date d2 = null;
     try {
       d1 = sdf.parse(firstMonth);
       d2 = sdf.parse(secondMonth);
+      return daysBetween(d1, d2);
     } catch (ParseException e) {
       e.printStackTrace();
     }
-    return d1.compareTo(d2);
+    return 0;
   }
 
   /**
@@ -712,5 +751,51 @@ public class DateUtil {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  /**
+   * 同比日期 即去年时的这个日期（日、月、年）
+   *
+   * @param dateStr
+   * @return
+   */
+  public static String chainDate(String dateStr) {
+    String[] dates = dateStr.split("-");
+    String pattern = "yyyy-MM-dd";
+    if (dates.length == 2) {
+      pattern = "yyyy-MM";
+    } else if (dates.length == 1) {
+      pattern = "yyyy";
+    }
+    Date date = null;
+    try {
+      date = parse(dateStr,pattern);
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    Calendar c = Calendar.getInstance();
+    c.setTime(date);
+    c.add(Calendar.YEAR, -1);
+    return format(c.getTime(),pattern);
+  }
+
+  public static String yearStart(String dateStr) {
+    String[] dates = dateStr.split("-");
+    if (dates.length == 2) { // 月
+      return dates[0] + "-01";
+    } else if (dates.length == 1) {// 年
+      return dates[0];
+    }
+    return dates[0] + "-01-01";
+  }
+
+  public static String yearEnd(String dateStr) {
+    String[] dates = dateStr.split("-");
+    if (dates.length == 2) { // 月
+      return dates[0] + "-12";
+    } else if (dates.length == 1) {// 年
+      return dates[0];
+    }
+    return dates[0] + "-12-31";
   }
 }

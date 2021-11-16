@@ -288,11 +288,11 @@ public class BizTest {
     }
 
     /**
-     * 门诊业绩
+     * 门诊工作量统计
      */
     @Test
-    public void test24() {
-        String param = "{\"dateType\":1,\"endDate\":\"2021-04\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-04\",\"whetherPage\":true}";
+    public void clinicPerformanceList() {
+        String param = "{\"dateType\":2,\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021\",\"endDate\":\"2021\",\"whetherPage\":true}";
         ClinicPerformanceBusinessQuery query = JSONObject.parseObject(param,ClinicPerformanceBusinessQuery.class);
         long t1 = System.currentTimeMillis();
         DynamicHeaderPageInfo<JSONObject> pageInfo = baseBillDetailBiz.clinicPerformanceList(query);
@@ -305,7 +305,7 @@ public class BizTest {
      */
     @Test
     public void testClinicFirstVisitStatistics() {
-        String param = "{\"dateType\":1,\"originTypes\":[1],\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-04\",\"endDate\":\"2021-04\",\"whetherPage\":true}";
+        String param = "{\"dateType\":1,\"originTypes\":[],\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-11\",\"endDate\":\"2021-11\",\"whetherPage\":true}";
         ClinicPerformanceBusinessQuery query = JSONObject.parseObject(param,ClinicPerformanceBusinessQuery.class);
         long t1 = System.currentTimeMillis();
         DynamicHeaderPageInfo<JSONObject> pageInfo = baseBillDetailBiz.clinicFirstVisitSourceList(query);
@@ -318,7 +318,7 @@ public class BizTest {
      */
     @Test
     public void testClinicSpecialItemList() {
-        String param = "{\"dateType\":1,\"pageNum\":1,\"pageSize\":50,\"startDate\":\"2021-01\",\"endDate\":\"2021-12\",\"whetherPage\":true}";
+        String param = "{\"dateType\":1,\"specailistProjectIds\":[],\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-11\",\"endDate\":\"2021-11\",\"whetherPage\":true}";
         ClinicPerformanceBusinessQuery query = JSONObject.parseObject(param,ClinicPerformanceBusinessQuery.class);
         long t1 = System.currentTimeMillis();
         DynamicHeaderPageInfo<JSONObject> pageInfo = baseBillDetailBiz.clinicSpecialItemList(query);
