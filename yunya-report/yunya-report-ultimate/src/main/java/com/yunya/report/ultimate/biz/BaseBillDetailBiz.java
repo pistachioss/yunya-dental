@@ -1360,46 +1360,45 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public DynamicHeaderPageInfo<JSONObject> clinicPerformanceList(
       ClinicPerformanceBusinessQuery queryForm) {
-      // 门诊的目标工作量
-      Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
-      List<BaseOrganization> orgs = getOrganization(queryForm);
-      Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
-      String startDate = queryForm.getStartDate();
-      String endDate = queryForm.getEndDate();
-      String year = checkCrossYear(startDate, endDate);
+    // 门诊的目标工作量
+    Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
+    List<BaseOrganization> orgs = getOrganization(queryForm);
+    Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
+    String startDate = queryForm.getStartDate();
+    String endDate = queryForm.getEndDate();
+    String year = checkCrossYear(startDate, endDate);
+    DataStatisticsQuery query = new DataStatisticsQuery();
+    query.setDateType(queryForm.getDateType());
+    query.setOrgIds(orgIds);
+    List<String> curMonthList = DateUtil.sliceUpDateRange(startDate, endDate);
 
-      DataStatisticsQuery query = new DataStatisticsQuery();
-      query.setDateType(queryForm.getDateType());
-      query.setOrgIds(orgIds);
-      List<String> curMonthList = DateUtil.sliceUpDateRange(startDate, endDate);
+    // 同比：去年+查询月份范围
+    String chainSDate = DateUtil.chainDate(startDate);
+    String chainEDate = DateUtil.chainDate(endDate);
+    String minDate = chainSDate;
+    List<String> chainDateList = DateUtil.sliceUpDateRange(chainSDate, chainEDate);
 
-      // 同比：去年+查询月份范围
-      String chainSMonth = DateUtil.chainDate(startDate);
-      String chainEMonth = DateUtil.chainDate(endDate);
-      String minMonth = chainSMonth;
-      List<String> chainDateList = DateUtil.sliceUpDateRange(chainSMonth, chainEMonth);
+    // 环比：查询条件的开始月份 + 查询月份范围的跨度值
+    int range = 1; // 默认差值：1
+    if (!startDate.equals(endDate)) {
+      range += DateUtil.dateFieldDiff(startDate, endDate);
+    }
+    String preSDate = DateUtil.preDate(startDate, range);
+    String preEDate = DateUtil.preDate(endDate, range);
+    if (DateUtil.compareDate(minDate, preSDate) < 0) {
+        minDate = preSDate;
+    }
+    List<String> preDateList = DateUtil.sliceUpDateRange(preSDate, preEDate);
 
-      // 环比：查询条件的开始月份 + 查询月份范围的跨度值
-      int range = 1; // 默认差值：1
-      if (!startDate.equals(endDate)) {
-          range += DateUtil.dateFieldDiff(startDate, endDate);
-      }
-      String preSMonth = DateUtil.preDate(startDate, range);
-      String preEMonth = DateUtil.preDate(endDate, range);
-      if (DateUtil.compareDate(minMonth, preSMonth) < 0) {
-          minMonth = preSMonth;
-      }
-      List<String> preDateList = DateUtil.sliceUpDateRange(preSMonth, preEMonth);
-
-      // 年度工作量
-      String yearSMonth = DateUtil.yearStart(startDate);
-      String yearEMonth = DateUtil.yearEnd(endDate);
-      if (DateUtil.compareDate(minMonth, yearSMonth) < 0) {
-          minMonth = yearSMonth;
-      }
-      query.setStartDate(minMonth);
-      query.setEndDate(yearEMonth);
-      List<String> yearDateList = DateUtil.sliceUpDateRange(yearSMonth, yearEMonth);
+    // 年度工作量
+    String yearSDate = DateUtil.yearStart(startDate);
+    String yearEDate = DateUtil.yearEnd(endDate);
+    if (DateUtil.compareDate(minDate, yearSDate) < 0) {
+      minDate = yearSDate;
+    }
+    query.setStartDate(minDate);
+    query.setEndDate(yearEDate);
+    List<String> yearDateList = DateUtil.sliceUpDateRange(yearSDate, yearEDate);
     Map<String, Map<Integer, BigDecimal>> workloadMap =
         baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(query);
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
@@ -1414,8 +1413,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       JSONObject actual = init(startDate, endDate, "实际值");
       JSONObject goals = init(startDate, endDate, "目标值");
       JSONObject completed = init(startDate, endDate, "完成度");
-      JSONObject preDiff = init(preSMonth, preEMonth, "环比值");
-      JSONObject chainDiff = init(chainSMonth, chainEMonth, "同比值");
+      JSONObject preDiff = init(preSDate, preEDate, "环比值");
+      JSONObject chainDiff = init(chainSDate, chainEDate, "同比值");
       JSONObject curYear = init(year, year, "年度总工作量");
       Map<String, String> map = new LinkedHashMap<>();
       map.put("date", "时间");
