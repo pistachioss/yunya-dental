@@ -2936,79 +2936,86 @@
         bti.category_name as categoryName,
         ifnull(be.employee_name, '--') as employeeName
         from (
-        SELECT
-        bbd.org_id AS orgId,
-        bbd.item_id AS itemId,
-        bbd.item_type AS itemType,
-        bbd.executor_id as employeeId,
-        IFNULL(SUM(bbd.quantity),0) as quantity,
-        IFNULL(SUM(bbd.price*bbd.quantity-bbd.discount_amount),0) as amount
-        FROM
-        (
-        select
-        bbd.org_id,
-        bbd.item_id,
-        bbd.item_type,
-        bbd.executor_id,
-        bbd.quantity,
-        bbd.price,
-        bbd.discount_amount
-        from base_bill_detail bbd
-        LEFT JOIN base_bill bb on bb.bill_id = bbd.bill_id
-        <where>
-            AND bb.bill_date IS NOT NULL
-            <if test="query.itemIds!=null and query.itemIds.size()>0">
-                and bbd.item_id in
-                <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="query.itemType != null">
-                and bbd.item_type=#{query.itemType}
-            </if>
-            <if test="query.orgId != null">
-                and bbd.org_id = #{query.orgId}
-                and bb.org_id = #{query.orgId}
-            </if>
-            <if test="query.employeeIds!=null and query.employeeIds.size()>0">
-                AND bbd.executor_id in
-                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+            SELECT
+            bbd.org_id AS orgId,
+            bbd.item_id AS itemId,
+            bbd.item_type AS itemType,
+            bbd.executor_id as employeeId,
+            IFNULL(SUM(bbd.quantity),0) as quantity,
+            IFNULL(SUM(bbd.price*bbd.quantity-bbd.discount_amount),0) as amount
+            FROM
+            (
+            select
+            bbd.org_id,
+            bbd.item_id,
+            bbd.item_type,
+            bbd.executor_id,
+            bbd.quantity,
+            bbd.price,
+            bbd.discount_amount
+            from base_bill_detail bbd
+            LEFT JOIN base_bill bb on bb.bill_id = bbd.bill_id
+            <where>
+                AND bb.bill_date IS NOT NULL
+                <if test="query.itemIds!=null and query.itemIds.size()>0">
+                    and bbd.item_id in
+                    <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
                 </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                <if test="query.itemType != null">
+                    and bbd.item_type=#{query.itemType}
                 </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                <if test="query.orgIds!=null and query.orgIds.size()>0">
+                    and bbd.org_id in
+                    <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                    and bb.org_id in
+                    <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
                 </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                <if test="query.employeeIds!=null and query.employeeIds.size()>0">
+                    AND bbd.executor_id in
+                    <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
                 </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y') &gt;= #{query.startDate}
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                    </if>
                 </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y') &lt;= #{query.endDate}
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                    </if>
                 </if>
-            </if>
-        </where>
-        ) bbd
-        GROUP BY
-        bbd.executor_id,
-        bbd.item_id
-        ORDER BY
-        amount DESC,
-        bbd.item_id,
-        bbd.item_type
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bb.bill_date, '%Y') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bb.bill_date, '%Y') &lt;= #{query.endDate}
+                    </if>
+                </if>
+            </where>
+            ) bbd
+            GROUP BY
+            bbd.org_id,
+            bbd.executor_id,
+            bbd.item_id
+            ORDER BY
+            amount DESC,
+            bbd.item_id,
+            bbd.item_type
         ) bbd
         LEFT JOIN base_tariff_info bti ON bbd.itemId = bti.item_id AND bbd.itemType = bti.item_type
         LEFT JOIN base_employee be ON be.user_id = bbd.employeeId

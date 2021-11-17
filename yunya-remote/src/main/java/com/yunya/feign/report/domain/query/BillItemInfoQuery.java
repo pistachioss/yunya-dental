@@ -25,6 +25,9 @@ import java.util.Collection;
 @ToString
 @EqualsAndHashCode(callSuper = true)
 public class BillItemInfoQuery extends PageQuery implements Serializable {
+    /** 门诊ID列表 */
+    @ApiModelProperty(value = "门诊ID列表")
+    private Collection<Integer> orgIds;
     /** 门诊ID */
     @ApiModelProperty(value = "门诊ID")
     private Integer orgId;
