@@ -309,8 +309,8 @@
         bd.itemType,
         bd.billingItemId,
         case bd.itemType
-        when 0 then bt.name
-        when 1 then bot.name
+        when 0 then ifnull(bd.billingItemName,bt.name)
+        when 1 then ifnull(bd.billingItemName,bot.name)
         end as billingItemName,
         case bd.itemType
         when 0 then bt.english_name
@@ -337,6 +337,7 @@
         od.orderDetailId,
         od.itemType,
         od.billingItemId,
+        od.billingItemName,
         od.price,
         od.quantity,
         od.receivableAmount,
@@ -351,6 +352,7 @@
         od.order_record_id as orderId,
         od.type as itemType,
         od.billing_item_id as billingItemId,
+        od.billing_item_name as billingItemName,
         od.price as price,
         od.quantity as quantity,
         od.receivable_amount as receivableAmount,
