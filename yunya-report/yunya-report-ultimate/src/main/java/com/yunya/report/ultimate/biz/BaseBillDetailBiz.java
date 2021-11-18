@@ -1360,6 +1360,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public DynamicHeaderPageInfo<JSONObject> clinicPerformanceList(
       ClinicPerformanceBusinessQuery queryForm) {
+    correctQueryDate(queryForm);
     // 门诊的目标工作量
     Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
     List<BaseOrganization> orgs = getOrganization(queryForm);
@@ -1474,6 +1475,24 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     pageInfo.setTotal(result.size());
     pageInfo.setList(result);
     return pageInfo;
+  }
+
+  private void correctQueryDate(ClinicPerformanceBusinessQuery queryForm) {
+    int dateType = queryForm.getDateType().intValue();
+    String startDate = queryForm.getStartDate();
+    String endDate = queryForm.getEndDate();
+    try {
+      if (dateType == 1) {
+        queryForm.setStartDate(startDate.substring(0, 7));
+        queryForm.setEndDate(endDate.substring(0, 7));
+      } else if (dateType == 2) {
+        queryForm.setStartDate(startDate.substring(0, 4));
+        queryForm.setEndDate(endDate.substring(0, 4));
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new ClientServiceException("查询日期参数格式错误",PARAMETERS_IS_ILLEGAL);
+    }
   }
 
     /**
