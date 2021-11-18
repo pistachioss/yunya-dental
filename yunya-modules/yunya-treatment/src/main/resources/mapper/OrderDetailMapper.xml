@@ -113,8 +113,8 @@
     <select id="billPrintInfo" resultMap="billPrintMap">
         select a.*,
             case a.type
-                when 0 then bt.name
-                when 1 then bot.name
+                when 0 then ifnull(a.billingItemName,bt.name)
+                when 1 then ifnull(a.billingItemName,bot.name)
             end as name,
             case a.type
                 when 0 then bt.english_name
@@ -132,6 +132,7 @@
                      od.tooth_bit,
                      od.type,
                      od.billing_item_id,
+                     od.billing_item_name as billingItemName,
                      od.quantity,
                      od.price,
                      od.order_record_id,
