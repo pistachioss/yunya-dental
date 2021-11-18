@@ -320,7 +320,7 @@ public class DiscountController {
 	public ResponseResult<PageInfo<CouponUseVo>> getCouponUse(@RequestBody CouponUseQuery query) {
 		return ResponseUtil.success(discountBiz.getCouponUse(query));
 	}
-	@ApiOperation(value = "产品记录-产品使用报表-导出")
+	@ApiOperation(value = "公司端-产品使用报表-导出")
 	@PostMapping("/coupon/use/page/export")
 	public void getCouponUseExport(HttpServletResponse response,@Valid @RequestBody CouponUseQuery query) throws IOException {
 		discountBiz.buildResponse(response, "产品使用记录");
