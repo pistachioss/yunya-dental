@@ -80,8 +80,11 @@
         ON bbd.bill_id = bb.bill_id
         <where>
             bbd.executor_id IS NOT NULL
-            <if test="query.orgId != null">
-                and bbd.org_id = #{query.orgId}
+            <if test="query.orgIds != null and query.orgIds.size > 0">
+                and bbd.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
         </where>
 
@@ -91,8 +94,11 @@
         ) bbd ON btp.treatment_id = bbd.treatment_id
         LEFT JOIN ( SELECT br.treatment_id, SUM( br.refund_amount ) AS refundWorkload FROM base_refund br
         <where>
-            <if test="query.orgId != null">
-                and br.org_id = #{query.orgId}
+            <if test="query.orgIds != null and query.orgIds.size > 0">
+                and br.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
         </where>
         GROUP BY
@@ -130,8 +136,11 @@
         ) btp ON e.user_id = ${assistant}
         AND e.org_id = btp.org_id
         <where>
-            <if test="query.orgId != null">
-                and e.org_id = #{query.orgId}
+            <if test="query.orgIds != null and query.orgIds.size > 0">
+                and e.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.assistantIds != null and query.assistantIds.length > 0">
                 and e.user_id in

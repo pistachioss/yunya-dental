@@ -10,6 +10,7 @@ import lombok.ToString;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 简介: 助手配诊退费明细查询参数
@@ -27,7 +28,7 @@ public class AssistantRefundDetailQuery extends PageQuery implements Serializabl
   /** 门诊ID */
   @ApiModelProperty(value = "门诊ID", required = true)
   @NotNull(message = "门诊ID不能为空！")
-  private Integer orgId;
+  private List<Integer> orgIds;
   /** 时间类型 */
   @ApiModelProperty(value = "时间类型：0-日；1-月；2-年", required = true)
   @NotNull(message = "时间类型不能为空！")
