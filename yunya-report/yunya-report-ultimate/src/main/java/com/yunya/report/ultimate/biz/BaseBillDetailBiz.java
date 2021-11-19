@@ -1288,14 +1288,18 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   private Map<Integer, BigDecimal> workloadMonthGoal() {
     String date = DateUtil.parseDateToStr("yyyy-MM", new Date());
+    return workloadMonthGoal((byte) 1, date, date);// 按月查
+  }
+
+  private Map<Integer, BigDecimal> workloadMonthGoal(Byte dateType, String startDate, String endDate) {
     BusinessGoalCompletedInfoQuery query = new BusinessGoalCompletedInfoQuery();
-    query.setBusinessType((byte) 1); // 工作量
     query.setBusinessTypes(new Byte[] {1}); // 工作量
-    query.setDateType((byte) 1); // 按月查
+    query.setDateType(dateType);
+    query.setBusinessType((byte) 1); // 工作量
     query.setStartDate("1");
     query.setEndDate("1");
     query.setOrgId(0);
-    query.setDateRange(Collections.singletonList(date));
+    query.setDateRange(DateUtil.sliceUpDateRange(startDate, endDate));
     List<BusinessGoalVO> goalVOS = clinicBaseServiceFeign.businessGoalList(query);
     if (StringHelper.isNotEmpty(goalVOS)) {
       return goalVOS.stream()
@@ -1362,7 +1366,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       ClinicPerformanceBusinessQuery queryForm) {
     correctQueryDate(queryForm);
     // 门诊的目标工作量
-    Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
+    Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal(queryForm.getDateType(), queryForm.getStartDate(), queryForm.getEndDate());
     List<BaseOrganization> orgs = getOrganization(queryForm);
     Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
     String startDate = queryForm.getStartDate();
