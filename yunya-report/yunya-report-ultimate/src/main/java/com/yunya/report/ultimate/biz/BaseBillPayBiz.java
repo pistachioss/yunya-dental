@@ -388,11 +388,12 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       DataStatisticsQuery query) {
     Map<String, Map<Integer, BigDecimal>> result = new HashMap<>(16);
     // 月份分组求已收工作量合计
-    List<BillWorkloadVO> workloads = mapper.selectRecievedWorkloadsGroupByMonth(query);
+    List<BillWorkloadVO> workloads = mapper.selectRecievedWorkloadsGroupByMonth(query);//1.6
+
     Set<Integer> billIds =
         workloads.stream().map(BillWorkloadVO::getBillId).collect(Collectors.toSet());
     List<BillRecordWorkloadVO> workloadInfos =
-        findBillWorkloadInfoByBillIds(new ArrayList<>(billIds));
+        findBillWorkloadInfoByBillIds(new ArrayList<>(billIds));//1.7, 2.3
     Map<Integer, BigDecimal> totalWorkloadMaps =
         workloadInfos.stream()
             .collect(
@@ -400,7 +401,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                     BillRecordWorkloadVO::getBillId, BillRecordWorkloadVO::getBillTotalWorkload));
     List<BillRecordWorkloadVO> couponWorkloads = findCouponWorkloadGroupByPrivilegeDate(query);
     List<BillOfRefundWorkloadVO> totalRefundWorkload =
-        refundBiz.selectTotalRefundWorkloadGroupByMonth(query);
+        refundBiz.findTotalRefundWorkloadGroupByMonth(query);
     if (StringHelper.isNotEmpty(workloads)) {
       workloads.forEach(
           vo -> {

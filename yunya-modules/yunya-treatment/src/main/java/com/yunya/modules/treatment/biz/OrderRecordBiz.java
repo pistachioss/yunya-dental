@@ -351,7 +351,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
         && !status.equals(TREATMENT_PROCESS_ORDER_STATUS)) {
       throw new ClientServiceException("开单失败，当前就诊处于开单完成或结算状态，无法重复开单！", PARAMETERS_IS_ILLEGAL);
     }
-
     String recordId = redisUtils.get(LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId);
     if (StringHelper.isNotBlank(recordId)) {
       throw new ClientServiceException("开单失败，当前就诊记录处于正在开单状态，无法同时开单！", SAME_DATA_EXIST);
