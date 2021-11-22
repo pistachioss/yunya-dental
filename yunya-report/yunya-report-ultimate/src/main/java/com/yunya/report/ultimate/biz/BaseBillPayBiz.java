@@ -1257,7 +1257,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
               case "AXA":
                 chargeDetailExport.setAxaAmount(totalAmount);
                 break;
-              case "风石":
+              case "中意保险":
                 chargeDetailExport.setFengShiAmount(totalAmount);
                 break;
               case "本次免单支付":
