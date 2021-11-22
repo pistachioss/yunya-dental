@@ -3258,7 +3258,7 @@
                 </foreach>
             </if>
         </where>
-        order by bb.org_id,bb.executor_id,bb.coupon_id
+        order by bb.executor_id,bb.coupon_id
     </select>
 
     <select id="couponExecutoredDetails" resultType="com.yunya.feign.report.domain.vo.CouponExecutoredDetailVO">

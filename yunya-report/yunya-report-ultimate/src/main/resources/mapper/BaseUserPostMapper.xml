@@ -150,7 +150,6 @@
             </if>
         </where>
         GROUP BY
-        e.org_id,
         e.user_id
         ORDER BY treatMatchingTimeAsAssistant1 DESC
     </select>
