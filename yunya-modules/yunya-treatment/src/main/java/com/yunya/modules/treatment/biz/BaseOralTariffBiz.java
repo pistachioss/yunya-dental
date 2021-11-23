@@ -1251,6 +1251,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
           oralTariff.setCrtName(name);
           oralTariff.setUpdId(userId);
           oralTariff.setUpdName(name);
+          oralTariff.setInservice(true);
           clinicOralTariffs.add(oralTariff);
         }
       }

@@ -9,6 +9,7 @@ import com.yunya.feign.treatment.domain.form.ClinicItemMemberPriceForm;
 import com.yunya.feign.treatment.domain.form.ClinicTariffForm;
 import com.yunya.feign.treatment.domain.form.ClinicTariffUniteDiscountForm;
 import com.yunya.feign.treatment.domain.form.MemberUniteDiscountForm;
+import com.yunya.feign.treatment.domain.model.ClinicTariffSwitchModel;
 import com.yunya.feign.treatment.domain.query.BaseTariffQueryForm;
 import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseCategoryInfoVO;
@@ -32,10 +33,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -57,6 +69,9 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
   @Autowired private ClinicTariffMemberPriceBiz clinicTariffMemberPriceBiz;
   /** 系统服务调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
+  /** 线程池 */
+  @Resource(name = "treatmentThreadPool")
+  private ExecutorService executorService;
 
   /**
    * 根据门诊价目表ID获取门诊价目表信息
@@ -480,5 +495,85 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    */
   public void batchInsert(List<ClinicTariff> clinicTariffs) {
     mapper.batchInsert(clinicTariffs);
+  }
+
+  /**
+   * 一键启用/禁用门诊价目表整个分类
+   *
+   * @param model 价目表分类参数
+   */
+  public void switchClinicTariffCategory(ClinicTariffSwitchModel model)
+      throws InterruptedException {
+    BaseTariff baseTariff = new BaseTariff();
+    baseTariff.setTariffCategoryId(model.getTariffCategoryId());
+    List<BaseTariff> tariffs = baseTariffMapper.select(baseTariff);
+    if (StringHelper.isNotEmpty(tariffs)) {
+      CountDownLatch countDownLatch = new CountDownLatch(tariffs.size());
+      List<ClinicTariff> clinicTariffs = Lists.newArrayList();
+      Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+      String userName = BaseContextHandler.getName();
+      tariffs.forEach(
+          tariff -> {
+            try {
+              executorService.submit(
+                  () -> {
+                    ClinicTariff clinicTariff = new ClinicTariff();
+                    clinicTariff.setClinicId(model.getOrgId());
+                    clinicTariff.setInservice(true);
+                    clinicTariff.setCrtId(userId);
+                    clinicTariff.setCrtName(userName);
+                    clinicTariff.setCrtTime(new Date());
+                    clinicTariff.setUpdId(userId);
+                    clinicTariff.setUpdName(userName);
+                    clinicTariff.setTariffId(tariff.getId());
+                    clinicTariff.setPrice(tariff.getPrice());
+                    clinicTariff.setInservice(model.getIsAvailable());
+                    clinicTariffs.add(clinicTariff);
+                  });
+            } catch (Exception e) {
+              e.printStackTrace();
+            } finally {
+              countDownLatch.countDown();
+            }
+          });
+      countDownLatch.await();
+
+      ClinicTariff clinicTariff = new ClinicTariff();
+      clinicTariff.setClinicId(model.getOrgId());
+      List<ClinicTariff> list = mapper.select(clinicTariff);
+      if (StringHelper.isNotEmpty(list)) {
+        CountDownLatch countDownLatch1 = new CountDownLatch(list.size());
+        list.stream()
+            .<Consumer<? super ClinicTariff>>map(
+                tariff ->
+                    clinicTariff1 -> {
+                      try {
+                        executorService.submit(
+                            () -> {
+                              if (tariff.getTariffId().equals(clinicTariff1.getTariffId())) {
+                                clinicTariff1.setPrice(tariff.getPrice());
+                                mapper.delete(tariff);
+                              }
+                            });
+                      } finally {
+                        countDownLatch1.countDown();
+                      }
+                    })
+            .forEach(clinicTariffs::forEach);
+        countDownLatch1.await();
+      }
+
+      List<List<ClinicTariff>> lists = Lists.partition(clinicTariffs, 500);
+      CountDownLatch latch = new CountDownLatch(lists.size());
+      lists.forEach(
+          tariffList -> {
+            try {
+              executorService.submit(() -> batchInsert(tariffList));
+            } finally {
+              latch.countDown();
+            }
+          });
+      latch.await();
+    }
   }
 }

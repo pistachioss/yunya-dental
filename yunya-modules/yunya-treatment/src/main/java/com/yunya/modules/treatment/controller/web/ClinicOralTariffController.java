@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.controller.web;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.form.ClinicOralTariffForm;
 import com.yunya.feign.treatment.domain.form.ClinicOralTariffUniteDiscountForm;
+import com.yunya.feign.treatment.domain.model.ClinicTariffSwitchModel;
 import com.yunya.feign.treatment.domain.query.ClinicOralTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -13,7 +14,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -125,6 +131,22 @@ public class ClinicOralTariffController {
       HttpServletResponse response, @RequestBody @Validated ClinicOralTariffQueryForm queryForm)
       throws IOException {
     clinicOralTariffBiz.exportClinicOralTariffList(response, queryForm);
+    return ResponseUtil.success(null);
+  }
+
+
+  /**
+   * 一键启用（禁用）门诊商品表
+   *
+   * @param model 商品表禁用参数
+   * @return ResponseResult
+   */
+  @CurrentUser
+  @ApiOperation("根据分类一键启用（禁用）门诊商品表")
+  @PostMapping(value = "/category/switch", name = "一键启用（禁用）门诊商品表")
+  public ResponseResult<T> switchClinicTariff(
+          @RequestBody @Validated ClinicTariffSwitchModel model) throws InterruptedException {
+    clinicOralTariffBiz.switchClinicOralTariffCategory(model);
     return ResponseUtil.success(null);
   }
 }

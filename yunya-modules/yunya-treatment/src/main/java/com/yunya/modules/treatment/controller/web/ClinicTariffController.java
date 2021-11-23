@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.controller.web;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.form.ClinicTariffForm;
 import com.yunya.feign.treatment.domain.form.ClinicTariffUniteDiscountForm;
+import com.yunya.feign.treatment.domain.model.ClinicTariffSwitchModel;
 import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -15,7 +16,12 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -135,7 +141,21 @@ public class ClinicTariffController {
   @ApiModelProperty("根据条件查询门诊基础价目表（卡券设计-产品详情-适用项目）项目类型 0-价目表；1-商品表")
   @GetMapping("/category/{type}")
   public ResponseResult clinicBaseTariff(@PathVariable(value = "type") Byte type, String search) {
-
     return this.clinicTariffBiz.clinicBaseTariff(type, search);
+  }
+
+  /**
+   * 一键启用（禁用）门诊价目表
+   *
+   * @param model 价目表禁用参数
+   * @return ResponseResult
+   */
+  @CurrentUser
+  @ApiOperation("一键启用（禁用）门诊价目表")
+  @PostMapping(value = "/category/switch", name = "一键启用（禁用）门诊价目表")
+  public ResponseResult<T> switchClinicTariff(
+      @RequestBody @Validated ClinicTariffSwitchModel model) throws InterruptedException {
+    clinicTariffBiz.switchClinicTariffCategory(model);
+    return ResponseUtil.success(null);
   }
 }
