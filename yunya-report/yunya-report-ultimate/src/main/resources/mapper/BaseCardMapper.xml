@@ -706,9 +706,12 @@
         LEFT JOIN base_organization bo on cd.active_org_id = bo.org_id
         LEFT JOIN base_patient bp on cd.patient_id = bp.patient_id
         <where>
-        <if test="activeOrgId != null and activeOrgId != ''">
-            and cd.active_org_id = #{activeOrgId}
-        </if>
+            <if test="activeOrgIds != null and activeOrgIds.size > 0">
+                and cd.active_org_id in
+                <foreach collection="activeOrgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         <if test="couponIds != null and couponIds.size() > 0">
             and cd.coupon_id in
             <foreach collection="couponIds" item="couponId" open="(" separator="," close=")">
@@ -749,5 +752,41 @@
         <if test="noticeType == 2">
             where date_format(date_add(bc.activation_deadline, interval 1 day), '%Y-%m-%d') = date_format(now(), '%Y-%m-%d')
         </if>
+    </select>
+    <select id="getCouponUse" resultType="com.yunya.feign.report.domain.vo.CouponUseVo">
+          SELECT
+	bo.abbreviation AS orgName,
+	bc.coupon_name AS couponName,
+	bp.name as patName,
+	bbi.bill_num AS billNum,
+    DATE_FORMAT(bbi.bill_date,'%Y-%m-%d')  AS billDate,
+	bbi.order_amount AS orderAmount,
+	bbi.actual_amount as actualAmount
+    FROM
+	base_benefit bb
+    LEFT JOIN base_bill bbi ON bb.order_id = bbi.bill_id
+    LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+    LEFT JOIN base_coupon bc ON bb.coupon_id = bc.coupon_id
+    LEFT JOIN base_organization bo ON bb.org_id = bo.org_id
+    <where>
+        bb.choice_benefit_type = 0 and bb.benefit_type = 1
+        <if test="startDate != null and endDate != null">
+            and (DATE_FORMAT(bbi.bill_date,'%Y-%m-%d') between DATE_FORMAT(#{startDate},'%Y-%m-%d') and
+            DATE_FORMAT(#{endDate},'%Y-%m-%d'))
+        </if>
+        <if test="couponIds != null and couponIds.size() > 0">
+            and bb.coupon_id in
+            <foreach collection="couponIds" item="couponId" open="(" separator="," close=")">
+                #{couponId}
+            </foreach>
+        </if>
+        <if test="orgIds != null and orgIds.size() > 0">
+            and bb.org_id in
+            <foreach collection="orgIds" item="orgId" open="(" separator="," close=")">
+                #{orgId}
+            </foreach>
+        </if>
+    </where>
+    order by bbi.bill_date desc
     </select>
 </mapper>

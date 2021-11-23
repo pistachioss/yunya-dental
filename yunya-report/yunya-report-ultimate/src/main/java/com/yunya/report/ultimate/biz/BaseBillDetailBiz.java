@@ -1154,6 +1154,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<CouponExecutoredVO> list = mapper.couponExecutoredList(query);
+    for(CouponExecutoredVO vo:list){
+        vo.setOrgIds(query.getOrgIds());
+    }
     return new PageInfo<>(list);
   }
 

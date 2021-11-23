@@ -1795,8 +1795,11 @@
         bbd.executor_id > 0
         ) btp
         <where>
-            <if test="query.orgId != null">
-                AND btp.org_id = #{query.orgId}
+            <if test="query.orgIds != null and query.orgIds.size > 0">
+                and btp.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
@@ -3255,7 +3258,7 @@
                 </foreach>
             </if>
         </where>
-        order by bb.org_id,bb.executor_id,bb.coupon_id
+        order by bb.executor_id,bb.coupon_id
     </select>
 
     <select id="couponExecutoredDetails" resultType="com.yunya.feign.report.domain.vo.CouponExecutoredDetailVO">
