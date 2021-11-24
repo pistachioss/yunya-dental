@@ -24,6 +24,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -1029,7 +1030,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     Collection<Integer[]> items = query.getCategoryItems();
-    if (StringHelper.isNotEmpty(items)) {
+    if (!CollectionUtils.isEmpty(items)) {
       Set<Integer> categoryIds = new HashSet<>();
       Set<Integer> itemIds = new HashSet<>();
       items.forEach(
