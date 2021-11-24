@@ -1039,6 +1039,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           });
       query.setCategoryIds(categoryIds);
       query.setItemIds(itemIds);
+    } else {
+      throw new ClientServiceException("请至少选择一个项目", PARAMETERS_IS_ILLEGAL);
     }
     List<BillItemStatisticsVO> resultList = mapper.billItemStatistics(query);
     return new PageInfo<>(resultList);
