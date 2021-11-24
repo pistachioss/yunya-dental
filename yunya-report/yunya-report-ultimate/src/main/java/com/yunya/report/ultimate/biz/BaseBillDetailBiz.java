@@ -1054,13 +1054,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       throws IOException {
     query.setWhetherPage(false);
     PageInfo<BillItemStatisticsVO> pageInfo = billItemStatistics(query);
-    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     List<BillItemStatisticsVO> resultList = pageInfo.getList();
     ExcelUtil<BillItemStatisticsVO> excelUtil = new ExcelUtil<>(BillItemStatisticsVO.class);
     String fileName =
-        excelUtil.getFileName(
-            organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), "开单项目数量统计表");
-    excelUtil.exportExcel(response, resultList, "开单项目数量统计表", fileName);
+        excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "-", "开单项目数量金额统计表");
+    excelUtil.exportExcel(response, resultList, "开单项目数量金额统计表", fileName);
   }
 
   /**
@@ -1154,8 +1152,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<CouponExecutoredVO> list = mapper.couponExecutoredList(query);
-    for(CouponExecutoredVO vo:list){
-        vo.setOrgIds(query.getOrgIds());
+    for (CouponExecutoredVO vo : list) {
+      vo.setOrgIds(query.getOrgIds());
     }
     return new PageInfo<>(list);
   }
@@ -1291,10 +1289,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   private Map<Integer, BigDecimal> workloadMonthGoal() {
     String date = DateUtil.parseDateToStr("yyyy-MM", new Date());
-    return workloadMonthGoal((byte) 1, date, date);// 按月查
+    return workloadMonthGoal((byte) 1, date, date); // 按月查
   }
 
-  private Map<Integer, BigDecimal> workloadMonthGoal(Byte dateType, String startDate, String endDate) {
+  private Map<Integer, BigDecimal> workloadMonthGoal(
+      Byte dateType, String startDate, String endDate) {
     BusinessGoalCompletedInfoQuery query = new BusinessGoalCompletedInfoQuery();
     query.setBusinessTypes(new Byte[] {1}); // 工作量
     query.setDateType(dateType);
@@ -1369,7 +1368,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       ClinicPerformanceBusinessQuery queryForm) {
     correctQueryDate(queryForm);
     // 门诊的目标工作量
-    Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal(queryForm.getDateType(), queryForm.getStartDate(), queryForm.getEndDate());
+    Map<Integer, BigDecimal> workloadGoalMap =
+        workloadMonthGoal(
+            queryForm.getDateType(), queryForm.getStartDate(), queryForm.getEndDate());
     List<BaseOrganization> orgs = getOrganization(queryForm);
     Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
     String startDate = queryForm.getStartDate();
@@ -1394,7 +1395,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     String preSDate = DateUtil.preDate(startDate, range);
     String preEDate = DateUtil.preDate(endDate, range);
     if (DateUtil.compareDate(minDate, preSDate) < 0) {
-        minDate = preSDate;
+      minDate = preSDate;
     }
     List<String> preDateList = DateUtil.sliceUpDateRange(preSDate, preEDate);
 
@@ -1498,26 +1499,26 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       }
     } catch (Exception e) {
       e.printStackTrace();
-      throw new ClientServiceException("查询日期参数格式错误",PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("查询日期参数格式错误", PARAMETERS_IS_ILLEGAL);
     }
   }
 
-    /**
-     * 检查日期是否跨年
-     *
-     * @param startDate
-     * @param endDate
-     * @return
-     */
-    private String checkCrossYear(String startDate, String endDate) {
-        String year = startDate.substring(0, 4); // 年份
-        if (!year.equals(endDate.substring(0, 4))) {
-            throw new ClientServiceException("查询日期不能跨年！", PARAMETERS_IS_ILLEGAL);
-        }
-        return year;
+  /**
+   * 检查日期是否跨年
+   *
+   * @param startDate
+   * @param endDate
+   * @return
+   */
+  private String checkCrossYear(String startDate, String endDate) {
+    String year = startDate.substring(0, 4); // 年份
+    if (!year.equals(endDate.substring(0, 4))) {
+      throw new ClientServiceException("查询日期不能跨年！", PARAMETERS_IS_ILLEGAL);
     }
+    return year;
+  }
 
-    private BigDecimal computeOrgWorkload(
+  private BigDecimal computeOrgWorkload(
       Integer orgId,
       List<String> chainMonthList,
       Map<String, Map<Integer, BigDecimal>> workloadMap) {
