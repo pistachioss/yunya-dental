@@ -1393,7 +1393,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     // 环比：查询条件的开始月份 + 查询月份范围的跨度值
     int range = 1; // 默认差值：1
     if (!startDate.equals(endDate)) {
-      range += DateUtil.dateFieldDiff(startDate, endDate);
+      range += DateUtil.dateFieldDiff(endDate, startDate);
     }
     String preSDate = DateUtil.preDate(startDate, range);
     String preEDate = DateUtil.preDate(endDate, range);
