@@ -1558,9 +1558,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   private JSONObject init(String sMonth, String eMonth, String value) {
     JSONObject object = new JSONObject();
-    String month = sMonth.replaceAll("-", ".");
+    String month = sMonth.replaceAll("-", "/");
     if (!sMonth.equals(eMonth)) {
-      month = month + "-" + eMonth.replaceAll("-", ".");
+      month = month + "-" + eMonth.replaceAll("-", "/");
     }
     object.put("date", month);
     object.put("name", value);
