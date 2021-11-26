@@ -1390,16 +1390,24 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     String minDate = chainSDate;
     List<String> chainDateList = DateUtil.sliceUpDateRange(chainSDate, chainEDate);
 
+    String preSDate;
+    String preEDate;
     // 环比：查询条件的开始月份 + 查询月份范围的跨度值
     int range = 1; // 默认差值：1
     if (!startDate.equals(endDate) && queryForm.getDateType().intValue() != 0) {
       range += DateUtil.dateFieldDiff(endDate, startDate);
+      preSDate = DateUtil.preDate(startDate, range);
+      preEDate = DateUtil.preDate(endDate, range);
+    } else if (startDate.equals(endDate)) {
+      preSDate = DateUtil.preDate(startDate, range);
+      preEDate = DateUtil.preDate(endDate, range);
     } else {
       range =
-         - (int) DateUtil.until(new DateTime(startDate).toDate(), new DateTime(endDate).toDate())-1;
+          -(int) DateUtil.until(new DateTime(startDate).toDate(), new DateTime(endDate).toDate())
+              - 1;
+      preSDate = DateUtil.preDate(startDate, range);
+      preEDate = DateUtil.preDate(endDate, range);
     }
-    String preSDate = DateUtil.preDate(startDate, range);
-    String preEDate = DateUtil.preDate(endDate, range);
     if (DateUtil.compareDate(minDate, preSDate) < 0) {
       minDate = preSDate;
     }
