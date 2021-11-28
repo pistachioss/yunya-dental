@@ -40,6 +40,11 @@ public class OrderDetail {
      */
     @Column(name = "billing_item_id")
     private Integer billingItemId;
+    /**
+     * 开单项目ID
+     */
+    @Column(name = "billing_item_name")
+    private String billingItemName;
 
     /**
      * 门诊价目表单价
@@ -479,5 +484,14 @@ public class OrderDetail {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+
+    public String getBillingItemName() {
+        return billingItemName;
+    }
+
+    public void setBillingItemName(String billingItemName) {
+        this.billingItemName = billingItemName;
     }
 }

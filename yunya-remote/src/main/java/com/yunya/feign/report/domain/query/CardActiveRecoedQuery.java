@@ -24,9 +24,9 @@ import java.util.List;
 @ApiModel(value = "产品激活记录参数模型")
 public class CardActiveRecoedQuery extends PageQuery {
 
-    @ApiModelProperty("激活门诊ID")
+    @ApiModelProperty("激活门诊ID集合")
     @NotNull(message = "请选择激活门诊")
-    private Integer activeOrgId;
+    private List<Integer> activeOrgIds;
     @ApiModelProperty(value = "激活日期开始时间")
     @NotNull(message = "请选择激活日期范围")
     private LocalDate rechargeStartDate;

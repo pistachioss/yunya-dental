@@ -66,6 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -196,7 +197,10 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                   tariff = baseTariffBiz.selectById(billingItemId);
                   redisUtils.set(itemKey, tariff);
                 }
+                //新数据不查询实时名称 老数据用当前价目表的名字 需求修改
+                if(StringUtils.isEmpty(vo.getBillingItemName())){
                 vo.setBillingItemName(tariff.getName());
+                }
                 vo.setUnit(tariff.getUnit());
                 break;
               case 1:
@@ -205,7 +209,9 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                   oralTariff = baseOralTariffBiz.selectById(billingItemId);
                   redisUtils.set(itemKey, oralTariff);
                 }
-                vo.setBillingItemName(oralTariff.getName());
+                if(StringUtils.isEmpty(vo.getBillingItemName())){
+                  vo.setBillingItemName(oralTariff.getName());
+                }
                 vo.setUnit(oralTariff.getUnit());
                 break;
               default:
@@ -478,7 +484,10 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           tariff = baseTariffBiz.selectById(billingItemId);
           redisUtils.set(itemKey, tariff);
         }
-        vo.setBillingItemName(tariff.getName());
+        //新数据不查询实时名称 老数据用当前价目表的名字 需求修改
+        if(StringUtils.isEmpty(vo.getBillingItemName())){
+          vo.setBillingItemName(tariff.getName());
+        }
         vo.setBillingItemEnglishName(tariff.getEnglishName());
         vo.setUnit(tariff.getUnit());
         break;
@@ -488,7 +497,9 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           oralTariff = baseOralTariffBiz.selectById(billingItemId);
           redisUtils.set(itemKey, oralTariff);
         }
-        vo.setBillingItemName(oralTariff.getName());
+        if(StringUtils.isEmpty(vo.getBillingItemName())){
+          vo.setBillingItemName(oralTariff.getName());
+        }
         vo.setBillingItemEnglishName(oralTariff.getEnglishName());
         vo.setUnit(oralTariff.getUnit());
         break;
@@ -590,6 +601,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         entity.setType(type);
         Integer itemId = detail.getBillingItemId();
         entity.setBillingItemId(itemId);
+        //记录当时的开单项目名称 需求修改
+        entity.setBillingItemName(detail.getBillingItemName());
         String itemKey = type + REDIS_KEY_ITEM_INFO + itemId;
         // 从缓存查询开单项目
         switch (type) {

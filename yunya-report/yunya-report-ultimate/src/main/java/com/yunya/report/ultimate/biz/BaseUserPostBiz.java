@@ -2,6 +2,8 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
+import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.EmployeeDiagnosisQuery;
 import com.yunya.feign.report.domain.query.EmployeeMatchingRecordQuery;
 import com.yunya.feign.report.domain.vo.EmployeeDiagnosisInfoVO;
@@ -21,6 +23,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -98,6 +101,9 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
               });
         }
       }
+    }
+    for(AssistantMatchingStatisticsVO vo:resultList){
+      vo.setOrgIds(query.getOrgIds());
     }
     return new PageInfo<>(resultList);
   }
@@ -178,11 +184,19 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
     ExcelUtil<AssistantMatchingStatisticsVO> excelUtil =
         new ExcelUtil<>(AssistantMatchingStatisticsVO.class);
     String fileName = query.getStartDate() + query.getEndDate() + "助手配诊统计";
-    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
-    if (null != organization) {
-      String abbreviation = organization.getAbbreviation();
-      fileName = abbreviation + fileName;
-      list.forEach(vo -> vo.setOrgName(abbreviation));
+
+    ClinicPerformanceBusinessQuery dataStatisticsQuery = new ClinicPerformanceBusinessQuery();
+    dataStatisticsQuery.setOrgIds(query.getOrgIds());
+    List<BaseOrganization>orgList = organizationMapper.selectOrganizationList(dataStatisticsQuery);
+//    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    if (orgList.size()>0) {
+      for(AssistantMatchingStatisticsVO vo:list){
+        BaseOrganization organization = orgList.stream().filter(item -> item.getOrgId().equals(vo.getOrgId())).findFirst().get();
+        String abbreviation = organization.getAbbreviation();
+        fileName = abbreviation + fileName;
+        vo.setOrgName(fileName);
+      }
+//      list.forEach(vo -> vo.setOrgName(abbreviation));
     }
     excelUtil.exportExcel(response, list, "员工配诊记录列表", fileName);
   }

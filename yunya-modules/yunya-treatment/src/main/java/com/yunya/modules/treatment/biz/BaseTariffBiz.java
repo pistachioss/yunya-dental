@@ -2,7 +2,6 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.github.pagehelper.PageSerializable;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
@@ -1482,6 +1481,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
           tariff.setCrtName(name);
           tariff.setUpdId(userId);
           tariff.setUpdName(name);
+          tariff.setInservice(true);
           clinicTariffs.add(tariff);
         }
       }

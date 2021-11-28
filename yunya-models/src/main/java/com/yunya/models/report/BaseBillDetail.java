@@ -49,7 +49,11 @@ public class BaseBillDetail {
      */
     @Column(name = "item_id")
     private Integer itemId;
-
+    /**
+     * 项目名称
+     */
+    @Column(name = "item_name")
+    private Integer itemName;
     /**
      * 项目类型（0-价目表；1-商品）
      */
@@ -305,5 +309,13 @@ public class BaseBillDetail {
 
     public void setRemark(String remark) {
         this.remark = remark;
+    }
+
+    public Integer getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(Integer itemName) {
+        this.itemName = itemName;
     }
 }

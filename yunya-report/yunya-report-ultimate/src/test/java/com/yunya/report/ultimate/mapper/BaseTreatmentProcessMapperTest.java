@@ -28,7 +28,7 @@ public class BaseTreatmentProcessMapperTest {
   @Test
   public void findMatchingDetailList() {
     AssistantMatchingDetailQuery query = new AssistantMatchingDetailQuery();
-    query.setOrgId(35);
+    //query.setOrgId(35);
     query.setDateType((byte) 1);
     query.setStartDate("2020-10-01");
     query.setEndDate("2020-11-30");

@@ -303,7 +303,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
    * @param query
    * @return
    */
-  public List<BillOfRefundWorkloadVO> selectTotalRefundWorkloadGroupByMonth(
+  public List<BillOfRefundWorkloadVO> findTotalRefundWorkloadGroupByMonth(
       DataStatisticsQuery query) {
     return mapper.selectTotalRefundWorkloadGroupByMonth(query);
   }

@@ -34,6 +34,9 @@ public class OrderDetailModel implements Serializable {
   @Min(message = "输入的开单项目ID必须为非零正整数",value = 1)
   private Integer billingItemId;
 
+  @ApiModelProperty(value = "开单项目名称")
+  private String billingItemName;
+
   @ApiModelProperty(value = "数量", required = true)
   @NotNull(message = "开单项目数量不能为空！")
   @Min(value = 1, message = "开单项目数量不能小于1！")

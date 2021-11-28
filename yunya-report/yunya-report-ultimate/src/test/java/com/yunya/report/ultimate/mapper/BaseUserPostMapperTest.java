@@ -31,7 +31,7 @@ public class BaseUserPostMapperTest {
     EmployeeMatchingRecordQuery query = new EmployeeMatchingRecordQuery();
     query.setStartDate("2020-10-01");
     query.setEndDate("2020-11-30");
-    query.setOrgId(35);
+    //query.setOrgIds(35);
     query.setAssistantIds(new Integer[] {573});
     List<AssistantMatchingStatisticsVO> vos =
         baseUserPostMapper.selectAssistantMatchingStatisticsByAssistant(query);

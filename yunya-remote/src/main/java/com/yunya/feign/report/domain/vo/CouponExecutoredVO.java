@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 简介：产品使用VO
@@ -21,6 +23,8 @@ import java.io.Serializable;
 @ToString
 public class CouponExecutoredVO implements Serializable {
 
+    @ApiModelProperty("门诊ID集合")
+    private Collection<Integer> orgIds;
     /** 门诊ID*/
     @ApiModelProperty("门诊ID")
     private Integer orgId;

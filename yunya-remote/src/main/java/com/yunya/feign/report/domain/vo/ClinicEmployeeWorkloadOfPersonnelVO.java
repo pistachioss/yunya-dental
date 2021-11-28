@@ -32,11 +32,11 @@ public class ClinicEmployeeWorkloadOfPersonnelVO extends ClinicEmployeeWorkloadO
   private BigDecimal bonusCoefficient;
   /** 应收奖金基数（元） */
   @Excel(name = "应收奖金基数（元）", cellType = NUMERIC, type = EXPORT, isStatistics = true)
-  @ApiModelProperty("应收奖金基数（元）= 应收工作量+补入工作量-退费工作量-加工费-大额材料费-基本工作量")
+  @ApiModelProperty("应收奖金基数（元）= 应收工作量+补入工作量-退费工作量-加工费-大额材料费-基本工作量-免单支付工作量")
   private BigDecimal actualBonusBase;
   /** 实收奖金基数（元） */
   @Excel(name = "实收奖金基数（元）", cellType = NUMERIC, type = EXPORT, isStatistics = true)
-  @ApiModelProperty("实收奖金基数（元）= 实收工作量+补入工作量-退费工作量-加工费-大额材料费-基本工作量")
+  @ApiModelProperty("实收奖金基数（元）= 实收工作量+补入工作量-退费工作量-加工费-大额材料费-基本工作量-免单支付工作量")
   private BigDecimal receivedBonusBase;
   /** 应收奖金（元） */
   @Excel(name = "应收奖金（元）", cellType = NUMERIC, type = EXPORT, isStatistics = true)

@@ -7,8 +7,16 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -23,9 +31,10 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TR
  * @create 2019-08-11 10:26
  */
 public class DateUtil {
-  /** 最大秒*/
+  /** 最大秒 */
   public static final int MAX_SECOND = 59;
-  private final static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
+
+  private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
   /** 年 */
   public static final int YEAR = 1;
   /** 月 */
@@ -41,7 +50,8 @@ public class DateUtil {
 
   private DateUtil() {}
 
-  public static String parseObjectToStr(final String format, final Object dateObj) throws ParseException {
+  public static String parseObjectToStr(final String format, final Object dateObj)
+      throws ParseException {
     Date date = null;
     if (dateObj instanceof Date) {
       date = (Date) dateObj;
@@ -384,7 +394,7 @@ public class DateUtil {
   public static Date timeToDate(Date date, String time) throws ParseException {
     String dateStr = DateFormatUtils.format(date, "yyyy-MM-dd");
     String timeStr = time;
-    int count = StringHelper.countChild(":",time);
+    int count = StringHelper.countChild(":", time);
     if (count == 1) {
       timeStr = time + ":00";
     } else if (count == 0) {
@@ -596,7 +606,6 @@ public class DateUtil {
     return rs;
   }
 
-
   /**
    * 上一年
    *
@@ -615,59 +624,103 @@ public class DateUtil {
     return sdf.format(c.getTime());
   }
 
-  public static String preMonth(String month, int range) {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+  /**
+   * 环比日期，即上一个日期（年、月、日）
+   *
+   * @param date 日期
+   * @param diff 差值
+   * @return
+   */
+  public static String preDate(String date, int diff) {
+    String[] dates = date.split("-");
+    if (dates.length == 2) { // 月
+      return preDate(date, diff, "yyyy-MM", Calendar.MONTH);
+    } else if (dates.length == 1) { // 年
+      return preDate(date, diff, "yyyy", Calendar.YEAR);
+    }
+    return preDate(date, -diff, "yyyy-MM-dd", Calendar.DATE);
+  }
+
+  /**
+   * 环比日期，即上一个日期（年、月、日）
+   *
+   * @param date 日期
+   * @param diff 差值
+   * @param format 年月日的格式
+   * @param dateField 年月日的增加字段
+   * @return
+   */
+  public static String preDate(String date, int diff, String format, int dateField) {
+    SimpleDateFormat sdf = new SimpleDateFormat(format);
     Calendar c = Calendar.getInstance();
     try {
-      c.setTime(sdf.parse(month));
+      c.setTime(sdf.parse(date));
     } catch (ParseException e) {
       e.printStackTrace();
     }
-    c.add(Calendar.MONTH, -range);
+    c.add(dateField, -diff);
     return sdf.format(c.getTime());
   }
 
-  public static int compareDate(String firstDate, String secondDate) {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-    Date d1 = null;
-    Date d2 = null;
-    try {
-      d1 = sdf.parse(firstDate);
-      d2 = sdf.parse(secondDate);
-    } catch (ParseException e) {
-      e.printStackTrace();
+  /**
+   * 日期字段差值：
+   *
+   * @param startDate
+   * @param endDate
+   * @return
+   */
+  public static int dateFieldDiff(String startDate, String endDate) {
+    String[] sDates = startDate.split("-");
+    String[] eDates = endDate.split("-");
+    if (sDates.length == 2) { // 月
+      return Integer.parseInt(sDates[1]) - Integer.parseInt(eDates[1]);
+    } else if (sDates.length == 1) { // 年
+      return Integer.parseInt(sDates[1]) - Integer.parseInt(eDates[1]);
     }
-    return d1.compareTo(d2);
+    return compareDate(startDate, endDate) - 1; // 日
   }
 
-  public static int compareMonth(String firstMonth, String secondMonth) {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+  public static int compareDate(String firstDate, String secondDate) {
+    int count = StringHelper.countChild("-", firstDate);
+    String pattern = "yyyy-MM-dd";
+    if (count == 1) { // 月
+      pattern = "yyyy-MM";
+    } else if (count == 0) {
+      pattern = "yyyy";
+    }
+    return compareDate(firstDate, secondDate, pattern);
+  }
+
+  public static int compareDate(String firstMonth, String secondMonth, String pattern) {
+    SimpleDateFormat sdf = new SimpleDateFormat(pattern);
     Date d1 = null;
     Date d2 = null;
     try {
       d1 = sdf.parse(firstMonth);
       d2 = sdf.parse(secondMonth);
+      return daysBetween(d1, d2);
     } catch (ParseException e) {
       e.printStackTrace();
     }
-    return d1.compareTo(d2);
+    return 0;
   }
 
   /**
    * 时间加法计算
-   * @param time   时间 HH:mm:ss 或 HH:mm
-   * @param expr  加数
+   *
+   * @param time 时间 HH:mm:ss 或 HH:mm
+   * @param expr 加数
    * @param unit 单位
    * @return 返回结果
    */
-  public static String timeAdd(String time,int expr,int unit) {
+  public static String timeAdd(String time, int expr, int unit) {
     checkTimeFormat(time);
     LocalTime localTime = LocalTime.parse(time, DateTimeFormatter.ISO_LOCAL_TIME);
     if (unit == DateUtil.HOURS) {
       return localTime.plusHours(expr).format(DateTimeFormatter.ofPattern("HH:mm"));
     } else if (unit == DateUtil.MINUTE) {
       return localTime.plusMinutes(expr).format(DateTimeFormatter.ofPattern("HH:mm"));
-    } else if (unit == DateUtil.SECONDS){
+    } else if (unit == DateUtil.SECONDS) {
       return localTime.plusSeconds(expr).format(DateTimeFormatter.ofPattern("HH:mm"));
     }
     return "";
@@ -675,11 +728,12 @@ public class DateUtil {
 
   /**
    * 比较时间
+   *
    * @param time1
    * @param time2
    * @return the comparator value, negative if less, positive if greater
    */
-  public static int compareTime(String time1,String time2) {
+  public static int compareTime(String time1, String time2) {
     checkTimeFormat(time1);
     checkTimeFormat(time2);
     LocalTime localTime1 = LocalTime.parse(time1, DateTimeFormatter.ISO_LOCAL_TIME);
@@ -689,6 +743,7 @@ public class DateUtil {
 
   /**
    * 校验时间格式
+   *
    * @param time 时间
    */
   private static void checkTimeFormat(String time) {
@@ -701,16 +756,102 @@ public class DateUtil {
         if (i == 0) {
           Integer hours = Integer.valueOf(times[0]);
           if (hours < 0 || hours >= 24) {
-            throw new ClientServiceException("时间格式不正确" + time, CommonConstants.ILLEGAL_PARAMETERS_CODE);
+            throw new ClientServiceException(
+                "时间格式不正确" + time, CommonConstants.ILLEGAL_PARAMETERS_CODE);
           }
         } else {
           if (Integer.parseInt(times[1]) < 0 || Integer.parseInt(times[1]) > 59) {
-            throw new ClientServiceException("时间格式不正确" + time, CommonConstants.ILLEGAL_PARAMETERS_CODE);
+            throw new ClientServiceException(
+                "时间格式不正确" + time, CommonConstants.ILLEGAL_PARAMETERS_CODE);
           }
         }
       }
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  /**
+   * 同比日期 即去年时的这个日期（日、月、年）
+   *
+   * @param dateStr
+   * @return
+   */
+  public static String chainDate(String dateStr) {
+    String[] dates = dateStr.split("-");
+    String pattern = "yyyy-MM-dd";
+    if (dates.length == 2) {
+      pattern = "yyyy-MM";
+    } else if (dates.length == 1) {
+      pattern = "yyyy";
+    }
+    Date date = null;
+    try {
+      date = parse(dateStr, pattern);
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    Calendar c = Calendar.getInstance();
+    c.setTime(date);
+    c.add(Calendar.YEAR, -1);
+    return format(c.getTime(), pattern);
+  }
+
+  public static String yearStart(String dateStr) {
+    String[] dates = dateStr.split("-");
+    if (dates.length == 2) { // 月
+      return dates[0] + "-01";
+    } else if (dates.length == 1) { // 年
+      return dates[0];
+    }
+    return dates[0] + "-01-01";
+  }
+
+  public static String yearEnd(String dateStr) {
+    String[] dates = dateStr.split("-");
+    if (dates.length == 2) { // 月
+      return dates[0] + "-12";
+    } else if (dates.length == 1) { // 年
+      return dates[0];
+    }
+    return dates[0] + "-12-31";
+  }
+
+  // -计算日期 start------------------------------------------
+
+  /**
+   * 计算结束时间与当前时间间隔的天数
+   *
+   * @param endDate 结束日期
+   * @return 计算结束时间与当前时间间隔的天数
+   */
+  public static long until(Date endDate) {
+    return LocalDateTime.now().until(dateToLocalDateTime(endDate), ChronoUnit.DAYS);
+  }
+
+  /**
+   * 计算结束时间与开始时间间隔的天数
+   *
+   * @param startDate 开始日期
+   * @param endDate 结束日期
+   * @return 计算结束时间与开始时间间隔的天数
+   */
+  public static long until(Date startDate, Date endDate) {
+    return dateToLocalDateTime(startDate).until(dateToLocalDateTime(endDate), ChronoUnit.DAYS);
+  }
+
+  /**
+   * 计算结束时间与开始时间间隔的天数
+   *
+   * @param startDate 开始日期
+   * @param endDate 结束日期
+   * @return 计算结束时间与开始时间间隔的天数
+   */
+  public static long until(LocalDateTime startDate, LocalDateTime endDate) {
+    return startDate.until(endDate, ChronoUnit.DAYS);
+  }
+
+  public static long until(LocalDate startDate, LocalDate endDate) {
+    return startDate.until(endDate, ChronoUnit.DAYS);
   }
 }

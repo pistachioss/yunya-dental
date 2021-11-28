@@ -141,8 +141,8 @@ public class StatementBillChargeDetailExportVO implements Serializable {
   @ApiModelProperty("AXA")
   private BigDecimal axaAmount;
   /** 风石 */
-  @Excel(name = "风石", cellType = NUMERIC, type = EXPORT, isStatistics = true)
-  @ApiModelProperty("风石")
+  @Excel(name = "中意保险", cellType = NUMERIC, type = EXPORT, isStatistics = true)
+  @ApiModelProperty("中意保险")
   private BigDecimal fengShiAmount;
   /** 本次免单支付 */
   @Excel(name = "本次免单支付", cellType = NUMERIC, type = EXPORT, isStatistics = true)

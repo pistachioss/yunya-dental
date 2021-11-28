@@ -29,7 +29,7 @@ public class BaseBillDetailMapperTest {
   @Test
   public void testActualWorkloadList() {
     AssistantActualWorkloadDetailQuery query = new AssistantActualWorkloadDetailQuery();
-    query.setOrgId(35);
+    //query.setOrgId(35);
     query.setDateType((byte) 2);
     query.setStartDate("2020");
     query.setEndDate("2020");

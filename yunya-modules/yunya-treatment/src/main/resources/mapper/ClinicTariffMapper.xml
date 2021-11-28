@@ -261,13 +261,13 @@
     <!-- 批量插入门诊价目表列表 -->
     <insert id="batchInsert">
         insert into clinic_tariff (
-        clinic_id, tariff_id, price, crt_id, crt_name, upd_id, upd_name
+        clinic_id, tariff_id, price, crt_id, crt_name, upd_id, upd_name, inservice
         )
         values
         <foreach collection="list" item="obj" separator=",">
             (
             #{obj.clinicId}, #{obj.tariffId}, #{obj.price}, #{obj.crtId},
-            #{obj.crtName}, #{obj.updId}, #{obj.updName}
+            #{obj.crtName}, #{obj.updId}, #{obj.updName}, #{obj.inservice}
             )
         </foreach>
     </insert>

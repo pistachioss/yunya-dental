@@ -494,4 +494,12 @@ public class DiscountBiz {
         }
         return list;
     }
+
+    public PageInfo<CouponUseVo> getCouponUse(CouponUseQuery query){
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<CouponUseVo> resultList = cardMapper.getCouponUse(query);
+        return new PageInfo<>(resultList);
+    }
 }

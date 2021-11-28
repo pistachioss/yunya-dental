@@ -8,6 +8,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
 import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
@@ -24,6 +25,9 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 @Data
 @ToString
 public class AssistantMatchingStatisticsVO implements Serializable {
+  /** 组织ID集合 */
+  @ApiModelProperty("门诊Id集合")
+  private List<Integer> orgIds;
   /** 组织ID */
   private Integer orgId;
   @ApiModelProperty("门诊名称")

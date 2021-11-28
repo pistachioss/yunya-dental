@@ -31,7 +31,7 @@ public class BaseRefundMapperTest {
   @Test
   public void findRefundList() {
     AssistantRefundDetailQuery query = new AssistantRefundDetailQuery();
-    query.setOrgId(35);
+    //query.setOrgId(35);
     query.setDateType((byte) 0);
     query.setStartDate("2020-10-01");
     query.setEndDate("2020-11-30");

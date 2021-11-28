@@ -315,4 +315,16 @@ public class DiscountController {
 		return ResponseUtil.success(list);
 	}
 
+	@ApiOperation(value = "公司端-报表统计-市场报表-产品使用报表")
+	@PostMapping("/coupon/use/page")
+	public ResponseResult<PageInfo<CouponUseVo>> getCouponUse(@RequestBody CouponUseQuery query) {
+		return ResponseUtil.success(discountBiz.getCouponUse(query));
+	}
+	@ApiOperation(value = "公司端-产品使用报表-导出")
+	@PostMapping("/coupon/use/page/export")
+	public void getCouponUseExport(HttpServletResponse response,@Valid @RequestBody CouponUseQuery query) throws IOException {
+		discountBiz.buildResponse(response, "产品使用记录");
+		EasyExcel.write(response.getOutputStream(), CouponUseVo.class)
+				.sheet("sheet").doWrite(discountBiz.getCouponUse(query).getList());
+	}
 }
