@@ -1104,6 +1104,9 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       discountCoupons.forEach(vo->{
         String categoryKey = categoryMap.get(vo.getItemType()+","+vo.getItemId());
         CategoryInfoIncomeVO income = resultMap.get(categoryKey + "." + vo.getOrgId());
+        if (ObjectUtils.isEmpty(income)) {
+          income = new CategoryInfoIncomeVO();
+        }
         BigDecimal totalDiscountAmount = income.getTotalDiscountAmount().add(vo.getDiscountAmount());
         income.setTotalDiscountAmount(totalDiscountAmount);
         BigDecimal couponAmount = income.getTotalCouponAmount().add(vo.getSupplyWorkload());
