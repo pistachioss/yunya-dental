@@ -392,7 +392,7 @@
         count(btp.patient_id) AS appointCount
         FROM base_treatment_process btp
         WHERE
-        DATE_FORMAT(btp.appoint_start_time, '%Y-%m-%d') > current_date
+        DATE_FORMAT(btp.appoint_start_time, '%Y-%m-%d') &gt;= current_date
         GROUP BY patient_id
         ) btp1 ON bp.patient_id = btp1.patient_id
         LEFT JOIN (
@@ -400,7 +400,7 @@
         count(bvr.patient_id) AS visitCount
         FROM base_visit_remind bvr
         WHERE bvr.type = 1
-        AND DATE_FORMAT(bvr.visiting_remind_time, '%Y-%m-%d') > current_date
+        AND DATE_FORMAT(bvr.visiting_remind_time, '%Y-%m-%d') &gt;= current_date
         GROUP BY patient_id
         ) bvr ON bp.patient_id = bvr.patient_id
         <where>
