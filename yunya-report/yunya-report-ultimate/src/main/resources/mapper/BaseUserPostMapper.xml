@@ -21,6 +21,7 @@
             resultType="com.yunya.feign.treatment.domain.vo.AssistantMatchingStatisticsVO">
         SELECT
         e.org_id as orgId,
+        e.abbreviation as orgName,
         e.user_id as assistantId,
         e.employee_name as assistantName,
         SUM(
@@ -39,10 +40,12 @@
         SELECT
         bup.user_id,
         bup.org_id,
+        bo.abbreviation,
         be.employee_name
         FROM
         base_user_post bup
         LEFT JOIN base_employee be ON bup.user_id = be.user_id
+        LEFT JOIN base_organization on  bup.org_id = bo.org_id
         <where>
             bup.group_id = 4
             <if test="query.workStatus!=null and query.workStatus.size()>0">
@@ -150,7 +153,7 @@
             </if>
         </where>
         GROUP BY
-        e.user_id
+        e.user_id,e.org_id
         ORDER BY treatMatchingTimeAsAssistant1 DESC
     </select>
 
