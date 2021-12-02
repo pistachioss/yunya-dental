@@ -45,7 +45,7 @@
         FROM
         base_user_post bup
         LEFT JOIN base_employee be ON bup.user_id = be.user_id
-        LEFT JOIN base_organization on  bup.org_id = bo.org_id
+        LEFT JOIN base_organization bo on  bup.org_id = bo.org_id
         <where>
             bup.group_id = 4
             <if test="query.workStatus!=null and query.workStatus.size()>0">
