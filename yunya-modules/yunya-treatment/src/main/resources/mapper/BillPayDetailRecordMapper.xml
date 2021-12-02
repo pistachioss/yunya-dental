@@ -161,8 +161,11 @@
         <where>
             date_format(bpdr.crt_time, '%Y-%m') = #{query.queryDate}
             AND bpdr.account_item_id in (23, 26)
+            <if test="inservice != null">
+                and bpdr.inservice = #{inservice}
+            </if>
             <if test="payIds!=null and payIds.size()>0">
-                AND bpdr.bill_pay_record_id not in
+                AND bpdr.bill_pay_record_id in
                 <foreach collection="payIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
