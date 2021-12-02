@@ -124,7 +124,7 @@
             select behdr.associate_record_id
             from bill_exception_handle_record behr
             left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
-            where operate_type = 1 and date_format(behr.crt_time, '%Y-%m') = #{query.queryDate}
+            where operate_type = 1 and date_format(behr.crt_time, '%Y-%m') > #{query.queryDate}
         )
         and date_format(bpr.crt_time, '%Y-%m') = #{query.queryDate}
         and date_format(br.crt_time, '%Y-%m') = #{query.queryDate}
@@ -149,7 +149,7 @@
             select behr.handled_record_id
             from bill_exception_handle_record behr
             left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
-            where behr.operate_type = 0 and date_format(behr.crt_time, '%Y-%m') = #{query.queryDate}
+            where behr.operate_type = 0 and date_format(behr.crt_time, '%Y-%m') > #{query.queryDate}
             group by behr.handled_record_id
         )
         and date_format(bpr.crt_time, '%Y-%m') = #{query.queryDate}
