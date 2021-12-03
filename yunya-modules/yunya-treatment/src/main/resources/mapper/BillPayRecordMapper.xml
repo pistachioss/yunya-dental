@@ -114,7 +114,7 @@
         GROUP BY bpr.bill_record_id
     </select>
 
-    <!--撤销收费记录ID-->
+    <!--当月撤销收费记录ID-->
     <select id="selectRevokePayIds" resultType="java.lang.Integer">
         select bpr.id
         from bill_pay_record bpr
@@ -139,7 +139,7 @@
         </if>
     </select>
 
-    <!--调整收费方式-->
+    <!--当月调整收费方式-->
     <select id="selectAdjustPayIds" resultType="java.lang.Integer">
         select bpr.id
         from bill_pay_record bpr

@@ -785,7 +785,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       // 撤销或调整免单合计
       BigDecimal subtractFreePayAmount =
           billPayDetailRecordBiz.selectDeductionFreePayAmount(payIds);
-      freePayAmount = freePayAmount.subtract(subtractFreePayAmount);
+      freePayAmount = freePayAmount.add(subtractFreePayAmount);
     }
     receivedAmount = receivedAmount.subtract(revokeReceivedAmount);
     result.setCurrentMonth(query.getQueryDate());

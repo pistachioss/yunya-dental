@@ -1210,7 +1210,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           List<OrderDetailInfoVO> freePaymentTotal =
               billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, null, true);
           List<OrderDetailInfoVO> freePaymentTotal1 =
-              billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, payIds, null);
+              billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, payIds, false);
           freePaymentTotal.addAll(freePaymentTotal1);
           return shareTariffFreePayment(orderDetails, freePaymentTotal);
         });
