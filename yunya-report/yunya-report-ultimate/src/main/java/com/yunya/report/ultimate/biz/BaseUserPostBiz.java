@@ -103,7 +103,9 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
       }
     }
     for(AssistantMatchingStatisticsVO vo:resultList){
-      vo.setOrgIds(query.getOrgIds());
+      List<Integer>olist = new ArrayList<>();
+      olist.add(vo.getOrgId());
+      vo.setOrgIds(olist);
     }
     return new PageInfo<>(resultList);
   }
