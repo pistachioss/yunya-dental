@@ -994,7 +994,6 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     return mapper.selectSpecialistProjectCompletedList(specialistProjectCompletedQuery);
   }
 
-
   public void specialistProjectTargetCompletedExport(
       DataStatisticsQuery query, HttpServletResponse response) throws IOException {
     query.setWhetherPage(false);
@@ -1211,7 +1210,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           List<OrderDetailInfoVO> freePaymentTotal =
               billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, null, true);
           List<OrderDetailInfoVO> freePaymentTotal1 =
-              billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, payIds, null);
+              billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, payIds, false);
           freePaymentTotal.addAll(freePaymentTotal1);
           return shareTariffFreePayment(orderDetails, freePaymentTotal);
         });
@@ -1305,8 +1304,9 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param query
    * @return
    */
-  private Future<List<ClinicTariffOrderVO>> multiFindTariffCategoryOriginalAmount(BillCategoryIncomeQuery query) {
-    return executorService.submit(()-> mapper.selectClinicTariffCategoryOriginalAmount(query));
+  private Future<List<ClinicTariffOrderVO>> multiFindTariffCategoryOriginalAmount(
+      BillCategoryIncomeQuery query) {
+    return executorService.submit(() -> mapper.selectClinicTariffCategoryOriginalAmount(query));
   }
 
   /**
@@ -1315,11 +1315,12 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return
    */
   private Future<List<BaseTariffVO>> multiFindAllTariffList() {
-    return executorService.submit(()->{
-      BaseTariffQueryForm queryForm = new BaseTariffQueryForm();
-      queryForm.setWhetherPage(false);
-      return baseTariffBiz.findAllTariffList(queryForm).getList();
-    });
+    return executorService.submit(
+        () -> {
+          BaseTariffQueryForm queryForm = new BaseTariffQueryForm();
+          queryForm.setWhetherPage(false);
+          return baseTariffBiz.findAllTariffList(queryForm).getList();
+        });
   }
 
   /**
@@ -1329,7 +1330,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param query 查询条件
    */
   public void exportCategoryIncome(HttpServletResponse response, BillCategoryIncomeQuery query)
-          throws Exception {
+      throws Exception {
     query.setWhetherPage(false);
     List<CategoryInfoIncomeVO> list = findCategoryIncomeList(query).getList();
     ExcelUtil<CategoryInfoIncomeVO> excelUtil = new ExcelUtil<>(CategoryInfoIncomeVO.class);

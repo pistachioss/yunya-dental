@@ -114,7 +114,7 @@
         GROUP BY bpr.bill_record_id
     </select>
 
-    <!--撤销收费记录ID-->
+    <!--当月撤销收费记录ID-->
     <select id="selectRevokePayIds" resultType="java.lang.Integer">
         select bpr.id
         from bill_pay_record bpr
@@ -139,7 +139,7 @@
         </if>
     </select>
 
-    <!--调整收费方式-->
+    <!--当月调整收费方式-->
     <select id="selectAdjustPayIds" resultType="java.lang.Integer">
         select bpr.id
         from bill_pay_record bpr
@@ -149,7 +149,7 @@
             select behr.handled_record_id
             from bill_exception_handle_record behr
             left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
-            where behr.operate_type = 0 and date_format(behr.crt_time, '%Y-%m') = #{query.queryDate}
+            where behr.operate_type = 0 and date_format(behr.crt_time, '%Y-%m') > #{query.queryDate}
             group by behr.handled_record_id
         )
         and date_format(bpr.crt_time, '%Y-%m') = #{query.queryDate}

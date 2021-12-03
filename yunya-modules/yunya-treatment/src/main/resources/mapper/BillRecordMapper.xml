@@ -506,7 +506,7 @@
         select IFNULL(sum(amount),0)
         from bill_pay_detail_record bpdr
         where date_format(bpdr.crt_time, '%Y-%m') = #{query.queryDate}
-          and bpdr.account_item_id in (23, 26)
+          and bpdr.account_item_id in (23, 26) and bpdr.inservice = 1
           and bpdr.bill_pay_record_id in (
             select bpr.id
             from bill_pay_record bpr
@@ -516,8 +516,8 @@
                 from bill_record br
                 where br.org_id = #{query.orgId}
                   and date_format(br.crt_time, '%Y-%m') = #{query.queryDate}
-            )
-        );
+            ) and bpr.inservice = 1
+        )
     </select>
 
     <!--去掉撤销优惠后的orderRecordId列表-->
