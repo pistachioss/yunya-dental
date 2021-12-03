@@ -760,8 +760,8 @@
 	bp.name as patName,
 	bbi.bill_num AS billNum,
     DATE_FORMAT(bbi.bill_date,'%Y-%m-%d')  AS billDate,
-	bbi.order_amount AS orderAmount,
-	bbi.actual_amount as actualAmount
+	bbi.actual_amount AS orderAmount,
+	bbi.received_amount as actualAmount
     FROM
 	base_benefit bb
     LEFT JOIN base_bill bbi ON bb.order_id = bbi.bill_id
