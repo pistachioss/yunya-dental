@@ -754,7 +754,7 @@
         </if>
     </select>
     <select id="getCouponUse" resultType="com.yunya.feign.report.domain.vo.CouponUseVo">
-          SELECT
+          SELECT distinct
 	bo.abbreviation AS orgName,
 	bc.coupon_name AS couponName,
 	bp.name as patName,
