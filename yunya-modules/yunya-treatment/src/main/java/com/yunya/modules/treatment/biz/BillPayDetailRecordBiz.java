@@ -406,7 +406,8 @@ public class BillPayDetailRecordBiz
    * @param payIds 不属于的收费id
    * @return
    */
-  public List<OrderDetailInfoVO> findBillPayDetailByFreePayment(BillCategoryIncomeQuery query, List<Integer> payIds) {
-    return mapper.selectBillPayDetailByFreePayment(query, payIds);
+  public List<OrderDetailInfoVO> findBillPayDetailByFreePayment(
+      BillCategoryIncomeQuery query, List<Integer> payIds, Boolean inservice) {
+    return mapper.selectBillPayDetailByFreePayment(query, payIds, inservice);
   }
 }

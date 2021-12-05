@@ -59,13 +59,29 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    List<AssistantMatchingStatisticsVO> resultList =
-        mapper.selectAssistantMatchingStatisticsByAssistant("assistant_1", query);
-    CountDownLatch latch_1 = new CountDownLatch(2);
+    CountDownLatch latch_1 = new CountDownLatch(3);
+    long startTime=System.currentTimeMillis();
+    //执行方法
+    long endTime=System.currentTimeMillis();
+
+    List<AssistantMatchingStatisticsVO> resultList;
+//            =
+//        mapper.selectAssistantMatchingStatisticsByAssistant("assistant_1", query);
+
+    try {
+      Future<List<AssistantMatchingStatisticsVO>> assistant_2 =
+              executorService.submit(
+                      () -> mapper.selectAssistantMatchingStatisticsByAssistant("assistant_2", query));
+      resultList = getFutureObj(assistant_2);
+    } finally {
+      latch_1.countDown();
+    }
 
     List<AssistantMatchingStatisticsVO> resultList2 = this.getAssistant2List(query, latch_1);
     List<AssistantMatchingStatisticsVO> resultList3 = this.getAssistant3List(query, latch_1);
-
+    endTime=System.currentTimeMillis();
+    float excTime1=(float)(endTime-startTime)/1000;
+    System.out.println("2,3---------------------执行时间："+excTime1+"s");
     latch_1.await();
 
     if (StringHelper.isNotEmpty(resultList)) {
@@ -103,7 +119,9 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
       }
     }
     for(AssistantMatchingStatisticsVO vo:resultList){
-      vo.setOrgIds(query.getOrgIds());
+      List<Integer>olist = new ArrayList<>();
+      olist.add(vo.getOrgId());
+      vo.setOrgIds(olist);
     }
     return new PageInfo<>(resultList);
   }

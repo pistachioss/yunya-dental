@@ -84,5 +84,8 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
    * @param payIds 不属于的收费id
    * @return
    */
-  List<OrderDetailInfoVO> selectBillPayDetailByFreePayment(@Param("query") BillCategoryIncomeQuery query, @Param("payIds") List<Integer> payIds);
+  List<OrderDetailInfoVO> selectBillPayDetailByFreePayment(
+      @Param("query") BillCategoryIncomeQuery query,
+      @Param("payIds") List<Integer> payIds,
+      @Param("inservice") Boolean inservice);
 }
