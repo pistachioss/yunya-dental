@@ -39,4 +39,6 @@ public interface BaseUserPostMapper extends Mapper<BaseUserPost> {
    */
   List<AssistantMatchingStatisticsVO> selectAssistantMatchingStatisticsByAssistant(
       @Param("assistant") String assistant, @Param("query") EmployeeMatchingRecordQuery query);
+
+
 }
