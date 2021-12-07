@@ -638,7 +638,7 @@ public class DateUtil {
     } else if (dates.length == 1) { // 年
       return preDate(date, diff, "yyyy", Calendar.YEAR);
     }
-    return preDate(date, -diff, "yyyy-MM-dd", Calendar.DATE);
+    return preDate(date, diff, "yyyy-MM-dd", Calendar.DATE);
   }
 
   /**
