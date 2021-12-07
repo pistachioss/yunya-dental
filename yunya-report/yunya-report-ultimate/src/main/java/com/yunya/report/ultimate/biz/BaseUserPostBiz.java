@@ -224,7 +224,7 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
     List<AssistantMatchingStatisticsVO> list = pageInfo.getList();
     ExcelUtil<AssistantMatchingStatisticsVO> excelUtil =
         new ExcelUtil<>(AssistantMatchingStatisticsVO.class);
-    String fileName = query.getStartDate() + query.getEndDate() + "助手配诊统计";
+    String fileName = query.getStartDate()+ "至"+ query.getEndDate() + "助手配诊统计";
 
     ClinicPerformanceBusinessQuery dataStatisticsQuery = new ClinicPerformanceBusinessQuery();
     dataStatisticsQuery.setOrgIds(query.getOrgIds());
@@ -234,8 +234,8 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
       for(AssistantMatchingStatisticsVO vo:list){
         BaseOrganization organization = orgList.stream().filter(item -> item.getOrgId().equals(vo.getOrgId())).findFirst().get();
         String abbreviation = organization.getAbbreviation();
-        fileName = abbreviation + fileName;
-        vo.setOrgName(fileName);
+//        fileName = abbreviation + fileName;
+        vo.setOrgName(abbreviation);
       }
 //      list.forEach(vo -> vo.setOrgName(abbreviation));
     }
