@@ -1039,7 +1039,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     // 组装数据并排序
     List<CategoryInfoIncomeVO> list =
         mergeCategoryIncomeList(
-            tariffFuture, originalFuture, discountFuture, freePaymentFuture, orgList);
+            tariffFuture, originalFuture, discountFuture, freePaymentFuture, orgList, query.getOrgId());
 
     // 分页
     return PageUtl.doPage(query.getPageNum(), query.getPageSize(), list, query.getWhetherPage());
@@ -1084,7 +1084,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       Future<List<ClinicTariffOrderVO>> originalFuture,
       List<ClinicTariffDiscountCouponVO> discountCoupons,
       Future<Map<String, BigDecimal>> freePaymentFuture,
-      List<OrganizationInfoDetail> orgList)
+      List<OrganizationInfoDetail> orgList, Integer orgId)
       throws Exception {
     Map<String, String> categoryMap = new HashMap<>(16);
     List<BaseTariffVO> baseTariffVOS = tariffFuture.get();
@@ -1111,7 +1111,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       discountCoupons.forEach(
           vo -> {
             String categoryKey = categoryMap.get(vo.getItemType() + "," + vo.getItemId());
-            CategoryInfoIncomeVO income = resultMap.get(categoryKey + "." + vo.getOrgId());
+            CategoryInfoIncomeVO income = resultMap.get(categoryKey + "." + orgId);
             if (ObjectUtils.isEmpty(income)) {
               income = new CategoryInfoIncomeVO();
             }
