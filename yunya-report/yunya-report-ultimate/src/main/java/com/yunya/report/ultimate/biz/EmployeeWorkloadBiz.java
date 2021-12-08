@@ -291,7 +291,7 @@ public class EmployeeWorkloadBiz {
      * @param query
      * @return
      */
-    private Future<Map<String, BigDecimal>> findClinicEmployeeReceivedWorkload(ClinicEmployeeWorkloadQuery query) {
+    public Future<Map<String, BigDecimal>> findClinicEmployeeReceivedWorkload(ClinicEmployeeWorkloadQuery query) {
         return threadPool.submit(()->{
             List<EmployeeWorkloadVO> workloads = baseBillDetailMapper.selectClinicEmployeeReceivedWorkload(query);
             return mapEmployeeWorkload(workloads);
@@ -317,7 +317,7 @@ public class EmployeeWorkloadBiz {
      * @param query
      * @return
      */
-    private Future<List<ClinicEmployeBonusCoefficientVO>> findClinicEmployeeCartesianProduct(MultiClinicEmployeeQuery query) {
+    public Future<List<ClinicEmployeBonusCoefficientVO>> findClinicEmployeeCartesianProduct(MultiClinicEmployeeQuery query) {
         return threadPool.submit(()-> baseEmployeeMapper.selectClinicEmployeeCartesianProduct(query));
     }
 

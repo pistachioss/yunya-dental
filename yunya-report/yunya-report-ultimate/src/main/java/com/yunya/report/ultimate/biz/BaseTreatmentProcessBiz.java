@@ -697,4 +697,37 @@ public class BaseTreatmentProcessBiz
       }
       return mapper.findPatientLikePatientInfo(form,34);
     }
+
+  /**
+   * 查询本月初诊且复诊
+   * @param patientIds
+   * @return
+   */
+  public List<InMonthReFirstVisitVO> findInMonthReFirstVisit(List<Integer> patientIds) {
+    return mapper.selectInMonthReFirstVisit(patientIds);
+  }
+
+  public List<PatientDateVO> findNextAppointDateByPatientId(List<Integer> patientIds) {
+    return mapper.selectNextAppointDateByPatientId(patientIds);
+  }
+
+  public List<PatientDateVO> findFirstVisitDateByPatientId(List<Integer> patientIds) {
+    return mapper.selectFirstVisitDateByPatientId(patientIds);
+  }
+
+  public List<PatientDateVO> findLastVisitDateByPatientId(List<Integer> patientIds) {
+    return mapper.selectLastVisitDateByPatientId(patientIds);
+  }
+
+  public List<PatientCountVO> findPatientTreatNum(List<Integer> patientIds) {
+    return mapper.selectPatientTreatNum(patientIds);
+  }
+
+  public List<EmployeeCountVO> findPatientTreatNumGroupEmp(ClinicEmployeeWorkloadQuery query, Integer treatType) {
+    return mapper.selectPatientTreatNumGroupEmp(query, treatType);
+  }
+
+  public List<EmployeeCountVO> findTreatVisitsTimes(ClinicEmployeeWorkloadQuery query) {
+    return mapper.selectTreatVisitsTimes(query);
+  }
 }

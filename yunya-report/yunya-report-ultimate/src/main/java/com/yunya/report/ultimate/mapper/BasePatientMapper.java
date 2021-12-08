@@ -1,11 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
-import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
-import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
-import com.yunya.feign.report.domain.query.PatientManageQuery;
-import com.yunya.feign.report.domain.query.PatientReportQueryForm;
-import com.yunya.feign.report.domain.query.VipLogoQueryForm;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BasePatient;
 import org.apache.ibatis.annotations.Param;
@@ -180,4 +176,6 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    * 查询会员占比
    */
   List<VipRateVo> getVipRate();
+
+  List<PatientManageVo> selectPatientInfoList(@Param("query") PatientDimensionQueryForm queryForm);
 }

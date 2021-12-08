@@ -2,14 +2,7 @@ package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
-import com.yunya.feign.report.domain.query.AppointmentCountQuery;
-import com.yunya.feign.report.domain.query.AssistantMatchingDetailQuery;
-import com.yunya.feign.report.domain.query.FirstVisitDetailQuery;
-import com.yunya.feign.report.domain.query.FirstVisitPersonalQuery;
-import com.yunya.feign.report.domain.query.FirstVisitQuery;
-import com.yunya.feign.report.domain.query.PatientFirstTreatOriginQuery;
-import com.yunya.feign.report.domain.query.TreatmentMatchingRecordQuery;
-import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.wechat.domain.vo.WxAppointConfirmPushVo;
 import com.yunya.models.report.BaseTreatmentProcess;
@@ -159,4 +152,18 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    * @return
    */
     List<PatientBaseInfoVo> findPatientLikePatientInfo(@Param("form") PatientLikeFinleQueryForm form, @Param("orgId") Integer orgId);
+
+    List<InMonthReFirstVisitVO> selectInMonthReFirstVisit(@Param("patientIds") List<Integer> patientIds);
+
+    List<PatientDateVO> selectNextAppointDateByPatientId(@Param("patientIds") List<Integer> patientIds);
+
+  List<PatientDateVO> selectFirstVisitDateByPatientId(@Param("patientIds") List<Integer> patientIds);
+
+  List<PatientDateVO> selectLastVisitDateByPatientId(@Param("patientIds") List<Integer> patientIds);
+
+  List<PatientCountVO> selectPatientTreatNum(@Param("patientIds") List<Integer> patientIds);
+
+  List<EmployeeCountVO> selectPatientTreatNumGroupEmp(@Param("query") ClinicEmployeeWorkloadQuery query, @Param("treatType") Integer treatType);
+
+  List<EmployeeCountVO> selectTreatVisitsTimes(@Param("query") ClinicEmployeeWorkloadQuery query);
 }

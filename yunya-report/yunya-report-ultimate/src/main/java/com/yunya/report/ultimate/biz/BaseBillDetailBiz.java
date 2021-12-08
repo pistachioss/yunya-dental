@@ -70,6 +70,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   @Autowired private BaseCouponMapper baseCouponMapper;
   /** 项目信息 */
   @Autowired private BaseTariffInfoBiz baseTariffInfoBiz;
+  /** 就诊信息*/
+  @Autowired private BaseTreatmentProcessBiz baseTreatmentProcessBiz;
 
   /**
    * 根据条件查询账单收入详情列表
@@ -2637,4 +2639,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             "个人开单项目实收明细表");
     excelUtil.exportExcel(response, resultList, "个人开单项目实收明细表", fileName);
   }
+
+    public List<PatientBillItemVO> findBillItemNumByPatientId(List<Integer> patientIds) {
+        return mapper.selectBillItemNumByPatientId(patientIds);
+    }
 }

@@ -159,7 +159,6 @@
         INNER JOIN bill_pay_record bpr ON bpr.id = bpdr.bill_pay_record_id
         INNER JOIN bill_record br ON br.id = bpr.bill_record_id
         <where>
-            date_format(bpdr.crt_time, '%Y-%m') = #{query.queryDate}
             AND bpdr.account_item_id in (23, 26)
             <if test="inservice != null">
                 and bpdr.inservice = #{inservice}
@@ -177,6 +176,7 @@
                 </foreach>
             </if>
             <if test="query.queryDate!=null and query.queryDate!=''">
+                AND date_format(bpdr.crt_time, '%Y-%m') = #{query.queryDate}
                 AND date_format(bpr.crt_time, '%Y-%m') = #{query.queryDate}
                 AND date_format(br.crt_time, '%Y-%m') = #{query.queryDate}
             </if>

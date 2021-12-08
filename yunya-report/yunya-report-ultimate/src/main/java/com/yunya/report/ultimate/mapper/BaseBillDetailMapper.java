@@ -511,4 +511,6 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return
    */
   List<EmployeeTariffWorkloadVO> selectClinicExecutorTariffRefundWorkload(@Param("query") BillItemTollWorkloadQuery query);
+
+  List<PatientBillItemVO> selectBillItemNumByPatientId(@Param("patientIds") List<Integer> patientIds);
 }

@@ -5112,4 +5112,21 @@
         brd.executorId IS NOT NULL
         GROUP BY brd.executorId,brd.itemId,brd.orgId
     </select>
+
+    <select id="selectBillItemNumByPatientId" resultType="com.yunya.feign.report.domain.vo.PatientBillItemVO">
+        SELECT
+            bb.patient_id AS patientId,
+            bbd.item_type AS itemType,
+            bbd.item_id AS itemId,
+            SUM(bbd.quantity) AS quantity
+        FROM base_bill_detail bbd
+        LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
+        <where>
+            and bb.patient_id in
+            <foreach collection="patientIds" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+        GROUP BY bb.patient_id, bbd.item_type, bbd.item_id
+    </select>
 </mapper>

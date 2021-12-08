@@ -837,10 +837,16 @@
     <!-- 根据患者ID查询患者消费信息 -->
     <select id="selectPatientCostInfo" resultType="com.yunya.feign.report.domain.vo.PatientCostInfoVO">
         select
+            patient_id AS patientId,
             sum(bb.actual_amount) as cumulativeConsumption,
+            sum(bb.received_amount) as receivedAmount,
             sum(bb.debt_amount) as totalArrears
         from base_bill bb
-        where bb.patient_id = #{patientId}
+        where bb.patient_id in
+        <foreach collection="patientIds" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        group by bb.patient_id
     </select>
 
     <select id="selectBaseBenefitInfoByBillId" resultType="com.yunya.feign.report.domain.vo.BaseBenefitInfoVO">

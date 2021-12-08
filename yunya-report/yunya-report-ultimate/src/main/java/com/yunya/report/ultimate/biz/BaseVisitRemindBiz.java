@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.biz;
 
 import com.yunya.feign.report.domain.query.VisitAndRemindCompletedInfoQuery;
+import com.yunya.feign.report.domain.vo.PatientDateVO;
 import com.yunya.feign.report.domain.vo.VisitAndRemindCompletedInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.report.BaseVisitRemind;
@@ -8,6 +9,7 @@ import com.yunya.report.ultimate.mapper.BaseVisitRemindMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 简介: 随访提醒业务层
@@ -41,5 +43,9 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
     }
     resultData.setWaitingForCompletedCount(waitingForCompletedCount-completedCount);
     return resultData;
+  }
+
+  public List<PatientDateVO> findNextRemindByPatientId(List<Integer> patientIds) {
+    return mapper.selectNextRemindByPatientId(patientIds);
   }
 }

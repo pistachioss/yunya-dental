@@ -34,7 +34,10 @@ public class DynamicHeaderPageInfo<T> extends PageInfo<T> implements Serializabl
     @ApiModelProperty("表头")
     private String[] header;
 
-    /** 关联映射*/
-    @ApiModelProperty("关联映射")
+    /** 表头关联映射*/
+    @ApiModelProperty("表头关联映射")
     private Map<String, String> map;
+
+    @ApiModelProperty("上下层表头关联映射")
+    private Map<String, List<String>> contextMap;
 }
