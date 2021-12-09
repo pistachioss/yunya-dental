@@ -7,6 +7,7 @@ import com.yunya.feign.report.domain.vo.DynamicHeaderPageInfo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.DimensionReportBiz;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
  * @Date: 2021/12/7 13:40
  * @since: 1.0.0
  */
+@Api(tags = "公司端报表-报表统计-运营报表-维度报表")
 @RestController
 @RequestMapping("/dimesionReport")
 public class DimensionReportController {
