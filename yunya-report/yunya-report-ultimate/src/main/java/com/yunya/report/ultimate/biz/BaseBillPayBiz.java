@@ -1337,4 +1337,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     result.add(item);
     return result;
   }
+
+  public List<PatientAmountVO> findPatientTotalPayAmount(PatientDimensionQueryForm query, List<Integer> patientIds) {
+    return mapper.selectPatientTotalPayAmount(query, patientIds);
+  }
 }

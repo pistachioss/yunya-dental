@@ -452,9 +452,10 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * 查询门诊员工的实收工作量
    *
    * @param query
+   * @param groupByOrgId
    * @return
    */
-  List<EmployeeWorkloadVO> selectClinicEmployeeReceivedWorkload(@Param("query") ClinicEmployeeWorkloadQuery query);
+  List<EmployeeWorkloadVO> selectClinicEmployeeReceivedWorkload(@Param("query") ClinicEmployeeWorkloadQuery query, @Param("groupByOrgId") boolean groupByOrgId);
 
   /**
    * 查询门诊员工的补入工作量
@@ -511,4 +512,9 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return
    */
   List<EmployeeTariffWorkloadVO> selectClinicExecutorTariffRefundWorkload(@Param("query") BillItemTollWorkloadQuery query);
+
+  List<PersonalBillItemVO> selectBillItemNumByPatientId(@Param("patientIds") List<Integer> patientIds);
+
+  List<PersonalBillItemVO> selectExecutorBillItem(@Param("query") ClinicEmployeeWorkloadQuery query,
+                                                  @Param("groupByOrgId") boolean groupByOrgId);
 }

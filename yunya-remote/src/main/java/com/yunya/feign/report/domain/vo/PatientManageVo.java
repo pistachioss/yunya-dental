@@ -15,6 +15,8 @@ import java.math.BigDecimal;
 @Data
 @ApiModel(value = "公司端-患者管理返回")
 public class PatientManageVo {
+    @ApiModelProperty(value = "患者ID")
+    private Integer patientId;
     @ApiModelProperty(value = "病历编号")
     @ExcelProperty(value = "病历编号")
     private String medicalNumber;

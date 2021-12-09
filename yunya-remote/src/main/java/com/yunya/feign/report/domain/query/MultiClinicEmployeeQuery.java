@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -24,8 +23,8 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = true)
 public class MultiClinicEmployeeQuery extends PageQuery implements Serializable {
   /** 组织id列表 */
-  @ApiModelProperty(value = "组织id列表", required = true)
-  @NotNull(message = "组织ID不能为空！")
+  @ApiModelProperty(value = "组织id列表"/*, required = true*/)
+//  @NotNull(message = "组织ID不能为空！")
   private Integer[] orgIds;
 
   /** 员工ID列表 */

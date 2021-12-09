@@ -12,6 +12,7 @@ import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -148,10 +149,10 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
   /**
    * 查询患者消费信息
    *
-   * @param patientId 患者ID
+   * @param patientIds 患者ID
    * @return PatientCostInfoVO
    */
-  PatientCostInfoVO selectPatientCostInfo(@Param("patientId") Integer patientId);
+  List<PatientCostInfoVO> selectPatientCostInfo(@Param("patientIds") Collection<Integer> patientIds);
 
   /**
    * 根据billId查询所有优惠的项目
@@ -244,4 +245,7 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
   List<ReceivedWorkloadDetailsVo> selectMakeUpDetail(@Param("query") ReceiverkLoadQuery query,@Param("originType") Integer originType);
 
   List<Integer> distinctBillIds(@Param("query") ClinicPerformanceBusinessQuery query);
+
+  List<EmployeeAmountVO> selectPatientDebtAmount(@Param("query") ClinicEmployeeWorkloadQuery query,
+                                                 @Param("groupByOrgId") boolean groupByOrgId);
 }
