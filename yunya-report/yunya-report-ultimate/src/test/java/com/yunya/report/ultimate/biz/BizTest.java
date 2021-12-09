@@ -412,6 +412,16 @@ public class BizTest {
     }
 
     @Test
+    public void testDentistDimensionStatistics() throws Exception {
+        String param = "{\"employeeIds\":[341],\"dateType\":2,\"startDate\":\"2021\",\"endDate\":\"2021\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":10}";
+        ClinicEmployeeWorkloadQuery query = JSONObject.parseObject(param, ClinicEmployeeWorkloadQuery.class);
+        long t1 = System.currentTimeMillis();
+        ResponseResult<DynamicHeaderPageInfo<JSONObject>> result = dimensionReportController.dentistDimensionStatistics(query);
+        System.out.println(System.currentTimeMillis() - t1);
+        System.out.println(JSONObject.toJSON(result));
+    }
+
+    @Test
     public void testClinicDimensionStatistics() throws Exception {
         String param = "{\"employeeIds\":[341],\"orgIds\":[26],\"dateType\":2,\"startDate\":\"2021\",\"endDate\":\"2021\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":10}";
         ClinicEmployeeWorkloadQuery query = JSONObject.parseObject(param, ClinicEmployeeWorkloadQuery.class);

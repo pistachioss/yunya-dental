@@ -389,7 +389,7 @@ public class DimensionReportBiz {
         List<Integer> employeeIds = new ArrayList<>();
         employees.forEach(vo->{
             Integer employeeId = vo.getEmployeeId();
-            if (employeeIds.contains(employeeId)) {
+            if (!employeeIds.contains(employeeId)) {
                 employeeIds.add(employeeId);
             }
         });
