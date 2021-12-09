@@ -51,7 +51,9 @@
             be.user_id AS employeeId,
             be.employee_name AS employeeName,
             IFNULL(be.bonus_coefficient, 0) AS bonusCoefficient,
-            bo.org_id AS orgId,
+            <if test="groupByOrgId">
+                bo.org_id AS orgId,
+            </if>
             bo.abbreviation
         FROM base_employee be, base_organization bo
         <where>
@@ -75,5 +77,10 @@
                 </foreach>
             </if>
         </where>
+        ORDER BY
+        <if test="groupByOrgId">
+            bo.org_id,
+        </if>
+        be.user_id
     </select>
 </mapper>

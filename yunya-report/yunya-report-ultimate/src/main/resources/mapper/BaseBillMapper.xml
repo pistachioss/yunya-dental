@@ -1266,4 +1266,69 @@
             </if>
         </where>
     </select>
+
+    <select id="selectPatientDebtAmount" resultType="com.yunya.feign.report.domain.vo.EmployeeAmountVO">
+        SELECT
+            <if test="groupByOrgId">
+                btp.org_id AS orgId,
+            </if>
+            btp.registered_dentist_id AS employeeId,
+            sum(bb.debt_amount) AS amount
+        FROM base_bill bb
+        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+        LEFT JOIN (
+            SELECT
+            btp.org_id,
+            btp.treatment_id,
+            btp.registered_dentist_id
+            FROM
+            base_treatment_process btp
+            WHERE btp.treat_end_time IS NOT NULL
+        ) btp ON bb.treatment_id = btp.treatment_id
+        AND bb.org_id = btp.org_id
+        <where>
+            bb.debt_amount > 0
+            <if test="query.orgIds!=null and query.orgIds.length>0">
+                and bb.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.employeeIds != null and query.employeeIds.length > 0">
+                and btp.registered_dentist_id in
+                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.dateType==0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bb.order_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bb.order_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bb.order_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bb.order_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bb.order_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bb.order_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        <if test="groupByOrgId">
+            btp.org_id,
+        </if>
+        btp.registered_dentist_id
+    </select>
 </mapper>

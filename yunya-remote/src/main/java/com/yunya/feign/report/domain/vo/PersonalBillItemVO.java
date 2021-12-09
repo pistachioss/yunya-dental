@@ -8,20 +8,22 @@ import lombok.ToString;
 import java.io.Serializable;
 
 /**
- * 简介：患者账单项目VO
+ * 简介：账单项目VO
  *
  * @author: chenlin
- * @Description: 患者账单项目VO
+ * @Description: 账单项目VO
  * @Date: 2021/12/7 17:36
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("患者账单项目VO")
-public class PatientBillItemVO implements Serializable {
+@ApiModel("账单项目VO")
+public class PersonalBillItemVO implements Serializable {
+    @ApiModelProperty("门诊ID")
+    private Integer orgId;
 
-    @ApiModelProperty("患者ID")
-    private Integer patientId;
+    @ApiModelProperty("患者ID/员工ID")
+    private Integer personId;
 
     @ApiModelProperty("项目类型（0-价目表；1-商品）")
     private Integer itemType;

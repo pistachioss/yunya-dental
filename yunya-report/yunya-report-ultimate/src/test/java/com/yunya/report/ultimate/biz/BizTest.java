@@ -18,7 +18,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -395,16 +394,9 @@ public class BizTest {
      */
     @Test
     public void testFindInMonthReFirstVisit() {
-        List<Integer> patientIds = Arrays.asList(82534,
-                106563,
-                85395,
-                86516,
-                87093,
-                23127,
-                86984,
-                5616);
+        ClinicEmployeeWorkloadQuery query= new ClinicEmployeeWorkloadQuery();
         long t1 = System.currentTimeMillis();
-        List<InMonthReFirstVisitVO> result = baseTreatmentProcessBiz.findInMonthReFirstVisit(patientIds);
+        List<EmployeeCountVO> result = baseTreatmentProcessBiz.findInMonthReFirstVisit(query, true);
         System.out.println(System.currentTimeMillis() - t1);
         System.out.println(JSONObject.toJSON(result));
     }
@@ -415,6 +407,16 @@ public class BizTest {
         PatientDimensionQueryForm query = JSONObject.parseObject(param, PatientDimensionQueryForm.class);
         long t1 = System.currentTimeMillis();
         ResponseResult<DynamicHeaderPageInfo<JSONObject>> result = dimensionReportController.patientDimensionStatistics(query);
+        System.out.println(System.currentTimeMillis() - t1);
+        System.out.println(JSONObject.toJSON(result));
+    }
+
+    @Test
+    public void testClinicDimensionStatistics() throws Exception {
+        String param = "{\"employeeIds\":[341],\"orgIds\":[26],\"dateType\":2,\"startDate\":\"2021\",\"endDate\":\"2021\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":10}";
+        ClinicEmployeeWorkloadQuery query = JSONObject.parseObject(param, ClinicEmployeeWorkloadQuery.class);
+        long t1 = System.currentTimeMillis();
+        ResponseResult<DynamicHeaderPageInfo<JSONObject>> result = dimensionReportController.clinicDimensionStatistics(query);
         System.out.println(System.currentTimeMillis() - t1);
         System.out.println(JSONObject.toJSON(result));
     }

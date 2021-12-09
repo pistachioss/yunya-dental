@@ -2640,7 +2640,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     excelUtil.exportExcel(response, resultList, "个人开单项目实收明细表", fileName);
   }
 
-    public List<PatientBillItemVO> findBillItemNumByPatientId(List<Integer> patientIds) {
+    public List<PersonalBillItemVO> findBillItemNumByPatientId(List<Integer> patientIds) {
         return mapper.selectBillItemNumByPatientId(patientIds);
+    }
+
+    public List<PersonalBillItemVO> findExecutorBillItem(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
+      return mapper.selectExecutorBillItem(query, groupByOrgId);
     }
 }

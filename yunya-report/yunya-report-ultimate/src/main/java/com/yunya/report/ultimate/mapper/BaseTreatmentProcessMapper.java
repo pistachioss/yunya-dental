@@ -153,7 +153,8 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    */
     List<PatientBaseInfoVo> findPatientLikePatientInfo(@Param("form") PatientLikeFinleQueryForm form, @Param("orgId") Integer orgId);
 
-    List<InMonthReFirstVisitVO> selectInMonthReFirstVisit(@Param("patientIds") List<Integer> patientIds);
+    List<EmployeeCountVO> selectInMonthReFirstVisit(@Param("query") ClinicEmployeeWorkloadQuery query,
+                                                    @Param("groupByOrgId") boolean groupByOrgId);
 
     List<PatientDateVO> selectNextAppointDateByPatientId(@Param("patientIds") List<Integer> patientIds);
 
@@ -163,7 +164,16 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
 
   List<PatientCountVO> selectPatientTreatNum(@Param("patientIds") List<Integer> patientIds);
 
-  List<EmployeeCountVO> selectPatientTreatNumGroupEmp(@Param("query") ClinicEmployeeWorkloadQuery query, @Param("treatType") Integer treatType);
+  List<EmployeeCountVO> selectPatientTreatNumGroupEmp(@Param("query") ClinicEmployeeWorkloadQuery query,
+                                                      @Param("treatType") Integer treatType,
+                                                      @Param("groupByOrgId") boolean groupByOrgId);
 
-  List<EmployeeCountVO> selectTreatVisitsTimes(@Param("query") ClinicEmployeeWorkloadQuery query);
+  List<EmployeeCountVO> selectTreatVisitsTimes(@Param("query") ClinicEmployeeWorkloadQuery query,
+                                               @Param("groupByOrgId") boolean groupByOrgId);
+
+  List<EmployeeCountVO> selectHasntAppointAndRemind(@Param("query") ClinicEmployeeWorkloadQuery query,
+                                                    @Param("groupByOrgId") boolean groupByOrgId);
+
+  List<EmployeeFirstVisitOriginTypeVO> selectFirstVisitPatientOriginType(@Param("query") ClinicEmployeeWorkloadQuery query,
+                                                                         @Param("groupByOrgId") boolean groupByOrgId);
 }

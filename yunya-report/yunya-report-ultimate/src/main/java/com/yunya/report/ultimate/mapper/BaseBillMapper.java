@@ -245,4 +245,7 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
   List<ReceivedWorkloadDetailsVo> selectMakeUpDetail(@Param("query") ReceiverkLoadQuery query,@Param("originType") Integer originType);
 
   List<Integer> distinctBillIds(@Param("query") ClinicPerformanceBusinessQuery query);
+
+  List<EmployeeAmountVO> selectPatientDebtAmount(@Param("query") ClinicEmployeeWorkloadQuery query,
+                                                 @Param("groupByOrgId") boolean groupByOrgId);
 }
