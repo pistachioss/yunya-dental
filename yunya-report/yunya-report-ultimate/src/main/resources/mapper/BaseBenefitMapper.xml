@@ -242,7 +242,7 @@
             be.employee_name as executor
         from base_benefit bf
             inner join base_coupon bco on bco.coupon_id = bf.coupon_id
-			left join base_tariff_info bt on bt.item_id=bf.item_id
+			left join base_tariff_info bt on bt.item_id=bf.item_id and bt.item_type=bf.item_type
 			left join base_employee be on be.user_id = bf.operate_user_id
         where
             bco.coupon_type != 4
