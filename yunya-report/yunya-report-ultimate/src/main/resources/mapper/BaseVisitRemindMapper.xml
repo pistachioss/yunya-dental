@@ -87,4 +87,21 @@
         </where>
         order by time desc
     </select>
+
+    <select id="selectNextRemindByPatientId" resultType="com.yunya.feign.report.domain.vo.PatientDateVO">
+        SELECT
+            v.patient_id AS patientId,
+            date_format(min(v.visiting_remind_time), '%Y-%m-%d') as date
+        FROM base_visit_remind v
+        <where>
+             v.type = 1
+             and v.time IS NULL
+             and v.visiting_remind_time >= date_add(date_format(now(), '%Y-%m-%d'), INTERVAL 1 DAY)
+             and v.patient_id in
+            <foreach collection="patientIds" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+        group by v.patient_id
+    </select>
 </mapper>

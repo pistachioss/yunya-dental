@@ -50,17 +50,24 @@
         SELECT
             be.user_id AS employeeId,
             be.employee_name AS employeeName,
-            IFNULL(be.bonus_coefficient, 0) AS bonusCoefficient,
-            bo.org_id AS orgId,
-            bo.abbreviation
-        FROM base_employee be, base_organization bo
+            <if test="groupByOrgId">
+                bo.org_id AS orgId,
+                bo.abbreviation,
+            </if>
+            IFNULL(be.bonus_coefficient, 0) AS bonusCoefficient
+        FROM base_employee be
+        <if test="groupByOrgId">
+            , base_organization bo
+        </if>
         <where>
-            AND bo.org_type = 2
-            <if test="query.orgIds != null and query.orgIds.length > 0">
-                and bo.org_id in
-                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
+            <if test="groupByOrgId">
+                AND bo.org_type = 2
+                <if test="query.orgIds != null and query.orgIds.length > 0">
+                    and bo.org_id in
+                    <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
             </if>
             <if test="query.employeeIds != null and query.employeeIds.length > 0">
                 and be.user_id in
@@ -75,5 +82,10 @@
                 </foreach>
             </if>
         </where>
+        ORDER BY
+        <if test="groupByOrgId">
+            bo.org_id,
+        </if>
+        be.user_id
     </select>
 </mapper>

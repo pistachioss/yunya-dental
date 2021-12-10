@@ -2357,4 +2357,11 @@
         </if>
         ) t
     </select>
+
+    <select id="selectPatientTotalPayAmount" resultType="com.yunya.feign.report.domain.vo.PatientAmountVO">
+        SELECT
+            patient_id AS patientId,
+            SUM(received_amount) AS amount
+        FROM base_bill_pay bbp
+    </select>
 </mapper>

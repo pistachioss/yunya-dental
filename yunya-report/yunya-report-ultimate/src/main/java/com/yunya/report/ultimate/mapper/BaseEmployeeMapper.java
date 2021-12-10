@@ -34,5 +34,5 @@ public interface BaseEmployeeMapper extends Mapper<BaseEmployee> {
    * @param query
    * @return
    */
-  List<ClinicEmployeBonusCoefficientVO> selectClinicEmployeeCartesianProduct(@Param("query") MultiClinicEmployeeQuery query);
+  List<ClinicEmployeBonusCoefficientVO> selectClinicEmployeeCartesianProduct(@Param("query") MultiClinicEmployeeQuery query, @Param("groupByOrgId") boolean groupByOrgId);
 }

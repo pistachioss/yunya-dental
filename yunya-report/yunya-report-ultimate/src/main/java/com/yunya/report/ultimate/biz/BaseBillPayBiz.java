@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
+import static com.yunya.framework.common.constant.ThreadPoolConstant.CUT_SLICE_500;
 
 /**
  * 简介: 账单收费记录业务层
@@ -43,7 +44,6 @@ import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM
  */
 @Service
 public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
-  private static final int CUT_SLICE_500 = 500;
   /** 开单明细 */
   @Autowired private BaseBillDetailBiz billDetailBiz;
   /** 收费记录明细 */
@@ -497,10 +497,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           () -> {
             try {
               result.addAll(billDetailBiz.findCouponWorkloadGroupByPrivilegeDate(query));
-              downLatch.countDown();
             } catch (Exception e) {
-              downLatch.countDown();
               e.printStackTrace();
+            } finally {
+              downLatch.countDown();
             }
           });
     }
@@ -1336,5 +1336,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     item.setName("授权折扣");
     result.add(item);
     return result;
+  }
+
+  public List<PatientAmountVO> findPatientTotalPayAmount(PatientDimensionQueryForm query, List<Integer> patientIds) {
+    return mapper.selectPatientTotalPayAmount(query, patientIds);
   }
 }
