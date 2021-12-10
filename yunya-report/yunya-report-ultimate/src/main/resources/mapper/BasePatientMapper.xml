@@ -414,14 +414,20 @@
         and bp.visitCount = 0
     </select>
 
-
     <select id="firstVisitPatientList" resultType="com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO">
         SELECT
-        DISTINCT btp.patient_id AS patientId
+            DISTINCT btp.patient_id AS patientId,
+            btp.org_id AS orgId
         FROM base_treatment_process btp
         <where>
             btp.treat_status IN (3, 4)
             AND btp.treat_type = 0
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
+                AND btp.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
                     AND DATE_FORMAT(btp.treat_start_time,'%Y-%m-%d') between DATE_FORMAT(#{query.startDate},'%Y-%m-%d')
@@ -441,11 +447,14 @@
                 </if>
             </if>
         </where>
+        GROUP BY btp.org_id, btp.patient_id
     </select>
 
+    <!--根据条件统计患者来源-->
     <select id="clinicFirstVisitSourceList" resultType="com.yunya.feign.report.domain.vo.PatientFirstVisitSourceVO">
         SELECT
         IFNULL(bp.origin_type,12) AS originType,
+        IFNULL(bp.origin_type_name,"未知来源") AS originTypeName,
         bp.org_id AS orgId,
         count(bp.patient_id) firstVisitCount
         FROM base_patient bp
@@ -463,7 +472,7 @@
                 </foreach>
             </if>
         </where>
-        GROUP BY bp.origin_type, bp.org_id
+        GROUP BY bp.origin_type, bp.origin_type_name, bp.org_id
     </select>
 
     <!-- 查询未填写出生日期并有过就诊的患者数量 -->

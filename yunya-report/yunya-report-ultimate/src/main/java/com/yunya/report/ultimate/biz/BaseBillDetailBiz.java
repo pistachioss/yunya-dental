@@ -26,15 +26,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.ThreadPoolConstant.CUT_SLICE_500;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -71,7 +75,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   /** 项目信息 */
   @Autowired private BaseTariffInfoBiz baseTariffInfoBiz;
   /** 就诊信息*/
-  @Autowired private BaseTreatmentProcessBiz baseTreatmentProcessBiz;
+  @Autowired private BaseOrganizationBiz baseOrganizationBiz;
+  @Resource(name = "customizeThreadPool")
+  private ThreadPoolExecutor threadPool;
 
   /**
    * 根据条件查询账单收入详情列表
@@ -1221,7 +1227,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public DynamicHeaderPageInfo<JSONObject> workloadCompleted(String startDate, String curDate) {
     Map<Integer, BigDecimal> workloadGoalMap = workloadMonthGoal();
-    List<BaseOrganization> orgs = getOrganization(new ClinicPerformanceBusinessQuery());
+    List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(new ClinicPerformanceBusinessQuery());
     Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
     DataStatisticsQuery query = new DataStatisticsQuery();
     query.setDateType((byte) 0);
@@ -1376,7 +1382,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     Map<Integer, BigDecimal> workloadGoalMap =
         workloadMonthGoal(
             queryForm.getDateType(), queryForm.getStartDate(), queryForm.getEndDate());
-    List<BaseOrganization> orgs = getOrganization(queryForm);
+    List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(queryForm);
     Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
     String startDate = queryForm.getStartDate();
     String endDate = queryForm.getEndDate();
@@ -1553,33 +1559,28 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-   * 获取所有门诊信息
-   *
-   * @param query
-   */
-  private List<BaseOrganization> getOrganization(ClinicPerformanceBusinessQuery query) {
-    return organizationMapper.selectOrganizationList(query);
-  }
-
-  /**
    * 初始化
    *
-   * @param sMonth
-   * @param eMonth
+   * @param startDate
+   * @param endDate
    * @param value
    */
-  private JSONObject init(String sMonth, String eMonth, String value) {
+  public JSONObject init(String startDate, String endDate, Object value) {
     JSONObject object = new JSONObject();
-    String month = sMonth.replaceAll("-", "/");
-    if (!sMonth.equals(eMonth)) {
-      month = month + "-" + eMonth.replaceAll("-", "/");
-    }
-    object.put("date", month);
+    object.put("date", doDateStyle(startDate, endDate));
     object.put("name", value);
     return object;
   }
 
-  /**
+  public String doDateStyle(String startDate, String endDate) {
+    String result = startDate.replaceAll("-", "/");
+    if (!startDate.equals(endDate)) {
+      result = result + "-" + endDate.replaceAll("-", "/");
+    }
+    return result;
+  }
+
+    /**
    * 门诊业绩导出
    *
    * @param query
@@ -1622,21 +1623,22 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (query.getWhetherPage()) {
       PageHelper.clearPage();
     }
-    List<BaseOrganization> orgs = getOrganization(query);
+    List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(query);
     if (StringHelper.isEmpty(query.getOriginTypes())) {
       query.setOriginTypes(
           origins.stream().map(BasePatientOrigin::getOriginType).collect(Collectors.toSet()));
     }
-    List<BaseTreatmentProcessVO> patientIds = patientBaseInfoBiz.firstVisitPatientList(query);
-    List<PatientFirstVisitSourceVO> patients =
-        patientBaseInfoBiz.clinicFirstVisitSourceList(
-            query,
-            patientIds.stream()
-                .map(BaseTreatmentProcess::getPatientId)
-                .collect(Collectors.toSet()));
+    List<BaseTreatmentProcessVO> firstVisitPatients = patientBaseInfoBiz.firstVisitPatientList(query);
+    List<PatientFirstVisitSourceVO> patients = multiFirstVisitPatientSourceList(query, firstVisitPatients);
     Map<String, Integer> originMap = new HashMap<>(16);
-    patients.forEach(
-        vo -> originMap.put(vo.getOriginType() + "," + vo.getOrgId(), vo.getFirstVisitCount()));
+    patients.forEach(vo->{
+        String key = vo.getOriginType()+","+vo.getOrgId();
+        Integer count = originMap.get(key);
+        if (count == null) {
+            count = 0;
+        }
+        originMap.put(key, vo.getFirstVisitCount() + count);
+    });
     List<JSONObject> result = new ArrayList<>();
     if (StringHelper.isNotEmpty(origins)) {
       Map<String, String> map = new LinkedHashMap<>();
@@ -1655,7 +1657,42 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return pageInfo;
   }
 
+
   /**
+   * 多线程查询患者初诊来源统计
+   *
+   * @param query
+   * @return
+   */
+  public List<PatientFirstVisitSourceVO> multiFirstVisitPatientSourceList(ClinicPerformanceBusinessQuery query, List<BaseTreatmentProcessVO> patients) {
+    List<PatientFirstVisitSourceVO> result = new ArrayList<>();
+    if (StringHelper.isNotEmpty(patients)) {
+      List<Integer> patientIds = patients.stream().map(BaseTreatmentProcessVO::getPatientId).collect(Collectors.toList());
+      List<List<Integer>> parts = Lists.partition(patientIds, CUT_SLICE_500);
+      CountDownLatch cdt = new CountDownLatch(parts.size());
+      for (List<Integer> patientId : parts) {
+        threadPool.execute(() -> {
+          try {
+            List<PatientFirstVisitSourceVO> list =
+                    patientBaseInfoBiz.clinicFirstVisitSourceList(query, patientId);
+            result.addAll(list);
+          } catch (Exception e) {
+            e.printStackTrace();
+          } finally {
+            cdt.countDown();
+          }
+        });
+      }
+      try {
+        cdt.await();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    return result;
+  }
+
+    /**
    * 计算所有门诊的总数
    *
    * @param firstKey
@@ -1723,7 +1760,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (StringHelper.isNotEmpty(specialItems)) {
       Map<String, Integer> dataMap =
           mapQuantityGroupOrgItemId(findBillItemStatistics(query, specialItems));
-      List<BaseOrganization> orgs = getOrganization(query);
+      List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(query);
       List<JSONObject> result = new ArrayList<>();
       if (StringHelper.isNotEmpty(specialItems)) {
         Map<String, String> map = new LinkedHashMap<>();
@@ -1941,7 +1978,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    List<BaseOrganization> orgs = getOrganization(query);
+    List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(query);
     PageInfo pageInfo = new PageInfo(orgs);
     if (query.getWhetherPage()) {
       PageHelper.clearPage();

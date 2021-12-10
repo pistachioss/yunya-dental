@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.query.PatientDimensionQueryForm;
+import com.yunya.feign.report.domain.query.base.MultiClinicDateRangetQueryForm;
 import com.yunya.feign.report.domain.vo.DynamicHeaderPageInfo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * 简介：维度报表控制层
@@ -144,6 +146,44 @@ public class DimensionReportController {
             HttpServletResponse response, @RequestBody @Validated ClinicEmployeeWorkloadQuery query)
             throws Exception {
         dimesionReportBiz.clinicDimensionStatisticsExport(query, response);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 根据条件查询初诊来源数量分析
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-初诊来源占比表")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            code = 200,
+                            message =
+                                    "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":0,\"orgId1\":0,\"originType\":\"患者来源\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"患者来源\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
+            })
+    @PostMapping(value = "/clinic/firstVisitSource/ratio", name = "公司端报表-报表统计-运营报表-门诊初诊来源占比表")
+    public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicFirstVisitSourceRatio(
+            @RequestBody @Validated MultiClinicDateRangetQueryForm query) {
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.clinicFirstVisitSourceRatio(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件导出初诊来源数量分析
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析导出")
+    @PostMapping(
+            value = "/clinic/firstVisitSource/ratio/export",
+            name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-初诊来源数量分析导出")
+    public ResponseResult<T> clinicFirstVisitSourceRatioExport(
+            HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangetQueryForm query)
+            throws IOException {
+        dimesionReportBiz.clinicFirstVisitSourceRatioExport(query, response);
         return ResponseUtil.success(null);
     }
 }
