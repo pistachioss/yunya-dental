@@ -46,7 +46,6 @@ public class CouponExecutoredDetailQuery extends PageQuery implements Serializab
 
   /** 执行人ID */
   @ApiModelProperty(value = "执行人ID", required = true)
-  @NotNull(message = "执行人ID不能为空")
   private Integer executorId;
 
   /** 项目类型 */
