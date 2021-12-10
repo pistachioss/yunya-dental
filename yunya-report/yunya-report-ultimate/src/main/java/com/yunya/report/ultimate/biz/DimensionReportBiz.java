@@ -7,10 +7,13 @@ import com.yunya.feign.clinic_base.RemoteClinicBaseServiceFeign;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
+import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.query.PatientDimensionQueryForm;
+import com.yunya.feign.report.domain.query.base.MultiClinicDateRangetQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
+import com.yunya.models.report.BaseOrganization;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,6 +58,8 @@ public class DimensionReportBiz {
     private BaseBillBiz baseBillBiz;
     @Autowired
     private EmployeeWorkloadBiz employeeWorkloadBiz;
+    @Autowired
+    private BaseOrganizationBiz baseOrganizationBiz;
     @Resource(name = "customizeThreadPool")
     private ThreadPoolExecutor threadPool;
 
@@ -641,5 +646,103 @@ public class DimensionReportBiz {
         excelUtil.setMergeRegion(collectMergeCell(pageInfo, 7));
         String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "门诊维度统计");
         excelUtil.exportExcel(response, list, "门诊维度统计", fileName, pageInfo.getHeader(), pageInfo.getMap());
+    }
+
+    /**
+     * 根据条件查询门诊初诊来源占比表
+     *
+     * @param query
+     * @return
+     */
+    public DynamicHeaderPageInfo<JSONObject> clinicFirstVisitSourceRatio(MultiClinicDateRangetQueryForm query) {
+        ClinicPerformanceBusinessQuery queryFrom = new ClinicPerformanceBusinessQuery();
+        queryFrom.setOrgIds(query.getOrgIds());
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(queryFrom);
+        DynamicHeaderPageInfo<JSONObject> result = new DynamicHeaderPageInfo<>();
+        ClinicPerformanceBusinessQuery clinicQuery = new ClinicPerformanceBusinessQuery();
+        clinicQuery.setOrgIds(query.getOrgIds());
+        clinicQuery.setDateType(query.getDateType());
+        clinicQuery.setStartDate(query.getStartDate());
+        clinicQuery.setEndDate(query.getEndDate());
+        List<BaseTreatmentProcessVO> firstVisitPatients = patientBaseInfoBiz.firstVisitPatientList(clinicQuery);
+        Map<Integer, Integer> firstVisitMap = mapClinicFirstVisitCount(firstVisitPatients);
+        List<PatientFirstVisitSourceVO> patients = baseBillDetailBiz.multiFirstVisitPatientSourceList(clinicQuery, firstVisitPatients);
+        if (StringHelper.isNotEmpty(orgs)) {
+            Map<String, Integer> originDataMap = new HashMap<>(16);
+            Map<String, String> originMap = new LinkedHashMap<>(16);
+            if (StringHelper.isNotEmpty(patients)) {
+                patients.forEach(vo->{
+                    originMap.put(vo.getOriginType()+"", vo.getOriginTypeName());
+                    String key = vo.getOrgId() + "," + vo.getOriginType();
+                    Integer count = originDataMap.get(key);
+                    if (count == null) {
+                        count = 0;
+                    }
+                    originDataMap.put(key, count + vo.getFirstVisitCount());
+                });
+            }
+            List<JSONObject> list = new ArrayList<>();
+            orgs.forEach(vo->{
+                Integer orgId = vo.getOrgId();
+                JSONObject obj = new JSONObject();
+                obj.put("abbreviation", defValue(vo.getAbbreviation()));
+                obj.put("date", baseBillDetailBiz.doDateStyle(query.getStartDate(),
+                        query.getEndDate()));
+                obj.put("firstVisitCount", defIntVal(firstVisitMap.get(orgId)));
+                originMap.forEach((originTypeId, name)-> obj.put(originTypeId, defIntVal(originDataMap.get(orgId+","+originTypeId))));
+                list.add(obj);
+            });
+            result.setList(list);
+            result.setMap(originTitleMap(originMap));
+        }
+        return result;
+    }
+
+    /**
+     * 门诊初诊来源占比表标题
+     *
+     * @param originMap
+     * @return
+     */
+    private Map<String, String> originTitleMap(Map<String, String> originMap) {
+        Map<String, String> title = new LinkedHashMap<>(16);
+        title.put("abbreviation", "门诊");
+        title.put("date", "日期");
+        title.put("firstVisitCount", "初诊人数");
+        title.putAll(originMap);
+        return title;
+    }
+
+    private Map<Integer, Integer> mapClinicFirstVisitCount(List<BaseTreatmentProcessVO> firstVisitPatients) {
+        Map<Integer, Integer> result = new HashMap<>(16);
+        if (StringHelper.isNotEmpty(firstVisitPatients)) {
+            firstVisitPatients.forEach(vo->{
+                Integer orgId = vo.getOrgId();
+                Integer count = result.get(orgId);
+                if (count == null) {
+                    count = 0;
+                }
+                result.put(orgId, count+1);
+            });
+        }
+        return result;
+    }
+
+    /**
+     * 根据条件导出门诊初诊来源占比表
+     *
+     * @param query
+     * @param response
+     */
+    public void clinicFirstVisitSourceRatioExport(MultiClinicDateRangetQueryForm query, HttpServletResponse response) throws IOException {
+        query.setWhetherPage(false);
+        DynamicHeaderPageInfo<JSONObject> pageInfo = clinicFirstVisitSourceRatio(query);
+        List<JSONObject> result = pageInfo.getList();
+        ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+        String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "初诊来源占比表");
+        excelUtil.exportExcel(response, result, "初诊来源占比表", fileName, pageInfo.getMap());
     }
 }

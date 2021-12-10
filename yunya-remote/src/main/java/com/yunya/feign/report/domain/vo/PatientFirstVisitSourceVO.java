@@ -28,4 +28,7 @@ public class PatientFirstVisitSourceVO implements Serializable {
   /** 患者来源ID */
   @ApiModelProperty("患者来源ID")
   private Integer originType;
+  /** 患者来源名称 */
+  @ApiModelProperty("患者来源名称")
+  private String originTypeName;
 }

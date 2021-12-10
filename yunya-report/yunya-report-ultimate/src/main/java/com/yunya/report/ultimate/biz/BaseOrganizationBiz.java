@@ -2,6 +2,7 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.vo.PatientDataStatisticsVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -188,5 +189,14 @@ public class BaseOrganizationBiz extends BaseBiz<BaseOrganizationMapper, BaseOrg
     result.setOrgId(-1);
     result.setAbbreviation("\\/");
     return result;
+  }
+
+  /**
+   * 获取所有门诊信息
+   *
+   * @param query
+   */
+  public List<BaseOrganization> getOrganization(ClinicPerformanceBusinessQuery query) {
+    return mapper.selectOrganizationList(query);
   }
 }
