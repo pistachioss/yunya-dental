@@ -161,7 +161,7 @@ public class DimensionReportController {
                     @ApiResponse(
                             code = 200,
                             message =
-                                    "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":11,\"list\":[{\"33\":0,\"orgId1\":0,\"originType\":\"患者来源\",\"date\":\"时间\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"26\":\"古墩路门诊\",\"orgId1\":\"金沙大道门诊\",\"date\":\"时间\",\"name\":\"患者来源\",\"total\":\"合计\"},\"lastPage\":2,\"firstPage\":1},\"audit\":true}")
+                                    "响应格式：{\"msg\":\"success\",\"data\":{\"lastPage\":0,\"startRow\":0,\"hasNextPage\":false,\"prePage\":0,\"nextPage\":0,\"endRow\":0,\"pageSize\":0,\"list\":[{\"1\":91,\"2\":74,\"date\":\"2021\",\"firstVisitCount\":500,\"abbreviation\":\"古墩路门诊\"}],\"pageNum\":0,\"navigatePages\":0,\"navigateFirstPage\":0,\"total\":0,\"pages\":0,\"firstPage\":0,\"size\":0,\"isLastPage\":false,\"hasPreviousPage\":false,\"navigateLastPage\":0,\"isFirstPage\":false,\"map\":{\"1\":\"员工转介绍\",\"2\":\"患者转介绍\",\"abbreviation\":\"门诊\",\"date\":\"日期\",\"firstVisitCount\":\"初诊人数\"}},\"audit\":true,\"status\":0}")
             })
     @PostMapping(value = "/clinic/firstVisitSource/ratio", name = "公司端报表-报表统计-运营报表-门诊初诊来源占比表")
     public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicFirstVisitSourceRatio(
