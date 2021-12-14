@@ -27,6 +27,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -63,6 +64,8 @@ public class BaseTreatmentProcessBiz
   @Autowired private BasePatientMapper basePatientMapper;
   /** 助手配诊 */
   @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
+  /** 员工就诊统计*/
+  @Autowired private StatEmpTreatBiz statEmpTreatBiz;
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -85,13 +88,29 @@ public class BaseTreatmentProcessBiz
         // 修改
       case 1:
         updateTreatmentProcess(dataId, type);
+        statEmployeeTreat(dataId);
         break;
       case 2:
         // 删除
         deleteTreatmentProcess(dataId, type);
+        statEmployeeTreat(dataId);
         break;
       default:
         break;
+    }
+  }
+
+  private void statEmployeeTreat(Integer dataId) {
+    TreatmentRecord query = new TreatmentRecord();
+    query.setAppointmentId(dataId);
+    TreatmentRecord treatmentRecord = treatmentRecordMapper.selectOne(query);
+    if (ObjectUtils.isEmpty(treatmentRecord)) {
+      query.setAppointmentId(null);
+      query.setRegisteredId(dataId);
+      treatmentRecord = treatmentRecordMapper.selectOne(query);
+    }
+    if (treatmentRecord.getStatus().intValue() == 4) {
+      statEmpTreatBiz.incStatEmpTreat(treatmentRecord);
     }
   }
 

@@ -35,6 +35,8 @@ public class DateUtil {
   public static final int MAX_SECOND = 59;
 
   private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
+
+  private static final SimpleDateFormat NUMBER_DATESDF = new SimpleDateFormat("yyyyMMdd");
   /** 年 */
   public static final int YEAR = 1;
   /** 月 */
@@ -503,6 +505,20 @@ public class DateUtil {
       throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
     }
     return date;
+  }
+
+  /**
+   * 日期格式成数字形式：yyyyMMdd
+   *
+   * @param date
+   * @return
+   */
+  public static Integer date2Number(Date date) {
+    Integer dateNumber = null;
+    if (date == null) {
+      return dateNumber;
+    }
+    return Integer.parseInt(NUMBER_DATESDF.format(date));
   }
 
   /** 年日期正则表达式 */

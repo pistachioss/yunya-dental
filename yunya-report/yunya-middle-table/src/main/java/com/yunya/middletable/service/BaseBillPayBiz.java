@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -53,6 +54,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
   /** 预付款消费记录 */
   @Autowired private PrepaidExpendRecordMapper prepaidExpendRecordMapper;
+  /** 员工收费时统计*/
+  @Autowired private StatEmpPayBiz statEmpPayBiz;
   /** 线程池 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -87,9 +90,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           billCreditsCallback.scrapCredits(dataId);
           baseBillPayDetailMapper.deleteByBillPayId(dataId);
         }
+        incStatEmpPayWorkload(baseBillPay, dataId, operateType);
         break;
       default:
         break;
+    }
+  }
+
+  private void incStatEmpPayWorkload(BaseBillPay baseBillPay, Integer dataId, Integer operateType) {
+    if (operateType==2 || (operateType==1&& ObjectUtils.isEmpty(baseBillPay.getPayeeDate()))) {
+      statEmpPayBiz.incStatEmpPay(billPayRecordMapper.selectByPrimaryKey(dataId));
     }
   }
 
