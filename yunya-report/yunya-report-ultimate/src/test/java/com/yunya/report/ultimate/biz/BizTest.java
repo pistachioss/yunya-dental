@@ -441,4 +441,14 @@ public class BizTest {
         System.out.println(System.currentTimeMillis() - t1);
         System.out.println(JSONObject.toJSON(result));
     }
+
+    @Test
+    public void testClinicSpecialProjectWorkloadRatio() throws Exception {
+        String param = "{\"orgIds\":[43, 26, 27, 36, 35, 37, 28, 29, 30, 31, 32, 33, 34, 39, 40, 45],\"dateType\":2,\"startDate\":\"2021\",\"endDate\":\"2021\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":10}";
+        MultiClinicDateRangetQueryForm query = JSONObject.parseObject(param, MultiClinicDateRangetQueryForm.class);
+        long t1 = System.currentTimeMillis();
+        ResponseResult<DynamicHeaderPageInfo<JSONObject>> result = dimensionReportController.clinicSpecialProjectWorkloadRatio(query);
+        System.out.println(System.currentTimeMillis() - t1);
+        System.out.println(JSONObject.toJSON(result));
+    }
 }

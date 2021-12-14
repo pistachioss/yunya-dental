@@ -6,6 +6,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.RemoteClinicBaseServiceFeign;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
+import com.yunya.feign.report.domain.query.BillItemTollWorkloadQuery;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.query.PatientDimensionQueryForm;
@@ -663,6 +664,7 @@ public class DimensionReportBiz {
         List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(queryFrom);
         DynamicHeaderPageInfo<JSONObject> result = new DynamicHeaderPageInfo<>();
         ClinicPerformanceBusinessQuery clinicQuery = new ClinicPerformanceBusinessQuery();
+        clinicQuery.setWhetherPage(false);
         clinicQuery.setOrgIds(query.getOrgIds());
         clinicQuery.setDateType(query.getDateType());
         clinicQuery.setStartDate(query.getStartDate());
@@ -744,5 +746,206 @@ public class DimensionReportBiz {
         ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
         String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "初诊来源占比表");
         excelUtil.exportExcel(response, result, "初诊来源占比表", fileName, pageInfo.getMap());
+    }
+
+    /**
+     * 根据条件查询门诊专科工作量占比
+     *
+     * @param query
+     * @return
+     * @throws Exception
+     */
+    public DynamicHeaderPageInfo<JSONObject> clinicSpecialProjectWorkloadRatio(MultiClinicDateRangetQueryForm query) throws Exception {
+        ClinicPerformanceBusinessQuery queryFrom = new ClinicPerformanceBusinessQuery();
+        queryFrom.setOrgIds(query.getOrgIds());
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(queryFrom);
+        Integer[] orgIds = orgs.stream().map(BaseOrganization::getOrgId).toArray(Integer[]::new);
+        ClinicEmployeeWorkloadQuery workloadQuery = new ClinicEmployeeWorkloadQuery();
+        workloadQuery.setWhetherPage(false);
+        workloadQuery.setDateType(query.getDateType());
+        workloadQuery.setStartDate(query.getStartDate());
+        workloadQuery.setEndDate(query.getEndDate());
+        workloadQuery.setOrgIds(orgIds);
+        SpecialistProjectQuery queryForm = new SpecialistProjectQuery();
+        queryForm.setWhetherPage(false);
+        List<SpecialistProjectVO> specialis = clinicBaseServiceFeign.specialProjectList(queryForm).getList();
+        Set<Integer> itemIds = new HashSet<>();
+        Set<Integer> oralIds = new HashSet<>();
+        specialis.forEach(vo->{
+            String tariffIdStr = vo.getTariffItemIds();
+            if (StringHelper.isNotEmpty(tariffIdStr)) {
+                itemIds.addAll(StringHelper.split2IntList(tariffIdStr, ","));
+            }
+            String oralIdStr = vo.getOralIds();
+            if (StringHelper.isNotEmpty(oralIdStr)) {
+                oralIds.addAll(StringHelper.split2IntList(oralIdStr, ","));
+            }
+        });
+        // 门诊的实收工作量
+        Future<Map<String, BigDecimal>> workloadFuture = employeeWorkloadBiz.findClinicEmployeeReceivedWorkload(workloadQuery, true);
+        BillItemTollWorkloadQuery itemQuery = new BillItemTollWorkloadQuery();
+        itemQuery.setWhetherPage(false);
+        itemQuery.setDateType(query.getDateType());
+        itemQuery.setStartDate(query.getStartDate());
+        itemQuery.setEndDate(query.getEndDate());
+        itemQuery.setOrgIds(orgIds);
+        itemQuery.setItemIds(itemIds);
+        // 价目的实收工作量
+        Future<Map<String, EmployeeTariffWorkloadVO>> tariffWorkload = employeeWorkloadBiz.findClinicExecutorTariffReceivedWorkload(itemQuery);
+        BillItemTollWorkloadQuery oralQuery = new BillItemTollWorkloadQuery();
+        oralQuery.setWhetherPage(false);
+        oralQuery.setDateType(query.getDateType());
+        oralQuery.setStartDate(query.getStartDate());
+        oralQuery.setEndDate(query.getEndDate());
+        oralQuery.setOrgIds(orgIds);
+        oralQuery.setItemType((byte) 1);
+        oralQuery.setItemIds(oralIds);
+        // 商品的实收工作量
+        Future<Map<String, EmployeeTariffWorkloadVO>> oralWorkload = employeeWorkloadBiz.findClinicExecutorTariffReceivedWorkload(oralQuery);
+        return mergeSpecialProjectWorkloadRatio(orgs, baseBillDetailBiz.doDateStyle(query.getStartDate(), query.getEndDate()),
+                workloadFuture.get(), tariffWorkload.get(), oralWorkload.get(), specialis);
+    }
+
+    private DynamicHeaderPageInfo<JSONObject> mergeSpecialProjectWorkloadRatio(List<BaseOrganization> orgs, String date,
+               Map<String, BigDecimal> workloadMap, Map<String, EmployeeTariffWorkloadVO> tariffWorkload,
+               Map<String, EmployeeTariffWorkloadVO> oralWorkload, List<SpecialistProjectVO> specialis) {
+        DynamicHeaderPageInfo<JSONObject> result = new DynamicHeaderPageInfo<>();
+        List<JSONObject> list = new ArrayList<>();
+        Map<String, String> specialMap = new LinkedHashMap<>(16);
+        if (StringHelper.isNotEmpty(orgs)) {
+            Map<Integer, BigDecimal> orgWorkloadMap = emp2OrgWorkloadMap(workloadMap);
+            Map<String, Integer> item2Special = new HashMap<>(16);
+            specialis.forEach(vo->{
+                Integer id = vo.getId();
+                String tariffItemIds = vo.getTariffItemIds();
+                if (StringHelper.isNotEmpty(tariffItemIds)) {
+                    String[] ids = StringHelper.split(tariffItemIds, ",");
+                    for (String oralId : ids) {
+                        item2Special.put("0,"+oralId, id);
+                    }
+                }
+                String oralIdStr = vo.getOralIds();
+                if (StringHelper.isNotEmpty(oralIdStr)) {
+                    String[] ids = StringHelper.split(oralIdStr, ",");
+                    for (String oralId : ids) {
+                        item2Special.put("1,"+oralId, id);
+                    }
+                }
+                specialMap.put(""+id, vo.getSpecialistProjectName());
+            });
+            Map<String, BigDecimal> orgItemWorkloadMap = item2SpecialWorkloadMap(tariffWorkload, oralWorkload, item2Special);
+            orgs.forEach(org->{
+                Integer orgId = org.getOrgId();
+                JSONObject obj = new JSONObject();
+                obj.put("abbreviation", org.getAbbreviation());
+                obj.put("date", date);
+                BigDecimal workload = (BigDecimal) defDecVal(orgWorkloadMap.get(orgId));
+                obj.put("workload", workload);
+                specialMap.forEach((specialId, name)->{
+                    BigDecimal itemWorkload = (BigDecimal) defDecVal(orgItemWorkloadMap.get(orgId + "," + specialId));
+                    BigDecimal percentage = new BigDecimal("0");
+                    if (workload.compareTo(BigDecimal.ZERO)!=0) {
+                        percentage = itemWorkload
+                                .divide(workload, 2, BigDecimal.ROUND_HALF_UP)
+                                .multiply(new BigDecimal(100));
+
+                    }
+                    obj.put(specialId, percentage + "%");
+                });
+                list.add(obj);
+            });
+        }
+        result.setList(list);
+        result.setMap(specialTitleMap(specialMap));
+        return result;
+    }
+
+    private Map<String, String> specialTitleMap(Map<String, String> specialMap) {
+        Map<String, String> title = new LinkedHashMap<>(16);
+        title.put("abbreviation", "门诊");
+        title.put("date", "日期");
+        title.put("workload", "工作量");
+        title.putAll(specialMap);
+        return title;
+    }
+
+    /**
+     * 员工工作量统计转换为门诊工作量统计
+     * @param workloadMap
+     * @return
+     */
+    private Map<Integer, BigDecimal> emp2OrgWorkloadMap(Map<String, BigDecimal> workloadMap) {
+        Map<Integer, BigDecimal> orgWorkloadMap = new HashMap<>(16);
+        workloadMap.forEach((keyStr, workload)->{
+            String[] keys = StringHelper.split(keyStr, ",");
+            Integer orgId = Integer.parseInt(keys[1]);
+            BigDecimal totalWorkload = orgWorkloadMap.get(orgId);
+            if (totalWorkload == null) {
+                totalWorkload = new BigDecimal("0.00");
+            }
+            orgWorkloadMap.put(orgId, totalWorkload.add(workload));
+        });
+        return orgWorkloadMap;
+    }
+
+    /**
+     * 员工项目工作量统计转换为门诊专科工作量统计
+     *
+     * @param tariffWorkload
+     * @param oralWorkload
+     * @param item2Special
+     * @return
+     */
+    private Map<String, BigDecimal> item2SpecialWorkloadMap(Map<String, EmployeeTariffWorkloadVO> tariffWorkload,
+                                Map<String, EmployeeTariffWorkloadVO> oralWorkload, Map<String, Integer> item2Special) {
+        Map<String, BigDecimal> orgItemWorkloadMap = new HashMap<>(16);
+        if (StringHelper.isNotEmpty(tariffWorkload)) {
+            tariffWorkload.forEach((keyStr, vo) -> cumulation(keyStr, item2Special, vo, orgItemWorkloadMap, "0"));
+        }
+        if (StringHelper.isNotEmpty(oralWorkload)) {
+            oralWorkload.forEach((keyStr, vo) -> cumulation(keyStr, item2Special, vo, orgItemWorkloadMap, "1"));
+        }
+        return orgItemWorkloadMap;
+    }
+
+    /**
+     * 累加
+     *
+     * @param keyStr
+     * @param item2Special
+     * @param vo
+     * @param orgItemWorkloadMap
+     */
+    private void cumulation(String keyStr, Map<String, Integer> item2Special, EmployeeTariffWorkloadVO vo, Map<String, BigDecimal> orgItemWorkloadMap, String itemKey) {
+        String[] keys = StringHelper.substringsBetween(keyStr, ",", ".");
+        Integer specialId = item2Special.get(itemKey+","+vo.getItemId());
+        if (!ObjectUtils.isEmpty(specialId)) {
+            String key = keys[0] + "," + specialId;
+            BigDecimal workload = orgItemWorkloadMap.get(key);
+            if (workload == null) {
+                workload = new BigDecimal("0.00");
+            }
+            orgItemWorkloadMap.put(key, workload.add(vo.getWorkload()));
+        }
+
+    }
+
+    /**
+     * 根据条件导出门诊专科工作量占比
+     *
+     * @param query
+     * @param response
+     * @throws Exception
+     */
+    public void clinicSpecialProjectWorkloadRatioExport(MultiClinicDateRangetQueryForm query, HttpServletResponse response) throws Exception {
+        query.setWhetherPage(false);
+        DynamicHeaderPageInfo<JSONObject> pageInfo = clinicSpecialProjectWorkloadRatio(query);
+        List<JSONObject> result = pageInfo.getList();
+        ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+        String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "专科占比表");
+        excelUtil.exportExcel(response, result, "专科占比表", fileName, pageInfo.getMap());
     }
 }

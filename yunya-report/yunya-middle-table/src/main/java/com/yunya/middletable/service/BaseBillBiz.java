@@ -25,7 +25,9 @@ import com.yunya.models.treatment.OrderDetailPayRecord;
 import com.yunya.models.treatment.OrderRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -63,6 +65,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Resource private BasePatientOriginLogMapper basePatientOriginLogMapper;
   /** 患者积分信息 */
   @Resource private CreditsShopMapper creditsShopMapper;
+  /** 员工账单时统计*/
+  @Autowired private StatEmpBillBiz statEmpBillWorkloadBiz;
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -113,9 +117,19 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         } else {
           baseBillDetailMapper.deleteByBillId(dataId);
         }
+        incStatEmpBill(bill, dataId, operateType);
         break;
       default:
         break;
+    }
+  }
+
+  private void incStatEmpBill(BaseBill bill, Integer dataId, Integer operateType) {
+    if (operateType==2 || (operateType==1&& ObjectUtils.isEmpty(bill.getBillDate()))) {
+      BillRecord query = new BillRecord();
+      query.setOrderRecordId(dataId);
+      BillRecord billRecord = billRecordMapper.selectOne(query);
+      statEmpBillWorkloadBiz.incStatEmpBill(billRecord);
     }
   }
 
@@ -200,22 +214,32 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       bill.setInservice(true);
       BillRecord billRecord = billRecordMapper.selectOne(bill);
       if (null != billRecord) {
-        BigDecimal debtAmount = billRecord.getDebtAmount();
-        baseBill.setBillStatus(
-            debtAmount.compareTo(BigDecimal.valueOf(0)) > 0 ? (byte) 0 : (byte) 1);
-        baseBill.setPrivilegeType(billRecord.getPrivilegeType());
-        baseBill.setPrivilegeOrgId(billRecord.getPrivilegeOrgId());
-        baseBill.setFirstPrivilege(billRecord.getFirstPrivilege());
-        baseBill.setPrivilegeAmount(billRecord.getPrivilegeAmount());
-        baseBill.setPrivilegeDate(billRecord.getPrivilegeDate());
-        baseBill.setBillDate(billRecord.getCrtTime());
-        baseBill.setBillNum(billRecord.getBillNumber());
-        baseBill.setActualAmount(billRecord.getActualReceivableAmount());
-        baseBill.setReceivedAmount(billRecord.getReceivedAmount());
-        baseBill.setDebtAmount(debtAmount);
-        baseBill.setCheckerId(billRecord.getCrtId());
+        record2baseReport(billRecord, baseBill);
       }
     }
+  }
+
+  /**
+   * 账单实体转换
+   *
+   * @param billRecord
+   * @param baseBill
+   */
+  private void record2baseReport(BillRecord billRecord, BaseBill baseBill) {
+    BigDecimal debtAmount = billRecord.getDebtAmount();
+    baseBill.setBillStatus(
+            debtAmount.compareTo(BigDecimal.valueOf(0)) > 0 ? (byte) 0 : (byte) 1);
+    baseBill.setPrivilegeType(billRecord.getPrivilegeType());
+    baseBill.setPrivilegeOrgId(billRecord.getPrivilegeOrgId());
+    baseBill.setFirstPrivilege(billRecord.getFirstPrivilege());
+    baseBill.setPrivilegeAmount(billRecord.getPrivilegeAmount());
+    baseBill.setPrivilegeDate(billRecord.getPrivilegeDate());
+    baseBill.setBillDate(billRecord.getCrtTime());
+    baseBill.setBillNum(billRecord.getBillNumber());
+    baseBill.setActualAmount(billRecord.getActualReceivableAmount());
+    baseBill.setReceivedAmount(billRecord.getReceivedAmount());
+    baseBill.setDebtAmount(debtAmount);
+    baseBill.setCheckerId(billRecord.getCrtId());
   }
 
   /**

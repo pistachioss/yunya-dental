@@ -129,6 +129,15 @@ public class RedisConstants implements Serializable {
   /** ---------------------------------积分商城------------------------------------------ */
   public static final String CREDITS_SHOP_ORDER = "credits:shop:order:";
 
+
+  /** ---------------------------------报表统计------------------------------------------ */
+  /** 员工就诊统计锁 */
+  public static final String LOCK_STATISTICS_EMP_TREAT = "lock:statistics:emp:treat:";
+  /** 员工收费时统计锁 */
+  public static final String LOCK_STATISTICS_EMP_PAY = "lock:statistics:emp:pay:";
+  /** 员工账单时统计锁 */
+  public static final String LOCK_STATISTICS_EMP_BILL = "lock:statistics:emp:bill:";
+
   /**
    * 设置key中的占位符
    *
