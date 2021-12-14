@@ -66,6 +66,7 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
                         entity.setQuantity(entity.getQuantity()-detail.getQuantity());
                         mapper.updateByPrimaryKeySelective(entity);
                     }
+                    return null;
                 });
             });
         }
