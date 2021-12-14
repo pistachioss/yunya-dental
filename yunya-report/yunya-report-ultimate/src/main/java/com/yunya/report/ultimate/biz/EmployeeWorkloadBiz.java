@@ -671,7 +671,7 @@ public class EmployeeWorkloadBiz {
      * @param query
      * @return
      */
-    private Future<Map<String, EmployeeTariffWorkloadVO>> findClinicExecutorTariffReceivedWorkload(BillItemTollWorkloadQuery query) {
+    public Future<Map<String, EmployeeTariffWorkloadVO>> findClinicExecutorTariffReceivedWorkload(BillItemTollWorkloadQuery query) {
         return threadPool.submit(()->{
             List<EmployeeTariffWorkloadVO> workload = baseBillDetailMapper.selectClinicExecutorTariffWorkload(query);
             return mapEmployeeWorkloadVO(workload);

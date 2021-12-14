@@ -23,6 +23,8 @@ import java.util.Collection;
 @ToString
 @EqualsAndHashCode(callSuper = true)
 public class BillItemTollWorkloadQuery extends MultiClinicEmployeeQuery implements Serializable {
+  @ApiModelProperty(value = "时间类型:0-日；1-月；2-年")
+  private Byte dateType = 0;
   /** 查询时间 */
   @ApiModelProperty(value = "查询开始时间", required = true)
   @NotBlank(message = "查询开始时间不能为空！")
@@ -36,6 +38,8 @@ public class BillItemTollWorkloadQuery extends MultiClinicEmployeeQuery implemen
   private Collection<Integer[]> categoryItems;
   /** 项目分类ID列表 */
   private Collection<Integer> categoryIds;
+  /** 项目类型（0-价目、1-商品）*/
+  private Byte itemType = 0;
   /** 项目ID列表 */
   private Collection<Integer> itemIds;
 }

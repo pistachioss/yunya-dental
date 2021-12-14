@@ -150,7 +150,7 @@ public class DimensionReportController {
     }
 
     /**
-     * 根据条件查询初诊来源数量分析
+     * 根据条件查询门诊初诊来源占比表
      *
      * @param query 查询条件
      * @return
@@ -171,7 +171,7 @@ public class DimensionReportController {
     }
 
     /**
-     * 根据条件导出初诊来源数量分析
+     * 根据条件导出门诊初诊来源占比表
      *
      * @param query 查询条件
      * @return
@@ -184,6 +184,44 @@ public class DimensionReportController {
             HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangetQueryForm query)
             throws IOException {
         dimesionReportBiz.clinicFirstVisitSourceRatioExport(query, response);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 根据条件查询门诊专科工作量占比表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-专科占比表")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            code = 200,
+                            message =
+                                    "响应格式：{\"msg\":\"success\",\"data\":{\"lastPage\":0,\"startRow\":0,\"hasNextPage\":false,\"prePage\":0,\"nextPage\":0,\"endRow\":0,\"pageSize\":0,\"list\":[{\"1\":91,\"2\":74,\"date\":\"2021\",\"firstVisitCount\":500,\"abbreviation\":\"古墩路门诊\"}],\"pageNum\":0,\"navigatePages\":0,\"navigateFirstPage\":0,\"total\":0,\"pages\":0,\"firstPage\":0,\"size\":0,\"isLastPage\":false,\"hasPreviousPage\":false,\"navigateLastPage\":0,\"isFirstPage\":false,\"map\":{\"1\":\"员工转介绍\",\"2\":\"患者转介绍\",\"abbreviation\":\"门诊\",\"date\":\"日期\",\"firstVisitCount\":\"初诊人数\"}},\"audit\":true,\"status\":0}")
+            })
+    @PostMapping(value = "/clinic/specialProjectWorkload/ratio", name = "公司端报表-报表统计-运营报表-门诊专科占比表")
+    public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicSpecialProjectWorkloadRatio(
+            @RequestBody @Validated MultiClinicDateRangetQueryForm query) throws Exception {
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.clinicSpecialProjectWorkloadRatio(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件导出门诊专科工作量占比表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-门诊业绩&业务报表-专科占比表导出")
+    @PostMapping(
+            value = "/clinic/specialProjectWorkload/ratio/export",
+            name = "公司端报表-报表统计-运营报表-门诊业绩&业务报表-门诊专科占比表导出")
+    public ResponseResult<T> clinicSpecialProjectWorkloadRatioExport(
+            HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangetQueryForm query)
+            throws Exception {
+        dimesionReportBiz.clinicSpecialProjectWorkloadRatioExport(query, response);
         return ResponseUtil.success(null);
     }
 }
