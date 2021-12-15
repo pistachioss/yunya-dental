@@ -50,6 +50,12 @@ public class StatEmpBill {
     private BigDecimal receivableWorkload;
 
     /**
+     * 实收工作量（账单最终）
+     */
+    @Column(name = "received_workload")
+    private BigDecimal receivedWorkload;
+
+    /**
      * 项目数量
      */
     private Integer quantity;
@@ -172,6 +178,14 @@ public class StatEmpBill {
      */
     public void setReceivableWorkload(BigDecimal receivableWorkload) {
         this.receivableWorkload = receivableWorkload;
+    }
+
+    public BigDecimal getReceivedWorkload() {
+        return receivedWorkload;
+    }
+
+    public void setReceivedWorkload(BigDecimal receivedWorkload) {
+        this.receivedWorkload = receivedWorkload;
     }
 
     /**
