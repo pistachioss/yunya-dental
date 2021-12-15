@@ -324,7 +324,10 @@
                 ) btp1 ON btp.treatmentId = btp1.treatment_id
             ) btp ON bp.id = btp.patient_id
     </select>
-
+    <update id="deleteTrent">
+     update base_treatment_process set inservice = 0
+     where treatment_id = #{treatmentId}
+  </update>
     <!-- 末诊后无预约、随访的患者列表 -->
     <select id="selectNotSeenList" resultType="com.yunya.feign.report.domain.vo.BasePatientNotSeenVo">
         select
@@ -353,6 +356,7 @@
                 and btp.org_id = #{form.orgId}
             </if>
             and btp.treat_end_time is not null
+            and btp.inservice = 1
         </where>
         group by btp.patient_id
         ) btp

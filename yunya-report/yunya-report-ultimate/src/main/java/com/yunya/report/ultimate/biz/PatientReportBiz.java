@@ -70,7 +70,9 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     List<BasePatientNotSeenVo> basePatientNotSeenVoList = mapper.selectNotSeenList(form);
     return new PageInfo<>(basePatientNotSeenVoList);
   }
-
+  public void deleteTrent(Integer treatmentId) {
+   mapper.deleteTrent(treatmentId);
+  }
   /**
    * 查询并装配下次提醒
    *
