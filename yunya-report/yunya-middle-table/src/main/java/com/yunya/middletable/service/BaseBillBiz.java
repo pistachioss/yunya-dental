@@ -66,7 +66,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   /** 患者积分信息 */
   @Resource private CreditsShopMapper creditsShopMapper;
   /** 员工账单时统计*/
-  @Autowired private StatEmpBillBiz statEmpBillWorkloadBiz;
+  @Autowired private StatEmpBillBiz statEmpBillBiz;
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -117,20 +117,29 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         } else {
           baseBillDetailMapper.deleteByBillId(dataId);
         }
-        incStatEmpBill(bill, dataId, operateType);
+        incStatEmpBill(bill, dataId);
         break;
       default:
         break;
     }
   }
 
-  private void incStatEmpBill(BaseBill bill, Integer dataId, Integer operateType) {
-    if (operateType==2 || (operateType==1&& ObjectUtils.isEmpty(bill.getBillDate()))) {
-      BillRecord query = new BillRecord();
-      query.setOrderRecordId(dataId);
-      BillRecord billRecord = billRecordMapper.selectOne(query);
-      statEmpBillWorkloadBiz.incStatEmpBill(billRecord);
-    }
+  private void incStatEmpBill(BaseBill bill, Integer dataId) {
+      if (ObjectUtils.isEmpty(bill)) {
+        bill = new BaseBill();
+        BillRecord query = new BillRecord();
+        query.setOrderRecordId(dataId);
+        query.setInservice(false);
+        BillRecord billRecord = billRecordMapper.selectOne(query);
+        record2baseReport(billRecord, bill);
+      }
+      if (!ObjectUtils.isEmpty(bill.getBillDate())) {
+        Integer billId = bill.getBillId();
+        OrderDetail query = new OrderDetail();
+        query.setOrderRecordId(billId);
+        List<OrderDetail> orderDetails = orderDetailMapper.select(query);
+        statEmpBillBiz.incStatEmpBill(orderDetails, bill);
+      }
   }
 
   /** 判断是否首次下单，若是则推荐者增加500积分 */

@@ -51,4 +51,40 @@
     <delete id="deleteByBillId">
         delete from base_bill_detail where bill_id = #{billId}
     </delete>
+
+    <select id="groupBillDetailByDateAndExecutorId" resultType="com.yunya.models.report.BaseBillDetail">
+        SELECT
+            bbd.item_type AS itemType,
+            bbd.item_id AS itemId,
+            bbd.executor_id AS executorId,
+            SUM(bbd.quantity*bbd.price-bbd.discount_amount) AS discountAmount,
+            SUM(bbd.quantity) AS quantity,
+            <if test="payeeDate != null">
+                IFNULL(bbp.received_amount,0) AS couponWorkload,
+            </if>
+            SUM(bbd.received_amount) AS receivedAmount
+        FROM base_bill_detail bbd
+        LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
+        <if test="payeeDate != null">
+            LEFT JOIN (
+                SELECT SUM(received_amount) AS received_amount, bbp.bill_id FROM base_bill_pay
+                WHERE DATE_FORMAT(bbp.payee_date,'%Y%m%d')=#{payeeDate}
+            ) bbp ON bbp.bill_id = bb.bill_id
+        </if>
+        <where>
+            AND bb.bill_date is not null
+            AND bb.org_id = #{orgId}
+            <if test="billDate != null">
+                AND DATE_FORMAT(bb.bill_date, '%Y%m%d')  = #{billDate}
+            </if>
+            <if test="payeeDate != null">
+                AND DATE_FORMAT(bbp.payee_date,'%Y%m%d')=#{payeeDate}
+            </if>
+            AND bbd.executor_id in
+            <foreach collection="executorIds" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+        GROUP BY bbd.executor_id, bbd.item_type, bbd.item_id
+    </select>
 </mapper>

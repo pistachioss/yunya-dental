@@ -7,17 +7,21 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.MemberExpendRecordMapper;
 import com.yunya.middletable.dao.patient.PrepaidExpendRecordMapper;
+import com.yunya.middletable.dao.report.BaseBillMapper;
 import com.yunya.middletable.dao.report.BaseBillPayDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillPayMapper;
 import com.yunya.middletable.dao.treatment.BillPayDetailRecordMapper;
 import com.yunya.middletable.dao.treatment.BillPayRecordMapper;
+import com.yunya.middletable.dao.treatment.OrderDetailMapper;
 import com.yunya.middletable.service.credits_shop.BillCreditsCallback;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
+import com.yunya.models.report.BaseBill;
 import com.yunya.models.report.BaseBillPay;
 import com.yunya.models.report.BaseBillPayDetail;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
+import com.yunya.models.treatment.OrderDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +60,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   @Autowired private PrepaidExpendRecordMapper prepaidExpendRecordMapper;
   /** 员工收费时统计*/
   @Autowired private StatEmpPayBiz statEmpPayBiz;
+  /** 订单明细*/
+  @Autowired private OrderDetailMapper orderDetailMapper;
+  /** 账单*/
+  @Autowired private BaseBillMapper baseBillMapper;
   /** 线程池 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -90,16 +98,24 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           billCreditsCallback.scrapCredits(dataId);
           baseBillPayDetailMapper.deleteByBillPayId(dataId);
         }
-        incStatEmpPayWorkload(baseBillPay, dataId, operateType);
+        statEmpPayWorkload(dataId);
         break;
       default:
         break;
     }
   }
 
-  private void incStatEmpPayWorkload(BaseBillPay baseBillPay, Integer dataId, Integer operateType) {
-    if (operateType==2 || (operateType==1&& ObjectUtils.isEmpty(baseBillPay.getPayeeDate()))) {
-      statEmpPayBiz.incStatEmpPay(billPayRecordMapper.selectByPrimaryKey(dataId));
+  private void statEmpPayWorkload(Integer dataId) {
+    BaseBillPay baseBillPay = record2BaseReport(billPayRecordMapper.selectByPrimaryKey(dataId));
+    Integer billId = baseBillPay.getBillId();
+    OrderDetail query = new OrderDetail();
+    query.setOrderRecordId(billId);
+    List<OrderDetail> orderDetails = orderDetailMapper.select(query);
+    BaseBill bill = new BaseBill();
+    bill.setBillId(billId);
+    BaseBill baseBill = baseBillMapper.selectOne(bill);
+    if (!ObjectUtils.isEmpty(baseBill.getBillDate())) {
+      statEmpPayBiz.incStatEmpPay(orderDetails, baseBill, baseBillPay);
     }
   }
 
@@ -188,18 +204,22 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   private BaseBillPay generateBaseBillPay(Integer billPayId) {
     BillPayRecord billPayRecord = billPayRecordMapper.selectByPrimaryKey(billPayId);
     if (null != billPayRecord && billPayRecord.getInservice()) {
-      BaseBillPay baseBillPay = new BaseBillPay();
-      baseBillPay.setBillPayId(billPayId);
-      baseBillPay.setBillId(billPayRecord.getOrderRecordId());
-      baseBillPay.setOrgId(billPayRecord.getOrgId());
-      baseBillPay.setTreatmentId(billPayRecord.getTreatmentRecordId());
-      baseBillPay.setPayeeUserId(billPayRecord.getCrtId());
-      baseBillPay.setPayeeDate(billPayRecord.getCrtTime());
-      baseBillPay.setReceivedAmount(billPayRecord.getReceivedAmount());
-      baseBillPay.setStillOweAmount(billPayRecord.getStillOweAmount());
-      return baseBillPay;
+      return record2BaseReport(billPayRecord);
     }
     return null;
+  }
+
+  private BaseBillPay record2BaseReport(BillPayRecord billPayRecord) {
+    BaseBillPay baseBillPay = new BaseBillPay();
+    baseBillPay.setBillPayId(billPayRecord.getId());
+    baseBillPay.setBillId(billPayRecord.getOrderRecordId());
+    baseBillPay.setOrgId(billPayRecord.getOrgId());
+    baseBillPay.setTreatmentId(billPayRecord.getTreatmentRecordId());
+    baseBillPay.setPayeeUserId(billPayRecord.getCrtId());
+    baseBillPay.setPayeeDate(billPayRecord.getCrtTime());
+    baseBillPay.setReceivedAmount(billPayRecord.getReceivedAmount());
+    baseBillPay.setStillOweAmount(billPayRecord.getStillOweAmount());
+    return baseBillPay;
   }
 
   /**
