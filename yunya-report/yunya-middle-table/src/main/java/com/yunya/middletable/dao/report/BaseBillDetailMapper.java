@@ -21,4 +21,10 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param baseBillDetails 订单明细列表
    */
   void batchInsertSelective(@Param("baseBillDetails") List<BaseBillDetail> baseBillDetails);
+
+  List<BaseBillDetail> groupBillDetailByDateAndExecutorId(
+          @Param("orgId") Integer orgId,
+          @Param("billDate") Integer billDate,
+          @Param("payeeDate") Integer payeeDate,
+          @Param("executorIds") List<Integer> executorIds);
 }

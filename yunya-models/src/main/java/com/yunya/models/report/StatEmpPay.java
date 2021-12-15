@@ -62,12 +62,6 @@ public class StatEmpPay {
     private Integer crtId;
 
     /**
-     * 收费人id
-     */
-    @Column(name = "pay_id")
-    private Integer payId;
-
-    /**
      * 获取门诊id
      *
      * @return org_id - 门诊id
@@ -209,23 +203,5 @@ public class StatEmpPay {
      */
     public void setCrtId(Integer crtId) {
         this.crtId = crtId;
-    }
-
-    /**
-     * 获取收费人id
-     *
-     * @return pay_id - 收费人id
-     */
-    public Integer getPayId() {
-        return payId;
-    }
-
-    /**
-     * 设置收费人id
-     *
-     * @param payId 收费人id
-     */
-    public void setPayId(Integer payId) {
-        this.payId = payId;
     }
 }

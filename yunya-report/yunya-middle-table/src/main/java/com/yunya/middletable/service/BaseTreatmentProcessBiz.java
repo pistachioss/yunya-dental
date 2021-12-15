@@ -109,7 +109,7 @@ public class BaseTreatmentProcessBiz
       query.setRegisteredId(dataId);
       treatmentRecord = treatmentRecordMapper.selectOne(query);
     }
-    if (treatmentRecord.getStatus().intValue() == 4) {
+    if (treatmentRecord.getStatus().intValue() == 3) {
       statEmpTreatBiz.incStatEmpTreat(treatmentRecord);
     }
   }

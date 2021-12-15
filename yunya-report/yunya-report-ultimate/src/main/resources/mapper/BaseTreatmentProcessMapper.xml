@@ -834,7 +834,8 @@
             count(treatment_id) AS count
         FROM base_treatment_process btp
         <where>
-            patient_id IN
+            AND btp.treat_end_time IS NOT NULL
+            AND patient_id IN
             <foreach collection="patientIds" item="item" index="index" open="(" close=")" separator=",">
                 #{item}
             </foreach>
