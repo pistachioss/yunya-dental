@@ -81,17 +81,18 @@ public class BaseOrganizationBiz extends BaseBiz<BaseOrganizationMapper, BaseOrg
    */
   private BaseOrganization generateOrganization(Integer orgId) {
     Company company = companyMapper.selectByPrimaryKey(orgId);
-    return null != company ? setOrganizationValue(orgId, company.getType()) : null;
+    return null != company ? setOrganizationValue(orgId, company) : null;
   }
 
   /**
    * 设置组织字段属性
    *
    * @param orgId 组织id
-   * @param orgType 组织类型
+   * @param company 组织
    * @return
    */
-  private BaseOrganization setOrganizationValue(Integer orgId, Byte orgType) {
+  private BaseOrganization setOrganizationValue(Integer orgId, Company company) {
+    Byte orgType = company.getType();
     BaseOrganization organization = new BaseOrganization();
     organization.setOrgId(orgId);
     organization.setOrgType(orgType);
@@ -101,6 +102,9 @@ public class BaseOrganizationBiz extends BaseBiz<BaseOrganizationMapper, BaseOrg
     if (null != extInfo) {
       organization.setAbbreviation(extInfo.getAbbreviation());
       organization.setClinicNumber(extInfo.getClinicNumber());
+    }
+    if (orgType.intValue() == 1) {
+      organization.setAbbreviation(company.getName());
     }
     return organization;
   }
@@ -121,7 +125,7 @@ public class BaseOrganizationBiz extends BaseBiz<BaseOrganizationMapper, BaseOrg
           company -> {
             Integer orgId = company.getId();
             mapper.deleteByPrimaryKey(orgId);
-            BaseOrganization organization = setOrganizationValue(orgId, company.getType());
+            BaseOrganization organization = setOrganizationValue(orgId, company);
             mapper.insertSelective(organization);
           });
     }
