@@ -74,6 +74,7 @@ public class EmployeeWorkloadBiz {
      * @return
      */
     private List<ClinicEmployeeWorkloadOfOperationVO> findEmployeeWorkloadList(ClinicEmployeeWorkloadQuery query) throws Exception {
+        query.setWhetherPage(false);
         // 主数据：门诊 + 员工
         Future<List<ClinicEmployeBonusCoefficientVO>> employee = multiFindClinicEmployeeCartesianProduct(query);
 

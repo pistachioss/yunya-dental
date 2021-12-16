@@ -6,15 +6,18 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.RemoteClinicBaseServiceFeign;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
-import com.yunya.feign.report.domain.query.BillItemTollWorkloadQuery;
-import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
-import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
-import com.yunya.feign.report.domain.query.PatientDimensionQueryForm;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangetQueryForm;
+import com.yunya.feign.report.domain.query.base.MultiClinicNumDateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.NumDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseOrganization;
+import com.yunya.models.report.StatEmpPay;
+import com.yunya.models.report.StatEmpTreat;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +33,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -52,7 +56,9 @@ public class DimensionReportBiz {
     @Autowired
     private BaseVisitRemindBiz baseVisitRemindBiz;
     @Autowired
-    private BaseBillPayBiz baseBillPayBiz;
+    private StatEmpPayBiz statEmpPayBiz;
+    @Autowired
+    private StatEmpTreatBiz statEmpTreatBiz;
     @Autowired
     private BaseBillDetailBiz baseBillDetailBiz;
     @Autowired
@@ -494,16 +500,16 @@ public class DimensionReportBiz {
         return result;
     }
 
-    private Object defValue(Object value) {
-        return defValue(value, String.class);
+    private String defValue(Object value) {
+        return defValue(value, String.class) + "";
     }
 
-    private Object defIntVal(Object value) {
-        return defValue(value, Integer.class);
+    private Integer defIntVal(Object value) {
+        return Integer.parseInt(defValue(value, Integer.class) + "");
     }
 
-    private Object defDecVal(Object value) {
-        return defValue(value, BigDecimal.class);
+    private BigDecimal defDecVal(Object value) {
+        return (BigDecimal) defValue(value, BigDecimal.class);
     }
 
     private Object defValue(Object value, Class<?> clzz) {
@@ -662,7 +668,7 @@ public class DimensionReportBiz {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }
         List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(queryFrom);
-        DynamicHeaderPageInfo<JSONObject> result = new DynamicHeaderPageInfo<>();
+        DynamicHeaderPageInfo result = new DynamicHeaderPageInfo<>(orgs);
         ClinicPerformanceBusinessQuery clinicQuery = new ClinicPerformanceBusinessQuery();
         clinicQuery.setWhetherPage(false);
         clinicQuery.setOrgIds(query.getOrgIds());
@@ -812,7 +818,7 @@ public class DimensionReportBiz {
     private DynamicHeaderPageInfo<JSONObject> mergeSpecialProjectWorkloadRatio(List<BaseOrganization> orgs, String date,
                Map<String, BigDecimal> workloadMap, Map<String, EmployeeTariffWorkloadVO> tariffWorkload,
                Map<String, EmployeeTariffWorkloadVO> oralWorkload, List<SpecialistProjectVO> specialis) {
-        DynamicHeaderPageInfo<JSONObject> result = new DynamicHeaderPageInfo<>();
+        DynamicHeaderPageInfo result = new DynamicHeaderPageInfo<>(orgs);
         List<JSONObject> list = new ArrayList<>();
         Map<String, String> specialMap = new LinkedHashMap<>(16);
         if (StringHelper.isNotEmpty(orgs)) {
@@ -947,5 +953,245 @@ public class DimensionReportBiz {
         ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
         String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "专科占比表");
         excelUtil.exportExcel(response, result, "专科占比表", fileName, pageInfo.getMap());
+    }
+
+    /**
+     * 根据条件查询门诊统计表（实收工作量、初诊人数、复诊人数）
+     *
+     * @param query
+     * @return
+     */
+    public DynamicHeaderPageInfo<JSONObject> clinicWorkloadVisitStatistics(MultiClinicNumDateRangeQueryForm query) throws Exception {
+        dateQuery2NumDateQuery(query);
+        Byte dateType = query.getDateType();
+        if (dateType.intValue() != 2) {
+            throw new ClientServiceException("请选择年份！",PARAMETERS_IS_ILLEGAL);
+        }
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        ClinicPerformanceBusinessQuery clinicQuery = new ClinicPerformanceBusinessQuery();
+        clinicQuery.setOrgIds(query.getOrgIds());
+        List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(clinicQuery);
+        Future<Map<String, BigDecimal>> workloadFuture = multiFindClinicReceivedWorkload(query, query.getOrgIds(), null);
+        Future<Map<String, StatEmpTreat>> treatNumFuture = multiFindClinicTreatVisitNum(query, query.getOrgIds(), null);
+        return mergeClinicWorkloadVisitStatistice(query, orgs, workloadFuture.get(), treatNumFuture.get());
+    }
+
+    private DynamicHeaderPageInfo<JSONObject> mergeClinicWorkloadVisitStatistice(NumDateRangeQueryForm query,
+                                                                                 List<BaseOrganization> orgs, Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> treatNumMap) {
+        String startDate = query.getStartDate();
+        String endDate = query.getEndDate();
+        List<String> years = DateUtil.sliceUpDateRange(startDate, endDate);
+        int size = Integer.parseInt(endDate) - Integer.parseInt(startDate) + 1;
+        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(orgs);
+        List<JSONObject> list = new ArrayList<>();
+        Map<String, String> title = new LinkedHashMap<>(16);
+        orgs.forEach(vo-> putObject(vo.getOrgId(), vo.getAbbreviation(), size, years, workloadMap, treatNumMap, title, list));
+        pageInfo.setMap(title);
+        pageInfo.setList(list);
+        pageInfo.setTotal(pageInfo.getTotal()*13);
+        pageInfo.setPageNum(query.getPageNum());
+        pageInfo.setPageSize(query.getPageSize());
+        return pageInfo;
+    }
+
+    private void putObject(Integer keyId, String name, int size, List<String> years,
+           Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> treatNumMap,
+           Map<String, String> title, List<JSONObject> list) {
+        BigDecimal[] totalWorkload = new BigDecimal[size];
+        for (int i = 0; i < size; i++) {
+            totalWorkload[i] = new BigDecimal("0.00");
+        }
+        int[] totalFirstVisitCount = new int[size];
+        int[] totalReVisitCount = new int[size];
+        for (int i = 1; i <=12; i++) {
+            JSONObject obj = new JSONObject();
+            obj.put("name", defValue(name));
+            obj.put("Wmonth", i);
+            obj.put("Fmonth", i);
+            obj.put("Rmonth", i);
+            int index = 0;
+            for (String year : years) {
+                String key = keyId + "," + year;
+                if (i < 10) {
+                    key += "0" + i;
+                } else {
+                    key += i;
+                }
+                BigDecimal workload = defDecVal(workloadMap.get(key));
+                obj.put("W"+year, workload);
+                StatEmpTreat statEmpTreat = treatNumMap.get(key);
+                int firstVisitCount = 0;
+                int reVisitCount = 0;
+                if (!ObjectUtils.isEmpty(statEmpTreat)) {
+                    firstVisitCount = statEmpTreat.getFirstVisitCount();
+                    reVisitCount = statEmpTreat.getReVisitCount();
+                }
+                obj.put("F"+year, firstVisitCount);
+                obj.put("R"+year, reVisitCount);
+                totalWorkload[index] = totalWorkload[index].add(workload);
+                totalFirstVisitCount[index] += firstVisitCount;
+                totalReVisitCount[index++] += reVisitCount;
+            }
+            list.add(obj);
+        }
+        title.put("name", "门诊");
+        title.put("Wmonth", "月份");
+        years.forEach(year-> title.put("W"+year, year));
+        title.put("Fmonth", "月份");
+        years.forEach(year-> title.put("F"+year, year));
+        title.put("Rmonth", "月份");
+        years.forEach(year-> title.put("R"+year, year));
+        JSONObject totalObj = new JSONObject();
+        totalObj.put("name", defValue(name));
+        totalObj.put("Wmonth", "总计");
+        totalObj.put("Fmonth", "总计");
+        totalObj.put("Rmonth", "总计");
+        for (int i = 0; i < years.size(); i++) {
+            String year = years.get(i);
+            totalObj.put("W"+year, totalWorkload[i]);
+            totalObj.put("F"+year, totalFirstVisitCount[i]);
+            totalObj.put("R"+year, totalReVisitCount[i]);
+        }
+        list.add(totalObj);
+    }
+
+    private Future<Map<String, StatEmpTreat>> multiFindClinicTreatVisitNum(NumDateRangeQueryForm query, List<Integer> orgIds, List<Integer> employeeIds) {
+        return threadPool.submit(()->{
+            Map<String, StatEmpTreat> result = new HashMap<>(16);
+            List<StatEmpTreat> data = statEmpTreatBiz.findClinicTreatVisitNum(query, orgIds, employeeIds);
+            if (StringHelper.isNotEmpty(data)) {
+                if (StringHelper.isNotEmpty(orgIds)) {
+                    data.forEach(vo -> result.put(vo.getOrgId() + "," + vo.getTreatDate(), vo));
+                } else {
+                    data.forEach(vo -> result.put(vo.getDentistId() + "," + vo.getTreatDate(), vo));
+                }
+            }
+            return result;
+        });
+    }
+
+    private void dateQuery2NumDateQuery(NumDateRangeQueryForm query) {
+        int endInt = Integer.parseInt(query.getEndDate());
+        Integer eDateInt = DateUtil.date2Number(String.valueOf(endInt + 1));
+        query.setSDateInt(DateUtil.date2Number(query.getStartDate()));
+        query.setEDateInt(eDateInt);
+    }
+
+    private Future<Map<String, BigDecimal>> multiFindClinicReceivedWorkload(NumDateRangeQueryForm query, List<Integer> orgIds, List<Integer> employeeIds) {
+        return threadPool.submit(()->{
+            Map<String, BigDecimal> result = new HashMap<>(16);
+            List<StatEmpPay> data = statEmpPayBiz.findClinicReceivedWorkload(query, orgIds, employeeIds);
+            if (StringHelper.isNotEmpty(data)) {
+                if (StringHelper.isNotEmpty(orgIds)) {
+                    data.forEach(vo -> result.put(vo.getOrgId() + "," + vo.getPayDate(), vo.getReceivedWorkload()));
+                } else {
+                    data.forEach(vo -> result.put(vo.getDentistId() + "," + vo.getPayDate(), vo.getReceivedWorkload()));
+                }
+            }
+            return result;
+        });
+    }
+
+    public void clinicWorkloadVisitStatisticsExport(MultiClinicNumDateRangeQueryForm query, HttpServletResponse response) throws Exception {
+        query.setWhetherPage(false);
+        dateQuery2NumDateQuery(query);
+        DynamicHeaderPageInfo<JSONObject> pageInfo = clinicWorkloadVisitStatistics(query);
+        List<JSONObject> result = pageInfo.getList();
+        ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+        List<CellRangeAddress> crds = workloadVisitMergeRegiion(
+                pageInfo,
+                query,
+                "门诊","工作量","初诊人数","复诊人数");
+        excelUtil.setMergeRegion(crds);
+        String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "门诊统计表");
+        excelUtil.exportExcel(response, result, "门诊统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
+    }
+
+    private List<CellRangeAddress> workloadVisitMergeRegiion(DynamicHeaderPageInfo<JSONObject> pageInfo,
+                                                             NumDateRangeQueryForm query, String... title) {
+        List<CellRangeAddress> result = new ArrayList<>();
+        int size = Integer.parseInt(query.getEndDate()) - Integer.parseInt(query.getStartDate()) + 2;
+        List<JSONObject> list = pageInfo.getList();
+        Map<String, String> map = pageInfo.getMap();
+        String[] header = new String[size*3 + 1];
+        // 工作量、初诊人数、复诊人数横向表头
+        result.add(new CellRangeAddress(0,1,0,0));
+        result.add(new CellRangeAddress(0,0,1,1 + size - 1));
+        int colInx = 1;
+        header[0] = title[0];
+        for (int i = 1; i < header.length; i++) {
+            header[i] = "";
+            if (i % size == 0) {
+                result.add(new CellRangeAddress(0, 0, i+1, i + size));
+                header[i-1] = title[colInx++];
+            }
+        }
+        // 门诊/医生纵向表头
+        if (StringHelper.isNotEmpty(list)) {
+            for (int i = 2; i < list.size(); ++i) {
+                result.add(new CellRangeAddress(i, i+=12, 0, 0));
+            }
+        }
+        JSONObject obj = new JSONObject();
+        map.forEach((key, value)->obj.put(key, value));
+        list.add(0, obj);
+        pageInfo.setHeader(header);
+       return result;
+    }
+
+    public DynamicHeaderPageInfo<JSONObject> dentistWorkloadVisitStatistics(EmployeeWorkStatusQueryForm query) throws Exception {
+        query.setWhetherPage(false);
+        dateQuery2NumDateQuery(query);
+        Byte dateType = query.getDateType();
+        if (dateType.intValue() != 2) {
+            throw new ClientServiceException("请选择年份！",PARAMETERS_IS_ILLEGAL);
+        }
+        // 门诊员工信息
+        MultiClinicEmployeeQuery queryForm = new MultiClinicEmployeeQuery();
+        queryForm.setWorkStatus(query.getWorkStatus());
+        queryForm.setEmployeeIds(query.getEmployeeIds());
+        queryForm.setWhetherPage(query.getWhetherPage());
+        queryForm.setPageNum(query.getPageNum());
+        queryForm.setPageSize(query.getPageSize());
+        List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(queryForm, false);
+        List<Integer> employeeIds = employees.stream().map(ClinicEmployeeReportVO::getEmployeeId).collect(Collectors.toList());
+        Future<Map<String, BigDecimal>> workloadFuture = multiFindClinicReceivedWorkload(query, null, employeeIds);
+        Future<Map<String, StatEmpTreat>> treatNumFuture = multiFindClinicTreatVisitNum(query, null, employeeIds);
+        return mergeDentistWorkloadVisitStatistice(query, employees, workloadFuture.get(), treatNumFuture.get());
+    }
+
+    private DynamicHeaderPageInfo<JSONObject> mergeDentistWorkloadVisitStatistice(NumDateRangeQueryForm query,
+              List<ClinicEmployeBonusCoefficientVO> employees, Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> treatNumMap) {
+        String startDate = query.getStartDate();
+        String endDate = query.getEndDate();
+        List<String> years = DateUtil.sliceUpDateRange(startDate, endDate);
+        int size = Integer.parseInt(endDate) - Integer.parseInt(startDate) + 1;
+        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(employees);
+        List<JSONObject> list = new ArrayList<>();
+        Map<String, String> title = new LinkedHashMap<>(16);
+        employees.forEach(vo-> putObject(vo.getEmployeeId(), vo.getEmployeeName(), size, years, workloadMap, treatNumMap, title, list));
+        pageInfo.setMap(title);
+        pageInfo.setList(list);
+        pageInfo.setTotal(pageInfo.getTotal()*13);
+        pageInfo.setPageNum(query.getPageNum());
+        pageInfo.setPageSize(query.getPageSize());
+        return pageInfo;
+    }
+
+    public void dentistWorkloadVisitStatisticsExport(EmployeeWorkStatusQueryForm query, HttpServletResponse response) throws Exception {
+        query.setWhetherPage(false);
+        dateQuery2NumDateQuery(query);
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dentistWorkloadVisitStatistics(query);
+        List<JSONObject> result = pageInfo.getList();
+        ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+        List<CellRangeAddress> crds = workloadVisitMergeRegiion(
+                pageInfo,
+                query,
+                "医生","工作量","初诊人数","复诊人数");
+        excelUtil.setMergeRegion(crds);
+        String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "医生统计表");
+        excelUtil.exportExcel(response, result, "医生统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
 }

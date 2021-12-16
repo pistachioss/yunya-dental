@@ -1,19 +1,19 @@
 package com.yunya.middletable.service;
 
 import com.google.common.base.Joiner;
+import com.yunya.feign.report.domain.vo.BillExecutorItemVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseBillDetailMapper;
 import com.yunya.middletable.dao.report.StatEmpPayMapper;
 import com.yunya.models.report.BaseBill;
-import com.yunya.models.report.BaseBillDetail;
 import com.yunya.models.report.BaseBillPay;
 import com.yunya.models.report.StatEmpPay;
 import com.yunya.models.treatment.OrderDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -29,7 +29,6 @@ import static com.yunya.framework.common.constant.RedisConstants.LOCK_STATISTICS
  * @since: 1.0.0
  */
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
     @Autowired private RedisLockBiz redisLockBiz;
     /** 账单明细*/
@@ -40,7 +39,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
         Date date = new Date(System.currentTimeMillis());
         Integer payDate = DateUtil.date2Number(baseBillPay.getPayeeDate());
         if (StringHelper.isNotEmpty(orderDetails)) {
-            List<Integer> executorIds = new ArrayList<>();
+            Set<Integer> executorIds = new HashSet<>();
             orderDetails.forEach(vo->{
                 Integer executorId = vo.getExecutorId();
                 StatEmpPay entity = new StatEmpPay();
@@ -50,12 +49,14 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                 entity.setItemType(vo.getType());
                 entity.setItemId(vo.getBillingItemId());
                 mapper.deleteByPrimaryKey(entity);
-                if (vo.getInservice() && !executorIds.contains(executorId)) {
+                if (vo.getInservice() && !ObjectUtils.isEmpty(executorId)) {
                     executorIds.add(executorId);
                 }
             });
-            List<BaseBillDetail> details = baseBillDetailMapper.groupBillDetailByDateAndExecutorId(orgId, null, payDate, executorIds);
+            List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId,
+                    null, payDate, executorIds);
             sharedItemAmount(details);
+            details = statisticsExecutorItem(details);
             if (StringHelper.isNotEmpty(details)) {
                 Integer payeeUserId = baseBillPay.getPayeeUserId();
                 details.forEach(vo->{
@@ -69,7 +70,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                         entity.setPayDate(payDate);
                         entity.setItemType(vo.getItemType());
                         entity.setItemId(vo.getItemId());
-                        entity.setReceivedWorkload(vo.getDiscountAmount().multiply(vo.getCouponWorkload()));
+                        entity.setReceivedWorkload(vo.getReceivedWorkload());
                         entity.setCrtId(payeeUserId);
                         entity.setCrtTime(date);
                         mapper.insertSelective(entity);
@@ -78,6 +79,33 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                 });
             }
         }
+    }
+
+    /**
+     * 统计执行人、项目的数量和实收
+     * @param details
+     * @return
+     */
+    public List<BillExecutorItemVO> statisticsExecutorItem(List<BillExecutorItemVO> details) {
+        if (StringHelper.isNotEmpty(details)) {
+            Map<String, BillExecutorItemVO> map = new HashMap<>(16);
+            details.forEach(vo->{
+                String key = vo.getExecutorId() + "," + vo.getItemType() + "," + vo.getItemId();
+                BillExecutorItemVO executorItem = map.get(key);
+                if (ObjectUtils.isEmpty(executorItem)) {
+                    executorItem = new BillExecutorItemVO();
+                    executorItem.setItemType(vo.getItemType());
+                    executorItem.setItemId(vo.getItemId());
+                    executorItem.setExecutorId(vo.getExecutorId());
+                }
+                executorItem.setQuantity(executorItem.getQuantity() + vo.getQuantity());
+                executorItem.setReceivableWorkload(executorItem.getReceivableWorkload().add(vo.getReceivableWorkload()));
+                executorItem.setReceivedWorkload(executorItem.getReceivedWorkload().add(vo.getReceivedWorkload()));
+                map.put(key, executorItem);
+            });
+            return new ArrayList<>(map.values());
+        }
+        return null;
     }
 
 //    public List<OrderDetail> findOrderDetailByOrderRecordId(Integer orderRecordId, BigDecimal amount) {
@@ -112,36 +140,42 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
 
     /**
      * 对baseBillDetail中各项目的分摊占比值
-     *      BaseBillDetail.discountAmount--项目应收
-     *      BaseBillDetail.receivedAmount--占比值
+     *
      * @param details
      * @return
      */
-    private void sharedItemAmount(List<BaseBillDetail> details) {
+    private void sharedItemAmount(List<BillExecutorItemVO> details) {
         // 每个账单的执行实收总额
         Map<Integer, BigDecimal[]> total = new HashMap<>(16);
-        details.forEach(
-                detail -> {
-                    Integer billId = detail.getBillId();
-                    BigDecimal[] sum = total.get(billId);
-                    if (sum == null) {
-                        sum = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
-                    }
-                    sum[0] = sum[0].add(detail.getReceivedAmount());
-                    total.put(billId, sum);
-                });
-        details.forEach(
-                detail -> {
-                    BigDecimal receivedAmount = detail.getReceivedAmount();
-                    Integer billId = detail.getBillId();
-                    BigDecimal[] sum = total.get(billId);
-                    sum[1] = sum[1].add(receivedAmount);
-                    BigDecimal amount = receivedAmount.divide(sum[0], 2, BigDecimal.ROUND_HALF_UP);
-                    if (sum[0].compareTo(sum[1]) == 0) { // 最后一个占比项目
-                        amount = BigDecimal.ONE.subtract(sum[2]);
-                    }
-                    sum[2] = sum[2].add(amount);
-                    detail.setDiscountAmount(amount);
-                });
+        if (StringHelper.isNotEmpty(details)) {
+            details.forEach(
+                    detail -> {
+                        Integer billId = detail.getBillId();
+                        BigDecimal[] sum = total.get(billId);
+                        if (sum == null) {
+                            // 执行项目的总应收，累加项目应收，累加项目占比值
+                            sum = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+                        }
+                        sum[0] = sum[0].add(detail.getReceivableWorkload());
+                        total.put(billId, sum);
+                    });
+            details.forEach(
+                    detail -> {
+                        BigDecimal receivableWorkload = detail.getReceivableWorkload();
+                        Integer billId = detail.getBillId();
+                        BigDecimal[] sum = total.get(billId);
+                        sum[1] = sum[1].add(receivableWorkload);
+                        BigDecimal amount = receivableWorkload.divide(sum[0], 4, BigDecimal.ROUND_HALF_UP);
+                        if (sum[0].compareTo(sum[1]) == 0) { // 最后一个占比项目
+                            amount = BigDecimal.ONE.subtract(sum[2]);
+                        }
+                        sum[2] = sum[2].add(amount);
+                        BigDecimal receivedWorkload = amount.multiply(detail.getTotalReceivedWorkload());
+                        if (receivedWorkload.compareTo(receivableWorkload)>0) {// 超出应收说明无欠费，则项目实收=项目总实收
+                            receivedWorkload = detail.getReceivedWorkload();
+                        }
+                        detail.setReceivedWorkload(receivedWorkload);
+                    });
+        }
     }
 }

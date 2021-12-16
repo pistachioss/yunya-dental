@@ -238,6 +238,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     BigDecimal debtAmount = billRecord.getDebtAmount();
     baseBill.setBillStatus(
             debtAmount.compareTo(BigDecimal.valueOf(0)) > 0 ? (byte) 0 : (byte) 1);
+    baseBill.setBillId(billRecord.getOrderRecordId());
+    baseBill.setOrgId(billRecord.getOrgId());
     baseBill.setPrivilegeType(billRecord.getPrivilegeType());
     baseBill.setPrivilegeOrgId(billRecord.getPrivilegeOrgId());
     baseBill.setFirstPrivilege(billRecord.getFirstPrivilege());

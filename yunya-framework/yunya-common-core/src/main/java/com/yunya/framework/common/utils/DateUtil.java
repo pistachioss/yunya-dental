@@ -37,6 +37,8 @@ public class DateUtil {
   private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
 
   private static final SimpleDateFormat NUMBER_DATESDF = new SimpleDateFormat("yyyyMMdd");
+  private static final SimpleDateFormat NUMBER_YEARSDF = new SimpleDateFormat("yyyy");
+  private static final SimpleDateFormat NUMBER_MONTHSDF = new SimpleDateFormat("yyyyMM");
   /** 年 */
   public static final int YEAR = 1;
   /** 月 */
@@ -507,6 +509,19 @@ public class DateUtil {
     return date;
   }
 
+  public static Integer date2Number(String dateStr) {
+    if (StringHelper.isEmpty(dateStr)) {
+      return null;
+    }
+    String date = StringHelper.remove(dateStr, "-");
+    if (date.length() == 4) {// 年
+      date += "0000";
+    } else if (date.length() == 6){// 月
+      date += "00";
+    }
+    return Integer.parseInt(date);
+  }
+
   /**
    * 日期格式成数字形式：yyyyMMdd
    *
@@ -514,6 +529,10 @@ public class DateUtil {
    * @return
    */
   public static Integer date2Number(Date date) {
+    return date2Number(date, NUMBER_DATESDF);
+  }
+
+  public static Integer date2Number(Date date, SimpleDateFormat sdf) {
     Integer dateNumber = null;
     if (date == null) {
       return dateNumber;
