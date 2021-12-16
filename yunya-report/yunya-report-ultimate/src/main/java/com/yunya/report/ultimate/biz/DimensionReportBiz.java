@@ -1121,11 +1121,13 @@ public class DimensionReportBiz {
         result.add(new CellRangeAddress(0,0,1,1 + size - 1));
         int colInx = 1;
         header[0] = title[0];
+        header[1] = title[1];
         for (int i = 1; i < header.length; i++) {
-            header[i] = "";
             if (i % size == 0) {
                 result.add(new CellRangeAddress(0, 0, i+1, i + size));
-                header[i-1] = title[colInx++];
+                header[i-7] = title[colInx++];
+            } else {
+                header[i] = "";
             }
         }
         // 门诊/医生纵向表头
@@ -1138,7 +1140,7 @@ public class DimensionReportBiz {
         map.forEach((key, value)->obj.put(key, value));
         list.add(0, obj);
         pageInfo.setHeader(header);
-       return result;
+        return result;
     }
 
     public DynamicHeaderPageInfo<JSONObject> dentistWorkloadVisitStatistics(EmployeeWorkStatusQueryForm query) throws Exception {
