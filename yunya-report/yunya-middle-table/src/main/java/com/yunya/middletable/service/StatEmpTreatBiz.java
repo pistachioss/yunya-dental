@@ -3,9 +3,10 @@ package com.yunya.middletable.service;
 import com.google.common.base.Joiner;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.middletable.dao.report.BaseTreatmentProcessMapper;
 import com.yunya.middletable.dao.report.StatEmpTreatMapper;
+import com.yunya.models.report.BaseTreatmentProcess;
 import com.yunya.models.report.StatEmpTreat;
-import com.yunya.models.treatment.TreatmentRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,15 +29,16 @@ import static com.yunya.framework.common.constant.RedisConstants.LOCK_STATISTICS
 public class StatEmpTreatBiz extends BaseBiz<StatEmpTreatMapper, StatEmpTreat> {
 
     @Autowired private RedisLockBiz redisLockBiz;
+    @Autowired private BaseTreatmentProcessMapper baseTreatmentProcessMapper;
     /**
      * 增量更新员工就诊统计项
      *
-     * @param treatmentRecord
+     * @param treatmentProcess
      */
-    public void incStatEmpTreat(TreatmentRecord treatmentRecord) {
-        Integer orgId = treatmentRecord.getOrgId();
-        Integer dentistId = treatmentRecord.getDentistId();
-        Integer treatDate = DateUtil.date2Number(treatmentRecord.getTreatEndTime());
+    public void incStatEmpTreat(BaseTreatmentProcess treatmentProcess) {
+        Integer orgId = treatmentProcess.getOrgId();
+        Integer dentistId = treatmentProcess.getRegisteredDentistId();
+        Integer treatDate = DateUtil.date2Number(treatmentProcess.getTreatEndTime());
         StatEmpTreat entity = new StatEmpTreat();
         entity.setOrgId(orgId);
         entity.setDentistId(dentistId);
@@ -44,42 +46,14 @@ public class StatEmpTreatBiz extends BaseBiz<StatEmpTreatMapper, StatEmpTreat> {
         String lockKey = Joiner.on(":").join(LOCK_STATISTICS_EMP_TREAT, orgId, dentistId);
         String lockVal = String.valueOf(treatDate);
         redisLockBiz.lockedApply(lockKey, lockVal, (t)->{
-            StatEmpTreat statEmpTreat = mapper.selectByPrimaryKey(entity);
-            if (treatmentRecord.getInservice()) {
-                Byte type = treatmentRecord.getType();
-                Integer firstVisitCount = 0;
-                Integer reVisitCount = 0;
-                if (type.intValue() == 0) {// 初诊
-                    firstVisitCount += 1;
-                } else { // 复诊
-                    reVisitCount += 1;
-                }
-                Integer updId = treatmentRecord.getUpdId();
-                if (ObjectUtils.isEmpty(statEmpTreat)) {// 新数据生成
-                    entity.setCrtId(updId);
-                    entity.setCrtTime(new Date(System.currentTimeMillis()));
-                    entity.setFirstVisitCount(firstVisitCount);
-                    entity.setReVisitCount(reVisitCount);
-                    mapper.insertSelective(statEmpTreat);
-                } else {// 增量更新
-                    statEmpTreat.setFirstVisitCount(firstVisitCount + statEmpTreat.getFirstVisitCount());
-                    statEmpTreat.setReVisitCount(reVisitCount + statEmpTreat.getReVisitCount());
-                    mapper.updateByPrimaryKeySelective(statEmpTreat);
-                }
-            } else {// 删除
-                Byte type = treatmentRecord.getType();
-                Integer firstVisitCount = 0;
-                Integer reVisitCount = 0;
-                if (type.intValue() == 0) {// 初诊
-                    firstVisitCount -= 1;
-                } else { // 复诊
-                    reVisitCount -= 1;
-                }
-                statEmpTreat.setFirstVisitCount(firstVisitCount + statEmpTreat.getFirstVisitCount());
-                statEmpTreat.setReVisitCount(reVisitCount + statEmpTreat.getReVisitCount());
-                mapper.updateByPrimaryKeySelective(statEmpTreat);
+            mapper.deleteByPrimaryKey(entity);
+            StatEmpTreat statEmpTreat = baseTreatmentProcessMapper.countTreatNumByDateAndDentist(orgId, dentistId, treatDate);
+            if (!ObjectUtils.isEmpty(statEmpTreat)) {
+                statEmpTreat.setCrtId(treatmentProcess.getAppointDentistId());
+                statEmpTreat.setCrtTime(new Date(System.currentTimeMillis()));
+                mapper.insertSelective(statEmpTreat);
             }
-            return statEmpTreat;
+            return null;
         });
     }
 }

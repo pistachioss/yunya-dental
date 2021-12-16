@@ -6,10 +6,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.bo.ClinicDataStatisticsInfoVO;
 import com.yunya.feign.report.domain.model.EmployeeWorkloadCostModel;
 import com.yunya.feign.report.domain.query.*;
-import com.yunya.feign.report.domain.query.base.MultiClinicDateRangetQueryForm;
 import com.yunya.feign.report.domain.vo.*;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.report.ultimate.controller.DimensionReportController;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,8 +52,6 @@ public class BizTest {
     private BaseBillPayBiz baseBillPayBiz;
     @Autowired
     private BaseTreatmentProcessBiz baseTreatmentProcessBiz;
-    @Autowired
-    private DimensionReportController dimensionReportController;
 
     @Test
     public void test1() {
@@ -398,56 +393,6 @@ public class BizTest {
         ClinicEmployeeWorkloadQuery query= new ClinicEmployeeWorkloadQuery();
         long t1 = System.currentTimeMillis();
         List<EmployeeCountVO> result = baseTreatmentProcessBiz.findInMonthReFirstVisit(query, true);
-        System.out.println(System.currentTimeMillis() - t1);
-        System.out.println(JSONObject.toJSON(result));
-    }
-
-    @Test
-    public void testPatientDimensionStatistics() throws Exception {
-        String param = "{\"patientName\":\"张小勇\",\"dateType\":2,\"startDate\":\"2015\",\"endDate\":\"2015\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":50}";
-        PatientDimensionQueryForm query = JSONObject.parseObject(param, PatientDimensionQueryForm.class);
-        long t1 = System.currentTimeMillis();
-        ResponseResult<DynamicHeaderPageInfo<JSONObject>> result = dimensionReportController.patientDimensionStatistics(query);
-        System.out.println(System.currentTimeMillis() - t1);
-        System.out.println(JSONObject.toJSON(result));
-    }
-
-    @Test
-    public void testDentistDimensionStatistics() throws Exception {
-        String param = "{\"employeeIds\":[341],\"dateType\":2,\"startDate\":\"2021\",\"endDate\":\"2021\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":10}";
-        ClinicEmployeeWorkloadQuery query = JSONObject.parseObject(param, ClinicEmployeeWorkloadQuery.class);
-        long t1 = System.currentTimeMillis();
-        ResponseResult<DynamicHeaderPageInfo<JSONObject>> result = dimensionReportController.dentistDimensionStatistics(query);
-        System.out.println(System.currentTimeMillis() - t1);
-        System.out.println(JSONObject.toJSON(result));
-    }
-
-    @Test
-    public void testClinicDimensionStatistics() throws Exception {
-        String param = "{\"employeeIds\":[341],\"orgIds\":[26],\"dateType\":2,\"startDate\":\"2021\",\"endDate\":\"2021\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":10}";
-        ClinicEmployeeWorkloadQuery query = JSONObject.parseObject(param, ClinicEmployeeWorkloadQuery.class);
-        long t1 = System.currentTimeMillis();
-        ResponseResult<DynamicHeaderPageInfo<JSONObject>> result = dimensionReportController.clinicDimensionStatistics(query);
-        System.out.println(System.currentTimeMillis() - t1);
-        System.out.println(JSONObject.toJSON(result));
-    }
-
-    @Test
-    public void testClinicFirstVisitSourceRatio() throws Exception {
-        String param = "{\"orgIds\":[43, 26, 27, 36, 35, 37, 28, 29, 30, 31, 32, 33, 34, 39, 40, 45],\"dateType\":2,\"startDate\":\"2021\",\"endDate\":\"2021\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":10}";
-        MultiClinicDateRangetQueryForm query = JSONObject.parseObject(param, MultiClinicDateRangetQueryForm.class);
-        long t1 = System.currentTimeMillis();
-        ResponseResult<DynamicHeaderPageInfo<JSONObject>> result = dimensionReportController.clinicFirstVisitSourceRatio(query);
-        System.out.println(System.currentTimeMillis() - t1);
-        System.out.println(JSONObject.toJSON(result));
-    }
-
-    @Test
-    public void testClinicSpecialProjectWorkloadRatio() throws Exception {
-        String param = "{\"orgIds\":[43, 26, 27, 36, 35, 37, 28, 29, 30, 31, 32, 33, 34, 39, 40, 45],\"dateType\":2,\"startDate\":\"2021\",\"endDate\":\"2021\",\"whetherPage\":true,\"pageNum\":1,\"pageSize\":10}";
-        MultiClinicDateRangetQueryForm query = JSONObject.parseObject(param, MultiClinicDateRangetQueryForm.class);
-        long t1 = System.currentTimeMillis();
-        ResponseResult<DynamicHeaderPageInfo<JSONObject>> result = dimensionReportController.clinicSpecialProjectWorkloadRatio(query);
         System.out.println(System.currentTimeMillis() - t1);
         System.out.println(JSONObject.toJSON(result));
     }
