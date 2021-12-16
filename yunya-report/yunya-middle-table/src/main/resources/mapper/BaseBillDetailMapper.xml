@@ -52,23 +52,25 @@
         delete from base_bill_detail where bill_id = #{billId}
     </delete>
 
-    <select id="groupBillDetailByDateAndExecutorId" resultType="com.yunya.models.report.BaseBillDetail">
+    <select id="selectBillDetailByDateAndExecutorId" resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">
         SELECT
+            bb.bill_id AS billId,
             bbd.item_type AS itemType,
             bbd.item_id AS itemId,
             bbd.executor_id AS executorId,
-            SUM(bbd.quantity*bbd.price-bbd.discount_amount) AS discountAmount,
-            SUM(bbd.quantity) AS quantity,
+            (bbd.quantity*bbd.price-bbd.discount_amount) AS receivableWorkload,
+            bbd.quantity AS quantity,
             <if test="payeeDate != null">
-                IFNULL(bbp.received_amount,0) AS couponWorkload,
+                IFNULL(bbp.received_amount,0) AS totalReceivedWorkload,
             </if>
-            SUM(bbd.received_amount) AS receivedAmount
+            bbd.received_amount AS receivedWorkload,
+            bb.actual_amount AS actualWorkload
         FROM base_bill_detail bbd
         LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
         <if test="payeeDate != null">
             LEFT JOIN (
-                SELECT SUM(received_amount) AS received_amount, bbp.bill_id FROM base_bill_pay
-                WHERE DATE_FORMAT(bbp.payee_date,'%Y%m%d')=#{payeeDate}
+                SELECT SUM(received_amount) AS received_amount, bill_id, payee_date FROM base_bill_pay
+                WHERE DATE_FORMAT(payee_date,'%Y%m%d')=#{payeeDate}
             ) bbp ON bbp.bill_id = bb.bill_id
         </if>
         <where>
@@ -85,6 +87,5 @@
                 #{item}
             </foreach>
         </where>
-        GROUP BY bbd.executor_id, bbd.item_type, bbd.item_id
     </select>
 </mapper>

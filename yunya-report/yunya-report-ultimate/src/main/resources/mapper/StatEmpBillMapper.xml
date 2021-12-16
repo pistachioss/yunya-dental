@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.StatEmpBillMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.StatEmpBill" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="org_id" property="orgId" jdbcType="INTEGER" />
+    <id column="dentist_id" property="dentistId" jdbcType="INTEGER" />
+    <id column="item_type" property="itemType" jdbcType="TINYINT" />
+    <id column="item_id" property="itemId" jdbcType="INTEGER" />
+    <id column="bill_date" property="billDate" jdbcType="INTEGER" />
+    <result column="receivable_workload" property="receivableWorkload" jdbcType="DECIMAL" />
+    <result column="received_workload" property="receivedWorkload" jdbcType="DECIMAL" />
+    <result column="quantity" property="quantity" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+  </resultMap>
+</mapper>
