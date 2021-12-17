@@ -1,6 +1,6 @@
 package com.yunya.report.ultimate.biz;
 
-import com.yunya.feign.report.domain.query.base.NumDateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.report.StatEmpTreat;
 import com.yunya.report.ultimate.mapper.StatEmpTreatMapper;
@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Service
 public class StatEmpTreatBiz extends BaseBiz<StatEmpTreatMapper, StatEmpTreat> {
-    public List<StatEmpTreat> findClinicTreatVisitNum(NumDateRangeQueryForm query, List<Integer> orgIds, List<Integer> employeeIds) {
+    public List<StatEmpTreat> findClinicTreatVisitNum(DateRangeQueryForm query, List<Integer> orgIds, List<Integer> employeeIds) {
         return mapper.selectClinicTreatVisitNum(query, orgIds, employeeIds);
     }
 }

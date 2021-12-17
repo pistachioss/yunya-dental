@@ -34,4 +34,10 @@ public class DateRangeQueryForm extends PageQuery implements Serializable {
     @ApiModelProperty(value = "查询结束时间", required = true)
     @NotBlank(message = "查询结束时间不能为空！")
     private String endDate;
+    /** 查询时间 */
+    @ApiModelProperty(value = "查询开始时间数字形式：yyyyMMdd")
+    private Integer sDateInt;
+    /** 查询结束时间 */
+    @ApiModelProperty(value = "查询结束时间数字形式：yyyyMMdd")
+    private Integer eDateInt;
 }

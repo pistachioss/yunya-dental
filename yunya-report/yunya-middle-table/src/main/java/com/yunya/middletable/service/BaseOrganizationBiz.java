@@ -94,6 +94,7 @@ public class BaseOrganizationBiz extends BaseBiz<BaseOrganizationMapper, BaseOrg
   private BaseOrganization setOrganizationValue(Integer orgId, Company company) {
     Byte orgType = company.getType();
     BaseOrganization organization = new BaseOrganization();
+    organization.setParentId(company.getParentId());
     organization.setOrgId(orgId);
     organization.setOrgType(orgType);
     ClinicExtInfo clinicExtInfo = new ClinicExtInfo();

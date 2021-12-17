@@ -21,7 +21,7 @@ import java.util.List;
 @Data
 @ToString
 @ApiModel("多门诊+日期范围查询参数模型")
-public class MultiClinicDateRangetQueryForm extends DateRangeQueryForm implements Serializable {
+public class MultiClinicDateRangeQueryForm extends DateRangeQueryForm implements Serializable {
     /** 门诊ID列表 */
     @ApiModelProperty(value = "门诊ID列表", required = true)
     @NotNull(message = "门诊ID不能为空")
