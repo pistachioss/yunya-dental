@@ -2,6 +2,7 @@ package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
+import com.yunya.feign.report.domain.vo.BaseOrganizationVO;
 import com.yunya.feign.report.domain.vo.PatientDataStatisticsVO;
 import com.yunya.models.report.BaseOrganization;
 import org.apache.ibatis.annotations.Param;
@@ -21,4 +22,6 @@ public interface BaseOrganizationMapper extends Mapper<BaseOrganization> {
       @Param("query") DataStatisticsQuery query);
 
   List<BaseOrganization> selectOrganizationList(@Param("query") ClinicPerformanceBusinessQuery query);
+
+  List<BaseOrganizationVO> selectOrganizationWithParentList(@Param("query") ClinicPerformanceBusinessQuery query);
 }

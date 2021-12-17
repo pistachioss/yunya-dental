@@ -7,9 +7,8 @@ import com.yunya.feign.clinic_base.RemoteClinicBaseServiceFeign;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.feign.report.domain.query.*;
-import com.yunya.feign.report.domain.query.base.MultiClinicDateRangetQueryForm;
-import com.yunya.feign.report.domain.query.base.MultiClinicNumDateRangeQueryForm;
-import com.yunya.feign.report.domain.query.base.NumDateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
@@ -19,6 +18,7 @@ import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.StatEmpPay;
 import com.yunya.models.report.StatEmpTreat;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -661,7 +661,7 @@ public class DimensionReportBiz {
      * @param query
      * @return
      */
-    public DynamicHeaderPageInfo<JSONObject> clinicFirstVisitSourceRatio(MultiClinicDateRangetQueryForm query) {
+    public DynamicHeaderPageInfo<JSONObject> clinicFirstVisitSourceRatio(MultiClinicDateRangeQueryForm query) {
         ClinicPerformanceBusinessQuery queryFrom = new ClinicPerformanceBusinessQuery();
         queryFrom.setOrgIds(query.getOrgIds());
         if (query.getWhetherPage()) {
@@ -745,7 +745,7 @@ public class DimensionReportBiz {
      * @param query
      * @param response
      */
-    public void clinicFirstVisitSourceRatioExport(MultiClinicDateRangetQueryForm query, HttpServletResponse response) throws IOException {
+    public void clinicFirstVisitSourceRatioExport(MultiClinicDateRangeQueryForm query, HttpServletResponse response) throws IOException {
         query.setWhetherPage(false);
         DynamicHeaderPageInfo<JSONObject> pageInfo = clinicFirstVisitSourceRatio(query);
         List<JSONObject> result = pageInfo.getList();
@@ -761,7 +761,7 @@ public class DimensionReportBiz {
      * @return
      * @throws Exception
      */
-    public DynamicHeaderPageInfo<JSONObject> clinicSpecialProjectWorkloadRatio(MultiClinicDateRangetQueryForm query) throws Exception {
+    public DynamicHeaderPageInfo<JSONObject> clinicSpecialProjectWorkloadRatio(MultiClinicDateRangeQueryForm query) throws Exception {
         ClinicPerformanceBusinessQuery queryFrom = new ClinicPerformanceBusinessQuery();
         queryFrom.setOrgIds(query.getOrgIds());
         if (query.getWhetherPage()) {
@@ -946,7 +946,7 @@ public class DimensionReportBiz {
      * @param response
      * @throws Exception
      */
-    public void clinicSpecialProjectWorkloadRatioExport(MultiClinicDateRangetQueryForm query, HttpServletResponse response) throws Exception {
+    public void clinicSpecialProjectWorkloadRatioExport(MultiClinicDateRangeQueryForm query, HttpServletResponse response) throws Exception {
         query.setWhetherPage(false);
         DynamicHeaderPageInfo<JSONObject> pageInfo = clinicSpecialProjectWorkloadRatio(query);
         List<JSONObject> result = pageInfo.getList();
@@ -961,7 +961,7 @@ public class DimensionReportBiz {
      * @param query
      * @return
      */
-    public DynamicHeaderPageInfo<JSONObject> clinicWorkloadVisitStatistics(MultiClinicNumDateRangeQueryForm query) throws Exception {
+    public DynamicHeaderPageInfo<JSONObject> clinicWorkloadVisitStatistics(MultiClinicDateRangeQueryForm query) throws Exception {
         dateQuery2NumDateQuery(query);
         Byte dateType = query.getDateType();
         if (dateType.intValue() != 2) {
@@ -978,7 +978,7 @@ public class DimensionReportBiz {
         return mergeClinicWorkloadVisitStatistice(query, orgs, workloadFuture.get(), treatNumFuture.get());
     }
 
-    private DynamicHeaderPageInfo<JSONObject> mergeClinicWorkloadVisitStatistice(NumDateRangeQueryForm query,
+    private DynamicHeaderPageInfo<JSONObject> mergeClinicWorkloadVisitStatistice(DateRangeQueryForm query,
                                                                                  List<BaseOrganization> orgs, Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> treatNumMap) {
         String startDate = query.getStartDate();
         String endDate = query.getEndDate();
@@ -1057,7 +1057,7 @@ public class DimensionReportBiz {
         list.add(totalObj);
     }
 
-    private Future<Map<String, StatEmpTreat>> multiFindClinicTreatVisitNum(NumDateRangeQueryForm query, List<Integer> orgIds, List<Integer> employeeIds) {
+    private Future<Map<String, StatEmpTreat>> multiFindClinicTreatVisitNum(DateRangeQueryForm query, List<Integer> orgIds, List<Integer> employeeIds) {
         return threadPool.submit(()->{
             Map<String, StatEmpTreat> result = new HashMap<>(16);
             List<StatEmpTreat> data = statEmpTreatBiz.findClinicTreatVisitNum(query, orgIds, employeeIds);
@@ -1072,14 +1072,12 @@ public class DimensionReportBiz {
         });
     }
 
-    private void dateQuery2NumDateQuery(NumDateRangeQueryForm query) {
-        int endInt = Integer.parseInt(query.getEndDate());
-        Integer eDateInt = DateUtil.date2Number(String.valueOf(endInt + 1));
-        query.setSDateInt(DateUtil.date2Number(query.getStartDate()));
-        query.setEDateInt(eDateInt);
+    private void dateQuery2NumDateQuery(DateRangeQueryForm query) {
+        query.setSDateInt(DateUtil.startDate2Number(query.getStartDate()));
+        query.setEDateInt(DateUtil.endDate2Number(query.getEndDate()));
     }
 
-    private Future<Map<String, BigDecimal>> multiFindClinicReceivedWorkload(NumDateRangeQueryForm query, List<Integer> orgIds, List<Integer> employeeIds) {
+    private Future<Map<String, BigDecimal>> multiFindClinicReceivedWorkload(DateRangeQueryForm query, List<Integer> orgIds, List<Integer> employeeIds) {
         return threadPool.submit(()->{
             Map<String, BigDecimal> result = new HashMap<>(16);
             List<StatEmpPay> data = statEmpPayBiz.findClinicReceivedWorkload(query, orgIds, employeeIds);
@@ -1094,9 +1092,8 @@ public class DimensionReportBiz {
         });
     }
 
-    public void clinicWorkloadVisitStatisticsExport(MultiClinicNumDateRangeQueryForm query, HttpServletResponse response) throws Exception {
+    public void clinicWorkloadVisitStatisticsExport(MultiClinicDateRangeQueryForm query, HttpServletResponse response) throws Exception {
         query.setWhetherPage(false);
-        dateQuery2NumDateQuery(query);
         DynamicHeaderPageInfo<JSONObject> pageInfo = clinicWorkloadVisitStatistics(query);
         List<JSONObject> result = pageInfo.getList();
         ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
@@ -1110,7 +1107,7 @@ public class DimensionReportBiz {
     }
 
     private List<CellRangeAddress> workloadVisitMergeRegiion(DynamicHeaderPageInfo<JSONObject> pageInfo,
-                                                             NumDateRangeQueryForm query, String... title) {
+                                                             DateRangeQueryForm query, String... title) {
         List<CellRangeAddress> result = new ArrayList<>();
         int size = Integer.parseInt(query.getEndDate()) - Integer.parseInt(query.getStartDate()) + 2;
         List<JSONObject> list = pageInfo.getList();
@@ -1144,7 +1141,6 @@ public class DimensionReportBiz {
     }
 
     public DynamicHeaderPageInfo<JSONObject> dentistWorkloadVisitStatistics(EmployeeWorkStatusQueryForm query) throws Exception {
-        query.setWhetherPage(false);
         dateQuery2NumDateQuery(query);
         Byte dateType = query.getDateType();
         if (dateType.intValue() != 2) {
@@ -1164,7 +1160,7 @@ public class DimensionReportBiz {
         return mergeDentistWorkloadVisitStatistice(query, employees, workloadFuture.get(), treatNumFuture.get());
     }
 
-    private DynamicHeaderPageInfo<JSONObject> mergeDentistWorkloadVisitStatistice(NumDateRangeQueryForm query,
+    private DynamicHeaderPageInfo<JSONObject> mergeDentistWorkloadVisitStatistice(DateRangeQueryForm query,
               List<ClinicEmployeBonusCoefficientVO> employees, Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> treatNumMap) {
         String startDate = query.getStartDate();
         String endDate = query.getEndDate();
@@ -1184,7 +1180,6 @@ public class DimensionReportBiz {
 
     public void dentistWorkloadVisitStatisticsExport(EmployeeWorkStatusQueryForm query, HttpServletResponse response) throws Exception {
         query.setWhetherPage(false);
-        dateQuery2NumDateQuery(query);
         DynamicHeaderPageInfo<JSONObject> pageInfo = dentistWorkloadVisitStatistics(query);
         List<JSONObject> result = pageInfo.getList();
         ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
@@ -1195,5 +1190,195 @@ public class DimensionReportBiz {
         excelUtil.setMergeRegion(crds);
         String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "医生统计表");
         excelUtil.exportExcel(response, result, "医生统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
+    }
+
+    /**
+     * 根据条件导出每日业绩汇总表
+     *
+     * @param query
+     * @param response
+     */
+    public void clinicAchievementStatisticsExport(MultiClinicDateRangeQueryForm query, HttpServletResponse response) throws Exception {
+        query.setWhetherPage(false);
+        DynamicHeaderPageInfo<ClinicAchievementVO> pageInfo = clinicAchievementStatistics(query);
+        List<ClinicAchievementVO> result = pageInfo.getList();
+        ExcelUtil<ClinicAchievementVO> excelUtil = new ExcelUtil(ClinicAchievementVO.class);
+        List<CellRangeAddress> crds = clinicAchievementMergeRegiion(pageInfo.getContextMap());
+        excelUtil.setMergeRegion(crds);
+        String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "每日业绩汇总表");
+        excelUtil.exportExcel(response, result, "每日业绩汇总表", fileName);
+    }
+
+    private List<CellRangeAddress> clinicAchievementMergeRegiion(Map<String, List<String>> contextMap) {
+        List<CellRangeAddress> result = new ArrayList<>();
+        // 院区列纵向合并
+        int index = 0;
+        for (Map.Entry<String, List<String>> entry : contextMap.entrySet()) {
+            List<String> list = entry.getValue();
+            result.add(new CellRangeAddress(index, index += list.size(), 0, 0));
+            index++;
+        }
+        // 合计行横向合并
+        result.add(new CellRangeAddress(index,index,0,1));
+        return result;
+    }
+
+    /**
+     * 根据条件查询每日业绩汇总表
+     *
+     * @param query
+     * @return
+     * @throws Exception
+     */
+    public DynamicHeaderPageInfo<ClinicAchievementVO> clinicAchievementStatistics(MultiClinicDateRangeQueryForm query) throws Exception {
+        // 目标值
+        Future<Map<Integer, BigDecimal>> goalFuture = multiFindBusinessGoal(query);
+        Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
+        dateQuery2NumDateQuery(query);
+        // 实际值
+        Future<Map<String, BigDecimal>> workloadFuture = multiFindClinicReceivedWorkload(query, query.getOrgIds(), null);
+        String todayStr = new DateTime().toDateTime().toString("yyyyMMdd");
+        int today = Integer.parseInt(todayStr);
+        query.setSDateInt(today);
+        query.setEDateInt(today);
+        // 今日完成
+        Future<Map<String, BigDecimal>> todayFuture = multiFindClinicReceivedWorkload(query, query.getOrgIds(), null);
+        String chainSDate = DateUtil.chainDate(query.getStartDate());
+        String chainEDate = DateUtil.chainDate(query.getEndDate());
+        query.setSDateInt(DateUtil.startDate2Number(chainSDate));
+        query.setEDateInt(DateUtil.endDate2Number(chainEDate));
+        // 同比
+        Future<Map<String, BigDecimal>> preYearFuture = multiFindClinicReceivedWorkload(query, query.getOrgIds(), null);
+        return mergeClinicAchievementStatistics(goalFuture.get(), orgFuture.get(), workloadFuture.get(), todayFuture.get(), preYearFuture.get());
+    }
+
+    private DynamicHeaderPageInfo<ClinicAchievementVO> mergeClinicAchievementStatistics(
+            Map<Integer, BigDecimal> goalMap, List<BaseOrganizationVO> orgs,
+            Map<String, BigDecimal> workloadMap, Map<String, BigDecimal> todayWorkloadMap,
+            Map<String, BigDecimal> preYearWorkloadMap) {
+        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo();
+        List<ClinicAchievementVO> result = new ArrayList<>();
+        Map<String, List<String>> map = new LinkedHashMap<>(16);
+        Map<Integer, BigDecimal> orgWorkloadMap = statisticOrgWorkload(workloadMap);
+        Map<Integer, BigDecimal> orgTodayMap = statisticOrgWorkload(todayWorkloadMap);
+        Map<Integer, BigDecimal> orgPreYearMap = statisticOrgWorkload(preYearWorkloadMap);
+        Integer id = orgs.get(0).getOrgId();
+        BigDecimal[] total = {
+                new BigDecimal("0.00"), // 实际值
+                new BigDecimal("0.00"), // 目标值
+                new BigDecimal("0.00"), // 完成度
+                new BigDecimal("0.00"), // 今日完成
+                new BigDecimal("0.00")};// 同比
+        BigDecimal[] campusStat = {
+                new BigDecimal("0.00"),
+                new BigDecimal("0.00"),
+                new BigDecimal("0.00"),
+                new BigDecimal("0.00"),
+                new BigDecimal("0.00")};
+        for (BaseOrganizationVO org : orgs) {
+            Integer orgId = org.getOrgId();
+            Integer parentId = org.getParentId();
+            String abbreviation = org.getAbbreviation();
+            String parentName = org.getParentName();
+            List<String> list = map.get(parentName);
+            if (list == null) {
+                list = new ArrayList<>();
+            }
+            list.add(abbreviation);
+            map.put(parentName, list);
+
+            BigDecimal actualWorkload = defDecVal(orgWorkloadMap.get(orgId));
+            BigDecimal goalWorkload = defDecVal(goalMap.get(orgId));
+            BigDecimal completed = new BigDecimal("0.00");
+            if (goalWorkload.compareTo(BigDecimal.ZERO) != 0) {
+                completed = actualWorkload
+                        .divide(goalWorkload, 2, BigDecimal.ROUND_HALF_UP)
+                        .multiply(new BigDecimal("100"));
+                campusStat[2] = campusStat[2].add(completed);
+                total[2] = total[2].add(completed);
+            }
+            BigDecimal todayCompleted = defDecVal(orgTodayMap.get(orgId));
+            BigDecimal preYear = defDecVal(orgPreYearMap.get(orgId));
+            ClinicAchievementVO vo = initAchievementVO(orgId, abbreviation, parentName,
+                    actualWorkload, goalWorkload, completed, todayCompleted, preYear);
+            result.add(vo);
+
+            campusStat[0] = campusStat[0].add(actualWorkload);
+            campusStat[1] = campusStat[1].add(goalWorkload);
+            campusStat[3] = campusStat[3].add(todayCompleted);
+            campusStat[4] = campusStat[4].add(preYear);
+            total[0] = total[0].add(actualWorkload);
+            total[1] = total[1].add(goalWorkload);
+            total[3] = total[3].add(todayCompleted);
+            total[4] = total[4].add(preYear);
+            if (parentId.equals(id)) {// 统计院区各项指标
+                result.add(initAchievementVO(parentName, campusStat));
+                // 更新
+                id = parentId;
+                campusStat = new BigDecimal[]{
+                    new BigDecimal("0.00"),
+                            new BigDecimal("0.00"),
+                            new BigDecimal("0.00"),
+                            new BigDecimal("0.00"),
+                            new BigDecimal("0.00")};
+            }
+        }
+        map.forEach((parentName, list)->{
+            list.add("合计");
+        });
+        result.add(initAchievementVO("合计", total));
+        map.put("合计", Arrays.asList("合计"));
+        pageInfo.setList(result);
+        pageInfo.setContextMap(map);
+        return pageInfo;
+    }
+
+    private ClinicAchievementVO initAchievementVO(String parentName, BigDecimal...total) {
+        return initAchievementVO(null,"合计",parentName, total);
+    }
+
+    private ClinicAchievementVO initAchievementVO(Integer orgId, String abbreviation, String parentName, BigDecimal...total) {
+        ClinicAchievementVO vo = new ClinicAchievementVO();
+        vo.setOrgId(orgId);
+        vo.setCampus(parentName);
+        vo.setAbbreviation(abbreviation);
+        vo.setActualWorkload(total[0]);
+        vo.setBusinessGoal(total[1]);
+        vo.setCompletedPer(total[2]+"%");
+        vo.setTodayCompleted(total[3]);
+        vo.setCmpPreYear(total[4]);
+        return vo;
+    }
+
+    private Map<Integer, BigDecimal> statisticOrgWorkload(Map<String, BigDecimal> workloadMap) {
+        Map<Integer, BigDecimal> result = new HashMap<>(16);
+        if (StringHelper.isNotEmpty(workloadMap)) {
+            workloadMap.forEach((key, workload)->{
+                String[] keys = StringHelper.split(key, ",");
+                Integer orgId = Integer.parseInt(keys[0]);
+                BigDecimal totalWorkload = result.get(orgId);
+                if (totalWorkload == null) {
+                    totalWorkload = new BigDecimal("0.00");
+                }
+                result.put(orgId, totalWorkload.add(workload));
+            });
+        }
+        return result;
+    }
+
+    private Future<List<BaseOrganizationVO>> multiFindOrganizationWithParent(MultiClinicDateRangeQueryForm query) {
+        return threadPool.submit(()->{
+            ClinicPerformanceBusinessQuery clinicQuery = new ClinicPerformanceBusinessQuery();
+            clinicQuery.setWhetherPage(query.getWhetherPage());
+            clinicQuery.setPageNum(query.getPageNum());
+            clinicQuery.setPageSize(query.getPageSize());
+            clinicQuery.setOrgIds(query.getOrgIds());
+            return baseOrganizationBiz.getOrganizationWithParent(clinicQuery);
+        });
+    }
+
+    private Future<Map<Integer, BigDecimal>> multiFindBusinessGoal(MultiClinicDateRangeQueryForm query) {
+        return threadPool.submit(()-> baseBillDetailBiz.workloadMonthGoal(query.getDateType(),
+                query.getStartDate(), query.getEndDate()));
     }
 }

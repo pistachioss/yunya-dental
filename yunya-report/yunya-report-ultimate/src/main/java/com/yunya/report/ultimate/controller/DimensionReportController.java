@@ -4,8 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.query.EmployeeWorkStatusQueryForm;
 import com.yunya.feign.report.domain.query.PatientDimensionQueryForm;
-import com.yunya.feign.report.domain.query.base.MultiClinicDateRangetQueryForm;
-import com.yunya.feign.report.domain.query.base.MultiClinicNumDateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
+import com.yunya.feign.report.domain.vo.ClinicAchievementVO;
 import com.yunya.feign.report.domain.vo.DynamicHeaderPageInfo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -39,7 +39,9 @@ import java.io.IOException;
 public class DimensionReportController {
 
 
-    /** 维度报表*/
+    /**
+     * 维度报表
+     */
     @Autowired
     private DimensionReportBiz dimesionReportBiz;
 
@@ -167,7 +169,7 @@ public class DimensionReportController {
             })
     @PostMapping(value = "/clinic/firstVisitSource/ratio", name = "公司端报表-报表统计-运营报表-门诊初诊来源占比表")
     public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicFirstVisitSourceRatio(
-            @RequestBody @Validated MultiClinicDateRangetQueryForm query) {
+            @RequestBody @Validated MultiClinicDateRangeQueryForm query) {
         DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.clinicFirstVisitSourceRatio(query);
         return ResponseUtil.success(pageInfo);
     }
@@ -183,7 +185,7 @@ public class DimensionReportController {
             value = "/clinic/firstVisitSource/ratio/export",
             name = "公司端报表-报表统计-运营报表-初诊来源数量分析导出")
     public ResponseResult<T> clinicFirstVisitSourceRatioExport(
-            HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangetQueryForm query)
+            HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangeQueryForm query)
             throws IOException {
         dimesionReportBiz.clinicFirstVisitSourceRatioExport(query, response);
         return ResponseUtil.success(null);
@@ -205,7 +207,7 @@ public class DimensionReportController {
             })
     @PostMapping(value = "/clinic/specialProjectWorkload/ratio", name = "公司端报表-报表统计-运营报表-门诊专科占比表")
     public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicSpecialProjectWorkloadRatio(
-            @RequestBody @Validated MultiClinicDateRangetQueryForm query) throws Exception {
+            @RequestBody @Validated MultiClinicDateRangeQueryForm query) throws Exception {
         DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.clinicSpecialProjectWorkloadRatio(query);
         return ResponseUtil.success(pageInfo);
     }
@@ -221,7 +223,7 @@ public class DimensionReportController {
             value = "/clinic/specialProjectWorkload/ratio/export",
             name = "公司端报表-报表统计-运营报表-门诊专科占比表导出")
     public ResponseResult<T> clinicSpecialProjectWorkloadRatioExport(
-            HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangetQueryForm query)
+            HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangeQueryForm query)
             throws Exception {
         dimesionReportBiz.clinicSpecialProjectWorkloadRatioExport(query, response);
         return ResponseUtil.success(null);
@@ -240,11 +242,11 @@ public class DimensionReportController {
                             code = 200,
                             message =
                                     "响应格式：{\"msg\":\"success\",\"data\":{\"lastPage\":0,\"startRow\":0,\"hasNextPage\":false,\"prePage\":0,\"nextPage\":0,\"endRow\":0,\"pageSize\":0,\"list\":[{\"Wmonth\":1,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":1,\"Rmonth\":1},{\"Wmonth\":2,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":2,\"Rmonth\":2},{\"Wmonth\":3,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":3,\"Rmonth\":3},{\"Wmonth\":4,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":4,\"Rmonth\":4},{\"Wmonth\":5,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":5,\"Rmonth\":5},{\"Wmonth\":6,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":6,\"Rmonth\":6},{\"Wmonth\":7,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":7,\"Rmonth\":7},{\"Wmonth\":8,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":8,\"Rmonth\":8},{\"Wmonth\":9,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":9,\"Rmonth\":9},{\"Wmonth\":10,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":10,\"Rmonth\":10},{\"Wmonth\":11,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":11,\"Rmonth\":11},{\"Wmonth\":12,\"F2021\":1,\"W2021\":2000,\"R2021\":2,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":12,\"Rmonth\":12},{\"Wmonth\":\"总计\",\"F2021\":1,\"W2021\":2000,\"R2021\":2,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":\"总计\",\"Rmonth\":\"总计\"}],\"pageNum\":0,\"navigatePages\":0,\"navigateFirstPage\":0,\"total\":0,\"pages\":0,\"firstPage\":0,\"size\":0,\"isLastPage\":false,\"hasPreviousPage\":false,\"navigateLastPage\":0,\"isFirstPage\":false,\"map\":{\"abbreviation\":\"门诊\",\"Wmonth\":\"月份\",\"W2021\":\"2021\",\"Fmonth\":\"月份\",\"F2021\":\"2021\",\"Rmonth\":\"月份\",\"R2021\":\"2021\"}},\"audit\":true,\"status\":0}; "
-                                            +"\n W前缀-工作量； F前缀-初诊人数；R前缀-复诊人数")
+                                            + "\n W前缀-工作量； F前缀-初诊人数；R前缀-复诊人数")
             })
     @PostMapping(value = "/clinic/workloadVisit/statistics", name = "公司端报表-报表统计-运营报表-门诊统计表")
     public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicWorkloadVisitStatistics(
-            @RequestBody @Validated MultiClinicNumDateRangeQueryForm query) throws Exception {
+            @RequestBody @Validated MultiClinicDateRangeQueryForm query) throws Exception {
         DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.clinicWorkloadVisitStatistics(query);
         return ResponseUtil.success(pageInfo);
     }
@@ -260,7 +262,7 @@ public class DimensionReportController {
             value = "/clinic/workloadVisit/statistics/export",
             name = "公司端报表-报表统计-运营报表-门诊统计表导出")
     public ResponseResult<T> clinicWorkloadVisitStatisticsExport(
-            HttpServletResponse response, @RequestBody @Validated MultiClinicNumDateRangeQueryForm query)
+            HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangeQueryForm query)
             throws Exception {
         dimesionReportBiz.clinicWorkloadVisitStatisticsExport(query, response);
         return ResponseUtil.success(null);
@@ -279,7 +281,7 @@ public class DimensionReportController {
                             code = 200,
                             message =
                                     "响应格式：{\"msg\":\"success\",\"data\":{\"lastPage\":0,\"startRow\":0,\"hasNextPage\":false,\"prePage\":0,\"nextPage\":0,\"endRow\":0,\"pageSize\":0,\"list\":[{\"Wmonth\":1,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":1,\"Rmonth\":1},{\"Wmonth\":2,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":2,\"Rmonth\":2},{\"Wmonth\":3,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":3,\"Rmonth\":3},{\"Wmonth\":4,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":4,\"Rmonth\":4},{\"Wmonth\":5,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":5,\"Rmonth\":5},{\"Wmonth\":6,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":6,\"Rmonth\":6},{\"Wmonth\":7,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":7,\"Rmonth\":7},{\"Wmonth\":8,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":8,\"Rmonth\":8},{\"Wmonth\":9,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":9,\"Rmonth\":9},{\"Wmonth\":10,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":10,\"Rmonth\":10},{\"Wmonth\":11,\"F2021\":0,\"W2021\":0,\"R2021\":0,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":11,\"Rmonth\":11},{\"Wmonth\":12,\"F2021\":1,\"W2021\":2000,\"R2021\":2,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":12,\"Rmonth\":12},{\"Wmonth\":\"总计\",\"F2021\":1,\"W2021\":2000,\"R2021\":2,\"abbreviation\":\"古墩路门诊\",\"Fmonth\":\"总计\",\"Rmonth\":\"总计\"}],\"pageNum\":0,\"navigatePages\":0,\"navigateFirstPage\":0,\"total\":0,\"pages\":0,\"firstPage\":0,\"size\":0,\"isLastPage\":false,\"hasPreviousPage\":false,\"navigateLastPage\":0,\"isFirstPage\":false,\"map\":{\"abbreviation\":\"门诊\",\"Wmonth\":\"月份\",\"W2021\":\"2021\",\"Fmonth\":\"月份\",\"F2021\":\"2021\",\"Rmonth\":\"月份\",\"R2021\":\"2021\"}},\"audit\":true,\"status\":0}; "
-                                            +"\n W前缀-工作量； F前缀-初诊人数；R前缀-复诊人数")
+                                            + "\n W前缀-工作量； F前缀-初诊人数；R前缀-复诊人数")
             })
     @PostMapping(value = "/dentist/workloadVisit/statistics", name = "公司端报表-报表统计-运营报表-医生统计表")
     public ResponseResult<DynamicHeaderPageInfo<JSONObject>> dentistWorkloadVisitStatistics(
@@ -302,6 +304,38 @@ public class DimensionReportController {
             HttpServletResponse response, @RequestBody @Validated EmployeeWorkStatusQueryForm query)
             throws Exception {
         dimesionReportBiz.dentistWorkloadVisitStatisticsExport(query, response);
+        return ResponseUtil.success(null);
+    }
+
+
+    /**
+     * 根据条件查询每日业绩汇总表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-每日业绩汇总表")
+    @PostMapping(value = "/clinic/achievement/statistics", name = "公司端报表-报表统计-运营报表-每日业绩汇总表")
+    public ResponseResult<DynamicHeaderPageInfo<ClinicAchievementVO>> clinicAchievementStatistics(
+            @RequestBody @Validated MultiClinicDateRangeQueryForm query) throws Exception {
+        DynamicHeaderPageInfo<ClinicAchievementVO> pageInfo = dimesionReportBiz.clinicAchievementStatistics(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件导出每日业绩汇总表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-每日业绩汇总表导出")
+    @PostMapping(
+            value = "/clinic/achievement/statistics/export",
+            name = "公司端报表-报表统计-运营报表-导出每日业绩汇总表")
+    public ResponseResult<T> clinicAchievementStatisticsExport(
+            HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangeQueryForm query)
+            throws Exception {
+        dimesionReportBiz.clinicAchievementStatisticsExport(query, response);
         return ResponseUtil.success(null);
     }
 }

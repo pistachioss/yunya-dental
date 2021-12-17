@@ -19,6 +19,13 @@ public class BaseOrganization {
     private Integer orgId;
 
     /**
+     * 上级组织ID
+     */
+    @Column(name = "parent_id")
+    @ApiModelProperty(value = "上级组织ID")
+    private Integer parentId;
+
+    /**
      * 组织类型（0-公司；1-区域；2-医疗机构；3-其他）
      */
     @Column(name = "org_type")
@@ -54,6 +61,14 @@ public class BaseOrganization {
      */
     public void setOrgId(Integer orgId) {
         this.orgId = orgId;
+    }
+
+    public Integer getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Integer parentId) {
+        this.parentId = parentId;
     }
 
     /**
