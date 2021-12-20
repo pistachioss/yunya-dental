@@ -98,14 +98,19 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           billCreditsCallback.scrapCredits(dataId);
           baseBillPayDetailMapper.deleteByBillPayId(dataId);
         }
-        statEmpPayWorkload(dataId);
         break;
       default:
+        statisticsInPayDate(dataId);
         break;
     }
   }
 
-  private void statEmpPayWorkload(Integer dataId) {
+  /**
+   * 账单收费时统计
+   *
+   * @param dataId
+   */
+  private void statisticsInPayDate(Integer dataId) {
     BaseBillPay baseBillPay = record2BaseReport(billPayRecordMapper.selectByPrimaryKey(dataId));
     Integer billId = baseBillPay.getBillId();
     OrderDetail query = new OrderDetail();
@@ -115,7 +120,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     bill.setBillId(billId);
     BaseBill baseBill = baseBillMapper.selectOne(bill);
     if (!ObjectUtils.isEmpty(baseBill.getBillDate())) {
-      statEmpPayBiz.incStatEmpPay(orderDetails, baseBill, baseBillPay);
+      statEmpPayBiz.statisticsInPayDate(orderDetails, baseBill, baseBillPay);
     }
   }
 
@@ -295,5 +300,49 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       baseBillPays.add(baseBillPay);
     }
     return baseBillPays;
+  }
+
+  /**
+   * 根据时间段批量操作中间表账单收费时统计
+   *
+   * @param form
+   * @throws InterruptedException
+   */
+  public void pullPayDateStatistics(PullForm form) throws InterruptedException {
+    String startDate = form.getStartDate();
+    String endDate = form.getEndDate();
+    List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
+    if (StringHelper.isNotEmpty(dateRanges)) {
+      CountDownLatch latch = new CountDownLatch(dateRanges.size());
+      List<Future> resultFutures = new ArrayList<>();
+      for (String date : dateRanges) {
+        resultFutures.add(
+                importExcelThreadPool.submit(
+                        () -> {
+                          try {
+                            Example example = new Example(BaseBillPay.class);
+                            example
+                                    .createCriteria()
+                                    .andCondition(
+                                            "payee_date >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
+                                    .andCondition(
+                                            "payee_date < '"
+                                                    + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
+                                                    + "'");
+                            List<BaseBillPay> baseBillPays =
+                                    mapper.selectByExample(example);
+                            if (StringHelper.isNotEmpty(baseBillPays)) {
+                              baseBillPays.forEach(vo->{
+                                statisticsInPayDate(vo.getBillPayId());
+                              });
+                            }
+                          } finally {
+                            latch.countDown();
+                          }
+                        }));
+      }
+      latch.await();
+      BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
+    }
   }
 }

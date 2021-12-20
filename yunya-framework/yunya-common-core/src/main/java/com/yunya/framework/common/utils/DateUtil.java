@@ -915,11 +915,17 @@ public class DateUtil {
   }
 
   public static Integer startDate2Number(String date) {
-    return date2Number(getStartDate(date), null);
+    if (!date.matches(DATE_REGEX)) {
+      date = getStartDate(date);
+    }
+    return date2Number(date, null);
   }
 
   public static Integer endDate2Number(String date) {
-    return date2Number(getEndDate(date), null);
+    if (!date.matches(DATE_REGEX)) {
+      date = getEndDate(date);
+    }
+    return date2Number(date, null);
   }
 
 }

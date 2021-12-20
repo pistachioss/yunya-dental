@@ -392,7 +392,7 @@
 
 
     <select id="selectOrganizationList" resultType="com.yunya.models.report.BaseOrganization">
-        SELECT bo.*, bo2.abb
+        SELECT bo.*
         FROM base_organization bo
         <where>
             bo.org_type = 2
@@ -407,7 +407,9 @@
 
     <select id="selectOrganizationWithParentList"
             resultType="com.yunya.feign.report.domain.vo.BaseOrganizationVO">
-        SELECT bo.*, bo2.abbreviation
+        SELECT
+            bo.*,
+            bo2.abbreviation AS parentName
         FROM base_organization bo
         LEFT JOIN base_organization bo2 ON bo2.org_id = bo.parent_id
         <where>

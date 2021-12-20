@@ -1,10 +1,13 @@
 package com.yunya.report.ultimate.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.query.EmployeeWorkStatusQueryForm;
 import com.yunya.feign.report.domain.query.PatientDimensionQueryForm;
+import com.yunya.feign.report.domain.query.base.DoubleDateRangeQueryForm;
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
+import com.yunya.feign.report.domain.vo.CampusAchievementCompareVO;
 import com.yunya.feign.report.domain.vo.ClinicAchievementVO;
 import com.yunya.feign.report.domain.vo.DynamicHeaderPageInfo;
 import com.yunya.framework.common.model.ResponseResult;
@@ -329,13 +332,113 @@ public class DimensionReportController {
      * @return
      */
     @ApiOperation("公司端报表-报表统计-运营报表-每日业绩汇总表导出")
-    @PostMapping(
-            value = "/clinic/achievement/statistics/export",
-            name = "公司端报表-报表统计-运营报表-导出每日业绩汇总表")
+    @PostMapping(value = "/clinic/achievement/statistics/export", name = "公司端报表-报表统计-运营报表-导出每日业绩汇总表")
     public ResponseResult<T> clinicAchievementStatisticsExport(
             HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangeQueryForm query)
             throws Exception {
         dimesionReportBiz.clinicAchievementStatisticsExport(query, response);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 根据条件查询专科数量同比
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-专科数量同比")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            code = 200,
+                            message =
+                                    "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":0,\"list\":[{\"cmpDate1\":1,\"cmpNum1\":\"100%\",\"abbreviation\":\"古墩路门诊\",\"date1\":1},{\"cmpDate1\":1,\"cmpNum1\":\"100%\",\"abbreviation\":\"合计\",\"date1\":1}],\"pageNum\":0,\"pageSize\":0,\"size\":0,\"startRow\":0,\"endRow\":0,\"pages\":0,\"prePage\":0,\"nextPage\":0,\"isFirstPage\":false,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":false,\"navigatePages\":0,\"navigatepageNums\":null,\"navigateFirstPage\":0,\"navigateLastPage\":0,\"header\":null,\"map\":{\"abbreviation\":\"门诊\",\"date1\":\"2015-2021\",\"cmpDate1\":\"2018-2021\",\"cmpNum1\":\"同比\"},\"contextMap\":{\"洁牙\":[\"date1\",\"cmpDate1\",\"cmpNum1\"]},\"lastPage\":0,\"firstPage\":0},\"audit\":true}; "
+                                            + "\n date前缀-第一个日期+专科项目id； cmpDate前缀-第一个日期+专科项目id；cmpNum前缀-专科项目id的同比")
+            })
+    @PostMapping(value = "/clinic/specialProject/numCompare", name = "公司端报表-报表统计-运营报表-专科数量同比")
+    public ResponseResult<DynamicHeaderPageInfo<JSONObject>> clinicSpecialProjectNumCompare(
+            @RequestBody @Validated DoubleDateRangeQueryForm query) throws Exception {
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.clinicSpecialProjectNumCompare(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件导出专科数量同比
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-专科数量同比导出")
+    @PostMapping(value = "/clinic/specialProject/numCompare/export", name = "公司端报表-报表统计-运营报表-专科数量同比导出")
+    public ResponseResult<T> clinicSpecialProjectNumCompareExport(
+            HttpServletResponse response, @RequestBody @Validated DoubleDateRangeQueryForm query)
+            throws Exception {
+        dimesionReportBiz.clinicSpecialProjectNumCompareExport(query, response);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 根据条件查询院区业绩汇总表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-院区业绩汇总表")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            code = 200,
+                            message =
+                                    "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":0,\"list\":[{\"cmpDate1\":1,\"cmpNum1\":\"100%\",\"abbreviation\":\"古墩路门诊\",\"date1\":1},{\"cmpDate1\":1,\"cmpNum1\":\"100%\",\"abbreviation\":\"合计\",\"date1\":1}],\"pageNum\":0,\"pageSize\":0,\"size\":0,\"startRow\":0,\"endRow\":0,\"pages\":0,\"prePage\":0,\"nextPage\":0,\"isFirstPage\":false,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":false,\"navigatePages\":0,\"navigatepageNums\":null,\"navigateFirstPage\":0,\"navigateLastPage\":0,\"header\":null,\"map\":{\"abbreviation\":\"门诊\",\"date1\":\"2015-2021\",\"cmpDate1\":\"2018-2021\",\"cmpNum1\":\"同比\"},\"contextMap\":{\"洁牙\":[\"date1\",\"cmpDate1\",\"cmpNum1\"]},\"lastPage\":0,\"firstPage\":0},\"audit\":true}; "
+                                            + "\n date前缀-第一个日期+专科项目id； cmpDate前缀-第一个日期+专科项目id；cmpNum前缀-专科项目id的同比")
+            })
+    @PostMapping(value = "/campus/achievement/statistics", name = "公司端报表-报表统计-运营报表-院区业绩汇总表")
+    public ResponseResult<DynamicHeaderPageInfo<JSONObject>> campusAchievementStatistics(
+            @RequestBody @Validated MultiClinicDateRangeQueryForm query) throws Exception {
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.campusAchievementStatistics(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件导出院区业绩汇总表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-院区业绩汇总表导出")
+    @PostMapping(value = "/campus/achievement/statistics/export", name = "公司端报表-报表统计-运营报表-院区业绩汇总表导出")
+    public ResponseResult<T> campusAchievementStatisticsExport(
+            HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangeQueryForm query)
+            throws Exception {
+        dimesionReportBiz.campusAchievementStatisticsExport(query, response);
+        return ResponseUtil.success(null);
+    }
+    /**
+     * 根据条件查询院区业绩同比表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-院区业绩同比")
+    @PostMapping(value = "/campus/achievement/compare", name = "公司端报表-报表统计-运营报表-院区业绩同比表")
+    public ResponseResult<PageInfo<CampusAchievementCompareVO>> campusAchievementCompare(
+            @RequestBody @Validated MultiClinicDateRangeQueryForm query) throws Exception {
+        PageInfo<CampusAchievementCompareVO> pageInfo = dimesionReportBiz.campusAchievementCompare(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件导出院区业绩汇总表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-院区业绩汇总表导出")
+    @PostMapping(value = "/campus/achievement/compare/export", name = "公司端报表-报表统计-运营报表-院区业绩汇总表导出")
+    public ResponseResult<T> campusAchievementCompareExport(
+            HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangeQueryForm query)
+            throws Exception {
+        dimesionReportBiz.campusAchievementCompareExport(query, response);
         return ResponseUtil.success(null);
     }
 }

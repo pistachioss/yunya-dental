@@ -117,14 +117,20 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         } else {
           baseBillDetailMapper.deleteByBillId(dataId);
         }
-        incStatEmpBill(bill, dataId);
         break;
       default:
+        statisticsInBillDate(bill, dataId);
         break;
     }
   }
 
-  private void incStatEmpBill(BaseBill bill, Integer dataId) {
+  /**
+   * 账单生成时统计
+   *
+   * @param bill
+   * @param dataId
+   */
+  private void statisticsInBillDate(BaseBill bill, Integer dataId) {
       if (ObjectUtils.isEmpty(bill)) {
         bill = new BaseBill();
         BillRecord query = new BillRecord();
@@ -133,12 +139,12 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         BillRecord billRecord = billRecordMapper.selectOne(query);
         record2baseReport(billRecord, bill);
       }
-      if (!ObjectUtils.isEmpty(bill.getBillDate())) {
+      if (!ObjectUtils.isEmpty(bill) && !ObjectUtils.isEmpty(bill.getBillDate())) {
         Integer billId = bill.getBillId();
         OrderDetail query = new OrderDetail();
         query.setOrderRecordId(billId);
         List<OrderDetail> orderDetails = orderDetailMapper.select(query);
-        statEmpBillBiz.incStatEmpBill(orderDetails, bill);
+        statEmpBillBiz.statisticsInBillDate(orderDetails, bill);
       }
   }
 
@@ -501,5 +507,48 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
 
   public void updateBaseBill(BaseBill baseBill) {
     mapper.updateByPrimaryKeySelective(baseBill);
+  }
+
+  /**
+   * 根据条件拉取账单时统计并更新中间表
+   *
+   * @param form
+   * @throws InterruptedException
+   */
+  public void pullBillDateStatistics(PullForm form) throws InterruptedException {
+    String startDate = form.getStartDate();
+    String endDate = form.getEndDate();
+    List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
+    if (StringHelper.isNotEmpty(dateRanges)) {
+      CountDownLatch latch = new CountDownLatch(dateRanges.size());
+      List<Future> resultFutures = new ArrayList<>();
+      for (String date : dateRanges) {
+        resultFutures.add(
+                importExcelThreadPool.submit(
+                        () -> {
+                          try {
+                            Example example = new Example(BaseBill.class);
+                            example
+                                    .createCriteria()
+                                    .andCondition(
+                                            "bill_date >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
+                                    .andCondition(
+                                            "bill_date < '"
+                                                    + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
+                                                    + "'");
+                            List<BaseBill> baseBills = mapper.selectByExample(example);
+                            if (StringHelper.isNotEmpty(baseBills)) {
+                              baseBills.forEach(vo->{
+                                statisticsInBillDate(vo, null);
+                              });
+                            }
+                          } finally {
+                            latch.countDown();
+                          }
+                        }));
+      }
+      latch.await();
+      BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
+    }
   }
 }

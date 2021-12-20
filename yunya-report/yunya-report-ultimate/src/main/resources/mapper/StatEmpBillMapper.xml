@@ -16,4 +16,25 @@
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
   </resultMap>
+
+  <select id="selectBillItemList" resultType="com.yunya.models.report.StatEmpBill">
+    SELECT
+        seb.org_id AS orgId,
+        seb.item_type AS itemType,
+        seb.item_id AS itemId,
+        SUM(seb.quantity) AS quantity
+    FROM stat_emp_bill seb
+    <where>
+        <if test="query.orgIds!=null and query.orgIds.size()>0">
+          AND seb.org_id in
+          <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+          </foreach>
+        </if>
+        <if test="query.sDateInt!=null and query.eDateInt!=null">
+          AND seb.bill_date between #{query.sDateInt} and #{query.eDateInt}
+        </if>
+    </where>
+    GROUP BY seb.org_id, seb.item_type, seb.item_id
+  </select>
 </mapper>
