@@ -89,16 +89,15 @@ public class BaseTreatmentProcessBiz
         // 修改
       case 1:
         treatmentProcess = updateTreatmentProcess(dataId, type);
-        statEmployeeTreat(treatmentProcess);
         break;
       case 2:
         // 删除
         treatmentProcess = deleteTreatmentProcess(dataId, type);
-        statEmployeeTreat(treatmentProcess);
         break;
       default:
         break;
     }
+    statEmployeeTreat(treatmentProcess);
   }
 
   private void statEmployeeTreat(BaseTreatmentProcess treatmentProcess) {
@@ -687,6 +686,48 @@ public class BaseTreatmentProcessBiz
         break;
       default:
         break;
+    }
+  }
+
+  public void pullTreatDateStatistics(PullForm form) throws InterruptedException {
+    String startDate = form.getStartDate();
+    String endDate = form.getEndDate();
+    List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
+    if (StringHelper.isNotEmpty(dateRanges)) {
+      CountDownLatch latch = new CountDownLatch(dateRanges.size());
+      List<Future> resultFutures = new ArrayList<>();
+      for (String date : dateRanges) {
+        resultFutures.add(
+                importExcelThreadPool.submit(
+                        () -> {
+                          try {
+                            // 预约-就诊
+                            Example treatExample = new Example(BaseTreatmentProcess.class);
+                            treatExample
+                                    .createCriteria()
+                                    .andCondition(
+                                            "treat_end_time >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
+                                    .andCondition(
+                                            "treat_end_time < '"
+                                                    + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
+                                                    + "'");
+                            List<BaseTreatmentProcess> treatmentProcesses = mapper.selectByExample(treatExample);
+
+//                            if (treatmentProcesses.size() > 10000) {
+                              List<List<BaseTreatmentProcess>> partitions = ListUtils.partition(treatmentProcesses, 1000);
+                              if (StringHelper.isNotEmpty(partitions)) {
+                                for (List<BaseTreatmentProcess> partition : partitions) {
+                                  partition.forEach(this::statEmployeeTreat);
+                                }
+                              }
+//                            }
+                          } finally {
+                            latch.countDown();
+                          }
+                        }));
+      }
+      latch.await();
+      printExceptionLog(resultFutures, log);
     }
   }
 }
