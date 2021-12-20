@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 简单介绍:</br> 组织详情VO
@@ -58,4 +59,8 @@ public class OrganizationInfoVO implements Serializable {
   /** 营业结束时间*/
   @ApiModelProperty("营业结束时间")
   private String businessEndTime;
+
+  /** 子门诊ID列表*/
+  @ApiModelProperty("子门诊ID列表")
+  private List<Integer> orgIds;
 }

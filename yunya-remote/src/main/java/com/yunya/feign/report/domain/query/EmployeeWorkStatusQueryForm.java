@@ -1,13 +1,12 @@
 package com.yunya.feign.report.domain.query;
 
-import com.yunya.feign.report.domain.query.base.NumDateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * 简介：员工状态查询VO
@@ -20,7 +19,7 @@ import java.util.List;
 @Data
 @ToString
 @ApiModel("员工状态查询VO")
-public class EmployeeWorkStatusQueryForm extends NumDateRangeQueryForm implements Serializable {
+public class EmployeeWorkStatusQueryForm extends DateRangeQueryForm implements Serializable {
     private Integer[] employeeIds;
 
     /** 就职状态 */

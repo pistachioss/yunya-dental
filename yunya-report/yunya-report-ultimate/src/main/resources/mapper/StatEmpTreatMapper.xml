@@ -17,7 +17,7 @@
   <select id="selectClinicTreatVisitNum" resultType="com.yunya.models.report.StatEmpTreat">
     SELECT
       st.org_id AS orgId,
-      st.dentist_id AS dentistsId,
+      st.dentist_id AS dentistId,
       DATE_FORMAT(st.treat_date, '%Y%m') AS treatDate,
       SUM(st.first_visit_count) AS firstVisitCount,
       SUM(st.re_visit_count) AS reVisitCount

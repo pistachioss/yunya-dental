@@ -36,7 +36,13 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
     /** 账单明细*/
     @Autowired private BaseBillDetailMapper baseBillDetailMapper;
 
-    public void incStatEmpBill(List<OrderDetail> orderDetails, BaseBill bill) {
+    /**
+     * 账单生成时统计
+     *
+     * @param orderDetails
+     * @param bill
+     */
+    public void statisticsInBillDate(List<OrderDetail> orderDetails, BaseBill bill) {
         Integer orgId = bill.getOrgId();
         Date date = new Date(System.currentTimeMillis());
         Integer billDate = DateUtil.date2Number(bill.getBillDate());

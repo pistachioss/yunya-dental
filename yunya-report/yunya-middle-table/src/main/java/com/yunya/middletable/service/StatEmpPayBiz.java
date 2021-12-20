@@ -34,7 +34,14 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
     /** 账单明细*/
     @Autowired private BaseBillDetailMapper baseBillDetailMapper;
 
-    public void incStatEmpPay(List<OrderDetail> orderDetails, BaseBill bill, BaseBillPay baseBillPay) {
+    /**
+     * 账单收费时统计
+     *
+     * @param orderDetails
+     * @param bill
+     * @param baseBillPay
+     */
+    public void statisticsInPayDate(List<OrderDetail> orderDetails, BaseBill bill, BaseBillPay baseBillPay) {
         Integer orgId = bill.getOrgId();
         Date date = new Date(System.currentTimeMillis());
         Integer payDate = DateUtil.date2Number(baseBillPay.getPayeeDate());

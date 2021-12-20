@@ -36,4 +36,12 @@ public interface CompanyMapper extends Mapper<Company> {
   List<OrganizationInfoVO> selectOrganizationByExample(@Param("queryForm") OrganizationQueryForm queryForm);
 
   List<OrganizationInfoVO> selectOrganizationInIds(@Param("orgIds") List<Integer> orgIds);
+
+  /**
+   * 根据上级组织ID获取组织信息
+   *
+   * @param parentId 上级组织ID
+   * @return
+   */
+  List<OrganizationInfo> selectOrgInfoByParentId(@Param("parentId") Integer parentId);
 }

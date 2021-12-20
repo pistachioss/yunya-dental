@@ -54,4 +54,32 @@ public class BaseBillPayController {
     billPayBiz.pullBillPayData(form);
     return ResponseUtil.success(null);
   }
+
+  /**
+   * 根据消息操作中间表收费时统计
+   *
+   * @param msg 消息
+   * @return
+   */
+  @ApiOperation("根据消息操作中间表收费时统计")
+  @PostMapping(value = "/payDate/statistics", name = "根据消息操作中间表收费时统计")
+  public ResponseResult<T> payDateStatistics(@RequestBody @Validated MessageModel msg) {
+    msg.setOperateType(-1);
+    billPayBiz.operateBillPay(msg);
+    return ResponseUtil.success(null);
+  }
+
+
+  /**
+   * 根据时间段批量操作中间表账单收费时统计
+   *
+   * @param form 拉取时间
+   * @return
+   */
+  @ApiOperation("根据时间段批量操作中间表账单收费时统计")
+  @PostMapping(value = "/payDate/statistics/batch", name = "根据时间段批量操作中间表账单收费时统计")
+  public ResponseResult<T> pullPayDateStatistics(@RequestBody PullForm form) throws InterruptedException {
+    billPayBiz.pullPayDateStatistics(form);
+    return ResponseUtil.success(null);
+  }
 }

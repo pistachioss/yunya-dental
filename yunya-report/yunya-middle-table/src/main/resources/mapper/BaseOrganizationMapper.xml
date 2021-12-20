@@ -6,6 +6,7 @@
       WARNING - @mbg.generated
     -->
     <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="parent_id" property="parentId" jdbcType="INTEGER" />
     <result column="org_type" property="orgType" jdbcType="TINYINT" />
     <result column="abbreviation" property="abbreviation" jdbcType="VARCHAR" />
     <result column="clinic_number" property="clinicNumber" jdbcType="VARCHAR" />

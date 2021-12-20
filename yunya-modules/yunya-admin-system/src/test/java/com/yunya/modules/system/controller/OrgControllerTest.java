@@ -1,5 +1,6 @@
 package com.yunya.modules.system.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.redis.util.RedisUtils;
@@ -34,9 +35,9 @@ public class OrgControllerTest {
   @Test
   public void testFindList() {
     OrganizationQueryForm form = new OrganizationQueryForm();
-    form.setTypes(new Byte[] {0, 2});
+    form.setTypes(new Byte[] {0, 1});
     ResponseResult list = organizationController.findList(form);
-    System.out.println(list);
+    System.out.println(JSONObject.toJSON(list));
   }
 
   @Test

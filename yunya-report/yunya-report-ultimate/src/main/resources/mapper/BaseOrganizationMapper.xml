@@ -6,6 +6,7 @@
           WARNING - @mbg.generated
         -->
         <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="parent_id" property="parentId" jdbcType="INTEGER"/>
         <result column="org_type" property="orgType" jdbcType="TINYINT"/>
         <result column="abbreviation" property="abbreviation" jdbcType="VARCHAR"/>
         <result column="clinic_number" property="clinicNumber" jdbcType="VARCHAR"/>
@@ -402,5 +403,24 @@
                 </foreach>
             </if>
         </where>
+    </select>
+
+    <select id="selectOrganizationWithParentList"
+            resultType="com.yunya.feign.report.domain.vo.BaseOrganizationVO">
+        SELECT
+            bo.*,
+            bo2.abbreviation AS parentName
+        FROM base_organization bo
+        LEFT JOIN base_organization bo2 ON bo2.org_id = bo.parent_id
+        <where>
+            bo.org_type = 2
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
+                AND bo.org_id IN
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY bo.parent_id,bo.org_id
     </select>
 </mapper>

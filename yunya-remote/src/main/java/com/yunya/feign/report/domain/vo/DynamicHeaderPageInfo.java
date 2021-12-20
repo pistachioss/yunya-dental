@@ -30,14 +30,15 @@ public class DynamicHeaderPageInfo<T> extends PageInfo<T> implements Serializabl
     public DynamicHeaderPageInfo() {
     }
 
-    /** 表头 */
-    @ApiModelProperty("表头")
+    /** 表头，注意顺序 */
+    @ApiModelProperty("表头：name1,name2,name3，注意顺序")
     private String[] header;
 
-    /** 表头关联映射*/
-    @ApiModelProperty("表头关联映射")
+    /** 单层表头关联映射：Map<id, name1,name2,name3>，注意顺序，其中id数据行中的对象的键值一一对应*/
+    @ApiModelProperty("单层表头关联映射：Map<id, name1,name2,name3>，注意顺序，其中id数据行中的对象的键值一一对应")
     private Map<String, String> map;
 
-    @ApiModelProperty("上下层表头关联映射")
+    /**两层表头，上下层之间的关联关系：Map<id, [name1,name2,name]> ，注意顺序，其中id数据行中的对象的键值一一对应*/
+    @ApiModelProperty("两层表头，上下层之间的关联关系：Map<id, [name1,name2,name]>，注意顺序，其中id数据行中的对象的键值一一对应")
     private Map<String, List<String>> contextMap;
 }

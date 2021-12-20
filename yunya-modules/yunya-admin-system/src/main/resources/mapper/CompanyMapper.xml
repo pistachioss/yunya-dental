@@ -203,4 +203,23 @@
             #{item}
         </foreach>
     </select>
+
+    <select id="selectOrgInfoByParentId" resultType="com.yunya.feign.system.vo.OrganizationInfo">
+        select
+           c.id,
+           c.`name`,
+           c.`type`,
+           case
+               c.type
+           when 0 then
+                '公司'
+           when 1 then
+                '区域管理'
+           when 2 then
+            cei.abbreviation else '其他'
+           end as abbreviation
+        from company c
+	    left join clinic_ext_info cei ON c.id = cei.company_id
+        where c.parent_id = #{parentId}
+    </select>
 </mapper>

@@ -29,9 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseOrganization;
 import static com.yunya.framework.common.constant.BusinessConstants.DEFAULT_PARENT_ID;
@@ -129,7 +128,30 @@ public class OrganizationBiz {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<OrganizationInfoVO> resultList = companyMapper.selectOrganizationByExample(queryForm);
+    childIfAbsent(resultList);
     return new PageInfo<>(resultList);
+  }
+
+  private void childIfAbsent(List<OrganizationInfoVO> resultList) {
+    if (StringHelper.isNotEmpty(resultList)) {
+      Map<Integer, List<Integer>> hasChild = new HashMap<>(16);
+      for (OrganizationInfoVO org : resultList) {
+        String type = org.getType();
+        if ("0".equals(type) || "1".equals(type)) {
+          hasChild.put(org.getId(), null);
+        }
+      }
+      if (StringHelper.isNotEmpty(hasChild)) {
+        hasChild.forEach((orgId, list) -> {
+          List<OrganizationInfo> orgs = companyMapper.selectOrgInfoByParentId(orgId);
+          List<Integer> orgIds = orgs.stream().map(OrganizationInfo::getId).collect(Collectors.toList());
+          if (StringHelper.isNotEmpty(orgIds)) {
+            hasChild.put(orgId, orgIds);
+          }
+        });
+      }
+      resultList.forEach(org-> org.setOrgIds(hasChild.get(org.getId())));
+    }
   }
 
   /**

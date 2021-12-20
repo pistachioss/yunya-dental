@@ -1303,7 +1303,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     return workloadMonthGoal((byte) 1, date, date); // 按月查
   }
 
-  private Map<Integer, BigDecimal> workloadMonthGoal(
+  public Map<Integer, BigDecimal> workloadMonthGoal(
       Byte dateType, String startDate, String endDate) {
     BusinessGoalCompletedInfoQuery query = new BusinessGoalCompletedInfoQuery();
     query.setBusinessTypes(new Byte[] {1}); // 工作量
