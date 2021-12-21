@@ -255,4 +255,17 @@
         GROUP BY bd.coupon_id, bd.active_org_id
         ORDER BY bd.coupon_id
     </select>
+
+    <select id="selectBaseCouponListByCouponId" resultType="com.yunya.models.report.BaseCoupon">
+        SELECT
+            bc.coupon_id AS couponId,
+            bc.coupon_name AS couponName
+        FROM base_coupon bc
+        <where>
+            and bc.coupon_id IN
+            <foreach collection="couponIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
 </mapper>

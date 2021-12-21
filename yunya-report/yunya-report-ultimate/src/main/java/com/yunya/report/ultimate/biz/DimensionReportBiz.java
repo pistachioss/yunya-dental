@@ -15,10 +15,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
-import com.yunya.models.report.BaseOrganization;
-import com.yunya.models.report.StatEmpBill;
-import com.yunya.models.report.StatEmpPay;
-import com.yunya.models.report.StatEmpTreat;
+import com.yunya.models.report.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
@@ -30,6 +27,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -73,6 +71,10 @@ public class DimensionReportBiz {
     private EmployeeWorkloadBiz employeeWorkloadBiz;
     @Autowired
     private BaseOrganizationBiz baseOrganizationBiz;
+    @Autowired
+    private BaseCardBiz baseCardBiz;
+    @Autowired
+    private BaseCouponBiz baseCouponBiz;
     @Resource(name = "customizeThreadPool")
     private ThreadPoolExecutor threadPool;
 
@@ -1488,9 +1490,6 @@ public class DimensionReportBiz {
     }
 
     private void checkSpecialNumQuery(DoubleDateRangeQueryForm query) {
-        if (!query.getDateType1().equals(query.getDateType2())) {
-            throw new ClientServiceException("请选择相同日期类型！", PARAMETERS_IS_ILLEGAL);
-        }
         if (query.getStartDate1().equals(query.getStartDate2()) && query.getEndDate1().equals(query.getEndDate2())) {
             throw new ClientServiceException("请勿选择相同日期时段！", PARAMETERS_IS_ILLEGAL);
         }
@@ -1816,5 +1815,107 @@ public class DimensionReportBiz {
         ExcelUtil<CampusAchievementCompareVO> excelUtil = new ExcelUtil(CampusAchievementCompareVO.class);
         String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "院区业绩同比");
         excelUtil.exportExcel(response, result, "院区业绩同比", fileName);
+    }
+
+    /**
+     * 根据条件查询产品卡券使用统计
+     *
+     * @param query
+     * @return
+     */
+    public DynamicHeaderPageInfo<JSONObject> cardCouponUsedStatistics(CardCouponUsedQueryForm query) throws Exception {
+        // 门诊
+        ClinicPerformanceBusinessQuery queryFrom = new ClinicPerformanceBusinessQuery();
+        queryFrom.setOrgIds(query.getOrgIds());
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(queryFrom);
+        query.setOrgIds(orgs.stream().map(BaseOrganization::getOrgId).collect(toList()));
+        // 产品
+        List<BaseCoupon> coupons = baseCouponBiz.findBaseCouponListByCouponId(query.getCouponIds());
+        query.setCouponIds(coupons.stream().map(BaseCoupon::getCouponId).collect(Collectors.toSet()));
+        // 卡券
+        Future<List<BaseCard>> cardFuture = multiFindCardCouponSoldStatistics(query);
+        return mergeCardCouponUsedStatistics(orgs, coupons, cardFuture.get());
+    }
+
+    private DynamicHeaderPageInfo<JSONObject> mergeCardCouponUsedStatistics(List<BaseOrganization> orgs, List<BaseCoupon> coupons, List<BaseCard> cards) {
+        // 患者激活卡片次数
+        Map<String, Set<LocalDateTime>> patientActiveDates = new HashMap<>(16);
+        // 销售数量
+        Map<String, Integer> soldNumMap = new HashMap<>(16);
+        // 激活数量
+        Map<String, Integer> activeNumMap = new HashMap<>(16);
+        cards.forEach(card->{
+            Integer status = card.getStatus();
+            Integer couponId = card.getCouponId();
+            Integer allocateOrgId = card.getAllocateOrgId();
+            Integer patientId = card.getPatientId();
+            String key = allocateOrgId + "," + couponId;
+            Integer soldNum = soldNumMap.get(key);
+            if (soldNum == null) {
+                soldNum = 0;
+            }
+            soldNumMap.put(key, soldNum + 1);
+            if (status > 1) {// 已激活
+                String patientKey = allocateOrgId + "," + couponId + "," + patientId;
+                Set<LocalDateTime> dates = patientActiveDates.get(patientKey);
+                if (dates == null) {
+                    dates = new HashSet<>();
+                }
+                dates.add(card.getActiveDate());
+                patientActiveDates.put(patientKey, dates);
+
+                Integer activeNum = activeNumMap.get(key);
+                if (activeNum == null) {
+                    activeNum = 0;
+                }
+                activeNumMap.put(key, activeNum + 1);
+            }
+        });
+        Map<String, Integer> repurchaseMap = patientRepurchaseMap(patientActiveDates);
+        List<JSONObject> list = new ArrayList<>();
+        orgs.forEach(org->{
+            JSONObject obj = new JSONObject();
+            Integer orgId = org.getOrgId();
+            obj.put("abbreviation", defValue(org.getAbbreviation()));
+            coupons.forEach(coupon->{
+                Integer couponId = coupon.getCouponId();
+                String key = orgId + "," + couponId;
+                Integer soldNum = defIntVal(soldNumMap.get(key));
+                obj.put("S" + couponId, soldNum);
+                Integer activeNum = defIntVal(activeNumMap.get(key));
+                obj.put("A" + couponId, activeNum);
+                obj.put("U" + couponId, soldNum - activeNum);
+                obj.put("R" + couponId, );
+            });
+        });
+        return null;
+    }
+
+    private Map<String, Integer> patientRepurchaseMap(Map<String, Set<LocalDateTime>> patientActiveDates) {
+        Map<String, Integer> result = new HashMap<>(16);
+        if (StringHelper.isNotEmpty(patientActiveDates)) {
+            patientActiveDates.forEach((key, set)->{
+                String[] keys = StringHelper.split(key, ",");
+                result.get()
+            });
+        }
+    }
+
+    private Future<List<BaseCard>> multiFindCardCouponSoldStatistics(CardCouponUsedQueryForm query) {
+        return threadPool.submit(()-> baseCardBiz.findCardCouponSoldStatistics(query));
+    }
+
+    /**
+     * 根据条件导出产品卡券使用统计
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public void cardCouponUsedStatisticsExport(CardCouponUsedQueryForm query, HttpServletResponse response) {
+
+
     }
 }

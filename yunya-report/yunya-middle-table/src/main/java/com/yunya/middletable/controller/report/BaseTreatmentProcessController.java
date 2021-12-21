@@ -68,7 +68,7 @@ public class BaseTreatmentProcessController {
   @PostMapping(value = "/treatDate/statistics", name = "根据消息操作中间表就诊完成时统计")
   public ResponseResult<T> treatDateStatistics(@RequestBody @Validated MessageModel msg) {
     log.info("根据消息操作中间表就诊完成时统计========> {}", msg);
-    msg.setOperateType(-1);
+    msg.setOperateType(1);
     treatmentProcessBiz.operateTreatmentProcess(msg);
     return ResponseUtil.success(null);
   }

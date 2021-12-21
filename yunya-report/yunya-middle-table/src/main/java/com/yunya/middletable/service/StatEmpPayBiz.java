@@ -46,6 +46,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
         Date date = new Date(System.currentTimeMillis());
         Integer payDate = DateUtil.date2Number(baseBillPay.getPayeeDate());
         if (StringHelper.isNotEmpty(orderDetails)) {
+            Set<String> keys = new HashSet<>();
             Set<Integer> executorIds = new HashSet<>();
             orderDetails.forEach(vo->{
                 Integer executorId = vo.getExecutorId();
@@ -59,44 +60,48 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                 if (vo.getInservice() && !ObjectUtils.isEmpty(executorId)) {
                     executorIds.add(executorId);
                 }
+                keys.add(executorId + "," + vo.getType() + "," + vo.getBillingItemId());
             });
-            List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId,
-                    null, payDate, executorIds);
-            sharedItemAmount(details);
-            details = statisticsExecutorItem(details);
-            if (StringHelper.isNotEmpty(details)) {
-                Integer payeeUserId = baseBillPay.getPayeeUserId();
-                details.forEach(vo->{
-                    Integer executorId = vo.getExecutorId();
-                    String lockKey = Joiner.on(":").join(LOCK_STATISTICS_EMP_PAY, orgId, payDate);
-                    String lockVal = String.valueOf(executorId);
-                    redisLockBiz.lockedApply(lockKey, lockVal,(t)->{
-                        StatEmpPay entity = new StatEmpPay();
-                        entity.setOrgId(orgId);
-                        entity.setDentistId(executorId);
-                        entity.setPayDate(payDate);
-                        entity.setItemType(vo.getItemType());
-                        entity.setItemId(vo.getItemId());
-                        entity.setReceivedWorkload(vo.getReceivedWorkload());
-                        entity.setCrtId(payeeUserId);
-                        entity.setCrtTime(date);
-                        mapper.insertSelective(entity);
-                        return null;
+            if (StringHelper.isNotEmpty(executorIds)) {
+                List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId,
+                        null, payDate, executorIds);
+                sharedItemAmount(details);
+                details = statisticsExecutorItem(details, keys);
+                if (StringHelper.isNotEmpty(details)) {
+                    Integer payeeUserId = baseBillPay.getPayeeUserId();
+                    details.forEach(vo -> {
+                        Integer executorId = vo.getExecutorId();
+                        String lockKey = Joiner.on(":").join(LOCK_STATISTICS_EMP_PAY, orgId, payDate);
+                        String lockVal = String.valueOf(executorId);
+                        redisLockBiz.lockedApply(lockKey, lockVal, (t) -> {
+                            StatEmpPay entity = new StatEmpPay();
+                            entity.setOrgId(orgId);
+                            entity.setDentistId(executorId);
+                            entity.setPayDate(payDate);
+                            entity.setItemType(vo.getItemType());
+                            entity.setItemId(vo.getItemId());
+                            entity.setReceivedWorkload(vo.getReceivedWorkload());
+                            entity.setCrtId(payeeUserId);
+                            entity.setCrtTime(date);
+                            mapper.insertSelective(entity);
+                            return null;
+                        });
                     });
-                });
+                }
             }
         }
     }
 
     /**
-     * 统计执行人、项目的数量和实收
+     * 统计执行人的项目的数量、应收、实收
      * @param details
+     * @param keys
      * @return
      */
-    public List<BillExecutorItemVO> statisticsExecutorItem(List<BillExecutorItemVO> details) {
+    public List<BillExecutorItemVO> statisticsExecutorItem(List<BillExecutorItemVO> details, Set<String> keys) {
         if (StringHelper.isNotEmpty(details)) {
             Map<String, BillExecutorItemVO> map = new HashMap<>(16);
-            details.forEach(vo->{
+            details.stream().filter(vo-> keys.contains(vo.getExecutorId() + "," + vo.getItemType() + "," + vo.getItemId())).forEach(vo->{
                 String key = vo.getExecutorId() + "," + vo.getItemType() + "," + vo.getItemId();
                 BillExecutorItemVO executorItem = map.get(key);
                 if (ObjectUtils.isEmpty(executorItem)) {

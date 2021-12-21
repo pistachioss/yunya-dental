@@ -25,7 +25,7 @@ public class DoubleDateRangeQueryForm extends PageQuery implements Serializable 
     /** 第一套时间类型 */
     @ApiModelProperty(value = "第一套时间类型:0-日；1-月；2-年", required = true)
     @NotNull(message = "第一个时间类型不能为空！")
-    private Byte dateType1;
+    private Byte dateType;
     /** 第一套查询时间 */
     @ApiModelProperty(value = "第一套查询开始时间", required = true)
     @NotBlank(message = "第一个查询开始时间不能为空！")
@@ -41,10 +41,6 @@ public class DoubleDateRangeQueryForm extends PageQuery implements Serializable 
     @ApiModelProperty(value = "第一套查询结束时间数字形式：yyyyMMdd")
     private Integer eDateInt1;
 
-    /** 第二套时间类型 */
-    @ApiModelProperty(value = "第二套时间类型:0-日；1-月；2-年", required = true)
-    @NotNull(message = "第二个时间类型不能为空！")
-    private Byte dateType2;
     /** 第二套查询时间 */
     @ApiModelProperty(value = "第二套查询开始时间", required = true)
     @NotBlank(message = "第二个查询开始时间不能为空！")

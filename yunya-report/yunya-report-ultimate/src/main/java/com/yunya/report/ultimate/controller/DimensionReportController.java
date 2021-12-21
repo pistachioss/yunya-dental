@@ -2,6 +2,7 @@ package com.yunya.report.ultimate.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.CardCouponUsedQueryForm;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.query.EmployeeWorkStatusQueryForm;
 import com.yunya.feign.report.domain.query.PatientDimensionQueryForm;
@@ -413,6 +414,7 @@ public class DimensionReportController {
         dimesionReportBiz.campusAchievementStatisticsExport(query, response);
         return ResponseUtil.success(null);
     }
+
     /**
      * 根据条件查询院区业绩同比表
      *
@@ -439,6 +441,35 @@ public class DimensionReportController {
             HttpServletResponse response, @RequestBody @Validated MultiClinicDateRangeQueryForm query)
             throws Exception {
         dimesionReportBiz.campusAchievementCompareExport(query, response);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 根据条件产品卡券使用统计
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-产品卡券使用统计")
+    @PostMapping(value = "/cardCoupon/used/statistics", name = "公司端报表-报表统计-运营报表-产品卡券使用统计")
+    public ResponseResult<DynamicHeaderPageInfo<JSONObject>> cardCouponUsedStatistics(
+            @RequestBody @Validated CardCouponUsedQueryForm query) throws Exception {
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.cardCouponUsedStatistics(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件导出产品卡券使用统计
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-产品卡券使用统计导出")
+    @PostMapping(value = "/cardCoupon/used/statistics/export", name = "公司端报表-报表统计-运营报表-产品卡券使用统计导出")
+    public ResponseResult<T> cardCouponUsedStatisticsExport(
+            HttpServletResponse response, @RequestBody @Validated CardCouponUsedQueryForm query)
+            throws Exception {
+        dimesionReportBiz.cardCouponUsedStatisticsExport(query, response);
         return ResponseUtil.success(null);
     }
 }
