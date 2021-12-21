@@ -451,6 +451,14 @@ public class DimensionReportController {
      * @return
      */
     @ApiOperation("公司端报表-报表统计-运营报表-产品卡券使用统计")
+    @ApiResponses(
+            value = {
+                    @ApiResponse(
+                            code = 200,
+                            message =
+                                    "响应格式：{\"status\":0,\"msg\":\"success\",\"data\":{\"total\":16,\"list\":[{\"S-443\":1,\"A-443\":1,\"U-443\":0,\"R-443\":0,\"T-443\":\"100.00%\",\"V-443\":\"0.00%\",\"abbreviation\":\"古墩路门诊\"},{\"S-443\":1,\"A-443\":1,\"U-443\":0,\"R-443\":0,\"T-443\":\"100.00%\",\"V-443\":\"0.00%\",\"abbreviation\":\"合计\"}],\"pageNum\":1,\"pageSize\":10,\"size\":10,\"startRow\":1,\"endRow\":10,\"pages\":2,\"prePage\":0,\"nextPage\":2,\"isFirstPage\":true,\"isLastPage\":false,\"hasPreviousPage\":false,\"hasNextPage\":true,\"navigatePages\":8,\"navigatepageNums\":[1,2],\"navigateFirstPage\":1,\"navigateLastPage\":2,\"header\":null,\"map\":{\"abbreviation\":\"门诊\",\"S-443\":\"销售\",\"A-443\":\"激活\",\"U-443\":\"未激活\",\"R-443\":\"复购\",\"T-443\":\"激活率\",\"V-443\":\"复购率\"},\"contextMap\":{\"艾牙周涂氟礼包\":[\"S-443\",\"A-443\",\"U-443\",\"R-443\",\"T-443\",\"V-443\"]},\"firstPage\":1,\"lastPage\":2},\"audit\":true}; "
+                                            + "\n S前缀-销售+产品id； A前缀-激活+产品id；U前缀-未激活+产品id；R前缀-复购+产品id；T前缀-激活率+产品id；V前缀-复购率+产品id")
+            })
     @PostMapping(value = "/cardCoupon/used/statistics", name = "公司端报表-报表统计-运营报表-产品卡券使用统计")
     public ResponseResult<DynamicHeaderPageInfo<JSONObject>> cardCouponUsedStatistics(
             @RequestBody @Validated CardCouponUsedQueryForm query) throws Exception {

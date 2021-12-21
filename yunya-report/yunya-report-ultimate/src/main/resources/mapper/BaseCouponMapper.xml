@@ -262,10 +262,12 @@
             bc.coupon_name AS couponName
         FROM base_coupon bc
         <where>
-            and bc.coupon_id IN
-            <foreach collection="couponIds" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
+            <if test="couponIds!=null and couponIds.size()>0">
+                and bc.coupon_id IN
+                <foreach collection="couponIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 </mapper>

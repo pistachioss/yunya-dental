@@ -793,7 +793,7 @@
     <select id="selectCardCouponSoldList" resultType="com.yunya.models.report.BaseCard">
         SELECT
             bc.coupon_id AS couponId,
-            bc.allocate_org_id AS allocateOrgId,
+            bc.active_org_id AS activeOrgId,
             bc.patient_id AS patientId,
             bc.status,
             bc.active_date AS activeDate
@@ -830,8 +830,8 @@
                     #{couponId}
                 </foreach>
             </if>
-            <if test="query.orgIds!=null and queryorgIds.size() > 0">
-                and bc.allocate_org_id in
+            <if test="query.orgIds!=null and query.orgIds.size() > 0">
+                and bc.active_org_id in
                 <foreach collection="query.orgIds" item="orgId" open="(" separator="," close=")">
                     #{orgId}
                 </foreach>

@@ -1849,11 +1849,13 @@ public class DimensionReportBiz {
         // 激活数量
         Map<String, Integer> activeNumMap = new HashMap<>(16);
         // 购买产品的患者数量
-        Map<String, Set<Integer>> patients = statisticCouponCardNum(cards, patientActiveDates, soldNumMap, activeNumMap);
+        Map<String, Set<Integer>> patients = new HashMap<>(16);
+        Set<Integer> couponIds = statisticCouponCardNum(cards, patients, patientActiveDates, soldNumMap, activeNumMap);
+        coupons = coupons.stream().filter(vo->couponIds.contains(vo.getCouponId())).collect(toList());
         int[] total = new int[coupons.size()*5];
         Map<String, Integer> repurchaseMap = patientRepurchaseMap(patientActiveDates);
         List<JSONObject> list = new ArrayList<>();
-        orgs.forEach(org->{
+        for (BaseOrganization org : orgs) {
             JSONObject obj = new JSONObject();
             Integer orgId = org.getOrgId();
             obj.put("abbreviation", defValue(org.getAbbreviation()));
@@ -1886,22 +1888,22 @@ public class DimensionReportBiz {
                 total[i*5+4] += patientNum;
             }
             list.add(obj);
-        });
+        }
         list.add(totalCardCouponObj(total, coupons));
         pageInfo.setList(list);
         cardCouponUsedTitle(pageInfo, coupons);
         return pageInfo;
     }
 
-    private Map<String, Set<Integer>> statisticCouponCardNum(List<BaseCard> cards, Map<String, Set<LocalDateTime>> patientActiveDates,
+    private Set<Integer> statisticCouponCardNum(List<BaseCard> cards, Map<String, Set<Integer>> patients, Map<String, Set<LocalDateTime>> patientActiveDates,
                                                              Map<String, Integer> soldNumMap, Map<String, Integer> activeNumMap) {
-        Map<String, Set<Integer>> patients = new HashMap<>(16);
+        Set<Integer> couponIds = new HashSet<>();
         cards.forEach(card->{
             Integer status = card.getStatus();
             Integer couponId = card.getCouponId();
-            Integer allocateOrgId = card.getAllocateOrgId();
+            Integer activeOrgId = card.getActiveOrgId();
             Integer patientId = card.getPatientId();
-            String key = allocateOrgId + "," + couponId;
+            String key = activeOrgId + "," + couponId;
             incrementOne(key, soldNumMap);
             if (status > 1) {// 已激活
                 String patientKey = key + "," + patientId;
@@ -1919,8 +1921,9 @@ public class DimensionReportBiz {
             }
             patientIds.add(patientId);
             patients.put(key, patientIds);
+            couponIds.add(couponId);
         });
-        return patients;
+        return couponIds;
     }
 
     private void cardCouponUsedTitle(DynamicHeaderPageInfo pageInfo, List<BaseCoupon> coupons) {
@@ -1945,19 +1948,19 @@ public class DimensionReportBiz {
     private JSONObject totalCardCouponObj(int[] total, List<BaseCoupon> coupons) {
         JSONObject totalObj = new JSONObject();
         totalObj.put("abbreviation", "合计");
-        for (int i = 0; i < total.length; i++) {
+        for (int i = 0; i < coupons.size(); i++) {
             Integer couponId = coupons.get(i).getCouponId();
             int soldNum = total[i*5];
             int activeNum = total[i*5+1];
             int unActiveNum = total[i*5+2];
             int repurchaseNum = total[i*5+3];
             int patientNum = total[i*5+4];
-            totalObj.put("S"+couponId, soldNum);
-            totalObj.put("A"+couponId, activeNum);
-            totalObj.put("U"+couponId, unActiveNum);
-            totalObj.put("R"+couponId, repurchaseNum);
-            totalObj.put("AR"+couponId, computePercentage(activeNum,soldNum)+"%");
-            totalObj.put("RR"+couponId, computePercentage(repurchaseNum,patientNum)+"%");
+            totalObj.put("S-"+couponId, soldNum);
+            totalObj.put("A-"+couponId, activeNum);
+            totalObj.put("U-"+couponId, unActiveNum);
+            totalObj.put("R-"+couponId, repurchaseNum);
+            totalObj.put("T-"+couponId, computePercentage(activeNum,soldNum)+"%");
+            totalObj.put("V-"+couponId, computePercentage(repurchaseNum,patientNum)+"%");
         }
         return totalObj;
     }
@@ -1974,7 +1977,9 @@ public class DimensionReportBiz {
         Map<String, Integer> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(patientActiveDates)) {
             patientActiveDates.forEach((key, set)->{
-                incrementOne(StringHelper.substringsBetween(key, "","\\.")[0],result);
+                if (set.size() > 1) {
+                    incrementOne(key.substring(0, key.lastIndexOf(",")),result);
+                }
             });
         }
         return result;
@@ -2004,17 +2009,29 @@ public class DimensionReportBiz {
         Map<String, String> map = pageInfo.getMap();
         JSONObject title = new JSONObject();
         map.forEach((key, name)->title.put(key, name));
+        List<JSONObject> list = pageInfo.getList();
+        list.add(0, title);
         // 产品行横向合并
         Map<String, List<String>> contextMap = pageInfo.getContextMap();
         String[] header = new String[contextMap.size()*6+1];
         int index = 0;
+        int colInx = 0;
+        result.add(new CellRangeAddress(0,0,colInx,colInx+=6));
         for (Map.Entry<String, List<String>> entry : contextMap.entrySet()) {
             header[index++] = entry.getKey();
-            for (String name : entry.getValue()) {
+            if (index == 1) {
                 header[index++] = "";
+            } else {
+                result.add(new CellRangeAddress(0,0,colInx,colInx+=5));
+            }
+            colInx++;
+            for (int i = 0; i < entry.getValue().size(); i++) {
+                if (i != 0) {
+                    header[index++] = "";
+                }
             }
         }
-        header[index++] = "";
+        pageInfo.setHeader(header);
         return result;
     }
 }
