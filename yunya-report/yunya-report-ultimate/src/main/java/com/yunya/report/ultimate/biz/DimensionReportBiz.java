@@ -512,7 +512,7 @@ public class DimensionReportBiz {
         return defValue(value, String.class) + "";
     }
 
-    private Integer defIntVal(Object value) {
+    private int defIntVal(Object value) {
         return Integer.parseInt(defValue(value, Integer.class) + "");
     }
 
@@ -1081,7 +1081,7 @@ public class DimensionReportBiz {
             totalObj.put("W"+year, workload);
             int firstVisitCount = defIntVal(totalFirstVisitCount[wInx]);
             totalObj.put("F"+year, firstVisitCount);
-            Integer reVisitCount = defIntVal(totalReVisitCount[wInx]);
+            int reVisitCount = defIntVal(totalReVisitCount[wInx]);
             totalObj.put("R"+year, reVisitCount);
             cumulation(12, wInx, fInx, rInx, total, workload, firstVisitCount, reVisitCount);
         }
@@ -1514,15 +1514,15 @@ public class DimensionReportBiz {
                 title.put("abbreviation", "门诊");
                 specialMap.forEach((specialId, name)->{
                     String key = orgId + "," + specialId;
-                    Integer itemNum1 = defIntVal(itemDataMap1.get(key));
-                    Integer itemNum2 = defIntVal(itemDataMap2.get(key));
+                    int itemNum1 = defIntVal(itemDataMap1.get(key));
+                    int itemNum2 = defIntVal(itemDataMap2.get(key));
                     BigDecimal cmpNum = computePercentage(itemNum1, itemNum2);
                     String key1 = "date"+specialId;
                     String key2 = "cmpDate"+specialId;
                     String key3 = "cmpNum"+specialId;
-                    Integer num1 = defIntVal(specialNumMap.get(key1));
+                    int num1 = defIntVal(specialNumMap.get(key1));
                     specialNumMap.put(key1, num1 + itemNum1);
-                    Integer num2 = defIntVal(specialNumMap.get(key2));
+                    int num2 = defIntVal(specialNumMap.get(key2));
                     specialNumMap.put(key2, num2 + itemNum2);
                     obj.put(key1, itemNum1);
                     obj.put(key2, itemNum2);
@@ -1537,8 +1537,8 @@ public class DimensionReportBiz {
             JSONObject totalObj = new JSONObject();
             totalObj.put("abbreviation", "合计");
             specialMap.forEach((specialId, name)->{
-                Integer num1 = defIntVal(specialNumMap.get("date"+specialId));
-                Integer num2 = defIntVal(specialNumMap.get("cmpDate"+specialId));
+                int num1 = defIntVal(specialNumMap.get("date"+specialId));
+                int num2 = defIntVal(specialNumMap.get("cmpDate"+specialId));
                 totalObj.put("date"+specialId, num1);
                 totalObj.put("cmpDate"+specialId, num2);
                 totalObj.put("cmpNum"+specialId,  computePercentage(num1, num2) + "%");
@@ -1710,7 +1710,7 @@ public class DimensionReportBiz {
             totalObj.put("treatVisitCount", totalObj.getIntValue("treatVisitCount") + treatVisitCount);
             for (Map.Entry<String, String> entry : specialMap.entrySet()) {
                 String specialId = entry.getKey();
-                Integer specialNum = defIntVal(itemNumMap.get(orgId + "," + specialId));
+                int specialNum = defIntVal(itemNumMap.get(orgId + "," + specialId));
                 obj.put(specialId, defIntVal(obj.getIntValue(specialId)) + specialNum);
                 totalObj.put(specialId, defIntVal(totalObj.getIntValue(specialId)) + specialNum);
             }
@@ -1841,67 +1841,143 @@ public class DimensionReportBiz {
     }
 
     private DynamicHeaderPageInfo<JSONObject> mergeCardCouponUsedStatistics(List<BaseOrganization> orgs, List<BaseCoupon> coupons, List<BaseCard> cards) {
+        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo(orgs);
         // 患者激活卡片次数
         Map<String, Set<LocalDateTime>> patientActiveDates = new HashMap<>(16);
         // 销售数量
         Map<String, Integer> soldNumMap = new HashMap<>(16);
         // 激活数量
         Map<String, Integer> activeNumMap = new HashMap<>(16);
-        cards.forEach(card->{
-            Integer status = card.getStatus();
-            Integer couponId = card.getCouponId();
-            Integer allocateOrgId = card.getAllocateOrgId();
-            Integer patientId = card.getPatientId();
-            String key = allocateOrgId + "," + couponId;
-            Integer soldNum = soldNumMap.get(key);
-            if (soldNum == null) {
-                soldNum = 0;
-            }
-            soldNumMap.put(key, soldNum + 1);
-            if (status > 1) {// 已激活
-                String patientKey = allocateOrgId + "," + couponId + "," + patientId;
-                Set<LocalDateTime> dates = patientActiveDates.get(patientKey);
-                if (dates == null) {
-                    dates = new HashSet<>();
-                }
-                dates.add(card.getActiveDate());
-                patientActiveDates.put(patientKey, dates);
-
-                Integer activeNum = activeNumMap.get(key);
-                if (activeNum == null) {
-                    activeNum = 0;
-                }
-                activeNumMap.put(key, activeNum + 1);
-            }
-        });
+        // 购买产品的患者数量
+        Map<String, Set<Integer>> patients = statisticCouponCardNum(cards, patientActiveDates, soldNumMap, activeNumMap);
+        int[] total = new int[coupons.size()*5];
         Map<String, Integer> repurchaseMap = patientRepurchaseMap(patientActiveDates);
         List<JSONObject> list = new ArrayList<>();
         orgs.forEach(org->{
             JSONObject obj = new JSONObject();
             Integer orgId = org.getOrgId();
             obj.put("abbreviation", defValue(org.getAbbreviation()));
-            coupons.forEach(coupon->{
+            obj.put("orgId", orgId);
+            for (int i = 0; i < coupons.size(); i++) {
+                BaseCoupon coupon = coupons.get(i);
                 Integer couponId = coupon.getCouponId();
                 String key = orgId + "," + couponId;
-                Integer soldNum = defIntVal(soldNumMap.get(key));
-                obj.put("S" + couponId, soldNum);
-                Integer activeNum = defIntVal(activeNumMap.get(key));
-                obj.put("A" + couponId, activeNum);
-                obj.put("U" + couponId, soldNum - activeNum);
-                obj.put("R" + couponId, );
-            });
+                int soldNum = defIntVal(soldNumMap.get(key));
+                obj.put("S-" + couponId, soldNum);
+                int activeNum = defIntVal(activeNumMap.get(key));
+                obj.put("A-" + couponId, activeNum);
+                int unActiveNum = soldNum - activeNum;
+                obj.put("U-" + couponId, unActiveNum);
+                int repurchaseNum = defIntVal(repurchaseMap.get(key));
+                obj.put("R-" + couponId, repurchaseNum);
+                // 激活率 = 激活数/销售数
+                obj.put("T-" + couponId, computePercentage(activeNum,soldNum)+"%");
+                // 复购率 = 复购数/购买产品的患者人数
+                int patientNum = 0;
+                Set<Integer> patientIds = patients.get(key);
+                if (StringHelper.isNotEmpty(patientIds)) {
+                    patientNum = patientIds.size();
+                }
+                obj.put("V-" + couponId, computePercentage(repurchaseNum, patientNum)+"%");
+                total[i*5] += soldNum;
+                total[i*5+1] += activeNum;
+                total[i*5+2] += unActiveNum;
+                total[i*5+3] += repurchaseNum;
+                total[i*5+4] += patientNum;
+            }
+            list.add(obj);
         });
-        return null;
+        list.add(totalCardCouponObj(total, coupons));
+        pageInfo.setList(list);
+        cardCouponUsedTitle(pageInfo, coupons);
+        return pageInfo;
+    }
+
+    private Map<String, Set<Integer>> statisticCouponCardNum(List<BaseCard> cards, Map<String, Set<LocalDateTime>> patientActiveDates,
+                                                             Map<String, Integer> soldNumMap, Map<String, Integer> activeNumMap) {
+        Map<String, Set<Integer>> patients = new HashMap<>(16);
+        cards.forEach(card->{
+            Integer status = card.getStatus();
+            Integer couponId = card.getCouponId();
+            Integer allocateOrgId = card.getAllocateOrgId();
+            Integer patientId = card.getPatientId();
+            String key = allocateOrgId + "," + couponId;
+            incrementOne(key, soldNumMap);
+            if (status > 1) {// 已激活
+                String patientKey = key + "," + patientId;
+                Set<LocalDateTime> dates = patientActiveDates.get(patientKey);
+                if (dates == null) {
+                    dates = new HashSet<>();
+                }
+                dates.add(card.getActiveDate());
+                patientActiveDates.put(patientKey, dates);
+                incrementOne(key, activeNumMap);
+            }
+            Set<Integer> patientIds = patients.get(key);
+            if (patientIds == null) {
+                patientIds = new HashSet<>();
+            }
+            patientIds.add(patientId);
+            patients.put(key, patientIds);
+        });
+        return patients;
+    }
+
+    private void cardCouponUsedTitle(DynamicHeaderPageInfo pageInfo, List<BaseCoupon> coupons) {
+        Map<String, List<String>> contextMap = new LinkedHashMap<>(16);
+        Map<String, String> title = new LinkedHashMap<>(16);
+        title.put("abbreviation","门诊");
+        coupons.forEach(coupon->{
+            Integer couponId = coupon.getCouponId();
+            title.put("S-"+couponId, "销售");
+            title.put("A-"+couponId, "激活");
+            title.put("U-"+couponId, "未激活");
+            title.put("R-"+couponId, "复购");
+            title.put("T-"+couponId, "激活率");
+            title.put("V-"+couponId, "复购率");
+            contextMap.put(coupon.getCouponName(),
+                    Arrays.asList("S-"+couponId, "A-"+couponId, "U-"+couponId, "R-"+couponId, "T-"+couponId, "V-"+couponId));
+        });
+        pageInfo.setMap(title);
+        pageInfo.setContextMap(contextMap);
+    }
+
+    private JSONObject totalCardCouponObj(int[] total, List<BaseCoupon> coupons) {
+        JSONObject totalObj = new JSONObject();
+        totalObj.put("abbreviation", "合计");
+        for (int i = 0; i < total.length; i++) {
+            Integer couponId = coupons.get(i).getCouponId();
+            int soldNum = total[i*5];
+            int activeNum = total[i*5+1];
+            int unActiveNum = total[i*5+2];
+            int repurchaseNum = total[i*5+3];
+            int patientNum = total[i*5+4];
+            totalObj.put("S"+couponId, soldNum);
+            totalObj.put("A"+couponId, activeNum);
+            totalObj.put("U"+couponId, unActiveNum);
+            totalObj.put("R"+couponId, repurchaseNum);
+            totalObj.put("AR"+couponId, computePercentage(activeNum,soldNum)+"%");
+            totalObj.put("RR"+couponId, computePercentage(repurchaseNum,patientNum)+"%");
+        }
+        return totalObj;
+    }
+
+    private void incrementOne(String key, Map<String, Integer> map) {
+        Integer num = map.get(key);
+        if (num == null) {
+            num = 0;
+        }
+        map.put(key, num + 1);
     }
 
     private Map<String, Integer> patientRepurchaseMap(Map<String, Set<LocalDateTime>> patientActiveDates) {
         Map<String, Integer> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(patientActiveDates)) {
             patientActiveDates.forEach((key, set)->{
-                String[] keys = StringHelper.split(key, ",");
-                result.get()
+                incrementOne(StringHelper.substringsBetween(key, "","\\.")[0],result);
             });
         }
+        return result;
     }
 
     private Future<List<BaseCard>> multiFindCardCouponSoldStatistics(CardCouponUsedQueryForm query) {
@@ -1914,8 +1990,31 @@ public class DimensionReportBiz {
      * @param query 查询条件
      * @return
      */
-    public void cardCouponUsedStatisticsExport(CardCouponUsedQueryForm query, HttpServletResponse response) {
+    public void cardCouponUsedStatisticsExport(CardCouponUsedQueryForm query, HttpServletResponse response) throws Exception {
+        DynamicHeaderPageInfo<JSONObject> pageInfo = cardCouponUsedStatistics(query);
+        List<JSONObject> result = pageInfo.getList();
+        ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+        excelUtil.setMergeRegion(cardCouponUsedMergeRegiion(pageInfo));
+        String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "产品卡券使用统计");
+        excelUtil.exportExcel(response, result, "产品卡券使用统计", fileName, pageInfo.getHeader(), pageInfo.getMap());
+    }
 
-
+    private List<CellRangeAddress> cardCouponUsedMergeRegiion(DynamicHeaderPageInfo<JSONObject> pageInfo) {
+        List<CellRangeAddress> result = new ArrayList<>();
+        Map<String, String> map = pageInfo.getMap();
+        JSONObject title = new JSONObject();
+        map.forEach((key, name)->title.put(key, name));
+        // 产品行横向合并
+        Map<String, List<String>> contextMap = pageInfo.getContextMap();
+        String[] header = new String[contextMap.size()*6+1];
+        int index = 0;
+        for (Map.Entry<String, List<String>> entry : contextMap.entrySet()) {
+            header[index++] = entry.getKey();
+            for (String name : entry.getValue()) {
+                header[index++] = "";
+            }
+        }
+        header[index++] = "";
+        return result;
     }
 }
