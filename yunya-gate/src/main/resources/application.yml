@@ -205,6 +205,16 @@ spring:
             - StripPrefix=2
           metadata:
             title: "微信平台服务"
+
+        - id: licence
+          uri: ${proxy.target_url}
+          order: 8996
+          predicates:
+            - Path=/api/go/**
+          filters:
+            - StripPrefix=1
+          metadata:
+            title: "扩展服务"
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848
@@ -213,6 +223,9 @@ spring:
         dashboard: localhost:8080
   profiles:
     active: dev
+
+proxy:
+  target_url: http://114.55.233.112:8686
 
 # 暴露所有端点
 management:

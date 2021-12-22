@@ -1410,7 +1410,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       preSDate = DateUtil.preDate(startDate, range);
       preEDate = DateUtil.preDate(endDate, range);
     } else {
-      range += (int) DateUtil.until(new DateTime(startDate).toDate(), new DateTime(endDate).toDate());
+      range +=
+          (int) DateUtil.until(new DateTime(startDate).toDate(), new DateTime(endDate).toDate());
       preSDate = DateUtil.preDate(startDate, range);
       preEDate = DateUtil.preDate(endDate, range);
     }
