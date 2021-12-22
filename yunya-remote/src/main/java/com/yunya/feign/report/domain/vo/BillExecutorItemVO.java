@@ -20,7 +20,12 @@ import java.math.BigDecimal;
 @ToString
 @ApiModel("账单执行项目VO")
 public class BillExecutorItemVO implements Serializable {
-
+    /** 门诊id*/
+    @ApiModelProperty("门诊id")
+    private Integer orgId;
+    /** 账单日期*/
+    @ApiModelProperty("账单日期")
+    private Integer billDate;
     /** 账单id*/
     @ApiModelProperty("账单id")
     private Integer billId;

@@ -29,4 +29,8 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
           @Param("billDate") Integer billDate,
           @Param("payeeDate") Integer payeeDate,
           @Param("executorIds") Collection<Integer> executorIds);
+
+  List<BillExecutorItemVO> groupBillItemDetailListByBillDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+  List<BillExecutorItemVO> groupBillItemDetailListByPayDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
 }

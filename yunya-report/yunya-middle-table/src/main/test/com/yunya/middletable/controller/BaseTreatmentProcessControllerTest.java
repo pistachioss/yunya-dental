@@ -42,7 +42,7 @@ public class BaseTreatmentProcessControllerTest {
 
     @Test
     public void testPullTreatDateStatistics() throws InterruptedException {
-        String param = "{\"startDate\":\"2021-03-02\",\"endDate\":\"2021-03-02\"}";
+        String param = "{\"startDate\":\"2000-01-01\",\"endDate\":\"2021-12-31\"}";
         PullForm form = JSONObject.parseObject(param, PullForm.class);
         ResponseResult result = baseTreatmentProcessController.pullTreatDateStatistics(form);
         System.out.println(result);

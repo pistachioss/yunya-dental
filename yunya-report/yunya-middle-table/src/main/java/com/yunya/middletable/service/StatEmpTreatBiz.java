@@ -1,6 +1,8 @@
 package com.yunya.middletable.service;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -13,9 +15,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_STATISTICS_EMP_TREAT;
+import static com.yunya.middletable.service.BaseTreatmentProcessBiz.printExceptionLog;
 
 /**
  * 简介：
@@ -31,6 +40,10 @@ public class StatEmpTreatBiz extends BaseBiz<StatEmpTreatMapper, StatEmpTreat> {
 
     @Autowired private RedisLockBiz redisLockBiz;
     @Autowired private BaseTreatmentProcessMapper baseTreatmentProcessMapper;
+    /** 多线程 */
+    @Resource(name = "customizeThreadPool")
+    private ExecutorService importExcelThreadPool;
+
     /**
      * 增量更新员工就诊统计项
      *
@@ -58,30 +71,29 @@ public class StatEmpTreatBiz extends BaseBiz<StatEmpTreatMapper, StatEmpTreat> {
         });
     }
 
-    public void pullTreatDateStatistics(List<BaseTreatmentProcess> datas) {
+    public void pullTreatDateStatistics(PullForm form) throws InterruptedException {
+        String startDate = form.getStartDate();
+        String endDate = form.getEndDate();
+        List<StatEmpTreat> datas = baseTreatmentProcessMapper.countTreatNumByDate(startDate, endDate);
         if (StringHelper.isNotEmpty(datas)) {
-            Set<String> set = new HashSet<>();
-            List<StatEmpTreat> list = new ArrayList<>();
-            datas.stream().filter((treatment)->{
-                String key = treatment.getOrgId() + "," + treatment.getRegisteredDentistId() + "," + DateUtil.date2Number(treatment.getTreatEndTime());
-                boolean isFilter = true;
-                if (set.contains(key)) {
-                    isFilter = false;
-                }
-                set.add(key);
-                return isFilter;
-            }).forEach(treatment->{
-                StatEmpTreat statEmpTreat = baseTreatmentProcessMapper.countTreatNumByDateAndDentist(
-                        treatment.getOrgId(), treatment.getRegisteredDentistId(), DateUtil.date2Number(treatment.getTreatEndTime()));
-                if (!ObjectUtils.isEmpty(statEmpTreat)) {
-                    statEmpTreat.setCrtId(treatment.getRegisteredDentistId());
-                    statEmpTreat.setCrtTime(new Date(System.currentTimeMillis()));
-                    list.add(statEmpTreat);
-                }
-            });
-            if (StringHelper.isNotEmpty(list)) {
-                mapper.insertBatch(list);
-            }
+            List<List<StatEmpTreat>> partition = Lists.partition(datas, 1000);
+            CountDownLatch latch = new CountDownLatch(partition.size());
+            List<Future> resultFutures = new ArrayList<>();
+            partition.forEach(list-> resultFutures.add(
+                importExcelThreadPool.submit(
+                    () -> {
+                        try {
+                            insertBatch(list);
+                        } finally {
+                            latch.countDown();
+                        }
+                    })));
+            latch.await();
+            printExceptionLog(resultFutures, log);
         }
+    }
+
+    private void insertBatch(List<StatEmpTreat> list) {
+        mapper.insertBatch(list);
     }
 }
