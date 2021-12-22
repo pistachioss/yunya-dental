@@ -29,6 +29,8 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    */
   List<BasePatientNotSeenVo> selectNotSeenList(@Param("form") PatientReportQueryForm form);
 
+  void  deleteTrent( @Param("treatmentId")Integer treatmentId);
+
   /**
    * 查询来源类型总数量
    *

@@ -82,22 +82,23 @@ public class BaseTreatmentProcessBiz
     Integer operateType = msg.getOperateType();
     BaseTreatmentProcess treatmentProcess = null;
     switch (operateType) {
-        // 新增
+      // 新增
       case 0:
         createTreatmentProcess(dataId, type);
         break;
-        // 修改
+      // 修改
       case 1:
         treatmentProcess = updateTreatmentProcess(dataId, type);
+        statEmployeeTreat(treatmentProcess);
         break;
       case 2:
         // 删除
         treatmentProcess = deleteTreatmentProcess(dataId, type);
+        statEmployeeTreat(treatmentProcess);
         break;
       default:
         break;
     }
-    statEmployeeTreat(treatmentProcess);
   }
 
   private void statEmployeeTreat(BaseTreatmentProcess treatmentProcess) {
@@ -711,16 +712,8 @@ public class BaseTreatmentProcessBiz
                                             "treat_end_time < '"
                                                     + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
                                                     + "'");
-                            List<BaseTreatmentProcess> treatmentProcesses = mapper.selectByExample(treatExample);
-
-//                            if (treatmentProcesses.size() > 10000) {
-                              List<List<BaseTreatmentProcess>> partitions = ListUtils.partition(treatmentProcesses, 1000);
-                              if (StringHelper.isNotEmpty(partitions)) {
-                                for (List<BaseTreatmentProcess> partition : partitions) {
-                                  partition.forEach(this::statEmployeeTreat);
-                                }
-                              }
-//                            }
+                            List<BaseTreatmentProcess> datas = mapper.selectByExample(treatExample);
+                            statEmpTreatBiz.pullTreatDateStatistics(datas);
                           } finally {
                             latch.countDown();
                           }

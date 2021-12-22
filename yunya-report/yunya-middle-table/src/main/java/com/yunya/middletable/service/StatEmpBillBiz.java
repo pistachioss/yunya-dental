@@ -48,6 +48,7 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
         Integer billDate = DateUtil.date2Number(bill.getBillDate());
         if (StringHelper.isNotEmpty(orderDetails)) {
             Set<Integer> executorIds = new HashSet<>();
+            Set<String> keys = new HashSet<>();
             orderDetails.forEach(vo->{
                 Integer executorId = vo.getExecutorId();
                 StatEmpBill entity = new StatEmpBill();
@@ -60,32 +61,35 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
                 if (vo.getInservice() && !ObjectUtils.isEmpty(executorId)) {
                     executorIds.add(executorId);
                 }
+                keys.add(executorId + "," + vo.getType() + "," + vo.getBillingItemId());
             });
-            List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId,
-                    billDate, null, executorIds);
-            details = statEmpPayBiz.statisticsExecutorItem(details);
-            if (StringHelper.isNotEmpty(details)) {
-                Integer crtId = bill.getBillerId();
-                details.forEach(vo->{
-                    Integer executorId = vo.getExecutorId();
-                    String lockKey = Joiner.on(":").join(LOCK_STATISTICS_EMP_BILL, orgId, billDate);
-                    String lockVal = String.valueOf(executorId);
-                    redisLockBiz.lockedApply(lockKey, lockVal,(t)->{
-                        StatEmpBill entity = new StatEmpBill();
-                        entity.setOrgId(orgId);
-                        entity.setDentistId(executorId);
-                        entity.setBillDate(billDate);
-                        entity.setItemType(vo.getItemType());
-                        entity.setItemId(vo.getItemId());
-                        entity.setQuantity(vo.getQuantity());
-                        entity.setReceivableWorkload(vo.getReceivableWorkload());
-                        entity.setReceivedWorkload(vo.getReceivedWorkload());
-                        entity.setCrtId(crtId);
-                        entity.setCrtTime(date);
-                        mapper.insertSelective(entity);
-                        return null;
+            if (StringHelper.isNotEmpty(executorIds)) {
+                List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId,
+                        billDate, null, executorIds);
+                details = statEmpPayBiz.statisticsExecutorItem(details, keys);
+                if (StringHelper.isNotEmpty(details)) {
+                    Integer crtId = bill.getBillerId();
+                    details.forEach(vo -> {
+                        Integer executorId = vo.getExecutorId();
+                        String lockKey = Joiner.on(":").join(LOCK_STATISTICS_EMP_BILL, orgId, billDate);
+                        String lockVal = String.valueOf(executorId);
+                        redisLockBiz.lockedApply(lockKey, lockVal, (t) -> {
+                            StatEmpBill entity = new StatEmpBill();
+                            entity.setOrgId(orgId);
+                            entity.setDentistId(executorId);
+                            entity.setBillDate(billDate);
+                            entity.setItemType(vo.getItemType());
+                            entity.setItemId(vo.getItemId());
+                            entity.setQuantity(vo.getQuantity());
+                            entity.setReceivableWorkload(vo.getReceivableWorkload());
+                            entity.setReceivedWorkload(vo.getReceivedWorkload());
+                            entity.setCrtId(crtId);
+                            entity.setCrtTime(date);
+                            mapper.insertSelective(entity);
+                            return null;
+                        });
                     });
-                });
+                }
             }
         }
     }

@@ -68,7 +68,18 @@ public class PatientReportController {
         patientReportBiz.notSeenList(patientReportQueryForm);
     return ResponseUtil.success(basePatientNotSeenVoList);
   }
-
+  /**
+   * 删除未复诊预约且未提醒
+   *
+   * @param
+   * @return 
+   */
+  @ApiOperation("删除未复诊预约且未提醒")
+  @GetMapping("/notSeen/List/delete/{treatmentId}")
+  public ResponseResult<T> notSeenList(@PathVariable(value = "treatmentId") Integer treatmentId) {
+            patientReportBiz.deleteTrent(treatmentId);
+    return ResponseUtil.success();
+  }
   /**
    * 导出未复诊预约且未提醒记录列表
    *

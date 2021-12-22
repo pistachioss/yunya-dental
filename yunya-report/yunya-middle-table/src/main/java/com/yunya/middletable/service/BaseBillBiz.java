@@ -520,35 +520,46 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     String endDate = form.getEndDate();
     List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
     if (StringHelper.isNotEmpty(dateRanges)) {
-      CountDownLatch latch = new CountDownLatch(dateRanges.size());
+//      CountDownLatch latch = new CountDownLatch(dateRanges.size());
       List<Future> resultFutures = new ArrayList<>();
       for (String date : dateRanges) {
-        resultFutures.add(
-                importExcelThreadPool.submit(
-                        () -> {
-                          try {
-                            Example example = new Example(BaseBill.class);
-                            example
-                                    .createCriteria()
-                                    .andCondition(
-                                            "bill_date >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
-                                    .andCondition(
-                                            "bill_date < '"
-                                                    + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
-                                                    + "'");
-                            List<BaseBill> baseBills = mapper.selectByExample(example);
-                            if (StringHelper.isNotEmpty(baseBills)) {
-                              baseBills.forEach(vo->{
-                                statisticsInBillDate(vo, null);
-                              });
-                            }
-                          } finally {
-                            latch.countDown();
-                          }
-                        }));
+        Example example = new Example(BaseBill.class);
+        example
+                .createCriteria()
+                .andCondition("org_id=", 26)
+                .andCondition(
+                        "bill_date >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
+                .andCondition(
+                        "bill_date < '"
+                                + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
+                                + "'");
+        List<BaseBill> baseBills = mapper.selectByExample(example);
+        baseBills.forEach(vo-> statisticsInBillDate(vo, null));
+//        resultFutures.add(
+//                importExcelThreadPool.submit(
+//                        () -> {
+//                          try {
+//                            Example example = new Example(BaseBill.class);
+//                            example
+//                                    .createCriteria()
+//                                    .andCondition("org_id=", 26)
+//                                    .andCondition(
+//                                            "bill_date >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
+//                                    .andCondition(
+//                                            "bill_date < '"
+//                                                    + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
+//                                                    + "'");
+//                            List<BaseBill> baseBills = mapper.selectByExample(example);
+//                            if (StringHelper.isNotEmpty(baseBills)) {
+//                              baseBills.forEach(vo-> statisticsInBillDate(vo, null));
+//                            }
+//                          } finally {
+//                            latch.countDown();
+//                          }
+//                        }));
       }
-      latch.await();
-      BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
+//      latch.await();
+//      BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
     }
   }
 }

@@ -1,16 +1,13 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
-import com.yunya.feign.report.domain.vo.CouponActiveVo;
-import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
-import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
-import com.yunya.feign.report.domain.vo.CouponUsedVo;
-import com.yunya.feign.report.domain.vo.RechargeVo;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseCoupon;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 
 public interface BaseCouponMapper extends Mapper<BaseCoupon> {
@@ -39,4 +36,6 @@ public interface BaseCouponMapper extends Mapper<BaseCoupon> {
 										  @Param("activeOrgIds") List<Integer> activeOrgIds);
 
 	List<CouponActiveVo> couponActivedGroupByOrgId(@Param("query") ClinicPerformanceBusinessQuery query);
+
+	List<BaseCoupon> selectBaseCouponListByCouponId(@Param("couponIds") Collection<Integer> couponIds);
 }
