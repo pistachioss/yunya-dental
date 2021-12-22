@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.form.PatientNotSeenForm;
 import com.yunya.feign.report.domain.query.ArrearsQueryForm;
 import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
@@ -69,16 +70,16 @@ public class PatientReportController {
     return ResponseUtil.success(basePatientNotSeenVoList);
   }
   /**
-   * 删除未复诊预约且未提醒
+   * 删除未复诊预约未提醒患者记录
    *
-   * @param
-   * @return 
+   * @param form 参数
+   * @return void
    */
   @ApiOperation("删除未复诊预约且未提醒")
-  @GetMapping("/notSeen/List/delete/{treatmentId}")
-  public ResponseResult<T> notSeenList(@PathVariable(value = "treatmentId") Integer treatmentId) {
-            patientReportBiz.deleteTrent(treatmentId);
-    return ResponseUtil.success();
+  @PostMapping("/notSeen/delete")
+  public ResponseResult<T> notSeenList(@RequestBody @Validated PatientNotSeenForm form) {
+    patientReportBiz.deleteTrent(form);
+    return ResponseUtil.success(null);
   }
   /**
    * 导出未复诊预约且未提醒记录列表
