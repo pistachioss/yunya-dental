@@ -210,7 +210,7 @@ spring:
           uri: ${proxy.target_url}
           order: 8996
           predicates:
-            - Path=/go/**
+            - Path=/api/go/**
           filters:
             - StripPrefix=1
           metadata:
@@ -225,7 +225,7 @@ spring:
     active: dev
 
 proxy:
-  target_url: http://114.55.233.112:8686/go/
+  target_url: http://114.55.233.112:8686
 
 # 暴露所有端点
 management:
