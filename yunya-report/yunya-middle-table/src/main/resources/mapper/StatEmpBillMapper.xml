@@ -16,4 +16,14 @@
     <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
     <result column="crt_id" jdbcType="INTEGER" property="crtId" />
   </resultMap>
+
+  <insert id="insertBatch">
+    INSERT stat_emp_bill
+    (org_id, dentist_id, bill_date, item_type, item_id, quantity, receivable_workload, received_workload, crt_id, crt_time)
+    VALUES
+    <foreach collection ="list" item="item" index= "index" separator =",">
+      (#{item.orgId}, #{item.dentistId}, #{item.billDate}, #{item.itemType}, #{item.itemId},
+       #{item.quantity}, #{item.receivableWorkload}, #{item.receivedWorkload}, #{item.crtId}, #{item.crtTime})
+    </foreach >
+  </insert>
 </mapper>

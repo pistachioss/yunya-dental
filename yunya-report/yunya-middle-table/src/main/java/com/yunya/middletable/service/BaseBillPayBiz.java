@@ -302,13 +302,14 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     return baseBillPays;
   }
 
+
   /**
    * 根据时间段批量操作中间表账单收费时统计
    *
    * @param form
    * @throws InterruptedException
    */
-  public void pullPayDateStatistics(PullForm form) throws InterruptedException {
+  /*public void pullPayDateStatistics(PullForm form) throws InterruptedException {
     String startDate = form.getStartDate();
     String endDate = form.getEndDate();
     List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
@@ -332,9 +333,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                             List<BaseBillPay> baseBillPays =
                                     mapper.selectByExample(example);
                             if (StringHelper.isNotEmpty(baseBillPays)) {
-                              baseBillPays.forEach(vo->{
-                                statisticsInPayDate(vo.getBillPayId());
-                              });
+                              baseBillPays.forEach(vo-> statisticsInPayDate(vo.getBillPayId()));
                             }
                           } finally {
                             latch.countDown();
@@ -344,5 +343,5 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       latch.await();
       BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
     }
-  }
+  }*/
 }

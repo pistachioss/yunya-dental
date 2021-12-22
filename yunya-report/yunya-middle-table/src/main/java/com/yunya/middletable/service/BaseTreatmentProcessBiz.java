@@ -690,7 +690,7 @@ public class BaseTreatmentProcessBiz
     }
   }
 
-  public void pullTreatDateStatistics(PullForm form) throws InterruptedException {
+  /*public void pullTreatDateStatistics(PullForm form) throws InterruptedException {
     String startDate = form.getStartDate();
     String endDate = form.getEndDate();
     List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
@@ -722,5 +722,5 @@ public class BaseTreatmentProcessBiz
       latch.await();
       printExceptionLog(resultFutures, log);
     }
-  }
+  }*/
 }

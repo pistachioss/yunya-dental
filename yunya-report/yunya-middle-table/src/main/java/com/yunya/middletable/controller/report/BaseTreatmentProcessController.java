@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.BaseTreatmentProcessBiz;
+import com.yunya.middletable.service.StatEmpTreatBiz;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BaseTreatmentProcessController {
 
   @Autowired private BaseTreatmentProcessBiz treatmentProcessBiz;
+  @Autowired private StatEmpTreatBiz statEmpTreatBiz;
 
   /**
    * 根据消息操作中间表就诊流程
@@ -83,7 +85,7 @@ public class BaseTreatmentProcessController {
   @PostMapping(value = "/treatDate/statistics/batch", name = "form")
   public ResponseResult<T> pullTreatDateStatistics(@RequestBody PullForm form)
           throws InterruptedException {
-    treatmentProcessBiz.pullTreatDateStatistics(form);
+    statEmpTreatBiz.pullTreatDateStatistics(form);
     return ResponseUtil.success(null);
   }
 }

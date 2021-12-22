@@ -97,4 +97,6 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
           @Param("orgId") Integer orgId,
           @Param("dentistId") Integer dentistId,
           @Param("treatDate") Integer treatDate);
+
+  List<StatEmpTreat> countTreatNumByDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
 }

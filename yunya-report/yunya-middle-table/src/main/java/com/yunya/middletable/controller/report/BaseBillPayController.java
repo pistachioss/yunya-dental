@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.BaseBillPayBiz;
+import com.yunya.middletable.service.StatEmpPayBiz;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ public class BaseBillPayController {
 
   /** 账单收费记录 */
   @Autowired private BaseBillPayBiz billPayBiz;
+  /** 账单收费记录 */
+  @Autowired private StatEmpPayBiz statEmpPayBiz;
 
   /**
    * 根据消息操作中间表账单收费记录
@@ -79,7 +82,7 @@ public class BaseBillPayController {
   @ApiOperation("根据时间段批量操作中间表账单收费时统计")
   @PostMapping(value = "/payDate/statistics/batch", name = "根据时间段批量操作中间表账单收费时统计")
   public ResponseResult<T> pullPayDateStatistics(@RequestBody PullForm form) throws InterruptedException {
-    billPayBiz.pullPayDateStatistics(form);
+    statEmpPayBiz.pullPayDateStatistics(form);
     return ResponseUtil.success(null);
   }
 }
