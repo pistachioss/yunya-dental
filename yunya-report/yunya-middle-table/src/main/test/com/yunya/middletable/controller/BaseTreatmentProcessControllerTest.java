@@ -26,8 +26,8 @@ public class BaseTreatmentProcessControllerTest {
     private BaseTreatmentProcessController baseTreatmentProcessController;
 
     @Test
-    public void testPullBenefit() throws InterruptedException {
-        String param = "{\"startDate\":\"2000-01-01\",\"endDate\":\"2021-12-31\"}";
+    public void pullTreatDateStatistics() throws InterruptedException {
+        String param = "{\"startDate\":\"2021-01-01\",\"endDate\":\"2021-12-31\"}";
         PullForm form = JSONObject.parseObject(param, PullForm.class);
         ResponseResult result = baseTreatmentProcessController.pullTreatDateStatistics(form);
         System.out.println(result);
