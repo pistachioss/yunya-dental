@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.biz;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillItemTollWorkloadQuery;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
@@ -73,14 +74,15 @@ public class EmployeeWorkloadBiz {
      * @return
      */
     private List<ClinicEmployeeWorkloadOfOperationVO> findEmployeeWorkloadList(ClinicEmployeeWorkloadQuery query) throws Exception {
+        query.setWhetherPage(false);
         // 主数据：门诊 + 员工
-        Future<List<ClinicEmployeBonusCoefficientVO>> employee = findClinicEmployeeCartesianProduct(query);
+        Future<List<ClinicEmployeBonusCoefficientVO>> employee = multiFindClinicEmployeeCartesianProduct(query);
 
         // 门诊员工的应收工作量
         Future<Map<String, BigDecimal>> receivableWorkload = findClinicEmployeeReceivableWorkload(query);
 
         // 门诊员工的实收工作量
-        Future<Map<String, BigDecimal>> receivedWorkload = findClinicEmployeeReceivedWorkload(query);
+        Future<Map<String, BigDecimal>> receivedWorkload = findClinicEmployeeReceivedWorkload(query, true);
 
         // 门诊员工的补入工作量
         Future<Map<String, BigDecimal>> supplementWorkload = findClinicEmployeeSupplementWorkload(query);
@@ -289,11 +291,12 @@ public class EmployeeWorkloadBiz {
     /**
      * 多线程查询门诊员工的实收工作量
      * @param query
+     * @param groupByOrgId
      * @return
      */
-    private Future<Map<String, BigDecimal>> findClinicEmployeeReceivedWorkload(ClinicEmployeeWorkloadQuery query) {
+    public Future<Map<String, BigDecimal>> findClinicEmployeeReceivedWorkload(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
         return threadPool.submit(()->{
-            List<EmployeeWorkloadVO> workloads = baseBillDetailMapper.selectClinicEmployeeReceivedWorkload(query);
+            List<EmployeeWorkloadVO> workloads = baseBillDetailMapper.selectClinicEmployeeReceivedWorkload(query, groupByOrgId);
             return mapEmployeeWorkload(workloads);
         });
     }
@@ -317,8 +320,15 @@ public class EmployeeWorkloadBiz {
      * @param query
      * @return
      */
-    private Future<List<ClinicEmployeBonusCoefficientVO>> findClinicEmployeeCartesianProduct(MultiClinicEmployeeQuery query) {
-        return threadPool.submit(()-> baseEmployeeMapper.selectClinicEmployeeCartesianProduct(query));
+    private Future<List<ClinicEmployeBonusCoefficientVO>> multiFindClinicEmployeeCartesianProduct(MultiClinicEmployeeQuery query) {
+        return threadPool.submit(()-> findClinicEmployeeCartesianProduct(query, true));
+    }
+
+    public List<ClinicEmployeBonusCoefficientVO> findClinicEmployeeCartesianProduct(MultiClinicEmployeeQuery query, boolean groupByOrgId) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        return baseEmployeeMapper.selectClinicEmployeeCartesianProduct(query, groupByOrgId);
     }
 
     /**
@@ -479,7 +489,7 @@ public class EmployeeWorkloadBiz {
         Future<Map<Integer, ItemCategoryVO>> tariffMap = findTariffInfoMap();
 
         // 门诊员工
-        Future<List<ClinicEmployeBonusCoefficientVO>> employees = findClinicEmployeeCartesianProduct(query);
+        Future<List<ClinicEmployeBonusCoefficientVO>> employees = multiFindClinicEmployeeCartesianProduct(query);
 
         // 数据合并组装
         List<BillItemTollAndWorkloadVO> result = mergeExecutorTariffWorkload(receivedWorkload, freePaymentAmount, supplementWorkload, refundWorkload, employees, tariffMap);
@@ -662,7 +672,7 @@ public class EmployeeWorkloadBiz {
      * @param query
      * @return
      */
-    private Future<Map<String, EmployeeTariffWorkloadVO>> findClinicExecutorTariffReceivedWorkload(BillItemTollWorkloadQuery query) {
+    public Future<Map<String, EmployeeTariffWorkloadVO>> findClinicExecutorTariffReceivedWorkload(BillItemTollWorkloadQuery query) {
         return threadPool.submit(()->{
             List<EmployeeTariffWorkloadVO> workload = baseBillDetailMapper.selectClinicExecutorTariffWorkload(query);
             return mapEmployeeWorkloadVO(workload);

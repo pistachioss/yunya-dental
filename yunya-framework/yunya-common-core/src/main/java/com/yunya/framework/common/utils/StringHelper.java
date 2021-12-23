@@ -3,6 +3,7 @@ package com.yunya.framework.common.utils;
 import cn.hutool.core.text.StrFormatter;
 import org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -438,5 +439,45 @@ public class StringHelper extends StringUtils {
     }
     // 返回次数
     return count;
+  }
+
+  /**
+   * 字符串分割成Int类型list
+   * @param s 字符串
+   * @param regex 分割符号
+   * @return
+   */
+  public static List split2IntList(String s, String regex) {
+    return split2List(s, regex, Integer.class);
+  }
+
+  public static List split2DecList(String s, String regex) {
+    return split2List(s, regex, BigDecimal.class);
+  }
+
+  public static List split2List(String s, String regex) {
+    return split2List(s, regex, String.class);
+  }
+
+  public static List split2List(String s, String regex, Class<?> clzz) {
+    List list = new ArrayList<>();
+    if (isEmpty(s)) {
+      return list;
+    }
+    String[] array = split(s, regex);
+    if (clzz == Integer.class) {
+      for (String str : array) {
+        list.add(Integer.parseInt(str));
+      }
+    } else if (clzz == BigDecimal.class) {
+      for (String str : array) {
+        list.add(new BigDecimal(str));
+      }
+    } else {
+      for (String str : array) {
+        list.add(str);
+      }
+    }
+    return list;
   }
 }

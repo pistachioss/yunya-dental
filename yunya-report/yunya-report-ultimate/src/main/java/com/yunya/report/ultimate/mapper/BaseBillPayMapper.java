@@ -287,4 +287,6 @@ public interface BaseBillPayMapper extends Mapper<BaseBillPay> {
    * @return 免单金额合计
    */
   BigDecimal selectTotalFreePayment(@Param("form")MarketRecommendationVo marketRecommendationVo,@Param("query") MarketRecommendationQueryFrom queryFrom,@Param("itemIds") List<Integer> freePaymentId);
+
+  List<PatientAmountVO> selectPatientTotalPayAmount(@Param("query") PatientDimensionQueryForm query, @Param("patientIds") List<Integer> patientIds);
 }

@@ -697,4 +697,46 @@ public class BaseTreatmentProcessBiz
       }
       return mapper.findPatientLikePatientInfo(form,34);
     }
+
+  /**
+   * 查询本月初诊且复诊
+   * @return
+   * @param query
+   * @param groupByOrgId
+   */
+  public List<EmployeeCountVO> findInMonthReFirstVisit(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
+    return mapper.selectInMonthReFirstVisit(query, groupByOrgId);
+  }
+
+  public List<PatientDateVO> findNextAppointDateByPatientId(List<Integer> patientIds) {
+    return mapper.selectNextAppointDateByPatientId(patientIds);
+  }
+
+  public List<PatientDateVO> findFirstVisitDateByPatientId(List<Integer> patientIds) {
+    return mapper.selectFirstVisitDateByPatientId(patientIds);
+  }
+
+  public List<PatientDateVO> findLastVisitDateByPatientId(List<Integer> patientIds) {
+    return mapper.selectLastVisitDateByPatientId(patientIds);
+  }
+
+  public List<PatientCountVO> findPatientTreatNum(List<Integer> patientIds) {
+    return mapper.selectPatientTreatNum(patientIds);
+  }
+
+  public List<EmployeeCountVO> findPatientTreatNumGroupEmp(ClinicEmployeeWorkloadQuery query, Integer treatType, boolean groupByOrgId) {
+    return mapper.selectPatientTreatNumGroupEmp(query, treatType, groupByOrgId);
+  }
+
+  public List<EmployeeCountVO> findTreatVisitsTimes(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
+    return mapper.selectTreatVisitsTimes(query, groupByOrgId);
+  }
+
+  public List<EmployeeCountVO> findHasntAppointAndRemind(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
+    return mapper.selectHasntAppointAndRemind(query, groupByOrgId);
+  }
+
+  public List<EmployeeFirstVisitOriginTypeVO> findFirstVisitPatientOriginType(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
+    return mapper.selectFirstVisitPatientOriginType(query, groupByOrgId);
+  }
 }

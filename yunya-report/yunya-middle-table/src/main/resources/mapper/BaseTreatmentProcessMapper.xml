@@ -264,4 +264,34 @@
     <select id="selectOneByTreatmentId" resultType="com.yunya.models.report.BaseTreatmentProcess">
       select * from base_treatment_process where treatment_id = #{treatmentId}
     </select>
+
+    <select id="countTreatNumByDateAndDentist" resultType="com.yunya.models.report.StatEmpTreat">
+        SELECT
+            btp.org_id AS orgId,
+            btp.registered_dentist_id AS dentistId,
+            ${treatDate} AS treatDate,
+            sum(case when btp.treat_type = 0 then 1 else 0 end) as firstVisitCount,
+            sum(case when btp.treat_type = 1 then 1 else 0 end) as reVisitCount
+        FROM base_treatment_process btp
+        <where>
+            AND btp.treat_end_time is not null
+            AND btp.org_id = #{orgId}
+            AND btp.registered_dentist_id = #{dentistId}
+            AND DATE_FORMAT(btp.treat_end_time, '%Y%m%d') = #{treatDate}
+        </where>
+    </select>
+
+    <select id="countTreatNumByDate" resultType="com.yunya.models.report.StatEmpTreat">
+        SELECT
+            btp.org_id AS orgId,
+            btp.registered_dentist_id AS dentistId,
+            btp.registered_dentist_id AS crtId,
+            now() AS crtTime,
+            DATE_FORMAT(btp.treat_end_time, '%Y%m%d') AS treatDate,
+            sum(case when btp.treat_type = 0 then 1 else 0 end) as firstVisitCount,
+            sum(case when btp.treat_type = 1 then 1 else 0 end) as reVisitCount
+            FROM base_treatment_process btp
+        WHERE DATE_FORMAT(btp.treat_end_time, '%Y-%m-%d') between #{startDate} and #{endDate}
+        GROUP BY btp.org_id, btp.registered_dentist_id, DATE_FORMAT(btp.treat_end_time, '%Y-%m-%d')
+    </select>
 </mapper>

@@ -15,10 +15,7 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -280,7 +277,18 @@ public class CompanyReportOfPersonnelController {
         baseUserPostBiz.findTreatMatchingStatisticsList(query);
     return ResponseUtil.success(pageInfo);
   }
-
+  /**
+   * 手动触发配诊定时任务
+   *
+   * @param
+   * @return
+   */
+  @ApiOperation("手动触发配诊定时任务")
+  @GetMapping(value = "/matching/statistics/list/dingshi", name = "手动触发配诊定时任务")
+  public ResponseResult<T> treatMatchingStatisticsList() throws InterruptedException, ExecutionException{
+            baseUserPostBiz.dingshi();
+    return ResponseUtil.success();
+  }
   /**
    * 根据条件导出助手配诊统计列表
    *

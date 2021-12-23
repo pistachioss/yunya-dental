@@ -51,4 +51,95 @@
     <delete id="deleteByBillId">
         delete from base_bill_detail where bill_id = #{billId}
     </delete>
+
+    <select id="selectBillDetailByDateAndExecutorId" resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">
+        SELECT
+            bb.bill_id AS billId,
+            bbd.item_type AS itemType,
+            bbd.item_id AS itemId,
+            bbd.executor_id AS executorId,
+            (bbd.quantity*bbd.price-bbd.discount_amount) AS receivableWorkload,
+            bbd.quantity AS quantity,
+            <if test="payeeDate != null">
+                IFNULL(bbp.received_amount,0) AS totalReceivedWorkload,
+            </if>
+            bbd.received_amount AS receivedWorkload,
+            bb.actual_amount AS actualWorkload
+        FROM base_bill_detail bbd
+        LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
+        <if test="payeeDate != null">
+            LEFT JOIN (
+                SELECT SUM(received_amount) AS received_amount, bill_id, payee_date FROM base_bill_pay
+                WHERE DATE_FORMAT(payee_date,'%Y%m%d')=#{payeeDate}
+            ) bbp ON bbp.bill_id = bb.bill_id
+        </if>
+        <where>
+            AND bb.bill_date is not null
+            AND bb.org_id = #{orgId}
+            <if test="billDate != null">
+                AND DATE_FORMAT(bb.bill_date, '%Y%m%d')  = #{billDate}
+            </if>
+            <if test="payeeDate != null">
+                AND DATE_FORMAT(bbp.payee_date,'%Y%m%d')=#{payeeDate}
+            </if>
+            AND bbd.executor_id in
+            <foreach collection="executorIds" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="groupBillItemDetailListByBillDate" resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">
+        SELECT
+            bbd.org_id AS orgId,
+            DATE_FORMAT(bb.bill_date, '%Y%m%d') AS billDate,
+            bbd.item_type AS itemType,
+            bbd.item_id AS itemId,
+            bbd.executor_id AS executorId,
+            SUM(bbd.quantity*bbd.price-bbd.discount_amount) AS receivableWorkload,
+            SUM(bbd.quantity) AS quantity,
+            SUM(bbd.received_amount) AS receivedWorkload
+        FROM base_bill_detail bbd
+        LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
+        <where>
+            AND bb.bill_date is not null
+            AND bbd.executor_id > 0
+            <if test="startDate!=null and startDate!='' and endDate!=null and endDate!=''">
+                AND DATE_FORMAT(bb.bill_date, '%Y-%m-%d') between #{startDate} and #{endDate}
+            </if>
+        </where>
+        GROUP BY bbd.org_id, bbd.executor_id, bbd.item_type, bbd.item_id, DATE_FORMAT(bb.bill_date, '%Y%m%d')
+    </select>
+
+    <select id="groupBillItemDetailListByPayDate"
+            resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">
+        SELECT
+            bb.bill_id AS billId,
+            bbd.org_id AS orgId,
+            DATE_FORMAT(bbp.payee_date, '%Y%m%d') AS billDate,
+            bbd.item_type AS itemType,
+            bbd.item_id AS itemId,
+            bbd.executor_id AS executorId,
+            (bbd.quantity*bbd.price-bbd.discount_amount) AS receivableWorkload,
+            bbd.quantity AS quantity,
+            IFNULL(bbp.received_amount,0) AS totalReceivedWorkload,
+            bbd.received_amount AS receivedWorkload,
+            bb.actual_amount AS actualWorkload
+        FROM base_bill_detail bbd
+        LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
+        INNER JOIN (
+            SELECT SUM(received_amount) AS received_amount, bill_id, DATE_FORMAT(payee_date, '%Y-%m-%d') AS payee_date FROM base_bill_pay
+            <where>
+                AND received_amount > 0
+                <if test="startDate!=null and startDate!='' and endDate!=null and endDate!=''">
+                    AND DATE_FORMAT(payee_date, '%Y-%m-%d') between #{startDate} and #{endDate}
+                </if>
+            </where>
+            GROUP BY bill_id, DATE_FORMAT(payee_date, '%Y-%m-%d')
+        ) bbp ON bbp.bill_id = bb.bill_id
+        <where>
+            AND bb.bill_date is not null
+            AND bbd.executor_id > 0
+        </where>
+    </select>
 </mapper>

@@ -28,10 +28,10 @@
 
     <!-- 根据姓名/手机号/拼音姓名 -->
     <select id="selectKilePatientId" resultType="java.lang.Integer">
-      select patient_id
-      from base_patient
-      where concat(IFNULL(name,''),IFNULL(pinyin_name,''),IFNULL(mobile,''))
-      like concat(concat('%',#{combination}),'%')
+        select patient_id
+        from base_patient
+        where concat(IFNULL(name, ''), IFNULL(pinyin_name, ''), IFNULL(mobile, ''))
+                  like concat(concat('%', #{combination}), '%')
     </select>
     <!-- 查询来源类型总数量 -->
     <select id="selectCountOriginType" resultType="java.lang.Integer">
@@ -241,88 +241,77 @@
 
     <!-- 计算百分比 -->
     <select id="calculateAgePercentage" resultType="java.lang.String">
-        select concat( format( ${countAge} / ${count} * 100, 2 ),'%') percentage
+        select concat(format(${countAge} / ${count} * 100, 2), '%') percentage
     </select>
 
     <!-- 根据患者id查询患者预约信息 -->
     <select id="findPatientDataVo" resultType="com.yunya.feign.report.domain.vo.PatientDataVo">
-        SELECT
-        patient_id patientId,
-        first_visit_date firstVisitDate,
-        first_visit_doctors firstVisitDoctors,
-        first_visit_outpatient firstVisitOutpatient,
-        cumulative_consumption cumulativeConsumption,
-        last_visit_date lastVisitDate,
-        last_visit_doctors lastVisitDoctors,
-        last_visit_outpatient lastVisitOutpatient,
-        total_arrears totalArrears,
-		number_of_visits numberOfVisits
-        FROM
-            base_patient
-        WHERE
-            patient_id = #{patientId}
+        SELECT patient_id             patientId,
+               first_visit_date       firstVisitDate,
+               first_visit_doctors    firstVisitDoctors,
+               first_visit_outpatient firstVisitOutpatient,
+               cumulative_consumption cumulativeConsumption,
+               last_visit_date        lastVisitDate,
+               last_visit_doctors     lastVisitDoctors,
+               last_visit_outpatient  lastVisitOutpatient,
+               total_arrears          totalArrears,
+               number_of_visits       numberOfVisits
+        FROM base_patient
+        WHERE patient_id = #{patientId}
     </select>
 
     <!-- 根据关键字查询患者信息 -->
     <select id="selectPatientInfoByExample" resultType="com.yunya.feign.report.domain.vo.PatientInfoVO">
-        SELECT
-            bp.id,
-            bp.`name`,
-            bp.gender,
-            bp.mobile,
-            bp.medicalNumber,
-            bp.age,
-            bp.faceUrl,
-            btp.dentistId,
-            btp.lastVisit,
-            btp.lastVisitTime
-        FROM
-            (
-            SELECT
-                bp.patient_id AS id,
-                bp.`name`,
-                bp.face_url AS faceUrl,
-                bp.mobile,
-                bp.medical_number AS medicalNumber,
-                bp.gender,
-                TIMESTAMPDIFF(
-                    YEAR,
-                    bp.birthday,
-                CURDATE()) AS age
-            FROM
-                base_patient bp
-            WHERE
-                concat(
-                    IFNULL( bp.`name`, '' ),
-                    IFNULL( bp.medical_number, '' ),
-                    IFNULL( bp.pinyin_name, '' ),
-                IFNULL( bp.mobile, '' )) LIKE concat( concat( '%', #{query.patientKeyWord} ), '%' )
-                LIMIT 0, 10
-            ) bp
-            LEFT JOIN (
-            SELECT
-                btp1.patient_id,
-                btp1.registered_dentist_id AS dentistId,
-                btp1.employee_name AS lastVisit,
-                btp1.treat_start_time AS lastVisitTime
-            FROM
-                ( SELECT max( btp.treatment_id ) AS treatmentId FROM base_treatment_process btp WHERE btp.treat_end_time IS NOT NULL GROUP BY btp.patient_id ) btp
-                LEFT JOIN (
-                SELECT
-                    btp.treatment_id,
-                    btp.patient_id,
-                    btp.registered_dentist_id,
-                    btp.treat_start_time,
-                    be.employee_name
-                FROM
-                    base_treatment_process btp
-                    LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
-                WHERE
-                    btp.treat_end_time IS NOT NULL
-                GROUP BY
-                    btp.treatment_id
-                ) btp1 ON btp.treatmentId = btp1.treatment_id
-            ) btp ON bp.id = btp.patient_id
+        SELECT bp.id,
+               bp.`name`,
+               bp.gender,
+               bp.mobile,
+               bp.medicalNumber,
+               bp.age,
+               bp.faceUrl,
+               btp.dentistId,
+               btp.lastVisit,
+               btp.lastVisitTime
+        FROM (
+                 SELECT bp.patient_id      AS id,
+                        bp.`name`,
+                        bp.face_url        AS faceUrl,
+                        bp.mobile,
+                        bp.medical_number  AS medicalNumber,
+                        bp.gender,
+                        TIMESTAMPDIFF(
+                                YEAR,
+                                bp.birthday,
+                                CURDATE()) AS age
+                 FROM base_patient bp
+                 WHERE concat(
+                               IFNULL(bp.`name`, ''),
+                               IFNULL(bp.medical_number, ''),
+                               IFNULL(bp.pinyin_name, ''),
+                               IFNULL(bp.mobile, '')) LIKE concat(concat('%', #{query.patientKeyWord}), '%')
+                 LIMIT 0, 10
+             ) bp
+                 LEFT JOIN (
+            SELECT btp1.patient_id,
+                   btp1.registered_dentist_id AS dentistId,
+                   btp1.employee_name         AS lastVisit,
+                   btp1.treat_start_time      AS lastVisitTime
+            FROM (SELECT max(btp.treatment_id) AS treatmentId
+                  FROM base_treatment_process btp
+                  WHERE btp.treat_end_time IS NOT NULL
+                  GROUP BY btp.patient_id) btp
+                     LEFT JOIN (
+                SELECT btp.treatment_id,
+                       btp.patient_id,
+                       btp.registered_dentist_id,
+                       btp.treat_start_time,
+                       be.employee_name
+                FROM base_treatment_process btp
+                         LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+                WHERE btp.treat_end_time IS NOT NULL
+                GROUP BY btp.treatment_id
+            ) btp1 ON btp.treatmentId = btp1.treatment_id
+        ) btp ON bp.id = btp.patient_id
     </select>
 
     <!-- 末诊后无预约、随访的患者列表 -->
@@ -348,17 +337,16 @@
         select btp.patient_id as patientId,
         max(btp.treatment_id) AS treatmentId
         from base_treatment_process btp
-        <where>
-            <if test="form.orgId != null">
-                and btp.org_id = #{form.orgId}
-            </if>
-            and btp.treat_end_time is not null
-        </where>
+        where btp.treat_end_time is not null
         group by btp.patient_id
         ) btp
         inner join base_treatment_process btp2 on btp.treatmentId = btp2.treatment_id
         left join base_employee be on btp2.registered_dentist_id = be.user_id
         <where>
+            and btp2.inservice = 1
+            <if test="form.orgId != null">
+                and btp2.org_id = #{form.orgId}
+            </if>
             <if test="form.startDate != null and form.startDate != ''">
                 and date_format(btp2.treat_end_time, '%Y-%m-%d') &gt;= #{form.startDate}
             </if>
@@ -413,15 +401,37 @@
         where bp.appointCount = 0
         and bp.visitCount = 0
     </select>
-
+    <!-- 更新患者某段时间的就诊状态 -->
+    <update id="updateTreatment">
+        update base_treatment_process
+        set inservice = 0
+        <where>
+            <if test="form.patientId != null">
+                and patient_id = #{form.patientId}
+            </if>
+            <if test="form.startDate != null and form.startDate != ''">
+                and treat_end_time &gt;= #{form.startDate}
+            </if>
+            <if test="form.endDate != null and form.endDate != ''">
+                and treat_end_time &lt;= #{form.endDate}
+            </if>
+        </where>
+    </update>
 
     <select id="firstVisitPatientList" resultType="com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO">
         SELECT
-        DISTINCT btp.patient_id AS patientId
+        DISTINCT btp.patient_id AS patientId,
+        btp.org_id AS orgId
         FROM base_treatment_process btp
         <where>
             btp.treat_status IN (3, 4)
             AND btp.treat_type = 0
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
+                AND btp.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate!=null and query.startDate!='' and query.endDate!=null and query.endDate!=''">
                     AND DATE_FORMAT(btp.treat_start_time,'%Y-%m-%d') between DATE_FORMAT(#{query.startDate},'%Y-%m-%d')
@@ -441,17 +451,20 @@
                 </if>
             </if>
         </where>
+        GROUP BY btp.org_id, btp.patient_id
     </select>
 
+    <!--根据条件统计患者来源-->
     <select id="clinicFirstVisitSourceList" resultType="com.yunya.feign.report.domain.vo.PatientFirstVisitSourceVO">
         SELECT
         IFNULL(bp.origin_type,12) AS originType,
+        IFNULL(bp.origin_type_name,"未知来源") AS originTypeName,
         bp.org_id AS orgId,
         count(bp.patient_id) firstVisitCount
         FROM base_patient bp
         <where>
             <if test="query.originTypes!=null and query.originTypes.size()>0">
-                AND  IFNULL( bp.origin_type,12) in
+                AND IFNULL( bp.origin_type,12) in
                 <foreach collection="query.originTypes" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
@@ -463,7 +476,7 @@
                 </foreach>
             </if>
         </where>
-        GROUP BY bp.origin_type, bp.org_id
+        GROUP BY bp.origin_type, bp.origin_type_name, bp.org_id
     </select>
 
     <!-- 查询未填写出生日期并有过就诊的患者数量 -->
@@ -496,10 +509,10 @@
 
     <select id="findPatientInfoInId" resultType="com.yunya.models.report.BasePatient">
         SELECT
-            bp.patient_id AS patientId,
-            name
+        bp.patient_id AS patientId,
+        name
         FROM
-            base_patient bp
+        base_patient bp
         <where>
             <if test="patientIds!=null and patientIds.size()>0">
                 AND bp.patient_id in
@@ -512,35 +525,35 @@
 
     <select id="listPatientByKeys" resultType="com.yunya.feign.report.domain.vo.PatientManageVo">
         select
-            bp.patient_id,
-            bp.`name`                                   as patientName,
-            bp.medical_number                           as medicalNumber,
-            timestampdiff(year, bp.birthday, curdate()) as age,
-            case
-                when bp.gender = 0 then '男'
-                when bp.gender = 1 then '女'
-                else '未知'
-                end                                     as gender,
-            bp.mobile,
-            bp.vip_logo                                 as patientType,
-            pm.cumulative_consumption                   as totalConsumeAmount,
-            pm.total_arrears                            as totalOweAmount,
-            pm.member_level_name                        as memberTypeName,
-            pm.member_balance                           as memberBalance,
-            pm.principal_balance                        as principalBalance,
-            bp.origin_id                                as patientOrionName,
-            bp.origin_type_name                         as patientOrionTypeName,
-            date_format(bp.first_visit_date, '%Y/%m/%d')as firstVisitDate,
-            bo.abbreviation                             as firstVisitOutpatient,
-            be.employee_name                            as firstVisitDoctors,
-            date_format(bp.last_visit_date, '%Y/%m/%d') as lastVisitDate,
-            be1.employee_name                           as lastVisitDoctors,
-            pm.number_of_visits                         as treatQuantity
+        bp.patient_id,
+        bp.`name` as patientName,
+        bp.medical_number as medicalNumber,
+        timestampdiff(year, bp.birthday, curdate()) as age,
+        case
+        when bp.gender = 0 then '男'
+        when bp.gender = 1 then '女'
+        else '未知'
+        end as gender,
+        bp.mobile,
+        bp.vip_logo as patientType,
+        pm.cumulative_consumption as totalConsumeAmount,
+        pm.total_arrears as totalOweAmount,
+        pm.member_level_name as memberTypeName,
+        pm.member_balance as memberBalance,
+        pm.principal_balance as principalBalance,
+        bp.origin_id as patientOrionName,
+        bp.origin_type_name as patientOrionTypeName,
+        date_format(bp.first_visit_date, '%Y/%m/%d')as firstVisitDate,
+        bo.abbreviation as firstVisitOutpatient,
+        be.employee_name as firstVisitDoctors,
+        date_format(bp.last_visit_date, '%Y/%m/%d') as lastVisitDate,
+        be1.employee_name as lastVisitDoctors,
+        pm.number_of_visits as treatQuantity
         from base_patient bp
-            left join base_employee be on be.user_id = bp.first_visit_doctors
-            left join base_employee be1 on be1.user_id = bp.last_visit_doctors
-            left join base_organization bo on bo.org_id = bp.first_visit_outpatient
-            left join patient_manage pm on bp.patient_id = pm.patient_id
+        left join base_employee be on be.user_id = bp.first_visit_doctors
+        left join base_employee be1 on be1.user_id = bp.last_visit_doctors
+        left join base_organization bo on bo.org_id = bp.first_visit_outpatient
+        left join patient_manage pm on bp.patient_id = pm.patient_id
         <where>
             <if test="query.patientKeyWord != null and query.patientKeyWord != ''">
                 (bp.name like concat('%', #{query.patientKeyWord}, '%')
@@ -573,123 +586,133 @@
                 and pm.total_arrears &gt;= #{query.startOweAmount} and pm.total_arrears &lt;= #{query.endOweAmount}
             </if>
             <if test="query.startPrincipalBalance != null and query.endPrincipalBalance != null">
-                and pm.principal_balance &gt;= #{query.startPrincipalBalance} and pm.principal_balance &lt;= #{query.endPrincipalBalance}
+                and pm.principal_balance &gt;= #{query.startPrincipalBalance} and pm.principal_balance &lt;=
+                #{query.endPrincipalBalance}
             </if>
             <if test="query.startMemberBalance != null and query.endMemberBalance != null">
-                and pm.member_balance &gt;= #{query.startMemberBalance} and pm.member_balance &lt;= #{query.endMemberBalance}
+                and pm.member_balance &gt;= #{query.startMemberBalance} and pm.member_balance &lt;=
+                #{query.endMemberBalance}
             </if>
             <if test="query.startConsumeAmount != null and query.endConsumeAmount != null">
-                and pm.cumulative_consumption &gt;= #{query.startConsumeAmount} and pm.cumulative_consumption &lt;= #{query.endConsumeAmount}
+                and pm.cumulative_consumption &gt;= #{query.startConsumeAmount} and pm.cumulative_consumption &lt;=
+                #{query.endConsumeAmount}
             </if>
             <if test="query.startTreatQuantity != null and query.endTreatQuantity != null">
-                and pm.number_of_visits &gt;= #{query.startTreatQuantity} and pm.number_of_visits &lt;= #{query.endTreatQuantity}
+                and pm.number_of_visits &gt;= #{query.startTreatQuantity} and pm.number_of_visits &lt;=
+                #{query.endTreatQuantity}
             </if>
         </where>
     </select>
 
     <select id="updateFirstVisitInfo">
         update base_patient p
-        inner join (
-        select t.patient_id, min(t.treatment_id) as 'treatment_id'
-        from base_treatment_process t
-        group by t.patient_id
-        ) t1 on p.patient_id = t1.patient_id
-        inner join base_treatment_process t2 on t1.treatment_id = t2.treatment_id
-        set p.first_visit_date = t2.treat_start_time
-        , p.first_visit_doctors = t2.registered_dentist_id
-        , p.first_visit_outpatient = t2.org_id
+            inner join (
+                select t.patient_id, min(t.treatment_id) as 'treatment_id'
+                from base_treatment_process t
+                group by t.patient_id
+            ) t1 on p.patient_id = t1.patient_id
+            inner join base_treatment_process t2 on t1.treatment_id = t2.treatment_id
+        set p.first_visit_date       = t2.treat_start_time
+          , p.first_visit_doctors    = t2.registered_dentist_id
+          , p.first_visit_outpatient = t2.org_id
         where p.first_visit_outpatient is null
     </select>
 
     <select id="updateLastVisitInfo">
         update base_patient p
-        inner join (
-        select t.patient_id, max(t.treatment_id) as 'treatment_id'
-        from base_treatment_process t
-        group by t.patient_id
-        ) t1 on p.patient_id = t1.patient_id
-        inner join base_treatment_process t2 on t1.treatment_id = t2.treatment_id
-        set p.last_visit_date = t2.treat_start_time
-        , p.last_visit_doctors = t2.registered_dentist_id
-        , p.last_visit_outpatient = t2.org_id
+            inner join (
+                select t.patient_id, max(t.treatment_id) as 'treatment_id'
+                from base_treatment_process t
+                group by t.patient_id
+            ) t1 on p.patient_id = t1.patient_id
+            inner join base_treatment_process t2 on t1.treatment_id = t2.treatment_id
+        set p.last_visit_date       = t2.treat_start_time
+          , p.last_visit_doctors    = t2.registered_dentist_id
+          , p.last_visit_outpatient = t2.org_id
         where p.first_visit_outpatient is not null
     </select>
 
     <select id="updateNumberOfVisit">
         update base_patient p
-        inner join (
-        select t.patient_id, count(0) as 'qty'
-        from base_treatment_process t
-        where t.treatment_id is not null
-        group by t.patient_id
-        ) t on p.patient_id = t.patient_id
+            inner join (
+                select t.patient_id, count(0) as 'qty'
+                from base_treatment_process t
+                where t.treatment_id is not null
+                group by t.patient_id
+            ) t on p.patient_id = t.patient_id
         set p.number_of_visits = t.qty
     </select>
 
     <select id="updateTotalAmount">
         update base_patient p
-        inner join (
-        select b.patient_id, sum(b.actual_amount) as 'total_amount', sum(b.debt_amount) as 'unpaid_amount'
-        from base_bill b
-        group by b.patient_id
-        ) b on p.patient_id = b.patient_id
-        set p.total_arrears = b.unpaid_amount
-        , p.cumulative_consumption = b.total_amount
+            inner join (
+                select b.patient_id, sum(b.actual_amount) as 'total_amount', sum(b.debt_amount) as 'unpaid_amount'
+                from base_bill b
+                group by b.patient_id
+            ) b on p.patient_id = b.patient_id
+        set p.total_arrears          = b.unpaid_amount
+          , p.cumulative_consumption = b.total_amount
     </select>
 
     <select id="updateVipLogoOld">
         update base_patient bp
         set bp.visit_rate_old = bp.visit_rate
-        , bp.vip_score_old = bp.vip_score
-        , bp.vip_logo_old = bp.vip_logo
+          , bp.vip_score_old  = bp.vip_score
+          , bp.vip_logo_old   = bp.vip_logo
     </select>
 
     <select id="updateVipLogo">
         update base_patient bp
-        inner join (
-        select p.patient_id
-        , p.qty
-        , (case when p.qty >= 3 then 100 when p.qty >= 2 then 80 else 60 end) * 0.6
-        + (case when p.amount >= 10000 then 100 when p.amount >= 5000 then 80 else 60 end) * 0.4 as 'score'
-        , (case when p.member = '365' then '365' else '' end) as 'member'
-        from (
-        select p.patient_id
-        , p.amount
-        , p.member
-        , ROUND(p.number_of_visits / (p.subday / 365)) as 'qty'
-        from (
-        select p.patient_id
-        , if(datediff(now(), p.first_visit_date) &lt; 365, 365, datediff(now(), p.first_visit_date)) as 'subday'
-        , p.cumulative_consumption as 'amount'
-        , p.member
-        , p.number_of_visits
-        from (
-        SELECT p.patient_id
-        , p.first_visit_date
-        , p.number_of_visits
-        , p.cumulative_consumption
-        , (case when m.member_level_name is not null then '123' when c.coupon_name is not null then '365' end) as 'member'
-        FROM base_patient p
-        left join (
-        select m.patient_id, m.member_level_name
-        from base_patient_member m
-        where m.type = 0 and m.member_level_id &lt; 4
-        ) m on p.patient_id = m.patient_id
-        left join (
-        select c.patient_id, max(g.coupon_name) as 'coupon_name'
-        from base_card c
-        left join base_coupon g on c.coupon_id = g.coupon_id
-        where c.status > 1 and g.coupon_name like '%365%'
-        group by c.patient_id
-        ) c on p.patient_id = c.patient_id
-        ) p
-        where p.member is not null
-        ) p
-        ) p
-        ) p on p.patient_id = bp.patient_id
+            inner join (
+                select p.patient_id
+                     , p.qty
+                     , (case when p.qty >= 3 then 100 when p.qty >= 2 then 80 else 60 end) * 0.6
+                    + (case when p.amount >= 10000 then 100 when p.amount >= 5000 then 80 else 60 end) * 0.4 as 'score'
+                     , (case when p.member = '365' then '365' else '' end)                                   as 'member'
+                from (
+                         select p.patient_id
+                              , p.amount
+                              , p.member
+                              , ROUND(p.number_of_visits / (p.subday / 365)) as 'qty'
+                         from (
+                                  select p.patient_id
+                                       , if(datediff(now(), p.first_visit_date) &lt; 365, 365,
+                                            datediff(now(), p.first_visit_date)) as 'subday'
+                                       , p.cumulative_consumption                as 'amount'
+                                       , p.member
+                                       , p.number_of_visits
+                                  from (
+                                           SELECT p.patient_id
+                                                , p.first_visit_date
+                                                , p.number_of_visits
+                                                , p.cumulative_consumption
+                                                , (case
+                                                       when m.member_level_name is not null then '123'
+                                                       when c.coupon_name is not null then '365' end) as 'member'
+                                           FROM base_patient p
+                                                    left join (
+                                               select m.patient_id, m.member_level_name
+                                               from base_patient_member m
+                                               where m.type = 0
+                                                 and m.member_level_id &lt; 4
+                                           ) m on p.patient_id = m.patient_id
+                                                    left join (
+                                               select c.patient_id, max(g.coupon_name) as 'coupon_name'
+                                               from base_card c
+                                                        left join base_coupon g on c.coupon_id = g.coupon_id
+                                               where c.status > 1
+                                                 and g.coupon_name like '%365%'
+                                               group by c.patient_id
+                                           ) c on p.patient_id = c.patient_id
+                                       ) p
+                                  where p.member is not null
+                              ) p
+                     ) p
+            ) p on p.patient_id = bp.patient_id
         set bp.visit_rate = p.qty
-        , bp.vip_score = p.score
-        , bp.vip_logo = concat((case when p.score >= 90 then 'A' when p.score >= 80 then 'B' else 'C' end), p.member)
+          , bp.vip_score  = p.score
+          , bp.vip_logo   = concat((case when p.score >= 90 then 'A' when p.score >= 80 then 'B' else 'C' end),
+                                   p.member)
     </select>
 
     <select id="findVipLogoList" resultType="com.yunya.feign.report.domain.vo.VipLogoVo">
@@ -779,7 +802,55 @@
     <select id="getVipRate" resultType="com.yunya.feign.report.domain.vo.VipRateVo">
         select p.vip_logo, count(*) as 'vip_qty'
         from base_patient p
-        where p.vip_logo is not null and p.vip_logo != ''
+        where p.vip_logo is not null
+          and p.vip_logo != ''
         group by p.vip_logo
+    </select>
+
+    <!-- 根据关键字查询患者信息 -->
+    <select id="selectPatientInfoList" resultType="com.yunya.feign.report.domain.vo.PatientManageVo">
+        SELECT
+        bp.patient_id AS patientId,
+        bp.`name` AS patientName,
+        TIMESTAMPDIFF(YEAR, bp.birthday, CURDATE()) AS age,
+        bp.origin_type_name AS patientOrionTypeName,
+        bpm.member_level_name AS memberTypeName
+        FROM base_patient bp
+        LEFT JOIN base_patient_member bpm ON bp.patient_id = bpm.patient_id
+        <where>
+            AND bpm.type = 0
+            <if test="query.patientName!=null and query.patientName!=''">
+                AND concat(
+                IFNULL( bp.`name`, '' ),
+                IFNULL( bp.pinyin_name, '' ),
+                IFNULL( bp.mobile, '' )
+                ) LIKE concat( concat( '%', #{query.patientName} ), '%' )
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bp.patient_crt_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bp.patient_crt_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bp.patient_crt_time, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bp.patient_crt_time, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bp.patient_crt_time, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bp.patient_crt_time, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ORDER BY bp.patient_id
     </select>
 </mapper>

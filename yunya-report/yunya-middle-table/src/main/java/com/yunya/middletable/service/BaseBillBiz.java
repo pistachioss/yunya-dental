@@ -25,7 +25,9 @@ import com.yunya.models.treatment.OrderDetailPayRecord;
 import com.yunya.models.treatment.OrderRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -63,6 +65,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Resource private BasePatientOriginLogMapper basePatientOriginLogMapper;
   /** 患者积分信息 */
   @Resource private CreditsShopMapper creditsShopMapper;
+  /** 员工账单时统计*/
+  @Autowired private StatEmpBillBiz statEmpBillBiz;
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -115,8 +119,33 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         }
         break;
       default:
+        statisticsInBillDate(bill, dataId);
         break;
     }
+  }
+
+  /**
+   * 账单生成时统计
+   *
+   * @param bill
+   * @param dataId
+   */
+  private void statisticsInBillDate(BaseBill bill, Integer dataId) {
+      if (ObjectUtils.isEmpty(bill)) {
+        bill = new BaseBill();
+        BillRecord query = new BillRecord();
+        query.setOrderRecordId(dataId);
+        query.setInservice(false);
+        BillRecord billRecord = billRecordMapper.selectOne(query);
+        record2baseReport(billRecord, bill);
+      }
+      if (!ObjectUtils.isEmpty(bill) && !ObjectUtils.isEmpty(bill.getBillDate())) {
+        Integer billId = bill.getBillId();
+        OrderDetail query = new OrderDetail();
+        query.setOrderRecordId(billId);
+        List<OrderDetail> orderDetails = orderDetailMapper.select(query);
+        statEmpBillBiz.statisticsInBillDate(orderDetails, bill);
+      }
   }
 
   /** 判断是否首次下单，若是则推荐者增加500积分 */
@@ -200,22 +229,34 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       bill.setInservice(true);
       BillRecord billRecord = billRecordMapper.selectOne(bill);
       if (null != billRecord) {
-        BigDecimal debtAmount = billRecord.getDebtAmount();
-        baseBill.setBillStatus(
-            debtAmount.compareTo(BigDecimal.valueOf(0)) > 0 ? (byte) 0 : (byte) 1);
-        baseBill.setPrivilegeType(billRecord.getPrivilegeType());
-        baseBill.setPrivilegeOrgId(billRecord.getPrivilegeOrgId());
-        baseBill.setFirstPrivilege(billRecord.getFirstPrivilege());
-        baseBill.setPrivilegeAmount(billRecord.getPrivilegeAmount());
-        baseBill.setPrivilegeDate(billRecord.getPrivilegeDate());
-        baseBill.setBillDate(billRecord.getCrtTime());
-        baseBill.setBillNum(billRecord.getBillNumber());
-        baseBill.setActualAmount(billRecord.getActualReceivableAmount());
-        baseBill.setReceivedAmount(billRecord.getReceivedAmount());
-        baseBill.setDebtAmount(debtAmount);
-        baseBill.setCheckerId(billRecord.getCrtId());
+        record2baseReport(billRecord, baseBill);
       }
     }
+  }
+
+  /**
+   * 账单实体转换
+   *
+   * @param billRecord
+   * @param baseBill
+   */
+  private void record2baseReport(BillRecord billRecord, BaseBill baseBill) {
+    BigDecimal debtAmount = billRecord.getDebtAmount();
+    baseBill.setBillStatus(
+            debtAmount.compareTo(BigDecimal.valueOf(0)) > 0 ? (byte) 0 : (byte) 1);
+    baseBill.setBillId(billRecord.getOrderRecordId());
+    baseBill.setOrgId(billRecord.getOrgId());
+    baseBill.setPrivilegeType(billRecord.getPrivilegeType());
+    baseBill.setPrivilegeOrgId(billRecord.getPrivilegeOrgId());
+    baseBill.setFirstPrivilege(billRecord.getFirstPrivilege());
+    baseBill.setPrivilegeAmount(billRecord.getPrivilegeAmount());
+    baseBill.setPrivilegeDate(billRecord.getPrivilegeDate());
+    baseBill.setBillDate(billRecord.getCrtTime());
+    baseBill.setBillNum(billRecord.getBillNumber());
+    baseBill.setActualAmount(billRecord.getActualReceivableAmount());
+    baseBill.setReceivedAmount(billRecord.getReceivedAmount());
+    baseBill.setDebtAmount(debtAmount);
+    baseBill.setCheckerId(billRecord.getCrtId());
   }
 
   /**

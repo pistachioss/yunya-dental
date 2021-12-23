@@ -2,6 +2,7 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.CardCouponUsedQueryForm;
 import com.yunya.feign.report.domain.query.StatementProductSoldDetailQuery;
 import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import com.yunya.feign.report.domain.vo.StatementProductSoldDetailVO;
@@ -97,5 +98,9 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
     ExcelUtil<StatementProductSoldDetailVO> excelUtil =
         new ExcelUtil<>(StatementProductSoldDetailVO.class);
     excelUtil.exportExcel(response, list, "产品售出记录明细列表");
+  }
+
+  public List<BaseCard> findCardCouponSoldStatistics(CardCouponUsedQueryForm query) {
+    return mapper.selectCardCouponSoldList(query);
   }
 }

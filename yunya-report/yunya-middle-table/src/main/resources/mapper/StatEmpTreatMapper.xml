@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.middletable.dao.report.StatEmpTreatMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.StatEmpTreat">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="org_id" jdbcType="INTEGER" property="orgId" />
+    <id column="dentist_id" jdbcType="INTEGER" property="dentistId" />
+    <id column="treat_date" jdbcType="INTEGER" property="treatDate" />
+    <result column="first_visit_count" jdbcType="INTEGER" property="firstVisitCount" />
+    <result column="re_visit_count" jdbcType="INTEGER" property="reVisitCount" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+  </resultMap>
+
+  <insert id="insertBatch">
+    INSERT stat_emp_treat
+    (org_id, dentist_id, first_visit_count, re_visit_count, treat_date, crt_id, crt_time)
+    VALUES
+    <foreach collection ="list" item="item" index= "index" separator =",">
+      (#{item.orgId}, #{item.dentistId}, #{item.firstVisitCount}, #{item.reVisitCount}, #{item.treatDate}, #{item.crtId}, #{item.crtTime})
+    </foreach >
+  </insert>
+</mapper>

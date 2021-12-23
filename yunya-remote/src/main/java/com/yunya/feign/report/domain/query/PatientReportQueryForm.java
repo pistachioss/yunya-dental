@@ -21,7 +21,7 @@ import java.util.List;
 @ToString
 public class PatientReportQueryForm implements Serializable {
 
-    @ApiModelProperty(value = "是否分页", required = true)
+    @ApiModelProperty(value = "是否分页")
     private Boolean whetherPage = true;
 
     @ApiModelProperty("页码")
@@ -32,15 +32,15 @@ public class PatientReportQueryForm implements Serializable {
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
 
-    @ApiModelProperty(value = "门诊id", required = false)
+    @ApiModelProperty(value = "门诊id", required = true)
     /** 门诊id */
     private Integer orgId;
 
-    @ApiModelProperty(value = "开始末次就诊日期", required = false)
+    @ApiModelProperty(value = "开始末次就诊日期", required = true)
     /** 充值开始日期 */
     private String startDate;
 
-    @ApiModelProperty(value = "结束末次就诊日期", required = false)
+    @ApiModelProperty(value = "结束末次就诊日期", required = true)
     /** 充值结束日期 */
     private String endDate;
 

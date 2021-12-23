@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.BaseTreatmentProcessBiz;
+import com.yunya.middletable.service.StatEmpTreatBiz;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BaseTreatmentProcessController {
 
   @Autowired private BaseTreatmentProcessBiz treatmentProcessBiz;
+  @Autowired private StatEmpTreatBiz statEmpTreatBiz;
 
   /**
    * 根据消息操作中间表就诊流程
@@ -55,6 +57,35 @@ public class BaseTreatmentProcessController {
   public ResponseResult<T> pullTreatmentProcessData(@RequestBody PullForm form)
       throws InterruptedException {
     treatmentProcessBiz.pullTreatmentProcessData(form);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据消息操作中间表就诊完成时统计
+   *
+   * @param msg 消息
+   * @return
+   */
+  @ApiOperation("根据消息操作中间表就诊完成时统计")
+  @PostMapping(value = "/treatDate/statistics", name = "根据消息操作中间表就诊完成时统计")
+  public ResponseResult<T> treatDateStatistics(@RequestBody @Validated MessageModel msg) {
+    log.info("根据消息操作中间表就诊完成时统计========> {}", msg);
+    msg.setOperateType(1);
+    treatmentProcessBiz.operateTreatmentProcess(msg);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件拉取就诊完成时统计并更新中间表
+   *
+   * @param form 拉取时间
+   * @return
+   */
+  @ApiOperation("根据时间段批量操作中间表就诊完成时统计")
+  @PostMapping(value = "/treatDate/statistics/batch", name = "form")
+  public ResponseResult<T> pullTreatDateStatistics(@RequestBody PullForm form)
+          throws InterruptedException {
+    statEmpTreatBiz.pullTreatDateStatistics(form);
     return ResponseUtil.success(null);
   }
 }

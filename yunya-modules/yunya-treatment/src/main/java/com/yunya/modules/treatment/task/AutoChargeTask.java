@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.task;
 
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.treatment.BillRecord;
@@ -9,6 +10,7 @@ import com.yunya.modules.treatment.biz.BillRecordBiz;
 import com.yunya.modules.treatment.biz.OrderRecordBiz;
 import com.yunya.modules.treatment.biz.TollBiz;
 import com.yunya.modules.treatment.biz.TreatmentRecordBiz;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
+
 /**
  * 简介: 自动收费定时任务
  *
@@ -29,6 +33,7 @@ import java.util.concurrent.ExecutorService;
  * @description: 所有就诊完成的未收费的订单，当天23点（23:50）自动收费确认
  * @since: 1.0.0
  */
+@Slf4j
 @Component
 @EnableScheduling
 public class AutoChargeTask {
@@ -44,6 +49,8 @@ public class AutoChargeTask {
   @Resource private TollBiz tollBiz;
   /** 账单业务层 */
   @Resource private BillRecordBiz billRecordBiz;
+  /** 中间表 */
+  @Resource private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
   /**
    * 定时任务自动收费
@@ -80,7 +87,11 @@ public class AutoChargeTask {
                             BigDecimal.ZERO, orderRecord.getId(), billRecord.getId(), true);
                         // 更新开单状态为结账
                         orderRecord.setStatus(BusinessConstants.ORDER_FINISH_STATUS);
-                        orderRecordBiz.updateOrderStatus(orderRecord);
+                        int i = orderRecordBiz.updateOrderStatus(orderRecord);
+                        if (i > 0) {
+                          rabbitMqServiceFeign.sendMessage(billRecord.getOrderRecordId(), 0, BaseBill);
+                          log.info("发送中间表开单记录同步消息{}", "开单记录ID：-------》》》" + billRecord.getOrderRecordId());
+                        }
                       } finally {
                         countDownLatch.countDown();
                       }

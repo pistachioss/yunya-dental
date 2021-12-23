@@ -293,7 +293,24 @@ public class ExcelUtil<T> {
    * @throws IOException
    */
   public void exportExcel(
-          HttpServletResponse response, List<T> list, String sheetName, String fileName, Map<String, String> dynamicTitle)
+          HttpServletResponse response, List<T> list, String sheetName, String fileName, Map<String, String> dynamicTitle) throws IOException {
+    exportExcel(response, list, sheetName, fileName, null, dynamicTitle);
+  }
+
+  /**
+   * 对list数据源将其里面的数据导入到excel表单
+   *
+   * @param response 返回数据
+   * @param list 导出数据集合
+   * @param sheetName 工作表的名称
+   * @param fileName excel文件名
+   * @param header 表头列表
+   * @param dynamicTitle 动态表头与数据映射
+   * @return 结果
+   * @throws IOException
+   */
+  public void exportExcel(
+          HttpServletResponse response, List<T> list, String sheetName, String fileName, String[] header, Map<String, String> dynamicTitle)
           throws IOException {
     response.setContentType("application/vnd.ms-excel");
     response.setCharacterEncoding("utf-8");
@@ -301,7 +318,7 @@ public class ExcelUtil<T> {
             "Content-Disposition",
             "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
     this.init(list, sheetName, Type.EXPORT);
-    exportExcel(response.getOutputStream(), dynamicTitle);
+    exportExcel(response.getOutputStream(), header, dynamicTitle);
   }
 
   /**
@@ -441,7 +458,7 @@ public class ExcelUtil<T> {
    *
    * @param outputStream
    */
-  public void exportExcel(OutputStream outputStream, Map<String, String> dynamicTitle) {
+  public void exportExcel(OutputStream outputStream, String[] header,Map<String, String> dynamicTitle) {
     try {
       // 取出一共有多少个sheet.
       double sheetNo = Math.ceil(list.size() / SHEET_SIZE);
@@ -451,9 +468,16 @@ public class ExcelUtil<T> {
         // 产生一行
         Row row = sheet.createRow(0);
         int column = 0;
-        for (String head : dynamicTitle.values()) {
-          sheet.setColumnWidth(column, (int) ((16 + 0.72) * 256));
-          this.createCell(head, row, column++, "header");
+        if (StringHelper.isNotEmpty(header)) {
+          for (String head : header) {
+            sheet.setColumnWidth(column, (int) ((16 + 0.72) * 256));
+            createCell(head, row, column++, "header");
+          }
+        } else {
+          for (String head : dynamicTitle.values()) {
+            sheet.setColumnWidth(column, (int) ((16 + 0.72) * 256));
+            createCell(head, row, column++, "header");
+          }
         }
         if (Type.EXPORT.equals(type)) {
           int startNo = index * SHEET_SIZE;
@@ -471,7 +495,7 @@ public class ExcelUtil<T> {
         }
       }
       // 设置表格合并
-      this.mergeRegion();
+      mergeRegion();
       wb.write(outputStream);
     } catch (Exception e) {
       log.error("导出Excel异常{}", e.getMessage());

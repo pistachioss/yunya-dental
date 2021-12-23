@@ -1,6 +1,7 @@
 package com.yunya.middletable.dao.report;
 
 import com.yunya.models.report.BaseTreatmentProcess;
+import com.yunya.models.report.StatEmpTreat;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -91,4 +92,11 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    * @param appointmentId
    */
   void updateRegisteredValueByAppointmentId(@Param("appointmentId") Integer appointmentId);
+
+  StatEmpTreat countTreatNumByDateAndDentist(
+          @Param("orgId") Integer orgId,
+          @Param("dentistId") Integer dentistId,
+          @Param("treatDate") Integer treatDate);
+
+  List<StatEmpTreat> countTreatNumByDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
 }

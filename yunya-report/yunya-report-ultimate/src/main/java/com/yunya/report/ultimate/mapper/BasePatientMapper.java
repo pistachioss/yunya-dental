@@ -1,11 +1,8 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
-import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
-import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
-import com.yunya.feign.report.domain.query.PatientManageQuery;
-import com.yunya.feign.report.domain.query.PatientReportQueryForm;
-import com.yunya.feign.report.domain.query.VipLogoQueryForm;
+import com.yunya.feign.report.domain.form.PatientNotSeenForm;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BasePatient;
 import org.apache.ibatis.annotations.Param;
@@ -32,6 +29,13 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    * @return List<BasePatientNotSeenVo>
    */
   List<BasePatientNotSeenVo> selectNotSeenList(@Param("form") PatientReportQueryForm form);
+
+  /**
+   * 从列表删除未复诊且未提醒患者
+   *
+   * @param form 删除条件
+   */
+  void updateTreatment(@Param("form") PatientNotSeenForm form);
 
   /**
    * 查询来源类型总数量
@@ -119,12 +123,23 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    */
   List<PatientInfoVO> selectPatientInfoByExample(@Param("query") PatientSearchQuery query);
 
-  List<PatientFirstVisitSourceVO> clinicFirstVisitSourceList(@Param("query") ClinicPerformanceBusinessQuery query, @Param("patientIds") Collection<Integer> patientIds);
+  /**
+   * 根据条件统计患者来源
+   *
+   * @param query
+   * @param patientIds
+   * @return
+   */
+  List<PatientFirstVisitSourceVO> clinicFirstVisitSourceList(
+      @Param("query") ClinicPerformanceBusinessQuery query,
+      @Param("patientIds") Collection<Integer> patientIds);
 
-  List<BaseTreatmentProcessVO> firstVisitPatientList(@Param("query") ClinicPerformanceBusinessQuery query);
+  List<BaseTreatmentProcessVO> firstVisitPatientList(
+      @Param("query") ClinicPerformanceBusinessQuery query);
 
   /**
    * 查询未填写出生日期并有过就诊的患者数量
+   *
    * @param form 条件
    * @return 患者数量
    */
@@ -138,46 +153,33 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    */
   List<BasePatient> findPatientInfoInId(@Param("patientIds") Collection<Integer> patientIds);
 
-  List<PatientManageVo> listPatientByKeys(@Param("query") PatientManageQuery query, @Param("startAge") Integer startAge,
-                                          @Param("endAge") Integer endAge);
-  /**
-   * 更新患者初次就诊信息
-   */
+  List<PatientManageVo> listPatientByKeys(
+      @Param("query") PatientManageQuery query,
+      @Param("startAge") Integer startAge,
+      @Param("endAge") Integer endAge);
+  /** 更新患者初次就诊信息 */
   void updateFirstVisitInfo();
 
-  /**
-   * 更新患者末次就诊信息
-   */
+  /** 更新患者末次就诊信息 */
   void updateLastVisitInfo();
 
-  /**
-   * 更新患者就诊次数
-   */
+  /** 更新患者就诊次数 */
   void updateNumberOfVisit();
 
-  /**
-   * 更新患者累计消费，欠费
-   */
+  /** 更新患者累计消费，欠费 */
   void updateTotalAmount();
 
-  /**
-   * 备份患者会员标识
-   */
+  /** 备份患者会员标识 */
   void updateVipLogoOld();
 
-  /**
-   * 更新患者会员标识
-   */
+  /** 更新患者会员标识 */
   void updateVipLogo();
 
-  /**
-   * 查询会员情况
-   */
+  /** 查询会员情况 */
   List<VipLogoVo> findVipLogoList(@Param("form") VipLogoQueryForm form);
 
-
-  /**
-   * 查询会员占比
-   */
+  /** 查询会员占比 */
   List<VipRateVo> getVipRate();
+
+  List<PatientManageVo> selectPatientInfoList(@Param("query") PatientDimensionQueryForm queryForm);
 }

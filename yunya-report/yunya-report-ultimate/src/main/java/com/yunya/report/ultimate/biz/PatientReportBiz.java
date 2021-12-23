@@ -2,6 +2,7 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.form.PatientNotSeenForm;
 import com.yunya.feign.report.domain.query.ArrearsQueryForm;
 import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
@@ -13,7 +14,6 @@ import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.BasePatient;
 import com.yunya.report.ultimate.mapper.*;
-import io.swagger.models.auth.In;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -69,6 +69,15 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     }
     List<BasePatientNotSeenVo> basePatientNotSeenVoList = mapper.selectNotSeenList(form);
     return new PageInfo<>(basePatientNotSeenVoList);
+  }
+
+  /**
+   * 从列表删除未复诊预约且未提醒患者
+   *
+   * @param form 参数
+   */
+  public void deleteTrent(PatientNotSeenForm form) {
+    mapper.updateTreatment(form);
   }
 
   /**
@@ -202,7 +211,8 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     AnalysisVo analysisVo = new AnalysisVo();
     // 来源类型比例
     Integer countOriginType = mapper.selectCountOriginType(form);
-    List<AnalysisPatientOriginVo> analysisPatientOriginVoList = mapper.analysis(form, countOriginType);
+    List<AnalysisPatientOriginVo> analysisPatientOriginVoList =
+        mapper.analysis(form, countOriginType);
     if (StringHelper.isNotEmpty(analysisPatientOriginVoList)) {
       analysisVo.setAnalysisPatientOriginVoList(analysisPatientOriginVoList);
     }

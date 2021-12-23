@@ -27,6 +27,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -63,6 +64,8 @@ public class BaseTreatmentProcessBiz
   @Autowired private BasePatientMapper basePatientMapper;
   /** 助手配诊 */
   @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
+  /** 员工就诊统计*/
+  @Autowired private StatEmpTreatBiz statEmpTreatBiz;
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -77,21 +80,32 @@ public class BaseTreatmentProcessBiz
     Integer dataId = (Integer) paramMap.get("id");
     Integer type = (Integer) paramMap.get("type");
     Integer operateType = msg.getOperateType();
+    BaseTreatmentProcess treatmentProcess = null;
     switch (operateType) {
-        // 新增
+      // 新增
       case 0:
         createTreatmentProcess(dataId, type);
         break;
-        // 修改
+      // 修改
       case 1:
-        updateTreatmentProcess(dataId, type);
+        treatmentProcess = updateTreatmentProcess(dataId, type);
+        statEmployeeTreat(treatmentProcess);
         break;
       case 2:
         // 删除
-        deleteTreatmentProcess(dataId, type);
+        treatmentProcess = deleteTreatmentProcess(dataId, type);
+        statEmployeeTreat(treatmentProcess);
         break;
       default:
         break;
+    }
+  }
+
+  private void statEmployeeTreat(BaseTreatmentProcess treatmentProcess) {
+    if (!ObjectUtils.isEmpty(treatmentProcess)) {
+      if (!ObjectUtils.isEmpty(treatmentProcess.getTreatEndTime())) {
+        statEmpTreatBiz.incStatEmpTreat(treatmentProcess);
+      }
     }
   }
 
@@ -170,18 +184,16 @@ public class BaseTreatmentProcessBiz
    * @param dataId 更新数据ID
    * @param type 元数据类型
    */
-  private void updateTreatmentProcess(Integer dataId, Integer type) {
+  private BaseTreatmentProcess updateTreatmentProcess(Integer dataId, Integer type) {
     switch (type) {
         // 预约
       case 0:
-        updateTreatmentProcessByAppointmentId(dataId);
-        break;
+        return updateTreatmentProcessByAppointmentId(dataId);
         // 挂号
       case 1:
-        updateTreatProcessByRegisteredId(dataId);
-        break;
+        return updateTreatProcessByRegisteredId(dataId);
       default:
-        break;
+        return null;
     }
   }
 
@@ -190,7 +202,7 @@ public class BaseTreatmentProcessBiz
    *
    * @param appointmentId 预约ID
    */
-  private void updateTreatmentProcessByAppointmentId(Integer appointmentId) {
+  private BaseTreatmentProcess updateTreatmentProcessByAppointmentId(Integer appointmentId) {
     Appointment appointment = appointmentMapper.selectByPrimaryKey(appointmentId);
     log.info("====================【APP就诊主页面】============");
     log.info("==> user.dir:{}", System.getProperty("user.dir"));
@@ -204,7 +216,9 @@ public class BaseTreatmentProcessBiz
       setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
       log.info("=============开始插入中间表就诊记录（更新预约）============{}", treatmentProcess);
       mapper.insertSelective(treatmentProcess);
+      return treatmentProcess;
     }
+    return null;
   }
 
   /**
@@ -212,7 +226,7 @@ public class BaseTreatmentProcessBiz
    *
    * @param registeredId 挂号ID
    */
-  public void updateTreatProcessByRegisteredId(Integer registeredId) {
+  public BaseTreatmentProcess updateTreatProcessByRegisteredId(Integer registeredId) {
     Registered registered = registeredMapper.selectByPrimaryKey(registeredId);
     if (null != registered) {
       BaseTreatmentProcess treatmentProcess = mapper.selectOneByRegisteredId(registeredId);
@@ -246,9 +260,11 @@ public class BaseTreatmentProcessBiz
           mapper.deleteByRegisteredId(registeredId);
         }
       }
+      return treatmentProcess;
     } else {
       mapper.deleteByRegisteredId(registeredId);
     }
+    return null;
   }
 
   /**
@@ -388,18 +404,16 @@ public class BaseTreatmentProcessBiz
    * @param dataId 删除数据ID
    * @param type 数据类型（0-预约；1-挂号）
    */
-  private void deleteTreatmentProcess(Integer dataId, Integer type) {
+  private BaseTreatmentProcess deleteTreatmentProcess(Integer dataId, Integer type) {
     switch (type) {
         // 预约
       case 0:
-        deleteTreatmentProcessByAppointmentId(dataId);
-        break;
+        return deleteTreatmentProcessByAppointmentId(dataId);
         // 挂号
       case 1:
-        deleteTreatmentProcessByRegistered(dataId);
-        break;
+        return deleteTreatmentProcessByRegistered(dataId);
       default:
-        break;
+        return null;
     }
   }
 
@@ -408,7 +422,7 @@ public class BaseTreatmentProcessBiz
    *
    * @param registeredId 预约ID
    */
-  private void deleteTreatmentProcessByRegistered(Integer registeredId) {
+  private BaseTreatmentProcess deleteTreatmentProcessByRegistered(Integer registeredId) {
     Registered registered = registeredMapper.selectByPrimaryKey(registeredId);
     if (null != registered) {
       if (registered.getInservice()) {
@@ -417,14 +431,17 @@ public class BaseTreatmentProcessBiz
         treatmentRecord.setRegisteredId(registeredId);
         setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
         mapper.insertSelective(treatmentProcess);
+        return treatmentProcess;
       } else {
         BaseTreatmentProcess entity = new BaseTreatmentProcess();
         entity.setRegisteredId(registeredId);
         mapper.delete(entity);
+        return entity;
       }
     } else {
       mapper.deleteByRegisteredId(registeredId);
     }
+    return null;
   }
 
   /**
@@ -432,7 +449,7 @@ public class BaseTreatmentProcessBiz
    *
    * @param appointmentId 预约ID
    */
-  private void deleteTreatmentProcessByAppointmentId(Integer appointmentId) {
+  private BaseTreatmentProcess deleteTreatmentProcessByAppointmentId(Integer appointmentId) {
     Appointment appointment = appointmentMapper.selectByPrimaryKey(appointmentId);
     if (null == appointment) {
       mapper.deleteByAppointmentId(appointmentId);
@@ -453,7 +470,9 @@ public class BaseTreatmentProcessBiz
         setTreatmentProcessTreatmentValue(process, treatmentRecord);
         mapper.insertSelective(process);
       }
+      return process;
     }
+    return null;
   }
 
   /**
@@ -670,4 +689,38 @@ public class BaseTreatmentProcessBiz
         break;
     }
   }
+
+  /*public void pullTreatDateStatistics(PullForm form) throws InterruptedException {
+    String startDate = form.getStartDate();
+    String endDate = form.getEndDate();
+    List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
+    if (StringHelper.isNotEmpty(dateRanges)) {
+      CountDownLatch latch = new CountDownLatch(dateRanges.size());
+      List<Future> resultFutures = new ArrayList<>();
+      for (String date : dateRanges) {
+        resultFutures.add(
+                importExcelThreadPool.submit(
+                        () -> {
+                          try {
+                            // 预约-就诊
+                            Example treatExample = new Example(BaseTreatmentProcess.class);
+                            treatExample
+                                    .createCriteria()
+                                    .andCondition(
+                                            "treat_end_time >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
+                                    .andCondition(
+                                            "treat_end_time < '"
+                                                    + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
+                                                    + "'");
+                            List<BaseTreatmentProcess> datas = mapper.selectByExample(treatExample);
+                            statEmpTreatBiz.pullTreatDateStatistics(datas);
+                          } finally {
+                            latch.countDown();
+                          }
+                        }));
+      }
+      latch.await();
+      printExceptionLog(resultFutures, log);
+    }
+  }*/
 }

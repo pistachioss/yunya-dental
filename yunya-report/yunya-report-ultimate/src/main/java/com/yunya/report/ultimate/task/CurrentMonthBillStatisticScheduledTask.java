@@ -4,10 +4,12 @@ import com.yunya.feign.report.domain.query.FirstVisitDetailQuery;
 import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.CurrentMonthBillStatisticVO;
 import com.yunya.feign.report.domain.vo.FirstVisitDetailVO;
+import com.yunya.feign.treatment.domain.vo.BasePeizhenCentreVO;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.*;
 import com.yunya.models.report.CurrentMonthBillStatistics;
+import com.yunya.report.ultimate.model.BasePeizhenCentre;
 import io.swagger.annotations.ApiModelProperty;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -50,6 +52,10 @@ public class CurrentMonthBillStatisticScheduledTask {
   @Autowired private BaseFirstVisitDetailMapper baseFirstVisitDetailMapper;
   /** 初诊明细 */
   @Autowired private BaseTreatmentProcessMapper baseTreatmentProcessMapper;
+  /** 配诊统计*/
+  @Autowired private BasePeizhenCentreMapper basePeizhenCentreMapper;
+
+
 
 
   /** 每月最后一天23:59分存档当月账单信息（本月实收合计、本月优惠合计、本月免单合计、本月账单已收合计、本月账单欠费合计） */
@@ -110,5 +116,27 @@ public class CurrentMonthBillStatisticScheduledTask {
     }
   }
 
-
+  /** 每天23:59分存档当天之前的配诊统计信息*/
+  @Scheduled(cron = "0 0 23 * * ?")
+  public void peizhenVisitdetail() {
+    List<BasePeizhenCentreVO>list =  basePeizhenCentreMapper.findFirstVisitRecordDetail();
+    int size = list.size();
+    int temp = size / 5000 + 1;
+    boolean result = size % 5000 == 0;
+    List<List<BasePeizhenCentreVO>> subList = new ArrayList<>();
+    for (int i = 0; i < temp; i++) {
+      if (i == temp - 1) {
+        if (result) {
+          break;
+        }
+        subList.add(list.subList(5000 * i, size)) ;
+      } else {
+        subList.add(list.subList(5000 * i, 5000 * (i + 1))) ;
+      }
+    }
+    basePeizhenCentreMapper.deleteAll();
+    for(List<BasePeizhenCentreVO>relist:subList){
+      basePeizhenCentreMapper.batchIntert(relist);
+    }
+  }
 }

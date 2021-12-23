@@ -35,6 +35,10 @@ public class DateUtil {
   public static final int MAX_SECOND = 59;
 
   private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
+
+  private static final SimpleDateFormat NUMBER_DATESDF = new SimpleDateFormat("yyyyMMdd");
+  private static final SimpleDateFormat NUMBER_YEARSDF = new SimpleDateFormat("yyyy");
+  private static final SimpleDateFormat NUMBER_MONTHSDF = new SimpleDateFormat("yyyyMM");
   /** 年 */
   public static final int YEAR = 1;
   /** 月 */
@@ -256,6 +260,26 @@ public class DateUtil {
     LocalDateTime localDateTime = endOfMonth.atTime(23, 59, 59, 999);
     ZonedDateTime zonedDateTime = localDateTime.atZone(ZoneId.of("Asia/Shanghai"));
     return Date.from(zonedDateTime.toInstant());
+  }
+
+  public static String getEndDate(String date) {
+    int year = Integer.parseInt(date.substring(0, 4));
+    int month = 12;
+    if (!date.matches(YEAR_REGEX)) {
+      month = Integer.parseInt(date.substring(5,7));
+    }
+    YearMonth yearMonth = YearMonth.of(year, month);
+    return yearMonth.atEndOfMonth().toString();
+  }
+
+  public static String getStartDate(String date) {
+    int year = Integer.parseInt(date.substring(0, 4));
+    int month = 01;
+    if (!date.matches(YEAR_REGEX)) {
+      month = Integer.parseInt(date.substring(5,7));
+    }
+    YearMonth yearMonth = YearMonth.of(year, month);
+    return yearMonth.atDay(1).toString();
   }
 
   /**
@@ -505,6 +529,41 @@ public class DateUtil {
     return date;
   }
 
+  public static Integer date2Number(String dateStr, String suffix) {
+    if (StringHelper.isEmpty(dateStr)) {
+      return null;
+    }
+    String date = StringHelper.remove(dateStr, "-");
+    if (StringHelper.isEmpty(suffix)) {
+      if (date.matches(YEAR_REGEX)) {// 年
+        suffix = "0101";
+      } else if (date.matches(MONTH_REGEX)){// 月
+        suffix = "01";
+      } else {
+        suffix = "";
+      }
+    }
+    return Integer.parseInt(date + suffix);
+  }
+
+  /**
+   * 日期格式成数字形式：yyyyMMdd
+   *
+   * @param date
+   * @return
+   */
+  public static Integer date2Number(Date date) {
+    return date2Number(date, NUMBER_DATESDF);
+  }
+
+  public static Integer date2Number(Date date, SimpleDateFormat sdf) {
+    Integer dateNumber = null;
+    if (date == null) {
+      return dateNumber;
+    }
+    return Integer.parseInt(sdf.format(date));
+  }
+
   /** 年日期正则表达式 */
   public static String YEAR_REGEX = "^\\d{4}$";
   /** 月日期正则表达式 */
@@ -633,12 +692,12 @@ public class DateUtil {
    */
   public static String preDate(String date, int diff) {
     String[] dates = date.split("-");
-    if (dates.length == 2) { // 月
+    if (date.matches(MONTH_REGEX)) { // 月
       return preDate(date, diff, "yyyy-MM", Calendar.MONTH);
-    } else if (dates.length == 1) { // 年
+    } else if (date.matches(YEAR_REGEX)) { // 年
       return preDate(date, diff, "yyyy", Calendar.YEAR);
     }
-    return preDate(date, -diff, "yyyy-MM-dd", Calendar.DATE);
+    return preDate(date, diff, "yyyy-MM-dd", Calendar.DATE);
   }
 
   /**
@@ -672,9 +731,9 @@ public class DateUtil {
   public static int dateFieldDiff(String startDate, String endDate) {
     String[] sDates = startDate.split("-");
     String[] eDates = endDate.split("-");
-    if (sDates.length == 2) { // 月
+    if (startDate.matches(MONTH_REGEX)) { // 月
       return Integer.parseInt(sDates[1]) - Integer.parseInt(eDates[1]);
-    } else if (sDates.length == 1) { // 年
+    } else if (startDate.matches(YEAR_REGEX)) { // 年
       return Integer.parseInt(sDates[1]) - Integer.parseInt(eDates[1]);
     }
     return compareDate(startDate, endDate) - 1; // 日
@@ -780,9 +839,9 @@ public class DateUtil {
   public static String chainDate(String dateStr) {
     String[] dates = dateStr.split("-");
     String pattern = "yyyy-MM-dd";
-    if (dates.length == 2) {
+    if (dateStr.matches(MONTH_REGEX)) {
       pattern = "yyyy-MM";
-    } else if (dates.length == 1) {
+    } else if (dateStr.matches(YEAR_REGEX)) {
       pattern = "yyyy";
     }
     Date date = null;
@@ -799,9 +858,9 @@ public class DateUtil {
 
   public static String yearStart(String dateStr) {
     String[] dates = dateStr.split("-");
-    if (dates.length == 2) { // 月
+    if (dateStr.matches(MONTH_REGEX)) { // 月
       return dates[0] + "-01";
-    } else if (dates.length == 1) { // 年
+    } else if (dateStr.matches(YEAR_REGEX)) { // 年
       return dates[0];
     }
     return dates[0] + "-01-01";
@@ -809,9 +868,9 @@ public class DateUtil {
 
   public static String yearEnd(String dateStr) {
     String[] dates = dateStr.split("-");
-    if (dates.length == 2) { // 月
+    if (dateStr.matches(MONTH_REGEX)) { // 月
       return dates[0] + "-12";
-    } else if (dates.length == 1) { // 年
+    } else if (dateStr.matches(YEAR_REGEX)) { // 年
       return dates[0];
     }
     return dates[0] + "-12-31";
@@ -854,4 +913,19 @@ public class DateUtil {
   public static long until(LocalDate startDate, LocalDate endDate) {
     return startDate.until(endDate, ChronoUnit.DAYS);
   }
+
+  public static Integer startDate2Number(String date) {
+    if (!date.matches(DATE_REGEX)) {
+      date = getStartDate(date);
+    }
+    return date2Number(date, null);
+  }
+
+  public static Integer endDate2Number(String date) {
+    if (!date.matches(DATE_REGEX)) {
+      date = getEndDate(date);
+    }
+    return date2Number(date, null);
+  }
+
 }

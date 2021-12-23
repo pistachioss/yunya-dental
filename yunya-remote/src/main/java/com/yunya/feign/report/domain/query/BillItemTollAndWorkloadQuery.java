@@ -1,4 +1,4 @@
-package com.yunya.feign.report.domain.vo;
+package com.yunya.feign.report.domain.query;
 
 import com.yunya.framework.common.model.PageQuery;
 import io.swagger.annotations.ApiModel;

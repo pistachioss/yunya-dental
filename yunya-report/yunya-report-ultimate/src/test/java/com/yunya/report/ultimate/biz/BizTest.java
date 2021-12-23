@@ -148,7 +148,7 @@ public class BizTest {
     }
 
     @Test
-    public void test11() {
+    public void findClinicDataStatisticsInfo() {
         String param = "{\"orgIds\":[26],\"dateType\":1,\"startDate\":\"2021-03\",\"endDate\":\"2021-03\"}";
         DataStatisticsQuery query = JSONObject.parseObject(param, DataStatisticsQuery.class);
         ClinicDataStatisticsInfoVO clinicDataStatisticsInfoVO = clinicDataStatisticsBiz.findClinicDataStatisticsInfo(query);
@@ -156,7 +156,7 @@ public class BizTest {
     }
 
     @Test
-    public void test12() {
+    public void findAnalysisBusinessGoalList() {
         String param = "{\"dateType\":1,\"startDate\":\"2021-03\",\"endDate\":\"2021-03\"}";
         DataStatisticsQuery query = JSONObject.parseObject(param, DataStatisticsQuery.class);
         PageInfo<OperationDataBusinessGoalVO> result = clinicDataStatisticsBiz.findAnalysisBusinessGoalList(query);
@@ -164,7 +164,7 @@ public class BizTest {
     }
 
     @Test
-    public void test13() {
+    public void personalWorkloadList() {
         String param = "{\"dateType\":0,\"employeeIds\":[],\"pageNum\":1,\"pageSize\":10,\"queryDate\":\"2021-03\",\"whetherPage\":true}";
         EmployeeWorkloadQuery query = JSONObject.parseObject(param, EmployeeWorkloadQuery.class);
         long t1 = System.currentTimeMillis();
@@ -292,7 +292,7 @@ public class BizTest {
      */
     @Test
     public void clinicPerformanceList() {
-        String param = "{\"dateType\":2,\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021\",\"endDate\":\"2021\",\"whetherPage\":true}";
+        String param = "{\"dateType\":\"0\",\"pageNum\":1,\"pageSize\":10,\"startDate\":\"2021-12-06\",\"endDate\":\"2021-12-07\",\"whetherPage\":true}";
         ClinicPerformanceBusinessQuery query = JSONObject.parseObject(param,ClinicPerformanceBusinessQuery.class);
         long t1 = System.currentTimeMillis();
         DynamicHeaderPageInfo<JSONObject> pageInfo = baseBillDetailBiz.clinicPerformanceList(query);
@@ -381,6 +381,18 @@ public class BizTest {
         TreatmentRecordQuery query = JSONObject.parseObject(param, TreatmentRecordQuery.class);
         long t1 = System.currentTimeMillis();
         PageInfo<TreatmentRecordReportVO> result = baseTreatmentProcessBiz.findTreatmentList(query);
+        System.out.println(System.currentTimeMillis() - t1);
+        System.out.println(JSONObject.toJSON(result));
+    }
+
+    /**
+     * 就诊记录列表
+     */
+    @Test
+    public void testFindInMonthReFirstVisit() {
+        ClinicEmployeeWorkloadQuery query= new ClinicEmployeeWorkloadQuery();
+        long t1 = System.currentTimeMillis();
+        List<EmployeeCountVO> result = baseTreatmentProcessBiz.findInMonthReFirstVisit(query, true);
         System.out.println(System.currentTimeMillis() - t1);
         System.out.println(JSONObject.toJSON(result));
     }

@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.CardActiveRecoedQuery;
+import com.yunya.feign.report.domain.query.CardCouponUsedQueryForm;
 import com.yunya.feign.report.domain.query.CouponUseQuery;
 import com.yunya.feign.report.domain.query.StatementProductSoldDetailQuery;
 import com.yunya.feign.report.domain.vo.*;
@@ -146,4 +147,6 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
     List<WxCardEventVo> listWxPushCard(@Param("noticeType") Integer noticeType);
 
     List<CouponUseVo> getCouponUse(CouponUseQuery query);
+
+    List<BaseCard> selectCardCouponSoldList(@Param("query") CardCouponUsedQueryForm query);
 }

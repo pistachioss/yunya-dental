@@ -5,9 +5,11 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
+import com.yunya.feign.report.domain.query.PatientDimensionQueryForm;
 import com.yunya.feign.report.domain.query.PatientManageQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BasePatient;
 import com.yunya.models.report.BasePatientOrigin;
@@ -23,10 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -95,8 +94,9 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
       patientDataVo.setNumberOfVisits(appointmentInfo.getNumberOfVisits());
     }
     // 患者消费
-    PatientCostInfoVO costInfo = billMapper.selectPatientCostInfo(patientId);
-    if (null != costInfo) {
+    List<PatientCostInfoVO> costInfos = billMapper.selectPatientCostInfo(Collections.singleton(patientId));
+    if (StringHelper.isNotEmpty(costInfos)) {
+      PatientCostInfoVO costInfo = costInfos.get(0);
       patientDataVo.setCumulativeConsumption(costInfo.getCumulativeConsumption());
       patientDataVo.setTotalArrears(costInfo.getTotalArrears());
     }
@@ -203,5 +203,9 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
     response.setCharacterEncoding("utf-8");
     String encodeFileName = URLEncoder.encode(fileName, "UTF-8");
     response.setHeader("Content-disposition", "attachment;filename=" + encodeFileName + ".xlsx");
+  }
+
+  public List<PatientManageVo> findPatientInfoList(PatientDimensionQueryForm queryForm) {
+    return mapper.selectPatientInfoList(queryForm);
   }
 }

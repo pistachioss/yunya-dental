@@ -8,13 +8,16 @@ import com.yunya.feign.report.domain.query.EmployeeDiagnosisQuery;
 import com.yunya.feign.report.domain.query.EmployeeMatchingRecordQuery;
 import com.yunya.feign.report.domain.vo.EmployeeDiagnosisInfoVO;
 import com.yunya.feign.treatment.domain.vo.AssistantMatchingStatisticsVO;
+import com.yunya.feign.treatment.domain.vo.BasePeizhenCentreVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.BaseUserPost;
 import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
+import com.yunya.report.ultimate.mapper.BasePeizhenCentreMapper;
 import com.yunya.report.ultimate.mapper.BaseUserPostMapper;
+import com.yunya.report.ultimate.model.BasePeizhenCentre;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,6 +50,32 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
 
   @Resource(name = "customizeThreadPool")
   private ExecutorService executorService;
+  /** 配诊统计*/
+  @Autowired private BasePeizhenCentreMapper basePeizhenCentreMapper;
+
+  public void dingshi()throws InterruptedException, ExecutionException{
+      List<BasePeizhenCentreVO>list =  basePeizhenCentreMapper.findFirstVisitRecordDetail();
+      int size = list.size();
+      int temp = size / 5000 + 1;
+      boolean result = size % 5000 == 0;
+      List<List<BasePeizhenCentreVO>> subList = new ArrayList<>();
+      for (int i = 0; i < temp; i++) {
+          if (i == temp - 1) {
+              if (result) {
+                  break;
+              }
+              subList.add(list.subList(5000 * i, size)) ;
+          } else {
+              subList.add(list.subList(5000 * i, 5000 * (i + 1))) ;
+          }
+      }
+      basePeizhenCentreMapper.deleteAll();
+      for(List<BasePeizhenCentreVO>relist:subList){
+          basePeizhenCentreMapper.batchIntert(relist);
+      }
+
+  }
+
 
   /**
    * 根据条件查询配诊统计列表
@@ -59,29 +88,23 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    CountDownLatch latch_1 = new CountDownLatch(3);
-    long startTime=System.currentTimeMillis();
-    //执行方法
-    long endTime=System.currentTimeMillis();
+    CountDownLatch latch_1 = new CountDownLatch(2);
+    List<AssistantMatchingStatisticsVO> resultList
+            =
+        mapper.selectAssistantMatchingStatisticsByAssistant("assistant_1", query);
 
-    List<AssistantMatchingStatisticsVO> resultList;
-//            =
-//        mapper.selectAssistantMatchingStatisticsByAssistant("assistant_1", query);
-
-    try {
-      Future<List<AssistantMatchingStatisticsVO>> assistant_2 =
-              executorService.submit(
-                      () -> mapper.selectAssistantMatchingStatisticsByAssistant("assistant_2", query));
-      resultList = getFutureObj(assistant_2);
-    } finally {
-      latch_1.countDown();
-    }
+//    try {
+//      Future<List<AssistantMatchingStatisticsVO>> assistant_2 =
+//              executorService.submit(
+//                      () -> mapper.selectAssistantMatchingStatisticsByAssistant("assistant_2", query));
+//      resultList = getFutureObj(assistant_2);
+//    } finally {
+//      latch_1.countDown();
+//    }
 
     List<AssistantMatchingStatisticsVO> resultList2 = this.getAssistant2List(query, latch_1);
     List<AssistantMatchingStatisticsVO> resultList3 = this.getAssistant3List(query, latch_1);
-    endTime=System.currentTimeMillis();
-    float excTime1=(float)(endTime-startTime)/1000;
-    System.out.println("2,3---------------------执行时间："+excTime1+"s");
+
     latch_1.await();
 
     if (StringHelper.isNotEmpty(resultList)) {
@@ -201,7 +224,7 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
     List<AssistantMatchingStatisticsVO> list = pageInfo.getList();
     ExcelUtil<AssistantMatchingStatisticsVO> excelUtil =
         new ExcelUtil<>(AssistantMatchingStatisticsVO.class);
-    String fileName = query.getStartDate() + query.getEndDate() + "助手配诊统计";
+    String fileName = query.getStartDate()+ "至"+ query.getEndDate() + "助手配诊统计";
 
     ClinicPerformanceBusinessQuery dataStatisticsQuery = new ClinicPerformanceBusinessQuery();
     dataStatisticsQuery.setOrgIds(query.getOrgIds());
@@ -211,8 +234,8 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
       for(AssistantMatchingStatisticsVO vo:list){
         BaseOrganization organization = orgList.stream().filter(item -> item.getOrgId().equals(vo.getOrgId())).findFirst().get();
         String abbreviation = organization.getAbbreviation();
-        fileName = abbreviation + fileName;
-        vo.setOrgName(fileName);
+//        fileName = abbreviation + fileName;
+        vo.setOrgName(abbreviation);
       }
 //      list.forEach(vo -> vo.setOrgName(abbreviation));
     }

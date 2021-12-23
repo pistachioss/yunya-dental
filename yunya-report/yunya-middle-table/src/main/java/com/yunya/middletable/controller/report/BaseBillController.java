@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.BaseBillBiz;
+import com.yunya.middletable.service.StatEmpBillBiz;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class BaseBillController {
 
   @Autowired private BaseBillBiz billBiz;
+
+  @Autowired private StatEmpBillBiz statEmpBillBiz;
 
   /**
    * 根据消息操作中间表账单
@@ -51,6 +54,33 @@ public class BaseBillController {
   @PostMapping(value = "/operate/batch", name = "form")
   public ResponseResult<T> pullBillData(@RequestBody PullForm form) throws InterruptedException {
     billBiz.pullBillData(form);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据消息操作中间表账单时统计
+   *
+   * @param msg 消息
+   * @return
+   */
+  @ApiOperation("根据消息操作中间表账单时统计")
+  @PostMapping(value = "/billDate/statistics", name = "根据消息操作中间表账单时统计")
+  public ResponseResult<T> billDateStatistics(@RequestBody @Validated MessageModel msg) {
+    msg.setOperateType(-1);
+    billBiz.operateBill(msg);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件拉取账单时统计并更新中间表
+   *
+   * @param form 拉取时间
+   * @return
+   */
+  @ApiOperation("根据时间段批量操作中间表账单时统计")
+  @PostMapping(value = "/billDate/statistics/batch", name = "form")
+  public ResponseResult<T> pullBillDateStatistics(@RequestBody PullForm form) throws InterruptedException {
+    statEmpBillBiz.pullBillDateStatistics(form);
     return ResponseUtil.success(null);
   }
 }

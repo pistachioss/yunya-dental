@@ -1,9 +1,11 @@
 package com.yunya.middletable.dao.report;
 
+import com.yunya.feign.report.domain.vo.BillExecutorItemVO;
 import com.yunya.models.report.BaseBillDetail;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
@@ -21,4 +23,14 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param baseBillDetails 订单明细列表
    */
   void batchInsertSelective(@Param("baseBillDetails") List<BaseBillDetail> baseBillDetails);
+
+  List<BillExecutorItemVO> selectBillDetailByDateAndExecutorId(
+          @Param("orgId") Integer orgId,
+          @Param("billDate") Integer billDate,
+          @Param("payeeDate") Integer payeeDate,
+          @Param("executorIds") Collection<Integer> executorIds);
+
+  List<BillExecutorItemVO> groupBillItemDetailListByBillDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+  List<BillExecutorItemVO> groupBillItemDetailListByPayDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
 }

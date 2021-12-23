@@ -486,5 +486,24 @@
                 </foreach>
             </if>
         </where>
+        <if test="payIds != null and payIds.size() > 0">
+        UNION
+            SELECT
+                od.org_id AS orgId,
+                od.order_record_id AS orderRecordId,
+                od.type,
+                od.billing_item_id AS billingItemId,
+                odpr.actual_receivable AS receivableAmount
+            FROM order_detail od
+            INNER JOIN order_detail_pay_record odpr ON odpr.order_detail_id=od.id
+            INNER JOIN bill_pay_record bpr ON od.order_record_id=bpr.order_record_id
+            INNER JOIN bill_pay_detail_record bpdr ON bpr.id=bpdr.bill_pay_record_id
+            WHERE bpdr.bill_pay_record_id in
+            <foreach collection="payIds" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+            and bpdr.account_item_id in (23, 26)
+            and bpdr.inservice = 0
+        </if>
     </select>
 </mapper>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.StatEmpTreatMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.StatEmpTreat" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="org_id" property="orgId" jdbcType="INTEGER" />
+    <id column="dentist_id" property="dentistId" jdbcType="INTEGER" />
+    <id column="treat_date" property="treatDate" jdbcType="INTEGER" />
+    <result column="first_visit_count" property="firstVisitCount" jdbcType="INTEGER" />
+    <result column="re_visit_count" property="reVisitCount" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+  </resultMap>
+
+  <select id="selectClinicTreatVisitNum" resultType="com.yunya.models.report.StatEmpTreat">
+    SELECT
+      st.org_id AS orgId,
+      st.dentist_id AS dentistId,
+      DATE_FORMAT(st.treat_date, '%Y%m') AS treatDate,
+      SUM(st.first_visit_count) AS firstVisitCount,
+      SUM(st.re_visit_count) AS reVisitCount
+    FROM stat_emp_treat st
+    <where>
+      <if test="orgIds!=null and orgIds.size()>0">
+        AND st.org_id in
+        <foreach collection="orgIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
+      <if test="employeeIds!=null and employeeIds.size()>0">
+        AND st.dentist_id in
+        <foreach collection="employeeIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
+      <if test="query.sDateInt!=null and query.eDateInt!=null">
+        AND st.treat_date between #{query.sDateInt} and #{query.eDateInt}
+      </if>
+    </where>
+    GROUP BY
+    <if test="orgIds!=null and orgIds.size()>0">
+        st.org_id,
+    </if>
+    <if test="employeeIds!=null and employeeIds.size()>0">
+        st.dentist_id,
+    </if>
+    DATE_FORMAT(st.treat_date, '%Y%m')
+  </select>
+</mapper>
