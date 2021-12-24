@@ -90,8 +90,12 @@ public class DimensionReportBiz {
         }
         // 患者信息（姓名,年龄,患者来源类型,会员等级）
         List<PatientManageVo> patients = patientBaseInfoBiz.findPatientInfoList(query);
-        PageInfo<PatientManageVo> pageInfo = new PageInfo<>(patients);
+        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(patients);
+        if (StringHelper.isEmpty(patients)) {
+            return pageInfo;
+        }
         List<Integer> patientIds = patients.stream().map(PatientManageVo::getPatientId).collect(Collectors.toList());
+
         // 就诊次数
         Future<Map<Integer, Integer>> treatNumFuture = multiFindPatientTreatNum(patientIds);
         // 初诊日期
@@ -135,10 +139,10 @@ public class DimensionReportBiz {
             obj.put("age", defIntVal(vo.getAge()));
             obj.put("orionTypeName", defValue(vo.getPatientOrionTypeName()));
             obj.put("memberTypeName", defValue(vo.getMemberTypeName()));
-            obj.put("treatNum", defValue(treatNumMap.get(patientId)));
+            obj.put("treatNum", defIntVal(treatNumMap.get(patientId)));
             PatientCostInfoVO costInfo = consumeArrearMap.get(patientId);
-            BigDecimal totalConsume = new BigDecimal(0);
-            BigDecimal totalArrear = new BigDecimal(0);
+            BigDecimal totalConsume = new BigDecimal(0.00);
+            BigDecimal totalArrear = new BigDecimal(0.00);
             if (!ObjectUtils.isEmpty(costInfo)) {
                 totalConsume = costInfo.getReceivedAmount();
                 totalArrear = costInfo.getTotalArrears();
@@ -355,7 +359,9 @@ public class DimensionReportBiz {
         DynamicHeaderPageInfo<JSONObject> pageInfo = dentistDimensionStatistics(query);
         List<JSONObject> list = pageInfo.getList();
         ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
-        excelUtil.setMergeRegion(collectMergeCell(pageInfo, 6));
+        if (StringHelper.isNotEmpty(pageInfo.getContextMap())) {
+            excelUtil.setMergeRegion(collectMergeCell(pageInfo, 6));
+        }
         String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "医生维度统计");
         excelUtil.exportExcel(response, list, "医生维度统计", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
@@ -485,10 +491,8 @@ public class DimensionReportBiz {
     private DynamicHeaderPageInfo<JSONObject> convertClinicDimensionPageInfo(List<JSONObject> list, Map<String, List<String>> contextMap, Map<String, String> originTypeMap, Map<String, String> specialMap, boolean groupByOrgId) {
         DynamicHeaderPageInfo<JSONObject> result = new DynamicHeaderPageInfo<>(list);
         Map<String, String> title = new LinkedHashMap<>(16);
-        String[] header = {"医生", "工作量", "初诊人数", "复诊人数", "就诊人次", "本月初诊且复诊", "患者来源", "", "", "", "", "", "", "欠费总额", "无下次预约或提醒客户", "专科数量"};
         if (groupByOrgId) {
             title.put("abbreviation", "门诊");
-            header = new String[]{"门诊", "医生", "工作量", "初诊人数", "复诊人数", "就诊人次", "本月初诊且复诊", "患者来源", "", "", "", "", "", "", "欠费总额", "无下次预约或提醒客户", "专科数量"};
         }
         title.put("employeeName", "医生");
         title.put("workload", "工作量");
@@ -504,8 +508,50 @@ public class DimensionReportBiz {
         title.putAll(specialMap);
         result.setMap(title);
         result.setContextMap(contextMap);
-        result.setHeader(header);
+        result.setHeader(clinicDimensionHeader(contextMap, groupByOrgId));
         return result;
+    }
+
+    private String[] clinicDimensionHeader(Map<String, List<String>> contextMap, boolean groupByOrgId) {
+        int size = 0;
+        for (Map.Entry<String, List<String>> entry : contextMap.entrySet()) {
+            size += entry.getValue().size();
+        }
+        String[] header = new String[size+8];
+        int index = 0;
+        if (groupByOrgId) {
+            header = new String[size+9];
+            header[index++] = "门诊";
+        }
+        header[index++] = "医生";
+        header[index++] = "工作量";
+        header[index++] = "初诊人数";
+        header[index++] = "复诊人数";
+        header[index++] = "就诊人次";
+        header[index++] = "本月初诊且复诊";
+        List<String> originTypeNames = contextMap.get("originTypeNames");
+        if (StringHelper.isNotEmpty(originTypeNames)) {
+            for (int i = 0; i < originTypeNames.size(); i++) {
+                if (i == 0) {
+                    header[index++] = "患者来源";
+                } else {
+                    header[index++] = "";
+                }
+            }
+        }
+        header[index++] = "欠费总额";
+        header[index++] = "无下次预约或提醒客户";
+        List<String> specialProjectNames = contextMap.get("specialProjectNames");
+        if (StringHelper.isNotEmpty(specialProjectNames)) {
+            for (int i = 0; i < specialProjectNames.size(); i++) {
+                if (i == 0) {
+                    header[index++] = "专科数量";
+                } else {
+                    header[index++] = "";
+                }
+            }
+        }
+        return header;
     }
 
     private String defValue(Object value) {
@@ -637,11 +683,16 @@ public class DimensionReportBiz {
             region.add(crd);
         }
         // 横向合并单元格
-        int index = lastCol + originTypeNames.size()-1;
-        region.add(new CellRangeAddress(0,0, lastCol, index++));
-        region.add(new CellRangeAddress(0,1, index, index++));
-        region.add(new CellRangeAddress(0,1, index, index++));
-        region.add(new CellRangeAddress(0,0, index, index + specialProjectNames.size()-1));
+        int index = lastCol;
+        if (StringHelper.isNotEmpty(originTypeNames) && originTypeNames.size()>1) {
+            index += originTypeNames.size()-1;
+            region.add(new CellRangeAddress(0,0, lastCol, index));
+        }
+        region.add(new CellRangeAddress(0,1, ++index, index));
+        region.add(new CellRangeAddress(0,1, ++index, index));
+        if (StringHelper.isNotEmpty(specialProjectNames) && specialProjectNames.size()>1) {
+            region.add(new CellRangeAddress(0, 0, ++index, index + specialProjectNames.size() - 1));
+        }
         return region;
     }
 
@@ -658,7 +709,9 @@ public class DimensionReportBiz {
         DynamicHeaderPageInfo<JSONObject> pageInfo = clinicDimensionStatistics(query, true);
         List<JSONObject> list = pageInfo.getList();
         ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
-        excelUtil.setMergeRegion(collectMergeCell(pageInfo, 7));
+        if (StringHelper.isNotEmpty(pageInfo.getContextMap())) {
+            excelUtil.setMergeRegion(collectMergeCell(pageInfo, 7));
+        }
         String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), "", "门诊维度统计");
         excelUtil.exportExcel(response, list, "门诊维度统计", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
@@ -1033,7 +1086,7 @@ public class DimensionReportBiz {
             totalWorkload[i] = new BigDecimal("0.00");
         }
         int[] totalFirstVisitCount = new int[size];
-        int[] totalReVisitCount = new int[size];
+        int[] totalTreatVisitCount = new int[size];
         // 门诊的每年每月统计
         for (int i = 1; i <=12; i++) {
             JSONObject obj = initMonthObj(name, i+"");
@@ -1051,17 +1104,17 @@ public class DimensionReportBiz {
                 obj.put("W"+year, workload);
                 StatEmpTreat statEmpTreat = treatNumMap.get(key);
                 int firstVisitCount = 0;
-                int reVisitCount = 0;
+                int treatVisitCount = 0;
                 if (!ObjectUtils.isEmpty(statEmpTreat)) {
                     firstVisitCount = statEmpTreat.getFirstVisitCount();
-                    reVisitCount = statEmpTreat.getReVisitCount();
+                    treatVisitCount = statEmpTreat.getReVisitCount() + firstVisitCount;
                 }
                 obj.put("F"+year, firstVisitCount);
-                obj.put("R"+year, reVisitCount);
+                obj.put("R"+year, treatVisitCount);
                 totalWorkload[wInx] = totalWorkload[wInx].add(workload);
                 totalFirstVisitCount[wInx] += firstVisitCount;
-                totalReVisitCount[wInx] += reVisitCount;
-                cumulation(i-1, wInx, fInx, rInx, total, workload, firstVisitCount, reVisitCount);
+                totalTreatVisitCount[wInx] += treatVisitCount;
+                cumulation(i-1, wInx, fInx, rInx, total, workload, firstVisitCount, treatVisitCount);
             }
             list.add(obj);
         }
@@ -1081,15 +1134,15 @@ public class DimensionReportBiz {
             totalObj.put("W"+year, workload);
             int firstVisitCount = defIntVal(totalFirstVisitCount[wInx]);
             totalObj.put("F"+year, firstVisitCount);
-            int reVisitCount = defIntVal(totalReVisitCount[wInx]);
-            totalObj.put("R"+year, reVisitCount);
-            cumulation(12, wInx, fInx, rInx, total, workload, firstVisitCount, reVisitCount);
+            int treatVisitCount = defIntVal(totalTreatVisitCount[wInx]);
+            totalObj.put("R"+year, treatVisitCount);
+            cumulation(12, wInx, fInx, rInx, total, workload, firstVisitCount, treatVisitCount);
         }
         list.add(totalObj);
         return total;
     }
 
-    private void cumulation(int col, int wInx, int fInx, int rInx, BigDecimal[][] total, BigDecimal workload, int firstVisitCount, int reVisitCount) {
+    private void cumulation(int col, int wInx, int fInx, int rInx, BigDecimal[][] total, BigDecimal workload, int firstVisitCount, int treatVisitCount) {
         if (total[col][wInx] == null) {
             total[col][wInx] = new BigDecimal("0.00");
         }
@@ -1101,7 +1154,7 @@ public class DimensionReportBiz {
         }
         total[col][wInx] = total[col][wInx].add(workload);
         total[col][fInx] = total[col][fInx].add(new BigDecimal(firstVisitCount));
-        total[col][rInx] = total[col][rInx].add(new BigDecimal(reVisitCount));
+        total[col][rInx] = total[col][rInx].add(new BigDecimal(treatVisitCount));
     }
 
     private JSONObject initMonthObj(String name, String month) {
@@ -1156,7 +1209,7 @@ public class DimensionReportBiz {
         List<CellRangeAddress> crds = workloadVisitMergeRegiion(
                 pageInfo,
                 query,
-                "门诊","工作量","初诊人数","复诊人数");
+                "门诊","工作量","初诊人数","就诊人数");
         excelUtil.setMergeRegion(crds);
         String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "门诊统计表");
         excelUtil.exportExcel(response, result, "门诊统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
@@ -1172,15 +1225,18 @@ public class DimensionReportBiz {
         // 工作量、初诊人数、复诊人数横向表头
         result.add(new CellRangeAddress(0,1,0,0));
         result.add(new CellRangeAddress(0,0,1,1 + size - 1));
-        int colInx = 1;
-        header[0] = title[0];
-        header[1] = title[1];
-        for (int i = 1; i < header.length; i++) {
+        int index = 0;
+        int colIndex = 0;
+        header[index++] = title[colIndex++];
+        header[index++] = title[colIndex++];
+        for (int i = 1; i < header.length; i++,index++) {
             if (i % size == 0) {
                 result.add(new CellRangeAddress(0, 0, i+1, i + size));
-                header[i-7] = title[colInx++];
+                if (index+1 < header.length) {
+                    header[index] = title[colIndex++];
+                }
             } else {
-                header[i] = "";
+                header[index] = "";
             }
         }
         // 门诊/医生纵向表头
@@ -1244,7 +1300,7 @@ public class DimensionReportBiz {
         List<CellRangeAddress> crds = workloadVisitMergeRegiion(
                 pageInfo,
                 query,
-                "医生","工作量","初诊人数","复诊人数");
+                "医生","工作量","初诊人数","就诊人数");
         excelUtil.setMergeRegion(crds);
         String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "医生统计表");
         excelUtil.exportExcel(response, result, "医生统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());

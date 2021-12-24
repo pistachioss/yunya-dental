@@ -747,7 +747,7 @@
         FROM base_treatment_process btp1
         INNER JOIN (
             SELECT min(treat_end_time) AS treat_end_time, patient_id FROM base_treatment_process
-            WHERE treat_end_time is not null AND .treat_end_time is not null AND treat_type=1
+            WHERE treat_end_time is not null AND treat_end_time is not null AND treat_type=1
             GROUP BY patient_id
         ) btp2 ON btp1.patient_id=btp2.patient_id
         <where>
