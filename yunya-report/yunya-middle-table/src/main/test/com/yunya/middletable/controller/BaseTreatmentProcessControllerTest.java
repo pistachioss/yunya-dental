@@ -33,6 +33,14 @@ public class BaseTreatmentProcessControllerTest {
     private BaseBillPayController baseBillPayController;
 
     @Test
+    public void testOperateTreatmentProcess() throws InterruptedException {
+        String param = "{\"paramMap\":{\"type\":0,\"id\":463912},\"operateType\":1}";
+        MessageModel msg = JSONObject.parseObject(param, MessageModel.class);
+        ResponseResult result = baseTreatmentProcessController.operateTreatmentProcess(msg);
+        System.out.println(result);
+    }
+
+    @Test
     public void testTreatDateStatistics() throws InterruptedException {
         String param = "{\"paramMap\":{\"type\":1,\"id\":432915},\"operateType\":1}";
         MessageModel msg = JSONObject.parseObject(param, MessageModel.class);
