@@ -18,6 +18,14 @@ import java.util.List;
  */
 @Service
 public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
+    /**
+     * 统计实收工作量
+     *
+     * @param query
+     * @param orgIds 非空时，根据门诊分组统计
+     * @param employeeIds 非空时，根据员工分组统计
+     * @return
+     */
     public List<StatEmpPay> findClinicReceivedWorkload(DateRangeQueryForm query, List<Integer> orgIds, List<Integer> employeeIds) {
         return mapper.selectClinicReceivedWorkload(query, orgIds, employeeIds);
     }

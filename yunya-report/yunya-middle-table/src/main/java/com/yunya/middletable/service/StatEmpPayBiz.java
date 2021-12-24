@@ -45,14 +45,15 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
     /** 多线程 */
     @Resource(name = "customizeThreadPool")
     private ExecutorService importExcelThreadPool;
+
     /**
-     * 账单收费时统计
+     * 账单收费时统计执行人的账单相关数据
      *
      * @param orderDetails
      * @param bill
      * @param baseBillPay
      */
-    public void statisticsInPayDate(List<OrderDetail> orderDetails, BaseBill bill, BaseBillPay baseBillPay) {
+    public void statisticsEmployeeByPayDate(List<OrderDetail> orderDetails, BaseBill bill, BaseBillPay baseBillPay) {
         Integer orgId = bill.getOrgId();
         Date date = new Date(System.currentTimeMillis());
         Integer payDate = DateUtil.date2Number(baseBillPay.getPayeeDate());
@@ -221,6 +222,12 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
         }
     }
 
+    /**
+     * 批量拉取
+     *
+     * @param form
+     * @throws InterruptedException
+     */
     public void pullPayDateStatistics(PullForm form) throws InterruptedException {
         Date now = new Date(System.currentTimeMillis());
         String startDate = form.getStartDate();
@@ -261,6 +268,11 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
         }
     }
 
+    /**
+     * 批量新增
+     *
+     * @param datas
+     */
     private void insertBatch(List<StatEmpPay> datas) {
         mapper.insertBatch(datas);
     }

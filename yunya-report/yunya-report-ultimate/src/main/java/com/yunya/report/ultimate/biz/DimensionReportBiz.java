@@ -49,30 +49,43 @@ import static java.util.stream.Collectors.toMap;
 @Service
 public class DimensionReportBiz {
 
+    /*就诊流程*/
     @Autowired
     private BaseTreatmentProcessBiz baseTreatmentProcessBiz;
+    /*门诊基础服务*/
     @Autowired
     private RemoteClinicBaseServiceFeign clinicBaseServiceFeign;
+    /*患者基础信息*/
     @Autowired
     private PatientBaseInfoBiz patientBaseInfoBiz;
+    /*随访提醒*/
     @Autowired
     private BaseVisitRemindBiz baseVisitRemindBiz;
+    /*账单收费时统计*/
     @Autowired
     private StatEmpPayBiz statEmpPayBiz;
+    /*就诊完成时统计*/
     @Autowired
     private StatEmpTreatBiz statEmpTreatBiz;
+    /*账单生成时统计*/
     @Autowired
     private StatEmpBillBiz statEmpBillBiz;
+    /*账单详情*/
     @Autowired
     private BaseBillDetailBiz baseBillDetailBiz;
+    /*账单*/
     @Autowired
     private BaseBillBiz baseBillBiz;
+    /*员工工作量*/
     @Autowired
     private EmployeeWorkloadBiz employeeWorkloadBiz;
+    /*组织*/
     @Autowired
     private BaseOrganizationBiz baseOrganizationBiz;
+    /*卡券*/
     @Autowired
     private BaseCardBiz baseCardBiz;
+    /*产品*/
     @Autowired
     private BaseCouponBiz baseCouponBiz;
     @Resource(name = "customizeThreadPool")
@@ -785,6 +798,12 @@ public class DimensionReportBiz {
         return title;
     }
 
+    /**
+     * 统计门诊的初诊人数
+     *
+     * @param firstVisitPatients
+     * @return
+     */
     private Map<Integer, Integer> mapClinicFirstVisitCount(List<BaseTreatmentProcessVO> firstVisitPatients) {
         Map<Integer, Integer> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(firstVisitPatients)) {
@@ -876,6 +895,17 @@ public class DimensionReportBiz {
                 workloadFuture.get(), tariffWorkload.get(), oralWorkload.get(), specialis);
     }
 
+    /**
+     * 专科工作量占比数据合并
+     *
+     * @param orgs
+     * @param date
+     * @param workloadMap
+     * @param tariffWorkload
+     * @param oralWorkload
+     * @param specialis
+     * @return
+     */
     private DynamicHeaderPageInfo<JSONObject> mergeSpecialProjectWorkloadRatio(List<BaseOrganization> orgs, String date,
                Map<String, BigDecimal> workloadMap, Map<String, EmployeeTariffWorkloadVO> tariffWorkload,
                Map<String, EmployeeTariffWorkloadVO> oralWorkload, List<SpecialistProjectVO> specialis) {
@@ -1039,6 +1069,15 @@ public class DimensionReportBiz {
         return mergeClinicWorkloadVisitStatistice(query, orgs, workloadFuture.get(), treatNumFuture.get());
     }
 
+    /**
+     * 合并门诊工作量就诊统计
+     *
+     * @param query
+     * @param orgs
+     * @param workloadMap
+     * @param treatNumMap
+     * @return
+     */
     private DynamicHeaderPageInfo<JSONObject> mergeClinicWorkloadVisitStatistice(DateRangeQueryForm query,
                                                                                  List<BaseOrganization> orgs, Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> treatNumMap) {
         String startDate = query.getStartDate();
@@ -1050,16 +1089,23 @@ public class DimensionReportBiz {
         Map<String, String> title = new LinkedHashMap<>(16);
         BigDecimal[][] total = new BigDecimal[13][years.size()*3];
         orgs.forEach(vo->putObject(vo.getOrgId(), vo.getAbbreviation(), size, years, workloadMap, treatNumMap, title, list, total));
-        putTotalObj(total, years, size, list);
+        putTotalObj(total, years, list);
         pageInfo.setMap(title);
         pageInfo.setList(list);
-        pageInfo.setTotal(pageInfo.getTotal()*13);
+        pageInfo.setTotal(pageInfo.getTotal());
         pageInfo.setPageNum(query.getPageNum());
         pageInfo.setPageSize(query.getPageSize());
         return pageInfo;
     }
 
-    private void putTotalObj(BigDecimal[][] total, List<String> years, int size, List<JSONObject> list) {
+    /**
+     * 统计年份下的工作量、初诊人数、就诊人数
+     *
+     * @param total
+     * @param years
+     * @param list
+     */
+    private void putTotalObj(BigDecimal[][] total, List<String> years, List<JSONObject> list) {
         for (int i = 0; i < total.length; i++) {
             String month = String.valueOf(i + 1);
             if (i == total.length-1) {
@@ -1142,6 +1188,18 @@ public class DimensionReportBiz {
         return total;
     }
 
+    /**
+     * 累加12个月的工作量、就诊次数
+     *
+     * @param col
+     * @param wInx
+     * @param fInx
+     * @param rInx
+     * @param total
+     * @param workload
+     * @param firstVisitCount
+     * @param treatVisitCount
+     */
     private void cumulation(int col, int wInx, int fInx, int rInx, BigDecimal[][] total, BigDecimal workload, int firstVisitCount, int treatVisitCount) {
         if (total[col][wInx] == null) {
             total[col][wInx] = new BigDecimal("0.00");
@@ -1166,6 +1224,14 @@ public class DimensionReportBiz {
         return obj;
     }
 
+    /**
+     * 统计就诊次数
+     *
+     * @param query
+     * @param orgIds 非空时，根据门诊分组统计
+     * @param employeeIds 非空时，根据员工分组统计
+     * @return
+     */
     private Future<Map<String, StatEmpTreat>> multiFindClinicTreatVisitNum(DateRangeQueryForm query, List<Integer> orgIds, List<Integer> employeeIds) {
         return threadPool.submit(()->{
             Map<String, StatEmpTreat> result = new HashMap<>(16);
@@ -1181,11 +1247,24 @@ public class DimensionReportBiz {
         });
     }
 
+    /**
+     * 查询条件中的字符串日期转换数值型
+     *
+     * @param query
+     */
     private void dateQuery2NumDateQuery(DateRangeQueryForm query) {
         query.setSDateInt(DateUtil.startDate2Number(query.getStartDate()));
         query.setEDateInt(DateUtil.endDate2Number(query.getEndDate()));
     }
 
+    /**
+     * 统计实收工作量
+     *
+     * @param query
+     * @param orgIds 非空时，根据门诊分组统计
+     * @param employeeIds 非空时，根据员工分组统计
+     * @return
+     */
     private Future<Map<String, BigDecimal>> multiFindClinicReceivedWorkload(final DateRangeQueryForm query, List<Integer> orgIds, List<Integer> employeeIds) {
         return threadPool.submit(()->{
             Map<String, BigDecimal> result = new HashMap<>(16);
@@ -1201,6 +1280,13 @@ public class DimensionReportBiz {
         });
     }
 
+    /**
+     * 根据条件导出门诊统计表
+     *
+     * @param query
+     * @param response
+     * @throws Exception
+     */
     public void clinicWorkloadVisitStatisticsExport(MultiClinicDateRangeQueryForm query, HttpServletResponse response) throws Exception {
         query.setWhetherPage(false);
         DynamicHeaderPageInfo<JSONObject> pageInfo = clinicWorkloadVisitStatistics(query);
@@ -1215,6 +1301,13 @@ public class DimensionReportBiz {
         excelUtil.exportExcel(response, result, "门诊统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
 
+    /**
+     * 门诊统计表/医生统计表单元格合并
+     * @param pageInfo
+     * @param query
+     * @param title
+     * @return
+     */
     private List<CellRangeAddress> workloadVisitMergeRegiion(DynamicHeaderPageInfo<JSONObject> pageInfo,
                                                              DateRangeQueryForm query, String... title) {
         List<CellRangeAddress> result = new ArrayList<>();
@@ -1252,6 +1345,13 @@ public class DimensionReportBiz {
         return result;
     }
 
+    /**
+     * 根据条件查询医生统计表
+     *
+     * @param query
+     * @return
+     * @throws Exception
+     */
     public DynamicHeaderPageInfo<JSONObject> dentistWorkloadVisitStatistics(EmployeeWorkStatusQueryForm query) throws Exception {
         dateQuery2NumDateQuery(query);
         Byte dateType = query.getDateType();
@@ -1272,6 +1372,15 @@ public class DimensionReportBiz {
         return mergeDentistWorkloadVisitStatistice(query, employees, workloadFuture.get(), treatNumFuture.get());
     }
 
+    /**
+     * 医生统计表数据合并
+     *
+     * @param query
+     * @param employees
+     * @param workloadMap
+     * @param treatNumMap
+     * @return
+     */
     private DynamicHeaderPageInfo<JSONObject> mergeDentistWorkloadVisitStatistice(DateRangeQueryForm query,
               List<ClinicEmployeBonusCoefficientVO> employees, Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> treatNumMap) {
         String startDate = query.getStartDate();
@@ -1283,15 +1392,22 @@ public class DimensionReportBiz {
         Map<String, String> title = new LinkedHashMap<>(16);
         BigDecimal[][] total = new BigDecimal[13][years.size()*3];
         employees.forEach(vo-> putObject(vo.getEmployeeId(), vo.getEmployeeName(), size, years, workloadMap, treatNumMap, title, list, total));
-        putTotalObj(total, years, size, list);
+        putTotalObj(total, years, list);
         pageInfo.setMap(title);
         pageInfo.setList(list);
-        pageInfo.setTotal(pageInfo.getTotal()*13);
+        pageInfo.setTotal(pageInfo.getTotal());
         pageInfo.setPageNum(query.getPageNum());
         pageInfo.setPageSize(query.getPageSize());
         return pageInfo;
     }
 
+    /**
+     * 根据条件导出医生统计表
+     *
+     * @param query
+     * @param response
+     * @throws Exception
+     */
     public void dentistWorkloadVisitStatisticsExport(EmployeeWorkStatusQueryForm query, HttpServletResponse response) throws Exception {
         query.setWhetherPage(false);
         DynamicHeaderPageInfo<JSONObject> pageInfo = dentistWorkloadVisitStatistics(query);
@@ -1323,6 +1439,12 @@ public class DimensionReportBiz {
         excelUtil.exportExcel(response, result, "每日业绩汇总表", fileName);
     }
 
+    /**
+     * 院区业绩汇总表单元格合并
+     *
+     * @param contextMap
+     * @return
+     */
     private List<CellRangeAddress> clinicAchievementMergeRegiion(Map<String, List<String>> contextMap) {
         List<CellRangeAddress> result = new ArrayList<>();
         contextMap.remove("合计");
@@ -1372,6 +1494,16 @@ public class DimensionReportBiz {
         return mergeClinicAchievementStatistics(goalFuture.get(), orgFuture.get(), workloadFuture.get(), todayFuture.get(), preYearFuture.get());
     }
 
+    /**
+     * 每日业绩汇总表数据合并
+     *
+     * @param goalMap
+     * @param orgs
+     * @param workloadMap
+     * @param todayWorkloadMap
+     * @param preYearWorkloadMap
+     * @return
+     */
     private DynamicHeaderPageInfo<ClinicAchievementVO> mergeClinicAchievementStatistics(
             Map<Integer, BigDecimal> goalMap, List<BaseOrganizationVO> orgs,
             Map<String, BigDecimal> workloadMap, Map<String, BigDecimal> todayWorkloadMap,
@@ -1458,6 +1590,14 @@ public class DimensionReportBiz {
         return initAchievementVO(null,"合计",parentName, total);
     }
 
+    /**
+     * 生成每日业绩实体
+     * @param orgId
+     * @param abbreviation
+     * @param parentName
+     * @param total
+     * @return
+     */
     private ClinicAchievementVO initAchievementVO(Integer orgId, String abbreviation, String parentName, BigDecimal...total) {
         ClinicAchievementVO vo = new ClinicAchievementVO();
         vo.setOrgId(orgId);
@@ -1471,6 +1611,12 @@ public class DimensionReportBiz {
         return vo;
     }
 
+    /**
+     * 统计门诊的实收工作量
+     *
+     * @param workloadMap
+     * @return
+     */
     private Map<Integer, BigDecimal> statisticOrgWorkload(Map<String, BigDecimal> workloadMap) {
         Map<Integer, BigDecimal> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(workloadMap)) {
@@ -1487,6 +1633,12 @@ public class DimensionReportBiz {
         return result;
     }
 
+    /**
+     * 统计门诊的初诊、复诊人数
+     *
+     * @param treatNumMap
+     * @return
+     */
     private Map<Integer, StatEmpTreat> statisticOrgStatEmpTreat(Map<String, StatEmpTreat> treatNumMap) {
         Map<Integer, StatEmpTreat> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(treatNumMap)) {
@@ -1506,6 +1658,12 @@ public class DimensionReportBiz {
         return result;
     }
 
+    /**
+     * 查询门诊及其院区列表
+     *
+     * @param query
+     * @return
+     */
     private Future<List<BaseOrganizationVO>> multiFindOrganizationWithParent(MultiClinicDateRangeQueryForm query) {
         return threadPool.submit(()->{
             ClinicPerformanceBusinessQuery clinicQuery = new ClinicPerformanceBusinessQuery();
@@ -1517,11 +1675,24 @@ public class DimensionReportBiz {
         });
     }
 
+    /**
+     * 统计门诊工作量目标
+     *
+     * @param query
+     * @return
+     */
     private Future<Map<Integer, BigDecimal>> multiFindBusinessGoal(MultiClinicDateRangeQueryForm query) {
         return threadPool.submit(()-> baseBillDetailBiz.workloadMonthGoal(query.getDateType(),
                 query.getStartDate(), query.getEndDate()));
     }
 
+    /**
+     * 根据条件查询专科数量同比
+     *
+     * @param query
+     * @return
+     * @throws Exception
+     */
     public DynamicHeaderPageInfo<JSONObject> clinicSpecialProjectNumCompare(DoubleDateRangeQueryForm query) throws Exception {
         checkSpecialNumQuery(query);
         // 门诊
@@ -1551,6 +1722,16 @@ public class DimensionReportBiz {
         }
     }
 
+    /**
+     * 专科数量同比的数据合并
+     *
+     * @param query
+     * @param orgs
+     * @param specials
+     * @param statEmpBills
+     * @param cmpStatEmpBills
+     * @return
+     */
     private DynamicHeaderPageInfo<JSONObject> mergeClinicSpecialProjectNumCompare(DoubleDateRangeQueryForm query, List<BaseOrganization> orgs,
                                                                                   List<SpecialistProjectVO> specials, List<StatEmpBill> statEmpBills, List<StatEmpBill> cmpStatEmpBills) {
         DynamicHeaderPageInfo<JSONObject> pageInfo = new DynamicHeaderPageInfo<>();
@@ -1607,6 +1788,13 @@ public class DimensionReportBiz {
         return pageInfo;
     }
 
+    /**
+     * 返回价目表、商品表与专科项目id的关联map
+     *
+     * @param specials
+     * @param specialMap
+     * @return
+     */
     private Map<String, Integer> item2SpecialNumMap(List<SpecialistProjectVO> specials, Map<String, String> specialMap) {
         Map<String, Integer> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(specials)) {
@@ -1632,6 +1820,13 @@ public class DimensionReportBiz {
         return result;
     }
 
+    /**
+     * 计算百分比
+     *
+     * @param num1
+     * @param num2
+     * @return
+     */
     private BigDecimal computePercentage(BigDecimal num1, BigDecimal num2) {
         if (num1==null || num2==null || num2.compareTo(BigDecimal.ZERO)==0) {
             return new BigDecimal("0.00");
@@ -1650,6 +1845,13 @@ public class DimensionReportBiz {
                 .multiply(new BigDecimal(100));
     }
 
+    /**
+     * 根据门诊和专科项目统计数量
+     *
+     * @param statEmpBills
+     * @param specialItemMap
+     * @return
+     */
     private Map<String, Integer> sumBillItemNum(List<StatEmpBill> statEmpBills, Map<String, Integer> specialItemMap) {
         Map<String, Integer> result = new HashMap<>(16);
         statEmpBills.forEach(vo -> {
@@ -1664,6 +1866,10 @@ public class DimensionReportBiz {
         return result;
     }
 
+    /**
+     * 查询专科项目列表
+     * @return
+     */
     private Future<List<SpecialistProjectVO>> multiFindSpecialProjectList() {
         return threadPool.submit(()->{
             SpecialistProjectQuery queryForm = new SpecialistProjectQuery();
@@ -1672,10 +1878,23 @@ public class DimensionReportBiz {
         });
     }
 
+    /**
+     * 查询账单时项目数量
+     *
+     * @param query
+     * @return
+     */
     private Future<List<StatEmpBill>> multiFindClinicBillItemNum(MultiClinicDateRangeQueryForm query) {
-        return threadPool.submit(()-> statEmpBillBiz.findBillItemList(query));
+        return threadPool.submit(()-> statEmpBillBiz.findBillItemNum(query));
     }
 
+    /**
+     * 根据条件导出专科数量同比
+     *
+     * @param query
+     * @param response
+     * @throws Exception
+     */
     public void clinicSpecialProjectNumCompareExport(DoubleDateRangeQueryForm query, HttpServletResponse response) throws Exception {
         DynamicHeaderPageInfo<JSONObject> pageInfo = clinicSpecialProjectNumCompare(query);
         List<JSONObject> result = pageInfo.getList();
@@ -1685,6 +1904,13 @@ public class DimensionReportBiz {
         excelUtil.exportExcel(response, result, "专科数量同比", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
 
+    /**
+     * 专科数量同比单元格合并
+     *
+     * @param pageInfo
+     * @param query
+     * @return
+     */
     private List<CellRangeAddress> specialProjectNumCmpMergeRegiion(DynamicHeaderPageInfo<JSONObject> pageInfo, DoubleDateRangeQueryForm query) {
         List<CellRangeAddress> result = new ArrayList<>();
         List<JSONObject> list = pageInfo.getList();
@@ -1717,6 +1943,13 @@ public class DimensionReportBiz {
         return result;
     }
 
+    /**
+     * 根据条件查询院区业绩统计表
+     *
+     * @param query
+     * @return
+     * @throws Exception
+     */
     public DynamicHeaderPageInfo<JSONObject> campusAchievementStatistics(MultiClinicDateRangeQueryForm query) throws Exception {
         // 院区门诊
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
@@ -1731,6 +1964,16 @@ public class DimensionReportBiz {
         return mergeCampusAchievementStatistics(orgFuture.get(), workloadFuture.get(), treatNumFuture.get(), itemNumFuture.get(), specialFuture.get());
     }
 
+    /**
+     * 院区业绩统计表数据合并
+     *
+     * @param orgs
+     * @param workloadMap
+     * @param treatNumMap
+     * @param statEmpBills
+     * @param specials
+     * @return
+     */
     private DynamicHeaderPageInfo<JSONObject> mergeCampusAchievementStatistics(List<BaseOrganizationVO> orgs,
             Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> treatNumMap,
            List<StatEmpBill> statEmpBills, List<SpecialistProjectVO> specials) {
@@ -1742,12 +1985,12 @@ public class DimensionReportBiz {
         Map<String, Integer> specialItemMap = item2SpecialNumMap(specials, specialMap);
         Map<String, Integer> itemNumMap = sumBillItemNum(statEmpBills, specialItemMap);
         Map<Integer, JSONObject> campus = new LinkedHashMap<>(16);
-        JSONObject totalObj = initTotalCampusAchievement("合计");
+        JSONObject totalObj = initCampusAchievement("合计");
         orgs.forEach(org->{
             Integer parentId = org.getParentId();
             JSONObject obj = campus.get(parentId);
             if (obj == null) {
-                obj = initTotalCampusAchievement(org.getParentName());
+                obj = initCampusAchievement(org.getParentName());
             }
             Integer orgId = org.getOrgId();
             BigDecimal workload = defDecVal(orgWorkloadMap.get(orgId));
@@ -1783,7 +2026,13 @@ public class DimensionReportBiz {
         return pageInfo;
     }
 
-    private JSONObject initTotalCampusAchievement(String name) {
+    /**
+     * 生成院区业绩统计表的行数据
+     *
+     * @param name
+     * @return
+     */
+    private JSONObject initCampusAchievement(String name) {
         JSONObject obj = new JSONObject();
         obj.put("campusName", defValue(name));
         obj.put("workload", new BigDecimal("0.00"));
@@ -1792,6 +2041,13 @@ public class DimensionReportBiz {
         return obj;
     }
 
+    /**
+     * 根据条件导出院区业绩汇总表
+     *
+     * @param query
+     * @param response
+     * @throws Exception
+     */
     public void campusAchievementStatisticsExport(MultiClinicDateRangeQueryForm query, HttpServletResponse response) throws Exception {
         DynamicHeaderPageInfo<JSONObject> pageInfo = campusAchievementStatistics(query);
         List<JSONObject> result = pageInfo.getList();
@@ -1800,6 +2056,13 @@ public class DimensionReportBiz {
         excelUtil.exportExcel(response, result, "院区业绩汇总表", fileName, pageInfo.getMap());
     }
 
+    /**
+     * 根据条件查询院区业绩同比
+     *
+     * @param query
+     * @return
+     * @throws Exception
+     */
     public PageInfo<CampusAchievementCompareVO> campusAchievementCompare(MultiClinicDateRangeQueryForm query) throws Exception {
         // 院区门诊
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
@@ -1865,6 +2128,13 @@ public class DimensionReportBiz {
         return pageInfo;
     }
 
+    /**
+     * 根据条件导出院区业绩同比
+     *
+     * @param query
+     * @param response
+     * @throws Exception
+     */
     public void campusAchievementCompareExport(MultiClinicDateRangeQueryForm query, HttpServletResponse response) throws Exception {
         PageInfo<CampusAchievementCompareVO> pageInfo = campusAchievementCompare(query);
         List<CampusAchievementCompareVO> result = pageInfo.getList();
@@ -1896,6 +2166,14 @@ public class DimensionReportBiz {
         return mergeCardCouponUsedStatistics(orgs, coupons, cardFuture.get());
     }
 
+    /**
+     * 产品卡券使用统计数据合并
+     *
+     * @param orgs
+     * @param coupons
+     * @param cards
+     * @return
+     */
     private DynamicHeaderPageInfo<JSONObject> mergeCardCouponUsedStatistics(List<BaseOrganization> orgs, List<BaseCoupon> coupons, List<BaseCard> cards) {
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo(orgs);
         // 患者激活卡片次数
@@ -1951,6 +2229,16 @@ public class DimensionReportBiz {
         return pageInfo;
     }
 
+    /**
+     * 统计产品的售出数、激活数、复购数
+     *
+     * @param cards
+     * @param patients
+     * @param patientActiveDates
+     * @param soldNumMap
+     * @param activeNumMap
+     * @return
+     */
     private Set<Integer> statisticCouponCardNum(List<BaseCard> cards, Map<String, Set<Integer>> patients, Map<String, Set<LocalDateTime>> patientActiveDates,
                                                              Map<String, Integer> soldNumMap, Map<String, Integer> activeNumMap) {
         Set<Integer> couponIds = new HashSet<>();
@@ -1982,6 +2270,12 @@ public class DimensionReportBiz {
         return couponIds;
     }
 
+    /**
+     * 产品卡券使用的标题行
+     *
+     * @param pageInfo
+     * @param coupons
+     */
     private void cardCouponUsedTitle(DynamicHeaderPageInfo pageInfo, List<BaseCoupon> coupons) {
         Map<String, List<String>> contextMap = new LinkedHashMap<>(16);
         Map<String, String> title = new LinkedHashMap<>(16);
@@ -2001,6 +2295,13 @@ public class DimensionReportBiz {
         pageInfo.setContextMap(contextMap);
     }
 
+    /**
+     * 生成产品卡券使用统计的合计行
+     *
+     * @param total
+     * @param coupons
+     * @return
+     */
     private JSONObject totalCardCouponObj(int[] total, List<BaseCoupon> coupons) {
         JSONObject totalObj = new JSONObject();
         totalObj.put("abbreviation", "合计");
@@ -2021,6 +2322,12 @@ public class DimensionReportBiz {
         return totalObj;
     }
 
+    /**
+     * 数量累加1
+     *
+     * @param key
+     * @param map
+     */
     private void incrementOne(String key, Map<String, Integer> map) {
         Integer num = map.get(key);
         if (num == null) {
@@ -2029,6 +2336,12 @@ public class DimensionReportBiz {
         map.put(key, num + 1);
     }
 
+    /**
+     * 统计复购产品的患者人数
+     *
+     * @param patientActiveDates
+     * @return
+     */
     private Map<String, Integer> patientRepurchaseMap(Map<String, Set<LocalDateTime>> patientActiveDates) {
         Map<String, Integer> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(patientActiveDates)) {
@@ -2060,6 +2373,12 @@ public class DimensionReportBiz {
         excelUtil.exportExcel(response, result, "产品卡券使用统计", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
 
+    /**
+     * 产品卡券使用单元格合并
+     *
+     * @param pageInfo
+     * @return
+     */
     private List<CellRangeAddress> cardCouponUsedMergeRegiion(DynamicHeaderPageInfo<JSONObject> pageInfo) {
         List<CellRangeAddress> result = new ArrayList<>();
         Map<String, String> map = pageInfo.getMap();
