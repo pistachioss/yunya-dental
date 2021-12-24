@@ -113,6 +113,9 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
         if (StringHelper.isNotEmpty(details)) {
             Map<String, BillExecutorItemVO> map = new HashMap<>(16);
             details.stream().filter(vo->{
+                if (ObjectUtils.isEmpty(vo.getExecutorId())) {
+                    return false;
+                }
                 if (StringHelper.isNotEmpty(keys)) {
                     return keys.contains(func.apply(vo));
                 }
@@ -187,7 +190,8 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                             // 执行项目的总应收，累加项目应收，累加项目占比值
                             sum = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
                         }
-                        sum[0] = sum[0].add(detail.getReceivableWorkload());
+//                        sum[0] = sum[0].add(detail.getReceivableWorkload());
+                        sum[0] = detail.getActualWorkload();
                         total.put(key, sum);
                     });
             details.forEach(
@@ -196,17 +200,21 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                         String key = func.apply(detail);
                         BigDecimal[] sum = total.get(key);
                         sum[1] = sum[1].add(receivableWorkload);
-                        BigDecimal amount = BigDecimal.ZERO;
+//                        BigDecimal amount = BigDecimal.ZERO;
+//                        if (sum[0].compareTo(BigDecimal.ZERO) != 0) {
+//                            amount = receivableWorkload.divide(sum[0]);
+//                        }
+//                        if (sum[0].compareTo(sum[1]) == 0) { // 最后一个占比项目
+//                            amount = BigDecimal.ONE.subtract(sum[2]);
+//                        }
+//                        sum[2] = sum[2].add(amount);
+//                        BigDecimal receivedWorkload = amount.multiply(detail.getTotalReceivedWorkload()).setScale(2, BigDecimal.ROUND_HALF_UP);
+//                        if (receivedWorkload.compareTo(receivableWorkload)>0) {// 超出应收说明无欠费，则项目实收=项目总实收
+//                            receivedWorkload = detail.getReceivedWorkload();
+//                        }
+                        BigDecimal receivedWorkload = BigDecimal.ZERO;
                         if (sum[0].compareTo(BigDecimal.ZERO) != 0) {
-                            amount = receivableWorkload.divide(sum[0], 4, BigDecimal.ROUND_HALF_UP);
-                        }
-                        if (sum[0].compareTo(sum[1]) == 0) { // 最后一个占比项目
-                            amount = BigDecimal.ONE.subtract(sum[2]);
-                        }
-                        sum[2] = sum[2].add(amount);
-                        BigDecimal receivedWorkload = amount.multiply(detail.getTotalReceivedWorkload());
-                        if (receivedWorkload.compareTo(receivableWorkload)>0) {// 超出应收说明无欠费，则项目实收=项目总实收
-                            receivedWorkload = detail.getReceivedWorkload();
+                            receivedWorkload = receivableWorkload.divide(sum[0], 8, BigDecimal.ROUND_HALF_UP).multiply(detail.getTotalReceivedWorkload());
                         }
                         detail.setReceivedWorkload(receivedWorkload);
                     });

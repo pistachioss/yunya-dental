@@ -139,7 +139,7 @@
         ) bbp ON bbp.bill_id = bb.bill_id
         <where>
             AND bb.bill_date is not null
-            AND bbd.executor_id > 0
+--             AND bbd.executor_id > 0
         </where>
     </select>
 </mapper>
