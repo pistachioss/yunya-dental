@@ -816,9 +816,10 @@
         bp.origin_type_name AS patientOrionTypeName,
         bpm.member_level_name AS memberTypeName
         FROM base_patient bp
-        LEFT JOIN base_patient_member bpm ON bp.patient_id = bpm.patient_id
+        LEFT JOIN (
+            SELECT * FROM base_patient_member WHERE type=0
+        ) bpm ON bp.patient_id = bpm.patient_id
         <where>
-            AND bpm.type = 0
             <if test="query.patientName!=null and query.patientName!=''">
                 AND concat(
                 IFNULL( bp.`name`, '' ),

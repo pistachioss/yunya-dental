@@ -106,7 +106,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   }
 
   /**
-   * 账单收费时统计
+   * 账单收费时统计执行人的账单相关数据
    *
    * @param dataId
    */
@@ -120,7 +120,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     bill.setBillId(billId);
     BaseBill baseBill = baseBillMapper.selectOne(bill);
     if (!ObjectUtils.isEmpty(baseBill.getBillDate())) {
-      statEmpPayBiz.statisticsInPayDate(orderDetails, baseBill, baseBillPay);
+      statEmpPayBiz.statisticsEmployeeByPayDate(orderDetails, baseBill, baseBillPay);
     }
   }
 

@@ -18,6 +18,14 @@ import java.util.List;
  */
 @Service
 public class StatEmpTreatBiz extends BaseBiz<StatEmpTreatMapper, StatEmpTreat> {
+    /**
+     * 统计就诊次数
+     *
+     * @param query
+     * @param orgIds 非空时，根据门诊分组统计
+     * @param employeeIds 非空时，根据员工分组统计
+     * @return
+     */
     public List<StatEmpTreat> findClinicTreatVisitNum(DateRangeQueryForm query, List<Integer> orgIds, List<Integer> employeeIds) {
         return mapper.selectClinicTreatVisitNum(query, orgIds, employeeIds);
     }
