@@ -14,7 +14,8 @@
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
   </resultMap>
-  
+
+  <!--统计实收工作量 非空时，根据门诊分组统计；非空时，根据员工分组统计-->
   <select id="selectClinicReceivedWorkload" resultType="com.yunya.models.report.StatEmpPay">
     SELECT
         sep.org_id AS orgId,

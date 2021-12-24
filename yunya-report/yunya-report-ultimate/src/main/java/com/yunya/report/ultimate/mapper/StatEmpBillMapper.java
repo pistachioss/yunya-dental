@@ -8,5 +8,11 @@ import tk.mybatis.mapper.common.Mapper;
 import java.util.List;
 
 public interface StatEmpBillMapper extends Mapper<StatEmpBill> {
-    List<StatEmpBill> selectBillItemList(@Param("query") MultiClinicDateRangeQueryForm query);
+    /**
+     * 查询账单时项目数量
+     *
+     * @param query
+     * @return
+     */
+    List<StatEmpBill> selectBillItemNum(@Param("query") MultiClinicDateRangeQueryForm query);
 }

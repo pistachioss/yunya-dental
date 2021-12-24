@@ -14,6 +14,7 @@
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
   </resultMap>
 
+  <!--统计就诊次数, orgIds 非空时，根据门诊分组统计；employeeIds 非空时，根据员工分组统计-->
   <select id="selectClinicTreatVisitNum" resultType="com.yunya.models.report.StatEmpTreat">
     SELECT
       st.org_id AS orgId,

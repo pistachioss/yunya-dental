@@ -18,7 +18,13 @@ import java.util.List;
  */
 @Service
 public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
-    public List<StatEmpBill> findBillItemList(MultiClinicDateRangeQueryForm query) {
-        return mapper.selectBillItemList(query);
+    /**
+     * 查询账单时项目数量
+     *
+     * @param query
+     * @return
+     */
+    public List<StatEmpBill> findBillItemNum(MultiClinicDateRangeQueryForm query) {
+        return mapper.selectBillItemNum(query);
     }
 }

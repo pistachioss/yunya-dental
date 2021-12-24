@@ -89,22 +89,27 @@ public class BaseTreatmentProcessBiz
       // 修改
       case 1:
         treatmentProcess = updateTreatmentProcess(dataId, type);
-        statEmployeeTreat(treatmentProcess);
+        statisticsEmployeeByTreatDate(treatmentProcess);
         break;
       case 2:
         // 删除
         treatmentProcess = deleteTreatmentProcess(dataId, type);
-        statEmployeeTreat(treatmentProcess);
+        statisticsEmployeeByTreatDate(treatmentProcess);
         break;
       default:
         break;
     }
   }
 
-  private void statEmployeeTreat(BaseTreatmentProcess treatmentProcess) {
+  /**
+   * 就诊完成时统计就诊相关数据
+   *
+   * @param treatmentProcess
+   */
+  private void statisticsEmployeeByTreatDate(BaseTreatmentProcess treatmentProcess) {
     if (!ObjectUtils.isEmpty(treatmentProcess)) {
       if (!ObjectUtils.isEmpty(treatmentProcess.getTreatEndTime())) {
-        statEmpTreatBiz.incStatEmpTreat(treatmentProcess);
+        statEmpTreatBiz.statisticsEmployeeByTreatDate(treatmentProcess);
       }
     }
   }

@@ -17,7 +17,8 @@
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
   </resultMap>
 
-  <select id="selectBillItemList" resultType="com.yunya.models.report.StatEmpBill">
+    <!--查询账单时项目数量-->
+  <select id="selectBillItemNum" resultType="com.yunya.models.report.StatEmpBill">
     SELECT
         seb.org_id AS orgId,
         seb.item_type AS itemType,
