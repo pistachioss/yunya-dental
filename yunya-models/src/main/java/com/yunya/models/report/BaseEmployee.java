@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Date;
 
 @Table(name = "base_employee")
 @ApiModel("末次接诊医生")
@@ -77,6 +78,13 @@ public class BaseEmployee {
     @Column(name = "work_number")
     @ApiModelProperty(value = "工号")
     private String workNumber;
+
+    /**
+     * 入职时间
+     */
+    @Column(name = "entry_date")
+    @ApiModelProperty(value = "入职时间")
+    private Date entryDate;
 
     /**
      * 获取用户ID
@@ -256,5 +264,13 @@ public class BaseEmployee {
      */
     public void setWorkNumber(String workNumber) {
         this.workNumber = workNumber;
+    }
+
+    public Date getEntryDate() {
+        return entryDate;
+    }
+
+    public void setEntryDate(Date entryDate) {
+        this.entryDate = entryDate;
     }
 }

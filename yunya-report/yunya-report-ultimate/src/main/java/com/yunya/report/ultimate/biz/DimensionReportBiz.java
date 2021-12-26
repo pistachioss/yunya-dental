@@ -149,10 +149,10 @@ public class DimensionReportBiz {
             JSONObject obj = new JSONObject();
 //            obj.put("patientId", vo.getPatientId());
             obj.put("patientName", vo.getPatientName());
-            obj.put("age", defIntVal(vo.getAge()));
-            obj.put("orionTypeName", defValue(vo.getPatientOrionTypeName()));
-            obj.put("memberTypeName", defValue(vo.getMemberTypeName()));
-            obj.put("treatNum", defIntVal(treatNumMap.get(patientId)));
+            obj.put("age", defaultValue(vo.getAge()));
+            obj.put("orionTypeName", defaultValue(vo.getPatientOrionTypeName()));
+            obj.put("memberTypeName", defaultValue(vo.getMemberTypeName()));
+            obj.put("treatNum", defaultValue(treatNumMap.get(patientId)));
             PatientCostInfoVO costInfo = consumeArrearMap.get(patientId);
             BigDecimal totalConsume = new BigDecimal(0.00);
             BigDecimal totalArrear = new BigDecimal(0.00);
@@ -162,12 +162,12 @@ public class DimensionReportBiz {
             }
             obj.put("totalConsume", totalConsume);
             obj.put("totalArrear", totalArrear);
-            obj.put("firstVisitDate", defValue(firstVisitMap.get(patientId)));
-            obj.put("lastVisitDate", defValue(lastVisitMap.get(patientId)));
-            obj.put("nextAppointDate", defValue(appointMap.get(patientId)));
-            obj.put("nextRemindDate", defValue(remindMap.get(patientId)));
+            obj.put("firstVisitDate", defaultValue(firstVisitMap.get(patientId)));
+            obj.put("lastVisitDate", defaultValue(lastVisitMap.get(patientId)));
+            obj.put("nextAppointDate", defaultValue(appointMap.get(patientId)));
+            obj.put("nextRemindDate", defaultValue(remindMap.get(patientId)));
             specialMap.forEach((id, name)->{
-                obj.put(id, defIntVal(billItemMap.get(id+"."+patientId)));
+                obj.put(id, defaultValue(billItemMap.get(id+"."+patientId)));
             });
             list.add(obj);
         });
@@ -316,7 +316,7 @@ public class DimensionReportBiz {
         queryForm.setWhetherPage(false);
         List<SpecialistProjectVO> specialis = clinicBaseServiceFeign.specialProjectList(queryForm).getList();
         Map<String, Integer> result = new HashMap<>(16);
-        Map<String, Integer> specialItemMap = new HashMap<>();
+        Map<String, List<Integer>> specialItemMap = new HashMap<>();
         if (StringHelper.isNotEmpty(specialis)) {
             for (int i = 0; i < specialis.size(); i++) {
                 SpecialistProjectVO vo = specialis.get(i);
@@ -328,7 +328,12 @@ public class DimensionReportBiz {
                         if (keys.contains(key) && !specialMap.containsKey(id)) {
                             specialMap.put("S"+id, vo.getSpecialistProjectName());
                         }
-                        specialItemMap.put(key, id);
+                        List<Integer> list = specialItemMap.get(key);
+                        if (list == null) {
+                            list = new ArrayList<>();
+                        }
+                        list.add(id);
+                        specialItemMap.put(key, list);
                     }
                 }
                 String tariffItemIds = vo.getTariffItemIds();
@@ -338,23 +343,30 @@ public class DimensionReportBiz {
                         if (keys.contains(key) && !specialMap.containsKey(id)) {
                             specialMap.put("S"+id, vo.getSpecialistProjectName());
                         }
-                        specialItemMap.put(key, id);
+                        List<Integer> list = specialItemMap.get(key);
+                        if (list == null) {
+                            list = new ArrayList<>();
+                        }
+                        list.add(id);
+                        specialItemMap.put(key, list);
                     }
                 }
             }
         }
         billItems.forEach(vo->{
-            Integer specialId = specialItemMap.get(vo.getItemType()+","+vo.getItemId());
-            if (!ObjectUtils.isEmpty(specialId)) {
-                String key = "S" +specialId + "." + vo.getPersonId();
-                if (!ObjectUtils.isEmpty(vo.getOrgId())) {
-                    key += "," + vo.getOrgId();
-                }
-                Integer num = result.get(key);
-                if (num == null) {
-                    num = 0;
-                }
-                result.put(key, num + vo.getQuantity());
+            List<Integer> specialIds = specialItemMap.get(vo.getItemType()+","+vo.getItemId());
+            if (StringHelper.isNotEmpty(specialIds)) {
+                specialIds.forEach(specialId->{
+                    String key = "S" +specialId + "." + vo.getPersonId();
+                    if (!ObjectUtils.isEmpty(vo.getOrgId())) {
+                        key += "," + vo.getOrgId();
+                    }
+                    Integer num = result.get(key);
+                    if (num == null) {
+                        num = 0;
+                    }
+                    result.put(key, num + vo.getQuantity());
+                });
             }
         });
         return result;
@@ -386,12 +398,8 @@ public class DimensionReportBiz {
      * @return
      */
     public DynamicHeaderPageInfo<JSONObject> clinicDimensionStatistics(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) throws Exception {
-        if (query.getWhetherPage()) {
-            PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        }
         // 门诊员工信息
         List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(query, groupByOrgId);
-
         updEmployeeId2Query(employees, query);
 
         // 实收工作量
@@ -420,8 +428,9 @@ public class DimensionReportBiz {
 
         // 专科项目
         Future<List<PersonalBillItemVO>> billItemFuture = multiFindExecutorBillItem(query, groupByOrgId);
-        return mergeClinicDimension(employees, workloadFuture, firstVisitFuture, reFirstVisitFuture,
-                treatFuture, debtFuture, noAppointAndRemindFuture, patientOrginFuture, billItemFuture, reVisitFuture, groupByOrgId);
+        return mergeClinicDimension(employees, workloadFuture.get(), firstVisitFuture.get(), reFirstVisitFuture.get(),
+                treatFuture.get(), debtFuture.get(), noAppointAndRemindFuture.get(), patientOrginFuture.get(),
+                billItemFuture.get(), reVisitFuture.get(), groupByOrgId);
     }
 
     private void updEmployeeId2Query(List<ClinicEmployeBonusCoefficientVO> employees, ClinicEmployeeWorkloadQuery query) {
@@ -436,18 +445,9 @@ public class DimensionReportBiz {
     }
 
     private DynamicHeaderPageInfo<JSONObject> mergeClinicDimension(List<ClinicEmployeBonusCoefficientVO> employees,
-            Future<Map<String, BigDecimal>> workloadFuture, Future<Map<String, Integer>> firstVisitFuture,
-            Future<Map<String, Integer>> reFirstVisitFuture, Future<Map<String, Integer>> treatFuture,
-            Future<Map<String, BigDecimal>> debtFuture, Future<Map<String, Integer>> noAppointAndRemindFuture,
-            Future<List<EmployeeFirstVisitOriginTypeVO>> patientOrginFuture, Future<List<PersonalBillItemVO>> billItemFuture,
-            Future<Map<String, Integer>> reVisitFuture, boolean groupByOrgId) throws Exception {
-        Map<String, BigDecimal> workloadMap = workloadFuture.get();
-        Map<String, Integer> firstVisitMap = firstVisitFuture.get();
-        Map<String, Integer> reFirstVisitMap = reFirstVisitFuture.get();
-        Map<String, Integer> treatTimesMap = treatFuture.get();
-        Map<String, BigDecimal> debtMap = debtFuture.get();
-        Map<String, Integer> noARMap = noAppointAndRemindFuture.get();
-        List<EmployeeFirstVisitOriginTypeVO> originTypes = patientOrginFuture.get();
+            Map<String, BigDecimal> workloadMap, Map<String, Integer> firstVisitMap, Map<String, Integer> reFirstVisitMap,
+            Map<String, Integer> treatTimesMap, Map<String, BigDecimal> debtMap, Map<String, Integer> noARMap,
+            List<EmployeeFirstVisitOriginTypeVO> originTypes, List<PersonalBillItemVO> billItems, Map<String, Integer> reVisitMap, boolean groupByOrgId) throws Exception {
         Map<String, List<String>> title = new HashMap<>(16);
         Map<String, Integer> originDataMap = new HashMap<>(16);
         Map<String, String> originTypeMap = new LinkedHashMap<>(16);
@@ -462,47 +462,49 @@ public class DimensionReportBiz {
             });
             title.put("originTypeNames", originTypeMap.values().stream().collect(Collectors.toList()));
         }
-        List<PersonalBillItemVO> billItems = billItemFuture.get();
         Map<String, String> specialMap = new LinkedHashMap<>(16);
         Map<String, Integer> billItemMap = specialIdNameMap(billItems, specialMap);
         if (StringHelper.isNotEmpty(specialMap)) {
             title.put("specialProjectNames", specialMap.values().stream().collect(Collectors.toList()));
         }
-        List<JSONObject> list = new ArrayList<>();
-        Map<String, Integer> reVisitMap = reVisitFuture.get();
-        employees.forEach(vo->{
-            Integer employeeId = vo.getEmployeeId();
-            Integer orgId = vo.getOrgId();
-            String key = employeeId + "," + orgId;
-            JSONObject obj = new JSONObject();
+        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo(employees);
+        if (StringHelper.isNotEmpty(employees)) {
+            List<JSONObject> list = new ArrayList<>();
+            employees.forEach(vo -> {
+                Integer employeeId = vo.getEmployeeId();
+                Integer orgId = vo.getOrgId();
+                String key = employeeId + "," + orgId;
+                JSONObject obj = new JSONObject();
 //            obj.put("employeeId", employeeId);
 //            obj.put("orgId", orgId);
-            if (groupByOrgId) {
-                obj.put("abbreviation", defValue(vo.getAbbreviation()));
-            }
-            obj.put("employeeName", defValue(vo.getEmployeeName()));
-            obj.put("workload", defDecVal(workloadMap.get(key)));
-            obj.put("firstVisitCount", defIntVal(firstVisitMap.get(key)));
-            obj.put("reVisitCount", defIntVal(reVisitMap.get(key)));
-            obj.put("treatTimes", defIntVal(treatTimesMap.get(key)));
-            obj.put("reFirstVisitCount", defIntVal(reFirstVisitMap.get(key)));
-            obj.put("debtAmount", defDecVal(debtMap.get(key)));
-            obj.put("hasntAppointAndRemind", defIntVal(noARMap.get(key)));
-            originTypeMap.forEach((originTypeId, name)->{
-                Integer num = originDataMap.get(key + "," + originTypeId);
-                obj.put(originTypeId, defIntVal(num));
+                if (groupByOrgId) {
+                    obj.put("abbreviation", defaultValue(vo.getAbbreviation()));
+                }
+                obj.put("employeeName", defaultValue(vo.getEmployeeName()));
+                obj.put("workload", defaultValue(workloadMap.get(key)));
+                obj.put("firstVisitCount", defaultValue(firstVisitMap.get(key)));
+                obj.put("reVisitCount", defaultValue(reVisitMap.get(key)));
+                obj.put("treatTimes", defaultValue(treatTimesMap.get(key)));
+                obj.put("reFirstVisitCount", defaultValue(reFirstVisitMap.get(key)));
+                obj.put("debtAmount", defaultValue(debtMap.get(key)));
+                obj.put("hasntAppointAndRemind", defaultValue(noARMap.get(key)));
+                originTypeMap.forEach((originTypeId, name) -> {
+                    Integer num = originDataMap.get(key + "," + originTypeId);
+                    obj.put(originTypeId, defaultValue(num));
+                });
+                specialMap.forEach((id, name) -> {
+                    Integer num = billItemMap.get(id + "." + employeeId + "," + orgId);
+                    obj.put(id, defaultValue(num));
+                });
+                list.add(obj);
             });
-            specialMap.forEach((id, name)->{
-                Integer num = billItemMap.get(id+"."+employeeId+","+orgId);
-                obj.put(id, defIntVal(num));
-            });
-            list.add(obj);
-        });
-        return convertClinicDimensionPageInfo(list, title, originTypeMap, specialMap, groupByOrgId);
+            pageInfo.setList(list);
+            convertClinicDimensionPageInfo(pageInfo, title, originTypeMap, specialMap, groupByOrgId);
+        }
+        return pageInfo;
     }
 
-    private DynamicHeaderPageInfo<JSONObject> convertClinicDimensionPageInfo(List<JSONObject> list, Map<String, List<String>> contextMap, Map<String, String> originTypeMap, Map<String, String> specialMap, boolean groupByOrgId) {
-        DynamicHeaderPageInfo<JSONObject> result = new DynamicHeaderPageInfo<>(list);
+    private void convertClinicDimensionPageInfo(DynamicHeaderPageInfo<JSONObject> result, Map<String, List<String>> contextMap, Map<String, String> originTypeMap, Map<String, String> specialMap, boolean groupByOrgId) {
         Map<String, String> title = new LinkedHashMap<>(16);
         if (groupByOrgId) {
             title.put("abbreviation", "门诊");
@@ -522,7 +524,6 @@ public class DimensionReportBiz {
         result.setMap(title);
         result.setContextMap(contextMap);
         result.setHeader(clinicDimensionHeader(contextMap, groupByOrgId));
-        return result;
     }
 
     private String[] clinicDimensionHeader(Map<String, List<String>> contextMap, boolean groupByOrgId) {
@@ -567,28 +568,27 @@ public class DimensionReportBiz {
         return header;
     }
 
-    private String defValue(Object value) {
-        return defValue(value, String.class) + "";
-    }
-
-    private int defIntVal(Object value) {
-        return Integer.parseInt(defValue(value, Integer.class) + "");
-    }
-
-    private BigDecimal defDecVal(Object value) {
-        return (BigDecimal) defValue(value, BigDecimal.class);
-    }
-
-    private Object defValue(Object value, Class<?> clzz) {
+    private String defaultValue(String value) {
         if (!ObjectUtils.isEmpty(value)) {
             return value;
-        }
-        if (clzz == Integer.class) {
-            return 0;
-        } else if (clzz == BigDecimal.class) {
-            return new BigDecimal("0.00");
         } else {
             return "";
+        }
+    }
+
+    private int defaultValue(Integer value) {
+        if (!ObjectUtils.isEmpty(value)) {
+            return value;
+        } else {
+            return 0;
+        }
+    }
+
+    private BigDecimal defaultValue(BigDecimal value) {
+        if (!ObjectUtils.isEmpty(value)) {
+            return value.setScale(2, BigDecimal.ROUND_HALF_UP);
+        } else {
+            return new BigDecimal("0.00");
         }
     }
 
@@ -770,11 +770,11 @@ public class DimensionReportBiz {
             orgs.forEach(vo->{
                 Integer orgId = vo.getOrgId();
                 JSONObject obj = new JSONObject();
-                obj.put("abbreviation", defValue(vo.getAbbreviation()));
+                obj.put("abbreviation", defaultValue(vo.getAbbreviation()));
                 obj.put("date", baseBillDetailBiz.doDateStyle(query.getStartDate(),
                         query.getEndDate()));
-                obj.put("firstVisitCount", defIntVal(firstVisitMap.get(orgId)));
-                originMap.forEach((originTypeId, name)-> obj.put(originTypeId, defIntVal(originDataMap.get(orgId+","+originTypeId))));
+                obj.put("firstVisitCount", defaultValue(firstVisitMap.get(orgId)));
+                originMap.forEach((originTypeId, name)-> obj.put(originTypeId, defaultValue(originDataMap.get(orgId+","+originTypeId))));
                 list.add(obj);
             });
             result.setList(list);
@@ -939,10 +939,10 @@ public class DimensionReportBiz {
                 JSONObject obj = new JSONObject();
                 obj.put("abbreviation", org.getAbbreviation());
                 obj.put("date", date);
-                BigDecimal workload = (BigDecimal) defDecVal(orgWorkloadMap.get(orgId));
+                BigDecimal workload = (BigDecimal) defaultValue(orgWorkloadMap.get(orgId));
                 obj.put("workload", workload);
                 specialMap.forEach((specialId, name)->{
-                    BigDecimal itemWorkload = (BigDecimal) defDecVal(orgItemWorkloadMap.get(orgId + "," + specialId));
+                    BigDecimal itemWorkload = (BigDecimal) defaultValue(orgItemWorkloadMap.get(orgId + "," + specialId));
                     BigDecimal percentage = new BigDecimal("0");
                     if (workload.compareTo(BigDecimal.ZERO)!=0) {
                         percentage = itemWorkload
@@ -1146,7 +1146,7 @@ public class DimensionReportBiz {
                 } else {
                     key += i;
                 }
-                BigDecimal workload = defDecVal(workloadMap.get(key));
+                BigDecimal workload = defaultValue(workloadMap.get(key));
                 obj.put("W"+year, workload);
                 StatEmpTreat statEmpTreat = treatNumMap.get(key);
                 int firstVisitCount = 0;
@@ -1171,16 +1171,16 @@ public class DimensionReportBiz {
         years.forEach(year-> title.put("F"+year, year));
         title.put("Rmonth", "月份");
         years.forEach(year-> title.put("R"+year, year));
-        JSONObject totalObj = initMonthObj(defValue(name), "合计");
+        JSONObject totalObj = initMonthObj(defaultValue(name), "合计");
         int fInx = years.size();
         int rInx = years.size() * 2;
         for (int wInx = 0; wInx < years.size(); wInx++,fInx++,rInx++) {
             String year = years.get(wInx);
-            BigDecimal workload = defDecVal(totalWorkload[wInx]);
+            BigDecimal workload = defaultValue(totalWorkload[wInx]);
             totalObj.put("W"+year, workload);
-            int firstVisitCount = defIntVal(totalFirstVisitCount[wInx]);
+            int firstVisitCount = defaultValue(totalFirstVisitCount[wInx]);
             totalObj.put("F"+year, firstVisitCount);
-            int treatVisitCount = defIntVal(totalTreatVisitCount[wInx]);
+            int treatVisitCount = defaultValue(totalTreatVisitCount[wInx]);
             totalObj.put("R"+year, treatVisitCount);
             cumulation(12, wInx, fInx, rInx, total, workload, firstVisitCount, treatVisitCount);
         }
@@ -1217,7 +1217,7 @@ public class DimensionReportBiz {
 
     private JSONObject initMonthObj(String name, String month) {
         JSONObject obj = new JSONObject();
-        obj.put("name", defValue(name));
+        obj.put("name", defaultValue(name));
         obj.put("Wmonth", month);
         obj.put("Fmonth", month);
         obj.put("Rmonth", month);
@@ -1359,12 +1359,8 @@ public class DimensionReportBiz {
             throw new ClientServiceException("请选择年份！",PARAMETERS_IS_ILLEGAL);
         }
         // 门诊员工信息
-        MultiClinicEmployeeQuery queryForm = new MultiClinicEmployeeQuery();
-        queryForm.setWorkStatus(query.getWorkStatus());
-        queryForm.setEmployeeIds(query.getEmployeeIds());
-        queryForm.setWhetherPage(query.getWhetherPage());
-        queryForm.setPageNum(query.getPageNum());
-        queryForm.setPageSize(query.getPageSize());
+        ClinicEmployeeWorkloadQuery queryForm = new ClinicEmployeeWorkloadQuery();
+        BeanUtils.copyProperties(query, queryForm);
         List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(queryForm, false);
         List<Integer> employeeIds = employees.stream().map(ClinicEmployeeReportVO::getEmployeeId).collect(Collectors.toList());
         Future<Map<String, BigDecimal>> workloadFuture = multiFindClinicReceivedWorkload(query, null, employeeIds);
@@ -1508,7 +1504,7 @@ public class DimensionReportBiz {
             Map<Integer, BigDecimal> goalMap, List<BaseOrganizationVO> orgs,
             Map<String, BigDecimal> workloadMap, Map<String, BigDecimal> todayWorkloadMap,
             Map<String, BigDecimal> preYearWorkloadMap) {
-        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo();
+        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo(orgs);
         List<ClinicAchievementVO> result = new ArrayList<>();
         Map<String, List<String>> map = new LinkedHashMap<>(16);
         Map<Integer, BigDecimal> orgWorkloadMap = statisticOrgWorkload(workloadMap);
@@ -1550,8 +1546,8 @@ public class DimensionReportBiz {
             list.add(abbreviation);
             map.put(parentName, list);
 
-            BigDecimal actualWorkload = defDecVal(orgWorkloadMap.get(orgId));
-            BigDecimal goalWorkload = defDecVal(goalMap.get(orgId));
+            BigDecimal actualWorkload = defaultValue(orgWorkloadMap.get(orgId));
+            BigDecimal goalWorkload = defaultValue(goalMap.get(orgId));
             BigDecimal completed = new BigDecimal("0.00");
             if (goalWorkload.compareTo(BigDecimal.ZERO) != 0) {
                 completed = actualWorkload
@@ -1560,8 +1556,8 @@ public class DimensionReportBiz {
                 campusStat[2] = campusStat[2].add(completed);
                 total[2] = total[2].add(completed);
             }
-            BigDecimal todayCompleted = defDecVal(orgTodayMap.get(orgId));
-            BigDecimal preYear = defDecVal(orgPreYearMap.get(orgId));
+            BigDecimal todayCompleted = defaultValue(orgTodayMap.get(orgId));
+            BigDecimal preYear = defaultValue(orgPreYearMap.get(orgId));
             ClinicAchievementVO vo = initAchievementVO(orgId, abbreviation, parentName,
                     actualWorkload, goalWorkload, completed, todayCompleted, preYear);
             result.add(vo);
@@ -1734,7 +1730,7 @@ public class DimensionReportBiz {
      */
     private DynamicHeaderPageInfo<JSONObject> mergeClinicSpecialProjectNumCompare(DoubleDateRangeQueryForm query, List<BaseOrganization> orgs,
                                                                                   List<SpecialistProjectVO> specials, List<StatEmpBill> statEmpBills, List<StatEmpBill> cmpStatEmpBills) {
-        DynamicHeaderPageInfo<JSONObject> pageInfo = new DynamicHeaderPageInfo<>();
+        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(orgs);
         List<JSONObject> list = new ArrayList<>();
         Map<String, String> specialMap = new LinkedHashMap<>(16);
         Map<String, List<String>> contextMap = new LinkedHashMap<>(16);
@@ -1747,19 +1743,19 @@ public class DimensionReportBiz {
             orgs.forEach(org->{
                 Integer orgId = org.getOrgId();
                 JSONObject obj = new JSONObject();
-                obj.put("abbreviation", defValue(org.getAbbreviation()));
+                obj.put("abbreviation", defaultValue(org.getAbbreviation()));
                 title.put("abbreviation", "门诊");
                 specialMap.forEach((specialId, name)->{
                     String key = orgId + "," + specialId;
-                    int itemNum1 = defIntVal(itemDataMap1.get(key));
-                    int itemNum2 = defIntVal(itemDataMap2.get(key));
+                    int itemNum1 = defaultValue(itemDataMap1.get(key));
+                    int itemNum2 = defaultValue(itemDataMap2.get(key));
                     BigDecimal cmpNum = computePercentage(itemNum1, itemNum2);
                     String key1 = "date"+specialId;
                     String key2 = "cmpDate"+specialId;
                     String key3 = "cmpNum"+specialId;
-                    int num1 = defIntVal(specialNumMap.get(key1));
+                    int num1 = defaultValue(specialNumMap.get(key1));
                     specialNumMap.put(key1, num1 + itemNum1);
-                    int num2 = defIntVal(specialNumMap.get(key2));
+                    int num2 = defaultValue(specialNumMap.get(key2));
                     specialNumMap.put(key2, num2 + itemNum2);
                     obj.put(key1, itemNum1);
                     obj.put(key2, itemNum2);
@@ -1774,8 +1770,8 @@ public class DimensionReportBiz {
             JSONObject totalObj = new JSONObject();
             totalObj.put("abbreviation", "合计");
             specialMap.forEach((specialId, name)->{
-                int num1 = defIntVal(specialNumMap.get("date"+specialId));
-                int num2 = defIntVal(specialNumMap.get("cmpDate"+specialId));
+                int num1 = defaultValue(specialNumMap.get("date"+specialId));
+                int num2 = defaultValue(specialNumMap.get("cmpDate"+specialId));
                 totalObj.put("date"+specialId, num1);
                 totalObj.put("cmpDate"+specialId, num2);
                 totalObj.put("cmpNum"+specialId,  computePercentage(num1, num2) + "%");
@@ -1977,7 +1973,7 @@ public class DimensionReportBiz {
     private DynamicHeaderPageInfo<JSONObject> mergeCampusAchievementStatistics(List<BaseOrganizationVO> orgs,
             Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> treatNumMap,
            List<StatEmpBill> statEmpBills, List<SpecialistProjectVO> specials) {
-        DynamicHeaderPageInfo<JSONObject> pageInfo = new DynamicHeaderPageInfo<>();
+        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(orgs);
         Map<String, String> specialMap = new LinkedHashMap<>(16);
         Map<String, String> title = new LinkedHashMap<>(16);
         Map<Integer, BigDecimal> orgWorkloadMap = statisticOrgWorkload(workloadMap);
@@ -1993,7 +1989,7 @@ public class DimensionReportBiz {
                 obj = initCampusAchievement(org.getParentName());
             }
             Integer orgId = org.getOrgId();
-            BigDecimal workload = defDecVal(orgWorkloadMap.get(orgId));
+            BigDecimal workload = defaultValue(orgWorkloadMap.get(orgId));
             obj.put("workload", obj.getDoubleValue("workload") + workload.doubleValue());
             totalObj.put("workload", totalObj.getDoubleValue("workload") + workload.doubleValue());
             StatEmpTreat statEmpTreat = orgTreatNumMap.get(orgId);
@@ -2009,9 +2005,9 @@ public class DimensionReportBiz {
             totalObj.put("treatVisitCount", totalObj.getIntValue("treatVisitCount") + treatVisitCount);
             for (Map.Entry<String, String> entry : specialMap.entrySet()) {
                 String specialId = entry.getKey();
-                int specialNum = defIntVal(itemNumMap.get(orgId + "," + specialId));
-                obj.put(specialId, defIntVal(obj.getIntValue(specialId)) + specialNum);
-                totalObj.put(specialId, defIntVal(totalObj.getIntValue(specialId)) + specialNum);
+                int specialNum = defaultValue(itemNumMap.get(orgId + "," + specialId));
+                obj.put(specialId, defaultValue(obj.getIntValue(specialId)) + specialNum);
+                totalObj.put(specialId, defaultValue(totalObj.getIntValue(specialId)) + specialNum);
             }
             campus.put(parentId, obj);
         });
@@ -2034,7 +2030,7 @@ public class DimensionReportBiz {
      */
     private JSONObject initCampusAchievement(String name) {
         JSONObject obj = new JSONObject();
-        obj.put("campusName", defValue(name));
+        obj.put("campusName", defaultValue(name));
         obj.put("workload", new BigDecimal("0.00"));
         obj.put("firstVisitCount", 0);
         obj.put("treatVisitCount", 0);
@@ -2092,7 +2088,7 @@ public class DimensionReportBiz {
                 obj.setCampusName(org.getParentName());
             }
             Integer orgId = org.getOrgId();
-            BigDecimal workload = defDecVal(orgWorkloadMap.get(orgId));
+            BigDecimal workload = defaultValue(orgWorkloadMap.get(orgId));
             obj.setWorkload(obj.getWorkload().add(workload));
             totalWorkload = totalWorkload.add(workload);
             StatEmpTreat statEmpTreat = orgTreatNumMap.get(orgId);
@@ -2192,19 +2188,19 @@ public class DimensionReportBiz {
         for (BaseOrganization org : orgs) {
             JSONObject obj = new JSONObject();
             Integer orgId = org.getOrgId();
-            obj.put("abbreviation", defValue(org.getAbbreviation()));
+            obj.put("abbreviation", defaultValue(org.getAbbreviation()));
             obj.put("orgId", orgId);
             for (int i = 0; i < coupons.size(); i++) {
                 BaseCoupon coupon = coupons.get(i);
                 Integer couponId = coupon.getCouponId();
                 String key = orgId + "," + couponId;
-                int soldNum = defIntVal(soldNumMap.get(key));
+                int soldNum = defaultValue(soldNumMap.get(key));
                 obj.put("S-" + couponId, soldNum);
-                int activeNum = defIntVal(activeNumMap.get(key));
+                int activeNum = defaultValue(activeNumMap.get(key));
                 obj.put("A-" + couponId, activeNum);
                 int unActiveNum = soldNum - activeNum;
                 obj.put("U-" + couponId, unActiveNum);
-                int repurchaseNum = defIntVal(repurchaseMap.get(key));
+                int repurchaseNum = defaultValue(repurchaseMap.get(key));
                 obj.put("R-" + couponId, repurchaseNum);
                 // 激活率 = 激活数/销售数
                 obj.put("T-" + couponId, computePercentage(activeNum,soldNum)+"%");
