@@ -10,6 +10,7 @@
         <result column="gender" property="gender" jdbcType="TINYINT"/>
         <result column="mobile" property="mobile" jdbcType="VARCHAR"/>
         <result column="work_status" property="workStatus" jdbcType="TINYINT"/>
+        <result column="entry_date" property="entryDate" jdbcType="DATE"/>
         <result column="title" property="title" jdbcType="VARCHAR"/>
         <result column="post_level" property="postLevel" jdbcType="VARCHAR"/>
         <result column="bonus_coefficient" property="bonusCoefficient" jdbcType="DOUBLE"/>
@@ -80,6 +81,30 @@
                 <foreach collection="query.workStatus" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(be.entry_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(be.entry_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(be.entry_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(be.entry_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(be.entry_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(be.entry_date, '%Y') &lt;= #{query.endDate}
+                </if>
             </if>
         </where>
         ORDER BY
