@@ -746,10 +746,31 @@
             count(btp1.patient_id) AS count
         FROM base_treatment_process btp1
         INNER JOIN (
-            SELECT min(treat_end_time) AS treat_end_time, patient_id FROM base_treatment_process
-            WHERE treat_end_time is not null AND treat_end_time is not null AND treat_type=1
-            GROUP BY patient_id
-        ) btp2 ON btp1.patient_id=btp2.patient_id
+            SELECT treat_end_time, org_id, patient_id, registered_dentist_id FROM base_treatment_process
+            <where>
+                treat_end_time is not null AND treat_end_time is not null AND treat_type=1
+                <if test="query.orgIds!=null and query.orgIds.length>0">
+                    and org_id in
+                    <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="query.employeeIds != null and query.employeeIds.length > 0">
+                    and registered_dentist_id in
+                    <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+            group by
+            <if test="groupByOrgId">
+                org_id,
+            </if>
+            registered_dentist_id
+        ) btp2 ON btp1.patient_id=btp2.patient_id AND btp1.registered_dentist_id=btp2.registered_dentist_id
+        <if test="groupByOrgId">
+            AND btp1.org_id=btp2.org_id
+        </if>
         <where>
             AND btp1.treat_end_time is not null and btp1.treat_type=0
             AND TIMESTAMPDIFF(MONTH,btp2.treat_end_time,btp1.treat_end_time) &lt; 1

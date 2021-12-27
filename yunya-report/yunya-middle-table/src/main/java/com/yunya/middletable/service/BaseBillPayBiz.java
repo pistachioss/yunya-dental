@@ -98,7 +98,6 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           billCreditsCallback.scrapCredits(dataId);
           baseBillPayDetailMapper.deleteByBillPayId(dataId);
         }
-        break;
       default:
         statisticsInPayDate(dataId);
         break;
