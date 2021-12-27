@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -21,4 +22,9 @@ public class CouponActiveQuery extends PageQuery {
     private List<Integer> soldChannelIds;
     @ApiModelProperty(value = "激活门诊")
     private List<Integer> activeOrgIds;
+    @ApiModelProperty(value = "激活开始时间")
+    private String activeStartDate;
+    @ApiModelProperty(value = "激活结束时间")
+    private String activeEndDate;
+
 }
