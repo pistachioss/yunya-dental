@@ -1362,7 +1362,11 @@ public class DimensionReportBiz {
         }
         // 门诊员工信息
         ClinicEmployeeWorkloadQuery queryForm = new ClinicEmployeeWorkloadQuery();
-        BeanUtils.copyProperties(query, queryForm);
+        queryForm.setWorkStatus(query.getWorkStatus());
+        queryForm.setEmployeeIds(query.getEmployeeIds());
+        queryForm.setWhetherPage(query.getWhetherPage());
+        queryForm.setPageNum(query.getPageNum());
+        queryForm.setPageSize(query.getPageSize());
         List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(queryForm, false);
         List<Integer> employeeIds = employees.stream().map(ClinicEmployeeReportVO::getEmployeeId).collect(Collectors.toList());
         Future<Map<String, BigDecimal>> workloadFuture = multiFindClinicReceivedWorkload(query, null, employeeIds);
