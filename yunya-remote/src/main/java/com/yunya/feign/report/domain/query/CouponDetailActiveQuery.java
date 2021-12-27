@@ -13,7 +13,7 @@ import java.util.List;
  * @author: xy
  * @date 2021/3/17 14:27
  **/
-@ApiModel(value = "公司端/门诊端-产品激活明细参数")
+@ApiModel(value = "公司端,门诊端-产品激活明细参数")
 @Data
 public class CouponDetailActiveQuery extends PageQuery {
     @ApiModelProperty(value = "患者关键字")
