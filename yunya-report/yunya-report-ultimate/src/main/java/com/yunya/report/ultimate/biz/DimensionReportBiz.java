@@ -1080,21 +1080,23 @@ public class DimensionReportBiz {
      */
     private DynamicHeaderPageInfo<JSONObject> mergeClinicWorkloadVisitStatistice(DateRangeQueryForm query,
                                                                                  List<BaseOrganization> orgs, Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> treatNumMap) {
-        String startDate = query.getStartDate();
-        String endDate = query.getEndDate();
-        List<String> years = DateUtil.sliceUpDateRange(startDate, endDate);
-        int size = Integer.parseInt(endDate) - Integer.parseInt(startDate) + 1;
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(orgs);
-        List<JSONObject> list = new ArrayList<>();
-        Map<String, String> title = new LinkedHashMap<>(16);
-        BigDecimal[][] total = new BigDecimal[13][years.size()*3];
-        orgs.forEach(vo->putObject(vo.getOrgId(), vo.getAbbreviation(), size, years, workloadMap, treatNumMap, title, list, total));
-        putTotalObj(total, years, list);
-        pageInfo.setMap(title);
-        pageInfo.setList(list);
-        pageInfo.setTotal(pageInfo.getTotal());
-        pageInfo.setPageNum(query.getPageNum());
-        pageInfo.setPageSize(query.getPageSize());
+        if (StringHelper.isNotEmpty(orgs)) {
+            String startDate = query.getStartDate();
+            String endDate = query.getEndDate();
+            List<String> years = DateUtil.sliceUpDateRange(startDate, endDate);
+            int size = Integer.parseInt(endDate) - Integer.parseInt(startDate) + 1;
+            List<JSONObject> list = new ArrayList<>();
+            Map<String, String> title = new LinkedHashMap<>(16);
+            BigDecimal[][] total = new BigDecimal[13][years.size() * 3];
+            orgs.forEach(vo -> putObject(vo.getOrgId(), vo.getAbbreviation(), size, years, workloadMap, treatNumMap, title, list, total));
+            putTotalObj(total, years, list);
+            pageInfo.setMap(title);
+            pageInfo.setList(list);
+            pageInfo.setTotal(pageInfo.getTotal());
+            pageInfo.setPageNum(query.getPageNum());
+            pageInfo.setPageSize(query.getPageSize());
+        }
         return pageInfo;
     }
 
@@ -1379,21 +1381,23 @@ public class DimensionReportBiz {
      */
     private DynamicHeaderPageInfo<JSONObject> mergeDentistWorkloadVisitStatistice(DateRangeQueryForm query,
               List<ClinicEmployeBonusCoefficientVO> employees, Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> treatNumMap) {
-        String startDate = query.getStartDate();
-        String endDate = query.getEndDate();
-        List<String> years = DateUtil.sliceUpDateRange(startDate, endDate);
-        int size = Integer.parseInt(endDate) - Integer.parseInt(startDate) + 1;
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(employees);
-        List<JSONObject> list = new ArrayList<>();
-        Map<String, String> title = new LinkedHashMap<>(16);
-        BigDecimal[][] total = new BigDecimal[13][years.size()*3];
-        employees.forEach(vo-> putObject(vo.getEmployeeId(), vo.getEmployeeName(), size, years, workloadMap, treatNumMap, title, list, total));
-        putTotalObj(total, years, list);
-        pageInfo.setMap(title);
-        pageInfo.setList(list);
-        pageInfo.setTotal(pageInfo.getTotal());
-        pageInfo.setPageNum(query.getPageNum());
-        pageInfo.setPageSize(query.getPageSize());
+        if (StringHelper.isNotEmpty(employees)) {
+            String startDate = query.getStartDate();
+            String endDate = query.getEndDate();
+            List<String> years = DateUtil.sliceUpDateRange(startDate, endDate);
+            int size = Integer.parseInt(endDate) - Integer.parseInt(startDate) + 1;
+            List<JSONObject> list = new ArrayList<>();
+            Map<String, String> title = new LinkedHashMap<>(16);
+            BigDecimal[][] total = new BigDecimal[13][years.size() * 3];
+            employees.forEach(vo -> putObject(vo.getEmployeeId(), vo.getEmployeeName(), size, years, workloadMap, treatNumMap, title, list, total));
+            putTotalObj(total, years, list);
+            pageInfo.setMap(title);
+            pageInfo.setList(list);
+            pageInfo.setTotal(pageInfo.getTotal());
+            pageInfo.setPageNum(query.getPageNum());
+            pageInfo.setPageSize(query.getPageSize());
+        }
         return pageInfo;
     }
 
