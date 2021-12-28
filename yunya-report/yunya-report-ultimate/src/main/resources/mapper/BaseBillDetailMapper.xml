@@ -3634,6 +3634,7 @@
             , ${column2}
         </if>
     </select>
+
     <!-- 根据条件查询个人开单项目已收工作量明细 -->
     <select id="selectPersonalBillItemReceivedWorkloadDetail"
             resultType="com.yunya.feign.report.domain.vo.PersonalBillItemReceivedWorkloadDetailVO">
