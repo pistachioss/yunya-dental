@@ -117,7 +117,6 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         } else {
           baseBillDetailMapper.deleteByBillId(dataId);
         }
-        break;
       default:
         statisticsEmployeeByBillDate(bill, dataId);
         break;
