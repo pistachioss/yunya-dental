@@ -2,8 +2,10 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.CardCouponUsedDetailQueryForm;
 import com.yunya.feign.report.domain.query.CardCouponUsedQueryForm;
 import com.yunya.feign.report.domain.query.StatementProductSoldDetailQuery;
+import com.yunya.feign.report.domain.vo.CardCouponUsedDetailVO;
 import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import com.yunya.feign.report.domain.vo.StatementProductSoldDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -102,5 +104,9 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
 
   public List<BaseCard> findCardCouponSoldStatistics(CardCouponUsedQueryForm query) {
     return mapper.selectCardCouponSoldList(query);
+  }
+
+  public List<CardCouponUsedDetailVO> findCardCouponUsedDetail(CardCouponUsedDetailQueryForm query) {
+    return mapper.selectCardCouponUsedDetail(query);
   }
 }

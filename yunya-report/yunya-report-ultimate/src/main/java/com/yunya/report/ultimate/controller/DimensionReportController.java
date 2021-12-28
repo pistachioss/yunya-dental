@@ -2,10 +2,7 @@ package com.yunya.report.ultimate.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.CardCouponUsedQueryForm;
-import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
-import com.yunya.feign.report.domain.query.EmployeeWorkStatusQueryForm;
-import com.yunya.feign.report.domain.query.PatientDimensionQueryForm;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.query.base.DoubleDateRangeQueryForm;
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.CampusAchievementCompareVO;
@@ -478,6 +475,21 @@ public class DimensionReportController {
             HttpServletResponse response, @RequestBody @Validated CardCouponUsedQueryForm query)
             throws Exception {
         dimesionReportBiz.cardCouponUsedStatisticsExport(query, response);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 根据条件导出产品卡券使用统计-激活/复购明细
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-产品卡券使用统计-激活/复购明细导出")
+    @PostMapping(value = "/cardCoupon/used/statistics/detail/export", name = "公司端报表-报表统计-运营报表-产品卡券使用统计-激活/复购明细导出")
+    public ResponseResult<T> cardCouponUsedStatisticsDetailExport(
+            HttpServletResponse response, @RequestBody @Validated CardCouponUsedDetailQueryForm query)
+            throws Exception {
+        dimesionReportBiz.cardCouponUsedStatisticsDetailExport(query, response);
         return ResponseUtil.success(null);
     }
 }
