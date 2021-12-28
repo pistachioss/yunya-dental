@@ -11,6 +11,9 @@ import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.query.base.DoubleDateRangeQueryForm;
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -35,6 +38,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.yunya.framework.common.constant.BusinessConstants.DENTIST_GROUP_ID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -89,6 +93,8 @@ public class DimensionReportBiz {
     /*产品*/
     @Autowired
     private BaseCouponBiz baseCouponBiz;
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Resource(name = "customizeThreadPool")
     private ThreadPoolExecutor threadPool;
 
@@ -293,6 +299,23 @@ public class DimensionReportBiz {
      * @return
      */
     public DynamicHeaderPageInfo<JSONObject> dentistDimensionStatistics(ClinicEmployeeWorkloadQuery query) throws Exception {
+        Integer[] employeeIds = query.getEmployeeIds();
+        if (StringHelper.isEmpty(employeeIds)) {
+            SysUserEmployeeModel empQuery = new SysUserEmployeeModel();
+            empQuery.setPostGroupId(Collections.singletonList(DENTIST_GROUP_ID));
+            Integer[] workStatus = query.getWorkStatus();
+            if (StringHelper.isNotEmpty(workStatus)) {
+                Byte[] wStatus = new Byte[workStatus.length];
+                for (int i = 0; i < workStatus.length; i++) {
+                    wStatus[i] = (byte) workStatus[i].intValue();
+                }
+                empQuery.setWorkStatus(wStatus);
+            }
+            empQuery.setWhetherPage(false);
+            List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(empQuery);
+            employeeIds = employees.stream().map(SysUserInfoDetail::getEmployeeId).toArray(Integer[]::new);
+            query.setEmployeeIds(employeeIds);
+        }
         return clinicDimensionStatistics(query, false);
     }
 
@@ -399,7 +422,6 @@ public class DimensionReportBiz {
      * @return
      */
     public DynamicHeaderPageInfo<JSONObject> clinicDimensionStatistics(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) throws Exception {
-        // 门诊员工信息
         List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(query, groupByOrgId);
         updEmployeeId2Query(employees, query);
 
