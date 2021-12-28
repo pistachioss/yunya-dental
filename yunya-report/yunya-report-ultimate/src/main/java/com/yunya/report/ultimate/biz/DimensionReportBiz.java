@@ -1500,11 +1500,11 @@ public class DimensionReportBiz {
      * @throws Exception
      */
     public DynamicHeaderPageInfo<ClinicAchievementVO> clinicAchievementStatistics(MultiClinicDateRangeQueryForm query) throws Exception {
+        dateQuery2NumDateQuery(query);
         // 院区门诊
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
         // 目标值
         Future<Map<Integer, BigDecimal>> goalFuture = multiFindBusinessGoal(query);
-        dateQuery2NumDateQuery(query);
         // 实际值
         Future<Map<String, BigDecimal>> workloadFuture = multiFindClinicReceivedWorkload(query, query.getOrgIds(), null);
         MultiClinicDateRangeQueryForm todayQuery = new MultiClinicDateRangeQueryForm();
@@ -1999,6 +1999,7 @@ public class DimensionReportBiz {
      * @throws Exception
      */
     public DynamicHeaderPageInfo<JSONObject> campusAchievementStatistics(MultiClinicDateRangeQueryForm query) throws Exception {
+        dateQuery2NumDateQuery(query);
         // 院区门诊
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
         // 工作量
@@ -2112,6 +2113,7 @@ public class DimensionReportBiz {
      * @throws Exception
      */
     public PageInfo<CampusAchievementCompareVO> campusAchievementCompare(MultiClinicDateRangeQueryForm query) throws Exception {
+        dateQuery2NumDateQuery(query);
         // 院区门诊
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
         // 工作量
