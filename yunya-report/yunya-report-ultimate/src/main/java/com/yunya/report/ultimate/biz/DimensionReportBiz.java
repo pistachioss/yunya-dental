@@ -16,6 +16,7 @@ import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.*;
@@ -2483,14 +2484,11 @@ public class DimensionReportBiz {
      * @return
      */
     public PageInfo<CardCouponUsedDetailVO> cardCouponUsedStatisticsDetail(CardCouponUsedDetailQueryForm query) {
-        if (query.getWhetherPage()) {
-            PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        }
         List<CardCouponUsedDetailVO> list = baseCardBiz.findCardCouponUsedDetail(query);
         if (query.getDetailType() == 1) {
             list = repurchaseFilter(list);
         }
-        return new PageInfo<>(list);
+        return PageUtl.doPage(query.getPageNum(), query.getPageSize(), list);
     }
 
     /**
