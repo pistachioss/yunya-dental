@@ -127,7 +127,7 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
    * @return
    */
   public List<PatientFirstVisitSourceVO> clinicFirstVisitSourceList(ClinicPerformanceBusinessQuery query, Collection<Integer> patientIds) {
-    return mapper.clinicFirstVisitSourceList(query, patientIds);
+    return mapper.selectClinicFirstVisitSourceList(query, patientIds);
   }
 
   /**
@@ -136,7 +136,7 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
    * @return
    */
   public List<BaseTreatmentProcessVO> firstVisitPatientList(ClinicPerformanceBusinessQuery query) {
-    return mapper.firstVisitPatientList(query);
+    return mapper.selectFirstVisitPatientList(query);
   }
 
   public PageInfo<PatientManageVo> getPatientManagePage(PatientManageQuery query) {

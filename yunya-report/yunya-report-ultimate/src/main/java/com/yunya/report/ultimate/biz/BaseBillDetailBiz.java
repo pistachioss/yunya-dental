@@ -1609,8 +1609,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public DynamicHeaderPageInfo<JSONObject> clinicFirstVisitSourceList(
       ClinicPerformanceBusinessQuery query) {
-    String startDate = query.getStartDate().substring(0, 7);
-    String endDate = query.getEndDate().substring(0, 7);
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
@@ -1645,7 +1643,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       map.put("date", "时间");
       map.put("name", "患者来源");
       for (BasePatientOrigin vo : origins) {
-        JSONObject object = init(startDate, endDate, vo.getName());
+        JSONObject object = init(query.getStartDate(), query.getEndDate(), vo.getName());
         object.put(
             "total", computeOrgPatientCount(vo.getOriginType() + "", object, map, orgs, originMap));
         result.add(object);
@@ -1752,8 +1750,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public DynamicHeaderPageInfo<JSONObject> clinicSpecialItemList(
       ClinicPerformanceBusinessQuery query) {
-    String startDate = query.getStartDate().substring(0, 7);
-    String endDate = query.getEndDate().substring(0, 7);
     PageInfo<SpecialistProjectVO> pageInfo = getSpecialProjectList(query);
     List<SpecialistProjectVO> specialItems = pageInfo.getList();
     DynamicHeaderPageInfo resPageInfo = new DynamicHeaderPageInfo();
@@ -1767,7 +1763,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         map.put("date", "时间");
         map.put("name", "专科项目");
         for (SpecialistProjectVO item : specialItems) {
-          JSONObject object = init(startDate, endDate, item.getSpecialistProjectName());
+          JSONObject object = init(query.getStartDate(), query.getEndDate(), item.getSpecialistProjectName());
           Integer total = 0;
           for (BaseOrganization org : orgs) {
             Integer orgId = org.getOrgId();

@@ -418,7 +418,7 @@
         </where>
     </update>
 
-    <select id="firstVisitPatientList" resultType="com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO">
+    <select id="selectFirstVisitPatientList" resultType="com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO">
         SELECT
         DISTINCT btp.patient_id AS patientId,
         btp.org_id AS orgId
@@ -455,7 +455,7 @@
     </select>
 
     <!--根据条件统计患者来源-->
-    <select id="clinicFirstVisitSourceList" resultType="com.yunya.feign.report.domain.vo.PatientFirstVisitSourceVO">
+    <select id="selectClinicFirstVisitSourceList" resultType="com.yunya.feign.report.domain.vo.PatientFirstVisitSourceVO">
         SELECT
         IFNULL(bp.origin_type,12) AS originType,
         IFNULL(bp.origin_type_name,"未知来源") AS originTypeName,
