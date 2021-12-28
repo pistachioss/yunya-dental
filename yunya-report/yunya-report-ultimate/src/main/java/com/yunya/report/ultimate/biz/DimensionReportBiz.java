@@ -2476,7 +2476,13 @@ public class DimensionReportBiz {
         excelUtil.exportExcel(response, result, sheetName, fileName);
     }
 
-    private PageInfo<CardCouponUsedDetailVO> cardCouponUsedStatisticsDetail(CardCouponUsedDetailQueryForm query) {
+    /**
+     * 根据条件查询产品卡券使用统计-激活/复购明细
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public PageInfo<CardCouponUsedDetailVO> cardCouponUsedStatisticsDetail(CardCouponUsedDetailQueryForm query) {
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }

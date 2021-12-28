@@ -41,15 +41,15 @@ public class CardCouponUsedDetailVO implements Serializable {
     @ApiModelProperty("患者")
     private String patientName;
 
-    /** 手机号 */
-    @Excel(name = "手机号")
-    @ApiModelProperty("手机号")
-    private String mobile;
-
     /** 病历号 */
     @Excel(name = "病历号")
     @ApiModelProperty("病历号")
     private String medicalNumber;
+
+    /** 手机号 */
+    @Excel(name = "手机号")
+    @ApiModelProperty("手机号")
+    private String mobile;
 
     /** 绑定时间 */
     @Excel(name = "绑定时间", dateFormat = "yyyy-MM-dd HH:mm")
