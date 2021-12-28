@@ -4,6 +4,7 @@ import com.yunya.framework.common.model.PageQuery;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
@@ -18,6 +19,7 @@ import java.io.Serializable;
  * @Date: 2021/12/10 10:12
  * @since: 1.0.0
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @ToString
 @ApiModel("日期范围查询参数模型")

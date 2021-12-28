@@ -3,6 +3,7 @@ package com.yunya.feign.report.domain.query.base;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
@@ -17,6 +18,7 @@ import java.io.Serializable;
  * @since: 1.0.0
  */
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @ToString
 @ApiModel("单门诊+日期范围查询参数模型")
