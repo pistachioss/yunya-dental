@@ -480,14 +480,15 @@ public class DimensionReportController {
     }
 
     /**
-     * 根据条件查询产品卡券使用统计-激活/复购明细
+     * 根据条件查询产品卡券使用统计-激活or复购明细
      *
      * @param query 查询条件
      * @return
      */
-    @ApiOperation("公司端报表-报表统计-运营报表-产品卡券使用统计-激活/复购明细")
-    @PostMapping(value = "/cardCoupon/used/statistics/detail", name = "公司端报表-报表统计-运营报表-产品卡券使用统计-激活/复购明细")
-    public ResponseResult<PageInfo<CardCouponUsedDetailVO>> cardCouponUsedStatisticsDetail(@RequestBody @Validated CardCouponUsedDetailQueryForm query) throws Exception {
+    @ApiOperation("公司端报表-报表统计-运营报表-产品卡券使用统计-激活or复购明细")
+    @PostMapping(value = "/cardCoupon/used/statistics/detail", name = "公司端报表-报表统计-运营报表-产品卡券使用统计-激活or复购明细")
+    public ResponseResult<PageInfo<CardCouponUsedDetailVO>> cardCouponUsedStatisticsDetail(
+            @RequestBody @Validated CardCouponUsedDetailQueryForm query) throws Exception {
         PageInfo<CardCouponUsedDetailVO> pageInfo = dimesionReportBiz.cardCouponUsedStatisticsDetail(query);
         return ResponseUtil.success(pageInfo);
     }
@@ -498,8 +499,8 @@ public class DimensionReportController {
      * @param query 查询条件
      * @return
      */
-    @ApiOperation("公司端报表-报表统计-运营报表-产品卡券使用统计-激活/复购明细导出")
-    @PostMapping(value = "/cardCoupon/used/statistics/detail/export", name = "公司端报表-报表统计-运营报表-产品卡券使用统计-激活/复购明细导出")
+    @ApiOperation("公司端报表-报表统计-运营报表-产品卡券使用统计-激活or复购明细导出")
+    @PostMapping(value = "/cardCoupon/used/statistics/detail/export", name = "公司端报表-报表统计-运营报表-产品卡券使用统计-激活or复购明细导出")
     public ResponseResult<T> cardCouponUsedStatisticsDetailExport(
             HttpServletResponse response, @RequestBody @Validated CardCouponUsedDetailQueryForm query)
             throws Exception {
