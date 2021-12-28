@@ -127,10 +127,14 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
    * 根据条件统计患者来源
    *
    * @param query
+   * @param orgId
    * @param patientIds
    * @return
    */
-  List<PatientFirstVisitSourceVO> selectClinicFirstVisitSourceList(@Param("query") ClinicPerformanceBusinessQuery query, @Param("patientIds") Collection<Integer> patientIds);
+  List<PatientFirstVisitSourceVO> selectClinicFirstVisitSourceList(
+          @Param("query") ClinicPerformanceBusinessQuery query,
+          @Param("orgId") Integer orgId,
+          @Param("patientIds") Collection<Integer> patientIds);
 
   List<BaseTreatmentProcessVO> selectFirstVisitPatientList(@Param("query") ClinicPerformanceBusinessQuery query);
 

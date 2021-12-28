@@ -455,7 +455,7 @@ public class DiscountBiz {
 
     public PageInfo<CouponActiveVo> getCouponActivePage(CouponActiveQuery query) {
         Page<CouponActiveVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        couponMapper.listCouponActive(query.getCouponName(), query.getSoldChannelIds(), query.getActiveOrgIds(),query.getActiveStartDate(),query.getActiveEndDate());
+        couponMapper.listCouponActive(query.getCouponIds(), query.getSoldChannelIds(), query.getActiveOrgIds(),query.getActiveStartDate(),query.getActiveEndDate());
         return new PageInfo<>(page);
     }
 
@@ -467,7 +467,7 @@ public class DiscountBiz {
     }
 
     public List<CouponActiveVo> listCouponActive(CouponActiveQuery query) {
-        return couponMapper.listCouponActive(query.getCouponName()
+        return couponMapper.listCouponActive(query.getCouponIds()
                 , query.getSoldChannelIds(), query.getActiveOrgIds(),query.getActiveStartDate(),query.getActiveEndDate());
     }
 
