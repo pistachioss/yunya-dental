@@ -463,16 +463,16 @@ public class TollBiz {
     }
     // 保存收费明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, payments);
-    if (billPayInsertResult > 0) {
-      rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
-      weChatServiceFeign.pushTemplate(chargePushMsg(billPayRecord));
-    }
     orderRecord.setStatus(BusinessConstants.ORDER_FINISH_STATUS);
     orderRecord.setUpdId(userId);
     orderRecord.setUpdName(name);
     int orderUpdateResult = orderRecordBiz.updateOrderStatus(orderRecord);
     if (orderUpdateResult > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+    }
+    if (billPayInsertResult > 0) {
+      rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
+      weChatServiceFeign.pushTemplate(chargePushMsg(billPayRecord));
     }
     updateTreatmentRecordStatus(treatmentRecordId, userId, name);
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);

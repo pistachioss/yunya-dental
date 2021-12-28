@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -472,8 +473,8 @@ public class DimensionReportBiz {
             List<JSONObject> list = new ArrayList<>();
             employees.forEach(vo -> {
                 Integer employeeId = vo.getEmployeeId();
-                Integer orgId = vo.getOrgId();
-                String key = employeeId + "," + orgId;
+                String orgId = ObjectUtils.isEmpty(vo.getOrgId())?"":","+vo.getOrgId();
+                String key = employeeId + orgId;
                 JSONObject obj = new JSONObject();
 //            obj.put("employeeId", employeeId);
 //            obj.put("orgId", orgId);
@@ -493,8 +494,8 @@ public class DimensionReportBiz {
                     obj.put(originTypeId, defaultValue(num));
                 });
                 specialMap.forEach((id, name) -> {
-                    Integer num = billItemMap.get(id + "." + employeeId + "," + orgId);
-                    obj.put(id, defaultValue(num));
+                    String itemKey = id + "." + employeeId + orgId;
+                    obj.put(id, defaultValue(billItemMap.get(itemKey)));
                 });
                 list.add(obj);
             });
@@ -914,23 +915,11 @@ public class DimensionReportBiz {
         Map<String, String> specialMap = new LinkedHashMap<>(16);
         if (StringHelper.isNotEmpty(orgs)) {
             Map<Integer, BigDecimal> orgWorkloadMap = emp2OrgWorkloadMap(workloadMap);
-            Map<String, Integer> item2Special = new HashMap<>(16);
+            Map<String, List<Integer>> item2Special = new HashMap<>(16);
             specialis.forEach(vo->{
                 Integer id = vo.getId();
-                String tariffItemIds = vo.getTariffItemIds();
-                if (StringHelper.isNotEmpty(tariffItemIds)) {
-                    String[] ids = StringHelper.split(tariffItemIds, ",");
-                    for (String oralId : ids) {
-                        item2Special.put("0,"+oralId, id);
-                    }
-                }
-                String oralIdStr = vo.getOralIds();
-                if (StringHelper.isNotEmpty(oralIdStr)) {
-                    String[] ids = StringHelper.split(oralIdStr, ",");
-                    for (String oralId : ids) {
-                        item2Special.put("1,"+oralId, id);
-                    }
-                }
+                putItem2Special(vo.getTariffItemIds(), "0", id, item2Special);
+                putItem2Special(vo.getOralIds(), "1", id, item2Special);
                 specialMap.put(""+id, vo.getSpecialistProjectName());
             });
             Map<String, BigDecimal> orgItemWorkloadMap = item2SpecialWorkloadMap(tariffWorkload, oralWorkload, item2Special);
@@ -939,10 +928,10 @@ public class DimensionReportBiz {
                 JSONObject obj = new JSONObject();
                 obj.put("abbreviation", org.getAbbreviation());
                 obj.put("date", date);
-                BigDecimal workload = (BigDecimal) defaultValue(orgWorkloadMap.get(orgId));
+                BigDecimal workload = defaultValue(orgWorkloadMap.get(orgId));
                 obj.put("workload", workload);
                 specialMap.forEach((specialId, name)->{
-                    BigDecimal itemWorkload = (BigDecimal) defaultValue(orgItemWorkloadMap.get(orgId + "," + specialId));
+                    BigDecimal itemWorkload = defaultValue(orgItemWorkloadMap.get(orgId + "," + specialId));
                     BigDecimal percentage = new BigDecimal("0");
                     if (workload.compareTo(BigDecimal.ZERO)!=0) {
                         percentage = itemWorkload
@@ -958,6 +947,21 @@ public class DimensionReportBiz {
         result.setList(list);
         result.setMap(specialTitleMap(specialMap));
         return result;
+    }
+
+    private void putItem2Special(String itemIds, String firstKey, Integer id, Map<String, List<Integer>> item2Special) {
+        if (StringHelper.isNotEmpty(itemIds)) {
+            String[] itemIdStr = StringHelper.split(itemIds, ",");
+            for (String itemId : itemIdStr) {
+                String key = firstKey + "," + itemId;
+                List<Integer> ids = item2Special.get(key);
+                if (ids == null) {
+                    ids = new ArrayList<>();
+                }
+                ids.add(id);
+                item2Special.put(key, ids);
+            }
+        }
     }
 
     private Map<String, String> specialTitleMap(Map<String, String> specialMap) {
@@ -997,7 +1001,7 @@ public class DimensionReportBiz {
      * @return
      */
     private Map<String, BigDecimal> item2SpecialWorkloadMap(Map<String, EmployeeTariffWorkloadVO> tariffWorkload,
-                                Map<String, EmployeeTariffWorkloadVO> oralWorkload, Map<String, Integer> item2Special) {
+                                Map<String, EmployeeTariffWorkloadVO> oralWorkload, Map<String, List<Integer>> item2Special) {
         Map<String, BigDecimal> orgItemWorkloadMap = new HashMap<>(16);
         if (StringHelper.isNotEmpty(tariffWorkload)) {
             tariffWorkload.forEach((keyStr, vo) -> cumulation(keyStr, item2Special, vo, orgItemWorkloadMap, "0"));
@@ -1016,18 +1020,19 @@ public class DimensionReportBiz {
      * @param vo
      * @param orgItemWorkloadMap
      */
-    private void cumulation(String keyStr, Map<String, Integer> item2Special, EmployeeTariffWorkloadVO vo, Map<String, BigDecimal> orgItemWorkloadMap, String itemKey) {
+    private void cumulation(String keyStr, Map<String, List<Integer>> item2Special, EmployeeTariffWorkloadVO vo, Map<String, BigDecimal> orgItemWorkloadMap, String itemKey) {
         String[] keys = StringHelper.substringsBetween(keyStr, ",", ".");
-        Integer specialId = item2Special.get(itemKey+","+vo.getItemId());
-        if (!ObjectUtils.isEmpty(specialId)) {
-            String key = keys[0] + "," + specialId;
-            BigDecimal workload = orgItemWorkloadMap.get(key);
-            if (workload == null) {
-                workload = new BigDecimal("0.00");
-            }
-            orgItemWorkloadMap.put(key, workload.add(vo.getWorkload()));
+        List<Integer> specialIds = item2Special.get(itemKey+","+vo.getItemId());
+        if (StringHelper.isNotEmpty(specialIds)) {
+            specialIds.forEach(specialId->{
+                String key = keys[0] + "," + specialId;
+                BigDecimal workload = orgItemWorkloadMap.get(key);
+                if (workload == null) {
+                    workload = new BigDecimal("0.00");
+                }
+                orgItemWorkloadMap.put(key, workload.add(vo.getWorkload()));
+            });
         }
-
     }
 
     /**
@@ -1706,18 +1711,34 @@ public class DimensionReportBiz {
         // 专科项目
         Future<List<SpecialistProjectVO>> specialFuture = multiFindSpecialProjectList();
         // 第一个日期的专科项目数量
-        MultiClinicDateRangeQueryForm queryForm1 = new MultiClinicDateRangeQueryForm();
-        BeanUtils.copyProperties(query, queryForm1);
-        queryForm1.setOrgIds(orgIds);
+        MultiClinicDateRangeQueryForm queryForm1 = doubleDateRange2SingleDateRangeQuery(query, orgIds, (doubleQuery, queryForm)->{
+            queryForm.setSDateInt(DateUtil.startDate2Number(doubleQuery.getStartDate1()));
+            queryForm.setEDateInt(DateUtil.endDate2Number(doubleQuery.getEndDate1()));
+            return null;
+        });
         Future<List<StatEmpBill>> itemFuture = multiFindClinicBillItemNum(queryForm1);
         // 对比日期的专科项目数量
-        MultiClinicDateRangeQueryForm queryForm2 = new MultiClinicDateRangeQueryForm();
-        BeanUtils.copyProperties(query, queryForm2);
-        queryForm2.setSDateInt(query.getSDateInt2());
-        queryForm2.setEDateInt(query.getEDateInt2());
-        queryForm2.setOrgIds(orgIds);
+        MultiClinicDateRangeQueryForm queryForm2 = doubleDateRange2SingleDateRangeQuery(query, orgIds, (doubleQuery, queryForm)->{
+            queryForm.setSDateInt(DateUtil.startDate2Number(doubleQuery.getStartDate2()));
+            queryForm.setEDateInt(DateUtil.endDate2Number(doubleQuery.getEndDate2()));
+            return null;
+        });
         Future<List<StatEmpBill>> itemFuture2 = multiFindClinicBillItemNum(queryForm2);
         return mergeClinicSpecialProjectNumCompare(query, orgs, specialFuture.get(), itemFuture.get(), itemFuture2.get());
+    }
+
+    private MultiClinicDateRangeQueryForm doubleDateRange2SingleDateRangeQuery(DoubleDateRangeQueryForm query, List<Integer> orgIds,
+                   BiFunction<DoubleDateRangeQueryForm, MultiClinicDateRangeQueryForm, Integer> func) {
+        MultiClinicDateRangeQueryForm queryForm = new MultiClinicDateRangeQueryForm();
+        queryForm.setOrgIds(orgIds);
+        queryForm.setDateType(query.getDateType());
+        queryForm.setIsAsc(query.getIsAsc());
+        queryForm.setOrderByColumn(query.getOrderByColumn());
+        queryForm.setPageNum(query.getPageNum());
+        queryForm.setPageSize(query.getPageSize());
+        queryForm.setWhetherPage(query.getWhetherPage());
+        func.apply(query,queryForm);
+        return queryForm;
     }
 
     private void checkSpecialNumQuery(DoubleDateRangeQueryForm query) {
@@ -2180,56 +2201,58 @@ public class DimensionReportBiz {
      */
     private DynamicHeaderPageInfo<JSONObject> mergeCardCouponUsedStatistics(List<BaseOrganization> orgs, List<BaseCoupon> coupons, List<BaseCard> cards) {
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo(orgs);
-        // 患者激活卡片次数
-        Map<String, Set<LocalDateTime>> patientActiveDates = new HashMap<>(16);
-        // 销售数量
-        Map<String, Integer> soldNumMap = new HashMap<>(16);
-        // 激活数量
-        Map<String, Integer> activeNumMap = new HashMap<>(16);
-        // 购买产品的患者数量
-        Map<String, Set<Integer>> patients = new HashMap<>(16);
-        Set<Integer> couponIds = statisticCouponCardNum(cards, patients, patientActiveDates, soldNumMap, activeNumMap);
-        coupons = coupons.stream().filter(vo->couponIds.contains(vo.getCouponId())).collect(toList());
-        int[] total = new int[coupons.size()*5];
-        Map<String, Integer> repurchaseMap = patientRepurchaseMap(patientActiveDates);
-        List<JSONObject> list = new ArrayList<>();
-        for (BaseOrganization org : orgs) {
-            JSONObject obj = new JSONObject();
-            Integer orgId = org.getOrgId();
-            obj.put("abbreviation", defaultValue(org.getAbbreviation()));
-            obj.put("orgId", orgId);
-            for (int i = 0; i < coupons.size(); i++) {
-                BaseCoupon coupon = coupons.get(i);
-                Integer couponId = coupon.getCouponId();
-                String key = orgId + "," + couponId;
-                int soldNum = defaultValue(soldNumMap.get(key));
-                obj.put("S-" + couponId, soldNum);
-                int activeNum = defaultValue(activeNumMap.get(key));
-                obj.put("A-" + couponId, activeNum);
-                int unActiveNum = soldNum - activeNum;
-                obj.put("U-" + couponId, unActiveNum);
-                int repurchaseNum = defaultValue(repurchaseMap.get(key));
-                obj.put("R-" + couponId, repurchaseNum);
-                // 激活率 = 激活数/销售数
-                obj.put("T-" + couponId, computePercentage(activeNum,soldNum)+"%");
-                // 复购率 = 复购数/购买产品的患者人数
-                int patientNum = 0;
-                Set<Integer> patientIds = patients.get(key);
-                if (StringHelper.isNotEmpty(patientIds)) {
-                    patientNum = patientIds.size();
+        if (StringHelper.isNotEmpty(orgs)) {
+            // 患者激活卡片次数
+            Map<String, Set<LocalDateTime>> patientActiveDates = new HashMap<>(16);
+            // 销售数量
+            Map<String, Integer> soldNumMap = new HashMap<>(16);
+            // 激活数量
+            Map<String, Integer> activeNumMap = new HashMap<>(16);
+            // 购买产品的患者数量
+            Map<String, Set<Integer>> patients = new HashMap<>(16);
+            Set<Integer> couponIds = statisticCouponCardNum(cards, patients, patientActiveDates, soldNumMap, activeNumMap);
+            coupons = coupons.stream().filter(vo->couponIds.contains(vo.getCouponId())).collect(toList());
+            int[] total = new int[coupons.size()*5];
+            Map<String, Integer> repurchaseMap = patientRepurchaseMap(patientActiveDates);
+            List<JSONObject> list = new ArrayList<>();
+            for (BaseOrganization org : orgs) {
+                JSONObject obj = new JSONObject();
+                Integer orgId = org.getOrgId();
+                obj.put("abbreviation", defaultValue(org.getAbbreviation()));
+                obj.put("orgId", orgId);
+                for (int i = 0; i < coupons.size(); i++) {
+                    BaseCoupon coupon = coupons.get(i);
+                    Integer couponId = coupon.getCouponId();
+                    String key = orgId + "," + couponId;
+                    int soldNum = defaultValue(soldNumMap.get(key));
+                    obj.put("S-" + couponId, soldNum);
+                    int activeNum = defaultValue(activeNumMap.get(key));
+                    obj.put("A-" + couponId, activeNum);
+                    int unActiveNum = soldNum - activeNum;
+                    obj.put("U-" + couponId, unActiveNum);
+                    int repurchaseNum = defaultValue(repurchaseMap.get(key));
+                    obj.put("R-" + couponId, repurchaseNum);
+                    // 激活率 = 激活数/销售数
+                    obj.put("T-" + couponId, computePercentage(activeNum,soldNum)+"%");
+                    // 复购率 = 复购数/购买产品的患者人数
+                    int patientNum = 0;
+                    Set<Integer> patientIds = patients.get(key);
+                    if (StringHelper.isNotEmpty(patientIds)) {
+                        patientNum = patientIds.size();
+                    }
+                    obj.put("V-" + couponId, computePercentage(repurchaseNum, patientNum)+"%");
+                    total[i*5] += soldNum;
+                    total[i*5+1] += activeNum;
+                    total[i*5+2] += unActiveNum;
+                    total[i*5+3] += repurchaseNum;
+                    total[i*5+4] += patientNum;
                 }
-                obj.put("V-" + couponId, computePercentage(repurchaseNum, patientNum)+"%");
-                total[i*5] += soldNum;
-                total[i*5+1] += activeNum;
-                total[i*5+2] += unActiveNum;
-                total[i*5+3] += repurchaseNum;
-                total[i*5+4] += patientNum;
+                list.add(obj);
             }
-            list.add(obj);
+            list.add(totalCardCouponObj(total, coupons));
+            pageInfo.setList(list);
+            cardCouponUsedTitle(pageInfo, coupons);
         }
-        list.add(totalCardCouponObj(total, coupons));
-        pageInfo.setList(list);
-        cardCouponUsedTitle(pageInfo, coupons);
         return pageInfo;
     }
 
@@ -2309,6 +2332,7 @@ public class DimensionReportBiz {
     private JSONObject totalCardCouponObj(int[] total, List<BaseCoupon> coupons) {
         JSONObject totalObj = new JSONObject();
         totalObj.put("abbreviation", "合计");
+        totalObj.put("orgId", "");
         for (int i = 0; i < coupons.size(); i++) {
             Integer couponId = coupons.get(i).getCouponId();
             int soldNum = total[i*5];
@@ -2411,6 +2435,58 @@ public class DimensionReportBiz {
             }
         }
         pageInfo.setHeader(header);
+        return result;
+    }
+
+    /**
+     * 根据条件导出产品卡券使用统计-激活/复购明细
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public void cardCouponUsedStatisticsDetailExport(CardCouponUsedDetailQueryForm query, HttpServletResponse response) throws Exception {
+        query.setWhetherPage(false);
+        PageInfo<CardCouponUsedDetailVO> pageInfo = cardCouponUsedStatisticsDetail(query);
+        List<CardCouponUsedDetailVO> result = pageInfo.getList();
+        ExcelUtil<CardCouponUsedDetailVO> excelUtil = new ExcelUtil(CardCouponUsedDetailVO.class);
+        String sheetName = "产品卡券使用统计";
+        String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", sheetName);
+        excelUtil.exportExcel(response, result, sheetName, fileName);
+    }
+
+    private PageInfo<CardCouponUsedDetailVO> cardCouponUsedStatisticsDetail(CardCouponUsedDetailQueryForm query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<CardCouponUsedDetailVO> list = baseCardBiz.findCardCouponUsedDetail(query);
+        if (query.getDetailType() == 1) {
+            list = repurchaseFilter(list);
+        }
+        return new PageInfo<>(list);
+    }
+
+    /**
+     * 复购过滤（只保留该产品每人第二次购买的）
+     *
+     * @param list
+     * @return
+     */
+    private List<CardCouponUsedDetailVO> repurchaseFilter(List<CardCouponUsedDetailVO> list) {
+        if (StringHelper.isEmpty(list)) {
+            return list;
+        }
+        List<CardCouponUsedDetailVO> result = new ArrayList<>();
+        Map<Integer, Boolean> map = new LinkedHashMap<>(16);
+        list.forEach(vo->{
+            Integer patientId = vo.getPatientId();
+            Boolean hasSecond = map.get(patientId);
+            if (hasSecond == null) {// 第一次购买
+                map.put(patientId, false);
+            } else if (!hasSecond) {// 已经有第一次了
+                map.put(patientId, true);
+                result.add(vo);
+            }
+        });
         return result;
     }
 }

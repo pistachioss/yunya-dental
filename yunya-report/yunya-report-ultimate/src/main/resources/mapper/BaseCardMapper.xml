@@ -838,4 +838,52 @@
             </if>
         </where>
     </select>
+
+    <select id="selectCardCouponUsedDetail" resultType="com.yunya.feign.report.domain.vo.CardCouponUsedDetailVO">
+        SELECT
+            bc.coupon_name AS bindCouponName,
+            bcd.card_id,
+            bcd.active_date AS bindTime,
+            bp.patient_id AS patientId,
+            bp.name AS patientName,
+            bp.medical_number AS medicalNumber,
+            bp.mobile AS mobile
+        FROM base_card bcd
+        LEFT JOIN base_coupon bc ON bc.coupon_id = bcd.coupon_id
+        LEFT JOIN base_patient bp ON bp.patient_id = bcd.patient_id
+        <where>
+            AND bcd.status in (2,3,4)
+            <if test="query.orgId != null">
+                and bcd.active_org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(bcd.sold_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(bcd.sold_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(bcd.sold_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(bcd.sold_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(bcd.sold_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(bcd.sold_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.couponId!=null">
+                and bcd.coupon_id = #{query.couponId}
+            </if>
+        </where>
+        order by bcd.active_date desc
+    </select>
 </mapper>
