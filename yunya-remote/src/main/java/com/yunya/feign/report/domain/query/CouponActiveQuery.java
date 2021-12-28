@@ -18,6 +18,8 @@ import java.util.List;
 public class CouponActiveQuery extends PageQuery {
     @ApiModelProperty(value = "产品名称")
     private String couponName;
+    @ApiModelProperty(value = "产品Id集合")
+    private List<Integer> couponIds;
     @ApiModelProperty(value = "销售渠道")
     private List<Integer> soldChannelIds;
     @ApiModelProperty(value = "激活门诊")
