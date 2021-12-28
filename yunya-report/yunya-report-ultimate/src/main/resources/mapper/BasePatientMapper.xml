@@ -475,6 +475,7 @@
                     #{item}
                 </foreach>
             </if>
+            AND bp.org_id = #{orgId}
         </where>
         GROUP BY bp.origin_type, bp.origin_type_name, bp.org_id
     </select>

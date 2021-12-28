@@ -782,12 +782,7 @@ public class DimensionReportBiz {
             if (StringHelper.isNotEmpty(patients)) {
                 patients.forEach(vo->{
                     originMap.put(vo.getOriginType()+"", vo.getOriginTypeName());
-                    String key = vo.getOrgId() + "," + vo.getOriginType();
-                    Integer count = originDataMap.get(key);
-                    if (count == null) {
-                        count = 0;
-                    }
-                    originDataMap.put(key, count + vo.getFirstVisitCount());
+                    originDataMap.put(vo.getOrgId()+","+vo.getOriginType(), vo.getFirstVisitCount());
                 });
             }
             List<JSONObject> list = new ArrayList<>();

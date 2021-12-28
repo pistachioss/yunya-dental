@@ -124,10 +124,11 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
    * 根据条件统计患者来源
    *
    * @param query
+   * @param orgId
    * @return
    */
-  public List<PatientFirstVisitSourceVO> clinicFirstVisitSourceList(ClinicPerformanceBusinessQuery query, Collection<Integer> patientIds) {
-    return mapper.selectClinicFirstVisitSourceList(query, patientIds);
+  public List<PatientFirstVisitSourceVO> clinicFirstVisitSourceList(ClinicPerformanceBusinessQuery query, Integer orgId, Collection<Integer> patientIds) {
+    return mapper.selectClinicFirstVisitSourceList(query, orgId, patientIds);
   }
 
   /**
