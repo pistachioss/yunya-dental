@@ -978,16 +978,23 @@ public class DimensionReportBiz {
         return result;
     }
 
-    private void putItem2Special(String itemIds, String firstKey, Integer id, Map<String, List<Integer>> item2Special) {
+    /**
+     * 项目映射关系转换
+     * @param itemIds 项目id列表字符串形式
+     * @param itemType 项目类型
+     * @param specialId 专科项目id
+     * @param item2Special 转换结果
+     */
+    private void putItem2Special(String itemIds, String itemType, Integer specialId, Map<String, List<Integer>> item2Special) {
         if (StringHelper.isNotEmpty(itemIds)) {
             String[] itemIdStr = StringHelper.split(itemIds, ",");
             for (String itemId : itemIdStr) {
-                String key = firstKey + "," + itemId;
+                String key = itemType + "," + itemId;
                 List<Integer> ids = item2Special.get(key);
                 if (ids == null) {
                     ids = new ArrayList<>();
                 }
-                ids.add(id);
+                ids.add(specialId);
                 item2Special.put(key, ids);
             }
         }
@@ -1779,7 +1786,7 @@ public class DimensionReportBiz {
         Map<String, String> title = new LinkedHashMap<>(16);
         Map<String, Integer> specialNumMap = new HashMap<>(16);
         if (StringHelper.isNotEmpty(specials)) {
-            Map<String, Integer> specialItemMap = item2SpecialNumMap(specials, specialMap);
+            Map<String, List<Integer>> specialItemMap = item2SpecialNumMap(specials, specialMap);
             Map<String, Integer> itemDataMap1 = sumBillItemNum(statEmpBills, specialItemMap);
             Map<String, Integer> itemDataMap2 = sumBillItemNum(cmpStatEmpBills, specialItemMap);
             orgs.forEach(org->{
@@ -1833,26 +1840,14 @@ public class DimensionReportBiz {
      * @param specialMap
      * @return
      */
-    private Map<String, Integer> item2SpecialNumMap(List<SpecialistProjectVO> specials, Map<String, String> specialMap) {
-        Map<String, Integer> result = new HashMap<>(16);
+    private Map<String, List<Integer>> item2SpecialNumMap(List<SpecialistProjectVO> specials, Map<String, String> specialMap) {
+        Map<String, List<Integer>> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(specials)) {
             specials.forEach(vo -> {
                 Integer specialId = vo.getId();
                 specialMap.put(specialId + "", vo.getSpecialistProjectName());
-                String tariffItemIdStr = vo.getTariffItemIds();
-                if (StringHelper.isNotEmpty(tariffItemIdStr)) {
-                    String[] tariffIds = StringHelper.split(tariffItemIdStr, ",");
-                    for (String tariffId : tariffIds) {
-                        result.put("0," + tariffId, specialId);
-                    }
-                }
-                String oralIdStr = vo.getOralIds();
-                if (StringHelper.isNotEmpty(oralIdStr)) {
-                    String[] oralIds = StringHelper.split(oralIdStr, ",");
-                    for (String oralId : oralIds) {
-                        result.put("1," + oralId, specialId);
-                    }
-                }
+                putItem2Special(vo.getTariffItemIds(), "0", specialId, result);
+                putItem2Special(vo.getOralIds(), "1", specialId, result);
             });
         }
         return result;
@@ -1890,16 +1885,18 @@ public class DimensionReportBiz {
      * @param specialItemMap
      * @return
      */
-    private Map<String, Integer> sumBillItemNum(List<StatEmpBill> statEmpBills, Map<String, Integer> specialItemMap) {
+    private Map<String, Integer> sumBillItemNum(List<StatEmpBill> statEmpBills, Map<String, List<Integer>> specialItemMap) {
         Map<String, Integer> result = new HashMap<>(16);
         statEmpBills.forEach(vo -> {
-            Integer specialId = specialItemMap.get(vo.getItemType() + "," + vo.getItemId());
-            String key = vo.getOrgId() + "," + specialId;
-            Integer itemNum = result.get(key);
-            if (itemNum == null) {
-                itemNum = 0;
-            }
-            result.put(key, itemNum + vo.getQuantity());
+            List<Integer> specialIds = specialItemMap.get(vo.getItemType() + "," + vo.getItemId());
+            specialIds.forEach(specialId->{
+                String key = vo.getOrgId() + "," + specialId;
+                Integer itemNum = result.get(key);
+                if (itemNum == null) {
+                    itemNum = 0;
+                }
+                result.put(key, itemNum + vo.getQuantity());
+            });
         });
         return result;
     }
@@ -2019,7 +2016,7 @@ public class DimensionReportBiz {
         Map<String, String> title = new LinkedHashMap<>(16);
         Map<Integer, BigDecimal> orgWorkloadMap = statisticOrgWorkload(workloadMap);
         Map<Integer, StatEmpTreat> orgTreatNumMap = statisticOrgStatEmpTreat(treatNumMap);
-        Map<String, Integer> specialItemMap = item2SpecialNumMap(specials, specialMap);
+        Map<String, List<Integer>> specialItemMap = item2SpecialNumMap(specials, specialMap);
         Map<String, Integer> itemNumMap = sumBillItemNum(statEmpBills, specialItemMap);
         Map<Integer, JSONObject> campus = new LinkedHashMap<>(16);
         JSONObject totalObj = initCampusAchievement("合计");
