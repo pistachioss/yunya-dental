@@ -692,7 +692,14 @@ public class DimensionReportBiz {
             return new HashMap<>();
         }
         Map<String, Integer> result = new HashMap<>(16);
-        list.forEach(vo-> result.put(vo.getEmployeeId()+","+vo.getOrgId(), vo.getCount()));
+        list.forEach(vo->{
+            String key = vo.getEmployeeId() + "";
+            Integer orgId = vo.getOrgId();
+            if (!ObjectUtils.isEmpty(orgId)) {
+                key += "," + orgId;
+            }
+            result.put(key, vo.getCount());
+        });
         return result;
     }
 
