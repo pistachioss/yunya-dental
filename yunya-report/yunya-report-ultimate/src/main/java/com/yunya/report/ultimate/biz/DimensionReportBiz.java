@@ -1076,7 +1076,6 @@ public class DimensionReportBiz {
      * @return
      */
     public DynamicHeaderPageInfo<JSONObject> clinicWorkloadVisitStatistics(MultiClinicDateRangeQueryForm query) throws Exception {
-        dateQuery2NumDateQuery(query);
         Byte dateType = query.getDateType();
         if (dateType.intValue() != 2) {
             throw new ClientServiceException("请选择年份！",PARAMETERS_IS_ILLEGAL);
@@ -1273,16 +1272,6 @@ public class DimensionReportBiz {
     }
 
     /**
-     * 查询条件中的字符串日期转换数值型
-     *
-     * @param query
-     */
-    private void dateQuery2NumDateQuery(DateRangeQueryForm query) {
-        query.setSDateInt(DateUtil.startDate2Number(query.getStartDate()));
-        query.setEDateInt(DateUtil.endDate2Number(query.getEndDate()));
-    }
-
-    /**
      * 统计实收工作量
      *
      * @param query
@@ -1378,7 +1367,6 @@ public class DimensionReportBiz {
      * @throws Exception
      */
     public DynamicHeaderPageInfo<JSONObject> dentistWorkloadVisitStatistics(EmployeeWorkStatusQueryForm query) throws Exception {
-        dateQuery2NumDateQuery(query);
         Byte dateType = query.getDateType();
         if (dateType.intValue() != 2) {
             throw new ClientServiceException("请选择年份！",PARAMETERS_IS_ILLEGAL);
@@ -1495,7 +1483,6 @@ public class DimensionReportBiz {
      * @throws Exception
      */
     public DynamicHeaderPageInfo<ClinicAchievementVO> clinicAchievementStatistics(MultiClinicDateRangeQueryForm query) throws Exception {
-        dateQuery2NumDateQuery(query);
         // 院区门诊
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
         // 目标值
@@ -1504,18 +1491,15 @@ public class DimensionReportBiz {
         Future<Map<String, BigDecimal>> workloadFuture = multiFindClinicReceivedWorkload(query, query.getOrgIds(), null);
         MultiClinicDateRangeQueryForm todayQuery = new MultiClinicDateRangeQueryForm();
         BeanUtils.copyProperties(query,todayQuery);
-        String todayStr = new DateTime().toDateTime().toString("yyyyMMdd");
-        int today = Integer.parseInt(todayStr);
-        todayQuery.setSDateInt(today);
-        todayQuery.setEDateInt(today);
+        String today = new DateTime().toDateTime().toString("yyyy-MM-dd");
+        todayQuery.setStartDate(today);
+        todayQuery.setEndDate(today);
         // 今日完成
         Future<Map<String, BigDecimal>> todayFuture = multiFindClinicReceivedWorkload(todayQuery, query.getOrgIds(), null);
         MultiClinicDateRangeQueryForm chainQuery = new MultiClinicDateRangeQueryForm();
         BeanUtils.copyProperties(query,chainQuery);
-        String chainSDate = DateUtil.chainDate(chainQuery.getStartDate());
-        String chainEDate = DateUtil.chainDate(chainQuery.getEndDate());
-        chainQuery.setSDateInt(DateUtil.startDate2Number(chainSDate));
-        chainQuery.setEDateInt(DateUtil.endDate2Number(chainEDate));
+        chainQuery.setStartDate(DateUtil.chainDate(chainQuery.getStartDate()));
+        chainQuery.setEndDate(DateUtil.chainDate(chainQuery.getEndDate()));
         // 同比
         Future<Map<String, BigDecimal>> preYearFuture = multiFindClinicReceivedWorkload(chainQuery, query.getOrgIds(), null);
         return mergeClinicAchievementStatistics(goalFuture.get(), orgFuture.get(), workloadFuture.get(), todayFuture.get(), preYearFuture.get());
@@ -1730,15 +1714,15 @@ public class DimensionReportBiz {
         Future<List<SpecialistProjectVO>> specialFuture = multiFindSpecialProjectList();
         // 第一个日期的专科项目数量
         MultiClinicDateRangeQueryForm queryForm1 = doubleDateRange2SingleDateRangeQuery(query, orgIds, (doubleQuery, queryForm)->{
-            queryForm.setSDateInt(DateUtil.startDate2Number(doubleQuery.getStartDate1()));
-            queryForm.setEDateInt(DateUtil.endDate2Number(doubleQuery.getEndDate1()));
+            queryForm.setStartDate(doubleQuery.getStartDate1());
+            queryForm.setEndDate(doubleQuery.getEndDate1());
             return null;
         });
         Future<List<StatEmpBill>> itemFuture = multiFindClinicBillItemNum(queryForm1);
         // 对比日期的专科项目数量
         MultiClinicDateRangeQueryForm queryForm2 = doubleDateRange2SingleDateRangeQuery(query, orgIds, (doubleQuery, queryForm)->{
-            queryForm.setSDateInt(DateUtil.startDate2Number(doubleQuery.getStartDate2()));
-            queryForm.setEDateInt(DateUtil.endDate2Number(doubleQuery.getEndDate2()));
+            queryForm.setStartDate(doubleQuery.getStartDate2());
+            queryForm.setEndDate(doubleQuery.getEndDate2());
             return null;
         });
         Future<List<StatEmpBill>> itemFuture2 = multiFindClinicBillItemNum(queryForm2);
@@ -1994,7 +1978,6 @@ public class DimensionReportBiz {
      * @throws Exception
      */
     public DynamicHeaderPageInfo<JSONObject> campusAchievementStatistics(MultiClinicDateRangeQueryForm query) throws Exception {
-        dateQuery2NumDateQuery(query);
         // 院区门诊
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
         // 工作量
@@ -2108,7 +2091,6 @@ public class DimensionReportBiz {
      * @throws Exception
      */
     public PageInfo<CampusAchievementCompareVO> campusAchievementCompare(MultiClinicDateRangeQueryForm query) throws Exception {
-        dateQuery2NumDateQuery(query);
         // 院区门诊
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
         // 工作量
