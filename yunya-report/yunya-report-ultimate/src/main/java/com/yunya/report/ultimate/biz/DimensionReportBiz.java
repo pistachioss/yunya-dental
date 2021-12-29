@@ -2135,11 +2135,11 @@ public class DimensionReportBiz {
             campus.put(parentId, obj);
         }
         totalObj.setWorkload(totalWorkload);
-        totalObj.setWorkloadRatio("100.00%");
+        totalObj.setWorkloadRatio(totalWorkload.compareTo(BigDecimal.ZERO)!=0?"100.00%":"0.00%");
         totalObj.setFirstVisitCount(totalFirstVisit);
-        totalObj.setFirstVisitCountRatio("100.00%");
+        totalObj.setFirstVisitCountRatio(totalFirstVisit!=0?"100.00%":"0.00%");
         totalObj.setTreatVisitCount(totalTreatVisit);
-        totalObj.setTreatVisitCountRatio("100.00%");
+        totalObj.setTreatVisitCountRatio(totalTreatVisit!=0?"100.00%":"0.00%");
         List<CampusAchievementCompareVO> list = new ArrayList<>();
         for (Map.Entry<Integer, CampusAchievementCompareVO> entry : campus.entrySet()) {
             CampusAchievementCompareVO vo = entry.getValue();
