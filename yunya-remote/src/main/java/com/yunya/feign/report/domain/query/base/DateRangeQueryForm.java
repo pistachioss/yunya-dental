@@ -1,6 +1,8 @@
 package com.yunya.feign.report.domain.query.base;
 
 import com.yunya.framework.common.model.PageQuery;
+import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -42,4 +44,18 @@ public class DateRangeQueryForm extends PageQuery implements Serializable {
     /** 查询结束时间 */
     @ApiModelProperty(value = "查询结束时间数字形式：yyyyMMdd")
     private Integer eDateInt;
+
+    public void setStartDate(String startDate) {
+        if (StringHelper.isNotEmpty(startDate)) {
+            this.sDateInt = DateUtil.startDate2Number(startDate);
+        }
+        this.startDate = startDate;
+    }
+
+    public void setEndDate(String endDate) {
+        if (StringHelper.isNotEmpty(endDate)) {
+            this.eDateInt = DateUtil.endDate2Number(endDate);
+        }
+        this.endDate = endDate;
+    }
 }
