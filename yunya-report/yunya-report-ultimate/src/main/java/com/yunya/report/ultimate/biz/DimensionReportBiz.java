@@ -1926,8 +1926,8 @@ public class DimensionReportBiz {
         DynamicHeaderPageInfo<JSONObject> pageInfo = clinicSpecialProjectNumCompare(query);
         List<JSONObject> result = pageInfo.getList();
         ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
-        excelUtil.setMergeRegion(specialProjectNumCmpMergeRegiion(pageInfo, query));
-        String fileName = excelUtil.getFileName(query.getStartDate1()+"", query.getEndDate1()+"", "", "专科数量同比");
+        excelUtil.setMergeRegion(specialProjectNumCmpMergeRegiion(pageInfo));
+        String fileName = excelUtil.getFileName(query.getStartDate1()+"", query.getStartDate2()+"", "", "专科数量同比");
         excelUtil.exportExcel(response, result, "专科数量同比", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
 
@@ -1935,10 +1935,9 @@ public class DimensionReportBiz {
      * 专科数量同比单元格合并
      *
      * @param pageInfo
-     * @param query
      * @return
      */
-    private List<CellRangeAddress> specialProjectNumCmpMergeRegiion(DynamicHeaderPageInfo<JSONObject> pageInfo, DoubleDateRangeQueryForm query) {
+    private List<CellRangeAddress> specialProjectNumCmpMergeRegiion(DynamicHeaderPageInfo<JSONObject> pageInfo) {
         List<CellRangeAddress> result = new ArrayList<>();
         List<JSONObject> list = pageInfo.getList();
         Map<String, String> title = pageInfo.getMap();
