@@ -300,23 +300,6 @@ public class DimensionReportBiz {
      * @return
      */
     public DynamicHeaderPageInfo<JSONObject> dentistDimensionStatistics(ClinicEmployeeWorkloadQuery query) throws Exception {
-        Integer[] employeeIds = query.getEmployeeIds();
-        if (StringHelper.isEmpty(employeeIds)) {
-            SysUserEmployeeModel empQuery = new SysUserEmployeeModel();
-            empQuery.setPostGroupId(Collections.singletonList(DENTIST_GROUP_ID));
-            Integer[] workStatus = query.getWorkStatus();
-            if (StringHelper.isNotEmpty(workStatus)) {
-                Byte[] wStatus = new Byte[workStatus.length];
-                for (int i = 0; i < workStatus.length; i++) {
-                    wStatus[i] = (byte) workStatus[i].intValue();
-                }
-                empQuery.setWorkStatus(wStatus);
-            }
-            empQuery.setWhetherPage(false);
-            List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(empQuery);
-            employeeIds = employees.stream().map(SysUserInfoDetail::getEmployeeId).toArray(Integer[]::new);
-            query.setEmployeeIds(employeeIds);
-        }
         return clinicDimensionStatistics(query, false);
     }
 
@@ -423,6 +406,7 @@ public class DimensionReportBiz {
      * @return
      */
     public DynamicHeaderPageInfo<JSONObject> clinicDimensionStatistics(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) throws Exception {
+        filterDentistPost(query);
         List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(query, groupByOrgId);
         updEmployeeId2Query(employees, query);
 
@@ -455,6 +439,26 @@ public class DimensionReportBiz {
         return mergeClinicDimension(employees, workloadFuture.get(), firstVisitFuture.get(), reFirstVisitFuture.get(),
                 treatFuture.get(), debtFuture.get(), noAppointAndRemindFuture.get(), patientOrginFuture.get(),
                 billItemFuture.get(), reVisitFuture.get(), groupByOrgId);
+    }
+
+    private void filterDentistPost(ClinicEmployeeWorkloadQuery query) {
+        Integer[] employeeIds = query.getEmployeeIds();
+        if (StringHelper.isEmpty(employeeIds)) {
+            SysUserEmployeeModel empQuery = new SysUserEmployeeModel();
+            empQuery.setPostGroupId(Collections.singletonList(DENTIST_GROUP_ID));
+            Integer[] workStatus = query.getWorkStatus();
+            if (StringHelper.isNotEmpty(workStatus)) {
+                Byte[] wStatus = new Byte[workStatus.length];
+                for (int i = 0; i < workStatus.length; i++) {
+                    wStatus[i] = (byte) workStatus[i].intValue();
+                }
+                empQuery.setWorkStatus(wStatus);
+            }
+            empQuery.setWhetherPage(false);
+            List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(empQuery);
+            employeeIds = employees.stream().map(SysUserInfoDetail::getEmployeeId).toArray(Integer[]::new);
+            query.setEmployeeIds(employeeIds);
+        }
     }
 
     private void updEmployeeId2Query(List<ClinicEmployeBonusCoefficientVO> employees, ClinicEmployeeWorkloadQuery query) {
