@@ -474,9 +474,11 @@ public class ExcelUtil<T> {
             createCell(head, row, column++, "header");
           }
         } else {
-          for (String head : dynamicTitle.values()) {
-            sheet.setColumnWidth(column, (int) ((16 + 0.72) * 256));
-            createCell(head, row, column++, "header");
+          if (StringHelper.isNotEmpty(dynamicTitle)) {
+            for (String head : dynamicTitle.values()) {
+              sheet.setColumnWidth(column, (int) ((16 + 0.72) * 256));
+              createCell(head, row, column++, "header");
+            }
           }
         }
         if (Type.EXPORT.equals(type)) {
