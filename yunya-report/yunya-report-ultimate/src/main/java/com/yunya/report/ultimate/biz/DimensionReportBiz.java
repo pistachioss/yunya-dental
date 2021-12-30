@@ -2213,56 +2213,54 @@ public class DimensionReportBiz {
      */
     private DynamicHeaderPageInfo<JSONObject> mergeCardCouponUsedStatistics(List<BaseOrganization> orgs, List<BaseCoupon> coupons, List<BaseCard> cards) {
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo();
-        if (StringHelper.isNotEmpty(orgs)) {
-            List<JSONObject> list = new ArrayList<>();
-            if (StringHelper.isNotEmpty(cards)) {
-                pageInfo = new DynamicHeaderPageInfo(orgs);
-                // 销售数量
-                Map<String, Integer> soldNumMap = new HashMap<>(16);
-                // 激活数量
-                Map<String, Integer> activeNumMap = new HashMap<>(16);
-                // 购买产品的患者数量
-                Map<String, Set<Integer>> patients = new HashMap<>(16);
-                // 患者激活卡片次数
-                Map<String, Set<LocalDateTime>> patientActiveDates = statisticCouponCardNum(cards, patients, soldNumMap, activeNumMap);
-                int[] total = new int[coupons.size() * 5];
-                Map<String, Integer> repurchaseMap = patientRepurchaseMap(patientActiveDates);
-                for (BaseOrganization org : orgs) {
-                    JSONObject obj = new JSONObject();
-                    Integer orgId = org.getOrgId();
-                    obj.put("abbreviation", defaultValue(org.getAbbreviation()));
-                    obj.put("orgId", orgId);
-                    for (int i = 0; i < coupons.size(); i++) {
-                        BaseCoupon coupon = coupons.get(i);
-                        Integer couponId = coupon.getCouponId();
-                        String key = orgId + "," + couponId;
-                        int soldNum = defaultValue(soldNumMap.get(key));
-                        obj.put("S-" + couponId, soldNum);
-                        int activeNum = defaultValue(activeNumMap.get(key));
-                        obj.put("A-" + couponId, activeNum);
-                        int unActiveNum = soldNum - activeNum;
-                        obj.put("U-" + couponId, unActiveNum);
-                        int repurchaseNum = defaultValue(repurchaseMap.get(key));
-                        obj.put("R-" + couponId, repurchaseNum);
-                        // 激活率 = 激活数/销售数
-                        obj.put("T-" + couponId, computePercentage(activeNum, soldNum) + "%");
-                        // 复购率 = 复购数/购买产品的患者人数
-                        int patientNum = 0;
-                        Set<Integer> patientIds = patients.get(key);
-                        if (StringHelper.isNotEmpty(patientIds)) {
-                            patientNum = patientIds.size();
-                        }
-                        obj.put("V-" + couponId, computePercentage(repurchaseNum, patientNum) + "%");
-                        total[i * 5] += soldNum;
-                        total[i * 5 + 1] += activeNum;
-                        total[i * 5 + 2] += unActiveNum;
-                        total[i * 5 + 3] += repurchaseNum;
-                        total[i * 5 + 4] += patientNum;
+        List<JSONObject> list = new ArrayList<>();
+        if (StringHelper.isNotEmpty(orgs) && StringHelper.isNotEmpty(cards)) {
+            pageInfo = new DynamicHeaderPageInfo(orgs);
+            // 销售数量
+            Map<String, Integer> soldNumMap = new HashMap<>(16);
+            // 激活数量
+            Map<String, Integer> activeNumMap = new HashMap<>(16);
+            // 购买产品的患者数量
+            Map<String, Set<Integer>> patients = new HashMap<>(16);
+            // 患者激活卡片次数
+            Map<String, Set<LocalDateTime>> patientActiveDates = statisticCouponCardNum(cards, patients, soldNumMap, activeNumMap);
+            int[] total = new int[coupons.size() * 5];
+            Map<String, Integer> repurchaseMap = patientRepurchaseMap(patientActiveDates);
+            for (BaseOrganization org : orgs) {
+                JSONObject obj = new JSONObject();
+                Integer orgId = org.getOrgId();
+                obj.put("abbreviation", defaultValue(org.getAbbreviation()));
+                obj.put("orgId", orgId);
+                for (int i = 0; i < coupons.size(); i++) {
+                    BaseCoupon coupon = coupons.get(i);
+                    Integer couponId = coupon.getCouponId();
+                    String key = orgId + "," + couponId;
+                    int soldNum = defaultValue(soldNumMap.get(key));
+                    obj.put("S-" + couponId, soldNum);
+                    int activeNum = defaultValue(activeNumMap.get(key));
+                    obj.put("A-" + couponId, activeNum);
+                    int unActiveNum = soldNum - activeNum;
+                    obj.put("U-" + couponId, unActiveNum);
+                    int repurchaseNum = defaultValue(repurchaseMap.get(key));
+                    obj.put("R-" + couponId, repurchaseNum);
+                    // 激活率 = 激活数/销售数
+                    obj.put("T-" + couponId, computePercentage(activeNum, soldNum) + "%");
+                    // 复购率 = 复购数/购买产品的患者人数
+                    int patientNum = 0;
+                    Set<Integer> patientIds = patients.get(key);
+                    if (StringHelper.isNotEmpty(patientIds)) {
+                        patientNum = patientIds.size();
                     }
-                    list.add(obj);
+                    obj.put("V-" + couponId, computePercentage(repurchaseNum, patientNum) + "%");
+                    total[i * 5] += soldNum;
+                    total[i * 5 + 1] += activeNum;
+                    total[i * 5 + 2] += unActiveNum;
+                    total[i * 5 + 3] += repurchaseNum;
+                    total[i * 5 + 4] += patientNum;
                 }
-                list.add(totalCardCouponObj(total, coupons));
+                list.add(obj);
             }
+            list.add(totalCardCouponObj(total, coupons));
             pageInfo.setList(list);
             cardCouponUsedTitle(pageInfo, coupons);
         }
