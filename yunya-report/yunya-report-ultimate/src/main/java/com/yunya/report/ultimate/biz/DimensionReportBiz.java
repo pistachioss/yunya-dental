@@ -482,7 +482,8 @@ public class DimensionReportBiz {
         if (StringHelper.isNotEmpty(originTypes)) {
             originTypes.forEach(vo->{
                 Integer originTypeId = vo.getOriginTypeId();
-                originDataMap.put(vo.getEmployeeId()+","+vo.getOrgId()+",T"+originTypeId, vo.getCount());
+                String orgId = ObjectUtils.isEmpty(vo.getOrgId())?"":","+vo.getOrgId();
+                originDataMap.put(vo.getEmployeeId()+orgId+",T"+originTypeId, vo.getCount());
                 String originTypeName = vo.getOriginTypeName();
                 if (!originTypeMap.containsKey(originTypeId+"")) {
                     originTypeMap.put("T"+originTypeId, originTypeName);
@@ -1889,14 +1890,16 @@ public class DimensionReportBiz {
         Map<String, Integer> result = new HashMap<>(16);
         statEmpBills.forEach(vo -> {
             List<Integer> specialIds = specialItemMap.get(vo.getItemType() + "," + vo.getItemId());
-            specialIds.forEach(specialId->{
-                String key = vo.getOrgId() + "," + specialId;
-                Integer itemNum = result.get(key);
-                if (itemNum == null) {
-                    itemNum = 0;
-                }
-                result.put(key, itemNum + vo.getQuantity());
-            });
+            if (StringHelper.isNotEmpty(specialIds)) {
+                specialIds.forEach(specialId -> {
+                    String key = vo.getOrgId() + "," + specialId;
+                    Integer itemNum = result.get(key);
+                    if (itemNum == null) {
+                        itemNum = 0;
+                    }
+                    result.put(key, itemNum + vo.getQuantity());
+                });
+            }
         });
         return result;
     }

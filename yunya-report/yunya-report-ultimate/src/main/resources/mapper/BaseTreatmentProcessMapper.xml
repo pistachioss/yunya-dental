@@ -1129,6 +1129,7 @@
         <if test="groupByOrgId">
             btp.org_id,
         </if>
-        btp.registered_dentist_id
+        btp.registered_dentist_id,
+        bp.origin_type
     </select>
 </mapper>
