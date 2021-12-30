@@ -2407,7 +2407,9 @@ public class DimensionReportBiz {
         DynamicHeaderPageInfo<JSONObject> pageInfo = cardCouponUsedStatistics(query);
         List<JSONObject> result = pageInfo.getList();
         ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
-        excelUtil.setMergeRegion(cardCouponUsedMergeRegiion(pageInfo));
+        if (StringHelper.isNotEmpty(pageInfo.getMap())) {
+            excelUtil.setMergeRegion(cardCouponUsedMergeRegiion(pageInfo));
+        }
         String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "产品卡券使用统计");
         excelUtil.exportExcel(response, result, "产品卡券使用统计", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
@@ -2421,31 +2423,37 @@ public class DimensionReportBiz {
     private List<CellRangeAddress> cardCouponUsedMergeRegiion(DynamicHeaderPageInfo<JSONObject> pageInfo) {
         List<CellRangeAddress> result = new ArrayList<>();
         Map<String, String> map = pageInfo.getMap();
-        JSONObject title = new JSONObject();
-        map.forEach((key, name)->title.put(key, name));
-        List<JSONObject> list = pageInfo.getList();
-        list.add(0, title);
-        // 产品行横向合并
-        Map<String, List<String>> contextMap = pageInfo.getContextMap();
-        String[] header = new String[contextMap.size()*6+1];
-        int index = 0;
-        int colInx = 0;
-        result.add(new CellRangeAddress(0,0,colInx,colInx+=6));
-        for (Map.Entry<String, List<String>> entry : contextMap.entrySet()) {
-            header[index++] = entry.getKey();
-            if (index == 1) {
-                header[index++] = "";
-            } else {
-                result.add(new CellRangeAddress(0,0,colInx,colInx+=5));
-            }
-            colInx++;
-            for (int i = 0; i < entry.getValue().size(); i++) {
-                if (i != 0) {
-                    header[index++] = "";
-                }
+        if (StringHelper.isNotEmpty(map)) {
+            JSONObject title = new JSONObject();
+            map.forEach((key, name) -> title.put(key, name));
+            List<JSONObject> list = pageInfo.getList();
+            if (StringHelper.isNotEmpty(list)) {
+                list.add(0, title);
             }
         }
-        pageInfo.setHeader(header);
+        // 产品行横向合并
+        Map<String, List<String>> contextMap = pageInfo.getContextMap();
+        if (StringHelper.isNotEmpty(contextMap)) {
+            String[] header = new String[contextMap.size() * 6 + 1];
+            int index = 0;
+            int colInx = 0;
+            result.add(new CellRangeAddress(0, 0, colInx, colInx += 6));
+            for (Map.Entry<String, List<String>> entry : contextMap.entrySet()) {
+                header[index++] = entry.getKey();
+                if (index == 1) {
+                    header[index++] = "";
+                } else {
+                    result.add(new CellRangeAddress(0, 0, colInx, colInx += 5));
+                }
+                colInx++;
+                for (int i = 0; i < entry.getValue().size(); i++) {
+                    if (i != 0) {
+                        header[index++] = "";
+                    }
+                }
+            }
+            pageInfo.setHeader(header);
+        }
         return result;
     }
 
