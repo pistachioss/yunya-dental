@@ -465,6 +465,11 @@ public class DiscountBiz {
                 couponId, saleChannelId);
         return new PageInfo<>(page);
     }
+    public PageInfo<CardDetaVo> getCardDetailPage(CardDetailForm query) {
+        Page<CardDetaVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        cardMapper.listCardDetail(query.getPatientKeyword(), query.getActiveOrgIds(), query.getActiveStartDate(), query.getActiveEndDate(),query.getCardIds());
+        return new PageInfo<>(page);
+    }
 
     public List<CouponActiveVo> listCouponActive(CouponActiveQuery query) {
         return couponMapper.listCouponActive(query.getCouponIds()

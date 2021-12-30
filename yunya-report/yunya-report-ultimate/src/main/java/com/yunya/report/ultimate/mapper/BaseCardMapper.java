@@ -130,6 +130,9 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
     List<CardActiveVo> listCardActive(@Param("patientKeyword") String patientKeyword, @Param("activeOrgIds") List<Integer> activeOrgIds,
                                       @Param("activeStartDate") LocalDate activeStartDate, @Param("activeEndDate") LocalDate activeEndDate,
                                       @Param("couponId") Integer couponId, @Param("saleChannelId") Integer saleChannelId);
+    List<CardDetaVo> listCardDetail(@Param("patientKeyword") String patientKeyword, @Param("activeOrgIds") List<Integer> activeOrgIds,
+                                      @Param("activeStartDate") LocalDate activeStartDate, @Param("activeEndDate") LocalDate activeEndDate
+            , @Param("cardIds") List<Integer> cardIds);
 
     /**
      * 产品激活报表

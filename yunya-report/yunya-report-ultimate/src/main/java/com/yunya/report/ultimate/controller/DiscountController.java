@@ -274,6 +274,18 @@ public class DiscountController {
 																			  @RequestBody CouponDetailActiveQuery query) {
 		return ResponseUtil.success(discountBiz.getCardActivePage(couponId, saleChannelId, query));
 	}
+	@ApiOperation(value = "公司端/门诊端-报表统计-市场报表-产品激活明细报表")
+	@PostMapping("/coupon/card/detail/page")
+	public ResponseResult<PageInfo<CardDetaVo>> getCouponDetail(@RequestBody CardDetailForm query) {
+		return ResponseUtil.success(discountBiz.getCardDetailPage(query));
+	}
+	@ApiOperation(value = "公司端/门诊端-报表统计-市场报表-产品激活明细报表-导出")
+	@PostMapping("/coupon/card/detail/export")
+	public void exportCouponDetail(HttpServletResponse response,@RequestBody CardDetailForm query)  throws IOException {
+		discountBiz.buildResponse(response, "产品激活明细报表");
+		EasyExcel.write(response.getOutputStream(), CardDetaVo.class)
+				.sheet("sheet").doWrite(discountBiz.getCardDetailPage(query).getList());
+	}
 
 	@ApiOperation(value = "公司端/门诊端-报表统计-市场报表-产品激活报表-导出")
 	@PostMapping("/coupon/activation/export")
