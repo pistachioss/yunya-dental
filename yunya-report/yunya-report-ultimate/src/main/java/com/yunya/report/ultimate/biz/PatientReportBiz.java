@@ -6,6 +6,7 @@ import com.yunya.feign.report.domain.form.PatientNotSeenForm;
 import com.yunya.feign.report.domain.query.ArrearsQueryForm;
 import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
+import com.yunya.feign.report.domain.query.base.FuchaForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
@@ -48,6 +49,44 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
 
   @Resource private BaseOrganizationMapper baseOrganizationMapper;
 
+  /**
+   * 复查患者报表
+   *
+   * @return 复查患者报表
+   */
+  public PageInfo<FuchaVO> fuchaList(FuchaForm fuchaForm) {
+    if (fuchaForm.getWhetherPage()) {
+      PageHelper.startPage(fuchaForm.getPageNum(), fuchaForm.getPageSize());
+    }
+    return  new PageInfo<>(baseEmployeeMapper.fuchaList(fuchaForm));
+  }
+  /**
+   * 导出复查患者报表
+   *
+   * @param response 导出响应
+   * @param form 条件
+   */
+  public void exportfuchaList(HttpServletResponse response, FuchaForm form)
+          throws IOException {
+    form.setWhetherPage(false);
+    PageInfo<FuchaVO> pageInfo = fuchaList(form);
+    List<FuchaVO> basePatientNotSeenVoList = pageInfo.getList();
+    ExcelUtil<FuchaVO> excelUtil = new ExcelUtil<>(FuchaVO.class);
+//    if (StringHelper.isNotNull(form.getOrgIds())) {
+//      BaseOrganization baseOrganization = new BaseOrganization();
+//      baseOrganization.setOrgId(form.getOrgId());
+//      BaseOrganization baseOrganizationv = baseOrganizationMapper.selectOne(baseOrganization);
+//      if (baseOrganizationv != null) {
+//        excelUtil.exportExcel(
+//                response,
+//                basePatientNotSeenVoList,
+//                "未复诊预约且未提醒统计表",
+//                baseOrganizationv.getAbbreviation() + "未复诊预约且未提醒统计表");
+//      }
+//    } else {
+      excelUtil.exportExcel(response, basePatientNotSeenVoList, "复查患者报表", "复查患者报表");
+
+  }
   /**
    * 查询末诊医生列表
    *
