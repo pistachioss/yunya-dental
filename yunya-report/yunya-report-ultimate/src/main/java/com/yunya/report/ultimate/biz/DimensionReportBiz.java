@@ -2212,8 +2212,9 @@ public class DimensionReportBiz {
      * @return
      */
     private DynamicHeaderPageInfo<JSONObject> mergeCardCouponUsedStatistics(List<BaseOrganization> orgs, List<BaseCoupon> coupons, List<BaseCard> cards) {
-        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo(orgs);
-        if (StringHelper.isNotEmpty(orgs)) {
+        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo();
+        if (StringHelper.isNotEmpty(orgs) && StringHelper.isNotEmpty(cards)) {
+            pageInfo = new DynamicHeaderPageInfo(orgs);
             // 患者激活卡片次数
             Map<String, Set<LocalDateTime>> patientActiveDates = new HashMap<>(16);
             // 销售数量
