@@ -2213,56 +2213,54 @@ public class DimensionReportBiz {
      */
     private DynamicHeaderPageInfo<JSONObject> mergeCardCouponUsedStatistics(List<BaseOrganization> orgs, List<BaseCoupon> coupons, List<BaseCard> cards) {
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo();
-        if (StringHelper.isNotEmpty(orgs)) {
-            List<JSONObject> list = new ArrayList<>();
-            if (StringHelper.isNotEmpty(cards)) {
-                pageInfo = new DynamicHeaderPageInfo(orgs);
-                // 销售数量
-                Map<String, Integer> soldNumMap = new HashMap<>(16);
-                // 激活数量
-                Map<String, Integer> activeNumMap = new HashMap<>(16);
-                // 购买产品的患者数量
-                Map<String, Set<Integer>> patients = new HashMap<>(16);
-                // 患者激活卡片次数
-                Map<String, Set<LocalDateTime>> patientActiveDates = statisticCouponCardNum(cards, patients, soldNumMap, activeNumMap);
-                int[] total = new int[coupons.size() * 5];
-                Map<String, Integer> repurchaseMap = patientRepurchaseMap(patientActiveDates);
-                for (BaseOrganization org : orgs) {
-                    JSONObject obj = new JSONObject();
-                    Integer orgId = org.getOrgId();
-                    obj.put("abbreviation", defaultValue(org.getAbbreviation()));
-                    obj.put("orgId", orgId);
-                    for (int i = 0; i < coupons.size(); i++) {
-                        BaseCoupon coupon = coupons.get(i);
-                        Integer couponId = coupon.getCouponId();
-                        String key = orgId + "," + couponId;
-                        int soldNum = defaultValue(soldNumMap.get(key));
-                        obj.put("S-" + couponId, soldNum);
-                        int activeNum = defaultValue(activeNumMap.get(key));
-                        obj.put("A-" + couponId, activeNum);
-                        int unActiveNum = soldNum - activeNum;
-                        obj.put("U-" + couponId, unActiveNum);
-                        int repurchaseNum = defaultValue(repurchaseMap.get(key));
-                        obj.put("R-" + couponId, repurchaseNum);
-                        // 激活率 = 激活数/销售数
-                        obj.put("T-" + couponId, computePercentage(activeNum, soldNum) + "%");
-                        // 复购率 = 复购数/购买产品的患者人数
-                        int patientNum = 0;
-                        Set<Integer> patientIds = patients.get(key);
-                        if (StringHelper.isNotEmpty(patientIds)) {
-                            patientNum = patientIds.size();
-                        }
-                        obj.put("V-" + couponId, computePercentage(repurchaseNum, patientNum) + "%");
-                        total[i * 5] += soldNum;
-                        total[i * 5 + 1] += activeNum;
-                        total[i * 5 + 2] += unActiveNum;
-                        total[i * 5 + 3] += repurchaseNum;
-                        total[i * 5 + 4] += patientNum;
+        List<JSONObject> list = new ArrayList<>();
+        if (StringHelper.isNotEmpty(orgs) && StringHelper.isNotEmpty(cards)) {
+            pageInfo = new DynamicHeaderPageInfo(orgs);
+            // 销售数量
+            Map<String, Integer> soldNumMap = new HashMap<>(16);
+            // 激活数量
+            Map<String, Integer> activeNumMap = new HashMap<>(16);
+            // 购买产品的患者数量
+            Map<String, Set<Integer>> patients = new HashMap<>(16);
+            // 患者激活卡片次数
+            Map<String, Set<LocalDateTime>> patientActiveDates = statisticCouponCardNum(cards, patients, soldNumMap, activeNumMap);
+            int[] total = new int[coupons.size() * 5];
+            Map<String, Integer> repurchaseMap = patientRepurchaseMap(patientActiveDates);
+            for (BaseOrganization org : orgs) {
+                JSONObject obj = new JSONObject();
+                Integer orgId = org.getOrgId();
+                obj.put("abbreviation", defaultValue(org.getAbbreviation()));
+                obj.put("orgId", orgId);
+                for (int i = 0; i < coupons.size(); i++) {
+                    BaseCoupon coupon = coupons.get(i);
+                    Integer couponId = coupon.getCouponId();
+                    String key = orgId + "," + couponId;
+                    int soldNum = defaultValue(soldNumMap.get(key));
+                    obj.put("S-" + couponId, soldNum);
+                    int activeNum = defaultValue(activeNumMap.get(key));
+                    obj.put("A-" + couponId, activeNum);
+                    int unActiveNum = soldNum - activeNum;
+                    obj.put("U-" + couponId, unActiveNum);
+                    int repurchaseNum = defaultValue(repurchaseMap.get(key));
+                    obj.put("R-" + couponId, repurchaseNum);
+                    // 激活率 = 激活数/销售数
+                    obj.put("T-" + couponId, computePercentage(activeNum, soldNum) + "%");
+                    // 复购率 = 复购数/购买产品的患者人数
+                    int patientNum = 0;
+                    Set<Integer> patientIds = patients.get(key);
+                    if (StringHelper.isNotEmpty(patientIds)) {
+                        patientNum = patientIds.size();
                     }
-                    list.add(obj);
+                    obj.put("V-" + couponId, computePercentage(repurchaseNum, patientNum) + "%");
+                    total[i * 5] += soldNum;
+                    total[i * 5 + 1] += activeNum;
+                    total[i * 5 + 2] += unActiveNum;
+                    total[i * 5 + 3] += repurchaseNum;
+                    total[i * 5 + 4] += patientNum;
                 }
-                list.add(totalCardCouponObj(total, coupons));
+                list.add(obj);
             }
+            list.add(totalCardCouponObj(total, coupons));
             pageInfo.setList(list);
             cardCouponUsedTitle(pageInfo, coupons);
         }
@@ -2409,7 +2407,9 @@ public class DimensionReportBiz {
         DynamicHeaderPageInfo<JSONObject> pageInfo = cardCouponUsedStatistics(query);
         List<JSONObject> result = pageInfo.getList();
         ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
-        excelUtil.setMergeRegion(cardCouponUsedMergeRegiion(pageInfo));
+        if (StringHelper.isNotEmpty(pageInfo.getMap())) {
+            excelUtil.setMergeRegion(cardCouponUsedMergeRegiion(pageInfo));
+        }
         String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "产品卡券使用统计");
         excelUtil.exportExcel(response, result, "产品卡券使用统计", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
@@ -2423,31 +2423,37 @@ public class DimensionReportBiz {
     private List<CellRangeAddress> cardCouponUsedMergeRegiion(DynamicHeaderPageInfo<JSONObject> pageInfo) {
         List<CellRangeAddress> result = new ArrayList<>();
         Map<String, String> map = pageInfo.getMap();
-        JSONObject title = new JSONObject();
-        map.forEach((key, name)->title.put(key, name));
-        List<JSONObject> list = pageInfo.getList();
-        list.add(0, title);
-        // 产品行横向合并
-        Map<String, List<String>> contextMap = pageInfo.getContextMap();
-        String[] header = new String[contextMap.size()*6+1];
-        int index = 0;
-        int colInx = 0;
-        result.add(new CellRangeAddress(0,0,colInx,colInx+=6));
-        for (Map.Entry<String, List<String>> entry : contextMap.entrySet()) {
-            header[index++] = entry.getKey();
-            if (index == 1) {
-                header[index++] = "";
-            } else {
-                result.add(new CellRangeAddress(0,0,colInx,colInx+=5));
-            }
-            colInx++;
-            for (int i = 0; i < entry.getValue().size(); i++) {
-                if (i != 0) {
-                    header[index++] = "";
-                }
+        if (StringHelper.isNotEmpty(map)) {
+            JSONObject title = new JSONObject();
+            map.forEach((key, name) -> title.put(key, name));
+            List<JSONObject> list = pageInfo.getList();
+            if (StringHelper.isNotEmpty(list)) {
+                list.add(0, title);
             }
         }
-        pageInfo.setHeader(header);
+        // 产品行横向合并
+        Map<String, List<String>> contextMap = pageInfo.getContextMap();
+        if (StringHelper.isNotEmpty(contextMap)) {
+            String[] header = new String[contextMap.size() * 6 + 1];
+            int index = 0;
+            int colInx = 0;
+            result.add(new CellRangeAddress(0, 0, colInx, colInx += 6));
+            for (Map.Entry<String, List<String>> entry : contextMap.entrySet()) {
+                header[index++] = entry.getKey();
+                if (index == 1) {
+                    header[index++] = "";
+                } else {
+                    result.add(new CellRangeAddress(0, 0, colInx, colInx += 5));
+                }
+                colInx++;
+                for (int i = 0; i < entry.getValue().size(); i++) {
+                    if (i != 0) {
+                        header[index++] = "";
+                    }
+                }
+            }
+            pageInfo.setHeader(header);
+        }
         return result;
     }
 
