@@ -1664,7 +1664,7 @@ public class DimensionReportBiz {
     }
 
     /**
-     * 统计门诊的初诊、复诊人数
+     * 统计门诊的初诊、就诊人数
      *
      * @param treatNumMap
      * @return
@@ -2038,7 +2038,7 @@ public class DimensionReportBiz {
             int treatVisitCount = 0;
             if (statEmpTreat != null) {
                 firstVisitCount = statEmpTreat.getFirstVisitCount();
-                treatVisitCount = firstVisitCount + statEmpTreat.getReVisitCount();
+                treatVisitCount = statEmpTreat.getReVisitCount();
             }
             obj.put("firstVisitCount", obj.getIntValue("firstVisitCount") + firstVisitCount);
             obj.put("treatVisitCount", obj.getIntValue("treatVisitCount") + treatVisitCount);
@@ -2137,7 +2137,7 @@ public class DimensionReportBiz {
             int treatVisitCount = 0;
             if (statEmpTreat != null) {
                 firstVisitCount = statEmpTreat.getFirstVisitCount();
-                treatVisitCount = firstVisitCount + statEmpTreat.getReVisitCount();
+                treatVisitCount = statEmpTreat.getReVisitCount();
             }
             obj.setFirstVisitCount(obj.getFirstVisitCount() + firstVisitCount);
             obj.setTreatVisitCount(obj.getTreatVisitCount() + treatVisitCount);
@@ -2213,56 +2213,56 @@ public class DimensionReportBiz {
      */
     private DynamicHeaderPageInfo<JSONObject> mergeCardCouponUsedStatistics(List<BaseOrganization> orgs, List<BaseCoupon> coupons, List<BaseCard> cards) {
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo();
-        if (StringHelper.isNotEmpty(orgs) && StringHelper.isNotEmpty(cards)) {
-            pageInfo = new DynamicHeaderPageInfo(orgs);
-            // 患者激活卡片次数
-            Map<String, Set<LocalDateTime>> patientActiveDates = new HashMap<>(16);
-            // 销售数量
-            Map<String, Integer> soldNumMap = new HashMap<>(16);
-            // 激活数量
-            Map<String, Integer> activeNumMap = new HashMap<>(16);
-            // 购买产品的患者数量
-            Map<String, Set<Integer>> patients = new HashMap<>(16);
-            Set<Integer> couponIds = statisticCouponCardNum(cards, patients, patientActiveDates, soldNumMap, activeNumMap);
-            coupons = coupons.stream().filter(vo->couponIds.contains(vo.getCouponId())).collect(toList());
-            int[] total = new int[coupons.size()*5];
-            Map<String, Integer> repurchaseMap = patientRepurchaseMap(patientActiveDates);
+        if (StringHelper.isNotEmpty(orgs)) {
             List<JSONObject> list = new ArrayList<>();
-            for (BaseOrganization org : orgs) {
-                JSONObject obj = new JSONObject();
-                Integer orgId = org.getOrgId();
-                obj.put("abbreviation", defaultValue(org.getAbbreviation()));
-                obj.put("orgId", orgId);
-                for (int i = 0; i < coupons.size(); i++) {
-                    BaseCoupon coupon = coupons.get(i);
-                    Integer couponId = coupon.getCouponId();
-                    String key = orgId + "," + couponId;
-                    int soldNum = defaultValue(soldNumMap.get(key));
-                    obj.put("S-" + couponId, soldNum);
-                    int activeNum = defaultValue(activeNumMap.get(key));
-                    obj.put("A-" + couponId, activeNum);
-                    int unActiveNum = soldNum - activeNum;
-                    obj.put("U-" + couponId, unActiveNum);
-                    int repurchaseNum = defaultValue(repurchaseMap.get(key));
-                    obj.put("R-" + couponId, repurchaseNum);
-                    // 激活率 = 激活数/销售数
-                    obj.put("T-" + couponId, computePercentage(activeNum,soldNum)+"%");
-                    // 复购率 = 复购数/购买产品的患者人数
-                    int patientNum = 0;
-                    Set<Integer> patientIds = patients.get(key);
-                    if (StringHelper.isNotEmpty(patientIds)) {
-                        patientNum = patientIds.size();
+            if (StringHelper.isNotEmpty(cards)) {
+                pageInfo = new DynamicHeaderPageInfo(orgs);
+                // 销售数量
+                Map<String, Integer> soldNumMap = new HashMap<>(16);
+                // 激活数量
+                Map<String, Integer> activeNumMap = new HashMap<>(16);
+                // 购买产品的患者数量
+                Map<String, Set<Integer>> patients = new HashMap<>(16);
+                // 患者激活卡片次数
+                Map<String, Set<LocalDateTime>> patientActiveDates = statisticCouponCardNum(cards, patients, soldNumMap, activeNumMap);
+                int[] total = new int[coupons.size() * 5];
+                Map<String, Integer> repurchaseMap = patientRepurchaseMap(patientActiveDates);
+                for (BaseOrganization org : orgs) {
+                    JSONObject obj = new JSONObject();
+                    Integer orgId = org.getOrgId();
+                    obj.put("abbreviation", defaultValue(org.getAbbreviation()));
+                    obj.put("orgId", orgId);
+                    for (int i = 0; i < coupons.size(); i++) {
+                        BaseCoupon coupon = coupons.get(i);
+                        Integer couponId = coupon.getCouponId();
+                        String key = orgId + "," + couponId;
+                        int soldNum = defaultValue(soldNumMap.get(key));
+                        obj.put("S-" + couponId, soldNum);
+                        int activeNum = defaultValue(activeNumMap.get(key));
+                        obj.put("A-" + couponId, activeNum);
+                        int unActiveNum = soldNum - activeNum;
+                        obj.put("U-" + couponId, unActiveNum);
+                        int repurchaseNum = defaultValue(repurchaseMap.get(key));
+                        obj.put("R-" + couponId, repurchaseNum);
+                        // 激活率 = 激活数/销售数
+                        obj.put("T-" + couponId, computePercentage(activeNum, soldNum) + "%");
+                        // 复购率 = 复购数/购买产品的患者人数
+                        int patientNum = 0;
+                        Set<Integer> patientIds = patients.get(key);
+                        if (StringHelper.isNotEmpty(patientIds)) {
+                            patientNum = patientIds.size();
+                        }
+                        obj.put("V-" + couponId, computePercentage(repurchaseNum, patientNum) + "%");
+                        total[i * 5] += soldNum;
+                        total[i * 5 + 1] += activeNum;
+                        total[i * 5 + 2] += unActiveNum;
+                        total[i * 5 + 3] += repurchaseNum;
+                        total[i * 5 + 4] += patientNum;
                     }
-                    obj.put("V-" + couponId, computePercentage(repurchaseNum, patientNum)+"%");
-                    total[i*5] += soldNum;
-                    total[i*5+1] += activeNum;
-                    total[i*5+2] += unActiveNum;
-                    total[i*5+3] += repurchaseNum;
-                    total[i*5+4] += patientNum;
+                    list.add(obj);
                 }
-                list.add(obj);
+                list.add(totalCardCouponObj(total, coupons));
             }
-            list.add(totalCardCouponObj(total, coupons));
             pageInfo.setList(list);
             cardCouponUsedTitle(pageInfo, coupons);
         }
@@ -2274,40 +2274,40 @@ public class DimensionReportBiz {
      *
      * @param cards
      * @param patients
-     * @param patientActiveDates
      * @param soldNumMap
      * @param activeNumMap
      * @return
      */
-    private Set<Integer> statisticCouponCardNum(List<BaseCard> cards, Map<String, Set<Integer>> patients, Map<String, Set<LocalDateTime>> patientActiveDates,
-                                                             Map<String, Integer> soldNumMap, Map<String, Integer> activeNumMap) {
-        Set<Integer> couponIds = new HashSet<>();
-        cards.forEach(card->{
-            Integer status = card.getStatus();
-            Integer couponId = card.getCouponId();
-            Integer activeOrgId = card.getActiveOrgId();
-            Integer patientId = card.getPatientId();
-            String key = activeOrgId + "," + couponId;
-            incrementOne(key, soldNumMap);
-            if (status > 1) {// 已激活
-                String patientKey = key + "," + patientId;
-                Set<LocalDateTime> dates = patientActiveDates.get(patientKey);
-                if (dates == null) {
-                    dates = new HashSet<>();
+    private Map<String, Set<LocalDateTime>> statisticCouponCardNum(List<BaseCard> cards, Map<String, Set<Integer>> patients,
+                                 Map<String, Integer> soldNumMap, Map<String, Integer> activeNumMap) {
+        Map<String, Set<LocalDateTime>> patientActiveDates = new HashMap<>(16);
+        if (StringHelper.isNotEmpty(cards)) {
+            cards.forEach(card->{
+                Integer status = card.getStatus();
+                Integer couponId = card.getCouponId();
+                Integer activeOrgId = card.getActiveOrgId();
+                Integer patientId = card.getPatientId();
+                String key = activeOrgId + "," + couponId;
+                incrementOne(key, soldNumMap);
+                if (status > 1) {// 已激活
+                    String patientKey = key + "," + patientId;
+                    Set<LocalDateTime> dates = patientActiveDates.get(patientKey);
+                    if (dates == null) {
+                        dates = new HashSet<>();
+                    }
+                    dates.add(card.getActiveDate());
+                    patientActiveDates.put(patientKey, dates);
+                    incrementOne(key, activeNumMap);
                 }
-                dates.add(card.getActiveDate());
-                patientActiveDates.put(patientKey, dates);
-                incrementOne(key, activeNumMap);
-            }
-            Set<Integer> patientIds = patients.get(key);
-            if (patientIds == null) {
-                patientIds = new HashSet<>();
-            }
-            patientIds.add(patientId);
-            patients.put(key, patientIds);
-            couponIds.add(couponId);
-        });
-        return couponIds;
+                Set<Integer> patientIds = patients.get(key);
+                if (patientIds == null) {
+                    patientIds = new HashSet<>();
+                }
+                patientIds.add(patientId);
+                patients.put(key, patientIds);
+            });
+        }
+        return patientActiveDates;
     }
 
     /**
