@@ -482,7 +482,8 @@ public class DimensionReportBiz {
         if (StringHelper.isNotEmpty(originTypes)) {
             originTypes.forEach(vo->{
                 Integer originTypeId = vo.getOriginTypeId();
-                originDataMap.put(vo.getEmployeeId()+","+vo.getOrgId()+",T"+originTypeId, vo.getCount());
+                String orgId = ObjectUtils.isEmpty(vo.getOrgId())?"":","+vo.getOrgId();
+                originDataMap.put(vo.getEmployeeId()+orgId+",T"+originTypeId, vo.getCount());
                 String originTypeName = vo.getOriginTypeName();
                 if (!originTypeMap.containsKey(originTypeId+"")) {
                     originTypeMap.put("T"+originTypeId, originTypeName);
