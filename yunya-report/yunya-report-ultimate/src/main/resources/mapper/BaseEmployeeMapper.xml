@@ -26,7 +26,7 @@
         bp. NAME AS NAME,
         bp.mobile AS mobile,
         IF (
-        count(btp.patient_id) > 0,
+        count(btp.patient_id) > 1,
         1,
         0
         ) AS treatType,
@@ -40,7 +40,13 @@
         LEFT JOIN base_treatment_process btp ON bp.patient_id = btp.patient_id
         LEFT JOIN base_employee be ON bp.last_visit_doctors = be.user_id
         LEFT JOIN base_organization bo on  bp.last_visit_outpatient = bo.org_id
-        where bp.last_visit_doctors is not NULL
+        <where>
+         bp.last_visit_doctors is not NULL
+        <if test="combination != null and combination != ''">
+            and concat(IFNULL(bp.name,''),IFNULL(bp.pinyin_name,''),IFNULL(bp.mobile,'')) like
+            concat(concat('%',#{combination}),'%')
+        </if>
+        </where>
         GROUP BY
         bp.patient_id) res
         <where>
@@ -59,10 +65,7 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="combination != null and combination != ''">
-                    and concat(IFNULL(bp.`name`,''),IFNULL(bp.pinyin_name,''),IFNULL(bp.mobile,'')) like
-                    concat(concat('%',#{form.combination}),'%')
-            </if>
+
             <if test="attendingDoctors != null and attendingDoctors.size > 0">
                 AND res.lastVisitDoctors IN
                 <foreach collection="attendingDoctors" item="item" index="index" open="(" close=")" separator=",">
