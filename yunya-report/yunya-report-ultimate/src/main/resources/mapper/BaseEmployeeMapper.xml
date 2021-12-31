@@ -20,7 +20,7 @@
 
     <select id="fuchaList" resultType="com.yunya.feign.report.domain.vo.FuchaVO">
         select res.name ,res.mobile ,res.treatType ,
-        DATE_FORMAT(res.lastVisitDate,'%Y-%m-%d' ) as lastVisitDate,res.lastVisitOutpatient,res.lastVisitDoctors,
+        DATE_FORMAT(res.lastVisitDate,'%Y-%m-%d' ) as lastVisitDate,res.lastVisitOutpatient,res.abbreviation as abbreviation,res.lastVisitDoctors,
          res.employeeName
          from (SELECT
         bp. NAME AS NAME,
@@ -33,11 +33,13 @@
         bp.last_visit_date AS lastVisitDate,
         bp.last_visit_outpatient as lastVisitOutpatient,
         bp.last_visit_doctors as lastVisitDoctors,
-        be.employee_name AS employeeName
+        be.employee_name AS employeeName,
+        bo.abbreviation as abbreviation
         FROM
         base_patient bp
         LEFT JOIN base_treatment_process btp ON bp.patient_id = btp.patient_id
         LEFT JOIN base_employee be ON bp.last_visit_doctors = be.user_id
+        LEFT JOIN base_organization bo on  bp.last_visit_outpatient = bo.org_id
         where bp.last_visit_doctors is not NULL
         GROUP BY
         bp.patient_id) res
