@@ -651,7 +651,7 @@
     </select>
     <select id="listCardDetail" resultType="com.yunya.feign.report.domain.vo.CardDetaVo">
         select
-        b.coupon_name as cardName,
+        b.coupon_name as couponName,
         `bp`.`name` as `patientName`,
         date_format(`bp`.first_visit_date, '%Y-%m-%d') as firstTreatDate,
         `bc`.`card_number`,
@@ -659,7 +659,7 @@
         (select
         `abbreviation`
         from `base_organization`
-        where `org_id` = `bc`.`active_org_id`) as `activeOrgName`,
+        where `org_id` = `bc`.`active_org_id`) as `orgName`,
         (select
         `employee_name`
         from `base_employee`
