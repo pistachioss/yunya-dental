@@ -25,5 +25,5 @@ public class CardDetailForm  extends PageQuery {
     @ApiModelProperty(value = "激活结束日期")
     private LocalDate activeEndDate;
     @ApiModelProperty(value = "产品Id集合")
-    private List<Integer> cardIds;
+    private List<Integer> couponIds;
 }

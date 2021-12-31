@@ -467,7 +467,7 @@ public class DiscountBiz {
     }
     public PageInfo<CardDetaVo> getCardDetailPage(CardDetailForm query) {
         Page<CardDetaVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        cardMapper.listCardDetail(query.getPatientKeyword(), query.getActiveOrgIds(), query.getActiveStartDate(), query.getActiveEndDate(),query.getCardIds());
+        cardMapper.listCardDetail(query.getPatientKeyword(), query.getActiveOrgIds(), query.getActiveStartDate(), query.getActiveEndDate(),query.getCouponIds());
         return new PageInfo<>(page);
     }
 
