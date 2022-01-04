@@ -95,9 +95,9 @@ public class SysUserController {
   @CurrentUser
   @ApiOperation("新增用户")
   @PostMapping("/add")
-  public ResponseResult<T> add(@RequestBody @Validated SysUserForm resource) {
-    sysUserBiz.add(resource);
-    return ResponseUtil.success(null);
+  public ResponseResult<Integer> add(@RequestBody @Validated SysUserForm resource) {
+    Integer userId = sysUserBiz.add(resource);
+    return ResponseUtil.success(userId);
   }
 
   /**
