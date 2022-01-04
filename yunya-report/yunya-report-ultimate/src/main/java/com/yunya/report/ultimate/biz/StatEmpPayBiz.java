@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.biz;
 
 import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.report.StatEmpPay;
 import com.yunya.report.ultimate.mapper.StatEmpPayMapper;
@@ -28,5 +29,9 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
      */
     public List<StatEmpPay> findClinicReceivedWorkload(DateRangeQueryForm query, List<Integer> orgIds, List<Integer> employeeIds) {
         return mapper.selectClinicReceivedWorkload(query, orgIds, employeeIds);
+    }
+
+    public List<StatEmpPay> findStatisticsEmployeePayWorkload(MultiClinicDateRangeQueryForm query) {
+        return mapper.selectStatisticsEmployeeWorkload(query);
     }
 }
