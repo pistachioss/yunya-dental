@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.BaseRefundBiz;
+import com.yunya.middletable.service.StatEmpRefundBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
@@ -30,6 +31,8 @@ public class BaseRefundController {
 
   @Autowired private BaseRefundBiz refundBiz;
 
+  @Autowired private StatEmpRefundBiz statEmpRefundBiz;
+
   /**
    * 根据消息更新中间表退费信息
    *
@@ -53,6 +56,32 @@ public class BaseRefundController {
   @PostMapping(value = "/operate/batch", name = "form")
   public ResponseResult<T> pullRefundData(@RequestBody PullForm form) {
     refundBiz.pullRefundData(form);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据消息操作中间表退费时统计
+   *
+   * @param msg 消息
+   * @return
+   */
+  @ApiOperation("根据消息操作中间表收费时统计")
+  @PostMapping(value = "/refundDate/statistics", name = "根据消息操作中间表收费时统计")
+  public ResponseResult<T> payDateStatistics(@RequestBody @Validated MessageModel msg) {
+    msg.setOperateType(-1);
+    refundBiz.operateRefund(msg);
+    return ResponseUtil.success(null);
+  }
+  /**
+   * 根据时间段批量操作中间表退费时统计账单数据
+   *
+   * @param form 拉取时间
+   * @return
+   */
+  @ApiOperation("根据时间段批量操作中间表退费时统计账单数据")
+  @PostMapping(value = "/refundDate/statistics/batch", name = "form")
+  public ResponseResult pullRefundDateStatistics(PullForm form) throws InterruptedException {
+    statEmpRefundBiz.pullRefundDateStatistics(form);
     return ResponseUtil.success(null);
   }
 }

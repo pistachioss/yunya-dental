@@ -2,6 +2,7 @@ package com.yunya.middletable.dao.report;
 
 import com.yunya.feign.report.domain.vo.BillExecutorItemVO;
 import com.yunya.models.report.BaseBillDetail;
+import com.yunya.models.report.BaseBillPayDetail;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -29,8 +30,14 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
           @Param("billDate") Integer billDate,
           @Param("payeeDate") Integer payeeDate,
           @Param("executorIds") Collection<Integer> executorIds);
+  List<BaseBillPayDetail> selectFreePaymentAmountByDate(
+          @Param("orgId") Integer orgId,
+          @Param("payeeDate") Integer payeeDate,
+          @Param("executorIds") Collection<Integer> executorIds);
 
   List<BillExecutorItemVO> groupBillItemDetailListByBillDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
   List<BillExecutorItemVO> groupBillItemDetailListByPayDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+  List<BillExecutorItemVO> selectFreePaymentAmount(@Param("startDate") String startDate, @Param("endDate") String endDate);
 }

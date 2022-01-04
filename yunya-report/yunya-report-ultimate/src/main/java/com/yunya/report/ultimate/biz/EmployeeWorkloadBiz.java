@@ -345,7 +345,14 @@ public class EmployeeWorkloadBiz {
      */
     private Map<String, BigDecimal> mapEmployeeWorkload(List<EmployeeWorkloadVO> workloads) {
         Map<String, BigDecimal> result = new HashMap<>();
-        workloads.forEach(vo->result.put(vo.getEmployeeId()+","+vo.getOrgId(), vo.getWorkload()));
+        workloads.forEach(vo->{
+            String key = vo.getEmployeeId() + "";
+            Integer orgId = vo.getOrgId();
+            if (orgId != null) {
+                key += "," + orgId;
+            }
+            result.put(key, vo.getWorkload());
+        });
         return result;
     }
 

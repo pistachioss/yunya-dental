@@ -2,6 +2,8 @@ package com.yunya.middletable.service;
 
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
+import com.yunya.feign.report.domain.query.StatisticsEmployeeQueryForm;
+import com.yunya.feign.report.domain.vo.BillExecutorItemVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseRefundDetailMapper;
@@ -20,6 +22,7 @@ import com.yunya.models.treatment.BillRefundRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -48,6 +51,9 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
 
   /** 退费明细 */
   @Autowired private BaseRefundDetailMapper refundDetailMapper;
+
+  /** 账单退费时统计*/
+  @Autowired private StatEmpRefundBiz statEmpRefundBiz;
 
   @Autowired private BaseRefundPayDetailMapper refundPayDetailMapper;
   @Resource(name = "billCreditsCallbackImpl")
@@ -104,6 +110,13 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
         break;
       default:
         break;
+    }
+    statisticsEmployeeByRefund(refund);
+  }
+
+  private void statisticsEmployeeByRefund(BaseRefund refund) {
+    if (!ObjectUtils.isEmpty(refund) && !ObjectUtils.isEmpty(refund.getRefundDate())) {
+      statEmpRefundBiz.statisticsEmployeeByRefundDate(refund);
     }
   }
 
@@ -255,4 +268,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
     }
   }
 
+  public List<BillExecutorItemVO> findBillItemRefundListByDate(StatisticsEmployeeQueryForm query) {
+    return mapper.selectBillItemRefundListByDate(query);
+  }
 }
