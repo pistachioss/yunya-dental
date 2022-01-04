@@ -18,6 +18,62 @@
         <result column="work_number" property="workNumber" jdbcType="VARCHAR"/>
     </resultMap>
 
+    <select id="fuchaList" resultType="com.yunya.feign.report.domain.vo.FuchaVO">
+        select res.name ,res.mobile ,res.treatType ,
+        DATE_FORMAT(res.lastVisitDate,'%Y-%m-%d' ) as lastVisitDate,res.lastVisitOutpatient,res.abbreviation as abbreviation,res.lastVisitDoctors,
+         res.employeeName
+         from (SELECT
+        bp. NAME AS NAME,
+        bp.mobile AS mobile,
+        IF (
+        count(btp.patient_id) > 1,
+        1,
+        0
+        ) AS treatType,
+        bp.last_visit_date AS lastVisitDate,
+        bp.last_visit_outpatient as lastVisitOutpatient,
+        bp.last_visit_doctors as lastVisitDoctors,
+        be.employee_name AS employeeName,
+        bo.abbreviation as abbreviation
+        FROM
+        base_patient bp
+        LEFT JOIN base_treatment_process btp ON bp.patient_id = btp.patient_id
+        LEFT JOIN base_employee be ON bp.last_visit_doctors = be.user_id
+        LEFT JOIN base_organization bo on  bp.last_visit_outpatient = bo.org_id
+        <where>
+         bp.last_visit_doctors is not NULL
+        <if test="combination != null and combination != ''">
+            and concat(IFNULL(bp.name,''),IFNULL(bp.pinyin_name,''),IFNULL(bp.mobile,'')) like
+            concat(concat('%',#{combination}),'%')
+        </if>
+        </where>
+        GROUP BY
+        bp.patient_id) res
+        <where>
+            <if test="treatTypes != null and treatTypes.size > 0">
+                AND res.treatType IN
+                <foreach collection="treatTypes" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="days != null and days > 0">
+                AND DATEDIFF(DATE_FORMAT(now(),'%Y-%m-%d' ), DATE_FORMAT(res.lastVisitDate,'%Y-%m-%d')) &lt;=  #{days}
+            </if>
+            <if test="orgIds != null and orgIds.size > 0">
+                AND res.lastVisitOutpatient IN
+                <foreach collection="orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+
+            <if test="attendingDoctors != null and attendingDoctors.size > 0">
+                AND res.lastVisitDoctors IN
+                <foreach collection="attendingDoctors" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
     <select id="selectByOrgId" resultType="com.yunya.models.report.BaseEmployee">
       select distinct be.* from base_employee be join base_user_post bup on be.user_id =  bup.user_id
       where bup.org_id = #{orgId}  and bup.post_name = '医生'
