@@ -796,7 +796,7 @@
             bc.active_org_id AS activeOrgId,
             bc.patient_id AS patientId,
             bc.status,
-            bc.active_date AS activeDate
+            DATE_FORMAT(bc.active_date,'%Y-%m-%d') AS activeDate
         FROM base_card bc
         <where>
             AND bc.status in (1,2,3,4)
@@ -831,7 +831,7 @@
                 </foreach>
             </if>
             <if test="query.orgIds!=null and query.orgIds.size() > 0">
-                and bc.active_org_id in
+                and bc.allocate_org_id in
                 <foreach collection="query.orgIds" item="orgId" open="(" separator="," close=")">
                     #{orgId}
                 </foreach>
