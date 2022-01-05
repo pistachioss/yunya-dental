@@ -69,7 +69,7 @@
         FROM base_bill_detail bbd
         LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
         <if test="payeeDate != null">
-            LEFT JOIN (
+            INNER JOIN (
                 SELECT SUM(bbp.received_amount) AS received_amount, bbp.bill_id FROM base_bill_pay bbp
                 WHERE DATE_FORMAT(bbp.payee_date,'%Y%m%d')=#{payeeDate}
                 GROUP BY bbp.bill_id
@@ -180,12 +180,23 @@
             AND exists (
                 SELECT bb.bill_id FROM base_bill bb
                 INNER JOIN base_bill_detail bbd ON bbd.bill_id = bb.bill_id
-                WHERE bb.bill_id = bbp.bill_id
-                AND bb.bill_date is not null
-                AND bbd.executor_id > 0
+                <where>
+                    bb.bill_id = bbp.bill_id
+                    AND bb.bill_date is not null
+                    AND bbd.executor_id > 0
+                    <if test="query.orgId != null">
+                        AND bbd.org_id = #{query.orgId}
+                    </if>
+                    <if test="query.dentistIds!=null and query.dentistIds.size()>0">
+                        AND bbd.executor_id in
+                        <foreach collection="query.dentistIds" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                </where>
             )
-            <if test="startDate!=null and startDate!='' and endDate!=null and endDate!=''">
-                AND DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') between #{startDate} and #{endDate}
+            <if test="query.sDateInt!=null and query.eDateInt!=null">
+                AND DATE_FORMAT(bbp.payee_date, '%Y%m%d') between #{query.sDateInt} and #{query.eDateInt}
             </if>
         </where>
     </select>
