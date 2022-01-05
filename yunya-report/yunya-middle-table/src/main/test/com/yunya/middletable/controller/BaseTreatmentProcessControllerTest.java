@@ -70,7 +70,7 @@ public class BaseTreatmentProcessControllerTest {
 
     @Test
     public void testPayDateStatistics() throws InterruptedException {
-        String param = "{\"paramMap\":{\"id\":317685},\"operateType\":1}";
+        String param = "{\"paramMap\":{\"id\":287643},\"operateType\":1}";
         MessageModel form = JSONObject.parseObject(param, MessageModel.class);
         ResponseResult result = baseBillPayController.payDateStatistics(form);
         System.out.println(result);
