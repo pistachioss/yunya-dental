@@ -1,5 +1,6 @@
 package com.yunya.middletable.dao.report;
 
+import com.yunya.feign.report.domain.query.StatisticsEmployeeQueryForm;
 import com.yunya.feign.report.domain.vo.BillExecutorItemVO;
 import com.yunya.models.report.BaseBillDetail;
 import com.yunya.models.report.BaseBillPayDetail;
@@ -40,5 +41,5 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
   List<BillExecutorItemVO> groupBillItemDetailListByPayDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
 
-  List<BillExecutorItemVO> selectFreePaymentAmount(@Param("startDate") String startDate, @Param("endDate") String endDate);
+  List<BillExecutorItemVO> selectFreePaymentAmount(@Param("query")StatisticsEmployeeQueryForm query);
 }
