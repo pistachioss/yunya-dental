@@ -56,6 +56,12 @@ public class StatEmpBill {
     private BigDecimal receivedWorkload;
 
     /**
+     * 补入工作量
+     */
+    @Column(name = "coupon_workload")
+    private BigDecimal couponWorkload;
+
+    /**
      * 项目数量
      */
     private Integer quantity;
@@ -186,6 +192,14 @@ public class StatEmpBill {
 
     public void setReceivedWorkload(BigDecimal receivedWorkload) {
         this.receivedWorkload = receivedWorkload;
+    }
+
+    public BigDecimal getCouponWorkload() {
+        return couponWorkload;
+    }
+
+    public void setCouponWorkload(BigDecimal couponWorkload) {
+        this.couponWorkload = couponWorkload;
     }
 
     /**

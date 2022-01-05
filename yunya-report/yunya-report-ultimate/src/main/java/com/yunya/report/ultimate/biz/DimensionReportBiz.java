@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.BiFunction;
@@ -413,9 +414,6 @@ public class DimensionReportBiz {
         List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(query, groupByOrgId);
         updEmployeeId2Query(employees, query);
 
-        // 实收工作量
-        Future<Map<String, BigDecimal>> workloadFuture = employeeWorkloadBiz.findClinicEmployeeReceivedWorkload(query, groupByOrgId);
-
         // 初诊人数
         Future<Map<String, Integer>> firstVisitFuture = multiFindFirstVisitNum(query, groupByOrgId);
 
@@ -439,7 +437,18 @@ public class DimensionReportBiz {
 
         // 专科项目
         Future<List<PersonalBillItemVO>> billItemFuture = multiFindExecutorBillItem(query, groupByOrgId);
-        return mergeClinicDimension(employees, workloadFuture.get(), firstVisitFuture.get(), reFirstVisitFuture.get(),
+
+        List<Integer> employeeIds = employees.stream().map(ClinicEmployeeReportVO::getEmployeeId).collect(Collectors.toList());
+        MultiClinicDateRangeQueryForm dateQuery = new MultiClinicDateRangeQueryForm();
+        BeanUtils.copyProperties(query, dateQuery);
+        // 工作量
+        Map<String, BigDecimal> workloadMap = null;
+        if (groupByOrgId) {
+            workloadMap = clinicEmployeeWorkload(dateQuery, employeeIds, vo->vo.getExecutorId()+"");
+        } else {
+            workloadMap = clinicEmployeeWorkload(dateQuery, employeeIds, vo ->vo.getExecutorId()+","+vo.getOrgId());
+        }
+        return mergeClinicDimension(employees, workloadMap, firstVisitFuture.get(), reFirstVisitFuture.get(),
                 treatFuture.get(), debtFuture.get(), noAppointAndRemindFuture.get(), patientOrginFuture.get(),
                 billItemFuture.get(), reVisitFuture.get(), groupByOrgId);
     }
@@ -905,20 +914,44 @@ public class DimensionReportBiz {
                 oralIds.addAll(StringHelper.split2IntList(oralIdStr, ","));
             }
         });
-        // 门诊的实收、补入、免单
-        Future<List<StatEmpPay>> workloadFuture = multiFindClinicEmployeeWorkload(query, true);
+        // 门诊的实收、免单
+        Future<List<BillExecutorItemVO>> workloadFuture = multiFindClinicEmployeeWorkload(query, null);
+        // 门诊的补入
+        Future<List<BillExecutorItemVO>> couponFuture = multiFindClinicEmployeeCouponWorkload(query, null);
         // 门诊的退费
-        Future<List<StatEmpRefund>> refundFuture = multiFindClinicEmployeeRefundWorkload(query);
+        Future<List<BillExecutorItemVO>> refundFuture = multiFindClinicEmployeeRefundWorkload(query, null);
         return mergeSpecialProjectWorkloadRatio(orgs, baseBillDetailBiz.doDateStyle(query.getStartDate(), query.getEndDate()),
-                workloadFuture.get(), refundFuture.get(), itemIds, oralIds, specialis);
+                workloadFuture.get(), refundFuture.get(), couponFuture.get(), itemIds, oralIds, specialis);
     }
 
-    private Future<List<StatEmpRefund>> multiFindClinicEmployeeRefundWorkload(MultiClinicDateRangeQueryForm query) {
-        return threadPool.submit(()-> statEmpRefundBiz.findStatisticsEmployeeRefundWorkload(query));
+    /**
+     * 门诊员工补入工作量
+     * @param query
+     * @param employeeIds
+     * @return
+     */
+    private Future<List<BillExecutorItemVO>> multiFindClinicEmployeeCouponWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds) {
+        return threadPool.submit(()-> statEmpBillBiz.findStatisticsEmployeeBillWorkload(query, employeeIds));
     }
 
-    private Future<List<StatEmpPay>> multiFindClinicEmployeeWorkload(MultiClinicDateRangeQueryForm query, boolean groupByOrg) {
-        return threadPool.submit(()-> statEmpPayBiz.findStatisticsEmployeePayWorkload(query));
+    /**
+     * 门诊员工退费工作量
+     * @param query
+     * @param employeeIds
+     * @return
+     */
+    private Future<List<BillExecutorItemVO>> multiFindClinicEmployeeRefundWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds) {
+        return threadPool.submit(()-> statEmpRefundBiz.findStatisticsEmployeeRefundWorkload(query, employeeIds));
+    }
+
+    /**
+     * 门诊员工实收、免单工作量
+     * @param query
+     * @param employeeIds
+     * @return
+     */
+    private Future<List<BillExecutorItemVO>> multiFindClinicEmployeeWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds) {
+        return threadPool.submit(()-> statEmpPayBiz.findStatisticsEmployeePayWorkload(query, employeeIds));
     }
 
     /**
@@ -928,21 +961,22 @@ public class DimensionReportBiz {
      * @param date
      * @param pays
      * @param refunds
+     * @param coupons
      * @param itemIds
      * @param oralIds
      * @param specialis
      * @return
      */
     private DynamicHeaderPageInfo<JSONObject> mergeSpecialProjectWorkloadRatio(List<BaseOrganization> orgs, String date,
-                       List<StatEmpPay> pays, List<StatEmpRefund> refunds, Set<Integer> itemIds,
-                        Set<Integer> oralIds, List<SpecialistProjectVO> specialis) {
+                               List<BillExecutorItemVO> pays, List<BillExecutorItemVO> refunds, List<BillExecutorItemVO> coupons, Set<Integer> itemIds,
+                                                                               Set<Integer> oralIds, List<SpecialistProjectVO> specialis) {
         DynamicHeaderPageInfo result = new DynamicHeaderPageInfo<>(orgs);
         List<JSONObject> list = new ArrayList<>();
         Map<String, String> specialMap = new LinkedHashMap<>(16);
         if (StringHelper.isNotEmpty(orgs)) {
             Map<String, BigDecimal> tariffWorkload = new HashMap<>(16);
             Map<String, BigDecimal> oralWorkload = new HashMap<>(16);
-            Map<Integer, BigDecimal> orgWorkloadMap = emp2OrgWorkloadMap(pays, refunds, oralIds, itemIds, tariffWorkload, oralWorkload);
+            Map<Integer, BigDecimal> orgWorkloadMap = emp2OrgWorkloadMap(pays, refunds, coupons, oralIds, itemIds, tariffWorkload, oralWorkload);
             Map<String, List<Integer>> item2Special = new HashMap<>(16);
             specialis.forEach(vo->{
                 Integer id = vo.getId();
@@ -1012,14 +1046,15 @@ public class DimensionReportBiz {
      * 员工工作量统计转换为门诊工作量统计
      * @param pays
      * @param refunds
+     * @param coupons
      * @param oralIds
      * @param itemIds
      * @param tariffWorkload
      * @param oralWorkload
      * @return
      */
-    private Map<Integer, BigDecimal> emp2OrgWorkloadMap(List<StatEmpPay> pays, List<StatEmpRefund> refunds,
-                Set<Integer> oralIds, Set<Integer> itemIds, Map<String, BigDecimal> tariffWorkload, Map<String, BigDecimal> oralWorkload) {
+    private Map<Integer, BigDecimal> emp2OrgWorkloadMap(List<BillExecutorItemVO> pays, List<BillExecutorItemVO> refunds,
+                                                        List<BillExecutorItemVO> coupons, Set<Integer> oralIds, Set<Integer> itemIds, Map<String, BigDecimal> tariffWorkload, Map<String, BigDecimal> oralWorkload) {
         Map<Integer, BigDecimal> orgWorkloadMap = new HashMap<>(16);
         if (StringHelper.isNotEmpty(pays)) {
             pays.forEach(vo->{
@@ -1028,7 +1063,40 @@ public class DimensionReportBiz {
                 if (totalWorkload == null) {
                     totalWorkload = new BigDecimal("0.00");
                 }
-                BigDecimal workload = vo.getReceivedWorkload().subtract(vo.getFreePaymentWorkload()).add(vo.getCouponWorkload());
+                BigDecimal workload = vo.getReceivedWorkload().subtract(vo.getFreePaymentWorkload());
+                orgWorkloadMap.put(orgId, totalWorkload.add(workload));
+                Integer itemId = vo.getItemId();
+                String key = orgId + ",";
+                if (vo.getItemType().intValue() == 0) {
+                    if (itemIds.contains(itemId)) {
+                        key += "0,"+itemId;
+                        BigDecimal tariffs = tariffWorkload.get(key);
+                        if (tariffs == null) {
+                            tariffs = new BigDecimal("0.00");
+                        }
+                        tariffWorkload.put(key, tariffs.add(workload));
+                    }
+                } else {
+                    if (oralIds.contains(itemId)) {
+                        key += "1,"+itemId;
+                        BigDecimal orals = oralWorkload.get(key);
+                        if (orals == null) {
+                            orals = new BigDecimal("0.00");
+                        }
+                        oralWorkload.put(key, orals.add(workload));
+                    }
+
+                }
+            });
+        }
+        if (StringHelper.isNotEmpty(coupons)) {
+            coupons.forEach(vo->{
+                Integer orgId = vo.getOrgId();
+                BigDecimal totalWorkload = orgWorkloadMap.get(orgId);
+                if (totalWorkload == null) {
+                    totalWorkload = new BigDecimal("0.00");
+                }
+                BigDecimal workload = vo.getCouponWorkload();
                 orgWorkloadMap.put(orgId, totalWorkload.add(workload));
                 Integer itemId = vo.getItemId();
                 String key = orgId + ",";
@@ -1166,10 +1234,57 @@ public class DimensionReportBiz {
         ClinicPerformanceBusinessQuery clinicQuery = new ClinicPerformanceBusinessQuery();
         clinicQuery.setOrgIds(query.getOrgIds());
         List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(clinicQuery);
-        Future<Map<String, BigDecimal>> workloadFuture = multiFindClinicReceivedWorkload(query, query.getOrgIds(), null);
+        Map<String, BigDecimal> workloadMap = clinicEmployeeWorkload(query, null, vo->{
+            // 门诊+月份分组统计
+            String key = vo.getOrgId()+","+vo.getBillDate();
+            return key.substring(0, key.length()-2);
+        });
         Future<Map<String, StatEmpTreat>> firstVisitFuture = multiFindClinicTreatVisitNum(query, query.getOrgIds(), null);
         Future<Map<String, Set<Integer>>> treatVisitFuture = multiFindTreatVisitPatientList(query, query.getOrgIds(), null);
-        return mergeClinicWorkloadVisitStatistice(query, orgs, workloadFuture.get(), firstVisitFuture.get(), treatVisitFuture.get());
+        return mergeClinicWorkloadVisitStatistice(query, orgs, workloadMap, firstVisitFuture.get(), treatVisitFuture.get());
+    }
+
+    private Map<String, BigDecimal> clinicEmployeeWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds, Function<BillExecutorItemVO, String> keyFunc) throws ExecutionException, InterruptedException {
+        // 门诊的实收、免单
+        List<BillExecutorItemVO> pays = multiFindClinicEmployeeWorkload(query, employeeIds).get();
+        // 门诊的补入
+        List<BillExecutorItemVO> bills = multiFindClinicEmployeeCouponWorkload(query, employeeIds).get();
+        // 门诊的退费
+        List<BillExecutorItemVO> refunds = multiFindClinicEmployeeRefundWorkload(query, employeeIds).get();
+        Map<String, BigDecimal> result = new HashMap<>();
+        if (StringHelper.isNotEmpty(pays)) {
+            pays.forEach(vo->{
+                String key = keyFunc.apply(vo);
+                BigDecimal totalWorkload = result.get(key);
+                if (totalWorkload == null) {
+                    totalWorkload = new BigDecimal("0.00");
+                }
+                BigDecimal workload = vo.getReceivedWorkload().subtract(vo.getFreePaymentWorkload());
+                result.put(key, totalWorkload.add(workload));
+            });
+        }
+        if (StringHelper.isNotEmpty(bills)) {
+            bills.forEach(vo -> {
+                String key = keyFunc.apply(vo);
+                BigDecimal totalWorkload = result.get(key);
+                if (totalWorkload == null) {
+                    totalWorkload = new BigDecimal("0.00");
+                }
+                BigDecimal workload = vo.getCouponWorkload();
+                result.put(key, totalWorkload.add(workload));
+            });
+        }
+        if (StringHelper.isNotEmpty(refunds)) {
+            refunds.forEach(vo -> {
+                String key = keyFunc.apply(vo);
+                BigDecimal totalWorkload = result.get(key);
+                if (totalWorkload == null) {
+                    totalWorkload = new BigDecimal("0.00");
+                }
+                result.put(key, totalWorkload.subtract(vo.getRefundWorkload()));
+            });
+        }
+        return result;
     }
 
     /**
@@ -1179,11 +1294,10 @@ public class DimensionReportBiz {
      * @param orgs
      * @param workloadMap
      * @param firstVisitMap
-     * @param stringSetMap
      * @return
      */
-    private DynamicHeaderPageInfo<JSONObject> mergeClinicWorkloadVisitStatistice(DateRangeQueryForm query,
-                                                                                 List<BaseOrganization> orgs, Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> firstVisitMap, Map<String, Set<Integer>> treatVisitMap) {
+    private DynamicHeaderPageInfo<JSONObject> mergeClinicWorkloadVisitStatistice(DateRangeQueryForm query, List<BaseOrganization> orgs,
+             Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> firstVisitMap, Map<String, Set<Integer>> treatVisitMap) {
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(orgs);
         if (StringHelper.isNotEmpty(orgs)) {
             String startDate = query.getStartDate();
@@ -1506,10 +1620,15 @@ public class DimensionReportBiz {
         queryForm.setPageSize(query.getPageSize());
         List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(queryForm, false);
         List<Integer> employeeIds = employees.stream().map(ClinicEmployeeReportVO::getEmployeeId).collect(Collectors.toList());
-        Future<Map<String, BigDecimal>> workloadFuture = multiFindClinicReceivedWorkload(query, null, employeeIds);
+        MultiClinicDateRangeQueryForm dateQuery = new MultiClinicDateRangeQueryForm();
+        BeanUtils.copyProperties(query, dateQuery);
+        Map<String, BigDecimal> workloadMap = clinicEmployeeWorkload(dateQuery, employeeIds, vo->{
+            String key = vo.getExecutorId()+","+vo.getBillDate();
+            return key.substring(0, key.length()-2);
+        });
         Future<Map<String, StatEmpTreat>> treatNumFuture = multiFindClinicTreatVisitNum(query, null, employeeIds);
         Future<Map<String, Set<Integer>>> treatVisitFuture = multiFindTreatVisitPatientList(query, null, employeeIds);
-        return mergeDentistWorkloadVisitStatistice(query, employees, workloadFuture.get(), treatNumFuture.get(), treatVisitFuture.get());
+        return mergeDentistWorkloadVisitStatistice(query, employees, workloadMap, treatNumFuture.get(), treatVisitFuture.get());
     }
 
     /**
@@ -2099,8 +2218,6 @@ public class DimensionReportBiz {
     public DynamicHeaderPageInfo<JSONObject> campusAchievementStatistics(MultiClinicDateRangeQueryForm query) throws Exception {
         // 院区门诊
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
-        // 工作量
-        Future<Map<String, BigDecimal>> workloadFuture = multiFindClinicReceivedWorkload(query, query.getOrgIds(), null);
         // 初诊人数、复诊人数
         Future<Map<String, StatEmpTreat>> treatNumFuture = multiFindClinicTreatVisitNum(query, query.getOrgIds(), null);
         Future<Map<Integer, Set<Integer>>> treatVisitNumFuture = multiFindCampusTreatVisitNum(query);
@@ -2108,7 +2225,9 @@ public class DimensionReportBiz {
         Future<List<StatEmpBill>> itemNumFuture = multiFindClinicBillItemNum(query);
         // 专科项目
         Future<List<SpecialistProjectVO>> specialFuture = multiFindSpecialProjectList();
-        return mergeCampusAchievementStatistics(orgFuture.get(), workloadFuture.get(), treatNumFuture.get(), itemNumFuture.get(), treatVisitNumFuture.get(), specialFuture.get());
+        // 工作量
+        Map<String, BigDecimal> workloadMap = clinicEmployeeWorkload(query, null, vo->vo.getOrgId()+"");
+        return mergeCampusAchievementStatistics(orgFuture.get(), workloadMap, treatNumFuture.get(), itemNumFuture.get(), treatVisitNumFuture.get(), specialFuture.get());
     }
 
     private Future<Map<Integer, Set<Integer>>> multiFindCampusTreatVisitNum(MultiClinicDateRangeQueryForm query) {
@@ -2134,7 +2253,7 @@ public class DimensionReportBiz {
      * 院区业绩统计表数据合并
      *
      * @param orgs
-     * @param workloadMap
+     * @param orgWorkloadMap
      * @param firstVisit
      * @param statEmpBills
      * @param treatVisit
@@ -2142,12 +2261,11 @@ public class DimensionReportBiz {
      * @return
      */
     private DynamicHeaderPageInfo<JSONObject> mergeCampusAchievementStatistics(List<BaseOrganizationVO> orgs,
-               Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> firstVisit,
+               Map<String, BigDecimal> orgWorkloadMap, Map<String, StatEmpTreat> firstVisit,
                List<StatEmpBill> statEmpBills, Map<Integer, Set<Integer>> treatVisit, List<SpecialistProjectVO> specials) {
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(orgs);
         Map<String, String> specialMap = new LinkedHashMap<>(16);
         Map<String, String> title = new LinkedHashMap<>(16);
-        Map<Integer, BigDecimal> orgWorkloadMap = statisticOrgWorkload(workloadMap);
         Map<Integer, StatEmpTreat> orgTreatNumMap = statisticOrgStatEmpTreat(firstVisit);
         Map<String, List<Integer>> specialItemMap = item2SpecialNumMap(specials, specialMap);
         Map<String, Integer> itemNumMap = sumBillItemNum(statEmpBills, specialItemMap);
@@ -2167,7 +2285,7 @@ public class DimensionReportBiz {
                 totalObj.put("treatVisitCount", totalObj.getIntValue("treatVisitCount") + treatVisitCount);
             }
             Integer orgId = org.getOrgId();
-            BigDecimal workload = defaultValue(orgWorkloadMap.get(orgId));
+            BigDecimal workload = defaultValue(orgWorkloadMap.get(orgId+""));
             obj.put("workload", obj.getDoubleValue("workload") + workload.doubleValue());
             totalObj.put("workload", totalObj.getDoubleValue("workload") + workload.doubleValue());
             StatEmpTreat statEmpTreat = orgTreatNumMap.get(orgId);
@@ -2236,19 +2354,18 @@ public class DimensionReportBiz {
     public PageInfo<CampusAchievementCompareVO> campusAchievementCompare(MultiClinicDateRangeQueryForm query) throws Exception {
         // 院区门诊
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
-        // 工作量
-        Future<Map<String, BigDecimal>> workloadFuture = multiFindClinicReceivedWorkload(query, query.getOrgIds(), null);
         // 初诊人数
         Future<Map<String, StatEmpTreat>> firstVisitFuture = multiFindClinicTreatVisitNum(query, query.getOrgIds(), null);
         // 就诊人数
         Future<Map<Integer, Set<Integer>>> treatVisitFuture = multiFindCampusTreatVisitNum(query);
-        return mergetCampusAchievementCompare(orgFuture.get(), workloadFuture.get(), firstVisitFuture.get(), treatVisitFuture.get());
+        // 工作量
+        Map<String, BigDecimal> workloadMap = clinicEmployeeWorkload(query, null, vo->vo.getOrgId()+"");
+        return mergetCampusAchievementCompare(orgFuture.get(), workloadMap, firstVisitFuture.get(), treatVisitFuture.get());
     }
 
     private PageInfo<CampusAchievementCompareVO> mergetCampusAchievementCompare(List<BaseOrganizationVO> orgs,
-            Map<String, BigDecimal> workloadMap, Map<String, StatEmpTreat> firstVisit, Map<Integer, Set<Integer>> treatVisit) {
+            Map<String, BigDecimal> orgWorkloadMap, Map<String, StatEmpTreat> firstVisit, Map<Integer, Set<Integer>> treatVisit) {
         PageInfo<CampusAchievementCompareVO> pageInfo = new PageInfo<>();
-        Map<Integer, BigDecimal> orgWorkloadMap = statisticOrgWorkload(workloadMap);
         Map<Integer, StatEmpTreat> orgTreatNumMap = statisticOrgStatEmpTreat(firstVisit);
         Map<Integer, CampusAchievementCompareVO> campus = new LinkedHashMap<>(16);
         CampusAchievementCompareVO totalObj = new CampusAchievementCompareVO();
@@ -2271,7 +2388,7 @@ public class DimensionReportBiz {
                 totalTreatVisit += treatVisitCount;
             }
             Integer orgId = org.getOrgId();
-            BigDecimal workload = defaultValue(orgWorkloadMap.get(orgId));
+            BigDecimal workload = defaultValue(orgWorkloadMap.get(orgId+""));
             obj.setWorkload(obj.getWorkload().add(workload));
             totalWorkload = totalWorkload.add(workload);
             StatEmpTreat statEmpTreat = orgTreatNumMap.get(orgId);

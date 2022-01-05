@@ -12,6 +12,7 @@
     <id column="bill_date" property="billDate" jdbcType="INTEGER" />
     <result column="receivable_workload" property="receivableWorkload" jdbcType="DECIMAL" />
     <result column="received_workload" property="receivedWorkload" jdbcType="DECIMAL" />
+    <result column="coupon_workload" property="couponWorkload" jdbcType="DECIMAL" />
     <result column="quantity" property="quantity" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
@@ -37,5 +38,33 @@
         </if>
     </where>
     GROUP BY seb.org_id, seb.item_type, seb.item_id
+  </select>
+
+  <select id="selectStatisticsEmployeeBillWorkload" resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">
+      SELECT
+          seb.org_id AS orgId,
+          seb.dentist_id AS executorId,
+          seb.bill_date AS billDate,
+          seb.item_type AS itemType,
+          seb.item_id AS itemId,
+          seb.coupon_workload AS couponWorkload
+      FROM stat_emp_bill seb
+      <where>
+          <if test="query.sDateInt!=null and query.eDateInt!=null">
+              AND seb.bill_date between #{query.sDateInt} and #{query.eDateInt}
+          </if>
+          <if test="query.orgIds!=null and query.orgIds.size()>0">
+              AND seb.org_id in
+              <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+                  #{item}
+              </foreach>
+          </if>
+          <if test="query.employeeIds!=null and query.employeeIds.size()>0">
+              AND seb.dentist_id in
+              <foreach collection="query.employeeIds" item="item" open="(" separator="," close=")">
+                  #{item}
+              </foreach>
+          </if>
+      </where>
   </select>
 </mapper>

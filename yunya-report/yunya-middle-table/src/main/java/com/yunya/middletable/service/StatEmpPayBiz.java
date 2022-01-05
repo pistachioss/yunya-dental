@@ -80,7 +80,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                 List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId,
                         null, payDate, executorIds);
                 Map<String, BigDecimal> freeMap = findFreePaymentMap(orgId, payDate, executorIds);
-                sharedItemAmount(details, freeMap, (vo)-> vo.getBillId()+"");
+                details = sharedItemAmount(details, freeMap, (vo)-> vo.getBillId()+"");
                 details = statisticsExecutorItem(details, keys, (vo)-> vo.getExecutorId() + "," + vo.getItemType() + "," + vo.getItemId());
                 if (StringHelper.isNotEmpty(details)) {
                     Integer payeeUserId = baseBillPay.getPayeeUserId();
@@ -97,8 +97,6 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                             entity.setItemId(vo.getItemId());
                             entity.setReceivedWorkload(vo.getReceivedWorkload());
                             entity.setFreePaymentWorkload(vo.getFreePaymentWorkload());
-                            entity.setCouponWorkload(vo.getCouponWorkload());
-//                            entity.setRefundWorkload(vo.getRefundWorkload());
                             entity.setCrtId(payeeUserId);
                             entity.setCrtTime(date);
                             mapper.insertSelective(entity);
@@ -195,7 +193,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
      * @param details
      * @return
      */
-    private void sharedItemAmount(List<BillExecutorItemVO> details, Map<String, BigDecimal> freeMap, Function<BillExecutorItemVO, String> func) {
+    private List<BillExecutorItemVO> sharedItemAmount(List<BillExecutorItemVO> details, Map<String, BigDecimal> freeMap, Function<BillExecutorItemVO, String> func) {
         // 每个账单的执行实收总额
         Map<String, BigDecimal[]> total = new HashMap<>(16);
         if (StringHelper.isNotEmpty(details)) {
@@ -221,8 +219,6 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                         BigDecimal freePayment = freeMap.get(key);
                         if (   ObjectUtils.isEmpty(freePayment)) {
                             freePayment = BigDecimal.ZERO;
-                        } else {
-                            System.out.println("");
                         }
                         sum[1] = sum[1].add(receivableWorkload);
 //                        BigDecimal amount = BigDecimal.ZERO;
@@ -250,6 +246,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                         detail.setFreePaymentWorkload(freePaymentWorkload);
                     });
         }
+        return details;
     }
 
     /**
@@ -264,7 +261,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
         String endDate = form.getEndDate();
         List<BillExecutorItemVO> details = baseBillDetailMapper.groupBillItemDetailListByPayDate(startDate, endDate);
         Map<String, BigDecimal> freeMap = findFreePaymentMap(startDate, endDate);
-        sharedItemAmount(details, freeMap, (vo)-> vo.getBillId() + "," +vo.getBillDate());
+        details = sharedItemAmount(details, freeMap, (vo)-> vo.getBillId() + "," +vo.getBillDate());
         details = statisticsExecutorItem(details, null, (vo)-> vo.getOrgId() + "," + vo.getBillDate() + "," + vo.getExecutorId() + "," + vo.getItemType() + "," + vo.getItemId());
         if (StringHelper.isNotEmpty(details)) {
             List<StatEmpPay> datas = new ArrayList<>();
@@ -277,9 +274,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                 entity.setItemType(vo.getItemType());
                 entity.setItemId(vo.getItemId());
                 entity.setReceivedWorkload(vo.getReceivedWorkload());
-                entity.setCouponWorkload(vo.getCouponWorkload());
                 entity.setFreePaymentWorkload(vo.getFreePaymentWorkload());
-//                entity.setRefundWorkload(vo.getRefundWorkload());
                 entity.setCrtId(vo.getExecutorId());
                 entity.setCrtTime(now);
                 datas.add(entity);

@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.biz;
 
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
+import com.yunya.feign.report.domain.vo.BillExecutorItemVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.report.StatEmpRefund;
 import com.yunya.report.ultimate.mapper.StatEmpRefundMapper;
@@ -18,7 +19,7 @@ import java.util.List;
  */
 @Service
 public class StatEmpRefundBiz extends BaseBiz<StatEmpRefundMapper, StatEmpRefund> {
-    public List<StatEmpRefund> findStatisticsEmployeeRefundWorkload(MultiClinicDateRangeQueryForm query) {
-        return mapper.selectStatisticsEmployeeRefundWorkload(query);
+    public List<BillExecutorItemVO> findStatisticsEmployeeRefundWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds) {
+        return mapper.selectStatisticsEmployeeRefundWorkload(query, employeeIds);
     }
 }
