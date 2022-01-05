@@ -1209,9 +1209,11 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           // 有效账单的免单收费总价
           List<OrderDetailInfoVO> freePaymentTotal =
               billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, null, true);
-          List<OrderDetailInfoVO> freePaymentTotal1 =
-              billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, payIds, false);
-          freePaymentTotal.addAll(freePaymentTotal1);
+          if (StringHelper.isNotEmpty(payIds)) {
+            List<OrderDetailInfoVO> freePaymentTotal1 =
+                billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, payIds, false);
+            freePaymentTotal.addAll(freePaymentTotal1);
+          }
           return shareTariffFreePayment(orderDetails, freePaymentTotal);
         });
   }
