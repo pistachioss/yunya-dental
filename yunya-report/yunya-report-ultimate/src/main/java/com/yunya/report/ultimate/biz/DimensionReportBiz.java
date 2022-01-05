@@ -2547,11 +2547,10 @@ public class DimensionReportBiz {
             Integer sDateInt = query.getSDateInt();
             Integer eDateInt = query.getEDateInt();
             cards.forEach(card->{
-                Integer status = card.getStatus();
                 Integer couponId = card.getCouponId();
-                Integer activeOrgId = card.getActiveOrgId();
+                Integer allocateOrgId = card.getAllocateOrgId();
                 Integer patientId = card.getPatientId();
-                String key = activeOrgId + "," + couponId;
+                String key = allocateOrgId + "," + couponId;
                 incrementOne(key, soldNumMap);
                 LocalDateTime activeDate = card.getActiveDate();
                 if (!ObjectUtils.isEmpty(activeDate)) {
