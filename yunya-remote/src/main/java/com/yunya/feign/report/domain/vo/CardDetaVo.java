@@ -17,7 +17,7 @@ import lombok.Data;
 public class CardDetaVo {
     @ApiModelProperty(value = "产品名称")
     @ExcelProperty("产品名称")
-    private String cardName;
+    private String couponName;
     @ApiModelProperty(value = "患者")
     @ExcelProperty("患者")
     private String patientName;
@@ -32,7 +32,7 @@ public class CardDetaVo {
     private String cardNumber;
     @ApiModelProperty(value = "激活门诊")
     @ExcelProperty("激活门诊")
-    private String activeOrgName;
+    private String orgName;
     @ApiModelProperty(value = "操作人")
     @ExcelProperty("操作人")
     private String operateUser;

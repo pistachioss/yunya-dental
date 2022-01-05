@@ -38,4 +38,7 @@ public class FuchaVO implements Serializable {
     @Excel(name = "末次就诊日期")
     @ApiModelProperty(value = "末次就诊日期")
     private String lastVisitDate;
+    @Excel(name = "门诊")
+    @ApiModelProperty(value = "门诊")
+    private String abbreviation;
 }
