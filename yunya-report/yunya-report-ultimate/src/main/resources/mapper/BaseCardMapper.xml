@@ -836,7 +836,7 @@
             bc.coupon_id AS couponId,
             bc.active_org_id AS activeOrgId,
             bc.patient_id AS patientId,
-            bc.status,
+            bc.allocate_org_id AS allocateOrgId,
             DATE_FORMAT(bc.active_date,'%Y-%m-%d') AS activeDate
         FROM base_card bc
         <where>
