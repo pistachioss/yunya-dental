@@ -4716,7 +4716,8 @@
                 INNER JOIN (
                     SELECT
                         bbp.bill_pay_id,
-                        bbd.billTotalWorkload,
+--                         bbd.billTotalWorkload,
+                        bb.actual_amount AS billTotalWorkload,
                         bb.org_id
                     FROM base_bill_pay bbp
                     INNER JOIN base_bill bb ON bbp.bill_id = bb.bill_id
@@ -4824,12 +4825,6 @@
         ) brd
         <where>
             brd.executor_id > 0
-            <if test="query.orgIds != null and query.orgIds.length > 0">
-                and brd.org_id in
-                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
             <if test="query.orgIds != null and query.orgIds.length > 0">
                 and brd.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">

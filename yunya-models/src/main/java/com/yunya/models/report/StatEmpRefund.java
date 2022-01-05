@@ -6,8 +6,8 @@ import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
 
-@Table(name = "stat_emp_pay")
-public class StatEmpPay {
+@Table(name = "stat_emp_refund")
+public class StatEmpRefund {
     /**
      * 门诊id
      */
@@ -37,23 +37,17 @@ public class StatEmpPay {
     private Byte itemType;
 
     /**
-     * 收费时间
+     * 退费时间
      */
     @Id
-    @Column(name = "pay_date")
-    private Integer payDate;
+    @Column(name = "refund_date")
+    private Integer refundDate;
 
     /**
-     * 实收工作量
+     * 退费工作量
      */
-    @Column(name = "received_workload")
-    private BigDecimal receivedWorkload;
-
-    /**
-     * 免单工作量
-     */
-    @Column(name = "free_payment_workload")
-    private BigDecimal freePaymentWorkload;
+    @Column(name = "refund_workload")
+    private BigDecimal refundWorkload;
 
     /**
      * 创建时间
@@ -140,47 +134,39 @@ public class StatEmpPay {
     }
 
     /**
-     * 获取收费时间
+     * 获取退费时间
      *
-     * @return pay_date - 收费时间
+     * @return refund_date - 退费时间
      */
-    public Integer getPayDate() {
-        return payDate;
+    public Integer getRefundDate() {
+        return refundDate;
     }
 
     /**
-     * 设置收费时间
+     * 设置退费时间
      *
-     * @param payDate 收费时间
+     * @param refundDate 退费时间
      */
-    public void setPayDate(Integer payDate) {
-        this.payDate = payDate;
+    public void setRefundDate(Integer refundDate) {
+        this.refundDate = refundDate;
     }
 
     /**
-     * 获取实收工作量
+     * 获取退费工作量
      *
-     * @return received_workload - 实收工作量
+     * @return refund_workload - 退费工作量
      */
-    public BigDecimal getReceivedWorkload() {
-        return receivedWorkload;
+    public BigDecimal getRefundWorkload() {
+        return refundWorkload;
     }
 
     /**
-     * 设置实收工作量
+     * 设置退费工作量
      *
-     * @param receivedWorkload 实收工作量
+     * @param refundWorkload 退费工作量
      */
-    public void setReceivedWorkload(BigDecimal receivedWorkload) {
-        this.receivedWorkload = receivedWorkload;
-    }
-
-    public BigDecimal getFreePaymentWorkload() {
-        return freePaymentWorkload;
-    }
-
-    public void setFreePaymentWorkload(BigDecimal freePaymentWorkload) {
-        this.freePaymentWorkload = freePaymentWorkload;
+    public void setRefundWorkload(BigDecimal refundWorkload) {
+        this.refundWorkload = refundWorkload;
     }
 
     /**

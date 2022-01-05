@@ -60,6 +60,7 @@
             bbd.executor_id AS executorId,
             (bbd.quantity*bbd.price-bbd.discount_amount) AS receivableWorkload,
             bbd.quantity AS quantity,
+            bbd.coupon_workload AS couponWorkload,
             <if test="payeeDate != null">
                 IFNULL(bbp.received_amount,0) AS totalReceivedWorkload,
             </if>
@@ -69,9 +70,9 @@
         LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
         <if test="payeeDate != null">
             LEFT JOIN (
-                SELECT SUM(received_amount) AS received_amount, bill_id FROM base_bill_pay
-                WHERE DATE_FORMAT(payee_date,'%Y%m%d')=#{payeeDate}
-                GROUP BY bill_id
+                SELECT SUM(bbp.received_amount) AS received_amount, bbp.bill_id FROM base_bill_pay bbp
+                WHERE DATE_FORMAT(bbp.payee_date,'%Y%m%d')=#{payeeDate}
+                GROUP BY bbp.bill_id
             ) bbp ON bbp.bill_id = bb.bill_id
         </if>
         <where>
@@ -87,6 +88,28 @@
         </where>
     </select>
 
+    <select id="selectFreePaymentAmountByDate" resultType="com.yunya.models.report.BaseBillPayDetail">
+        SELECT
+            SUM(bbpd.principal_amount + bbpd.bonus_amount) AS principalAmount,
+            bbpd.bill_id AS billId
+        FROM base_bill_pay_detail bbpd
+        INNER JOIN base_bill_pay bbp ON bbpd.bill_pay_id = bbp.bill_pay_id
+        INNER JOIN base_bill bb ON bb.bill_id = bbp.bill_id
+        INNER JOIN base_bill_detail bbd ON bbd.bill_id = bb.bill_id
+        <where>
+            AND bbpd.type = 2
+            AND bbpd.account_item_id in (23,26)
+            AND DATE_FORMAT(bbp.payee_date,'%Y%m%d')=#{payeeDate}
+            AND bb.bill_date is not null
+            AND bb.org_id = #{orgId}
+            AND bbd.executor_id in
+            <foreach collection="executorIds" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+        GROUP BY bb.bill_id
+    </select>
+
     <select id="groupBillItemDetailListByBillDate" resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">
         SELECT
             bbd.org_id AS orgId,
@@ -96,7 +119,8 @@
             bbd.executor_id AS executorId,
             SUM(bbd.quantity*bbd.price-bbd.discount_amount) AS receivableWorkload,
             SUM(bbd.quantity) AS quantity,
-            SUM(bbd.received_amount) AS receivedWorkload
+            SUM(bbd.received_amount) AS receivedWorkload,
+            SUM(bbd.coupon_workload) AS couponWorkload
         FROM base_bill_detail bbd
         LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
         <where>
@@ -126,7 +150,8 @@
         FROM base_bill_detail bbd
         LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
         INNER JOIN (
-            SELECT SUM(received_amount) AS received_amount, bill_id, DATE_FORMAT(payee_date, '%Y-%m-%d') AS payee_date FROM base_bill_pay
+            SELECT SUM(received_amount) AS received_amount, bill_id, DATE_FORMAT(payee_date, '%Y-%m-%d') AS payee_date FROM
+            base_bill_pay
             <where>
                 AND received_amount > 0
                 <if test="startDate!=null and startDate!='' and endDate!=null and endDate!=''">
@@ -137,7 +162,31 @@
         ) bbp ON bbp.bill_id = bb.bill_id
         <where>
             AND bb.bill_date is not null
---             AND bbd.executor_id > 0
+--             AND bb.org_id=27
+--             AND bbd.executor_id=442
+        </where>
+    </select>
+
+    <select id="selectFreePaymentAmount" resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">
+        SELECT
+            bbp.bill_id AS billId,
+            DATE_FORMAT(bbp.payee_date, '%Y%m%d') AS billDate,
+            bbpd.principal_amount + bbpd.bonus_amount AS freePaymentWorkload
+        FROM base_bill_pay_detail bbpd
+        INNER JOIN base_bill_pay bbp ON bbpd.bill_pay_id = bbp.bill_pay_id
+        <where>
+            AND bbpd.type = 2
+            AND bbpd.account_item_id in (23,26)
+            AND exists (
+                SELECT bb.bill_id FROM base_bill bb
+                INNER JOIN base_bill_detail bbd ON bbd.bill_id = bb.bill_id
+                WHERE bb.bill_id = bbp.bill_id
+                AND bb.bill_date is not null
+                AND bbd.executor_id > 0
+            )
+            <if test="startDate!=null and startDate!='' and endDate!=null and endDate!=''">
+                AND DATE_FORMAT(bbp.payee_date, '%Y-%m-%d') between #{startDate} and #{endDate}
+            </if>
         </where>
     </select>
 </mapper>

@@ -44,12 +44,21 @@ public class BillExecutorItemVO implements Serializable {
     /** 项目应收工作量*/
     @ApiModelProperty("项目应收工作量")
     private BigDecimal receivableWorkload = new BigDecimal("0.00");
+    /** 项目补入工作量*/
+    @ApiModelProperty("项目补入工作量")
+    private BigDecimal couponWorkload = new BigDecimal("0.00");
     /** 账单总应收工作量*/
     @ApiModelProperty("账单总应收工作量")
     private BigDecimal actualWorkload = new BigDecimal("0.00");
     /** 项目实收工作量*/
     @ApiModelProperty("项目实收工作量")
     private BigDecimal receivedWorkload = new BigDecimal("0.00");
+    /** 项目免单工作量*/
+    @ApiModelProperty("项目免单工作量")
+    private BigDecimal freePaymentWorkload = new BigDecimal("0.00");
+    /** 项目退费工作量*/
+    @ApiModelProperty("项目退费工作量")
+    private BigDecimal refundWorkload = new BigDecimal("0.00");
     /** 项目实收工作量*/
     @ApiModelProperty("项目总实收工作量")
     private BigDecimal totalReceivedWorkload = new BigDecimal("0.00");
