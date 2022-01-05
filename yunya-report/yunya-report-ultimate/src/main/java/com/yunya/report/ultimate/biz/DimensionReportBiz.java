@@ -442,6 +442,8 @@ public class DimensionReportBiz {
         List<Integer> employeeIds = employees.stream().map(ClinicEmployeeReportVO::getEmployeeId).collect(Collectors.toList());
         MultiClinicDateRangeQueryForm dateQuery = new MultiClinicDateRangeQueryForm();
         BeanUtils.copyProperties(query, dateQuery);
+        dateQuery.setSDateInt(null);
+        dateQuery.setEDateInt(null);
         // 工作量
         Map<String, BigDecimal> workloadMap = null;
         if (groupByOrgId) {
