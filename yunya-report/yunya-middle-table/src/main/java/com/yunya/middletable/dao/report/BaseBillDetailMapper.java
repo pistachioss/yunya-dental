@@ -30,6 +30,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
           @Param("billDate") Integer billDate,
           @Param("payeeDate") Integer payeeDate,
           @Param("executorIds") Collection<Integer> executorIds);
+
   List<BaseBillPayDetail> selectFreePaymentAmountByDate(
           @Param("orgId") Integer orgId,
           @Param("payeeDate") Integer payeeDate,

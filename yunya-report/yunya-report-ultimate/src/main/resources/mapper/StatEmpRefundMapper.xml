@@ -15,11 +15,11 @@
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
   </resultMap>
   
-  <select id="selectStatisticsEmployeeRefundWorkload" resultType="com.yunya.models.report.StatEmpRefund">
+  <select id="selectStatisticsEmployeeRefundWorkload" resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">
     SELECT
         sef.org_id AS orgId,
-        sef.dentist_id AS dentistId,
-        sef.refund_date AS refundDate,
+        sef.dentist_id AS executorId,
+        sef.refund_date AS billDate,
         sef.item_type AS itemType,
         sef.item_id AS itemId,
         sef.refund_workload AS refundWorkload
@@ -31,6 +31,12 @@
       <if test="query.orgIds!=null and query.orgIds.size()>0">
         AND sef.org_id in
         <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+      <if test="employeeIds!=null and employeeIds.size()>0">
+        AND sef.dentist_id in
+        <foreach collection="employeeIds" item="item" open="(" separator="," close=")">
           #{item}
         </foreach>
       </if>

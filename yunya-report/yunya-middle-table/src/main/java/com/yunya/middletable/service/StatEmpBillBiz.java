@@ -91,6 +91,7 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
                             entity.setQuantity(vo.getQuantity());
                             entity.setReceivableWorkload(vo.getReceivableWorkload());
                             entity.setReceivedWorkload(vo.getReceivedWorkload());
+                            entity.setCouponWorkload(vo.getCouponWorkload());
                             entity.setCrtId(crtId);
                             entity.setCrtTime(date);
                             mapper.insertSelective(entity);
@@ -121,6 +122,7 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
                 entity.setDentistId(vo.getExecutorId());
                 entity.setReceivableWorkload(vo.getReceivableWorkload());
                 entity.setReceivedWorkload(vo.getReceivedWorkload());
+                entity.setCouponWorkload(vo.getCouponWorkload());
                 entity.setItemType(vo.getItemType());
                 entity.setItemId(vo.getItemId());
                 entity.setQuantity(vo.getQuantity());

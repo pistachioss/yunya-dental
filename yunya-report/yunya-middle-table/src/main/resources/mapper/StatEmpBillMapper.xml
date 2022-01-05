@@ -12,6 +12,7 @@
     <id column="bill_date" jdbcType="INTEGER" property="billDate" />
     <result column="receivable_workload" jdbcType="DECIMAL" property="receivableWorkload" />
     <result column="received_workload" jdbcType="DECIMAL" property="receivedWorkload" />
+    <result column="coupon_workload" jdbcType="DECIMAL" property="couponWorkload" />
     <result column="quantity" jdbcType="INTEGER" property="quantity" />
     <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
     <result column="crt_id" jdbcType="INTEGER" property="crtId" />
@@ -19,11 +20,11 @@
 
   <insert id="insertBatch">
     INSERT stat_emp_bill
-    (org_id, dentist_id, bill_date, item_type, item_id, quantity, receivable_workload, received_workload, crt_id, crt_time)
+    (org_id, dentist_id, bill_date, item_type, item_id, quantity, receivable_workload, received_workload, coupon_workload, crt_id, crt_time)
     VALUES
     <foreach collection ="list" item="item" index= "index" separator =",">
       (#{item.orgId}, #{item.dentistId}, #{item.billDate}, #{item.itemType}, #{item.itemId},
-       #{item.quantity}, #{item.receivableWorkload}, #{item.receivedWorkload}, #{item.crtId}, #{item.crtTime})
+       #{item.quantity}, #{item.receivableWorkload}, #{item.receivedWorkload}, #{item.couponWorkload}, #{item.crtId}, #{item.crtTime})
     </foreach >
   </insert>
 </mapper>

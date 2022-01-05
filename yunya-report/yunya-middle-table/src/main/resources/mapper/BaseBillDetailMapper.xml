@@ -119,7 +119,8 @@
             bbd.executor_id AS executorId,
             SUM(bbd.quantity*bbd.price-bbd.discount_amount) AS receivableWorkload,
             SUM(bbd.quantity) AS quantity,
-            SUM(bbd.received_amount) AS receivedWorkload
+            SUM(bbd.received_amount) AS receivedWorkload,
+            SUM(bbd.coupon_workload) AS couponWorkload
         FROM base_bill_detail bbd
         LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
         <where>
@@ -142,7 +143,6 @@
             bbd.item_id AS itemId,
             bbd.executor_id AS executorId,
             (bbd.quantity*bbd.price-bbd.discount_amount) AS receivableWorkload,
-            bbd.coupon_workload AS couponWorkload,
             bbd.quantity AS quantity,
             IFNULL(bbp.received_amount,0) AS totalReceivedWorkload,
             bbd.received_amount AS receivedWorkload,
@@ -152,16 +152,18 @@
         INNER JOIN (
             SELECT SUM(received_amount) AS received_amount, bill_id, DATE_FORMAT(payee_date, '%Y-%m-%d') AS payee_date FROM
             base_bill_pay
-            <where>AND received_amount > 0
-                <if test="
-                startDate!=null and startDate!='' and endDate!=null and endDate!=''">
-                        AND DATE_FORMAT(payee_date, '%Y-%m-%d') between #{startDate} and #{endDate}
-                    </if>
-                </where>
-                GROUP BY bill_id, DATE_FORMAT(payee_date, '%Y-%m-%d')
+            <where>
+                AND received_amount > 0
+                <if test="startDate!=null and startDate!='' and endDate!=null and endDate!=''">
+                    AND DATE_FORMAT(payee_date, '%Y-%m-%d') between #{startDate} and #{endDate}
+                </if>
+            </where>
+            GROUP BY bill_id, DATE_FORMAT(payee_date, '%Y-%m-%d')
         ) bbp ON bbp.bill_id = bb.bill_id
         <where>
             AND bb.bill_date is not null
+--             AND bb.org_id=27
+--             AND bbd.executor_id=442
         </where>
     </select>
 
