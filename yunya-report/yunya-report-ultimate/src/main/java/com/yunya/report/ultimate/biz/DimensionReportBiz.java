@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -2456,18 +2457,20 @@ public class DimensionReportBiz {
         query.setCouponIds(coupons.stream().map(BaseCoupon::getCouponId).collect(Collectors.toSet()));
         // 卡券
         Future<List<BaseCard>> cardFuture = multiFindCardCouponSoldStatistics(query);
-        return mergeCardCouponUsedStatistics(orgs, coupons, cardFuture.get());
+        return mergeCardCouponUsedStatistics(query, orgs, coupons, cardFuture.get());
     }
 
     /**
      * 产品卡券使用统计数据合并
      *
+     *
+     * @param query
      * @param orgs
      * @param coupons
      * @param cards
      * @return
      */
-    private DynamicHeaderPageInfo<JSONObject> mergeCardCouponUsedStatistics(List<BaseOrganization> orgs, List<BaseCoupon> coupons, List<BaseCard> cards) {
+    private DynamicHeaderPageInfo<JSONObject> mergeCardCouponUsedStatistics(CardCouponUsedQueryForm query, List<BaseOrganization> orgs, List<BaseCoupon> coupons, List<BaseCard> cards) {
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo();
         List<JSONObject> list = new ArrayList<>();
         if (StringHelper.isNotEmpty(orgs) && StringHelper.isNotEmpty(cards)) {
@@ -2479,7 +2482,7 @@ public class DimensionReportBiz {
             // 购买产品的患者数量
             Map<String, Set<Integer>> patients = new HashMap<>(16);
             // 患者激活卡片次数
-            Map<String, Set<LocalDateTime>> patientActiveDates = statisticCouponCardNum(cards, patients, soldNumMap, activeNumMap);
+            Map<String, Set<LocalDateTime>> patientActiveDates = statisticCouponCardNum(query, cards, patients, soldNumMap, activeNumMap);
             int[] total = new int[coupons.size() * 5];
             Map<String, Integer> repurchaseMap = patientRepurchaseMap(patientActiveDates);
             for (BaseOrganization org : orgs) {
@@ -2526,16 +2529,21 @@ public class DimensionReportBiz {
     /**
      * 统计产品的售出数、激活数、复购数
      *
+     *
+     * @param query
      * @param cards
      * @param patients
      * @param soldNumMap
      * @param activeNumMap
      * @return
      */
-    private Map<String, Set<LocalDateTime>> statisticCouponCardNum(List<BaseCard> cards, Map<String, Set<Integer>> patients,
-                                 Map<String, Integer> soldNumMap, Map<String, Integer> activeNumMap) {
+    private Map<String, Set<LocalDateTime>> statisticCouponCardNum(CardCouponUsedQueryForm query, List<BaseCard> cards, Map<String, Set<Integer>> patients,
+                                                                   Map<String, Integer> soldNumMap, Map<String, Integer> activeNumMap) {
         Map<String, Set<LocalDateTime>> patientActiveDates = new HashMap<>(16);
         if (StringHelper.isNotEmpty(cards)) {
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
+            Integer sDateInt = query.getSDateInt();
+            Integer eDateInt = query.getEDateInt();
             cards.forEach(card->{
                 Integer status = card.getStatus();
                 Integer couponId = card.getCouponId();
@@ -2543,15 +2551,19 @@ public class DimensionReportBiz {
                 Integer patientId = card.getPatientId();
                 String key = activeOrgId + "," + couponId;
                 incrementOne(key, soldNumMap);
-                if (status > 1) {// 已激活
-                    String patientKey = key + "," + patientId;
-                    Set<LocalDateTime> dates = patientActiveDates.get(patientKey);
-                    if (dates == null) {
-                        dates = new HashSet<>();
+                LocalDateTime activeDate = card.getActiveDate();
+                if (!ObjectUtils.isEmpty(activeDate)) {
+                    int dateInt = Integer.parseInt(activeDate.format(dtf));
+                    if (sDateInt <= dateInt && eDateInt >= dateInt) {// 已激活
+                        String patientKey = key + "," + patientId;
+                        Set<LocalDateTime> dates = patientActiveDates.get(patientKey);
+                        if (dates == null) {
+                            dates = new HashSet<>();
+                        }
+                        dates.add(activeDate);
+                        patientActiveDates.put(patientKey, dates);
+                        incrementOne(key, activeNumMap);
                     }
-                    dates.add(card.getActiveDate());
-                    patientActiveDates.put(patientKey, dates);
-                    incrementOne(key, activeNumMap);
                 }
                 Set<Integer> patientIds = patients.get(key);
                 if (patientIds == null) {
