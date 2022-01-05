@@ -34,9 +34,9 @@
           #{item}
         </foreach>
       </if>
-      <if test="query.employeeIds!=null and query.employeeIds.size()>0">
+      <if test="employeeIds!=null and employeeIds.size()>0">
         AND sef.dentist_id in
-        <foreach collection="query.employeeIds" item="item" open="(" separator="," close=")">
+        <foreach collection="employeeIds" item="item" open="(" separator="," close=")">
           #{item}
         </foreach>
       </if>

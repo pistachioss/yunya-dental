@@ -444,9 +444,9 @@ public class DimensionReportBiz {
         // 工作量
         Map<String, BigDecimal> workloadMap = null;
         if (groupByOrgId) {
-            workloadMap = clinicEmployeeWorkload(dateQuery, employeeIds, vo->vo.getExecutorId()+"");
+            workloadMap = clinicEmployeeWorkload(dateQuery, employeeIds, vo->vo.getExecutorId()+","+vo.getOrgId());
         } else {
-            workloadMap = clinicEmployeeWorkload(dateQuery, employeeIds, vo ->vo.getExecutorId()+","+vo.getOrgId());
+            workloadMap = clinicEmployeeWorkload(dateQuery, employeeIds, vo ->vo.getExecutorId()+"");
         }
         return mergeClinicDimension(employees, workloadMap, firstVisitFuture.get(), reFirstVisitFuture.get(),
                 treatFuture.get(), debtFuture.get(), noAppointAndRemindFuture.get(), patientOrginFuture.get(),
@@ -455,22 +455,23 @@ public class DimensionReportBiz {
 
     private void filterDentistPost(ClinicEmployeeWorkloadQuery query) {
         Integer[] employeeIds = query.getEmployeeIds();
-        if (StringHelper.isEmpty(employeeIds)) {
-            SysUserEmployeeModel empQuery = new SysUserEmployeeModel();
-            empQuery.setPostGroupId(Collections.singletonList(DENTIST_GROUP_ID));
-            Integer[] workStatus = query.getWorkStatus();
-            if (StringHelper.isNotEmpty(workStatus)) {
-                Byte[] wStatus = new Byte[workStatus.length];
-                for (int i = 0; i < workStatus.length; i++) {
-                    wStatus[i] = (byte) workStatus[i].intValue();
-                }
-                empQuery.setWorkStatus(wStatus);
+        SysUserEmployeeModel empQuery = new SysUserEmployeeModel();
+        empQuery.setPostGroupId(Collections.singletonList(DENTIST_GROUP_ID));
+        Integer[] workStatus = query.getWorkStatus();
+        if (StringHelper.isNotEmpty(workStatus)) {
+            Byte[] wStatus = new Byte[workStatus.length];
+            for (int i = 0; i < workStatus.length; i++) {
+                wStatus[i] = (byte) workStatus[i].intValue();
             }
-            empQuery.setWhetherPage(false);
-            List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(empQuery);
-            employeeIds = employees.stream().map(SysUserInfoDetail::getEmployeeId).toArray(Integer[]::new);
-            query.setEmployeeIds(employeeIds);
+            empQuery.setWorkStatus(wStatus);
         }
+        empQuery.setWhetherPage(false);
+        if (StringHelper.isNotEmpty(employeeIds)) {
+            empQuery.setUserIds(Arrays.asList(employeeIds));
+        }
+        List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(empQuery);
+        employeeIds = employees.stream().map(SysUserInfoDetail::getEmployeeId).toArray(Integer[]::new);
+        query.setEmployeeIds(employeeIds);
     }
 
     private void updEmployeeId2Query(List<ClinicEmployeBonusCoefficientVO> employees, ClinicEmployeeWorkloadQuery query) {
@@ -1248,10 +1249,11 @@ public class DimensionReportBiz {
         // 门诊的实收、免单
         List<BillExecutorItemVO> pays = multiFindClinicEmployeeWorkload(query, employeeIds).get();
         // 门诊的补入
-        List<BillExecutorItemVO> bills = multiFindClinicEmployeeCouponWorkload(query, employeeIds).get();
+        List<BillExecutorItemVO> coupons = multiFindClinicEmployeeCouponWorkload(query, employeeIds).get();
         // 门诊的退费
         List<BillExecutorItemVO> refunds = multiFindClinicEmployeeRefundWorkload(query, employeeIds).get();
         Map<String, BigDecimal> result = new HashMap<>();
+        // 工作量=实收-免单-退费+补入
         if (StringHelper.isNotEmpty(pays)) {
             pays.forEach(vo->{
                 String key = keyFunc.apply(vo);
@@ -1263,15 +1265,14 @@ public class DimensionReportBiz {
                 result.put(key, totalWorkload.add(workload));
             });
         }
-        if (StringHelper.isNotEmpty(bills)) {
-            bills.forEach(vo -> {
+        if (StringHelper.isNotEmpty(coupons)) {
+            coupons.forEach(vo -> {
                 String key = keyFunc.apply(vo);
                 BigDecimal totalWorkload = result.get(key);
                 if (totalWorkload == null) {
                     totalWorkload = new BigDecimal("0.00");
                 }
-                BigDecimal workload = vo.getCouponWorkload();
-                result.put(key, totalWorkload.add(workload));
+                result.put(key, totalWorkload.add(vo.getCouponWorkload()));
             });
         }
         if (StringHelper.isNotEmpty(refunds)) {
