@@ -315,11 +315,8 @@ public class DimensionReportBiz {
      * @param query
      * @param groupByOrgId
      */
-    private Future<Map<String, Integer>> multiFindinMonthReFirstVisit(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
-        return threadPool.submit(()->{
-            List<EmployeeCountVO> employees = baseTreatmentProcessBiz.findInMonthReFirstVisit(query, groupByOrgId);
-            return mapEmployeeCount(employees);
-        });
+    private Future<Map<String, Set<Integer>>> multiFindinMonthReFirstVisit(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
+        return threadPool.submit(()-> baseTreatmentProcessBiz.findInMonthReFirstVisit(query, groupByOrgId));
     }
 
     private Map<String, Integer> specialIdNameMap(List<PersonalBillItemVO> billItems, Map<String, String> specialMap) {
@@ -425,7 +422,7 @@ public class DimensionReportBiz {
         Future<Map<String, Integer>> treatFuture = multiFindTreatVisitsTimes(query, groupByOrgId);
 
         // 本月初诊且/复诊
-        Future<Map<String, Integer>> reFirstVisitFuture = multiFindinMonthReFirstVisit(query, groupByOrgId);
+        Future<Map<String, Set<Integer>>> reFirstVisitFuture = multiFindinMonthReFirstVisit(query, groupByOrgId);
 
         // 欠费总额
         Future<Map<String, BigDecimal>> debtFuture = multiFindPatientDebtAmount(query, groupByOrgId);
@@ -491,7 +488,7 @@ public class DimensionReportBiz {
     }
 
     private DynamicHeaderPageInfo<JSONObject> mergeClinicDimension(List<ClinicEmployeBonusCoefficientVO> employees,
-            Map<String, BigDecimal> workloadMap, Map<String, Integer> firstVisitMap, Map<String, Integer> reFirstVisitMap,
+            Map<String, BigDecimal> workloadMap, Map<String, Integer> firstVisitMap, Map<String, Set<Integer>> reFirstVisitMap,
             Map<String, Integer> treatTimesMap, Map<String, BigDecimal> debtMap, Map<String, Integer> noARMap,
             List<EmployeeFirstVisitOriginTypeVO> originTypes, List<PersonalBillItemVO> billItems, Map<String, Integer> reVisitMap, boolean groupByOrgId) throws Exception {
         Map<String, List<String>> title = new HashMap<>(16);
@@ -532,7 +529,12 @@ public class DimensionReportBiz {
                 obj.put("firstVisitCount", defaultValue(firstVisitMap.get(key)));
                 obj.put("reVisitCount", defaultValue(reVisitMap.get(key)));
                 obj.put("treatTimes", defaultValue(treatTimesMap.get(key)));
-                obj.put("reFirstVisitCount", defaultValue(reFirstVisitMap.get(key)));
+                Set<Integer> patientIds = reFirstVisitMap.get(key);
+                int reFirstVisitCount = 0;
+                if (StringHelper.isNotEmpty(patientIds)) {
+                    reFirstVisitCount = patientIds.size();
+                }
+                obj.put("reFirstVisitCount", defaultValue(reFirstVisitCount));
                 obj.put("debtAmount", defaultValue(debtMap.get(key)));
                 obj.put("hasntAppointAndRemind", defaultValue(noARMap.get(key)));
                 originTypeMap.forEach((originTypeId, name) -> {
