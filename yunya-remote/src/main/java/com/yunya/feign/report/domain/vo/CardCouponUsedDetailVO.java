@@ -52,7 +52,7 @@ public class CardCouponUsedDetailVO implements Serializable {
     private String mobile;
 
     /** 绑定时间 */
-    @Excel(name = "绑定时间", dateFormat = "yyyy-MM-dd HH:mm")
+    @Excel(name = "绑定时间")
     @ApiModelProperty("绑定时间")
     private String bindTime;
 

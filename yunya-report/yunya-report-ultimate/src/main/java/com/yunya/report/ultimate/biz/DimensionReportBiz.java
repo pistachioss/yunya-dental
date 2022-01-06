@@ -2554,20 +2554,22 @@ public class DimensionReportBiz {
                 Integer couponId = card.getCouponId();
                 Integer allocateOrgId = card.getAllocateOrgId();
                 Integer patientId = card.getPatientId();
+                Integer activeOrgId = card.getActiveOrgId();
                 String key = allocateOrgId + "," + couponId;
                 incrementOne(key, soldNumMap);
                 LocalDateTime activeDate = card.getActiveDate();
                 if (!ObjectUtils.isEmpty(activeDate)) {
                     int dateInt = Integer.parseInt(activeDate.format(dtf));
                     if (sDateInt <= dateInt && eDateInt >= dateInt) {// 已激活
-                        String patientKey = key + "," + patientId;
+                        String activeKey = activeOrgId + "," + couponId;
+                        String patientKey = activeKey + "," + patientId;
                         Set<LocalDateTime> dates = patientActiveDates.get(patientKey);
                         if (dates == null) {
                             dates = new HashSet<>();
                         }
                         dates.add(activeDate);
                         patientActiveDates.put(patientKey, dates);
-                        incrementOne(key, activeNumMap);
+                        incrementOne(activeKey, activeNumMap);
                     }
                 }
                 Set<Integer> patientIds = patients.get(key);
@@ -2731,7 +2733,7 @@ public class DimensionReportBiz {
     }
 
     /**
-     * 根据条件导出产品卡券使用统计-激活/复购明细
+     * 根据条件导出产品卡券使用统计-激活or复购明细
      *
      * @param query 查询条件
      * @return
@@ -2742,6 +2744,11 @@ public class DimensionReportBiz {
         List<CardCouponUsedDetailVO> result = pageInfo.getList();
         ExcelUtil<CardCouponUsedDetailVO> excelUtil = new ExcelUtil(CardCouponUsedDetailVO.class);
         String sheetName = "产品卡券使用统计";
+        if (query.getDetailType() == 0) {
+            sheetName += "激活明细";
+        } else {
+            sheetName += "复购明细";
+        }
         String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", sheetName);
         excelUtil.exportExcel(response, result, sheetName, fileName);
     }
