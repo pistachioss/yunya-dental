@@ -486,6 +486,8 @@ public class DimensionReportBiz {
             }
         });
         query.setEmployeeIds(employeeIds.toArray(new Integer[0]));
+        query.setStartDate(null);
+        query.setEndDate(null);
     }
 
     private DynamicHeaderPageInfo<JSONObject> mergeClinicDimension(List<ClinicEmployeBonusCoefficientVO> employees,
