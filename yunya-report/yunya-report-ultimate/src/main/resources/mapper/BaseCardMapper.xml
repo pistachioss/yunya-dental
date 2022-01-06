@@ -933,7 +933,7 @@
         SELECT
         bc.coupon_name AS bindCouponName,
         bcd.card_id,
-        bcd.active_date AS bindTime,
+        DATE_FORMAT(bcd.active_date,'%Y-%m-%d %H:%i') AS bindTime,
         bp.patient_id AS patientId,
         bp.name AS patientName,
         bp.medical_number AS medicalNumber,
