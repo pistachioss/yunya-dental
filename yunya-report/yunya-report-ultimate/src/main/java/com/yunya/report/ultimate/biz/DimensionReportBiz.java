@@ -410,6 +410,13 @@ public class DimensionReportBiz {
     public DynamicHeaderPageInfo<JSONObject> clinicDimensionStatistics(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) throws Exception {
         filterDentistPost(query);
         List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(query, groupByOrgId);
+        if (StringHelper.isEmpty(employees)) {
+            DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo(employees);
+            pageInfo.setMap(new HashMap<>());
+            pageInfo.setContextMap(new HashMap<>());
+            pageInfo.setHeader(new String[0]);
+            return pageInfo;
+        }
         updEmployeeId2Query(employees, query);
 
         // 初诊人数
