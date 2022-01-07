@@ -2564,25 +2564,24 @@ public class DimensionReportBiz {
                 Integer couponId = card.getCouponId();
                 Integer allocateOrgId = card.getAllocateOrgId();
                 Integer patientId = card.getPatientId();
-                String key = allocateOrgId + "," + couponId;
-                if (ObjectUtils.isEmpty(allocateOrgId) || allocateOrgId<=0) {
-                    key = card.getActiveOrgId() + "," + couponId;
-                }
-                incrementOne(key, soldNumMap);
+                String allocateKey = allocateOrgId + "," + couponId;
+                incrementOne(allocateKey, soldNumMap);
                 LocalDateTime activeDate = card.getActiveDate();
                 if (!ObjectUtils.isEmpty(activeDate)) {
                     int dateInt = Integer.parseInt(activeDate.format(dtf));
                     if (sDateInt <= dateInt && eDateInt >= dateInt) {// 已激活
-                        incrementOne(key + "," + patientId, activePatients);
-                        incrementOne(key, activeNumMap);
+                        String activeKey = card.getActiveOrgId() + "," + couponId;
+                        incrementOne(activeKey + "," + patientId, activePatients);
+                        incrementOne(activeKey, activeNumMap);
                     }
                 }
-                Set<Integer> patientIds = patients.get(key);
+
+                Set<Integer> patientIds = patients.get(allocateKey);
                 if (patientIds == null) {
                     patientIds = new HashSet<>();
                 }
                 patientIds.add(patientId);
-                patients.put(key, patientIds);
+                patients.put(allocateKey, patientIds);
             });
         }
         return patientRepurchaseMap(activePatients);
