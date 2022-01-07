@@ -975,7 +975,7 @@
                     </if>
                     and btp.treat_end_time is not null
                 </where>
-                group by btp.patient_id
+                group by btp.org_id,btp.patient_id
             ) btp
             inner join base_treatment_process btp2 on btp.treatmentId = btp2.treatment_id
             <where>
@@ -1019,30 +1019,46 @@
         ) btp
         left join (
             select
-            bp.patient_id,
-            ifnull(btp1.appointCount, 0) as appointCount,
-            ifnull(bvr.visitCount, 0) as visitCount
-            from base_patient bp
+                bp.org_id,
+                bp.patient_id,
+                ifnull(btp1.appointCount, 0) as appointCount,
+                ifnull(bvr.visitCount, 0) as visitCount
+            FROM (
+                SELECT bp.patient_id, bo.org_id FROM base_patient bp, base_organization bo
+                <where>
+                    AND bo.org_type = 2
+                    <if test="query.orgIds!=null and query.orgIds.length>0">
+                        and bo.org_id in
+                        <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                </where>
+            ) bp
             LEFT JOIN (
-                SELECT patient_id,
+                SELECT org_id, patient_id,
                 count(btp.patient_id) AS appointCount
                 FROM base_treatment_process btp
                 WHERE
                 DATE_FORMAT(btp.appoint_start_time, '%Y-%m-%d') &gt;= current_date
-                GROUP BY patient_id
-            ) btp1 ON bp.patient_id = btp1.patient_id
+                GROUP BY org_id, patient_id
+            ) btp1 ON bp.patient_id = btp1.patient_id AND bp.org_id = btp1.org_id
             LEFT JOIN (
-                SELECT patient_id,
+                SELECT org_id, patient_id,
                 count(bvr.patient_id) AS visitCount
                 FROM base_visit_remind bvr
                 WHERE bvr.type = 1
                 AND DATE_FORMAT(bvr.visiting_remind_time, '%Y-%m-%d') &gt;= current_date
-                GROUP BY patient_id
-            ) bvr ON bp.patient_id = bvr.patient_id
-        ) bp on btp.patientId = bp.patient_id
+                GROUP BY org_id, patient_id
+            ) bvr ON bp.patient_id = bvr.patient_id AND bp.org_id = bvr.org_id
+        ) bp on btp.patientId = bp.patient_id AND bp.org_id = btp.org_id
         where bp.appointCount = 0
         and bp.visitCount = 0
-        GROUP BY btp.org_id, btp.registered_dentist_id
+        GROUP BY
+        <if test="groupByOrgId">
+            btp.org_id,
+        </if>
+        btp.registered_dentist_id
     </select>
 
     <select id="selectFirstVisitPatientOriginType"
