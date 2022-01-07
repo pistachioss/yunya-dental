@@ -2562,9 +2562,8 @@ public class DimensionReportBiz {
             Integer eDateInt = query.getEDateInt();
             cards.forEach(card->{
                 Integer couponId = card.getCouponId();
-                Integer allocateOrgId = card.getAllocateOrgId();
                 Integer patientId = card.getPatientId();
-                String allocateKey = allocateOrgId + "," + couponId;
+                String allocateKey = card.getAllocateOrgId() + "," + couponId;
                 incrementOne(allocateKey, soldNumMap);
                 LocalDateTime activeDate = card.getActiveDate();
                 if (!ObjectUtils.isEmpty(activeDate)) {
