@@ -833,6 +833,7 @@
 
     <select id="selectCardCouponSoldList" resultType="com.yunya.models.report.BaseCard">
         SELECT
+            bc.card_id,
             bc.coupon_id AS couponId,
             bc.active_org_id AS activeOrgId,
             bc.patient_id AS patientId,
@@ -880,6 +881,7 @@
         </where>
         UNION
         SELECT
+            bc.card_id,
             bc.coupon_id AS couponId,
             bc.active_org_id AS activeOrgId,
             bc.patient_id AS patientId,

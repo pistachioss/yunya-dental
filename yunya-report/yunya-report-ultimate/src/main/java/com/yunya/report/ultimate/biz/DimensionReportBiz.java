@@ -2494,10 +2494,9 @@ public class DimensionReportBiz {
             Map<String, Integer> activeNumMap = new HashMap<>(16);
             // 购买产品的患者数量
             Map<String, Set<Integer>> patients = new HashMap<>(16);
-            // 患者激活卡片次数
-            Map<String, Set<LocalDateTime>> patientActiveDates = statisticCouponCardNum(query, cards, patients, soldNumMap, activeNumMap);
+            // 患者复购数
+            Map<String, Integer> repurchaseMap = statisticCouponCardNum(query, cards, patients, soldNumMap, activeNumMap);
             int[] total = new int[coupons.size() * 5];
-            Map<String, Integer> repurchaseMap = patientRepurchaseMap(patientActiveDates);
             for (BaseOrganization org : orgs) {
                 JSONObject obj = new JSONObject();
                 Integer orgId = org.getOrgId();
@@ -2553,9 +2552,10 @@ public class DimensionReportBiz {
      * @param activeNumMap
      * @return
      */
-    private Map<String, Set<LocalDateTime>> statisticCouponCardNum(CardCouponUsedQueryForm query, List<BaseCard> cards, Map<String, Set<Integer>> patients,
+    private Map<String, Integer> statisticCouponCardNum(CardCouponUsedQueryForm query, List<BaseCard> cards, Map<String, Set<Integer>> patients,
                                                                    Map<String, Integer> soldNumMap, Map<String, Integer> activeNumMap) {
-        Map<String, Set<LocalDateTime>> patientActiveDates = new HashMap<>(16);
+        // 每个患者的激活次数
+        Map<String, Integer> activePatients = new HashMap<>(16);
         if (StringHelper.isNotEmpty(cards)) {
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
             Integer sDateInt = query.getSDateInt();
@@ -2564,22 +2564,17 @@ public class DimensionReportBiz {
                 Integer couponId = card.getCouponId();
                 Integer allocateOrgId = card.getAllocateOrgId();
                 Integer patientId = card.getPatientId();
-                Integer activeOrgId = card.getActiveOrgId();
                 String key = allocateOrgId + "," + couponId;
+                if (ObjectUtils.isEmpty(allocateOrgId) || allocateOrgId<=0) {
+                    key = card.getActiveOrgId() + "," + couponId;
+                }
                 incrementOne(key, soldNumMap);
                 LocalDateTime activeDate = card.getActiveDate();
                 if (!ObjectUtils.isEmpty(activeDate)) {
                     int dateInt = Integer.parseInt(activeDate.format(dtf));
                     if (sDateInt <= dateInt && eDateInt >= dateInt) {// 已激活
-                        String activeKey = activeOrgId + "," + couponId;
-                        String patientKey = activeKey + "," + patientId;
-                        Set<LocalDateTime> dates = patientActiveDates.get(patientKey);
-                        if (dates == null) {
-                            dates = new HashSet<>();
-                        }
-                        dates.add(activeDate);
-                        patientActiveDates.put(patientKey, dates);
-                        incrementOne(activeKey, activeNumMap);
+                        incrementOne(key + "," + patientId, activePatients);
+                        incrementOne(key, activeNumMap);
                     }
                 }
                 Set<Integer> patientIds = patients.get(key);
@@ -2590,7 +2585,7 @@ public class DimensionReportBiz {
                 patients.put(key, patientIds);
             });
         }
-        return patientActiveDates;
+        return patientRepurchaseMap(activePatients);
     }
 
     /**
@@ -2666,11 +2661,11 @@ public class DimensionReportBiz {
      * @param patientActiveDates
      * @return
      */
-    private Map<String, Integer> patientRepurchaseMap(Map<String, Set<LocalDateTime>> patientActiveDates) {
+    private Map<String, Integer> patientRepurchaseMap(Map<String, Integer> patientActiveDates) {
         Map<String, Integer> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(patientActiveDates)) {
-            patientActiveDates.forEach((key, set)->{
-                if (set.size() > 1) {
+            patientActiveDates.forEach((key, count)->{
+                if (count > 1) {
                     incrementOne(key.substring(0, key.lastIndexOf(",")),result);
                 }
             });
