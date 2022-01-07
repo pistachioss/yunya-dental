@@ -833,12 +833,14 @@
 
     <select id="selectCardCouponSoldList" resultType="com.yunya.models.report.BaseCard">
         SELECT
-            bc.card_id,
-            bc.coupon_id AS couponId,
-            bc.active_org_id AS activeOrgId,
-            bc.patient_id AS patientId,
-            bc.allocate_org_id AS allocateOrgId,
-            DATE_FORMAT(bc.active_date,'%Y-%m-%d') AS activeDate
+        'sale' AS cardNumber,
+        bc.card_id,
+        bc.coupon_id AS couponId,
+        bc.active_org_id AS activeOrgId,
+        bc.patient_id AS patientId,
+        bc.sale_channel_id,
+        bc.allocate_org_id AS allocateOrgId,
+        DATE_FORMAT(bc.active_date,'%Y-%m-%d') AS activeDate
         FROM base_card bc
         <where>
             AND bc.status in (1,2,3,4)
@@ -879,18 +881,19 @@
                 </foreach>
             </if>
         </where>
-        UNION
+        UNION ALL
         SELECT
-            bc.card_id,
-            bc.coupon_id AS couponId,
-            bc.active_org_id AS activeOrgId,
-            bc.patient_id AS patientId,
-            bc.active_org_id AS allocateOrgId,
-            DATE_FORMAT(bc.active_date,'%Y-%m-%d') AS activeDate
+        'active' AS cardNumber,
+        bc.card_id,
+        bc.coupon_id AS couponId,
+        bc.active_org_id AS activeOrgId,
+        bc.patient_id AS patientId,
+        bc.sale_channel_id,
+        bc.allocate_org_id AS allocateOrgId,
+        DATE_FORMAT(bc.active_date,'%Y-%m-%d') AS activeDate
         FROM base_card bc
         <where>
-            AND bc.status in (1,2,3,4)
-            AND bc.sale_channel_id != 2
+            AND bc.status in (2,3,4)
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     AND DATE_FORMAT(bc.active_date, '%Y-%m-%d') &gt;= #{query.startDate}
