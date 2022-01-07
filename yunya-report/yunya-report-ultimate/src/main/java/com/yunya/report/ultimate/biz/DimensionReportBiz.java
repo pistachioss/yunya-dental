@@ -2505,6 +2505,9 @@ public class DimensionReportBiz {
                     int activeNum = defaultValue(activeNumMap.get(key));
                     obj.put("A-" + couponId, activeNum);
                     int unActiveNum = soldNum - activeNum;
+                    if (unActiveNum < 0) {
+                        unActiveNum = 0;
+                    }
                     obj.put("U-" + couponId, unActiveNum);
                     int repurchaseNum = defaultValue(repurchaseMap.get(key));
                     obj.put("R-" + couponId, repurchaseNum);
