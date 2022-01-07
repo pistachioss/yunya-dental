@@ -31,8 +31,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -2470,20 +2468,19 @@ public class DimensionReportBiz {
         query.setCouponIds(coupons.stream().map(BaseCoupon::getCouponId).collect(Collectors.toSet()));
         // 卡券
         Future<List<BaseCard>> cardFuture = multiFindCardCouponSoldStatistics(query);
-        return mergeCardCouponUsedStatistics(query, orgs, coupons, cardFuture.get());
+        return mergeCardCouponUsedStatistics(orgs, coupons, cardFuture.get());
     }
 
     /**
      * 产品卡券使用统计数据合并
      *
      *
-     * @param query
      * @param orgs
      * @param coupons
      * @param cards
      * @return
      */
-    private DynamicHeaderPageInfo<JSONObject> mergeCardCouponUsedStatistics(CardCouponUsedQueryForm query, List<BaseOrganization> orgs, List<BaseCoupon> coupons, List<BaseCard> cards) {
+    private DynamicHeaderPageInfo<JSONObject> mergeCardCouponUsedStatistics(List<BaseOrganization> orgs, List<BaseCoupon> coupons, List<BaseCard> cards) {
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo();
         List<JSONObject> list = new ArrayList<>();
         if (StringHelper.isNotEmpty(orgs) && StringHelper.isNotEmpty(cards)) {
@@ -2492,10 +2489,10 @@ public class DimensionReportBiz {
             Map<String, Integer> soldNumMap = new HashMap<>(16);
             // 激活数量
             Map<String, Integer> activeNumMap = new HashMap<>(16);
-            // 购买产品的患者数量
+            // 激活总人量
             Map<String, Set<Integer>> patients = new HashMap<>(16);
             // 患者复购数
-            Map<String, Integer> repurchaseMap = statisticCouponCardNum(query, cards, patients, soldNumMap, activeNumMap);
+            Map<String, Integer> repurchaseMap = statisticCouponCardNum(cards, patients, soldNumMap, activeNumMap);
             int[] total = new int[coupons.size() * 5];
             for (BaseOrganization org : orgs) {
                 JSONObject obj = new JSONObject();
@@ -2545,45 +2542,65 @@ public class DimensionReportBiz {
      * 统计产品的售出数、激活数、复购数
      *
      *
-     * @param query
      * @param cards
      * @param patients
      * @param soldNumMap
      * @param activeNumMap
      * @return
      */
-    private Map<String, Integer> statisticCouponCardNum(CardCouponUsedQueryForm query, List<BaseCard> cards, Map<String, Set<Integer>> patients,
-                                                                   Map<String, Integer> soldNumMap, Map<String, Integer> activeNumMap) {
+    private Map<String, Integer> statisticCouponCardNum(List<BaseCard> cards, Map<String, Set<Integer>> patients,
+                               Map<String, Integer> soldNumMap, Map<String, Integer> activeNumMap) {
         // 每个患者的激活次数
-        Map<String, Integer> activePatients = new HashMap<>(16);
+        Map<String, Set<Integer>> activePatients = new HashMap<>(16);
         if (StringHelper.isNotEmpty(cards)) {
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
-            Integer sDateInt = query.getSDateInt();
-            Integer eDateInt = query.getEDateInt();
+            // 患者首次激活产品key列表 （标本数据）
+            List<String> couponPatients = new ArrayList<>();
+            // 患者非首次激活产品列表
+            List<BaseCard> activeCards = new ArrayList<>();
             cards.forEach(card->{
+                String type = card.getCardNumber();// 销售/激活
                 Integer couponId = card.getCouponId();
                 Integer patientId = card.getPatientId();
                 String allocateKey = card.getAllocateOrgId() + "," + couponId;
-                incrementOne(allocateKey, soldNumMap);
-                LocalDateTime activeDate = card.getActiveDate();
-                if (!ObjectUtils.isEmpty(activeDate)) {
-                    int dateInt = Integer.parseInt(activeDate.format(dtf));
-                    if (sDateInt <= dateInt && eDateInt >= dateInt) {// 已激活
-                        String activeKey = card.getActiveOrgId() + "," + couponId;
-                        incrementOne(activeKey + "," + patientId, activePatients);
-                        incrementOne(activeKey, activeNumMap);
+                String activeKey = card.getActiveOrgId() + "," + couponId;
+                if ("sale".equals(type)) {// 统计销售数
+                    incrementOne(allocateKey, soldNumMap);
+                } else {// 统计激活数
+                    incrementOne(activeKey, activeNumMap);
+                    // 给激活门诊的销售数+1
+                    incrementOne(activeKey, soldNumMap);
+                    // 给销售门诊的销售数-1
+                    decrementOne(allocateKey, soldNumMap);
+                    // 统计激活的患者人数
+                    incrUniqueInt(activeKey, patientId, patients);
+                    String key = card.getCouponId() + "," + card.getPatientId();
+                    if (!couponPatients.contains(key)) {
+                        couponPatients.add(key);
+                    } else {
+                        activeCards.add(card);
                     }
                 }
-
-                Set<Integer> patientIds = patients.get(allocateKey);
-                if (patientIds == null) {
-                    patientIds = new HashSet<>();
+            });
+            activeCards.forEach(card->{
+                Integer patientId = card.getPatientId();
+                Integer couponId = card.getCouponId();
+                String key = couponId + "," + patientId;
+                if (couponPatients.contains(key)) {
+                    // 统计产品二次激活门诊的患者人数
+                    incrUniqueInt(card.getActiveOrgId()+","+couponId, patientId, activePatients);
                 }
-                patientIds.add(patientId);
-                patients.put(allocateKey, patientIds);
             });
         }
         return patientRepurchaseMap(activePatients);
+    }
+
+    private void incrUniqueInt(String activeKey, Integer id, Map<String, Set<Integer>> uniqueMap) {
+        Set<Integer> patientIds = uniqueMap.get(activeKey);
+        if (patientIds == null) {
+            patientIds = new HashSet<>();
+        }
+        patientIds.add(id);
+        uniqueMap.put(activeKey, patientIds);
     }
 
     /**
@@ -2646,6 +2663,24 @@ public class DimensionReportBiz {
      * @param map
      */
     private void incrementOne(String key, Map<String, Integer> map) {
+        incrementKey(key, 1, map);
+    }
+
+    private void incrementKey(String key, int value, Map<String, Integer> map) {
+        Integer num = map.get(key);
+        if (num == null) {
+            num = 0;
+        }
+        map.put(key, num + value);
+    }
+
+    /**
+     * 数量减1
+     *
+     * @param key
+     * @param map
+     */
+    private void decrementOne(String key, Map<String, Integer> map) {
         Integer num = map.get(key);
         if (num == null) {
             num = 0;
@@ -2659,13 +2694,11 @@ public class DimensionReportBiz {
      * @param patientActiveDates
      * @return
      */
-    private Map<String, Integer> patientRepurchaseMap(Map<String, Integer> patientActiveDates) {
+    private Map<String, Integer> patientRepurchaseMap(Map<String, Set<Integer>> patientActiveDates) {
         Map<String, Integer> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(patientActiveDates)) {
-            patientActiveDates.forEach((key, count)->{
-                if (count > 1) {
-                    incrementOne(key.substring(0, key.lastIndexOf(",")),result);
-                }
+            patientActiveDates.forEach((key, set)->{
+                incrementKey(key, set.size(), result);
             });
         }
         return result;
