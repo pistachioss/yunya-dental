@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.StatEmpRefundMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.StatEmpRefund" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="org_id" property="orgId" jdbcType="INTEGER" />
+    <id column="dentist_id" property="dentistId" jdbcType="INTEGER" />
+    <id column="item_id" property="itemId" jdbcType="INTEGER" />
+    <id column="item_type" property="itemType" jdbcType="TINYINT" />
+    <id column="refund_date" property="refundDate" jdbcType="INTEGER" />
+    <result column="refund_workload" property="refundWorkload" jdbcType="DECIMAL" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+  </resultMap>
+  
+  <select id="selectStatisticsEmployeeRefundWorkload" resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">
+    SELECT
+        sef.org_id AS orgId,
+        sef.dentist_id AS executorId,
+        sef.refund_date AS billDate,
+        sef.item_type AS itemType,
+        sef.item_id AS itemId,
+        sef.refund_workload AS refundWorkload
+    FROM stat_emp_refund sef
+    <where>
+      <if test="query.sDateInt!=null and query.eDateInt!=null">
+        AND sef.refund_date between #{query.sDateInt} and #{query.eDateInt}
+      </if>
+      <if test="query.orgIds!=null and query.orgIds.size()>0">
+        AND sef.org_id in
+        <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+      <if test="employeeIds!=null and employeeIds.size()>0">
+        AND sef.dentist_id in
+        <foreach collection="employeeIds" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+    </where>  
+  </select>
+
+</mapper>

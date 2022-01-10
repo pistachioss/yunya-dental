@@ -32,8 +32,9 @@ public interface BaseCouponMapper extends Mapper<BaseCoupon> {
 	 */
 	List<RechargeVo> listRechargeByParam(@Param("couponName") String couponName, @Param("couponCategoryIds") List<Integer> couponCategoryIds);
 
-	List<CouponActiveVo> listCouponActive(@Param("couponName") String couponName, @Param("soldChannelIds") List<Integer> soldChannelIds,
-										  @Param("activeOrgIds") List<Integer> activeOrgIds);
+	List<CouponActiveVo> listCouponActive(@Param("couponIds") List<Integer> couponIds, @Param("soldChannelIds") List<Integer> soldChannelIds,
+										  @Param("activeOrgIds") List<Integer> activeOrgIds,
+										  @Param("activeStartDate") String activeStartDate,@Param("activeEndDate") String activeEndDate);
 
 	List<CouponActiveVo> couponActivedGroupByOrgId(@Param("query") ClinicPerformanceBusinessQuery query);
 

@@ -105,7 +105,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    *
    * @param resource 参数封装
    */
-  public void add(SysUserForm resource) {
+  public Integer add(SysUserForm resource) {
     checkUserNameUnique(resource.getName());
     checkIdentityUnique(resource.getIdentity());
     checkMobileUnique(resource.getMobilePhone());
@@ -117,8 +117,9 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     sysUser.setCrtName(BaseContextHandler.getName());
     // 新增用户基础信息
     int result = mapper.insertUser(sysUser);
+    Integer userId = null;
     if (result > 0) {
-      Integer userId = sysUser.getId();
+      userId = sysUser.getId();
       SysEmployee sysEmployee = EntityUtils.build(resource, SysEmployee.class);
       sysEmployee.setUserId(userId);
       // 新增员工就职状态为离职处理
@@ -140,6 +141,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       // 发送消息同步员工信息
       rabbitMqServiceFeign.sendMessage(userId, 0, BaseEmployee);
     }
+    return userId;
   }
 
   /**

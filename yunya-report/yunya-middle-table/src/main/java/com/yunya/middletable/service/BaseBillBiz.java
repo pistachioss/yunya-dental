@@ -117,20 +117,19 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         } else {
           baseBillDetailMapper.deleteByBillId(dataId);
         }
-        break;
       default:
-        statisticsInBillDate(bill, dataId);
+        statisticsEmployeeByBillDate(bill, dataId);
         break;
     }
   }
 
   /**
-   * 账单生成时统计
+   * 账单生成时统计执行人的账单数据
    *
    * @param bill
    * @param dataId
    */
-  private void statisticsInBillDate(BaseBill bill, Integer dataId) {
+  private void statisticsEmployeeByBillDate(BaseBill bill, Integer dataId) {
       if (ObjectUtils.isEmpty(bill)) {
         bill = new BaseBill();
         BillRecord query = new BillRecord();
@@ -144,7 +143,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         OrderDetail query = new OrderDetail();
         query.setOrderRecordId(billId);
         List<OrderDetail> orderDetails = orderDetailMapper.select(query);
-        statEmpBillBiz.statisticsInBillDate(orderDetails, bill);
+        statEmpBillBiz.statisticsEmployeeByBillDate(orderDetails, bill);
       }
   }
 

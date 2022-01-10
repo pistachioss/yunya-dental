@@ -9,6 +9,7 @@
     <result column="employee_name" property="employeeName" jdbcType="VARCHAR" />
     <result column="gender" property="gender" jdbcType="TINYINT" />
     <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+    <result column="entry_date" property="entryDate" jdbcType="DATE" />
     <result column="work_status" property="workStatus" jdbcType="TINYINT" />
     <result column="title" property="title" jdbcType="VARCHAR" />
     <result column="post_level" property="postLevel" jdbcType="VARCHAR" />

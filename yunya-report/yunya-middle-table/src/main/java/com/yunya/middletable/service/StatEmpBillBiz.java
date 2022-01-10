@@ -45,12 +45,12 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
     private ExecutorService importExcelThreadPool;
 
     /**
-     * 账单生成时统计
+     * 账单生成时统计执行人的账单数据
      *
      * @param orderDetails
      * @param bill
      */
-    public void statisticsInBillDate(List<OrderDetail> orderDetails, BaseBill bill) {
+    public void statisticsEmployeeByBillDate(List<OrderDetail> orderDetails, BaseBill bill) {
         Integer orgId = bill.getOrgId();
         Date date = new Date(System.currentTimeMillis());
         Integer billDate = DateUtil.date2Number(bill.getBillDate());
@@ -91,6 +91,7 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
                             entity.setQuantity(vo.getQuantity());
                             entity.setReceivableWorkload(vo.getReceivableWorkload());
                             entity.setReceivedWorkload(vo.getReceivedWorkload());
+                            entity.setCouponWorkload(vo.getCouponWorkload());
                             entity.setCrtId(crtId);
                             entity.setCrtTime(date);
                             mapper.insertSelective(entity);
@@ -101,48 +102,6 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
             }
         }
     }
-
-    /**
-     * 根据条件拉取账单时统计并更新中间表
-     *
-     * @param form
-     * @throws InterruptedException
-     */
-  /*public void pullBillDateStatistics(PullForm form) throws InterruptedException {
-    String startDate = form.getStartDate();
-    String endDate = form.getEndDate();
-    List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
-    if (StringHelper.isNotEmpty(dateRanges)) {
-      CountDownLatch latch = new CountDownLatch(dateRanges.size());
-      List<Future> resultFutures = new ArrayList<>();
-      for (String date : dateRanges) {
-        resultFutures.add(
-                importExcelThreadPool.submit(
-                        () -> {
-                          try {
-                            Example example = new Example(BaseBill.class);
-                            example
-                                    .createCriteria()
-                                    .andCondition("org_id=", 26)
-                                    .andCondition(
-                                            "bill_date >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
-                                    .andCondition(
-                                            "bill_date < '"
-                                                    + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
-                                                    + "'");
-                            List<BaseBill> baseBills = mapper.selectByExample(example);
-                            if (StringHelper.isNotEmpty(baseBills)) {
-                              baseBills.forEach(vo-> statisticsInBillDate(vo, null));
-                            }
-                          } finally {
-                            latch.countDown();
-                          }
-                        }));
-      }
-      latch.await();
-      BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
-    }
-  }*/
 
     /**
      * 根据条件拉取账单时统计并更新中间表
@@ -163,6 +122,7 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
                 entity.setDentistId(vo.getExecutorId());
                 entity.setReceivableWorkload(vo.getReceivableWorkload());
                 entity.setReceivedWorkload(vo.getReceivedWorkload());
+                entity.setCouponWorkload(vo.getCouponWorkload());
                 entity.setItemType(vo.getItemType());
                 entity.setItemId(vo.getItemId());
                 entity.setQuantity(vo.getQuantity());
@@ -188,6 +148,11 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
         }
     }
 
+    /**
+     * 批量新增
+     *
+     * @param datas
+     */
     public void insertBatch(List<StatEmpBill> datas) {
         mapper.insertBatch(datas);
     }

@@ -1,7 +1,9 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.MultiClinicEmployeeQuery;
+import com.yunya.feign.report.domain.query.base.FuchaForm;
 import com.yunya.feign.report.domain.vo.ClinicEmployeBonusCoefficientVO;
+import com.yunya.feign.report.domain.vo.FuchaVO;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.models.report.BaseEmployee;
 import org.apache.ibatis.annotations.Param;
@@ -12,6 +14,7 @@ import java.util.List;
 
 public interface BaseEmployeeMapper extends Mapper<BaseEmployee> {
 
+  List<FuchaVO> fuchaList(FuchaForm fuchaForm);
   /**
    * 根据门诊id查询医生信息
    *

@@ -22,17 +22,7 @@ import java.util.Collection;
 @Data
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class BillItemTollWorkloadQuery extends MultiClinicEmployeeQuery implements Serializable {
-  @ApiModelProperty(value = "时间类型:0-日；1-月；2-年")
-  private Byte dateType = 0;
-  /** 查询时间 */
-  @ApiModelProperty(value = "查询开始时间", required = true)
-  @NotBlank(message = "查询开始时间不能为空！")
-  private String startDate;
-  /** 查询结束时间 */
-  @ApiModelProperty(value = "查询结束时间", required = true)
-  @NotBlank(message = "查询结束时间不能为空！")
-  private String endDate;
+public class BillItemTollWorkloadQuery extends ClinicEmployeeWorkloadQuery implements Serializable {
   /** 分类及项目列表 */
   @ApiModelProperty(value = "分类及项目列表")
   private Collection<Integer[]> categoryItems;

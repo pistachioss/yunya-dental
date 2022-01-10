@@ -10,6 +10,7 @@ import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
@@ -26,6 +27,7 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -43,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -704,8 +707,39 @@ public class BaseTreatmentProcessBiz
    * @param query
    * @param groupByOrgId
    */
-  public List<EmployeeCountVO> findInMonthReFirstVisit(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
-    return mapper.selectInMonthReFirstVisit(query, groupByOrgId);
+  public Map<String, Set<Integer>> findInMonthReFirstVisit(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
+    Map<String, Set<Integer>> result = new HashMap<>(16);
+    List<BaseTreatmentProcess> firstTreat = mapper.selectInMonthReFirstVisit(query, groupByOrgId, 0);
+    List<BaseTreatmentProcess> reTreat = mapper.selectInMonthReFirstVisit(query, groupByOrgId, 1);
+    if (StringHelper.isNotEmpty(firstTreat)) {
+      firstTreat.forEach(vo->{
+        Integer patientId = vo.getPatientId();
+        String key = vo.getRegisteredDentistId() + "";
+        if (groupByOrgId) {
+          key += "," + vo.getOrgId();
+        }
+        for (BaseTreatmentProcess re : reTreat) {
+          String emId = re.getRegisteredDentistId() + "";
+          if (groupByOrgId) {
+            emId += "," + re.getOrgId();
+          }
+          try {
+            if (key.equals(emId) && re.getPatientId().equals(patientId)
+              && DateUtil.daysBetween(vo.getTreatEndTime(), re.getTreatEndTime())<32) {
+              Set<Integer> list = result.get(key);
+              if (list == null) {
+                list = new HashSet<>();
+              }
+              list.add(patientId);
+              result.put(key, list);
+            }
+          } catch (ParseException e) {
+            e.printStackTrace();
+          }
+        }
+      });
+    }
+    return result;
   }
 
   public List<PatientDateVO> findNextAppointDateByPatientId(List<Integer> patientIds) {
@@ -738,5 +772,9 @@ public class BaseTreatmentProcessBiz
 
   public List<EmployeeFirstVisitOriginTypeVO> findFirstVisitPatientOriginType(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
     return mapper.selectFirstVisitPatientOriginType(query, groupByOrgId);
+  }
+
+  public List<StatTreatVO> findTreatVisitPatientList(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds) {
+    return mapper.selectTreatVisitPatientList(query, employeeIds);
   }
 }

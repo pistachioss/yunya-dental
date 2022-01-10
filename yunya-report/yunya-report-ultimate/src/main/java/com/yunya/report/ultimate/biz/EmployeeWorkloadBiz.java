@@ -4,7 +4,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillItemTollWorkloadQuery;
 import com.yunya.feign.report.domain.query.ClinicEmployeeWorkloadQuery;
-import com.yunya.feign.report.domain.query.MultiClinicEmployeeQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.SortUtil;
@@ -13,6 +12,7 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.EmployeeWorkloadCost;
 import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
 import com.yunya.report.ultimate.mapper.BaseEmployeeMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -320,11 +320,17 @@ public class EmployeeWorkloadBiz {
      * @param query
      * @return
      */
-    private Future<List<ClinicEmployeBonusCoefficientVO>> multiFindClinicEmployeeCartesianProduct(MultiClinicEmployeeQuery query) {
-        return threadPool.submit(()-> findClinicEmployeeCartesianProduct(query, true));
+    private Future<List<ClinicEmployeBonusCoefficientVO>> multiFindClinicEmployeeCartesianProduct(ClinicEmployeeWorkloadQuery query) {
+        return threadPool.submit(()->{
+            ClinicEmployeeWorkloadQuery queryForm = new ClinicEmployeeWorkloadQuery();
+            BeanUtils.copyProperties(query, queryForm);
+            queryForm.setStartDate(null);
+            queryForm.setEndDate(null);
+            return findClinicEmployeeCartesianProduct(queryForm, true);
+        });
     }
 
-    public List<ClinicEmployeBonusCoefficientVO> findClinicEmployeeCartesianProduct(MultiClinicEmployeeQuery query, boolean groupByOrgId) {
+    public List<ClinicEmployeBonusCoefficientVO> findClinicEmployeeCartesianProduct(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }
@@ -339,7 +345,14 @@ public class EmployeeWorkloadBiz {
      */
     private Map<String, BigDecimal> mapEmployeeWorkload(List<EmployeeWorkloadVO> workloads) {
         Map<String, BigDecimal> result = new HashMap<>();
-        workloads.forEach(vo->result.put(vo.getEmployeeId()+","+vo.getOrgId(), vo.getWorkload()));
+        workloads.forEach(vo->{
+            String key = vo.getEmployeeId() + "";
+            Integer orgId = vo.getOrgId();
+            if (orgId != null) {
+                key += "," + orgId;
+            }
+            result.put(key, vo.getWorkload());
+        });
         return result;
     }
 

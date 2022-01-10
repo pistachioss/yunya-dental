@@ -3,6 +3,7 @@ package com.yunya.middletable.service;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseEmployeeMapper;
 import com.yunya.middletable.dao.system.SysEmployeeMapper;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -106,6 +108,13 @@ public class BaseEmployeeBiz extends BaseBiz<BaseEmployeeMapper, BaseEmployee> {
       employee.setBonusCoefficient(empResult.getBonusCoefficient());
       employee.setWorkAmount(empResult.getWorkAmount());
       employee.setWorkNumber(empResult.getWorkNumber());
+      Date entryDate = null;
+      try {
+        entryDate = DateUtil.parse(empResult.getEntryDate(),"yyyy-MM-dd");
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      employee.setEntryDate(entryDate);
     }
     return employee;
   }
@@ -119,7 +128,7 @@ public class BaseEmployeeBiz extends BaseBiz<BaseEmployeeMapper, BaseEmployee> {
     String startDate = form.getStartDate();
     String endDate = form.getEndDate();
     Example emp = new Example(SysUser.class);
-    emp.createCriteria().andBetween("updTime", startDate, endDate);
+    emp.createCriteria().andBetween("crtTime", startDate, endDate);
     List<SysUser> sysUsers = userMapper.selectByExample(emp);
     if (StringHelper.isNotEmpty(sysUsers)) {
       sysUsers.forEach(

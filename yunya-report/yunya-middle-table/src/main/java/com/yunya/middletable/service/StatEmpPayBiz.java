@@ -3,6 +3,7 @@ package com.yunya.middletable.service;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.form.PullForm;
+import com.yunya.feign.report.domain.query.StatisticsEmployeeQueryForm;
 import com.yunya.feign.report.domain.vo.BillExecutorItemVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
@@ -25,6 +26,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_STATISTICS_EMP_PAY;
 
@@ -45,14 +47,15 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
     /** 多线程 */
     @Resource(name = "customizeThreadPool")
     private ExecutorService importExcelThreadPool;
+
     /**
-     * 账单收费时统计
+     * 账单收费时统计执行人的账单相关数据
      *
      * @param orderDetails
      * @param bill
      * @param baseBillPay
      */
-    public void statisticsInPayDate(List<OrderDetail> orderDetails, BaseBill bill, BaseBillPay baseBillPay) {
+    public void statisticsEmployeeByPayDate(List<OrderDetail> orderDetails, BaseBill bill, BaseBillPay baseBillPay) {
         Integer orgId = bill.getOrgId();
         Date date = new Date(System.currentTimeMillis());
         Integer payDate = DateUtil.date2Number(baseBillPay.getPayeeDate());
@@ -76,7 +79,13 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
             if (StringHelper.isNotEmpty(executorIds)) {
                 List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId,
                         null, payDate, executorIds);
-                sharedItemAmount(details, (vo)-> vo.getBillId()+"");
+                StatisticsEmployeeQueryForm query = new StatisticsEmployeeQueryForm();
+                query.setSDateInt(payDate);
+                query.setEDateInt(payDate);
+                query.setDentistIds(executorIds);
+                query.setOrgId(orgId);
+                Map<String, BigDecimal> freeMap = findFreePaymentMap(query, vo->vo.getBillId()+"");
+                details = sharedItemAmount(details, freeMap, (vo)-> vo.getBillId()+"");
                 details = statisticsExecutorItem(details, keys, (vo)-> vo.getExecutorId() + "," + vo.getItemType() + "," + vo.getItemId());
                 if (StringHelper.isNotEmpty(details)) {
                     Integer payeeUserId = baseBillPay.getPayeeUserId();
@@ -92,6 +101,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                             entity.setItemType(vo.getItemType());
                             entity.setItemId(vo.getItemId());
                             entity.setReceivedWorkload(vo.getReceivedWorkload());
+                            entity.setFreePaymentWorkload(vo.getFreePaymentWorkload());
                             entity.setCrtId(payeeUserId);
                             entity.setCrtTime(date);
                             mapper.insertSelective(entity);
@@ -113,6 +123,9 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
         if (StringHelper.isNotEmpty(details)) {
             Map<String, BillExecutorItemVO> map = new HashMap<>(16);
             details.stream().filter(vo->{
+                if (ObjectUtils.isEmpty(vo.getExecutorId())) {
+                    return false;
+                }
                 if (StringHelper.isNotEmpty(keys)) {
                     return keys.contains(func.apply(vo));
                 }
@@ -122,6 +135,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                 BillExecutorItemVO executorItem = map.get(key);
                 if (ObjectUtils.isEmpty(executorItem)) {
                     executorItem = new BillExecutorItemVO();
+                    executorItem.setBillId(vo.getBillId());
                     executorItem.setOrgId(vo.getOrgId());
                     executorItem.setBillDate(vo.getBillDate());
                     executorItem.setItemType(vo.getItemType());
@@ -131,6 +145,8 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                 executorItem.setQuantity(executorItem.getQuantity() + vo.getQuantity());
                 executorItem.setReceivableWorkload(executorItem.getReceivableWorkload().add(vo.getReceivableWorkload()));
                 executorItem.setReceivedWorkload(executorItem.getReceivedWorkload().add(vo.getReceivedWorkload()));
+                executorItem.setCouponWorkload(executorItem.getCouponWorkload().add(vo.getCouponWorkload()));
+                executorItem.setFreePaymentWorkload(executorItem.getFreePaymentWorkload().add(vo.getFreePaymentWorkload()));
                 map.put(key, executorItem);
             });
             return new ArrayList<>(map.values());
@@ -174,20 +190,21 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
      * @param details
      * @return
      */
-    private void sharedItemAmount(List<BillExecutorItemVO> details, Function<BillExecutorItemVO, String> func) {
-        // 每个账单的执行实收总额
+    private List<BillExecutorItemVO> sharedItemAmount(List<BillExecutorItemVO> details, Map<String, BigDecimal> freeMap, Function<BillExecutorItemVO, String> func) {
+        // 每个账单的执行实收总额，免单实收总额
         Map<String, BigDecimal[]> total = new HashMap<>(16);
         if (StringHelper.isNotEmpty(details)) {
+            details = details.stream().filter(vo->vo.getReceivableWorkload().compareTo(BigDecimal.ZERO)>0).collect(Collectors.toList());
             details.forEach(
                     detail -> {
                         String key = func.apply(detail);
-//                        Integer billId = detail.getBillId();
                         BigDecimal[] sum = total.get(key);
                         if (sum == null) {
-                            // 执行项目的总应收，累加项目应收，累加项目占比值
-                            sum = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
+                            // 项目的总应收，免单（价目项目）的总应收
+                            sum = new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO};
                         }
-                        sum[0] = sum[0].add(detail.getReceivableWorkload());
+                        sum[1] = sum[1].add(detail.getReceivableWorkload());
+                        sum[0] = detail.getActualWorkload();
                         total.put(key, sum);
                     });
             details.forEach(
@@ -195,30 +212,57 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                         BigDecimal receivableWorkload = detail.getReceivableWorkload();
                         String key = func.apply(detail);
                         BigDecimal[] sum = total.get(key);
-                        sum[1] = sum[1].add(receivableWorkload);
-                        BigDecimal amount = BigDecimal.ZERO;
+                        BigDecimal freePayment = freeMap.get(key);
+                        if (   ObjectUtils.isEmpty(freePayment)) {
+                            freePayment = BigDecimal.ZERO;
+                        }
+//                        sum[1] = sum[1].add(receivableWorkload);
+//                        BigDecimal amount = BigDecimal.ZERO;
+//                        if (sum[0].compareTo(BigDecimal.ZERO) != 0) {
+//                            amount = receivableWorkload.divide(sum[0]);
+//                        }
+//                        if (sum[0].compareTo(sum[1]) == 0) { // 最后一个占比项目
+//                            amount = BigDecimal.ONE.subtract(sum[2]);
+//                        }
+//                        sum[2] = sum[2].add(amount);
+//                        BigDecimal receivedWorkload = amount.multiply(detail.getTotalReceivedWorkload()).setScale(2, BigDecimal.ROUND_HALF_UP);
+//                        if (receivedWorkload.compareTo(receivableWorkload)>0) {// 超出应收说明无欠费，则项目实收=项目总实收
+//                            receivedWorkload = detail.getReceivedWorkload();
+//                        }
+                        BigDecimal receivedWorkload = BigDecimal.ZERO;
                         if (sum[0].compareTo(BigDecimal.ZERO) != 0) {
-                            amount = receivableWorkload.divide(sum[0], 4, BigDecimal.ROUND_HALF_UP);
+                            receivedWorkload = receivableWorkload.divide(sum[0], 8, BigDecimal.ROUND_HALF_UP).multiply(detail.getTotalReceivedWorkload());
                         }
-                        if (sum[0].compareTo(sum[1]) == 0) { // 最后一个占比项目
-                            amount = BigDecimal.ONE.subtract(sum[2]);
-                        }
-                        sum[2] = sum[2].add(amount);
-                        BigDecimal receivedWorkload = amount.multiply(detail.getTotalReceivedWorkload());
-                        if (receivedWorkload.compareTo(receivableWorkload)>0) {// 超出应收说明无欠费，则项目实收=项目总实收
-                            receivedWorkload = detail.getReceivedWorkload();
+                        BigDecimal freePaymentWorkload = BigDecimal.ZERO;
+                        if (sum[1].compareTo(BigDecimal.ZERO) != 0) {
+                            if (freePayment.compareTo(sum[1])>0) {
+                                freePayment = sum[1];
+                            }
+                            freePaymentWorkload = receivableWorkload.divide(sum[1], 8, BigDecimal.ROUND_HALF_UP).multiply(freePayment);
                         }
                         detail.setReceivedWorkload(receivedWorkload);
+                        detail.setFreePaymentWorkload(freePaymentWorkload);
                     });
         }
+        return details;
     }
 
+    /**
+     * 批量拉取
+     *
+     * @param form
+     * @throws InterruptedException
+     */
     public void pullPayDateStatistics(PullForm form) throws InterruptedException {
         Date now = new Date(System.currentTimeMillis());
         String startDate = form.getStartDate();
         String endDate = form.getEndDate();
+        StatisticsEmployeeQueryForm query = new StatisticsEmployeeQueryForm();
+        query.setStartDate(startDate);
+        query.setEndDate(endDate);
         List<BillExecutorItemVO> details = baseBillDetailMapper.groupBillItemDetailListByPayDate(startDate, endDate);
-        sharedItemAmount(details, (vo)-> vo.getBillId() + "," +vo.getBillDate());
+        Map<String, BigDecimal> freeMap = findFreePaymentMap(query, vo->vo.getBillId()+","+vo.getBillDate());
+        details = sharedItemAmount(details, freeMap, (vo)-> vo.getBillId() + "," +vo.getBillDate());
         details = statisticsExecutorItem(details, null, (vo)-> vo.getOrgId() + "," + vo.getBillDate() + "," + vo.getExecutorId() + "," + vo.getItemType() + "," + vo.getItemId());
         if (StringHelper.isNotEmpty(details)) {
             List<StatEmpPay> datas = new ArrayList<>();
@@ -231,6 +275,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                 entity.setItemType(vo.getItemType());
                 entity.setItemId(vo.getItemId());
                 entity.setReceivedWorkload(vo.getReceivedWorkload());
+                entity.setFreePaymentWorkload(vo.getFreePaymentWorkload());
                 entity.setCrtId(vo.getExecutorId());
                 entity.setCrtTime(now);
                 datas.add(entity);
@@ -242,6 +287,8 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                     importExcelThreadPool.submit(() -> {
                         try {
                             insertBatch(vo);
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         } finally {
                             latch.countDown();
                         }
@@ -253,6 +300,27 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
         }
     }
 
+    private Map<String, BigDecimal> findFreePaymentMap(StatisticsEmployeeQueryForm query, Function<BillExecutorItemVO, String> keyFunc) {
+        Map<String, BigDecimal> result = new HashMap<>(16);
+        List<BillExecutorItemVO> frees = baseBillDetailMapper.selectFreePaymentAmount(query);
+        if (StringHelper.isNotEmpty(frees)) {
+            frees.forEach(vo->{
+                String key = keyFunc.apply(vo);
+                BigDecimal freePayment = result.get(key);
+                if (freePayment == null) {
+                    freePayment = BigDecimal.ZERO;
+                }
+                result.put(key, freePayment.add(vo.getFreePaymentWorkload()));
+            });
+        }
+        return result;
+    }
+
+    /**
+     * 批量新增
+     *
+     * @param datas
+     */
     private void insertBatch(List<StatEmpPay> datas) {
         mapper.insertBatch(datas);
     }

@@ -7,6 +7,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.middletable.controller.report.BaseBillController;
 import com.yunya.middletable.controller.report.BaseBillPayController;
+import com.yunya.middletable.controller.report.BaseRefundController;
 import com.yunya.middletable.controller.report.BaseTreatmentProcessController;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +32,16 @@ public class BaseTreatmentProcessControllerTest {
     private BaseBillController baseBillController;
     @Autowired
     private BaseBillPayController baseBillPayController;
+    @Autowired
+    private BaseRefundController baseRefundController;
+
+    @Test
+    public void testOperateTreatmentProcess() throws InterruptedException {
+        String param = "{\"paramMap\":{\"type\":0,\"id\":463912},\"operateType\":1}";
+        MessageModel msg = JSONObject.parseObject(param, MessageModel.class);
+        ResponseResult result = baseTreatmentProcessController.operateTreatmentProcess(msg);
+        System.out.println(result);
+    }
 
     @Test
     public void testTreatDateStatistics() throws InterruptedException {
@@ -42,7 +53,7 @@ public class BaseTreatmentProcessControllerTest {
 
     @Test
     public void testPullTreatDateStatistics() throws InterruptedException {
-        String param = "{\"startDate\":\"2000-01-01\",\"endDate\":\"2021-12-31\"}";
+        String param = "{\"startDate\":\"2000-01-01\",\"endDate\":\"2022-12-31\"}";
         PullForm form = JSONObject.parseObject(param, PullForm.class);
         ResponseResult result = baseTreatmentProcessController.pullTreatDateStatistics(form);
         System.out.println(result);
@@ -51,17 +62,33 @@ public class BaseTreatmentProcessControllerTest {
 
     @Test
     public void testPullBillDateStatistics() throws InterruptedException {
-        String param = "{\"startDate\":\"2000-01-01\",\"endDate\":\"2021-12-31\"}";
+        String param = "{\"startDate\":\"2000-01-01\",\"endDate\":\"2022-12-31\"}";
         PullForm form = JSONObject.parseObject(param, PullForm.class);
         ResponseResult result = baseBillController.pullBillDateStatistics(form);
         System.out.println(result);
     }
 
     @Test
+    public void testPayDateStatistics() throws InterruptedException {
+        String param = "{\"paramMap\":{\"id\":287643},\"operateType\":1}";
+        MessageModel form = JSONObject.parseObject(param, MessageModel.class);
+        ResponseResult result = baseBillPayController.payDateStatistics(form);
+        System.out.println(result);
+    }
+
+    @Test
     public void testPullPayDateStatistics() throws InterruptedException {
-        String param = "{\"startDate\":\"2000-01-01\",\"endDate\":\"2021-12-31\"}";
+        String param = "{\"startDate\":\"2000-01-01\",\"endDate\":\"2022-12-31\"}";
         PullForm form = JSONObject.parseObject(param, PullForm.class);
         ResponseResult result = baseBillPayController.pullPayDateStatistics(form);
+        System.out.println(result);
+    }
+
+    @Test
+    public void testPullRefundDateStatistics() throws InterruptedException {
+        String param = "{\"startDate\":\"2000-01-01\",\"endDate\":\"2022-12-31\"}";
+        PullForm form = JSONObject.parseObject(param, PullForm.class);
+        ResponseResult result = baseRefundController.pullRefundDateStatistics(form);
         System.out.println(result);
     }
 }

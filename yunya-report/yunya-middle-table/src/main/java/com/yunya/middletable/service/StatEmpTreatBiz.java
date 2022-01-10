@@ -39,17 +39,18 @@ import static com.yunya.middletable.service.BaseTreatmentProcessBiz.printExcepti
 public class StatEmpTreatBiz extends BaseBiz<StatEmpTreatMapper, StatEmpTreat> {
 
     @Autowired private RedisLockBiz redisLockBiz;
+    /*就诊流程*/
     @Autowired private BaseTreatmentProcessMapper baseTreatmentProcessMapper;
     /** 多线程 */
     @Resource(name = "customizeThreadPool")
     private ExecutorService importExcelThreadPool;
 
     /**
-     * 增量更新员工就诊统计项
+     * 就诊完成时统计就诊相关数据
      *
      * @param treatmentProcess
      */
-    public void incStatEmpTreat(BaseTreatmentProcess treatmentProcess) {
+    public void statisticsEmployeeByTreatDate(BaseTreatmentProcess treatmentProcess) {
         Integer orgId = treatmentProcess.getOrgId();
         Integer dentistId = treatmentProcess.getRegisteredDentistId();
         Integer treatDate = DateUtil.date2Number(treatmentProcess.getTreatEndTime());
@@ -71,6 +72,12 @@ public class StatEmpTreatBiz extends BaseBiz<StatEmpTreatMapper, StatEmpTreat> {
         });
     }
 
+    /**
+     * 批量拉取
+     *
+     * @param form
+     * @throws InterruptedException
+     */
     public void pullTreatDateStatistics(PullForm form) throws InterruptedException {
         String startDate = form.getStartDate();
         String endDate = form.getEndDate();
@@ -93,6 +100,11 @@ public class StatEmpTreatBiz extends BaseBiz<StatEmpTreatMapper, StatEmpTreat> {
         }
     }
 
+    /**
+     * 批量新增
+     *
+     * @param list
+     */
     private void insertBatch(List<StatEmpTreat> list) {
         mapper.insertBatch(list);
     }

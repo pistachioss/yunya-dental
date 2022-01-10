@@ -1,9 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.report.domain.query.CardActiveRecoedQuery;
-import com.yunya.feign.report.domain.query.CardCouponUsedQueryForm;
-import com.yunya.feign.report.domain.query.CouponUseQuery;
-import com.yunya.feign.report.domain.query.StatementProductSoldDetailQuery;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseCard;
 import org.apache.ibatis.annotations.Param;
@@ -133,6 +130,9 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
     List<CardActiveVo> listCardActive(@Param("patientKeyword") String patientKeyword, @Param("activeOrgIds") List<Integer> activeOrgIds,
                                       @Param("activeStartDate") LocalDate activeStartDate, @Param("activeEndDate") LocalDate activeEndDate,
                                       @Param("couponId") Integer couponId, @Param("saleChannelId") Integer saleChannelId);
+    List<CardDetaVo> listCardDetail(@Param("patientKeyword") String patientKeyword, @Param("activeOrgIds") List<Integer> activeOrgIds,
+                                      @Param("activeStartDate") LocalDate activeStartDate, @Param("activeEndDate") LocalDate activeEndDate
+            , @Param("cardIds") List<Integer> cardIds);
 
     /**
      * 产品激活报表
@@ -149,4 +149,6 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
     List<CouponUseVo> getCouponUse(CouponUseQuery query);
 
     List<BaseCard> selectCardCouponSoldList(@Param("query") CardCouponUsedQueryForm query);
+
+    List<CardCouponUsedDetailVO> selectCardCouponUsedDetail(@Param("query") CardCouponUsedDetailQueryForm query);
 }

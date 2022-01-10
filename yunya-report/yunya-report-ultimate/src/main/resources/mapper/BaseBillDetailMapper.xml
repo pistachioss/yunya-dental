@@ -3634,6 +3634,7 @@
             , ${column2}
         </if>
     </select>
+
     <!-- 根据条件查询个人开单项目已收工作量明细 -->
     <select id="selectPersonalBillItemReceivedWorkloadDetail"
             resultType="com.yunya.feign.report.domain.vo.PersonalBillItemReceivedWorkloadDetailVO">
@@ -4823,12 +4824,6 @@
         ) brd
         <where>
             brd.executor_id > 0
-            <if test="query.orgIds != null and query.orgIds.length > 0">
-                and brd.org_id in
-                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
             <if test="query.orgIds != null and query.orgIds.length > 0">
                 and brd.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">

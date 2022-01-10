@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
-import static com.yunya.framework.common.constant.ThreadPoolConstant.CUT_SLICE_500;
 import static java.util.stream.Collectors.toMap;
 
 /**
@@ -1609,8 +1608,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public DynamicHeaderPageInfo<JSONObject> clinicFirstVisitSourceList(
       ClinicPerformanceBusinessQuery query) {
-    String startDate = query.getStartDate().substring(0, 7);
-    String endDate = query.getEndDate().substring(0, 7);
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
@@ -1631,21 +1628,14 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<BaseTreatmentProcessVO> firstVisitPatients = patientBaseInfoBiz.firstVisitPatientList(query);
     List<PatientFirstVisitSourceVO> patients = multiFirstVisitPatientSourceList(query, firstVisitPatients);
     Map<String, Integer> originMap = new HashMap<>(16);
-    patients.forEach(vo->{
-        String key = vo.getOriginType()+","+vo.getOrgId();
-        Integer count = originMap.get(key);
-        if (count == null) {
-            count = 0;
-        }
-        originMap.put(key, vo.getFirstVisitCount() + count);
-    });
+    patients.forEach(vo-> originMap.put(vo.getOriginType()+","+vo.getOrgId(), vo.getFirstVisitCount()));
     List<JSONObject> result = new ArrayList<>();
     if (StringHelper.isNotEmpty(origins)) {
       Map<String, String> map = new LinkedHashMap<>();
       map.put("date", "时间");
       map.put("name", "患者来源");
       for (BasePatientOrigin vo : origins) {
-        JSONObject object = init(startDate, endDate, vo.getName());
+        JSONObject object = init(query.getStartDate(), query.getEndDate(), vo.getName());
         object.put(
             "total", computeOrgPatientCount(vo.getOriginType() + "", object, map, orgs, originMap));
         result.add(object);
@@ -1667,22 +1657,28 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   public List<PatientFirstVisitSourceVO> multiFirstVisitPatientSourceList(ClinicPerformanceBusinessQuery query, List<BaseTreatmentProcessVO> patients) {
     List<PatientFirstVisitSourceVO> result = new ArrayList<>();
     if (StringHelper.isNotEmpty(patients)) {
-      List<Integer> patientIds = patients.stream().map(BaseTreatmentProcessVO::getPatientId).collect(Collectors.toList());
-      List<List<Integer>> parts = Lists.partition(patientIds, CUT_SLICE_500);
-      CountDownLatch cdt = new CountDownLatch(parts.size());
-      for (List<Integer> patientId : parts) {
-        threadPool.execute(() -> {
-          try {
-            List<PatientFirstVisitSourceVO> list =
-                    patientBaseInfoBiz.clinicFirstVisitSourceList(query, patientId);
-            result.addAll(list);
-          } catch (Exception e) {
-            e.printStackTrace();
-          } finally {
-            cdt.countDown();
+      Map<Integer, Set<Integer>> patientMap = new HashMap<>(16);
+      patients.forEach(vo->{
+          Integer orgId = vo.getOrgId();
+          Set<Integer> patientIds = patientMap.get(orgId);
+          if (patientIds == null) {
+              patientIds = new HashSet<>();
           }
-        });
-      }
+          patientIds.add(vo.getPatientId());
+          patientMap.put(orgId, patientIds);
+      });
+      CountDownLatch cdt = new CountDownLatch(patientMap.size());
+      patientMap.forEach((orgId, patientIds)-> threadPool.execute(() -> {
+          try {
+              List<PatientFirstVisitSourceVO> list =
+                      patientBaseInfoBiz.clinicFirstVisitSourceList(query, orgId, patientIds);
+              result.addAll(list);
+          } catch (Exception e) {
+              e.printStackTrace();
+          } finally {
+              cdt.countDown();
+          }
+      }));
       try {
         cdt.await();
       } catch (InterruptedException e) {
@@ -1752,8 +1748,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public DynamicHeaderPageInfo<JSONObject> clinicSpecialItemList(
       ClinicPerformanceBusinessQuery query) {
-    String startDate = query.getStartDate().substring(0, 7);
-    String endDate = query.getEndDate().substring(0, 7);
     PageInfo<SpecialistProjectVO> pageInfo = getSpecialProjectList(query);
     List<SpecialistProjectVO> specialItems = pageInfo.getList();
     DynamicHeaderPageInfo resPageInfo = new DynamicHeaderPageInfo();
@@ -1767,7 +1761,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         map.put("date", "时间");
         map.put("name", "专科项目");
         for (SpecialistProjectVO item : specialItems) {
-          JSONObject object = init(startDate, endDate, item.getSpecialistProjectName());
+          JSONObject object = init(query.getStartDate(), query.getEndDate(), item.getSpecialistProjectName());
           Integer total = 0;
           for (BaseOrganization org : orgs) {
             Integer orgId = org.getOrgId();

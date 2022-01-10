@@ -455,7 +455,7 @@ public class DiscountBiz {
 
     public PageInfo<CouponActiveVo> getCouponActivePage(CouponActiveQuery query) {
         Page<CouponActiveVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        couponMapper.listCouponActive(query.getCouponName(), query.getSoldChannelIds(), query.getActiveOrgIds());
+        couponMapper.listCouponActive(query.getCouponIds(), query.getSoldChannelIds(), query.getActiveOrgIds(),query.getActiveStartDate(),query.getActiveEndDate());
         return new PageInfo<>(page);
     }
 
@@ -465,10 +465,17 @@ public class DiscountBiz {
                 couponId, saleChannelId);
         return new PageInfo<>(page);
     }
+    public PageInfo<CardDetaVo> getCardDetailPage(CardDetailForm query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<CardDetaVo>list = cardMapper.listCardDetail(query.getPatientKeyword(), query.getActiveOrgIds(), query.getActiveStartDate(), query.getActiveEndDate(),query.getCouponIds());
+        return new PageInfo<>(list);
+    }
 
     public List<CouponActiveVo> listCouponActive(CouponActiveQuery query) {
-        return couponMapper.listCouponActive(query.getCouponName()
-                , query.getSoldChannelIds(), query.getActiveOrgIds());
+        return couponMapper.listCouponActive(query.getCouponIds()
+                , query.getSoldChannelIds(), query.getActiveOrgIds(),query.getActiveStartDate(),query.getActiveEndDate());
     }
 
     public List<CardActiveVo> listCardActive(Integer couponId, Integer saleChannelId, CouponDetailActiveQuery query) {

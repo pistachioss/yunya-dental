@@ -10,10 +10,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
- * 简介：
+ * 简介：带redis锁的业务层
  *
  * @author: chenlin
- * @Description:
+ * @Description: 带redis锁的业务层
  * @Date: 2021/12/13 15:31
  * @since: 1.0.0
  */

@@ -5,9 +5,11 @@ import com.yunya.feign.report.domain.form.PatientNotSeenForm;
 import com.yunya.feign.report.domain.query.ArrearsQueryForm;
 import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
+import com.yunya.feign.report.domain.query.base.FuchaForm;
 import com.yunya.feign.report.domain.vo.AnalysisVo;
 import com.yunya.feign.report.domain.vo.ArrearsStatisticsVo;
 import com.yunya.feign.report.domain.vo.BasePatientNotSeenVo;
+import com.yunya.feign.report.domain.vo.FuchaVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.report.BaseEmployee;
@@ -43,7 +45,32 @@ public class PatientReportController {
 
   /** 注入服务 */
   @Autowired private PatientReportBiz patientReportBiz;
-
+  /**
+   * 复查患者报表
+   *
+   * @return 复查患者报表
+   */
+  @ApiOperation("复查患者报表")
+  @PostMapping("/fucha/list")
+  public ResponseResult<PageInfo<FuchaVO>> fuchaList( @RequestBody FuchaForm fuchaForm) {
+    return ResponseUtil.success(this.patientReportBiz.fuchaList(fuchaForm));
+  }
+  /**
+   * 导出复查患者报表
+   *
+   * @param response 导出响应
+   * @param fuchaForm 查询条件
+   * @return 未复查患者报表
+   */
+  @ApiOperation("导出复查患者报表")
+  @PostMapping(value = "/fucha/export", name = "公司端-运营报表-患者报表-复查患者报表-导出")
+  public ResponseResult<T> exportfuchaList(
+          HttpServletResponse response,
+          @RequestBody @Validated FuchaForm fuchaForm)
+          throws IOException {
+    patientReportBiz.exportfuchaList(response, fuchaForm);
+    return ResponseUtil.success(null);
+  }
   /**
    * 末次接诊医生
    *

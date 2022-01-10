@@ -197,8 +197,14 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="couponName !=null and couponName != ''">
-                and `bc`.`coupon_name` like concat('%', #{couponName}, '%')
+            <if test="couponIds!=null and couponIds.size()>0">
+                AND bc.coupon_id IN
+                <foreach collection="couponIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="activeStartDate!=null and activeStartDate!='' and activeEndDate!=null and activeEndDate!=''">
+                and DATE_FORMAT(bd.active_date,'%Y-%m-%d') between #{activeStartDate} and #{activeEndDate}
             </if>
         </where>
         group by `bd`.`coupon_id`, `bd`.`sale_channel_id`, `bd`.`active_org_id`

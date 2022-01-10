@@ -50,6 +50,12 @@ public class StatEmpPay {
     private BigDecimal receivedWorkload;
 
     /**
+     * 免单工作量
+     */
+    @Column(name = "free_payment_workload")
+    private BigDecimal freePaymentWorkload;
+
+    /**
      * 创建时间
      */
     @Column(name = "crt_time")
@@ -167,6 +173,14 @@ public class StatEmpPay {
      */
     public void setReceivedWorkload(BigDecimal receivedWorkload) {
         this.receivedWorkload = receivedWorkload;
+    }
+
+    public BigDecimal getFreePaymentWorkload() {
+        return freePaymentWorkload;
+    }
+
+    public void setFreePaymentWorkload(BigDecimal freePaymentWorkload) {
+        this.freePaymentWorkload = freePaymentWorkload;
     }
 
     /**
