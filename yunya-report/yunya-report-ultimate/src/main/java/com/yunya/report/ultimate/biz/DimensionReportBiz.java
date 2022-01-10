@@ -1743,6 +1743,7 @@ public class DimensionReportBiz {
      * @throws Exception
      */
     public DynamicHeaderPageInfo<ClinicAchievementVO> clinicAchievementStatistics(MultiClinicDateRangeQueryForm query) throws Exception {
+        checkCampusOrg(query.getOrgIds());
         // 院区门诊
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
         // 目标值
@@ -2229,6 +2230,7 @@ public class DimensionReportBiz {
      * @throws Exception
      */
     public DynamicHeaderPageInfo<JSONObject> campusAchievementStatistics(MultiClinicDateRangeQueryForm query) throws Exception {
+        checkCampusOrg(query.getOrgIds());
         // 院区门诊
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
         // 初诊人数、复诊人数
@@ -2241,6 +2243,17 @@ public class DimensionReportBiz {
         // 工作量
         Map<String, BigDecimal> workloadMap = clinicEmployeeWorkload(query, null, vo->vo.getOrgId()+"");
         return mergeCampusAchievementStatistics(orgFuture.get(), workloadMap, treatNumFuture.get(), itemNumFuture.get(), treatVisitNumFuture.get(), specialFuture.get());
+    }
+
+    /**
+     * 检查参数：院区和院区下门诊
+     *
+     * @param orgIds
+     */
+    private void checkCampusOrg(List<Integer> orgIds) {
+        if (StringHelper.isEmpty(orgIds)) {
+            throw new ClientServiceException("请选择院区或者请确保院区下存在门诊！", PARAMETERS_IS_ILLEGAL);
+        }
     }
 
     private Future<Map<Integer, Set<Integer>>> multiFindCampusTreatVisitNum(MultiClinicDateRangeQueryForm query) {
@@ -2365,6 +2378,7 @@ public class DimensionReportBiz {
      * @throws Exception
      */
     public PageInfo<CampusAchievementCompareVO> campusAchievementCompare(MultiClinicDateRangeQueryForm query) throws Exception {
+        checkCampusOrg(query.getOrgIds());
         // 院区门诊
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
         // 初诊人数
@@ -2685,7 +2699,7 @@ public class DimensionReportBiz {
         if (num == null) {
             num = 0;
         }
-        map.put(key, num + 1);
+        map.put(key, num - 1);
     }
 
     /**
