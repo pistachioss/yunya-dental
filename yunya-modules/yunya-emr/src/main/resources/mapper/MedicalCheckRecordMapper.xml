@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.emr.mapper.MedicalCheckRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.emr.MedicalCheckRecord" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="medical_record_id" property="medicalRecordId" jdbcType="INTEGER" />
+    <result column="tooth_position" property="toothPosition" jdbcType="SMALLINT" />
+    <result column="check_id" property="checkId" jdbcType="INTEGER" />
+    <result column="symptom_id" property="symptomId" jdbcType="INTEGER" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <!--批量新增-->
+  <insert id="insertBatch">
+    INSERT INTO medical_check_record(
+      medical_record_id, tooth_position, check_id, symptom_id,
+      remark, crt_id, crt_time, upt_id, upt_time
+    )
+    VALUES
+    <foreach collection="list" item="item" separator=",">
+      (
+          #{item.medicalRecordId}, #{item.toothPosition}, #{item.checkId}, #{item.symptomId},
+          #{item.remark}, #{item.crtId}, #{item.crtTime}, #{item.uptId}, #{item.uptTime}
+      )
+    </foreach>
+  </insert>
+
+  <!--条件查询检查记录-->
+  <select id="selectMedicalCheckRecordList" resultType="com.yunya.feign.emr.domain.vo.MedicalCheckRecordVO">
+    SELECT
+        mcr.id AS recordId,
+        mcr.check_id AS checkId,
+        mcr.symptom_id AS symptomId,
+        mcr.tooth_position AS toothPosition,
+        mcr.remark,
+        mcr.upt_time AS recordDate,
+        cc.check_name AS checkName,
+        sc.symptom_name AS sypmtomName
+    FROM medical_check_record mcr
+    LEFT JOIN check_config cc ON mcr.check_id = cc.id
+    LEFT JOIN symptom_config sc ON mcr.symptom_id = sc.id
+    <where>
+        <if test="query.medicalId != null">
+          AND mcr.medical_record_id = #{query.medicalId}
+        </if>
+    </where>
+  </select>
+</mapper>

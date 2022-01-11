@@ -13,11 +13,15 @@ import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
+import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
+import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.emr.MedicalCommonRecord;
 import com.yunya.modules.emr.biz.MedicalCommonRecordBiz;
 import io.swagger.annotations.Api;
@@ -28,6 +32,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.yunya.framework.common.enums.FileSourceTypeEnum.MEDICAL_COMMON;
 
 /**
  * @author 杨柳絮
@@ -47,6 +54,9 @@ public class MedicalCommonRecordController {
   private RemoteSystemServiceFeign remoteSystemServiceFeign;
   @Autowired
   private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
+  @Autowired
+  private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
+
   /**
    * 新增普通电子病历
    *
@@ -61,7 +71,6 @@ public class MedicalCommonRecordController {
     model.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     model.setCrtTime(new Date());
     return medicalCommonRecordBiz.create(model);
-
   }
 
   /**
@@ -77,6 +86,7 @@ public class MedicalCommonRecordController {
     BeanUtils.copyProperties(model, medicalCommonRecord);
     List<MedicalCommonRecord> list = medicalCommonRecordBiz.findList(medicalCommonRecord);
 
+    Map<Integer, List<XUploadFileVO>> fileMap = findXRayFilmList(list);
     //获取员工信息
     SysUserEmployeeModel sysUserEmployeeModel = new SysUserEmployeeModel();
     //查询总数不分页
@@ -96,6 +106,8 @@ public class MedicalCommonRecordController {
     for (MedicalCommonRecord medical : list) {
       MedicalCommonRecordModel medicalCommonRecordModel = new MedicalCommonRecordModel();
       BeanUtils.copyProperties(medical, medicalCommonRecordModel);
+      // 照片影像
+      medicalCommonRecordModel.setXRayFilm(fileMap.get(medical.getId()));
       medicalCommonRecordModel.setMajorDentistName(employeeMap.get(medicalCommonRecordModel.getMajorDentistId()+"").getName());
 
       if (!StrUtil.isEmpty(medical.getExamination())) {
@@ -143,7 +155,32 @@ public class MedicalCommonRecordController {
         }
       }
     }
+
     return ResponseUtil.success(reList);
+  }
+
+  private Map<Integer, List<XUploadFileVO>> findXRayFilmList(List<MedicalCommonRecord> medicalCommonRecords) {
+    Map<Integer, List<XUploadFileVO>> result = new HashMap<>(16);
+    if (StringHelper.isNotEmpty(medicalCommonRecords)) {
+      List<Integer> medicalIds = medicalCommonRecords.stream().map(MedicalCommonRecord::getId).collect(Collectors.toList());
+      XUploadFileQuery query = new XUploadFileQuery();
+      query.setWhetherPage(false);
+      query.setSourceIds(medicalIds);
+      query.setSourceType(MEDICAL_COMMON.getCode());
+      List<XUploadFileVO> files = remoteTreatmentOtherFeign.findXUploadFileList(query);
+      if (StringHelper.isNotEmpty(files)) {
+        files.forEach(file->{
+          Integer sourceId = file.getSourceId();
+          List<XUploadFileVO> list = result.get(sourceId);
+          if (list == null) {
+            list = new ArrayList<>();
+          }
+          list.add(file);
+          result.put(sourceId, list);
+        });
+      }
+    }
+    return result;
   }
 
   /**

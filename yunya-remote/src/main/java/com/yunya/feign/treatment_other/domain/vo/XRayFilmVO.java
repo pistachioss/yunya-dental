@@ -5,15 +5,12 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 
 @ApiModel("图片影像视图模型")
 @Data
-public class XRayFilmVo implements Serializable {
+public class XRayFilmVO implements Serializable {
     @ApiModelProperty("主键")
     private Integer id;
 
@@ -34,9 +31,17 @@ public class XRayFilmVo implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date uploadTime;
 
+    @ApiModelProperty("创建人id")
+    private Integer crtId;
+
     @ApiModelProperty("创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date crtTime;
+
+
+    @ApiModelProperty("更新人id")
+    private Integer updId;
+
     @ApiModelProperty("修改时间")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date updTime;
