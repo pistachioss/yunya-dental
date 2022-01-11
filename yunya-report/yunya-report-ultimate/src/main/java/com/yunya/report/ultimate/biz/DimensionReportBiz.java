@@ -1196,20 +1196,20 @@ public class DimensionReportBiz {
      *
      * @param keyStr
      * @param item2Special
-     * @param vo
+     * @param workload
      * @param orgItemWorkloadMap
      */
-    private void cumulation(String keyStr, Map<String, List<Integer>> item2Special, BigDecimal vo, Map<String, BigDecimal> orgItemWorkloadMap, String itemKey) {
+    private void cumulation(String keyStr, Map<String, List<Integer>> item2Special, BigDecimal workload, Map<String, BigDecimal> orgItemWorkloadMap, String itemKey) {
         String[] keys = StringHelper.split(keyStr, ",");
         List<Integer> specialIds = item2Special.get(itemKey+","+keys[2]);
         if (StringHelper.isNotEmpty(specialIds)) {
             specialIds.forEach(specialId->{
                 String key = keys[0] + "," + specialId;
-                BigDecimal workload = orgItemWorkloadMap.get(key);
-                if (workload == null) {
-                    workload = new BigDecimal("0.00");
+                BigDecimal totalWorkload = orgItemWorkloadMap.get(key);
+                if (totalWorkload == null) {
+                    totalWorkload = new BigDecimal("0.00");
                 }
-                orgItemWorkloadMap.put(key, workload.add(workload));
+                orgItemWorkloadMap.put(key, totalWorkload.add(workload));
             });
         }
     }

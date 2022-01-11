@@ -893,8 +893,7 @@
             DATE_FORMAT(bc.active_date,'%Y-%m-%d') AS activeDate
         FROM base_card bc
         <where>
-            AND bc.status in (1,2,3,4)
-            AND bc.sale_channel_id != 2
+            AND bc.status in (2,3,4)
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
                     AND DATE_FORMAT(bc.active_date, '%Y-%m-%d') &gt;= #{query.startDate}
