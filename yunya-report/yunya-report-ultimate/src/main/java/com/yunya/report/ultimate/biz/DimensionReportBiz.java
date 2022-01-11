@@ -2235,7 +2235,7 @@ public class DimensionReportBiz {
         Future<List<BaseOrganizationVO>> orgFuture = multiFindOrganizationWithParent(query);
         // 初诊人数、复诊人数
         Future<Map<String, StatEmpTreat>> treatNumFuture = multiFindClinicTreatVisitNum(query, query.getOrgIds(), null);
-        Future<Map<Integer, Set<Integer>>> treatVisitNumFuture = multiFindCampusTreatVisitNum(query);
+        Future<Map<Integer, Set<Integer>>> treatVisitNumFuture = multiFindCampusTreatVisitNum(query, (vo)->vo.getOrgId());
         // 项目数量
         Future<List<StatEmpBill>> itemNumFuture = multiFindClinicBillItemNum(query);
         // 专科项目
@@ -2256,22 +2256,22 @@ public class DimensionReportBiz {
         }
     }
 
-    private Future<Map<Integer, Set<Integer>>> multiFindCampusTreatVisitNum(MultiClinicDateRangeQueryForm query) {
+    private Future<Map<Integer, Set<Integer>>> multiFindCampusTreatVisitNum(MultiClinicDateRangeQueryForm query, Function<StatTreatVO, Integer> keyFunc) {
         return threadPool.submit(()->{
             Map<Integer, Set<Integer>> result = new HashMap<>(16);
             List<StatTreatVO> list = baseTreatmentProcessBiz.findTreatVisitPatientList(query, null);
             if (StringHelper.isNotEmpty(list)) {
-               list.forEach(vo->{
-                   Integer campusId = vo.getCampusId();
-                   Set<Integer> set = result.get(campusId);
-                   if (set == null) {
-                       set = new HashSet<>();
-                   }
-                   set.add(vo.getPatientId());
-                   result.put(campusId, set);
-               });
-           }
-           return result;
+                list.forEach(vo->{
+                    Integer key = keyFunc.apply(vo);
+                    Set<Integer> set = result.get(key);
+                    if (set == null) {
+                        set = new HashSet<>();
+                    }
+                    set.add(vo.getPatientId());
+                    result.put(key, set);
+                });
+            }
+            return result;
         });
     }
 
@@ -2295,47 +2295,61 @@ public class DimensionReportBiz {
         Map<Integer, StatEmpTreat> orgTreatNumMap = statisticOrgStatEmpTreat(firstVisit);
         Map<String, List<Integer>> specialItemMap = item2SpecialNumMap(specials, specialMap);
         Map<String, Integer> itemNumMap = sumBillItemNum(statEmpBills, specialItemMap);
-        Map<Integer, JSONObject> campus = new LinkedHashMap<>(16);
-        JSONObject totalObj = initCampusAchievement("合计");
+        Map<Integer, List<BaseOrganizationVO>> orgMap = new LinkedHashMap<>(16);
         orgs.forEach(org->{
             Integer parentId = org.getParentId();
-            JSONObject obj = campus.get(parentId);
-            if (obj == null) {
-                obj = initCampusAchievement(org.getParentName());
+            List<BaseOrganizationVO> list = orgMap.get(parentId);
+            if (list == null) {
+                list = new ArrayList<>();
+            }
+            list.add(org);
+            orgMap.put(parentId, list);
+        });
+        List<JSONObject> result = new ArrayList<>();
+        orgMap.forEach((campusId, orgList)->{
+            String campusName = orgList.get(0).getParentName();
+            BigDecimal totalWorkload = new BigDecimal("0.00");
+            int totalFirstVisitCount = 0;
+            int totalTreatVisitCount = 0;
+            Map<String, Integer> totalSpecialMap = new HashMap<>(16);
+            for (BaseOrganizationVO org : orgList) {
+                Integer orgId = org.getOrgId();
+                BigDecimal workload = defaultValue(orgWorkloadMap.get(orgId+""));
                 int treatVisitCount = 0;
-                Set<Integer> patients = treatVisit.get(parentId);
+                Set<Integer> patients = treatVisit.get(orgId);
                 if (StringHelper.isNotEmpty(patients)) {
                     treatVisitCount = patients.size();
                 }
-                obj.put("treatVisitCount", treatVisitCount);
-                totalObj.put("treatVisitCount", totalObj.getIntValue("treatVisitCount") + treatVisitCount);
+                totalTreatVisitCount += treatVisitCount;
+                StatEmpTreat statEmpTreat = orgTreatNumMap.get(orgId);
+                int firstVisitCount = 0;
+                if (statEmpTreat != null) {
+                    firstVisitCount = statEmpTreat.getFirstVisitCount();
+                }
+                totalFirstVisitCount += firstVisitCount;
+                JSONObject obj = initAchievement(org.getAbbreviation(), workload, firstVisitCount, treatVisitCount);
+                for (Map.Entry<String, String> entry : specialMap.entrySet()) {
+                    String specialId = entry.getKey();
+                    int specialNum = defaultValue(itemNumMap.get(orgId + "," + specialId));
+                    obj.put(specialId, specialNum);
+                    Integer num = totalSpecialMap.get(specialId);
+                    if (num == null) {
+                        num = 0;
+                    }
+                    totalSpecialMap.put(specialId, num + specialNum);
+                }
+                result.add(obj);
             }
-            Integer orgId = org.getOrgId();
-            BigDecimal workload = defaultValue(orgWorkloadMap.get(orgId+""));
-            obj.put("workload", obj.getDoubleValue("workload") + workload.doubleValue());
-            totalObj.put("workload", totalObj.getDoubleValue("workload") + workload.doubleValue());
-            StatEmpTreat statEmpTreat = orgTreatNumMap.get(orgId);
-            int firstVisitCount = 0;
-            if (statEmpTreat != null) {
-                firstVisitCount = statEmpTreat.getFirstVisitCount();
-            }
-            obj.put("firstVisitCount", obj.getIntValue("firstVisitCount") + firstVisitCount);
-            totalObj.put("firstVisitCount", totalObj.getIntValue("firstVisitCount") + firstVisitCount);
-            for (Map.Entry<String, String> entry : specialMap.entrySet()) {
-                String specialId = entry.getKey();
-                int specialNum = defaultValue(itemNumMap.get(orgId + "," + specialId));
-                obj.put(specialId, defaultValue(obj.getIntValue(specialId)) + specialNum);
-                totalObj.put(specialId, defaultValue(totalObj.getIntValue(specialId)) + specialNum);
-            }
-            campus.put(parentId, obj);
+            JSONObject campusObj = initAchievement(campusName, totalWorkload, totalFirstVisitCount, totalTreatVisitCount);
+            campusObj.putAll(totalSpecialMap);
+            result.add(campusObj);
         });
-        campus.put(-1, totalObj);
         title.put("campusName", "院区");
         title.put("workload", "工作量");
         title.put("firstVisitCount", "初诊人数");
         title.put("treatVisitCount", "就诊人数");
         title.putAll(specialMap);
-        pageInfo.setList(new ArrayList<>(campus.values()));
+        pageInfo.setList(result);
         pageInfo.setMap(title);
         return pageInfo;
     }
@@ -2346,12 +2360,12 @@ public class DimensionReportBiz {
      * @param name
      * @return
      */
-    private JSONObject initCampusAchievement(String name) {
+    private JSONObject initAchievement(String name, BigDecimal workload, int firstVisitCount, int treatVisitCount) {
         JSONObject obj = new JSONObject();
         obj.put("campusName", defaultValue(name));
-        obj.put("workload", new BigDecimal("0.00"));
-        obj.put("firstVisitCount", 0);
-        obj.put("treatVisitCount", 0);
+        obj.put("workload", workload);
+        obj.put("firstVisitCount", firstVisitCount);
+        obj.put("treatVisitCount", treatVisitCount);
         return obj;
     }
 
@@ -2384,7 +2398,7 @@ public class DimensionReportBiz {
         // 初诊人数
         Future<Map<String, StatEmpTreat>> firstVisitFuture = multiFindClinicTreatVisitNum(query, query.getOrgIds(), null);
         // 就诊人数
-        Future<Map<Integer, Set<Integer>>> treatVisitFuture = multiFindCampusTreatVisitNum(query);
+        Future<Map<Integer, Set<Integer>>> treatVisitFuture = multiFindCampusTreatVisitNum(query, (vo)->vo.getCampusId());
         // 工作量
         Map<String, BigDecimal> workloadMap = clinicEmployeeWorkload(query, null, vo->vo.getOrgId()+"");
         return mergetCampusAchievementCompare(orgFuture.get(), workloadMap, firstVisitFuture.get(), treatVisitFuture.get());
