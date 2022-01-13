@@ -53,4 +53,8 @@ public class PatientManageQuery extends PageQuery {
     private Integer startTreatQuantity;
     @ApiModelProperty(value = "就诊次数末")
     private Integer endTreatQuantity;
+    @ApiModelProperty(value = "同名患者")
+    private Boolean limitName;
+    @ApiModelProperty(value = "同手机号")
+    private Boolean limitMobile;
 }

@@ -602,7 +602,28 @@
                 and pm.number_of_visits &gt;= #{query.startTreatQuantity} and pm.number_of_visits &lt;=
                 #{query.endTreatQuantity}
             </if>
+            <if test="query.limitName and query.limitMobile != true">
+                and bp.`name` in (select `name` from base_patient where `name` is not null and trim(`name`) != "" group by `name` having count(*) > 1)
+            </if>
+            <if test="query.limitMobile and query.limitName != true">
+                and bp.mobile in (select `mobile` from base_patient where mobile is not null and trim(mobile) != "" group by `mobile` having count(*) > 1)
+            </if>
+            <if test="query.limitMobile and query.limitName">
+                and concat(bp.`name`, ',', bp.`mobile`) in (
+                    select concat(`name`, ',', `mobile`)
+                    from base_patient
+                    where mobile is not null and trim(mobile) != ""
+                        and `name` is not null and trim(`name`) != ""
+                    group by `name`, `mobile` having count(*) > 1
+                )
+            </if>
         </where>
+        <if test="query.limitName">
+            order by bp.`name`
+        </if>
+        <if test="query.limitMobile and query.limitName == false">
+            order by bp.`mobile`
+        </if>
     </select>
 
     <select id="updateFirstVisitInfo">
