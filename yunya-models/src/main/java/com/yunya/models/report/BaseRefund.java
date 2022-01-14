@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Table(name = "base_refund")
-public class BaseRefund {
+public class  BaseRefund {
     /**
      * 退费记录ID
      */
@@ -62,6 +62,42 @@ public class BaseRefund {
      */
     @Column(name = "refund_reason")
     private String refundReason;
+
+    /**
+     * 账单编号
+     */
+    @Column(name = "bill_num")
+    private String billNum;
+
+    /**
+     * 账单日期
+     */
+    @Column(name = "bill_date")
+    private Date billDate;
+
+    /**
+     * 订单总原价
+     */
+    @Column(name = "order_amount")
+    private BigDecimal orderAmount;
+
+    /**
+     * 账单优惠总额
+     */
+    @Column(name = "privilege_amount")
+    private BigDecimal privilegeAmount;
+
+    /**
+     * 账单应收总额
+     */
+    @Column(name = "actual_amount")
+    private BigDecimal actualAmount;
+
+    /**
+     * 账单实收总额
+     */
+    @Column(name = "received_amount")
+    private BigDecimal receivedAmount;
 
     /**
      * 获取退费记录ID
@@ -223,5 +259,53 @@ public class BaseRefund {
      */
     public void setRefundReason(String refundReason) {
         this.refundReason = refundReason;
+    }
+
+    public String getBillNum() {
+        return billNum;
+    }
+
+    public void setBillNum(String billNum) {
+        this.billNum = billNum;
+    }
+
+    public Date getBillDate() {
+        return billDate;
+    }
+
+    public void setBillDate(Date billDate) {
+        this.billDate = billDate;
+    }
+
+    public BigDecimal getOrderAmount() {
+        return orderAmount;
+    }
+
+    public void setOrderAmount(BigDecimal orderAmount) {
+        this.orderAmount = orderAmount;
+    }
+
+    public BigDecimal getPrivilegeAmount() {
+        return privilegeAmount;
+    }
+
+    public void setPrivilegeAmount(BigDecimal privilegeAmount) {
+        this.privilegeAmount = privilegeAmount;
+    }
+
+    public BigDecimal getActualAmount() {
+        return actualAmount;
+    }
+
+    public void setActualAmount(BigDecimal actualAmount) {
+        this.actualAmount = actualAmount;
+    }
+
+    public BigDecimal getReceivedAmount() {
+        return receivedAmount;
+    }
+
+    public void setReceivedAmount(BigDecimal receivedAmount) {
+        this.receivedAmount = receivedAmount;
     }
 }

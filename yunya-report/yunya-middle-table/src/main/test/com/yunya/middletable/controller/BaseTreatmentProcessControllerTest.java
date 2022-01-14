@@ -91,4 +91,12 @@ public class BaseTreatmentProcessControllerTest {
         ResponseResult result = baseRefundController.pullRefundDateStatistics(form);
         System.out.println(result);
     }
+
+    @Test
+    public void testOperateRefund() throws InterruptedException {
+        String param = "{\"paramMap\":{\"id\":674},\"operateType\":1}";
+        MessageModel form = JSONObject.parseObject(param, MessageModel.class);
+        ResponseResult result = baseRefundController.operateRefund(form);
+        System.out.println(result);
+    }
 }
