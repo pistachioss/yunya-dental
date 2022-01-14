@@ -2315,6 +2315,7 @@ public class DimensionReportBiz {
             for (BaseOrganizationVO org : orgList) {
                 Integer orgId = org.getOrgId();
                 BigDecimal workload = defaultValue(orgWorkloadMap.get(orgId+""));
+                totalWorkload = totalWorkload.add(workload);
                 int treatVisitCount = 0;
                 Set<Integer> patients = treatVisit.get(orgId);
                 if (StringHelper.isNotEmpty(patients)) {
