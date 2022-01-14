@@ -14,6 +14,12 @@
         <result column="refund_operator_id" property="refundOperatorId" jdbcType="INTEGER"/>
         <result column="refund_date" property="refundDate" jdbcType="TIMESTAMP"/>
         <result column="refund_reason" property="refundReason" jdbcType="VARCHAR"/>
+        <result column="bill_num" property="billNum" jdbcType="VARCHAR" />
+        <result column="bill_date" property="billDate" jdbcType="TIMESTAMP" />
+        <result column="order_amount" property="orderAmount" jdbcType="DECIMAL" />
+        <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
+        <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
+        <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
     </resultMap>
 
     <!-- 根据条件查询账单退费记录列表 -->
@@ -133,12 +139,12 @@
         br.patientName,
         br.pinyinName,
         br.mobile,
-        bbd.executor_id AS employeeId
+        brd.executor_id AS employeeId
         FROM
         base_refund_detail brd
-        INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
+        WHERE
         <if test="query.employeeId != null">
-            AND bbd.executor_id = #{query.employeeId}
+            brd.executor_id = #{query.employeeId}
         </if>
         INNER JOIN (
         SELECT
@@ -223,12 +229,11 @@
         brd.bill_detail_id,
         brd.refund_amount,
         brd.refund_id,
-        bbd.item_id,
-        bbd.item_type,
-        bbd.executor_id
+        brd.item_id,
+        brd.item_type,
+        brd.executor_id
         FROM
         base_refund_detail brd
-        LEFT JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
         ) brd
         LEFT JOIN base_tariff_info bti ON brd.item_type = bti.item_type
         AND brd.item_id = bti.item_id
@@ -701,8 +706,7 @@
         FROM
         base_refund_detail brd
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
-        INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
-        AND bbd.executor_id > 0
+        WHERE brd.executor_id > 0
         ) brd
         <where>
             <if test="query.orgIds != null and query.orgIds.length > 0">
@@ -783,20 +787,19 @@
 				bti.item_name itemName,
 				TRUNCATE(brd.refund_amount,2) as workload
         from base_refund_detail brd
-                 left join base_bill_detail bbd on bbd.bill_detail_id = brd.bill_detail_id
                  left join base_bill bb on bb.bill_id = bbd.bill_id
                  left join base_patient bp on bp.patient_id = bb.patient_id
                  left join base_patient_origin_log log on log.patient_id = bp.patient_id
                  left join base_organization bo on bo.org_id = bb.org_id
                  left join base_treatment_process btp on btp.treatment_id = bb.treatment_id
                  left join base_employee be on be.user_id = btp.registered_dentist_id
-                 left join base_tariff_info bti ON bti.item_id = bbd.item_id
+                 left join base_tariff_info bti ON bti.item_id = brd.item_id
         where
               log.inservice = 1
               and brd.refund_id = #{refundId}
               and log.origin_id = #{originId}
               and log.origin_type = #{originType}
-              and bti.item_type = bbd.item_type
+              and bti.item_type = brd.item_type
     </select>
 
     <!-- 根据条件查询退费工作量 -->
@@ -808,8 +811,8 @@
         FROM
         base_refund_detail brd
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
-        INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id AND bbd.executor_id IS NOT NULL
         <where>
+            AND brd.executor_id > 0
             <if test="query.orgIds != null and query.orgIds.length > 0">
                 AND br.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
@@ -860,8 +863,8 @@
         FROM
         base_refund_detail brd
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
-        INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id AND bbd.executor_id IS NOT NULL
         <where>
+            AND brd.executor_id > 0
             <if test="query.orgIds != null and query.orgIds.length > 0">
                 AND br.org_id IN
                 <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
