@@ -1,22 +1,27 @@
 package com.yunya.modules.treatment.other.rpc;
 
 import com.yunya.feign.report.domain.form.PullForm;
+import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
 import com.yunya.feign.treatment_other.domain.vo.FindAllRemindRecordVO;
 import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
+import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.models.treatment_other.XRayFilm;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import com.yunya.modules.treatment.other.biz.XRayFilmBiz;
+import com.yunya.modules.treatment.other.biz.XUploadFileBiz;
 import com.yunya.modules.treatment.other.mapper.VisitingRecordMapper;
 import com.yunya.modules.treatment.other.mapper.VisitingRemindMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -41,6 +46,8 @@ public class TreatmentOtherServiceRest {
   @Autowired private VisitingRemindMapper visitingRemindMapper;
 
   @Autowired private XRayFilmBiz xRayFilmBiz;
+
+  @Autowired private XUploadFileBiz xUploadFileBiz;
 
   /**
    * 插入随访记录
@@ -169,6 +176,26 @@ public class TreatmentOtherServiceRest {
     findAllRemindRecordVO.setRecordList(list1);
     findAllRemindRecordVO.setRemindList(list2);
     return findAllRemindRecordVO;
+  }
+
+  /**
+   * 将指定照片影像复制到x_upload_file中
+   *
+   */
+  @ApiOperation(value = "查询全部随访提醒记录")
+  @PostMapping("/xUploadFile/saveMedicalRayToUploadFile")
+  public void saveXRayFile2XUploadFile(@RequestBody @Validated MedicalRayFilmModel model) {
+    xUploadFileBiz.saveXRayFile2XUploadFile(model);
+  }
+
+  /**
+   * 条件查询上传文件
+   *
+   */
+  @ApiOperation(value = "条件查询上传文件")
+  @PostMapping(value = "/xUploadFile/findList")
+  public List<XUploadFileVO> findXUploadFileList(@RequestBody @Validated XUploadFileQuery query) {
+    return xUploadFileBiz.findXUploadFileList(query);
   }
 
 }

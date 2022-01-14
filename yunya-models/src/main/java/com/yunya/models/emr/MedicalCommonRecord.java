@@ -1,7 +1,9 @@
 package com.yunya.models.emr;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "medical_common_record")
 public class MedicalCommonRecord {

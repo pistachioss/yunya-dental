@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.emr.mapper.TreatPlanDetailHistoryMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.emr.TreatPlanDetailHistory" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="step_detail_id" property="stepDetailId" jdbcType="INTEGER" />
+    <result column="treat_plan_id" property="treatPlanId" jdbcType="INTEGER" />
+    <result column="treat_step_id" property="treatStepId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="tooth_bit" property="toothBit" jdbcType="VARCHAR" />
+    <result column="billing_item_id" property="billingItemId" jdbcType="INTEGER" />
+    <result column="billing_item_name" property="billingItemName" jdbcType="VARCHAR" />
+    <result column="unit" property="unit" jdbcType="VARCHAR" />
+    <result column="price" property="price" jdbcType="DECIMAL" />
+    <result column="quantity" property="quantity" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="operation" property="operation" jdbcType="TINYINT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <!--批量添加-->
+  <insert id="insertBatch">
+    INSERT INTO treat_plan_detail_history
+    (
+        step_detail_id, treat_plan_id, treat_step_id, type, tooth_bit,
+        billing_item_id, billing_item_name, price, quantity, status,
+        unit,remark, operation, crt_id, crt_time
+    )
+    VALUES
+    <foreach collection="list" item="item" separator=",">
+      (
+        #{item.stepDetailId}, #{item.treatPlanId}, #{item.treatStepId}, #{item.type},
+        #{item.toothBit}, #{item.billingItemId}, #{item.billingItemName}, #{item.price},
+        #{item.quantity}, #{item.status}, #{item.unit}, #{item.remark},
+        #{item.operation}, #{item.crtId}, #{item.crtTime}
+      )
+    </foreach>
+  </insert>
+
+  <select id="selectTreatPlanDetailPreByPlanId" resultType="com.yunya.feign.emr.domain.vo.TreatPlanDetailVO">
+    SELECT
+        step_detail_id AS detailId,
+        treat_plan_id AS planId,
+        treat_step_id AS stepId,
+        type,
+        tooth_bit AS toothBit,
+        billing_item_id AS billingItemId,
+        billing_item_name AS billingItemName,
+        unit,
+        price,
+        quantity,
+        status,
+        remark
+    FROM treat_plan_detail_history tpdl
+    INNER JOIN (
+        SELECT
+            MAX(crt_time) AS crt_time,
+            step_detail_id
+        FROM treat_plan_detail_history
+        WHERE AND status &lt; #{status}
+        AND treat_plan_id = #{planId}
+        GROUP BY step_detail_id
+    ) tpdl2 ON tpdl.step_detail_id = tpdl2.step_detail_id AND tpdl.crt_time = tpdl2.crt_time
+  </select>
+</mapper>

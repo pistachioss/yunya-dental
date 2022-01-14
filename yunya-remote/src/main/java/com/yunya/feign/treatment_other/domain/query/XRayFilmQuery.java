@@ -4,11 +4,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.persistence.Column;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -36,6 +34,7 @@ public class XRayFilmQuery implements Serializable {
             allowableValues = "0-照片；1-根尖片；2-全景片；3-正位片；4-侧位片；5-关节片；6-正畸片；7-其他片")
     private Byte type;
 
-
+    /** 主键id列表*/
+    private List<Integer> ids;
 
 }
