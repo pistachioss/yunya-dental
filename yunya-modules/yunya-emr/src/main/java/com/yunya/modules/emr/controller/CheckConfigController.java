@@ -37,14 +37,14 @@ public class CheckConfigController {
     }
 
     @ApiOperation(value = "修改检查")
-    @PostMapping("/update")
+    @PutMapping("/update")
     @CurrentUser
     public ResponseResult update(@Valid @RequestBody CheckConfigForm form) {
         return ResponseUtil.success(checkConfigBiz.update(form));
     }
 
     @ApiOperation(value = "删除检查")
-    @PutMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     @CurrentUser
     public ResponseResult delete(@PathVariable(value = "id") Integer id) {
         return ResponseUtil.success(checkConfigBiz.delete(id));
