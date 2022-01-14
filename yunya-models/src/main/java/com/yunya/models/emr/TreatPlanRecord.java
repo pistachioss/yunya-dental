@@ -48,11 +48,6 @@ public class TreatPlanRecord {
     private Byte status;
 
     /**
-     * 沟通方式：0-患者知情同意书
-     */
-    private Byte way;
-
-    /**
      * 创建人id
      */
     @Column(name = "crt_id")
@@ -206,24 +201,6 @@ public class TreatPlanRecord {
      */
     public void setStatus(Byte status) {
         this.status = status;
-    }
-
-    /**
-     * 获取沟通方式：0-患者知情同意书
-     *
-     * @return way - 沟通方式：0-患者知情同意书
-     */
-    public Byte getWay() {
-        return way;
-    }
-
-    /**
-     * 设置沟通方式：0-患者知情同意书
-     *
-     * @param way 沟通方式：0-患者知情同意书
-     */
-    public void setWay(Byte way) {
-        this.way = way;
     }
 
     /**

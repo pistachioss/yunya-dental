@@ -14,4 +14,19 @@
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />
     <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <!--根据治疗计划id查询治疗计划步骤列表-->
+  <select id="selectTreatPlanStepByPlanId" resultType="com.yunya.feign.emr.domain.vo.TreatPlanStepVO">
+    SELECT
+        id AS treatPlanStepId,
+        plan_id AS planId,
+        step_name AS stepName,
+        status
+    FROM treat_plan_step
+    WHERE
+      plan_id in
+      <foreach collection="planIds" item="item" index="index" open="(" close=")" separator=",">
+        #{item}
+      </foreach>
+  </select>
 </mapper>

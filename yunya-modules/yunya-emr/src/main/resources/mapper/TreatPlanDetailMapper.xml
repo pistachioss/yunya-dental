@@ -12,6 +12,7 @@
     <result column="tooth_bit" property="toothBit" jdbcType="VARCHAR" />
     <result column="billing_item_id" property="billingItemId" jdbcType="INTEGER" />
     <result column="billing_item_name" property="billingItemName" jdbcType="VARCHAR" />
+    <result column="unit" property="unit" jdbcType="VARCHAR" />
     <result column="price" property="price" jdbcType="DECIMAL" />
     <result column="quantity" property="quantity" jdbcType="INTEGER" />
     <result column="status" property="status" jdbcType="TINYINT" />
@@ -21,4 +22,23 @@
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <!--根据治疗计划id查询明细列表-->
+  <select id="selectTreatPlanDetailByPlanId" resultType="com.yunya.feign.emr.domain.vo.TreatPlanDetailVO">
+    SELECT
+        id AS detailId,
+        treat_plan_id AS planId,
+        treat_step_id AS stepId,
+        type,
+        tooth_bit AS toothBit,
+        billing_item_id AS billingItemId,
+        billing_item_name AS billingItemName,
+        unit,
+        price,
+        quantity,
+        status,
+        remark
+    FROM treat_plan_detail
+    WHERE treat_plan_id = #{planId}
+  </select>
 </mapper>

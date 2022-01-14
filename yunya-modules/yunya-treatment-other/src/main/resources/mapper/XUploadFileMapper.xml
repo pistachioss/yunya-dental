@@ -69,7 +69,7 @@
         </foreach>
       </if>
       <if test="query.sourceType != null">
-        AND xu.source_type = #{query.sourceType}
+        AND xuf.source_type = #{query.sourceType}
       </if>
     </where>
     order by xuf.crt_time desc

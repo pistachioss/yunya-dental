@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
@@ -25,7 +24,6 @@ import java.util.List;
 public class XUploadFileQuery extends PageQuery implements Serializable {
     @ApiModelProperty(value = "数据来源id列表", required = true)
     @NotNull(message = "数据来源id列表不能为空")
-    @Min(value = 1)
     private List<Integer> sourceIds;
 
     @ApiModelProperty(value = "数据来源类型", required = true)

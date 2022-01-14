@@ -15,8 +15,8 @@
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
-  <!--批量添加-->
-  <insert id="insertBatch">
+    <!--批量添加-->
+    <insert id="insertBatch">
       INSERT INTO treat_plan_step_history
       (
         step_id, plan_id, step_name, operation, crt_id, crt_time
@@ -24,9 +24,27 @@
       VALUES
       <foreach collection="list" item="item" separator=",">
         (
-        #{item.stepId}, #{item.planId}, #{item.stepName},
-        #{item.operation}, #{item.crtId}, #{item.crtTime}
+            #{item.stepId}, #{item.planId}, #{item.stepName},
+            #{item.operation}, #{item.crtId}, #{item.crtTime}
         )
     </foreach>
-  </insert>
+    </insert>
+
+    <select id="selectTreatPlanStepPreByPlanId" resultType="com.yunya.feign.emr.domain.vo.TreatPlanStepVO">
+        SELECT
+            tpsh.step_id AS treatPlanStepId,
+            tpsh.plan_id AS planId,
+            tpsh.step_name AS stepName,
+            tpsh.status
+        FROM treat_plan_step_history tpsh
+        INNER JOIN (
+            SELECT
+                step_id,
+                MAX(crt_time) AS crt_time
+            FROM treat_plan_step_history
+            WHERE status &lt; #{status}
+            AND plan_id = #{planId}
+            GROUP BY step_id
+        ) tpsh2 ON tpsh2.step_id = tpsh.step_id AND tpsh2.crt_time = tpsh.crt_time
+    </select>
 </mapper>

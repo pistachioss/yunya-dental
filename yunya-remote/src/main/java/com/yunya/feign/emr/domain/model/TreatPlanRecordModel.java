@@ -26,8 +26,8 @@ public class TreatPlanRecordModel implements Serializable {
     @ApiModelProperty("治疗计划id")
     private Integer treatPlanId;
 
-    /** 门诊id*/
-    @ApiModelProperty("门诊id")
+    /** 就诊门诊id*/
+    @ApiModelProperty("就诊门诊id")
     private Integer orgId;
 
     /** 普通电子病历id*/
@@ -54,12 +54,16 @@ public class TreatPlanRecordModel implements Serializable {
     private Integer patientId;
 
     /** 备注*/
-    @ApiModelProperty(value = "备注")
+    @ApiModelProperty(value = "备注，如果为空请勿传null")
     private String remark;
 
-    /** 患者是否确认*/
-    @ApiModelProperty(value = "患者是否确认")
-    private Boolean patientIsConfirm;
+    /** 方案变更或提前终止或撤销终止的原因*/
+    @ApiModelProperty(value = "方案变更或提前终止或撤销终止的原因，如果为空请勿传null")
+    private String operationReason;
+
+    /** 状态：0-未确认; 1-已确认; 2-进行中; 3-全部完成; 4-提前终止*/
+    @ApiModelProperty("状态：0-未确认; 1-已确认; 2-进行中; 3-全部完成; 4-提前终止")
+    private Byte status = 0;
 
     /** 步骤列表*/
     @ApiModelProperty(value = "步骤列表")

@@ -42,7 +42,7 @@
         mcr.remark,
         mcr.upt_time AS recordDate,
         cc.check_name AS checkName,
-        sc.symptom_name AS sypmtomName
+        sc.symptom_name AS symptomName
     FROM medical_check_record mcr
     LEFT JOIN check_config cc ON mcr.check_id = cc.id
     LEFT JOIN symptom_config sc ON mcr.symptom_id = sc.id

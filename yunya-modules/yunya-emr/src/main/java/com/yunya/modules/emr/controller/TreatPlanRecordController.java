@@ -1,10 +1,13 @@
 package com.yunya.modules.emr.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.emr.domain.form.TreatPlanRecordChangeForm;
 import com.yunya.feign.emr.domain.model.TreatPlanRecordModel;
-import com.yunya.feign.emr.domain.vo.CheckConfigVO;
+import com.yunya.feign.emr.domain.query.TreatPlanRecordQuery;
+import com.yunya.feign.emr.domain.vo.MedicalTreatPlanRecordVO;
+import com.yunya.feign.emr.domain.vo.TreatPlanRecordInfoVO;
+import com.yunya.feign.emr.domain.vo.TreatPlanRecordVO;
 import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.model.PageQuery;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.emr.biz.TreatPlanRecordBiz;
@@ -32,23 +35,40 @@ public class TreatPlanRecordController {
     @PostMapping("/save")
     @CurrentUser
     public ResponseResult save(@Valid @RequestBody TreatPlanRecordModel model) {
-        treatPlanRecordBiz.save(model);
+        treatPlanRecordBiz.save(model, (byte) 0);
         return ResponseUtil.success();
     }
 
-    @ApiOperation(value = "根据id查询")
-    @GetMapping("/one/{id}")
-    public ResponseResult<CheckConfigVO> findOneById(@PathVariable(value = "id") Integer id) {
-//        return ResponseUtil.success(treatPlanRecordBiz.findOneById(id));
-        return null;
+    @ApiOperation(value = "根据治疗计划id查询")
+    @GetMapping("/one/{planId}")
+    public ResponseResult<TreatPlanRecordVO> findOneById(@PathVariable(value = "planId") Integer planId) {
+        return ResponseUtil.success(treatPlanRecordBiz.findOneById(planId));
+    }
+
+    @ApiOperation(value = "根据治疗计划id查询病历及治疗计划（打印）")
+    @GetMapping("/medicalTreatPlan/{planId}")
+    public ResponseResult<MedicalTreatPlanRecordVO> findMedicalTreatPlanById(@PathVariable(value = "planId") Integer planId) {
+        return ResponseUtil.success(treatPlanRecordBiz.findMedicalTreatPlanById(planId));
     }
 
     @ApiOperation("分页查询")
     @PostMapping("/list")
+    public ResponseResult<PageInfo<TreatPlanRecordInfoVO>> findList(@Valid @RequestBody TreatPlanRecordQuery query) {
+        PageInfo<TreatPlanRecordInfoVO> page = treatPlanRecordBiz.findTreatPlanRecordInfoList(query);
+        return ResponseUtil.success(page);
+    }
+
+    @ApiOperation("查询患者所有已确认、进行中的治疗计划列表")
+    @PostMapping("/patientList")
+    public ResponseResult<PageInfo<TreatPlanRecordVO>> findPatientTreatPlanList(@Valid @RequestBody TreatPlanRecordQuery query) {
+        PageInfo<TreatPlanRecordVO> page = treatPlanRecordBiz.findPatientTreatPlanList(query);
+        return ResponseUtil.success(page);
+    }
+
+    @ApiOperation("治疗计划变更：方案确认，方案变更，提前终止，撤销终止")
+    @PutMapping("/change")
     @CurrentUser
-    public ResponseResult<PageInfo<CheckConfigVO>> findList(@Valid @RequestBody PageQuery query) {
-//        PageInfo<CheckConfigVO> page = treatPlanRecordBiz.findCheckConfigList(query);
-//        return ResponseUtil.success(page);
-        return null;
+    private ResponseResult<MedicalTreatPlanRecordVO> treatPlanChange(TreatPlanRecordChangeForm form) {
+        return ResponseUtil.success(treatPlanRecordBiz.treatPlanChange(form));
     }
 }

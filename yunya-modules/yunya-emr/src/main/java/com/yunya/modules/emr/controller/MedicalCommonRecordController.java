@@ -107,7 +107,7 @@ public class MedicalCommonRecordController {
       MedicalCommonRecordModel medicalCommonRecordModel = new MedicalCommonRecordModel();
       BeanUtils.copyProperties(medical, medicalCommonRecordModel);
       // 照片影像
-      medicalCommonRecordModel.setXRayFilm(fileMap.get(medical.getId()));
+      medicalCommonRecordModel.setXRayFilms(fileMap.get(medical.getId()));
       medicalCommonRecordModel.setMajorDentistName(employeeMap.get(medicalCommonRecordModel.getMajorDentistId()+"").getName());
 
       if (!StrUtil.isEmpty(medical.getExamination())) {

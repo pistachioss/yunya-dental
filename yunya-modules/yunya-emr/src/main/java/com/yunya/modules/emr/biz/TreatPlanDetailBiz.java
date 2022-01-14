@@ -1,6 +1,7 @@
 package com.yunya.modules.emr.biz;
 
 import com.yunya.feign.emr.domain.model.TreatPlanDetailModel;
+import com.yunya.feign.emr.domain.vo.TreatPlanDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.StringHelper;
@@ -51,6 +52,7 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
         query.setTreatStepId(stepId);
         List<TreatPlanDetail> deleted = mapper.select(query);
         List<TreatPlanDetailHistory> histories = new ArrayList<>();
+        mapper.delete(query);
         if (StringHelper.isNotEmpty(details)) {
             if (StringHelper.isNotEmpty(deleted)) {
                 Iterator<TreatPlanDetail> it = deleted.iterator();
@@ -74,14 +76,16 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
             Date now = new Date(System.currentTimeMillis());
             details.forEach(vo->{
                 TreatPlanDetail entity = model2Entity(vo, planId, stepId, userId, now);
-                mapper.insert(entity);
+                mapper.insertSelective(entity);
                 histories.add(entity2History(entity, (byte) (ObjectUtils.isEmpty(vo.getDetailId())?0:1)));
             });
         }
         if (StringHelper.isNotEmpty(deleted)) { // 删除
             deleted.forEach(vo-> histories.add(entity2History(vo, (byte) 2)));
         }
-        treatPlanDetailHistoryMapper.insertBatch(histories);
+        if (StringHelper.isNotEmpty(histories)) {
+            treatPlanDetailHistoryMapper.insertBatch(histories);
+        }
     }
 
     /**
@@ -100,10 +104,12 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
         history.setType(entity.getType());
         history.setBillingItemId(entity.getBillingItemId());
         history.setBillingItemName(entity.getBillingItemName());
+        history.setUnit(entity.getUnit());
         history.setPrice(entity.getPrice());
         history.setQuantity(entity.getQuantity());
         history.setRemark(entity.getRemark());
         history.setOperation(operation);
+        history.setStatus(entity.getStatus());
         history.setCrtId(entity.getUpdId());
         history.setCrtTime(entity.getUpdTime());
         return history;
@@ -127,6 +133,7 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
         entity.setType(vo.getType());
         entity.setBillingItemId(vo.getBillingItemId());
         entity.setBillingItemName(vo.getBillingItemName());
+        entity.setUnit(vo.getUnit());
         entity.setPrice(vo.getPrice());
         entity.setQuantity(vo.getQuantity());
         entity.setToothBit(vo.getToothBit());
@@ -143,6 +150,21 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
         entity.setCrtTime(crtTime);
         entity.setUpdId(userId);
         entity.setUpdTime(now);
+        entity.setStatus((byte) 0);
         return entity;
+    }
+
+    /**
+     * 根据治疗计划id查询明细列表
+     *
+     * @param planId
+     * @return
+     */
+    public List<TreatPlanDetailVO> findTreatPlanDetailByPlanId(Integer planId) {
+        return mapper.selectTreatPlanDetailByPlanId(planId);
+    }
+
+    public List<TreatPlanDetailVO> findTreatPlanDetailPreByPlanId(Integer planId, Byte status) {
+        return treatPlanDetailHistoryMapper.selectTreatPlanDetailPreByPlanId(planId, status);
     }
 }

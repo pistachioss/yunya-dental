@@ -1,6 +1,7 @@
 package com.yunya.modules.emr.mapper;
 
 import com.yunya.models.emr.MedicalCommonRecord;
+import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
@@ -10,4 +11,5 @@ public interface MedicalCommonRecordMapper extends Mapper<MedicalCommonRecord> {
 
   int insertMedical(MedicalCommonRecord model);
 
+  MedicalCommonRecord selectMedicalIllnessHistoryById(@Param("id") Integer id);
 }

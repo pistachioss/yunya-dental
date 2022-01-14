@@ -39,13 +39,17 @@ public class TreatPlanDetailModel implements Serializable {
     private Integer billingItemId;
 
     /** 牙位列表*/
-    @ApiModelProperty("牙位列表")
+    @ApiModelProperty("牙位列表，如果为空请勿传null")
     private String toothBit;
 
     /** 项目名称*/
     @ApiModelProperty(value = "项目名称", required = true)
     @NotEmpty(message = "项目名称不能为空")
     private String billingItemName;
+
+    /** 单位*/
+    @ApiModelProperty(value = "单位")
+    private String unit;
 
     /** 数量*/
     @ApiModelProperty(value = "数量", required = true)
@@ -58,8 +62,11 @@ public class TreatPlanDetailModel implements Serializable {
     private BigDecimal price;
 
     /** 备注*/
-    @ApiModelProperty("备注")
+    @ApiModelProperty("备注，如果为空请勿传null")
     private String remark;
+
+    /** 执行状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止*/
+    private Byte status;
 
     /** 创建人id*/
     private Integer crtId;

@@ -31,7 +31,7 @@ public class MedicalRayFilmModel implements Serializable {
     private Byte sourceType;
 
     @ApiModelProperty("照片影像id列表")
-    private List<Integer> xRayIds;
+    private List<Integer> rayIds;
 
     @ApiModelProperty("电子病历提交人id")
     @NotNull(message = "电子病历提交人id不能为空")

@@ -1,6 +1,8 @@
 package com.yunya.modules.emr.biz;
 
 import com.yunya.feign.emr.domain.model.TreatPlanStepModel;
+import com.yunya.feign.emr.domain.vo.TreatPlanDetailVO;
+import com.yunya.feign.emr.domain.vo.TreatPlanStepVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.StringHelper;
@@ -13,10 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * 简介：治疗计划步骤业务层
@@ -54,6 +54,7 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
         TreatPlanStep query = new TreatPlanStep();
         query.setPlanId(planId);
         List<TreatPlanStep> deleted = mapper.select(query);
+        mapper.delete(query);
         if (StringHelper.isNotEmpty(treatPlanSteps)) {
             if (StringHelper.isNotEmpty(deleted)) {
                 Iterator<TreatPlanStep> it = deleted.iterator();
@@ -80,9 +81,14 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
             });
         }
         if (StringHelper.isNotEmpty(deleted)) { // 删除
-            deleted.forEach(vo-> histories.add(entity2History(vo, (byte) 2)));
+            deleted.forEach(vo->{
+                treatPlanDetailBiz.save(planId, vo.getId(), null);
+                histories.add(entity2History(vo, (byte) 2));
+            });
         }
-        treatPlanStepHistoryMapper.insertBatch(histories);
+        if (StringHelper.isNotEmpty(histories)) {
+            treatPlanStepHistoryMapper.insertBatch(histories);
+        }
     }
 
     /**
@@ -114,6 +120,13 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
         return entity;
     }
 
+    /**
+     * 实体数据转换成历史数据
+     *
+     * @param entity
+     * @param operation
+     * @return
+     */
     private TreatPlanStepHistory entity2History(TreatPlanStep entity, byte operation) {
         TreatPlanStepHistory history = new TreatPlanStepHistory();
         history.setStepId(entity.getId());
@@ -123,5 +136,69 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
         history.setCrtId(entity.getUptId());
         history.setCrtTime(entity.getUptTime());
         return history;
+    }
+
+    /**
+     * 根据治疗计划id查询步骤列表
+     *
+     * @param planId
+     * @return
+     */
+    public List<TreatPlanStepVO> findTreatPlanStepByPlanId(Integer planId) {
+        List<TreatPlanStepVO> steps = mapper.selectTreatPlanStepByPlanId(Collections.singleton(planId));
+        if (StringHelper.isNotEmpty(steps)) {
+            List<TreatPlanDetailVO> details = treatPlanDetailBiz.findTreatPlanDetailByPlanId(planId);
+            if (StringHelper.isNotEmpty(details)) {
+                putDetail2Step(steps, details);
+            }
+        }
+        return steps;
+    }
+
+
+    /**
+     * 根据治疗计划id查询步骤列表
+     *
+     * @param planId
+     * @return
+     */
+    public List<TreatPlanStepVO> findTreatPlanStepPreByPlanId(Integer planId, Byte status) {
+        List<TreatPlanStepVO> steps = treatPlanStepHistoryMapper.selectTreatPlanStepPreByPlanId(planId, status);
+        if (StringHelper.isNotEmpty(steps)) {
+            List<TreatPlanDetailVO> details = treatPlanDetailBiz.findTreatPlanDetailPreByPlanId(planId, status);
+            if (StringHelper.isNotEmpty(details)) {
+                putDetail2Step(steps, details);
+            }
+        }
+        return steps;
+    }
+
+    private void putDetail2Step(List<TreatPlanStepVO> steps, List<TreatPlanDetailVO> details) {
+        Map<Integer, List<TreatPlanDetailVO>> detailMap = new HashMap<>(16);
+        for (TreatPlanDetailVO detail : details) {
+            Integer stepId = detail.getStepId();
+            List<TreatPlanDetailVO> list = detailMap.get(stepId);
+            if (list == null) {
+                list = new ArrayList<>();
+            }
+            list.add(detail);
+            detailMap.put(stepId, list);
+        }
+        steps.forEach(step->{
+            Integer stepId = step.getTreatPlanStepId();
+            List<TreatPlanDetailVO> detailList = detailMap.get(stepId);
+            int quantity = 0;
+            BigDecimal amount = new BigDecimal("0.00");
+            if (StringHelper.isNotEmpty(detailList)) {
+                for (TreatPlanDetailVO detail : detailList) {
+                    Integer num = detail.getQuantity();
+                    quantity += num;
+                    amount = amount.add(new BigDecimal(num).multiply(detail.getPrice()));
+                }
+            }
+            step.setQuanity(quantity);
+            step.setAmount(amount);
+            step.setTreatPlanDetails(detailList);
+        });
     }
 }

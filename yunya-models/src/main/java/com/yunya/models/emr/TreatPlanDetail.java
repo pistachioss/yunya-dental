@@ -52,6 +52,11 @@ public class TreatPlanDetail {
     private String billingItemName;
 
     /**
+     * 单位
+     */
+    private String unit;
+
+    /**
      * 门诊项目单价
      */
     private BigDecimal price;
@@ -220,6 +225,14 @@ public class TreatPlanDetail {
      */
     public void setBillingItemName(String billingItemName) {
         this.billingItemName = billingItemName;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 
     /**

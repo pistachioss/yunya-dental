@@ -132,4 +132,8 @@ public class MedicalCommonRecordForm {
 
   @ApiModelProperty("牙位检查记录")
   private List<MedicalCheckRecordModel> checkRecords;
+
+  /** 照片影像id列表*/
+  @ApiModelProperty("照片影像id列表")
+  private List<Integer> rayIds;
 }

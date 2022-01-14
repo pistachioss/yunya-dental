@@ -177,7 +177,7 @@ public class XUploadFileBiz extends BaseBiz<XUploadFileMapper, XUploadFile> {
     }
 
     private List<XRayFilmVO> findXRayFilmList(MedicalRayFilmModel model) {
-        List<Integer> xRayIds = model.getXRayIds();
+        List<Integer> xRayIds = model.getRayIds();
         if (StringHelper.isNotEmpty(xRayIds)) {
             XRayFilmQuery query = new XRayFilmQuery();
             query.setIds(xRayIds);

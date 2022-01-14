@@ -115,11 +115,12 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
 
         //主治医生新增病历时，历史表中同步插入一条数据
         if (result > 0 && medicalCommonRecord.getStatus() == 0) {
-            // 保存照片影像
-            saveXRayFile2XUploadFile(medicalCommonRecord.getId(), model.getXRayIds(), model.getCrtTime());
             medicalRecordHistoryBiz.insertMedicalHistory(medicalCommonRecord);
             //更新医生的申请变更时间
             medicalApprovalBiz.updateDocApplyChangeTime(medicalCommonRecord.getTreatmentId());
+
+            // 保存照片影像
+            saveXRayFile2XUploadFile(medicalCommonRecord.getId(), model.getXRayIds(), model.getCrtTime());
             // 保存检查记录
             medicalCheckRecordBiz.saveCheckRecord(medicalCommonRecord.getId(), model.getCheckRecords());
         }
@@ -155,12 +156,12 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         return ResponseUtil.success(medicalCommonRecord.getId());
     }
 
-    private void saveXRayFile2XUploadFile(Integer medicalId, List<Integer> xRayIds, Date crtTime) {
+    private void saveXRayFile2XUploadFile(Integer medicalId, List<Integer> rayIds, Date crtTime) {
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         MedicalRayFilmModel model = new MedicalRayFilmModel();
         model.setMedicalId(medicalId);
         model.setSourceType(MEDICAL_COMMON.getCode());
-        model.setXRayIds(xRayIds);
+        model.setRayIds(rayIds);
         model.setCrtId(userId);
         model.setCrtTime(crtTime);
         remoteTreatmentOtherFeign.saveXRayFile2XUploadFile(model);
@@ -220,6 +221,11 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         Example example = new Example(MedicalRecordHistory.class);
         example.createCriteria().andEqualTo("medicalRecordId", medicalcopy.getId());
         medicalRecordHistoryMapper.updateByExampleSelective(medicalRecordHistory, example);
+
+        // 保存照片影像
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getRayIds(), medicalcopy.getUpdTime());
+        // 保存检查记录
+        medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
 
         if (medicalCommonRecordForm.getMedicalGeneralNumList() != null && medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
             List<MedicalGeneralNum> numList = new ArrayList<>();
@@ -363,4 +369,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     }
 
 
+    public MedicalCommonRecord findMedicalIllegaHistoryById(Integer medicalRecordId) {
+        return mapper.selectMedicalIllnessHistoryById(medicalRecordId);
+    }
 }

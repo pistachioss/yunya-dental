@@ -7,7 +7,6 @@ import com.yunya.feign.emr.domain.query.MedicalCheckRecordQuery;
 import com.yunya.feign.emr.domain.vo.MedicalCheckRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.emr.MedicalCheckHistory;
 import com.yunya.models.emr.MedicalCheckRecord;
@@ -83,7 +82,6 @@ public class MedicalCheckRecordBiz extends BaseBiz<MedicalCheckRecordMapper, Med
             deleted.forEach(vo-> histories.add(entity2History(vo, (byte) 2)));
         }
         medicalCheckHistoryMapper.insertBatch(histories);
-        throw new ClientServiceException("ok",111);
     }
 
     /**

@@ -54,14 +54,20 @@ public class TreatPlanRecordHistory {
     private Byte status;
 
     /**
-     * 沟通方式：0-患者知情同意书
+     * 方案是否变更：0-否，1-是
      */
-    private Byte way;
+    private Byte isChange;
 
     /**
      * 写操作类型：0-新增，1-修改，2-删除
      */
     private Byte operation;
+
+    /**
+     * 操作原因（变更状态时操作人填写的原因）
+     */
+    @Column(name="operation_reason")
+    private String operationReason;
 
     /**
      * 创建人id
@@ -225,22 +231,12 @@ public class TreatPlanRecordHistory {
         this.status = status;
     }
 
-    /**
-     * 获取沟通方式：0-患者知情同意书
-     *
-     * @return way - 沟通方式：0-患者知情同意书
-     */
-    public Byte getWay() {
-        return way;
+    public Byte getIsChange() {
+        return isChange;
     }
 
-    /**
-     * 设置沟通方式：0-患者知情同意书
-     *
-     * @param way 沟通方式：0-患者知情同意书
-     */
-    public void setWay(Byte way) {
-        this.way = way;
+    public void setIsChange(Byte isChange) {
+        this.isChange = isChange;
     }
 
     public Byte getOperation() {
@@ -249,6 +245,14 @@ public class TreatPlanRecordHistory {
 
     public void setOperation(Byte operation) {
         this.operation = operation;
+    }
+
+    public String getOperationReason() {
+        return operationReason;
+    }
+
+    public void setOperationReason(String operationReason) {
+        this.operationReason = operationReason;
     }
 
     /**
