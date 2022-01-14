@@ -254,16 +254,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                     vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0
                         && userIds.containsKey(vo.getExecutorId() + "," + vo.getOrgId()))
             .collect(Collectors.toList());
-    query.setBillIds(computePercentage(details));
+    Map<Integer, BigDecimal[]> billAmountMap = computePercentage(details);
+    query.setBillIds(billAmountMap.keySet());
     Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(query);
     details.forEach(
         detail -> {
           String key = detail.getExecutorId() + "," + detail.getOrgId();
           if (userIds.containsKey(key)) {
             Integer billId = detail.getBillId();
-            BigDecimal free = freePaymentMap.get(billId);
-            BigDecimal amount =
-                detail.getCouponWorkload().multiply(free == null ? BigDecimal.ZERO : free);
+            BigDecimal free = defaultFree(freePaymentMap.get(billId),billAmountMap.get(billId));
+            BigDecimal amount = detail.getCouponWorkload().multiply(free);
             userIds.put(key, amount.add(userIds.get(key)));
           }
         });
@@ -775,7 +775,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           details.stream()
               .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
               .collect(Collectors.toList());
-      computePercentage(details);
+      Map<Integer, BigDecimal[]> billAmountMap = computePercentage(details);
       Map<Integer, List<BaseBillPayDetailVO>> freePaymentMap =
           sumFreePaymentMapByBillPayIds(billPayIds);
       details.forEach(
@@ -787,9 +787,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
               list.forEach(
                   vo -> {
                     Integer billPayId = vo.getBillPayId();
-                    BigDecimal free = vo.getPrincipalAmount();
+                    BigDecimal free = defaultFree(vo.getPrincipalAmount(), billAmountMap.get(billId));
                     BigDecimal amount =
-                        detail.getCouponWorkload().multiply(free == null ? BigDecimal.ZERO : free);
+                        detail.getCouponWorkload().multiply(free);
                     billPayIdMap.put(billPayId, amount.add(billPayIdMap.get(billPayId)));
                   });
             }
@@ -873,9 +873,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param details
    * @return
    */
-  private Set<Integer> computePercentage(List<BaseBillDetail> details) {
-    Set<Integer> billIds = new HashSet<>();
-    // 每个账单的执行实收总额：账单应收总额，免单实收总额
+  private Map<Integer, BigDecimal[]> computePercentage(List<BaseBillDetail> details) {
+    // 每个账单的执行实收总额：账单应收总额，免单应收总额
     Map<Integer, BigDecimal[]> total = new HashMap<>(16);
     details.forEach(
         detail -> {
@@ -887,7 +886,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           sum[0] = detail.getDiscountAmount();
           sum[1] = sum[1].add(detail.getReceivedAmount());
           total.put(billId, sum);
-          billIds.add(billId);
         });
     details.forEach(
         detail -> {
@@ -906,7 +904,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           detail.setDiscountAmount(receivedRatio);// 实收项目占比
           detail.setCouponWorkload(freePaymentRatio);// 免单项目占比
         });
-    return billIds;
+    return total;
   }
 
   /**
@@ -952,19 +950,20 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           details.stream()
               .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
               .collect(Collectors.toList());
-      computePercentage(details);
-      BaseBillPayDetailVO free = sumFreePayments(query.getBillPayId());
+      Map<Integer, BigDecimal[]> billAmountMap = computePercentage(details);
+      BaseBillPayDetailVO freeVO = sumFreePayments(query.getBillPayId());
       Map<String, BigDecimal> amounts = new HashMap<>(16);
       for (BaseBillDetail detail : details) {
         Integer executorId = detail.getExecutorId();
         Integer itemId = detail.getItemId();
         Byte itemType = detail.getItemType();
         if (query.getEmployeeId().equals(executorId)) {
+          BigDecimal free = defaultFree(freeVO.getPrincipalAmount(), billAmountMap.get(detail.getBillId()));
           amounts.put(
               itemId + "," + itemType,
               detail
-                  .getDiscountAmount()
-                  .multiply(free == null ? BigDecimal.ZERO : free.getPrincipalAmount()));
+                  .getCouponWorkload()
+                  .multiply(free));
         }
       }
       resultList.forEach(
@@ -2158,7 +2157,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             details.stream()
                 .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
                 .collect(Collectors.toList());
-        computePercentage(details);
+        Map<Integer, BigDecimal[]> billAmountMap = computePercentage(details);
         EmployeeWorkloadQuery query = new EmployeeWorkloadQuery();
         query.setDateType((byte) 1);
         query.setStartDate(queryFrom.getQueryDate());
@@ -2169,9 +2168,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             detail -> {
               String key = itemMap.get(detail.getItemType() + "," + detail.getItemId());
               Integer billId = detail.getBillId();
-              BigDecimal free = freePaymentMap.get(billId);
-              BigDecimal amount =
-                  detail.getCouponWorkload().multiply(free == null ? BigDecimal.ZERO : free);
+              BigDecimal free = defaultFree(freePaymentMap.get(billId), billAmountMap.get(billId));
+              BigDecimal amount = detail.getCouponWorkload().multiply(free);
               BigDecimal freeAmount = frees.get(key);
               if (freeAmount == null) {
                 freeAmount = BigDecimal.ZERO;
@@ -2193,7 +2191,17 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
   }
 
-  /**
+    private BigDecimal defaultFree(BigDecimal free, BigDecimal[] billAmount) {
+      if (ObjectUtils.isEmpty(free) || StringHelper.isEmpty(billAmount)) {
+          return BigDecimal.ZERO;
+      }
+      if (free.compareTo(billAmount[1]) >= 0) {
+          return billAmount[1];
+      }
+      return free;
+    }
+
+    /**
    * 根据条件查询非本月免单金额列表
    *
    * @param query
@@ -2272,7 +2280,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
               details.stream()
                   .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
                   .collect(Collectors.toList());
-          computePercentage(details);
+          Map<Integer, BigDecimal[]> billAmountMap = computePercentage(details);
           Map<Integer, List<BaseBillPayDetailVO>> freePaymentMap =
               sumFreePaymentMapByBillPayIds(billPayIds.keySet());
           Map<String, BigDecimal> freeMap = new LinkedHashMap<>(16);
@@ -2286,11 +2294,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                       vo -> {
                         Integer billPayId = vo.getBillPayId();
                         String key = billId + "," + billPayId + "," + cid;
-                        BigDecimal free = vo.getPrincipalAmount();
-                        BigDecimal amount =
-                            detail
-                                .getCouponWorkload()
-                                .multiply(free == null ? BigDecimal.ZERO : free);
+                        BigDecimal free = defaultFree(vo.getPrincipalAmount(),billAmountMap.get(billId));
+                        BigDecimal amount = detail.getCouponWorkload().multiply(free);
                         BigDecimal freeAmount = freeMap.get(key);
                         if (freeAmount == null) {
                           freeAmount = BigDecimal.ZERO;
