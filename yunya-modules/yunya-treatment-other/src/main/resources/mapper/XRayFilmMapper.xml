@@ -39,7 +39,7 @@
   </resultMap>
 
   <!-- 查询图片列表 -->
-  <select id="findList" resultType="com.yunya.feign.treatment_other.domain.vo.XRayFilmVo">
+  <select id="findList" resultType="com.yunya.feign.treatment_other.domain.vo.XRayFilmVO">
     SELECT
     id,
     patient_id as patientId,
@@ -48,7 +48,9 @@
     url,
     photo_name as photoName,
     upload_time as uploadTime,
+    crt_id AS crtId,
     crt_time as crtTime,
+    upd_id AS updId,
     upd_time as updTime
     FROM
     x_ray_film
@@ -59,6 +61,12 @@
       </if>
       <if test="query.type != null">
         and type = #{query.type}
+      </if>
+      <if test="query.ids!=null and query.ids.size()>0">
+        AND id in
+        <foreach collection="query.ids" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
       </if>
     </where>
     order by uploadTime desc

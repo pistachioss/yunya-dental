@@ -31,4 +31,47 @@
       #{obj.filePath},#{obj.uploadTime},#{obj.crtId},#{obj.crtTime},#{obj.updId},#{obj.updTime})
     </foreach>
   </insert>
+
+  <!--逻辑删除-->
+  <update id="updateUnvaildByEntity">
+    UPDATE x_upload_file
+    SET inservice = false,
+        upd_id = #{crtId},
+        upd_time = #{crtTime}
+    <where>
+        AND source_type = #{query.sourceType}
+        AND source_id = #{query.sourceId}
+        AND inservice = #{query.inservice}
+    </where>
+  </update>
+
+  <!--根据条件查询治疗计划列表-->
+  <select id="selectXUploadFileList" resultType="com.yunya.feign.treatment_other.domain.vo.XUploadFileVO">
+    SELECT
+      xuf.id AS fieldId,
+      xuf.source_id AS sourceId,
+      xuf.source_type AS sourceType,
+      xuf.file_name AS fileName,
+      xuf.file_type AS fileType,
+      xuf.file_location AS fileLocation,
+      xuf.upload_time AS uploadTime,
+      xuf.crt_id AS crtId,
+      xuf.crt_time AS crtTime,
+      xuf.upd_id AS updId,
+      xuf.upd_time AS updTime
+    FROM  x_upload_file xuf
+    <where>
+      AND xuf.inservice = true
+      <if test="query.sourceIds!=null and query.sourceIds.size()>0">
+        AND xuf.source_id in
+        <foreach collection="query.sourceIds" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+      <if test="query.sourceType != null">
+        AND xuf.source_type = #{query.sourceType}
+      </if>
+    </where>
+    order by xuf.crt_time desc
+  </select>
 </mapper>
