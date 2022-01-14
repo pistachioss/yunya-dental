@@ -17,6 +17,7 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.PageUtl;
+import com.yunya.framework.common.utils.SortUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.*;
@@ -2726,9 +2727,7 @@ public class DimensionReportBiz {
     private Map<String, Integer> patientRepurchaseMap(Map<String, Set<Integer>> patientActiveDates) {
         Map<String, Integer> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(patientActiveDates)) {
-            patientActiveDates.forEach((key, set)->{
-                incrementKey(key, set.size(), result);
-            });
+            patientActiveDates.forEach((key, set)-> incrementKey(key, set.size(), result));
         }
         return result;
     }
@@ -2825,33 +2824,57 @@ public class DimensionReportBiz {
      * @return
      */
     public PageInfo<CardCouponUsedDetailVO> cardCouponUsedStatisticsDetail(CardCouponUsedDetailQueryForm query) {
-        List<CardCouponUsedDetailVO> list = baseCardBiz.findCardCouponUsedDetail(query);
+        List<CardCouponUsedDetailVO> list = null;
         if (query.getDetailType() == 1) {
-            list = repurchaseFilter(list);
+            // 复购明细
+            CardCouponUsedDetailQueryForm repeatQuery = new CardCouponUsedDetailQueryForm();
+            BeanUtils.copyProperties(query, repeatQuery);
+            repeatQuery.setOrgId(null);
+            list = repurchaseFilter(query.getOrgId(), baseCardBiz.findCardCouponUsedDetail(repeatQuery));
+        } else {
+            // 激活明细
+            CardCouponUsedDetailQueryForm activeQuery = new CardCouponUsedDetailQueryForm();
+            BeanUtils.copyProperties(query, activeQuery);
+            activeQuery.setOrgIds(null);
+            list = baseCardBiz.findCardCouponUsedDetail(activeQuery);
         }
+        list = SortUtil.sort(list,
+                SortUtil.comparing(CardCouponUsedDetailVO::getPatientId)
+                        .thenComparing(CardCouponUsedDetailVO::getBindTime)
+                        .reversed());
         return PageUtl.doPage(query.getPageNum(), query.getPageSize(), list);
     }
 
     /**
-     * 复购过滤（只保留该产品每人第二次购买的）
+     * 复购过滤（每人该产品已经是第二次购买时的门诊个数，第一次购买可以在其他门诊）
      *
-     * @param list
+     *
+     * @param orgId
+     * @param cards
      * @return
      */
-    private List<CardCouponUsedDetailVO> repurchaseFilter(List<CardCouponUsedDetailVO> list) {
-        if (StringHelper.isEmpty(list)) {
-            return list;
+    private List<CardCouponUsedDetailVO> repurchaseFilter(Integer orgId, List<CardCouponUsedDetailVO> cards) {
+        if (StringHelper.isEmpty(cards)) {
+            return cards;
         }
         List<CardCouponUsedDetailVO> result = new ArrayList<>();
-        Map<Integer, Boolean> map = new LinkedHashMap<>(16);
-        list.forEach(vo->{
-            Integer patientId = vo.getPatientId();
-            Boolean hasSecond = map.get(patientId);
-            if (hasSecond == null) {// 第一次购买
-                map.put(patientId, false);
-            } else if (!hasSecond) {// 已经有第一次了
-                map.put(patientId, true);
-                result.add(vo);
+        // 患者首次激活产品key列表 （标本数据）
+        List<Integer> firstActives = new ArrayList<>();
+        // 患者非首次激活产品列表
+        List<CardCouponUsedDetailVO> activeCards = new ArrayList<>();
+        cards.forEach(card->{
+            Integer patientId = card.getPatientId();
+            if (!firstActives.contains(patientId)) {
+                firstActives.add(patientId);
+            } else if (orgId.equals(card.getActiveOrgId())) {
+                activeCards.add(card);
+            }
+        });
+        activeCards.forEach(card->{
+            Integer patientId = card.getPatientId();
+            //只提取该患者非首次激活中第一条记录
+            if (firstActives.remove(patientId)) {
+                result.add(card);
             }
         });
         return result;

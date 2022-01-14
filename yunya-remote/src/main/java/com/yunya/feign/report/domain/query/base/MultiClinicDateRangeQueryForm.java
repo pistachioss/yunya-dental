@@ -24,7 +24,7 @@ import java.util.List;
 public class MultiClinicDateRangeQueryForm extends DateRangeQueryForm implements Serializable {
     /** 门诊ID列表 */
     @ApiModelProperty(value = "门诊ID列表", required = true)
-    @NotNull(message = "门诊ID不能为空")
+    @NotNull(message = "门诊ID列表不能为空")
     private List<Integer> orgIds;
 
 }
