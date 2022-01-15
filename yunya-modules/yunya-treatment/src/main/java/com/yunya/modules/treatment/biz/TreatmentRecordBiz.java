@@ -771,6 +771,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           });
       this.saveOrderDetailVisitRecord(visitingRecordList);
     }
+
+    // 治疗计划
+//    rabbitMqServiceFeign.sendMessage()
   }
 
   /**

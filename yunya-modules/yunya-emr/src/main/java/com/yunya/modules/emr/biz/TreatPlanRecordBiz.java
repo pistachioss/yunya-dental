@@ -33,10 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * 简介：治疗计划业务层
@@ -55,10 +52,13 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     /** 治疗计划步骤*/
     @Autowired
     private TreatPlanStepBiz treatPlanStepBiz;
-    @Autowired
-    private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    /** 普通电子病历 */
     @Autowired
     private MedicalCommonRecordBiz medicalCommonRecordBiz;
+    /** 系统*/
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    /** 其他*/
     @Autowired
     private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
 
@@ -149,19 +149,99 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     }
 
     /**
-     * 根据治疗计划id查询
+     * 根据病历id查询治疗计划详情
      *
-     * @param planId
+     * @param medicalId
      * @return
      */
+    public TreatPlanRecordVO findTreatPlanOneByMedicalId(Integer medicalId) {
+        MedicalCommonRecord medical = medicalCommonRecordBiz.findMedicalIllegaHistoryById(medicalId);
+        if (ObjectUtils.isEmpty(medical)) {
+            throw new ClientServiceException("该病历不存在",OperationCodeConstants.DATA_NOT_EXIST);
+        }
+        // 兼容旧版本时的“计划”数据
+        TreatPlanRecordVO plan = findCompatibleOldPlan(medical);
+        if (ObjectUtils.isEmpty(plan)) {
+            // 当前治疗计划
+            TreatPlanRecord query = new TreatPlanRecord();
+            query.setMedicalRecordId(medicalId);
+            TreatPlanRecord treatPlanRecord = mapper.selectOne(query);
+            if (!ObjectUtils.isEmpty(treatPlanRecord)) {
+                plan = putTreatPlanStepList(treatPlanRecord);
+            }
+        }
+        return plan;
+    }
+
+    /**
+     * 兼容旧版本普通电子病历中的“计划”数据
+     *
+     * @param medical
+     * @return
+     */
+    private TreatPlanRecordVO findCompatibleOldPlan(MedicalCommonRecord medical) {
+        List<ExaminationsVO> plans = json2List(medical.getPlan());
+        if (StringHelper.isNotEmpty(plans)) {
+            StringBuilder builder = new StringBuilder();
+            Iterator<ExaminationsVO> it = plans.iterator();
+            while (it.hasNext()) {
+                ExaminationsVO plan = it.next();
+                String describe = plan.getDescribe();
+                String toothPosition = plan.getTooth_position();
+                if (StringHelper.isEmpty(describe) && StringHelper.isEmpty(toothPosition)) {
+                    it.remove();
+                    continue;
+                }
+                if (StringHelper.isNotEmpty(describe)) {
+                    if (builder.length()>0) {
+                        builder.append("，");
+                    }
+                    builder.append(describe);
+                }
+            }
+            if (StringHelper.isNotEmpty(plans)) {
+                Byte status = TreatPlanStatusEnum.UNCONFIRM.getCode();
+                TreatPlanRecordVO treatPlanVO = new TreatPlanRecordVO();
+                treatPlanVO.setMedicalRecordId(medical.getId());
+                treatPlanVO.setDentistId(medical.getMajorDentistId());
+                treatPlanVO.setStatus(status);
+                treatPlanVO.setPlanName("");
+                treatPlanVO.setTreatPlanSteps(oldPlanSteps(plans, status));
+                treatPlanVO.setSummary(builder.toString());
+                return treatPlanVO;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 给旧版本生成步骤
+     *
+     * @param plans
+     * @param status
+     * @return
+     */
+    private List<TreatPlanStepVO> oldPlanSteps(List<ExaminationsVO> plans, Byte status) {
+        TreatPlanStepVO step = new TreatPlanStepVO();
+        step.setStatus(status);
+        step.setStepName("");
+        List<TreatPlanDetailVO> details = new ArrayList<>();
+        for (ExaminationsVO plan : plans) {
+            String describe = StringHelper.isNotEmpty(plan.getDescribe())?plan.getDescribe():"";
+            String toothPosition = StringHelper.isNotEmpty(plan.getTooth_position())?plan.getTooth_position():"";
+            TreatPlanDetailVO detail = new TreatPlanDetailVO();
+            detail.setRemark(describe);
+            detail.setStatus(status);
+            detail.setToothBit(toothPosition);
+            details.add(detail);
+        }
+        step.setTreatPlanDetails(details);
+        return Arrays.asList(step);
+    }
+
     public MedicalTreatPlanRecordVO findOneById(Integer planId) {
         TreatPlanRecord entity = mapper.selectByPrimaryKey(planId);
-        if (ObjectUtils.isEmpty(entity)) {
-            throw new ClientServiceException("该治疗计划不存在", OperationCodeConstants.DATA_NOT_EXIST);
-        }
-        MedicalTreatPlanRecordVO result = entity2VO(entity);
-        putTreatPlanStepList(result, planId);
-        return result;
+        return putTreatPlanStepList(entity);
     }
 
     /**
@@ -184,14 +264,18 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     /**
      * 查询并填充治疗步骤和明细
      *
-     * @param result
-     * @param planId
+     * @param entity
      */
-    private void putTreatPlanStepList(MedicalTreatPlanRecordVO result, Integer planId) {
-        List<TreatPlanStepVO> steps = treatPlanStepBiz.findTreatPlanStepByPlanId(planId);
+    private MedicalTreatPlanRecordVO putTreatPlanStepList(TreatPlanRecord entity) {
+        if (ObjectUtils.isEmpty(entity)) {
+            throw new ClientServiceException("该治疗计划不存在", OperationCodeConstants.DATA_NOT_EXIST);
+        }
+        MedicalTreatPlanRecordVO result = entity2VO(entity);
+        List<TreatPlanStepVO> steps = treatPlanStepBiz.findTreatPlanStepByPlanId(entity.getId());
         if (StringHelper.isNotEmpty(steps)) {
             accumulation(steps, result);
         }
+        return result;
     }
 
     /**
@@ -460,11 +544,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         List<TreatPlanRecord> list = mapper.selectTreatPlanRecordInfoList(query);
         List<TreatPlanRecordVO> result = new ArrayList<>();
         if (StringHelper.isNotEmpty(list)) {
-            list.forEach(entity->{
-                MedicalTreatPlanRecordVO vo = entity2VO(entity);
-                putTreatPlanStepList(vo, entity.getId());
-                result.add(vo);
-            });
+            list.forEach(entity-> result.add(putTreatPlanStepList(entity)));
         }
         return new PageInfo<>(result);
     }
