@@ -31,4 +31,7 @@ public enum MsgCategoryEnum {
     BaseRefund,
     BaseVisitRemind,
     BaseAppointmentModify,
+
+    // 治疗计划详情
+    TreatPlanDetail,
 }

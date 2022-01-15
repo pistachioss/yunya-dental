@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.middletable.dao.emr.TreatPlanDetailHistoryMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.emr.TreatPlanDetailHistory" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="step_detail_id" property="stepDetailId" jdbcType="INTEGER" />
+    <result column="treat_plan_id" property="treatPlanId" jdbcType="INTEGER" />
+    <result column="treat_step_id" property="treatStepId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="tooth_bit" property="toothBit" jdbcType="VARCHAR" />
+    <result column="billing_item_id" property="billingItemId" jdbcType="INTEGER" />
+    <result column="billing_item_name" property="billingItemName" jdbcType="VARCHAR" />
+    <result column="unit" property="unit" jdbcType="VARCHAR" />
+    <result column="price" property="price" jdbcType="DECIMAL" />
+    <result column="quantity" property="quantity" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="operation" property="operation" jdbcType="TINYINT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>

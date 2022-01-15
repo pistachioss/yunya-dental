@@ -56,8 +56,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_CHARGING_STATUS;
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESSING_STATUS;
@@ -331,6 +330,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       Integer registeredId = treatmentRecord.getRegisteredId();
       rabbitMqServiceFeign.sendMessage(registeredId, 1, 1, BaseTreatmentProcess);
     }
+    // 变更治疗计划详情的状态
+    rabbitMqServiceFeign.sendMessage(treatmentRecordId, 0,0, TreatPlanDetail);
     redisUtils.delete(orderKey);
   }
 
@@ -567,6 +568,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
         Integer registeredId = treatmentRecord.getRegisteredId();
         rabbitMqServiceFeign.sendMessage(registeredId, 1, 1, BaseTreatmentProcess);
       }
+      // 变更治疗计划详情的状态
+      rabbitMqServiceFeign.sendMessage(treatmentRecordId, 0,1, TreatPlanDetail);
     }
   }
 
@@ -686,6 +689,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     // 发送消息同步中间表账单数据
     if (result > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 0, BaseBill);
+      // 变更治疗计划详情的状态
+      rabbitMqServiceFeign.sendMessage(treatmentRecordId, 0,1, TreatPlanDetail);
     }
   }
 

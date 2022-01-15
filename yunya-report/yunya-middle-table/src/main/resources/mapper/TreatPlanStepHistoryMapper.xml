@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.middletable.dao.emr.TreatPlanStepHistoryMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.emr.TreatPlanStepHistory" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="step_id" property="stepId" jdbcType="INTEGER" />
+    <result column="plan_id" property="planId" jdbcType="INTEGER" />
+    <result column="step_name" property="stepName" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="operation" property="operation" jdbcType="TINYINT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>

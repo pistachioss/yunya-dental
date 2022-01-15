@@ -6,7 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
 
-@Table(name = "treat_plan_history")
+@Table(name = "treat_plan_record_history")
 public class TreatPlanRecordHistory {
     @Id
     @GeneratedValue(generator = "JDBC")

@@ -3,6 +3,7 @@ package com.yunya.middletable.handle;
 import com.rabbitmq.client.Channel;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.middletable.service.*;
+import com.yunya.middletable.service.emr.TreatPlanRecordBiz;
 import com.yunya.middletable.service.patient.*;
 import com.yunya.middletable.service.treatment_other.BaseEmployeeScheduleBiz;
 import com.yunya.middletable.service.treatment_other.BaseVisitRemindBiz;
@@ -63,6 +64,8 @@ public class ReceiverMessageController {
   @Autowired private BasePatientOriginBiz basePatientOriginBiz;
 
   @Autowired private BasePatientOriginLogBiz basePatientOriginLogBiz;
+
+  @Autowired private TreatPlanRecordBiz treatPlanRecordBiz;
 
   @RabbitHandler
   public void handleMiddleSingle(MessageModel messageModel, Channel channel, Message message)
@@ -145,6 +148,10 @@ public class ReceiverMessageController {
           break;
         case BasePatientOriginLog:
           basePatientOriginLogBiz.operate(messageModel);
+          break;
+        case TreatPlanDetail:
+          treatPlanRecordBiz.operate(messageModel);
+          break;
         default:
           log.info("消息中没有对应的枚举类型[{}]！", messageModel.getMsgCategoryEnum());
           break;
