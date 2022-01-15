@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -214,6 +215,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
         Date now = new Date(System.currentTimeMillis());
         String startDate = form.getStartDate();
         String endDate = form.getEndDate();
+        deleteData(startDate, endDate);
         StatisticsEmployeeQueryForm query = new StatisticsEmployeeQueryForm();
         query.setStartDate(startDate);
         query.setEndDate(endDate);
@@ -255,6 +257,21 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
             BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
 
         }
+    }
+
+    /**
+     * 清掉旧数据
+     *
+     * @param startDate
+     * @param endDate
+     */
+    private void deleteData(String startDate, String endDate) {
+        Example example = new Example(StatEmpPay.class);
+        Example.Criteria c = example.createCriteria();
+        Integer sDateInt = Integer.parseInt(StringHelper.remove(startDate,"-"));
+        Integer eDateInt = Integer.parseInt(StringHelper.remove(endDate,"-"));
+        c.andBetween("payDate", sDateInt, eDateInt);
+        mapper.deleteByExample(example);
     }
 
     private Map<String, BigDecimal> findFreePaymentMap(StatisticsEmployeeQueryForm query, Function<BillExecutorItemVO, String> keyFunc) {

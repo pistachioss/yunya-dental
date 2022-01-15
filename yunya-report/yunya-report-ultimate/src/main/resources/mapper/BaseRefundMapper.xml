@@ -142,10 +142,6 @@
         brd.executor_id AS employeeId
         FROM
         base_refund_detail brd
-        WHERE
-        <if test="query.employeeId != null">
-            brd.executor_id = #{query.employeeId}
-        </if>
         INNER JOIN (
         SELECT
         br.refund_id as refundId,
@@ -192,6 +188,10 @@
             </if>
         </where>
         ) br ON brd.refund_id = br.refundId
+        WHERE
+        <if test="query.employeeId != null">
+            brd.executor_id = #{query.employeeId}
+        </if>
         ) brd
         <where>
             <if test="query.keyword != null and query.keyword != ''">

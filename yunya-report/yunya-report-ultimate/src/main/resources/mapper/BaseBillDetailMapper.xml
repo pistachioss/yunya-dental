@@ -2412,6 +2412,7 @@
         from base_bill_detail t
         left join base_bill bb ON bb.bill_id = t.bill_id
         <where>
+            AND t.executor_id > 0
             and bb.bill_id in
             <foreach collection="billIds" item="item" open="(" separator="," close=")">
                 #{item}

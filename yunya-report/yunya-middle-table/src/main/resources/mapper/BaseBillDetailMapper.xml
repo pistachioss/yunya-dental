@@ -162,8 +162,8 @@
         ) bbp ON bbp.bill_id = bb.bill_id
         <where>
             AND bb.bill_date is not null
+            AND bbd.executor_id > 0
 --             AND bb.org_id=27
---             AND bbd.executor_id=442
         </where>
     </select>
 
