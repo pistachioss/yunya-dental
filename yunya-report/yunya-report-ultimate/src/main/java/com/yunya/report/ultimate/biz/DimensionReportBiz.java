@@ -2166,7 +2166,14 @@ public class DimensionReportBiz {
      * @return
      */
     private Future<List<StatEmpBill>> multiFindClinicBillItemNum(MultiClinicDateRangeQueryForm query) {
-        return threadPool.submit(()-> statEmpBillBiz.findBillItemNum(query));
+        return threadPool.submit(()-> {
+            List<StatEmpBill> tariffItemList = statEmpBillBiz.findBillItemNum(query);
+            List<StatEmpBill> oralItemList = baseBillDetailBiz.findBillingOralItemList(query);
+            if (StringHelper.isNotEmpty(oralItemList)) {
+                tariffItemList.addAll(oralItemList);
+            }
+            return tariffItemList;
+        });
     }
 
     /**

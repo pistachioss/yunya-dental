@@ -11,6 +11,7 @@ import com.yunya.feign.clinic_base.domain.vo.BusinessGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.feign.report.domain.bo.ClinicWorkloadGroupInfoVO;
 import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -20,6 +21,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.*;
 import com.yunya.report.ultimate.mapper.*;
+import jdk.nashorn.internal.ir.ReturnNode;
 import org.apache.commons.lang3.ObjectUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -2686,5 +2688,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
 
     public List<PersonalBillItemVO> findExecutorBillItem(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
       return mapper.selectExecutorBillItem(query, groupByOrgId);
+    }
+
+    public List<StatEmpBill> findBillingOralItemList(MultiClinicDateRangeQueryForm query) {
+        return mapper.selectBillingOralItemList(query);
     }
 }
