@@ -33,6 +33,27 @@ public class BaseRefundDetail {
     private BigDecimal refundAmount;
 
     /**
+     * 执行人ID
+     */
+    @Column(name = "executor_id")
+    private Integer executorId;
+
+    /**
+     * 项目ID
+     */
+    @Column(name = "item_id")
+    private Integer itemId;
+    /**
+     * 项目名称
+     */
+    @Column(name = "item_name")
+    private String itemName;
+    /**
+     * 项目类型（0-价目表；1-商品）
+     */
+    @Column(name = "item_type")
+    private Byte itemType;
+    /**
      * 获取退费明细ID
      *
      * @return refund_detail_id - 退费明细ID
@@ -102,5 +123,37 @@ public class BaseRefundDetail {
      */
     public void setRefundAmount(BigDecimal refundAmount) {
         this.refundAmount = refundAmount;
+    }
+
+    public Integer getExecutorId() {
+        return executorId;
+    }
+
+    public void setExecutorId(Integer executorId) {
+        this.executorId = executorId;
+    }
+
+    public Byte getItemType() {
+        return itemType;
+    }
+
+    public void setItemType(Byte itemType) {
+        this.itemType = itemType;
+    }
+
+    public Integer getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Integer itemId) {
+        this.itemId = itemId;
+    }
+
+    public String getItemName() {
+        return itemName;
+    }
+
+    public void setItemName(String itemName) {
+        this.itemName = itemName;
     }
 }

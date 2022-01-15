@@ -263,7 +263,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             Integer billId = detail.getBillId();
             BigDecimal free = freePaymentMap.get(billId);
             BigDecimal amount =
-                detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+                detail.getCouponWorkload().multiply(free == null ? BigDecimal.ZERO : free);
             userIds.put(key, amount.add(userIds.get(key)));
           }
         });
@@ -789,7 +789,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                     Integer billPayId = vo.getBillPayId();
                     BigDecimal free = vo.getPrincipalAmount();
                     BigDecimal amount =
-                        detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+                        detail.getCouponWorkload().multiply(free == null ? BigDecimal.ZERO : free);
                     billPayIdMap.put(billPayId, amount.add(billPayIdMap.get(billPayId)));
                   });
             }
@@ -875,7 +875,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   private Set<Integer> computePercentage(List<BaseBillDetail> details) {
     Set<Integer> billIds = new HashSet<>();
-    // 每个账单的执行实收总额
+    // 每个账单的执行实收总额：账单应收总额，免单实收总额
     Map<Integer, BigDecimal[]> total = new HashMap<>(16);
     details.forEach(
         detail -> {
@@ -884,22 +884,27 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           if (sum == null) {
             sum = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
           }
-          sum[0] = sum[0].add(detail.getReceivedAmount());
+          sum[0] = detail.getDiscountAmount();
+          sum[1] = sum[1].add(detail.getReceivedAmount());
           total.put(billId, sum);
           billIds.add(billId);
         });
     details.forEach(
         detail -> {
+          // 项目应收金额
           BigDecimal receivedAmount = detail.getReceivedAmount();
           Integer billId = detail.getBillId();
           BigDecimal[] sum = total.get(billId);
-          sum[1] = sum[1].add(receivedAmount);
-          BigDecimal amount = receivedAmount.divide(sum[0], 2, BigDecimal.ROUND_HALF_UP);
-          if (sum[0].compareTo(sum[1]) == 0) { // 最后一个占比项目
-            amount = BigDecimal.ONE.subtract(sum[2]);
+          BigDecimal receivedRatio = BigDecimal.ZERO;
+          if (sum[0].compareTo(BigDecimal.ZERO) != 0) {
+            receivedRatio = receivedAmount.divide(sum[0], 8, BigDecimal.ROUND_HALF_UP);
           }
-          sum[2] = sum[2].add(amount);
-          detail.setDiscountAmount(amount);
+          BigDecimal freePaymentRatio = BigDecimal.ZERO;
+          if (sum[1].compareTo(BigDecimal.ZERO) != 0) {
+            freePaymentRatio = receivedAmount.divide(sum[1], 8, BigDecimal.ROUND_HALF_UP);
+          }
+          detail.setDiscountAmount(receivedRatio);// 实收项目占比
+          detail.setCouponWorkload(freePaymentRatio);// 免单项目占比
         });
     return billIds;
   }
@@ -2166,7 +2171,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
               Integer billId = detail.getBillId();
               BigDecimal free = freePaymentMap.get(billId);
               BigDecimal amount =
-                  detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+                  detail.getCouponWorkload().multiply(free == null ? BigDecimal.ZERO : free);
               BigDecimal freeAmount = frees.get(key);
               if (freeAmount == null) {
                 freeAmount = BigDecimal.ZERO;
@@ -2284,7 +2289,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                         BigDecimal free = vo.getPrincipalAmount();
                         BigDecimal amount =
                             detail
-                                .getDiscountAmount()
+                                .getCouponWorkload()
                                 .multiply(free == null ? BigDecimal.ZERO : free);
                         BigDecimal freeAmount = freeMap.get(key);
                         if (freeAmount == null) {

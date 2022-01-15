@@ -9,16 +9,12 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseRefundDetailMapper;
 import com.yunya.middletable.dao.report.BaseRefundMapper;
 import com.yunya.middletable.dao.report.BaseRefundPayDetailMapper;
-import com.yunya.middletable.dao.treatment.BillRefundOrderDetailMapper;
-import com.yunya.middletable.dao.treatment.BillRefundPayDetailRecordMapper;
-import com.yunya.middletable.dao.treatment.BillRefundRecordMapper;
+import com.yunya.middletable.dao.treatment.*;
 import com.yunya.middletable.service.credits_shop.BillCreditsCallback;
 import com.yunya.models.report.BaseRefund;
 import com.yunya.models.report.BaseRefundDetail;
 import com.yunya.models.report.BaseRefundPayDetail;
-import com.yunya.models.treatment.BillRefundOrderDetail;
-import com.yunya.models.treatment.BillRefundPayDetailRecord;
-import com.yunya.models.treatment.BillRefundRecord;
+import com.yunya.models.treatment.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,6 +50,12 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
 
   /** 账单退费时统计*/
   @Autowired private StatEmpRefundBiz statEmpRefundBiz;
+
+  /** 账单*/
+  @Autowired private BillRecordMapper billRecordMapper;
+
+  /** 订单明细*/
+  @Autowired private OrderDetailMapper orderDetailMapper;
 
   @Autowired private BaseRefundPayDetailMapper refundPayDetailMapper;
   @Resource(name = "billCreditsCallbackImpl")
@@ -154,7 +156,28 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
     refund.setRefundOperatorId(billRefundRecord.getCrtId());
     refund.setRefundDate(billRefundRecord.getCrtTime());
     refund.setRefundReason(billRefundRecord.getReason());
+    putBillInfo(refund);
     return refund;
+  }
+
+  /**
+   * 填充账单信息
+   *
+   * @param refund
+   */
+  private void putBillInfo(BaseRefund refund) {
+    BillRecord query = new BillRecord();
+    query.setOrderRecordId(refund.getBillId());
+    List<BillRecord> bills = billRecordMapper.select(query);
+    if (StringHelper.isNotEmpty(bills)) {
+      BillRecord billRecord = bills.get(0);
+      refund.setBillNum(billRecord.getBillNumber());
+      refund.setBillDate(billRecord.getCrtTime());
+      refund.setOrderAmount(billRecord.getReceivableAmount());
+      refund.setPrivilegeAmount(billRecord.getPrivilegeAmount());
+      refund.setActualAmount(billRecord.getActualReceivableAmount());
+      refund.setReceivedAmount(billRecord.getReceivedAmount());
+    }
   }
 
   /**
@@ -176,12 +199,24 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
             refundDetail.setRefundId(refundId);
             refundDetail.setBillDetailId(detail.getOrderDetailId());
             refundDetail.setRefundAmount(detail.getRefundAmount());
+            putBillDetailInfo(refundDetail);
             refundDetailMapper.deleteByPrimaryKey(refundDetailId);
             refundDetailMapper.insertSelective(refundDetail);
           });
     }
 
     saveBaseRefundPayDetail(refundId);
+  }
+
+  private void putBillDetailInfo(BaseRefundDetail refundDetail) {
+    Integer billDetailId = refundDetail.getBillDetailId();
+    OrderDetail detail = orderDetailMapper.selectByPrimaryKey(billDetailId);
+    if (!ObjectUtils.isEmpty(detail)) {
+      refundDetail.setExecutorId(detail.getExecutorId());
+      refundDetail.setItemId(detail.getBillingItemId());
+      refundDetail.setItemType(detail.getType());
+      refundDetail.setItemName(detail.getBillingItemName());
+    }
   }
 
   private void saveBaseRefundPayDetail(Integer refundId) {
@@ -225,6 +260,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
           baseRefundDetail.setBillDetailId(refundDetail.getOrderDetailId());
           baseRefundDetail.setRefundId(refundId);
           baseRefundDetail.setRefundAmount(refundDetail.getRefundAmount());
+          putBillDetailInfo(baseRefundDetail);
           refundDetailMapper.updateByPrimaryKeySelective(baseRefundDetail);
         } else {
           baseRefundDetail = new BaseRefundDetail();
@@ -232,6 +268,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
           baseRefundDetail.setBillDetailId(refundDetail.getOrderDetailId());
           baseRefundDetail.setRefundId(refundId);
           baseRefundDetail.setRefundAmount(refundDetail.getRefundAmount());
+          putBillDetailInfo(baseRefundDetail);
           refundDetailMapper.deleteByPrimaryKey(refundOrderDetailId);
           refundDetailMapper.insertSelective(baseRefundDetail);
         }

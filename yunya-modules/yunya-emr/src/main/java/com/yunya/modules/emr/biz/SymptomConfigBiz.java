@@ -79,6 +79,7 @@ public class SymptomConfigBiz extends BaseBiz<SymptomConfigMapper, SymptomConfig
         checkNameRepeated(form.getId(), form.getSymptomName());
         SymptomConfig entity = checkEntityExists(form.getId());
         entity.setSymptomName(form.getSymptomName());
+        entity.setRemark(form.getRemark());
         entity.setCrtId(userId);
         entity.setCrtTime(now);
         entity.setUptId(userId);
