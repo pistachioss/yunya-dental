@@ -103,6 +103,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                             entity.setItemId(vo.getItemId());
                             entity.setReceivedWorkload(vo.getReceivedWorkload());
                             entity.setFreePaymentWorkload(vo.getFreePaymentWorkload());
+                            entity.setCouponWorkload(vo.getCouponWorkload());
                             entity.setCrtId(payeeUserId);
                             entity.setCrtTime(date);
                             mapper.insertSelective(entity);
@@ -120,7 +121,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
      * @param keys
      * @return
      */
-    public List<BillExecutorItemVO> statisticsExecutorItem(List<BillExecutorItemVO> details, Set<String> keys, Function<BillExecutorItemVO, String> func) {
+    public List<BillExecutorItemVO>  statisticsExecutorItem(List<BillExecutorItemVO> details, Set<String> keys, Function<BillExecutorItemVO, String> func) {
         if (StringHelper.isNotEmpty(details)) {
             Map<String, BillExecutorItemVO> map = new HashMap<>(16);
             details.stream().filter(vo->{
@@ -165,7 +166,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
         // 每个账单的执行实收总额，免单实收总额
         Map<String, BigDecimal[]> total = new HashMap<>(16);
         if (StringHelper.isNotEmpty(details)) {
-            details = details.stream().filter(vo->vo.getReceivableWorkload().compareTo(BigDecimal.ZERO)>0).collect(Collectors.toList());
+            details = details.stream().collect(Collectors.toList());
             details.forEach(
                     detail -> {
                         String key = func.apply(detail);
@@ -235,6 +236,7 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                 entity.setItemId(vo.getItemId());
                 entity.setReceivedWorkload(vo.getReceivedWorkload());
                 entity.setFreePaymentWorkload(vo.getFreePaymentWorkload());
+                entity.setCouponWorkload(vo.getCouponWorkload());
                 entity.setCrtId(vo.getExecutorId());
                 entity.setCrtTime(now);
                 datas.add(entity);
