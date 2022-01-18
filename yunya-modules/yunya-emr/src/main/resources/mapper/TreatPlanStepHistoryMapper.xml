@@ -9,7 +9,6 @@
     <result column="step_id" property="stepId" jdbcType="INTEGER" />
     <result column="plan_id" property="planId" jdbcType="INTEGER" />
     <result column="step_name" property="stepName" jdbcType="VARCHAR" />
-    <result column="status" property="status" jdbcType="TINYINT" />
     <result column="operation" property="operation" jdbcType="TINYINT" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
@@ -29,22 +28,4 @@
         )
     </foreach>
     </insert>
-
-    <select id="selectTreatPlanStepPreByPlanId" resultType="com.yunya.feign.emr.domain.vo.TreatPlanStepVO">
-        SELECT
-            tpsh.step_id AS treatPlanStepId,
-            tpsh.plan_id AS planId,
-            tpsh.step_name AS stepName,
-            tpsh.status
-        FROM treat_plan_step_history tpsh
-        INNER JOIN (
-            SELECT
-                step_id,
-                MAX(crt_time) AS crt_time
-            FROM treat_plan_step_history
-            WHERE status &lt; #{status}
-            AND plan_id = #{planId}
-            GROUP BY step_id
-        ) tpsh2 ON tpsh2.step_id = tpsh.step_id AND tpsh2.crt_time = tpsh.crt_time
-    </select>
 </mapper>
