@@ -2,8 +2,10 @@ package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.patient_central.domain.vo.web.ReceivedWorkloadDetailsVo;
 import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseBillDetail;
+import com.yunya.models.report.StatEmpBill;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -517,4 +519,6 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
   List<PersonalBillItemVO> selectExecutorBillItem(@Param("query") ClinicEmployeeWorkloadQuery query,
                                                   @Param("groupByOrgId") boolean groupByOrgId);
+
+  List<StatEmpBill> selectBillingOralItemList(@Param("query") MultiClinicDateRangeQueryForm query);
 }

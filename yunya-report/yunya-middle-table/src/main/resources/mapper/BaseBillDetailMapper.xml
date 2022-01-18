@@ -146,6 +146,7 @@
             bbd.quantity AS quantity,
             IFNULL(bbp.received_amount,0) AS totalReceivedWorkload,
             bbd.received_amount AS receivedWorkload,
+            bbd.coupon_workload AS couponWorkload,
             bb.actual_amount AS actualWorkload
         FROM base_bill_detail bbd
         LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
@@ -153,7 +154,6 @@
             SELECT SUM(received_amount) AS received_amount, bill_id, DATE_FORMAT(payee_date, '%Y-%m-%d') AS payee_date FROM
             base_bill_pay
             <where>
-                AND received_amount > 0
                 <if test="startDate!=null and startDate!='' and endDate!=null and endDate!=''">
                     AND DATE_FORMAT(payee_date, '%Y-%m-%d') between #{startDate} and #{endDate}
                 </if>
