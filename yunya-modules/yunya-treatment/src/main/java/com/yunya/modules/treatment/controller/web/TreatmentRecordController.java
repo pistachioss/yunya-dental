@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.emr.domain.model.PatientInformedConsentVO;
 import com.yunya.feign.treatment.domain.model.TreatmentModel;
 import com.yunya.feign.treatment.domain.query.BillBatchPrintInfoQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
@@ -221,5 +222,13 @@ public class TreatmentRecordController {
   @CurrentUser
   public ResponseResult<CountTreatmentRecordVO> treatmentStatusCount(@NotNull @RequestParam Integer orgId) {
     return treatmentRecordBiz.treatmentStatusCount(orgId);
+  }
+
+
+  @ApiOperation("根据就诊id查询治疗计划患者知情同意书信息")
+  @GetMapping("/patientInformedConsent/{treatmentId}")
+  public ResponseResult<PatientInformedConsentVO> findPatientInformedConsentHeaderVO(@PathVariable(value = "treatmentId") Integer treatmentId) {
+    PatientInformedConsentVO result = treatmentRecordBiz.findPatientInformedConsentVO(treatmentId);
+    return ResponseUtil.success(result);
   }
 }

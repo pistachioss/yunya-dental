@@ -58,7 +58,6 @@ public class CheckConfigController {
 
     @ApiOperation("分页查询")
     @PostMapping("/list")
-    @CurrentUser
     public ResponseResult<PageInfo<CheckConfigVO>> findList(@Valid @RequestBody PageQuery query) {
         PageInfo<CheckConfigVO> page = checkConfigBiz.findCheckConfigList(query);
         return ResponseUtil.success(page);

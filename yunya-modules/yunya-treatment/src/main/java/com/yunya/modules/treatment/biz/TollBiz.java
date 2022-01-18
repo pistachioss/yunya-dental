@@ -72,9 +72,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillPay;
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
 import static com.yunya.framework.common.constant.BusinessConstants.COMPANY_ORGID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
@@ -473,6 +471,8 @@ public class TollBiz {
     if (billPayInsertResult > 0) {
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
       weChatServiceFeign.pushTemplate(chargePushMsg(billPayRecord));
+      // 变更治疗计划详情的状态
+      rabbitMqServiceFeign.sendMessage(treatmentRecordId, 0, TreatPlanDetail);
     }
     updateTreatmentRecordStatus(treatmentRecordId, userId, name);
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
@@ -1580,6 +1580,8 @@ public class TollBiz {
       rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
       log.info("发送中间表账单收费记录同步消息{}", "收费记录ID：-------》》》" + billPayRecordId);
       weChatServiceFeign.pushTemplate(chargePushMsg(billPayRecord));
+      // 更新治疗计划项目核销数量
+      rabbitMqServiceFeign.sendMessage(treatmentId, 0, TreatPlanDetail);
     }
     TollConfirmVO tollConfirmVO = new TollConfirmVO();
     tollConfirmVO.setBillNumber(billNUmber);

@@ -57,6 +57,10 @@ public class TreatPlanDetailVO implements Serializable {
     @ApiModelProperty(value = "数量")
     private Integer quantity;
 
+    /** 可用数量*/
+    @ApiModelProperty("可用数量")
+    private Integer enableQuantity;
+
     /** 执行状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止*/
     @ApiModelProperty(value = "执行状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止")
     private Byte status;
@@ -68,4 +72,12 @@ public class TreatPlanDetailVO implements Serializable {
     /** 备注*/
     @ApiModelProperty("备注")
     private String remark;
+
+    /** 核销订单明细id*/
+    @ApiModelProperty("")
+    private Integer orderDetailId;
+
+    /** 核销数量*/
+    @ApiModelProperty("核销数量")
+    private Integer writeOffQuantity;
 }

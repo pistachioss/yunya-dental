@@ -24,14 +24,14 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController
-    @RequestMapping("treatPlanRecord")
-public class TreatPlanController {
+    @RequestMapping("treatPlanDetail")
+public class TreatPlanDetailController {
     /** 注入业务成 */
     @Autowired
     TreatPlanRecordBiz treatPlanRecordBiz;
 
     /**
-     * 提醒随访操作
+     * 变更治疗计划明细核销记录操作
      * @param model 提醒随访model
      * @return
      */
