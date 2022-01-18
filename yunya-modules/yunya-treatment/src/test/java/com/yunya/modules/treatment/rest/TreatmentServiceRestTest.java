@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.rest;
 
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.modules.treatment.controller.rpc.TreatmentServiceRest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +12,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import static com.yunya.feign.report.enums.MsgCategoryEnum.TreatPlanDetail;
 
 /**
  * 简介：
@@ -25,6 +28,8 @@ import java.util.Date;
 public class TreatmentServiceRestTest {
     @Autowired
     private TreatmentServiceRest treatmentServiceRest;
+    @Autowired
+    private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
     @Test
     public void test1() {
@@ -41,5 +46,10 @@ public class TreatmentServiceRestTest {
         query.setStartDate(date);
         query.setEndDate(new Date());
         System.out.println(treatmentServiceRest.sumBillPayAmount(query));
+    }
+
+    @Test
+    public void test() {
+        rabbitMqServiceFeign.sendMessage(441813, 0, TreatPlanDetail);
     }
 }
