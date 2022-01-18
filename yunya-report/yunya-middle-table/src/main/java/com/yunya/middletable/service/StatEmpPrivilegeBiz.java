@@ -8,9 +8,10 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseBillDetailMapper;
-import com.yunya.middletable.dao.report.StatEmpBillMapper;
+import com.yunya.middletable.dao.report.StatEmpPrivilegeMapper;
 import com.yunya.models.report.BaseBill;
 import com.yunya.models.report.StatEmpBill;
+import com.yunya.models.report.StatEmpPrivilege;
 import com.yunya.models.treatment.OrderDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,7 @@ import static com.yunya.framework.common.constant.RedisConstants.LOCK_STATISTICS
  */
 @Slf4j
 @Service
-public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
+public class StatEmpPrivilegeBiz extends BaseBiz<StatEmpPrivilegeMapper, StatEmpPrivilege> {
     @Autowired private RedisLockBiz redisLockBiz;
     @Autowired private StatEmpPayBiz statEmpPayBiz;
     /** 账单明细*/
@@ -46,15 +47,15 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
     private ExecutorService importExcelThreadPool;
 
     /**
-     * 账单生成时统计执行人的账单数据
+     * 账单使用优惠时统计执行人的账单数据
      *
      * @param orderDetails
      * @param bill
      */
-    public void statisticsEmployeeByBillDate(List<OrderDetail> orderDetails, BaseBill bill) {
+    public void statisticsEmployeeByPrivilegeDate(List<OrderDetail> orderDetails, BaseBill bill) {
         Integer orgId = bill.getOrgId();
         Date date = new Date(System.currentTimeMillis());
-        Integer billDate = DateUtil.date2Number(bill.getBillDate());
+        Integer privilegeDate = DateUtil.date2Number(bill.getPrivilegeDate());
         if (StringHelper.isNotEmpty(orderDetails)) {
             Set<Integer> executorIds = new HashSet<>();
             Set<String> keys = new HashSet<>();
@@ -63,7 +64,7 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
                 StatEmpBill entity = new StatEmpBill();
                 entity.setOrgId(orgId);
                 entity.setDentistId(executorId);
-                entity.setBillDate(billDate);
+                entity.setBillDate(privilegeDate);
                 entity.setItemType(vo.getType());
                 entity.setItemId(vo.getBillingItemId());
                 mapper.deleteByPrimaryKey(entity);
@@ -74,24 +75,22 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
             });
             if (StringHelper.isNotEmpty(executorIds)) {
                 List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId,
-                        billDate, null, null, executorIds);
+                        null, null, privilegeDate, executorIds);
                 details = statEmpPayBiz.statisticsExecutorItem(details, keys, (vo)-> vo.getExecutorId() + "," + vo.getItemType() + "," + vo.getItemId());
                 if (StringHelper.isNotEmpty(details)) {
                     Integer crtId = bill.getBillerId();
                     details.forEach(vo -> {
                         Integer executorId = vo.getExecutorId();
-                        String lockKey = Joiner.on(":").join(LOCK_STATISTICS_EMP_BILL, orgId, billDate);
+                        String lockKey = Joiner.on(":").join(LOCK_STATISTICS_EMP_BILL, orgId, privilegeDate);
                         String lockVal = String.valueOf(executorId);
                         redisLockBiz.lockedApply(lockKey, lockVal, (t) -> {
-                            StatEmpBill entity = new StatEmpBill();
+                            StatEmpPrivilege entity = new StatEmpPrivilege();
                             entity.setOrgId(orgId);
                             entity.setDentistId(executorId);
-                            entity.setBillDate(billDate);
+                            entity.setPrivilegeDate(privilegeDate);
                             entity.setItemType(vo.getItemType());
                             entity.setItemId(vo.getItemId());
-                            entity.setQuantity(vo.getQuantity());
-                            entity.setReceivableWorkload(vo.getReceivableWorkload());
-                            entity.setReceivedWorkload(vo.getReceivedWorkload());
+                            entity.setCouponWorkload(vo.getCouponWorkload());
                             entity.setCrtId(crtId);
                             entity.setCrtTime(date);
                             mapper.insertSelective(entity);
@@ -104,35 +103,33 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
     }
 
     /**
-     * 根据条件拉取账单时统计并更新中间表
+     * 根据条件拉取账单使用优惠时统计并更新中间表
      *
      * @param form
      * @throws InterruptedException
      */
-    public void pullBillDateStatistics(PullForm form) throws InterruptedException {
+    public void pullPrivilegeDateStatistics(PullForm form) throws InterruptedException {
         Date now = new Date(System.currentTimeMillis());
         String startDate = form.getStartDate();
         String endDate = form.getEndDate();
         deleteData(startDate, endDate);
-        List<BillExecutorItemVO> details = baseBillDetailMapper.groupBillItemDetailListByDate(startDate, endDate, 0);
+        List<BillExecutorItemVO> details = baseBillDetailMapper.groupBillItemDetailListByDate(startDate, endDate, 1);
         if (StringHelper.isNotEmpty(details)) {
-            List<StatEmpBill> datas = new ArrayList<>();
+            List<StatEmpPrivilege> datas = new ArrayList<>();
             details.forEach(vo -> {
-                StatEmpBill entity = new StatEmpBill();
+                StatEmpPrivilege entity = new StatEmpPrivilege();
                 entity.setOrgId(vo.getOrgId());
                 entity.setDentistId(vo.getExecutorId());
-                entity.setReceivableWorkload(vo.getReceivableWorkload());
-                entity.setReceivedWorkload(vo.getReceivedWorkload());
+                entity.setCouponWorkload(vo.getCouponWorkload());
                 entity.setItemType(vo.getItemType());
                 entity.setItemId(vo.getItemId());
-                entity.setQuantity(vo.getQuantity());
-                entity.setBillDate(vo.getBillDate());
+                entity.setPrivilegeDate(vo.getBillDate());
                 entity.setCrtId(vo.getExecutorId());
                 entity.setCrtTime(now);
                 datas.add(entity);
             });
             List<Future> resultFutures = new ArrayList<>();
-            List<List<StatEmpBill>> partition = Lists.partition(datas, 1000);
+            List<List<StatEmpPrivilege>> partition = Lists.partition(datas, 1000);
             CountDownLatch latch = new CountDownLatch(partition.size());
             partition.forEach(vo -> resultFutures.add(
                     importExcelThreadPool.submit(() -> {
@@ -155,11 +152,11 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
      * @param endDate
      */
     private void deleteData(String startDate, String endDate) {
-        Example example = new Example(StatEmpBill.class);
+        Example example = new Example(StatEmpPrivilege.class);
         Example.Criteria c = example.createCriteria();
         Integer sDateInt = Integer.parseInt(StringHelper.remove(startDate,"-"));
         Integer eDateInt = Integer.parseInt(StringHelper.remove(endDate,"-"));
-        c.andBetween("billDate", sDateInt, eDateInt);
+        c.andBetween("privilegeDate", sDateInt, eDateInt);
         mapper.deleteByExample(example);
     }
 
@@ -168,7 +165,7 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
      *
      * @param datas
      */
-    public void insertBatch(List<StatEmpBill> datas) {
+    public void insertBatch(List<StatEmpPrivilege> datas) {
         mapper.insertBatch(datas);
     }
 }

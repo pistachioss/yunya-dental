@@ -59,12 +59,19 @@ public class BaseTreatmentProcessControllerTest {
         System.out.println(result);
     }
 
-
     @Test
     public void testPullBillDateStatistics() throws InterruptedException {
         String param = "{\"startDate\":\"2000-01-01\",\"endDate\":\"2022-12-31\"}";
         PullForm form = JSONObject.parseObject(param, PullForm.class);
         ResponseResult result = baseBillController.pullBillDateStatistics(form);
+        System.out.println(result);
+    }
+
+    @Test
+    public void testPullPrivilegeDateStatistics() throws InterruptedException {
+        String param = "{\"startDate\":\"2000-01-01\",\"endDate\":\"2022-12-31\"}";
+        PullForm form = JSONObject.parseObject(param, PullForm.class);
+        ResponseResult result = baseBillController.pullPrivilegeDateStatistics(form);
         System.out.println(result);
     }
 

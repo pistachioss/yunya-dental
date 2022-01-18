@@ -78,8 +78,8 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                 keys.add(executorId + "," + vo.getType() + "," + vo.getBillingItemId());
             });
             if (StringHelper.isNotEmpty(executorIds)) {
-                List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId,
-                        null, payDate, executorIds);
+                List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId, null,
+                        payDate, null, executorIds);
                 StatisticsEmployeeQueryForm query = new StatisticsEmployeeQueryForm();
                 query.setSDateInt(payDate);
                 query.setEDateInt(payDate);

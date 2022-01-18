@@ -60,7 +60,6 @@
       sep.item_type AS itemType,
       sep.item_id AS itemId,
       sep.received_workload AS receivedWorkload,
-      sep.coupon_workload AS couponWorkload,
       sep.free_payment_workload AS freePaymentWorkload
     FROM stat_emp_pay sep
     <where>
