@@ -81,7 +81,7 @@ public class MedicalCommonRecordController {
    */
   @PostMapping("/findList")
   @ApiOperation("查询数据")
-  public ResponseResult findList(@RequestBody @Valid MedicalCommonRecordQueryForm model) {
+  public ResponseResult<List<MedicalCommonRecordModel>> findList(@RequestBody @Valid MedicalCommonRecordQueryForm model) {
     MedicalCommonRecord medicalCommonRecord = new MedicalCommonRecord();
     BeanUtils.copyProperties(model, medicalCommonRecord);
     List<MedicalCommonRecord> list = medicalCommonRecordBiz.findList(medicalCommonRecord);

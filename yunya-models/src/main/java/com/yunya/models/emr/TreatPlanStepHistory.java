@@ -29,11 +29,6 @@ public class TreatPlanStepHistory {
     private String stepName;
 
     /**
-     * 状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止
-     */
-    private Byte status;
-
-    /**
      * 写操作类型：0-新增，1-修改，2-删除
      */
     private Byte operation;
@@ -116,24 +111,6 @@ public class TreatPlanStepHistory {
      */
     public void setStepName(String stepName) {
         this.stepName = stepName;
-    }
-
-    /**
-     * 获取状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止
-     *
-     * @return status - 状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止
-     */
-    public Byte getStatus() {
-        return status;
-    }
-
-    /**
-     * 设置状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止
-     *
-     * @param status 状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止
-     */
-    public void setStatus(Byte status) {
-        this.status = status;
     }
 
     /**

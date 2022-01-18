@@ -16,7 +16,6 @@
     <result column="unit" property="unit" jdbcType="VARCHAR" />
     <result column="price" property="price" jdbcType="DECIMAL" />
     <result column="quantity" property="quantity" jdbcType="INTEGER" />
-    <result column="status" property="status" jdbcType="TINYINT" />
     <result column="remark" property="remark" jdbcType="VARCHAR" />
     <result column="operation" property="operation" jdbcType="TINYINT" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />

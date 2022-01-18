@@ -15,11 +15,31 @@
     <result column="unit" property="unit" jdbcType="VARCHAR" />
     <result column="price" property="price" jdbcType="DECIMAL" />
     <result column="quantity" property="quantity" jdbcType="INTEGER" />
-    <result column="status" property="status" jdbcType="TINYINT" />
     <result column="remark" property="remark" jdbcType="VARCHAR" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <select id="selectTreatPlanDetailAndWriteoffList"
+          resultType="com.yunya.feign.emr.domain.vo.TreatPlanDetailVO">
+        SELECT
+            tpd.id AS detailId,
+            tpd.treat_plan_id AS planId,
+            tpd.treat_step_id AS stepId,
+            tpd.type,
+            tpd.billing_item_id AS billingItemId,
+            tpd.quantity,
+            tpdw.status,
+            tpdw.id AS orderDetailId,
+            tpdw.write_off_quantity AS writeOffQuantity
+        FROM treat_plan_detail tpd
+        INNER JOIN treat_plan_detail_writeoff tpdw ON tpd.id = tpdw.plan_detail_id
+        WHERE tpdw.order_detail_id IN
+        <foreach collection="orderDetailIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+        ORDER BY tpd.id ASC,  ASC
+  </select>
 </mapper>

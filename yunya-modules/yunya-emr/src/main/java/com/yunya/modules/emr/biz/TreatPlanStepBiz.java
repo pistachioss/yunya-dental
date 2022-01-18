@@ -4,7 +4,7 @@ import com.yunya.feign.emr.domain.model.TreatPlanStepModel;
 import com.yunya.feign.emr.domain.vo.TreatPlanDetailVO;
 import com.yunya.feign.emr.domain.vo.TreatPlanStepVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.TreatPlanStatusEnum;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.emr.TreatPlanStep;
 import com.yunya.models.emr.TreatPlanStepHistory;
@@ -17,6 +17,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 简介：治疗计划步骤业务层
@@ -45,11 +46,11 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
      * 保持治疗计划步骤
      *
      * @param planId
+     * @param userId
      * @param treatPlanSteps
      */
-    public void save(Integer planId, List<TreatPlanStepModel> treatPlanSteps) {
+    public void save(Integer planId, Integer userId, List<TreatPlanStepModel> treatPlanSteps) {
         List<TreatPlanStepHistory> histories = new ArrayList<>();
-        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         Date now = new Date(System.currentTimeMillis());
         TreatPlanStep query = new TreatPlanStep();
         query.setPlanId(planId);
@@ -76,13 +77,13 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
             treatPlanSteps.forEach(vo->{
                 TreatPlanStep entity = model2Entity(vo, planId, userId, now);
                 mapper.insertSelective(entity);
-                treatPlanDetailBiz.save(planId, entity.getId(), vo.getTreatPlanDetails());
+                treatPlanDetailBiz.save(planId, entity.getId(), userId, vo.getTreatPlanDetails());
                 histories.add(entity2History(entity,(byte) (ObjectUtils.isEmpty(vo.getTreatPlanStepId())?0:1)));
             });
         }
         if (StringHelper.isNotEmpty(deleted)) { // 删除
             deleted.forEach(vo->{
-                treatPlanDetailBiz.save(planId, vo.getId(), null);
+                treatPlanDetailBiz.save(planId, vo.getId(), userId, null);
                 histories.add(entity2History(vo, (byte) 2));
             });
         }
@@ -155,24 +156,6 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
         return steps;
     }
 
-
-    /**
-     * 根据治疗计划id查询步骤列表
-     *
-     * @param planId
-     * @return
-     */
-    public List<TreatPlanStepVO> findTreatPlanStepPreByPlanId(Integer planId, Byte status) {
-        List<TreatPlanStepVO> steps = treatPlanStepHistoryMapper.selectTreatPlanStepPreByPlanId(planId, status);
-        if (StringHelper.isNotEmpty(steps)) {
-            List<TreatPlanDetailVO> details = treatPlanDetailBiz.findTreatPlanDetailPreByPlanId(planId, status);
-            if (StringHelper.isNotEmpty(details)) {
-                putDetail2Step(steps, details);
-            }
-        }
-        return steps;
-    }
-
     private void putDetail2Step(List<TreatPlanStepVO> steps, List<TreatPlanDetailVO> details) {
         Map<Integer, List<TreatPlanDetailVO>> detailMap = new HashMap<>(16);
         for (TreatPlanDetailVO detail : details) {
@@ -189,13 +172,18 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
             List<TreatPlanDetailVO> detailList = detailMap.get(stepId);
             int quantity = 0;
             BigDecimal amount = new BigDecimal("0.00");
+            Byte status = TreatPlanStatusEnum.CONFIRMED.getCode();
             if (StringHelper.isNotEmpty(detailList)) {
+                // 按状态排序
+                detailList = detailList.stream().sorted(Comparator.comparing(TreatPlanDetailVO::getStatus).reversed()).collect(Collectors.toList());
                 for (TreatPlanDetailVO detail : detailList) {
                     Integer num = detail.getQuantity();
                     quantity += num;
                     amount = amount.add(new BigDecimal(num).multiply(detail.getPrice()));
+                    status = detail.getStatus();
                 }
             }
+            step.setStatus(status);
             step.setQuanity(quantity);
             step.setAmount(amount);
             step.setTreatPlanDetails(detailList);
