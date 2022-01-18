@@ -15,7 +15,6 @@
     <result column="unit" property="unit" jdbcType="VARCHAR" />
     <result column="price" property="price" jdbcType="DECIMAL" />
     <result column="quantity" property="quantity" jdbcType="INTEGER" />
-    <result column="status" property="status" jdbcType="TINYINT" />
     <result column="remark" property="remark" jdbcType="VARCHAR" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
@@ -26,19 +25,34 @@
   <!--根据治疗计划id查询明细列表-->
   <select id="selectTreatPlanDetailByPlanId" resultType="com.yunya.feign.emr.domain.vo.TreatPlanDetailVO">
     SELECT
-        id AS detailId,
-        treat_plan_id AS planId,
-        treat_step_id AS stepId,
-        type,
-        tooth_bit AS toothBit,
-        billing_item_id AS billingItemId,
-        billing_item_name AS billingItemName,
-        unit,
-        price,
-        quantity,
-        status,
-        remark
-    FROM treat_plan_detail
+        tpd.id AS detailId,
+        tpd.treat_plan_id AS planId,
+        tpd.treat_step_id AS stepId,
+        tpd.type,
+        tpd.tooth_bit AS toothBit,
+        tpd.billing_item_id AS billingItemId,
+        tpd.billing_item_name AS billingItemName,
+        tpd.unit,
+        tpd.price,
+        tpd.quantity,
+        tpd.quantity-tpdw.writeoffQuantity AS enableQuantity,
+        tdpw.writeoffQuantity,
+        CASE
+        WHEN tdpw.writeoffQuantity &lt;= 0 and tpdw.status = 0 THEN 1
+        WHEN tpdw.writeoffQuantity &lt; tpd.quantity and tpdw.status = 1 THEN 2
+        WHEN tpdw.writeoffQuantity = tpd.quantity and tpdw.status = 1 THEN 3
+        WHEN tpdw.writeoffQuantity &gt;= 0 and tpdw.status = 2 THEN 4
+        AS status,
+        tpd.remark
+    FROM treat_plan_detail tpd
+    LEFT JOIN (
+        SELECT
+            IFNULL(SUM(write_off_quantity),0) writeoffQuantity,
+            IFNULL(status,0) AS status,
+            plan_detail_id
+        FROM treat_plan_detail_writeoff
+        GROUP BY plan_detail_id
+    ) tpdw ON tpd.id = tpdw.plan_detail_id
     WHERE treat_plan_id = #{planId}
   </select>
 </mapper>

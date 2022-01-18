@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.emr.mapper.TreatPlanDetailHistoryMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.emr.TreatPlanDetailHistory" >
+<mapper namespace="com.yunya.middletable.dao.emr.TreatPlanDetailMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.emr.TreatPlanDetail" >
     <!--
       WARNING - @mbg.generated
     -->
     <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="step_detail_id" property="stepDetailId" jdbcType="INTEGER" />
     <result column="treat_plan_id" property="treatPlanId" jdbcType="INTEGER" />
     <result column="treat_step_id" property="treatStepId" jdbcType="INTEGER" />
     <result column="type" property="type" jdbcType="TINYINT" />
@@ -17,26 +16,30 @@
     <result column="price" property="price" jdbcType="DECIMAL" />
     <result column="quantity" property="quantity" jdbcType="INTEGER" />
     <result column="remark" property="remark" jdbcType="VARCHAR" />
-    <result column="operation" property="operation" jdbcType="TINYINT" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
-  <!--批量添加-->
-  <insert id="insertBatch">
-    INSERT INTO treat_plan_detail_history
-    (
-        step_detail_id, treat_plan_id, treat_step_id, type, tooth_bit,
-        billing_item_id, billing_item_name, price, quantity, unit,
-        remark, operation, crt_id, crt_time
-    )
-    VALUES
-    <foreach collection="list" item="item" separator=",">
-      (
-        #{item.stepDetailId}, #{item.treatPlanId}, #{item.treatStepId}, #{item.type},
-        #{item.toothBit}, #{item.billingItemId}, #{item.billingItemName}, #{item.price},
-        #{item.quantity}, #{item.unit}, #{item.remark}, #{item.operation}, #{item.crtId}, #{item.crtTime}
-      )
-    </foreach>
-  </insert>
+  <select id="selectTreatPlanDetailAndWriteoffList"
+          resultType="com.yunya.feign.emr.domain.vo.TreatPlanDetailVO">
+        SELECT
+            tpd.id AS detailId,
+            tpd.treat_plan_id AS planId,
+            tpd.treat_step_id AS stepId,
+            tpd.type,
+            tpd.billing_item_id AS billingItemId,
+            tpd.quantity,
+            tpdw.status,
+            tpdw.id AS orderDetailId,
+            tpdw.write_off_quantity AS writeOffQuantity
+        FROM treat_plan_detail tpd
+        INNER JOIN treat_plan_detail_writeoff tpdw ON tpd.id = tpdw.plan_detail_id
+        WHERE tpdw.order_detail_id IN
+        <foreach collection="orderDetailIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+        ORDER BY tpd.id ASC,  ASC
+  </select>
 </mapper>

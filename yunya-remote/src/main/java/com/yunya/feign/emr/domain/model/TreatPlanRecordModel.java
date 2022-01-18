@@ -68,4 +68,7 @@ public class TreatPlanRecordModel implements Serializable {
     /** 步骤列表*/
     @ApiModelProperty(value = "步骤列表")
     private List<TreatPlanStepModel> treatPlanSteps;
+
+    /** 创建人id*/
+    private Integer crtId;
 }

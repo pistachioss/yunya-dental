@@ -71,11 +71,6 @@ public class TreatPlanDetailHistory {
     private Integer quantity;
 
     /**
-     * 执行状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止
-     */
-    private Byte status;
-
-    /**
      * 备注
      */
     private String remark;
@@ -283,24 +278,6 @@ public class TreatPlanDetailHistory {
      */
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
-    }
-
-    /**
-     * 获取执行状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止
-     *
-     * @return status - 执行状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止
-     */
-    public Byte getStatus() {
-        return status;
-    }
-
-    /**
-     * 设置执行状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止
-     *
-     * @param status 执行状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止
-     */
-    public void setStatus(Byte status) {
-        this.status = status;
     }
 
     /**
