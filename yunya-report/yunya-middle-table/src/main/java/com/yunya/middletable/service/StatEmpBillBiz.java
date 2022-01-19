@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -113,6 +114,7 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
         Date now = new Date(System.currentTimeMillis());
         String startDate = form.getStartDate();
         String endDate = form.getEndDate();
+        deleteData(startDate, endDate);
         List<BillExecutorItemVO> details = baseBillDetailMapper.groupBillItemDetailListByBillDate(startDate, endDate);
         if (StringHelper.isNotEmpty(details)) {
             List<StatEmpBill> datas = new ArrayList<>();
@@ -146,6 +148,21 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
             latch.await();
             BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
         }
+    }
+
+    /**
+     * 清掉旧数据
+     *
+     * @param startDate
+     * @param endDate
+     */
+    private void deleteData(String startDate, String endDate) {
+        Example example = new Example(StatEmpBill.class);
+        Example.Criteria c = example.createCriteria();
+        Integer sDateInt = Integer.parseInt(StringHelper.remove(startDate,"-"));
+        Integer eDateInt = Integer.parseInt(StringHelper.remove(endDate,"-"));
+        c.andBetween("billDate", sDateInt, eDateInt);
+        mapper.deleteByExample(example);
     }
 
     /**

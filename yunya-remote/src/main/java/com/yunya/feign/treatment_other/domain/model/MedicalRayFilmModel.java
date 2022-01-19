@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment_other.domain.model;
 
+import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -30,8 +31,8 @@ public class MedicalRayFilmModel implements Serializable {
     @NotNull(message = "文件类型不能为空")
     private Byte sourceType;
 
-    @ApiModelProperty("照片影像id列表")
-    private List<Integer> rayIds;
+    @ApiModelProperty("照片影像列表")
+    private List<XUploadFileVO> rayFiles;
 
     @ApiModelProperty("电子病历提交人id")
     @NotNull(message = "电子病历提交人id不能为空")

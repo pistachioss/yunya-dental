@@ -48,17 +48,12 @@
   <!--根据条件查询治疗计划列表-->
   <select id="selectXUploadFileList" resultType="com.yunya.feign.treatment_other.domain.vo.XUploadFileVO">
     SELECT
-      xuf.id AS fieldId,
       xuf.source_id AS sourceId,
-      xuf.source_type AS sourceType,
       xuf.file_name AS fileName,
-      xuf.file_type AS fileType,
       xuf.file_location AS fileLocation,
       xuf.upload_time AS uploadTime,
       xuf.crt_id AS crtId,
-      xuf.crt_time AS crtTime,
-      xuf.upd_id AS updId,
-      xuf.upd_time AS updTime
+      xuf.crt_time AS crtTime
     FROM  x_upload_file xuf
     <where>
       AND xuf.inservice = true
