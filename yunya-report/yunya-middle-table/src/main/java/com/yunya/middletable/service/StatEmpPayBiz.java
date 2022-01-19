@@ -103,7 +103,6 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                             entity.setItemId(vo.getItemId());
                             entity.setReceivedWorkload(vo.getReceivedWorkload());
                             entity.setFreePaymentWorkload(vo.getFreePaymentWorkload());
-                            entity.setCouponWorkload(vo.getCouponWorkload());
                             entity.setCrtId(payeeUserId);
                             entity.setCrtTime(date);
                             mapper.insertSelective(entity);
@@ -236,7 +235,6 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                 entity.setItemId(vo.getItemId());
                 entity.setReceivedWorkload(vo.getReceivedWorkload());
                 entity.setFreePaymentWorkload(vo.getFreePaymentWorkload());
-                entity.setCouponWorkload(vo.getCouponWorkload());
                 entity.setCrtId(vo.getExecutorId());
                 entity.setCrtTime(now);
                 datas.add(entity);
