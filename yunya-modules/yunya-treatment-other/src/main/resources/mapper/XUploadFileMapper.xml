@@ -51,9 +51,7 @@
       xuf.source_id AS sourceId,
       xuf.file_name AS fileName,
       xuf.file_location AS fileLocation,
-      xuf.upload_time AS uploadTime,
-      xuf.crt_id AS crtId,
-      xuf.crt_time AS crtTime
+      xuf.upload_time AS uploadTime
     FROM  x_upload_file xuf
     <where>
       AND xuf.inservice = true

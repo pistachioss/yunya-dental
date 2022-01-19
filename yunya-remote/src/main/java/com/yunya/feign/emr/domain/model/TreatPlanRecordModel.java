@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -66,7 +67,9 @@ public class TreatPlanRecordModel implements Serializable {
     private Byte status = 0;
 
     /** 步骤列表*/
-    @ApiModelProperty(value = "步骤列表")
+    @ApiModelProperty(value = "步骤列表", required = true)
+    @NotNull(message = "步骤列表不能为空")
+    @Min(message = "步骤列表不能为空", value = 1)
     private List<TreatPlanStepModel> treatPlanSteps;
 
     /** 创建人id*/
