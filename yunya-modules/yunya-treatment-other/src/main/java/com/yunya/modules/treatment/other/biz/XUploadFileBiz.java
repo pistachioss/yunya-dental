@@ -5,7 +5,6 @@ import com.yunya.feign.treatment_other.domain.form.XUploadFileForm;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.model.XUploadFileModel;
 import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
-import com.yunya.feign.treatment_other.domain.vo.XRayFilmVO;
 import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -165,32 +164,14 @@ public class XUploadFileBiz extends BaseBiz<XUploadFileMapper, XUploadFile> {
                 entity.setFileType(fileType);
                 entity.setFileName(vo.getFileName());
                 entity.setUploadTime(vo.getUploadTime());
-                // 照片上传人，上传时间
-                entity.setCrtId(vo.getCrtId());
-                entity.setCrtTime(vo.getCrtTime());
-                // 病历提交人，病历提交时间
+                entity.setCrtId(crtId);
+                entity.setCrtTime(crtTime);
                 entity.setUpdId(crtId);
                 entity.setUpdTime(crtTime);
                 datas.add(entity);
             });
             mapper.addBatch(datas);
         }
-    }
-
-    private List<XRayFilmVO> files2XRayFilm(List<XUploadFileVO> files) {
-        List<XRayFilmVO> result = new ArrayList<>();
-        if (StringHelper.isNotEmpty(files)) {
-            files.forEach(file->{
-                XRayFilmVO vo = new XRayFilmVO();
-                vo.setCrtId(file.getCrtId());
-                vo.setCrtTime(file.getCrtTime());
-                vo.setUploadTime(file.getUploadTime());
-                vo.setPhotoName(file.getFileName());
-                vo.setUrl(file.getFileLocation());
-                result.add(vo);
-            });
-        }
-        return result;
     }
 
     /**

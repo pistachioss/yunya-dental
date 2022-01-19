@@ -37,13 +37,4 @@ public class XUploadFileVO implements Serializable {
     @ApiModelProperty("上传时间")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date uploadTime;
-
-    /** 创建人id*/
-    @ApiModelProperty("创建人id")
-    private Integer crtId;
-
-    /** 创建时间*/
-    @ApiModelProperty("创建时间")
-    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
-    private Date crtTime;
 }
