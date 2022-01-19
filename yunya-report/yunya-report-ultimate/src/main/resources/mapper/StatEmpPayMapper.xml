@@ -12,7 +12,6 @@
     <id column="pay_date" property="payDate" jdbcType="INTEGER" />
     <result column="received_workload" property="receivedWorkload" jdbcType="DECIMAL" />
     <result column="free_payment_workload" property="freePaymentWorkload" jdbcType="DECIMAL" />
-    <result column="coupon_workload" property="couponWorkload" jdbcType="DECIMAL" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
   </resultMap>
@@ -60,7 +59,6 @@
       sep.item_type AS itemType,
       sep.item_id AS itemId,
       sep.received_workload AS receivedWorkload,
-      sep.coupon_workload AS couponWorkload,
       sep.free_payment_workload AS freePaymentWorkload
     FROM stat_emp_pay sep
     <where>

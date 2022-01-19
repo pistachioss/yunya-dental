@@ -525,21 +525,23 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         removeInvalidData(model.getDeletedOrderDetailIds());
         List<TreatPlanDetailWriteoffInfoModel> models = model.getWriteoffInfoModels();
         List<Integer> detailIds = models.stream().map(TreatPlanDetailWriteoffInfoModel::getPlanDetailId).collect(Collectors.toList());
-        List<TreatPlanDetail> list = treatPlanDetailBiz.sumTreatPlanDetailEnableQuantity(detailIds);
-        Date now = new Date(System.currentTimeMillis());
-        List<TreatPlanDetailWriteoff> datas = new ArrayList<>();
-        models.forEach(vo->{
-            Integer planDetailId = vo.getPlanDetailId();
-            Integer writeoffQuantity = checkQuantityOver(planDetailId, vo.getQuantity(), list);
-            TreatPlanDetailWriteoff data = new TreatPlanDetailWriteoff();
-            data.setOrderDetailId(vo.getOrderDetailId());
-            data.setOrderDetailId(planDetailId);
-            data.setWriteOffQuantity(writeoffQuantity);
-            data.setCrtId(vo.getCrtId());
-            data.setCrtTime(now);
-            datas.add(data);
-        });
-        treatPlanDetailBiz.insertBatchOfWriteoffQuantity(datas);
+        if (StringHelper.isNotEmpty(detailIds)) {
+            List<TreatPlanDetail> list = treatPlanDetailBiz.sumTreatPlanDetailEnableQuantity(detailIds);
+            Date now = new Date(System.currentTimeMillis());
+            List<TreatPlanDetailWriteoff> datas = new ArrayList<>();
+            models.forEach(vo -> {
+                Integer planDetailId = vo.getPlanDetailId();
+                Integer writeoffQuantity = checkQuantityOver(planDetailId, vo.getQuantity(), list);
+                TreatPlanDetailWriteoff data = new TreatPlanDetailWriteoff();
+                data.setOrderDetailId(vo.getOrderDetailId());
+                data.setOrderDetailId(planDetailId);
+                data.setWriteOffQuantity(writeoffQuantity);
+                data.setCrtId(vo.getCrtId());
+                data.setCrtTime(now);
+                datas.add(data);
+            });
+            treatPlanDetailBiz.insertBatchOfWriteoffQuantity(datas);
+        }
     }
 
     private void removeInvalidData(List<Integer> deletedIds) {

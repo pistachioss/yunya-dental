@@ -40,6 +40,6 @@
         <foreach collection="orderDetailIds" item="item" index="index" open="(" close=")" separator=",">
           #{item}
         </foreach>
-        ORDER BY tpd.id ASC,  ASC
+        ORDER BY tpd.id ASC
   </select>
 </mapper>

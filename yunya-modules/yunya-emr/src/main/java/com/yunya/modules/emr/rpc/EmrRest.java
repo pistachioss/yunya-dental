@@ -21,7 +21,7 @@ public class EmrRest {
 
   @Autowired private TreatPlanRecordBiz treatPlanRecordBiz;
 
-  @GetMapping("/api/emr/treatPlan/recalculate/{planId}")
+  @GetMapping("/treatPlan/recalculate/{planId}")
   public void recalculatePlanStatusById(@PathVariable(value = "planId") Integer planId, @RequestParam("userId") Integer userId) {
     treatPlanRecordBiz.recalculatePlanStatusById(planId, userId);
   }

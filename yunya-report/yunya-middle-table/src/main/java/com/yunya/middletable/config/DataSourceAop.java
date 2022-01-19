@@ -187,4 +187,24 @@ public class DataSourceAop {
         //清理掉当前设置的数据源，让默认的数据源不受影响
         HintManager.clear();
     }
+
+
+    /**
+     * system库切入点
+     */
+    @Pointcut("execution(* com.yunya.middletable.dao.emr..*.*(..))")
+    public void switchDataSource4Emr() {
+    }
+
+    @Before("switchDataSource4Emr()")
+    public void doDbEmrBefore() {
+        HintManager hintManager = HintManager.getInstance();
+        hintManager.setDatabaseShardingValue("emr");
+    }
+
+    @After("switchDataSource4Emr()")
+    public void doDbEmrafter() {
+        //清理掉当前设置的数据源，让默认的数据源不受影响
+        HintManager.clear();
+    }
 }

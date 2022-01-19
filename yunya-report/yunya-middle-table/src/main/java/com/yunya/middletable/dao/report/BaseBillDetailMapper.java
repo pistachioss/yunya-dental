@@ -30,6 +30,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
           @Param("orgId") Integer orgId,
           @Param("billDate") Integer billDate,
           @Param("payeeDate") Integer payeeDate,
+          @Param("privilegeDate") Integer privilegeDate,
           @Param("executorIds") Collection<Integer> executorIds);
 
   List<BaseBillPayDetail> selectFreePaymentAmountByDate(
@@ -37,7 +38,10 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
           @Param("payeeDate") Integer payeeDate,
           @Param("executorIds") Collection<Integer> executorIds);
 
-  List<BillExecutorItemVO> groupBillItemDetailListByBillDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
+  List<BillExecutorItemVO> groupBillItemDetailListByDate(
+          @Param("startDate") String startDate,
+          @Param("endDate") String endDate,
+          @Param("dateInt") int dateInt);
 
   List<BillExecutorItemVO> groupBillItemDetailListByPayDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
 

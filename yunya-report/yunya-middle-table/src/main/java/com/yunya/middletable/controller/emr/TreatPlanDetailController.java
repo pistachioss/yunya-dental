@@ -4,7 +4,7 @@ import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.middletable.service.emr.TreatPlanRecordBiz;
+import com.yunya.middletable.service.emr.TreatPlanDetailBiz;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TreatPlanDetailController {
     /** 注入业务成 */
     @Autowired
-    TreatPlanRecordBiz treatPlanRecordBiz;
+    TreatPlanDetailBiz treatPlanDetailBiz;
 
     /**
      * 变更治疗计划明细核销记录操作
@@ -37,7 +37,7 @@ public class TreatPlanDetailController {
      */
     @PostMapping("/operate")
     public ResponseResult<T> operate(@RequestBody @Validated MessageModel model) {
-        treatPlanRecordBiz.operate(model);
+        treatPlanDetailBiz.operate(model);
         return ResponseUtil.success(null);
     }
 

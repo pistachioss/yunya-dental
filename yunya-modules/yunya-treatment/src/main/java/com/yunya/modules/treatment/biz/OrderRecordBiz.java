@@ -344,7 +344,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
         });
       });
       model.setWriteoffInfoModels(list);
-      if (ObjectUtils.isEmpty(deletedQuery)) {
+      if (!ObjectUtils.isEmpty(deletedQuery)) {
         List<OrderDetail> deletedDetails = orderDetailBiz.selectList(deletedQuery);
         List<Integer> deletedDetailIds = deletedDetails.stream().map(OrderDetail::getId).collect(Collectors.toList());
         model.setDeletedOrderDetailIds(deletedDetailIds);

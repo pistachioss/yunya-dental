@@ -100,6 +100,8 @@ public class DimensionReportBiz {
     private BaseCouponBiz baseCouponBiz;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    @Autowired
+    private StatEmpPrivilegeBiz statEmpPrivilegeBiz;
     @Resource(name = "customizeThreadPool")
     private ThreadPoolExecutor threadPool;
 
@@ -928,12 +930,15 @@ public class DimensionReportBiz {
                 oralIds.addAll(StringHelper.split2IntList(oralIdStr, ","));
             }
         });
-        // 门诊的实收、免单、补入
+        // 门诊的实收、免单
         Future<List<BillExecutorItemVO>> workloadFuture = multiFindClinicEmployeeWorkload(query, null);
+        // 门诊的补入
+        Future<List<BillExecutorItemVO>> couponFuture = multiFindClinicEmployeeCouponWorkload(query, null);
+
         // 门诊的退费
         Future<List<BillExecutorItemVO>> refundFuture = multiFindClinicEmployeeRefundWorkload(query, null);
         return mergeSpecialProjectWorkloadRatio(orgs, baseBillDetailBiz.doDateStyle(query.getStartDate(), query.getEndDate()),
-                workloadFuture.get(), refundFuture.get(), itemIds, oralIds, specialis);
+                workloadFuture.get(), couponFuture.get(), refundFuture.get(), itemIds, oralIds, specialis);
     }
 
     /**
@@ -943,7 +948,7 @@ public class DimensionReportBiz {
      * @return
      */
     private Future<List<BillExecutorItemVO>> multiFindClinicEmployeeCouponWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds) {
-        return threadPool.submit(()-> statEmpBillBiz.findStatisticsEmployeeBillWorkload(query, employeeIds));
+        return threadPool.submit(()-> statEmpPrivilegeBiz.findStatisticsEmployeeCouponWorkload(query, employeeIds));
     }
 
     /**
@@ -957,7 +962,7 @@ public class DimensionReportBiz {
     }
 
     /**
-     * 门诊员工实收、免单、补入工作量
+     * 门诊员工实收、免单工作量
      * @param query
      * @param employeeIds
      * @return
@@ -979,7 +984,7 @@ public class DimensionReportBiz {
      * @return
      */
     private DynamicHeaderPageInfo<JSONObject> mergeSpecialProjectWorkloadRatio(List<BaseOrganization> orgs, String date,
-               List<BillExecutorItemVO> pays, List<BillExecutorItemVO> refunds, Set<Integer> itemIds,
+               List<BillExecutorItemVO> pays, List<BillExecutorItemVO> coupons, List<BillExecutorItemVO> refunds, Set<Integer> itemIds,
                                        Set<Integer> oralIds, List<SpecialistProjectVO> specialis) {
         DynamicHeaderPageInfo result = new DynamicHeaderPageInfo<>(orgs);
         List<JSONObject> list = new ArrayList<>();
@@ -987,7 +992,7 @@ public class DimensionReportBiz {
         if (StringHelper.isNotEmpty(orgs)) {
             Map<String, BigDecimal> tariffWorkload = new HashMap<>(16);
             Map<String, BigDecimal> oralWorkload = new HashMap<>(16);
-            Map<Integer, BigDecimal> orgWorkloadMap = emp2OrgWorkloadMap(pays, refunds, oralIds, itemIds, tariffWorkload, oralWorkload);
+            Map<Integer, BigDecimal> orgWorkloadMap = emp2OrgWorkloadMap(pays, coupons, refunds, oralIds, itemIds, tariffWorkload, oralWorkload);
             Map<String, List<Integer>> item2Special = new HashMap<>(16);
             specialis.forEach(vo->{
                 Integer id = vo.getId();
@@ -1063,7 +1068,7 @@ public class DimensionReportBiz {
      * @param oralWorkload
      * @return
      */
-    private Map<Integer, BigDecimal> emp2OrgWorkloadMap(List<BillExecutorItemVO> pays, List<BillExecutorItemVO> refunds,
+    private Map<Integer, BigDecimal> emp2OrgWorkloadMap(List<BillExecutorItemVO> pays, List<BillExecutorItemVO> coupons, List<BillExecutorItemVO> refunds,
             Set<Integer> oralIds, Set<Integer> itemIds, Map<String, BigDecimal> tariffWorkload, Map<String, BigDecimal> oralWorkload) {
         Map<Integer, BigDecimal> orgWorkloadMap = new HashMap<>(16);
         if (StringHelper.isNotEmpty(pays)) {
@@ -1073,7 +1078,7 @@ public class DimensionReportBiz {
                 if (totalWorkload == null) {
                     totalWorkload = new BigDecimal("0.00");
                 }
-                BigDecimal workload = vo.getReceivedWorkload().add(vo.getCouponWorkload()).subtract(vo.getFreePaymentWorkload());
+                BigDecimal workload = vo.getReceivedWorkload().subtract(vo.getFreePaymentWorkload());
                 orgWorkloadMap.put(orgId, totalWorkload.add(workload));
                 Integer itemId = vo.getItemId();
                 String key = orgId + ",";
@@ -1096,6 +1101,38 @@ public class DimensionReportBiz {
                         oralWorkload.put(key, orals.add(workload));
                     }
 
+                }
+            });
+        }
+        if (StringHelper.isNotEmpty(coupons)) {
+            coupons.forEach(vo->{
+                Integer orgId = vo.getOrgId();
+                BigDecimal totalWorkload = orgWorkloadMap.get(orgId);
+                if (totalWorkload == null) {
+                    totalWorkload = new BigDecimal("0.00");
+                }
+                BigDecimal workload = vo.getCouponWorkload();
+                orgWorkloadMap.put(orgId, totalWorkload.add(workload));
+                Integer itemId = vo.getItemId();
+                String key = orgId + ",";
+                if (vo.getItemType().intValue() == 0) {
+                    if (itemIds.contains(itemId)) {
+                        key += "0,"+itemId;
+                        BigDecimal tariffs = tariffWorkload.get(key);
+                        if (tariffs == null) {
+                            tariffs = new BigDecimal("0.00");
+                        }
+                        tariffWorkload.put(key, tariffs.add(workload));
+                    }
+                } else {
+                    if (oralIds.contains(itemId)) {
+                        key += "1,"+itemId;
+                        BigDecimal orals = oralWorkload.get(key);
+                        if (orals == null) {
+                            orals = new BigDecimal("0.00");
+                        }
+                        oralWorkload.put(key, orals.add(workload));
+                    }
                 }
             });
         }
@@ -1222,8 +1259,10 @@ public class DimensionReportBiz {
     }
 
     private Map<String, BigDecimal> clinicEmployeeWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds, Function<BillExecutorItemVO, String> keyFunc) throws ExecutionException, InterruptedException {
-        // 门诊的实收、免单、补入
+        // 门诊的实收、免单
         List<BillExecutorItemVO> pays = multiFindClinicEmployeeWorkload(query, employeeIds).get();
+        // 门诊的补入
+        List<BillExecutorItemVO> coupons = multiFindClinicEmployeeCouponWorkload(query, employeeIds).get();
         // 门诊的退费
         List<BillExecutorItemVO> refunds = multiFindClinicEmployeeRefundWorkload(query, employeeIds).get();
         Map<String, BigDecimal> result = new HashMap<>();
@@ -1235,8 +1274,18 @@ public class DimensionReportBiz {
                 if (totalWorkload == null) {
                     totalWorkload = new BigDecimal("0.00");
                 }
-                BigDecimal workload = vo.getReceivedWorkload().add(vo.getCouponWorkload()).subtract(vo.getFreePaymentWorkload());
+                BigDecimal workload = vo.getReceivedWorkload().subtract(vo.getFreePaymentWorkload());
                 result.put(key, totalWorkload.add(workload));
+            });
+        }
+        if (StringHelper.isNotEmpty(coupons)) {
+            coupons.forEach(vo -> {
+                String key = keyFunc.apply(vo);
+                BigDecimal totalWorkload = result.get(key);
+                if (totalWorkload == null) {
+                    totalWorkload = new BigDecimal("0.00");
+                }
+                result.put(key, totalWorkload.add(vo.getCouponWorkload()));
             });
         }
         if (StringHelper.isNotEmpty(refunds)) {

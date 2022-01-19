@@ -6,8 +6,8 @@ import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
 
-@Table(name = "stat_emp_pay")
-public class StatEmpPay {
+@Table(name = "stat_emp_privilege")
+public class StatEmpPrivilege {
     /**
      * 门诊id
      */
@@ -23,13 +23,6 @@ public class StatEmpPay {
     private Integer dentistId;
 
     /**
-     * 项目id
-     */
-    @Id
-    @Column(name = "item_id")
-    private Integer itemId;
-
-    /**
      * 项目类型：0-价目，1-商品
      */
     @Id
@@ -37,23 +30,24 @@ public class StatEmpPay {
     private Byte itemType;
 
     /**
-     * 收费时间
+     * 项目id
      */
     @Id
-    @Column(name = "pay_date")
-    private Integer payDate;
+    @Column(name = "item_id")
+    private Integer itemId;
 
     /**
-     * 实收工作量
+     * 优惠日期
      */
-    @Column(name = "received_workload")
-    private BigDecimal receivedWorkload;
+    @Id
+    @Column(name = "privilege_date")
+    private Integer privilegeDate;
 
     /**
-     * 免单工作量
+     * 补入工作量
      */
-    @Column(name = "free_payment_workload")
-    private BigDecimal freePaymentWorkload;
+    @Column(name = "coupon_workload")
+    private BigDecimal couponWorkload;
 
     /**
      * 创建时间
@@ -62,7 +56,7 @@ public class StatEmpPay {
     private Date crtTime;
 
     /**
-     * 创建人
+     * 创建人id
      */
     @Column(name = "crt_id")
     private Integer crtId;
@@ -104,24 +98,6 @@ public class StatEmpPay {
     }
 
     /**
-     * 获取项目id
-     *
-     * @return item_id - 项目id
-     */
-    public Integer getItemId() {
-        return itemId;
-    }
-
-    /**
-     * 设置项目id
-     *
-     * @param itemId 项目id
-     */
-    public void setItemId(Integer itemId) {
-        this.itemId = itemId;
-    }
-
-    /**
      * 获取项目类型：0-价目，1-商品
      *
      * @return item_type - 项目类型：0-价目，1-商品
@@ -140,47 +116,57 @@ public class StatEmpPay {
     }
 
     /**
-     * 获取收费时间
+     * 获取项目id
      *
-     * @return pay_date - 收费时间
+     * @return item_id - 项目id
      */
-    public Integer getPayDate() {
-        return payDate;
+    public Integer getItemId() {
+        return itemId;
     }
 
     /**
-     * 设置收费时间
+     * 设置项目id
      *
-     * @param payDate 收费时间
+     * @param itemId 项目id
      */
-    public void setPayDate(Integer payDate) {
-        this.payDate = payDate;
+    public void setItemId(Integer itemId) {
+        this.itemId = itemId;
     }
 
     /**
-     * 获取实收工作量
+     * 获取优惠日期
      *
-     * @return received_workload - 实收工作量
+     * @return privilege_date - 优惠日期
      */
-    public BigDecimal getReceivedWorkload() {
-        return receivedWorkload;
+    public Integer getPrivilegeDate() {
+        return privilegeDate;
     }
 
     /**
-     * 设置实收工作量
+     * 设置优惠日期
      *
-     * @param receivedWorkload 实收工作量
+     * @param privilegeDate 优惠日期
      */
-    public void setReceivedWorkload(BigDecimal receivedWorkload) {
-        this.receivedWorkload = receivedWorkload;
+    public void setPrivilegeDate(Integer privilegeDate) {
+        this.privilegeDate = privilegeDate;
     }
 
-    public BigDecimal getFreePaymentWorkload() {
-        return freePaymentWorkload;
+    /**
+     * 获取补入工作量
+     *
+     * @return coupon_workload - 补入工作量
+     */
+    public BigDecimal getCouponWorkload() {
+        return couponWorkload;
     }
 
-    public void setFreePaymentWorkload(BigDecimal freePaymentWorkload) {
-        this.freePaymentWorkload = freePaymentWorkload;
+    /**
+     * 设置补入工作量
+     *
+     * @param couponWorkload 补入工作量
+     */
+    public void setCouponWorkload(BigDecimal couponWorkload) {
+        this.couponWorkload = couponWorkload;
     }
 
     /**
@@ -202,18 +188,18 @@ public class StatEmpPay {
     }
 
     /**
-     * 获取创建人
+     * 获取创建人id
      *
-     * @return crt_id - 创建人
+     * @return crt_id - 创建人id
      */
     public Integer getCrtId() {
         return crtId;
     }
 
     /**
-     * 设置创建人
+     * 设置创建人id
      *
-     * @param crtId 创建人
+     * @param crtId 创建人id
      */
     public void setCrtId(Integer crtId) {
         this.crtId = crtId;
