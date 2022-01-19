@@ -9,6 +9,7 @@ import com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
+import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -120,7 +121,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
             medicalApprovalBiz.updateDocApplyChangeTime(medicalCommonRecord.getTreatmentId());
 
             // 保存照片影像
-            saveXRayFile2XUploadFile(medicalCommonRecord.getId(), model.getXRayIds(), model.getCrtTime());
+            saveXRayFile2XUploadFile(medicalCommonRecord.getId(), model.getXRayFilms(), model.getCrtTime());
             // 保存检查记录
             medicalCheckRecordBiz.saveCheckRecord(medicalCommonRecord.getId(), model.getCheckRecords());
         }
@@ -156,12 +157,12 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         return ResponseUtil.success(medicalCommonRecord.getId());
     }
 
-    private void saveXRayFile2XUploadFile(Integer medicalId, List<Integer> rayIds, Date crtTime) {
+    private void saveXRayFile2XUploadFile(Integer medicalId, List<XUploadFileVO> files, Date crtTime) {
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         MedicalRayFilmModel model = new MedicalRayFilmModel();
         model.setMedicalId(medicalId);
         model.setSourceType(MEDICAL_COMMON.getCode());
-        model.setRayIds(rayIds);
+        model.setRayFiles(files);
         model.setCrtId(userId);
         model.setCrtTime(crtTime);
         remoteTreatmentOtherFeign.saveXRayFile2XUploadFile(model);
@@ -223,7 +224,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         medicalRecordHistoryMapper.updateByExampleSelective(medicalRecordHistory, example);
 
         // 保存照片影像
-        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getRayIds(), medicalcopy.getUpdTime());
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getRayFiles(), medicalcopy.getUpdTime());
         // 保存检查记录
         medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
 

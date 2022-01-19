@@ -22,20 +22,8 @@ import java.util.Date;
 @ApiModel("文件上传VO")
 public class XUploadFileVO implements Serializable {
 
-    @ApiModelProperty("文件ID")
-    private Integer fileId;
-
     @ApiModelProperty("来源ID")
     private Integer sourceId;
-
-    /** 文件来源类型：0-其他，1-治疗计划; 2-普通电子病历*/
-    @ApiModelProperty(value = "文件来源类型：0-其他，1-治疗计划; 2-普通电子病历")
-    private Byte sourceType;
-
-    /** 文件类型：1-pdf; 2-doc; 3-jgp; 4-png*/
-    @ApiModelProperty(value = "文件类型：1-pdf; 2-doc; 3-jgp; 4-png",
-            allowableValues = "1-pdf; 2-doc; 3-jgp; 4-png")
-    private Byte fileType;
 
     /** 文件资源定位路径*/
     @ApiModelProperty("文件资源定位路径")
@@ -58,13 +46,4 @@ public class XUploadFileVO implements Serializable {
     @ApiModelProperty("创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date crtTime;
-
-    /** 更新人id*/
-    @ApiModelProperty("更新人id")
-    private Integer updId;
-
-    /** 修改时间*/
-    @ApiModelProperty("修改时间")
-    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
-    private Date updTime;
 }
