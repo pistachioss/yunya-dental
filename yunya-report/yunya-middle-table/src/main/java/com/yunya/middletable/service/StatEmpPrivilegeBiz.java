@@ -10,7 +10,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseBillDetailMapper;
 import com.yunya.middletable.dao.report.StatEmpPrivilegeMapper;
 import com.yunya.models.report.BaseBill;
-import com.yunya.models.report.StatEmpBill;
 import com.yunya.models.report.StatEmpPrivilege;
 import com.yunya.models.treatment.OrderDetail;
 import lombok.extern.slf4j.Slf4j;
@@ -61,10 +60,10 @@ public class StatEmpPrivilegeBiz extends BaseBiz<StatEmpPrivilegeMapper, StatEmp
             Set<String> keys = new HashSet<>();
             orderDetails.forEach(vo->{
                 Integer executorId = vo.getExecutorId();
-                StatEmpBill entity = new StatEmpBill();
+                StatEmpPrivilege entity = new StatEmpPrivilege();
                 entity.setOrgId(orgId);
                 entity.setDentistId(executorId);
-                entity.setBillDate(privilegeDate);
+                entity.setPrivilegeDate(privilegeDate);
                 entity.setItemType(vo.getType());
                 entity.setItemId(vo.getBillingItemId());
                 mapper.deleteByPrimaryKey(entity);
