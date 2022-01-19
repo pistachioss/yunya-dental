@@ -4,9 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import com.yunya.feign.treatment_other.domain.form.XUploadFileForm;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.model.XUploadFileModel;
-import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
 import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
-import com.yunya.feign.treatment_other.domain.vo.XRayFilmVO;
 import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -26,7 +24,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 简介：
@@ -144,62 +144,34 @@ public class XUploadFileBiz extends BaseBiz<XUploadFileMapper, XUploadFile> {
      * @param model
      */
     public void saveXRayFile2XUploadFile(MedicalRayFilmModel model) {
+        tombstone(model);
         Byte sourceType = model.getSourceType();
         Integer sourceId = model.getMedicalId();
         // 逻辑删除该病历下的所有照片
-        List<XRayFilmVO> list = findXRayFilmList(model);
-        tombstone(model);
+        List<XUploadFileVO> list = model.getRayFiles();
         if (StringHelper.isNotEmpty(list)) {
             Integer crtId = model.getCrtId();
             Date crtTime = model.getCrtTime();
             List<XUploadFile> datas = new ArrayList<>();
             list.forEach(vo->{
-                String url = vo.getUrl();
-                String extName = FileUtil.extName(url);
+                String location = vo.getFileLocation();
+                String extName = FileUtil.extName(location);
                 Byte fileType = FileTypeEnum.getCode(extName);
                 XUploadFile entity = new XUploadFile();
                 entity.setSourceId(sourceId);
                 entity.setSourceType(sourceType);
-                entity.setFileLocation(url);
+                entity.setFileLocation(location);
                 entity.setFileType(fileType);
-                entity.setFileName(vo.getPhotoName());
+                entity.setFileName(vo.getFileName());
                 entity.setUploadTime(vo.getUploadTime());
-                // 照片上传人，上传时间
-                entity.setCrtId(vo.getCrtId());
-                entity.setCrtTime(vo.getCrtTime());
-                // 病历提交人，病历提交时间
+                entity.setCrtId(crtId);
+                entity.setCrtTime(crtTime);
                 entity.setUpdId(crtId);
                 entity.setUpdTime(crtTime);
                 datas.add(entity);
             });
             mapper.addBatch(datas);
         }
-    }
-
-    private List<XRayFilmVO> findXRayFilmList(MedicalRayFilmModel model) {
-        List<Integer> xRayIds = model.getRayIds();
-        if (StringHelper.isNotEmpty(xRayIds)) {
-            XRayFilmQuery query = new XRayFilmQuery();
-            query.setIds(xRayIds);
-            return xRayFilmMapper.findList(query);
-        }
-        return null;
-    }
-
-    private List<XRayFilmVO> files2XRayFilm(List<XUploadFileVO> files) {
-        List<XRayFilmVO> result = new ArrayList<>();
-        if (StringHelper.isNotEmpty(files)) {
-            files.forEach(file->{
-                XRayFilmVO vo = new XRayFilmVO();
-                vo.setCrtId(file.getCrtId());
-                vo.setCrtTime(file.getCrtTime());
-                vo.setUploadTime(file.getUploadTime());
-                vo.setPhotoName(file.getFileName());
-                vo.setUrl(file.getFileLocation());
-                result.add(vo);
-            });
-        }
-        return result;
     }
 
     /**

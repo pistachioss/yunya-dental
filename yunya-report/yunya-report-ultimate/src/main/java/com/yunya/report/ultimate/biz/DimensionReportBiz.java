@@ -100,6 +100,8 @@ public class DimensionReportBiz {
     private BaseCouponBiz baseCouponBiz;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    @Autowired
+    private StatEmpPrivilegeBiz statEmpPrivilegeBiz;
     @Resource(name = "customizeThreadPool")
     private ThreadPoolExecutor threadPool;
 
@@ -932,10 +934,11 @@ public class DimensionReportBiz {
         Future<List<BillExecutorItemVO>> workloadFuture = multiFindClinicEmployeeWorkload(query, null);
         // 门诊的补入
         Future<List<BillExecutorItemVO>> couponFuture = multiFindClinicEmployeeCouponWorkload(query, null);
+
         // 门诊的退费
         Future<List<BillExecutorItemVO>> refundFuture = multiFindClinicEmployeeRefundWorkload(query, null);
         return mergeSpecialProjectWorkloadRatio(orgs, baseBillDetailBiz.doDateStyle(query.getStartDate(), query.getEndDate()),
-                workloadFuture.get(), refundFuture.get(), couponFuture.get(), itemIds, oralIds, specialis);
+                workloadFuture.get(), couponFuture.get(), refundFuture.get(), itemIds, oralIds, specialis);
     }
 
     /**
@@ -945,7 +948,7 @@ public class DimensionReportBiz {
      * @return
      */
     private Future<List<BillExecutorItemVO>> multiFindClinicEmployeeCouponWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds) {
-        return threadPool.submit(()-> statEmpBillBiz.findStatisticsEmployeeBillWorkload(query, employeeIds));
+        return threadPool.submit(()-> statEmpPrivilegeBiz.findStatisticsEmployeeCouponWorkload(query, employeeIds));
     }
 
     /**
@@ -975,22 +978,21 @@ public class DimensionReportBiz {
      * @param date
      * @param pays
      * @param refunds
-     * @param coupons
      * @param itemIds
      * @param oralIds
      * @param specialis
      * @return
      */
     private DynamicHeaderPageInfo<JSONObject> mergeSpecialProjectWorkloadRatio(List<BaseOrganization> orgs, String date,
-                               List<BillExecutorItemVO> pays, List<BillExecutorItemVO> refunds, List<BillExecutorItemVO> coupons, Set<Integer> itemIds,
-                                                                               Set<Integer> oralIds, List<SpecialistProjectVO> specialis) {
+               List<BillExecutorItemVO> pays, List<BillExecutorItemVO> coupons, List<BillExecutorItemVO> refunds, Set<Integer> itemIds,
+                                       Set<Integer> oralIds, List<SpecialistProjectVO> specialis) {
         DynamicHeaderPageInfo result = new DynamicHeaderPageInfo<>(orgs);
         List<JSONObject> list = new ArrayList<>();
         Map<String, String> specialMap = new LinkedHashMap<>(16);
         if (StringHelper.isNotEmpty(orgs)) {
             Map<String, BigDecimal> tariffWorkload = new HashMap<>(16);
             Map<String, BigDecimal> oralWorkload = new HashMap<>(16);
-            Map<Integer, BigDecimal> orgWorkloadMap = emp2OrgWorkloadMap(pays, refunds, coupons, oralIds, itemIds, tariffWorkload, oralWorkload);
+            Map<Integer, BigDecimal> orgWorkloadMap = emp2OrgWorkloadMap(pays, coupons, refunds, oralIds, itemIds, tariffWorkload, oralWorkload);
             Map<String, List<Integer>> item2Special = new HashMap<>(16);
             specialis.forEach(vo->{
                 Integer id = vo.getId();
@@ -1060,15 +1062,14 @@ public class DimensionReportBiz {
      * 员工工作量统计转换为门诊工作量统计
      * @param pays
      * @param refunds
-     * @param coupons
      * @param oralIds
      * @param itemIds
      * @param tariffWorkload
      * @param oralWorkload
      * @return
      */
-    private Map<Integer, BigDecimal> emp2OrgWorkloadMap(List<BillExecutorItemVO> pays, List<BillExecutorItemVO> refunds,
-                                                        List<BillExecutorItemVO> coupons, Set<Integer> oralIds, Set<Integer> itemIds, Map<String, BigDecimal> tariffWorkload, Map<String, BigDecimal> oralWorkload) {
+    private Map<Integer, BigDecimal> emp2OrgWorkloadMap(List<BillExecutorItemVO> pays, List<BillExecutorItemVO> coupons, List<BillExecutorItemVO> refunds,
+            Set<Integer> oralIds, Set<Integer> itemIds, Map<String, BigDecimal> tariffWorkload, Map<String, BigDecimal> oralWorkload) {
         Map<Integer, BigDecimal> orgWorkloadMap = new HashMap<>(16);
         if (StringHelper.isNotEmpty(pays)) {
             pays.forEach(vo->{
@@ -1132,7 +1133,6 @@ public class DimensionReportBiz {
                         }
                         oralWorkload.put(key, orals.add(workload));
                     }
-
                 }
             });
         }
@@ -2166,7 +2166,14 @@ public class DimensionReportBiz {
      * @return
      */
     private Future<List<StatEmpBill>> multiFindClinicBillItemNum(MultiClinicDateRangeQueryForm query) {
-        return threadPool.submit(()-> statEmpBillBiz.findBillItemNum(query));
+        return threadPool.submit(()-> {
+            List<StatEmpBill> tariffItemList = statEmpBillBiz.findBillItemNum(query);
+            List<StatEmpBill> oralItemList = baseBillDetailBiz.findBillingOralItemList(query);
+            if (StringHelper.isNotEmpty(oralItemList)) {
+                tariffItemList.addAll(oralItemList);
+            }
+            return tariffItemList;
+        });
     }
 
     /**

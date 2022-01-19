@@ -1,8 +1,11 @@
 package com.yunya.models.treatment;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "order_detail")
 public class OrderDetail {
@@ -10,6 +13,7 @@ public class OrderDetail {
      * 主键ID
      */
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**

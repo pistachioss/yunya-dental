@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -81,6 +82,7 @@ public class StatEmpTreatBiz extends BaseBiz<StatEmpTreatMapper, StatEmpTreat> {
     public void pullTreatDateStatistics(PullForm form) throws InterruptedException {
         String startDate = form.getStartDate();
         String endDate = form.getEndDate();
+        deleteData(startDate, endDate);
         List<StatEmpTreat> datas = baseTreatmentProcessMapper.countTreatNumByDate(startDate, endDate);
         if (StringHelper.isNotEmpty(datas)) {
             List<List<StatEmpTreat>> partition = Lists.partition(datas, 1000);
@@ -98,6 +100,21 @@ public class StatEmpTreatBiz extends BaseBiz<StatEmpTreatMapper, StatEmpTreat> {
             latch.await();
             printExceptionLog(resultFutures, log);
         }
+    }
+
+    /**
+     * 清掉旧数据
+     *
+     * @param startDate
+     * @param endDate
+     */
+    private void deleteData(String startDate, String endDate) {
+        Example example = new Example(StatEmpTreat.class);
+        Example.Criteria c = example.createCriteria();
+        Integer sDateInt = Integer.parseInt(StringHelper.remove(startDate,"-"));
+        Integer eDateInt = Integer.parseInt(StringHelper.remove(endDate,"-"));
+        c.andBetween("treatDate", sDateInt, eDateInt);
+        mapper.deleteByExample(example);
     }
 
     /**

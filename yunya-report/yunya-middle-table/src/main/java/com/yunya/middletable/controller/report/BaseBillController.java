@@ -6,6 +6,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.BaseBillBiz;
 import com.yunya.middletable.service.StatEmpBillBiz;
+import com.yunya.middletable.service.StatEmpPrivilegeBiz;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,8 @@ public class BaseBillController {
   @Autowired private BaseBillBiz billBiz;
 
   @Autowired private StatEmpBillBiz statEmpBillBiz;
+
+  @Autowired private StatEmpPrivilegeBiz statEmpPrivilegeBiz;
 
   /**
    * 根据消息操作中间表账单
@@ -81,6 +84,20 @@ public class BaseBillController {
   @PostMapping(value = "/billDate/statistics/batch", name = "form")
   public ResponseResult<T> pullBillDateStatistics(@RequestBody PullForm form) throws InterruptedException {
     statEmpBillBiz.pullBillDateStatistics(form);
+    return ResponseUtil.success(null);
+  }
+
+
+  /**
+   * 根据条件拉取账单使用优惠时统计并更新中间表
+   *
+   * @param form 拉取时间
+   * @return
+   */
+  @ApiOperation("根据时间段批量操作中间表账单时统计")
+  @PostMapping(value = "/privilegeDate/statistics/batch", name = "form")
+  public ResponseResult<T> pullPrivilegeDateStatistics(@RequestBody PullForm form) throws InterruptedException {
+    statEmpPrivilegeBiz.pullPrivilegeDateStatistics(form);
     return ResponseUtil.success(null);
   }
 }

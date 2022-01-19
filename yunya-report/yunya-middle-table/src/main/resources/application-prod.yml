@@ -7,6 +7,7 @@ myjdbc:
     
 ## 数据库列表
 mydb:
+    emr: yunya_emr
     report: yunya_report
     system: yunya_system
     patient: yunya_patient_central

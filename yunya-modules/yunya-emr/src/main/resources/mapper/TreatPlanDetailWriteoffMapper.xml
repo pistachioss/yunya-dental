@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.emr.mapper.TreatPlanDetailWriteoffMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.emr.TreatPlanDetailWriteoff" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="plan_detail_id" property="planDetailId" jdbcType="INTEGER" />
+    <result column="order_detail_id" property="orderDetailId" jdbcType="INTEGER" />
+    <result column="write_off_quantity" property="writeOffQuantity" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+    <!--批量添加-->
+    <insert id="insertBatch">
+        INSERT INTO treat_plan_detail_writeoff (
+            plan_detail_id, order_detail_id, write_off_quantity,
+            crt_id, crt_time
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+        (
+                #{item.planDetailId}, #{item.orderDetailId}, #{item.writeOffQuantity},
+                #{item.crtId}, #{item.crtTime}
+        )
+        </foreach>
+    </insert>
+
+    <!--根据就诊id删除记录-->
+    <delete id="deleteWriteoffByOrderDetailId">
+        DELETE FROM treat_plan_detail_writeoff
+        WHERE orderDetailId in
+        <foreach collection="detailIds" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+
+    <select id="sumTreatPlanDetailEnableQuantity" resultType="com.yunya.models.emr.TreatPlanDetail">
+        SELECT
+            tpd.id,
+            tpd.quantity - tpdw.writeoffQuantity AS quanity,
+            tpd.billing_item_name AS billingItemName
+        FROM treat_plan_detail tpd
+        LEFT JOIN (
+            SELECT
+                IFNULL(SUM(write_off_quantity),0) writeoffQuantity,
+                plan_detail_id
+            FROM treat_plan_detail_writeoff
+            GROUP BY plan_detail_id
+        ) tpdw ON tpd.id = tpdw.plan_detail_id
+        where
+        <if test="detailIds!=null and detailIds.size()>0">
+            id in
+            <foreach collection="detailIds" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+  </select>
+</mapper>

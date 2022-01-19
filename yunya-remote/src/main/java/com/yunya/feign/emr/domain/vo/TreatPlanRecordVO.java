@@ -68,6 +68,10 @@ public class TreatPlanRecordVO implements Serializable {
     @ApiModelProperty("状态：0-未确认; 1-已确认; 2-进行中; 3-全部完成; 4-提前终止")
     private Byte status;
 
+    /** 创建人id*/
+    @ApiModelProperty("创建人id")
+    private Integer crtId;
+
     /** 创建人*/
     @ApiModelProperty("创建人")
     private String crtName;

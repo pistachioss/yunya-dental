@@ -8,7 +8,6 @@
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="plan_id" property="planId" jdbcType="INTEGER" />
     <result column="step_name" property="stepName" jdbcType="VARCHAR" />
-    <result column="status" property="status" jdbcType="TINYINT" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />
@@ -20,8 +19,7 @@
     SELECT
         id AS treatPlanStepId,
         plan_id AS planId,
-        step_name AS stepName,
-        status
+        step_name AS stepName
     FROM treat_plan_step
     WHERE
       plan_id in

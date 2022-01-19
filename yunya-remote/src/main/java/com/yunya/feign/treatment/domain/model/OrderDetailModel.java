@@ -52,4 +52,8 @@ public class OrderDetailModel implements Serializable {
   @ApiModelProperty("备注")
   @Size(max = 150, message = "开单备注最多150个字符！")
   private String remarks;
+
+  /** 治疗计划详情id */
+  @ApiModelProperty("治疗计划详情id")
+  private Integer planDetailId;
 }

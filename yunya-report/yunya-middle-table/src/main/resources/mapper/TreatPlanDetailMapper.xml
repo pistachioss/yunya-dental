@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.middletable.dao.emr.TreatPlanDetailMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.emr.TreatPlanDetail" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="treat_plan_id" property="treatPlanId" jdbcType="INTEGER" />
+    <result column="treat_step_id" property="treatStepId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="tooth_bit" property="toothBit" jdbcType="VARCHAR" />
+    <result column="billing_item_id" property="billingItemId" jdbcType="INTEGER" />
+    <result column="billing_item_name" property="billingItemName" jdbcType="VARCHAR" />
+    <result column="unit" property="unit" jdbcType="VARCHAR" />
+    <result column="price" property="price" jdbcType="DECIMAL" />
+    <result column="quantity" property="quantity" jdbcType="INTEGER" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <select id="selectTreatPlanDetailAndWriteoffList"
+          resultType="com.yunya.feign.emr.domain.vo.TreatPlanDetailVO">
+        SELECT
+            tpd.id AS detailId,
+            tpd.treat_plan_id AS planId,
+            tpd.treat_step_id AS stepId,
+            tpd.type,
+            tpd.billing_item_id AS billingItemId,
+            tpd.quantity,
+            tpdw.status,
+            tpdw.id AS orderDetailId,
+            tpdw.write_off_quantity AS writeOffQuantity
+        FROM treat_plan_detail tpd
+        INNER JOIN treat_plan_detail_writeoff tpdw ON tpd.id = tpdw.plan_detail_id
+        WHERE tpdw.order_detail_id IN
+        <foreach collection="orderDetailIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+        ORDER BY tpd.id ASC
+  </select>
+</mapper>

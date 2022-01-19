@@ -68,7 +68,7 @@ public class TreatPlanRecordController {
     @ApiOperation("治疗计划变更：方案确认，方案变更，提前终止，撤销终止")
     @PutMapping("/change")
     @CurrentUser
-    private ResponseResult<MedicalTreatPlanRecordVO> treatPlanChange(TreatPlanRecordChangeForm form) {
+    public ResponseResult<MedicalTreatPlanRecordVO> treatPlanChange(@RequestBody @Valid TreatPlanRecordChangeForm form) {
         return ResponseUtil.success(treatPlanRecordBiz.treatPlanChange(form));
     }
 }
