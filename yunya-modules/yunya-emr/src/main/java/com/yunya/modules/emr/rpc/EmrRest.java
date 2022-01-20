@@ -31,7 +31,7 @@ public class EmrRest {
    *
    * @param model
    */
-  @PostMapping("/writeOffQuantity")
+  @PostMapping("/treatPlan/writeOffQuantity")
   public void treatPlanWriteOffQunatity(@RequestBody @Valid TreatPlanDetailWriteoffModel model) {
     treatPlanRecordBiz.treatPlanDetailWriteoffQunatity(model);
   }

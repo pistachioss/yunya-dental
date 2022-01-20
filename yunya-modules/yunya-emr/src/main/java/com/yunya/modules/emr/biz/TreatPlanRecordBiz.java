@@ -544,6 +544,11 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         }
     }
 
+    /**
+     * 清理无效记录
+     *
+     * @param deletedIds
+     */
     private void removeInvalidData(List<Integer> deletedIds) {
         if (StringHelper.isNotEmpty(deletedIds)) {
             treatPlanDetailBiz.deleteWriteoffByOrderDetailId(deletedIds);

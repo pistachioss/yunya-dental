@@ -18,6 +18,6 @@ public interface RemoteEmrServiceFeign {
      *
      * @param models
      */
-    @PostMapping("/api/emr/writeOffQuantity")
+    @PostMapping("/api/emr/treatPlan/writeOffQuantity")
     void treatPlanWriteOffQunatity(@RequestBody @Valid TreatPlanDetailWriteoffModel models);
 }
