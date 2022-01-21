@@ -421,24 +421,24 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         Byte status = treatPlan.getStatus();
         Byte changeType = form.getChangeType();
         if (changeType == 0) {// 方案确认
-            checkStatus(status, TreatPlanStatusEnum.UNCONFIRM);
+            checkNotStatus(status, TreatPlanStatusEnum.UNCONFIRM);
             updateStatus(treatPlan, TreatPlanStatusEnum.CONFIRMED.getCode());
             treatPlan.setStatus(TreatPlanStatusEnum.CONFIRMED.getCode());
             return treatPlan;
         } else if (changeType == 1) {// 方案变更
-            checkStatus(status, TreatPlanStatusEnum.COMPLETED, TreatPlanStatusEnum.TERMINATION);
+            checkNotStatus(status, TreatPlanStatusEnum.COMPLETED, TreatPlanStatusEnum.TERMINATION);
             // 已完成的项目不变
             TreatPlanRecordModel model = new TreatPlanRecordModel();
             model.setTreatPlanId(planId);
             model.setTreatPlanSteps(form.getDetails());
             save(model, (byte) 1);
         } else if (changeType == 2) {// 提前终止
-            checkStatus(status, TreatPlanStatusEnum.EXECUTING, TreatPlanStatusEnum.COMPLETED);
+            checkNotStatus(status, TreatPlanStatusEnum.EXECUTING, TreatPlanStatusEnum.COMPLETED);
             // 终止计划，终止步骤，终止项目
             updateStatus(treatPlan, TreatPlanStatusEnum.TERMINATION.getCode());
             treatPlanDetailBiz.terminalOrRenewWriteoffRecord(treatPlan, (byte)2);
         } else {// 撤销终止
-            checkStatus(status, TreatPlanStatusEnum.TERMINATION);
+            checkNotStatus(status, TreatPlanStatusEnum.TERMINATION);
             // 恢复计划，步骤，项目在终止前的状态
             treatPlanDetailBiz.terminalOrRenewWriteoffRecord(treatPlan, (byte)1);
             treatPlan = findMedicalTreatPlanById(planId);
@@ -480,16 +480,21 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     }
 
     /**
-     * 校验状态
+     * 校验状态，如果status不属于statusEmums，则抛异常
      *
      * @param status
      * @param statusEnums
      */
-    private void checkStatus(Byte status, TreatPlanStatusEnum... statusEnums) {
+    protected static void checkNotStatus(Byte status, TreatPlanStatusEnum... statusEnums) {
+        int okSize = 0;
         for (TreatPlanStatusEnum statusEnum : statusEnums) {
-            if (!statusEnum.equals(status)) {
-                throw new ClientServiceException("该治疗计划状态不允许操作", OperationCodeConstants.OPERATION_NOT_ALLOW);
+            if (statusEnum.getCode().equals(status)) {
+                okSize++;
+                break;
             }
+        }
+        if (okSize == 0) {
+            throw new ClientServiceException("该治疗计划项目不允许操作", OperationCodeConstants.OPERATION_NOT_ALLOW);
         }
     }
 

@@ -5,6 +5,7 @@ import com.yunya.feign.emr.domain.vo.MedicalTreatPlanRecordVO;
 import com.yunya.feign.emr.domain.vo.TreatPlanDetailVO;
 import com.yunya.feign.emr.domain.vo.TreatPlanStepVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.enums.TreatPlanStatusEnum;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.emr.TreatPlanDetail;
 import com.yunya.models.emr.TreatPlanDetailHistory;
@@ -43,6 +44,11 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
      */
     @Autowired
     private TreatPlanDetailWriteoffMapper treatPlanDetailWriteoffMapper;
+    /**
+     * 治疗计划
+     */
+    @Autowired
+    private TreatPlanRecordBiz treatPlanRecordBiz;
 
     /**
      * 保存治疗计划明细
@@ -67,6 +73,8 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
                 Iterator<TreatPlanDetail> it = deleted.iterator();
                 details.forEach(vo->{
                     Integer detailId = vo.getDetailId();
+                    Byte status = vo.getStatus();
+                    treatPlanRecordBiz.checkNotStatus(status, TreatPlanStatusEnum.EXECUTING, TreatPlanStatusEnum.COMPLETED);
                     if (!ObjectUtils.isEmpty(detailId)) {
                         while (it.hasNext()) {
                             TreatPlanDetail next = it.next();
