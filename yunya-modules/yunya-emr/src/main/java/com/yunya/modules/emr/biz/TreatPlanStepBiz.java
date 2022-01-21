@@ -35,7 +35,6 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
      */
     @Autowired
     private TreatPlanStepHistoryMapper treatPlanStepHistoryMapper;
-
     /**
      * 治疗计划明细
      */
