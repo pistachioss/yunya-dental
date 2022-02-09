@@ -52,6 +52,8 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     private LeaveScheduleMapper leaveScheduleMapper;
     @Autowired
     private EmployeePushBiz employeePushBiz;
+    @Autowired
+    private ApprovalPeopleBiz approvalPeopleBiz;
     /**
      * 根据日期和用户id列表查询请假列表
      *
@@ -147,7 +149,8 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                         employeePushForm.setEmpId(emp_ids);
                         employeePushForm.setShowName(showName);
                         // 根据leaveInfoForm.getApprovalNowPeopleId();查推送号与平台
-                        emp_ids.add(leaveInfoForm.getApprovalNowPeopleId());
+                        Integer userid = approvalPeopleBiz.selectById(leaveInfoForm.getApprovalNowPeopleId()).getUserId();
+                        emp_ids.add(userid);
                         List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                         employeePushFormList.forEach(el -> {
                             JpushManager.getInstance().pushLeaveApproval(el, 1);
@@ -285,7 +288,8 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                         employeePushForm.setEmpId(emp_ids);
                         employeePushForm.setShowName(showName);
                         // 根据leaveInfoForm.getApprovalNowPeopleId();查推送号与平台
-                        emp_ids.add(leaveInfoByEmForm.getApprovalNowPeopleId());
+                        Integer userid = approvalPeopleBiz.selectById(leaveInfoByEmForm.getApprovalNowPeopleId()).getUserId();
+                        emp_ids.add(userid);
                         // 组装
                         List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                         employeePushFormList.forEach(el -> {
@@ -479,7 +483,8 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     employeePushForm.setShowName(showName);
                     // 撤销
                     emp_ids.add(leaveInfo.getUserId());
-                    emp_ids.add(leaveInfo.getApprovalNowPeopleId());
+                    Integer userid = approvalPeopleBiz.selectById(leaveInfo.getApprovalNowPeopleId()).getUserId();
+                    emp_ids.add(userid);
                     ApprovalInfo approvalInfo = new ApprovalInfo();
                     approvalInfo.setLeaveId(leaveInfoForm.getId());
                     approvalInfo.setApprovalStatus(1);

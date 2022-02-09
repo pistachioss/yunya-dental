@@ -57,7 +57,7 @@ public class EmployeePushBiz extends BaseBiz<EmployeePushMapper, EmployeePush> {
         log.info("employeePushForm: " + employeePushForm.toString());
         if(employeePushForm.getEmpId() != null && !employeePushForm.getEmpId().isEmpty()){
             List<EmployeePush> employeePushList = query(employeePushForm.getEmpId());
-            if(employeePushList == null || !employeePushList.isEmpty()){
+            if(employeePushList != null && !employeePushList.isEmpty()){
                 EmployeePushForm iosList = new EmployeePushForm();
                 EmployeePushForm androidList = new EmployeePushForm();
                 try{
@@ -68,8 +68,12 @@ public class EmployeePushBiz extends BaseBiz<EmployeePushMapper, EmployeePush> {
                 }
                 iosList.setPlatform(1);
                 androidList.setPlatform(2);
-                List<String> iosUL = iosList.getUserList();
-                List<String> androidUL = androidList.getUserList();
+                List<String> iosUL = new ArrayList<String>();
+                List<String> androidUL = new ArrayList<String>();;
+                if(employeePushForm.getUserList()!=null){
+                    iosUL.addAll(iosList.getUserList());
+                    androidUL.addAll(androidList.getUserList());
+                }
                 employeePushList.forEach(employeePush -> {
                     switch (employeePush.getPlatform()){
                         case 1:
@@ -80,6 +84,8 @@ public class EmployeePushBiz extends BaseBiz<EmployeePushMapper, EmployeePush> {
                             break;
                     }
                 });
+                iosList.setUserList(iosUL);
+                androidList.setUserList(androidUL);
                 employeePushFormList.add(iosList);
                 employeePushFormList.add(androidList);
                 return employeePushFormList;
@@ -90,10 +96,10 @@ public class EmployeePushBiz extends BaseBiz<EmployeePushMapper, EmployeePush> {
             return employeePushFormList;
         }
         List<String> userList = new ArrayList<String>();
-        userList.add("160a3797c8cce98edef");
+        userList.add("1104a8979264c85dfd4");
         employeePushForm.setPlatform(2);
         employeePushForm.setUserList(userList);
-        if(employeePushForm.getIsSchedule()){
+        if(employeePushForm.getIsSchedule() != null && employeePushForm.getIsSchedule()){
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             Date dt = new Date(System.currentTimeMillis() + 60 * 1000);
             if(dt.getHours()<8){

@@ -81,6 +81,8 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
     private WorkOvertimeInfoMapper workOvertimeInfoMapper;
     @Autowired
     private EmployeePushBiz employeePushBiz;
+    @Autowired
+    private ApprovalPeopleBiz approvalPeopleBiz;
 
     public int create(FieldInfoForm fieldInfoForm) {
         //判断是否有其他类型的申请
@@ -184,8 +186,9 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                             Set<Integer> emp_ids = new HashSet<>();
                             employeePushForm.setEmpId(emp_ids);
                             employeePushForm.setShowName(showName);
-                            // 根据leaveInfoForm.getApprovalPeopleId();查推送号与平台
-                            emp_ids.add(fieldInfoForm.getApprovalPeopleId());
+                            // 根据fieldInfoForm.getApprovalPeopleId();查推送号与平台
+                            Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
+                            emp_ids.add(userid);
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
                                 JpushManager.getInstance().pushLeaveApproval(el, 3);
@@ -400,7 +403,8 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     employeePushForm.setShowName(showName);
                     // 撤销
                     emp_ids.add(fieldInfo.getUserId());
-                    emp_ids.add(fieldInfo.getApprovalPeopleId());
+                    Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
+                    emp_ids.add(userid);
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         JpushManager.getInstance().pushLeaveCancel(el, 3);

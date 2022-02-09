@@ -5,7 +5,7 @@ import javax.persistence.*;
 @Table(name = "employee_push")
 public class EmployeePush {
     /**
-     * 员工ID
+     * 员工ID：改为使用user_id（员工id）
      */
     @Id
     @Column(name = "employee_id")

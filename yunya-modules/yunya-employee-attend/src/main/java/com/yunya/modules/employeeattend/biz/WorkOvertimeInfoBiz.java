@@ -58,6 +58,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
     private LeaveInfoMapper leaveInfoMapper;
     @Autowired
     private EmployeePushBiz employeePushBiz;
+    @Autowired
+    private ApprovalPeopleBiz approvalPeopleBiz;
 
     /**
      * 根据日期和用户id列表查询加班列表
@@ -162,7 +164,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 employeePushForm.setEmpId(emp_ids);
                                 employeePushForm.setShowName(showName);
                                 // 根据leaveInfoForm.getApprovalPeopleId();查推送号与平台
-                                emp_ids.add(workOvertimeInfoForm.getApprovalPeopleId());
+                                Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
+                                emp_ids.add(userid);
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
                                     JpushManager.getInstance().pushLeaveApproval(el, 2);
@@ -348,7 +351,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                     employeePushForm.setShowName(showName);
                     // 撤销
                     emp_ids.add(workOvertimeInfo.getUserId());
-                    emp_ids.add(workOvertimeInfo.getApprovalPeopleId());
+                    Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
+                    emp_ids.add(userid);
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         JpushManager.getInstance().pushLeaveCancel(el, 2);

@@ -163,6 +163,9 @@ public class JpushManager {
       if (employeePushForm.getContent().isEmpty()) {
         employeePushForm.setContent("欢迎您成为平台用户，我们将热忱为您服务。");
       }
+      if (employeePushForm.getIsSchedule() == null) {
+        employeePushForm.setIsSchedule(false);
+      }
       JpushManager.getInstance()
           .send(
               employeePushForm.getUserList(),
