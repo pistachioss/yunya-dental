@@ -35,13 +35,15 @@
         tpd.unit,
         tpd.price,
         tpd.quantity,
-        tpd.quantity-tpdw.writeoffQuantity AS enableQuantity,
-        tdpw.writeoffQuantity,
+        IFNULL(tpdw.writeoffQuantity, 0) AS writeoffQuantity,
+        tpd.quantity-writeoffQuantity AS enableQuantity,
         CASE
-        WHEN tdpw.writeoffQuantity &lt;= 0 and tpdw.status = 0 THEN 1
-        WHEN tpdw.writeoffQuantity &lt; tpd.quantity and tpdw.status = 1 THEN 2
-        WHEN tpdw.writeoffQuantity = tpd.quantity and tpdw.status = 1 THEN 3
-        WHEN tpdw.writeoffQuantity &gt;= 0 and tpdw.status = 2 THEN 4
+        WHEN tpdw.status IS NULL THEN 1
+        WHEN writeoffQuantity &lt;= 0 and tpdw.status = 0 THEN 1
+        WHEN writeoffQuantity &lt; tpd.quantity and tpdw.status = 1 THEN 2
+        WHEN writeoffQuantity = tpd.quantity and tpdw.status = 1 THEN 3
+        WHEN writeoffQuantity &gt;= 0 and tpdw.status = 2 THEN 4
+        END
         AS status,
         tpd.remark
     FROM treat_plan_detail tpd
