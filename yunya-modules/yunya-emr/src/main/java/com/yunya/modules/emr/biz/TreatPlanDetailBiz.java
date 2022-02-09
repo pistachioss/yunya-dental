@@ -74,7 +74,7 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
                 details.forEach(vo->{
                     Integer detailId = vo.getDetailId();
                     Byte status = vo.getStatus();
-                    treatPlanRecordBiz.checkNotStatus(status, TreatPlanStatusEnum.EXECUTING, TreatPlanStatusEnum.COMPLETED);
+                    treatPlanRecordBiz.checkNotStatus(status, TreatPlanStatusEnum.UNCONFIRM, TreatPlanStatusEnum.CONFIRMED);
                     if (!ObjectUtils.isEmpty(detailId)) {
                         while (it.hasNext()) {
                             TreatPlanDetail next = it.next();
