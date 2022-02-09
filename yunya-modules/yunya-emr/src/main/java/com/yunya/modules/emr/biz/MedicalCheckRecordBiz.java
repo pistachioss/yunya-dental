@@ -81,7 +81,9 @@ public class MedicalCheckRecordBiz extends BaseBiz<MedicalCheckRecordMapper, Med
         if (StringHelper.isNotEmpty(deleted)) {
             deleted.forEach(vo-> histories.add(entity2History(vo, (byte) 2)));
         }
-        medicalCheckHistoryMapper.insertBatch(histories);
+        if (StringHelper.isNotEmpty(histories)) {
+            medicalCheckHistoryMapper.insertBatch(histories);
+        }
     }
 
     /**
