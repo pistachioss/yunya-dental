@@ -11,16 +11,16 @@ import java.util.Objects;
  * @since: 1.0.0
  */
 public enum TreatPlanStatusEnum {
-    UNCONFIRM("未确认", (byte)0),
-    CONFIRMED("已确认", (byte)1),
-    EXECUTING("进行中", (byte)2),
-    COMPLETED("全部完成", (byte)3),
-    TERMINATION("提前终止", (byte)4);
+    UNCONFIRM("未确认", 0),
+    CONFIRMED("已确认", 1),
+    EXECUTING("进行中", 2),
+    COMPLETED("全部完成", 3),
+    TERMINATION("提前终止", 4);
 
     private final String value;
-    private final Byte code;
+    private final Integer code;
 
-    TreatPlanStatusEnum(String value, Byte code) {
+    TreatPlanStatusEnum(String value, Integer code) {
         this.value = value;
         this.code = code;
     }
@@ -29,7 +29,7 @@ public enum TreatPlanStatusEnum {
         return value;
     }
 
-    public Byte getCode() {
+    public Integer getCode() {
         return code;
     }
 

@@ -44,7 +44,7 @@ public class TreatPlanStepVO implements Serializable {
 
     /** 状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止*/
     @ApiModelProperty(value = "状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止")
-    private Byte status;
+    private Integer status;
 
     /** 步骤明细*/
     @ApiModelProperty(value = "步骤明细")

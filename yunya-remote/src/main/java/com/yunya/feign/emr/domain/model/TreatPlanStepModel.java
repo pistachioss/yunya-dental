@@ -39,7 +39,7 @@ public class TreatPlanStepModel implements Serializable {
     private List<TreatPlanDetailModel> treatPlanDetails;
 
     /** 执行状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止*/
-    private Byte status;
+    private Integer status;
 
     /** 创建人id*/
     private Integer crtId;
