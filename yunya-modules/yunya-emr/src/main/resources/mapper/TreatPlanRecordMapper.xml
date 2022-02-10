@@ -23,9 +23,10 @@
     SELECT
         id,
         plan_name AS planName,
-        crt_time AS crtTime,
+        patient_id AS patientId,
         org_id AS orgId,
         status,
+        crt_time AS crtTime,
         dentist_id AS dentistId
     FROM treat_plan_record
     <where>

@@ -28,21 +28,41 @@
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
-	<select id="findList" resultMap="BaseResultMap">
-		select
-		*
-		from
-		medical_common_record
+	<select id="findList" resultType="com.yunya.models.emr.MedicalCommonRecord">
+		SELECT
+			mcr.id,
+			mcr.treatment_id AS treatmentId,
+			mcr.patient_id AS patientId,
+			mcr.major_dentist_id AS majorDentistId,
+			mcr.chief_complaint AS chiefComplaint,
+			mcr.present_illness AS presentIllness,
+			mcr.past_history AS pastHistory,
+			mcr.re_examination AS reExamination,
+			mcr.examination,
+			mcr.diagnosis,
+			IF (tpr.id IS NULL, 0, 1) AS plan,
+			mcr.treatment,
+			mcr.prescription,
+			mcr.type,
+			mcr. STATUS,
+			mcr.approval_time AS approvalTime,
+			mcr.time,
+			mcr.crt_id AS crtId,
+			mcr.crt_time AS crtTime,
+			mcr.upd_id AS updId,
+			mcr.upd_time AS updTime
+		FROM medical_common_record mcr
+		LEFT JOIN treat_plan_record tpr ON mcr.id = tpr.medical_record_id
 		<where>
-		  patient_id = #{patientId}
+			mcr.patient_id = #{patientId}
 		  <if test="id != null" >
-			and id = #{id}
+			and mcr.id = #{id}
 		  </if>
 			<if test="treatmentId != null" >
-				and treatment_id = #{treatmentId}
+				and mcr.treatment_id = #{treatmentId}
 			</if>
 		</where>
-		order by crt_time desc
+		order by mcr.crt_time desc
   	</select>
 
 	<select id="selectMedicalIllnessHistoryById" resultType="com.yunya.models.emr.MedicalCommonRecord">

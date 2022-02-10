@@ -28,6 +28,14 @@ public class TreatPlanRecordVO implements Serializable {
     @ApiModelProperty("治疗计划id")
     private Integer planId;
 
+    /** 患者id*/
+    @ApiModelProperty("患者id")
+    private Integer patientId;
+
+    /** 门诊id*/
+    @ApiModelProperty("门诊id")
+    private Integer orgId;
+
     /** 普通电子病历id*/
     @ApiModelProperty("普通电子病历id")
     private Integer medicalRecordId;

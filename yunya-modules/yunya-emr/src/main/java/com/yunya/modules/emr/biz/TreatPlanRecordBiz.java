@@ -291,6 +291,8 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     private MedicalTreatPlanRecordVO entity2VO(TreatPlanRecord entity) {
         MedicalTreatPlanRecordVO result = new MedicalTreatPlanRecordVO();
         result.setPlanId(entity.getId());
+        result.setPatientId(entity.getPatientId());
+        result.setOrgId(entity.getOrgId());
         result.setPlanName(entity.getPlanName());
         result.setSummary(entity.getSummary());
         result.setDentistId(entity.getDentistId());
@@ -429,7 +431,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
             checkNotStatus(status, TreatPlanStatusEnum.COMPLETED, TreatPlanStatusEnum.TERMINATION);
             // 已完成的项目不变
             TreatPlanRecordModel model = new TreatPlanRecordModel();
-            model.setTreatPlanId(planId);
+            model.setPlanId(planId);
             model.setTreatPlanSteps(form.getDetails());
             save(model, (byte) 1);
         } else if (changeType == 2) {// 提前终止
@@ -449,7 +451,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
 
     private void updateStatus(MedicalTreatPlanRecordVO treatPlan, Byte status) {
         TreatPlanRecordModel model = new TreatPlanRecordModel();
-        model.setTreatPlanId(treatPlan.getPlanId());
+        model.setPlanId(treatPlan.getPlanId());
         if (ObjectUtils.isEmpty(status)) {
             status = treatPlan.getStatus();
         }
