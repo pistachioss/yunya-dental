@@ -24,7 +24,7 @@ import java.util.List;
 public class TreatPlanRecordModel implements Serializable {
     /** 治疗计划Id*/
     @ApiModelProperty("治疗计划id")
-    private Integer treatPlanId;
+    private Integer planId;
 
     /** 就诊门诊id*/
     @ApiModelProperty("就诊门诊id")
