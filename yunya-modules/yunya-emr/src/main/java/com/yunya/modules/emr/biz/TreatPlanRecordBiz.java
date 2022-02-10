@@ -347,7 +347,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 TreatPlanRecordInfoVO vo = new TreatPlanRecordInfoVO();
                 vo.setPlanId(entity.getId());
                 vo.setPlanName(entity.getPlanName());
-                vo.setStatus(entity.getStatus());
+                vo.setStatus(entity.getStatus().intValue());
                 vo.setCrtTime(entity.getCrtTime());
                 OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(entity.getOrgId());
                 if (!ObjectUtils.isEmpty(org)) {
