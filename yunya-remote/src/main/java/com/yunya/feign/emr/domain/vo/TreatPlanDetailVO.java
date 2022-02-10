@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 简介：治疗计划步骤明细VO
@@ -63,21 +64,37 @@ public class TreatPlanDetailVO implements Serializable {
 
     /** 执行状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止*/
     @ApiModelProperty(value = "执行状态：1-未开始; 2-进行中; 3-全部完成; 4-提前终止")
-    private Byte status;
+    private Integer status;
 
     /** 单价*/
     @ApiModelProperty(value = "单价")
     private BigDecimal price;
+
+    /** 折扣价*/
+    @ApiModelProperty(value = "折扣价")
+    private BigDecimal memberPrice;
 
     /** 备注*/
     @ApiModelProperty("备注")
     private String remark;
 
     /** 核销订单明细id*/
-    @ApiModelProperty("")
+    @ApiModelProperty("核销订单明细id")
     private Integer orderDetailId;
 
     /** 核销数量*/
     @ApiModelProperty("核销数量")
     private Integer writeOffQuantity;
+
+    /** 创建人id*/
+    private Integer crtId;
+
+    /** 创建日期*/
+    private Date crtTime;
+
+    /** 更新人id*/
+    private Integer uptId;
+
+    /** 更新日期*/
+    private Date uptTime;
 }

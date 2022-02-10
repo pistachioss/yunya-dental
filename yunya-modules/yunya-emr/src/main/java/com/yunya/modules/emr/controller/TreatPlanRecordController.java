@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author chenlin
@@ -60,8 +61,11 @@ public class TreatPlanRecordController {
 
     @ApiOperation("查询患者所有已确认、进行中的治疗计划列表")
     @PostMapping("/patientList")
-    public ResponseResult<PageInfo<TreatPlanRecordVO>> findPatientTreatPlanList(@Valid @RequestBody TreatPlanRecordQuery query) {
-        PageInfo<TreatPlanRecordVO> page = treatPlanRecordBiz.findPatientTreatPlanList(query);
+    public ResponseResult<PageInfo<TreatPlanRecordVO>> findPatientTreatPlanList(
+            @RequestParam("memberTypeId") Integer memberTypeId,
+            @RequestParam("orgId") @Valid @NotNull(message = "门诊id不能为空") Integer orgId,
+            @Valid @RequestBody TreatPlanRecordQuery query) {
+        PageInfo<TreatPlanRecordVO> page = treatPlanRecordBiz.findPatientTreatPlanList(memberTypeId, orgId, query);
         return ResponseUtil.success(page);
     }
 

@@ -11,8 +11,9 @@ public interface TreatPlanDetailMapper extends Mapper<TreatPlanDetail> {
     /**
      * 根据治疗计划id查询明细列表
      *
-     * @param planId
+     * @param query
      * @return
      */
-    List<TreatPlanDetailVO> selectTreatPlanDetailByPlanId(@Param("planId") Integer planId);
+    List<TreatPlanDetailVO> selectTreatPlanDetailByPlanId(
+            @Param("query") TreatPlanDetail query);
 }

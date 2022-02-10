@@ -63,7 +63,7 @@ public class TreatPlanRecordModel implements Serializable {
 
     /** 状态：0-未确认; 1-已确认; 2-进行中; 3-全部完成; 4-提前终止*/
     @ApiModelProperty("状态：0-未确认; 1-已确认; 2-进行中; 3-全部完成; 4-提前终止")
-    private Byte status = 0;
+    private Integer status = 0;
 
     /** 步骤列表*/
     @ApiModelProperty(value = "步骤列表", required = true)

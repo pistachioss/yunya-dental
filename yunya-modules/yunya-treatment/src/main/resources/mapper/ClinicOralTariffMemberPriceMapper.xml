@@ -18,4 +18,21 @@
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+    <select id="selectClinicOralTariffItemMemberPrice"
+            resultType="com.yunya.feign.treatment.domain.vo.ClinicItemPriceVO">
+      SELECT
+        1 AS itemId,
+        oral_tariff_id AS clinicItemId,
+        discount_price AS clinicItemPrice
+        FROM clinic_oral_tariff_member_price
+      <where>
+        AND clinic_id = #{query.orgId}
+        AND member_type_id = #{query.memberTypeId}
+        AND oral_tariff_id IN
+        <foreach collection="query.oralIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </where>
+    </select>
 </mapper>

@@ -1,5 +1,6 @@
 package com.yunya.feign.emr.domain.vo;
 
+import com.yunya.feign.emr.domain.model.TreatPlanRecordModel;
 import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
