@@ -23,6 +23,7 @@ import com.yunya.framework.common.enums.TreatPlanStatusEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.emr.*;
+import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.modules.emr.mapper.TreatPlanRecordHistoryMapper;
 import com.yunya.modules.emr.mapper.TreatPlanRecordMapper;
@@ -64,6 +65,9 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     /** 就诊*/
     @Autowired
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
+    /** 系统*/
+    @Autowired
+    private RemoteSystemServiceFeign systemServiceFeign;
     /** 治疗计划明细*/
     @Autowired
     private TreatPlanDetailBiz treatPlanDetailBiz;
@@ -564,19 +568,18 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      * 查询患者所有已确认、进行中的治疗计划列表
      *
      *
-     * @param memberTypeId
      * @param orgId
      * @param query
      * @return
      */
-    public PageInfo<TreatPlanRecordVO> findPatientTreatPlanList(Integer memberTypeId, Integer orgId, TreatPlanRecordQuery query) {
+    public PageInfo<TreatPlanRecordVO> findPatientTreatPlanList(Integer orgId, TreatPlanRecordQuery query) {
         List<Integer> status = Arrays.asList(TreatPlanStatusEnum.CONFIRMED.getCode(), TreatPlanStatusEnum.EXECUTING.getCode());
         query.setStatus(status);
         List<TreatPlanRecord> list = mapper.selectTreatPlanRecordInfoList(query);
         List<TreatPlanRecordVO> result = new ArrayList<>();
         if (StringHelper.isNotEmpty(list)) {
             list.forEach(entity-> result.add(putTreatPlanStepList(entity)));
-            putPlanItemMemberPrice(memberTypeId, orgId, result);
+            putPlanItemMemberPrice(orgId, result);
         }
         return new PageInfo<>(result);
     }
@@ -584,12 +587,12 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     /**
      * 装配会员折扣价
      *
-     * @param memberTypeId
      * @param orgId
      * @param result
      */
-    private void putPlanItemMemberPrice(Integer memberTypeId, Integer orgId, List<TreatPlanRecordVO> result) {
-        if (!ObjectUtils.isEmpty(memberTypeId)) {
+    private void putPlanItemMemberPrice(Integer orgId, List<TreatPlanRecordVO> result) {
+        List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
+        if (StringHelper.isNotEmpty(memberTypes)) {
             List<Integer> oralIds = new ArrayList<>();
             List<Integer> tariffIds = new ArrayList<>();
             result.forEach(vo -> {
@@ -609,21 +612,44 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
             });
             ClinicMemberPriceQuery query = new ClinicMemberPriceQuery();
             query.setOrgId(orgId);
-            query.setMemberTypeId(memberTypeId);
             query.setOralIds(oralIds);
             query.setTariffIds(tariffIds);
-            List<ClinicItemPriceVO> memberPrices = remoteTreatmentServiceFeign.findClinicItemMemberPrice(query);
-            Map<String, BigDecimal> priceMap = new HashMap<>();
-            memberPrices.forEach(vo-> priceMap.put(vo.getItemId() + "," + vo.getClinicItemId(), vo.getClinicItemPrice()));
-            result.forEach(vo -> {
-                List<TreatPlanStepVO> steps = vo.getTreatPlanSteps();
+            List<ClinicItemPriceVO> memberPriceList = remoteTreatmentServiceFeign.findClinicItemMemberPrice(query);
+            Map<String, Map<Integer, BigDecimal>> priceMap = new HashMap<>();
+            memberPriceList.forEach(vo -> {
+                String key = vo.getItemId() + "," + vo.getClinicItemId();
+                Map<Integer, BigDecimal> memberPrices = priceMap.get(key);
+                if (memberPrices == null) {
+                    memberPrices = new LinkedHashMap<>();
+                }
+                memberPrices.put(vo.getMemberTypeId(), vo.getClinicItemPrice());
+                priceMap.put(key, memberPrices);
+            });
+            result.forEach(plan -> {
+                List<TreatPlanStepVO> steps = plan.getTreatPlanSteps();
                 steps.forEach(step -> {
                     List<TreatPlanDetailVO> details = step.getTreatPlanDetails();
                     details.forEach(detail -> {
-                        BigDecimal memberPrice = priceMap.get(detail.getType() + "," + detail.getBillingItemId());
-                        if (!ObjectUtils.isEmpty(memberPrice)) {
-                            detail.setMemberPrice(memberPrice.multiply(new BigDecimal(detail.getQuantity())));
+                        Integer quantity = detail.getQuantity();
+                        Map<Integer, BigDecimal> map = new LinkedHashMap<>();
+                        Map<Integer, BigDecimal> memberPrices = priceMap.get(detail.getType() + "," + detail.getBillingItemId());
+                        if (StringHelper.isNotEmpty(memberPrices)) {
+                            memberPrices.forEach((memberTypeId, discountPrice) -> {
+                                map.put(memberTypeId, new BigDecimal(quantity).multiply(discountPrice)
+                                        .setScale(2, BigDecimal.ROUND_HALF_UP));
+                            });
+                        } else {
+                            BigDecimal price = detail.getPrice();
+                            memberTypes.forEach(memberType->{
+                                BigDecimal memberPrice =
+                                        (price
+                                                .multiply(BigDecimal.valueOf(memberType.getRate()))
+                                                .divide(BigDecimal.valueOf(100), 2))
+                                                .setScale(2, BigDecimal.ROUND_HALF_UP);
+                                map.put(memberType.getId(), memberPrice);
+                            });
                         }
+                        detail.setMemberPrices(map);
                     });
                 });
             });
@@ -645,21 +671,23 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         removeInvalidData(model.getDeletedOrderDetailIds());
         List<TreatPlanDetailWriteoffInfoModel> models = model.getWriteoffInfoModels();
         List<Integer> detailIds = models.stream().map(TreatPlanDetailWriteoffInfoModel::getPlanDetailId).collect(Collectors.toList());
-        List<TreatPlanDetail> list = treatPlanDetailBiz.sumTreatPlanDetailEnableQuantity(detailIds);
-        Date now = new Date(System.currentTimeMillis());
-        List<TreatPlanDetailWriteoff> datas = new ArrayList<>();
-        models.forEach(vo->{
-            Integer planDetailId = vo.getPlanDetailId();
-            Integer writeoffQuantity = checkQuantityOver(planDetailId, vo.getQuantity(), list);
-            TreatPlanDetailWriteoff data = new TreatPlanDetailWriteoff();
-            data.setOrderDetailId(vo.getOrderDetailId());
-            data.setOrderDetailId(planDetailId);
-            data.setWriteOffQuantity(writeoffQuantity);
-            data.setCrtId(vo.getCrtId());
-            data.setCrtTime(now);
-            datas.add(data);
-        });
-        treatPlanDetailBiz.insertBatchOfWriteoffQuantity(datas);
+        if (StringHelper.isNotEmpty(detailIds)) {
+            List<TreatPlanDetail> list = treatPlanDetailBiz.sumTreatPlanDetailEnableQuantity(detailIds);
+            Date now = new Date(System.currentTimeMillis());
+            List<TreatPlanDetailWriteoff> datas = new ArrayList<>();
+            models.forEach(vo -> {
+                Integer planDetailId = vo.getPlanDetailId();
+                Integer writeoffQuantity = checkQuantityOver(planDetailId, vo.getQuantity(), list);
+                TreatPlanDetailWriteoff data = new TreatPlanDetailWriteoff();
+                data.setOrderDetailId(vo.getOrderDetailId());
+                data.setPlanDetailId(planDetailId);
+                data.setWriteOffQuantity(writeoffQuantity);
+                data.setCrtId(vo.getCrtId());
+                data.setCrtTime(now);
+                datas.add(data);
+            });
+            treatPlanDetailBiz.insertBatchOfWriteoffQuantity(datas);
+        }
     }
 
     /**

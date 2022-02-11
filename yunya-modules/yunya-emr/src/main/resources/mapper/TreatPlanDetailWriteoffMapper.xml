@@ -41,24 +41,24 @@
     </delete>
 
     <select id="sumTreatPlanDetailEnableQuantity" resultType="com.yunya.models.emr.TreatPlanDetail">
-    SELECT
-        tpd.id,
-        tpd.quantity - tpdw.writeoffQuantity AS quanity,
-        tpd.billing_item_name AS billingItemName
-    FROM treat_plan_detail tpd
-    LEFT JOIN (
         SELECT
-            IFNULL(SUM(write_off_quantity),0) writeoffQuantity,
-            plan_detail_id
-        FROM treat_plan_detail_writeoff
-        GROUP BY plan_detail_id
-    ) tpdw ON tpd.id = tpdw.plan_detail_id
-    where
-    <if test="detailIds!=null and detailIds.size()>0">
-        id in
-        <foreach collection="detailIds" item="item" index="index" open="(" close=")" separator=",">
-            #{item}
-        </foreach>
-    </if>
+            tpd.id,
+            tpd.quantity - IFNULL(tpdw.writeoffQuantity, 0) AS quantity,
+            tpd.billing_item_name AS billingItemName
+        FROM treat_plan_detail tpd
+        LEFT JOIN (
+            SELECT
+                IFNULL(SUM(write_off_quantity),0) writeoffQuantity,
+                plan_detail_id
+            FROM treat_plan_detail_writeoff
+            GROUP BY plan_detail_id
+        ) tpdw ON tpd.id = tpdw.plan_detail_id
+        where
+        <if test="detailIds!=null and detailIds.size()>0">
+            id in
+            <foreach collection="detailIds" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
   </select>
 </mapper>

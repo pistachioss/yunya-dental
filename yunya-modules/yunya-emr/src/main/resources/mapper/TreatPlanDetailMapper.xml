@@ -37,13 +37,13 @@
         tpd.price*tpd.quantity AS memberPrice,
         tpd.quantity,
         IFNULL(tpdw.writeoffQuantity, 0) AS writeoffQuantity,
-        tpd.quantity-writeoffQuantity AS enableQuantity,
+        tpd.quantity-IFNULL(tpdw.writeoffQuantity, 0) AS enableQuantity,
         CASE
         WHEN tpdw.status IS NULL THEN 1
-        WHEN writeoffQuantity &lt;= 0 and tpdw.status = 0 THEN 1
-        WHEN writeoffQuantity &lt; tpd.quantity and tpdw.status = 1 THEN 2
-        WHEN writeoffQuantity = tpd.quantity and tpdw.status = 1 THEN 3
-        WHEN writeoffQuantity &gt;= 0 and tpdw.status = 2 THEN 4
+        WHEN IFNULL(tpdw.writeoffQuantity, 0) &lt;= 0 and tpdw.status = 0 THEN 1
+        WHEN IFNULL(tpdw.writeoffQuantity, 0) &lt; tpd.quantity and tpdw.status = 1 THEN 2
+        WHEN IFNULL(tpdw.writeoffQuantity, 0) = tpd.quantity and tpdw.status = 1 THEN 3
+        WHEN IFNULL(tpdw.writeoffQuantity, 0) &gt;= 0 and tpdw.status = 2 THEN 4
         END
         AS status,
         tpd.remark,

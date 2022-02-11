@@ -8,6 +8,7 @@ import lombok.ToString;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * 简介：治疗计划步骤明细VO
@@ -70,9 +71,9 @@ public class TreatPlanDetailVO implements Serializable {
     @ApiModelProperty(value = "单价")
     private BigDecimal price;
 
-    /** 折扣价*/
-    @ApiModelProperty(value = "折扣价")
-    private BigDecimal memberPrice;
+    /** 折扣价列表*/
+    @ApiModelProperty(value = "折扣价列表")
+    private Map<Integer, BigDecimal> memberPrices;
 
     /** 备注*/
     @ApiModelProperty("备注")
