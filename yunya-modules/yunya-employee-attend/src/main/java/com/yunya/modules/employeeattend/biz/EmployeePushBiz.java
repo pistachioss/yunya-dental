@@ -21,93 +21,99 @@ import java.util.Set;
 @Transactional(rollbackFor = Exception.class)
 public class EmployeePushBiz extends BaseBiz<EmployeePushMapper, EmployeePush> {
 
-    /**
-     * 保证推送设备与员工绑定关系
-     * @param employeePush
-     * @return
-     */
-    public int save(EmployeePush employeePush){
-        if(mapper.selectByPrimaryKey(employeePush.getEmployeeId()) == null){
-            return mapper.insert(employeePush);
-        }
-        else{
-            return mapper.updateByPrimaryKey(employeePush);
-        }
+  /**
+   * 保证推送设备与员工绑定关系
+   *
+   * @param employeePush
+   * @return
+   */
+  public int save(EmployeePush employeePush) {
+    if (mapper.selectByPrimaryKey(employeePush.getEmployeeId()) == null) {
+      return mapper.insert(employeePush);
+    } else {
+      return mapper.updateByPrimaryKey(employeePush);
     }
+  }
 
-    public List<EmployeePush> query(Set<Integer> employee_ids)
-    {
-        List<Integer> ids = new ArrayList<>();
-        if(employee_ids != null){
-            employee_ids.forEach(id ->{
-                ids.add(id);
+  public List<EmployeePush> query(Set<Integer> employee_ids) {
+    List<Integer> ids = new ArrayList<>();
+    if (employee_ids != null) {
+      employee_ids.forEach(
+          id -> {
+            ids.add(id);
+          });
+    }
+    log.info("ids: " + ids.toString());
+    return mapper.selectByEmployeeIds(ids);
+  }
+
+  /**
+   * 根据员工ID，获取推送号，按平台分类返回
+   *
+   * @param employeePushForm
+   * @return
+   */
+  public List<EmployeePushForm> makeEmployeePushForm(EmployeePushForm employeePushForm) {
+    List<EmployeePushForm> employeePushFormList = new ArrayList<>();
+    log.info("employeePushForm: " + employeePushForm.toString());
+    if (employeePushForm.getEmpId() != null && !employeePushForm.getEmpId().isEmpty()) {
+      List<EmployeePush> employeePushList = query(employeePushForm.getEmpId());
+      if (employeePushList != null && !employeePushList.isEmpty()) {
+        List<String> iosUL = new ArrayList<String>();
+        List<String> androidUL = new ArrayList<String>();
+        employeePushList.forEach(
+            employeePush -> {
+              switch (employeePush.getPlatform()) {
+                case 1:
+                  iosUL.add(employeePush.getRegistrationId());
+                  break;
+                case 2:
+                  androidUL.add(employeePush.getRegistrationId());
+                  break;
+              }
             });
+        if (iosUL.size() > 0) {
+          EmployeePushForm iosList = new EmployeePushForm();
+          try {
+            iosList = BeanCopierUtils.deepClone(employeePushForm);
+          } catch (Exception e) {
+            log.info(e.getMessage());
+          }
+          iosList.setPlatform(1);
+          iosList.setUserList(iosUL);
+          employeePushFormList.add(iosList);
         }
-        log.info("ids: " + ids.toString());
-        return mapper.selectByEmployeeIds(ids);
-    }
-
-    /**
-     * 根据员工ID，获取推送号，按平台分类返回
-     * @param employeePushForm
-     * @return
-     */
-    public List<EmployeePushForm> makeEmployeePushForm(EmployeePushForm employeePushForm) {
-        List<EmployeePushForm> employeePushFormList = new ArrayList<>();
-        log.info("employeePushForm: " + employeePushForm.toString());
-        if(employeePushForm.getEmpId() != null && !employeePushForm.getEmpId().isEmpty()){
-            List<EmployeePush> employeePushList = query(employeePushForm.getEmpId());
-            if(employeePushList != null && !employeePushList.isEmpty()){
-                EmployeePushForm iosList = new EmployeePushForm();
-                EmployeePushForm androidList = new EmployeePushForm();
-                try{
-                    iosList  = BeanCopierUtils.deepClone(employeePushForm);
-                    androidList  = BeanCopierUtils.deepClone(employeePushForm);
-                }catch (Exception e){
-                    log.info(e.getMessage());
-                }
-                iosList.setPlatform(1);
-                androidList.setPlatform(2);
-                List<String> iosUL = new ArrayList<String>();
-                List<String> androidUL = new ArrayList<String>();;
-                if(employeePushForm.getUserList()!=null){
-                    iosUL.addAll(iosList.getUserList());
-                    androidUL.addAll(androidList.getUserList());
-                }
-                employeePushList.forEach(employeePush -> {
-                    switch (employeePush.getPlatform()){
-                        case 1:
-                            iosUL.add(employeePush.getRegistrationId());
-                            break;
-                        case  2:
-                            androidUL.add(employeePush.getRegistrationId());
-                            break;
-                    }
-                });
-                iosList.setUserList(iosUL);
-                androidList.setUserList(androidUL);
-                employeePushFormList.add(iosList);
-                employeePushFormList.add(androidList);
-                return employeePushFormList;
-            }
+        if (androidUL.size() > 0) {
+          EmployeePushForm androidList = new EmployeePushForm();
+          try {
+            androidList = BeanCopierUtils.deepClone(employeePushForm);
+          } catch (Exception e) {
+            log.info(e.getMessage());
+          }
+          androidList.setPlatform(2);
+          androidList.setUserList(androidUL);
+          employeePushFormList.add(androidList);
         }
-        if(employeePushForm.getUserList()!=null && !employeePushForm.getUserList().isEmpty()){
-            employeePushFormList.add(employeePushForm);
-            return employeePushFormList;
-        }
-        List<String> userList = new ArrayList<String>();
-        userList.add("1104a8979264c85dfd4");
-        employeePushForm.setPlatform(2);
-        employeePushForm.setUserList(userList);
-        if(employeePushForm.getIsSchedule() != null && employeePushForm.getIsSchedule()){
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            Date dt = new Date(System.currentTimeMillis() + 60 * 1000);
-            if(dt.getHours()<8){
-                dt.setHours(8);
-            }
-            employeePushForm.setScheTime(simpleDateFormat.format(dt));
-        }
-        employeePushFormList.add(employeePushForm);
         return employeePushFormList;
+      }
     }
+    if (employeePushForm.getUserList() != null && !employeePushForm.getUserList().isEmpty()) {
+      employeePushFormList.add(employeePushForm);
+      return employeePushFormList;
+    }
+    List<String> userList = new ArrayList<String>();
+    userList.add("1104a8979264c85dfd4");
+    employeePushForm.setPlatform(2);
+    employeePushForm.setUserList(userList);
+    if (employeePushForm.getIsSchedule() != null && employeePushForm.getIsSchedule()) {
+      SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+      Date dt = new Date(System.currentTimeMillis() + 60 * 1000);
+      if (dt.getHours() < 8) {
+        dt.setHours(8);
+      }
+      employeePushForm.setScheTime(simpleDateFormat.format(dt));
+    }
+    employeePushFormList.add(employeePushForm);
+    return employeePushFormList;
+  }
 }

@@ -15,6 +15,7 @@ import cn.jpush.api.push.model.notification.Notification;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.yunya.modules.employeeattend.config.JPushConfig;
+import com.yunya.modules.employeeattend.form.EmployeePushData;
 import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,9 +155,9 @@ public class JpushManager {
     return res;
   }
 
-  public void pushBase(EmployeePushForm employeePushForm) {
+  public void pushBase(EmployeePushForm employeePushForm, EmployeePushData pushData) {
     try {
-      String data = JpushManager.getInstance().makeSendData(employeePushForm.getPushData());
+      String data = JpushManager.getInstance().makeSendData(pushData);
       if (employeePushForm.getTitle().isEmpty()) {
         employeePushForm.setTitle("提示");
       }
@@ -182,7 +183,7 @@ public class JpushManager {
   }
 
   public void pushTest(EmployeePushForm employeePushTest) {
-    pushBase(employeePushTest);
+    pushBase(employeePushTest, new EmployeePushData());
   }
 
   private String getTypeName(int type) {
@@ -201,45 +202,56 @@ public class JpushManager {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(
         String.format("【OA审批】%s提交的%s", employeePushForm.getShowName(), getTypeName(type)));
-    employeePushForm.setPushData(type * 10);
-    pushBase(employeePushForm);
+    EmployeePushData pushData = new EmployeePushData();
+    pushData.setType(type * 10);
+    pushData.setId(employeePushForm.getId());
+    pushBase(employeePushForm, pushData);
   }
 
   public void pushLeaveCope(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(
         String.format("【OA审批】%s提交的%s，抄送给你，请知晓", employeePushForm.getShowName(), getTypeName(type)));
-    employeePushForm.setPushData(type * 10 + 1);
-    pushBase(employeePushForm);
+    EmployeePushData pushData = new EmployeePushData();
+    pushData.setType(type * 10 + 1);
+    pushData.setId(employeePushForm.getId());
+    pushBase(employeePushForm, pushData);
   }
 
   public void pushLeaveYes(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(String.format("【OA审批】%s审批已通过", getTypeName(type)));
-    employeePushForm.setPushData(type * 10 + 2);
-    pushBase(employeePushForm);
+    EmployeePushData pushData = new EmployeePushData();
+    pushData.setType(type * 10 + 2);
+    pushData.setId(employeePushForm.getId());
+    pushBase(employeePushForm, pushData);
   }
 
   public void pushLeaveNo(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(String.format("【OA审批】%s审批未通过，请知晓", getTypeName(type)));
-    employeePushForm.setPushData(type * 10 + 3);
-    pushBase(employeePushForm);
+    EmployeePushData pushData = new EmployeePushData();
+    pushData.setType(type * 10 + 3);
+    pushData.setId(employeePushForm.getId());
+    pushBase(employeePushForm, pushData);
   }
 
   public void pushLeaveCancel(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(
         String.format("【OA审批】%s申请的%s已撤销", employeePushForm.getShowName(), getTypeName(type)));
-    employeePushForm.setPushData(type * 10 + 4);
-    pushBase(employeePushForm);
+    EmployeePushData pushData = new EmployeePushData();
+    pushData.setType(type * 10 + 4);
+    pushData.setId(employeePushForm.getId());
+    pushBase(employeePushForm, pushData);
   }
 
   public void pushAttend(EmployeePushForm employeePushForm) {
     employeePushForm.setTitle("考勤打卡提示");
     employeePushForm.setContent("【考勤打卡】还有10分钟就要上班啦，快来一键打卡");
     employeePushForm.setIsSchedule(true);
-    employeePushForm.setPushData(1);
-    pushBase(employeePushForm);
+    EmployeePushData pushData = new EmployeePushData();
+    pushData.setType(1);
+    pushBase(employeePushForm, pushData);
   }
 }

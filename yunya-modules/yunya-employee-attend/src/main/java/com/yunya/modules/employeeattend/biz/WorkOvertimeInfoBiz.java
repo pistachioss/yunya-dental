@@ -166,6 +166,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 // 根据leaveInfoForm.getApprovalPeopleId();查推送号与平台
                                 Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
                                 emp_ids.add(userid);
+                                employeePushForm.setId(workOvertimeInfo.getId());
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
                                     JpushManager.getInstance().pushLeaveApproval(el, 2);
@@ -198,6 +199,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                     });
                                     employeePushForm.setEmpId(emp_ids);
                                     employeePushForm.setShowName(showName);
+                                    employeePushForm.setId(workOvertimeInfo.getId());
                                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                     employeePushFormList.forEach(el -> {
                                         JpushManager.getInstance().pushLeaveCope(el, 2);
@@ -292,6 +294,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                         Set<Integer> emp_ids = new HashSet<>();
                         employeePushForm.setEmpId(emp_ids);
                         employeePushForm.setShowName(showName);
+                        employeePushForm.setId(workOvertimeInfoForm.getId());
                         switch (workOvertimeInfoForm.getApprovalStatus()){
                             case 1:
                                 // 通过
@@ -353,6 +356,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                     emp_ids.add(workOvertimeInfo.getUserId());
                     Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
                     emp_ids.add(userid);
+                    employeePushForm.setId(workOvertimeInfoForm.getId());
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         JpushManager.getInstance().pushLeaveCancel(el, 2);

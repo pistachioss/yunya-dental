@@ -189,6 +189,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                             // 根据fieldInfoForm.getApprovalPeopleId();查推送号与平台
                             Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
                             emp_ids.add(userid);
+                            employeePushForm.setId(fieldInfo.getId());
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
                                 JpushManager.getInstance().pushLeaveApproval(el, 3);
@@ -221,6 +222,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                                 });
                                 employeePushForm.setEmpId(emp_ids);
                                 employeePushForm.setShowName(showName);
+                                employeePushForm.setId(fieldInfo.getId());
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
                                     JpushManager.getInstance().pushLeaveCope(el, 3);
@@ -344,6 +346,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                         Set<Integer> emp_ids = new HashSet<>();
                         employeePushForm.setEmpId(emp_ids);
                         employeePushForm.setShowName(showName);
+                        employeePushForm.setId(fieldInfoForm.getId());
                         switch (fieldInfoForm.getApprovalStatus()){
                             case 1:
                                 // 通过
@@ -405,6 +408,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     emp_ids.add(fieldInfo.getUserId());
                     Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
                     emp_ids.add(userid);
+                    employeePushForm.setId(fieldInfoForm.getId());
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         JpushManager.getInstance().pushLeaveCancel(el, 3);

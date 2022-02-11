@@ -135,6 +135,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     leaveInfo.setCrtTime(new Date());
                     leaveInfo.setApprovalStatus(0);
                     int num = mapper.insert(leaveInfo);
+                    int leaveId = leaveInfo.getId();
                     // TODO :一级审批人
                     // start 添加推送 需求1450 by zd.xie
                     SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(leaveInfoForm.getUserId());
@@ -151,6 +152,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                         // 根据leaveInfoForm.getApprovalNowPeopleId();查推送号与平台
                         Integer userid = approvalPeopleBiz.selectById(leaveInfoForm.getApprovalNowPeopleId()).getUserId();
                         emp_ids.add(userid);
+                        employeePushForm.setId(leaveId);
                         List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                         employeePushFormList.forEach(el -> {
                             JpushManager.getInstance().pushLeaveApproval(el, 1);
@@ -158,7 +160,6 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     }
                     // end 添加推送 需求1450 by zd.xie
                     //插入审批人信息
-                    int leaveId = leaveInfo.getId();
                     List<ApprovalInfo> list = leaveInfoForm.getApprovalPeopleList();
                     for (ApprovalInfo approvalInfo : list) {
                         approvalInfo.setCrtId(leaveInfoForm.getCrtId());
@@ -190,6 +191,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                             });
                             employeePushForm.setEmpId(emp_ids);
                             employeePushForm.setShowName(showName);
+                            employeePushForm.setId(leaveId);
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
                                 JpushManager.getInstance().pushLeaveCope(el, 1);
@@ -275,6 +277,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     leaveInfo.setCrtTime(new Date());
                     leaveInfo.setApprovalStatus(0);
                     int num = mapper.insert(leaveInfo);
+                    int leaveId = leaveInfo.getId();
                     // TODO :一级审批人
                     // start 添加推送 需求1450 by zd.xie
                     SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(leaveInfoByEmForm.getUserId());
@@ -290,6 +293,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                         // 根据leaveInfoForm.getApprovalNowPeopleId();查推送号与平台
                         Integer userid = approvalPeopleBiz.selectById(leaveInfoByEmForm.getApprovalNowPeopleId()).getUserId();
                         emp_ids.add(userid);
+                        employeePushForm.setId(leaveId);
                         // 组装
                         List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                         employeePushFormList.forEach(el -> {
@@ -298,7 +302,6 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     }
                     // end 添加推送 需求1450 by zd.xie
                     //插入审批人信息
-                    int leaveId = leaveInfo.getId();
                     //插入班次请假信息
                     for (LeaveSchedule leaveSchedule : scList) {
                         leaveSchedule.setCrtId(leaveInfoByEmForm.getCrtId());
@@ -338,6 +341,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                             });
                             employeePushForm.setEmpId(emp_ids);
                             employeePushForm.setShowName(showName);
+                            employeePushForm.setId(leaveId);
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
                                 JpushManager.getInstance().pushLeaveCope(el, 1);
@@ -416,6 +420,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     Set<Integer> emp_ids = new HashSet<>();
                     employeePushForm.setEmpId(emp_ids);
                     employeePushForm.setShowName(showName);
+                    employeePushForm.setId(leaveInfoForm.getId());
                     switch (leaveInfoForm.getApprovalStatus()){
                         case 1:
                             if(next!=null){
@@ -495,6 +500,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                             emp_ids.add(approvalInfo1.getApprovalPeopleId());
                         });
                     }
+                    employeePushForm.setId(leaveInfoForm.getId());
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         JpushManager.getInstance().pushLeaveCancel(el, 1);
