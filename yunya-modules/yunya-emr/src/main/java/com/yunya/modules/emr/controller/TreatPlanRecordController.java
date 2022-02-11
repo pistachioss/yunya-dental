@@ -62,10 +62,9 @@ public class TreatPlanRecordController {
     @ApiOperation("查询患者所有已确认、进行中的治疗计划列表")
     @PostMapping("/patientList")
     public ResponseResult<PageInfo<TreatPlanRecordVO>> findPatientTreatPlanList(
-            @RequestParam("memberTypeId") Integer memberTypeId,
             @RequestParam("orgId") @Valid @NotNull(message = "门诊id不能为空") Integer orgId,
             @Valid @RequestBody TreatPlanRecordQuery query) {
-        PageInfo<TreatPlanRecordVO> page = treatPlanRecordBiz.findPatientTreatPlanList(memberTypeId, orgId, query);
+        PageInfo<TreatPlanRecordVO> page = treatPlanRecordBiz.findPatientTreatPlanList(orgId, query);
         return ResponseUtil.success(page);
     }
 

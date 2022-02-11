@@ -27,8 +27,7 @@ public class ClinicMemberPriceQuery implements Serializable {
     private Integer orgId;
 
     /** 会员类型id*/
-    @ApiModelProperty(value = "会员类型id", required = true)
-    @NotNull(message = "会员类型id不能为空")
+    @ApiModelProperty(value = "会员类型id")
     private Integer memberTypeId;
 
     /** 商品表id*/
