@@ -7,12 +7,11 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.emr.TreatPlanDetailMapper;
 import com.yunya.middletable.dao.emr.TreatPlanDetailWriteoffMapper;
-import com.yunya.middletable.dao.emr.TreatPlanRecordMapper;
 import com.yunya.middletable.dao.treatment.BillPayRecordMapper;
 import com.yunya.middletable.dao.treatment.OrderDetailMapper;
 import com.yunya.middletable.dao.treatment.OrderRecordMapper;
+import com.yunya.models.emr.TreatPlanDetail;
 import com.yunya.models.emr.TreatPlanDetailWriteoff;
-import com.yunya.models.emr.TreatPlanRecord;
 import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
@@ -35,7 +34,7 @@ import java.util.stream.Collectors;
  * @since: 1.0.0
  */
 @Service
-public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlanRecord> {
+public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlanDetail> {
 
     @Autowired
     private OrderRecordMapper orderRecordMapper;
