@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.middletable.controller.emr.TreatPlanDetailController;
 import com.yunya.middletable.controller.report.BaseBillController;
 import com.yunya.middletable.controller.report.BaseBillPayController;
 import com.yunya.middletable.controller.report.BaseRefundController;
@@ -34,6 +35,8 @@ public class BaseTreatmentProcessControllerTest {
     private BaseBillPayController baseBillPayController;
     @Autowired
     private BaseRefundController baseRefundController;
+    @Autowired
+    private TreatPlanDetailController treatPlanDetailController;
 
     @Test
     public void testOperateTreatmentProcess() throws InterruptedException {
@@ -97,6 +100,14 @@ public class BaseTreatmentProcessControllerTest {
         String param = "{\"paramMap\":{\"id\":674},\"operateType\":1}";
         MessageModel form = JSONObject.parseObject(param, MessageModel.class);
         ResponseResult result = baseRefundController.operateRefund(form);
+        System.out.println(result);
+    }
+
+    @Test
+    public void testOperateTreatPlanDetailWriteoff() throws InterruptedException {
+        String param = "{\"paramMap\":{\"id\":441840},\"operateType\":0}";
+        MessageModel form = JSONObject.parseObject(param, MessageModel.class);
+        ResponseResult result = treatPlanDetailController.operate(form);
         System.out.println(result);
     }
 }

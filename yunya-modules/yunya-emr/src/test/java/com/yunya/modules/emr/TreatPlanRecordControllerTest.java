@@ -169,7 +169,7 @@ public class TreatPlanRecordControllerTest {
                     stepModel.setTreatPlanDetails(details);
                     model.setTreatPlanSteps(Arrays.asList(stepModel));
                     model.setSummary(builder.toString());
-                    treatPlanRecordBiz.save(model, (byte) 0);
+                    treatPlanRecordBiz.save(model, (byte) 0, true);
                 }
             }
         });

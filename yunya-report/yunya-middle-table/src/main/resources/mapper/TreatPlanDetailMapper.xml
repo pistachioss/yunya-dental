@@ -18,8 +18,8 @@
     <result column="remark" property="remark" jdbcType="VARCHAR" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upd_id" property="updId" jdbcType="INTEGER" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
   <select id="selectTreatPlanDetailAndWriteoffList"

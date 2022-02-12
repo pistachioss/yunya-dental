@@ -3,15 +3,18 @@ package com.yunya.feign.emr;
 import com.yunya.feign.emr.domain.model.TreatPlanDetailWriteoffModel;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @FeignClient(name = YunyaServiceNameConstants.YUNYA_EMR)
 public interface RemoteEmrServiceFeign {
 
-    @GetMapping("/api/emr/treatPlan/recalculate/{planId}")
-    void recalculatePlanStatusById(@PathVariable(value = "planId") Integer planId, @RequestParam("userId") Integer userId);
+    @PostMapping("/api/emr/treatPlan/recalculate/{userId}")
+    void recalculatePlanStatusById(@PathVariable(value = "userId") Integer userId, @RequestBody List<Integer> planIds);
 
     /**
      * 生成治疗计划核销表数据
