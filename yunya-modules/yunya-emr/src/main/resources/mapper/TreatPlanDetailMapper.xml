@@ -39,10 +39,10 @@
         IFNULL(tpdw.writeoffQuantity, 0) AS writeoffQuantity,
         tpd.quantity-IFNULL(tpdw.writeoffQuantity, 0) AS enableQuantity,
         CASE
-        WHEN tpdw.status IS NULL OR IFNULL(tpdw.writeoffQuantity,0) &lt;= 0 OR tpdw.status = 0  THEN 1
         <if test="onlySelectStatus">
             WHEN tpr.status = 4 THEN 4
         </if>
+        WHEN tpdw.status IS NULL OR IFNULL(tpdw.writeoffQuantity,0) &lt;= 0 OR tpdw.status = 0  THEN 1
         WHEN IFNULL(tpdw.writeoffQuantity, 0) &lt; tpd.quantity and tpdw.status = 1 THEN 2
         WHEN IFNULL(tpdw.writeoffQuantity, 0) = tpd.quantity and tpdw.status = 1 THEN 3
         END
