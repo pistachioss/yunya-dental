@@ -105,10 +105,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     // 门诊账单收费(本月)-- 查询时间段内本门诊账单首次收费
     billChargeThisMonth(query, resultList);
 
-    // 门诊收欠费（本月）-- 查询时间段内本门诊账单非首次收费
+    // 门诊收欠费（本期）-- 查询时间段内本门诊账单非首次收费
     collectArrearsThisMonth(query, resultList);
 
-    // 门诊收欠费（非本月）-- 非查询时间段内本门诊账单的非首次收费
+    // 门诊收欠费（非本期）-- 非查询时间段内本门诊账单的非首次收费
     collectArrearsNotThisMonth(query, resultList);
 
     // 门诊会员充值 -- 查询时间段内本门诊会员卡充值
@@ -120,16 +120,16 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     // 产品售出 -- 查询时间段内本门诊产品售出
     productSold(query, resultList);
 
-    // 诊所代收（本月）-- 查询时间段内非本门诊账单在本门诊收费
+    // 诊所代收（本期）-- 查询时间段内非本门诊账单在本门诊收费
     clinicCollectionThisMonth(query, resultList);
 
-    // 诊所代收（非本月）-- 非查询时间段内非本门诊账单在本门诊收费
+    // 诊所代收（非本期）-- 非查询时间段内非本门诊账单在本门诊收费
     clinicCollectionNotThisMonth(query, resultList);
 
-    // 账单退费（本月）-- 查询时间段内本门诊账单退费
+    // 账单退费（本期）-- 查询时间段内本门诊账单退费
     billRefundThisMonth(query, resultList);
 
-    // 账单退费（非本月）-- 非查询时间段内本门诊账单退费
+    // 账单退费（非本期）-- 非查询时间段内本门诊账单退费
     billRefundNotThisMonth(query, resultList);
 
     // 会员卡退费 -- 查询时间段内本门诊会员卡充值退费
@@ -141,10 +141,10 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     // 计算出入账合计
     calculateInboundAndOutbound(resultList);
 
-    // 诊所被代收（本月）-- 查询时间段内本门诊账单不在本门诊收费
+    // 诊所被代收（本期）-- 查询时间段内本门诊账单不在本门诊收费
     clinicIsAcceptedThisMonth(query, resultList);
 
-    // 诊所被代收（非本月）-- 非查询时间段内本门诊账单不在门诊收费
+    // 诊所被代收（非本期）-- 非查询时间段内本门诊账单不在门诊收费
     clinicIsAcceptedNotThisMonth(query, resultList);
 
     return resultList;
@@ -227,7 +227,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
   }
 
   /**
-   * 诊所被代收（非本月）
+   * 诊所被代收（非本期）
    *
    * @param query 查询条件
    * @param resultList 结果集
@@ -258,13 +258,13 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     clinicIsAcceptedNotThisMonth = reBuildStatementsPaymentList(clinicIsAcceptedNotThisMonth);
     ClinicInboundAndOutboundVO clinicIsAcceptedNotThisMonthVO = new ClinicInboundAndOutboundVO();
     clinicIsAcceptedNotThisMonthVO.setType((byte) 14);
-    clinicIsAcceptedNotThisMonthVO.setName("诊所被代收（非本月）");
+    clinicIsAcceptedNotThisMonthVO.setName("诊所被代收（非本期）");
     clinicIsAcceptedNotThisMonthVO.setPaymentInfoList(clinicIsAcceptedNotThisMonth);
     resultList.add(14, clinicIsAcceptedNotThisMonthVO);
   }
 
   /**
-   * 诊所被代收（本月）
+   * 诊所被代收（本期）
    *
    * @param query 查询条件
    * @param resultList 结果集
@@ -295,7 +295,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     clinicIsAcceptedThisMonth = reBuildStatementsPaymentList(clinicIsAcceptedThisMonth);
     ClinicInboundAndOutboundVO clinicIsAcceptedThisMonthVO = new ClinicInboundAndOutboundVO();
     clinicIsAcceptedThisMonthVO.setType((byte) 13);
-    clinicIsAcceptedThisMonthVO.setName("诊所被代收（本月）");
+    clinicIsAcceptedThisMonthVO.setName("诊所被代收（本期）");
     clinicIsAcceptedThisMonthVO.setPaymentInfoList(clinicIsAcceptedThisMonth);
     resultList.add(13, clinicIsAcceptedThisMonthVO);
   }
@@ -373,7 +373,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
   }
 
   /**
-   * 账单退费（非本月）
+   * 账单退费（非本期）
    *
    * @param query 查询条件
    * @param resultList 结果集
@@ -404,13 +404,13 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     billRefundNotThisMonth = reBuildStatementsPaymentList(billRefundNotThisMonth);
     ClinicInboundAndOutboundVO billRefundNotThisMonthVO = new ClinicInboundAndOutboundVO();
     billRefundNotThisMonthVO.setType((byte) 9);
-    billRefundNotThisMonthVO.setName("账单退费（非本月）");
+    billRefundNotThisMonthVO.setName("账单退费（非本期）");
     billRefundNotThisMonthVO.setPaymentInfoList(billRefundNotThisMonth);
     resultList.add(9, billRefundNotThisMonthVO);
   }
 
   /**
-   * 账单退费（本月）
+   * 账单退费（本期）
    *
    * @param query 查询条件
    * @param resultList 结果集
@@ -440,13 +440,13 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     billRefundThisMonth = reBuildStatementsPaymentList(billRefundThisMonth);
     ClinicInboundAndOutboundVO billRefundThisMonthVO = new ClinicInboundAndOutboundVO();
     billRefundThisMonthVO.setType((byte) 8);
-    billRefundThisMonthVO.setName("账单退费（本月）");
+    billRefundThisMonthVO.setName("账单退费（本期）");
     billRefundThisMonthVO.setPaymentInfoList(billRefundThisMonth);
     resultList.add(8, billRefundThisMonthVO);
   }
 
   /**
-   * 诊所代收（非本月）
+   * 诊所代收（非本期）
    *
    * @param query 查询条件
    * @param resultList 结果集
@@ -477,13 +477,13 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     clinicCollectionNotThisMonth = reBuildStatementsPaymentList(clinicCollectionNotThisMonth);
     ClinicInboundAndOutboundVO clinicCollectionNotThisMonthVO = new ClinicInboundAndOutboundVO();
     clinicCollectionNotThisMonthVO.setType((byte) 7);
-    clinicCollectionNotThisMonthVO.setName("诊所代收（非本月）");
+    clinicCollectionNotThisMonthVO.setName("诊所代收（非本期）");
     clinicCollectionNotThisMonthVO.setPaymentInfoList(clinicCollectionNotThisMonth);
     resultList.add(7, clinicCollectionNotThisMonthVO);
   }
 
   /**
-   * 诊所代收（本月）
+   * 诊所代收（本期）
    *
    * @param query 查询条件
    * @param resultList 结果集
@@ -514,7 +514,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     clinicCollectionThisMonth = reBuildStatementsPaymentList(clinicCollectionThisMonth);
     ClinicInboundAndOutboundVO clinicCollectionThisMonthVO = new ClinicInboundAndOutboundVO();
     clinicCollectionThisMonthVO.setType((byte) 6);
-    clinicCollectionThisMonthVO.setName("诊所代收（本月）");
+    clinicCollectionThisMonthVO.setName("诊所代收（本期）");
     clinicCollectionThisMonthVO.setPaymentInfoList(clinicCollectionThisMonth);
     resultList.add(6, clinicCollectionThisMonthVO);
   }
@@ -628,7 +628,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
   }
 
   /**
-   * 门诊收欠费（非本月）
+   * 门诊收欠费（非本期）
    *
    * @param query 查询条件
    * @param resultList 结果集
@@ -659,13 +659,13 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     collectArrearsNotThisMonth = reBuildStatementsPaymentList(collectArrearsNotThisMonth);
     ClinicInboundAndOutboundVO collectArrearsNotThisMonthVO = new ClinicInboundAndOutboundVO();
     collectArrearsNotThisMonthVO.setType((byte) 2);
-    collectArrearsNotThisMonthVO.setName("收欠费（非本月）");
+    collectArrearsNotThisMonthVO.setName("收欠费（非本期）");
     collectArrearsNotThisMonthVO.setPaymentInfoList(collectArrearsNotThisMonth);
     resultList.add(2, collectArrearsNotThisMonthVO);
   }
 
   /**
-   * 门诊收欠费（本月）
+   * 门诊收欠费（本期）
    *
    * @param query 查询条件
    * @param resultList 结果集
@@ -696,7 +696,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     collectArrearsThisMonth = reBuildStatementsPaymentList(collectArrearsThisMonth);
     ClinicInboundAndOutboundVO collectArrearsOfThisMonthVO = new ClinicInboundAndOutboundVO();
     collectArrearsOfThisMonthVO.setType((byte) 1);
-    collectArrearsOfThisMonthVO.setName("收欠费（本月）");
+    collectArrearsOfThisMonthVO.setName("收欠费（本期）");
     collectArrearsOfThisMonthVO.setPaymentInfoList(collectArrearsThisMonth);
     resultList.add(1, collectArrearsOfThisMonthVO);
   }
@@ -733,7 +733,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     billChargeThisMonth = reBuildStatementsPaymentList(billChargeThisMonth);
     ClinicInboundAndOutboundVO billChargeVO = new ClinicInboundAndOutboundVO();
     billChargeVO.setType((byte) 0);
-    billChargeVO.setName("账单收费（本月）");
+    billChargeVO.setName("账单收费（本期）");
     billChargeVO.setPaymentInfoList(billChargeThisMonth);
     resultList.add(0, billChargeVO);
   }
@@ -741,9 +741,9 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
   /**
    * 重构支付方式汇总列表
    *
-   * @param type "收支明细分类:0-账单收费（本月）；1-收欠费（本月）；2-收欠费（非本月）；3-会员充值；4-预付款充值；5-产品售出；"
-   *     "6-诊所代收（本月）；7-诊所代收（非本月）；8-账单退费（本月）；9-账单退费（非本月）；"
-   *     "10-会员卡退费；11-预付款退费；12-诊所被代收账（本月）；13-诊所被代收帐（非本月）"
+   * @param type "收支明细分类:0-账单收费（本期）；1-收欠费（本期）；2-收欠费（非本期）；3-会员充值；4-预付款充值；5-产品售出；"
+   *     "6-诊所代收（本期）；7-诊所代收（非本期）；8-账单退费（本期）；9-账单退费（非本期）；"
+   *     "10-会员卡退费；11-预付款退费；12-诊所被代收账（本期）；13-诊所被代收帐（非本期）"
    * @param list 支付方式列表
    * @param query 会员卡/预付款本金赠金查询参数
    */
