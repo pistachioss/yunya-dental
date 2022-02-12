@@ -141,12 +141,13 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
      * 根据治疗计划id查询步骤列表
      *
      * @param planId
+     * @param onlySelectStatus
      * @return
      */
-    public List<TreatPlanStepVO> findTreatPlanStepByPlanId(Integer planId) {
+    public List<TreatPlanStepVO> findTreatPlanStepByPlanId(Integer planId, boolean onlySelectStatus) {
         List<TreatPlanStepVO> steps = mapper.selectTreatPlanStepByPlanId(Collections.singleton(planId));
         if (StringHelper.isNotEmpty(steps)) {
-            List<TreatPlanDetailVO> details = treatPlanDetailBiz.findTreatPlanDetailByPlanId(planId);
+            List<TreatPlanDetailVO> details = treatPlanDetailBiz.findTreatPlanDetailByPlanId(planId, onlySelectStatus);
             if (StringHelper.isNotEmpty(details)) {
                 putDetail2Step(steps, details);
             }
@@ -174,8 +175,7 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
             if (StringHelper.isNotEmpty(detailList)) {
                 int completedNum = 0;
                 int confirmNum = 0;
-                // 按状态排序
-//                detailList = detailList.stream().sorted(Comparator.comparing(TreatPlanDetailVO::getStatus).reversed()).collect(Collectors.toList());
+                int terminationNum = 0;
                 for (TreatPlanDetailVO detail : detailList) {
                     Integer num = detail.getQuantity();
                     quantity += num;
@@ -185,9 +185,14 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
                         completedNum++;
                     } else if (detailStatus.equals(TreatPlanStatusEnum.CONFIRMED.getCode())) {
                         confirmNum++;
+                    } else if (detailStatus.equals(TreatPlanStatusEnum.TERMINATION.getCode())) {
+                        terminationNum++;
                     }
                 }
-                if (completedNum==detailList.size() || confirmNum==detailList.size()) {
+                int size = detailList.size();
+                if (completedNum==size
+                        || confirmNum==size
+                        || terminationNum==size) {
                     status = detailList.get(0).getStatus();
                 }
             }

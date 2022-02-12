@@ -1,9 +1,7 @@
 package com.yunya.modules.emr.biz;
 
 import com.yunya.feign.emr.domain.model.TreatPlanDetailModel;
-import com.yunya.feign.emr.domain.vo.MedicalTreatPlanRecordVO;
 import com.yunya.feign.emr.domain.vo.TreatPlanDetailVO;
-import com.yunya.feign.emr.domain.vo.TreatPlanStepVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.emr.TreatPlanDetail;
@@ -51,26 +49,26 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
 
     /**
      * 保存治疗计划明细
-     *  1、查出本次的原数据
-     *  2、原数据与新数据对比，找出已删数据
-     *  3、删除原数据，增加新数据，追加操作记录
+     * 1、查出本次的原数据
+     * 2、原数据与新数据对比，找出已删数据
+     * 3、删除原数据，增加新数据，追加操作记录
      *
      * @param planId
      * @param stepId
      * @param userId
      * @param details
      */
-    public void save(Integer planId, Integer stepId, Integer userId,List<TreatPlanDetailModel> details) {
+    public void save(Integer planId, Integer stepId, Integer userId, List<TreatPlanDetailModel> details) {
         TreatPlanDetail query = new TreatPlanDetail();
         query.setTreatPlanId(planId);
         query.setTreatStepId(stepId);
-        List<TreatPlanDetailVO> deleted = mapper.selectTreatPlanDetailByPlanId(query);
+        List<TreatPlanDetailVO> deleted = mapper.selectTreatPlanDetailByPlanId(query, true);
         List<TreatPlanDetailHistory> histories = new ArrayList<>();
         mapper.delete(query);
         if (StringHelper.isNotEmpty(details)) {
             if (StringHelper.isNotEmpty(deleted)) {
                 Iterator<TreatPlanDetailVO> it = deleted.iterator();
-                details.forEach(vo->{
+                details.forEach(vo -> {
                     Integer detailId = vo.getDetailId();
                     if (!ObjectUtils.isEmpty(detailId)) {
                         while (it.hasNext()) {
@@ -89,14 +87,14 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
             }
 
             Date now = new Date(System.currentTimeMillis());
-            details.forEach(vo->{
+            details.forEach(vo -> {
                 TreatPlanDetail entity = model2Entity(vo, planId, stepId, userId, now);
                 mapper.insertSelective(entity);
-                histories.add(entity2History(entity, (byte) (ObjectUtils.isEmpty(vo.getDetailId())?0:1)));
+                histories.add(entity2History(entity, (byte) (ObjectUtils.isEmpty(vo.getDetailId()) ? 0 : 1)));
             });
         }
         if (StringHelper.isNotEmpty(deleted)) { // 删除
-            deleted.forEach(vo-> histories.add(entity2History(vo, (byte) 2)));
+            deleted.forEach(vo -> histories.add(entity2History(vo, (byte) 2)));
         }
         if (StringHelper.isNotEmpty(histories)) {
             treatPlanDetailHistoryMapper.insertBatch(histories);
@@ -197,12 +195,13 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
      * 根据治疗计划id查询明细列表
      *
      * @param planId
+     * @param onlySelectStatus
      * @return
      */
-    public List<TreatPlanDetailVO> findTreatPlanDetailByPlanId(Integer planId) {
+    public List<TreatPlanDetailVO> findTreatPlanDetailByPlanId(Integer planId, boolean onlySelectStatus) {
         TreatPlanDetail query = new TreatPlanDetail();
         query.setTreatPlanId(planId);
-        return mapper.selectTreatPlanDetailByPlanId(query);
+        return mapper.selectTreatPlanDetailByPlanId(query, onlySelectStatus);
     }
 
     public List<TreatPlanDetail> sumTreatPlanDetailEnableQuantity(List<Integer> detailIds) {
@@ -217,25 +216,5 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
 
     public void deleteWriteoffByOrderDetailId(List<Integer> detailIds) {
         treatPlanDetailWriteoffMapper.deleteWriteoffByOrderDetailId(detailIds);
-    }
-
-    /**
-     * 终止or恢复已核销的记录
-     *
-     * @param treatPlan
-     */
-    public void terminalOrRenewWriteoffRecord(MedicalTreatPlanRecordVO treatPlan, Byte status) {
-        List<TreatPlanStepVO> steps = treatPlan.getTreatPlanSteps();
-        if (StringHelper.isNotEmpty(steps)) {
-            steps.forEach(step->{
-                List<TreatPlanDetailVO> details = step.getTreatPlanDetails();
-                details.forEach(vo->{
-                    TreatPlanDetailWriteoff entity = new TreatPlanDetailWriteoff();
-                    entity.setId(vo.getDetailId());
-                    entity.setStatus(status);
-                    treatPlanDetailWriteoffMapper.updateByPrimaryKey(entity);
-                });
-            });
-        }
     }
 }

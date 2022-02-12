@@ -294,13 +294,16 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      * @param entity
      */
     private MedicalTreatPlanRecordVO putTreatPlanStepList(TreatPlanRecord entity) {
+        return putTreatPlanStepList(entity, true);
+    }
+
+    private MedicalTreatPlanRecordVO putTreatPlanStepList(TreatPlanRecord entity, boolean onlySelectStatus) {
         if (ObjectUtils.isEmpty(entity)) {
             throw new ClientServiceException("该治疗计划不存在", OperationCodeConstants.DATA_NOT_EXIST);
         }
         MedicalTreatPlanRecordVO result = entity2VO(entity);
-        List<TreatPlanStepVO> steps = treatPlanStepBiz.findTreatPlanStepByPlanId(entity.getId());
+        List<TreatPlanStepVO> steps = treatPlanStepBiz.findTreatPlanStepByPlanId(entity.getId(), onlySelectStatus);
         if (StringHelper.isNotEmpty(steps)) {
-//            steps = steps.stream().sorted(Comparator.comparing(TreatPlanStepVO::getStatus).reversed()).collect(Collectors.toList());
             accumulation(steps, result);
         }
         return result;
@@ -310,6 +313,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         int totalQuantity = 0;
         int completedNum = 0;
         int confirmNum = 0;
+        int terminationNum = 0;
         BigDecimal totalAmount = new BigDecimal("0.00");
         Integer status = TreatPlanStatusEnum.EXECUTING.getCode();
         for (TreatPlanStepVO step : steps) {
@@ -320,13 +324,18 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 completedNum++;
             } else if (stepStatus.equals(TreatPlanStatusEnum.CONFIRMED.getCode())) {
                 confirmNum++;
+            } else if (stepStatus.equals(TreatPlanStatusEnum.TERMINATION.getCode())) {
+                terminationNum++;
             }
         }
-        if (completedNum==steps.size() || confirmNum==steps.size()) {
+        int size = steps.size();
+        if (completedNum==size
+                || confirmNum==size
+                || terminationNum==size) {
             status = steps.get(0).getStatus();
         }
         Integer planStatus = result.getStatus();
-        if (planStatus > TreatPlanStatusEnum.UNCONFIRM.getCode()) {
+        if (planStatus>TreatPlanStatusEnum.UNCONFIRM.getCode()) {
             result.setStatus(status);
         }
         result.setTreatPlanSteps(steps);
@@ -489,12 +498,12 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
             checkNotStatus(status, TreatPlanStatusEnum.EXECUTING, TreatPlanStatusEnum.COMPLETED);
             // 终止计划，终止步骤，终止项目
             updateTreatPlanStatus(treatPlan, TreatPlanStatusEnum.TERMINATION.getCode());
-            treatPlanDetailBiz.terminalOrRenewWriteoffRecord(treatPlan, (byte)2);
-        } else {// 撤销终止
+        } else if (changeType == 3) {// 撤销终止
             checkNotStatus(status, TreatPlanStatusEnum.TERMINATION);
             // 恢复计划，步骤，项目在终止前的状态
-            treatPlanDetailBiz.terminalOrRenewWriteoffRecord(treatPlan, (byte)1);
-            treatPlan = findMedicalTreatPlanById(planId);
+            TreatPlanRecord entity = mapper.selectByPrimaryKey(planId);
+            // 重新计算治疗计划的状态
+            treatPlan = putTreatPlanStepList(entity, false);
             updateTreatPlanStatus(treatPlan, null);
         }
         return null;
