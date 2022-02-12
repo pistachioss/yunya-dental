@@ -74,12 +74,12 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
 
             // 2、找出对应核销记录及其计划明细
             List<TreatPlanDetailVO> details = treatPlanDetailMapper.selectTreatPlanDetailAndWriteoffList(orderDetailIds);
-
-            // 3、更新治疗计划项目数量与核销记录的状态：
-            List<Integer> planIds = updTreatPlanDetailWriteoffStatus(details, status, userId);
-
-            // 4、重新统计给定治疗计划的状态
-            remoteEmrServiceFeign.recalculatePlanStatusById(userId, planIds);
+            if (StringHelper.isNotEmpty(details)) {
+                // 3、更新治疗计划项目数量与核销记录的状态：
+                List<Integer> planIds = updTreatPlanDetailWriteoffStatus(details, status, userId);
+                // 4、重新统计给定治疗计划的状态
+                remoteEmrServiceFeign.recalculatePlanStatusById(userId, planIds);
+            }
         }
     }
 
