@@ -34,7 +34,6 @@ import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 简介：治疗计划业务层
@@ -700,21 +699,24 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     public void treatPlanDetailWriteoffQunatity(TreatPlanDetailWriteoffModel model) {
         removeInvalidData(model.getDeletedOrderDetailIds());
         List<TreatPlanDetailWriteoffInfoModel> models = model.getWriteoffInfoModels();
-        List<Integer> detailIds = models.stream().map(TreatPlanDetailWriteoffInfoModel::getPlanDetailId).collect(Collectors.toList());
+        List<Integer> detailIds = new ArrayList<>();
+        models.forEach(vo-> detailIds.addAll(vo.getPlanDetailIds()));
         if (StringHelper.isNotEmpty(detailIds)) {
             List<TreatPlanDetail> list = treatPlanDetailBiz.sumTreatPlanDetailEnableQuantity(detailIds);
             Date now = new Date(System.currentTimeMillis());
             List<TreatPlanDetailWriteoff> datas = new ArrayList<>();
             models.forEach(vo -> {
-                Integer planDetailId = vo.getPlanDetailId();
-                Integer writeoffQuantity = checkQuantityOver(planDetailId, vo.getQuantity(), list);
-                TreatPlanDetailWriteoff data = new TreatPlanDetailWriteoff();
-                data.setOrderDetailId(vo.getOrderDetailId());
-                data.setPlanDetailId(planDetailId);
-                data.setWriteOffQuantity(writeoffQuantity);
-                data.setCrtId(vo.getCrtId());
-                data.setCrtTime(now);
-                datas.add(data);
+                List<Integer> planDetailIds = vo.getPlanDetailIds();
+                Map<Integer, Integer> writeoffQuantityMap = checkQuantityOver(planDetailIds, vo.getQuantity(), list);
+                writeoffQuantityMap.forEach((detailId, writeoffQuantity)->{
+                    TreatPlanDetailWriteoff data = new TreatPlanDetailWriteoff();
+                    data.setOrderDetailId(vo.getOrderDetailId());
+                    data.setPlanDetailId(detailId);
+                    data.setWriteOffQuantity(writeoffQuantity);
+                    data.setCrtId(vo.getCrtId());
+                    data.setCrtTime(now);
+                    datas.add(data);
+                });
             });
             treatPlanDetailBiz.insertBatchOfWriteoffQuantity(datas);
         }
@@ -734,33 +736,35 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     /**
      * 检查订单项目是否超过选定计划的项目数量
      *
-     * @param planDetailId
-     * @param enableQuantity
+     * @param planDetailIds
+     * @param quantity
      * @param list
      */
-    private Integer checkQuantityOver(Integer planDetailId, Integer enableQuantity, List<TreatPlanDetail> list) {
-        int num = -1;
+    private Map<Integer, Integer> checkQuantityOver(List<Integer> planDetailIds, Integer quantity, List<TreatPlanDetail> list) {
+        Map<Integer, Integer> result = new LinkedHashMap<>(16);
         if (StringHelper.isNotEmpty(list)) {
             for (TreatPlanDetail vo : list) {
-                if (vo.getId().equals(planDetailId)) {
-                    int quantity = vo.getQuantity();
-                    if (quantity <= 0) {
-                        throw new ClientServiceException(vo.getBillingItemName()
-                                + "在治疗计划中已使用，请重新选择治疗计划", OperationCodeConstants.OPERATION_NOT_ALLOW);
-                    }
-                    // 已选项目数量-可用项目数量
-                    num = quantity - enableQuantity;
-                    if (num < 0) {// 可用项目数量未用完
-                        num = quantity;
-                    } else {// 可用项目数量全部用完
-                        num = enableQuantity;
+                int enableQuantity = vo.getQuantity();
+                if (enableQuantity <= 0) {
+                    throw new ClientServiceException(vo.getBillingItemName()
+                            + "在治疗计划中已使用，请重新选择治疗计划", OperationCodeConstants.OPERATION_NOT_ALLOW);
+                }
+                for (Integer detailId : planDetailIds) {
+                    if (detailId.equals(vo.getId())) {
+                        // 可用项目数量-已选项目数量
+                        enableQuantity -= quantity;
+                        if (enableQuantity <= 0) {// 可用项目数量已全部用完
+                            result.put(detailId, enableQuantity);
+                            break;
+                        } else {// 可用项目数量未用完
+                            result.put(detailId, quantity);
+                        }
                     }
                 }
             }
-        }
-        if (num == -1) {
+        } else {
             throw new ClientServiceException("治疗计划中项目不存在", OperationCodeConstants.DATA_NOT_EXIST);
         }
-        return num;
+        return result;
     }
 }
