@@ -614,15 +614,17 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 List<TreatPlanStepVO> steps = vo.getTreatPlanSteps();
                 steps.forEach(step -> {
                     List<TreatPlanDetailVO> details = step.getTreatPlanDetails();
-                    details.forEach(detail -> {
-                        Byte type = detail.getType();
-                        Integer itemId = detail.getBillingItemId();
-                        if (type.intValue() == 0) {
-                            tariffIds.add(itemId);
-                        } else {
-                            oralIds.add(itemId);
-                        }
-                    });
+                    if (StringHelper.isNotEmpty(details)) {
+                        details.forEach(detail -> {
+                            Byte type = detail.getType();
+                            Integer itemId = detail.getBillingItemId();
+                            if (type.intValue() == 0) {
+                                tariffIds.add(itemId);
+                            } else {
+                                oralIds.add(itemId);
+                            }
+                        });
+                    }
                 });
             });
             ClinicMemberPriceQuery query = new ClinicMemberPriceQuery();
@@ -644,28 +646,30 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 List<TreatPlanStepVO> steps = plan.getTreatPlanSteps();
                 steps.forEach(step -> {
                     List<TreatPlanDetailVO> details = step.getTreatPlanDetails();
-                    details.forEach(detail -> {
-                        Integer quantity = detail.getQuantity();
-                        Map<Integer, BigDecimal> map = new LinkedHashMap<>();
-                        Map<Integer, BigDecimal> memberPrices = priceMap.get(detail.getType() + "," + detail.getBillingItemId());
-                        if (StringHelper.isNotEmpty(memberPrices)) {
-                            memberPrices.forEach((memberTypeId, discountPrice) -> {
-                                map.put(memberTypeId, new BigDecimal(quantity).multiply(discountPrice)
-                                        .setScale(2, BigDecimal.ROUND_HALF_UP));
-                            });
-                        } else {
-                            BigDecimal price = detail.getPrice();
-                            memberTypes.forEach(memberType->{
-                                BigDecimal memberPrice =
-                                        (price
-                                                .multiply(BigDecimal.valueOf(memberType.getRate()))
-                                                .divide(BigDecimal.valueOf(100), 2))
-                                                .setScale(2, BigDecimal.ROUND_HALF_UP);
-                                map.put(memberType.getId(), memberPrice);
-                            });
-                        }
-                        detail.setMemberPrices(map);
-                    });
+                    if (StringHelper.isNotEmpty(details)) {
+                        details.forEach(detail -> {
+                            Integer quantity = detail.getQuantity();
+                            Map<Integer, BigDecimal> map = new LinkedHashMap<>();
+                            Map<Integer, BigDecimal> memberPrices = priceMap.get(detail.getType() + "," + detail.getBillingItemId());
+                            if (StringHelper.isNotEmpty(memberPrices)) {
+                                memberPrices.forEach((memberTypeId, discountPrice) -> {
+                                    map.put(memberTypeId, new BigDecimal(quantity).multiply(discountPrice)
+                                            .setScale(2, BigDecimal.ROUND_HALF_UP));
+                                });
+                            } else {
+                                BigDecimal price = detail.getPrice();
+                                memberTypes.forEach(memberType -> {
+                                    BigDecimal memberPrice =
+                                            (price
+                                                    .multiply(BigDecimal.valueOf(memberType.getRate()))
+                                                    .divide(BigDecimal.valueOf(100), 2))
+                                                    .setScale(2, BigDecimal.ROUND_HALF_UP);
+                                    map.put(memberType.getId(), memberPrice);
+                                });
+                            }
+                            detail.setMemberPrices(map);
+                        });
+                    }
                 });
             });
         }
