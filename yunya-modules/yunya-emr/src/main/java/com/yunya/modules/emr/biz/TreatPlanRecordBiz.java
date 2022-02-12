@@ -308,12 +308,22 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
 
     private void accumulation(List<TreatPlanStepVO> steps, MedicalTreatPlanRecordVO result) {
         int totalQuantity = 0;
+        int completedNum = 0;
+        int confirmNum = 0;
         BigDecimal totalAmount = new BigDecimal("0.00");
-        Integer status = TreatPlanStatusEnum.CONFIRMED.getCode();
+        Integer status = TreatPlanStatusEnum.EXECUTING.getCode();
         for (TreatPlanStepVO step : steps) {
             totalQuantity += step.getQuanity();
             totalAmount = totalAmount.add(step.getAmount());
-            status = step.getStatus();
+            Integer stepStatus = step.getStatus();
+            if (stepStatus.equals(TreatPlanStatusEnum.COMPLETED.getCode())) {
+                completedNum++;
+            } else if (stepStatus.equals(TreatPlanStatusEnum.CONFIRMED.getCode())) {
+                confirmNum++;
+            }
+        }
+        if (completedNum==steps.size() || confirmNum==steps.size()) {
+            status = steps.get(0).getStatus();
         }
         Integer planStatus = result.getStatus();
         if (planStatus > TreatPlanStatusEnum.UNCONFIRM.getCode()) {
