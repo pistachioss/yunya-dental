@@ -43,7 +43,7 @@
     <select id="sumTreatPlanDetailEnableQuantity" resultType="com.yunya.models.emr.TreatPlanDetail">
         SELECT
             tpd.id,
-            tpd.quantity - tpdw.writeoffQuantity AS quanity,
+            tpd.quantity - IFNULL(tpdw.writeoffQuantity, 0) AS quantity,
             tpd.billing_item_name AS billingItemName
         FROM treat_plan_detail tpd
         LEFT JOIN (

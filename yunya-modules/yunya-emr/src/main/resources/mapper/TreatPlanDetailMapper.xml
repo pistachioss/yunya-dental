@@ -18,8 +18,8 @@
     <result column="remark" property="remark" jdbcType="VARCHAR" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upd_id" property="updId" jdbcType="INTEGER" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
   <!--根据治疗计划id查询明细列表-->
@@ -34,16 +34,22 @@
         tpd.billing_item_name AS billingItemName,
         tpd.unit,
         tpd.price,
+        tpd.price*tpd.quantity AS memberPrice,
         tpd.quantity,
-        tpd.quantity-tpdw.writeoffQuantity AS enableQuantity,
-        tdpw.writeoffQuantity,
+        IFNULL(tpdw.writeoffQuantity, 0) AS writeoffQuantity,
+        tpd.quantity-IFNULL(tpdw.writeoffQuantity, 0) AS enableQuantity,
         CASE
-        WHEN tdpw.writeoffQuantity &lt;= 0 and tpdw.status = 0 THEN 1
-        WHEN tpdw.writeoffQuantity &lt; tpd.quantity and tpdw.status = 1 THEN 2
-        WHEN tpdw.writeoffQuantity = tpd.quantity and tpdw.status = 1 THEN 3
-        WHEN tpdw.writeoffQuantity &gt;= 0 and tpdw.status = 2 THEN 4
+        WHEN tpdw.status IS NULL OR IFNULL(tpdw.writeoffQuantity,0) &lt;= 0 OR tpdw.status = 0  THEN 1
+        WHEN IFNULL(tpdw.writeoffQuantity, 0) &lt; tpd.quantity and tpdw.status = 1 THEN 2
+        WHEN IFNULL(tpdw.writeoffQuantity, 0) = tpd.quantity and tpdw.status = 1 THEN 3
+        WHEN IFNULL(tpdw.writeoffQuantity, 0) &gt;= 0 and tpdw.status = 2 THEN 4
+        END
         AS status,
-        tpd.remark
+        tpd.remark,
+        tpd.crt_id AS crtId,
+        tpd.crt_time AS crtTime,
+        tpd.upt_id AS uptId,
+        tpd.upt_time AS uptTime
     FROM treat_plan_detail tpd
     LEFT JOIN (
         SELECT
@@ -53,6 +59,11 @@
         FROM treat_plan_detail_writeoff
         GROUP BY plan_detail_id
     ) tpdw ON tpd.id = tpdw.plan_detail_id
-    WHERE treat_plan_id = #{planId}
+    <where>
+        AND tpd.treat_plan_id = #{query.treatPlanId}
+        <if test="query.treatStepId != null">
+            AND tpd.treat_step_id = #{query.treatStepId}
+        </if>
+    </where>
   </select>
 </mapper>

@@ -66,7 +66,7 @@ public class TreatPlanRecordControllerTest {
     public void testAdd() throws InterruptedException {
         List<MedicalCommonRecord> list = medicalCommonRecordMapper.selectAll();
         if (StringHelper.isNotEmpty(list)) {
-            Byte status = TreatPlanStatusEnum.UNCONFIRM.getCode();
+            Integer status = TreatPlanStatusEnum.UNCONFIRM.getCode();
             List<List<MedicalCommonRecord>> parts = Lists.partition(list, 500);
             CountDownLatch cdl = new CountDownLatch(parts.size());
             List<Future> resultFutures = new ArrayList<>();
@@ -108,7 +108,7 @@ public class TreatPlanRecordControllerTest {
         }
     }
 
-    private void batchSave(List<MedicalCommonRecord> list, Byte status) {
+    private void batchSave(List<MedicalCommonRecord> list, Integer status) {
         BaseContextHandler.setUserID("-999");
         list.forEach(vo->{
             String planStr = vo.getPlan();

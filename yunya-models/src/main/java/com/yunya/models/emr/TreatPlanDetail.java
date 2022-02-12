@@ -86,14 +86,14 @@ public class TreatPlanDetail {
     /**
      * 更新人ID
      */
-    @Column(name = "upd_id")
-    private Integer updId;
+    @Column(name = "upt_id")
+    private Integer uptId;
 
     /**
      * 更新时间
      */
-    @Column(name = "upd_time")
-    private Date updTime;
+    @Column(name = "upt_time")
+    private Date uptTime;
 
     /**
      * 获取主键ID
@@ -322,36 +322,36 @@ public class TreatPlanDetail {
     /**
      * 获取更新人ID
      *
-     * @return upd_id - 更新人ID
+     * @return upt_id - 更新人ID
      */
-    public Integer getUpdId() {
-        return updId;
+    public Integer getUptId() {
+        return uptId;
     }
 
     /**
      * 设置更新人ID
      *
-     * @param updId 更新人ID
+     * @param uptId 更新人ID
      */
-    public void setUpdId(Integer updId) {
-        this.updId = updId;
+    public void setUptId(Integer uptId) {
+        this.uptId = uptId;
     }
 
     /**
      * 获取更新时间
      *
-     * @return upd_time - 更新时间
+     * @return upt_time - 更新时间
      */
-    public Date getUpdTime() {
-        return updTime;
+    public Date getUptTime() {
+        return uptTime;
     }
 
     /**
      * 设置更新时间
      *
-     * @param updTime 更新时间
+     * @param uptTime 更新时间
      */
-    public void setUpdTime(Date updTime) {
-        this.updTime = updTime;
+    public void setUptTime(Date uptTime) {
+        this.uptTime = uptTime;
     }
 }

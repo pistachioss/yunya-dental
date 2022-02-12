@@ -5,6 +5,7 @@ import com.yunya.feign.emr.domain.vo.MedicalTreatPlanRecordVO;
 import com.yunya.feign.emr.domain.vo.TreatPlanDetailVO;
 import com.yunya.feign.emr.domain.vo.TreatPlanStepVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.enums.TreatPlanStatusEnum;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.emr.TreatPlanDetail;
 import com.yunya.models.emr.TreatPlanDetailHistory;
@@ -43,6 +44,11 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
      */
     @Autowired
     private TreatPlanDetailWriteoffMapper treatPlanDetailWriteoffMapper;
+    /**
+     * 治疗计划
+     */
+    @Autowired
+    private TreatPlanRecordBiz treatPlanRecordBiz;
 
     /**
      * 保存治疗计划明细
@@ -59,18 +65,20 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
         TreatPlanDetail query = new TreatPlanDetail();
         query.setTreatPlanId(planId);
         query.setTreatStepId(stepId);
-        List<TreatPlanDetail> deleted = mapper.select(query);
+        List<TreatPlanDetailVO> deleted = mapper.selectTreatPlanDetailByPlanId(query);
         List<TreatPlanDetailHistory> histories = new ArrayList<>();
         mapper.delete(query);
         if (StringHelper.isNotEmpty(details)) {
             if (StringHelper.isNotEmpty(deleted)) {
-                Iterator<TreatPlanDetail> it = deleted.iterator();
+                Iterator<TreatPlanDetailVO> it = deleted.iterator();
                 details.forEach(vo->{
                     Integer detailId = vo.getDetailId();
                     if (!ObjectUtils.isEmpty(detailId)) {
                         while (it.hasNext()) {
-                            TreatPlanDetail next = it.next();
-                            if (next.getId().equals(detailId)) {
+                            TreatPlanDetailVO next = it.next();
+                            treatPlanRecordBiz.checkNotStatus(next.getStatus().intValue(),
+                                    TreatPlanStatusEnum.UNCONFIRM, TreatPlanStatusEnum.CONFIRMED);
+                            if (next.getDetailId().equals(detailId)) {
                                 vo.setCrtId(next.getCrtId());
                                 vo.setCrtTime(next.getCrtTime());
                                 it.remove();
@@ -117,8 +125,34 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
         history.setQuantity(entity.getQuantity());
         history.setRemark(entity.getRemark());
         history.setOperation(operation);
-        history.setCrtId(entity.getUpdId());
-        history.setCrtTime(entity.getUpdTime());
+        history.setCrtId(entity.getUptId());
+        history.setCrtTime(entity.getUptTime());
+        return history;
+    }
+
+    /**
+     * 实体数据转为历史操作数据
+     *
+     * @param vo
+     * @param operation
+     * @return
+     */
+    private TreatPlanDetailHistory entity2History(TreatPlanDetailVO vo, Byte operation) {
+        TreatPlanDetailHistory history = new TreatPlanDetailHistory();
+        history.setStepDetailId(vo.getDetailId());
+        history.setTreatPlanId(vo.getPlanId());
+        history.setTreatStepId(vo.getStepId());
+        history.setToothBit(vo.getToothBit());
+        history.setType(vo.getType());
+        history.setBillingItemId(vo.getBillingItemId());
+        history.setBillingItemName(vo.getBillingItemName());
+        history.setUnit(vo.getUnit());
+        history.setPrice(vo.getPrice());
+        history.setQuantity(vo.getQuantity());
+        history.setRemark(vo.getRemark());
+        history.setOperation(operation);
+        history.setCrtId(vo.getUptId());
+        history.setCrtTime(vo.getUptTime());
         return history;
     }
 
@@ -155,8 +189,8 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
         }
         entity.setCrtId(crtId);
         entity.setCrtTime(crtTime);
-        entity.setUpdId(userId);
-        entity.setUpdTime(now);
+        entity.setUptId(userId);
+        entity.setUptTime(now);
         return entity;
     }
 
@@ -167,7 +201,9 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
      * @return
      */
     public List<TreatPlanDetailVO> findTreatPlanDetailByPlanId(Integer planId) {
-        return mapper.selectTreatPlanDetailByPlanId(planId);
+        TreatPlanDetail query = new TreatPlanDetail();
+        query.setTreatPlanId(planId);
+        return mapper.selectTreatPlanDetailByPlanId(query);
     }
 
     public List<TreatPlanDetail> sumTreatPlanDetailEnableQuantity(List<Integer> detailIds) {

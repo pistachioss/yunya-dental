@@ -7,6 +7,7 @@ import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
+import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
@@ -556,5 +557,16 @@ public class TreatmentServiceRest {
   @RequestMapping(value = "/oral/name", method = RequestMethod.POST)
   public String findBaseOralNamesByIds(@RequestBody @NotEmpty String[] ids) {
     return baseOralTariffBiz.findBaseOralNamesByIds(ids);
+  }
+
+  /**
+   * 根据条件查询商品表or价目表门诊折扣价
+   *
+   * @param query 字符串ID
+   * @return ClinicItemPriceVO
+   */
+  @RequestMapping(value = "/clinic/itemMemberPrice", method = RequestMethod.POST)
+  public List<ClinicItemPriceVO> findClinicItemMemberPrice(@Validated @RequestBody ClinicMemberPriceQuery query) {
+    return clinicTariffMemberPriceBiz.findClinicItemMemberPrice(query);
   }
 }

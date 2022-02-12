@@ -224,7 +224,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         medicalRecordHistoryMapper.updateByExampleSelective(medicalRecordHistory, example);
 
         // 保存照片影像
-        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getRayFiles(), medicalcopy.getUpdTime());
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXRayFilms(), medicalcopy.getUpdTime());
         // 保存检查记录
         medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
 
