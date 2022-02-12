@@ -330,14 +330,14 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
         Integer billingItemId = detail.getBillingItemId();
         Byte type = detail.getType();
         models.forEach(vo->{
-          Integer planDetailId = vo.getPlanDetailId();
-          if (!ObjectUtils.isEmpty(planDetailId)
+          List<Integer> planDetailIds = vo.getPlanDetailIds();
+          if (!ObjectUtils.isEmpty(planDetailIds)
                   && vo.getBillingItemId().equals(billingItemId) && vo.getType().equals(type)) {
             TreatPlanDetailWriteoffInfoModel obj = new TreatPlanDetailWriteoffInfoModel();
             obj.setTreatmentId(detail.getTreatmentRecordId());
             obj.setQuantity(detail.getQuantity());
             obj.setOrderDetailId(detail.getId());
-            obj.setPlanDetailId(planDetailId);
+            obj.setPlanDetailIds(planDetailIds);
             obj.setCrtId(detail.getCrtId());
             list.add(obj);
           }
