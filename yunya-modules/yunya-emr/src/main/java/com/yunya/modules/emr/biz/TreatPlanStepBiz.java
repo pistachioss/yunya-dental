@@ -17,7 +17,6 @@ import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 简介：治疗计划步骤业务层
@@ -176,7 +175,7 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
                 int completedNum = 0;
                 int confirmNum = 0;
                 // 按状态排序
-                detailList = detailList.stream().sorted(Comparator.comparing(TreatPlanDetailVO::getStatus).reversed()).collect(Collectors.toList());
+//                detailList = detailList.stream().sorted(Comparator.comparing(TreatPlanDetailVO::getStatus).reversed()).collect(Collectors.toList());
                 for (TreatPlanDetailVO detail : detailList) {
                     Integer num = detail.getQuantity();
                     quantity += num;

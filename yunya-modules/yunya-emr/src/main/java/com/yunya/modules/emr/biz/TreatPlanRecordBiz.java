@@ -300,7 +300,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         MedicalTreatPlanRecordVO result = entity2VO(entity);
         List<TreatPlanStepVO> steps = treatPlanStepBiz.findTreatPlanStepByPlanId(entity.getId());
         if (StringHelper.isNotEmpty(steps)) {
-            steps = steps.stream().sorted(Comparator.comparing(TreatPlanStepVO::getStatus).reversed()).collect(Collectors.toList());
+//            steps = steps.stream().sorted(Comparator.comparing(TreatPlanStepVO::getStatus).reversed()).collect(Collectors.toList());
             accumulation(steps, result);
         }
         return result;
@@ -480,7 +480,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
             treatPlan.setStatus(TreatPlanStatusEnum.CONFIRMED.getCode());
             return treatPlan;
         } else if (changeType == 1) {// 方案变更
-            checkNotStatus(status, TreatPlanStatusEnum.UNCONFIRM, TreatPlanStatusEnum.CONFIRMED, TreatPlanStatusEnum.COMPLETED);
+            checkNotStatus(status, TreatPlanStatusEnum.UNCONFIRM, TreatPlanStatusEnum.CONFIRMED, TreatPlanStatusEnum.EXECUTING);
             // 已完成的项目不变
             TreatPlanRecordModel model = vo2modelBaseInfo(treatPlan);
             model.setTreatPlanSteps(form.getDetails());
