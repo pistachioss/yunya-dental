@@ -21,7 +21,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.*;
 import com.yunya.report.ultimate.mapper.*;
-import jdk.nashorn.internal.ir.ReturnNode;
 import org.apache.commons.lang3.ObjectUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1614,6 +1613,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public DynamicHeaderPageInfo<JSONObject> clinicFirstVisitSourceList(
       ClinicPerformanceBusinessQuery query) {
+    query.setWhetherPage(false);
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }

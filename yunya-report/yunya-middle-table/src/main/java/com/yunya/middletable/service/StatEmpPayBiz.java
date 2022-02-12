@@ -78,8 +78,8 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                 keys.add(executorId + "," + vo.getType() + "," + vo.getBillingItemId());
             });
             if (StringHelper.isNotEmpty(executorIds)) {
-                List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId,
-                        null, payDate, executorIds);
+                List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId, null,
+                        payDate, null, executorIds);
                 StatisticsEmployeeQueryForm query = new StatisticsEmployeeQueryForm();
                 query.setSDateInt(payDate);
                 query.setEDateInt(payDate);
@@ -103,7 +103,6 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                             entity.setItemId(vo.getItemId());
                             entity.setReceivedWorkload(vo.getReceivedWorkload());
                             entity.setFreePaymentWorkload(vo.getFreePaymentWorkload());
-                            entity.setCouponWorkload(vo.getCouponWorkload());
                             entity.setCrtId(payeeUserId);
                             entity.setCrtTime(date);
                             mapper.insertSelective(entity);
@@ -236,7 +235,6 @@ public class StatEmpPayBiz extends BaseBiz<StatEmpPayMapper, StatEmpPay> {
                 entity.setItemId(vo.getItemId());
                 entity.setReceivedWorkload(vo.getReceivedWorkload());
                 entity.setFreePaymentWorkload(vo.getFreePaymentWorkload());
-                entity.setCouponWorkload(vo.getCouponWorkload());
                 entity.setCrtId(vo.getExecutorId());
                 entity.setCrtTime(now);
                 datas.add(entity);

@@ -81,6 +81,9 @@
             <if test="billDate != null">
                 AND DATE_FORMAT(bb.bill_date, '%Y%m%d')  = #{billDate}
             </if>
+            <if test="privilegeDate != null">
+                AND DATE_FORMAT(bb.privilege_date, '%Y%m%d')  = #{privilegeDate}
+            </if>
             AND bbd.executor_id in
             <foreach collection="executorIds" item="item" index="index" open="(" close=")" separator=",">
                 #{item}
@@ -110,10 +113,15 @@
         GROUP BY bb.bill_id
     </select>
 
-    <select id="groupBillItemDetailListByBillDate" resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">
+    <select id="groupBillItemDetailListByDate" resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">
         SELECT
             bbd.org_id AS orgId,
-            DATE_FORMAT(bb.bill_date, '%Y%m%d') AS billDate,
+            <if test="dateInt == 0">
+                DATE_FORMAT(bb.bill_date, '%Y%m%d') AS billDate,
+            </if>
+            <if test="dateInt == 1">
+                DATE_FORMAT(bb.privilege_date, '%Y%m%d') AS billDate,
+            </if>
             bbd.item_type AS itemType,
             bbd.item_id AS itemId,
             bbd.executor_id AS executorId,
@@ -122,15 +130,28 @@
             SUM(bbd.received_amount) AS receivedWorkload,
             SUM(bbd.coupon_workload) AS couponWorkload
         FROM base_bill_detail bbd
-        LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
+        INNER JOIN base_bill bb ON bb.bill_id = bbd.bill_id
         <where>
             AND bb.bill_date is not null
             AND bbd.executor_id > 0
-            <if test="startDate!=null and startDate!='' and endDate!=null and endDate!=''">
-                AND DATE_FORMAT(bb.bill_date, '%Y-%m-%d') between #{startDate} and #{endDate}
+            <if test="dateInt == 0">
+                <if test="startDate!=null and startDate!='' and endDate!=null and endDate!=''">
+                    AND DATE_FORMAT(bb.bill_date, '%Y-%m-%d') between #{startDate} and #{endDate}
+                </if>
+            </if>
+            <if test="dateInt == 1">
+                <if test="startDate!=null and startDate!='' and endDate!=null and endDate!=''">
+                    AND DATE_FORMAT(bb.privilege_date, '%Y-%m-%d') between #{startDate} and #{endDate}
+                </if>
             </if>
         </where>
-        GROUP BY bbd.org_id, bbd.executor_id, bbd.item_type, bbd.item_id, DATE_FORMAT(bb.bill_date, '%Y%m%d')
+        GROUP BY bbd.org_id, bbd.executor_id, bbd.item_type, bbd.item_id,
+        <if test="dateInt == 0">
+            DATE_FORMAT(bb.bill_date, '%Y%m%d')
+        </if>
+        <if test="dateInt == 1">
+            DATE_FORMAT(bb.privilege_date, '%Y%m%d')
+        </if>
     </select>
 
     <select id="groupBillItemDetailListByPayDate"
