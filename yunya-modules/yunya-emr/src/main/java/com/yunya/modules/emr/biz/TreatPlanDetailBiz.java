@@ -5,7 +5,6 @@ import com.yunya.feign.emr.domain.vo.MedicalTreatPlanRecordVO;
 import com.yunya.feign.emr.domain.vo.TreatPlanDetailVO;
 import com.yunya.feign.emr.domain.vo.TreatPlanStepVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.enums.TreatPlanStatusEnum;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.emr.TreatPlanDetail;
 import com.yunya.models.emr.TreatPlanDetailHistory;
@@ -76,8 +75,8 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
                     if (!ObjectUtils.isEmpty(detailId)) {
                         while (it.hasNext()) {
                             TreatPlanDetailVO next = it.next();
-                            treatPlanRecordBiz.checkNotStatus(next.getStatus().intValue(),
-                                    TreatPlanStatusEnum.UNCONFIRM, TreatPlanStatusEnum.CONFIRMED);
+//                            treatPlanRecordBiz.checkNotStatus(next.getStatus().intValue(),
+//                                    TreatPlanStatusEnum.UNCONFIRM, TreatPlanStatusEnum.CONFIRMED);
                             if (next.getDetailId().equals(detailId)) {
                                 vo.setCrtId(next.getCrtId());
                                 vo.setCrtTime(next.getCrtTime());

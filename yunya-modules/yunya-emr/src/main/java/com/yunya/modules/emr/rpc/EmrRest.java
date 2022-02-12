@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * 简介: 门诊基础数据接口暴露
@@ -21,9 +22,9 @@ public class EmrRest {
 
   @Autowired private TreatPlanRecordBiz treatPlanRecordBiz;
 
-  @GetMapping("/treatPlan/recalculate/{planId}")
-  public void recalculatePlanStatusById(@PathVariable(value = "planId") Integer planId, @RequestParam("userId") Integer userId) {
-    treatPlanRecordBiz.recalculatePlanStatusById(planId, userId);
+  @PostMapping("/api/emr/treatPlan/recalculate/{userId}")
+  public void recalculatePlanStatusById(@PathVariable(value = "userId") Integer userId, @RequestBody List<Integer> planIds) {
+    treatPlanRecordBiz.recalculatePlanStatusById(userId, planIds);
   }
 
   /**

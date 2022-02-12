@@ -36,7 +36,7 @@ public class TreatPlanRecordController {
     @PostMapping("/save")
     @CurrentUser
     public ResponseResult save(@Valid @RequestBody TreatPlanRecordModel model) {
-        treatPlanRecordBiz.save(model, (byte) 0);
+        treatPlanRecordBiz.save(model, (byte) 0, true);
         return ResponseUtil.success();
     }
 

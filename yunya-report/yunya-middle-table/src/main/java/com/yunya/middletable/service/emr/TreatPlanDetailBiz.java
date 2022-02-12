@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -72,18 +73,19 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
             List<Integer> orderDetailIds = orderDetails.stream().map(OrderDetail::getId).collect(Collectors.toList());
 
             // 2、找出对应核销记录及其计划明细
-            List<TreatPlanDetailVO> details = mapper.selectTreatPlanDetailAndWriteoffList(orderDetailIds);
+            List<TreatPlanDetailVO> details = treatPlanDetailMapper.selectTreatPlanDetailAndWriteoffList(orderDetailIds);
             if (StringHelper.isNotEmpty(details)) {
                 // 3、更新治疗计划项目数量与核销记录的状态：
-                int planId = updTreatPlanDetailWriteoffStatus(details, status, userId);
+                List<Integer> planIds = updTreatPlanDetailWriteoffStatus(details, status, userId);
                 // 4、重新统计给定治疗计划的状态
-                remoteEmrServiceFeign.recalculatePlanStatusById(planId, userId);
+                remoteEmrServiceFeign.recalculatePlanStatusById(userId, planIds);
             }
         }
     }
 
-    private Integer updTreatPlanDetailWriteoffStatus(List<TreatPlanDetailVO> details, Byte status, Integer userId) {
+    private List<Integer> updTreatPlanDetailWriteoffStatus(List<TreatPlanDetailVO> details, Byte status, Integer userId) {
         Date now = new Date(System.currentTimeMillis());
+        List<Integer> planIds = new ArrayList<>();
         details.forEach(vo->{
             TreatPlanDetailWriteoff entity = new TreatPlanDetailWriteoff();
             entity.setId(vo.getOrderDetailId());
@@ -91,8 +93,12 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
             entity.setUptId(userId);
             entity.setUptTime(now);
             treatPlanDetailWriteoffMapper.updateByPrimaryKeySelective(entity);
+            Integer planId = vo.getPlanId();
+            if (!planIds.contains(planId)) {
+                planIds.add(planId);
+            }
         });
-        return details.get(0).getPlanId();
+        return planIds;
     }
 
     private List<BillPayRecord> findBillPayRecordByOrderId(Integer orderRecordId) {

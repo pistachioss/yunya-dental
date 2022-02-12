@@ -77,18 +77,15 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      *
      * @param model
      * @param isChange 方案是否变更
+     * @param needAll 是否保存全部（治疗计划、步骤、详情），false-只保存治疗计划
      * @return
      */
-    public void save(TreatPlanRecordModel model, Byte isChange) {
+    public void save(TreatPlanRecordModel model, Byte isChange, boolean needAll) {
         String userID = BaseContextHandler.getUserID();
         Integer userId = model.getCrtId();
         if (StringHelper.isNotEmpty(userID)) {
             userId = Integer.parseInt(userID);
         }
-        save(model, userId, isChange);
-    }
-
-    public void save(TreatPlanRecordModel model, Integer userId, Byte isChange) {
         Date now = new Date(System.currentTimeMillis());
         TreatPlanRecord query = new TreatPlanRecord();
         query.setMedicalRecordId(model.getMedicalRecordId());
@@ -112,7 +109,9 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 addTreatPlanRecord(entity, model, userId, now);
             }
             addTreatPlanHistory(entity, model.getOperationReason(), isChange, operation, userId, now);
-            treatPlanStepBiz.save(entity.getId(), userId, model.getTreatPlanSteps());
+            if (needAll) {
+                treatPlanStepBiz.save(entity.getId(), userId, model.getTreatPlanSteps());
+            }
         }
     }
 
@@ -309,12 +308,22 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
 
     private void accumulation(List<TreatPlanStepVO> steps, MedicalTreatPlanRecordVO result) {
         int totalQuantity = 0;
+        int completedNum = 0;
+        int confirmNum = 0;
         BigDecimal totalAmount = new BigDecimal("0.00");
-        Integer status = TreatPlanStatusEnum.CONFIRMED.getCode();
+        Integer status = TreatPlanStatusEnum.EXECUTING.getCode();
         for (TreatPlanStepVO step : steps) {
             totalQuantity += step.getQuanity();
             totalAmount = totalAmount.add(step.getAmount());
-            status = step.getStatus();
+            Integer stepStatus = step.getStatus();
+            if (stepStatus.equals(TreatPlanStatusEnum.COMPLETED.getCode())) {
+                completedNum++;
+            } else if (stepStatus.equals(TreatPlanStatusEnum.CONFIRMED.getCode())) {
+                confirmNum++;
+            }
+        }
+        if (completedNum==steps.size() || confirmNum==steps.size()) {
+            status = steps.get(0).getStatus();
         }
         Integer planStatus = result.getStatus();
         if (planStatus > TreatPlanStatusEnum.UNCONFIRM.getCode()) {
@@ -467,7 +476,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         Byte changeType = form.getChangeType();
         if (changeType == 0) {// 方案确认
             checkNotStatus(status, TreatPlanStatusEnum.UNCONFIRM);
-            updateStatus(treatPlan, TreatPlanStatusEnum.CONFIRMED.getCode());
+            updateTreatPlanStatus(treatPlan, TreatPlanStatusEnum.CONFIRMED.getCode());
             treatPlan.setStatus(TreatPlanStatusEnum.CONFIRMED.getCode());
             return treatPlan;
         } else if (changeType == 1) {// 方案变更
@@ -475,30 +484,36 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
             // 已完成的项目不变
             TreatPlanRecordModel model = vo2modelBaseInfo(treatPlan);
             model.setTreatPlanSteps(form.getDetails());
-            save(model, (byte) 1);
+            save(model, (byte) 1, true);
         } else if (changeType == 2) {// 提前终止
             checkNotStatus(status, TreatPlanStatusEnum.EXECUTING, TreatPlanStatusEnum.COMPLETED);
             // 终止计划，终止步骤，终止项目
-            updateStatus(treatPlan, TreatPlanStatusEnum.TERMINATION.getCode());
+            updateTreatPlanStatus(treatPlan, TreatPlanStatusEnum.TERMINATION.getCode());
             treatPlanDetailBiz.terminalOrRenewWriteoffRecord(treatPlan, (byte)2);
         } else {// 撤销终止
             checkNotStatus(status, TreatPlanStatusEnum.TERMINATION);
             // 恢复计划，步骤，项目在终止前的状态
             treatPlanDetailBiz.terminalOrRenewWriteoffRecord(treatPlan, (byte)1);
             treatPlan = findMedicalTreatPlanById(planId);
-            updateStatus(treatPlan, null);
+            updateTreatPlanStatus(treatPlan, null);
         }
         return null;
     }
 
-    private void updateStatus(MedicalTreatPlanRecordVO treatPlan, Integer status) {
+    /**
+     * 更新治疗计划状态
+     *
+     * @param treatPlan
+     * @param status
+     */
+    private void updateTreatPlanStatus(MedicalTreatPlanRecordVO treatPlan, Integer status) {
         TreatPlanRecordModel model = vo2modelBaseInfo(treatPlan);
         if (ObjectUtils.isEmpty(status)) {
             status = treatPlan.getStatus();
         }
         model.setStatus(status);
-        detailVO2Model(model, treatPlan.getTreatPlanSteps());
-        save(model, null);
+//        detailVO2Model(model, treatPlan.getTreatPlanSteps());
+        save(model, null, false);
     }
 
     private TreatPlanRecordModel vo2modelBaseInfo(MedicalTreatPlanRecordVO treatPlan) {
@@ -656,10 +671,12 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         }
     }
 
-    public void recalculatePlanStatusById(Integer planId, Integer userId) {
-        MedicalTreatPlanRecordVO treatPlan = findOneById(planId);
-        treatPlan.setCrtId(userId);
-        updateStatus(treatPlan, null);
+    public void recalculatePlanStatusById(Integer userId, List<Integer> planIds) {
+        planIds.forEach(planId->{
+            MedicalTreatPlanRecordVO treatPlan = findOneById(planId);
+            treatPlan.setCrtId(userId);
+            updateTreatPlanStatus(treatPlan, null);
+        });
     }
 
     /**
@@ -705,10 +722,10 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      * 检查订单项目是否超过选定计划的项目数量
      *
      * @param planDetailId
-     * @param writeoffQuantity
+     * @param enableQuantity
      * @param list
      */
-    private Integer checkQuantityOver(Integer planDetailId, Integer writeoffQuantity, List<TreatPlanDetail> list) {
+    private Integer checkQuantityOver(Integer planDetailId, Integer enableQuantity, List<TreatPlanDetail> list) {
         int num = -1;
         if (StringHelper.isNotEmpty(list)) {
             for (TreatPlanDetail vo : list) {
@@ -718,9 +735,12 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                         throw new ClientServiceException(vo.getBillingItemName()
                                 + "在治疗计划中已使用，请重新选择治疗计划", OperationCodeConstants.OPERATION_NOT_ALLOW);
                     }
-                    num = quantity - writeoffQuantity;
-                    if (num < 0) {
+                    // 已选项目数量-可用项目数量
+                    num = quantity - enableQuantity;
+                    if (num < 0) {// 可用项目数量未用完
                         num = quantity;
+                    } else {// 可用项目数量全部用完
+                        num = enableQuantity;
                     }
                 }
             }

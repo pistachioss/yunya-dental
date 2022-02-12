@@ -4,6 +4,7 @@ import com.yunya.feign.emr.RemoteEmrServiceFeign;
 import com.yunya.feign.emr.domain.model.TreatPlanDetailWriteoffModel;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @author xiangyang
@@ -12,7 +13,7 @@ import javax.validation.Valid;
 public class RemoteEmrFallBackFactory implements RemoteEmrServiceFeign {
 
     @Override
-    public void recalculatePlanStatusById(Integer planId, Integer crtId) {
+    public void recalculatePlanStatusById(Integer userId, List<Integer> planIds) {
 
     }
 

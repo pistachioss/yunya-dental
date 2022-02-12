@@ -171,15 +171,25 @@ public class TreatPlanStepBiz extends BaseBiz<TreatPlanStepMapper, TreatPlanStep
             List<TreatPlanDetailVO> detailList = detailMap.get(stepId);
             int quantity = 0;
             BigDecimal amount = new BigDecimal("0.00");
-            Integer status = TreatPlanStatusEnum.CONFIRMED.getCode();
+            Integer status = TreatPlanStatusEnum.EXECUTING.getCode();
             if (StringHelper.isNotEmpty(detailList)) {
+                int completedNum = 0;
+                int confirmNum = 0;
                 // 按状态排序
                 detailList = detailList.stream().sorted(Comparator.comparing(TreatPlanDetailVO::getStatus).reversed()).collect(Collectors.toList());
                 for (TreatPlanDetailVO detail : detailList) {
                     Integer num = detail.getQuantity();
                     quantity += num;
                     amount = amount.add(new BigDecimal(num).multiply(detail.getPrice()));
-                    status = detail.getStatus();
+                    Integer detailStatus = detail.getStatus();
+                    if (detailStatus.equals(TreatPlanStatusEnum.COMPLETED.getCode())) {
+                        completedNum++;
+                    } else if (detailStatus.equals(TreatPlanStatusEnum.CONFIRMED.getCode())) {
+                        confirmNum++;
+                    }
+                }
+                if (completedNum==detailList.size() || confirmNum==detailList.size()) {
+                    status = detailList.get(0).getStatus();
                 }
             }
             step.setStatus(status);
