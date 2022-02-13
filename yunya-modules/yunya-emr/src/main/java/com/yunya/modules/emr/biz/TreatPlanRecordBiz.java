@@ -207,18 +207,15 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         if (ObjectUtils.isEmpty(medical)) {
             throw new ClientServiceException("该病历不存在",OperationCodeConstants.DATA_NOT_EXIST);
         }
-        // 兼容旧版本时的“计划”数据
-        TreatPlanRecordVO plan = findCompatibleOldPlan(medical);
-        if (ObjectUtils.isEmpty(plan)) {
-            // 当前治疗计划
-            TreatPlanRecord query = new TreatPlanRecord();
-            query.setMedicalRecordId(medicalId);
-            TreatPlanRecord treatPlanRecord = mapper.selectOne(query);
-            if (!ObjectUtils.isEmpty(treatPlanRecord)) {
-                plan = putTreatPlanStepList(treatPlanRecord);
-            }
+        // 当前治疗计划
+        TreatPlanRecord query = new TreatPlanRecord();
+        query.setMedicalRecordId(medicalId);
+        TreatPlanRecord treatPlanRecord = mapper.selectOne(query);
+        if (!ObjectUtils.isEmpty(treatPlanRecord)) { // 治疗计划
+            return putTreatPlanStepList(treatPlanRecord);
+        } else { // 兼容旧版本时的“计划”数据
+            return findCompatibleOldPlan(medical);
         }
-        return plan;
     }
 
     /**
