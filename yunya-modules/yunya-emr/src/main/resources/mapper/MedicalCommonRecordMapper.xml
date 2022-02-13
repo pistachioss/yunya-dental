@@ -71,7 +71,8 @@
 			present_illness AS presentIllness,
 			past_history AS pastHistory,
 			examination,
-			diagnosis
+			diagnosis,
+			plan
 		FROM medical_common_record
 		WHERE id = #{id}
 	</select>
