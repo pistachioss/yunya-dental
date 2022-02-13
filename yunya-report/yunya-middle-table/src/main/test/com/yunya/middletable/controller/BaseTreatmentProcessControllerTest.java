@@ -112,7 +112,7 @@ public class BaseTreatmentProcessControllerTest {
 
     @Test
     public void testOperateTreatPlanDetailWriteoff() throws InterruptedException {
-        String param = "{\"paramMap\":{\"id\":441842},\"operateType\":0}";
+        String param = "{\"paramMap\":{\"id\":441841},\"operateType\":0}";
         MessageModel form = JSONObject.parseObject(param, MessageModel.class);
         ResponseResult result = treatPlanDetailController.operate(form);
         System.out.println(result);
