@@ -752,13 +752,13 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 for (Integer detailId : planDetailIds) {
                     if (detailId.equals(vo.getId())) {
                         // 可用项目数量-已选项目数量
-                        enableQuantity -= quantity;
-                        if (enableQuantity <= 0) {// 可用项目数量已全部用完
+                        if (enableQuantity - quantity <= 0) {// 可用项目数量已全部用完
                             result.put(detailId, enableQuantity);
                             break;
                         } else {// 可用项目数量未用完
                             result.put(detailId, quantity);
                         }
+                        enableQuantity -= quantity;
                     }
                 }
             }
