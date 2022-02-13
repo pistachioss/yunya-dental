@@ -120,11 +120,11 @@ public class MedicalCommonRecordController {
         list1 = jsonArray.toJavaList(ExaminationsVO.class);
         medicalCommonRecordModel.setDiagnosis(list1);
       }
-      /*if (!StrUtil.isEmpty(medical.getPlan())) {
+      if (!StrUtil.isEmpty(medical.getPlan())) {
         jsonArray = JSONArray.parseArray(medical.getPlan());
         list1 = jsonArray.toJavaList(ExaminationsVO.class);
         medicalCommonRecordModel.setPlan(list1);
-      }*/
+      }
       String plan = medical.getPlan();
       if ("1".equals(plan)) {
         ExaminationsVO plans = new ExaminationsVO();
