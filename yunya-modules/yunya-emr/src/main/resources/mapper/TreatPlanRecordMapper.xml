@@ -31,7 +31,7 @@
     FROM treat_plan_record
     <where>
       <if test="query.planName!=null and query.planName!=''">
-        AND plan_name like CONCAT(CONCAT('%',#{queryForm.planName}),'%')
+        AND plan_name like CONCAT(CONCAT('%',#{query.planName}),'%')
       </if>
       <if test="query.patientId != null">
         AND patient_id = #{query.patientId}
