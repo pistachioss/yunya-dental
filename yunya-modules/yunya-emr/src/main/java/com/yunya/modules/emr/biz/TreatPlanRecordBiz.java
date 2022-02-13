@@ -490,6 +490,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
             TreatPlanRecordModel model = vo2modelBaseInfo(treatPlan);
             model.setTreatPlanSteps(form.getDetails());
             save(model, (byte) 1, true);
+            recalculatePlanStatusById(Integer.parseInt(BaseContextHandler.getUserID()),Arrays.asList(treatPlan.getPlanId()));
         } else if (changeType == 2) {// 提前终止
             checkNotStatus(status, TreatPlanStatusEnum.EXECUTING, TreatPlanStatusEnum.COMPLETED);
             // 终止计划，终止步骤，终止项目
@@ -532,6 +533,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         model.setSummary(treatPlan.getSummary());
         model.setRemark(treatPlan.getRemark());
         model.setCrtId(treatPlan.getCrtId());
+        model.setStatus(treatPlan.getStatus());
         return model;
     }
 
