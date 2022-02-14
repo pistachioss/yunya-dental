@@ -2204,7 +2204,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
 
     /**
-   * 根据条件查询非本月免单金额列表
+   * 根据条件查询非本期免单金额列表
    *
    * @param query
    * @return
@@ -2373,7 +2373,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-   * 根据条件导出非本月免单金额明细列表
+   * 根据条件导出非本期免单金额明细列表
    *
    * @param response 响应
    * @param query 查询条件
@@ -2387,8 +2387,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     String fileName =
         excelUtil.getFileName(
-            query.getQueryDate(), "", organization.getAbbreviation(), "非本月免单金额明细");
-    excelUtil.exportExcel(response, list, "非本月免单金额明细", fileName);
+            query.getQueryDate(), "", organization.getAbbreviation(), "非本期免单金额明细");
+    excelUtil.exportExcel(response, list, "非本期免单金额明细", fileName);
   }
 
   /**
@@ -2406,8 +2406,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     String fileName =
         excelUtil.getFileName(
-            query.getQueryDate(), "", organization.getAbbreviation(), "非本月优惠金额明细");
-    excelUtil.exportExcel(response, list, "非本月优惠金额明细", fileName);
+            query.getQueryDate(), "", organization.getAbbreviation(), "非本期优惠金额明细");
+    excelUtil.exportExcel(response, list, "非本期优惠金额明细", fileName);
   }
 
   /**
