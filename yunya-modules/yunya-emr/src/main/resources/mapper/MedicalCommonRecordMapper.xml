@@ -67,6 +67,7 @@
 
 	<select id="selectMedicalIllnessHistoryById" resultType="com.yunya.models.emr.MedicalCommonRecord">
 		SELECT
+			major_dentist_id AS majorDentistId,
 			chief_complaint AS chiefComplaint,
 			present_illness AS presentIllness,
 			past_history AS pastHistory,
