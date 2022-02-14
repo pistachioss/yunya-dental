@@ -381,7 +381,7 @@ public class CompanyReportOfFinanceController {
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-账单收费明细（本月）-查询明细")
+  @ApiOperation("公司端报表-财务报表-对账单-账单收费明细（本期）-查询明细")
   @PostMapping(value = "/bill/charge/detail/list", name = "根据条件查询门诊账单收费明细（首次收费）")
   public ResponseResult<PageInfo<StatementBillChargeDetailVO>> billChargeDetailInfoList(
       @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
@@ -390,13 +390,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询导出本月账单收费明细
+   * 根据条件查询导出本期账单收费明细
    *
    * @param response http响应
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-账单收费明细（本月）-账单收费明细列表-导出")
+  @ApiOperation("公司端报表-财务报表-对账单-账单收费明细（本期）-账单收费明细列表-导出")
   @PostMapping(value = "/bill/charge/detail/export", name = "根据条件查询门诊账单收费明细（首次收费）")
   public ResponseResult<T> exportBillChargeDetailInfoList(
       HttpServletResponse response,
@@ -407,12 +407,12 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询门诊账单收欠费明细（本月账单）
+   * 根据条件查询门诊账单收欠费明细（本期账单）
    *
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-账单收欠费(本月)-查询明细")
+  @ApiOperation("公司端报表-财务报表-对账单-账单收欠费(本期)-查询明细")
   @PostMapping(value = "/bill/current/debt/detail/list", name = "公司端报表-财务报表-对账单-账单收欠费")
   public ResponseResult<PageInfo<StatementBillChargeDetailVO>> billCurrentCollectDebtDetailList(
       @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
@@ -422,13 +422,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询导出账单收欠费明细（本月）账单本月收欠费
+   * 根据条件查询导出账单收欠费明细（本期）账单本期收欠费
    *
    * @param response http响应
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-账单收欠费明细（本月）-账单收欠（本月）费明细列表-导出")
+  @ApiOperation("公司端报表-财务报表-对账单-账单收欠费明细（本期）-账单收欠（本期）费明细列表-导出")
   @PostMapping(value = "/bill/current/debt/detail/export", name = "根据条件查询门诊账单收费明细（非首次收费）")
   public ResponseResult<T> exportBillCollectDebtDetailList(
       HttpServletResponse response,
@@ -439,12 +439,12 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询门诊账单收欠费明细（非本月账单）
+   * 根据条件查询门诊账单收欠费明细（非本期账单）
    *
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-账单收欠费(非本月)-查询明细")
+  @ApiOperation("公司端报表-财务报表-对账单-账单收欠费(非本期)-查询明细")
   @PostMapping(value = "/bill/other/debt/detail/list", name = "公司端报表-财务报表-对账单-账单收欠费")
   public ResponseResult<PageInfo<StatementBillChargeDetailVO>> billOtherCollectDebtDetailList(
       @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
@@ -454,13 +454,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询导出账单收欠费明细（非本月账单本月收欠费）
+   * 根据条件查询导出账单收欠费明细（非本期账单本期收欠费）
    *
    * @param response http响应
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-账单收欠费明细（非本月）-账单收欠费（非本月）明细列表-导出")
+  @ApiOperation("公司端报表-财务报表-对账单-账单收欠费明细（非本期）-账单收欠费（非本期）明细列表-导出")
   @PostMapping(value = "/bill/other/debt/detail/export", name = "根据条件查询门诊账单收费明细（非首次收费）")
   public ResponseResult<T> exportBillOtherCollectDebtDetailList(
       HttpServletResponse response,
@@ -534,13 +534,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询诊所代收(本月)明细列表
+   * 根据条件查询诊所代收(本期)明细列表
    *
    * @param query 查询条件
    * @return PageInfo<StatementBillChargeDetailVO>
    */
-  @ApiOperation("公司端报表-财务报表-对账单-诊所代收(本月)-查询明细")
-  @PostMapping(value = "/bill/current/collection/detail/list", name = "根据条件查询诊所代收(本月)明细列表")
+  @ApiOperation("公司端报表-财务报表-对账单-诊所代收(本期)-查询明细")
+  @PostMapping(value = "/bill/current/collection/detail/list", name = "根据条件查询诊所代收(本期)明细列表")
   public ResponseResult<PageInfo<StatementBillChargeDetailVO>> currentBillCollectionDetailList(
       @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
     PageInfo<StatementBillChargeDetailVO> pageInfo =
@@ -549,7 +549,7 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件导出诊所代收(本月)记录明细
+   * 根据条件导出诊所代收(本期)记录明细
    *
    * @param response 响应
    * @param query 查询条件
@@ -566,13 +566,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询诊所代(非本月)收明细列表
+   * 根据条件查询诊所代(非本期)收明细列表
    *
    * @param query 查询条件
    * @return PageInfo<StatementBillChargeDetailVO>
    */
-  @ApiOperation("公司端报表-财务报表-对账单-诊所代收(非本月)-查询明细")
-  @PostMapping(value = "/bill/other/collection/detail/list", name = "公司端报表-财务报表-对账单-诊所代收(非本月)-查询明细")
+  @ApiOperation("公司端报表-财务报表-对账单-诊所代收(非本期)-查询明细")
+  @PostMapping(value = "/bill/other/collection/detail/list", name = "公司端报表-财务报表-对账单-诊所代收(非本期)-查询明细")
   public ResponseResult<PageInfo<StatementBillChargeDetailVO>> otherBillCollectionDetailList(
       @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
     PageInfo<StatementBillChargeDetailVO> pageInfo =
@@ -581,13 +581,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件导出诊所代收(非本月)记录明细
+   * 根据条件导出诊所代收(非本期)记录明细
    *
    * @param response 响应
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-诊所代收(非本月)-导出")
+  @ApiOperation("公司端报表-财务报表-对账单-诊所代收(非本期)-导出")
   @PostMapping(value = "/bill/other/collection/detail/export", name = "根据条件导出产品售出记录明细")
   public ResponseResult<T> exportOtherBillCollectionDetailList(
       HttpServletResponse response,
@@ -598,13 +598,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询门诊账单退费明细（本月）列表
+   * 根据条件查询门诊账单退费明细（本期）列表
    *
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-账单退费（本月）-查询明细")
-  @PostMapping(value = "/bill/current/refund/detail/list", name = "公司端报表-财务报表-对账单-账单退费（本月）-查询明细")
+  @ApiOperation("公司端报表-财务报表-对账单-账单退费（本期）-查询明细")
+  @PostMapping(value = "/bill/current/refund/detail/list", name = "公司端报表-财务报表-对账单-账单退费（本期）-查询明细")
   public ResponseResult<PageInfo<StatementBillRefundDetailVO>> currentBillRefundDetailList(
       @RequestBody @Validated StatementBillRefundDetailInfoQuery query) {
     PageInfo<StatementBillRefundDetailVO> pageInfo =
@@ -613,13 +613,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件导出门诊账单退费明细（本月）列表
+   * 根据条件导出门诊账单退费明细（本期）列表
    *
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-账单退费（本月）-查询明细-导出")
-  @PostMapping(value = "/bill/current/refund/detail/export", name = "公司端报表-财务报表-对账单-账单退费（本月）-查询明细")
+  @ApiOperation("公司端报表-财务报表-对账单-账单退费（本期）-查询明细-导出")
+  @PostMapping(value = "/bill/current/refund/detail/export", name = "公司端报表-财务报表-对账单-账单退费（本期）-查询明细")
   public ResponseResult<T> exportCurrentBillRefundDetailList(
       HttpServletResponse response,
       @RequestBody @Validated StatementBillRefundDetailInfoQuery query)
@@ -629,13 +629,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询门诊账单退费明细（非本月）列表
+   * 根据条件查询门诊账单退费明细（非本期）列表
    *
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-账单退费（非本月）-查询明细")
-  @PostMapping(value = "/bill/other/refund/detail/list", name = "公司端报表-财务报表-对账单-账单退费（本月）-查询明细")
+  @ApiOperation("公司端报表-财务报表-对账单-账单退费（非本期）-查询明细")
+  @PostMapping(value = "/bill/other/refund/detail/list", name = "公司端报表-财务报表-对账单-账单退费（本期）-查询明细")
   public ResponseResult<PageInfo<StatementBillRefundDetailVO>> otherBillRefundDetailList(
       @RequestBody @Validated StatementBillRefundDetailInfoQuery query) {
     PageInfo<StatementBillRefundDetailVO> pageInfo = refundBiz.findOtherBillRefundDetailList(query);
@@ -643,13 +643,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件导出门诊账单退费明细（非本月）列表
+   * 根据条件导出门诊账单退费明细（非本期）列表
    *
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-账单退费（非本月）-查询明细-导出")
-  @PostMapping(value = "/bill/other/refund/detail/export", name = "公司端报表-财务报表-对账单-账单退费（非本月）-查询明细")
+  @ApiOperation("公司端报表-财务报表-对账单-账单退费（非本期）-查询明细-导出")
+  @PostMapping(value = "/bill/other/refund/detail/export", name = "公司端报表-财务报表-对账单-账单退费（非本期）-查询明细")
   public ResponseResult<T> exportOtherBillRefundDetailList(
       HttpServletResponse response,
       @RequestBody @Validated StatementBillRefundDetailInfoQuery query)
@@ -690,13 +690,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询诊所被代收账（本月）明细列表
+   * 根据条件查询诊所被代收账（本期）明细列表
    *
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-诊所被代收账（本月）-查询明细")
-  @PostMapping(value = "/bill/current/accepted/detail/list", name = "根据条件查询诊所被代收账（本月）明细列表")
+  @ApiOperation("公司端报表-财务报表-对账单-诊所被代收账（本期）-查询明细")
+  @PostMapping(value = "/bill/current/accepted/detail/list", name = "根据条件查询诊所被代收账（本期）明细列表")
   public ResponseResult<PageInfo<StatementBillChargeDetailVO>> currentBillIsAcceptedDetailList(
       @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
     PageInfo<StatementBillChargeDetailVO> pageInfo =
@@ -705,13 +705,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件导出诊所被代收账（本月）明细列表
+   * 根据条件导出诊所被代收账（本期）明细列表
    *
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-诊所被代收账（本月）-查询明细-导出")
-  @PostMapping(value = "/bill/current/accepted/detail/export", name = "根据条件导出诊所被代收账（本月）明细列表")
+  @ApiOperation("公司端报表-财务报表-对账单-诊所被代收账（本期）-查询明细-导出")
+  @PostMapping(value = "/bill/current/accepted/detail/export", name = "根据条件导出诊所被代收账（本期）明细列表")
   public ResponseResult<T> exportCurrentBillIsAcceptedDetailList(
       HttpServletResponse response,
       @RequestBody @Validated StatementBillChargeDetailInfoQuery query)
@@ -721,13 +721,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件查询诊所被代收账（非本月）明细列表
+   * 根据条件查询诊所被代收账（非本期）明细列表
    *
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-诊所被代收账（非本月）-查询明细")
-  @PostMapping(value = "/bill/other/accepted/detail/list", name = "根据条件查询诊所被代收账（非本月）明细列表")
+  @ApiOperation("公司端报表-财务报表-对账单-诊所被代收账（非本期）-查询明细")
+  @PostMapping(value = "/bill/other/accepted/detail/list", name = "根据条件查询诊所被代收账（非本期）明细列表")
   public ResponseResult<PageInfo<StatementBillChargeDetailVO>> otherBillIsAcceptedDetailList(
       @RequestBody @Validated StatementBillChargeDetailInfoQuery query) {
     PageInfo<StatementBillChargeDetailVO> pageInfo =
@@ -736,13 +736,13 @@ public class CompanyReportOfFinanceController {
   }
 
   /**
-   * 根据条件导出诊所被代收账（非本月）明细列表
+   * 根据条件导出诊所被代收账（非本期）明细列表
    *
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("公司端报表-财务报表-对账单-诊所被代收账（非本月）-查询明细-导出")
-  @PostMapping(value = "/bill/other/accepted/detail/export", name = "根据条件导出诊所被代收账（非本月）明细列表")
+  @ApiOperation("公司端报表-财务报表-对账单-诊所被代收账（非本期）-查询明细-导出")
+  @PostMapping(value = "/bill/other/accepted/detail/export", name = "根据条件导出诊所被代收账（非本期）明细列表")
   public ResponseResult<T> exportOtherBillIsAcceptedDetailList(
       HttpServletResponse response,
       @RequestBody @Validated StatementBillChargeDetailInfoQuery query)
