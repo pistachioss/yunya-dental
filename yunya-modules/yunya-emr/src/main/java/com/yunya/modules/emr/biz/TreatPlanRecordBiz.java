@@ -247,7 +247,14 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
             if (StringHelper.isNotEmpty(plans)) {
                 TreatPlanRecordVO treatPlanVO = new TreatPlanRecordVO();
                 treatPlanVO.setMedicalRecordId(medical.getId());
-                treatPlanVO.setDentistId(medical.getMajorDentistId());
+                Integer majorDentistId = medical.getMajorDentistId();
+                if (!ObjectUtils.isEmpty(majorDentistId)) {
+                    treatPlanVO.setDentistId(majorDentistId);
+                    SysEmployee dentist = systemServiceFeign.findSysEmployeeById(majorDentistId);
+                    if (!ObjectUtils.isEmpty(dentist)) {
+                        treatPlanVO.setDentistName(dentist.getName());
+                    }
+                }
                 treatPlanVO.setPlanName(builder.toString());
                 treatPlanVO.setTreatPlanSteps(oldPlanSteps(plans));
                 treatPlanVO.setSummary("");
