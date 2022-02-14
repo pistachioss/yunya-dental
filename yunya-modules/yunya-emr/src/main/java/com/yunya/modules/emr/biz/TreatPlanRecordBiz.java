@@ -248,9 +248,9 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 TreatPlanRecordVO treatPlanVO = new TreatPlanRecordVO();
                 treatPlanVO.setMedicalRecordId(medical.getId());
                 treatPlanVO.setDentistId(medical.getMajorDentistId());
-                treatPlanVO.setPlanName("");
+                treatPlanVO.setPlanName(builder.toString());
                 treatPlanVO.setTreatPlanSteps(oldPlanSteps(plans));
-                treatPlanVO.setSummary(builder.toString());
+                treatPlanVO.setSummary("");
                 return treatPlanVO;
             }
         }
@@ -265,7 +265,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      */
     private List<TreatPlanStepVO> oldPlanSteps(List<ExaminationsVO> plans) {
         TreatPlanStepVO step = new TreatPlanStepVO();
-        step.setStepName("");
+        step.setStepName("步骤1");
         List<TreatPlanDetailVO> details = new ArrayList<>();
         for (ExaminationsVO plan : plans) {
             String describe = StringHelper.isNotEmpty(plan.getDescribe())?plan.getDescribe():"";
