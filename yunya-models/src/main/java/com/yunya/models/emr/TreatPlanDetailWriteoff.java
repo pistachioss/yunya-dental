@@ -34,7 +34,6 @@ public class TreatPlanDetailWriteoff {
     /**
      * 状态：0-未核销；1-已核销；2-已终止
      */
-    @Column(name = "状态：0-未核销；1-已核销；2-已终止")
     private Byte status;
 
     /**

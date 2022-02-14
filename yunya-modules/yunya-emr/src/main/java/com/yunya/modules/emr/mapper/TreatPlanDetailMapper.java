@@ -12,8 +12,10 @@ public interface TreatPlanDetailMapper extends Mapper<TreatPlanDetail> {
      * 根据治疗计划id查询明细列表
      *
      * @param query
+     * @param onlySelectStatus 是否只查询状态
      * @return
      */
     List<TreatPlanDetailVO> selectTreatPlanDetailByPlanId(
-            @Param("query") TreatPlanDetail query);
+            @Param("query") TreatPlanDetail query,
+            @Param("onlySelectStatus") boolean onlySelectStatus);
 }

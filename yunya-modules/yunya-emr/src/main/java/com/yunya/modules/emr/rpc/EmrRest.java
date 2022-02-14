@@ -22,7 +22,7 @@ public class EmrRest {
 
   @Autowired private TreatPlanRecordBiz treatPlanRecordBiz;
 
-  @PostMapping("/api/emr/treatPlan/recalculate/{userId}")
+  @PostMapping("/treatPlan/recalculate/{userId}")
   public void recalculatePlanStatusById(@PathVariable(value = "userId") Integer userId, @RequestBody List<Integer> planIds) {
     treatPlanRecordBiz.recalculatePlanStatusById(userId, planIds);
   }

@@ -1656,7 +1656,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   public PatientInformedConsentVO findPatientInformedConsentVO(Integer treatmentId) {
     PatientInformedConsentVO result = new PatientInformedConsentVO();
     TreatmentRecord treatment = mapper.selectByPrimaryKey(treatmentId);
-    result.setTreatmentDate(treatment.getTreatEndTime());
+    result.setTreatmentDate(treatment.getTreatStartTime());
     Integer patientId = treatment.getPatientId();
     // 从缓存中查询患者
     PatientBaseInfo patientBaseInfo = patientServiceFeign.findPatientInfoById(patientId);

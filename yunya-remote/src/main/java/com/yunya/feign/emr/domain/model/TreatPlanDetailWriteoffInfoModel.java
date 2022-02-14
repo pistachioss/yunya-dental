@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 简介：治疗计划与订单项目核销明细
@@ -30,10 +31,10 @@ public class TreatPlanDetailWriteoffInfoModel implements Serializable {
     @NotNull(message = "订单详情id不能为空")
     private Integer orderDetailId;
 
-    /** 计划详情id*/
-    @ApiModelProperty(value = "计划详情id", required = true)
-    @NotNull(message = "计划详情id不能为空")
-    private Integer planDetailId;
+    /** 计划详情id列表*/
+    @ApiModelProperty(value = "计划详情id列表", required = true)
+    @NotNull(message = "计划详情id列表不能为空")
+    private List<Integer> planDetailIds;
 
     /** 项目数量*/
     @ApiModelProperty(value = "项目数量", required = true)

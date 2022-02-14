@@ -2,9 +2,7 @@ package com.yunya.modules.emr;
 
 import com.alibaba.fastjson.JSONArray;
 import com.google.common.collect.Lists;
-import com.yunya.feign.emr.domain.model.TreatPlanDetailModel;
-import com.yunya.feign.emr.domain.model.TreatPlanRecordModel;
-import com.yunya.feign.emr.domain.model.TreatPlanStepModel;
+import com.yunya.feign.emr.domain.model.*;
 import com.yunya.feign.emr.domain.vo.ExaminationsVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -16,6 +14,7 @@ import com.yunya.models.emr.MedicalCommonRecord;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.emr.biz.TreatPlanRecordBiz;
 import com.yunya.modules.emr.mapper.MedicalCommonRecordMapper;
+import com.yunya.modules.emr.rpc.EmrRest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.junit.Before;
@@ -56,6 +55,8 @@ public class TreatPlanRecordControllerTest {
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
     @Resource(name = "customizeThreadPool")
     private ThreadPoolExecutor threadPoolExecutor;
+    @Autowired
+    private EmrRest emrRest;
 
     @Before
     public void before() {
@@ -173,6 +174,17 @@ public class TreatPlanRecordControllerTest {
                 }
             }
         });
+    }
+
+    public void test() {
+        TreatPlanDetailWriteoffModel model = new TreatPlanDetailWriteoffModel();
+        TreatPlanDetailWriteoffInfoModel obj = new TreatPlanDetailWriteoffInfoModel();
+        obj.setTreatmentId(441848);
+        obj.setQuantity(1);
+        obj.setOrderDetailId(1111);
+        obj.setPlanDetailIds(Arrays.asList(44));
+        obj.setCrtId(635);
+        emrRest.treatPlanWriteOffQunatity(model);
     }
 
 }

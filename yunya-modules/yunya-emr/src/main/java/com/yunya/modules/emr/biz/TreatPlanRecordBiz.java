@@ -34,7 +34,6 @@ import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 简介：治疗计划业务层
@@ -208,18 +207,15 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         if (ObjectUtils.isEmpty(medical)) {
             throw new ClientServiceException("该病历不存在",OperationCodeConstants.DATA_NOT_EXIST);
         }
-        // 兼容旧版本时的“计划”数据
-        TreatPlanRecordVO plan = findCompatibleOldPlan(medical);
-        if (ObjectUtils.isEmpty(plan)) {
-            // 当前治疗计划
-            TreatPlanRecord query = new TreatPlanRecord();
-            query.setMedicalRecordId(medicalId);
-            TreatPlanRecord treatPlanRecord = mapper.selectOne(query);
-            if (!ObjectUtils.isEmpty(treatPlanRecord)) {
-                plan = putTreatPlanStepList(treatPlanRecord);
-            }
+        // 当前治疗计划
+        TreatPlanRecord query = new TreatPlanRecord();
+        query.setMedicalRecordId(medicalId);
+        TreatPlanRecord treatPlanRecord = mapper.selectOne(query);
+        if (!ObjectUtils.isEmpty(treatPlanRecord)) { // 治疗计划
+            return putTreatPlanStepList(treatPlanRecord);
+        } else { // 兼容旧版本时的“计划”数据
+            return findCompatibleOldPlan(medical);
         }
-        return plan;
     }
 
     /**
@@ -252,9 +248,9 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 TreatPlanRecordVO treatPlanVO = new TreatPlanRecordVO();
                 treatPlanVO.setMedicalRecordId(medical.getId());
                 treatPlanVO.setDentistId(medical.getMajorDentistId());
-                treatPlanVO.setPlanName("");
+                treatPlanVO.setPlanName(builder.toString());
                 treatPlanVO.setTreatPlanSteps(oldPlanSteps(plans));
-                treatPlanVO.setSummary(builder.toString());
+                treatPlanVO.setSummary("");
                 return treatPlanVO;
             }
         }
@@ -269,7 +265,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      */
     private List<TreatPlanStepVO> oldPlanSteps(List<ExaminationsVO> plans) {
         TreatPlanStepVO step = new TreatPlanStepVO();
-        step.setStepName("");
+        step.setStepName("步骤1");
         List<TreatPlanDetailVO> details = new ArrayList<>();
         for (ExaminationsVO plan : plans) {
             String describe = StringHelper.isNotEmpty(plan.getDescribe())?plan.getDescribe():"";
@@ -294,13 +290,16 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      * @param entity
      */
     private MedicalTreatPlanRecordVO putTreatPlanStepList(TreatPlanRecord entity) {
+        return putTreatPlanStepList(entity, true);
+    }
+
+    private MedicalTreatPlanRecordVO putTreatPlanStepList(TreatPlanRecord entity, boolean onlySelectStatus) {
         if (ObjectUtils.isEmpty(entity)) {
             throw new ClientServiceException("该治疗计划不存在", OperationCodeConstants.DATA_NOT_EXIST);
         }
         MedicalTreatPlanRecordVO result = entity2VO(entity);
-        List<TreatPlanStepVO> steps = treatPlanStepBiz.findTreatPlanStepByPlanId(entity.getId());
+        List<TreatPlanStepVO> steps = treatPlanStepBiz.findTreatPlanStepByPlanId(entity.getId(), onlySelectStatus);
         if (StringHelper.isNotEmpty(steps)) {
-            steps = steps.stream().sorted(Comparator.comparing(TreatPlanStepVO::getStatus).reversed()).collect(Collectors.toList());
             accumulation(steps, result);
         }
         return result;
@@ -310,6 +309,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         int totalQuantity = 0;
         int completedNum = 0;
         int confirmNum = 0;
+        int terminationNum = 0;
         BigDecimal totalAmount = new BigDecimal("0.00");
         Integer status = TreatPlanStatusEnum.EXECUTING.getCode();
         for (TreatPlanStepVO step : steps) {
@@ -320,13 +320,18 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 completedNum++;
             } else if (stepStatus.equals(TreatPlanStatusEnum.CONFIRMED.getCode())) {
                 confirmNum++;
+            } else if (stepStatus.equals(TreatPlanStatusEnum.TERMINATION.getCode())) {
+                terminationNum++;
             }
         }
-        if (completedNum==steps.size() || confirmNum==steps.size()) {
+        int size = steps.size();
+        if (completedNum==size
+                || confirmNum==size
+                || terminationNum==size) {
             status = steps.get(0).getStatus();
         }
         Integer planStatus = result.getStatus();
-        if (planStatus > TreatPlanStatusEnum.UNCONFIRM.getCode()) {
+        if (planStatus>TreatPlanStatusEnum.UNCONFIRM.getCode()) {
             result.setStatus(status);
         }
         result.setTreatPlanSteps(steps);
@@ -480,21 +485,22 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
             treatPlan.setStatus(TreatPlanStatusEnum.CONFIRMED.getCode());
             return treatPlan;
         } else if (changeType == 1) {// 方案变更
-            checkNotStatus(status, TreatPlanStatusEnum.UNCONFIRM, TreatPlanStatusEnum.CONFIRMED, TreatPlanStatusEnum.COMPLETED);
+            checkNotStatus(status, TreatPlanStatusEnum.UNCONFIRM, TreatPlanStatusEnum.CONFIRMED, TreatPlanStatusEnum.EXECUTING);
             // 已完成的项目不变
             TreatPlanRecordModel model = vo2modelBaseInfo(treatPlan);
             model.setTreatPlanSteps(form.getDetails());
             save(model, (byte) 1, true);
+            recalculatePlanStatusById(Integer.parseInt(BaseContextHandler.getUserID()),Arrays.asList(treatPlan.getPlanId()));
         } else if (changeType == 2) {// 提前终止
             checkNotStatus(status, TreatPlanStatusEnum.EXECUTING, TreatPlanStatusEnum.COMPLETED);
             // 终止计划，终止步骤，终止项目
             updateTreatPlanStatus(treatPlan, TreatPlanStatusEnum.TERMINATION.getCode());
-            treatPlanDetailBiz.terminalOrRenewWriteoffRecord(treatPlan, (byte)2);
-        } else {// 撤销终止
+        } else if (changeType == 3) {// 撤销终止
             checkNotStatus(status, TreatPlanStatusEnum.TERMINATION);
             // 恢复计划，步骤，项目在终止前的状态
-            treatPlanDetailBiz.terminalOrRenewWriteoffRecord(treatPlan, (byte)1);
-            treatPlan = findMedicalTreatPlanById(planId);
+            TreatPlanRecord entity = mapper.selectByPrimaryKey(planId);
+            // 重新计算治疗计划的状态
+            treatPlan = putTreatPlanStepList(entity, false);
             updateTreatPlanStatus(treatPlan, null);
         }
         return null;
@@ -527,6 +533,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         model.setSummary(treatPlan.getSummary());
         model.setRemark(treatPlan.getRemark());
         model.setCrtId(treatPlan.getCrtId());
+        model.setStatus(treatPlan.getStatus());
         return model;
     }
 
@@ -614,15 +621,17 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 List<TreatPlanStepVO> steps = vo.getTreatPlanSteps();
                 steps.forEach(step -> {
                     List<TreatPlanDetailVO> details = step.getTreatPlanDetails();
-                    details.forEach(detail -> {
-                        Byte type = detail.getType();
-                        Integer itemId = detail.getBillingItemId();
-                        if (type.intValue() == 0) {
-                            tariffIds.add(itemId);
-                        } else {
-                            oralIds.add(itemId);
-                        }
-                    });
+                    if (StringHelper.isNotEmpty(details)) {
+                        details.forEach(detail -> {
+                            Byte type = detail.getType();
+                            Integer itemId = detail.getBillingItemId();
+                            if (type.intValue() == 0) {
+                                tariffIds.add(itemId);
+                            } else {
+                                oralIds.add(itemId);
+                            }
+                        });
+                    }
                 });
             });
             ClinicMemberPriceQuery query = new ClinicMemberPriceQuery();
@@ -644,28 +653,30 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 List<TreatPlanStepVO> steps = plan.getTreatPlanSteps();
                 steps.forEach(step -> {
                     List<TreatPlanDetailVO> details = step.getTreatPlanDetails();
-                    details.forEach(detail -> {
-                        Integer quantity = detail.getQuantity();
-                        Map<Integer, BigDecimal> map = new LinkedHashMap<>();
-                        Map<Integer, BigDecimal> memberPrices = priceMap.get(detail.getType() + "," + detail.getBillingItemId());
-                        if (StringHelper.isNotEmpty(memberPrices)) {
-                            memberPrices.forEach((memberTypeId, discountPrice) -> {
-                                map.put(memberTypeId, new BigDecimal(quantity).multiply(discountPrice)
-                                        .setScale(2, BigDecimal.ROUND_HALF_UP));
-                            });
-                        } else {
-                            BigDecimal price = detail.getPrice();
-                            memberTypes.forEach(memberType->{
-                                BigDecimal memberPrice =
-                                        (price
-                                                .multiply(BigDecimal.valueOf(memberType.getRate()))
-                                                .divide(BigDecimal.valueOf(100), 2))
-                                                .setScale(2, BigDecimal.ROUND_HALF_UP);
-                                map.put(memberType.getId(), memberPrice);
-                            });
-                        }
-                        detail.setMemberPrices(map);
-                    });
+                    if (StringHelper.isNotEmpty(details)) {
+                        details.forEach(detail -> {
+                            Integer quantity = detail.getQuantity();
+                            Map<Integer, BigDecimal> map = new LinkedHashMap<>();
+                            Map<Integer, BigDecimal> memberPrices = priceMap.get(detail.getType() + "," + detail.getBillingItemId());
+                            if (StringHelper.isNotEmpty(memberPrices)) {
+                                memberPrices.forEach((memberTypeId, discountPrice) -> {
+                                    map.put(memberTypeId, new BigDecimal(quantity).multiply(discountPrice)
+                                            .setScale(2, BigDecimal.ROUND_HALF_UP));
+                                });
+                            } else {
+                                BigDecimal price = detail.getPrice();
+                                memberTypes.forEach(memberType -> {
+                                    BigDecimal memberPrice =
+                                            (price
+                                                    .multiply(BigDecimal.valueOf(memberType.getRate()))
+                                                    .divide(BigDecimal.valueOf(100), 2))
+                                                    .setScale(2, BigDecimal.ROUND_HALF_UP);
+                                    map.put(memberType.getId(), memberPrice);
+                                });
+                            }
+                            detail.setMemberPrices(map);
+                        });
+                    }
                 });
             });
         }
@@ -687,21 +698,24 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     public void treatPlanDetailWriteoffQunatity(TreatPlanDetailWriteoffModel model) {
         removeInvalidData(model.getDeletedOrderDetailIds());
         List<TreatPlanDetailWriteoffInfoModel> models = model.getWriteoffInfoModels();
-        List<Integer> detailIds = models.stream().map(TreatPlanDetailWriteoffInfoModel::getPlanDetailId).collect(Collectors.toList());
+        List<Integer> detailIds = new ArrayList<>();
+        models.forEach(vo-> detailIds.addAll(vo.getPlanDetailIds()));
         if (StringHelper.isNotEmpty(detailIds)) {
             List<TreatPlanDetail> list = treatPlanDetailBiz.sumTreatPlanDetailEnableQuantity(detailIds);
             Date now = new Date(System.currentTimeMillis());
             List<TreatPlanDetailWriteoff> datas = new ArrayList<>();
             models.forEach(vo -> {
-                Integer planDetailId = vo.getPlanDetailId();
-                Integer writeoffQuantity = checkQuantityOver(planDetailId, vo.getQuantity(), list);
-                TreatPlanDetailWriteoff data = new TreatPlanDetailWriteoff();
-                data.setOrderDetailId(vo.getOrderDetailId());
-                data.setPlanDetailId(planDetailId);
-                data.setWriteOffQuantity(writeoffQuantity);
-                data.setCrtId(vo.getCrtId());
-                data.setCrtTime(now);
-                datas.add(data);
+                List<Integer> planDetailIds = vo.getPlanDetailIds();
+                Map<Integer, Integer> writeoffQuantityMap = checkQuantityOver(planDetailIds, vo.getQuantity(), list);
+                writeoffQuantityMap.forEach((detailId, writeoffQuantity)->{
+                    TreatPlanDetailWriteoff data = new TreatPlanDetailWriteoff();
+                    data.setOrderDetailId(vo.getOrderDetailId());
+                    data.setPlanDetailId(detailId);
+                    data.setWriteOffQuantity(writeoffQuantity);
+                    data.setCrtId(vo.getCrtId());
+                    data.setCrtTime(now);
+                    datas.add(data);
+                });
             });
             treatPlanDetailBiz.insertBatchOfWriteoffQuantity(datas);
         }
@@ -721,33 +735,35 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     /**
      * 检查订单项目是否超过选定计划的项目数量
      *
-     * @param planDetailId
-     * @param enableQuantity
+     * @param planDetailIds
+     * @param quantity
      * @param list
      */
-    private Integer checkQuantityOver(Integer planDetailId, Integer enableQuantity, List<TreatPlanDetail> list) {
-        int num = -1;
+    private Map<Integer, Integer> checkQuantityOver(List<Integer> planDetailIds, Integer quantity, List<TreatPlanDetail> list) {
+        Map<Integer, Integer> result = new LinkedHashMap<>(16);
         if (StringHelper.isNotEmpty(list)) {
             for (TreatPlanDetail vo : list) {
-                if (vo.getId().equals(planDetailId)) {
-                    int quantity = vo.getQuantity();
-                    if (quantity <= 0) {
-                        throw new ClientServiceException(vo.getBillingItemName()
-                                + "在治疗计划中已使用，请重新选择治疗计划", OperationCodeConstants.OPERATION_NOT_ALLOW);
-                    }
-                    // 已选项目数量-可用项目数量
-                    num = quantity - enableQuantity;
-                    if (num < 0) {// 可用项目数量未用完
-                        num = quantity;
-                    } else {// 可用项目数量全部用完
-                        num = enableQuantity;
+                int enableQuantity = vo.getQuantity();
+                if (enableQuantity <= 0) {
+                    throw new ClientServiceException(vo.getBillingItemName()
+                            + "在治疗计划中已使用，请重新选择治疗计划", OperationCodeConstants.OPERATION_NOT_ALLOW);
+                }
+                for (Integer detailId : planDetailIds) {
+                    if (detailId.equals(vo.getId())) {
+                        // 可用项目数量-已选项目数量
+                        if (enableQuantity - quantity <= 0) {// 可用项目数量已全部用完
+                            result.put(detailId, enableQuantity);
+                            break;
+                        } else {// 可用项目数量未用完
+                            result.put(detailId, quantity);
+                        }
+                        enableQuantity -= quantity;
                     }
                 }
             }
-        }
-        if (num == -1) {
+        } else {
             throw new ClientServiceException("治疗计划中项目不存在", OperationCodeConstants.DATA_NOT_EXIST);
         }
-        return num;
+        return result;
     }
 }
