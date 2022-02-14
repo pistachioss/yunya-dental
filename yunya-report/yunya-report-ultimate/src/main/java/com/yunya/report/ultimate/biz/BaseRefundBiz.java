@@ -159,7 +159,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
   }
 
   /**
-   * 根据条件查询门诊账单退费（本月）明细列表
+   * 根据条件查询门诊账单退费（本期）明细列表
    *
    * @param query 查询条件
    * @return
@@ -177,7 +177,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
   }
 
   /**
-   * 根据条件导出诊所账单退费（本月）明细列表
+   * 根据条件导出诊所账单退费（本期）明细列表
    *
    * @param response 响应
    * @param query 查询条件
@@ -188,7 +188,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
     List<StatementBillRefundDetailVO> list = pageInfo.getList();
     ExcelUtil<StatementBillRefundDetailVO> excelUtil =
         new ExcelUtil<>(StatementBillRefundDetailVO.class);
-    String fileName = "诊所账单退费（本月）明细列表";
+    String fileName = "诊所账单退费（本期）明细列表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName =
@@ -196,11 +196,11 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
               "%s%s-%s%s",
               organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), fileName);
     }
-    excelUtil.exportExcel(response, list, "诊所账单退费（本月）明细列表", fileName);
+    excelUtil.exportExcel(response, list, "诊所账单退费（本期）明细列表", fileName);
   }
 
   /**
-   * 根据条件查询门诊账单退费（非本月）明细列表
+   * 根据条件查询门诊账单退费（非本期）明细列表
    *
    * @param query 查询条件
    * @return
@@ -218,7 +218,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
   }
 
   /**
-   * 根据条件导出诊所账单退费（非本月）明细列表
+   * 根据条件导出诊所账单退费（非本期）明细列表
    *
    * @param response 响应
    * @param query 查询条件
@@ -229,7 +229,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
     List<StatementBillRefundDetailVO> list = pageInfo.getList();
     ExcelUtil<StatementBillRefundDetailVO> excelUtil =
         new ExcelUtil<>(StatementBillRefundDetailVO.class);
-    String fileName = "诊所账单退费（非本月）明细列表";
+    String fileName = "诊所账单退费（非本期）明细列表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName =
@@ -237,7 +237,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
               "%s%s-%s%s",
               organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), fileName);
     }
-    excelUtil.exportExcel(response, list, "诊所账单退费（非本月）明细列表", fileName);
+    excelUtil.exportExcel(response, list, "诊所账单退费（非本期）明细列表", fileName);
   }
 
   /**
