@@ -694,7 +694,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderRecord.setCrtId(userId);
     orderRecord.setCrtName(name);
     int result = mapper.insertSelective(orderRecord);
-    orderRecordId = orderRecord.getId();
+    Integer orderRecordId1 = orderRecord.getId();
     // 保存调整后订单明细
     for (OrderDetail detail : orderDetails) {
       detail.setOrderRecordId(orderRecordId);
@@ -709,7 +709,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     }
     // 发送消息同步中间表账单数据
     if (result > 0) {
-      rabbitMqServiceFeign.sendMessage(orderRecordId, 0, BaseBill);
+      rabbitMqServiceFeign.sendMessage(orderRecordId1, 0, BaseBill);
     }
   }
 
