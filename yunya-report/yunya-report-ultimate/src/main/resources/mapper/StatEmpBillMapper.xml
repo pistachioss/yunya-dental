@@ -21,7 +21,9 @@
     <!--查询账单时项目数量-->
   <select id="selectBillItemNum" resultType="com.yunya.models.report.StatEmpBill">
     SELECT
-        seb.org_id AS orgId,
+        <if test="groupByOrg">
+            seb.org_id AS orgId,
+        </if>
         seb.item_type AS itemType,
         seb.item_id AS itemId,
         SUM(seb.quantity) AS quantity
@@ -37,7 +39,11 @@
           AND seb.bill_date between #{query.sDateInt} and #{query.eDateInt}
         </if>
     </where>
-    GROUP BY seb.org_id, seb.item_type, seb.item_id
+    GROUP BY
+      <if test="groupByOrg">
+        seb.org_id,
+      </if>
+      seb.item_type, seb.item_id
   </select>
 
   <select id="selectStatisticsEmployeeBillWorkload" resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">

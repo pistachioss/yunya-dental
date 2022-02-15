@@ -849,30 +849,6 @@
                 IFNULL( bp.mobile, '' )
                 ) LIKE concat( concat( '%', #{query.patientName} ), '%' )
             </if>
-            <if test="query.dateType == 0">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bp.patient_crt_time, '%Y-%m-%d') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bp.patient_crt_time, '%Y-%m-%d') &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 1">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bp.patient_crt_time, '%Y-%m') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bp.patient_crt_time, '%Y-%m') &lt;= #{query.endDate}
-                </if>
-            </if>
-            <if test="query.dateType == 2">
-                <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT( bp.patient_crt_time, '%Y') &gt;= #{query.startDate}
-                </if>
-                <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT( bp.patient_crt_time, '%Y') &lt;= #{query.endDate}
-                </if>
-            </if>
         </where>
         ORDER BY bp.patient_id
     </select>

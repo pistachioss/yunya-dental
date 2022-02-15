@@ -122,34 +122,34 @@ public class DimensionReportBiz {
             return pageInfo;
         }
         List<Integer> patientIds = patients.stream().map(PatientManageVo::getPatientId).collect(Collectors.toList());
-
+        query.setPatientIds(patientIds);
         // 就诊次数
-        Future<Map<Integer, Integer>> treatNumFuture = multiFindPatientTreatNum(patientIds);
+        Future<Map<String, Integer>> treatNumFuture = multiFindPatientTreatNum(query);
         // 初诊日期
         Future<Map<Integer, String>> firstVisitFuture = multiFindFirstVisitDateByPatientId(patientIds);
         // 末次就诊日期
         Future<Map<Integer, String>> lastVisitFuture = multiFindLastVisitDateByPatientId(patientIds);
         // 累计消费、欠费总额
-        Future<Map<Integer, PatientCostInfoVO>> consumeFuture = multiFindPatientTotalConsumeArrear(patientIds);
+        Future<Map<String, PatientCostInfoVO>> consumeFuture = multiFindPatientTotalConsumeArrear(query);
         // 下次预约
         Future<Map<Integer, String>> appointFuture = multiFindNextAppointDateByPatientId(patientIds);
         // 下次提醒
         Future<Map<Integer, String>> remindFuture = multiFindNextRemindDateByPatientId(patientIds);
         // 账单项目
-        Future<List<PersonalBillItemVO>> itemFuture = multiFindBillItemNumByPatientId(patientIds);
+        Future<List<PersonalBillItemVO>> itemFuture = multiFindBillItemNumByPatientId(query);
         // 数据合并
         return patientDimensionMerge(pageInfo, treatNumFuture, firstVisitFuture,
-                lastVisitFuture,consumeFuture, appointFuture, remindFuture, itemFuture);
+                lastVisitFuture, consumeFuture, appointFuture, remindFuture, itemFuture);
     }
 
-    private DynamicHeaderPageInfo<JSONObject> patientDimensionMerge(PageInfo<PatientManageVo> pageInfo, Future<Map<Integer, Integer>> treatNumFuture,
+    private DynamicHeaderPageInfo<JSONObject> patientDimensionMerge(PageInfo<PatientManageVo> pageInfo, Future<Map<String, Integer>> treatNumFuture,
                                        Future<Map<Integer, String>> firstVisitFuture, Future<Map<Integer, String>> lastVisitFuture,
-                                       Future<Map<Integer, PatientCostInfoVO>> consumeFuture, Future<Map<Integer, String>> appointFuture,
+                                       Future<Map<String, PatientCostInfoVO>> consumeFuture, Future<Map<Integer, String>> appointFuture,
                                        Future<Map<Integer, String>> remindFuture, Future<List<PersonalBillItemVO>> itemFuture) throws Exception {
-        Map<Integer, Integer> treatNumMap = treatNumFuture.get();
+        Map<String, Integer> treatNumMap = treatNumFuture.get();
         Map<Integer, String> firstVisitMap = firstVisitFuture.get();
         Map<Integer, String> lastVisitMap = lastVisitFuture.get();
-        Map<Integer, PatientCostInfoVO> consumeArrearMap = consumeFuture.get();
+        Map<String, PatientCostInfoVO> consumeArrearMap = consumeFuture.get();
         Map<Integer, String> appointMap = appointFuture.get();
         Map<Integer, String> remindMap = remindFuture.get();
         List<PersonalBillItemVO> billItems = itemFuture.get();
@@ -157,33 +157,37 @@ public class DimensionReportBiz {
         Map<String, String> specialMap = new LinkedHashMap<>(16);
         Map<String, Integer> billItemMap = specialIdNameMap(billItems, specialMap);
         List<JSONObject> list = new ArrayList<>();
+        List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(new ClinicPerformanceBusinessQuery());
         List<PatientManageVo> patients = pageInfo.getList();
-        patients.forEach(vo->{
-            Integer patientId = vo.getPatientId();
-            JSONObject obj = new JSONObject();
-//            obj.put("patientId", vo.getPatientId());
-            obj.put("patientName", vo.getPatientName());
-            obj.put("age", defaultValue(vo.getAge()));
-            obj.put("orionTypeName", defaultValue(vo.getPatientOrionTypeName()));
-            obj.put("memberTypeName", defaultValue(vo.getMemberTypeName()));
-            obj.put("treatNum", defaultValue(treatNumMap.get(patientId)));
-            PatientCostInfoVO costInfo = consumeArrearMap.get(patientId);
-            BigDecimal totalConsume = new BigDecimal(0.00);
-            BigDecimal totalArrear = new BigDecimal(0.00);
-            if (!ObjectUtils.isEmpty(costInfo)) {
-                totalConsume = costInfo.getReceivedAmount();
-                totalArrear = costInfo.getTotalArrears();
-            }
-            obj.put("totalConsume", totalConsume);
-            obj.put("totalArrear", totalArrear);
-            obj.put("firstVisitDate", defaultValue(firstVisitMap.get(patientId)));
-            obj.put("lastVisitDate", defaultValue(lastVisitMap.get(patientId)));
-            obj.put("nextAppointDate", defaultValue(appointMap.get(patientId)));
-            obj.put("nextRemindDate", defaultValue(remindMap.get(patientId)));
-            specialMap.forEach((id, name)->{
-                obj.put(id, defaultValue(billItemMap.get(id+"."+patientId)));
+        orgs.forEach(org->{
+            Integer orgId = org.getOrgId();
+            patients.forEach(vo->{
+                Integer patientId = vo.getPatientId();
+                String key = patientId+","+orgId;
+                JSONObject obj = new JSONObject();
+                obj.put("patientName", vo.getPatientName());
+                obj.put("age", defaultValue(vo.getAge()));
+                obj.put("orionTypeName", defaultValue(vo.getPatientOrionTypeName()));
+                obj.put("memberTypeName", defaultValue(vo.getMemberTypeName()));
+                obj.put("treatNum", defaultValue(treatNumMap.get(key)));
+                PatientCostInfoVO costInfo = consumeArrearMap.get(key);
+                BigDecimal totalConsume = new BigDecimal(0.00);
+                BigDecimal totalArrear = new BigDecimal(0.00);
+                if (!ObjectUtils.isEmpty(costInfo)) {
+                    totalConsume = costInfo.getReceivedAmount();
+                    totalArrear = costInfo.getTotalArrears();
+                }
+                obj.put("totalConsume", totalConsume);
+                obj.put("totalArrear", totalArrear);
+                obj.put("firstVisitDate", defaultValue(firstVisitMap.get(patientId)));
+                obj.put("lastVisitDate", defaultValue(lastVisitMap.get(patientId)));
+                obj.put("nextAppointDate", defaultValue(appointMap.get(patientId)));
+                obj.put("nextRemindDate", defaultValue(remindMap.get(patientId)));
+                specialMap.forEach((id, name)->{
+                    obj.put(id, defaultValue(billItemMap.get(id+"."+key)));
+                });
+                list.add(obj);
             });
-            list.add(obj);
         });
         return convertPatientDimensionPageInfo(pageInfo, list, specialMap);
     }
@@ -211,22 +215,38 @@ public class DimensionReportBiz {
         return result;
     }
 
-    private Future<List<PersonalBillItemVO>> multiFindBillItemNumByPatientId(List<Integer> patientIds) {
-        return threadPool.submit(()-> baseBillDetailBiz.findBillItemNumByPatientId(patientIds));
+    private Future<List<PersonalBillItemVO>> multiFindBillItemNumByPatientId(PatientDimensionQueryForm query) {
+        return threadPool.submit(()-> baseBillDetailBiz.findBillItemNumByQuery(query));
     }
 
-    private Future<Map<Integer, PatientCostInfoVO>> multiFindPatientTotalConsumeArrear(List<Integer> patientIds) {
+    private Future<Map<String, PatientCostInfoVO>> multiFindPatientTotalConsumeArrear(PatientDimensionQueryForm query) {
         return threadPool.submit(()->{
-            List<PatientCostInfoVO> costInfos = baseBillBiz.findPatientCostInfo(patientIds);
-            return costInfos.stream().collect(toMap(PatientCostInfoVO::getPatientId, Function.identity()));
+            Map<String, PatientCostInfoVO> map = new HashMap<>(16);
+            List<PatientCostInfoVO> costInfos = baseBillBiz.findPatientCostInfo(query);
+            if (StringHelper.isNotEmpty(costInfos)) {
+                costInfos.forEach(vo -> map.put(vo.getPatientId()+","+vo.getOrgId(), vo));
+            }
+            return map;
         });
     }
 
-    private Future<Map<Integer, Integer>> multiFindPatientTreatNum(List<Integer> patientIds) {
+    private Future<Map<String, Integer>> multiFindPatientTreatNum(PatientDimensionQueryForm query) {
         return threadPool.submit(()->{
-            List<PatientCountVO> patients = baseTreatmentProcessBiz.findPatientTreatNum(patientIds);
-            return mapPatientCount(patients);
+            List<OrgPatientCountVO> patients = baseTreatmentProcessBiz.findPatientTreatNum(query);
+            return mapPatientIntByKey(patients, (vo)->vo.getPatientId()+","+vo.getOrgId());
         });
+    }
+
+    private Map<String, Integer> mapPatientIntByKey(List<OrgPatientCountVO> patients, Function<OrgPatientCountVO, String> keyFunc) {
+        if (StringHelper.isEmpty(patients)) {
+            return new HashMap<>();
+        }
+        Map<String, Integer> result = new HashMap<>(16);
+        patients.forEach(vo->{
+            String key = keyFunc.apply(vo);
+            result.put(key, vo.getCount());
+        });
+        return result;
     }
 
     /**
@@ -314,10 +334,16 @@ public class DimensionReportBiz {
      *
      * @return
      * @param query
-     * @param groupByOrgId
+     * @param groupByOrg
      */
-    private Future<Map<String, Set<Integer>>> multiFindinMonthReFirstVisit(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
-        return threadPool.submit(()-> baseTreatmentProcessBiz.findInMonthReFirstVisit(query, groupByOrgId));
+    private Future<Map<String, Integer>> multiFindinMonthReFirstVisit(ClinicEmployeeWorkloadQuery query, boolean groupByOrg) throws Exception {
+         return threadPool.submit(()-> {
+             long l = System.currentTimeMillis();
+             List<EmployeeCountVO> list = baseTreatmentProcessBiz.findInMonthReFirstVisit(query, groupByOrg, 0);
+             long l1 = System.currentTimeMillis();
+             System.out.println("本月初诊且复诊" + (l1 - l));
+             return mapEmployeeCount(list);
+        });
     }
 
     private Map<String, Integer> specialIdNameMap(List<PersonalBillItemVO> billItems, Map<String, String> specialMap) {
@@ -420,6 +446,9 @@ public class DimensionReportBiz {
         }
         updEmployeeId2Query(employees, query);
 
+        // 无下次预约或提醒客户
+        Future<Map<String, Integer>> noAppointAndRemindFuture = multiFindHasntAppointAndRemind(query, groupByOrgId);
+
         // 初诊人数
         Future<Map<String, Integer>> firstVisitFuture = multiFindFirstVisitNum(query, groupByOrgId);
 
@@ -430,13 +459,10 @@ public class DimensionReportBiz {
         Future<Map<String, Integer>> treatFuture = multiFindTreatVisitsTimes(query, groupByOrgId);
 
         // 本月初诊且/复诊
-        Future<Map<String, Set<Integer>>> reFirstVisitFuture = multiFindinMonthReFirstVisit(query, groupByOrgId);
+        Future<Map<String, Integer>> reFirstVisitFuture = multiFindinMonthReFirstVisit(query, groupByOrgId);
 
         // 欠费总额
         Future<Map<String, BigDecimal>> debtFuture = multiFindPatientDebtAmount(query, groupByOrgId);
-
-        // 无下次预约或提醒客户
-        Future<Map<String, Integer>> noAppointAndRemindFuture = multiFindHasntAppointAndRemind(query, groupByOrgId);
 
         // 患者来源
         Future<List<EmployeeFirstVisitOriginTypeVO>> patientOrginFuture = multiFindFirstVisitPatientOriginType(query, groupByOrgId);
@@ -446,9 +472,12 @@ public class DimensionReportBiz {
 
         List<Integer> employeeIds = employees.stream().map(ClinicEmployeeReportVO::getEmployeeId).collect(Collectors.toList());
         MultiClinicDateRangeQueryForm dateQuery = new MultiClinicDateRangeQueryForm();
-        BeanUtils.copyProperties(query, dateQuery);
-        dateQuery.setSDateInt(null);
-        dateQuery.setEDateInt(null);
+        dateQuery.setOrgIds(Arrays.asList(query.getOrgIds()));
+        dateQuery.setStartDate(query.getStartDate());
+        dateQuery.setEndDate(query.getEndDate());
+        dateQuery.setDateType(query.getDateType());
+
+        long l = System.currentTimeMillis();
         // 工作量
         Map<String, BigDecimal> workloadMap = null;
         if (groupByOrgId) {
@@ -456,6 +485,7 @@ public class DimensionReportBiz {
         } else {
             workloadMap = clinicEmployeeWorkload(dateQuery, employeeIds, vo ->vo.getExecutorId()+"");
         }
+        System.out.println("工作量" + (System.currentTimeMillis() - l));
         return mergeClinicDimension(employees, workloadMap, firstVisitFuture.get(), reFirstVisitFuture.get(),
                 treatFuture.get(), debtFuture.get(), noAppointAndRemindFuture.get(), patientOrginFuture.get(),
                 billItemFuture.get(), reVisitFuture.get(), groupByOrgId);
@@ -491,14 +521,13 @@ public class DimensionReportBiz {
             }
         });
         query.setEmployeeIds(employeeIds.toArray(new Integer[0]));
-        query.setStartDate(null);
-        query.setEndDate(null);
     }
 
     private DynamicHeaderPageInfo<JSONObject> mergeClinicDimension(List<ClinicEmployeBonusCoefficientVO> employees,
-            Map<String, BigDecimal> workloadMap, Map<String, Integer> firstVisitMap, Map<String, Set<Integer>> reFirstVisitMap,
+            Map<String, BigDecimal> workloadMap, Map<String, Integer> firstVisitMap, Map<String, Integer> reFirstVisitMap,
             Map<String, Integer> treatTimesMap, Map<String, BigDecimal> debtMap, Map<String, Integer> noARMap,
             List<EmployeeFirstVisitOriginTypeVO> originTypes, List<PersonalBillItemVO> billItems, Map<String, Integer> reVisitMap, boolean groupByOrgId) throws Exception {
+        long l = System.currentTimeMillis();
         Map<String, List<String>> title = new HashMap<>(16);
         Map<String, Integer> originDataMap = new HashMap<>(16);
         Map<String, String> originTypeMap = new LinkedHashMap<>(16);
@@ -527,8 +556,6 @@ public class DimensionReportBiz {
                 String orgId = ObjectUtils.isEmpty(vo.getOrgId())?"":","+vo.getOrgId();
                 String key = employeeId + orgId;
                 JSONObject obj = new JSONObject();
-//            obj.put("employeeId", employeeId);
-//            obj.put("orgId", orgId);
                 if (groupByOrgId) {
                     obj.put("abbreviation", defaultValue(vo.getAbbreviation()));
                 }
@@ -537,12 +564,7 @@ public class DimensionReportBiz {
                 obj.put("firstVisitCount", defaultValue(firstVisitMap.get(key)));
                 obj.put("reVisitCount", defaultValue(reVisitMap.get(key)));
                 obj.put("treatTimes", defaultValue(treatTimesMap.get(key)));
-                Set<Integer> patientIds = reFirstVisitMap.get(key);
-                int reFirstVisitCount = 0;
-                if (StringHelper.isNotEmpty(patientIds)) {
-                    reFirstVisitCount = patientIds.size();
-                }
-                obj.put("reFirstVisitCount", defaultValue(reFirstVisitCount));
+                obj.put("reFirstVisitCount", defaultValue(reFirstVisitMap.get(key)));
                 obj.put("debtAmount", defaultValue(debtMap.get(key)));
                 obj.put("hasntAppointAndRemind", defaultValue(noARMap.get(key)));
                 originTypeMap.forEach((originTypeId, name) -> {
@@ -558,6 +580,7 @@ public class DimensionReportBiz {
             pageInfo.setList(list);
             convertClinicDimensionPageInfo(pageInfo, title, originTypeMap, specialMap, groupByOrgId);
         }
+        System.out.println("汇总：" + (System.currentTimeMillis() - l));
         return pageInfo;
     }
 
@@ -649,48 +672,82 @@ public class DimensionReportBiz {
         }
     }
 
-    private Future<List<PersonalBillItemVO>> multiFindExecutorBillItem(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
+    private Future<List<PersonalBillItemVO>> multiFindExecutorBillItem(ClinicEmployeeWorkloadQuery query, boolean groupByOrg) {
         return threadPool.submit(()-> {
-            List<PersonalBillItemVO> list = baseBillDetailBiz.findExecutorBillItem(query, groupByOrgId);
-            return list;
+            long l = System.currentTimeMillis();
+            MultiClinicDateRangeQueryForm queryForm = new MultiClinicDateRangeQueryForm();
+            queryForm.setOrgIds(Arrays.asList(query.getOrgIds()));
+            queryForm.setStartDate(query.getStartDate());
+            queryForm.setEndDate(query.getEndDate());
+            List<StatEmpBill> list = statEmpBillBiz.findBillItemNum(queryForm, groupByOrg);
+            System.out.println("专科项目" + (System.currentTimeMillis() - l));
+            List<PersonalBillItemVO> result = new ArrayList<>();
+            if (StringHelper.isNotEmpty(list)) {
+                list.forEach(vo->{
+                    PersonalBillItemVO item = new PersonalBillItemVO();
+                    item.setItemId(vo.getItemId());
+                    item.setItemType(vo.getItemType().intValue());
+                    item.setOrgId(vo.getOrgId());
+                    item.setQuantity(vo.getQuantity());
+                    item.setPersonId(vo.getDentistId());
+                    result.add(item);
+                });
+            }
+            return result;
         });
     }
 
     private Future<List<EmployeeFirstVisitOriginTypeVO>> multiFindFirstVisitPatientOriginType(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
-        return threadPool.submit(()-> baseTreatmentProcessBiz.findFirstVisitPatientOriginType(query, groupByOrgId));
+        return threadPool.submit(()-> {
+            long l = System.currentTimeMillis();
+            List<EmployeeFirstVisitOriginTypeVO> res = baseTreatmentProcessBiz.findFirstVisitPatientOriginType(query, groupByOrgId);
+            System.out.println("患者来源" + (System.currentTimeMillis() - l));
+            return res;
+        });
+
     }
 
     private Future<Map<String, Integer>> multiFindHasntAppointAndRemind(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
         return threadPool.submit(()->{
+            long l = System.currentTimeMillis();
             List<EmployeeCountVO> employees = baseTreatmentProcessBiz.findHasntAppointAndRemind(query, groupByOrgId);
-           return mapEmployeeCount(employees);
+            System.out.println("无下次预约或提醒客户" + (System.currentTimeMillis() - l));
+            return mapEmployeeCount(employees);
         });
     }
 
     private Future<Map<String, BigDecimal>> multiFindPatientDebtAmount(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
         return threadPool.submit(()->{
+            long l = System.currentTimeMillis();
             List<EmployeeAmountVO> employees = baseBillBiz.findPatientDebAmount(query, groupByOrgId);
+            System.out.println("欠费" + (System.currentTimeMillis() - l));
            return mapEmployeeAmount(employees);
         });
     }
 
     private Future<Map<String, Integer>> multiFindTreatVisitsTimes(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
         return threadPool.submit(()->{
+            long t1 = System.currentTimeMillis();
             List<EmployeeCountVO> employees = baseTreatmentProcessBiz.findTreatVisitsTimes(query, groupByOrgId);
+            System.out.println("初诊人次" + (System.currentTimeMillis() - t1));
             return mapEmployeeCount(employees);
         });
     }
 
     private Future<Map<String, Integer>> multiFindRepeatVisitNum(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
         return threadPool.submit(()->{
+            long t1 = System.currentTimeMillis();
             List<EmployeeCountVO> employees = baseTreatmentProcessBiz.findPatientTreatNumGroupEmp(query, 1, groupByOrgId);
+            System.out.println("复诊人数" + (System.currentTimeMillis() - t1));
             return mapEmployeeCount(employees);
         });
     }
 
     private Future<Map<String, Integer>> multiFindFirstVisitNum(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
         return threadPool.submit(()->{
+            long t1 = System.currentTimeMillis();
             List<EmployeeCountVO> employees = baseTreatmentProcessBiz.findPatientTreatNumGroupEmp(query, 0, groupByOrgId);
+            System.out.println("初诊人数" + (System.currentTimeMillis() - t1));
             return mapEmployeeCount(employees);
         });
     }
@@ -1260,9 +1317,10 @@ public class DimensionReportBiz {
 
     private Map<String, BigDecimal> clinicEmployeeWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds, Function<BillExecutorItemVO, String> keyFunc) throws ExecutionException, InterruptedException {
         // 门诊的实收、免单
-        List<BillExecutorItemVO> pays = multiFindClinicEmployeeWorkload(query, employeeIds).get();
+        Future<List<BillExecutorItemVO>> payFuture = multiFindClinicEmployeeWorkload(query, employeeIds);
         // 门诊的补入
-        List<BillExecutorItemVO> coupons = multiFindClinicEmployeeCouponWorkload(query, employeeIds).get();
+        Future<List<BillExecutorItemVO>> couponFuture = multiFindClinicEmployeeCouponWorkload(query, employeeIds);
+        List<BillExecutorItemVO> pays = payFuture.get();
         // 门诊的退费
         List<BillExecutorItemVO> refunds = multiFindClinicEmployeeRefundWorkload(query, employeeIds).get();
         Map<String, BigDecimal> result = new HashMap<>();
@@ -1278,6 +1336,7 @@ public class DimensionReportBiz {
                 result.put(key, totalWorkload.add(workload));
             });
         }
+        List<BillExecutorItemVO> coupons = couponFuture.get();
         if (StringHelper.isNotEmpty(coupons)) {
             coupons.forEach(vo -> {
                 String key = keyFunc.apply(vo);
@@ -2167,7 +2226,7 @@ public class DimensionReportBiz {
      */
     private Future<List<StatEmpBill>> multiFindClinicBillItemNum(MultiClinicDateRangeQueryForm query) {
         return threadPool.submit(()-> {
-            List<StatEmpBill> tariffItemList = statEmpBillBiz.findBillItemNum(query);
+            List<StatEmpBill> tariffItemList = statEmpBillBiz.findBillItemNum(query, true);
             List<StatEmpBill> oralItemList = baseBillDetailBiz.findBillingOralItemList(query);
             if (StringHelper.isNotEmpty(oralItemList)) {
                 tariffItemList.addAll(oralItemList);

@@ -17,8 +17,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -383,19 +381,6 @@ public class BizTest {
         TreatmentRecordQuery query = JSONObject.parseObject(param, TreatmentRecordQuery.class);
         long t1 = System.currentTimeMillis();
         PageInfo<TreatmentRecordReportVO> result = baseTreatmentProcessBiz.findTreatmentList(query);
-        System.out.println(System.currentTimeMillis() - t1);
-        System.out.println(JSONObject.toJSON(result));
-    }
-
-    /**
-     * 就诊记录列表
-     */
-    @Test
-    public void testFindInMonthReFirstVisit() {
-        ClinicEmployeeWorkloadQuery query= new ClinicEmployeeWorkloadQuery();
-        query.setOrgIds(new Integer[]{33});
-        long t1 = System.currentTimeMillis();
-        Map<String, Set<Integer>> result = baseTreatmentProcessBiz.findInMonthReFirstVisit(query, true);
         System.out.println(System.currentTimeMillis() - t1);
         System.out.println(JSONObject.toJSON(result));
     }

@@ -15,7 +15,9 @@ public interface StatEmpBillMapper extends Mapper<StatEmpBill> {
      * @param query
      * @return
      */
-    List<StatEmpBill> selectBillItemNum(@Param("query") MultiClinicDateRangeQueryForm query);
+    List<StatEmpBill> selectBillItemNum(
+            @Param("query") MultiClinicDateRangeQueryForm query,
+            @Param("groupByOrg") boolean groupByOrg);
 
     List<BillExecutorItemVO> selectStatisticsEmployeeBillWorkload(
             @Param("query") MultiClinicDateRangeQueryForm query,

@@ -515,10 +515,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<EmployeeTariffWorkloadVO> selectClinicExecutorTariffRefundWorkload(@Param("query") BillItemTollWorkloadQuery query);
 
-  List<PersonalBillItemVO> selectBillItemNumByPatientId(@Param("patientIds") List<Integer> patientIds);
-
-  List<PersonalBillItemVO> selectExecutorBillItem(@Param("query") ClinicEmployeeWorkloadQuery query,
-                                                  @Param("groupByOrgId") boolean groupByOrgId);
+  List<PersonalBillItemVO> selectBillItemNumByQuery(@Param("query") PatientDimensionQueryForm query);
 
   List<StatEmpBill> selectBillingOralItemList(@Param("query") MultiClinicDateRangeQueryForm query);
 }

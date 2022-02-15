@@ -5108,8 +5108,9 @@
         GROUP BY brd.executorId,brd.itemId,brd.orgId
     </select>
 
-    <select id="selectBillItemNumByPatientId" resultType="com.yunya.feign.report.domain.vo.PersonalBillItemVO">
+    <select id="selectBillItemNumByQuery" resultType="com.yunya.feign.report.domain.vo.PersonalBillItemVO">
         SELECT
+            bb.org_id AS orgId,
             bb.patient_id AS personId,
             bbd.item_type AS itemType,
             bbd.item_id AS itemId,
@@ -5118,70 +5119,35 @@
         LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
         <where>
             and bb.patient_id in
-            <foreach collection="patientIds" item="item" index="index" open="(" close=")" separator=",">
+            <foreach collection="query.patientIds" item="item" index="index" open="(" close=")" separator=",">
                 #{item}
             </foreach>
-        </where>
-        GROUP BY bb.patient_id, bbd.item_type, bbd.item_id
-    </select>
-
-    <select id="selectExecutorBillItem" resultType="com.yunya.feign.report.domain.vo.PersonalBillItemVO">
-        SELECT
-            <if test="groupByOrgId">
-                bbd.org_id AS orgId,
-            </if>
-            bbd.executor_id AS personId,
-            bbd.item_type AS itemType,
-            bbd.item_id AS itemId,
-            sum(bbd.quantity) AS quantity
-        FROM base_bill_detail bbd
-        INNER JOIN base_bill bb ON bb.bill_id = bbd.bill_id
-        <where>
-            AND bbd.executor_id > 0
-            <if test="query.orgIds!=null and query.orgIds.length>0">
-                and bb.org_id in
-                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="query.employeeIds != null and query.employeeIds.length > 0">
-                and bbd.executor_id in
-                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
             <if test="query.dateType == 0">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 1">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
                 </if>
             </if>
             <if test="query.dateType == 2">
                 <if test="query.startDate != null and query.startDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y' ) &gt;= #{query.startDate}
+                    and DATE_FORMAT(bb.bill_date, '%Y') &gt;= #{query.startDate}
                 </if>
                 <if test="query.endDate != null and query.endDate != ''">
-                    and DATE_FORMAT(bb.bill_date, '%Y' ) &lt;= #{query.endDate}
+                    and DATE_FORMAT(bb.bill_date, '%Y') &lt;= #{query.endDate}
                 </if>
             </if>
         </where>
-        GROUP BY
-        <if test="groupByOrgId">
-            bbd.org_id,
-        </if>
-        bbd.executor_id,
-        bbd.item_type,
-        bbd.item_id
+        GROUP BY bb.org_id, bb.patient_id, bbd.item_type, bbd.item_id
     </select>
 
     <select id="selectBillingOralItemList" resultType="com.yunya.models.report.StatEmpBill">
