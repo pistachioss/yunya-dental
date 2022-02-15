@@ -27,6 +27,7 @@
         <result column="assistant_1" property="assistant1" jdbcType="INTEGER"/>
         <result column="assistant_2" property="assistant2" jdbcType="INTEGER"/>
         <result column="assistant_3" property="assistant3" jdbcType="INTEGER"/>
+        <result column="in_month_next_id" property="inMonthNextId" jdbcType="INTEGER"/>
     </resultMap>
 
     <sql id="BaseResultFields">
@@ -741,18 +742,16 @@
                          LENGTH(pbi.`name`) - LENGTH(#{form.condition}))
     </select>
 
-    <select id="selectInMonthReFirstVisit" resultType="com.yunya.models.report.BaseTreatmentProcess">
+    <select id="selectInMonthReFirstVisit" resultType="com.yunya.feign.report.domain.vo.EmployeeCountVO">
         SELECT
-        <if test="groupByOrgId">
-            btp.org_id AS orgId,
-        </if>
-        btp.registered_dentist_id AS registeredDentistId,
-        btp.patient_id AS patientId,
-        btp.treat_type AS treatType,
-        btp.treat_end_time AS treatEndTime
+            <if test="groupByOrg">
+                btp.org_id AS orgId,
+            </if>
+            btp.registered_dentist_id AS employeeId,
+            COUNT(btp.patient_id) AS count
         FROM base_treatment_process btp
         <where>
-            AND btp.treat_end_time is not null
+            AND btp.in_month_next_id > 0
             <if test="treatType != null">
                 and btp.treat_type = #{treatType}
             </if>
@@ -768,7 +767,36 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="query.dateType==0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( btp.treat_start_time, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( btp.treat_start_time, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
         </where>
+        GROUP BY
+        <if test="groupByOrg">
+            btp.org_id,
+        </if>
+        btp.registered_dentist_id
     </select>
 
     <select id="selectNextAppointDateByPatientId"
@@ -826,19 +854,44 @@
         LEFT JOIN base_treatment_process btp1 ON btp.treatmentId = btp1.treatment_id AND btp.patientId=btp1.patient_id
     </select>
 
-    <select id="selectPatientTreatNum" resultType="com.yunya.feign.report.domain.vo.PatientCountVO">
+    <select id="selectPatientTreatNum" resultType="com.yunya.feign.report.domain.vo.OrgPatientCountVO">
         SELECT
-        patient_id AS patientId,
-        count(treatment_id) AS count
+            org_id AS orgId,
+            patient_id AS patientId,
+            count(treatment_id) AS count
         FROM base_treatment_process btp
         <where>
             AND btp.treat_end_time IS NOT NULL
             AND patient_id IN
-            <foreach collection="patientIds" item="item" index="index" open="(" close=")" separator=",">
+            <foreach collection="query.patientIds" item="item" index="index" open="(" close=")" separator=",">
                 #{item}
             </foreach>
+            <if test="query.dateType==0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( btp.treat_start_time, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType==2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( btp.treat_start_time, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( btp.treat_start_time, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
         </where>
-        GROUP BY patient_id
+        GROUP BY patient_id, org_id
     </select>
 
     <select id="selectPatientTreatNumGroupEmp" resultType="com.yunya.feign.report.domain.vo.EmployeeCountVO">

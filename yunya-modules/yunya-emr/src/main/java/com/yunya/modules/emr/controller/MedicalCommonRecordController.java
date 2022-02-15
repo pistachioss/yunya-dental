@@ -23,7 +23,9 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.emr.MedicalCommonRecord;
+import com.yunya.models.emr.TreatPlanRecord;
 import com.yunya.modules.emr.biz.MedicalCommonRecordBiz;
+import com.yunya.modules.emr.biz.TreatPlanRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
@@ -50,6 +52,8 @@ public class MedicalCommonRecordController {
 
   @Autowired
   private MedicalCommonRecordBiz medicalCommonRecordBiz;
+  @Autowired
+  private TreatPlanRecordBiz treatPlanRecordBiz;
   @Autowired
   private RemoteSystemServiceFeign remoteSystemServiceFeign;
   @Autowired
@@ -106,8 +110,10 @@ public class MedicalCommonRecordController {
     for (MedicalCommonRecord medical : list) {
       MedicalCommonRecordModel medicalCommonRecordModel = new MedicalCommonRecordModel();
       BeanUtils.copyProperties(medical, medicalCommonRecordModel);
+      Integer medicalId = medical.getId();
+      medicalCommonRecordModel.setHasPlan(treatPlanRecordBiz.hasPlanByMedicalId(medicalId));
       // 照片影像
-      medicalCommonRecordModel.setXRayFilms(fileMap.get(medical.getId()));
+      medicalCommonRecordModel.setXRayFilms(fileMap.get(medicalId));
       medicalCommonRecordModel.setMajorDentistName(employeeMap.get(medicalCommonRecordModel.getMajorDentistId()+"").getName());
 
       if (!StrUtil.isEmpty(medical.getExamination())) {
@@ -120,17 +126,10 @@ public class MedicalCommonRecordController {
         list1 = jsonArray.toJavaList(ExaminationsVO.class);
         medicalCommonRecordModel.setDiagnosis(list1);
       }
-//      if (!StrUtil.isEmpty(medical.getPlan())) {
-//        jsonArray = JSONArray.parseArray(medical.getPlan());
-//        list1 = jsonArray.toJavaList(ExaminationsVO.class);
-//        medicalCommonRecordModel.setPlan(list1);
-//      }
-      String plan = medical.getPlan();
-      if ("1".equals(plan)) {
-        ExaminationsVO plans = new ExaminationsVO();
-        plans.setDescribe("1");
-        plans.setTooth_position("1");
-        medicalCommonRecordModel.setPlan(Arrays.asList(plans));
+      if (!StrUtil.isEmpty(medical.getPlan())) {
+        jsonArray = JSONArray.parseArray(medical.getPlan());
+        list1 = jsonArray.toJavaList(ExaminationsVO.class);
+        medicalCommonRecordModel.setPlan(list1);
       }
       if (!StrUtil.isEmpty(medical.getTreatment())) {
         jsonArray = JSONArray.parseArray(medical.getTreatment());

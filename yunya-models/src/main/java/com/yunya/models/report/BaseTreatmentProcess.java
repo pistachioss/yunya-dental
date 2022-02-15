@@ -139,6 +139,12 @@ public class BaseTreatmentProcess {
     private Integer assistant3;
 
     /**
+     * 一个月内下次就诊id
+     */
+    @Column(name = "in_month_next_id")
+    private Integer inMonthNextId;
+
+    /**
      * 获取预约ID
      *
      * @return appointment_id - 预约ID
@@ -530,5 +536,13 @@ public class BaseTreatmentProcess {
      */
     public void setRegisteredDate(Date registeredDate) {
         this.registeredDate = registeredDate;
+    }
+
+    public Integer getInMonthNextId() {
+        return inMonthNextId;
+    }
+
+    public void setInMonthNextId(Integer inMonthNextId) {
+        this.inMonthNextId = inMonthNextId;
     }
 }

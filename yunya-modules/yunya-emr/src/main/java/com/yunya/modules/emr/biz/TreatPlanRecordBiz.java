@@ -773,4 +773,11 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         }
         return result;
     }
+
+    public Boolean hasPlanByMedicalId(Integer medicalId) {
+        TreatPlanRecord query = new TreatPlanRecord();
+        query.setMedicalRecordId(medicalId);
+        List<TreatPlanRecord> records = mapper.select(query);
+        return StringHelper.isNotEmpty(records);
+    }
 }

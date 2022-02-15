@@ -529,7 +529,7 @@ public class DateUtil {
     return date;
   }
 
-  public static Integer date2Number(String dateStr, String suffix) {
+  public static String date2Number(String dateStr, String suffix) {
     if (StringHelper.isEmpty(dateStr)) {
       return null;
     }
@@ -543,7 +543,7 @@ public class DateUtil {
         suffix = "";
       }
     }
-    return Integer.parseInt(date + suffix);
+    return date + suffix;
   }
 
   /**
@@ -918,14 +918,13 @@ public class DateUtil {
     if (!date.matches(DATE_REGEX)) {
       date = getStartDate(date);
     }
-    return date2Number(date, null);
+    return Integer.parseInt(date2Number(date, null));
   }
 
   public static Integer endDate2Number(String date) {
     if (!date.matches(DATE_REGEX)) {
       date = getEndDate(date);
     }
-    return date2Number(date, null);
+    return Integer.parseInt(date2Number(date, null));
   }
-
 }
