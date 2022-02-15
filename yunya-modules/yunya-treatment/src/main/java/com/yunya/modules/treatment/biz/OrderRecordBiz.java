@@ -677,6 +677,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     billRecord.setUpdId(userId);
     billRecord.setUpdName(name);
     billRecordMapper.updateByPrimaryKeySelective(billRecord);
+    // 发送消息同步中间表账单数据
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(orderRecordId, 2, BaseBill);
+    }
     // 订单明细对象转换(调整账单不改变原来开单门诊ID)
     List<OrderDetail> orderDetails =
         orderDetailBiz.transferModelToEntity(billRecordOrgId, treatmentRecordId, detailModels);
@@ -703,10 +707,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     saveTreatPlanDetailWriteoffQuanity(orderDetails, detailModels, orderDetail);
     // 将优惠置为不可用
     discountFeign.revokeBenefit(orderRecordId);
-    // 发送消息同步中间表账单数据
-    if (i > 0) {
-      rabbitMqServiceFeign.sendMessage(orderRecordId, 2, BaseBill);
-    }
     // 发送消息同步中间表账单数据
     if (result > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 0, BaseBill);
