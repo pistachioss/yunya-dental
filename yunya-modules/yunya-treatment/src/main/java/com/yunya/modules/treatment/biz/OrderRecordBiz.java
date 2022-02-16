@@ -360,26 +360,23 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (StringHelper.isNotEmpty(models) && StringHelper.isNotEmpty(orderDetails)) {
       TreatPlanDetailWriteoffModel model = new TreatPlanDetailWriteoffModel();
       List<TreatPlanDetailWriteoffInfoModel> list = new ArrayList<>();
-      orderDetails.forEach(
-          detail -> {
-            Integer billingItemId = detail.getBillingItemId();
-            Byte type = detail.getType();
-            models.forEach(
-                vo -> {
-                  List<Integer> planDetailIds = vo.getPlanDetailIds();
-                  if (!ObjectUtils.isEmpty(planDetailIds)
-                      && vo.getBillingItemId().equals(billingItemId)
-                      && vo.getType().equals(type)) {
-                    TreatPlanDetailWriteoffInfoModel obj = new TreatPlanDetailWriteoffInfoModel();
-                    obj.setTreatmentId(detail.getTreatmentRecordId());
-                    obj.setQuantity(detail.getQuantity());
-                    obj.setOrderDetailId(detail.getId());
-                    obj.setPlanDetailIds(planDetailIds);
-                    obj.setCrtId(detail.getCrtId());
-                    list.add(obj);
-                  }
-                });
-          });
+      orderDetails.forEach(detail->{
+        Integer billingItemId = detail.getBillingItemId();
+        Byte type = detail.getType();
+        models.forEach(vo->{
+          List<Integer> planDetailIds = vo.getPlanDetailIds();
+          if (!ObjectUtils.isEmpty(planDetailIds)
+                  && vo.getBillingItemId().equals(billingItemId) && vo.getType().equals(type)) {
+            TreatPlanDetailWriteoffInfoModel obj = new TreatPlanDetailWriteoffInfoModel();
+            obj.setTreatmentId(detail.getTreatmentRecordId());
+            obj.setQuantity(detail.getQuantity());
+            obj.setOrderDetailId(detail.getId());
+            obj.setPlanDetailIds(planDetailIds);
+            obj.setCrtId(detail.getCrtId());
+            list.add(obj);
+          }
+        });
+      });
       model.setWriteoffInfoModels(list);
       model.setDeletedOrderDetailIds(deletedDetailIds);
       remoteEmrServiceFeign.treatPlanWriteOffQunatity(model);
