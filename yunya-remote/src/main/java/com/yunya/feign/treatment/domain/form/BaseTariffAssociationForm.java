@@ -35,5 +35,5 @@ public class BaseTariffAssociationForm implements Serializable {
   /** 几天后随访 */
   @ApiModelProperty("几天后随访")
   @Min(value = 0, message = "最小值为0")
-  private List<Integer> fellowUps;
+  private List<String> fellowUps;
 }

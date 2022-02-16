@@ -57,7 +57,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
@@ -1330,7 +1329,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     String emr = form.getEmr();
     String attention = form.getAttention();
     String fellowUp = "";
-    List<Integer> fellowUps = form.getFellowUps();
+    List<String> fellowUps = form.getFellowUps();
     if (StringHelper.isBlank(emr)) {
       emr = "";
     }
@@ -1338,11 +1337,10 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       attention = "";
     }
     if (StringHelper.isNotEmpty(fellowUps)) {
-      fellowUp =
-          fellowUps.stream()
-              .filter(Objects::nonNull)
-              .map(integer -> integer + ",")
-              .collect(Collectors.joining());
+      fellowUp = fellowUps.stream()
+          .filter(StringHelper::isNotBlank)
+          .map(s -> s + ",")
+          .collect(Collectors.joining());
     }
     resultData.setEmr(emr);
     resultData.setAttention(attention);
