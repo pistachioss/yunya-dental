@@ -69,6 +69,9 @@ public class OrderDetailVO implements Serializable {
   @ApiModelProperty("备注")
   private String remarks;
 
+  /** 治疗计划详情id */
+  @ApiModelProperty("治疗计划详情id")
+  private Integer planDetailId;
 
   /** 会员价 */
   private Map<Integer, Object> memberPrices;

@@ -14,11 +14,7 @@ import com.yunya.feign.treatment.domain.model.BillAdjustDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.feign.treatment.domain.query.OrderProcessQuery;
-import com.yunya.feign.treatment.domain.vo.AssistantInfoVO;
-import com.yunya.feign.treatment.domain.vo.OrderBill4AppVO;
-import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
-import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
-import com.yunya.feign.treatment.domain.vo.OrderProcessVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
@@ -30,20 +26,9 @@ import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
 import com.yunya.models.tariff.ClinicTariffMemberPrice;
-import com.yunya.models.treatment.AssistantMatchingRecord;
-import com.yunya.models.treatment.BillExceptionHandleDetailRecord;
-import com.yunya.models.treatment.BillExceptionHandleRecord;
-import com.yunya.models.treatment.BillPayRecord;
-import com.yunya.models.treatment.BillRecord;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
-import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
-import com.yunya.modules.treatment.mapper.BillExceptionHandleDetailRecordMapper;
-import com.yunya.modules.treatment.mapper.BillExceptionHandleRecordMapper;
-import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
-import com.yunya.modules.treatment.mapper.BillRecordMapper;
-import com.yunya.modules.treatment.mapper.OrderRecordMapper;
+import com.yunya.modules.treatment.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,29 +36,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
-import static com.yunya.framework.common.constant.BusinessConstants.ORDER_CHARGING_STATUS;
-import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
-import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESSING_STATUS;
-import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESS_ORDER_STATUS;
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
-import static com.yunya.framework.common.constant.OperationCodeConstants.OBJECT_EDIT_FAIL;
-import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
-import static com.yunya.framework.common.constant.OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY;
-import static com.yunya.framework.common.constant.OperationCodeConstants.SAME_DATA_EXIST;
-import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
-import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CREATE;
-import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK;
+import static com.yunya.framework.common.constant.BusinessConstants.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.*;
 
 /**
  * 简介: 患者就诊开单业务层
@@ -155,9 +127,12 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     // 处理门诊价目表价格
     if (StringHelper.isNotEmpty(orderDetails)) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
+      List<Integer> orderDetailIds = orderDetails.stream().map(OrderDetailVO::getOrderDetailId).collect(Collectors.toList());
+      Map<Integer, Integer> planDetails = remoteEmrServiceFeign.findOrderWithPlanDetailById(orderDetailIds);
       if (StringHelper.isNotEmpty(memberTypes)) {
         orderDetails.forEach(
             tariffVO -> {
+              tariffVO.setPlanDetailId(planDetails.get(tariffVO.getOrderDetailId()));
               Map<Integer, Object> memberPrices = new HashMap<>(16);
               if (tariffVO.getType() == 0) {
                 // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入

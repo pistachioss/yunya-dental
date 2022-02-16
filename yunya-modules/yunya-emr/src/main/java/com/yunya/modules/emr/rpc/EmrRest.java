@@ -1,12 +1,14 @@
 package com.yunya.modules.emr.rpc;
 
 import com.yunya.feign.emr.domain.model.TreatPlanDetailWriteoffModel;
+import com.yunya.modules.emr.biz.TreatPlanDetailBiz;
 import com.yunya.modules.emr.biz.TreatPlanRecordBiz;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 简介: 门诊基础数据接口暴露
@@ -21,6 +23,7 @@ import java.util.List;
 public class EmrRest {
 
   @Autowired private TreatPlanRecordBiz treatPlanRecordBiz;
+  @Autowired private TreatPlanDetailBiz treatPlanDetailBiz;
 
   @PostMapping("/treatPlan/recalculate/{userId}")
   public void recalculatePlanStatusById(@PathVariable(value = "userId") Integer userId, @RequestBody List<Integer> planIds) {
@@ -35,5 +38,15 @@ public class EmrRest {
   @PostMapping("/treatPlan/writeOffQuantity")
   public void treatPlanWriteOffQunatity(@RequestBody @Valid TreatPlanDetailWriteoffModel model) {
     treatPlanRecordBiz.treatPlanDetailWriteoffQunatity(model);
+  }
+
+  /**
+   * 根据orderDetailIds查找计划详情与订单详情映射关系
+   *
+   * @param orderDetailIds
+   */
+  @PostMapping("/treatPlan/orderWithPlanDetail")
+  public Map<Integer, Integer> findOrderWithPlanDetailById(@RequestBody List<Integer> orderDetailIds) {
+    return treatPlanDetailBiz.findOrderWithPlanDetailById(orderDetailIds);
   }
 }

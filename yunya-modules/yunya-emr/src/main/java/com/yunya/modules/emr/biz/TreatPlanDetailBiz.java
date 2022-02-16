@@ -15,10 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介：治疗计划明细业务层
@@ -216,5 +215,10 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
 
     public void deleteWriteoffByOrderDetailId(List<Integer> detailIds) {
         treatPlanDetailWriteoffMapper.deleteWriteoffByOrderDetailId(detailIds);
+    }
+
+    public Map<Integer, Integer> findOrderWithPlanDetailById(List<Integer> orderDetailIds) {
+        List<TreatPlanDetailWriteoff> list = treatPlanDetailWriteoffMapper.selectOrderWithPlanDetailById(orderDetailIds);
+        return list.stream().collect(toMap(TreatPlanDetailWriteoff::getOrderDetailId, TreatPlanDetailWriteoff::getPlanDetailId));
     }
 }

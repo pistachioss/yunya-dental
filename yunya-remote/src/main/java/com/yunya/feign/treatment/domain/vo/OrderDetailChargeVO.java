@@ -76,6 +76,9 @@ public class OrderDetailChargeVO implements Serializable {
   /** 备注 */
   @ApiModelProperty("备注")
   private String remarks;
+  /** 治疗计划详情id*/
+  @ApiModelProperty("治疗计划详情id")
+  private Integer planDetailId;
   /** 优惠适用卡券列表 */
   private List<PrivilegeCouponInfoVO> discountAppliesCoupons;
   /** 会员价 */

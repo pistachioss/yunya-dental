@@ -5,6 +5,7 @@ import com.yunya.feign.emr.domain.model.TreatPlanDetailWriteoffModel;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author xiangyang
@@ -20,5 +21,10 @@ public class RemoteEmrFallBackFactory implements RemoteEmrServiceFeign {
     @Override
     public void treatPlanWriteOffQunatity(@Valid TreatPlanDetailWriteoffModel models) {
 
+    }
+
+    @Override
+    public Map<Integer, Integer> findOrderWithPlanDetailById(List<Integer> orderDetailIds) {
+        return null;
     }
 }
