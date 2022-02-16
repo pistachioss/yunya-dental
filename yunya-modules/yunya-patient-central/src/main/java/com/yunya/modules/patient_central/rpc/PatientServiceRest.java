@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BasePatient;
+import static com.yunya.framework.common.constant.RedisConstants.PATIENT_BASE_INFO;
 
 /**
  * 简单介绍:</br>
@@ -108,6 +109,7 @@ public class PatientServiceRest {
   public void updatePatientInfo(@RequestBody PatientBaseInfo patientBaseInfo) {
     patientBaseInfoBiz.updateSelectiveById(patientBaseInfo);
     rabbitMqServiceFeign.sendMessage(patientBaseInfo.getId(), 1, BasePatient);
+    redisUtils.delete(PATIENT_BASE_INFO + patientBaseInfo.getId());
   }
 
   @ApiOperation("查询患者信息")

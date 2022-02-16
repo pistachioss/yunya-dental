@@ -862,10 +862,12 @@
         FROM base_treatment_process btp
         <where>
             AND btp.treat_end_time IS NOT NULL
+            <if test="query.patientIds!=null and query.patientIds.size()>0">
             AND patient_id IN
-            <foreach collection="query.patientIds" item="item" index="index" open="(" close=")" separator=",">
-                #{item}
-            </foreach>
+                <foreach collection="query.patientIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
             <if test="query.dateType==0">
                 <if test="query.startDate != null and query.startDate != ''">
                     and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}

@@ -112,19 +112,17 @@ public class DimensionReportBiz {
      * @return
      */
     public DynamicHeaderPageInfo<JSONObject> patientDimensionStatistics(PatientDimensionQueryForm query) throws Exception {
-        if (query.getWhetherPage()) {
-            PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        }
+        // 就诊次数
+        List<OrgPatientCountVO> patientTreatNum = findPatientTreatNum(query);
+        List<Integer> patientIds = patientTreatNum.stream().map(OrgPatientCountVO::getPatientId).collect(Collectors.toList());
+        Map<String, Integer> treatNum = mapPatientIntByKey(patientTreatNum, (vo) -> vo.getPatientId() + "," + vo.getOrgId());
         // 患者信息（姓名,年龄,患者来源类型,会员等级）
+        query.setPatientIds(patientIds);
         List<PatientManageVo> patients = patientBaseInfoBiz.findPatientInfoList(query);
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(patients);
         if (StringHelper.isEmpty(patients)) {
             return pageInfo;
         }
-        List<Integer> patientIds = patients.stream().map(PatientManageVo::getPatientId).collect(Collectors.toList());
-        query.setPatientIds(patientIds);
-        // 就诊次数
-        Future<Map<String, Integer>> treatNumFuture = multiFindPatientTreatNum(query);
         // 初诊日期
         Future<Map<Integer, String>> firstVisitFuture = multiFindFirstVisitDateByPatientId(patientIds);
         // 末次就诊日期
@@ -138,15 +136,14 @@ public class DimensionReportBiz {
         // 账单项目
         Future<List<PersonalBillItemVO>> itemFuture = multiFindBillItemNumByPatientId(query);
         // 数据合并
-        return patientDimensionMerge(query, patients, treatNumFuture, firstVisitFuture,
+        return patientDimensionMerge(query, patients, treatNum, firstVisitFuture,
                 lastVisitFuture, consumeFuture, appointFuture, remindFuture, itemFuture);
     }
 
-    private DynamicHeaderPageInfo<JSONObject> patientDimensionMerge(PatientDimensionQueryForm query, List<PatientManageVo> patients, Future<Map<String, Integer>> treatNumFuture,
+    private DynamicHeaderPageInfo<JSONObject> patientDimensionMerge(PatientDimensionQueryForm query, List<PatientManageVo> patients, Map<String, Integer> treatNumMap,
                                                                     Future<Map<Integer, String>> firstVisitFuture, Future<Map<Integer, String>> lastVisitFuture,
                                                                     Future<Map<String, PatientCostInfoVO>> consumeFuture, Future<Map<Integer, String>> appointFuture,
                                                                     Future<Map<Integer, String>> remindFuture, Future<List<PersonalBillItemVO>> itemFuture) throws Exception {
-        Map<String, Integer> treatNumMap = treatNumFuture.get();
         Map<Integer, String> firstVisitMap = firstVisitFuture.get();
         Map<Integer, String> lastVisitMap = lastVisitFuture.get();
         Map<String, PatientCostInfoVO> consumeArrearMap = consumeFuture.get();
@@ -239,11 +236,8 @@ public class DimensionReportBiz {
         });
     }
 
-    private Future<Map<String, Integer>> multiFindPatientTreatNum(PatientDimensionQueryForm query) {
-        return threadPool.submit(()->{
-            List<OrgPatientCountVO> patients = baseTreatmentProcessBiz.findPatientTreatNum(query);
-            return mapPatientIntByKey(patients, (vo)->vo.getPatientId()+","+vo.getOrgId());
-        });
+    private List<OrgPatientCountVO> findPatientTreatNum(PatientDimensionQueryForm query) {
+        return baseTreatmentProcessBiz.findPatientTreatNum(query);
     }
 
     private Map<String, Integer> mapPatientIntByKey(List<OrgPatientCountVO> patients, Function<OrgPatientCountVO, String> keyFunc) {
