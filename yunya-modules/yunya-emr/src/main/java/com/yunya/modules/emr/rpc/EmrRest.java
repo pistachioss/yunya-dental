@@ -46,7 +46,7 @@ public class EmrRest {
    * @param orderDetailIds
    */
   @PostMapping("/treatPlan/orderWithPlanDetail")
-  public Map<Integer, Integer> findOrderWithPlanDetailById(@RequestBody List<Integer> orderDetailIds) {
+  public Map<Integer, List<Integer>> findOrderWithPlanDetailById(@RequestBody List<Integer> orderDetailIds) {
     return treatPlanDetailBiz.findOrderWithPlanDetailById(orderDetailIds);
   }
 }

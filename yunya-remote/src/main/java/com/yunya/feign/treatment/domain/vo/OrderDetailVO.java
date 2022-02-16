@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -71,7 +72,7 @@ public class OrderDetailVO implements Serializable {
 
   /** 治疗计划详情id */
   @ApiModelProperty("治疗计划详情id")
-  private Integer planDetailId;
+  private List<Integer> planDetailIds;
 
   /** 会员价 */
   private Map<Integer, Object> memberPrices;

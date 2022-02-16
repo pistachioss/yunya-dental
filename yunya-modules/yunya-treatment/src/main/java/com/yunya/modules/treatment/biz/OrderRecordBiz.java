@@ -128,11 +128,11 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (StringHelper.isNotEmpty(orderDetails)) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
       List<Integer> orderDetailIds = orderDetails.stream().map(OrderDetailVO::getOrderDetailId).collect(Collectors.toList());
-      Map<Integer, Integer> planDetails = remoteEmrServiceFeign.findOrderWithPlanDetailById(orderDetailIds);
+      Map<Integer, List<Integer>> planDetails = remoteEmrServiceFeign.findOrderWithPlanDetailById(orderDetailIds);
       if (StringHelper.isNotEmpty(memberTypes)) {
         orderDetails.forEach(
             tariffVO -> {
-              tariffVO.setPlanDetailId(planDetails.get(tariffVO.getOrderDetailId()));
+              tariffVO.setPlanDetailIds(planDetails.get(tariffVO.getOrderDetailId()));
               Map<Integer, Object> memberPrices = new HashMap<>(16);
               if (tariffVO.getType() == 0) {
                 // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入

@@ -17,8 +17,6 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 
-import static java.util.stream.Collectors.toMap;
-
 /**
  * 简介：治疗计划明细业务层
  *
@@ -217,8 +215,20 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
         treatPlanDetailWriteoffMapper.deleteWriteoffByOrderDetailId(detailIds);
     }
 
-    public Map<Integer, Integer> findOrderWithPlanDetailById(List<Integer> orderDetailIds) {
+    public Map<Integer, List<Integer>> findOrderWithPlanDetailById(List<Integer> orderDetailIds) {
+        Map<Integer, List<Integer>> result = new HashMap<>(16);
         List<TreatPlanDetailWriteoff> list = treatPlanDetailWriteoffMapper.selectOrderWithPlanDetailById(orderDetailIds);
-        return list.stream().collect(toMap(TreatPlanDetailWriteoff::getOrderDetailId, TreatPlanDetailWriteoff::getPlanDetailId));
+        if (StringHelper.isNotEmpty(list)) {
+            list.forEach(detail->{
+                Integer orderDetailId = detail.getOrderDetailId();
+                List<Integer> planDetailIds = result.get(orderDetailId);
+                if (planDetailIds == null) {
+                    planDetailIds = new ArrayList<>();
+                }
+                planDetailIds.add(detail.getPlanDetailId());
+                result.put(orderDetailId, planDetailIds);
+            });
+        }
+        return result;
     }
 }

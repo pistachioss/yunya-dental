@@ -73,5 +73,6 @@
                 #{item}
             </foreach>
         </where>
+        ORDER BY id ASC;
   </select>
 </mapper>

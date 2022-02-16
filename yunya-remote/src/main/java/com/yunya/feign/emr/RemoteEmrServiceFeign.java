@@ -31,5 +31,5 @@ public interface RemoteEmrServiceFeign {
      * @param orderDetailIds
      */
     @PostMapping("/api/emr/treatPlan/orderWithPlanDetail")
-    Map<Integer, Integer> findOrderWithPlanDetailById(@RequestBody List<Integer> orderDetailIds);
+    Map<Integer, List<Integer>> findOrderWithPlanDetailById(@RequestBody List<Integer> orderDetailIds);
 }
