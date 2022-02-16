@@ -34,7 +34,7 @@
     <!--根据就诊id删除记录-->
     <delete id="deleteWriteoffByOrderDetailId">
         DELETE FROM treat_plan_detail_writeoff
-        WHERE orderDetailId in
+        WHERE order_detail_id in
         <foreach collection="detailIds" item="item" index="index" open="(" close=")" separator=",">
             #{item}
         </foreach>
