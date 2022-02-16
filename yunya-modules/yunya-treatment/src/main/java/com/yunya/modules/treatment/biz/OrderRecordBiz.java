@@ -282,7 +282,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     Integer orderRecordId;
     int result = 0;
     int operateType = 0;
-    OrderDetail orderDetail = null;
+    List<Integer> deletedDetailIds = null;
     if (null == orderResult) {
       orderRecord.setOrgId(treatmentRecordOrgId);
       String orderRecordNumber = generateOrderRecordNumber(treatmentRecordOrgId);
@@ -306,8 +306,12 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       orderResult.setUpdName(name);
       result = mapper.updateByPrimaryKeySelective(orderResult);
       orderRecordId = orderResult.getId();
-      orderDetail = new OrderDetail();
+      OrderDetail orderDetail = new OrderDetail();
       orderDetail.setTreatmentRecordId(treatmentRecordId);
+      List<OrderDetail> deletedDetails = orderDetailBiz.selectList(orderDetail);
+      if (StringHelper.isNotEmpty(deletedDetails)) {
+        deletedDetailIds = deletedDetails.stream().map(OrderDetail::getId).collect(Collectors.toList());
+      }
       orderDetailBiz.delete(orderDetail);
       if (StringHelper.isNotEmpty(orderDetails)) {
         orderDetails.forEach(
@@ -318,7 +322,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
         operateType = 1;
       }
     }
-    int detailSize = saveTreatPlanDetailWriteoffQuanity(orderDetails, models, orderDetail);
+    int detailSize = saveTreatPlanDetailWriteoffQuanity(orderDetails, models, deletedDetailIds);
     if (result > 0 && detailSize > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, operateType, BaseBill);
     }
@@ -348,11 +352,11 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    *
    * @param orderDetails
    * @param models
-   * @param deletedQuery
+   * @param deletedDetailIds
    * @return
    */
   private int saveTreatPlanDetailWriteoffQuanity(
-      List<OrderDetail> orderDetails, List<OrderDetailModel> models, OrderDetail deletedQuery) {
+      List<OrderDetail> orderDetails, List<OrderDetailModel> models, List<Integer> deletedDetailIds) {
     if (StringHelper.isNotEmpty(models) && StringHelper.isNotEmpty(orderDetails)) {
       TreatPlanDetailWriteoffModel model = new TreatPlanDetailWriteoffModel();
       List<TreatPlanDetailWriteoffInfoModel> list = new ArrayList<>();
@@ -377,12 +381,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
                 });
           });
       model.setWriteoffInfoModels(list);
-      if (!ObjectUtils.isEmpty(deletedQuery)) {
-        List<OrderDetail> deletedDetails = orderDetailBiz.selectList(deletedQuery);
-        List<Integer> deletedDetailIds =
-            deletedDetails.stream().map(OrderDetail::getId).collect(Collectors.toList());
-        model.setDeletedOrderDetailIds(deletedDetailIds);
-      }
+      model.setDeletedOrderDetailIds(deletedDetailIds);
       remoteEmrServiceFeign.treatPlanWriteOffQunatity(model);
     }
     return orderDetails.size();
@@ -569,6 +568,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     Integer orgId = orderRecord.getOrgId();
     OrderDetail orderDetail = new OrderDetail();
     orderDetail.setOrderRecordId(orderRecordId);
+    List<OrderDetail> details = orderDetailBiz.selectList(orderDetail);
+    List<Integer> deletedDetailIds = details.stream().map(OrderDetail::getId).collect(Collectors.toList());
     orderDetailBiz.delete(orderDetail);
 
     List<OrderDetail> orderDetails =
@@ -588,7 +589,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
             }
           });
     }
-    int detailSize = saveTreatPlanDetailWriteoffQuanity(orderDetails, models, orderDetail);
+    int detailSize = saveTreatPlanDetailWriteoffQuanity(orderDetails, models, deletedDetailIds);
     if (detailSize > 0) {
       treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
       // 设置分组计划
@@ -656,6 +657,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderDetail.setOrderRecordId(orderRecordId);
     orderDetail.setInservice(true);
     List<OrderDetail> orderDetailsData = orderDetailBiz.selectList(orderDetail);
+    List<Integer> deletedDetailIds = orderDetailsData.stream().map(OrderDetail::getId).collect(Collectors.toList());
     // 获取调整后的开单明细，并比较是否有修改
     List<OrderDetailModel> detailModels = model.getOrderDetailModels();
     if (orderDetailsData.size() == detailModels.size()) {
@@ -740,7 +742,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       detail.setOrderRecordId(orderRecordId);
       orderDetailBiz.insertSelective(detail);
     }
-    saveTreatPlanDetailWriteoffQuanity(orderDetails, detailModels, orderDetail);
+    saveTreatPlanDetailWriteoffQuanity(orderDetails, detailModels, deletedDetailIds);
     // 发送消息同步中间表账单数据
     if (result > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 0, BaseBill);
