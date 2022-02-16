@@ -31,6 +31,7 @@ public class PatientInformedConsentVO implements Serializable {
 
     /** 患者出生日期 */
     @ApiModelProperty("患者生日")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date birthday;
 
     /** 病历号 患者第一次就诊时生成 */
