@@ -53,6 +53,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -1329,7 +1330,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     String emr = form.getEmr();
     String attention = form.getAttention();
     String fellowUp = "";
-    List<String> fellowUps = form.getFellowUps();
+    String[] fellowUps = form.getFellowUps();
     if (StringHelper.isBlank(emr)) {
       emr = "";
     }
@@ -1337,14 +1338,16 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       attention = "";
     }
     if (StringHelper.isNotEmpty(fellowUps)) {
-      fellowUp = fellowUps.stream()
-          .filter(StringHelper::isNotBlank)
-          .map(s -> s + ",")
-          .collect(Collectors.joining());
+      fellowUp =
+          Arrays.stream(fellowUps)
+              .filter(StringHelper::isNotBlank)
+              .map(s -> s + ",")
+              .collect(Collectors.joining());
     }
     resultData.setEmr(emr);
     resultData.setAttention(attention);
-    resultData.setFellowUp(fellowUp.substring(0, fellowUp.length() - 1));
+    resultData.setFellowUp(
+        StringHelper.isBlank(fellowUp) ? "" : fellowUp.substring(0, fellowUp.length() - 1));
     mapper.updateByPrimaryKeySelective(resultData);
   }
 
