@@ -8,7 +8,6 @@ import lombok.ToString;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * 简介: 开单关联修改参数封装模型
@@ -35,5 +34,5 @@ public class BaseTariffAssociationForm implements Serializable {
   /** 几天后随访 */
   @ApiModelProperty("几天后随访")
   @Min(value = 0, message = "最小值为0")
-  private List<Integer> fellowUps;
+  private String[] fellowUps;
 }
