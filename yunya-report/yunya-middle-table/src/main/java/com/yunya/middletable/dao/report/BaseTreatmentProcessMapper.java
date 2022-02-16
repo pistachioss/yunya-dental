@@ -59,7 +59,7 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    * @param treatmentProcess 更新信息
    */
   void updateByTreatmentRecordId(
-      @Param("treatmentRecordId") Integer treatmentRecordId,
+      @Param("treatmentId") Integer treatmentRecordId,
       @Param("treatmentProcess") BaseTreatmentProcess treatmentProcess);
 
   /**
@@ -99,4 +99,14 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
           @Param("treatDate") Integer treatDate);
 
   List<StatEmpTreat> countTreatNumByDate(@Param("startDate") String startDate, @Param("endDate") String endDate);
+
+  BaseTreatmentProcess selectOneInMonthAndPreTreat(
+          @Param("orgId") Integer orgId,
+          @Param("patientId") Integer patientId,
+          @Param("dentistId") Integer dentistId,
+          @Param("treatmentId") Integer treatmentId,
+          @Param("sDate") String sDate,
+          @Param("eDate") String eDate);
+
+  List<BaseTreatmentProcess> selectAllTreatmentList();
 }

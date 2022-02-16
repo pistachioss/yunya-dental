@@ -40,7 +40,7 @@
 			mcr.re_examination AS reExamination,
 			mcr.examination,
 			mcr.diagnosis,
-			IF (tpr.id IS NULL, 0, 1) AS plan,
+			mcr.plan,
 			mcr.treatment,
 			mcr.prescription,
 			mcr.type,
@@ -52,7 +52,6 @@
 			mcr.upd_id AS updId,
 			mcr.upd_time AS updTime
 		FROM medical_common_record mcr
-		LEFT JOIN treat_plan_record tpr ON mcr.id = tpr.medical_record_id
 		<where>
 			mcr.patient_id = #{patientId}
 		  <if test="id != null" >

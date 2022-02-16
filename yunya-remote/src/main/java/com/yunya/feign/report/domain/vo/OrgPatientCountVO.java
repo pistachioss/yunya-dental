@@ -8,20 +8,18 @@ import lombok.ToString;
 import java.io.Serializable;
 
 /**
- * 简介：患者信息VO
+ * 简介：门诊患者数量VO
  *
  * @author: chenlin
- * @Description: 患者信息VO
- * @Date: 2021/12/7 16:03
+ * @Description: 门诊患者数量VO
+ * @Date: 2022/2/15 12:33
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("患者信息VO")
-public class PatientVO implements Serializable {
+@ApiModel("门诊患者数量VO")
+public class OrgPatientCountVO extends PatientCountVO implements Serializable {
+    /** 门诊id*/
     @ApiModelProperty("门诊id")
     private Integer orgId;
-
-    @ApiModelProperty("患者ID")
-    private Integer patientId;
 }

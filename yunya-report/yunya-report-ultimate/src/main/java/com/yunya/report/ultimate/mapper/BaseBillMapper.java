@@ -149,10 +149,18 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
   /**
    * 查询患者消费信息
    *
-   * @param patientIds 患者ID
+   * @param query
    * @return PatientCostInfoVO
    */
-  List<PatientCostInfoVO> selectPatientCostInfo(@Param("patientIds") Collection<Integer> patientIds);
+  List<PatientCostInfoVO> selectPatientCostInfo(@Param("query") PatientDimensionQueryForm query);
+
+  /**
+   * 查询患者消费信息
+   *
+   * @param patientIds
+   * @return PatientCostInfoVO
+   */
+  List<PatientCostInfoVO> selectPatientCostInfoById(@Param("patientIds") Collection<Integer> patientIds);
 
   /**
    * 根据billId查询所有优惠的项目
