@@ -473,7 +473,10 @@ public class DimensionReportBiz {
 
         List<Integer> employeeIds = employees.stream().map(ClinicEmployeeReportVO::getEmployeeId).collect(Collectors.toList());
         MultiClinicDateRangeQueryForm dateQuery = new MultiClinicDateRangeQueryForm();
-        dateQuery.setOrgIds(Arrays.asList(query.getOrgIds()));
+        Integer[] orgIds = query.getOrgIds();
+        if (StringHelper.isNotEmpty(orgIds)) {
+            dateQuery.setOrgIds(Arrays.asList(orgIds));
+        }
         dateQuery.setStartDate(query.getStartDate());
         dateQuery.setEndDate(query.getEndDate());
         dateQuery.setDateType(query.getDateType());
@@ -698,7 +701,10 @@ public class DimensionReportBiz {
     private Future<List<PersonalBillItemVO>> multiFindExecutorBillItem(ClinicEmployeeWorkloadQuery query, boolean groupByOrg) {
         return threadPool.submit(()-> {
             MultiClinicDateRangeQueryForm queryForm = new MultiClinicDateRangeQueryForm();
-            queryForm.setOrgIds(Arrays.asList(query.getOrgIds()));
+            Integer[] orgIds = query.getOrgIds();
+            if (StringHelper.isNotEmpty(orgIds)) {
+                queryForm.setOrgIds(Arrays.asList(orgIds));
+            }
             queryForm.setStartDate(query.getStartDate());
             queryForm.setEndDate(query.getEndDate());
             List<StatEmpBill> list = statEmpBillBiz.findBillItemNum(queryForm, groupByOrg);
