@@ -84,6 +84,12 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
     /** 消息服务 */
     @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
 
+    public ResponseResult addImplement(List<VisitingRemindModel> model){
+        for(VisitingRemindModel vm:model){
+            this.insertVisitingRemind(vm);
+        }
+        return ResponseUtil.success();
+    }
     /**
      * 新增随访提醒
      * @param model 新增随访表单

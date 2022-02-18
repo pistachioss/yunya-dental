@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -42,7 +43,17 @@ public class VisitingRemindController {
     public ResponseResult insertVisitingRemind(@RequestBody @Validated VisitingRemindModel model) {
         return visitingRemindBiz.insertVisitingRemind(model);
     }
-
+    /**
+     * 批量到执行提醒
+     * @param model 表单
+     * @return ResponseResult
+     */
+    @ApiOperation("批量到执行提醒")
+    @PostMapping("/addImplement")
+    @CurrentUser
+    public ResponseResult addImplement(@RequestBody @Validated List<VisitingRemindModel> model) {
+        return visitingRemindBiz.addImplement(model);
+    }
     /**
      * 根据id删除随访提醒
      * @param id 提醒记录id
