@@ -14,6 +14,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
+import com.yunya.feign.treatment_other.domain.form.ResetVisitingRemindForm;
 import com.yunya.feign.treatment_other.domain.form.VisitingRemindForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingRemindModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery;
@@ -43,9 +44,11 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.ContentHandler;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -658,5 +661,17 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         }
         pageInfo.setList(result);
         return pageInfo;
+    }
+
+    /**
+     * 批量修改提醒
+     * @param form 数据表单
+     * @return 返回结果
+     */
+    public Integer resetVisitingRemindBatch(ResetVisitingRemindForm form) {
+        return mapper.resetVisitingRemindBatch(
+                Integer.valueOf(BaseContextHandler.getUserID()),
+                BaseContextHandler.getUsername(),
+                form);
     }
 }

@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.other.controller;
 
+import com.yunya.feign.treatment_other.domain.form.ResetVisitingRemindForm;
 import com.yunya.feign.treatment_other.domain.form.VisitingRemindForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingRemindModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery;
@@ -27,12 +28,15 @@ import java.io.IOException;
 @RestController
 @RequestMapping("visiting/remind")
 public class VisitingRemindController {
-    /** 注入服务 */
+    /**
+     * 注入服务
+     */
     @Autowired
     private VisitingRemindBiz visitingRemindBiz;
 
     /**
      * 新增随访提醒
+     *
      * @param model 表单
      * @return ResponseResult
      */
@@ -45,6 +49,7 @@ public class VisitingRemindController {
 
     /**
      * 根据id删除随访提醒
+     *
      * @param id 提醒记录id
      * @return ResponseResult
      */
@@ -56,6 +61,7 @@ public class VisitingRemindController {
 
     /**
      * 修改随访提醒
+     *
      * @param form 表单
      * @return ResponseResult
      */
@@ -68,8 +74,9 @@ public class VisitingRemindController {
 
     /**
      * 根据id查询随访提醒
+     *
      * @param id 随访提醒id
-     * @return  ResponseResult
+     * @return ResponseResult
      */
     @ApiOperation("根据id查询随访提醒")
     @GetMapping("/find/{id}")
@@ -79,8 +86,9 @@ public class VisitingRemindController {
 
     /**
      * 根据条件查询随访提醒
+     *
      * @param query 查询条件
-     * @return  ResponseResult
+     * @return ResponseResult
      */
     @ApiOperation("根据条件查询随访提醒")
     @PostMapping("/find")
@@ -98,13 +106,14 @@ public class VisitingRemindController {
     @ApiOperation("根据条件导出执行提醒列表")
     @PostMapping("/execute/export")
     public ResponseResult<T> executeRemindExport(HttpServletResponse response,
-            @RequestBody @Validated VisitingRemindQuery query) throws IOException {
+                                                 @RequestBody @Validated VisitingRemindQuery query) throws IOException {
         visitingRemindBiz.executeRemindExport(response, query);
         return ResponseUtil.success(null);
     }
 
     /**
      * 完成提醒
+     *
      * @param id 提醒id
      * @return ResponseResult
      */
@@ -113,6 +122,23 @@ public class VisitingRemindController {
     @PutMapping("/finish/{id}")
     public ResponseResult finishVisitingRemind(@PathVariable("id") Integer id) {
         return visitingRemindBiz.finishVisitingRemind(id);
+    }
+
+    /**
+     * 批量修改提醒
+     *
+     * @param form 数据表单
+     * @return 返回结果
+     */
+    @ApiOperation("批量修改提醒")
+    @CurrentUser
+    @PutMapping("/reset")
+    public ResponseResult<?> resetVisitingRemindBatch(@RequestBody @Validated ResetVisitingRemindForm form) {
+        Integer result = visitingRemindBiz.resetVisitingRemindBatch(form);
+        if (result > 0) {
+            return ResponseUtil.success();
+        }
+        return ResponseUtil.success("批量修改失败",null);
     }
 
 
