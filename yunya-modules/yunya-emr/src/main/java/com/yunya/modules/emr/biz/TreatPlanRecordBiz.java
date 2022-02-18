@@ -25,6 +25,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.emr.*;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
+import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.emr.mapper.TreatPlanRecordHistoryMapper;
 import com.yunya.modules.emr.mapper.TreatPlanRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -151,39 +152,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      * @param now
      */
     private void addTreatPlanRecord(TreatPlanRecord entity, TreatPlanRecordModel model, Integer userId, Date now) {
-        /*Integer orgId = model.getOrgId();
-        if (!ObjectUtils.isEmpty(orgId)) {
-            entity.setOrgId(orgId);
-        }
-        Integer patientId = model.getPatientId();
-        if (!ObjectUtils.isEmpty(patientId)) {
-            entity.setPatientId(patientId);
-        }
-        Integer medicalRecordId = model.getMedicalRecordId();
-        if (!ObjectUtils.isEmpty(medicalRecordId)) {
-            entity.setMedicalRecordId(medicalRecordId);
-        }
-        String planName = model.getPlanName();
-        if (!ObjectUtils.isEmpty(planName)) {
-            entity.setPlanName(planName);
-        }
-        String summary = model.getSummary();
-        if (!ObjectUtils.isEmpty(summary)) {
-            entity.setSummary(summary);
-        }
-        Integer status = model.getStatus();
-        if (!ObjectUtils.isEmpty(status)) {
-            entity.setStatus(status.byteValue());
-        }
-        String remark = model.getRemark();
-        if (!ObjectUtils.isEmpty(remark)) {
-            entity.setRemark(remark);
-        }
-        Integer dentistId = model.getDentistId();
-        if (!ObjectUtils.isEmpty(dentistId)) {
-            entity.setDentistId(dentistId);
-        }*/
-        entity.setOrgId(model.getOrgId());
+        entity.setOrgId(findOrgByMedicalId(model));
         entity.setPatientId(model.getPatientId());
         entity.setMedicalRecordId(model.getMedicalRecordId());
         entity.setPlanName(model.getPlanName());
@@ -194,6 +163,16 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         entity.setUptId(userId);
         entity.setUptTime(now);
         mapper.insertSelective(entity);
+    }
+
+    private Integer findOrgByMedicalId(TreatPlanRecordModel model) {
+        Integer orgId = model.getOrgId();
+        if (ObjectUtils.isEmpty(orgId)) {
+            Integer medicalRecordId = model.getMedicalRecordId();
+            TreatmentRecord treatmentRecord = medicalCommonRecordBiz.findTreatmentByMedicalId(medicalRecordId);
+            orgId = treatmentRecord.getOrgId();
+        }
+        return orgId;
     }
 
     /**

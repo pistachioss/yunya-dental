@@ -385,4 +385,9 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     public MedicalCommonRecord findMedicalIllegaHistoryById(Integer medicalRecordId) {
         return mapper.selectMedicalIllnessHistoryById(medicalRecordId);
     }
+
+    public TreatmentRecord findTreatmentByMedicalId(Integer medicalRecordId) {
+        MedicalCommonRecord medical = mapper.selectByPrimaryKey(medicalRecordId);
+        return remoteTreatmentServiceFeign.findTreatmentRecordById(medical.getTreatmentId());
+    }
 }
