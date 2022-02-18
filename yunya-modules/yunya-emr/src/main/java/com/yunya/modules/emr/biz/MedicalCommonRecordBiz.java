@@ -27,6 +27,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import java.text.SimpleDateFormat;
@@ -164,6 +165,9 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         model.setSourceType(MEDICAL_COMMON.getCode());
         model.setRayFiles(files);
         model.setCrtId(userId);
+        if (ObjectUtils.isEmpty(crtTime)) {
+            crtTime = new Date(System.currentTimeMillis());
+        }
         model.setCrtTime(crtTime);
         remoteTreatmentOtherFeign.saveXRayFile2XUploadFile(model);
     }
