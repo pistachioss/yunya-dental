@@ -231,5 +231,22 @@
         where DATE_FORMAT(visiting_date,'%Y-%m') between #{startDate}
         and #{endDate}
     </select>
+    <!-- 查询已随访列表 -->
+    <select id="visitFinishedList" resultType="com.yunya.feign.treatment_other.domain.vo.VisitFinishedListVO">
+        SELECT
+            vr.id,
+            vr.org_id AS orgId,
+            vr.patient_id AS patientId,
+            DATE_FORMAT( vr.execute_date, '%Y-%m-%d %H:%i:%s' ) AS executeDateTime,
+            vr.dentist_id AS dentistId,
+            vr.executor_name AS executorName,
+            vr.visiting_content AS visitingContent
+        FROM
+            visiting_record vr
+        WHERE
+            vr.org_id = 28
+          AND vr.`status` = 1
+          AND vr.inservice = 1
+    </select>
 
 </mapper>
