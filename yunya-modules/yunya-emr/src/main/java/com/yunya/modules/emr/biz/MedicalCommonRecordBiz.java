@@ -119,12 +119,12 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
             medicalRecordHistoryBiz.insertMedicalHistory(medicalCommonRecord);
             //更新医生的申请变更时间
             medicalApprovalBiz.updateDocApplyChangeTime(medicalCommonRecord.getTreatmentId());
-
-            // 保存照片影像
-            saveXRayFile2XUploadFile(medicalCommonRecord.getId(), model.getXRayFilms(), model.getCrtTime());
-            // 保存检查记录
-            medicalCheckRecordBiz.saveCheckRecord(medicalCommonRecord.getId(), model.getCheckRecords());
         }
+
+        // 保存照片影像
+        saveXRayFile2XUploadFile(medicalCommonRecord.getId(), model.getXrayFilms(), model.getCrtTime());
+        // 保存检查记录
+        medicalCheckRecordBiz.saveCheckRecord(medicalCommonRecord.getId(), model.getCheckRecords());
         //助手新增病历时，审核表中同步插入一条数据
         if (result > 0 && medicalCommonRecord.getStatus() == 1) {
             DraftMedicalApplyModel draftMedicalApplyModel = new DraftMedicalApplyModel();

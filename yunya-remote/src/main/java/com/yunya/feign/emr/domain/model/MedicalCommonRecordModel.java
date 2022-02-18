@@ -152,7 +152,7 @@ public class MedicalCommonRecordModel {
 
   /** 照片影像列表*/
   @ApiModelProperty("照片影像列表")
-  private List<XUploadFileVO> xRayFilms;
+  private List<XUploadFileVO> xrayFilms;
 
   /** 是否有计划*/
   @ApiModelProperty("是否有计划")
