@@ -224,7 +224,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         medicalRecordHistoryMapper.updateByExampleSelective(medicalRecordHistory, example);
 
         // 保存照片影像
-        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXRayFilms(), medicalcopy.getUpdTime());
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXrayFilms(), medicalcopy.getUpdTime());
         // 保存检查记录
         medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
 
@@ -286,7 +286,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         }
 
         // 保存照片影像
-        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXRayFilms(), medicalcopy.getUpdTime());
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXrayFilms(), medicalcopy.getUpdTime());
         // 保存检查记录
         medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
         //助手修改病历通过时，审核表中同步插入一条数据
@@ -358,7 +358,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         }
 
         // 保存照片影像
-        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXRayFilms(), medicalcopy.getUpdTime());
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXrayFilms(), medicalcopy.getUpdTime());
         // 保存检查记录
         medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
         //插入常用词条使用频率
