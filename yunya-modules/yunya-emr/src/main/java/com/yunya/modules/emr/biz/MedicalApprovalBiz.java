@@ -788,6 +788,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             vo.setSubmitTime(obj.getCrtTime());
             vo.setApproveStatus(obj.getStatus());
             vo.setRejectReason(obj.getApproveReason());
+            vo.setTreatmentId(medicalTreatmentBo.getTreatmentId());
             resultList.add(vo);
         });
         return resultList;
