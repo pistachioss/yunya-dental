@@ -283,9 +283,12 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         //主治医生修改病历时，历史表中同步插入一条数据
         if (re > 0 && medicalcopy.getStatus() == 0) {
             medicalRecordHistoryBiz.insertMedicalHistory(medicalcopy);
-            // 保存检查记录
-            medicalCheckRecordBiz.saveCheckRecord(medicalCommonRecordForm.getId(), medicalCommonRecordForm.getCheckRecords());
         }
+
+        // 保存照片影像
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXRayFilms(), medicalcopy.getUpdTime());
+        // 保存检查记录
+        medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
         //助手修改病历通过时，审核表中同步插入一条数据
         if (re > 0 && (medicalCommonRecordForm.getStatus() == 2 || medicalCommonRecordForm.getStatus() == 3)) {
             DraftMedicalApplyModel draftMedicalApplyModel = new DraftMedicalApplyModel();
@@ -353,6 +356,11 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
             //修改就诊记录病历书写状态
             remoteTreatmentServiceFeign.updateTreatmentRecord(medicalcopy.getTreatmentId());
         }
+
+        // 保存照片影像
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXRayFilms(), medicalcopy.getUpdTime());
+        // 保存检查记录
+        medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
         //插入常用词条使用频率
         if (medicalCommonRecordForm.getMedicalGeneralNumList() != null && medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {
             List<MedicalGeneralNum> numList = new ArrayList<>();
