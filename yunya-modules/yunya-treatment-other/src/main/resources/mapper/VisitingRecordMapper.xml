@@ -244,7 +244,7 @@
         FROM
             visiting_record vr
         WHERE
-            vr.org_id = 28
+            vr.org_id = #{orgId}
           AND vr.`status` = 1
           AND vr.inservice = 1
     </select>
