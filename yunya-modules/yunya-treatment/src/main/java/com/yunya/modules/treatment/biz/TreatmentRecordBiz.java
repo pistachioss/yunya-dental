@@ -8,6 +8,7 @@ import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.vo.NextAppointsVo;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
+import com.yunya.feign.emr.domain.model.PatientInformedConsentVO;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
@@ -771,6 +772,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           });
       this.saveOrderDetailVisitRecord(visitingRecordList);
     }
+
+    // 治疗计划
+//    rabbitMqServiceFeign.sendMessage()
   }
 
   /**
@@ -1641,5 +1645,34 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
   public void updateTreatmentStatus(TreatmentRecord treatmentRecord) {
     mapper.updateByPrimaryKeySelective(treatmentRecord);
+  }
+
+  /**
+   * 根据就诊id查询治疗计划患者知情同意书信息
+   *
+   * @param treatmentId
+   * @return
+   */
+  public PatientInformedConsentVO findPatientInformedConsentVO(Integer treatmentId) {
+    PatientInformedConsentVO result = new PatientInformedConsentVO();
+    TreatmentRecord treatment = mapper.selectByPrimaryKey(treatmentId);
+    result.setTreatmentDate(treatment.getTreatStartTime());
+    Integer patientId = treatment.getPatientId();
+    // 从缓存中查询患者
+    PatientBaseInfo patientBaseInfo = patientServiceFeign.findPatientInfoById(patientId);
+    if (null != patientBaseInfo) {
+      result.setPatientName(patientBaseInfo.getName());
+      result.setMedicalNumber(patientBaseInfo.getMedicalNumber());
+      result.setBirthday(patientBaseInfo.getBirthday());
+      result.setGender(patientBaseInfo.getGender());
+    }
+    Integer dentistId = treatment.getDentistId();
+    // 从缓存中查询员工
+    SysEmployee employee = systemServiceFeign.findSysEmployeeById(dentistId);
+    if (null != employee) {
+      result.setDentistName(employee.getName());
+    }
+    result.setDate(new Date(System.currentTimeMillis()));
+    return result;
   }
 }

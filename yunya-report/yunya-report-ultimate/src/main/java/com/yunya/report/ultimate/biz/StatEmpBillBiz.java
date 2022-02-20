@@ -23,10 +23,11 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
      * 查询账单时项目数量
      *
      * @param query
+     * @param groupByOrg
      * @return
      */
-    public List<StatEmpBill> findBillItemNum(MultiClinicDateRangeQueryForm query) {
-        return mapper.selectBillItemNum(query);
+    public List<StatEmpBill> findBillItemNum(MultiClinicDateRangeQueryForm query, boolean groupByOrg) {
+        return mapper.selectBillItemNum(query, groupByOrg);
     }
 
     public List<BillExecutorItemVO> findStatisticsEmployeeBillWorkload(MultiClinicDateRangeQueryForm query, List<Integer> employeeIds) {

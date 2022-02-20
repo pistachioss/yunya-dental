@@ -38,6 +38,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -47,6 +48,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseRefund;
 import static com.yunya.framework.common.constant.BusinessConstants.FREE_PAYMENT_ID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
@@ -631,6 +633,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     }
     String userID = BaseContextHandler.getUserID();
     String name = BaseContextHandler.getName();
+    OrderDetailChargeVO vo = orderDetails.get(0);
     orderDetails.forEach(
         entity -> {
           String remarks = entity.getRemarks();
@@ -642,6 +645,10 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
           orderDetail.setUptName(name);
           orderDetailBiz.updateOrderDetail(orderDetail);
         });
+    OrderDetail orderDetail = orderDetailBiz.selectById(vo.getOrderDetailId());
+    if (!ObjectUtils.isEmpty(orderDetail)) {
+      rabbitMqServiceFeign.sendMessage(orderDetail.getOrderRecordId(), 1, BaseBill);
+    }
     return ResponseUtil.success();
   }
 

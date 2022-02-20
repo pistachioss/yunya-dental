@@ -1,9 +1,11 @@
 package com.yunya.modules.treatment.controller;
 
+import com.yunya.feign.treatment.domain.form.BaseTariffAssociationForm;
 import com.yunya.feign.treatment.domain.form.TariffUnitePriceForm;
 import com.yunya.feign.treatment.domain.model.TariffUniteModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.treatment.controller.web.BaseOralTariffController;
+import com.yunya.modules.treatment.controller.web.BaseTariffAssociationController;
 import com.yunya.modules.treatment.controller.web.BaseTariffController;
 import org.apache.poi.ss.formula.functions.T;
 import org.junit.Test;
@@ -29,6 +31,7 @@ import java.util.Set;
 public class BaseTariffControllerTest {
   @Resource private BaseTariffController baseTariffController;
   @Resource private BaseOralTariffController baseOralTariffController;
+  @Resource private BaseTariffAssociationController baseTariffAssociationController;
 
   @Test
   public void test1() {
@@ -86,5 +89,14 @@ public class BaseTariffControllerTest {
     form.setTariffUniteModels(objects);
     ResponseResult<T> result = baseTariffController.uniteTariffPrice(form);
     System.out.println(result);
+  }
+
+  @Test
+  public void test7() {
+    BaseTariffAssociationForm form = new BaseTariffAssociationForm();
+    form.setEmr("");
+    form.setAttention("");
+    form.setFellowUps(new String[]{""});
+    baseTariffAssociationController.modifyTariffAssociation(201,form);
   }
 }

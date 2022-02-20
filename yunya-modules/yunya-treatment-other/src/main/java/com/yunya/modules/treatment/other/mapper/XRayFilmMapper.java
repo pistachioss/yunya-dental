@@ -4,7 +4,7 @@ import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
 import com.yunya.feign.treatment_other.domain.vo.ToothRootCountVo;
 import com.yunya.feign.treatment_other.domain.vo.ToothRootVo;
 import com.yunya.models.treatment_other.XRayFilm;
-import com.yunya.feign.treatment_other.domain.vo.XRayFilmVo;
+import com.yunya.feign.treatment_other.domain.vo.XRayFilmVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -16,7 +16,7 @@ public interface XRayFilmMapper extends Mapper<XRayFilm> {
      * @param query 查找条件
      * @return 返回数据列表
      */
-    List<XRayFilmVo> findList(@Param("query") XRayFilmQuery query);
+    List<XRayFilmVO> findList(@Param("query") XRayFilmQuery query);
 
     /**
      * 批量添加图片

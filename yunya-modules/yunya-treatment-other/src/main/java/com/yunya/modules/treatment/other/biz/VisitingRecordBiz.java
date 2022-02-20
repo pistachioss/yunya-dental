@@ -838,4 +838,33 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
     public VisitingStatusCountVO countVisiting(Integer patientId) {
         return mapper.countVisiting(patientId);
     }
+
+    /**
+     * 查询已随访列表
+     * @param orgId 门诊ID
+     * @return 返回已随访列表
+     */
+    public List<VisitFinishedListVO> visitFinishedList(String orgId) {
+        List<VisitFinishedListVO> finishedListVOS = mapper.visitFinishedList(Integer.valueOf(orgId));
+        if (!finishedListVOS.isEmpty()) {
+            // 注入医生名字
+            List<Integer> dentistIds = finishedListVOS.stream().map(VisitFinishedListVO::getDentistId).collect(Collectors.toList());
+            List<SysUserInfoDetail> sysUserInfos = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
+            if (sysUserInfos != null && !sysUserInfos.isEmpty()) {
+                finishedListVOS.forEach(vo-> sysUserInfos.stream().filter(user->user.getEmployeeId().equals(vo.getDentistId())).findFirst().ifPresent(sysUser->{
+                    vo.setDentistName(sysUser.getName());
+                }));
+            }
+            // 注入患者名字，患者手机号
+            List<Integer> patientIds = finishedListVOS.stream().map(VisitFinishedListVO::getPatientId).collect(Collectors.toList());
+            List<PatientBaseInfoVo> patientInfos = remotePatientCentralServiceFeign.findPatientInfoByIds(patientIds);
+            if (patientInfos != null && !patientInfos.isEmpty()) {
+                finishedListVOS.forEach(vo-> patientInfos.stream().filter(patient->patient.getId().equals(vo.getPatientId())).findFirst().ifPresent(patientInfo->{
+                    vo.setPatientName(patientInfo.getName());
+                    vo.setMobile(patientInfo.getMobile());
+                }));
+            }
+        }
+        return finishedListVOS;
+    }
 }

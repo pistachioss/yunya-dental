@@ -225,6 +225,7 @@ public class OrganizationBiz {
       }
       company.setName(companyName);
     }
+    company.setParentId(resource.getParentId());
     // 判断组织类型是否修改
     Byte organizationType = resource.getType();
     Byte companyType = company.getType();

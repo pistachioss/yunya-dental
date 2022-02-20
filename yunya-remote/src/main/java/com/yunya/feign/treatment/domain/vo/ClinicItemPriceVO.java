@@ -34,4 +34,10 @@ public class ClinicItemPriceVO implements Serializable {
 
   /** 是否启用 */
   private Boolean itemInservice;
+
+  /** 会员类型id*/
+  private Integer memberTypeId;
+
+  /** 项目类型：0-价目，1-商品*/
+  private Integer itemType;
 }

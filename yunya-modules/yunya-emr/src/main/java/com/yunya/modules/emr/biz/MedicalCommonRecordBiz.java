@@ -1,31 +1,45 @@
 package com.yunya.modules.emr.biz;
 
-import com.alibaba.fastjson.*;
-import com.yunya.feign.emr.domain.form.*;
-import com.yunya.feign.emr.domain.model.*;
-import com.yunya.feign.emr.domain.vo.*;
+import com.alibaba.fastjson.JSONArray;
+import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
+import com.yunya.feign.emr.domain.model.ApplyBaseModel;
+import com.yunya.feign.emr.domain.model.DraftMedicalApplyModel;
+import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
+import com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
-import com.yunya.framework.common.biz.*;
-import com.yunya.framework.common.constant.*;
-import com.yunya.framework.common.context.*;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
+import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
+import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
+import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.emr.*;
+import com.yunya.models.emr.MedicalCommonRecord;
+import com.yunya.models.emr.MedicalGeneralNum;
+import com.yunya.models.emr.MedicalRecordHistory;
 import com.yunya.models.treatment.TreatmentRecord;
-import com.yunya.modules.emr.mapper.*;
-import org.springframework.beans.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.stereotype.*;
-import org.springframework.transaction.annotation.*;
-import tk.mybatis.mapper.entity.*;
+import com.yunya.modules.emr.mapper.MedicalCommonRecordMapper;
+import com.yunya.modules.emr.mapper.MedicalGeneralNumMapper;
+import com.yunya.modules.emr.mapper.MedicalRecordHistoryMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import tk.mybatis.mapper.entity.Example;
 
-import java.text.*;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static com.yunya.framework.common.enums.FileSourceTypeEnum.MEDICAL_COMMON;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -40,7 +54,11 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     @Autowired
     private MedicalRecordHistoryBiz medicalRecordHistoryBiz;
     @Autowired
+    private MedicalCheckRecordBiz medicalCheckRecordBiz;
+    @Autowired
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
+    @Autowired
+    private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
 
     public ResponseResult create(MedicalCommonRecordModel model) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -96,12 +114,18 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
             }
         }
         int result = mapper.insertMedical(medicalCommonRecord);
+
         //主治医生新增病历时，历史表中同步插入一条数据
         if (result > 0 && medicalCommonRecord.getStatus() == 0) {
             medicalRecordHistoryBiz.insertMedicalHistory(medicalCommonRecord);
             //更新医生的申请变更时间
             medicalApprovalBiz.updateDocApplyChangeTime(medicalCommonRecord.getTreatmentId());
         }
+
+        // 保存照片影像
+        saveXRayFile2XUploadFile(medicalCommonRecord.getId(), model.getXrayFilms(), model.getCrtTime());
+        // 保存检查记录
+        medicalCheckRecordBiz.saveCheckRecord(medicalCommonRecord.getId(), model.getCheckRecords());
         //助手新增病历时，审核表中同步插入一条数据
         if (result > 0 && medicalCommonRecord.getStatus() == 1) {
             DraftMedicalApplyModel draftMedicalApplyModel = new DraftMedicalApplyModel();
@@ -132,6 +156,20 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
             medicalGeneralNumMapper.saveList(numList);
         }
         return ResponseUtil.success(medicalCommonRecord.getId());
+    }
+
+    private void saveXRayFile2XUploadFile(Integer medicalId, List<XUploadFileVO> files, Date crtTime) {
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        MedicalRayFilmModel model = new MedicalRayFilmModel();
+        model.setMedicalId(medicalId);
+        model.setSourceType(MEDICAL_COMMON.getCode());
+        model.setRayFiles(files);
+        model.setCrtId(userId);
+        if (ObjectUtils.isEmpty(crtTime)) {
+            crtTime = new Date(System.currentTimeMillis());
+        }
+        model.setCrtTime(crtTime);
+        remoteTreatmentOtherFeign.saveXRayFile2XUploadFile(model);
     }
 
     public List<MedicalCommonRecord> findList(MedicalCommonRecord model) {
@@ -189,6 +227,11 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         example.createCriteria().andEqualTo("medicalRecordId", medicalcopy.getId());
         medicalRecordHistoryMapper.updateByExampleSelective(medicalRecordHistory, example);
 
+        // 保存照片影像
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXrayFilms(), medicalcopy.getUpdTime());
+        // 保存检查记录
+        medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
+
         if (medicalCommonRecordForm.getMedicalGeneralNumList() != null && medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
             List<MedicalGeneralNum> numList = new ArrayList<>();
             for (MedicalGeneralNumVO m : medicalCommonRecordForm.getMedicalGeneralNumList()) {
@@ -245,6 +288,11 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         if (re > 0 && medicalcopy.getStatus() == 0) {
             medicalRecordHistoryBiz.insertMedicalHistory(medicalcopy);
         }
+
+        // 保存照片影像
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXrayFilms(), medicalcopy.getUpdTime());
+        // 保存检查记录
+        medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
         //助手修改病历通过时，审核表中同步插入一条数据
         if (re > 0 && (medicalCommonRecordForm.getStatus() == 2 || medicalCommonRecordForm.getStatus() == 3)) {
             DraftMedicalApplyModel draftMedicalApplyModel = new DraftMedicalApplyModel();
@@ -308,9 +356,15 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         //助手修改病历通过时，审核表中同步插入一条数据
         if (re > 0 && medicalcopy.getStatus() == 2) {
             medicalRecordHistoryBiz.insertMedicalHistory(medicalcopy);
+            medicalCheckRecordBiz.saveCheckRecord(medicalCommonRecordForm.getId(), medicalCommonRecordForm.getCheckRecords());
             //修改就诊记录病历书写状态
             remoteTreatmentServiceFeign.updateTreatmentRecord(medicalcopy.getTreatmentId());
         }
+
+        // 保存照片影像
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXrayFilms(), medicalcopy.getUpdTime());
+        // 保存检查记录
+        medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
         //插入常用词条使用频率
         if (medicalCommonRecordForm.getMedicalGeneralNumList() != null && medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {
             List<MedicalGeneralNum> numList = new ArrayList<>();
@@ -328,4 +382,12 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     }
 
 
+    public MedicalCommonRecord findMedicalIllegaHistoryById(Integer medicalRecordId) {
+        return mapper.selectMedicalIllnessHistoryById(medicalRecordId);
+    }
+
+    public TreatmentRecord findTreatmentByMedicalId(Integer medicalRecordId) {
+        MedicalCommonRecord medical = mapper.selectByPrimaryKey(medicalRecordId);
+        return remoteTreatmentServiceFeign.findTreatmentRecordById(medical.getTreatmentId());
+    }
 }

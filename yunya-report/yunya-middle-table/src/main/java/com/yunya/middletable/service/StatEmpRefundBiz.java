@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -117,6 +118,7 @@ public class StatEmpRefundBiz extends BaseBiz<StatEmpRefundMapper, StatEmpRefund
         Date now = new Date(System.currentTimeMillis());
         String startDate = form.getStartDate();
         String endDate = form.getEndDate();
+        deleteData(startDate, endDate);
         StatisticsEmployeeQueryForm query = new StatisticsEmployeeQueryForm();
         query.setStartDate(startDate);
         query.setEndDate(endDate);
@@ -153,6 +155,21 @@ public class StatEmpRefundBiz extends BaseBiz<StatEmpRefundMapper, StatEmpRefund
             latch.await();
             BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
         }
+    }
+
+    /**
+     * 清掉旧数据
+     *
+     * @param startDate
+     * @param endDate
+     */
+    private void deleteData(String startDate, String endDate) {
+        Example example = new Example(StatEmpRefund.class);
+        Example.Criteria c = example.createCriteria();
+        Integer sDateInt = Integer.parseInt(StringHelper.remove(startDate,"-"));
+        Integer eDateInt = Integer.parseInt(StringHelper.remove(endDate,"-"));
+        c.andBetween("refundDate", sDateInt, eDateInt);
+        mapper.deleteByExample(example);
     }
 
     /**

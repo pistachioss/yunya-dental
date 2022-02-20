@@ -67,6 +67,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Resource private CreditsShopMapper creditsShopMapper;
   /** 员工账单时统计*/
   @Autowired private StatEmpBillBiz statEmpBillBiz;
+  /** 员工使用优惠时统计*/
+  @Autowired private StatEmpPrivilegeBiz statEmpPrivilegeBiz;
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -118,18 +120,18 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           baseBillDetailMapper.deleteByBillId(dataId);
         }
       default:
-        statisticsEmployeeByBillDate(bill, dataId);
+        statisticsEmployeeWorkload(bill, dataId);
         break;
     }
   }
 
   /**
-   * 账单生成时统计执行人的账单数据
+   * 统计执行人的账单数据
    *
    * @param bill
    * @param dataId
    */
-  private void statisticsEmployeeByBillDate(BaseBill bill, Integer dataId) {
+  private void statisticsEmployeeWorkload(BaseBill bill, Integer dataId) {
       if (ObjectUtils.isEmpty(bill)) {
         bill = new BaseBill();
         BillRecord query = new BillRecord();
@@ -138,12 +140,17 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         BillRecord billRecord = billRecordMapper.selectOne(query);
         record2baseReport(billRecord, bill);
       }
-      if (!ObjectUtils.isEmpty(bill) && !ObjectUtils.isEmpty(bill.getBillDate())) {
+      if (!ObjectUtils.isEmpty(bill)) {
         Integer billId = bill.getBillId();
         OrderDetail query = new OrderDetail();
         query.setOrderRecordId(billId);
         List<OrderDetail> orderDetails = orderDetailMapper.select(query);
-        statEmpBillBiz.statisticsEmployeeByBillDate(orderDetails, bill);
+        if (!ObjectUtils.isEmpty(bill.getBillDate())) {
+          statEmpBillBiz.statisticsEmployeeByBillDate(orderDetails, bill);
+        }
+        if (!ObjectUtils.isEmpty(bill.getPrivilegeDate())) {
+          statEmpPrivilegeBiz.statisticsEmployeeByPrivilegeDate(orderDetails, bill);
+        }
       }
   }
 

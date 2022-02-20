@@ -2,11 +2,11 @@ package com.yunya.feign.emr.domain.model;
 
 import com.yunya.feign.emr.domain.vo.ExaminationsVO;
 import com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO;
+import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
-
 import java.util.Date;
 import java.util.List;
 
@@ -145,4 +145,16 @@ public class MedicalCommonRecordModel {
 
   @ApiModelProperty("门诊名称")
   private String companyName;
+
+  /** 牙位检查记录 */
+  @ApiModelProperty("牙位检查记录")
+  private List<MedicalCheckRecordModel> checkRecords;
+
+  /** 照片影像列表*/
+  @ApiModelProperty("照片影像列表")
+  private List<XUploadFileVO> xrayFilms;
+
+  /** 是否有计划*/
+  @ApiModelProperty("是否有计划")
+  private Boolean hasPlan;
 }

@@ -1,7 +1,9 @@
 package com.yunya.feign.emr.domain.form;
 
+import com.yunya.feign.emr.domain.model.MedicalCheckRecordModel;
 import com.yunya.feign.emr.domain.vo.ExaminationsVO;
 import com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO;
+import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -129,4 +131,10 @@ public class MedicalCommonRecordForm {
   @ApiModelProperty("词条使用频率")
   private List<MedicalGeneralNumVO>medicalGeneralNumList;
 
+  @ApiModelProperty("牙位检查记录")
+  private List<MedicalCheckRecordModel> checkRecords;
+
+  /** 照片影像id列表*/
+  @ApiModelProperty("照片影像id列表")
+  private List<XUploadFileVO> xrayFilms;
 }

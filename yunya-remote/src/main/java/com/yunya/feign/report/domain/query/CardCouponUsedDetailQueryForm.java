@@ -1,10 +1,9 @@
 package com.yunya.feign.report.domain.query;
 
-import com.yunya.feign.report.domain.query.base.ClinicDateRangeQueryForm;
+import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
@@ -18,11 +17,14 @@ import java.io.Serializable;
  * @Date: 2021/12/21 9:20
  * @since: 1.0.0
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
 @ToString
 @ApiModel("产品卡券使用统计-激活or复购查询")
-public class CardCouponUsedDetailQueryForm extends ClinicDateRangeQueryForm implements Serializable {
+public class CardCouponUsedDetailQueryForm extends MultiClinicDateRangeQueryForm implements Serializable {
+    /** 门诊ID*/
+    @ApiModelProperty(value = "门诊ID", required = true)
+    @NotNull(message = "门诊ID")
+    private Integer orgId;
 
     /** 产品ID*/
     @ApiModelProperty(value = "产品ID", required = true)

@@ -154,8 +154,8 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    */
     List<PatientBaseInfoVo> findPatientLikePatientInfo(@Param("form") PatientLikeFinleQueryForm form, @Param("orgId") Integer orgId);
 
-    List<BaseTreatmentProcess> selectInMonthReFirstVisit(@Param("query") ClinicEmployeeWorkloadQuery query,
-                                                    @Param("groupByOrgId") boolean groupByOrgId,
+    List<EmployeeCountVO> selectInMonthReFirstVisit(@Param("query") ClinicEmployeeWorkloadQuery query,
+                                                         @Param("groupByOrg") boolean groupByOrg,
                                                          @Param("treatType") Integer treatType);
 
     List<PatientDateVO> selectNextAppointDateByPatientId(@Param("patientIds") List<Integer> patientIds);
@@ -164,7 +164,7 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
 
   List<PatientDateVO> selectLastVisitDateByPatientId(@Param("patientIds") List<Integer> patientIds);
 
-  List<PatientCountVO> selectPatientTreatNum(@Param("patientIds") List<Integer> patientIds);
+  List<OrgPatientCountVO> selectPatientTreatNum(@Param("query") PatientDimensionQueryForm query);
 
   List<EmployeeCountVO> selectPatientTreatNumGroupEmp(@Param("query") ClinicEmployeeWorkloadQuery query,
                                                       @Param("treatType") Integer treatType,

@@ -18,10 +18,9 @@
         SELECT
         br.bill_id,
         brd.refund_amount,
-        bbd.executor_id
+        brd.executor_id
         FROM
         base_refund_detail brd
-        INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
         ) brd
         <where>

@@ -241,6 +241,9 @@
             <if test="treatmentProcess.assistant3 != null">
                 assistant_3 = #{treatmentProcess.assistant3},
             </if>
+            <if test="treatmentProcess.inMonthNextId != null">
+                in_month_next_id = #{treatmentProcess.inMonthNextId},
+            </if>
         </set>
         where treatment_id = #{treatmentId}
     </update>
@@ -293,5 +296,35 @@
             FROM base_treatment_process btp
         WHERE DATE_FORMAT(btp.treat_end_time, '%Y-%m-%d') between #{startDate} and #{endDate}
         GROUP BY btp.org_id, btp.registered_dentist_id, DATE_FORMAT(btp.treat_end_time, '%Y-%m-%d')
+    </select>
+
+    <select id="selectOneInMonthAndPreTreat" resultType="com.yunya.models.report.BaseTreatmentProcess">
+        SELECT
+            treatment_id AS treatmentId
+        From base_treatment_process btp
+        <where>
+            AND treat_end_time IS NOT NULL
+            AND btp.org_id = #{orgId}
+            AND btp.registered_dentist_id = #{dentistId}
+            AND btp.patient_id = #{patientId}
+            AND DATE_FORMAT(btp.treat_end_time, '%Y-%m-%d') BETWEEN #{sDate} AND #{eDate}
+            AND treatment_id &lt; #{treatmentId}
+        </where>
+        ORDER BY treatment_id DESC
+        LIMIT 0,1
+    </select>
+
+    <select id="selectAllTreatmentList" resultType="com.yunya.models.report.BaseTreatmentProcess">
+        SELECT
+            treatment_id AS treatmentId,
+            org_id AS orgId,
+            registered_dentist_id AS registeredDentistId,
+            patient_id AS patientId,
+            treat_end_time AS treatEndTime
+        From base_treatment_process btp
+        <where>
+            AND treat_end_time IS NOT NULL
+        </where>
+        ORDER BY org_id, registered_dentist_id, patient_id, treat_end_time DESC
     </select>
 </mapper>

@@ -29,6 +29,7 @@ import com.yunya.modules.treatment.mapper.ClinicOralTariffMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -431,6 +432,9 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
       HttpServletResponse response, ClinicOralTariffQueryForm queryForm) throws IOException {
     queryForm.setWhetherPage(false);
     List<ClinicOralTariffVO> resultList = findList(queryForm, true).getList();
+    if (!CollectionUtils.isEmpty(resultList)) {
+      resultList.removeIf(clinicOralTariffVO -> !clinicOralTariffVO.getInservice());
+    }
     //    List<BaseOralTariffVO> resultList = mapper.selectClinicOralTariffExportList(queryForm);
     Integer orgId = queryForm.getOrgId();
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);

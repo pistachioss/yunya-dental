@@ -12,7 +12,6 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.EmployeeWorkloadCost;
 import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
 import com.yunya.report.ultimate.mapper.BaseEmployeeMapper;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -321,13 +320,7 @@ public class EmployeeWorkloadBiz {
      * @return
      */
     private Future<List<ClinicEmployeBonusCoefficientVO>> multiFindClinicEmployeeCartesianProduct(ClinicEmployeeWorkloadQuery query) {
-        return threadPool.submit(()->{
-            ClinicEmployeeWorkloadQuery queryForm = new ClinicEmployeeWorkloadQuery();
-            BeanUtils.copyProperties(query, queryForm);
-            queryForm.setStartDate(null);
-            queryForm.setEndDate(null);
-            return findClinicEmployeeCartesianProduct(queryForm, true);
-        });
+        return threadPool.submit(()-> findClinicEmployeeCartesianProduct(query, true));
     }
 
     public List<ClinicEmployeBonusCoefficientVO> findClinicEmployeeCartesianProduct(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {

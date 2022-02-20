@@ -474,10 +474,9 @@
         (
         SELECT
         brd.refund_amount,
-        bbd.executor_id
+        brd.executor_id
         FROM
         base_refund_detail brd
-        INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
         INNER JOIN (
         SELECT
         br.refund_id
@@ -1031,10 +1030,9 @@
         bo.abbreviation,
         br.refund_date,
         brd.refund_amount,
-        bbd.executor_id
+        brd.executor_id
         FROM
         base_refund_detail brd
-        INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
         left JOIN base_organization bo ON br.org_id = bo.org_id
         ) brd
@@ -2360,7 +2358,8 @@
         t.org_id as orgId,
         t.bill_id as billId,
         t.executor_id as executorId,
-        IFNULL(t.price * t.quantity - t.discount_amount, 0) as receivedAmount
+        IFNULL(t.price * t.quantity - t.discount_amount, 0) as receivedAmount,
+        bbd.actual_amount AS discountAmount
         from base_bill_detail t
         left join base_bill bbd on t.bill_id=bbd.bill_id
         <where>
@@ -2407,11 +2406,14 @@
         t.bill_id as billId,
         t.executor_id as executorId,
         IFNULL(t.price * t.quantity - t.discount_amount, 0) as receivedAmount,
+        bb.actual_amount AS discountAmount,
         t.item_type AS itemType,
         t.item_id AS itemId
         from base_bill_detail t
+        left join base_bill bb ON bb.bill_id = t.bill_id
         <where>
-            and bill_id in
+            AND t.executor_id > 0
+            and bb.bill_id in
             <foreach collection="billIds" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
@@ -2780,10 +2782,9 @@
         br.org_id,
         br.refund_date,
         brd.refund_amount,
-        bbd.executor_id
+        brd.executor_id
         FROM
         base_refund_detail brd
-        INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
         INNER JOIN base_refund br ON brd.refund_id = br.refund_id
         ) brd
         <where>
@@ -3506,11 +3507,10 @@
         brd.itemId
         FROM (
         SELECT brd.refund_amount,
-        bbd.executor_id as executorId,
-        bbd.item_type as itemType,
-        bbd.item_id as itemId
+        brd.executor_id as executorId,
+        brd.item_type as itemType,
+        brd.item_id as itemId
         FROM base_refund_detail brd
-        INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
         INNER JOIN (
         SELECT br.org_id,
         br.refund_id
@@ -4165,61 +4165,31 @@
         from (
         select
         brd.refund_amount,
-        bbd.billId,
-        date_format(bbd.billDate, '%Y-%m-%d %H:%i') as billDate,
-        bbd.billNum,
-        bbd.patientId,
-        bbd.patientName,
-        bbd.pinyinName,
-        bbd.mobile,
-        bbd.regDentistId,
-        bbd.executorId,
-        bbd.executorName
+        br.bill_id AS billId,
+        date_format(br.bill_date, '%Y-%m-%d %H:%i') as billDate,
+        br.bill_num AS billNum,
+        br.patient_id AS patientId,
+        bp.name AS patientName,
+        bp.pinyin_name AS pinyinName,
+        bp.mobile,
+        btp.registered_dentist_id AS regDentistId,
+        brd.executor_id AS executorId,
+        be.employee_name AS executorName
         from base_refund_detail brd
         inner join base_refund br on brd.refund_id = br.refund_id
-        inner join (
-        select bbd.bill_detail_id,
-        bb.billId,
-        bb.billDate,
-        bb.billNum,
-        bb.patientId,
-        bb.patientName,
-        bb.pinyinName,
-        bb.mobile,
-        bb.regDentistId,
-        bbd.executor_id as executorId,
-        be.employee_name as executorName
-        from base_bill_detail bbd
-        inner join (
-        select bb.bill_id as billId,
-        bb.patient_id as patientId,
-        bp.name as patientName,
-        bp.pinyin_name as pinyinName,
-        bp.mobile as mobile,
-        bb.bill_num as billNum,
-        bb.bill_date as billDate,
-        bb.actual_amount as actualAmount,
-        btp.registered_dentist_id as regDentistId
-        from base_bill bb
-        left join base_patient bp on bb.patient_id = bp.patient_id
-        left join base_treatment_process btp on bb.treatment_id = btp.treatment_id
-        <where>
-            and bb.bill_date is not null
-            <if test="query.orgId != null">
-                and bb.org_id = #{query.orgId}
-            </if>
-        </where>
-        ) bb on bbd.bill_id = bb.billId
+        left join base_patient bp on br.patient_id = bp.patient_id
+        left join base_treatment_process btp on br.treatment_id = btp.treatment_id
         left join base_employee be on bbd.executor_id = be.user_id
         <where>
+            and br.bill_date is not null
             <if test="query.executorId != null">
-                and bbd.executor_id = #{query.executorId}
+                and brd.executor_id = #{query.executorId}
             </if>
             <if test="query.itemId != null">
-                and bbd.item_id = #{query.itemId}
+                and brd.item_id = #{query.itemId}
             </if>
             <if test="query.orgId != null">
-                and bbd.org_id = #{query.orgId}
+                and br.org_id = #{query.orgId}
             </if>
         </where>
         ) bbd on brd.bill_detail_id = bbd.bill_detail_id
@@ -4817,9 +4787,8 @@
                 br.org_id,
                 br.refund_date,
                 brd.refund_amount,
-                bbd.executor_id
+                brd.executor_id
             FROM base_refund_detail brd
-            INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
             INNER JOIN base_refund br ON brd.refund_id = br.refund_id
         ) brd
         <where>
@@ -5093,11 +5062,10 @@
         FROM (
             SELECT
                 brd.refund_amount,
-                bbd.executor_id AS executorId,
-                bbd.item_id AS itemId,
-                bbd.org_id AS orgId
+                brd.executor_id AS executorId,
+                brd.item_id AS itemId,
+                br.org_id AS orgId
             FROM base_refund_detail brd
-            INNER JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
             INNER JOIN (
                 SELECT
                     br.org_id,
@@ -5119,16 +5087,16 @@
                 </where>
             ) br ON brd.refund_id = br.refund_id
             <where>
-                bbd.item_type = 0
-                AND bbd.executor_id > 0
+                brd.item_type = 0
+                AND brd.executor_id > 0
                 <if test="query.employeeIds!=null and query.employeeIds.length>0">
-                    and bbd.executor_id in
+                    and brd.executor_id in
                     <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
                         #{item}
                     </foreach>
                 </if>
                 <if test="query.itemIds!=null and query.itemIds.size()>0">
-                    and bbd.item_id in
+                    and brd.item_id in
                     <foreach collection="query.itemIds" item="item" index="index" open="(" close=")" separator=",">
                         #{item}
                     </foreach>
@@ -5140,8 +5108,9 @@
         GROUP BY brd.executorId,brd.itemId,brd.orgId
     </select>
 
-    <select id="selectBillItemNumByPatientId" resultType="com.yunya.feign.report.domain.vo.PersonalBillItemVO">
+    <select id="selectBillItemNumByQuery" resultType="com.yunya.feign.report.domain.vo.PersonalBillItemVO">
         SELECT
+            bb.org_id AS orgId,
             bb.patient_id AS personId,
             bbd.item_type AS itemType,
             bbd.item_id AS itemId,
@@ -5150,35 +5119,50 @@
         LEFT JOIN base_bill bb ON bb.bill_id = bbd.bill_id
         <where>
             and bb.patient_id in
-            <foreach collection="patientIds" item="item" index="index" open="(" close=")" separator=",">
+            <foreach collection="query.patientIds" item="item" index="index" open="(" close=")" separator=",">
                 #{item}
             </foreach>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bb.bill_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
         </where>
-        GROUP BY bb.patient_id, bbd.item_type, bbd.item_id
+        GROUP BY bb.org_id, bb.patient_id, bbd.item_type, bbd.item_id
     </select>
 
-    <select id="selectExecutorBillItem" resultType="com.yunya.feign.report.domain.vo.PersonalBillItemVO">
+    <select id="selectBillingOralItemList" resultType="com.yunya.models.report.StatEmpBill">
         SELECT
-            <if test="groupByOrgId">
-                bbd.org_id AS orgId,
-            </if>
-            bbd.executor_id AS personId,
+            bbd.org_id AS orgId,
             bbd.item_type AS itemType,
             bbd.item_id AS itemId,
-            sum(bbd.quantity) AS quantity
+            SUM(bbd.quantity) AS quantity
         FROM base_bill_detail bbd
         INNER JOIN base_bill bb ON bb.bill_id = bbd.bill_id
         <where>
-            AND bbd.executor_id > 0
-            <if test="query.orgIds!=null and query.orgIds.length>0">
-                and bb.org_id in
+            AND bbd.item_type = 1
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
+                AND bbd.org_id in
                 <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="query.employeeIds != null and query.employeeIds.length > 0">
-                and bbd.executor_id in
-                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
@@ -5207,12 +5191,6 @@
                 </if>
             </if>
         </where>
-        GROUP BY
-        <if test="groupByOrgId">
-            bbd.org_id,
-        </if>
-        bbd.executor_id,
-        bbd.item_type,
-        bbd.item_id
+        GROUP BY bbd.org_id, bbd.item_type, bbd.item_id
     </select>
 </mapper>

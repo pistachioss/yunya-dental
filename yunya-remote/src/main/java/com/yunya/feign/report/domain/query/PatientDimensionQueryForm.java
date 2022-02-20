@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 简介：患者维度查询VO
@@ -23,4 +24,8 @@ public class PatientDimensionQueryForm extends DateRangeQueryForm implements Ser
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名")
     private String patientName;
+
+    /** 患者id列表*/
+    @ApiModelProperty("患者id列表")
+    private List<Integer> patientIds;
 }

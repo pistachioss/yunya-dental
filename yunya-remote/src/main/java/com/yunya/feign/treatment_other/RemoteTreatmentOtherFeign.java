@@ -1,23 +1,22 @@
 package com.yunya.feign.treatment_other;
 
 import com.yunya.feign.report.domain.form.PullForm;
+import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
 import com.yunya.feign.treatment_other.domain.vo.FindAllRemindRecordVO;
 import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
+import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.feign.treatment_other.factory.RemoteTreatmentOtherFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.XRayFilm;
 import io.swagger.annotations.ApiOperation;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -111,4 +110,21 @@ public interface RemoteTreatmentOtherFeign {
           value = "api/treatment/other/visiting/findAllRecord",
           method = RequestMethod.POST)
   FindAllRemindRecordVO findAllRecord(PullForm pullForm);
+
+
+  /**
+   * 将指定照片影像复制到x_upload_file中
+   *
+   */
+  @ApiOperation(value = "将指定照片影像复制到x_upload_file中")
+  @PostMapping("api/treatment/other/xUploadFile/saveMedicalRayToUploadFile")
+  void saveXRayFile2XUploadFile(@RequestBody @Validated MedicalRayFilmModel model);
+
+  /**
+   * 条件查询上传文件
+   *
+   */
+  @ApiOperation(value = "条件查询上传文件")
+  @PostMapping(value = "api/treatment/other/xUploadFile/findList")
+  List<XUploadFileVO> findXUploadFileList(@RequestBody @Validated XUploadFileQuery query);
 }
