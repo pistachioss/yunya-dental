@@ -36,7 +36,7 @@ public class SymptomConfigBiz extends BaseBiz<SymptomConfigMapper, SymptomConfig
   public int add(SymptomConfigModel model) {
     Date now = new Date(System.currentTimeMillis());
     Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
-    checkNameRepeated(null, model.getSymptomName());
+    checkNameRepeated(model.getSymptomName());
     SymptomConfig entity = new SymptomConfig();
     entity.setCheckId(model.getCheckId());
     entity.setSymptomName(model.getSymptomName());
@@ -52,28 +52,15 @@ public class SymptomConfigBiz extends BaseBiz<SymptomConfigMapper, SymptomConfig
   /**
    * 重名检查
    *
-   * @param id
-   * @param checkName
+   * @param symptomName
    * @return
    */
-  private void checkNameRepeated(Integer id, String checkName) {
-    SymptomConfig entity = new SymptomConfig();
-    entity.setSymptomName(checkName);
-    if (ObjectUtils.isEmpty(id)) {
-      entity = mapper.selectOne(entity);
-      if (!ObjectUtils.isEmpty(entity)) {
-        throw new ClientServiceException("该症状名称已存在", OperationCodeConstants.DATA_EXIST);
-      } else {
-        SymptomConfig symptomConfig = mapper.selectByPrimaryKey(id);
-        if (!ObjectUtils.isEmpty(symptomConfig)) {
-          if (!symptomConfig.getSymptomName().equals(checkName)) {
-            int count = mapper.selectCount(entity);
-            if (count > 0) {
-              throw new ClientServiceException("该症状名称已存在", OperationCodeConstants.DATA_EXIST);
-            }
-          }
-        }
-      }
+  private void checkNameRepeated(String symptomName) {
+    SymptomConfig symptomConfig = new SymptomConfig();
+    symptomConfig.setSymptomName(symptomName);
+    int count = mapper.selectCount(symptomConfig);
+    if (count > 0) {
+      throw new ClientServiceException("该症状名称已存在", OperationCodeConstants.DATA_EXIST);
     }
   }
 
@@ -84,17 +71,19 @@ public class SymptomConfigBiz extends BaseBiz<SymptomConfigMapper, SymptomConfig
    * @return
    */
   public int update(SymptomConfigForm form) {
-    Date now = new Date(System.currentTimeMillis());
-    Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
-    checkNameRepeated(form.getId(), form.getSymptomName());
-    SymptomConfig entity = checkEntityExists(form.getId());
-    entity.setSymptomName(form.getSymptomName());
-    entity.setRemark(form.getRemark());
-    entity.setCrtId(userId);
-    entity.setCrtTime(now);
-    entity.setUptId(userId);
-    entity.setUptTime(now);
-    return mapper.updateByPrimaryKey(entity);
+    SymptomConfig symptomConfig = mapper.selectByPrimaryKey(form.getId());
+    if (ObjectUtils.isEmpty(symptomConfig)) {
+      throw new ClientServiceException("修改失败，该数据不存在", OperationCodeConstants.DATA_NOT_EXIST);
+    }
+    String symptomName = form.getSymptomName();
+    if (!symptomConfig.getSymptomName().equals(symptomName)) {
+      checkNameRepeated(symptomName);
+    }
+    symptomConfig.setSymptomName(symptomName);
+    symptomConfig.setRemark(form.getRemark());
+    symptomConfig.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+    symptomConfig.setUptTime(new Date(System.currentTimeMillis()));
+    return mapper.updateByPrimaryKeySelective(symptomConfig);
   }
 
   /**
