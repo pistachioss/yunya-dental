@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.other.controller;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment_other.domain.form.FinishVisitingForm;
 import com.yunya.feign.treatment_other.domain.form.VisitingRecordForm;
@@ -9,6 +10,8 @@ import com.yunya.feign.treatment_other.domain.query.VisitingForMonthInfo;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.model.PageQuery;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
@@ -153,4 +156,21 @@ public class VisitingRecordController {
         VisitingStatusCountVO result = visitingRecordBiz.countVisiting(patientId);
         return ResponseUtil.success(result);
     }
+
+    /**
+     * 查询已随访列表
+     * @return 返回列表
+     */
+    @ApiOperation(value = "查询已随访列表")
+    @GetMapping(value = "/finish/list")
+    @CurrentUser
+    public ResponseResult<PageInfo<VisitFinishedListVO>> visitFinishedList(PageQuery pageQuery) {
+        if (pageQuery.getWhetherPage()) {
+            PageHelper.startPage(pageQuery.getPageNum(),pageQuery.getPageSize());
+        }
+        List<VisitFinishedListVO> listData = visitingRecordBiz.visitFinishedList(BaseContextHandler.getOrgId());
+        return ResponseUtil.success(new PageInfo<>(listData));
+
+    }
+
 }

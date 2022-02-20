@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.other.mapper;
 
 import com.yunya.feign.report.domain.form.PullForm;
+import com.yunya.feign.treatment_other.domain.form.ResetVisitingRemindForm;
 import com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery;
 import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.models.treatment_other.VisitingRecord;
@@ -46,4 +47,11 @@ public interface VisitingRemindMapper extends Mapper<VisitingRemind> {
    * @return
    */
   List<VisitingRemind>selectList(PullForm pullForm);
+
+  /**
+   * 批量修改提醒时间
+   * @param form
+   * @return
+   */
+  Integer resetVisitingRemindBatch(@Param("userId") Integer userId,@Param("updName") String updName,@Param("form") ResetVisitingRemindForm form);
 }
