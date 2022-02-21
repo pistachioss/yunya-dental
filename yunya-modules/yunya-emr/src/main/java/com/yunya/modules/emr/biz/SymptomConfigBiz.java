@@ -58,6 +58,7 @@ public class SymptomConfigBiz extends BaseBiz<SymptomConfigMapper, SymptomConfig
   private void checkNameRepeated(String symptomName) {
     SymptomConfig symptomConfig = new SymptomConfig();
     symptomConfig.setSymptomName(symptomName);
+    symptomConfig.setInservice(true);
     int count = mapper.selectCount(symptomConfig);
     if (count > 0) {
       throw new ClientServiceException("该症状名称已存在", OperationCodeConstants.DATA_EXIST);
@@ -97,7 +98,7 @@ public class SymptomConfigBiz extends BaseBiz<SymptomConfigMapper, SymptomConfig
     SymptomConfig entity = checkEntityExists(id);
     entity.setInservice(false);
     entity.setUptId(userId);
-    return mapper.updateByPrimaryKeySelective(entity);
+    return mapper.deleteByPrimaryKey(entity);
   }
 
   /**
