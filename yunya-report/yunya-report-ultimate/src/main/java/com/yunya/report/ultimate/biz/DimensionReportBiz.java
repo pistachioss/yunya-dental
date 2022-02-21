@@ -510,7 +510,11 @@ public class DimensionReportBiz {
             empQuery.setUserIds(Arrays.asList(employeeIds));
         }
         List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(empQuery);
-        employeeIds = employees.stream().map(SysUserInfoDetail::getEmployeeId).toArray(Integer[]::new);
+        if (StringHelper.isEmpty(employees)) {
+            employeeIds = new Integer[]{-1};// 未查到
+        } else {
+            employeeIds = employees.stream().map(SysUserInfoDetail::getUserId).toArray(Integer[]::new);
+        }
         query.setEmployeeIds(employeeIds);
     }
 
