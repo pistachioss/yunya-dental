@@ -434,6 +434,7 @@ public class DimensionReportBiz {
      */
     public DynamicHeaderPageInfo<JSONObject> clinicDimensionStatistics(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) throws Exception {
         filterDentistPost(query);
+        Boolean whetherPage = query.getWhetherPage();
         query.setWhetherPage(false);
         List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(query, groupByOrgId);
         if (StringHelper.isEmpty(employees)) {
@@ -443,6 +444,7 @@ public class DimensionReportBiz {
             pageInfo.setHeader(new String[0]);
             return pageInfo;
         }
+        query.setWhetherPage(whetherPage);
         updEmployeeId2Query(employees, query);
 
         // 无下次预约或提醒客户
@@ -626,7 +628,7 @@ public class DimensionReportBiz {
         title.put("hasntAppointAndRemind", "无下次预约或提醒客户");
 //        title.put("specialProjectNames", "专科数量");
         title.putAll(specialMap);
-        DynamicHeaderPageInfo result = new DynamicHeaderPageInfo();
+        DynamicHeaderPageInfo<JSONObject> result = new DynamicHeaderPageInfo();
         BeanUtils.copyProperties(pageInfo, result);
         result.setMap(title);
         result.setContextMap(contextMap);
