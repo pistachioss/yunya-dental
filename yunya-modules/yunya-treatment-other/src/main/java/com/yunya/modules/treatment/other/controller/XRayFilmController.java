@@ -7,7 +7,7 @@ import com.yunya.feign.treatment_other.domain.query.ToothRootQuery;
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
 import com.yunya.feign.treatment_other.domain.vo.ToothRootCountVo;
 import com.yunya.feign.treatment_other.domain.vo.ToothRootVo;
-import com.yunya.feign.treatment_other.domain.vo.XRayFilmVo;
+import com.yunya.feign.treatment_other.domain.vo.XRayFilmVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.util.List;
 
@@ -43,8 +42,8 @@ public class XRayFilmController {
 
     @ApiOperation("查询图片影像列表")
     @PostMapping("/findCycleList")
-    public ResponseResult<PageInfo<XRayFilmVo>> findList(@RequestBody @Validated XRayFilmQuery query){
-        PageInfo<XRayFilmVo> data = this.XRayFilmBiz.findList(query);
+    public ResponseResult<PageInfo<XRayFilmVO>> findList(@RequestBody @Validated XRayFilmQuery query){
+        PageInfo<XRayFilmVO> data = this.XRayFilmBiz.findList(query);
         return ResponseUtil.success(data);
     }
 

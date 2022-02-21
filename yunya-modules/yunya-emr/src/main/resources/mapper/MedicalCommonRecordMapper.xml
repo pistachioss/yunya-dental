@@ -27,24 +27,57 @@
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
-  <select id="findList" resultMap="BaseResultMap">
-    select
-    *
-    from
-    medical_common_record
-    <where>
-      patient_id = #{patientId}
-      <if test="id != null" >
-        and id = #{id}
-      </if>
-		<if test="treatmentId != null" >
-			and treatment_id = #{treatmentId}
-		</if>
-    </where>
-    order by crt_time desc
-  </select>
 
-  <insert id="insertMedical" parameterType="com.yunya.models.emr.MedicalCommonRecord"
+	<select id="findList" resultType="com.yunya.models.emr.MedicalCommonRecord">
+		SELECT
+			mcr.id,
+			mcr.treatment_id AS treatmentId,
+			mcr.patient_id AS patientId,
+			mcr.major_dentist_id AS majorDentistId,
+			mcr.chief_complaint AS chiefComplaint,
+			mcr.present_illness AS presentIllness,
+			mcr.past_history AS pastHistory,
+			mcr.re_examination AS reExamination,
+			mcr.examination,
+			mcr.diagnosis,
+			mcr.plan,
+			mcr.treatment,
+			mcr.prescription,
+			mcr.type,
+			mcr. STATUS,
+			mcr.approval_time AS approvalTime,
+			mcr.time,
+			mcr.crt_id AS crtId,
+			mcr.crt_time AS crtTime,
+			mcr.upd_id AS updId,
+			mcr.upd_time AS updTime
+		FROM medical_common_record mcr
+		<where>
+			mcr.patient_id = #{patientId}
+		  <if test="id != null" >
+			and mcr.id = #{id}
+		  </if>
+			<if test="treatmentId != null" >
+				and mcr.treatment_id = #{treatmentId}
+			</if>
+		</where>
+		order by mcr.crt_time desc
+  	</select>
+
+	<select id="selectMedicalIllnessHistoryById" resultType="com.yunya.models.emr.MedicalCommonRecord">
+		SELECT
+			major_dentist_id AS majorDentistId,
+			chief_complaint AS chiefComplaint,
+			present_illness AS presentIllness,
+			past_history AS pastHistory,
+			examination,
+			diagnosis,
+			plan
+		FROM medical_common_record
+		WHERE id = #{id}
+	</select>
+
+	<insert id="insertMedical" parameterType="com.yunya.models.emr.MedicalCommonRecord"
           useGeneratedKeys="true" keyProperty="id">
      INSERT INTO medical_common_record (
 	id,

@@ -458,8 +458,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     excelUtil.exportExcel(response, resultList, "产品优惠项目明细", "产品优惠项目明细");
   }
 
-  public List<PatientCostInfoVO> findPatientCostInfo(List<Integer> patientIds) {
-    return mapper.selectPatientCostInfo(patientIds);
+  public List<PatientCostInfoVO> findPatientCostInfo(PatientDimensionQueryForm query) {
+    return mapper.selectPatientCostInfo(query);
   }
 
   public List<EmployeeAmountVO> findPatientDebAmount(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {

@@ -14,6 +14,12 @@
     <result column="refund_operator_id" property="refundOperatorId" jdbcType="INTEGER" />
     <result column="refund_date" property="refundDate" jdbcType="TIMESTAMP" />
     <result column="refund_reason" property="refundReason" jdbcType="VARCHAR" />
+    <result column="bill_num" property="billNum" jdbcType="VARCHAR" />
+    <result column="bill_date" property="billDate" jdbcType="TIMESTAMP" />
+    <result column="order_amount" property="orderAmount" jdbcType="DECIMAL" />
+    <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
+    <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
+    <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
   </resultMap>
 
   <select id="selectBillItemRefundListByDate"

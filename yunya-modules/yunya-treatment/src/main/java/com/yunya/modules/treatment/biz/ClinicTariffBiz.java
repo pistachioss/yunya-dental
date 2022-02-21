@@ -32,6 +32,7 @@ import com.yunya.modules.treatment.mapper.ClinicTariffMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -428,6 +429,9 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
   public void exportClinicTariffList(HttpServletResponse response, ClinicTariffQueryForm queryForm)
       throws IOException {
     List<ClinicTariffVO> resultList = findList(queryForm, true).getList();
+    if (!CollectionUtils.isEmpty(resultList)) {
+      resultList.removeIf(clinicTariffVO -> !clinicTariffVO.getInservice());
+    }
     //    List<BaseTariffVO> resultList = mapper.selectClinicTariffExportList(queryForm);
     Integer orgId = queryForm.getOrgId();
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);

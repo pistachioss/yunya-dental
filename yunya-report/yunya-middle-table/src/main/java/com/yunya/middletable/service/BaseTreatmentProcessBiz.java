@@ -31,6 +31,7 @@ import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -109,7 +110,26 @@ public class BaseTreatmentProcessBiz
   private void statisticsEmployeeByTreatDate(BaseTreatmentProcess treatmentProcess) {
     if (!ObjectUtils.isEmpty(treatmentProcess)) {
       if (!ObjectUtils.isEmpty(treatmentProcess.getTreatEndTime())) {
+        updateInMonthNextTreat(treatmentProcess);
         statEmpTreatBiz.statisticsEmployeeByTreatDate(treatmentProcess);
+      }
+    }
+  }
+
+  private void updateInMonthNextTreat(BaseTreatmentProcess treatmentProcess) {
+    Byte treatType = treatmentProcess.getTreatType();
+    if (treatType.intValue() == 1) {
+      String eDate = DateUtil.format(treatmentProcess.getTreatEndTime(), "yyyy-MM-dd");
+      String sDate = DateUtil.preDate(eDate, 29);
+      BaseTreatmentProcess preTreat = mapper.selectOneInMonthAndPreTreat(treatmentProcess.getOrgId(),
+              treatmentProcess.getPatientId(), treatmentProcess.getRegisteredDentistId(), treatmentProcess.getTreatmentId(), sDate, eDate);
+      if (!ObjectUtils.isEmpty(preTreat)) {
+        Integer treatmentId = treatmentProcess.getTreatmentId();
+        if (treatmentProcess.getInMonthNextId() == -1) {// 删除
+          treatmentId = 0;
+        }
+        preTreat.setInMonthNextId(treatmentId);
+        mapper.updateByTreatmentRecordId(preTreat.getTreatmentId(), preTreat);
       }
     }
   }
@@ -438,15 +458,19 @@ public class BaseTreatmentProcessBiz
         mapper.insertSelective(treatmentProcess);
         return treatmentProcess;
       } else {
+        BaseTreatmentProcess treatmentProcess = mapper.selectOneByRegisteredId(registeredId);
+        treatmentProcess.setInMonthNextId(-1);
         BaseTreatmentProcess entity = new BaseTreatmentProcess();
         entity.setRegisteredId(registeredId);
         mapper.delete(entity);
-        return entity;
+        return treatmentProcess;
       }
     } else {
+      BaseTreatmentProcess treatmentProcess = mapper.selectOneByRegisteredId(registeredId);
+      treatmentProcess.setInMonthNextId(-1);
       mapper.deleteByRegisteredId(registeredId);
+      return treatmentProcess;
     }
-    return null;
   }
 
   /**
@@ -456,10 +480,13 @@ public class BaseTreatmentProcessBiz
    */
   private BaseTreatmentProcess deleteTreatmentProcessByAppointmentId(Integer appointmentId) {
     Appointment appointment = appointmentMapper.selectByPrimaryKey(appointmentId);
+    BaseTreatmentProcess process = null;
     if (null == appointment) {
+      process = mapper.selectOneByAppointmentId(appointmentId);
+      process.setInMonthNextId(-1);
       mapper.deleteByAppointmentId(appointmentId);
     } else {
-      BaseTreatmentProcess process = mapper.selectOneByAppointmentId(appointmentId);
+      process = mapper.selectOneByAppointmentId(appointmentId);
       if (null != process) {
         setTreatmentProcessAppointmentValue(process, appointment);
         setTreatmentProcessRegisteredValue(process, appointmentId);
@@ -475,9 +502,8 @@ public class BaseTreatmentProcessBiz
         setTreatmentProcessTreatmentValue(process, treatmentRecord);
         mapper.insertSelective(process);
       }
-      return process;
     }
-    return null;
+    return process;
   }
 
   /**
@@ -695,37 +721,62 @@ public class BaseTreatmentProcessBiz
     }
   }
 
-  /*public void pullTreatDateStatistics(PullForm form) throws InterruptedException {
-    String startDate = form.getStartDate();
-    String endDate = form.getEndDate();
-    List<String> dateRanges = DateUtil.sliceUpDateRange(startDate, endDate);
-    if (StringHelper.isNotEmpty(dateRanges)) {
-      CountDownLatch latch = new CountDownLatch(dateRanges.size());
-      List<Future> resultFutures = new ArrayList<>();
-      for (String date : dateRanges) {
-        resultFutures.add(
-                importExcelThreadPool.submit(
-                        () -> {
-                          try {
-                            // 预约-就诊
-                            Example treatExample = new Example(BaseTreatmentProcess.class);
-                            treatExample
-                                    .createCriteria()
-                                    .andCondition(
-                                            "treat_end_time >= '" + new DateTime(date).toString("yyyy-MM-dd") + "'")
-                                    .andCondition(
-                                            "treat_end_time < '"
-                                                    + new DateTime(date).plusDays(1).toString("yyyy-MM-dd")
-                                                    + "'");
-                            List<BaseTreatmentProcess> datas = mapper.selectByExample(treatExample);
-                            statEmpTreatBiz.pullTreatDateStatistics(datas);
-                          } finally {
-                            latch.countDown();
-                          }
-                        }));
+  public void pullUpdateInMonthNextId() throws Exception {
+    List<BaseTreatmentProcess> list = mapper.selectAllTreatmentList();
+    BaseTreatmentProcess treatmentProcess = list.get(0);
+    Integer markOrgId = treatmentProcess.getOrgId();
+    Integer markDentistId = treatmentProcess.getRegisteredDentistId();
+    Integer markPatientId = treatmentProcess.getPatientId();
+    List<BaseTreatmentProcess> datas = new ArrayList<>();
+    for (int i = 0; i < list.size(); i++) {
+      BaseTreatmentProcess vo = list.get(i);
+      Integer orgId = vo.getOrgId();
+      Integer dentistId = vo.getRegisteredDentistId();
+      Integer patientId = vo.getPatientId();
+      Date treatEndTime = vo.getTreatEndTime();
+      if (i < list.size() - 1) {
+        BaseTreatmentProcess pre = list.get(i + 1);
+        if (markOrgId.equals(orgId) && markDentistId.equals(dentistId) && markPatientId.equals(patientId)) {
+          if (DateUtil.daysBetween(pre.getTreatEndTime(), treatEndTime) <= 30) {
+            pre.setInMonthNextId(vo.getTreatmentId());
+            datas.add(pre);
+          }
+        } else { // 换成成下一批就诊（门诊+医生+患者）比对
+          markOrgId = orgId;
+          markDentistId = dentistId;
+          markPatientId = patientId;
+        }
       }
+    }
+    if (StringHelper.isNotEmpty(datas)) {
+      List<Future> resultFutures = new ArrayList<>();
+      List<List<BaseTreatmentProcess>> partition = Lists.partition(datas, 1000);
+      CountDownLatch latch = new CountDownLatch(partition.size());
+      partition.forEach(data -> resultFutures.add(
+              importExcelThreadPool.submit(() -> {
+                try {
+                  for (BaseTreatmentProcess vo : data) {
+                    vo.setOrgId(null);
+                    vo.setPatientId(null);
+                    vo.setTreatEndTime(null);
+                    vo.setRegisteredDentistId(null);
+                    mapper.updateByTreatmentRecordId(vo.getTreatmentId(), vo);
+                  }
+                } catch (Exception e) {
+                  e.printStackTrace();
+                } finally {
+                  latch.countDown();
+                }
+              })
+      ));
       latch.await();
       printExceptionLog(resultFutures, log);
     }
-  }*/
+  }
+
+  public static void main(String[] args) throws ParseException {
+    Date d1 = DateTime.parse("2021-06-02").toDate();
+    Date d2 = DateTime.parse("2021-07-07").toDate();
+    System.out.println(DateUtil.daysBetween(d2, d1) <= 30);
+  }
 }

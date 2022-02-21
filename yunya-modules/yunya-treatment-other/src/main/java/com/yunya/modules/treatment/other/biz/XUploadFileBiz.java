@@ -2,7 +2,10 @@ package com.yunya.modules.treatment.other.biz;
 
 import cn.hutool.core.io.FileUtil;
 import com.yunya.feign.treatment_other.domain.form.XUploadFileForm;
+import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.model.XUploadFileModel;
+import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
+import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -11,10 +14,12 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment_other.XUploadFile;
+import com.yunya.modules.treatment.other.mapper.XRayFilmMapper;
 import com.yunya.modules.treatment.other.mapper.XUploadFileMapper;
 import com.yunya.modules.treatment.other.utils.TreatmentOtherUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +40,17 @@ import java.util.List;
 @Transactional
 @Slf4j
 public class XUploadFileBiz extends BaseBiz<XUploadFileMapper, XUploadFile> {
+
+    @Autowired
+    private XRayFilmMapper xRayFilmMapper;
+
+    /**
+     * 条件查询上传文件
+     *
+     */
+    public List<XUploadFileVO> findXUploadFileList(XUploadFileQuery query) {
+        return mapper.selectXUploadFileList(query);
+    }
 
     public int addBatch(List<XUploadFileModel> files, Integer sourceId, Byte sourceType, Date now) {
         List<XUploadFile> xUploadFiles = new ArrayList<>();
@@ -120,5 +136,54 @@ public class XUploadFileBiz extends BaseBiz<XUploadFileMapper, XUploadFile> {
             throw new ClientServiceException("数据不存在", OperationCodeConstants.DATA_NOT_EXIST);
         }
         return file;
+    }
+
+    /**
+     * 照片影像拷贝成文件
+     *
+     * @param model
+     */
+    public void saveXRayFile2XUploadFile(MedicalRayFilmModel model) {
+        tombstone(model);
+        Byte sourceType = model.getSourceType();
+        Integer sourceId = model.getMedicalId();
+        // 逻辑删除该病历下的所有照片
+        List<XUploadFileVO> list = model.getRayFiles();
+        if (StringHelper.isNotEmpty(list)) {
+            Integer crtId = model.getCrtId();
+            Date crtTime = model.getCrtTime();
+            List<XUploadFile> datas = new ArrayList<>();
+            list.forEach(vo->{
+                String location = vo.getFileLocation();
+                String extName = FileUtil.extName(location);
+                Byte fileType = FileTypeEnum.getCode(extName);
+                XUploadFile entity = new XUploadFile();
+                entity.setSourceId(sourceId);
+                entity.setSourceType(sourceType);
+                entity.setFileLocation(location);
+                entity.setFileType(fileType);
+                entity.setFileName(vo.getFileName());
+                entity.setUploadTime(vo.getUploadTime());
+                entity.setCrtId(crtId);
+                entity.setCrtTime(crtTime);
+                entity.setUpdId(crtId);
+                entity.setUpdTime(crtTime);
+                datas.add(entity);
+            });
+            mapper.addBatch(datas);
+        }
+    }
+
+    /**
+     * 根据条件逻辑删除文件
+     *
+     * @param model
+     */
+    private void tombstone(MedicalRayFilmModel model) {
+        XUploadFile fileQuery = new XUploadFile();
+        fileQuery.setInservice(true);
+        fileQuery.setSourceId(model.getMedicalId());
+        fileQuery.setSourceType(model.getSourceType());
+        mapper.updateUnvaildByEntity(fileQuery, model.getCrtId(), model.getCrtTime());
     }
 }

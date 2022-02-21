@@ -19,6 +19,8 @@ import java.io.Serializable;
 @ToString
 @ApiModel("患者信息VO")
 public class PatientVO implements Serializable {
+    @ApiModelProperty("门诊id")
+    private Integer orgId;
 
     @ApiModelProperty("患者ID")
     private Integer patientId;

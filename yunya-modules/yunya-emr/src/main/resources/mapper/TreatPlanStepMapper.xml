@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.emr.mapper.TreatPlanStepMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.emr.TreatPlanStep" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="plan_id" property="planId" jdbcType="INTEGER" />
+    <result column="step_name" property="stepName" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <!--根据治疗计划id查询治疗计划步骤列表-->
+  <select id="selectTreatPlanStepByPlanId" resultType="com.yunya.feign.emr.domain.vo.TreatPlanStepVO">
+    SELECT
+        id AS treatPlanStepId,
+        plan_id AS planId,
+        step_name AS stepName
+    FROM treat_plan_step
+    WHERE
+      plan_id in
+      <foreach collection="planIds" item="item" index="index" open="(" close=")" separator=",">
+        #{item}
+      </foreach>
+  </select>
+</mapper>

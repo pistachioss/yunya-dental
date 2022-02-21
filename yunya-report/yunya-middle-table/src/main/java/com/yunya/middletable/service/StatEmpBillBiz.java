@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -73,7 +74,7 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
             });
             if (StringHelper.isNotEmpty(executorIds)) {
                 List<BillExecutorItemVO> details = baseBillDetailMapper.selectBillDetailByDateAndExecutorId(orgId,
-                        billDate, null, executorIds);
+                        billDate, null, null, executorIds);
                 details = statEmpPayBiz.statisticsExecutorItem(details, keys, (vo)-> vo.getExecutorId() + "," + vo.getItemType() + "," + vo.getItemId());
                 if (StringHelper.isNotEmpty(details)) {
                     Integer crtId = bill.getBillerId();
@@ -91,7 +92,6 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
                             entity.setQuantity(vo.getQuantity());
                             entity.setReceivableWorkload(vo.getReceivableWorkload());
                             entity.setReceivedWorkload(vo.getReceivedWorkload());
-                            entity.setCouponWorkload(vo.getCouponWorkload());
                             entity.setCrtId(crtId);
                             entity.setCrtTime(date);
                             mapper.insertSelective(entity);
@@ -113,7 +113,8 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
         Date now = new Date(System.currentTimeMillis());
         String startDate = form.getStartDate();
         String endDate = form.getEndDate();
-        List<BillExecutorItemVO> details = baseBillDetailMapper.groupBillItemDetailListByBillDate(startDate, endDate);
+        deleteData(startDate, endDate);
+        List<BillExecutorItemVO> details = baseBillDetailMapper.groupBillItemDetailListByDate(startDate, endDate, 0);
         if (StringHelper.isNotEmpty(details)) {
             List<StatEmpBill> datas = new ArrayList<>();
             details.forEach(vo -> {
@@ -122,7 +123,6 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
                 entity.setDentistId(vo.getExecutorId());
                 entity.setReceivableWorkload(vo.getReceivableWorkload());
                 entity.setReceivedWorkload(vo.getReceivedWorkload());
-                entity.setCouponWorkload(vo.getCouponWorkload());
                 entity.setItemType(vo.getItemType());
                 entity.setItemId(vo.getItemId());
                 entity.setQuantity(vo.getQuantity());
@@ -146,6 +146,21 @@ public class StatEmpBillBiz extends BaseBiz<StatEmpBillMapper, StatEmpBill> {
             latch.await();
             BaseTreatmentProcessBiz.printExceptionLog(resultFutures, log);
         }
+    }
+
+    /**
+     * 清掉旧数据
+     *
+     * @param startDate
+     * @param endDate
+     */
+    private void deleteData(String startDate, String endDate) {
+        Example example = new Example(StatEmpBill.class);
+        Example.Criteria c = example.createCriteria();
+        Integer sDateInt = Integer.parseInt(StringHelper.remove(startDate,"-"));
+        Integer eDateInt = Integer.parseInt(StringHelper.remove(endDate,"-"));
+        c.andBetween("billDate", sDateInt, eDateInt);
+        mapper.deleteByExample(example);
     }
 
     /**

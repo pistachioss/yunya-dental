@@ -17,6 +17,7 @@ import com.yunya.feign.treatment.domain.model.BaseOralTariffModel;
 import com.yunya.feign.treatment.domain.model.ClinicItemPriceModel;
 import com.yunya.feign.treatment.domain.model.TariffUniteModel;
 import com.yunya.feign.treatment.domain.query.BaseOralTariffQueryForm;
+import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffExportVO;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffInfoVO;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffVO;

@@ -75,4 +75,7 @@ public class CardCouponUsedDetailVO implements Serializable {
 //    @Excel(name = "项目类型")
     @ApiModelProperty("项目类型")
     private String itemCategoryName;
+
+    /** 激活门诊*/
+    private Integer activeOrgId;
 }

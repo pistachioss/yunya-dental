@@ -2,6 +2,9 @@ package com.yunya.modules.treatment.biz;
 
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.emr.RemoteEmrServiceFeign;
+import com.yunya.feign.emr.domain.model.TreatPlanDetailWriteoffInfoModel;
+import com.yunya.feign.emr.domain.model.TreatPlanDetailWriteoffModel;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -45,6 +48,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -113,6 +117,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   @Autowired private ClinicTariffMemberPriceBiz clinicTariffMemberPriceBiz;
   /** 门诊商品项目会员价 */
   @Autowired private ClinicOralTariffMemberPriceBiz clinicOralTariffMemberPriceBiz;
+  /** 电子病历 */
+  @Autowired private RemoteEmrServiceFeign remoteEmrServiceFeign;
+
   /**
    * 根据就诊ID查询开单详情信息
    *
@@ -273,6 +280,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderRecord.setTreatmentRecordId(treatmentRecordId);
     OrderRecord orderResult = mapper.selectOne(orderRecord);
     Integer orderRecordId;
+    int result = 0;
+    int operateType = 0;
+    List<Integer> deletedDetailIds = null;
     if (null == orderResult) {
       orderRecord.setOrgId(treatmentRecordOrgId);
       String orderRecordNumber = generateOrderRecordNumber(treatmentRecordOrgId);
@@ -281,7 +291,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       orderRecord.setTotalAmount(totalAmount);
       orderRecord.setCrtId(userId);
       orderRecord.setCrtName(name);
-      int result = mapper.insertSelective(orderRecord);
+      result = mapper.insertSelective(orderRecord);
       orderRecordId = orderRecord.getId();
       if (StringHelper.isNotEmpty(orderDetails)) {
         orderDetails.forEach(
@@ -289,18 +299,19 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
               detail.setOrderRecordId(orderRecordId);
               orderDetailBiz.insertSelective(detail);
             });
-        if (result > 0) {
-          rabbitMqServiceFeign.sendMessage(orderRecordId, 0, BaseBill);
-        }
       }
     } else {
       orderResult.setTotalAmount(totalAmount);
       orderResult.setUpdId(userId);
       orderResult.setUpdName(name);
-      int result = mapper.updateByPrimaryKeySelective(orderResult);
+      result = mapper.updateByPrimaryKeySelective(orderResult);
       orderRecordId = orderResult.getId();
       OrderDetail orderDetail = new OrderDetail();
       orderDetail.setTreatmentRecordId(treatmentRecordId);
+      List<OrderDetail> deletedDetails = orderDetailBiz.selectList(orderDetail);
+      if (StringHelper.isNotEmpty(deletedDetails)) {
+        deletedDetailIds = deletedDetails.stream().map(OrderDetail::getId).collect(Collectors.toList());
+      }
       orderDetailBiz.delete(orderDetail);
       if (StringHelper.isNotEmpty(orderDetails)) {
         orderDetails.forEach(
@@ -308,10 +319,12 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
               detail.setOrderRecordId(orderRecordId);
               orderDetailBiz.insertSelective(detail);
             });
-        if (result > 0) {
-          rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
-        }
+        operateType = 1;
       }
+    }
+    int detailSize = saveTreatPlanDetailWriteoffQuanity(orderDetails, models, deletedDetailIds);
+    if (result > 0 && detailSize > 0) {
+      rabbitMqServiceFeign.sendMessage(orderRecordId, operateType, BaseBill);
     }
     Integer assistantId1 = model.getAssistantId1();
     Integer assistantId2 = model.getAssistantId2();
@@ -332,6 +345,43 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       rabbitMqServiceFeign.sendMessage(registeredId, 1, 1, BaseTreatmentProcess);
     }
     redisUtils.delete(orderKey);
+  }
+
+  /**
+   * 生成治疗计划与订单项目核销数据
+   *
+   * @param orderDetails
+   * @param models
+   * @param deletedDetailIds
+   * @return
+   */
+  private int saveTreatPlanDetailWriteoffQuanity(
+      List<OrderDetail> orderDetails, List<OrderDetailModel> models, List<Integer> deletedDetailIds) {
+    if (StringHelper.isNotEmpty(models) && StringHelper.isNotEmpty(orderDetails)) {
+      TreatPlanDetailWriteoffModel model = new TreatPlanDetailWriteoffModel();
+      List<TreatPlanDetailWriteoffInfoModel> list = new ArrayList<>();
+      orderDetails.forEach(detail->{
+        Integer billingItemId = detail.getBillingItemId();
+        Byte type = detail.getType();
+        models.forEach(vo->{
+          List<Integer> planDetailIds = vo.getPlanDetailIds();
+          if (!ObjectUtils.isEmpty(planDetailIds)
+                  && vo.getBillingItemId().equals(billingItemId) && vo.getType().equals(type)) {
+            TreatPlanDetailWriteoffInfoModel obj = new TreatPlanDetailWriteoffInfoModel();
+            obj.setTreatmentId(detail.getTreatmentRecordId());
+            obj.setQuantity(detail.getQuantity());
+            obj.setOrderDetailId(detail.getId());
+            obj.setPlanDetailIds(planDetailIds);
+            obj.setCrtId(detail.getCrtId());
+            list.add(obj);
+          }
+        });
+      });
+      model.setWriteoffInfoModels(list);
+      model.setDeletedOrderDetailIds(deletedDetailIds);
+      remoteEmrServiceFeign.treatPlanWriteOffQunatity(model);
+    }
+    return orderDetails.size();
   }
 
   /**
@@ -515,13 +565,14 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     Integer orgId = orderRecord.getOrgId();
     OrderDetail orderDetail = new OrderDetail();
     orderDetail.setOrderRecordId(orderRecordId);
+    List<OrderDetail> details = orderDetailBiz.selectList(orderDetail);
+    List<Integer> deletedDetailIds = details.stream().map(OrderDetail::getId).collect(Collectors.toList());
     orderDetailBiz.delete(orderDetail);
 
     List<OrderDetail> orderDetails =
         orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, models);
     List<VisitingRecord> visitingRecordList = new ArrayList<>();
     if (StringHelper.isNotEmpty(orderDetails)) {
-      treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
       orderDetails.forEach(
           detail -> {
             detail.setOrderRecordId(orderRecordId);
@@ -534,6 +585,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
                   .collect(Collectors.toCollection(() -> orderDetailVisitRecord));
             }
           });
+    }
+    int detailSize = saveTreatPlanDetailWriteoffQuanity(orderDetails, models, deletedDetailIds);
+    if (detailSize > 0) {
+      treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
       // 设置分组计划
       treatmentRecordBiz.saveOrderDetailVisitRecord(visitingRecordList);
     }
@@ -599,6 +654,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderDetail.setOrderRecordId(orderRecordId);
     orderDetail.setInservice(true);
     List<OrderDetail> orderDetailsData = orderDetailBiz.selectList(orderDetail);
+    List<Integer> deletedDetailIds = orderDetailsData.stream().map(OrderDetail::getId).collect(Collectors.toList());
     // 获取调整后的开单明细，并比较是否有修改
     List<OrderDetailModel> detailModels = model.getOrderDetailModels();
     if (orderDetailsData.size() == detailModels.size()) {
@@ -626,8 +682,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     exceptionHandleRecord.setCrtId(userId);
     exceptionHandleRecord.setCrtName(name);
     billExceptionHandleRecordMapper.insertSelective(exceptionHandleRecord);
-    // 将优惠置为不可用
-    discountFeign.revokeBenefit(orderRecordId);
     // 保存异常处理明细记录
     Integer handleRecordId = exceptionHandleRecord.getId();
     BillExceptionHandleDetailRecord handleDetailRecord = new BillExceptionHandleDetailRecord();
@@ -650,12 +704,14 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderRecord.setInservice(false);
     orderRecord.setUpdId(userId);
     orderRecord.setUpdName(name);
-    int i = mapper.updateByPrimaryKeySelective(orderRecord);
+    mapper.updateByPrimaryKeySelective(orderRecord);
     // 更新账单为无效
     billRecord.setInservice(false);
     billRecord.setUpdId(userId);
     billRecord.setUpdName(name);
-    billRecordMapper.updateByPrimaryKeySelective(billRecord);
+    int i = billRecordMapper.updateByPrimaryKeySelective(billRecord);
+    // 将优惠置为不可用
+    discountFeign.revokeBenefit(orderRecordId);
     // 发送消息同步中间表账单数据
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 2, BaseBill);
@@ -683,6 +739,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       detail.setOrderRecordId(orderRecordId);
       orderDetailBiz.insertSelective(detail);
     }
+    saveTreatPlanDetailWriteoffQuanity(orderDetails, detailModels, deletedDetailIds);
     // 发送消息同步中间表账单数据
     if (result > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 0, BaseBill);

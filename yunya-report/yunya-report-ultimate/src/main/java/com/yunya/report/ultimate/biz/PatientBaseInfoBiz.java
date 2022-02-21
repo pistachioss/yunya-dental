@@ -94,7 +94,7 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
       patientDataVo.setNumberOfVisits(appointmentInfo.getNumberOfVisits());
     }
     // 患者消费
-    List<PatientCostInfoVO> costInfos = billMapper.selectPatientCostInfo(Collections.singleton(patientId));
+    List<PatientCostInfoVO> costInfos = billMapper.selectPatientCostInfoById(Collections.singleton(patientId));
     if (StringHelper.isNotEmpty(costInfos)) {
       PatientCostInfoVO costInfo = costInfos.get(0);
       patientDataVo.setCumulativeConsumption(costInfo.getCumulativeConsumption());

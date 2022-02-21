@@ -61,6 +61,19 @@ public class BaseTreatmentProcessController {
   }
 
   /**
+   * 拉取就诊完成的数据并更新中间表base_treatment_process.in_month_next_id
+   *
+   * @return
+   */
+  @ApiOperation("拉取就诊完成的数据并更新中间表base_treatment_process.in_month_next_id")
+  @PostMapping(value = "/operate/inMonthNextId", name = "form")
+  public ResponseResult<T> pullUpdateInMonthNextId()
+      throws Exception {
+    treatmentProcessBiz.pullUpdateInMonthNextId();
+    return ResponseUtil.success(null);
+  }
+
+  /**
    * 根据消息操作中间表就诊完成时统计
    *
    * @param msg 消息

@@ -11,8 +11,9 @@ import java.util.Objects;
  * @since: 1.0.0
  */
 public enum FileSourceTypeEnum {
+    OTHER("其他", (byte)0),
     TREAT_PLAN("治疗计划", (byte)1),
-    OTHER("其他", (byte)2);
+    MEDICAL_COMMON("普通电子病历", (byte)2);
 
     private final String value;
     private final Byte code;

@@ -11,6 +11,7 @@ import com.yunya.feign.clinic_base.domain.vo.BusinessGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.feign.report.domain.bo.ClinicWorkloadGroupInfoVO;
 import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -254,16 +255,16 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                     vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0
                         && userIds.containsKey(vo.getExecutorId() + "," + vo.getOrgId()))
             .collect(Collectors.toList());
-    query.setBillIds(computePercentage(details));
+    Map<Integer, BigDecimal[]> billAmountMap = computePercentage(details);
+    query.setBillIds(billAmountMap.keySet());
     Map<Integer, BigDecimal> freePaymentMap = sumFreePaymentMap(query);
     details.forEach(
         detail -> {
           String key = detail.getExecutorId() + "," + detail.getOrgId();
           if (userIds.containsKey(key)) {
             Integer billId = detail.getBillId();
-            BigDecimal free = freePaymentMap.get(billId);
-            BigDecimal amount =
-                detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+            BigDecimal free = defaultFree(freePaymentMap.get(billId),billAmountMap.get(billId));
+            BigDecimal amount = detail.getCouponWorkload().multiply(free);
             userIds.put(key, amount.add(userIds.get(key)));
           }
         });
@@ -775,7 +776,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           details.stream()
               .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
               .collect(Collectors.toList());
-      computePercentage(details);
+      Map<Integer, BigDecimal[]> billAmountMap = computePercentage(details);
       Map<Integer, List<BaseBillPayDetailVO>> freePaymentMap =
           sumFreePaymentMapByBillPayIds(billPayIds);
       details.forEach(
@@ -787,9 +788,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
               list.forEach(
                   vo -> {
                     Integer billPayId = vo.getBillPayId();
-                    BigDecimal free = vo.getPrincipalAmount();
+                    BigDecimal free = defaultFree(vo.getPrincipalAmount(), billAmountMap.get(billId));
                     BigDecimal amount =
-                        detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+                        detail.getCouponWorkload().multiply(free);
                     billPayIdMap.put(billPayId, amount.add(billPayIdMap.get(billPayId)));
                   });
             }
@@ -873,9 +874,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param details
    * @return
    */
-  private Set<Integer> computePercentage(List<BaseBillDetail> details) {
-    Set<Integer> billIds = new HashSet<>();
-    // 每个账单的执行实收总额
+  private Map<Integer, BigDecimal[]> computePercentage(List<BaseBillDetail> details) {
+    // 每个账单的执行实收总额：账单应收总额，免单应收总额
     Map<Integer, BigDecimal[]> total = new HashMap<>(16);
     details.forEach(
         detail -> {
@@ -884,24 +884,28 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           if (sum == null) {
             sum = new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO};
           }
-          sum[0] = sum[0].add(detail.getReceivedAmount());
+          sum[0] = detail.getDiscountAmount();
+          sum[1] = sum[1].add(detail.getReceivedAmount());
           total.put(billId, sum);
-          billIds.add(billId);
         });
     details.forEach(
         detail -> {
+          // 项目应收金额
           BigDecimal receivedAmount = detail.getReceivedAmount();
           Integer billId = detail.getBillId();
           BigDecimal[] sum = total.get(billId);
-          sum[1] = sum[1].add(receivedAmount);
-          BigDecimal amount = receivedAmount.divide(sum[0], 2, BigDecimal.ROUND_HALF_UP);
-          if (sum[0].compareTo(sum[1]) == 0) { // 最后一个占比项目
-            amount = BigDecimal.ONE.subtract(sum[2]);
+          BigDecimal receivedRatio = BigDecimal.ZERO;
+          if (sum[0].compareTo(BigDecimal.ZERO) != 0) {
+            receivedRatio = receivedAmount.divide(sum[0], 8, BigDecimal.ROUND_HALF_UP);
           }
-          sum[2] = sum[2].add(amount);
-          detail.setDiscountAmount(amount);
+          BigDecimal freePaymentRatio = BigDecimal.ZERO;
+          if (sum[1].compareTo(BigDecimal.ZERO) != 0) {
+            freePaymentRatio = receivedAmount.divide(sum[1], 8, BigDecimal.ROUND_HALF_UP);
+          }
+          detail.setDiscountAmount(receivedRatio);// 实收项目占比
+          detail.setCouponWorkload(freePaymentRatio);// 免单项目占比
         });
-    return billIds;
+    return total;
   }
 
   /**
@@ -947,19 +951,20 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           details.stream()
               .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
               .collect(Collectors.toList());
-      computePercentage(details);
-      BaseBillPayDetailVO free = sumFreePayments(query.getBillPayId());
+      Map<Integer, BigDecimal[]> billAmountMap = computePercentage(details);
+      BaseBillPayDetailVO freeVO = sumFreePayments(query.getBillPayId());
       Map<String, BigDecimal> amounts = new HashMap<>(16);
       for (BaseBillDetail detail : details) {
         Integer executorId = detail.getExecutorId();
         Integer itemId = detail.getItemId();
         Byte itemType = detail.getItemType();
         if (query.getEmployeeId().equals(executorId)) {
+          BigDecimal free = defaultFree(freeVO.getPrincipalAmount(), billAmountMap.get(detail.getBillId()));
           amounts.put(
               itemId + "," + itemType,
               detail
-                  .getDiscountAmount()
-                  .multiply(free == null ? BigDecimal.ZERO : free.getPrincipalAmount()));
+                  .getCouponWorkload()
+                  .multiply(free));
         }
       }
       resultList.forEach(
@@ -1608,6 +1613,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public DynamicHeaderPageInfo<JSONObject> clinicFirstVisitSourceList(
       ClinicPerformanceBusinessQuery query) {
+    query.setWhetherPage(false);
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
@@ -2153,7 +2159,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             details.stream()
                 .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
                 .collect(Collectors.toList());
-        computePercentage(details);
+        Map<Integer, BigDecimal[]> billAmountMap = computePercentage(details);
         EmployeeWorkloadQuery query = new EmployeeWorkloadQuery();
         query.setDateType((byte) 1);
         query.setStartDate(queryFrom.getQueryDate());
@@ -2164,9 +2170,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             detail -> {
               String key = itemMap.get(detail.getItemType() + "," + detail.getItemId());
               Integer billId = detail.getBillId();
-              BigDecimal free = freePaymentMap.get(billId);
-              BigDecimal amount =
-                  detail.getDiscountAmount().multiply(free == null ? BigDecimal.ZERO : free);
+              BigDecimal free = defaultFree(freePaymentMap.get(billId), billAmountMap.get(billId));
+              BigDecimal amount = detail.getCouponWorkload().multiply(free);
               BigDecimal freeAmount = frees.get(key);
               if (freeAmount == null) {
                 freeAmount = BigDecimal.ZERO;
@@ -2188,8 +2193,18 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
   }
 
-  /**
-   * 根据条件查询非本月免单金额列表
+    private BigDecimal defaultFree(BigDecimal free, BigDecimal[] billAmount) {
+      if (ObjectUtils.isEmpty(free) || StringHelper.isEmpty(billAmount)) {
+          return BigDecimal.ZERO;
+      }
+      if (free.compareTo(billAmount[1]) >= 0) {
+          return billAmount[1];
+      }
+      return free;
+    }
+
+    /**
+   * 根据条件查询非本期免单金额列表
    *
    * @param query
    * @return
@@ -2267,7 +2282,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
               details.stream()
                   .filter(vo -> vo.getReceivedAmount().compareTo(BigDecimal.ZERO) > 0)
                   .collect(Collectors.toList());
-          computePercentage(details);
+          Map<Integer, BigDecimal[]> billAmountMap = computePercentage(details);
           Map<Integer, List<BaseBillPayDetailVO>> freePaymentMap =
               sumFreePaymentMapByBillPayIds(billPayIds.keySet());
           Map<String, BigDecimal> freeMap = new LinkedHashMap<>(16);
@@ -2281,11 +2296,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
                       vo -> {
                         Integer billPayId = vo.getBillPayId();
                         String key = billId + "," + billPayId + "," + cid;
-                        BigDecimal free = vo.getPrincipalAmount();
-                        BigDecimal amount =
-                            detail
-                                .getDiscountAmount()
-                                .multiply(free == null ? BigDecimal.ZERO : free);
+                        BigDecimal free = defaultFree(vo.getPrincipalAmount(),billAmountMap.get(billId));
+                        BigDecimal amount = detail.getCouponWorkload().multiply(free);
                         BigDecimal freeAmount = freeMap.get(key);
                         if (freeAmount == null) {
                           freeAmount = BigDecimal.ZERO;
@@ -2361,7 +2373,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-   * 根据条件导出非本月免单金额明细列表
+   * 根据条件导出非本期免单金额明细列表
    *
    * @param response 响应
    * @param query 查询条件
@@ -2375,8 +2387,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     String fileName =
         excelUtil.getFileName(
-            query.getQueryDate(), "", organization.getAbbreviation(), "非本月免单金额明细");
-    excelUtil.exportExcel(response, list, "非本月免单金额明细", fileName);
+            query.getQueryDate(), "", organization.getAbbreviation(), "非本期免单金额明细");
+    excelUtil.exportExcel(response, list, "非本期免单金额明细", fileName);
   }
 
   /**
@@ -2394,8 +2406,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     String fileName =
         excelUtil.getFileName(
-            query.getQueryDate(), "", organization.getAbbreviation(), "非本月优惠金额明细");
-    excelUtil.exportExcel(response, list, "非本月优惠金额明细", fileName);
+            query.getQueryDate(), "", organization.getAbbreviation(), "非本期优惠金额明细");
+    excelUtil.exportExcel(response, list, "非本期优惠金额明细", fileName);
   }
 
   /**
@@ -2670,11 +2682,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     excelUtil.exportExcel(response, resultList, "个人开单项目实收明细表", fileName);
   }
 
-    public List<PersonalBillItemVO> findBillItemNumByPatientId(List<Integer> patientIds) {
-        return mapper.selectBillItemNumByPatientId(patientIds);
+    public List<PersonalBillItemVO> findBillItemNumByQuery(PatientDimensionQueryForm query) {
+        return mapper.selectBillItemNumByQuery(query);
     }
 
-    public List<PersonalBillItemVO> findExecutorBillItem(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {
-      return mapper.selectExecutorBillItem(query, groupByOrgId);
+    public List<StatEmpBill> findBillingOralItemList(MultiClinicDateRangeQueryForm query) {
+        return mapper.selectBillingOralItemList(query);
     }
 }

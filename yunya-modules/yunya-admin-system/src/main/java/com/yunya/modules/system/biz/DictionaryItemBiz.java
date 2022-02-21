@@ -58,6 +58,7 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
       throw new ClientServiceException(
           "添加字典数据'" + name + "'失败，该字典下已存在相同名称数据", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
+    entity.setDictionaryTypeId(dictTypeId);
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setCrtName(BaseContextHandler.getName());
     mapper.insertSelective(entity);

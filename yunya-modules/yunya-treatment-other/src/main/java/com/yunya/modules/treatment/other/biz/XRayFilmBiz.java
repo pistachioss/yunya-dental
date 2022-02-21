@@ -8,7 +8,7 @@ import com.yunya.feign.treatment_other.domain.query.ToothRootQuery;
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
 import com.yunya.feign.treatment_other.domain.vo.ToothRootCountVo;
 import com.yunya.feign.treatment_other.domain.vo.ToothRootVo;
-import com.yunya.feign.treatment_other.domain.vo.XRayFilmVo;
+import com.yunya.feign.treatment_other.domain.vo.XRayFilmVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -38,11 +38,11 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
      * @param query 查询条件
      * @return 返回数据列表
      */
-    public PageInfo<XRayFilmVo> findList(XRayFilmQuery query){
+    public PageInfo<XRayFilmVO> findList(XRayFilmQuery query){
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
-        List<XRayFilmVo> data = mapper.findList(query);
+        List<XRayFilmVO> data = mapper.findList(query);
         return new PageInfo<>(data);
     }
 

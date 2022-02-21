@@ -10,6 +10,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 简介: 开单详情参数模型
@@ -52,4 +53,8 @@ public class OrderDetailModel implements Serializable {
   @ApiModelProperty("备注")
   @Size(max = 150, message = "开单备注最多150个字符！")
   private String remarks;
+
+  /** 治疗计划详情id列表 */
+  @ApiModelProperty("治疗计划详情id列表")
+  private List<Integer> planDetailIds;
 }

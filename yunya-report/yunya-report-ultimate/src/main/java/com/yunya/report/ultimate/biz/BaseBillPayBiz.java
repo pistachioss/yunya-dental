@@ -830,7 +830,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   }
 
   /**
-   * 根据条件查询账单收费（本月账单本月首次收费）详情信息列表
+   * 根据条件查询账单收费（本期账单本期首次收费）详情信息列表
    *
    * @param query 查询条件
    * @return PageInfo<StatementBillChargeDetailVO>
@@ -846,7 +846,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   }
 
   /**
-   * 根据条件导出门诊账单收费（本月）明细列表
+   * 根据条件导出门诊账单收费（本期）明细列表
    *
    * @param response http响应
    * @param query 查询条件
@@ -860,7 +860,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     // 构建导出数据列表
     List<StatementBillChargeDetailExportVO> exportList =
             buildStatementBillChargeDetailExportList(resultList);
-    String fileName = "门诊账单收费（本月）明细列表";
+    String fileName = "门诊账单收费（本期）明细列表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName =
@@ -868,11 +868,11 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                       "{0}{1}-{2}{3}",
                       organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), fileName);
     }
-    excelUtil.exportExcel(response, exportList, "门诊账单收费（本月）明细", fileName);
+    excelUtil.exportExcel(response, exportList, "门诊账单收费（本期）明细", fileName);
   }
 
   /**
-   * 根据条件查询账单收欠费（本月账单本月收费）详情信息列表
+   * 根据条件查询账单收欠费（本期账单本期收费）详情信息列表
    *
    * @param query 查询条件
    * @return PageInfo<StatementBillChargeDetailVO>
@@ -889,7 +889,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   }
 
   /**
-   * 根据条件导出账单收欠费（本月账单本月收费）详情信息列表
+   * 根据条件导出账单收欠费（本期账单本期收费）详情信息列表
    *
    * @param response 响应
    * @param query 查询条件
@@ -903,7 +903,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     // 构建导出数据列表
     List<StatementBillChargeDetailExportVO> exportList =
             buildStatementBillChargeDetailExportList(resultList);
-    String fileName = "门诊账单收欠费（本月）明细列表";
+    String fileName = "门诊账单收欠费（本期）明细列表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName =
@@ -911,11 +911,11 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                       "{0}{1}-{2}{3}",
                       organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), fileName);
     }
-    excelUtil.exportExcel(response, exportList, "门诊账单收欠费（本月）明细", fileName);
+    excelUtil.exportExcel(response, exportList, "门诊账单收欠费（本期）明细", fileName);
   }
 
   /**
-   * 根据条件查询账单收欠费（非本月账单本月收费）详情信息列表
+   * 根据条件查询账单收欠费（非本期账单本期收费）详情信息列表
    *
    * @param query 查询条件
    * @return PageInfo<StatementBillChargeDetailVO>
@@ -932,7 +932,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   }
 
   /**
-   * 根据条件导出账单收欠费（非本月账单本月收费）详情信息列表
+   * 根据条件导出账单收欠费（非本期账单本期收费）详情信息列表
    *
    * @param response http响应
    * @param query 查询条件
@@ -946,7 +946,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     // 构建导出数据列表
     List<StatementBillChargeDetailExportVO> exportList =
             buildStatementBillChargeDetailExportList(resultList);
-    String fileName = "门诊账单收欠费（非本月）明细列表";
+    String fileName = "门诊账单收欠费（非本期）明细列表";
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
     if (null != organization) {
       fileName =
@@ -954,7 +954,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                       "{0}{1}-{2}{3}",
                       organization.getAbbreviation(), query.getStartDate(), query.getEndDate(), fileName);
     }
-    excelUtil.exportExcel(response, exportList, "门诊账单收欠费（非本月）明细", fileName);
+    excelUtil.exportExcel(response, exportList, "门诊账单收欠费（非本期）明细", fileName);
   }
 
   /**
@@ -975,7 +975,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   }
 
   /**
-   * 根据条件导出诊所代收(本月)记录明细
+   * 根据条件导出诊所代收(本期)记录明细
    *
    * @param response 响应
    * @param query 查询条件
@@ -990,16 +990,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     ExcelUtil<StatementBillChargeDetailExportVO> excelUtil =
             new ExcelUtil<>(StatementBillChargeDetailExportVO.class);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
-    String fileName = "诊所代收(本月)记录明细列表";
+    String fileName = "诊所代收(本期)记录明细列表";
     if (null != organization) {
       String abbreviation = organization.getAbbreviation();
       fileName = abbreviation + fileName;
     }
-    excelUtil.exportExcel(response, exportList, "诊所代收(本月)记录明细", fileName);
+    excelUtil.exportExcel(response, exportList, "诊所代收(本期)记录明细", fileName);
   }
 
   /**
-   * 根据条件查询门诊账单代（非本月）收详情信息列表
+   * 根据条件查询门诊账单代（非本期）收详情信息列表
    *
    * @param query 查询条件
    * @return PageInfo<StatementBillChargeDetailVO>
@@ -1016,7 +1016,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   }
 
   /**
-   * 根据条件导出诊所代收(非本月)记录明细
+   * 根据条件导出诊所代收(非本期)记录明细
    *
    * @param response 响应
    * @param query 查询条件
@@ -1031,16 +1031,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     ExcelUtil<StatementBillChargeDetailExportVO> excelUtil =
             new ExcelUtil<>(StatementBillChargeDetailExportVO.class);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
-    String fileName = "诊所代收(非本月)记录明细列表";
+    String fileName = "诊所代收(非本期)记录明细列表";
     if (null != organization) {
       String abbreviation = organization.getAbbreviation();
       fileName = abbreviation + fileName;
     }
-    excelUtil.exportExcel(response, exportList, "诊所代收(非本月)记录明细", fileName);
+    excelUtil.exportExcel(response, exportList, "诊所代收(非本期)记录明细", fileName);
   }
 
   /**
-   * 根据条件查询诊所被代收账（本月）明细列表
+   * 根据条件查询诊所被代收账（本期）明细列表
    *
    * @param query 查询条件
    * @return PageInfo<StatementBillChargeDetailVO>
@@ -1057,7 +1057,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   }
 
   /**
-   * 根据条件导出诊所被代收帐(本月)记录明细
+   * 根据条件导出诊所被代收帐(本期)记录明细
    *
    * @param response 响应
    * @param query 查询条件
@@ -1072,16 +1072,16 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     ExcelUtil<StatementBillChargeDetailExportVO> excelUtil =
             new ExcelUtil<>(StatementBillChargeDetailExportVO.class);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
-    String fileName = "诊所被代收账(本月)记录明细列表";
+    String fileName = "诊所被代收账(本期)记录明细列表";
     if (null != organization) {
       String abbreviation = organization.getAbbreviation();
       fileName = abbreviation + fileName;
     }
-    excelUtil.exportExcel(response, exportList, "诊所被代收账(本月)记录明细", fileName);
+    excelUtil.exportExcel(response, exportList, "诊所被代收账(本期)记录明细", fileName);
   }
 
   /**
-   * 根据条件查询诊所被代收账（非本月）明细列表
+   * 根据条件查询诊所被代收账（非本期）明细列表
    *
    * @param query 查询条件
    * @return PageInfo<StatementBillChargeDetailVO>
@@ -1098,7 +1098,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   }
 
   /**
-   * 根据条件导出诊所被代收帐(非本月)记录明细
+   * 根据条件导出诊所被代收帐(非本期)记录明细
    *
    * @param response 响应
    * @param query 查询条件
@@ -1113,12 +1113,12 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     ExcelUtil<StatementBillChargeDetailExportVO> excelUtil =
             new ExcelUtil<>(StatementBillChargeDetailExportVO.class);
     BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
-    String fileName = "诊所被代收账(非本月)记录明细列表";
+    String fileName = "诊所被代收账(非本期)记录明细列表";
     if (null != organization) {
       String abbreviation = organization.getAbbreviation();
       fileName = abbreviation + fileName;
     }
-    excelUtil.exportExcel(response, exportList, "诊所被代收账(非本月)记录明细", fileName);
+    excelUtil.exportExcel(response, exportList, "诊所被代收账(非本期)记录明细", fileName);
   }
 
   /**

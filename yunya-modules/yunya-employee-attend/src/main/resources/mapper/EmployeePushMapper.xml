@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.employeeattend.mapper.EmployeePushMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.EmployeePush">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="employee_id" jdbcType="INTEGER" property="employeeId" />
+    <result column="registration_id" jdbcType="VARCHAR" property="registrationId" />
+    <result column="platform" jdbcType="INTEGER" property="platform" />
+  </resultMap>
+  <select id="selectByEmployeeIds" parameterType="java.util.List" resultMap="BaseResultMap">
+    select * from employee_push where employee_id in
+    <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+      #{item}
+    </foreach>
+  </select>
+</mapper>

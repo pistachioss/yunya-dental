@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.StatEmpPrivilegeMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.StatEmpPrivilege" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="org_id" property="orgId" jdbcType="INTEGER" />
+    <id column="dentist_id" property="dentistId" jdbcType="INTEGER" />
+    <id column="item_type" property="itemType" jdbcType="TINYINT" />
+    <id column="item_id" property="itemId" jdbcType="INTEGER" />
+    <id column="privilege_date" property="privilegeDate" jdbcType="INTEGER" />
+    <result column="coupon_workload" property="couponWorkload" jdbcType="DECIMAL" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+  </resultMap>
+
+  <select id="selectStatisticsEmployeeCouponWorkload"
+          resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">
+    SELECT
+      seb.org_id AS orgId,
+      seb.dentist_id AS executorId,
+      seb.privilege_date AS billDate,
+      seb.item_type AS itemType,
+      seb.item_id AS itemId,
+      seb.coupon_workload AS couponWorkload
+    FROM stat_emp_privilege seb
+    <where>
+      <if test="query.sDateInt!=null and query.eDateInt!=null">
+        AND seb.privilege_date between #{query.sDateInt} and #{query.eDateInt}
+      </if>
+      <if test="query.orgIds!=null and query.orgIds.size()>0">
+        AND seb.org_id in
+        <foreach collection="query.orgIds" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+      <if test="employeeIds!=null and employeeIds.size()>0">
+        AND seb.dentist_id in
+        <foreach collection="employeeIds" item="item" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+  </select>
+</mapper>
