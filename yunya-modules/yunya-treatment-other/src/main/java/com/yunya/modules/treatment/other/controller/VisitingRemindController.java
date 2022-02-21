@@ -52,7 +52,7 @@ public class VisitingRemindController {
      * @param model 表单
      * @return ResponseResult
      */
-    @ApiOperation("批量到执行提醒")
+    @ApiOperation("批量到执行提醒用")
     @PostMapping("/addImplement")
     @CurrentUser
     public ResponseResult addImplement(@RequestBody @Validated List<VisitingRemindModel> model) {
