@@ -13,10 +13,12 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.*;
+import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.form.FindApprovalByMeForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoByEmForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoForm;
 import com.yunya.modules.employeeattend.mapper.*;
+import com.yunya.modules.employeeattend.util.JpushManager;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,10 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Autowired
     private LeaveScheduleMapper leaveScheduleMapper;
+    @Autowired
+    private EmployeePushBiz employeePushBiz;
+    @Autowired
+    private ApprovalPeopleBiz approvalPeopleBiz;
     /**
      * 根据日期和用户id列表查询请假列表
      *
@@ -90,7 +96,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         } catch (ParseException e) {
             throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
         }
-        if (now.before(date)) {
+        if (now.compareTo(date) <= 0) {
             //判断是否有其他类型的申请
             LeaveInfo copy = new LeaveInfo();
             BeanUtils.copyProperties(leaveInfoForm, copy);
@@ -129,8 +135,31 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     leaveInfo.setCrtTime(new Date());
                     leaveInfo.setApprovalStatus(0);
                     int num = mapper.insert(leaveInfo);
-                    //插入审批人信息
                     int leaveId = leaveInfo.getId();
+                    // TODO :一级审批人
+                    // start 添加推送 需求1450 by zd.xie
+                    SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(leaveInfoForm.getUserId());
+                    String showName = "xxx";
+                    if(ui != null){
+                        showName = ui.getName();
+                    }
+                    if(num > 0){
+                        EmployeePushForm employeePushForm = new EmployeePushForm();
+                        // 组装
+                        Set<Integer> emp_ids = new HashSet<>();
+                        employeePushForm.setEmpId(emp_ids);
+                        employeePushForm.setShowName(showName);
+                        // 根据leaveInfoForm.getApprovalNowPeopleId();查推送号与平台
+                        Integer userid = approvalPeopleBiz.selectById(leaveInfoForm.getApprovalNowPeopleId()).getUserId();
+                        emp_ids.add(userid);
+                        employeePushForm.setId(leaveId);
+                        List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                        employeePushFormList.forEach(el -> {
+                            JpushManager.getInstance().pushLeaveApproval(el, 1);
+                        });
+                    }
+                    // end 添加推送 需求1450 by zd.xie
+                    //插入审批人信息
                     List<ApprovalInfo> list = leaveInfoForm.getApprovalPeopleList();
                     for (ApprovalInfo approvalInfo : list) {
                         approvalInfo.setCrtId(leaveInfoForm.getCrtId());
@@ -150,7 +179,25 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                             copyInfo.setCrtTime(new Date());
                             copyInfoList.add(copyInfo);
                         }
-                        copyInfoMapper.batchInsert(copyInfoList);
+                        int n = copyInfoMapper.batchInsert(copyInfoList);
+                        // TODO :所有抄送人
+                        // start 添加推送 需求1450 by zd.xie
+                        if(n > 0){
+                            EmployeePushForm employeePushForm = new EmployeePushForm();
+                            // 组装
+                            Set<Integer> emp_ids = new HashSet<>();
+                            leaveInfoForm.getCopyList().forEach(nn -> {
+                                emp_ids.add(nn);
+                            });
+                            employeePushForm.setEmpId(emp_ids);
+                            employeePushForm.setShowName(showName);
+                            employeePushForm.setId(leaveId);
+                            List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                            employeePushFormList.forEach(el -> {
+                                JpushManager.getInstance().pushLeaveCope(el, 1);
+                            });
+                        }
+                        // end 添加推送 需求1450 by zd.xie
                     }
                     return num;
                 }
@@ -214,7 +261,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         } catch (ParseException e) {
             throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
         }
-        if (now.before(date)) {
+        if (now.compareTo(date) <= 0) {
             //判断是否有其他类型的申请
             LeaveInfo li = new LeaveInfo();
             BeanUtils.copyProperties(leaveInfoByEmForm, li);
@@ -231,6 +278,30 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     leaveInfo.setApprovalStatus(0);
                     int num = mapper.insert(leaveInfo);
                     int leaveId = leaveInfo.getId();
+                    // TODO :一级审批人
+                    // start 添加推送 需求1450 by zd.xie
+                    SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(leaveInfoByEmForm.getUserId());
+                    String showName = "xxx";
+                    if(ui != null){
+                        showName = ui.getName();
+                    }
+                    if(num > 0){
+                        EmployeePushForm employeePushForm = new EmployeePushForm();
+                        Set<Integer> emp_ids = new HashSet<>();
+                        employeePushForm.setEmpId(emp_ids);
+                        employeePushForm.setShowName(showName);
+                        // 根据leaveInfoForm.getApprovalNowPeopleId();查推送号与平台
+                        Integer userid = approvalPeopleBiz.selectById(leaveInfoByEmForm.getApprovalNowPeopleId()).getUserId();
+                        emp_ids.add(userid);
+                        employeePushForm.setId(leaveId);
+                        // 组装
+                        List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                        employeePushFormList.forEach(el -> {
+                            JpushManager.getInstance().pushLeaveApproval(el, 1);
+                        });
+                    }
+                    // end 添加推送 需求1450 by zd.xie
+                    //插入审批人信息
                     //插入班次请假信息
                     for (LeaveSchedule leaveSchedule : scList) {
                         leaveSchedule.setCrtId(leaveInfoByEmForm.getCrtId());
@@ -258,7 +329,25 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                             copyInfo.setCrtTime(new Date());
                             copyInfoList.add(copyInfo);
                         }
-                        copyInfoMapper.batchInsert(copyInfoList);
+                        int n = copyInfoMapper.batchInsert(copyInfoList);
+                        // TODO :所有抄送人
+                        // start 添加推送 需求1450 by zd.xie
+                        if(n > 0){
+                            EmployeePushForm employeePushForm = new EmployeePushForm();
+                            // 组装
+                            Set<Integer> emp_ids = new HashSet<>();
+                            leaveInfoByEmForm.getCopyList().forEach(nn -> {
+                                emp_ids.add(nn);
+                            });
+                            employeePushForm.setEmpId(emp_ids);
+                            employeePushForm.setShowName(showName);
+                            employeePushForm.setId(leaveId);
+                            List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                            employeePushFormList.forEach(el -> {
+                                JpushManager.getInstance().pushLeaveCope(el, 1);
+                            });
+                        }
+                        // end 添加推送 需求1450 by zd.xie
                     }
                     return num;
                 }
@@ -292,7 +381,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
             throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
         }
         //必须提前一天申请或审批
-        if (now.before(date)) {
+        if (now.compareTo(date) <= 0) {
             if (leaveInfo.getApprovalStatus() == 0) {
                 //根据当前登录人Id和请假信息ID 获取审批流中当前登录人的待审批流程
                 ApprovalInfo approvalInfo = new ApprovalInfo();
@@ -316,7 +405,53 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                 }
                 leaveInfo.setRefuseReason(leaveInfoForm.getRefuseReason());
                 leaveInfo.setUpdTime(new Date());
-                return mapper.updateByPrimaryKey(leaveInfo);
+                int num = mapper.updateByPrimaryKey(leaveInfo);
+
+                // TODO :执行审批时
+                // start 添加推送 需求1450 by zd.xie
+                if(num > 0){
+                    SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(leaveInfo.getUserId());
+                    String showName = "xxx";
+                    if(ui != null){
+                        showName = ui.getName();
+                    }
+                    EmployeePushForm employeePushForm = new EmployeePushForm();
+                    // 组装
+                    Set<Integer> emp_ids = new HashSet<>();
+                    employeePushForm.setEmpId(emp_ids);
+                    employeePushForm.setShowName(showName);
+                    employeePushForm.setId(leaveInfoForm.getId());
+                    switch (leaveInfoForm.getApprovalStatus()){
+                        case 1:
+                            if(next!=null){
+                                // 下一级审批人
+                                emp_ids.add(next.getApprovalPeopleId());
+                                List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                                employeePushFormList.forEach(el -> {
+                                    JpushManager.getInstance().pushLeaveApproval(el, 1);
+                                });
+                            }
+                            else{
+                                // 通过
+                                emp_ids.add(leaveInfo.getUserId());
+                                List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                                employeePushFormList.forEach(el -> {
+                                    JpushManager.getInstance().pushLeaveYes(el, 1);
+                                });
+                            }
+                            break;
+                        case 2:
+                            // 拒绝
+                            emp_ids.add(leaveInfo.getUserId());
+                            List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                            employeePushFormList.forEach(el -> {
+                                JpushManager.getInstance().pushLeaveNo(el, 1);
+                            });
+                            break;
+                    }
+                }
+                // end 添加推送 需求1450 by zd.xie
+                return num;
             }
             throw new ClientServiceException("当前申请已被处理", OBJECT_EDIT_FAIL);
         }
@@ -324,7 +459,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     }
 
     /**
-     * 撤销加班
+     * 撤销请假
      *
      * @param leaveInfoForm
      * @return
@@ -336,7 +471,43 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         if (leaveInfo.getApprovalStatus() == 0) {
             if (leaveInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
                 leaveInfo.setApprovalStatus(3);
-                return mapper.updateByPrimaryKey(leaveInfo);
+                int num = mapper.updateByPrimaryKey(leaveInfo);
+
+                // TODO :撤销审批时
+                // start 添加推送 需求1450 by zd.xie
+                if(num > 0){
+                    SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(leaveInfo.getUserId());
+                    String showName = "xxx";
+                    if(ui != null){
+                        showName = ui.getName();
+                    }
+                    EmployeePushForm employeePushForm = new EmployeePushForm();
+                    // 组装
+                    Set<Integer> emp_ids = new HashSet<>();
+                    employeePushForm.setEmpId(emp_ids);
+                    employeePushForm.setShowName(showName);
+                    // 撤销
+                    emp_ids.add(leaveInfo.getUserId());
+                    Integer userid = approvalPeopleBiz.selectById(leaveInfo.getApprovalNowPeopleId()).getUserId();
+                    emp_ids.add(userid);
+                    ApprovalInfo approvalInfo = new ApprovalInfo();
+                    approvalInfo.setLeaveId(leaveInfoForm.getId());
+                    approvalInfo.setApprovalStatus(1);
+                    approvalInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                    List<ApprovalInfo> approvalInfoList = approvalInfoMapper.select(approvalInfo);
+                    if(approvalInfoList!=null){
+                        approvalInfoList.forEach(approvalInfo1 -> {
+                            emp_ids.add(approvalInfo1.getApprovalPeopleId());
+                        });
+                    }
+                    employeePushForm.setId(leaveInfoForm.getId());
+                    List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                    employeePushFormList.forEach(el -> {
+                        JpushManager.getInstance().pushLeaveCancel(el, 1);
+                    });
+                }
+                // end 添加推送 需求1450 by zd.xie
+                return num;
             }
             throw new ClientServiceException("当前用户无撤销该申请的权限", OBJECT_EDIT_FAIL);
         }

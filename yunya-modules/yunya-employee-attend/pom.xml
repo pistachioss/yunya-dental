@@ -114,6 +114,20 @@
             <artifactId>easyexcel</artifactId>
             <version>1.1.2-beta5</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/cn.jpush.api/jpush-client -->
+        <dependency>
+            <groupId>cn.jpush.api</groupId>
+            <artifactId>jpush-client</artifactId>
+            <version>3.5.5</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/cn.jpush.api/jiguang-common -->
+        <dependency>
+            <groupId>cn.jpush.api</groupId>
+            <artifactId>jiguang-common</artifactId>
+            <version>1.1.12</version>
+        </dependency>
+
     </dependencies>
 
     <build>
