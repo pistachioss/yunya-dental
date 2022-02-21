@@ -17,8 +17,10 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.*;
 import com.yunya.modules.employeeattend.form.ApprovalAllListForm;
+import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.form.FieldInfoForm;
 import com.yunya.modules.employeeattend.mapper.*;
+import com.yunya.modules.employeeattend.util.JpushManager;
 import com.yunya.modules.employeeattend.vo.EmListVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +79,10 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
     private LeaveInfoMapper leaveInfoMapper;
     @Autowired
     private WorkOvertimeInfoMapper workOvertimeInfoMapper;
+    @Autowired
+    private EmployeePushBiz employeePushBiz;
+    @Autowired
+    private ApprovalPeopleBiz approvalPeopleBiz;
 
     public int create(FieldInfoForm fieldInfoForm) {
         //判断是否有其他类型的申请
@@ -166,6 +172,31 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                         fieldInfo.setCrtTime(new Date());
                         fieldInfo.setApprovalStatus(0);
                         int num = mapper.insertSelective(fieldInfo);
+
+                        // TODO :一级审批人
+                        // start 添加推送 需求1450 by zd.xie
+                        SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(fieldInfoForm.getUserId());
+                        String showName = "xxx";
+                        if(ui != null){
+                            showName = ui.getName();
+                        }
+                        if(num > 0){
+                            EmployeePushForm employeePushForm = new EmployeePushForm();
+                            // 组装
+                            Set<Integer> emp_ids = new HashSet<>();
+                            employeePushForm.setEmpId(emp_ids);
+                            employeePushForm.setShowName(showName);
+                            // 根据fieldInfoForm.getApprovalPeopleId();查推送号与平台
+                            Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
+                            emp_ids.add(userid);
+                            employeePushForm.setId(fieldInfo.getId());
+                            List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                            employeePushFormList.forEach(el -> {
+                                JpushManager.getInstance().pushLeaveApproval(el, 3);
+                            });
+                        }
+                        // end 添加推送 需求1450 by zd.xie
+
                         //生成抄送信息
                         if (fieldInfoForm.getCopyList() != null) {
                             List<CopyInfo> copyInfoList = new ArrayList<>();
@@ -178,7 +209,26 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                                 copyInfo.setCrtTime(new Date());
                                 copyInfoList.add(copyInfo);
                             }
-                            copyInfoMapper.batchInsert(copyInfoList);
+                            int n = copyInfoMapper.batchInsert(copyInfoList);
+
+                            // TODO :所有抄送人
+                            // start 添加推送 需求1450 by zd.xie
+                            if(n > 0){
+                                EmployeePushForm employeePushForm = new EmployeePushForm();
+                                // 组装
+                                Set<Integer> emp_ids = new HashSet<>();
+                                fieldInfoForm.getCopyList().forEach(nn -> {
+                                    emp_ids.add(nn);
+                                });
+                                employeePushForm.setEmpId(emp_ids);
+                                employeePushForm.setShowName(showName);
+                                employeePushForm.setId(fieldInfo.getId());
+                                List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                                employeePushFormList.forEach(el -> {
+                                    JpushManager.getInstance().pushLeaveCope(el, 3);
+                                });
+                            }
+                            // end 添加推送 需求1450 by zd.xie
                         }
                         return num;
                     }
@@ -281,7 +331,43 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     fieldInfo.setApprovalStatus(fieldInfoForm.getApprovalStatus());
                     fieldInfo.setUpdTime(new Date());
                     fieldInfo.setRefuseReason(fieldInfoForm.getRefuseReason());
-                    return mapper.updateByPrimaryKey(fieldInfo);
+                    int num = mapper.updateByPrimaryKey(fieldInfo);
+
+                    // TODO :执行审批时
+                    // start 添加推送 需求1450 by zd.xie
+                    if(num > 0){
+                        SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(fieldInfo.getUserId());
+                        String showName = "xxx";
+                        if(ui != null){
+                            showName = ui.getName();
+                        }
+                        EmployeePushForm employeePushForm = new EmployeePushForm();
+                        // 组装
+                        Set<Integer> emp_ids = new HashSet<>();
+                        employeePushForm.setEmpId(emp_ids);
+                        employeePushForm.setShowName(showName);
+                        employeePushForm.setId(fieldInfoForm.getId());
+                        switch (fieldInfoForm.getApprovalStatus()){
+                            case 1:
+                                // 通过
+                                emp_ids.add(fieldInfo.getUserId());
+                                List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                                employeePushFormList.forEach(el -> {
+                                    JpushManager.getInstance().pushLeaveYes(el, 3);
+                                });
+                                break;
+                            case 2:
+                                // 拒绝
+                                emp_ids.add(fieldInfo.getUserId());
+                                List<EmployeePushForm> employeePushFormList1 = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                                employeePushFormList1.forEach(el -> {
+                                    JpushManager.getInstance().pushLeaveNo(el, 3);
+                                });
+                                break;
+                        }
+                    }
+                    // end 添加推送 需求1450 by zd.xie                    
+                    return num;
                 }
                 throw new ClientServiceException("当前用户无审批该申请的权限", OBJECT_EDIT_FAIL);
             }
@@ -303,7 +389,33 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         if (fieldInfo.getApprovalStatus() == 0) {
             if (fieldInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
                 fieldInfo.setApprovalStatus(3);
-                return mapper.updateByPrimaryKey(fieldInfo);
+                int num = mapper.updateByPrimaryKey(fieldInfo);
+
+                // TODO :撤销审批时
+                // start 添加推送 需求1450 by zd.xie
+                if(num > 0){
+                    SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(fieldInfo.getUserId());
+                    String showName = "xxx";
+                    if(ui != null){
+                        showName = ui.getName();
+                    }
+                    EmployeePushForm employeePushForm = new EmployeePushForm();
+                    // 组装
+                    Set<Integer> emp_ids = new HashSet<>();
+                    employeePushForm.setEmpId(emp_ids);
+                    employeePushForm.setShowName(showName);
+                    // 撤销
+                    emp_ids.add(fieldInfo.getUserId());
+                    Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
+                    emp_ids.add(userid);
+                    employeePushForm.setId(fieldInfoForm.getId());
+                    List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                    employeePushFormList.forEach(el -> {
+                        JpushManager.getInstance().pushLeaveCancel(el, 3);
+                    });
+                }
+                // end 添加推送 需求1450 by zd.xie
+                return num;
             }
             throw new ClientServiceException("当前用户无撤销该申请的权限", OBJECT_EDIT_FAIL);
         }

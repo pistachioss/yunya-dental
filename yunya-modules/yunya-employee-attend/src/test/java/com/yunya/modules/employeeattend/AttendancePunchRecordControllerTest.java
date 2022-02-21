@@ -12,9 +12,13 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.modules.employeeattend.aysnc.AttendancePunchRecordScheduledTask;
+import com.yunya.modules.employeeattend.config.JPushConfig;
 import com.yunya.modules.employeeattend.controller.AttendancePunchRecordController;
 import com.yunya.modules.employeeattend.controller.BaseScheduleController;
 import com.yunya.modules.employeeattend.form.ScheduleForm;
+import com.yunya.modules.employeeattend.util.JpushManager;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +39,7 @@ import java.util.concurrent.TimeUnit;
  * @since: 1.0.0
  */
 @SpringBootTest
+@Slf4j
 @RunWith(SpringRunner.class)
 public class AttendancePunchRecordControllerTest {
     @Autowired
@@ -129,5 +134,17 @@ public class AttendancePunchRecordControllerTest {
         AttendanceStatisticsQueryForm query = JSONObject.parseObject(param,AttendanceStatisticsQueryForm.class);
         ResponseResult<PageInfo<AttendanceInvalidCountVO>> result =attendancePunchRecordController.statisticsPunchRecordByInvalidCount(query);
         System.out.println(JSONObject.toJSON(result));
+    }
+
+//    @Test
+//    public void testTask() {
+//        AttendancePunchRecordScheduledTask task = new AttendancePunchRecordScheduledTask();
+//        task.produceAttendancePunchTemplateData();
+//    }
+
+    @Test
+    public void testConfig() {
+      JPushConfig jPushConfig = new JPushConfig();
+      log.info("jPushConfig: " + jPushConfig.getAppKey() + jPushConfig.getAppMasterSecret());
     }
 }

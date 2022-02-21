@@ -16,6 +16,7 @@ import java.util.UUID;
 
 
 
+@Deprecated
 @RestController
 @RequestMapping("/tmp")
 @Api(tags = "资源相关接口，测试用")
