@@ -118,11 +118,9 @@ public class DimensionReportBiz {
         Map<String, Integer> treatNum = mapPatientIntByKey(patientTreatNum, (vo) -> vo.getPatientId() + "," + vo.getOrgId());
         // 患者信息（姓名,年龄,患者来源类型,会员等级）
         query.setPatientIds(patientIds);
-        PageHelper.startPage(query.getPageNum(), query.getPageSize());
         List<PatientManageVo> patients = patientBaseInfoBiz.findPatientInfoList(query);
-        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(patients);
         if (StringHelper.isEmpty(patients)) {
-            return pageInfo;
+            return new DynamicHeaderPageInfo<>();
         }
         // 初诊日期
         Future<Map<Integer, String>> firstVisitFuture = multiFindFirstVisitDateByPatientId(patientIds);
@@ -196,7 +194,7 @@ public class DimensionReportBiz {
                 }
             });
         });
-        PageInfo<JSONObject> pageInfo = PageUtl.doPage(query.getPageNum(), query.getPageSize(), list);
+        PageInfo<JSONObject> pageInfo = PageUtl.doPage(query.getPageNum(), query.getPageSize(), list, query.getWhetherPage());
         return convertPatientDimensionPageInfo(pageInfo, list, specialMap);
     }
 
@@ -606,7 +604,7 @@ public class DimensionReportBiz {
                     list.add(obj);
                 }
             });
-            PageInfo<JSONObject> page = PageUtl.doPage(query.getPageNum(), query.getPageSize(), list);
+            PageInfo<JSONObject> page = PageUtl.doPage(query.getPageNum(), query.getPageSize(), list, query.getWhetherPage());
             pageInfo = convertClinicDimensionPageInfo(page, title, originTypeMap, specialMap, groupByOrgId);
         }
         return pageInfo;
