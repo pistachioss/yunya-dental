@@ -3,10 +3,7 @@ package com.yunya.modules.treatment.other.mapper;
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
-import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
-import com.yunya.feign.treatment_other.domain.vo.VisitingForMonthVo;
-import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
-import com.yunya.feign.treatment_other.domain.vo.VisitingStatusCountVO;
+import com.yunya.feign.treatment_other.domain.vo.*;
 import com.yunya.models.treatment_other.VisitingRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -100,4 +97,11 @@ public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
    * @return
    */
   List<VisitingRecord>selectList(PullForm pullForm);
+
+  /**
+   * 查询已随访列表
+   * @param orgId 门诊ID
+   * @return 返回已随访列表
+   */
+  List<VisitFinishedListVO> visitFinishedList(@Param("orgId") Integer orgId);
 }

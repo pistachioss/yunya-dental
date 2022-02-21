@@ -118,6 +118,7 @@ public class DimensionReportBiz {
         Map<String, Integer> treatNum = mapPatientIntByKey(patientTreatNum, (vo) -> vo.getPatientId() + "," + vo.getOrgId());
         // 患者信息（姓名,年龄,患者来源类型,会员等级）
         query.setPatientIds(patientIds);
+        PageHelper.startPage(query.getPageNum(), query.getPageSize());
         List<PatientManageVo> patients = patientBaseInfoBiz.findPatientInfoList(query);
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(patients);
         if (StringHelper.isEmpty(patients)) {

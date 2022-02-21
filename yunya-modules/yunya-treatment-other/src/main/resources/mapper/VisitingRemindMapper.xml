@@ -28,6 +28,19 @@
     vrd.id,vrd.org_id,vrd.patient_id,vrd.dentist_id,vrd.treatment_id,vrd.remind_date,vrd.remind_time,vrd.remind_content,vrd.remarks,vrd.status ,vrd.inservice,vrd.crt_id,vrd.crt_name,vrd.crt_time,
     vrd.upt_id,vrd.upd_name,vrd.upd_time
   </sql>
+    <!-- 批量修改提醒时间 -->
+    <update id="resetVisitingRemindBatch">
+        update visiting_remind set
+            remind_date = #{form.remindDate},
+            remind_time = #{form.remindTime},
+            upt_id = #{userId},
+            upd_name = #{updName},
+            upd_time = now()
+        where id in
+            <foreach collection="form.ids" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+    </update>
 
     <!-- 根据患者id、提醒日期，提醒时间查询随访提醒 -->
     <select id="findVisitingRemindByPatientIdAndDateTime" parameterType="java.util.Map" resultMap="BaseResultMap">

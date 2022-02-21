@@ -21,6 +21,10 @@ spring:
     port: 6379
     password: foobared
 
+# 扩展地址
+proxy:
+  target_url: http://114.55.233.112:8687
+
 # 日志打印级别
 logging:
   level:
