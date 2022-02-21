@@ -195,13 +195,12 @@ public class DimensionReportBiz {
             });
         });
         PageInfo<JSONObject> pageInfo = PageUtl.doPage(query.getPageNum(), query.getPageSize(), list, query.getWhetherPage());
-        return convertPatientDimensionPageInfo(pageInfo, list, specialMap);
+        return convertPatientDimensionPageInfo(pageInfo, specialMap);
     }
 
-    private DynamicHeaderPageInfo<JSONObject> convertPatientDimensionPageInfo(PageInfo<JSONObject> pageInfo, List<JSONObject> list, Map<String, String> specialMap) {
+    private DynamicHeaderPageInfo<JSONObject> convertPatientDimensionPageInfo(PageInfo<JSONObject> pageInfo, Map<String, String> specialMap) {
         DynamicHeaderPageInfo<JSONObject> result = new DynamicHeaderPageInfo<>();
         BeanUtils.copyProperties(pageInfo, result);
-        result.setList(list);
         Map<String, String> title = new LinkedHashMap<>(16);
         title.put("abbreviation", "门诊");
         title.put("patientName","患者");
