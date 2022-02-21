@@ -895,15 +895,21 @@ public class DimensionReportBiz {
         clinicQuery.setStartDate(query.getStartDate());
         clinicQuery.setEndDate(query.getEndDate());
         List<BaseTreatmentProcessVO> firstVisitPatients = patientBaseInfoBiz.firstVisitPatientList(clinicQuery);
-        Map<Integer, Integer> firstVisitMap = mapClinicFirstVisitCount(firstVisitPatients);
-        List<PatientFirstVisitSourceVO> patients = baseBillDetailBiz.multiFirstVisitPatientSourceList(clinicQuery, firstVisitPatients);
+        List<PatientFirstVisitSourceVO> patients = baseBillDetailBiz.findFirstVisitPatientSourceList(clinicQuery, firstVisitPatients);
         if (StringHelper.isNotEmpty(orgs)) {
+            Map<Integer, Integer> firstVisitMap = new HashMap<>(16);
             Map<String, Integer> originDataMap = new HashMap<>(16);
             Map<String, String> originMap = new LinkedHashMap<>(16);
             if (StringHelper.isNotEmpty(patients)) {
                 patients.forEach(vo->{
                     originMap.put(vo.getOriginType()+"", vo.getOriginTypeName());
-                    originDataMap.put(vo.getOrgId()+","+vo.getOriginType(), vo.getFirstVisitCount());
+                    Integer orgId = vo.getOrgId();
+                    originDataMap.put(orgId+","+vo.getOriginType(), vo.getFirstVisitCount());
+                    Integer num = firstVisitMap.get(orgId);
+                    if (ObjectUtils.isEmpty(num)) {
+                        num = 0;
+                    }
+                    firstVisitMap.put(orgId, num + vo.getFirstVisitCount());
                 });
             }
             List<JSONObject> list = new ArrayList<>();
