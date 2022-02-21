@@ -162,14 +162,11 @@ public class VisitingRecordController {
      * @return 返回列表
      */
     @ApiOperation(value = "查询已随访列表")
-    @GetMapping(value = "/finish/list")
-    @CurrentUser
-    public ResponseResult<PageInfo<VisitFinishedListVO>> visitFinishedList(PageQuery pageQuery) {
-        if (pageQuery.getWhetherPage()) {
-            PageHelper.startPage(pageQuery.getPageNum(),pageQuery.getPageSize());
-        }
-        List<VisitFinishedListVO> listData = visitingRecordBiz.visitFinishedList(BaseContextHandler.getOrgId());
-        return ResponseUtil.success(new PageInfo<>(listData));
+    @PostMapping(value = "/finish/list")
+    public ResponseResult<PageInfo<VisitFinishedListVO>> visitFinishedList(@RequestBody VisitingRecordQuery query) {
+
+        PageInfo<VisitFinishedListVO> listData = visitingRecordBiz.visitFinishedList(query);
+        return ResponseUtil.success(listData);
 
     }
 
