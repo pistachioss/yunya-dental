@@ -509,7 +509,6 @@
         base_treatment_process btp
         left join base_employee be on btp.registered_dentist_id = be.user_id
         <where>
-            btp.treat_status IN (3, 4)
             and btp.treat_type = 0
             <if test="orgId != null">
                 AND btp.org_id = #{orgId}
