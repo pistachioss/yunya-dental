@@ -455,7 +455,8 @@
     </select>
 
     <!--根据条件统计患者来源-->
-    <select id="selectClinicFirstVisitSourceList" resultType="com.yunya.feign.report.domain.vo.PatientFirstVisitSourceVO">
+    <select id="selectClinicFirstVisitSourceList"
+            resultType="com.yunya.feign.report.domain.vo.PatientFirstVisitSourceVO">
         SELECT
         IFNULL(bp.origin_type,12) AS originType,
         IFNULL(bp.origin_type_name,"未知来源") AS originTypeName,
@@ -556,11 +557,11 @@
         left join base_organization bo on bo.org_id = bp.first_visit_outpatient
         left join patient_manage pm on bp.patient_id = pm.patient_id
         <where>
+            and bp.medical_number is not null and !FIND_IN_SET('**',medical_number)
             <if test="query.patientKeyWord != null and query.patientKeyWord != ''">
-                (bp.name like concat('%', #{query.patientKeyWord}, '%')
-                or bp.mobile like concat('%', #{query.patientKeyWord}, '%')
-                or bp.medical_number like concat('%', #{query.patientKeyWord}, '%')
-                or bp.pinyin_name like concat('%', #{query.patientKeyWord}, '%'))
+                and concat(IFNULL(bp.`name`,''), IFNULL(bp.pinyin_name,''), IFNULL(bp.mobile,''),
+                IFNULL(bp.medical_number,'')) like
+                concat(concat('%',#{query.patientKeyWord}),'%')
             </if>
             <if test="startAge != null and endAge != null">
                 and date_format(bp.birthday, '%Y') &gt;= #{startAge} and date_format(bp.birthday, '%Y') &lt;= #{endAge}
@@ -603,18 +604,20 @@
                 #{query.endTreatQuantity}
             </if>
             <if test="query.limitName and query.limitMobile != true">
-                and bp.`name` in (select `name` from base_patient where `name` is not null and trim(`name`) != "" group by `name` having count(*) > 1)
+                and bp.`name` in (select `name` from base_patient where `name` is not null and trim(`name`) != "" group
+                by `name` having count(*) > 1)
             </if>
             <if test="query.limitMobile and query.limitName != true">
-                and bp.mobile in (select `mobile` from base_patient where mobile is not null and trim(mobile) != "" group by `mobile` having count(*) > 1)
+                and bp.mobile in (select `mobile` from base_patient where mobile is not null and trim(mobile) != ""
+                group by `mobile` having count(*) > 1)
             </if>
             <if test="query.limitMobile and query.limitName">
                 and concat(bp.`name`, ',', bp.`mobile`) in (
-                    select concat(`name`, ',', `mobile`)
-                    from base_patient
-                    where mobile is not null and trim(mobile) != ""
-                        and `name` is not null and trim(`name`) != ""
-                    group by `name`, `mobile` having count(*) > 1
+                select concat(`name`, ',', `mobile`)
+                from base_patient
+                where mobile is not null and trim(mobile) != ""
+                and `name` is not null and trim(`name`) != ""
+                group by `name`, `mobile` having count(*) > 1
                 )
             </if>
         </where>
@@ -839,7 +842,7 @@
         bpm.member_level_name AS memberTypeName
         FROM base_patient bp
         LEFT JOIN (
-            SELECT * FROM base_patient_member WHERE type=0
+        SELECT * FROM base_patient_member WHERE type=0
         ) bpm ON bp.patient_id = bpm.patient_id
         <where>
             <if test="query.patientName!=null and query.patientName!=''">
