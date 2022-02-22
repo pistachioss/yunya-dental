@@ -67,16 +67,26 @@
             <if test="query.orgId != null">
                 vr.org_id = #{query.orgId}
             </if>
-            <if test="query.visitingDate != null and query.searchId == 1">
-                and DATE_FORMAT(vr.crt_time,'%Y-%m-%d') = DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d')
-            </if>
-            <if test="query.visitingDate != null and query.searchId == 2">
-                and DATE_FORMAT(vr.visiting_date,'%Y-%m-%d') = DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d')
-            </if>
-            <if test="query.searchBeginTime != null and query.searchEndTime != null">
-                and date_format(vr.visiting_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d')
-                and date_format(#{query.searchEndTime},'%Y-%m-%d')
-            </if>
+            <choose>
+                <!-- 按创建日期检索 -->
+                <when test="query.searchId == 1">
+                    <if test="query.searchBeginTime != null and query.searchEndTime != null">
+                        and DATE_FORMAT(vr.crt_time,'%Y-%m-%d') between DATE_FORMAT(#{query.searchBeginTime},'%Y-%m-%d') and date_format(#{query.searchEndTime},'%Y-%m-%d')
+                    </if>
+                </when>
+                <!-- 按随访日期检索 -->
+                <when test="query.searchId == 2">
+                    <if test="query.searchBeginTime != null and query.searchEndTime != null">
+                        and DATE_FORMAT(vr.visiting_date,'%Y-%m-%d') between DATE_FORMAT(#{query.searchBeginTime},'%Y-%m-%d') and date_format(#{query.searchEndTime},'%Y-%m-%d')
+                    </if>
+                </when>
+                <otherwise>
+                    <if test="query.searchBeginTime != null and query.searchEndTime != null">
+                        and date_format(vr.visiting_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d')
+                        and date_format(#{query.searchEndTime},'%Y-%m-%d')
+                    </if>
+                </otherwise>
+            </choose>
             <if test="query.patientId != null">
                 and vr.patient_id = #{query.patientId}
             </if>
