@@ -570,9 +570,9 @@
     </select>
     <select id="firstVisitRecordDetail" resultType="com.yunya.feign.report.domain.vo.FirstVisitDetailVO">
         SELECT distinct
+        bf.patient_id AS patientId,
         bf.org_name as orgName,
         bf.first_visit_time AS firstVisitTime,
-        bf.patient_id AS patientId,
         bf.patient_name AS patient_name,
         bf.mobile AS mobile,
         bf.origin_type_name AS originTypeName,
