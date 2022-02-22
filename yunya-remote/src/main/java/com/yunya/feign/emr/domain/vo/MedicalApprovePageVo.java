@@ -48,4 +48,7 @@ public class MedicalApprovePageVo {
 
     @ApiModelProperty(value = "拒绝原因")
     private String rejectReason;
+
+    @ApiModelProperty(value = "就诊记录id")
+    private Integer treatmentId;
 }

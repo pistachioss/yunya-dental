@@ -23,7 +23,6 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.emr.MedicalCommonRecord;
-import com.yunya.models.emr.TreatPlanRecord;
 import com.yunya.modules.emr.biz.MedicalCommonRecordBiz;
 import com.yunya.modules.emr.biz.TreatPlanRecordBiz;
 import io.swagger.annotations.Api;
@@ -113,7 +112,7 @@ public class MedicalCommonRecordController {
       Integer medicalId = medical.getId();
       medicalCommonRecordModel.setHasPlan(treatPlanRecordBiz.hasPlanByMedicalId(medicalId));
       // 照片影像
-      medicalCommonRecordModel.setXRayFilms(fileMap.get(medicalId));
+      medicalCommonRecordModel.setXrayFilms(fileMap.get(medicalId));
       medicalCommonRecordModel.setMajorDentistName(employeeMap.get(medicalCommonRecordModel.getMajorDentistId()+"").getName());
 
       if (!StrUtil.isEmpty(medical.getExamination())) {

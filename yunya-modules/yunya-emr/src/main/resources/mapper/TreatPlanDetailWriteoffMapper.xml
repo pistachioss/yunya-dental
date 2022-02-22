@@ -61,4 +61,18 @@
             </foreach>
         </if>
   </select>
+
+  <select id="selectOrderWithPlanDetailById" resultType="com.yunya.models.emr.TreatPlanDetailWriteoff">
+        SELECT
+            plan_detail_id AS planDetailId,
+            order_detail_id AS orderDetailId
+        FROM treat_plan_detail_writeoff
+        <where>
+            order_detail_id in
+            <foreach collection="orderDetailIds" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+        ORDER BY id ASC;
+  </select>
 </mapper>

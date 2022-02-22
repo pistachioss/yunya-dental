@@ -52,4 +52,7 @@ public class MedicalApplyPageVo {
     @ApiModelProperty(value = "修改截止时间，页面不显示，只做按钮判断用")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private LocalDateTime modifyDeadTime;
+
+    @ApiModelProperty("就诊记录id")
+    private Integer treatmentId;
 }

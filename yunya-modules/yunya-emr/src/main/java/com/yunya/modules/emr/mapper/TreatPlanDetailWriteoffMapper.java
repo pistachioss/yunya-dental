@@ -18,4 +18,6 @@ public interface TreatPlanDetailWriteoffMapper extends Mapper<TreatPlanDetailWri
     void insertBatch(@Param("list") List<TreatPlanDetailWriteoff> datas);
 
     void deleteWriteoffByOrderDetailId(@Param("detailIds") List<Integer> detailIds);
+
+    List<TreatPlanDetailWriteoff> selectOrderWithPlanDetailById(@Param("orderDetailIds") List<Integer> orderDetailIds);
 }

@@ -509,7 +509,6 @@
         base_treatment_process btp
         left join base_employee be on btp.registered_dentist_id = be.user_id
         <where>
-            btp.treat_status IN (3, 4)
             and btp.treat_type = 0
             <if test="orgId != null">
                 AND btp.org_id = #{orgId}
@@ -571,9 +570,9 @@
     </select>
     <select id="firstVisitRecordDetail" resultType="com.yunya.feign.report.domain.vo.FirstVisitDetailVO">
         SELECT distinct
+        bf.patient_id AS patientId,
         bf.org_name as orgName,
         bf.first_visit_time AS firstVisitTime,
-        bf.patient_id AS patientId,
         bf.patient_name AS patient_name,
         bf.mobile AS mobile,
         bf.origin_type_name AS originTypeName,
@@ -1034,7 +1033,11 @@
             </if>
             and btp.treat_end_time is not null
         </where>
-        group by btp.patient_id
+        group by
+         <if test="groupByOrgId">
+             btp.org_id,
+         </if>
+         btp.patient_id
         ) btp
         inner join base_treatment_process btp2 on btp.treatmentId = btp2.treatment_id
         <where>
