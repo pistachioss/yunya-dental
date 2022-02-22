@@ -600,13 +600,15 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
     public void executeRemindExport(HttpServletResponse response, VisitingRemindQuery query) throws IOException {
         List<VisitingRemindExecuteVo> data = executeRemindList(query).getList();
         ExcelUtil<VisitingRemindExecuteVo> excelUtil = new ExcelUtil<>(VisitingRemindExecuteVo.class);
-        String date = DateUtil.format(query.getRemindDate(), "yyyy-MM-dd");
+        String dateStr = String.format("%s~%s",
+                DateUtil.format(query.getSearchBeginTime(), "yyyy-MM-dd"),
+                DateUtil.format(query.getSearchEndTime(), "yyyy-MM-dd"));
         OrganizationInfo orgInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
         String abbreviation = "";
         if (orgInfo != null) {
              abbreviation = orgInfo.getAbbreviation();
         }
-        String fileName = excelUtil.getFileName(date,"",abbreviation,"患者提醒事项报表");
+        String fileName = excelUtil.getFileName(dateStr,"",abbreviation,"患者提醒事项报表");
         excelUtil.exportExcel(response,data,"患者提醒事项报表",fileName);
     }
 
