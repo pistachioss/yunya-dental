@@ -729,15 +729,34 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param query 查询条件
      * @return List<AppointmentDimensionVo>
      */
-    public List<AppointmentDimensionVo> findAppointmentPatientDimensionByExample(PatientDimensionByDayQuery query) {
+    public List<AppointmentDimensionsVO> findAppointmentPatientDimensionByExample(PatientDimensionByDayQuery query) {
+        List<AppointmentDimensionsVO> appointmentDimensionsVos = new ArrayList<>();
         List<AppointmentDimensionVo> appointmentDimensionVos;
         // 根据门诊ID获取该门诊所有可预约医生的ID
         List<Integer> enableDentistIds = this.enableAppointDentistIds(query.getOrgId());
-        // 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
-        appointmentDimensionVos = this.dimensionAppointInfo(query,enableDentistIds);
-        dentistSchedule(appointmentDimensionVos);
-        // 最后进行排序
-        return this.sort(appointmentDimensionVos, query.getOrder(), query.getOrderBy());
+        for(Integer did:query.getDentistIds()){
+            query.setDentistId(did);
+            // 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
+            appointmentDimensionVos = this.dimensionAppointInfo(query,enableDentistIds);
+            dentistSchedule(appointmentDimensionVos);
+            // 最后进行排序
+            this.sort(appointmentDimensionVos, query.getOrder(), query.getOrderBy());
+            for(AppointmentDimensionVo avo:appointmentDimensionVos){
+                AppointmentDimensionsVO a = new AppointmentDimensionsVO();
+                if(appointmentDimensionsVos.stream().anyMatch(m ->m.getCurrentDate().equals(avo.getCurrentDate()))){
+                    appointmentDimensionsVos.stream().filter(m ->m.getCurrentDate().equals(avo.getCurrentDate())).findAny().isPresent();
+                     a = appointmentDimensionsVos.stream().filter(m ->m.getCurrentDate().equals(avo.getCurrentDate())).findFirst().get();
+                     a.getAppointmentDimensionVoList().add(avo);
+                }else{
+                    List<AppointmentDimensionVo> as = new ArrayList<>();
+                    a.setCurrentDate(avo.getCurrentDate());
+                    as.add(avo);
+                    a.setAppointmentDimensionVoList(as);
+                    appointmentDimensionsVos.add(a);
+                }
+            }
+        }
+        return appointmentDimensionsVos;
     }
 
     /**
