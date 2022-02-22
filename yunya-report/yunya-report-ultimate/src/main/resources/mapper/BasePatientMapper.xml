@@ -557,7 +557,7 @@
         left join base_organization bo on bo.org_id = bp.first_visit_outpatient
         left join patient_manage pm on bp.patient_id = pm.patient_id
         <where>
-            and substr(bp.medical_number, 1, 1) != '*'
+            and bp.medical_number is not null and substr(bp.medical_number, 1, 1) != '*'
             <if test="query.patientKeyWord != null and query.patientKeyWord != ''">
                 and concat(IFNULL(bp.`name`,''), IFNULL(bp.pinyin_name,''), IFNULL(bp.mobile,''),
                 IFNULL(bp.medical_number,'')) like
