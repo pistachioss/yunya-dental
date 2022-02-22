@@ -753,6 +753,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             vo.setApproveStatus(obj.getStatus());
             vo.setRejectReason(obj.getApproveReason());
             vo.setModifyDeadTime(Objects.equals(AUDIT_REJECT.getCode(), obj.getStatus()) ? obj.getApproveTime().plusDays(1) : null);
+            vo.setTreatmentId(medicalTreatmentBo.getTreatmentId());
             resultList.add(vo);
         });
         return resultList;
@@ -788,6 +789,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             vo.setSubmitTime(obj.getCrtTime());
             vo.setApproveStatus(obj.getStatus());
             vo.setRejectReason(obj.getApproveReason());
+            vo.setTreatmentId(medicalTreatmentBo.getTreatmentId());
             resultList.add(vo);
         });
         return resultList;
@@ -833,6 +835,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 int result = obj.getUpdTime().compareTo(obj.getApproveTime());
                 vo.setWhetherOperated(result > 0 ? TRUE.getCode() : FALSE.getCode());
             }
+            vo.setTreatmentId(medicalTreatmentBo.getTreatmentId());
             resultList.add(vo);
         });
         return resultList;

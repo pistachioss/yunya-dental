@@ -119,9 +119,8 @@ public class DimensionReportBiz {
         // 患者信息（姓名,年龄,患者来源类型,会员等级）
         query.setPatientIds(patientIds);
         List<PatientManageVo> patients = patientBaseInfoBiz.findPatientInfoList(query);
-        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(patients);
         if (StringHelper.isEmpty(patients)) {
-            return pageInfo;
+            return new DynamicHeaderPageInfo<>();
         }
         // 初诊日期
         Future<Map<Integer, String>> firstVisitFuture = multiFindFirstVisitDateByPatientId(patientIds);
@@ -195,14 +194,13 @@ public class DimensionReportBiz {
                 }
             });
         });
-        PageInfo<JSONObject> pageInfo = PageUtl.doPage(query.getPageNum(), query.getPageSize(), list);
-        return convertPatientDimensionPageInfo(pageInfo, list, specialMap);
+        PageInfo<JSONObject> pageInfo = PageUtl.doPage(query.getPageNum(), query.getPageSize(), list, query.getWhetherPage());
+        return convertPatientDimensionPageInfo(pageInfo, specialMap);
     }
 
-    private DynamicHeaderPageInfo<JSONObject> convertPatientDimensionPageInfo(PageInfo<JSONObject> pageInfo, List<JSONObject> list, Map<String, String> specialMap) {
+    private DynamicHeaderPageInfo<JSONObject> convertPatientDimensionPageInfo(PageInfo<JSONObject> pageInfo, Map<String, String> specialMap) {
         DynamicHeaderPageInfo<JSONObject> result = new DynamicHeaderPageInfo<>();
         BeanUtils.copyProperties(pageInfo, result);
-        result.setList(list);
         Map<String, String> title = new LinkedHashMap<>(16);
         title.put("abbreviation", "门诊");
         title.put("patientName","患者");
@@ -436,6 +434,7 @@ public class DimensionReportBiz {
      */
     public DynamicHeaderPageInfo<JSONObject> clinicDimensionStatistics(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) throws Exception {
         filterDentistPost(query);
+        Boolean whetherPage = query.getWhetherPage();
         query.setWhetherPage(false);
         List<ClinicEmployeBonusCoefficientVO> employees = employeeWorkloadBiz.findClinicEmployeeCartesianProduct(query, groupByOrgId);
         if (StringHelper.isEmpty(employees)) {
@@ -445,6 +444,7 @@ public class DimensionReportBiz {
             pageInfo.setHeader(new String[0]);
             return pageInfo;
         }
+        query.setWhetherPage(whetherPage);
         updEmployeeId2Query(employees, query);
 
         // 无下次预约或提醒客户
@@ -473,7 +473,10 @@ public class DimensionReportBiz {
 
         List<Integer> employeeIds = employees.stream().map(ClinicEmployeeReportVO::getEmployeeId).collect(Collectors.toList());
         MultiClinicDateRangeQueryForm dateQuery = new MultiClinicDateRangeQueryForm();
-        dateQuery.setOrgIds(Arrays.asList(query.getOrgIds()));
+        Integer[] orgIds = query.getOrgIds();
+        if (StringHelper.isNotEmpty(orgIds)) {
+            dateQuery.setOrgIds(Arrays.asList(orgIds));
+        }
         dateQuery.setStartDate(query.getStartDate());
         dateQuery.setEndDate(query.getEndDate());
         dateQuery.setDateType(query.getDateType());
@@ -507,7 +510,11 @@ public class DimensionReportBiz {
             empQuery.setUserIds(Arrays.asList(employeeIds));
         }
         List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(empQuery);
-        employeeIds = employees.stream().map(SysUserInfoDetail::getEmployeeId).toArray(Integer[]::new);
+        if (StringHelper.isEmpty(employees)) {
+            employeeIds = new Integer[]{-1};// 未查到
+        } else {
+            employeeIds = employees.stream().map(SysUserInfoDetail::getUserId).toArray(Integer[]::new);
+        }
         query.setEmployeeIds(employeeIds);
     }
 
@@ -598,7 +605,7 @@ public class DimensionReportBiz {
                     list.add(obj);
                 }
             });
-            PageInfo<JSONObject> page = PageUtl.doPage(query.getPageNum(), query.getPageSize(), list);
+            PageInfo<JSONObject> page = PageUtl.doPage(query.getPageNum(), query.getPageSize(), list, query.getWhetherPage());
             pageInfo = convertClinicDimensionPageInfo(page, title, originTypeMap, specialMap, groupByOrgId);
         }
         return pageInfo;
@@ -621,7 +628,7 @@ public class DimensionReportBiz {
         title.put("hasntAppointAndRemind", "无下次预约或提醒客户");
 //        title.put("specialProjectNames", "专科数量");
         title.putAll(specialMap);
-        DynamicHeaderPageInfo result = new DynamicHeaderPageInfo();
+        DynamicHeaderPageInfo<JSONObject> result = new DynamicHeaderPageInfo();
         BeanUtils.copyProperties(pageInfo, result);
         result.setMap(title);
         result.setContextMap(contextMap);
@@ -698,7 +705,10 @@ public class DimensionReportBiz {
     private Future<List<PersonalBillItemVO>> multiFindExecutorBillItem(ClinicEmployeeWorkloadQuery query, boolean groupByOrg) {
         return threadPool.submit(()-> {
             MultiClinicDateRangeQueryForm queryForm = new MultiClinicDateRangeQueryForm();
-            queryForm.setOrgIds(Arrays.asList(query.getOrgIds()));
+            Integer[] orgIds = query.getOrgIds();
+            if (StringHelper.isNotEmpty(orgIds)) {
+                queryForm.setOrgIds(Arrays.asList(orgIds));
+            }
             queryForm.setStartDate(query.getStartDate());
             queryForm.setEndDate(query.getEndDate());
             List<StatEmpBill> list = statEmpBillBiz.findBillItemNum(queryForm, groupByOrg);
@@ -886,15 +896,21 @@ public class DimensionReportBiz {
         clinicQuery.setStartDate(query.getStartDate());
         clinicQuery.setEndDate(query.getEndDate());
         List<BaseTreatmentProcessVO> firstVisitPatients = patientBaseInfoBiz.firstVisitPatientList(clinicQuery);
-        Map<Integer, Integer> firstVisitMap = mapClinicFirstVisitCount(firstVisitPatients);
-        List<PatientFirstVisitSourceVO> patients = baseBillDetailBiz.multiFirstVisitPatientSourceList(clinicQuery, firstVisitPatients);
+        List<PatientFirstVisitSourceVO> patients = baseBillDetailBiz.findFirstVisitPatientSourceList(clinicQuery, firstVisitPatients);
         if (StringHelper.isNotEmpty(orgs)) {
+            Map<Integer, Integer> firstVisitMap = new HashMap<>(16);
             Map<String, Integer> originDataMap = new HashMap<>(16);
             Map<String, String> originMap = new LinkedHashMap<>(16);
             if (StringHelper.isNotEmpty(patients)) {
                 patients.forEach(vo->{
                     originMap.put(vo.getOriginType()+"", vo.getOriginTypeName());
-                    originDataMap.put(vo.getOrgId()+","+vo.getOriginType(), vo.getFirstVisitCount());
+                    Integer orgId = vo.getOrgId();
+                    originDataMap.put(orgId+","+vo.getOriginType(), vo.getFirstVisitCount());
+                    Integer num = firstVisitMap.get(orgId);
+                    if (ObjectUtils.isEmpty(num)) {
+                        num = 0;
+                    }
+                    firstVisitMap.put(orgId, num + vo.getFirstVisitCount());
                 });
             }
             List<JSONObject> list = new ArrayList<>();

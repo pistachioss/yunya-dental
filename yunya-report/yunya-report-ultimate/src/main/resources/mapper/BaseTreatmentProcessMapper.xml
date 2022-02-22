@@ -1033,7 +1033,11 @@
             </if>
             and btp.treat_end_time is not null
         </where>
-        group by btp.patient_id
+        group by
+         <if test="groupByOrgId">
+             btp.org_id,
+         </if>
+         btp.patient_id
         ) btp
         inner join base_treatment_process btp2 on btp.treatmentId = btp2.treatment_id
         <where>

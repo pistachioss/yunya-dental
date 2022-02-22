@@ -136,5 +136,5 @@ public class MedicalCommonRecordForm {
 
   /** 照片影像id列表*/
   @ApiModelProperty("照片影像id列表")
-  private List<XUploadFileVO> xRayFilms;
+  private List<XUploadFileVO> xrayFilms;
 }

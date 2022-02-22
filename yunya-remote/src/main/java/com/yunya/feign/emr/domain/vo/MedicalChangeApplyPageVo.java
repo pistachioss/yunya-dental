@@ -52,4 +52,7 @@ public class MedicalChangeApplyPageVo {
 
     @ApiModelProperty(value = "是否操作过（0：否  1：是）")
     private Integer whetherOperated;
+
+    @ApiModelProperty(value = "就诊记录id")
+    private Integer treatmentId;
 }

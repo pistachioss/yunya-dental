@@ -1632,7 +1632,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
           origins.stream().map(BasePatientOrigin::getOriginType).collect(Collectors.toSet()));
     }
     List<BaseTreatmentProcessVO> firstVisitPatients = patientBaseInfoBiz.firstVisitPatientList(query);
-    List<PatientFirstVisitSourceVO> patients = multiFirstVisitPatientSourceList(query, firstVisitPatients);
+    List<PatientFirstVisitSourceVO> patients = findFirstVisitPatientSourceList(query, firstVisitPatients);
     Map<String, Integer> originMap = new HashMap<>(16);
     patients.forEach(vo-> originMap.put(vo.getOriginType()+","+vo.getOrgId(), vo.getFirstVisitCount()));
     List<JSONObject> result = new ArrayList<>();
@@ -1660,7 +1660,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query
    * @return
    */
-  public List<PatientFirstVisitSourceVO> multiFirstVisitPatientSourceList(ClinicPerformanceBusinessQuery query, List<BaseTreatmentProcessVO> patients) {
+  public List<PatientFirstVisitSourceVO> findFirstVisitPatientSourceList(ClinicPerformanceBusinessQuery query, List<BaseTreatmentProcessVO> patients) {
     List<PatientFirstVisitSourceVO> result = new ArrayList<>();
     if (StringHelper.isNotEmpty(patients)) {
       Map<Integer, Set<Integer>> patientMap = new HashMap<>(16);

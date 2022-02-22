@@ -11,6 +11,7 @@ import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
+import com.yunya.feign.emr.RemoteEmrServiceFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
@@ -134,6 +135,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
   /** 账单记录 */
   @Autowired private BillRecordMapper billRecordBiz;
+
+  @Autowired private RemoteEmrServiceFeign remoteEmrServiceFeign;
 
   @Resource(name = "treatmentThreadPool")
   private ExecutorService executorService;
@@ -285,6 +288,11 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       chargeOrderDetailList = chargeVOS;
     } else {
       chargeOrderDetailList = getChargeOrderDetailList(orderRecordId);
+    }
+    if (StringHelper.isNotEmpty(chargeOrderDetailList)) {
+      List<Integer> orderDetailIds = chargeOrderDetailList.stream().map(OrderDetailChargeVO::getOrderDetailId).collect(Collectors.toList());
+      Map<Integer, List<Integer>> planDetails = remoteEmrServiceFeign.findOrderWithPlanDetailById(orderDetailIds);
+      chargeOrderDetailList.forEach(vo-> vo.setPlanDetailIds(planDetails.get(vo.getOrderDetailId())));
     }
     // 设置10分钟（该段时间内不允许其他用户重复收费，解锁）
     redisUtils.set(redisKey, orderRecordId + ":" + userId, 600);

@@ -26,6 +26,7 @@
         </if>
         seb.item_type AS itemType,
         seb.item_id AS itemId,
+        seb.dentist_id AS dentistId,
         SUM(seb.quantity) AS quantity
     FROM stat_emp_bill seb
     <where>
@@ -43,7 +44,7 @@
       <if test="groupByOrg">
         seb.org_id,
       </if>
-      seb.item_type, seb.item_id
+      seb.item_type, seb.item_id, seb.dentist_id
   </select>
 
   <select id="selectStatisticsEmployeeBillWorkload" resultType="com.yunya.feign.report.domain.vo.BillExecutorItemVO">

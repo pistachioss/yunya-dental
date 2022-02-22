@@ -27,6 +27,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import java.text.SimpleDateFormat;
@@ -119,12 +120,12 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
             medicalRecordHistoryBiz.insertMedicalHistory(medicalCommonRecord);
             //更新医生的申请变更时间
             medicalApprovalBiz.updateDocApplyChangeTime(medicalCommonRecord.getTreatmentId());
-
-            // 保存照片影像
-            saveXRayFile2XUploadFile(medicalCommonRecord.getId(), model.getXRayFilms(), model.getCrtTime());
-            // 保存检查记录
-            medicalCheckRecordBiz.saveCheckRecord(medicalCommonRecord.getId(), model.getCheckRecords());
         }
+
+        // 保存照片影像
+        saveXRayFile2XUploadFile(medicalCommonRecord.getId(), model.getXrayFilms(), model.getCrtTime());
+        // 保存检查记录
+        medicalCheckRecordBiz.saveCheckRecord(medicalCommonRecord.getId(), model.getCheckRecords());
         //助手新增病历时，审核表中同步插入一条数据
         if (result > 0 && medicalCommonRecord.getStatus() == 1) {
             DraftMedicalApplyModel draftMedicalApplyModel = new DraftMedicalApplyModel();
@@ -164,6 +165,9 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         model.setSourceType(MEDICAL_COMMON.getCode());
         model.setRayFiles(files);
         model.setCrtId(userId);
+        if (ObjectUtils.isEmpty(crtTime)) {
+            crtTime = new Date(System.currentTimeMillis());
+        }
         model.setCrtTime(crtTime);
         remoteTreatmentOtherFeign.saveXRayFile2XUploadFile(model);
     }
@@ -224,7 +228,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         medicalRecordHistoryMapper.updateByExampleSelective(medicalRecordHistory, example);
 
         // 保存照片影像
-        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXRayFilms(), medicalcopy.getUpdTime());
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXrayFilms(), medicalcopy.getUpdTime());
         // 保存检查记录
         medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
 
@@ -283,9 +287,12 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         //主治医生修改病历时，历史表中同步插入一条数据
         if (re > 0 && medicalcopy.getStatus() == 0) {
             medicalRecordHistoryBiz.insertMedicalHistory(medicalcopy);
-            // 保存检查记录
-            medicalCheckRecordBiz.saveCheckRecord(medicalCommonRecordForm.getId(), medicalCommonRecordForm.getCheckRecords());
         }
+
+        // 保存照片影像
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXrayFilms(), medicalcopy.getUpdTime());
+        // 保存检查记录
+        medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
         //助手修改病历通过时，审核表中同步插入一条数据
         if (re > 0 && (medicalCommonRecordForm.getStatus() == 2 || medicalCommonRecordForm.getStatus() == 3)) {
             DraftMedicalApplyModel draftMedicalApplyModel = new DraftMedicalApplyModel();
@@ -353,6 +360,11 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
             //修改就诊记录病历书写状态
             remoteTreatmentServiceFeign.updateTreatmentRecord(medicalcopy.getTreatmentId());
         }
+
+        // 保存照片影像
+        saveXRayFile2XUploadFile(medicalcopy.getId(), medicalCommonRecordForm.getXrayFilms(), medicalcopy.getUpdTime());
+        // 保存检查记录
+        medicalCheckRecordBiz.saveCheckRecord(medicalcopy.getId(), medicalCommonRecordForm.getCheckRecords());
         //插入常用词条使用频率
         if (medicalCommonRecordForm.getMedicalGeneralNumList() != null && medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {
             List<MedicalGeneralNum> numList = new ArrayList<>();
@@ -372,5 +384,10 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
 
     public MedicalCommonRecord findMedicalIllegaHistoryById(Integer medicalRecordId) {
         return mapper.selectMedicalIllnessHistoryById(medicalRecordId);
+    }
+
+    public TreatmentRecord findTreatmentByMedicalId(Integer medicalRecordId) {
+        MedicalCommonRecord medical = mapper.selectByPrimaryKey(medicalRecordId);
+        return remoteTreatmentServiceFeign.findTreatmentRecordById(medical.getTreatmentId());
     }
 }
