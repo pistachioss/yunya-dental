@@ -202,13 +202,13 @@ public class AppointmentController {
    */
   @ApiOperation(value = "根据条件查询患者维度预约可视图(按医生id、时间段查询)")
   @PostMapping("/find/patient/dimension")
-  public ResponseResult<Page<AppointmentDimensionVo>> findAppointmentPatientDimensionByDate(
+  public ResponseResult<Page<AppointmentDimensionsVO>> findAppointmentPatientDimensionByDate(
       @RequestBody @Validated PatientDimensionByDayQuery query) {
-    List<AppointmentDimensionVo> appointmentDimensionVos =
+    List<AppointmentDimensionsVO> appointmentDimensionVos =
         appointmentBiz.findAppointmentPatientDimensionByExample(query);
     // 分页
     PageUtil pageUtil = new PageUtil(query.getPageNum(),query.getPageSize());
-    Page<AppointmentDimensionVo> paging = pageUtil.getPaging(appointmentDimensionVos);
+    Page<AppointmentDimensionsVO> paging = pageUtil.getPaging(appointmentDimensionVos);
     return ResponseUtil.success(paging);
   }
 
