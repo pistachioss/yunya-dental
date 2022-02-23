@@ -311,7 +311,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             }
             PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
             patientLikeQuery.setCondition(search);
-            patientLikeQuery.setWhetherPage(false);
+            patientLikeQuery.setWhetherPage(true);
             List<PatientBaseInfoVo> patientByNameAndMobile = remotePatientCentralServiceFeign.findPatientByNameAndMobile(patientLikeQuery);
             if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
                 List<Integer> collect = patientByNameAndMobile.stream().map(PatientBaseInfoVo::getId).collect(Collectors.toList());
