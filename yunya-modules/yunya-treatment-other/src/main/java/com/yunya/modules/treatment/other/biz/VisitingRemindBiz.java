@@ -237,14 +237,16 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         List<VisitingRemindVo> searchVisitingRemindVo = null;
         String search = query.getSearch();
         if (StringHelper.isNotBlank(search)) {
-            if (!search.matches(BusinessConstants.NAME_REGEXP) && !search.matches(BusinessConstants.MOBILE_REGEXP)) {
+            log.info("验证检索内容search = {}, 验证结果是: {}",search,search.matches(BusinessConstants.NAME_REGEXP));
+            if (!search.matches(BusinessConstants.NAME_REGEXP) && !search.matches(BusinessConstants.PINYIN_REGEXP) && !search.matches(BusinessConstants.MOBILE_REGEXP)) {
                 return  ResponseUtil.success(new PageInfo(new ArrayList<>()));
             }
             PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
             patientLikeQuery.setCondition(search);
-            patientLikeQuery.setWhetherPage(false);
+            patientLikeQuery.setWhetherPage(true);
             // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容
             List<PatientBaseInfoVo> patientByNameAndMobile = remotePatientCentralServiceFeign.findPatientByNameAndMobile(patientLikeQuery);
+            log.info("检索患者信息：{}",patientByNameAndMobile);
             if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
                 List<Integer> collect = patientByNameAndMobile.stream().map(PatientBaseInfoVo::getId).collect(Collectors.toList());
                 query.setPatientIds(collect);
