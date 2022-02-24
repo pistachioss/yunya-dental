@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.other.biz;
 
+import cn.hutool.core.date.DateUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
@@ -127,9 +128,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 query.setSearchBeginTime(visitingDate);
                 query.setSearchEndTime(visitingDate);
                 query.setSearchId(2);
-                log.info("随访冲突检测-参数：\n{}",query);
                 List<VisitingRecordVo> visitingRecordByCondition = mapper.findVisitingRecordByCondition(query);
-                log.info("随访列表信息： \n{}",visitingRecordByCondition);
                 if (visitingRecordByCondition != null && !visitingRecordByCondition.isEmpty()){
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     String format = dateFormat.format(query.getVisitingDate());
@@ -141,6 +140,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                     build.setOrgId(Integer.parseInt(orgId));
                 }
                 Integer currentUserId = Integer.valueOf(BaseContextHandler.getUserID());
+                build.setTreatmentDate(model.getTreatmentDate());
                 build.setVisitingDate(visitingContentModel.getVisitingDate());
                 build.setVisitingTime(visitingContentModel.getVisitingTime());
                 build.setReason(visitingContentModel.getReason());
@@ -378,7 +378,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             } else {
                 // 按患者姓名、手机号、病历号、医生名字检索
                 searchVisitingRecordVo = this.searchAndOrder(visitingRecordVoList, search, medicalNumber, distentName);
-                log.info("aaaa按患者名字检索：{}",searchVisitingRecordVo);
                 // 将检索结果列表排序
                 searchVisitingRecordVo = this.sort(searchVisitingRecordVo);
                 visitingRecordVoPageInfo.setList(searchVisitingRecordVo);
@@ -576,7 +575,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             boolean b = treatmentRecordInfoList.stream().anyMatch(entity -> entity.getId().equals(treatmentId));
             if (b){
                 TreatmentRecordExtendVO treatmentRecord = treatmentRecordInfoList.stream().filter(entity -> entity.getId().equals(treatmentId)).findAny().get();
-                visitingRecordVo.setTreatmentDate(treatmentRecord.getTreatEndTime());
+                visitingRecordVo.setTreatmentDate(treatmentRecord.getTreatStartTime());
                 // 设置初复诊
                 visitingRecordVo.setFirstVisit(treatmentRecord.getType());
             }
