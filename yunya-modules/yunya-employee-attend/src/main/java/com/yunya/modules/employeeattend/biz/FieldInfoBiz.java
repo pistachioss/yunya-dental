@@ -187,7 +187,9 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                             employeePushForm.setEmpId(emp_ids);
                             employeePushForm.setShowName(showName);
                             // 根据fieldInfoForm.getApprovalPeopleId();查推送号与平台
-                            Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
+//                            Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
+                            // fix: bug3476
+                            Integer userid = fieldInfoForm.getApprovalPeopleId();
                             emp_ids.add(userid);
                             employeePushForm.setId(fieldInfo.getId());
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
@@ -406,7 +408,9 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     employeePushForm.setShowName(showName);
                     // 撤销
                     emp_ids.add(fieldInfo.getUserId());
-                    Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
+//                    Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
+                    // fix: bug3476
+                    Integer userid = fieldInfoForm.getApprovalPeopleId();
                     emp_ids.add(userid);
                     employeePushForm.setId(fieldInfoForm.getId());
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
