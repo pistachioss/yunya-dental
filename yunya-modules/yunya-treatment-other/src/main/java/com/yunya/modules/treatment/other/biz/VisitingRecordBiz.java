@@ -124,8 +124,12 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 VisitingRecordQuery query = new VisitingRecordQuery();
                 query.setDentistId(Integer.valueOf(userID));
                 query.setPatientId(patientId);
-                query.setVisitingDate(visitingDate);
+                query.setSearchBeginTime(visitingDate);
+                query.setSearchEndTime(visitingDate);
+                query.setSearchId(2);
+                log.info("随访冲突检测-参数：\n{}",query);
                 List<VisitingRecordVo> visitingRecordByCondition = mapper.findVisitingRecordByCondition(query);
+                log.info("随访列表信息： \n{}",visitingRecordByCondition);
                 if (visitingRecordByCondition != null && !visitingRecordByCondition.isEmpty()){
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     String format = dateFormat.format(query.getVisitingDate());
@@ -307,11 +311,16 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         String distentName = query.getDistentName();
         if (StringHelper.isNotBlank(search)) {
             if (!search.matches(BusinessConstants.NAME_REGEXP) && !search.matches(BusinessConstants.MOBILE_REGEXP)) {
-                return  ResponseUtil.success(new PageInfo(new ArrayList<>()));
+                if (!search.matches(BusinessConstants.CN_EN_NAME_REGEXP)) {
+                    return ResponseUtil.success(new PageInfo(new ArrayList<>()));
+                } else {
+
+                }
             }
+
             PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
             patientLikeQuery.setCondition(search);
-            patientLikeQuery.setWhetherPage(true);
+            patientLikeQuery.setWhetherPage(false);
             List<PatientBaseInfoVo> patientByNameAndMobile = remotePatientCentralServiceFeign.findPatientByNameAndMobile(patientLikeQuery);
             if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
                 List<Integer> collect = patientByNameAndMobile.stream().map(PatientBaseInfoVo::getId).collect(Collectors.toList());
@@ -334,6 +343,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         }
 
         List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
+        log.info("ssssss随访查询结果：{}",visitingRecordVos);
         PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
         if (StringHelper.isNotEmpty(visitingRecordVos)){
 
@@ -368,6 +378,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             } else {
                 // 按患者姓名、手机号、病历号、医生名字检索
                 searchVisitingRecordVo = this.searchAndOrder(visitingRecordVoList, search, medicalNumber, distentName);
+                log.info("aaaa按患者名字检索：{}",searchVisitingRecordVo);
                 // 将检索结果列表排序
                 searchVisitingRecordVo = this.sort(searchVisitingRecordVo);
                 visitingRecordVoPageInfo.setList(searchVisitingRecordVo);
@@ -783,6 +794,8 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                     result = patientName.contains(searchStr);
                 } else if (searchStr.matches(BusinessConstants.MOBILE_REGEXP) && !StringHelper.isEmpty(mobile)) {
                     result = mobile.contains(searchStr);
+                } else if (searchStr.matches(BusinessConstants.CN_EN_NAME_REGEXP) && !StringHelper.isEmpty(patientName)) {
+                    result = patientName.contains(searchStr);
                 }
             }
 
