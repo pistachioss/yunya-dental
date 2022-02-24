@@ -30,4 +30,6 @@ public class LastTreatmentInfoVO implements Serializable {
   /** 末诊日期 */
   @ApiModelProperty(name = "treatmentDate", value = "末次就诊日期")
   private String treatmentDate;
+
+  private Integer patientId;
 }

@@ -505,10 +505,23 @@ public class TreatmentServiceRest {
    * @return 就诊信息
    */
   @RequestMapping(value = "/treat/last/{patientId}", method = RequestMethod.GET)
-  LastTreatmentInfoVO findLastTreatmentRecord(
+  public LastTreatmentInfoVO findLastTreatmentRecord(
       @PathVariable(value = "patientId") Integer patientId) {
     return treatmentRecordBiz.lastTreatmentInfo(patientId);
   }
+
+  /**
+   * 查询患者末次就诊记录 批量
+   *
+   * @param patientIds 患者ID
+   * @return 就诊信息
+   */
+  @RequestMapping(value = "/treat/last/batch", method = RequestMethod.POST)
+  public List<LastTreatmentInfoVO> lastTreatmentInfoByBatch(
+          @RequestBody List<Integer> patientIds) {
+    return treatmentRecordBiz.lastTreatmentInfoByBatch(patientIds);
+  }
+
 
   /**
    * 根据条件查询患者就诊记录列表
