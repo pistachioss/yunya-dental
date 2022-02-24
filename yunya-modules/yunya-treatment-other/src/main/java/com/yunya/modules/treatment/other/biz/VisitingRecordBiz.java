@@ -124,8 +124,12 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 VisitingRecordQuery query = new VisitingRecordQuery();
                 query.setDentistId(Integer.valueOf(userID));
                 query.setPatientId(patientId);
-                query.setVisitingDate(visitingDate);
+                query.setSearchBeginTime(visitingDate);
+                query.setSearchEndTime(visitingDate);
+                query.setSearchId(2);
+                log.info("随访冲突检测-参数：\n{}",query);
                 List<VisitingRecordVo> visitingRecordByCondition = mapper.findVisitingRecordByCondition(query);
+                log.info("随访列表信息： \n{}",visitingRecordByCondition);
                 if (visitingRecordByCondition != null && !visitingRecordByCondition.isEmpty()){
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     String format = dateFormat.format(query.getVisitingDate());

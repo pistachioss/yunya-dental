@@ -69,7 +69,7 @@
             </if>
             <choose>
                 <!-- 按创建日期检索 -->
-                <when test="query.searchId == 1">
+                <when test="query.searchId == 1 and query.searchBeginTime != null and query.searchEndTime != null">
                     <if test="query.searchBeginTime != null and query.searchEndTime != null">
                         and DATE_FORMAT(vr.crt_time,'%Y-%m-%d') between DATE_FORMAT(#{query.searchBeginTime},'%Y-%m-%d') and date_format(#{query.searchEndTime},'%Y-%m-%d')
                     </if>
