@@ -576,11 +576,16 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (StringHelper.isNotEmpty(patients)) {
       // 调用就诊服务查询患者末次就诊记录
       if (StringHelper.isNotEmpty(patients)) {
-        for (PatientBaseInfoVo patient : patients) {
-          LastTreatmentInfoVO treatmentRecord =
-              treatmentServiceFeign.findLastTreatmentRecord(patient.getId());
-          patient.setLastVisitTime(treatmentRecord.getTreatmentDate());
-          patient.setLastVisit(treatmentRecord.getDentistName());
+        List<Integer> ids = patients.stream().map(PatientBaseInfoVo::getId).collect(Collectors.toList());
+        List<LastTreatmentInfoVO> lastTreatmentInfoVOS = treatmentServiceFeign.lastTreatmentInfoByBatch(ids);
+        if (!lastTreatmentInfoVOS.isEmpty()) {
+          for (PatientBaseInfoVo patient : patients) {
+            lastTreatmentInfoVOS.stream().filter(vo->vo.getPatientId().equals(patient.getId())).findFirst().ifPresent(info->{
+              patient.setLastVisitTime(info.getTreatmentDate());
+              patient.setLastVisit(info.getDentistName());
+            });
+
+          }
         }
         return patients.stream()
             .filter(
