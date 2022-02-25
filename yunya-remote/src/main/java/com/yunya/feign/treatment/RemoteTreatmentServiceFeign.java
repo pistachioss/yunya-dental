@@ -374,6 +374,15 @@ public interface RemoteTreatmentServiceFeign {
   LastTreatmentInfoVO findLastTreatmentRecord(@PathVariable(value = "patientId") Integer patientId);
 
   /**
+   * 查询患者末次就诊记录 批量
+   *
+   * @param patientIds 患者ID
+   * @return 就诊信息
+   */
+  @RequestMapping(value = "/rpc/treat/last/batch", method = RequestMethod.POST)
+  List<LastTreatmentInfoVO> lastTreatmentInfoByBatch(@RequestBody List<Integer> patientIds);
+
+  /**
    * 根据预约ID查询患者接诊记录
    *
    * @param appointIds 预约记录

@@ -164,7 +164,9 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 employeePushForm.setEmpId(emp_ids);
                                 employeePushForm.setShowName(showName);
                                 // 根据leaveInfoForm.getApprovalPeopleId();查推送号与平台
-                                Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
+//                                Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
+                                // fix: bug3476
+                                Integer userid = workOvertimeInfoForm.getApprovalPeopleId();
                                 emp_ids.add(userid);
                                 employeePushForm.setId(workOvertimeInfo.getId());
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
@@ -354,7 +356,9 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                     employeePushForm.setShowName(showName);
                     // 撤销
                     emp_ids.add(workOvertimeInfo.getUserId());
-                    Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
+//                    Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
+                    // fix: bug3476
+                    Integer userid = workOvertimeInfoForm.getApprovalPeopleId();
                     emp_ids.add(userid);
                     employeePushForm.setId(workOvertimeInfoForm.getId());
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);

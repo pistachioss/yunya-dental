@@ -237,12 +237,16 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         List<VisitingRemindVo> searchVisitingRemindVo = null;
         String search = query.getSearch();
         if (StringHelper.isNotBlank(search)) {
-            if (!search.matches(BusinessConstants.NAME_REGEXP) && !search.matches(BusinessConstants.MOBILE_REGEXP)) {
-                return  ResponseUtil.success(new PageInfo(new ArrayList<>()));
+            if (!search.matches(BusinessConstants.NAME_REGEXP) && !search.matches(BusinessConstants.PINYIN_REGEXP) && !search.matches(BusinessConstants.MOBILE_REGEXP)) {
+                if (!search.matches(BusinessConstants.CN_EN_NAME_REGEXP)) {
+                    return ResponseUtil.success(new PageInfo(new ArrayList<>()));
+                } else {
+
+                }
             }
             PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
             patientLikeQuery.setCondition(search);
-            patientLikeQuery.setWhetherPage(false);
+            patientLikeQuery.setWhetherPage(true);
             // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容
             List<PatientBaseInfoVo> patientByNameAndMobile = remotePatientCentralServiceFeign.findPatientByNameAndMobile(patientLikeQuery);
             if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
@@ -606,13 +610,15 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
     public void executeRemindExport(HttpServletResponse response, VisitingRemindQuery query) throws IOException {
         List<VisitingRemindExecuteVo> data = executeRemindList(query).getList();
         ExcelUtil<VisitingRemindExecuteVo> excelUtil = new ExcelUtil<>(VisitingRemindExecuteVo.class);
-        String date = DateUtil.format(query.getRemindDate(), "yyyy-MM-dd");
+        String dateStr = String.format("%s~%s",
+                DateUtil.format(query.getSearchBeginTime(), "yyyy-MM-dd"),
+                DateUtil.format(query.getSearchEndTime(), "yyyy-MM-dd"));
         OrganizationInfo orgInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
         String abbreviation = "";
         if (orgInfo != null) {
              abbreviation = orgInfo.getAbbreviation();
         }
-        String fileName = excelUtil.getFileName(date,"",abbreviation,"患者提醒事项报表");
+        String fileName = excelUtil.getFileName(dateStr,"",abbreviation,"患者提醒事项报表");
         excelUtil.exportExcel(response,data,"患者提醒事项报表",fileName);
     }
 

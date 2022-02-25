@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
+import cn.hutool.core.date.DateUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -20,6 +21,7 @@ import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.model.TreatmentModel;
 import com.yunya.feign.treatment.domain.query.*;
@@ -49,9 +51,11 @@ import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1254,6 +1258,50 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     } else {
       return new LastTreatmentInfoVO();
     }
+  }
+
+
+  /**
+   * 末次就诊信息 批量
+   *
+   * @param patientIds 患者ID
+   * @return 返回末次就诊实体对象
+   */
+  public List<LastTreatmentInfoVO> lastTreatmentInfoByBatch(List<Integer> patientIds) {
+    List<LastTreatmentInfoVO> list = new ArrayList<>();
+    if (patientIds == null || !patientIds.isEmpty()) {
+      return list;
+    }
+    Example example = new Example(TreatmentRecord.class);
+    example.createCriteria().andIn("patient_id",patientIds);
+    List<TreatmentRecord> records = mapper.selectByExample(example);
+    if (!records.isEmpty()) {
+      Map<Integer, List<TreatmentRecord>> collect = records.stream().collect(Collectors.groupingBy(TreatmentRecord::getPatientId));
+      for (Integer key : collect.keySet()) {
+        List<TreatmentRecord> collect1 = collect.get(key).stream().sorted((o1, o2) -> o2.getId() - o1.getId()).collect(Collectors.toList());
+        log.info("过滤后的排序：{}",collect1);
+
+        TreatmentRecord treatmentRecord = collect1.get(0);
+        LastTreatmentInfoVO lastTreatmentInfoVO = new LastTreatmentInfoVO();
+        lastTreatmentInfoVO.setOrgId(treatmentRecord.getOrgId());
+        lastTreatmentInfoVO.setDentistId(treatmentRecord.getDentistId());
+        lastTreatmentInfoVO.setPatientId(treatmentRecord.getPatientId());
+        lastTreatmentInfoVO.setTreatmentDate(DateUtil.formatDate(treatmentRecord.getTreatStartTime()));
+        list.add(lastTreatmentInfoVO);
+      }
+    }
+
+    if (!list.isEmpty()) {
+      List<Integer> orgIds = list.stream().map(LastTreatmentInfoVO::getOrgId).collect(Collectors.toList());
+      List<Integer> dentistIds = list.stream().map(LastTreatmentInfoVO::getDentistId).collect(Collectors.toList());
+      List<OrganizationInfoDetail> orgInfoInIds = systemServiceFeign.findOrgInfoInIds(orgIds);
+      List<SysUserInfoDetail> dentistInfors = systemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
+      for (LastTreatmentInfoVO vo : list) {
+        orgInfoInIds.stream().filter(oid->oid.getId().equals(vo.getOrgId())).findFirst().ifPresent(oid-> vo.setOrgName(oid.getAbbreviation()));
+        dentistInfors.stream().filter(sid->sid.getEmployeeId().equals(vo.getDentistId())).findFirst().ifPresent(sid->vo.setDentistName(sid.getName()));
+      }
+    }
+    return list;
   }
 
   /**
