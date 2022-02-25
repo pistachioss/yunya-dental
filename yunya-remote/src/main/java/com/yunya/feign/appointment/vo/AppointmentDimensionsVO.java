@@ -16,10 +16,12 @@ import java.util.List;
  */
 @Data
 public class AppointmentDimensionsVO {
-    /** 日期 */
-    @ApiModelProperty(value = "日期")
-    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
-    private Date currentDate;
+    /** 医生id */
+    @ApiModelProperty(value = "医生id")
+    private Integer dentistId;
+    /** 医生名字 */
+    @ApiModelProperty(value = "医生名字")
+    private String name;
     @ApiModelProperty(value = "预约可视图模型(不同医生的组合)")
     private List<AppointmentDimensionVo> appointmentDimensionVoList;
 }

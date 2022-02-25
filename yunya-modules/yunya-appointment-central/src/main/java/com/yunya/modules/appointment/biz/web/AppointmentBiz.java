@@ -79,6 +79,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -731,34 +732,83 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     public List<AppointmentDimensionsVO> findAppointmentPatientDimensionByExample(PatientDimensionByDayQuery query) {
         List<AppointmentDimensionsVO> appointmentDimensionsVos = new ArrayList<>();
-        List<AppointmentDimensionVo> appointmentDimensionVos;
+
         // 根据门诊ID获取该门诊所有可预约医生的ID
         List<Integer> enableDentistIds = this.enableAppointDentistIds(query.getOrgId());
         for(Integer did:query.getDentistIds()){
+            List<AppointmentDimensionVo> appointmentDimensionVos;
             query.setDentistId(did);
             // 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
             appointmentDimensionVos = this.dimensionAppointInfo(query,enableDentistIds);
             dentistSchedule(appointmentDimensionVos);
             // 最后进行排序
             this.sort(appointmentDimensionVos, query.getOrder(), query.getOrderBy());
-            for(AppointmentDimensionVo avo:appointmentDimensionVos){
-                AppointmentDimensionsVO a = new AppointmentDimensionsVO();
-                if(appointmentDimensionsVos.stream().anyMatch(m ->m.getCurrentDate().equals(avo.getCurrentDate()))){
-                    appointmentDimensionsVos.stream().filter(m ->m.getCurrentDate().equals(avo.getCurrentDate())).findAny().isPresent();
-                     a = appointmentDimensionsVos.stream().filter(m ->m.getCurrentDate().equals(avo.getCurrentDate())).findFirst().get();
-                     a.getAppointmentDimensionVoList().add(avo);
+
+
+            List<Date> dalist = getBetweenDates(query.getStartDate(),query.getEndDate());
+            AppointmentDimensionsVO a = new AppointmentDimensionsVO();
+            a.setDentistId(did);
+            a.setName(appointmentDimensionVos.get(0).getName());
+            for(Date date:dalist){
+                if(appointmentDimensionVos.stream().anyMatch(m ->date.equals(m.getCurrentDate()))){
+
                 }else{
-                    List<AppointmentDimensionVo> as = new ArrayList<>();
-                    a.setCurrentDate(avo.getCurrentDate());
-                    as.add(avo);
-                    a.setAppointmentDimensionVoList(as);
-                    appointmentDimensionsVos.add(a);
+                    AppointmentDimensionVo appvo  = new AppointmentDimensionVo();
+                    appvo.setCurrentDate(date);
+                    appointmentDimensionVos.add(appvo);
                 }
             }
+            appointmentDimensionVos = appointmentDimensionVos.stream().filter(p -> p.getCurrentDate() != null).collect(Collectors.toList());
+            a.setAppointmentDimensionVoList(appointmentDimensionVos);
+//            for(AppointmentDimensionVo avo:appointmentDimensionVos){
+//                AppointmentDimensionsVO a = new AppointmentDimensionsVO();
+//                if(appointmentDimensionsVos.stream().anyMatch(m ->m.getCurrentDate().equals(avo.getCurrentDate()))){
+//                    appointmentDimensionsVos.stream().filter(m ->m.getCurrentDate().equals(avo.getCurrentDate())).findAny().isPresent();
+//                     a = appointmentDimensionsVos.stream().filter(m ->m.getCurrentDate().equals(avo.getCurrentDate())).findFirst().get();
+//                     a.getAppointmentDimensionVoList().add(avo);
+//                }else{
+//                    List<AppointmentDimensionVo> as = new ArrayList<>();
+//                    a.setCurrentDate(avo.getCurrentDate());
+//                    as.add(avo);
+//                    a.setAppointmentDimensionVoList(as);
+//                    appointmentDimensionsVos.add(a);
+//                }
+//            }
+            appointmentDimensionsVos.add(a);
         }
+
+
         return appointmentDimensionsVos;
     }
+    private List<Date> getBetweenDates(Date start, Date end) {
+//        List<Date> result = new ArrayList<Date>();
+//        Calendar tempStart = Calendar.getInstance();
+//        tempStart.setTime(start);
+//        tempStart.add(Calendar.DAY_OF_YEAR, 1);
+//
+//        Calendar tempEnd = Calendar.getInstance();
+//        tempEnd.setTime(end);
+//        while (tempStart.before(tempEnd)) {
+//            result.add(tempStart.getTime());
+//            tempStart.add(Calendar.DAY_OF_YEAR, 1);
+//        }
+//        return result;
+// 返回的日期集合
+        List<Date> days = new ArrayList<Date>();
 
+            Calendar tempStart = Calendar.getInstance();
+            tempStart.setTime(start);
+
+            Calendar tempEnd = Calendar.getInstance();
+            tempEnd.setTime(end);
+            tempEnd.add(Calendar.DATE, +1);// 日期加1(包含结束)
+            while (tempStart.before(tempEnd)) {
+                days.add(tempStart.getTime());
+                tempStart.add(Calendar.DAY_OF_YEAR, 1);
+            }
+
+        return days;
+    }
     /**
      * 设置预约列表中医生是否排班
      *
