@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.biz.web;
 
+import ch.qos.logback.core.joran.util.beans.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -47,6 +48,7 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -71,6 +73,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -750,33 +753,35 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             a.setDentistId(did);
             a.setName(appointmentDimensionVos.get(0).getName());
             for(Date date:dalist){
+                AppointmentDimensionVo appvo  = new AppointmentDimensionVo();
                 if(appointmentDimensionVos.stream().anyMatch(m ->date.equals(m.getCurrentDate()))){
 
                 }else{
-                    AppointmentDimensionVo appvo  = new AppointmentDimensionVo();
+                    appvo.setType(0);
+                    if(appointmentDimensionVos.get(0).getPatientNum()==null){
+                        appvo.setPatientNum(0);
+                    }else{
+                        appvo.setPatientNum(appointmentDimensionVos.get(0).getPatientNum());
+                    }
+
                     appvo.setCurrentDate(date);
                     appointmentDimensionVos.add(appvo);
                 }
             }
+            List<EmpScheduleVo> dVos = appointmentDimensionVos.get(0).getDentistScheduleVos();
             appointmentDimensionVos = appointmentDimensionVos.stream().filter(p -> p.getCurrentDate() != null).collect(Collectors.toList());
+            if(dVos.size()>0){
+                String abc = dVos.get(0).getStartDate().substring(0,10);
+                for(AppointmentDimensionVo forvo:appointmentDimensionVos){
+                    List<EmpScheduleVo> dentistScheduleVos = dVos.stream().filter(p -> p.getStartDate().substring(0,10).equals(DateUtil.format(forvo.getCurrentDate(), "yyyy-MM-dd"))).collect(Collectors.toList());
+                    forvo.setDentistScheduleVos(dentistScheduleVos);
+                }
+            }
+
+
             a.setAppointmentDimensionVoList(appointmentDimensionVos);
-//            for(AppointmentDimensionVo avo:appointmentDimensionVos){
-//                AppointmentDimensionsVO a = new AppointmentDimensionsVO();
-//                if(appointmentDimensionsVos.stream().anyMatch(m ->m.getCurrentDate().equals(avo.getCurrentDate()))){
-//                    appointmentDimensionsVos.stream().filter(m ->m.getCurrentDate().equals(avo.getCurrentDate())).findAny().isPresent();
-//                     a = appointmentDimensionsVos.stream().filter(m ->m.getCurrentDate().equals(avo.getCurrentDate())).findFirst().get();
-//                     a.getAppointmentDimensionVoList().add(avo);
-//                }else{
-//                    List<AppointmentDimensionVo> as = new ArrayList<>();
-//                    a.setCurrentDate(avo.getCurrentDate());
-//                    as.add(avo);
-//                    a.setAppointmentDimensionVoList(as);
-//                    appointmentDimensionsVos.add(a);
-//                }
-//            }
             appointmentDimensionsVos.add(a);
         }
-
 
         return appointmentDimensionsVos;
     }
