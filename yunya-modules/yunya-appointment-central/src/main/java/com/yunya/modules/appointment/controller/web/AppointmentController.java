@@ -202,10 +202,28 @@ public class AppointmentController {
    */
   @ApiOperation(value = "根据条件查询患者维度预约可视图(按医生id、时间段查询)")
   @PostMapping("/find/patient/dimension")
-  public ResponseResult<Page<AppointmentDimensionsVO>> findAppointmentPatientDimensionByDate(
+  public ResponseResult<Page<AppointmentDimensionVo>> findAppointmentPatientDimensionByDate(
       @RequestBody @Validated PatientDimensionByDayQuery query) {
-    List<AppointmentDimensionsVO> appointmentDimensionVos =
+    List<AppointmentDimensionVo> appointmentDimensionVos =
         appointmentBiz.findAppointmentPatientDimensionByExample(query);
+    // 分页
+    PageUtil pageUtil = new PageUtil(query.getPageNum(),query.getPageSize());
+    Page<AppointmentDimensionVo> paging = pageUtil.getPaging(appointmentDimensionVos);
+    return ResponseUtil.success(paging);
+  }
+
+  /**
+   * 根据条件查询预约可视图（患者维度）
+   *
+   * @param query 查询参数
+   * @return 患者维度列表
+   */
+  @ApiOperation(value = "根据条件查询患者维度预约可视图(按医生id、时间段查询) 多个医生")
+  @PostMapping("/find/patient/dimensionmore")
+  public ResponseResult<Page<AppointmentDimensionsVO>> findAppointmentPatientDimensionByDateMore(
+          @RequestBody @Validated PatientDimensionByDayQuery query) {
+    List<AppointmentDimensionsVO> appointmentDimensionVos =
+            appointmentBiz.findAppointmentPatientDimensionByExampleMore(query);
     // 分页
     PageUtil pageUtil = new PageUtil(query.getPageNum(),query.getPageSize());
     Page<AppointmentDimensionsVO> paging = pageUtil.getPaging(appointmentDimensionVos);

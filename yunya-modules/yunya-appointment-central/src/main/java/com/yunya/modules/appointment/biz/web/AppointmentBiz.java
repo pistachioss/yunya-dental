@@ -726,14 +726,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return collect;
     }
 
-
     /**
-     * 根据条件查询预约可视图（患者维度）按预约患者数量降序排列
+     * 根据条件查询预约可视图（患者维度）按预约患者数量降序排列(多个医生)
      * 可用范围 根据医生id、排班时间查询医生预约信息
      * @param query 查询条件
      * @return List<AppointmentDimensionVo>
      */
-    public List<AppointmentDimensionsVO> findAppointmentPatientDimensionByExample(PatientDimensionByDayQuery query) {
+    public List<AppointmentDimensionsVO> findAppointmentPatientDimensionByExampleMore(PatientDimensionByDayQuery query) {
         List<AppointmentDimensionsVO> appointmentDimensionsVos = new ArrayList<>();
 
         // 根据门诊ID获取该门诊所有可预约医生的ID
@@ -771,7 +770,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             List<EmpScheduleVo> dVos = appointmentDimensionVos.get(0).getDentistScheduleVos();
             appointmentDimensionVos = appointmentDimensionVos.stream().filter(p -> p.getCurrentDate() != null).collect(Collectors.toList());
             if(dVos.size()>0){
-                String abc = dVos.get(0).getStartDate().substring(0,10);
                 for(AppointmentDimensionVo forvo:appointmentDimensionVos){
                     List<EmpScheduleVo> dentistScheduleVos = dVos.stream().filter(p -> p.getStartDate().substring(0,10).equals(DateUtil.format(forvo.getCurrentDate(), "yyyy-MM-dd"))).collect(Collectors.toList());
                     forvo.setDentistScheduleVos(dentistScheduleVos);
@@ -784,6 +782,24 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
 
         return appointmentDimensionsVos;
+    }
+    /**
+     * 根据条件查询预约可视图（患者维度）按预约患者数量降序排列
+     * 可用范围 根据医生id、排班时间查询医生预约信息
+     * @param query 查询条件
+     * @return List<AppointmentDimensionVo>
+     */
+    public List<AppointmentDimensionVo> findAppointmentPatientDimensionByExample(PatientDimensionByDayQuery query) {
+        List<AppointmentDimensionVo> appointmentDimensionVos;
+        // 根据门诊ID获取该门诊所有可预约医生的ID
+        List<Integer> enableDentistIds = this.enableAppointDentistIds(query.getOrgId());
+
+            // 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
+            appointmentDimensionVos = this.dimensionAppointInfo(query,enableDentistIds);
+            dentistSchedule(appointmentDimensionVos);
+            // 最后进行排序
+        return  this.sort(appointmentDimensionVos, query.getOrder(), query.getOrderBy());
+
     }
     private List<Date> getBetweenDates(Date start, Date end) {
 //        List<Date> result = new ArrayList<Date>();

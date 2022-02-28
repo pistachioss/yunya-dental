@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -49,11 +50,11 @@ public class  AppointmentDimensionVo implements Serializable {
 
     /** 医生排班表卡片模型 */
     @ApiModelProperty(value = "医生排班表卡片")
-    private List<EmpScheduleVo> dentistScheduleVos;
+    private List<EmpScheduleVo> dentistScheduleVos = new ArrayList<>();
 
     /** 分解助手信息 */
     @ApiModelProperty(value = "分解助手信息")
-    private List<AppointmentDimensionVo> appointmentAssistants;
+    private List<AppointmentDimensionVo> appointmentAssistants = new ArrayList<>();
 
     @ApiModelProperty("0-无排班 1-有排班 2-请假 3-加班 4-外勤")
     private Integer type;
