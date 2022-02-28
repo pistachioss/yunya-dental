@@ -248,7 +248,7 @@ public class JpushManager {
 
   public void pushAttend(EmployeePushForm employeePushForm) {
     employeePushForm.setTitle("考勤打卡提示");
-    employeePushForm.setContent("【考勤打卡】还有10分钟就要上班啦，快来一键打卡");
+    employeePushForm.setContent("【考勤打卡】还有10分钟就要上班啦，快来一键打卡，已打卡请忽略");
     employeePushForm.setIsSchedule(true);
     EmployeePushData pushData = new EmployeePushData();
     pushData.setType(1);
