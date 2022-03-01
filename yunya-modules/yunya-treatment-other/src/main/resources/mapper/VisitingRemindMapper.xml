@@ -56,8 +56,8 @@
         inservice = #{inservice})
         VALUES
         <foreach collection="list" item="item" separator=",">
-            (#{orgId}, #{patientId},#{dentistId},#{treatmentId},#{remindDate}
-            ,#{remindTime},#{remindContent},#{remarks},#{status},#{inservice})
+            (#{item.orgId},#{item.patientId},#{item.dentistId},#{item.treatmentId},#{item.remindDate}
+            ,#{item.remindTime},#{item.remindContent},#{item.remarks},#{item.status},#{item.inservice})
         </foreach>
     </insert>
 
