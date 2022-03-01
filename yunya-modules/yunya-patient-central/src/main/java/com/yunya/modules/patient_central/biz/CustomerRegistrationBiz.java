@@ -1,5 +1,7 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.yunya.feign.patient_central.domain.model.AdultPatientRegistrationModel;
+import com.yunya.feign.patient_central.domain.model.ChildrenPatientRegistrationModel;
 import com.yunya.feign.patient_central.domain.model.CustomerRegistrationModel;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
@@ -147,6 +149,44 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         if (organizationInfo != null) {
             return mark + organizationInfo.getClinicNumber() + suffix;
         }
+        return null;
+    }
+
+    /**
+     * 添加客户登记
+     * @param model  客户登记
+     * @return PatientBaseInfoVo
+     */
+    public PatientBaseInfoVo addPatient(AdultPatientRegistrationModel model) {
+        Date now = new Date(System.currentTimeMillis());
+
+        PatientBaseInfo baseInfo = new PatientBaseInfo();
+        baseInfo.setAge(model.getAge());
+        baseInfo.setBirthday(model.getBirthdate());
+        baseInfo.setGender(model.getGender());
+        baseInfo.setMobile(model.getMobile());
+        baseInfo.setMobileOwner(model.getMobileOwner());
+        String name = model.getName();
+        baseInfo.setName(name);
+        baseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(name));
+        baseInfo.setOrgId(model.getOrgId());
+        baseInfo.setOriginId(model.getOriginId());
+        baseInfo.setOriginType(model.getOriginType());
+        baseInfo.setCrtId(1);
+        baseInfo.setCrtName("客户登记");
+        baseInfo.setCrtTime(now);
+        mapper.insertSelective(baseInfo);
+        Integer patientId = baseInfo.getId();
+        return null;
+    }
+
+    /**
+     * 添加客户登记
+     * @param model  客户登记
+     * @return PatientBaseInfoVo
+     */
+    public PatientBaseInfoVo addPatient(ChildrenPatientRegistrationModel model) {
+
         return null;
     }
 }

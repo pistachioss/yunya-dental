@@ -1,5 +1,7 @@
 package com.yunya.modules.patient_central.controller.web;
 
+import com.yunya.feign.patient_central.domain.model.AdultPatientRegistrationModel;
+import com.yunya.feign.patient_central.domain.model.ChildrenPatientRegistrationModel;
 import com.yunya.feign.patient_central.domain.model.CustomerRegistrationModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.framework.common.annation.IgnoreUserToken;
@@ -66,4 +68,33 @@ public class CustomerRegistrationController {
         return this.patientBaseInfoBiz.findUserExists(patientBaseInfoQueryForm);
     }
 
+    /**
+     * 成人患者登记
+     *
+     * @param model 新增患者信息
+     * @return ResponseResult
+     */
+    @RepeatSubmit
+    @IgnoreUserToken
+    @ApiOperation("成人患者登记")
+    @PostMapping("/permit/adult/add")
+    public ResponseResult addPatient(
+            @RequestBody @Validated AdultPatientRegistrationModel model) {
+        return ResponseUtil.success(this.customerRegistrationBiz.addPatient(model));
+    }
+
+    /**
+     * 儿童患者登记
+     *
+     * @param model 新增患者信息
+     * @return ResponseResult
+     */
+    @RepeatSubmit
+    @IgnoreUserToken
+    @ApiOperation("儿童患者登记")
+    @PostMapping("/permit/children/add")
+    public ResponseResult addPatient(
+            @RequestBody @Validated ChildrenPatientRegistrationModel model) {
+        return ResponseUtil.success(this.customerRegistrationBiz.addPatient(model));
+    }
 }
