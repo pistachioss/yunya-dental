@@ -41,6 +41,25 @@
                 #{id}
             </foreach>
     </update>
+    <insert id="batchIntert">
+
+         insert into visiting_remind (
+        org_id = #{orgId},
+        patient_id = #{patientId},
+        dentist_id = #{dentistId},
+        treatment_id = #{treatmentId},
+        remind_date = #{remindDate},
+        remind_time = #{remindTime},
+        remind_content = #{remindContent},
+        remarks = #{remarks},
+        status = #{status},
+        inservice = #{inservice})
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{orgId}, #{patientId},#{dentistId},#{treatmentId},#{remindDate}
+            ,#{remindTime},#{remindContent},#{remarks},#{status},#{inservice})
+        </foreach>
+    </insert>
 
     <!-- 根据患者id、提醒日期，提醒时间查询随访提醒 -->
     <select id="findVisitingRemindByPatientIdAndDateTime" parameterType="java.util.Map" resultMap="BaseResultMap">
