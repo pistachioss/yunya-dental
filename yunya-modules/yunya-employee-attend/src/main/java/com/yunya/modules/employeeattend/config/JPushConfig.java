@@ -13,6 +13,20 @@ public class JPushConfig {
 
   private static String appMasterSecret;
 
+  private static Boolean production;
+
+  public static Boolean getProduction() {
+    return production;
+  }
+
+  @Value("${jpush.production}")
+  public static void setProduction(String production) {
+    if( "prod".equals(production) || "true".equals(production)){
+      JPushConfig.production = true;
+    }
+    JPushConfig.production = false;
+  }
+
   public static String getAppKey() {
     return appKey;
   }
