@@ -1,33 +1,49 @@
 package com.yunya.models.system;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.util.Date;
+import javax.persistence.*;
 
 @Table(name = "sys_employee")
 public class SysEmployee {
-  @Id private Integer id;
+  @Id
+  private Integer id;
 
-  /** 用户ID */
+  /**
+   * 用户ID
+   */
   @Column(name = "user_id")
   private Integer userId;
 
-  /** 员工姓名 */
+  /**
+   * 员工姓名
+   */
   private String name;
 
-  /** 姓名拼音 */
+  /**
+   * 姓名拼音首字母缩写
+   */
   private String pinyin;
 
-  /** 手机 */
+  /**
+   * 性别: 0, 男; 1, 女
+   */
+  private Byte gender;
+
+  /**
+   * 手机
+   */
   @Column(name = "mobile_phone")
   private String mobilePhone;
 
-  /** 固定电话 */
+  /**
+   * 固定电话
+   */
   private String telephone;
 
-  /** 性别: 0, 男; 1, 女 */
-  private Byte gender;
+  /**
+   * 身份证
+   */
+  private String identity;
 
   /**
    * 生日
@@ -35,125 +51,214 @@ public class SysEmployee {
   private String birthday;
 
   /**
-   * 地址
+   * 居住地址-家庭地址
    */
   private String address;
 
   /**
-   * 省份
+   * 试用: 0, 正式: 1， 离职:2；实习: 3；
    */
-  private String province;
+  @Column(name = "work_status")
+  private Byte workStatus;
 
   /**
-   * 城市
+   * 工作类型（兼职-0；全职-1）
    */
-  private String city;
+  @Column(name = "work_type")
+  private Byte workType;
 
   /**
-   * 县/区
+   * 合同签署日期
    */
-  private String country;
+  @Column(name = "contract_signing_date")
+  private String contractSigningDate;
+
+  /**
+   * 入职时间
+   */
+  @Column(name = "entry_date")
+  private String entryDate;
+
+  /**
+   * 毕业院校
+   */
+  @Column(name = "graduated_school")
+  private String graduatedSchool;
+
+  /**
+   * 学历
+   */
+  private Integer education;
 
   /**
    * 籍贯
    */
   private String origin;
 
-  /** 身份证 */
-  private String identity;
+  /**
+   * 省
+   */
+  private String province;
 
-  /** 试用: 0, 正式: 1，实习: 2, 离职 */
-  @Column(name = "work_status")
-  private Byte workStatus;
+  /**
+   * 市
+   */
+  private String city;
 
-  /** 奖金系数 */
-  @Column(name = "bonus_coefficient")
-  private Double bonusCoefficient;
+  /**
+   * 区/县/自治州
+   */
+  private String country;
 
-  @Column(name = "work_amount")
-  private Double workAmount;
+  /**
+   * 是否有员工折扣
+   */
+  private Boolean discount;
 
-  /** 工作类型（兼职-0；全职-1） */
-  @Column(name = "work_type")
-  private Byte workType;
-
-  /** 合同签署日期 */
-  @Column(name = "contract_signing_date")
-  private String contractSigningDate;
-
-  /** 入职时间 */
-  @Column(name = "entry_date")
-  private String entryDate;
-
-  /** 毕业院校 */
-  @Column(name = "graduated_school")
-  private String graduatedSchool;
-
-  /** 学历 */
-  private Integer education;
-
-  /** 离职日期 */
+  /**
+   * 离职日期
+   */
   @Column(name = "leave_time")
   private String leaveTime;
 
-  /** 职称 */
+  /**
+   * 职称
+   */
   private String title;
 
-  /** 职级 */
+  /**
+   * 奖金系数
+   */
+  @Column(name = "bonus_coefficient")
+  private Double bonusCoefficient;
+
+  /**
+   * 基本工作量
+   */
+  @Column(name = "work_amount")
+  private Double workAmount;
+
+  /**
+   * 职级
+   */
   @Column(name = "post_level")
   private String postLevel;
 
-  /** 紧急联系人姓名 */
+  /**
+   * 紧急联系人姓名
+   */
   @Column(name = "emergency_contact")
   private String emergencyContact;
 
-  /** 紧急联系人联系人电话 */
+  /**
+   * 紧急联系人联系人电话
+   */
   @Column(name = "emergency_contact_phone")
   private String emergencyContactPhone;
 
-  /** 是否有员工折扣 */
-  private Boolean discount;
-
-  /** 个人照片链接 */
+  /**
+   * 个人照片链接
+   */
   private String photo;
 
-  /** 毕业证书照片:多张照片用;隔开 */
+  /**
+   * 毕业证书照片:多张照片用;隔开
+   */
   @Column(name = "diploma_photo")
   private String diplomaPhoto;
 
-  /** 工号 */
+  /**
+   * 工号
+   */
   @Column(name = "work_number")
   private String workNumber;
 
-  /** 创建人ID */
+  /**
+   * 人员类别
+   */
+  private String category;
+
+  /**
+   * 户口性质
+   */
+  private String registration;
+
+  /**
+   * 户籍地址
+   */
+  @Column(name = "permanent_address")
+  private String permanentAddress;
+
+  /**
+   *  毕业时间
+   */
+  @Column(name = "graduation_time")
+  private String graduationTime;
+
+  /**
+   *  学习专业
+   */
+  @Column(name = "study_major")
+  private String studyMajor;
+
+  /**
+   * 上一份工作单位
+   */
+  @Column(name = "last_job")
+  private String lastJob;
+
+  /**
+   * 试用期结束时间
+   */
+  @Column(name = "probation_period_time")
+  private String probationPeriodTime;
+
+  /**
+   * 创建人ID
+   */
   @Column(name = "crt_id")
   private Integer crtId;
 
-  /** 创建人名称 */
+  /**
+   * 创建人名称
+   */
   @Column(name = "crt_name")
   private String crtName;
 
-  /** 创建时间 */
+  /**
+   * 创建时间
+   */
   @Column(name = "crt_time")
   private Date crtTime;
 
+  /**
+   * 修改人ID
+   */
   @Column(name = "upd_id")
   private Integer updId;
 
-  /** 修改人名称 */
+  /**
+   * 修改人名称
+   */
   @Column(name = "upd_name")
   private String updName;
 
-  /** 修改时间 */
+  /**
+   * 修改时间
+   */
   @Column(name = "upd_time")
   private Date updTime;
 
-  /** @return id */
+  /**
+   * @return id
+   */
   public Integer getId() {
     return id;
   }
 
-  /** @param id */
+  /**
+   * @param id
+   */
   public void setId(Integer id) {
     this.id = id;
   }
@@ -195,19 +300,39 @@ public class SysEmployee {
   }
 
   /**
-   * 获取姓名拼音
-   * @return pinyin
+   * 获取姓名拼音首字母缩写
+   *
+   * @return pinyin - 姓名拼音首字母缩写
    */
   public String getPinyin() {
     return pinyin;
   }
 
   /**
-   * 设置姓名拼音
-   * @param pinyin 姓名拼音
+   * 设置姓名拼音首字母缩写
+   *
+   * @param pinyin 姓名拼音首字母缩写
    */
   public void setPinyin(String pinyin) {
     this.pinyin = pinyin;
+  }
+
+  /**
+   * 获取性别: 0, 男; 1, 女
+   *
+   * @return gender - 性别: 0, 男; 1, 女
+   */
+  public Byte getGender() {
+    return gender;
+  }
+
+  /**
+   * 设置性别: 0, 男; 1, 女
+   *
+   * @param gender 性别: 0, 男; 1, 女
+   */
+  public void setGender(Byte gender) {
+    this.gender = gender;
   }
 
   /**
@@ -231,7 +356,7 @@ public class SysEmployee {
   /**
    * 获取固定电话
    *
-   * @return telephone
+   * @return telephone - 固定电话
    */
   public String getTelephone() {
     return telephone;
@@ -240,76 +365,10 @@ public class SysEmployee {
   /**
    * 设置固定电话
    *
-   * @param telephone -固定电话
+   * @param telephone 固定电话
    */
   public void setTelephone(String telephone) {
     this.telephone = telephone;
-  }
-
-  /**
-   * 获取性别: 0, 男; 1, 女
-   *
-   * @return sex - 性别: 0, 男; 1, 女
-   */
-  public Byte getGender() {
-    return gender;
-  }
-
-  /**
-   * 设置性别: 0, 男; 1, 女
-   *
-   * @param gender 性别: 0, 男; 1, 女
-   */
-  public void setGender(Byte gender) {
-    this.gender = gender;
-  }
-
-  public String getBirthday() {
-    return birthday;
-  }
-
-  public void setBirthday(String birthday) {
-    this.birthday = birthday;
-  }
-
-  public String getAddress() {
-    return address;
-  }
-
-  public void setAddress(String address) {
-    this.address = address;
-  }
-
-  public String getProvince() {
-    return province;
-  }
-
-  public void setProvince(String province) {
-    this.province = province;
-  }
-
-  public String getCity() {
-    return city;
-  }
-
-  public void setCity(String city) {
-    this.city = city;
-  }
-
-  public String getCountry() {
-    return country;
-  }
-
-  public void setCountry(String country) {
-    this.country = country;
-  }
-
-  public String getOrigin() {
-    return origin;
-  }
-
-  public void setOrigin(String origin) {
-    this.origin = origin;
   }
 
   /**
@@ -331,37 +390,57 @@ public class SysEmployee {
   }
 
   /**
-   * 获取试用: 0, 正式: 1，实习: 2, 离职
+   * 获取生日
    *
-   * @return work_status - 试用: 0, 正式: 1，实习: 2, 离职
+   * @return birthday - 生日
+   */
+  public String getBirthday() {
+    return birthday;
+  }
+
+  /**
+   * 设置生日
+   *
+   * @param birthday 生日
+   */
+  public void setBirthday(String birthday) {
+    this.birthday = birthday;
+  }
+
+  /**
+   * 获取居住地址-家庭地址
+   *
+   * @return address - 居住地址-家庭地址
+   */
+  public String getAddress() {
+    return address;
+  }
+
+  /**
+   * 设置居住地址-家庭地址
+   *
+   * @param address 居住地址-家庭地址
+   */
+  public void setAddress(String address) {
+    this.address = address;
+  }
+
+  /**
+   * 获取试用: 0, 正式: 1， 离职:2；实习: 3；
+   *
+   * @return work_status - 试用: 0, 正式: 1， 离职:2；实习: 3；
    */
   public Byte getWorkStatus() {
     return workStatus;
   }
 
   /**
-   * 设置试用: 0, 正式: 1，实习: 2, 离职
+   * 设置试用: 0, 正式: 1， 离职:2；实习: 3；
    *
-   * @param workStatus 试用: 0, 正式: 1，实习: 2, 离职
+   * @param workStatus 试用: 0, 正式: 1， 离职:2；实习: 3；
    */
   public void setWorkStatus(Byte workStatus) {
     this.workStatus = workStatus;
-  }
-
-  public Double getBonusCoefficient() {
-    return bonusCoefficient;
-  }
-
-  public void setBonusCoefficient(Double bonusCoefficient) {
-    this.bonusCoefficient = bonusCoefficient;
-  }
-
-  public Double getWorkAmount() {
-    return workAmount;
-  }
-
-  public void setWorkAmount(Double workAmount) {
-    this.workAmount = workAmount;
   }
 
   /**
@@ -455,6 +534,96 @@ public class SysEmployee {
   }
 
   /**
+   * 获取籍贯
+   *
+   * @return origin - 籍贯
+   */
+  public String getOrigin() {
+    return origin;
+  }
+
+  /**
+   * 设置籍贯
+   *
+   * @param origin 籍贯
+   */
+  public void setOrigin(String origin) {
+    this.origin = origin;
+  }
+
+  /**
+   * 获取省
+   *
+   * @return province - 省
+   */
+  public String getProvince() {
+    return province;
+  }
+
+  /**
+   * 设置省
+   *
+   * @param province 省
+   */
+  public void setProvince(String province) {
+    this.province = province;
+  }
+
+  /**
+   * 获取市
+   *
+   * @return city - 市
+   */
+  public String getCity() {
+    return city;
+  }
+
+  /**
+   * 设置市
+   *
+   * @param city 市
+   */
+  public void setCity(String city) {
+    this.city = city;
+  }
+
+  /**
+   * 获取区/县/自治州
+   *
+   * @return country - 区/县/自治州
+   */
+  public String getCountry() {
+    return country;
+  }
+
+  /**
+   * 设置区/县/自治州
+   *
+   * @param country 区/县/自治州
+   */
+  public void setCountry(String country) {
+    this.country = country;
+  }
+
+  /**
+   * 获取是否有员工折扣
+   *
+   * @return discount - 是否有员工折扣
+   */
+  public Boolean getDiscount() {
+    return discount;
+  }
+
+  /**
+   * 设置是否有员工折扣
+   *
+   * @param discount 是否有员工折扣
+   */
+  public void setDiscount(Boolean discount) {
+    this.discount = discount;
+  }
+
+  /**
    * 获取离职日期
    *
    * @return leave_time - 离职日期
@@ -488,6 +657,42 @@ public class SysEmployee {
    */
   public void setTitle(String title) {
     this.title = title;
+  }
+
+  /**
+   * 获取奖金系数
+   *
+   * @return bonus_coefficient - 奖金系数
+   */
+  public Double getBonusCoefficient() {
+    return bonusCoefficient;
+  }
+
+  /**
+   * 设置奖金系数
+   *
+   * @param bonusCoefficient 奖金系数
+   */
+  public void setBonusCoefficient(Double bonusCoefficient) {
+    this.bonusCoefficient = bonusCoefficient;
+  }
+
+  /**
+   * 获取基本工作量
+   *
+   * @return work_amount - 基本工作量
+   */
+  public Double getWorkAmount() {
+    return workAmount;
+  }
+
+  /**
+   * 设置基本工作量
+   *
+   * @param workAmount 基本工作量
+   */
+  public void setWorkAmount(Double workAmount) {
+    this.workAmount = workAmount;
   }
 
   /**
@@ -545,24 +750,6 @@ public class SysEmployee {
   }
 
   /**
-   * 获取是否有员工折扣
-   *
-   * @return discount - 是否有员工折扣
-   */
-  public Boolean getDiscount() {
-    return discount;
-  }
-
-  /**
-   * 设置是否有员工折扣
-   *
-   * @param discount 是否有员工折扣
-   */
-  public void setDiscount(Boolean discount) {
-    this.discount = discount;
-  }
-
-  /**
    * 获取个人照片链接
    *
    * @return photo - 个人照片链接
@@ -614,6 +801,132 @@ public class SysEmployee {
    */
   public void setWorkNumber(String workNumber) {
     this.workNumber = workNumber;
+  }
+
+  /**
+   * 获取人员类别
+   *
+   * @return category - 人员类别
+   */
+  public String getCategory() {
+    return category;
+  }
+
+  /**
+   * 设置人员类别
+   *
+   * @param category 人员类别
+   */
+  public void setCategory(String category) {
+    this.category = category;
+  }
+
+  /**
+   * 获取户口性质
+   *
+   * @return registration - 户口性质
+   */
+  public String getRegistration() {
+    return registration;
+  }
+
+  /**
+   * 设置户口性质
+   *
+   * @param registration 户口性质
+   */
+  public void setRegistration(String registration) {
+    this.registration = registration;
+  }
+
+  /**
+   * 获取户籍地址
+   *
+   * @return permanent_address - 户籍地址
+   */
+  public String getPermanentAddress() {
+    return permanentAddress;
+  }
+
+  /**
+   * 设置户籍地址
+   *
+   * @param permanentAddress 户籍地址
+   */
+  public void setPermanentAddress(String permanentAddress) {
+    this.permanentAddress = permanentAddress;
+  }
+
+  /**
+   * 获取 毕业时间
+   *
+   * @return graduation_time -  毕业时间
+   */
+  public String getGraduationTime() {
+    return graduationTime;
+  }
+
+  /**
+   * 设置 毕业时间
+   *
+   * @param graduationTime  毕业时间
+   */
+  public void setGraduationTime(String graduationTime) {
+    this.graduationTime = graduationTime;
+  }
+
+  /**
+   * 获取 学习专业
+   *
+   * @return study_major -  学习专业
+   */
+  public String getStudyMajor() {
+    return studyMajor;
+  }
+
+  /**
+   * 设置 学习专业
+   *
+   * @param studyMajor  学习专业
+   */
+  public void setStudyMajor(String studyMajor) {
+    this.studyMajor = studyMajor;
+  }
+
+  /**
+   * 获取上一份工作单位
+   *
+   * @return last_job - 上一份工作单位
+   */
+  public String getLastJob() {
+    return lastJob;
+  }
+
+  /**
+   * 设置上一份工作单位
+   *
+   * @param lastJob 上一份工作单位
+   */
+  public void setLastJob(String lastJob) {
+    this.lastJob = lastJob;
+  }
+
+  /**
+   * 获取试用期结束时间
+   *
+   * @return probation_period_time - 试用期结束时间
+   */
+  public String getProbationPeriodTime() {
+    return probationPeriodTime;
+  }
+
+  /**
+   * 设置试用期结束时间
+   *
+   * @param probationPeriodTime 试用期结束时间
+   */
+  public void setProbationPeriodTime(String probationPeriodTime) {
+    this.probationPeriodTime = probationPeriodTime;
   }
 
   /**
@@ -670,12 +983,20 @@ public class SysEmployee {
     this.crtTime = crtTime;
   }
 
-  /** @return upd_id */
+  /**
+   * 获取修改人ID
+   *
+   * @return upd_id - 修改人ID
+   */
   public Integer getUpdId() {
     return updId;
   }
 
-  /** @param updId */
+  /**
+   * 设置修改人ID
+   *
+   * @param updId 修改人ID
+   */
   public void setUpdId(Integer updId) {
     this.updId = updId;
   }
