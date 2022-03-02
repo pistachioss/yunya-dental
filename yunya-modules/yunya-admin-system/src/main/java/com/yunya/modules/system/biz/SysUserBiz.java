@@ -128,6 +128,20 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
         sysEmployee.setLeaveTime(
             StringHelper.isBlank(leaveTime) ? new DateTime().toString("yyyy-MM-dd") : leaveTime);
       }
+      // 工号获取
+      String max;
+      try {
+        max = sysEmployeeMapper.selectMaxWorkNumber();
+        int n = Integer.parseInt(max);
+        max = "000" + (++n);
+        max = max.substring(max.length() - 4);
+      } catch (Exception ex) {
+        max = "0001";
+      }
+      if ("0000".equals(max)) {
+        throw new ClientServiceException("员工工号达最大9999，已无法再自动生成", SAME_DATA_EXIST);
+      }
+      sysEmployee.setWorkNumber(max);
       sysEmployee.setPinyin(HanyuPinyinHelper.getFirstLettersLo(resource.getName()));
       sysEmployee.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
       sysEmployee.setCrtName(BaseContextHandler.getName());
@@ -240,6 +254,18 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       if (1 == userId) {
         sysEmployeeEntity.setLeaveTime("");
         sysEmployeeEntity.setWorkStatus((byte) 1);
+      }
+      // 工号检测
+      try{
+        Integer.parseInt(sysEmployeeEntity.getWorkNumber());
+      } catch (Exception ex){
+        throw new ClientServiceException("员工工号" + sysEmployeeEntity.getWorkNumber() + "非法", PARAMETERS_IS_ILLEGAL);
+      }
+      Integer n =
+          sysEmployeeMapper.selectWorkNumberByUserId(
+              sysEmployeeEntity.getUserId(), sysEmployeeEntity.getWorkNumber());
+      if (n > 0) {
+        throw new ClientServiceException("员工工号" + sysEmployeeEntity.getWorkNumber() + "已存在", SAME_DATA_EXIST);
       }
       sysEmployeeEntity.setId(employeeResult.getId());
       sysEmployeeEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
