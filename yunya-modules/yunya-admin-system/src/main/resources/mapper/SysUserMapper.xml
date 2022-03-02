@@ -363,7 +363,7 @@
         se.graduation_time AS graduationTime,
         se.study_major AS studyMajor,
         se.last_job AS lastJob,
-        se.probation_period_time AS probationPeriodTime,
+        se.probation_period_time AS probationPeriodTime
         FROM
         sys_user su
         LEFT JOIN sys_employee se ON su.id = se.user_id
