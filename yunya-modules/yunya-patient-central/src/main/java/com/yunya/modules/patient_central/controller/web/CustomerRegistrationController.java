@@ -80,7 +80,8 @@ public class CustomerRegistrationController {
     @PostMapping("/permit/adult/add")
     public ResponseResult addPatient(
             @RequestBody @Validated AdultPatientRegistrationModel model) {
-        return ResponseUtil.success(this.customerRegistrationBiz.addPatient(model));
+        customerRegistrationBiz.addPatient(model);
+        return ResponseUtil.success();
     }
 
     /**
@@ -95,6 +96,7 @@ public class CustomerRegistrationController {
     @PostMapping("/permit/children/add")
     public ResponseResult addPatient(
             @RequestBody @Validated ChildrenPatientRegistrationModel model) {
-        return ResponseUtil.success(this.customerRegistrationBiz.addPatient(model));
+        customerRegistrationBiz.addPatient(model);
+        return ResponseUtil.success();
     }
 }

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -41,10 +42,6 @@ public class ChildrenPatientRegistrationModel extends PatientRegistrationModel i
     @NotEmpty(message = "联系电话不能为空")
     private String guardianPhone;
 
-    /** 职业 */
-    @ApiModelProperty("职业")
-    private String profession;
-
     /** 服药史 */
     @ApiModelProperty("服药史")
     private String medicationHistory;
@@ -63,11 +60,11 @@ public class ChildrenPatientRegistrationModel extends PatientRegistrationModel i
 
     /** 每天刷牙次数 */
     @ApiModelProperty("每天刷牙次数")
-    private Integer brushingTimes;
+    private Short brushingTimes;
 
     /** 使用的牙膏含氟吗：0-否，1-是 */
     @ApiModelProperty("使用的牙膏含氟吗：0-否，1-是")
-    private Byte usedFluorideToothpaste;
+    private Boolean usedFluorideToothpaste;
 
     /** 使用牙线吗：0-有，1-无，2-偶尔 */
     @ApiModelProperty("使用牙线吗：0-有，1-无，2-偶尔")
@@ -79,6 +76,7 @@ public class ChildrenPatientRegistrationModel extends PatientRegistrationModel i
 
     /** 父母是否有龋齿：0-父有，1-父无，2-母有，3-母无 */
     @ApiModelProperty("父母是否有龋齿：0-父有，1-父无，2-母有，3-母无")
+    @NotNull(message = "父母是否有龋齿必选")
     private List<Integer> parentHasCaries;
 
     /** 母亲孕期情况 */

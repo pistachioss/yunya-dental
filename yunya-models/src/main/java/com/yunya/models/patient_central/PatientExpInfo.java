@@ -142,6 +142,28 @@ public class PatientExpInfo {
     private String country;
 
     /**
+     * 紧急联系人（手机）
+     */
+    @Column(name = "emergency_phone")
+    private String emergencyPhone;
+
+    /**
+     * 电子邮箱
+     */
+    @Column(name = "e_mail")
+    private String eMail;
+
+    /**
+     * 单位
+     */
+    private String employer;
+
+    /**
+     * 国籍代码
+     */
+    private String state;
+
+    /**
      * 备注 备注
      */
     private String remarks;
@@ -731,5 +753,37 @@ public class PatientExpInfo {
 
     public void setGuardian(String guardian) {
         this.guardian = guardian;
+    }
+
+    public String getEmergencyPhone() {
+        return emergencyPhone;
+    }
+
+    public void setEmergencyPhone(String emergencyPhone) {
+        this.emergencyPhone = emergencyPhone;
+    }
+
+    public String geteMail() {
+        return eMail;
+    }
+
+    public void seteMail(String eMail) {
+        this.eMail = eMail;
+    }
+
+    public String getEmployer() {
+        return employer;
+    }
+
+    public void setEmployer(String employer) {
+        this.employer = employer;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }

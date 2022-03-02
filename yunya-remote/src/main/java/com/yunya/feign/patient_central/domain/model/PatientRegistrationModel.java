@@ -8,6 +8,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -26,12 +27,14 @@ import java.util.List;
 public class PatientRegistrationModel implements Serializable {
 
     /** 门诊id */
-    @ApiModelProperty("门诊id")
+    @ApiModelProperty(value = "门诊id", required = true)
+    @NotNull(message = "门诊id不能为空")
     private Integer orgId;
 
     /** 患者姓名 字符串，长度64 */
     @ApiModelProperty(value = "患者姓名",required = true)
     @NotEmpty(message = "姓名为空")
+    @Size(max = 50, message = "姓名长度不能超过50个字符！")
     private String name;
 
     /** 性别 0-男；1-女； */
@@ -53,20 +56,35 @@ public class PatientRegistrationModel implements Serializable {
     @ApiModelProperty("国籍编码")
     private String state;
 
-    /** 通讯地址（行政区划代码）*/
-    @ApiModelProperty("通讯地址（行政区划代码）")
-    private Integer address;
+    /** 职业-字典id */
+    @ApiModelProperty("职业-字典id")
+    private Integer profession;
+
+    /** 通讯地址-省份*/
+    @ApiModelProperty("通讯地址-省份")
+    private String province;
+
+    /** 通讯地址-城市*/
+    @ApiModelProperty("通讯地址-城市")
+    private String city;
+
+    /** 通讯地址-区县*/
+    @ApiModelProperty("通讯地址-区县")
+    private String country;
 
     /** 详细地址*/
     @ApiModelProperty("详细地址")
+    @Size(max = 50, message = "详细长度不能超过50个字符！")
     private String detailedAddress;
 
     /** 电子邮件*/
     @ApiModelProperty("电子邮件")
+    @Size(max = 50, message = "电子邮箱长度不能超过50个字符！")
     private String eMail;
 
     /** 紧急联系人*/
     @ApiModelProperty("紧急联系人")
+    @Size(max = 50, message = "紧急联系人长度不能超过50个字符！")
     private String emergencyPhone;
 
     /** 患者来源类型 患者来源分类ID */
@@ -80,12 +98,12 @@ public class PatientRegistrationModel implements Serializable {
     private Integer originId;
 
     /** 疾病史 */
-    @ApiModelProperty("疾病史")
-    private List<Integer> medicalHistoryIds;
+    @ApiModelProperty("疾病史 (疾病名称列表)")
+    private List<String> medicalHistorys;
 
     /** 过敏源 */
-    @ApiModelProperty("过敏源")
-    private List<Integer> allergnIds;
+    @ApiModelProperty("过敏源 （过敏源名称列表）")
+    private List<String> allergns;
 
     /** 患者签名图片*/
     @ApiModelProperty("患者签名图片")

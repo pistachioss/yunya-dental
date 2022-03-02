@@ -21,6 +21,7 @@
         <result column="origin_type" property="originType" jdbcType="INTEGER"/>
         <result column="origin_id" property="originId" jdbcType="INTEGER"/>
         <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="has_died" property="hasDied" jdbcType="BIT"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
@@ -33,7 +34,7 @@
     <!--患者表中的全部字段-->
     <sql id="Patient_Column_List">
         id,org_id orgId,name,pinyin_name pinyinName,face_url faceUrl,wo_guid woGuid,mobile,Mobile_owner mobileOwner,medical_number medicalNumber,gender,age,birthday,origin_type originType,origin_id originId,remarks,
-        inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime,person_id personId
+        inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime,person_id personId, has_died hasDied
     </sql>
 
     <!--根据手机号查询用户是否纯在-->
