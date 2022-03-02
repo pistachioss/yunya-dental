@@ -52,3 +52,4 @@ swagger:
 jpush:
   appKey : a179183924fe3b9f6fc35d8c
   appMasterSecret: d802655734787cf7237e73f2
+  production: ${spring.profiles.active}   # when prod or true then true
