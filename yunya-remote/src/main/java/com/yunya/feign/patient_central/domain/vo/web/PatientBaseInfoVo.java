@@ -146,4 +146,18 @@ public class PatientBaseInfoVo implements Serializable {
     @ApiModelProperty("来源名称")
     private String sourceName;
 
+
+    /**
+     * 创建人
+     */
+    @ApiModelProperty("创建人")
+    private Integer crtId;
+
+    /** 属性类型：0-成人，1-儿童*/
+    @ApiModelProperty("属性类型：0-成人，1-儿童")
+    private Byte attribute;
+
+    /** 是否去世*/
+    @ApiModelProperty("是否去世")
+    private Boolean hasDied;
 }

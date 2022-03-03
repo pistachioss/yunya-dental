@@ -1,11 +1,10 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -30,11 +29,13 @@ public class PatientExtInfoVo implements Serializable {
     /**
      * 诊所ID
      */
+    @ApiModelProperty("诊所ID")
     private Integer orgId;
 
     /**
      * 患者ID
      */
+    @ApiModelProperty("患者ID")
     private Integer patientId;
 
     /**
@@ -50,21 +51,25 @@ public class PatientExtInfoVo implements Serializable {
     /**
      * 数据类型 0-标签；1-疾病史；2-过敏原
      */
+    @ApiModelProperty("数据类型 0-标签；1-疾病史；2-过敏原")
     private Byte type;
 
     /**
-     * 描述 描述信息
+     * 描述
      */
+    @ApiModelProperty("描述信息")
     private String description;
 
     /**
-     * 备注 备注
+     * 备注
      */
+    @ApiModelProperty("备注")
     private String remarks;
 
     /**
      * 是否启用 是否有效
      */
+    @ApiModelProperty("是否启用")
     private Boolean inservice;
 
     /**

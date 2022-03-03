@@ -29,6 +29,11 @@ public class DictForm implements Serializable {
   @NotBlank(message = "字典名称不能为空")
   @Size(max = 50, message = "字典名称长度不能超过50个字符")
   private String name;
+
+  /** 字典明细英文名称 */
+  @ApiModelProperty(value = "字典明细英文名称")
+  private String englishName;
+
   /** 是否可用 */
   @ApiModelProperty(value = "是否启用")
   private Boolean inservice;

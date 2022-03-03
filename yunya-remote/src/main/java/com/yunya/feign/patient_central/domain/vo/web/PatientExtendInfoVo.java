@@ -1,6 +1,7 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -19,13 +20,19 @@ import java.util.List;
 @ToString
 @ApiModel("返回患者资料信息模型")
 public class PatientExtendInfoVo implements Serializable {
-
   /** 患者基本信息表 */
+  @ApiModelProperty("患者基本信息表")
   private PatientBaseInfoVo patientBaseInfoVo;
 
   /** 患者信息扩展表 */
+  @ApiModelProperty("患者信息扩展表")
   private PatientExpInfoVo patientExpInfoVo;
 
   /** 患者其他信息表 */
+  @ApiModelProperty("患者其他信息表")
   private List<PatientExtInfoVo> patientExtInfoListVo;
+
+  /** 患者儿童属性信息表 */
+  @ApiModelProperty("患者儿童属性信息表")
+  private PatientChildInfoVO patientChildInfoVO;
 }

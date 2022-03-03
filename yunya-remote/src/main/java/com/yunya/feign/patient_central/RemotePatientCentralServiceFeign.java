@@ -314,4 +314,8 @@ import java.util.*;
   @ApiOperation("批量查询推送消息的绑定人")
   @RequestMapping (value = "/api/wx/pusher/batch", method = RequestMethod.POST)
   List<WxFans> listWxPushUser(@RequestBody List<Integer> patientIds);
+
+  @ApiOperation("条件查询自助登记患者的人数")
+  @PostMapping(value = "/api/count/selfRegistrationPatient")
+  Integer countSelfRegistrationPatient(@RequestBody SelfRegistrationPatientQuery patientQuery);
 }
