@@ -31,6 +31,10 @@ public class DictionaryItemModel implements Serializable {
   @NotBlank(message = "字典名称为空！")
   private String name;
 
+  /** 字典明细英文名称 */
+  @ApiModelProperty(value = "字典明细英文名称")
+  private String englishName;
+
   /** 是否启用 */
   @ApiModelProperty("是否启用")
   private Boolean inservice;
