@@ -97,10 +97,75 @@ public class SysUserForm implements Serializable {
   /** 紧急联系人电话 */
   @ApiModelProperty("紧急联系人电话")
   private String emergencyContactPhone;
-  /** 现居地址 */
-  @ApiModelProperty("居住地址")
+  /** 现居地址-家庭地址 */
+  @ApiModelProperty("居住地址-家庭地址")
   @Size(max = 100, message = "居住地址不能超过100个字符")
   private String address;
+
+  /**
+   * 工号
+   */
+  @ApiModelProperty(value = "工号")
+  private String workNumber;
+
+  /**
+   * 人员类别
+   */
+  @ApiModelProperty(value = "人员类别", required = true)
+  @NotNull(message = "人员类别不能为空！")
+  @Size(max = 50, message = "人员类别不能超过50个字符")
+  private String category;
+
+  /**
+   * 户口性质
+   */
+  @ApiModelProperty(value = "户口性质（传文字）", required = true)
+  @NotNull(message = "户口性质不能为空！")
+  @Size(max = 50, message = "户口性质不能超过50个字符")
+  private String registration;
+
+  /**
+   * 户籍地址
+   */
+  @ApiModelProperty(value = "户籍地址", required = true)
+  @NotNull(message = "户籍地址不能为空！")
+  @Size(max = 200, message = "户籍地址不能超过200个字符")
+  private String permanentAddress;
+
+  /**
+   *  毕业时间
+   */
+  @ApiModelProperty(value = "毕业时间", required = true)
+  @NotNull(message = "毕业时间不能为空！")
+  @Size(max = 20, message = "毕业时间不能超过20个字符")
+  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+  private String graduationTime;
+
+  /**
+   *  学习专业
+   */
+  @ApiModelProperty(value = "学习专业", required = true)
+  @NotNull(message = "学习专业不能为空！")
+  @Size(max = 100, message = "学习专业不能超过100个字符")
+  private String studyMajor;
+
+  /**
+   * 上一份工作单位
+   */
+  @ApiModelProperty(value = "上一份工作单位", required = true)
+  @NotNull(message = "上一份工作单位不能为空！")
+  @Size(max = 200, message = "上一份工作单位不能超过200个字符")
+  private String lastJob;
+
+  /**
+   * 试用期结束时间
+   */
+  @ApiModelProperty(value = "试用期结束时间", required = true)
+  @NotNull(message = "试用期结束时间不能为空！")
+  @Size(max = 20, message = "试用期结束时间不能超过20个字符")
+  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+  private String probationPeriodTime;
+
   /** 可登陆组织列表 */
   private List<LoginOrganizationForm> loginOrganizationForms;
 }

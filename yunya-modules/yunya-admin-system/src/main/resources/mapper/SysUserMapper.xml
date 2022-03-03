@@ -356,7 +356,14 @@
         se.discount,
         se.photo,
         se.diploma_photo AS diplomaPhoto,
-        se.work_number AS workNumber
+        se.work_number AS workNumber,
+        se.category,
+        se.registration,
+        se.permanent_address AS permanentAddress,
+        se.graduation_time AS graduationTime,
+        se.study_major AS studyMajor,
+        se.last_job AS lastJob,
+        se.probation_period_time AS probationPeriodTime
         FROM
         sys_user su
         LEFT JOIN sys_employee se ON su.id = se.user_id
