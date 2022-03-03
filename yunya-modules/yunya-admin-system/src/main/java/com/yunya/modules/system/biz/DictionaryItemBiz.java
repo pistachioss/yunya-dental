@@ -53,6 +53,7 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
     }
     DictionaryItem entity = new DictionaryItem();
     entity.setName(name);
+    entity.setEnglishName(resource.getEnglishName());
     int count = mapper.selectCount(entity);
     if (count > 0) {
       throw new ClientServiceException(
@@ -81,6 +82,7 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
       String name = form.getName();
       resultData = new DictionaryItem();
       resultData.setName(name);
+      resultData.setEnglishName(form.getEnglishName());
       int count = mapper.selectCount(resultData);
       if (count > 0) {
         throw new ClientServiceException(
