@@ -9,7 +9,11 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
+import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
+import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.enums.FileSourceTypeEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
@@ -23,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -66,6 +71,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     @Autowired private PatientExpInfoMapper patientExpInfoMapper;
 
     @Autowired private PatientExtInfoMapper patientExtInfoMapper;
+
+    @Autowired private RemoteTreatmentOtherFeign  remoteTreatmentOtherFeign;
 
     /**
      * 添加客户登记
@@ -195,6 +202,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 创建预付款 并发送消息
         patientBaseInfoBiz.sendMessages(patientId, 0);
         addPatientPrepaymentsInfo(patientBaseInfo);
+        savePatientSignature(model, userId, patientId);
     }
 
     /**
@@ -345,6 +353,29 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 创建预付款 并发送消息
         patientBaseInfoBiz.sendMessages(patientId, 0);
         addPatientPrepaymentsInfo(patientBaseInfo);
+        savePatientSignature(model, userId, patientId);
+    }
+
+    /**
+     * 保存患者的签名
+     *
+     * @param patientModel
+     * @param userId
+     * @param patientId
+     */
+    private void savePatientSignature(PatientRegistrationModel patientModel, Integer userId, Integer patientId) {
+        Date now = new Date(System.currentTimeMillis());
+        XUploadFileVO file = new XUploadFileVO();
+        file.setFileLocation(patientModel.getSignatureImgUrl());
+        file.setUploadTime(now);
+        file.setFileName(patientModel.getName()+"的签名");
+        MedicalRayFilmModel model = new MedicalRayFilmModel();
+        model.setSourceType(FileSourceTypeEnum.PATIENT_SIGNATURE.getCode());
+        model.setMedicalId(patientId);
+        model.setRayFiles(Arrays.asList(file));
+        model.setCrtId(userId);
+        model.setCrtTime(now);
+        remoteTreatmentOtherFeign.saveXRayFile2XUploadFile(model);
     }
 
     /**
