@@ -21,10 +21,11 @@ public class JPushConfig {
 
   @Value("${jpush.production}")
   public void setProduction(String production) {
-    if( "prod".equals(production) || "true".equals(production)){
+    if ("prod".equals(production) || "true".equals(production)) {
       JPushConfig.production = true;
+    } else {
+      JPushConfig.production = false;
     }
-    JPushConfig.production = false;
   }
 
   public static String getAppKey() {
