@@ -164,6 +164,12 @@ public class PatientExpInfo {
     private String state;
 
     /**
+     * 治疗意见
+     */
+    @Column(name = "treat_advice")
+    private String treatAdvice;
+
+    /**
      * 备注 备注
      */
     private String remarks;
@@ -785,5 +791,13 @@ public class PatientExpInfo {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public String getTreatAdvice() {
+        return treatAdvice;
+    }
+
+    public void setTreatAdvice(String treatAdvice) {
+        this.treatAdvice = treatAdvice;
     }
 }

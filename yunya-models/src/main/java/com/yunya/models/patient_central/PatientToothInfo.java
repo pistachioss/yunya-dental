@@ -176,8 +176,8 @@ public class PatientToothInfo {
     /**
      * 更新时间
      */
-    @Column(name = "upd_time")
-    private Date updTime;
+    @Column(name = "upt_time")
+    private Date uptTime;
 
     /**
      * @return id
@@ -674,16 +674,16 @@ public class PatientToothInfo {
      *
      * @return upd_time - 更新时间
      */
-    public Date getUpdTime() {
-        return updTime;
+    public Date getUptTime() {
+        return uptTime;
     }
 
     /**
      * 设置更新时间
      *
-     * @param updTime 更新时间
+     * @param uptTime 更新时间
      */
-    public void setUpdTime(Date updTime) {
-        this.updTime = updTime;
+    public void setUptTime(Date uptTime) {
+        this.uptTime = uptTime;
     }
 }

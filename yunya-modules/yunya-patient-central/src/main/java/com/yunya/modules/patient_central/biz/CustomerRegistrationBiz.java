@@ -105,7 +105,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         patientOriginLog.setUpdName(patientBaseInfo.getUpdName());
         patientOriginLog.setUpdTime(patientBaseInfo.getUpdTime());
         patientOriginLogMapper.insertSelective(patientOriginLog);
-//        remoteRabbitMqServiceFeign.sendMessage(patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
+        remoteRabbitMqServiceFeign.sendMessage(patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
     }
 
     /**
@@ -193,8 +193,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
             addPatientOriginLog(patientBaseInfo);
         }
         // 创建预付款 并发送消息
-//        patientBaseInfoBiz.sendMessages(patientId, 0);
-//        addPatientPrepaymentsInfo(patientBaseInfo);
+        patientBaseInfoBiz.sendMessages(patientId, 0);
+        addPatientPrepaymentsInfo(patientBaseInfo);
     }
 
     /**
@@ -239,7 +239,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         toothInfo.setCrtId(userId);
         toothInfo.setCrtTime(now);
         toothInfo.setUptId(userId);
-        toothInfo.setUpdTime(now);
+        toothInfo.setUptTime(now);
         patientToothInfoMapper.insertSelective(toothInfo);
     }
 
@@ -343,8 +343,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
             addPatientOriginLog(patientBaseInfo);
         }
         // 创建预付款 并发送消息
-//        patientBaseInfoBiz.sendMessages(patientId, 0);
-//        addPatientPrepaymentsInfo(patientBaseInfo);
+        patientBaseInfoBiz.sendMessages(patientId, 0);
+        addPatientPrepaymentsInfo(patientBaseInfo);
     }
 
     /**

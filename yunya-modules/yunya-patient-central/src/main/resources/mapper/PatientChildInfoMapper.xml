@@ -31,22 +31,24 @@
   <select id="selectPatientChildInfoByPatientId"
           resultType="com.yunya.feign.patient_central.domain.vo.web.PatientChildInfoVO">
     SELECT
-      pci.school,
-      pci.grade,
-      pei.guardian,
-      pei.useful_phone guardianMobile,
-      pci.medication_history,
-      pci.diet,
-      pci.tooth_sprouting AS toothSprouting,
-      pci.tooth_clearliness AS toothClearliness,
-      pci.brushing_times AS brushingTimes,
-      pci.used_fluoride_toothpaste AS usedFluorideToothpaste,
-      pci.used_dental_floss AS usedDentalFloss,
-      pci.use_floss_times AS useFlossTimes,
-      pci.parent_has_caries AS parentHasCarieStr,
-      pci.mother_pregnancy AS motherPregnancy,
-      pci.habit_ids AS habitIdStr,
-      pci.tooth_last_check AS toothLastCheck
+        pci.id,
+        pci.patient_id AS patientId,
+        pci.school,
+        pci.grade,
+        pei.guardian,
+        pei.useful_phone guardianMobile,
+        pci.medication_history,
+        pci.diet,
+        pci.tooth_sprouting AS toothSprouting,
+        pci.tooth_clearliness AS toothClearliness,
+        pci.brushing_times AS brushingTimes,
+        pci.used_fluoride_toothpaste AS usedFluorideToothpaste,
+        pci.used_dental_floss AS usedDentalFloss,
+        pci.use_floss_times AS useFlossTimes,
+        pci.parent_has_caries AS parentHasCarieStr,
+        pci.mother_pregnancy AS motherPregnancy,
+        pci.habit_ids AS habitIdStr,
+        pci.tooth_last_check AS toothLastCheck
     FROM patient_child_info pci
     LEFT JOIN (
         SELECT * FROM patient_exp_info WHERE inservice = true

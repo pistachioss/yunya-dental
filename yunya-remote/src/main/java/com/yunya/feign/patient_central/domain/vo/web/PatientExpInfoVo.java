@@ -228,6 +228,10 @@ public class PatientExpInfoVo implements Serializable {
     @ApiModelProperty("是否哺乳")
     private Boolean feedBaby;
 
+    /** 牙齿信息记录id*/
+    @ApiModelProperty("牙齿信息记录id")
+    private Integer toothRecordId;
+
     /** 缺牙史 */
     @ApiModelProperty("是否缺牙史")
     private Boolean hadMissTooth;
