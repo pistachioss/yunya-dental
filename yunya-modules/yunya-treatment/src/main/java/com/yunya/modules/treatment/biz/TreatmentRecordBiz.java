@@ -11,6 +11,7 @@ import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.emr.domain.model.PatientInformedConsentVO;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.query.SelfRegistrationPatientQuery;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
@@ -1290,6 +1291,12 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     Integer orgId = query.getOrgId();
     Integer dentistId = query.getDentistId();
     String queryDate = query.getQueryDate();
+    // 自助登记患者人数
+    SelfRegistrationPatientQuery patientQuery = new SelfRegistrationPatientQuery();
+    patientQuery.setWhetherPage(false);
+    patientQuery.setCurrentDate(queryDate);
+    patientQuery.setOrgId(orgId);
+    Integer patientNum = patientServiceFeign.countSelfRegistrationPatient(patientQuery);
 
     // 预约未到数量
     AppointmentCurrentListQuery form = new AppointmentCurrentListQuery();
@@ -1301,6 +1308,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
     CountTreatmentRecordVO resultData = mapper.selectTreatCountByExample(query);
     resultData.setAppointNotArrived(appointNotArrived);
+    resultData.setSelfRegPatient(patientNum);
     return resultData;
   }
 

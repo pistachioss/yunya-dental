@@ -64,8 +64,8 @@ public class AdultPatientRegistrationModel extends PatientRegistrationModel impl
     @ApiModelProperty("是否缺牙史")
     private Boolean hadMissTooth;
 
-    /** 缺牙史（牙位）*/
-    @ApiModelProperty("缺牙史（牙位）")
+    /** 缺牙原因字典id列表 */
+    @ApiModelProperty("缺牙原因字典id列表")
     private List<Integer> missToothHistory;
 
     /** 填充治疗史 */

@@ -1,9 +1,8 @@
 package com.yunya.modules.patient_central.mapper;
 
-import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
-import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationChartQueryForm;
-import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationQueryForm;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.patient_central.domain.query.*;
+import com.yunya.feign.patient_central.domain.vo.SelfRegistrationPatientVO;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.*;
@@ -219,4 +218,20 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @return List<PatientBaseInfo>
    */
   List<PatientBaseInfo> selectOriginByOriginIdNotNull();
+
+  /**
+   * 条件查询自助登记患者的人数
+   *
+   * @param query
+   * @return
+   */
+  Integer countSelfRegistrationPatient(@Param("query") SelfRegistrationPatientQuery query);
+
+  /**
+   * 条件查询自助登记患者列表
+   *
+   * @param query
+   * @return
+   */
+  PageInfo<SelfRegistrationPatientVO> selectSelfRegistrationPatientList(@Param("query") SelfRegistrationPatientQuery query);
 }

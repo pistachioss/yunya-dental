@@ -1,8 +1,12 @@
 package com.yunya.modules.patient_central;
 
+import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.patient_central.domain.model.AdultPatientRegistrationModel;
 import com.yunya.feign.patient_central.domain.model.ChildrenPatientRegistrationModel;
+import com.yunya.feign.patient_central.domain.vo.web.PatientExtendInfoVo;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.patient_central.controller.web.CustomerRegistrationController;
+import com.yunya.modules.patient_central.controller.web.PatientBaseInfoController;
 import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +30,9 @@ public class PatientRegistrationControllerTest {
 
     @Autowired
     private CustomerRegistrationController customerRegistrationController;
+
+    @Autowired
+    private PatientBaseInfoController patientBaseInfoController;
 
     @Test
     public void testAdultAddPatient() {
@@ -124,5 +131,11 @@ public class PatientRegistrationControllerTest {
         model.setHabitIds(Arrays.asList(1,6,15));
         model.setToothLastCheck(DateTime.parse("2021-12-13").toDate());
         customerRegistrationController.addPatient(model);
+    }
+
+    @Test
+    public void testFindPatientData() {
+        ResponseResult<PatientExtendInfoVo> patientData = patientBaseInfoController.findPatientData(108462);
+        System.out.println(JSONObject.toJSON(patientData));
     }
 }

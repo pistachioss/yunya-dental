@@ -105,7 +105,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         patientOriginLog.setUpdName(patientBaseInfo.getUpdName());
         patientOriginLog.setUpdTime(patientBaseInfo.getUpdTime());
         patientOriginLogMapper.insertSelective(patientOriginLog);
-        remoteRabbitMqServiceFeign.sendMessage(patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
+//        remoteRabbitMqServiceFeign.sendMessage(patientOriginLog.getId(), 0, MsgCategoryEnum.BasePatientOriginLog);
     }
 
     /**
@@ -181,7 +181,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      */
     public void addPatient(AdultPatientRegistrationModel model) {
         // 成人患者自主登记
-        final int userId = -999;
+        final int userId = -666;
         final String userName = "患者自主登记";
         PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, model.getMobile(), model.getMobileOwner());
         int patientId = patientBaseInfo.getId();
@@ -193,8 +193,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
             addPatientOriginLog(patientBaseInfo);
         }
         // 创建预付款 并发送消息
-        patientBaseInfoBiz.sendMessages(patientId, 0);
-        addPatientPrepaymentsInfo(patientBaseInfo);
+//        patientBaseInfoBiz.sendMessages(patientId, 0);
+//        addPatientPrepaymentsInfo(patientBaseInfo);
     }
 
     /**
@@ -330,7 +330,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      */
     public void addPatient(ChildrenPatientRegistrationModel model) {
         // 儿童患者登记
-        final int userId = -666;
+        final int userId = -777;
         final String userName = "患者自主登记";
         PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, null, null);
         int patientId = patientBaseInfo.getId();
@@ -343,8 +343,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
             addPatientOriginLog(patientBaseInfo);
         }
         // 创建预付款 并发送消息
-        patientBaseInfoBiz.sendMessages(patientId, 0);
-        addPatientPrepaymentsInfo(patientBaseInfo);
+//        patientBaseInfoBiz.sendMessages(patientId, 0);
+//        addPatientPrepaymentsInfo(patientBaseInfo);
     }
 
     /**

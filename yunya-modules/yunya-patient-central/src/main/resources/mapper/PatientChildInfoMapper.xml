@@ -15,7 +15,7 @@
     <result column="tooth_clearliness" property="toothClearliness" jdbcType="VARCHAR" />
     <result column="brushing_times" property="brushingTimes" jdbcType="SMALLINT" />
     <result column="used_fluoride_toothpaste" property="usedFluorideToothpaste" jdbcType="BIT" />
-    <result column="used_dental_ floss" property="usedDentalFloss" jdbcType="TINYINT" />
+    <result column="used_dental_floss" property="usedDentalFloss" jdbcType="TINYINT" />
     <result column="use_floss_times" property="useFlossTimes" jdbcType="INTEGER" />
     <result column="parent_has_caries" property="parentHasCaries" jdbcType="VARCHAR" />
     <result column="mother_pregnancy" property="motherPregnancy" jdbcType="VARCHAR" />
@@ -27,4 +27,33 @@
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />
     <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <select id="selectPatientChildInfoByPatientId"
+          resultType="com.yunya.feign.patient_central.domain.vo.web.PatientChildInfoVO">
+    SELECT
+      pci.school,
+      pci.grade,
+      pei.guardian,
+      pei.useful_phone guardianMobile,
+      pci.medication_history,
+      pci.diet,
+      pci.tooth_sprouting AS toothSprouting,
+      pci.tooth_clearliness AS toothClearliness,
+      pci.brushing_times AS brushingTimes,
+      pci.used_fluoride_toothpaste AS usedFluorideToothpaste,
+      pci.used_dental_floss AS usedDentalFloss,
+      pci.use_floss_times AS useFlossTimes,
+      pci.parent_has_caries AS parentHasCarieStr,
+      pci.mother_pregnancy AS motherPregnancy,
+      pci.habit_ids AS habitIdStr,
+      pci.tooth_last_check AS toothLastCheck
+    FROM patient_child_info pci
+    LEFT JOIN (
+        SELECT * FROM patient_exp_info WHERE inservice = true
+    ) pei ON pci.patient_id = pei.patient_id
+    <where>
+      AND pci.inservice = true
+      AND pci.patient_id = #{patientId}
+    </where>
+  </select>
 </mapper>

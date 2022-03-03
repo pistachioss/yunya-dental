@@ -66,7 +66,7 @@ public class PatientChildInfo {
     /**
      * 使用牙线情况：0-有，1-无，2-偶尔
      */
-    @Column(name = "`used_dental_ floss`")
+    @Column(name = "used_dental_floss")
     private Byte usedDentalFloss;
 
     /**
@@ -307,7 +307,7 @@ public class PatientChildInfo {
     /**
      * 获取使用牙线情况：0-有，1-无，2-偶尔
      *
-     * @return used_dental_ floss - 使用牙线情况：0-有，1-无，2-偶尔
+     * @return used_dental_floss - 使用牙线情况：0-有，1-无，2-偶尔
      */
     public Byte getUsedDentalFloss() {
         return usedDentalFloss;

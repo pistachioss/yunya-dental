@@ -34,4 +34,36 @@
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <select id="selectPatientToothInfoByPatientId"
+          resultType="com.yunya.models.patient_central.PatientToothInfo">
+    SELECT
+        had_miss_tooth AS hadMissTooth,
+        miss_tooth_history AS missToothHistory,
+        had_fill_treat AS fillTreatHistory,
+        fill_treat_history AS fillTreatHistory,
+        fill_treat_last_date AS fillTreatLastDate,
+        had_periodontal_surgery AS hadPeriodontalSurgery,
+        had_occlusal_adjust AS hadOcclusalAdjust,
+        had_restorative_dentures AS hadRestorativeDentures,
+        rpd_part AS rpdPart,
+        rpd_date AS rpdDate,
+        lpd_part AS lpdPart,
+        lpd_date AS lpdDate,
+        had_preventive_treat AS hadPreventiveTreat,
+        preventive_treat_cycle AS preventiveTreatCycle,
+        preventive_treat_last_month AS preventiveTreatLastMonth,
+        had_diffcult_treat AS hadDiffcultTreat,
+        miss_teeth_unrepeat_cause AS missTeethUnrepeatCause,
+        had_orthodontic AS hadOrthodontic,
+        orthodontic_start_date AS orthodonticStartDate,
+        orthodontic_end_date AS orthodonticEndDate,
+        had_hygiene_education AS hadHygieneEducation,
+        used_plaque_dna AS usedPlaqueDna
+    FROM patient_tooth_info pti
+    <where>
+      AND inservice = true
+      AND patient_id = #{patientId}
+    </where>
+  </select>
 </mapper>
