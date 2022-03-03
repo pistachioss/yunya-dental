@@ -39,4 +39,9 @@ public class PatientExtendInfoModel implements Serializable {
     @ApiModelProperty(value = "患者其他信息表")
     private List<PatientExtInfoModel> patientExtInfoModelList;
 
+    /**
+     * 患者儿童属性信息表
+     */
+    @ApiModelProperty(value = "患者信息扩展表")
+    private PatientChildInfoModel patientChildInfoModel;
 }

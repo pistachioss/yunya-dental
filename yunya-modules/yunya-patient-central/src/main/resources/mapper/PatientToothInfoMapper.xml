@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientToothInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientToothInfo" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="had_miss_tooth" property="hadMissTooth" jdbcType="BIT" />
+    <result column="miss_tooth_history" property="missToothHistory" jdbcType="VARCHAR" />
+    <result column="had_fill_treat" property="hadFillTreat" jdbcType="BIT" />
+    <result column="fill_treat_history" property="fillTreatHistory" jdbcType="VARCHAR" />
+    <result column="fill_treat_last_date" property="fillTreatLastDate" jdbcType="DATE" />
+    <result column="had_periodontal_surgery" property="hadPeriodontalSurgery" jdbcType="BIT" />
+    <result column="had_occlusal_adjust" property="hadOcclusalAdjust" jdbcType="BIT" />
+    <result column="had_restorative_dentures" property="hadRestorativeDentures" jdbcType="BIT" />
+    <result column="rpd_part" property="rpdPart" jdbcType="VARCHAR" />
+    <result column="rpd_date" property="rpdDate" jdbcType="DATE" />
+    <result column="lpd_part" property="lpdPart" jdbcType="VARCHAR" />
+    <result column="lpd_date" property="lpdDate" jdbcType="DATE" />
+    <result column="had_preventive_treat" property="hadPreventiveTreat" jdbcType="BIT" />
+    <result column="preventive_treat_cycle" property="preventiveTreatCycle" jdbcType="SMALLINT" />
+    <result column="preventive_treat_last_month" property="preventiveTreatLastMonth" jdbcType="SMALLINT" />
+    <result column="had_diffcult_treat" property="hadDiffcultTreat" jdbcType="BIT" />
+    <result column="miss_teeth_unrepeat_cause" property="missTeethUnrepeatCause" jdbcType="VARCHAR" />
+    <result column="had_orthodontic" property="hadOrthodontic" jdbcType="BIT" />
+    <result column="orthodontic_start_date" property="orthodonticStartDate" jdbcType="DATE" />
+    <result column="orthodontic_end_date" property="orthodonticEndDate" jdbcType="DATE" />
+    <result column="had_hygiene_education" property="hadHygieneEducation" jdbcType="BIT" />
+    <result column="used_plaque_dna" property="usedPlaqueDna" jdbcType="BIT" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <select id="selectPatientToothInfoByPatientId"
+          resultType="com.yunya.models.patient_central.PatientToothInfo">
+    SELECT
+        id,
+        had_miss_tooth AS hadMissTooth,
+        miss_tooth_history AS missToothHistory,
+        had_fill_treat AS fillTreatHistory,
+        fill_treat_history AS fillTreatHistory,
+        fill_treat_last_date AS fillTreatLastDate,
+        had_periodontal_surgery AS hadPeriodontalSurgery,
+        had_occlusal_adjust AS hadOcclusalAdjust,
+        had_restorative_dentures AS hadRestorativeDentures,
+        rpd_part AS rpdPart,
+        rpd_date AS rpdDate,
+        lpd_part AS lpdPart,
+        lpd_date AS lpdDate,
+        had_preventive_treat AS hadPreventiveTreat,
+        preventive_treat_cycle AS preventiveTreatCycle,
+        preventive_treat_last_month AS preventiveTreatLastMonth,
+        had_diffcult_treat AS hadDiffcultTreat,
+        miss_teeth_unrepeat_cause AS missTeethUnrepeatCause,
+        had_orthodontic AS hadOrthodontic,
+        orthodontic_start_date AS orthodonticStartDate,
+        orthodontic_end_date AS orthodonticEndDate,
+        had_hygiene_education AS hadHygieneEducation,
+        used_plaque_dna AS usedPlaqueDna
+    FROM patient_tooth_info pti
+    <where>
+      AND inservice = true
+      AND patient_id = #{patientId}
+    </where>
+  </select>
+</mapper>

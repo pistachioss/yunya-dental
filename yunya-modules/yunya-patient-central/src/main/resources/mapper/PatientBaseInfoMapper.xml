@@ -21,6 +21,7 @@
         <result column="origin_type" property="originType" jdbcType="INTEGER"/>
         <result column="origin_id" property="originId" jdbcType="INTEGER"/>
         <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="has_died" property="hasDied" jdbcType="BIT"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
@@ -33,7 +34,7 @@
     <!--患者表中的全部字段-->
     <sql id="Patient_Column_List">
         id,org_id orgId,name,pinyin_name pinyinName,face_url faceUrl,wo_guid woGuid,mobile,Mobile_owner mobileOwner,medical_number medicalNumber,gender,age,birthday,origin_type originType,origin_id originId,remarks,
-        inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime,person_id personId
+        inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime,person_id personId, has_died hasDied
     </sql>
 
     <!--根据手机号查询用户是否纯在-->
@@ -368,6 +369,47 @@
     <!-- 查询OriginId不为空的患者信息 -->
     <select id="selectOriginByOriginIdNotNull" resultType="com.yunya.models.patient_central.PatientBaseInfo">
         SELECT id,origin_type originType,origin_id originId,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime,inservice from patient_base_info where origin_id is not null
+    </select>
+
+    <!--条件查询自助登记患者的人数-->
+    <select id="countSelfRegistrationPatient" resultType="java.lang.Integer">
+        SELECT count(id)
+        FROM patient_base_info
+        <where>
+            AND crt_id IN (-666,-777)
+            <if test="query.currentDate!=null and query.currentDate!=''">
+                AND DATE_FORMAT(crt_time,'%Y-%m-%d') = #{query.currentDate}
+            </if>
+            <if test="query.orgId != null">
+                AND org_id = #{query.orgId}
+            </if>
+        </where>
+    </select>
+
+    <!--条件查询自助登记患者列表-->
+    <select id="selectSelfRegistrationPatientList"
+            resultType="com.yunya.feign.patient_central.domain.vo.SelfRegistrationPatientVO">
+        SELECT
+            id AS patientId,
+            name AS patientName,
+            mobile,
+            gender,
+            birthday,
+            age,
+            po.name AS originChannel,
+            crt_time AS registrationTime
+        FROM patient_base_info pbi
+        LEFT JOIN patient_origin po ON pbi.origin_type = po.origin_type AND pbi.origin_id = po.id
+        <where>
+            AND crt_id IN (-666,-777)
+            <if test="query.currentDate!=null and query.currentDate!=''">
+                AND DATE_FORMAT(crt_time,'%Y-%m-%d') = #{query.currentDate}
+            </if>
+            <if test="query.orgId != null">
+                AND org_id = #{query.orgId}
+            </if>
+        </where>
+        ORDER BY pbi.crt_time DESC
     </select>
 </mapper>
 

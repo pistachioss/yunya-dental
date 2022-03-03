@@ -29,6 +29,11 @@ public class PatientOriginVo implements Serializable {
     private String name;
 
     /**
+     * 患者来源英文名称
+     */
+    private String englishName;
+
+    /**
      * 患者来源类型
      */
     private Integer originType;

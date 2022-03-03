@@ -29,6 +29,11 @@
     <result column="province" property="province" jdbcType="VARCHAR" />
     <result column="city" property="city" jdbcType="VARCHAR" />
     <result column="country" property="country" jdbcType="VARCHAR" />
+    <result column="emergency_phone" property="emergencyPhone" jdbcType="VARCHAR" />
+    <result column="employer" property="employer" jdbcType="VARCHAR" />
+    <result column="e_mail" property="eMail" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="VARCHAR" />
+    <result column="treat_advice" property="treatAdvice" jdbcType="VARCHAR" />
     <result column="remarks" property="remarks" jdbcType="VARCHAR" />
     <result column="inservice" property="inservice" jdbcType="BIT" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
@@ -41,8 +46,8 @@
 
   <sql id="PatientExpInfo_Column_List">
     id,patient_id patientId,patient_kind patientkind,useful_phone usefulPhone,identity,profession,heredity,other_health otherHealth,brush_times brushTimes,brush_time brushTime,brush_hardness brushHardness,smoking_age smokingAge,
-    smoking_num smokingNum,use_electric_brush useElectricBrush,use_collutory useCollutory,use_floss useFloss,bruxism ,address,province,city,country,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,
-    upt_id uptId,upd_name updName,upd_time updTime
+    smoking_num smokingNum,use_electric_brush useElectricBrush,use_collutory useCollutory,use_floss useFloss,bruxism, pregnancy_week pregnancyWeek, is_feed_baby feedBaBy, guardian, address,province,city,country,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,
+    upt_id uptId,upd_name updName,upd_time updTime, emergency_phone emergencyPhone, employer, e_mail eMail, state, treat_advice treatAdvice
   </sql>
 
   <!--根据患者id查询患者扩展信息-->

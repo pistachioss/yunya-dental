@@ -347,4 +347,11 @@ public class PatientServiceRest {
   List<WxFans> listWxPushUser(@RequestBody List<Integer> patientIds) {
     return wxFansBiz.getPushWxUser(patientIds);
   }
+
+
+  @ApiOperation("条件查询自助登记患者的人数")
+  @PostMapping(value = "/api/count/selfRegistrationPatient")
+  public Integer countSelfRegistrationPatient(@RequestBody SelfRegistrationPatientQuery patientQuery) {
+    return patientBaseInfoBiz.countSelfRegistrationPatient(patientQuery);
+  }
 }

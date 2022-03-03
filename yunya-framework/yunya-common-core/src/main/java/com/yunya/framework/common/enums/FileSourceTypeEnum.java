@@ -13,7 +13,8 @@ import java.util.Objects;
 public enum FileSourceTypeEnum {
     OTHER("其他", (byte)0),
     TREAT_PLAN("治疗计划", (byte)1),
-    MEDICAL_COMMON("普通电子病历", (byte)2);
+    MEDICAL_COMMON("普通电子病历", (byte)2),
+    PATIENT_SIGNATURE("患者签名", (byte)3);
 
     private final String value;
     private final Byte code;

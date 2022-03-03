@@ -5,25 +5,15 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
-import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientExtInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientLabelRecordModel;
-import com.yunya.feign.patient_central.domain.model.PicturesCallbackInfoModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLabelRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.query.SelfRegistrationPatientQuery;
+import com.yunya.feign.patient_central.domain.vo.SelfRegistrationPatientVO;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientExpInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientExtInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientExtendInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientImgVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientLabelRecordVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientVisitInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
@@ -42,44 +32,24 @@ import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.patient_central.PatientExpInfo;
-import com.yunya.models.patient_central.PatientExtInfo;
-import com.yunya.models.patient_central.PatientImg;
-import com.yunya.models.patient_central.PatientLabelRecord;
-import com.yunya.models.patient_central.PatientMemberInfo;
-import com.yunya.models.patient_central.PatientOrigin;
-import com.yunya.models.patient_central.PatientOriginLog;
-import com.yunya.models.patient_central.PatientPrepaymentsInfo;
+import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
-import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
-import com.yunya.modules.patient_central.mapper.PatientExpInfoMapper;
-import com.yunya.modules.patient_central.mapper.PatientExtInfoMapper;
-import com.yunya.modules.patient_central.mapper.PatientImgMapper;
-import com.yunya.modules.patient_central.mapper.PatientLabelRecordMapper;
-import com.yunya.modules.patient_central.mapper.PatientMemberInfoMapper;
-import com.yunya.modules.patient_central.mapper.PatientOriginLogMapper;
-import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
-import com.yunya.modules.patient_central.mapper.PatientPrepaymentsInfoMapper;
+import com.yunya.modules.patient_central.mapper.*;
 import org.apache.commons.httpclient.NameValuePair;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.RedisConstants.PATIENT_BASE_INFO;
@@ -148,6 +118,12 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
   /** 患者来源绑定关系 */
   @Resource private PatientOriginLogMapper patientOriginLogMapper;
+
+  /** 患者牙齿信息*/
+  @Autowired private PatientToothInfoMapper patientToothInfoMapper;
+
+  /** 患者儿童属性信息 */
+  @Autowired private PatientChildInfoMapper patientChildInfoMapper;
 
   /** 获取患者服务端口号 */
   @Value("${codeUrl.url}")
@@ -302,14 +278,29 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
     // 完善患者基本信息  对补全信息进行更新
     this.mapper.updateByPrimaryKeySelective(patientBaseInfo);
-    redisUtils.delete(PATIENT_BASE_INFO + patientExtendInfoModel.getPatientBaseInfoModel().getId());
-    sendMessages(patientBaseInfo.getId(), 1);
+    Integer patientId = patientBaseInfo.getId();
+    redisUtils.delete(PATIENT_BASE_INFO + patientId);
+    sendMessages(patientId, 1);
+
     PatientExpInfo patientExpInfo = new PatientExpInfo();
     // 完善患者扩展信息
     BeanUtils.copyProperties(patientExtendInfoModel.getPatientExpInfoModel(), patientExpInfo);
+    savePatientToothInfo(patientExtendInfoModel.getPatientExpInfoModel(), patientId);
+    PatientChildInfoModel patientChildInfoModel = patientExtendInfoModel.getPatientChildInfoModel();
+    if (!ObjectUtils.isEmpty(patientChildInfoModel)) {
+      savePatientChildInfo(patientChildInfoModel, patientId);
+      String guardian = patientChildInfoModel.getGuardian();
+      if (StringHelper.isNotEmpty(guardian)) {
+        patientExpInfo.setGuardian(guardian);
+      }
+      String guardianPhone = patientChildInfoModel.getGuardianPhone();
+      if (StringHelper.isNotEmpty(guardianPhone)) {
+        patientExpInfo.setUsefulPhone(guardianPhone);
+      }
+    }
     // 如果用户没有扩展信息就添加扩展信息 如果有就修改
     PatientExpInfoVo patientExpInfoVo =
-        patientExpInfoMapper.selectByPatientId(patientExpInfo.getPatientId());
+        patientExpInfoMapper.selectByPatientId(patientId);
     if (patientExpInfoVo == null) {
       patientExpInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientExpInfo.setCrtName(BaseContextHandler.getName());
@@ -327,10 +318,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     List<PatientExtInfoModel> patientExtInfoList =
         patientExtendInfoModel.getPatientExtInfoModelList();
     List<PatientExtInfoVo> patientExtInfos =
-        this.patientExtInfoMapper.patientExtInfoListByid(patientBaseInfo.getId());
+        this.patientExtInfoMapper.patientExtInfoListByid(patientId);
     // 判断是否已存在信息，若存在就删除
     if (!StringHelper.isEmpty(patientExtInfos)) {
-      this.patientExtInfoMapper.deletePatientExtInfoByPatientId(patientBaseInfo.getId());
+      this.patientExtInfoMapper.deletePatientExtInfoByPatientId(patientId);
     }
     if (!StringHelper.isEmpty(patientExtInfoList)) {
       List<PatientExtInfoModel> addPatientExtInfoList = new ArrayList<>();
@@ -347,6 +338,151 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         addPatientExtInfoList.add(patientExtInfoModel);
       }
       this.patientExtInfoMapper.insertPatientExtInfoList(addPatientExtInfoList);
+    }
+  }
+
+  /**
+   * 保存患者儿童属性信息
+   *
+   * @param model
+   * @param patientId
+   */
+  private void savePatientChildInfo(PatientChildInfoModel model, Integer patientId) {
+    Date now = new Date(System.currentTimeMillis());
+    int userId = Integer.parseInt(BaseContextHandler.getUserID());
+    Integer id = model.getId();
+    PatientChildInfo childInfo = patientChildInfoMapper.selectByPrimaryKey(id);
+    if (!ObjectUtils.isEmpty(childInfo)) {
+      childInfo.setSchool(model.getSchool());
+      childInfo.setGrade(model.getGrade());
+      childInfo.setMedicationHistory(model.getMedicationHistory());
+      childInfo.setMotherPregnancy(model.getMotherPregnancy());
+      List<Integer> parentHasCaries = model.getParentHasCaries();
+      childInfo.setParentHasCaries(StringHelper.join(parentHasCaries, ","));
+      childInfo.setToothClearliness(model.getToothClearliness());
+      childInfo.setToothLastCheck(model.getToothLastCheck());
+      childInfo.setToothSprouting(model.getToothSprouting());
+      childInfo.setUsedDentalFloss(model.getUsedDentalFloss());
+      childInfo.setUsedFluorideToothpaste(model.getUsedFluorideToothpaste());
+      childInfo.setUseFlossTimes(model.getUseFlossTimes());
+      childInfo.setBrushingTimes(model.getBrushingTimes());
+      childInfo.setDiet(model.getDiet());
+      List<Integer> habitIds = model.getHabitIds();
+      if (StringHelper.isNotEmpty(habitIds)) {
+        childInfo.setHabitIds(StringHelper.join(habitIds, ","));
+      }
+      childInfo.setUptId(userId);
+      childInfo.setUptTime(now);
+      patientChildInfoMapper.updateByPrimaryKey(childInfo);
+    } else {
+      childInfo.setPatientId(patientId);
+      childInfo.setSchool(model.getSchool());
+      childInfo.setGrade(model.getGrade());
+      childInfo.setMedicationHistory(model.getMedicationHistory());
+      childInfo.setMotherPregnancy(model.getMotherPregnancy());
+      List<Integer> parentHasCaries = model.getParentHasCaries();
+      childInfo.setParentHasCaries(StringHelper.join(parentHasCaries, ","));
+      childInfo.setToothClearliness(model.getToothClearliness());
+      childInfo.setToothLastCheck(model.getToothLastCheck());
+      childInfo.setToothSprouting(model.getToothSprouting());
+      childInfo.setUsedDentalFloss(model.getUsedDentalFloss());
+      childInfo.setUsedFluorideToothpaste(model.getUsedFluorideToothpaste());
+      childInfo.setUseFlossTimes(model.getUseFlossTimes());
+      childInfo.setBrushingTimes(model.getBrushingTimes());
+      childInfo.setDiet(model.getDiet());
+      List<Integer> habitIds = model.getHabitIds();
+      if (StringHelper.isNotEmpty(habitIds)) {
+        childInfo.setHabitIds(StringHelper.join(habitIds, ","));
+      }
+      childInfo.setCrtId(userId);
+      childInfo.setCrtTime(now);
+      childInfo.setUptId(userId);
+      childInfo.setUptTime(now);
+      patientChildInfoMapper.insertSelective(childInfo);
+    }
+  }
+
+  /**
+   * 保存患者的牙齿信息
+   *
+   * @param expInfo
+   * @param patientId
+   */
+  private void savePatientToothInfo(PatientExpInfoModel expInfo, Integer patientId) {
+    if (!ObjectUtils.isEmpty(expInfo)) {
+      Date now = new Date(System.currentTimeMillis());
+      int userId = Integer.parseInt(BaseContextHandler.getUserID());
+      Integer id = expInfo.getToothRecordId();
+      PatientToothInfo toothInfo = patientToothInfoMapper.selectByPrimaryKey(id);
+      if (!ObjectUtils.isEmpty(toothInfo)) {
+        toothInfo.setHadMissTooth(expInfo.getHadMissTooth());
+        List<Integer> missToothIds = expInfo.getMissToothHistory();
+        if (StringHelper.isNotEmpty(missToothIds)) {
+          toothInfo.setMissToothHistory(StringHelper.join(missToothIds, ","));
+        }
+        toothInfo.setHadFillTreat(expInfo.getHadFillTreat());
+        List<Integer> fillMeterials = expInfo.getFillTreatHistory();
+        if (StringHelper.isNotEmpty(fillMeterials)) {
+          toothInfo.setFillTreatHistory(StringHelper.join(fillMeterials, ","));
+        }
+        toothInfo.setFillTreatLastDate(expInfo.getFillTreatLastDate());
+        toothInfo.setHadPeriodontalSurgery(expInfo.getHadPeriodontalSurgery());
+        toothInfo.setHadOcclusalAdjust(expInfo.getHadOcclusalAdjust());
+        toothInfo.setHadRestorativeDentures(expInfo.getHadRestorativeDentures());
+        toothInfo.setRpdPart(expInfo.getRpdPart());
+        toothInfo.setRpdDate(expInfo.getRpdDate());
+        toothInfo.setLpdPart(expInfo.getLpdPart());
+        toothInfo.setLpdDate(expInfo.getLpdDate());
+        toothInfo.setHadOrthodontic(expInfo.getHadOrthodontic());
+        toothInfo.setOrthodonticStartDate(expInfo.getOrthodonticStartDate());
+        toothInfo.setOrthodonticEndDate(expInfo.getOrthodonticEndDate());
+        toothInfo.setHadPreventiveTreat(expInfo.getHadPreventiveTreat());
+        toothInfo.setPreventiveTreatCycle(expInfo.getPreventiveTreatCycle());
+        toothInfo.setPreventiveTreatLastMonth(expInfo.getPreventiveTreatLastMonth());
+        toothInfo.setHadDiffcultTreat(expInfo.getHadDiffcultTreat());
+        toothInfo.setHadHygieneEducation(expInfo.getHadHygieneEducation());
+        toothInfo.setMissTeethUnrepeatCause(expInfo.getMissTeethUnrepeatCause());
+        toothInfo.setUsedPlaqueDna(expInfo.getUsedPlaqueDna());
+        toothInfo.setUptId(userId);
+        toothInfo.setUptTime(now);
+        patientToothInfoMapper.updateByPrimaryKeySelective(toothInfo);
+      } else {
+        toothInfo = new PatientToothInfo();
+        toothInfo.setPatientId(patientId);
+        toothInfo.setHadMissTooth(expInfo.getHadMissTooth());
+        List<Integer> missToothIds = expInfo.getMissToothHistory();
+        if (StringHelper.isNotEmpty(missToothIds)) {
+          toothInfo.setMissToothHistory(StringHelper.join(missToothIds, ","));
+        }
+        toothInfo.setHadFillTreat(expInfo.getHadFillTreat());
+        List<Integer> fillMeterials = expInfo.getFillTreatHistory();
+        if (StringHelper.isNotEmpty(fillMeterials)) {
+          toothInfo.setFillTreatHistory(StringHelper.join(fillMeterials, ","));
+        }
+        toothInfo.setFillTreatLastDate(expInfo.getFillTreatLastDate());
+        toothInfo.setHadPeriodontalSurgery(expInfo.getHadPeriodontalSurgery());
+        toothInfo.setHadOcclusalAdjust(expInfo.getHadOcclusalAdjust());
+        toothInfo.setHadRestorativeDentures(expInfo.getHadRestorativeDentures());
+        toothInfo.setRpdPart(expInfo.getRpdPart());
+        toothInfo.setRpdDate(expInfo.getRpdDate());
+        toothInfo.setLpdPart(expInfo.getLpdPart());
+        toothInfo.setLpdDate(expInfo.getLpdDate());
+        toothInfo.setHadOrthodontic(expInfo.getHadOrthodontic());
+        toothInfo.setOrthodonticStartDate(expInfo.getOrthodonticStartDate());
+        toothInfo.setOrthodonticEndDate(expInfo.getOrthodonticEndDate());
+        toothInfo.setHadPreventiveTreat(expInfo.getHadPreventiveTreat());
+        toothInfo.setPreventiveTreatCycle(expInfo.getPreventiveTreatCycle());
+        toothInfo.setPreventiveTreatLastMonth(expInfo.getPreventiveTreatLastMonth());
+        toothInfo.setHadDiffcultTreat(expInfo.getHadDiffcultTreat());
+        toothInfo.setHadHygieneEducation(expInfo.getHadHygieneEducation());
+        toothInfo.setMissTeethUnrepeatCause(expInfo.getMissTeethUnrepeatCause());
+        toothInfo.setUsedPlaqueDna(expInfo.getUsedPlaqueDna());
+        toothInfo.setCrtId(userId);
+        toothInfo.setCrtTime(now);
+        toothInfo.setUptId(userId);
+        toothInfo.setUptTime(now);
+        patientToothInfoMapper.insertSelective(toothInfo);
+      }
     }
   }
 
@@ -441,6 +577,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
 
     BeanUtils.copyProperties(patientBaseInfo, patientBaseInfoVo);
+    markAttribute(patientBaseInfoVo);
     int originType = 2;
     if (patientBaseInfo.getOriginType() != null && patientBaseInfo.getOriginType() > originType) {
       PatientOrigin patientOrigin =
@@ -463,6 +600,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
           patientExpInfoVo.setPatientKindName(item.getName());
         }
       }
+      fillPatientToothInfo(patientExpInfoVo);
       patientExtendInfoVo.setPatientExpInfoVo(patientExpInfoVo);
     }
 
@@ -480,7 +618,87 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       }
     }
     patientExtendInfoVo.setPatientExtInfoListVo(patientExtInfoVos);
+
+    fillPatientChildInfo(patientExtendInfoVo, patientBaseInfo.getId());
     return ResponseUtil.success(patientExtendInfoVo);
+  }
+
+  /**
+   * 填充儿童属性
+   *
+   * @param patientExtendInfoVo
+   * @param patientId
+   */
+  private void fillPatientChildInfo(PatientExtendInfoVo patientExtendInfoVo, Integer patientId) {
+    PatientChildInfoVO childInfo = patientChildInfoMapper.selectPatientChildInfoByPatientId(patientId);
+    if (!ObjectUtils.isEmpty(childInfo)) {
+      String parentHasCarieStr = childInfo.getParentHasCarieStr();
+      if (StringHelper.isNotEmpty(parentHasCarieStr)) {
+        childInfo.setParentHasCaries(StringHelper.split2IntList(parentHasCarieStr,","));
+      }
+      String habitIdStr = childInfo.getHabitIdStr();
+      if (StringHelper.isNotEmpty(habitIdStr)) {
+        childInfo.setHabitIds(StringHelper.split2IntList(habitIdStr, ","));
+      }
+      patientExtendInfoVo.setPatientChildInfoVO(childInfo);
+    }
+  }
+
+  /**
+   * 填充牙齿信息
+   *
+   * @param expInfo
+   */
+  private void fillPatientToothInfo(PatientExpInfoVo expInfo) {
+    PatientToothInfo toothInfo = patientToothInfoMapper.selectPatientToothInfoByPatientId(expInfo.getPatientId());
+    if (!ObjectUtils.isEmpty(toothInfo)) {
+      expInfo.setToothRecordId(toothInfo.getId());
+      expInfo.setHadMissTooth(toothInfo.getHadMissTooth());
+      String missToothHistory = toothInfo.getMissToothHistory();
+      if (StringHelper.isNotEmpty(missToothHistory)) {
+        expInfo.setMissToothHistory(StringHelper.split2IntList(missToothHistory, ","));
+      }
+      expInfo.setMissTeethUnrepeatCause(toothInfo.getMissTeethUnrepeatCause());
+      expInfo.setHadFillTreat(toothInfo.getHadFillTreat());
+      String fillTreatHistory = toothInfo.getFillTreatHistory();
+      if (StringHelper.isNotEmpty(fillTreatHistory)) {
+        expInfo.setFillTreatHistory(StringHelper.split2IntList(fillTreatHistory,","));
+      }
+      expInfo.setFillTreatLastDate(toothInfo.getFillTreatLastDate());
+      expInfo.setHadOcclusalAdjust(toothInfo.getHadOcclusalAdjust());
+      expInfo.setHadPreventiveTreat(toothInfo.getHadPreventiveTreat());
+      expInfo.setRpdPart(toothInfo.getRpdPart());
+      expInfo.setRpdDate(toothInfo.getRpdDate());
+      expInfo.setLpdPart(toothInfo.getLpdPart());
+      expInfo.setLpdDate(toothInfo.getLpdDate());
+      expInfo.setPreventiveTreatCycle(toothInfo.getPreventiveTreatCycle());
+      expInfo.setPreventiveTreatLastMonth(toothInfo.getPreventiveTreatLastMonth());
+      expInfo.setHadRestorativeDentures(toothInfo.getHadRestorativeDentures());
+      expInfo.setUsedPlaqueDna(toothInfo.getUsedPlaqueDna());
+      expInfo.setHadPeriodontalSurgery(toothInfo.getHadPeriodontalSurgery());
+      expInfo.setHadOrthodontic(toothInfo.getHadOrthodontic());
+      expInfo.setOrthodonticStartDate(toothInfo.getOrthodonticStartDate());
+      expInfo.setOrthodonticEndDate(toothInfo.getOrthodonticEndDate());
+      expInfo.setHadHygieneEducation(toothInfo.getHadHygieneEducation());
+      expInfo.setHadDiffcultTreat(toothInfo.getHadDiffcultTreat());
+    }
+  }
+
+  /**
+   * 标记展示属性
+   *
+   * @param patientBaseInfoVo
+   */
+  private void markAttribute(PatientBaseInfoVo patientBaseInfoVo) {
+    Integer crtId = patientBaseInfoVo.getCrtId();
+    Byte attribute = 0;
+    if (crtId==-666 || crtId==-777) {// 成人or儿童患者登记
+      // 年龄小于12岁的展示儿童属性
+      if (patientBaseInfoVo.getAge() <= 12) {
+        attribute = 1;
+      }
+    }
+    patientBaseInfoVo.setAttribute(attribute);
   }
 
   /**
@@ -552,12 +770,15 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         }
       }
     }
-    // 根据ID查询字典明细
-    DictionaryItem dictionaryItem =
-        remoteSystemServiceFeign.findDictionaryItemById(patientBaseInfoVo.getMobileOwner());
-    if (dictionaryItem != null) {
-      // 手机号所属名称
-      patientBaseInfoVo.setMobileOwnerName(dictionaryItem.getName());
+    Integer mobileOwner = patientBaseInfoVo.getMobileOwner();
+    if (!ObjectUtils.isEmpty(mobileOwner)) {
+      // 根据ID查询字典明细
+      DictionaryItem dictionaryItem =
+              remoteSystemServiceFeign.findDictionaryItemById(mobileOwner);
+      if (dictionaryItem != null) {
+        // 手机号所属名称
+        patientBaseInfoVo.setMobileOwnerName(dictionaryItem.getName());
+      }
     }
     return patientBaseInfoVo;
   }
@@ -1322,5 +1543,30 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
           + id;
     }
     return null;
+  }
+
+  /**
+   * 条件查询自助登记患者的人数
+   *
+   * @param query
+   * @return
+   */
+  public Integer countSelfRegistrationPatient(SelfRegistrationPatientQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    return mapper.countSelfRegistrationPatient(query);
+  }
+
+  /**
+   * 条件查找自助登记患者列表
+   *
+   * @return
+   */
+  public PageInfo<SelfRegistrationPatientVO> findSelfRegistrationPatientList(SelfRegistrationPatientQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    return mapper.selectSelfRegistrationPatientList(query);
   }
 }
