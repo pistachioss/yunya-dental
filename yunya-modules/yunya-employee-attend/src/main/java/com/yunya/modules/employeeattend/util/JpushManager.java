@@ -94,7 +94,7 @@ public class JpushManager {
               PushPayload.newBuilder()
                   .setPlatform(Platform.ios())
                   .setAudience(
-                      Audience.newBuilder().addAudienceTarget(AudienceTarget.alias(alias)).build())
+                      Audience.newBuilder().addAudienceTarget(AudienceTarget.registrationId(alias)).build())
                   .setOptions(
                       Options.newBuilder()
                           .setApnsProduction(production)
