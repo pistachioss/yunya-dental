@@ -20,7 +20,7 @@ public class JPushConfig {
   }
 
   @Value("${jpush.production}")
-  public static void setProduction(String production) {
+  public void setProduction(String production) {
     if( "prod".equals(production) || "true".equals(production)){
       JPushConfig.production = true;
     }
