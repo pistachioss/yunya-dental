@@ -118,10 +118,16 @@
     <select id="selectPatientInfoByIdList" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
-        from patient_base_info where id in
-        <foreach collection="ids" item="id" open="(" close=")" separator=",">
-            #{id}
-        </foreach>
+        from patient_base_info
+        <where>
+            <if test="hasDied != null">
+                AND has_died = #{hasDied}
+            </if>
+            AND id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </where>
     </select>
 
     <!-- 根据患者id查询患者信息 -->

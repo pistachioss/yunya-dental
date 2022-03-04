@@ -74,9 +74,10 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * 根据患者id集合查询患者list
    *
    * @param id 患者id
+   * @param hasDied 是否去世
    * @return List<PatientBaseInfoVo>
    */
-  List<PatientBaseInfoVo> selectPatientInfoByIdList(@Param("ids") List<Integer> id);
+  List<PatientBaseInfoVo> selectPatientInfoByIdList(@Param("ids") List<Integer> id, @Param("hasDied") Boolean hasDied);
 
     /**
      * 根据患者id查询患者信息

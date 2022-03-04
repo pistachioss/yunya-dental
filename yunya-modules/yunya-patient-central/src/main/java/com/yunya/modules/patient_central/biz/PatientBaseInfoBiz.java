@@ -822,10 +822,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * 根据患者id集合查询患者list
    *
    * @param ids 患者id集合
+   * @param hasDied 是否去世
    * @return List<PatientBaseInfoVo>
    */
-  public List<PatientBaseInfoVo> findPatientInfoByIds(List<Integer> ids) {
-    return patientBaseInfoMapper.selectPatientInfoByIdList(ids);
+  public List<PatientBaseInfoVo> findPatientInfoByIds(List<Integer> ids, Boolean hasDied) {
+    return patientBaseInfoMapper.selectPatientInfoByIdList(ids, hasDied);
   }
 
   /**
