@@ -425,7 +425,9 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                         case 1:
                             if(next!=null){
                                 // 下一级审批人
-                                emp_ids.add(next.getApprovalPeopleId());
+                                // 根据leaveInfoForm.getApprovalNowPeopleId();查推送号与平台
+                                Integer userid = approvalPeopleBiz.selectById(next.getApprovalPeopleId()).getUserId();
+                                emp_ids.add(userid);
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
                                     JpushManager.getInstance().pushLeaveApproval(el, 1);
