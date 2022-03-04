@@ -356,7 +356,7 @@ public class PatientServiceRest {
 
 
   @ApiOperation("条件查询自助登记患者的人数")
-  @PostMapping(value = "/api/count/selfRegistrationPatient")
+  @PostMapping(value = "/count/selfRegistrationPatient")
   public Integer countSelfRegistrationPatient(@RequestBody SelfRegistrationPatientQuery patientQuery) {
     return patientBaseInfoBiz.countSelfRegistrationPatient(patientQuery);
   }
