@@ -396,23 +396,23 @@
     <select id="selectSelfRegistrationPatientList"
             resultType="com.yunya.feign.patient_central.domain.vo.SelfRegistrationPatientVO">
         SELECT
-            id AS patientId,
-            name AS patientName,
-            mobile,
-            gender,
-            birthday,
-            age,
+            pbi.id AS patientId,
+            pbi.name AS patientName,
+            pbi.mobile,
+            pbi.gender,
+            pbi.birthday,
+            pbi.age,
             po.name AS originChannel,
-            crt_time AS registrationTime
+            pbi.crt_time AS registrationTime
         FROM patient_base_info pbi
         LEFT JOIN patient_origin po ON pbi.origin_type = po.origin_type AND pbi.origin_id = po.id
         <where>
-            AND crt_id IN (-666,-777)
+            AND pbi.crt_id IN (-666,-777)
             <if test="query.currentDate!=null and query.currentDate!=''">
-                AND DATE_FORMAT(crt_time,'%Y-%m-%d') = #{query.currentDate}
+                AND DATE_FORMAT(pbi.crt_time,'%Y-%m-%d') = #{query.currentDate}
             </if>
             <if test="query.orgId != null">
-                AND org_id = #{query.orgId}
+                AND pbi.org_id = #{query.orgId}
             </if>
         </where>
         ORDER BY pbi.crt_time DESC
