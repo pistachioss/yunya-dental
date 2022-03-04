@@ -51,13 +51,11 @@
         remind_date,
         remind_time,
         remind_content ,
-        remarks,
-        status ,
-        inservice)
+        remarks)
         VALUES
         <foreach collection="list" item="item" separator=",">
             (#{item.orgId},#{item.patientId},#{item.dentistId},#{item.treatmentId},#{item.remindDate}
-            ,#{item.remindTime},#{item.remindContent},#{item.remarks},#{item.status},#{item.inservice})
+            ,#{item.remindTime},#{item.remindContent},#{item.remarks})
         </foreach>
     </insert>
 
