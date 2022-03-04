@@ -41,7 +41,7 @@
                 #{id}
             </foreach>
     </update>
-    <insert id="batchIntert">
+    <insert id="batchIntert" keyProperty="id" useGeneratedKeys="true">
 
          insert into visiting_remind (
         org_id ,
