@@ -1568,6 +1568,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    return mapper.selectSelfRegistrationPatientList(query);
+    return new PageInfo<>(mapper.selectSelfRegistrationPatientList(query));
   }
 }

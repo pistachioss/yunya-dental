@@ -1,6 +1,5 @@
 package com.yunya.modules.patient_central.mapper;
 
-import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.SelfRegistrationPatientVO;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
@@ -234,5 +233,5 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @param query
    * @return
    */
-  PageInfo<SelfRegistrationPatientVO> selectSelfRegistrationPatientList(@Param("query") SelfRegistrationPatientQuery query);
+  List<SelfRegistrationPatientVO> selectSelfRegistrationPatientList(@Param("query") SelfRegistrationPatientQuery query);
 }
