@@ -26,6 +26,7 @@ import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -40,20 +41,15 @@ import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.modules.treatment.other.mapper.VisitingRemindMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
+import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.ContentHandler;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -100,6 +96,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      */
     public ResponseResult insertVisitingRemind(VisitingRemindModel model){
         Integer patientId = model.getPatientId();
+        checkPatiendHasDied(patientId);
         Date remindDate = model.getRemindDate();
         String remindTime = model.getRemindTime();
         List<VisitingRemind> hasSameDatas = mapper.findVisitingRemindByPatientIdAndDateTime(patientId, remindDate, remindTime);
@@ -123,6 +120,18 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         // 发送消息-新建提醒
         remoteRabbitMqServiceFeign.sendMessage(build.getId(),1,0, MsgCategoryEnum.BaseVisitRemind);
         return ResponseUtil.success();
+    }
+
+    /**
+     * 检查患者是否已去世
+     *
+     * @param patientId
+     */
+    private void checkPatiendHasDied(Integer patientId) {
+        List<PatientBaseInfoVo> diedPatients = remotePatientCentralServiceFeign.findPatientInfoByIds(Arrays.asList(patientId), true);
+        if (StringHelper.isNotEmpty(diedPatients)) {
+            throw new ClientServiceException("该患者已去世！",OperationCodeConstants.OPERATION_NOT_ALLOW);
+        }
     }
 
     /**
@@ -269,6 +278,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         PageInfo visitingRemindVoPageInfo = new PageInfo(visitingReminds);
         // 获取医生ID集合
         if (!StringHelper.isEmpty(visitingReminds)) {
+            visitingReminds = filterDiedPatient(visitingReminds, query.getPatientId());
+
             // 获取医生信息列表
             List<Integer> dentistIds = visitingReminds.stream().map(VisitingRemind::getDentistId).collect(Collectors.toList());
             List<SysUserInfoDetail> dentistInfoList = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
@@ -307,6 +318,36 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         // 设置分页数据
         visitingRemindVoPageInfo.setList(searchVisitingRemindVo);
         return ResponseUtil.success(visitingRemindVoPageInfo);
+    }
+
+    /**
+     * 过滤掉已经去世的患者
+     *
+     * @param datas
+     * @param patientId
+     * @return
+     */
+    private List<VisitingRemind> filterDiedPatient(List<VisitingRemind> datas, Integer patientId) {
+        // 查询患者本人提醒无需过滤
+        if (!ObjectUtils.isEmpty(patientId)) {
+            return datas;
+        }
+        List<Integer> patientIds = datas.stream().map(VisitingRemind::getPatientId).collect(Collectors.toList());
+        List<PatientBaseInfoVo> diedPatients = remotePatientCentralServiceFeign.findPatientInfoByIds(patientIds, true);
+        if (StringHelper.isEmpty(diedPatients)) {
+            return new ArrayList<>();
+        }
+        datas = datas.stream().filter(vo->{
+            boolean notDied = true;
+            for (PatientBaseInfoVo patient : diedPatients) {
+                if (patient.getId().equals(vo.getPatientId())) {
+                    notDied = false;
+                    break;
+                }
+            }
+            return notDied;
+        }).collect(Collectors.toList());;
+        return datas;
     }
 
     /**

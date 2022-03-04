@@ -50,6 +50,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -839,27 +840,31 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     VisitingRecord visitRecord = new VisitingRecord();
                     TreatmentRecord treatmentRecord = mapper.selectByPrimaryKey(treatmentRecordId);
                     if (null != treatmentRecord) {
-                      visitRecord.setPatientId(treatmentRecord.getPatientId());
-                      visitRecord.setOrgId(treatmentRecord.getOrgId());
-                      visitRecord.setTreatmentDate(treatmentRecord.getTreatStartTime());
-                      Registered registered =
-                          registeredMapper.selectByPrimaryKey(treatmentRecord.getRegisteredId());
-                      if (null != registered) {
-                        visitRecord.setDentistId(registered.getDentistId());
-                        visitRecord.setDeptRoomId(registered.getDeptRoomId());
+                      Integer patientId = treatmentRecord.getPatientId();
+                      PatientBaseInfo patient = patientServiceFeign.findPatientInfoById(patientId);
+                      if (!ObjectUtils.isEmpty(patient) && !patient.getHasDied()) {
+                        visitRecord.setPatientId(patientId);
+                        visitRecord.setOrgId(treatmentRecord.getOrgId());
+                        visitRecord.setTreatmentDate(treatmentRecord.getTreatStartTime());
+                        Registered registered =
+                                registeredMapper.selectByPrimaryKey(treatmentRecord.getRegisteredId());
+                        if (null != registered) {
+                          visitRecord.setDentistId(registered.getDentistId());
+                          visitRecord.setDeptRoomId(registered.getDeptRoomId());
+                        }
+                        visitRecord.setCrtId(detail.getCrtId());
+                        visitRecord.setCrtName(detail.getCrtName());
+                        visitRecord.setCrtTime(new Date(System.currentTimeMillis()));
+                        visitRecord.setTreatmentId(treatmentRecordId);
+                        visitRecord.setVisitingTime("09:00");
+                        visitRecord.setReason(baseTariff.getName());
+                        visitRecord.setStatus(false);
+                        visitRecord.setInservice(true);
+                        visitRecord.setVisitingDate(
+                                DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
+                        visitRecordPlanList.add(visitRecord);
                       }
                     }
-                    visitRecord.setCrtId(detail.getCrtId());
-                    visitRecord.setCrtName(detail.getCrtName());
-                    visitRecord.setCrtTime(new Date(System.currentTimeMillis()));
-                    visitRecord.setTreatmentId(treatmentRecordId);
-                    visitRecord.setVisitingTime("09:00");
-                    visitRecord.setReason(baseTariff.getName());
-                    visitRecord.setStatus(false);
-                    visitRecord.setInservice(true);
-                    visitRecord.setVisitingDate(
-                        DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
-                    visitRecordPlanList.add(visitRecord);
                   });
         }
       }

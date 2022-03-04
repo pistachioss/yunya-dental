@@ -1,6 +1,5 @@
 package com.yunya.modules.patient_central;
 
-import cn.hutool.db.Db;
 import com.alibaba.fastjson.JSONObject;
 import com.uniubi.sdk.api.DeviceControllerApi;
 import com.uniubi.sdk.auth.authToken.AppAuthParam;
@@ -12,9 +11,9 @@ import com.uniubi.sdk.model.ResultDeviceOutput;
 import com.uniubi.sdk.model.ResultPageResultBeanAuthOutput;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.framework.common.utils.MD5Util;
-import com.yunya.modules.patient_central.tokenApi.TokenTask;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import com.yunya.modules.patient_central.constant.WoPlatformConstants;
+import com.yunya.modules.patient_central.tokenApi.TokenTask;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.junit.jupiter.api.Test;
@@ -153,7 +152,7 @@ class YunyaPatientApplicationTests {
         ids.add(1);
         ids.add(2);
         ids.add(3);
-        List<PatientBaseInfoVo> patientInfoByIds = patientBaseInfoBiz.findPatientInfoByIds(ids);
+        List<PatientBaseInfoVo> patientInfoByIds = patientBaseInfoBiz.findPatientInfoByIds(ids, null);
         System.out.println(patientInfoByIds);
     }
 
