@@ -350,8 +350,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   private void savePatientChildInfo(PatientChildInfoModel model, Integer patientId) {
     Date now = new Date(System.currentTimeMillis());
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
-    Integer id = model.getId();
-    PatientChildInfo childInfo = patientChildInfoMapper.selectByPrimaryKey(id);
+    PatientChildInfo query = new PatientChildInfo();
+    query.setPatientId(patientId);
+    query.setInservice(true);
+    PatientChildInfo childInfo = patientChildInfoMapper.selectOne(query);
     if (!ObjectUtils.isEmpty(childInfo)) {
       childInfo.setSchool(model.getSchool());
       childInfo.setGrade(model.getGrade());
@@ -412,8 +414,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (!ObjectUtils.isEmpty(expInfo)) {
       Date now = new Date(System.currentTimeMillis());
       int userId = Integer.parseInt(BaseContextHandler.getUserID());
-      Integer id = expInfo.getToothRecordId();
-      PatientToothInfo toothInfo = patientToothInfoMapper.selectByPrimaryKey(id);
+      PatientToothInfo query = new PatientToothInfo();
+      query.setPatientId(patientId);
+      query.setInservice(true);
+      PatientToothInfo toothInfo = patientToothInfoMapper.selectOne(query);
       if (!ObjectUtils.isEmpty(toothInfo)) {
         toothInfo.setHadMissTooth(expInfo.getHadMissTooth());
         List<Integer> missToothIds = expInfo.getMissToothHistory();

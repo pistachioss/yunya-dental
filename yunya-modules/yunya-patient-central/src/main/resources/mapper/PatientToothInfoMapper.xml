@@ -41,7 +41,7 @@
         id,
         had_miss_tooth AS hadMissTooth,
         miss_tooth_history AS missToothHistory,
-        had_fill_treat AS fillTreatHistory,
+        had_fill_treat AS hadFillTreat,
         fill_treat_history AS fillTreatHistory,
         fill_treat_last_date AS fillTreatLastDate,
         had_periodontal_surgery AS hadPeriodontalSurgery,
