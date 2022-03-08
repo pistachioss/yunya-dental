@@ -167,8 +167,13 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 // 根据leaveInfoForm.getApprovalPeopleId();查推送号与平台
 //                                Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
                                 // fix: bug3476
-                                Integer userid = workOvertimeInfoForm.getApprovalPeopleId();
-                                emp_ids.add(userid);
+//                                Integer userid = workOvertimeInfoForm.getApprovalPeopleId();
+                                // fix: bug3520
+                                Integer empid = workOvertimeInfoForm.getApprovalPeopleId();
+                                SysEmployee sysEmployee = remoteSystemServiceFeign.findSysUserByEmpId(empid);
+                                if(sysEmployee !=null){
+                                    emp_ids.add(sysEmployee.getUserId());
+                                }
                                 employeePushForm.setId(workOvertimeInfo.getId());
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {

@@ -190,8 +190,13 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                             // 根据fieldInfoForm.getApprovalPeopleId();查推送号与平台
 //                            Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
                             // fix: bug3476
-                            Integer userid = fieldInfoForm.getApprovalPeopleId();
-                            emp_ids.add(userid);
+//                            Integer userid = fieldInfoForm.getApprovalPeopleId();
+                            // fix: bug3520
+                            Integer empid = fieldInfoForm.getApprovalPeopleId();
+                            SysEmployee sysEmployee = remoteSystemServiceFeign.findSysUserByEmpId(empid);
+                            if(sysEmployee !=null){
+                                emp_ids.add(sysEmployee.getUserId());
+                            }
                             employeePushForm.setId(fieldInfo.getId());
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
