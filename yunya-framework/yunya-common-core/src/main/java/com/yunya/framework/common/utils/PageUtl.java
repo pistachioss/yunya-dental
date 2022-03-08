@@ -1,6 +1,7 @@
 package com.yunya.framework.common.utils;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.model.PageQuery;
 
 import java.util.List;
 
@@ -14,6 +15,17 @@ import java.util.List;
  */
 public class PageUtl<T> {
 
+
+    /**
+     * 手动分页（默认分页）
+     *
+     * @param pageQuery 分页查询对象
+     * @param resultList 数据集
+     * @return
+     */
+    public static <T> PageInfo<T> doPage(PageQuery pageQuery, List<T> resultList) {
+        return doPage(pageQuery.getPageNum(), pageQuery.getPageSize(), resultList, pageQuery.getWhetherPage());
+    }
 
     /**
      * 手动分页（默认分页）
