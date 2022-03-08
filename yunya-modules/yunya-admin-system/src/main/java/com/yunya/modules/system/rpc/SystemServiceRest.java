@@ -400,7 +400,7 @@ public class SystemServiceRest {
    * @param empId 员工
    * @return
    */
-  @RequestMapping(value = "/employee/{empId}", method = RequestMethod.GET)
+  @RequestMapping(value = "/user/{empId}", method = RequestMethod.GET)
   public SysEmployee findSysUserByEmpId(@PathVariable(value = "empId") Integer empId) {
     return sysEmployeeBiz.findSysUserByEmpId(empId);
   }

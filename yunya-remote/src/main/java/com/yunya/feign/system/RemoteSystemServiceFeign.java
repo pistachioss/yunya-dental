@@ -217,7 +217,7 @@ public interface RemoteSystemServiceFeign {
    * @param empId 员工ID
    * @return
    */
-  @RequestMapping(value = "/api/employee/{empId}", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/user/{empId}", method = RequestMethod.GET)
   SysEmployee findSysUserByEmpId(@PathVariable(value = "empId") Integer empId);
 
   /**
