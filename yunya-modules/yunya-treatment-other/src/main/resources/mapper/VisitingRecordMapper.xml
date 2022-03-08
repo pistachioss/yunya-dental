@@ -58,7 +58,9 @@
             parameterType="com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery"
             resultType="com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo">
         SELECT
-        <include refid="baseColumns"></include>,
+        vr.id,vr.org_id as orgId,vr.treatment_id as treatmentId,vr.patient_id as patientId,vr.dentist_id as dentistId,vr.executor_id as executorId,vr.executor_name as executorName,
+        vr.execute_date as executeDate,vr.dept_room_id as dept_roomId,vr.treatment_date as treatmentDate,vr.visiting_date as visitingDate,vr.visiting_time as visitingTime,vr.reason,
+        vr.visiting_content as visitingContent,vr.inservice,vr.remarks,vr.status ,vr.crt_id as crtId,vr.crt_name as crtName,vr.crt_time as crtTime,vr.upt_id as uptId,vr.upd_name as updName,vr.upd_time as updTime,
         (select count(id) from visiting_record where patient_id = vr.patient_id and visiting_content is null and
         visiting_date > DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d' )) as visitingCount
         FROM
@@ -69,7 +71,7 @@
             </if>
             <choose>
                 <!-- 按创建日期检索 -->
-                <when test="query.searchId == 1">
+                <when test="query.searchId == 1 and query.searchBeginTime != null and query.searchEndTime != null">
                     <if test="query.searchBeginTime != null and query.searchEndTime != null">
                         and DATE_FORMAT(vr.crt_time,'%Y-%m-%d') between DATE_FORMAT(#{query.searchBeginTime},'%Y-%m-%d') and date_format(#{query.searchEndTime},'%Y-%m-%d')
                     </if>

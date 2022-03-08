@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,7 +42,7 @@ public class BaseUserPostMapperTest {
   @Test
   public void findEmployeeDiagnosisInfo() {
     EmployeeDiagnosisQuery query = new EmployeeDiagnosisQuery();
-    query.setOrgId(35);
+    query.setOrgIds(Arrays.asList(35));
     query.setStartDate("2020-10-01");
     query.setEndDate("2020-12-07");
     query.setDentistIds(new Integer[] {521, 526});

@@ -213,6 +213,24 @@ public class AppointmentController {
   }
 
   /**
+   * 根据条件查询预约可视图（患者维度）
+   *
+   * @param query 查询参数
+   * @return 患者维度列表
+   */
+  @ApiOperation(value = "根据条件查询患者维度预约可视图(按医生id、时间段查询) 多个医生")
+  @PostMapping("/find/patient/dimensionmore")
+  public ResponseResult<Page<AppointmentDimensionsVO>> findAppointmentPatientDimensionByDateMore(
+          @RequestBody @Validated PatientDimensionByDayQuery query) {
+    List<AppointmentDimensionsVO> appointmentDimensionVos =
+            appointmentBiz.findAppointmentPatientDimensionByExampleMore(query);
+    // 分页
+    PageUtil pageUtil = new PageUtil(query.getPageNum(),query.getPageSize());
+    Page<AppointmentDimensionsVO> paging = pageUtil.getPaging(appointmentDimensionVos);
+    return ResponseUtil.success(paging);
+  }
+
+  /**
    * 根据排班开始结束日期/门诊id/医生id查询医生维度预约可视图（医生维度）
    *
    * @param query 查询参数

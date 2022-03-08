@@ -83,9 +83,40 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
     /** 消息服务 */
     @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
 
-    public ResponseResult addImplement(List<VisitingRemindModel> model){
-        for(VisitingRemindModel vm:model){
-            this.insertVisitingRemind(vm);
+    public ResponseResult addImplement(List<VisitingRemindModel> models){
+//        for(VisitingRemindModel vm:model){
+//            this.insertVisitingRemind(vm);
+//        }
+//        return ResponseUtil.success();
+        List<VisitingRemind>biulist = new ArrayList();
+
+        for(VisitingRemindModel model:models) {
+            Integer patientId = model.getPatientId();
+            Date remindDate = model.getRemindDate();
+            String remindTime = model.getRemindTime();
+            List<VisitingRemind> hasSameDatas = mapper.findVisitingRemindByPatientIdAndDateTime(patientId, remindDate, remindTime);
+            if (!StringHelper.isEmpty(hasSameDatas)) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                String format = dateFormat.format(remindDate);
+                return ResponseUtil.success(format + " " + remindTime + "时间段内已经存在一条提醒记录！");
+            }
+            VisitingRemind build = EntityUtils.build(model, VisitingRemind.class);
+
+            build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            build.setCrtName(BaseContextHandler.getName());
+            build.setCrtTime(new Date(System.currentTimeMillis()));
+            build.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+            build.setUpdName(BaseContextHandler.getName());
+            build.setUpdTime(new Date(System.currentTimeMillis()));
+            biulist.add(build);
+        }
+        int result = mapper.batchIntert(biulist);
+        if (result <= 0) {
+            return ResponseUtil.success("数据插入失败！");
+        }
+        for(VisitingRemind b:biulist){
+            // 发送消息-新建提醒
+            remoteRabbitMqServiceFeign.sendMessage(b.getId(),1,0, MsgCategoryEnum.BaseVisitRemind);
         }
         return ResponseUtil.success();
     }

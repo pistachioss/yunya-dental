@@ -3,13 +3,14 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.ClinicPerformanceBusinessQuery;
-import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.EmployeeDiagnosisQuery;
 import com.yunya.feign.report.domain.query.EmployeeMatchingRecordQuery;
 import com.yunya.feign.report.domain.vo.EmployeeDiagnosisInfoVO;
 import com.yunya.feign.treatment.domain.vo.AssistantMatchingStatisticsVO;
 import com.yunya.feign.treatment.domain.vo.BasePeizhenCentreVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.PageUtl;
+import com.yunya.framework.common.utils.SortUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseOrganization;
@@ -17,8 +18,8 @@ import com.yunya.models.report.BaseUserPost;
 import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import com.yunya.report.ultimate.mapper.BasePeizhenCentreMapper;
 import com.yunya.report.ultimate.mapper.BaseUserPostMapper;
-import com.yunya.report.ultimate.model.BasePeizhenCentre;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -249,12 +250,43 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
    * @return PageInfo<EmployeeDiagnosisInfoVO> 员工看诊情况分页列表
    */
   public PageInfo<EmployeeDiagnosisInfoVO> findEmployeeDiagnosisInfoList(
-      EmployeeDiagnosisQuery query) {
-    if (query.getWhetherPage()) {
-      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+      EmployeeDiagnosisQuery query) throws ExecutionException, InterruptedException {
+    List<Integer> orgIds = query.getOrgIds();
+    List<Future<List<EmployeeDiagnosisInfoVO>>> futures = new ArrayList<>();
+    for (Integer orgId : orgIds) {
+      Future<List<EmployeeDiagnosisInfoVO>> future = executorService.submit(()->{
+        EmployeeDiagnosisQuery queryForm = new EmployeeDiagnosisQuery();
+        BeanUtils.copyProperties(query, queryForm);
+        queryForm.setOrgId(orgId);
+        return mapper.selectEmployeeDiagnosisInfoList(queryForm);
+      });
+      futures.add(future);
     }
-    List<EmployeeDiagnosisInfoVO> resultList = mapper.selectEmployeeDiagnosisInfoList(query);
-    return new PageInfo<>(resultList);
+    List<EmployeeDiagnosisInfoVO> result = new ArrayList<>();
+    for (Future<List<EmployeeDiagnosisInfoVO>> future : futures) {
+      List<EmployeeDiagnosisInfoVO> data = future.get();
+      if (StringHelper.isNotEmpty(data)) {
+        result.addAll(data);
+      }
+    }
+    result = SortUtil.sort(result, employeeDiagnosisCmpList());
+    return PageUtl.doPage(query, result);
+  }
+
+  /**
+   * 返回员工看诊情况的排序规则
+   *
+   * @return
+   */
+  private Comparator employeeDiagnosisCmpList() {
+    return SortUtil.comparing(
+            EmployeeDiagnosisInfoVO::getEmployeeId,
+            EmployeeDiagnosisInfoVO::getOrgId
+    ).thenComparing(
+            EmployeeDiagnosisInfoVO::getTotalTreatmentTime
+    ).reversed().thenComparing(
+            EmployeeDiagnosisInfoVO::getTreatVisitsTimes
+    ).reversed();
   }
 
   /**
@@ -264,13 +296,17 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
    * @param query 查询条件
    */
   public void exportEmployeeDiagnosisInfoList(
-      HttpServletResponse response, EmployeeDiagnosisQuery query) throws IOException {
-    List<EmployeeDiagnosisInfoVO> resultList = mapper.selectEmployeeDiagnosisInfoList(query);
+      HttpServletResponse response, EmployeeDiagnosisQuery query) throws Exception {
+    query.setWhetherPage(false);
+    List<EmployeeDiagnosisInfoVO> resultList = findEmployeeDiagnosisInfoList(query).getList();
     ExcelUtil<EmployeeDiagnosisInfoVO> excelUtil = new ExcelUtil<>(EmployeeDiagnosisInfoVO.class);
     String fileName = query.getStartDate() + "-" + query.getEndDate() + "员工看诊情况统计";
-    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
-    if (null != organization) {
-      fileName = organization.getAbbreviation() + fileName;
+    List<Integer> orgIds = query.getOrgIds();
+    if (orgIds.size() == 1) {
+      BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+      if (null != organization) {
+        fileName = organization.getAbbreviation() + fileName;
+      }
     }
     excelUtil.exportExcel(response, resultList, "员工看诊情况列表", fileName);
   }

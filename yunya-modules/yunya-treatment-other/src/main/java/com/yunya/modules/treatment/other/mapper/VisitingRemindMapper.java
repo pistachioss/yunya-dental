@@ -54,4 +54,6 @@ public interface VisitingRemindMapper extends Mapper<VisitingRemind> {
    * @return
    */
   Integer resetVisitingRemindBatch(@Param("userId") Integer userId,@Param("updName") String updName,@Param("form") ResetVisitingRemindForm form);
+
+  Integer batchIntert(List<VisitingRemind>list);
 }

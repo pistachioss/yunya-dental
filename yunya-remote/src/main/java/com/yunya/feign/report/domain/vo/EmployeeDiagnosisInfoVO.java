@@ -24,6 +24,9 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 @Data
 @ToString
 public class EmployeeDiagnosisInfoVO implements Serializable {
+  /** 门诊ID */
+  @ApiModelProperty("门诊ID")
+  private Integer orgId;
   /** 员工ID */
   @ApiModelProperty("员工ID")
   private Integer employeeId;
