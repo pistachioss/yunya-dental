@@ -518,4 +518,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
   List<PersonalBillItemVO> selectBillItemNumByQuery(@Param("query") PatientDimensionQueryForm query);
 
   List<StatEmpBill> selectBillingOralItemList(@Param("query") MultiClinicDateRangeQueryForm query);
+
+  /**
+   * 根据条件查询开单数量及金额全部明细列表导出
+   *
+   * @param query
+   * @return
+   */
+  List<BillItemStatisticsDetailVO> billItemAmountDetailList(@Param("query") BillItemInfoQuery query);
 }
