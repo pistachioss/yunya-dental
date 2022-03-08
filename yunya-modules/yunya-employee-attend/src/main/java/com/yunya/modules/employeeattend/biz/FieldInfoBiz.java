@@ -414,16 +414,16 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     employeePushForm.setShowName(showName);
                     // 撤销
                     emp_ids.add(fieldInfo.getUserId());
-//                    Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
+//                    Integer userid = approvalPeopleBiz.selectById(fieldInfo.getApprovalPeopleId()).getUserId();
                     // fix: bug3476
-//                    Integer userid = fieldInfoForm.getApprovalPeopleId();
+//                    Integer userid = fieldInfo.getApprovalPeopleId();
                     // fix: bug3520
-                    Integer empid = fieldInfoForm.getApprovalPeopleId();
+                    Integer empid = fieldInfo.getApprovalPeopleId();
                     SysEmployee sysEmployee = remoteSystemServiceFeign.findSysUserByEmpId(empid);
                     if(sysEmployee !=null){
                         emp_ids.add(sysEmployee.getUserId());
                     }
-                    employeePushForm.setId(fieldInfoForm.getId());
+                    employeePushForm.setId(fieldInfo.getId());
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         JpushManager.getInstance().pushLeaveCancel(el, 3);
