@@ -395,6 +395,17 @@ public class SystemServiceRest {
   }
 
   /**
+   * 根据员工ID查询员工信息
+   *
+   * @param empId 员工
+   * @return
+   */
+  @RequestMapping(value = "/employee/{empId}", method = RequestMethod.GET)
+  public SysEmployee findSysUserByEmpId(@PathVariable(value = "empId") Integer empId) {
+    return sysEmployeeBiz.findSysUserByEmpId(empId);
+  }
+
+  /**
    * 根据科室ID查询科室
    *
    * @param id 科室模板ID

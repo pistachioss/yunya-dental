@@ -212,6 +212,15 @@ public interface RemoteSystemServiceFeign {
   SysEmployee findSysEmployeeById(@PathVariable(value = "userId") Integer userId);
 
   /**
+   * 根据 员工ID 查询员工信息
+   *
+   * @param empId 员工ID
+   * @return
+   */
+  @RequestMapping(value = "/api/employee/{empId}", method = RequestMethod.GET)
+  SysEmployee findSysUserByEmpId(@PathVariable(value = "empId") Integer empId);
+
+  /**
    * 根据条件查询用户信息（含员工信息）
    *
    * @param model 查询条件
