@@ -159,9 +159,9 @@ public class PatientExpInfo {
     private String employer;
 
     /**
-     * 国籍代码
+     * 国籍 字典id
      */
-    private String state;
+    private Integer state;
 
     /**
      * 治疗意见
@@ -785,11 +785,11 @@ public class PatientExpInfo {
         this.employer = employer;
     }
 
-    public String getState() {
+    public Integer getState() {
         return state;
     }
 
-    public void setState(String state) {
+    public void setState(Integer state) {
         this.state = state;
     }
 

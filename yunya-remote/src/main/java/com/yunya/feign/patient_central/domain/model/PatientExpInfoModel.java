@@ -193,7 +193,7 @@ public class PatientExpInfoModel implements Serializable {
      * 国籍字典id
      */
     @ApiModelProperty("国籍字典id")
-    private String state;
+    private Integer state;
 
     /** 治疗意见*/
     @ApiModelProperty("治疗意见")

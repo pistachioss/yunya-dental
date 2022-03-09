@@ -53,8 +53,8 @@ public class PatientRegistrationModel implements Serializable {
     private Integer age;
 
     /** 国籍 */
-    @ApiModelProperty("国籍编码")
-    private String state;
+    @ApiModelProperty("国籍字典id")
+    private Integer state;
 
     /** 职业-字典id */
     @ApiModelProperty("职业-字典id")
