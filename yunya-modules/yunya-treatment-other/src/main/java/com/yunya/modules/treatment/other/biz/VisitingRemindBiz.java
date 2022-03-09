@@ -334,9 +334,6 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         }
         List<Integer> patientIds = datas.stream().map(VisitingRemind::getPatientId).collect(Collectors.toList());
         List<PatientBaseInfoVo> diedPatients = remotePatientCentralServiceFeign.findPatientInfoByIds(patientIds, true);
-        if (StringHelper.isEmpty(diedPatients)) {
-            return new ArrayList<>();
-        }
         datas = datas.stream().filter(vo->{
             boolean notDied = true;
             for (PatientBaseInfoVo patient : diedPatients) {
