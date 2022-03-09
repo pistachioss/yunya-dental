@@ -66,6 +66,7 @@ public class RedisConstants implements Serializable {
 
   /** -------------------------------- 系统用户(员工)信息 ------------------------------- */
   public static final String REDIS_KEY_EMPLOYEE_INFO = "sys_user_info_";
+  public static final String REDIS_KEY_USER_INFO = "sys_employee_info_";
 
   public static final String REDIS_KEY_EMPLOYEE_LIST = "sys_user_info_list";
   /** 入账方式列表 */
