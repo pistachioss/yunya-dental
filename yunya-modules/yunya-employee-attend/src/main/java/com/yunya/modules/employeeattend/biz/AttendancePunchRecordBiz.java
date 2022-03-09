@@ -23,6 +23,7 @@ import com.yunya.modules.employeeattend.enums.*;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.mapper.AttendancePunchRecordMapper;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -1170,7 +1171,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      * @return
      */
     public PageInfo<AttendanceStatisticsVO> statisticsPunchRecord(AttendanceStatisticsQueryForm queryForm) {
-        String name = queryForm.getEmployeeName();
         Byte type = queryForm.getType();
         if (type == null) {
             throw new ClientServiceException("请选择查询年月", PARAM_NOT_ALLOW_EMPTY);
@@ -1178,12 +1178,15 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         setQueryFormDate(queryForm);
         Set<Integer> userIds = new HashSet<>();
         Set<String> userOrgIds = new HashSet<>();
+        List<SysUserInfoDetail> userList = findEmployeeList(queryForm.getOrgId(), queryForm.getEmployeeName(), userIds, userOrgIds);
+        Map<Integer, Date> onWorkMap = getEmployeeOnWorkMap(userList);
         //补入时长
         List<AttendanceManualMakeupVO> makeupVOS = makeupMinuteGroupByUserIdAndOrgId(queryForm, null);
         Table<Integer,Integer, Long> workDateMakeupMinutes = HashBasedTable.create();
         Table<Integer,Integer, Long> workOvertimeMakeupMinutes = HashBasedTable.create();
         if (StringHelper.isNotEmpty(makeupVOS)) {
             makeupVOS.forEach(makeupVO-> {
+                Date makeupDate = makeupVO.getMakeupDate();
                 Integer minute = makeupVO.getMinute();
                 if (minute == null) {
                     minute = 0;
@@ -1372,27 +1375,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         List<WorkOvertimeInfoVO> workOvertimeInfoVOS = getRestWorkOvertimeByQuery(queryForm);
         Table<Integer,Integer, Long> restDateOvertimeMap = sumRestWorkOvertimeInfo(workOvertimeInfoVOS, workOvertimeRecordMap, restDateOverCounts);
 
-        SysUserEmployeeModel model = new SysUserEmployeeModel();
-        model.setWhetherPage(queryForm.getWhetherPage());
-        model.setPageNum(queryForm.getPageNum());
-        model.setPageSize(queryForm.getPageSize());
-        if (queryForm.getOrgId() != null) {
-            model.setOrgIds(Arrays.asList(queryForm.getOrgId()));
-            if (userIds!=null && !userIds.isEmpty()) {
-                model.setUserIds(userIds);
-            }
-        } else {
-            if (userOrgIds!=null && !userOrgIds.isEmpty()) {
-                model.setUserOrgIds(userOrgIds);
-            }
-        }
-        model.setUserName(name);
-        model.setWorkStatus(new Byte[]{0, 1, 3});
-        PageInfo<SysUserInfoDetail> userPage = remoteSystemServiceFeign.findSysUserEmployeeWithOrgList(model);
         List<AttendanceStatisticsVO> result = new ArrayList<>();
-        List<SysUserInfoDetail> userList = userPage.getList();
         if (userList!=null && !userList.isEmpty()) {
             userList.forEach(user -> {
+                String leaveTime = user.getLeaveTime();
                 Integer userId = user.getUserId();
                 String companyIds = user.getCompanyIds();
                 Integer orgId = null;
@@ -1512,6 +1498,37 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         pageInfo.setPageSize(queryForm.getPageSize());
         pageInfo.setTotal(userPage.getTotal());
         return pageInfo;
+    }
+
+    private Map<Integer, Date> getEmployeeOnWorkMap(List<SysUserInfoDetail> userList) {
+        Map<Integer, Date> result = new HashMap<>(16);
+        if (StringHelper.isNotEmpty(userList)) {
+            userList.forEach(vo->{
+                String leaveTime = vo.getLeaveTime();
+                if (StringHelper.isNotEmpty(leaveTime)) {
+                    result.put(vo.getEmployeeId(), DateTime.parse(leaveTime).toDate());
+                }
+            });
+        }
+        return result;
+    }
+
+    private List<SysUserInfoDetail> findEmployeeList(Integer orgId, String name, Set<Integer> userIds, Set<String> userOrgIds) {
+        SysUserEmployeeModel model = new SysUserEmployeeModel();
+        model.setWhetherPage(false);
+        if (orgId != null) {
+            model.setOrgIds(Arrays.asList(orgId));
+            if (userIds!=null && !userIds.isEmpty()) {
+                model.setUserIds(userIds);
+            }
+        } else {
+            if (userOrgIds!=null && !userOrgIds.isEmpty()) {
+                model.setUserOrgIds(userOrgIds);
+            }
+        }
+        model.setUserName(name);
+//        model.setWorkStatus(new Byte[]{0, 1, 2, 3});
+        return remoteSystemServiceFeign.findSysUserEmployeeWithOrgList(model).getList();
     }
 
     /**
