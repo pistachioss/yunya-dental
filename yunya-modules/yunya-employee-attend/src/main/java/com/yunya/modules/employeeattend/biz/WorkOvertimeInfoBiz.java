@@ -362,16 +362,16 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                     employeePushForm.setShowName(showName);
                     // 撤销
                     emp_ids.add(workOvertimeInfo.getUserId());
-//                    Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
+//                    Integer userid = approvalPeopleBiz.selectById(workOvertimeInfo.getApprovalPeopleId()).getUserId();
                     // fix: bug3476
-//                    Integer userid = workOvertimeInfoForm.getApprovalPeopleId();
+//                    Integer userid = workOvertimeInfo.getApprovalPeopleId();
                     // fix: bug3520
-                    Integer empid = workOvertimeInfoForm.getApprovalPeopleId();
+                    Integer empid = workOvertimeInfo.getApprovalPeopleId();
                     SysEmployee sysEmployee = remoteSystemServiceFeign.findSysUserByEmpId(empid);
                     if(sysEmployee !=null){
                         emp_ids.add(sysEmployee.getUserId());
                     }
-                    employeePushForm.setId(workOvertimeInfoForm.getId());
+                    employeePushForm.setId(workOvertimeInfo.getId());
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         JpushManager.getInstance().pushLeaveCancel(el, 2);
