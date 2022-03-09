@@ -219,6 +219,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       }
       patientOrigin.setTimeLimit(patientOriginForm.getTimeLimit());
       patientOrigin.setName(patientOriginForm.getName());
+      patientOrigin.setEnglishName(patientOriginForm.getEnglishName());
       patientOrigin.setLimitStartDate(patientOriginForm.getLimitStartDate());
       if (patientOriginForm.getTimeLimit() != null && patientOriginForm.getTimeLimit() == 1) {
         patientOrigin.setLimitEndDate(getEndTimeOfDate(patientOriginForm.getLimitEndDate()));

@@ -117,4 +117,10 @@ public class PatientBaseInfoModel implements Serializable {
      */
     @ApiModelProperty(value = "推荐来源（员工 老患者）")
     private Integer sourceId;
+
+    /**
+     * 是否去世
+     */
+    @ApiModelProperty("是否去世")
+    private Boolean hasDied;
 }

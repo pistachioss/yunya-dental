@@ -3,8 +3,11 @@ package com.yunya.models.patient_central;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
 @Data
 @Table(name = "patient_origin")
@@ -26,6 +29,12 @@ public class PatientOrigin {
      * 患者来源名称
      */
     private String name;
+
+    /**
+     * 患者来源名称（英文名）
+     */
+    @Column(name = "english_name")
+    private String englishName;
 
     /**
      * 患者来源类型

@@ -8,6 +8,7 @@
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="parent_id" property="parentId" jdbcType="INTEGER"/>
         <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="english_name" property="englishName" jdbcType="VARCHAR"/>
         <result column="qr_code_path" property="qrCodePath" jdbcType="VARCHAR"/>
         <result column="allow_operate" property="allowOperate" jdbcType="BIT"/>
         <result column="time_limit" property="timeLimit" jdbcType="TINYINT"/>
@@ -24,7 +25,7 @@
     </resultMap>
 
     <sql id="PatientOrigin_Column_List">
-        po.source_attribute sourceAttribute ,po.id id,po.parent_id parentId,po.name name,po.origin_type originType,po.qr_code_path qrCodePath,po.allow_operate allowOperate,po.time_limit timeLimit,po.limit_start_date limitStartDate,
+        po.source_attribute sourceAttribute ,po.id id,po.parent_id parentId,po.name name, po.english_name englishName,po.origin_type originType,po.qr_code_path qrCodePath,po.allow_operate allowOperate,po.time_limit timeLimit,po.limit_start_date limitStartDate,
         po.limit_end_date limitEndDate,po.inservice inservice,po.crt_id crtId,po.crt_name crtName,po.crt_time crtTime,po.upt_id uptId,po.upd_name updName,po.upd_time updTime
     </sql>
 
@@ -59,7 +60,7 @@
 
     <!-- 查询父级患者来源 -->
     <select id="originalType" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientOriginVo">
-        select po.id,po.name,po.origin_type as 'originType'
+        select po.id,po.name,po.english_name AS englishName,po.origin_type as 'originType'
         from patient_origin po where po.parent_id = 0 and po.inservice = 1
     </select>
 

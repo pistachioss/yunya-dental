@@ -15,6 +15,8 @@ import java.io.Serializable;
 @Data
 @ApiModel(value = "CountTreatmentRecordVO",description = "统计就诊记录视图模型")
 public class CountTreatmentRecordVO implements Serializable {
+    @ApiModelProperty("自助登记患者人数统计")
+    private Integer selfRegPatient;
     @ApiModelProperty("预约未到人数统计")
     private Integer appointNotArrived;
     @ApiModelProperty("侯诊中人数统计")

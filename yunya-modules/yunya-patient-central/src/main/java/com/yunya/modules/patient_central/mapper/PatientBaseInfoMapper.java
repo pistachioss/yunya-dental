@@ -1,9 +1,7 @@
 package com.yunya.modules.patient_central.mapper;
 
-import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
-import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationChartQueryForm;
-import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationQueryForm;
+import com.yunya.feign.patient_central.domain.query.*;
+import com.yunya.feign.patient_central.domain.vo.SelfRegistrationPatientVO;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.*;
@@ -75,9 +73,10 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * 根据患者id集合查询患者list
    *
    * @param id 患者id
+   * @param hasDied 是否去世
    * @return List<PatientBaseInfoVo>
    */
-  List<PatientBaseInfoVo> selectPatientInfoByIdList(@Param("ids") List<Integer> id);
+  List<PatientBaseInfoVo> selectPatientInfoByIdList(@Param("ids") List<Integer> id, @Param("hasDied") Boolean hasDied);
 
     /**
      * 根据患者id查询患者信息
@@ -219,4 +218,20 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @return List<PatientBaseInfo>
    */
   List<PatientBaseInfo> selectOriginByOriginIdNotNull();
+
+  /**
+   * 条件查询自助登记患者的人数
+   *
+   * @param query
+   * @return
+   */
+  Integer countSelfRegistrationPatient(@Param("query") SelfRegistrationPatientQuery query);
+
+  /**
+   * 条件查询自助登记患者列表
+   *
+   * @param query
+   * @return
+   */
+  List<SelfRegistrationPatientVO> selectSelfRegistrationPatientList(@Param("query") SelfRegistrationPatientQuery query);
 }
