@@ -215,32 +215,53 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     private void addPatientToothInfo(AdultPatientRegistrationModel model, int userId, int patientId) {
         PatientToothInfo toothInfo = new PatientToothInfo();
         toothInfo.setPatientId(patientId);
-        toothInfo.setHadMissTooth(model.getHadMissTooth());
+        Boolean hadMissTooth = false;
         List<Integer> missToothPos = model.getMissToothHistory();
         if (StringHelper.isNotEmpty(missToothPos)) {
             toothInfo.setMissToothHistory(StringHelper.join(missToothPos, ","));
+            hadMissTooth = true;
         }
-        toothInfo.setHadFillTreat(model.getHadFillTreat());
+        toothInfo.setHadMissTooth(hadMissTooth);
+        Boolean hadFillTreat = false;
         List<Integer> fillMetiralIds = model.getFillTreatHistory();
         if (StringHelper.isNotEmpty(fillMetiralIds)) {
             toothInfo.setFillTreatHistory(StringHelper.join(fillMetiralIds, ","));
+            hadFillTreat = true;
         }
+        toothInfo.setHadFillTreat(hadFillTreat);
         toothInfo.setFillTreatLastDate(model.getFillTreatLastDate());
         toothInfo.setHadPeriodontalSurgery(model.getHadPeriodontalSurgery());
         toothInfo.setHadOcclusalAdjust(model.getHadOcclusalAdjust());
-        toothInfo.setHadRestorativeDentures(model.getHadRestorativeDentures());
-        toothInfo.setRpdPart(model.getRpdPart());
+        Boolean hadRestorativeDentures = false;
+        String rpdPart = model.getRpdPart();
+        String lpdPart = model.getLpdPart();
+        if (StringHelper.isNotEmpty(rpdPart) || StringHelper.isNotEmpty(lpdPart)) {
+            hadRestorativeDentures = true;
+        }
+        toothInfo.setHadRestorativeDentures(hadRestorativeDentures);
+        toothInfo.setRpdPart(rpdPart);
         toothInfo.setRpdDate(model.getRpdDate());
-        toothInfo.setLpdPart(model.getLpdPart());
+        toothInfo.setLpdPart(lpdPart);
         toothInfo.setLpdDate(model.getLpdDate());
-        toothInfo.setHadPreventiveTreat(model.getHadPreventiveTreat());
-        toothInfo.setPreventiveTreatCycle(model.getPreventiveTreatCycle());
+        Boolean hadPreventiveTreat = false;
+        Short preventiveTreatCycle = model.getPreventiveTreatCycle();
+        if (!ObjectUtils.isEmpty(preventiveTreatCycle)) {
+            toothInfo.setPreventiveTreatCycle(preventiveTreatCycle);
+            hadPreventiveTreat = true;
+        }
+        toothInfo.setHadPreventiveTreat(hadPreventiveTreat);
         toothInfo.setPreventiveTreatLastMonth(model.getPreventiveTreatLastMonth());
         toothInfo.setHadDiffcultTreat(model.getHadDiffcultTreat());
         toothInfo.setMissTeethUnrepeatCause(model.getMissTeethUnrepeatCause());
-        toothInfo.setHadOrthodontic(model.getHadOrthodontic());
-        toothInfo.setOrthodonticStartDate(model.getOrthodonticStartDate());
-        toothInfo.setOrthodonticEndDate(model.getOrthodonticEndDate());
+        Boolean hadOrthodontic = false;
+        Date orthodonticStartDate = model.getOrthodonticStartDate();
+        Date orthodonticEndDate = model.getOrthodonticEndDate();
+        if (!ObjectUtils.isEmpty(orthodonticStartDate) || !ObjectUtils.isEmpty(orthodonticEndDate)) {
+            hadOrthodontic = true;
+        }
+        toothInfo.setHadOrthodontic(hadOrthodontic);
+        toothInfo.setOrthodonticStartDate(orthodonticStartDate);
+        toothInfo.setOrthodonticEndDate(orthodonticEndDate);
         toothInfo.setHadHygieneEducation(model.getHadHygieneEducation());
         toothInfo.setUsedPlaqueDna(model.getUsedPlaqueDna());
         Date now = new Date(System.currentTimeMillis());

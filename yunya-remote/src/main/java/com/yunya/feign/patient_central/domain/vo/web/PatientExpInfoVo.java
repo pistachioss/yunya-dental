@@ -176,8 +176,8 @@ public class PatientExpInfoVo implements Serializable {
     /**
      * 国籍代码
      */
-    @ApiModelProperty("国籍代码")
-    private String state;
+    @ApiModelProperty("国籍字典id")
+    private Integer state;
 
     /**
      * 备注

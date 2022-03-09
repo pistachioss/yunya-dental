@@ -32,7 +32,7 @@
     <result column="emergency_phone" property="emergencyPhone" jdbcType="VARCHAR" />
     <result column="employer" property="employer" jdbcType="VARCHAR" />
     <result column="e_mail" property="eMail" jdbcType="VARCHAR" />
-    <result column="state" property="state" jdbcType="VARCHAR" />
+    <result column="state" property="state" jdbcType="INTEGER" />
     <result column="treat_advice" property="treatAdvice" jdbcType="VARCHAR" />
     <result column="remarks" property="remarks" jdbcType="VARCHAR" />
     <result column="inservice" property="inservice" jdbcType="BIT" />
