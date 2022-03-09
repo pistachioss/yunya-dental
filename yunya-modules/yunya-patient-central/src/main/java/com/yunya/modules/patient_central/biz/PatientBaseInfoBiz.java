@@ -380,6 +380,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       childInfo.setUptTime(now);
       patientChildInfoMapper.updateByPrimaryKey(childInfo);
     } else {
+      childInfo = new PatientChildInfo();
       childInfo.setPatientId(patientId);
       childInfo.setSchool(model.getSchool());
       childInfo.setGrade(model.getGrade());
