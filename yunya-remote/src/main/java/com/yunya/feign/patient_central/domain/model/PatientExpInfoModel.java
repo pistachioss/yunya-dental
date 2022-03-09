@@ -190,9 +190,9 @@ public class PatientExpInfoModel implements Serializable {
     private String employer;
 
     /**
-     * 国籍代码
+     * 国籍字典id
      */
-    @ApiModelProperty("国籍代码")
+    @ApiModelProperty("国籍字典id")
     private String state;
 
     /** 治疗意见*/
@@ -221,7 +221,7 @@ public class PatientExpInfoModel implements Serializable {
 
     /** 最近一次填充治疗日期 */
     @ApiModelProperty("最近一次填充治疗日期")
-    private Date fillTreatLastDate;
+    private String fillTreatLastDate;
 
     /** 是否牙周手术 */
     @ApiModelProperty("是否牙周手术")
@@ -241,7 +241,7 @@ public class PatientExpInfoModel implements Serializable {
 
     /** RPD戴用时间 */
     @ApiModelProperty("RPD戴用时间")
-    private Date rpdDate;
+    private String rpdDate;
 
     /** LPD部位 */
     @ApiModelProperty("LPD部位")
@@ -249,7 +249,7 @@ public class PatientExpInfoModel implements Serializable {
 
     /** LPD戴用时间 */
     @ApiModelProperty("LPD戴用时间")
-    private Date lpdDate;
+    private String lpdDate;
 
     /** 是否预防治疗 */
     @ApiModelProperty("是否预防治疗")
@@ -277,11 +277,11 @@ public class PatientExpInfoModel implements Serializable {
 
     /** 正畸治疗开始日期*/
     @ApiModelProperty("正畸治疗开始日期")
-    private Date orthodonticStartDate;
+    private String orthodonticStartDate;
 
     /** 正畸治疗结束日期*/
     @ApiModelProperty("正畸治疗结束日期")
-    private Date orthodonticEndDate;
+    private String orthodonticEndDate;
 
     /** 是否接受过口腔卫生宣教*/
     @ApiModelProperty("是否接受过口腔卫生宣教")
