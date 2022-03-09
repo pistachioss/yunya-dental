@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -91,5 +90,5 @@ public class PatientChildInfoModel implements Serializable {
 
     /** 最近一次检查牙齿日期 */
     @ApiModelProperty("最近一次检查牙齿日期")
-    private Date toothLastCheck;
+    private String toothLastCheck;
 }

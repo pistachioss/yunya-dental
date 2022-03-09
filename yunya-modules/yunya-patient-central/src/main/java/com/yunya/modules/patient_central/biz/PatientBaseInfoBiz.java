@@ -362,7 +362,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       List<Integer> parentHasCaries = model.getParentHasCaries();
       childInfo.setParentHasCaries(StringHelper.join(parentHasCaries, ","));
       childInfo.setToothClearliness(model.getToothClearliness());
-      childInfo.setToothLastCheck(model.getToothLastCheck());
+      String toothLastCheck = model.getToothLastCheck();
+      if (StringHelper.isNotEmpty(toothLastCheck)) {
+        childInfo.setToothLastCheck(DateTime.parse(toothLastCheck).toDate());
+      }
       childInfo.setToothSprouting(model.getToothSprouting());
       childInfo.setUsedDentalFloss(model.getUsedDentalFloss());
       childInfo.setUsedFluorideToothpaste(model.getUsedFluorideToothpaste());
@@ -385,7 +388,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       List<Integer> parentHasCaries = model.getParentHasCaries();
       childInfo.setParentHasCaries(StringHelper.join(parentHasCaries, ","));
       childInfo.setToothClearliness(model.getToothClearliness());
-      childInfo.setToothLastCheck(model.getToothLastCheck());
+      String toothLastCheck = model.getToothLastCheck();
+      if (StringHelper.isNotEmpty(toothLastCheck)) {
+        childInfo.setToothLastCheck(DateTime.parse(toothLastCheck).toDate());
+      }
       childInfo.setToothSprouting(model.getToothSprouting());
       childInfo.setUsedDentalFloss(model.getUsedDentalFloss());
       childInfo.setUsedFluorideToothpaste(model.getUsedFluorideToothpaste());
@@ -429,17 +435,32 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         if (StringHelper.isNotEmpty(fillMeterials)) {
           toothInfo.setFillTreatHistory(StringHelper.join(fillMeterials, ","));
         }
-        toothInfo.setFillTreatLastDate(expInfo.getFillTreatLastDate());
+        String fillTreatLastDate = expInfo.getFillTreatLastDate();
+        if (StringHelper.isNotEmpty(fillTreatLastDate)) {
+          toothInfo.setFillTreatLastDate(DateTime.parse(fillTreatLastDate).toDate());
+        }
         toothInfo.setHadPeriodontalSurgery(expInfo.getHadPeriodontalSurgery());
         toothInfo.setHadOcclusalAdjust(expInfo.getHadOcclusalAdjust());
         toothInfo.setHadRestorativeDentures(expInfo.getHadRestorativeDentures());
         toothInfo.setRpdPart(expInfo.getRpdPart());
-        toothInfo.setRpdDate(expInfo.getRpdDate());
+        String rpdDate = expInfo.getRpdDate();
+        if (StringHelper.isNotEmpty(rpdDate)) {
+          toothInfo.setRpdDate(DateTime.parse(rpdDate).toDate());
+        }
         toothInfo.setLpdPart(expInfo.getLpdPart());
-        toothInfo.setLpdDate(expInfo.getLpdDate());
+        String lpdDate = expInfo.getLpdDate();
+        if (StringHelper.isNotEmpty(lpdDate)) {
+          toothInfo.setLpdDate(DateTime.parse(lpdDate).toDate());
+        }
         toothInfo.setHadOrthodontic(expInfo.getHadOrthodontic());
-        toothInfo.setOrthodonticStartDate(expInfo.getOrthodonticStartDate());
-        toothInfo.setOrthodonticEndDate(expInfo.getOrthodonticEndDate());
+        String ortSDate = expInfo.getOrthodonticStartDate();
+        if (StringHelper.isNotEmpty(ortSDate)) {
+          toothInfo.setOrthodonticStartDate(DateTime.parse(ortSDate).toDate());
+        }
+        String ortEDate = expInfo.getOrthodonticEndDate();
+        if (StringHelper.isNotEmpty(ortEDate)) {
+          toothInfo.setOrthodonticEndDate(DateTime.parse(ortEDate).toDate());
+        }
         toothInfo.setHadPreventiveTreat(expInfo.getHadPreventiveTreat());
         toothInfo.setPreventiveTreatCycle(expInfo.getPreventiveTreatCycle());
         toothInfo.setPreventiveTreatLastMonth(expInfo.getPreventiveTreatLastMonth());
