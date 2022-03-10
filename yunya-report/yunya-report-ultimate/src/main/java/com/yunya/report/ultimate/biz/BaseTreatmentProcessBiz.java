@@ -27,6 +27,7 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -245,20 +246,20 @@ public class BaseTreatmentProcessBiz
    * @param query
    * @return
    */
-  public PageInfo<BaseTreatmentProcessVO> treatmentList4App(TreatmentList4AppQuery query) {
-    if (query.getWhetherPage()) {
-      PageHelper.startPage(query.getPageNum(), query.getPageSize());
-    }
+  public PageInfo<PatientTreatmentInfo4ListVO> treatmentList4App(TreatmentList4AppQuery query) {
+//    if (query.getWhetherPage()) {
+//      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+//    }
     List<PatientTreatmentInfo4ListVO> patientTreatmentInfo4ListVOS = new ArrayList<>();
     SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
     List<BaseTreatmentProcessVO> baseTreatmentProcessVOS =
         mapper.treatmentList4App(query.getOrgId(), query.getDentistId(), query.getQueryDate());
-    PageInfo pageInfo = null;
-    if (StringHelper.isEmpty(baseTreatmentProcessVOS)) {
-      return new PageInfo<>(baseTreatmentProcessVOS);
-    } else {
-      pageInfo = new PageInfo(baseTreatmentProcessVOS);
-    }
+//    PageInfo pageInfo = null;
+//    if (StringHelper.isEmpty(baseTreatmentProcessVOS)) {
+//      return new PageInfo<>(baseTreatmentProcessVOS);
+//    } else {
+//      pageInfo = new PageInfo(baseTreatmentProcessVOS);
+//    }
     // 获取患者ID集合
     List<Integer> patientIds =
         baseTreatmentProcessVOS.stream()
@@ -498,8 +499,9 @@ public class BaseTreatmentProcessBiz
         }
       }
     }
-    pageInfo.setList(patientTreatmentInfo4ListVOS);
-    return pageInfo;
+    return PageUtl.doPage(query, patientTreatmentInfo4ListVOS);
+//    pageInfo.setList(patientTreatmentInfo4ListVOS);
+//    return pageInfo;
   }
 
   /**
