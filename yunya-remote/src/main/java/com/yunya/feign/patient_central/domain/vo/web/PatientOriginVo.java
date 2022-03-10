@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
+import com.yunya.models.patient_central.PatientOrigin;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -46,5 +47,5 @@ public class PatientOriginVo implements Serializable {
 
     /** 患者来源类型的子类型列表*/
     @ApiModelProperty("患者来源类型的子类型列表")
-    private List<PatientOriginVo> children;
+    private List<PatientOrigin> children;
 }
