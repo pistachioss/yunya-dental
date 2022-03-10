@@ -23,7 +23,6 @@ import com.yunya.modules.employeeattend.enums.*;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.mapper.AttendancePunchRecordMapper;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -38,6 +37,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介：考勤打卡业务层
@@ -1176,17 +1176,13 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             throw new ClientServiceException("请选择查询年月", PARAM_NOT_ALLOW_EMPTY);
         }
         setQueryFormDate(queryForm);
-        Set<Integer> userIds = new HashSet<>();
-        Set<String> userOrgIds = new HashSet<>();
-        List<SysUserInfoDetail> userList = findEmployeeList(queryForm.getOrgId(), queryForm.getEmployeeName(), userIds, userOrgIds);
-        Map<Integer, Date> onWorkMap = getEmployeeOnWorkMap(userList);
+
         //补入时长
         List<AttendanceManualMakeupVO> makeupVOS = makeupMinuteGroupByUserIdAndOrgId(queryForm, null);
         Table<Integer,Integer, Long> workDateMakeupMinutes = HashBasedTable.create();
         Table<Integer,Integer, Long> workOvertimeMakeupMinutes = HashBasedTable.create();
         if (StringHelper.isNotEmpty(makeupVOS)) {
             makeupVOS.forEach(makeupVO-> {
-                Date makeupDate = makeupVO.getMakeupDate();
                 Integer minute = makeupVO.getMinute();
                 if (minute == null) {
                     minute = 0;
@@ -1198,9 +1194,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 }
             });
         }
-
-        // 打卡记录
-        List<AttendancePunchRecordVO> attendancePunchRecordVOS = getPunchRecordByQuery(queryForm);
         Table<Integer,Integer, Long> workDateOvertimeMinuteMap = HashBasedTable.create();
         Table<Integer,Integer, Long> workDateOvertime30MinuteMap = HashBasedTable.create();
         Table<Integer,Integer, Long> fieldMinuteMap = HashBasedTable.create();
@@ -1216,17 +1209,60 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Table<Integer,Integer, Integer> attendancNumMap = HashBasedTable.create();
         Table<Integer,Integer, Boolean> isFullMap = HashBasedTable.create();
         Date curDate = DateUtil.getCurrentDate();
-        Map<Integer, List<AttendancePunchRecordVO>> punchRecordMap = new HashMap<>(attendancePunchRecordVOS.size());
-        Map<Integer, List<AttendancePunchRecordVO>> workOvertimeRecordMap = new HashMap<>(attendancePunchRecordVOS.size());
-        Map<Integer, List<AttendancePunchRecordVO>> fieldRecordMap = new HashMap<>(attendancePunchRecordVOS.size());
-        Map<Date, List<Integer>> remDups = new HashMap<>(attendancePunchRecordVOS.size());
+        Map<Integer, List<AttendancePunchRecordVO>> punchRecordMap = new HashMap<>(16);
+        Map<Integer, List<AttendancePunchRecordVO>> workOvertimeRecordMap = new HashMap<>(16);
+        Map<Integer, List<AttendancePunchRecordVO>> fieldRecordMap = new HashMap<>(16);
+        Map<Date, List<Integer>> remDups = new HashMap<>(16);
+
+        //请假
+        Table<Integer,Integer, Integer[]> vacationLeaveMap = HashBasedTable.create();
+        List<LeaveInfoVO> leaveInfoVOS = getLeaveInfoByQuery(queryForm);
+        Set<Integer> userIds = new HashSet<>();
+        Set<String> userOrgIds = new HashSet<>();
+        for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
+            Integer userId = leaveInfoVO.getUserId();
+            Integer orgId = leaveInfoVO.getOrgId();
+            Long diff;
+            int minute;
+            if (leaveInfoVO.getVacationStatus().equals(0)) { // 按班次请假
+                diff = leaveInfoVO.getEndTime().getTime() - leaveInfoVO.getStartTime().getTime();
+                minute = DateUtil.micro2Min(diff).intValue();
+            } else { // 按天请假
+                try {
+                    minute = DateUtil.daysBetween(leaveInfoVO.getStartDate(), leaveInfoVO.getEndDate());
+                } catch (ParseException e) {
+                    throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+                }
+                diff = DAY_LEAVE_MILLSEC * minute;
+            }
+            userIds.add(userId);
+            userOrgIds.add(userId + "," + orgId);
+            incrMinute(leaveMinuteMap, userId, orgId, diff);
+            incrNum(leaveCounts, userId, orgId);
+            incrVacationNum(vacationLeaveMap, userId, orgId, leaveInfoVO.getVacationId(), minute);
+            isFullMap.put(userId, orgId, false);
+        }
+
+        // 打卡记录
+        List<AttendancePunchRecordVO> attendancePunchRecordVOS = getPunchRecordByQuery(queryForm);
+        attendancePunchRecordVOS.forEach(vo->{
+            Integer userId = vo.getUserId();
+            userIds.add(userId);
+            userOrgIds.add(userId + "," + vo.getOrgId());
+        });
+        PageInfo<SysUserInfoDetail> userPage = findEmployeeInfoList(queryForm, userIds, userOrgIds);
+        List<SysUserInfoDetail> userList = userPage.getList();
+        Map<Integer, String> onWorkMap = getEmployeeOnWorkMap(userList);
         attendancePunchRecordVOS.forEach(record->{
+            String punchDateStr = DateUtil.format(record.getPunchDate(),"yyyy-MM-dd");
             Integer esId = record.getEsId();
             Byte source = record.getSource();
             Integer userId = record.getUserId();
-            userIds.add(userId);
+            String leaveDate = onWorkMap.get(userId);
+            if (StringHelper.isNotEmpty(leaveDate) && DateUtil.dateFieldDiff(leaveDate, punchDateStr)>0) {
+                return;
+            }
             Integer orgId = record.getOrgId();
-            userOrgIds.add(userId + "," + orgId);
             Byte isInScope = record.getIsInScope();
             if (AttendanceSourceEnum.WORK_SCHEDULE.getCode().equals(source)) {//上班班次
                 if (isInScope.equals(AttendanceIsInScopeEnum.BELONG.getCode())) {
@@ -1283,32 +1319,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 isFullMap.put(userId, orgId, false);
             }
         });
-        //请假
-        Table<Integer,Integer, Integer[]> vacationLeaveMap = HashBasedTable.create();
-        List<LeaveInfoVO> leaveInfoVOS = getLeaveInfoByQuery(queryForm);
-        for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
-            Integer userId = leaveInfoVO.getUserId();
-            Integer orgId = leaveInfoVO.getOrgId();
-            Long diff;
-            int minute;
-            if (leaveInfoVO.getVacationStatus().equals(0)) { // 按班次请假
-                diff = leaveInfoVO.getEndTime().getTime() - leaveInfoVO.getStartTime().getTime();
-                minute = DateUtil.micro2Min(diff).intValue();
-            } else { // 按天请假
-                try {
-                    minute = DateUtil.daysBetween(leaveInfoVO.getStartDate(), leaveInfoVO.getEndDate());
-                } catch (ParseException e) {
-                    throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
-                }
-                diff = DAY_LEAVE_MILLSEC * minute;
-            }
-            userIds.add(userId);
-            userOrgIds.add(userId + "," + orgId);
-            incrMinute(leaveMinuteMap, userId, orgId, diff);
-            incrNum(leaveCounts, userId, orgId);
-            incrVacationNum(vacationLeaveMap, userId, orgId, leaveInfoVO.getVacationId(), minute);
-            isFullMap.put(userId, orgId, false);
-        }
 
         //工作时长：考勤范围内的迟到和早退将影响关联的上班班次的时长，请假扣除关联的上班班次的时长；加班和外勤不影响上班班次的时长
         Table<Integer,Integer, Long> workDateMinuteMap = sumWorkDateInfo(queryForm, punchRecordMap, laterMinuteMap,
@@ -1378,7 +1388,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         List<AttendanceStatisticsVO> result = new ArrayList<>();
         if (userList!=null && !userList.isEmpty()) {
             userList.forEach(user -> {
-                String leaveTime = user.getLeaveTime();
                 Integer userId = user.getUserId();
                 String companyIds = user.getCompanyIds();
                 Integer orgId = null;
@@ -1500,22 +1509,20 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         return pageInfo;
     }
 
-    private Map<Integer, Date> getEmployeeOnWorkMap(List<SysUserInfoDetail> userList) {
-        Map<Integer, Date> result = new HashMap<>(16);
+    private Map<Integer, String> getEmployeeOnWorkMap(List<SysUserInfoDetail> userList) {
+        Map<Integer, String> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(userList)) {
-            userList.forEach(vo->{
-                String leaveTime = vo.getLeaveTime();
-                if (StringHelper.isNotEmpty(leaveTime)) {
-                    result.put(vo.getEmployeeId(), DateTime.parse(leaveTime).toDate());
-                }
-            });
+            return userList.stream().collect(toMap(SysUserInfoDetail::getUserId, SysUserInfoDetail::getLeaveTime));
         }
         return result;
     }
 
-    private List<SysUserInfoDetail> findEmployeeList(Integer orgId, String name, Set<Integer> userIds, Set<String> userOrgIds) {
+    private PageInfo<SysUserInfoDetail> findEmployeeInfoList(AttendanceStatisticsQueryForm queryForm, Set<Integer> userIds, Set<String> userOrgIds) {
         SysUserEmployeeModel model = new SysUserEmployeeModel();
-        model.setWhetherPage(false);
+        model.setWhetherPage(queryForm.getWhetherPage());
+        model.setPageNum(queryForm.getPageNum());
+        model.setPageSize(queryForm.getPageSize());
+        Integer orgId = queryForm.getOrgId();
         if (orgId != null) {
             model.setOrgIds(Arrays.asList(orgId));
             if (userIds!=null && !userIds.isEmpty()) {
@@ -1526,9 +1533,9 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 model.setUserOrgIds(userOrgIds);
             }
         }
-        model.setUserName(name);
+        model.setUserName(queryForm.getEmployeeName());
 //        model.setWorkStatus(new Byte[]{0, 1, 2, 3});
-        return remoteSystemServiceFeign.findSysUserEmployeeWithOrgList(model).getList();
+        return remoteSystemServiceFeign.findSysUserEmployeeWithOrgList(model);
     }
 
     /**
@@ -3807,6 +3814,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     public PageInfo<AttendanceUnpunchCountVO> statisticsPunchRecordByUnpunchCount(AttendanceStatisticsQueryForm queryForm) {
         Integer userId = queryForm.getUserId();
         Integer orgId = queryForm.getOrgId();
+        SysUserInfoDetail employee = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(userId);
+        String leaveTime = employee.getLeaveTime();
         setQueryFormDate(queryForm);
         Date betweenDate = queryForm.getBetweenDate();
         Date andDate = queryForm.getAndDate();
@@ -3830,6 +3839,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         List<AttendanceUnpunchCountVO> result = new ArrayList<>(masterRecordVOS.size());
         masterRecordVOS.forEach(vo->{
             Date date = vo.getPunchDate();
+            String dateStr = DateUtil.format(date,"yyyy-MM-dd");
+            if (StringHelper.isNotEmpty(leaveTime) && DateUtil.dateFieldDiff(leaveTime,dateStr)>0) {
+                return;
+            }
             AttendanceUnpunchCountVO unpunchCountVO = new AttendanceUnpunchCountVO();
             StringBuilder employeeScheduleName = new StringBuilder();
             List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleMap.get(date);
