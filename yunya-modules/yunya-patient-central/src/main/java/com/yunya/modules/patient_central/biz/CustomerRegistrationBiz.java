@@ -82,7 +82,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     public PatientBaseInfoVo addPatient(CustomerRegistrationModel customerRegistrationModel) {
         PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
         BeanUtils.copyProperties(customerRegistrationModel, patientBaseInfo);
-        checkOriginSource(patientBaseInfo.getOriginId(), patientBaseInfo.getOriginType());
+        Integer originId = patientBaseInfo.getOriginId();
+        checkOriginSource(originId, patientBaseInfo.getOriginType(), originId, originId);
         // 设置患者登记默认的门诊为总院
         patientBaseInfo.setOrgId(39);
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
@@ -120,8 +121,13 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      *
      * @param originId
      * @param originType
+     * @param patientId
+     * @param employeeId
      */
-    private void checkOriginSource(Integer originId, Integer originType) {
+    private void checkOriginSource(Integer originId, Integer originType, Integer patientId, Integer employeeId) {
+        if (ObjectUtils.isEmpty(originId) && ObjectUtils.isEmpty(patientId) && ObjectUtils.isEmpty(employeeId)) {
+            throw new ClientServiceException("渠道来源不能为空", PARAMETERS_IS_ILLEGAL);
+        }
         if (originId != null) {
             if (originType > 2){
                 PatientOrigin patientOrigin =
@@ -329,8 +335,17 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      */
     private PatientBaseInfo addPatientBaseInfo(PatientRegistrationModel model, int userId, String userName, String mobile, Integer mobileOwner) {
         Date now = new Date(System.currentTimeMillis());
-        checkOriginSource(model.getOriginId(), model.getOriginType());
+        Integer originType = model.getOriginType();
+        Integer originId = model.getOriginId();
+        Integer patientId = model.getPatientId();
+        Integer employeeId = model.getEmployeeId();
+        checkOriginSource(originId, originType, patientId, employeeId);
         PatientBaseInfo baseInfo = new PatientBaseInfo();
+        if (originType == 1) {// 员工推荐
+            originId = employeeId;
+        } else if (originType == 2) {// 患者转介绍
+            originId = patientId;
+        }
         baseInfo.setAge(model.getAge());
         baseInfo.setBirthday(model.getBirthdate());
         baseInfo.setGender(model.getGender());
@@ -340,7 +355,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         baseInfo.setName(name);
         baseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(name));
         baseInfo.setOrgId(model.getOrgId());
-        baseInfo.setOriginId(model.getOriginId());
+        baseInfo.setOriginId(originId);
         baseInfo.setOriginType(model.getOriginType());
         baseInfo.setCrtId(userId);
         baseInfo.setCrtName(userName);
