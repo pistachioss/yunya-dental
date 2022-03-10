@@ -84,8 +84,8 @@ public class AdultPatientRegistrationModel extends PatientRegistrationModel impl
     @ApiModelProperty("是否牙周手术")
     private Boolean hadPeriodontalSurgery;
 
-    /** 是否牙周调整 */
-    @ApiModelProperty("是否牙周调整")
+    /** 是否咬合调整 */
+    @ApiModelProperty("是否咬合调整")
     private Boolean hadOcclusalAdjust;
 
     /** 是否修复义齿：0-否，1-是 */
