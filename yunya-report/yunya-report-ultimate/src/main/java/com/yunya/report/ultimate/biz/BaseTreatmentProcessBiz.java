@@ -247,9 +247,9 @@ public class BaseTreatmentProcessBiz
    * @return
    */
   public PageInfo<PatientTreatmentInfo4ListVO> treatmentList4App(TreatmentList4AppQuery query) {
-    if (query.getWhetherPage()) {
-      PageHelper.startPage(query.getPageNum(), query.getPageSize());
-    }
+//    if (query.getWhetherPage()) {
+//      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+//    }
     List<PatientTreatmentInfo4ListVO> patientTreatmentInfo4ListVOS = new ArrayList<>();
     SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
     List<BaseTreatmentProcessVO> baseTreatmentProcessVOS =
