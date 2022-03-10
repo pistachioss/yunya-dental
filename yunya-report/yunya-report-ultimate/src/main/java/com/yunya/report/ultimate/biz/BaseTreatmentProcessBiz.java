@@ -254,6 +254,9 @@ public class BaseTreatmentProcessBiz
     SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
     List<BaseTreatmentProcessVO> baseTreatmentProcessVOS =
         mapper.treatmentList4App(query.getOrgId(), query.getDentistId(), query.getQueryDate());
+    if (StringHelper.isEmpty(baseTreatmentProcessVOS)) {
+      return new PageInfo<>();
+    }
 //    PageInfo pageInfo = null;
 //    if (StringHelper.isEmpty(baseTreatmentProcessVOS)) {
 //      return new PageInfo<>(baseTreatmentProcessVOS);
