@@ -378,4 +378,17 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       long end = System.currentTimeMillis();
       log.info("患者信息患者来源信息迁移入库成功，时长：[{}]秒", (end - start) / 1000);
     }
+
+  /**
+   * 查询患者来源类型及其子类型
+   *
+   * @return
+   */
+  public List<PatientOriginVo> findoriginalTypeAndChildren() {
+    List<PatientOriginVo> result = originalType();
+    if (StringHelper.isNotEmpty(result)) {
+      result.forEach(vo-> vo.setChildren(mapper.selectOriginType(vo.getId(), vo.getOriginType())));
+    }
+    return result;
+  }
 }

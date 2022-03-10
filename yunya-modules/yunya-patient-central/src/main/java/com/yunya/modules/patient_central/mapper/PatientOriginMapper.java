@@ -72,5 +72,5 @@ public interface PatientOriginMapper extends Mapper<PatientOrigin> {
      * @param originType 患者来源类型 1.员工 2.老患者 3.活动 4.合作商
      * @return 患者来源信息
      */
-    PatientOrigin selectOriginType(@Param("parentId") int parentId, @Param("originType") Integer originType);
+    List<PatientOriginVo> selectOriginType(@Param("parentId") int parentId, @Param("originType") Integer originType);
 }
