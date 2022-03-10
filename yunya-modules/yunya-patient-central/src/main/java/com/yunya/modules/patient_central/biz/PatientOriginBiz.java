@@ -387,7 +387,16 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
   public List<PatientOriginVo> findoriginalTypeAndChildren() {
     List<PatientOriginVo> result = originalType();
     if (StringHelper.isNotEmpty(result)) {
-      result.forEach(vo-> vo.setChildren(mapper.selectOriginType(vo.getId(), vo.getOriginType())));
+      result.forEach(vo-> {
+        PatientOrigin query = new PatientOrigin();
+        // 根据来源类型
+        query.setOriginType(vo.getOriginType());
+        try {
+          vo.setChildren(getPatientOriginList(query));
+        } catch (ParseException e) {
+          log.error("findoriginalTypeAndChildren error",e);
+        }
+      });
     }
     return result;
   }
