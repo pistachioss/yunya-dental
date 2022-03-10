@@ -384,7 +384,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
    *
    * @return
    */
-  public List<PatientOriginVo> findoriginalTypeAndChildren() {
+  public List<PatientOriginVo> findOriginalTypeAndChildren() {
     List<PatientOriginVo> result = originalType();
     if (StringHelper.isNotEmpty(result)) {
       result.forEach(vo-> {
@@ -394,7 +394,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
         try {
           vo.setChildren(getPatientOriginList(query));
         } catch (ParseException e) {
-          log.error("findoriginalTypeAndChildren error",e);
+          log.error("findOriginalTypeAndChildren error",e);
         }
       });
     }
