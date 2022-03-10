@@ -48,7 +48,7 @@ public class PatientRegistrationControllerTest {
         model.setMobileOwner(10);
         model.setOriginType(1);
         model.setOriginId(79);
-        model.setState("CN");
+        model.setState(50);
         model.setProvince("浙江省");
         model.setCity("杭州市");
         model.setCountry("西湖区");
@@ -110,7 +110,7 @@ public class PatientRegistrationControllerTest {
         model.setGuardianPhone("13612514529");
         model.setOriginType(1);
         model.setOriginId(79);
-        model.setState("CN");
+        model.setState(50);
         model.setProvince("浙江省");
         model.setCity("杭州市");
         model.setCountry("拱墅区");
