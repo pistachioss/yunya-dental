@@ -77,8 +77,8 @@ public class PatientRegistrationModel implements Serializable {
     @Size(max = 50, message = "详细长度不能超过50个字符！")
     private String detailedAddress;
 
-    /** 电子邮件*/
-    @ApiModelProperty("电子邮件")
+    /** e-mail*/
+    @ApiModelProperty("e-mail")
     @Size(max = 50, message = "电子邮箱长度不能超过50个字符！")
     private String eMail;
 
