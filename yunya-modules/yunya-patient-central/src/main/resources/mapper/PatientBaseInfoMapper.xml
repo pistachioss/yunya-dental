@@ -401,7 +401,9 @@
             pbi.mobile,
             pbi.gender,
             pbi.birthday,
-            pbi.age,
+            TIMESTAMPDIFF(YEAR, pbi.birthday, CURDATE()) AS age,
+            pbi.origin_type AS originType,
+            pbi.origin_id AS originId,
             po.name AS originChannel,
             pbi.crt_time AS registrationTime
         FROM patient_base_info pbi

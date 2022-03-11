@@ -35,6 +35,7 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
 import org.apache.commons.httpclient.NameValuePair;
@@ -1605,6 +1606,25 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    return new PageInfo<>(mapper.selectSelfRegistrationPatientList(query));
+    List<SelfRegistrationPatientVO> result = mapper.selectSelfRegistrationPatientList(query);
+    if (StringHelper.isNotEmpty(result)) {
+      result.forEach(vo->{
+        Integer originType = vo.getOriginType();
+        Integer id = vo.getOriginId();
+        if (originType == 1) {
+          SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(id);
+          if (!ObjectUtils.isEmpty(employee)) {
+            vo.setOriginChannel(employee.getName());
+          }
+        }
+        if (originType == 2) {
+          PatientBaseInfo patient = findPatientInfoById(id);
+          if (!ObjectUtils.isEmpty(patient)) {
+            vo.setOriginChannel(patient.getName());
+          }
+        }
+      });
+    }
+    return new PageInfo<>(result);
   }
 }
