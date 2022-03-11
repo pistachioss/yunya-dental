@@ -573,6 +573,16 @@ public class DateUtil {
   public static String DATE_REGEX = "^\\d{4}([-/.])\\d{1,2}\\1\\d{1,2}$";
 
   /**
+   * 按yyyy-MM-dd格式转换
+   *
+   * @param date
+   * @return
+   */
+  public static String format(Date date) {
+    return SDF.format(date);
+  }
+
+  /**
    * 格式化日期 - yyyy-MM-dd HH:mm:ss
    *
    * @param date 日期
@@ -992,5 +1002,9 @@ public class DateUtil {
    */
   public static Integer pregancyWeek2Month(Integer pregnancyWeek) {
     return pregnancyWeek / 4;
+  }
+
+  public static void main(String[] args) {
+    System.out.println(parse2Date("1941-09-04"));
   }
 }

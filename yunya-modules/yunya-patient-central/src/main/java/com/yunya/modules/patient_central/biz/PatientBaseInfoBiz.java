@@ -706,21 +706,21 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       if (StringHelper.isNotEmpty(fillTreatHistory)) {
         expInfo.setFillTreatHistory(StringHelper.split2IntList(fillTreatHistory,","));
       }
-      expInfo.setFillTreatLastDate(toothInfo.getFillTreatLastDate());
+      expInfo.setFillTreatLastDate(DateUtil.format(toothInfo.getFillTreatLastDate()));
       expInfo.setHadOcclusalAdjust(toothInfo.getHadOcclusalAdjust());
       expInfo.setHadPreventiveTreat(toothInfo.getHadPreventiveTreat());
       expInfo.setRpdPart(toothInfo.getRpdPart());
-      expInfo.setRpdDate(toothInfo.getRpdDate());
+      expInfo.setRpdDate(DateUtil.format(toothInfo.getRpdDate()));
       expInfo.setLpdPart(toothInfo.getLpdPart());
-      expInfo.setLpdDate(toothInfo.getLpdDate());
+      expInfo.setLpdDate(DateUtil.format(toothInfo.getLpdDate()));
       expInfo.setPreventiveTreatCycle(toothInfo.getPreventiveTreatCycle());
       expInfo.setPreventiveTreatLastMonth(toothInfo.getPreventiveTreatLastMonth());
       expInfo.setHadRestorativeDentures(toothInfo.getHadRestorativeDentures());
       expInfo.setUsedPlaqueDna(toothInfo.getUsedPlaqueDna());
       expInfo.setHadPeriodontalSurgery(toothInfo.getHadPeriodontalSurgery());
       expInfo.setHadOrthodontic(toothInfo.getHadOrthodontic());
-      expInfo.setOrthodonticStartDate(toothInfo.getOrthodonticStartDate());
-      expInfo.setOrthodonticEndDate(toothInfo.getOrthodonticEndDate());
+      expInfo.setOrthodonticStartDate(DateUtil.format(toothInfo.getOrthodonticStartDate()));
+      expInfo.setOrthodonticEndDate(DateUtil.format(toothInfo.getOrthodonticEndDate()));
       expInfo.setHadHygieneEducation(toothInfo.getHadHygieneEducation());
       expInfo.setHadDiffcultTreat(toothInfo.getHadDiffcultTreat());
     }

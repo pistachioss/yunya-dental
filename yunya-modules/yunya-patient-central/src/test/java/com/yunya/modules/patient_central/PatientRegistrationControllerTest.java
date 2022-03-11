@@ -5,12 +5,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.oss.RemoteOssServiceFeign;
 import com.yunya.feign.oss.domain.model.OssUrlForm;
 import com.yunya.feign.patient_central.domain.model.*;
+import com.yunya.feign.patient_central.domain.vo.web.PatientExpInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientExtendInfoVo;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.patient_central.biz.CustomerRegistrationBiz;
 import com.yunya.modules.patient_central.controller.web.CustomerRegistrationController;
 import com.yunya.modules.patient_central.controller.web.PatientBaseInfoController;
+import com.yunya.modules.patient_central.mapper.PatientExpInfoMapper;
 import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,6 +46,8 @@ public class PatientRegistrationControllerTest {
 
     @Autowired
     private RemoteOssServiceFeign remoteOssServiceFeign;
+    @Autowired
+    private PatientExpInfoMapper patientExpInfoMapper;
 
     @Test
     public void testAdultAddPatient() {
@@ -194,5 +198,11 @@ public class PatientRegistrationControllerTest {
         ossUrlForm.setOssFilename(fileUrl);
         final ResponseResult url = remoteOssServiceFeign.getUrl(Arrays.asList(ossUrlForm));
         System.out.println(JSONObject.toJSON(url.getData()));
+    }
+
+    @Test
+    public void test() {
+        PatientExpInfoVo patientExpInfoVo = patientExpInfoMapper.selectByPatientId(112634);
+        System.out.println(JSONObject.toJSON(patientExpInfoVo));
     }
 }
