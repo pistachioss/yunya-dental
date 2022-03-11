@@ -284,9 +284,14 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     sendMessages(patientId, 1);
 
     PatientExpInfo patientExpInfo = new PatientExpInfo();
+    PatientExpInfoModel patientExpInfoModel = patientExtendInfoModel.getPatientExpInfoModel();
     // 完善患者扩展信息
-    BeanUtils.copyProperties(patientExtendInfoModel.getPatientExpInfoModel(), patientExpInfo);
-    savePatientToothInfo(patientExtendInfoModel.getPatientExpInfoModel(), patientId);
+    BeanUtils.copyProperties(patientExpInfoModel, patientExpInfo);
+    Integer pregnancyMonth = patientExpInfoModel.getPregnancyMonth();
+    if (!ObjectUtils.isEmpty(pregnancyMonth)) {
+      patientExpInfo.setPregnancyWeek(DateUtil.pregancyMonth2Week(pregnancyMonth));
+    }
+    savePatientToothInfo(patientExpInfoModel, patientId);
     PatientChildInfoModel patientChildInfoModel = patientExtendInfoModel.getPatientChildInfoModel();
     if (!ObjectUtils.isEmpty(patientChildInfoModel)) {
       savePatientChildInfo(patientChildInfoModel, patientId);

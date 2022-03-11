@@ -251,6 +251,9 @@ public class PatientExpInfoModel implements Serializable {
     @ApiModelProperty("LPD戴用时间")
     private String lpdDate;
 
+    @ApiModelProperty(value = "孕龄月数")
+    private Integer pregnancyMonth;
+
     /** 是否预防治疗 */
     @ApiModelProperty("是否预防治疗")
     private Boolean hadPreventiveTreat;
