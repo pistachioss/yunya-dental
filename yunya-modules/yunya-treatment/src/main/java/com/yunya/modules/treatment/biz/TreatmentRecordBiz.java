@@ -1273,7 +1273,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    */
   public List<LastTreatmentInfoVO> lastTreatmentInfoByBatch(List<Integer> patientIds) {
     List<LastTreatmentInfoVO> list = new ArrayList<>();
-    if (patientIds == null || !patientIds.isEmpty()) {
+    if (StringHelper.isEmpty(patientIds)) {
       return list;
     }
     Example example = new Example(TreatmentRecord.class);
