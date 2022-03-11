@@ -28,6 +28,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
@@ -208,7 +209,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 创建预付款 并发送消息
         patientBaseInfoBiz.sendMessages(patientId, 0);
         addPatientPrepaymentsInfo(patientBaseInfo);
-        savePatientSignature(model, userId, patientId);
+//        savePatientSignature(model, userId, patientId);
     }
 
     /**
@@ -389,7 +390,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 创建预付款 并发送消息
         patientBaseInfoBiz.sendMessages(patientId, 0);
         addPatientPrepaymentsInfo(patientBaseInfo);
-        savePatientSignature(model, userId, patientId);
+//        savePatientSignature(model, userId, patientId);
     }
 
     /**
@@ -400,9 +401,11 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      * @param patientId
      */
     private void savePatientSignature(PatientRegistrationModel patientModel, Integer userId, Integer patientId) {
+        String signatureImg = patientModel.getSignatureImgUrl();
+        String fileStr = new String(Base64.getDecoder().decode(signatureImg.trim()));
         Date now = new Date(System.currentTimeMillis());
         XUploadFileVO file = new XUploadFileVO();
-        file.setFileLocation(patientModel.getSignatureImgUrl());
+        file.setFileLocation(fileStr);
         file.setUploadTime(now);
         file.setFileName(patientModel.getName()+"的签名");
         MedicalRayFilmModel model = new MedicalRayFilmModel();
