@@ -1611,16 +1611,17 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       result.forEach(vo->{
         Integer originType = vo.getOriginType();
         Integer id = vo.getOriginId();
-        if (originType == 1) {
-          SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(id);
-          if (!ObjectUtils.isEmpty(employee)) {
-            vo.setOriginChannel(employee.getName());
-          }
-        }
-        if (originType == 2) {
-          PatientBaseInfo patient = findPatientInfoById(id);
-          if (!ObjectUtils.isEmpty(patient)) {
-            vo.setOriginChannel(patient.getName());
+        if (!ObjectUtils.isEmpty(id)) {
+          if (originType == 1) {
+            SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(id);
+            if (!ObjectUtils.isEmpty(employee)) {
+              vo.setOriginChannel(employee.getName());
+            }
+          } else if (originType == 2) {
+            PatientBaseInfo patient = findPatientInfoById(id);
+            if (!ObjectUtils.isEmpty(patient)) {
+              vo.setOriginChannel(patient.getName());
+            }
           }
         }
       });

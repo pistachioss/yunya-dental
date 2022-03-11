@@ -1277,7 +1277,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       return list;
     }
     Example example = new Example(TreatmentRecord.class);
-    example.createCriteria().andIn("patient_id",patientIds);
+    example.createCriteria().andIn("patientId",patientIds);
     List<TreatmentRecord> records = mapper.selectByExample(example);
     if (!records.isEmpty()) {
       Map<Integer, List<TreatmentRecord>> collect = records.stream().collect(Collectors.groupingBy(TreatmentRecord::getPatientId));
