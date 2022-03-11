@@ -3,6 +3,7 @@ package com.yunya.framework.common.utils;
 import cn.hutool.core.date.DateTime;
 import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.text.ParseException;
@@ -591,6 +592,50 @@ public class DateUtil {
    */
   public static String format(Date date, SimpleDateFormat sdf) {
     return sdf.format(date);
+  }
+
+  /**
+   * 解析成日期
+   *  支持格式：yyyy-MM-dd, yyyy-M-d, yyyyMMdd, yyyy/MM/dd, yyyy/M/d
+   *
+   * @param dateStr 日期字符串
+   * @return 日期
+   * @throws ParseException 解析异常
+   */
+  public static Date parse2Date(String dateStr) {
+    Date date = null;
+    try {
+      date = SDF.parse(dateStr);
+    } catch (Exception e) {
+    }
+    if (ObjectUtils.isEmpty(date)) {
+      try {
+        date = new SimpleDateFormat("yyyy-M-d").parse(dateStr);
+      } catch (ParseException e) {
+      }
+    }
+    if (ObjectUtils.isEmpty(date)) {
+      try {
+        date = new SimpleDateFormat("yyyyMMdd").parse(dateStr);
+      } catch (ParseException e) {
+      }
+    }
+    if (ObjectUtils.isEmpty(date)) {
+      try {
+        date = new SimpleDateFormat("yyyy/MM/dd").parse(dateStr);
+      } catch (ParseException e) {
+      }
+    }
+    if (ObjectUtils.isEmpty(date)) {
+      try {
+        date = new SimpleDateFormat("yyyy/M/d").parse(dateStr);
+      } catch (ParseException e) {
+      }
+    }
+    if (ObjectUtils.isEmpty(date)) {
+      throw new ClientServiceException("date parse error param：" + dateStr + " format not supported！", 1);
+    }
+    return date;
   }
 
   /**

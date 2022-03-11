@@ -113,6 +113,10 @@ public class Base64Utils {
         } else if (imgData.indexOf("data:image/png;base64,")!=-1) {
             imgData = imgData.replaceAll("data:image/jpg;base64,","");
         }
-        return null;
+        return ".png";
+    }
+
+    public static String getContentType(String dataStr, String defaultRes) {
+        return defaultRes;
     }
 }
