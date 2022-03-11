@@ -22,6 +22,7 @@ import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.patient_central.*;
 import com.yunya.modules.patient_central.mapper.*;
+import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
@@ -240,7 +241,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
             hadFillTreat = true;
         }
         toothInfo.setHadFillTreat(hadFillTreat);
-        toothInfo.setFillTreatLastDate(model.getFillTreatLastDate());
+        toothInfo.setFillTreatLastDate(DateTime.parse(model.getFillTreatLastDate()).toDate());
         toothInfo.setHadPeriodontalSurgery(model.getHadPeriodontalSurgery());
         toothInfo.setHadOcclusalAdjust(model.getHadOcclusalAdjust());
         Boolean hadRestorativeDentures = false;
@@ -251,9 +252,9 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         }
         toothInfo.setHadRestorativeDentures(hadRestorativeDentures);
         toothInfo.setRpdPart(rpdPart);
-        toothInfo.setRpdDate(model.getRpdDate());
+        toothInfo.setRpdDate(DateTime.parse(model.getRpdDate()).toDate());
         toothInfo.setLpdPart(lpdPart);
-        toothInfo.setLpdDate(model.getLpdDate());
+        toothInfo.setLpdDate(DateTime.parse(model.getLpdDate()).toDate());
         Boolean hadPreventiveTreat = false;
         Short preventiveTreatCycle = model.getPreventiveTreatCycle();
         if (!ObjectUtils.isEmpty(preventiveTreatCycle)) {
@@ -265,14 +266,14 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         toothInfo.setHadDiffcultTreat(model.getHadDiffcultTreat());
         toothInfo.setMissTeethUnrepeatCause(model.getMissTeethUnrepeatCause());
         Boolean hadOrthodontic = false;
-        Date orthodonticStartDate = model.getOrthodonticStartDate();
-        Date orthodonticEndDate = model.getOrthodonticEndDate();
-        if (!ObjectUtils.isEmpty(orthodonticStartDate) || !ObjectUtils.isEmpty(orthodonticEndDate)) {
+        String orthodonticStartDate = model.getOrthodonticStartDate();
+        String orthodonticEndDate = model.getOrthodonticEndDate();
+        if (StringHelper.isNotEmpty(orthodonticStartDate) || StringHelper.isNotEmpty(orthodonticEndDate)) {
             hadOrthodontic = true;
         }
         toothInfo.setHadOrthodontic(hadOrthodontic);
-        toothInfo.setOrthodonticStartDate(orthodonticStartDate);
-        toothInfo.setOrthodonticEndDate(orthodonticEndDate);
+        toothInfo.setOrthodonticStartDate(DateTime.parse(orthodonticStartDate).toDate());
+        toothInfo.setOrthodonticEndDate(DateTime.parse(orthodonticEndDate).toDate());
         toothInfo.setHadHygieneEducation(model.getHadHygieneEducation());
         toothInfo.setUsedPlaqueDna(model.getUsedPlaqueDna());
         Date now = new Date(System.currentTimeMillis());
