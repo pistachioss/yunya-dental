@@ -28,6 +28,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
@@ -82,7 +83,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     public PatientBaseInfoVo addPatient(CustomerRegistrationModel customerRegistrationModel) {
         PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
         BeanUtils.copyProperties(customerRegistrationModel, patientBaseInfo);
-        checkOriginSource(patientBaseInfo.getOriginId(), patientBaseInfo.getOriginType());
+        Integer originId = patientBaseInfo.getOriginId();
+        checkOriginSource(originId, patientBaseInfo.getOriginType(), originId, originId);
         // 设置患者登记默认的门诊为总院
         patientBaseInfo.setOrgId(39);
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
@@ -120,8 +122,13 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      *
      * @param originId
      * @param originType
+     * @param patientId
+     * @param employeeId
      */
-    private void checkOriginSource(Integer originId, Integer originType) {
+    private void checkOriginSource(Integer originId, Integer originType, Integer patientId, Integer employeeId) {
+        if (ObjectUtils.isEmpty(originId) && ObjectUtils.isEmpty(patientId) && ObjectUtils.isEmpty(employeeId)) {
+            throw new ClientServiceException("渠道来源不能为空", PARAMETERS_IS_ILLEGAL);
+        }
         if (originId != null) {
             if (originType > 2){
                 PatientOrigin patientOrigin =
@@ -202,7 +209,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 创建预付款 并发送消息
         patientBaseInfoBiz.sendMessages(patientId, 0);
         addPatientPrepaymentsInfo(patientBaseInfo);
-        savePatientSignature(model, userId, patientId);
+//        savePatientSignature(model, userId, patientId);
     }
 
     /**
@@ -329,8 +336,17 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      */
     private PatientBaseInfo addPatientBaseInfo(PatientRegistrationModel model, int userId, String userName, String mobile, Integer mobileOwner) {
         Date now = new Date(System.currentTimeMillis());
-        checkOriginSource(model.getOriginId(), model.getOriginType());
+        Integer originType = model.getOriginType();
+        Integer originId = model.getOriginId();
+        Integer patientId = model.getPatientId();
+        Integer employeeId = model.getEmployeeId();
+        checkOriginSource(originId, originType, patientId, employeeId);
         PatientBaseInfo baseInfo = new PatientBaseInfo();
+        if (originType == 1) {// 员工推荐
+            originId = employeeId;
+        } else if (originType == 2) {// 患者转介绍
+            originId = patientId;
+        }
         baseInfo.setAge(model.getAge());
         baseInfo.setBirthday(model.getBirthdate());
         baseInfo.setGender(model.getGender());
@@ -340,7 +356,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         baseInfo.setName(name);
         baseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(name));
         baseInfo.setOrgId(model.getOrgId());
-        baseInfo.setOriginId(model.getOriginId());
+        baseInfo.setOriginId(originId);
         baseInfo.setOriginType(model.getOriginType());
         baseInfo.setCrtId(userId);
         baseInfo.setCrtName(userName);
@@ -374,7 +390,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 创建预付款 并发送消息
         patientBaseInfoBiz.sendMessages(patientId, 0);
         addPatientPrepaymentsInfo(patientBaseInfo);
-        savePatientSignature(model, userId, patientId);
+//        savePatientSignature(model, userId, patientId);
     }
 
     /**
@@ -385,9 +401,11 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      * @param patientId
      */
     private void savePatientSignature(PatientRegistrationModel patientModel, Integer userId, Integer patientId) {
+        String signatureImg = patientModel.getSignatureImgUrl();
+        String fileStr = new String(Base64.getDecoder().decode(signatureImg.trim()));
         Date now = new Date(System.currentTimeMillis());
         XUploadFileVO file = new XUploadFileVO();
-        file.setFileLocation(patientModel.getSignatureImgUrl());
+        file.setFileLocation(fileStr);
         file.setUploadTime(now);
         file.setFileName(patientModel.getName()+"的签名");
         MedicalRayFilmModel model = new MedicalRayFilmModel();

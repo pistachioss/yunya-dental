@@ -137,8 +137,8 @@ public class PatientOriginController {
    */
   @ApiOperation("查询患者来源类型及其子类型")
   @GetMapping("/originalTypeAndChildren")
-  public ResponseResult<List<PatientOriginVo>> findoriginalTypeAndChildren() {
-    List<PatientOriginVo> result = patientOriginBiz.findoriginalTypeAndChildren();
+  public ResponseResult<List<PatientOriginVo>> findOriginalTypeAndChildren() {
+    List<PatientOriginVo> result = patientOriginBiz.findOriginalTypeAndChildren();
     return ResponseUtil.success(result);
   }
 
