@@ -1,6 +1,5 @@
 package com.yunya.modules.treatment.other.biz;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
@@ -686,9 +685,6 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @return
      */
     private PageInfo<VisitingRemindExecuteVo> executeRemindList(VisitingRemindQuery query) {
-        if (query.getWhetherPage()) {
-            PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        }
         String search = query.getSearch();
         if (StringHelper.isNotEmpty(search)) {
             PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
@@ -703,8 +699,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         query.setInservice(true);
         List<VisitingRemindExecuteVo> result = new ArrayList<>();
         List<VisitingRemind> reminds = mapper.findVisitingRemindByCondition(query);
-        PageInfo pageInfo = new PageInfo<>(reminds);
         if (StringHelper.isNotEmpty(reminds)) {
+            reminds = filterDiedPatient(reminds,null);
             reminds = reminds.stream().sorted((remind1, remind2)
                     ->compareHourMinute(remind1.getRemindTime(), remind2.getRemindTime())).collect(Collectors.toList());
             reminds.forEach(vo->{
@@ -728,8 +724,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 result.add(executeVo);
             });
         }
-        pageInfo.setList(result);
-        return pageInfo;
+        return PageUtl.doPage(query, result);
     }
 
     /**
