@@ -1,12 +1,13 @@
 package com.yunya.feign.oss.factory;
 
-import com.yunya.feign.oss.*;
-import com.yunya.feign.oss.domain.model.*;
-import com.yunya.framework.common.model.*;
-import lombok.extern.slf4j.*;
-import org.springframework.stereotype.*;
+import com.yunya.feign.oss.RemoteOssServiceFeign;
+import com.yunya.feign.oss.domain.model.Base64UploadForm;
+import com.yunya.feign.oss.domain.model.OssUrlForm;
+import com.yunya.framework.common.model.ResponseResult;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -17,4 +18,10 @@ public class RemoteOssServiceFeignFallBackFactory implements RemoteOssServiceFei
     public ResponseResult getUrl(List<OssUrlForm> ossUrlForms) throws Exception {
         return null;
     }
+
+    @Override
+    public ResponseResult uploadBase64Image(Base64UploadForm ossUploadForm) {
+        return null;
+    }
+
 }

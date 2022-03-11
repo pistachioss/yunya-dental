@@ -3,11 +3,13 @@ package com.yunya.feign.oss.domain.model;
 import io.swagger.annotations.*;
 import lombok.*;
 
+import java.io.Serializable;
+
 
 @Data
 @ToString
 @ApiModel("资源文件基本结构，需以下属性确定路径 参数模型")
-public class OssFolderForm {
+public class OssFolderForm implements Serializable {
 
     @ApiModelProperty(value = "saas模式：注册公司ID，定制模式：为0或固定值", dataType = "int")
     public Integer companyId;
