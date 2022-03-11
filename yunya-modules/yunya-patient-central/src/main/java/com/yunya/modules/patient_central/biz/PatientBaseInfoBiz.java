@@ -688,6 +688,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param expInfo
    */
   private void fillPatientToothInfo(PatientExpInfoVo expInfo) {
+    Integer pregnancyWeek = expInfo.getPregnancyWeek();
+    if (!ObjectUtils.isEmpty(pregnancyWeek)) {
+      expInfo.setPregnancyMonth(DateUtil.pregancyWeek2Month(pregnancyWeek));
+    }
     PatientToothInfo toothInfo = patientToothInfoMapper.selectPatientToothInfoByPatientId(expInfo.getPatientId());
     if (!ObjectUtils.isEmpty(toothInfo)) {
       expInfo.setToothRecordId(toothInfo.getId());

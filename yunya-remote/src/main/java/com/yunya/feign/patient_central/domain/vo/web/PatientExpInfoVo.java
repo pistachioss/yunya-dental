@@ -220,6 +220,9 @@ public class PatientExpInfoVo implements Serializable {
      */
     private Date updTime;
 
+    /** 妊娠周数*/
+    private Integer pregnancyWeek;
+
     /** 妊娠月数*/
     @ApiModelProperty("妊娠月数")
     private Integer pregnancyMonth;
