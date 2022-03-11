@@ -21,7 +21,7 @@ public interface RemoteOssServiceFeign {
     @ApiOperation("2.多资源：获取外网访问URL列表")
     public ResponseResult getUrl(@RequestBody List<OssUrlForm> ossUrlForms) throws Exception;
 
-    @RequestMapping(value = "/uploadBase64Image", method = RequestMethod.POST)
+    @RequestMapping(value = "uploadBase64Image", method = RequestMethod.POST)
     @ApiOperation("1.base64图片上传")
     ResponseResult uploadBase64Image(@RequestBody Base64UploadForm ossUploadForm);
 }

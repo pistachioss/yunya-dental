@@ -13,6 +13,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -86,11 +89,12 @@ public class BaseController {
     @RequestMapping(value = "uploadBase64Image", method = RequestMethod.POST)
     @ApiOperation("1.单资源：上传")
     public ResponseResult uploadBase64Image(@Validated @RequestBody Base64UploadForm form) throws Exception {
-        String dataStr = form.getData();
-        byte[] data = Base64Utils.decoderImage(dataStr);
-        String fileName = form.getFileName();
-        String contentType = Base64Utils.getContentType(dataStr, "image/png");
-        form.setFile(new MockMultipartFile(fileName, fileName, contentType, data));
+        String data = form.getData();
+        byte[] buf = Base64Utils.decoderImage(data);
+        InputStream imgIn = new ByteArrayInputStream(buf);
+        String contentType = URLConnection.guessContentTypeFromStream(imgIn);
+        String fileName = form.getFileName() + "." + contentType.substring(contentType.lastIndexOf("/")+1);
+        form.setFile(new MockMultipartFile(fileName, fileName, contentType, buf));
         final String objectName = this.makeObjectFullName(form);
         OssUtil.putObject(objectName, form.getFile().getInputStream());
         return ResponseUtil.success(this.getFileName(objectName));

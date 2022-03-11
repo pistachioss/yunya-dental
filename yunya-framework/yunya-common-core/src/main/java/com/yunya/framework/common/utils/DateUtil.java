@@ -603,6 +603,9 @@ public class DateUtil {
    * @throws ParseException 解析异常
    */
   public static Date parse2Date(String dateStr) {
+    if (StringHelper.isNotEmpty(dateStr)) {
+      return null;
+    }
     Date date = null;
     try {
       date = SDF.parse(dateStr);
