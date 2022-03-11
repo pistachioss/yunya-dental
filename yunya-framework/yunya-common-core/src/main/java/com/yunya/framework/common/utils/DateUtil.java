@@ -579,6 +579,9 @@ public class DateUtil {
    * @return
    */
   public static String format(Date date) {
+    if (ObjectUtils.isEmpty(date)) {
+      return null;
+    }
     return SDF.format(date);
   }
 
