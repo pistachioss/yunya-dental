@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.yunya.feign.oss.domain.model.OssFolderForm;
 import com.yunya.feign.patient_central.domain.model.AdultPatientRegistrationModel;
 import com.yunya.feign.patient_central.domain.model.ChildrenPatientRegistrationModel;
 import com.yunya.feign.patient_central.domain.model.CustomerRegistrationModel;
@@ -23,9 +24,11 @@ import com.yunya.models.patient_central.*;
 import com.yunya.modules.patient_central.mapper.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -404,10 +407,14 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     private void savePatientSignature(PatientRegistrationModel patientModel, Integer userId, Integer patientId, HttpServletRequest request) {
         String signatureImg = patientModel.getSignatureImgUrl();
         if (StringHelper.isNotEmpty(signatureImg)) {
-//            String tempFilePath = request.getSession().getServletContext().getRealPath("/")+"../../temp/"+patientModel.getName() + "的电子签名"+ extName;
+            String name = patientModel.getName()+"的电子签名"+Base64Utils.getExtName(signatureImg);
             byte[] b = Base64Utils.decoderImage(signatureImg);
-//            MultipartFile multFile = new MockMultipartFile(extName, b);
+            MultipartFile multFile = new MockMultipartFile(name, b);
             Date now = new Date(System.currentTimeMillis());
+            OssFolderForm form = new OssFolderForm();
+            form.setCompanyId(0);
+            form.setObjectId(patientId);
+            form.setOssCategory(4);
             XUploadFileVO file = new XUploadFileVO();
 //            file.setFileLocation(fileStr);
             file.setUploadTime(now);
