@@ -364,7 +364,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       childInfo.setToothClearliness(model.getToothClearliness());
       String toothLastCheck = model.getToothLastCheck();
       if (StringHelper.isNotEmpty(toothLastCheck)) {
-        childInfo.setToothLastCheck(DateTime.parse(toothLastCheck).toDate());
+        childInfo.setToothLastCheck(DateUtil.parse2Date(toothLastCheck));
       }
       childInfo.setToothSprouting(model.getToothSprouting());
       childInfo.setUsedDentalFloss(model.getUsedDentalFloss());
@@ -391,7 +391,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       childInfo.setToothClearliness(model.getToothClearliness());
       String toothLastCheck = model.getToothLastCheck();
       if (StringHelper.isNotEmpty(toothLastCheck)) {
-        childInfo.setToothLastCheck(DateTime.parse(toothLastCheck).toDate());
+        childInfo.setToothLastCheck(DateUtil.parse2Date(toothLastCheck));
       }
       childInfo.setToothSprouting(model.getToothSprouting());
       childInfo.setUsedDentalFloss(model.getUsedDentalFloss());
@@ -438,7 +438,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         }
         String fillTreatLastDate = expInfo.getFillTreatLastDate();
         if (StringHelper.isNotEmpty(fillTreatLastDate)) {
-          toothInfo.setFillTreatLastDate(DateTime.parse(fillTreatLastDate).toDate());
+          toothInfo.setFillTreatLastDate(DateUtil.parse2Date(fillTreatLastDate));
         }
         toothInfo.setHadPeriodontalSurgery(expInfo.getHadPeriodontalSurgery());
         toothInfo.setHadOcclusalAdjust(expInfo.getHadOcclusalAdjust());
@@ -446,21 +446,21 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         toothInfo.setRpdPart(expInfo.getRpdPart());
         String rpdDate = expInfo.getRpdDate();
         if (StringHelper.isNotEmpty(rpdDate)) {
-          toothInfo.setRpdDate(DateTime.parse(rpdDate).toDate());
+          toothInfo.setRpdDate(DateUtil.parse2Date(rpdDate));
         }
         toothInfo.setLpdPart(expInfo.getLpdPart());
         String lpdDate = expInfo.getLpdDate();
         if (StringHelper.isNotEmpty(lpdDate)) {
-          toothInfo.setLpdDate(DateTime.parse(lpdDate).toDate());
+          toothInfo.setLpdDate(DateUtil.parse2Date(lpdDate));
         }
         toothInfo.setHadOrthodontic(expInfo.getHadOrthodontic());
         String ortSDate = expInfo.getOrthodonticStartDate();
         if (StringHelper.isNotEmpty(ortSDate)) {
-          toothInfo.setOrthodonticStartDate(DateTime.parse(ortSDate).toDate());
+          toothInfo.setOrthodonticStartDate(DateUtil.parse2Date(ortSDate));
         }
         String ortEDate = expInfo.getOrthodonticEndDate();
         if (StringHelper.isNotEmpty(ortEDate)) {
-          toothInfo.setOrthodonticEndDate(DateTime.parse(ortEDate).toDate());
+          toothInfo.setOrthodonticEndDate(DateUtil.parse2Date(ortEDate));
         }
         toothInfo.setHadPreventiveTreat(expInfo.getHadPreventiveTreat());
         toothInfo.setPreventiveTreatCycle(expInfo.getPreventiveTreatCycle());
@@ -487,7 +487,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         }
         String fillTreatLastDate = expInfo.getFillTreatLastDate();
         if (StringHelper.isNotEmpty(fillTreatLastDate)) {
-          toothInfo.setFillTreatLastDate(DateTime.parse(fillTreatLastDate).toDate());
+          toothInfo.setFillTreatLastDate(DateUtil.parse2Date(fillTreatLastDate));
         }
         toothInfo.setHadPeriodontalSurgery(expInfo.getHadPeriodontalSurgery());
         toothInfo.setHadOcclusalAdjust(expInfo.getHadOcclusalAdjust());
@@ -495,21 +495,21 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         toothInfo.setRpdPart(expInfo.getRpdPart());
         String rpdDate = expInfo.getRpdDate();
         if (StringHelper.isNotEmpty(rpdDate)) {
-          toothInfo.setRpdDate(DateTime.parse(rpdDate).toDate());
+          toothInfo.setRpdDate(DateUtil.parse2Date(rpdDate));
         }
         toothInfo.setLpdPart(expInfo.getLpdPart());
         String lpdDate = expInfo.getLpdDate();
         if (StringHelper.isNotEmpty(lpdDate)) {
-          toothInfo.setLpdDate(DateTime.parse(lpdDate).toDate());
+          toothInfo.setLpdDate(DateUtil.parse2Date(lpdDate));
         }
         toothInfo.setHadOrthodontic(expInfo.getHadOrthodontic());
         String ortSDate = expInfo.getOrthodonticStartDate();
         if (StringHelper.isNotEmpty(ortSDate)) {
-          toothInfo.setOrthodonticStartDate(DateTime.parse(ortSDate).toDate());
+          toothInfo.setOrthodonticStartDate(DateUtil.parse2Date(ortSDate));
         }
         String ortEDate = expInfo.getOrthodonticEndDate();
         if (StringHelper.isNotEmpty(ortEDate)) {
-          toothInfo.setOrthodonticEndDate(DateTime.parse(ortEDate).toDate());
+          toothInfo.setOrthodonticEndDate(DateUtil.parse2Date(ortEDate));
         }
         toothInfo.setHadPreventiveTreat(expInfo.getHadPreventiveTreat());
         toothInfo.setPreventiveTreatCycle(expInfo.getPreventiveTreatCycle());
