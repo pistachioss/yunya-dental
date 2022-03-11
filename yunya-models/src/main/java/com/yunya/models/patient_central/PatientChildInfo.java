@@ -76,10 +76,16 @@ public class PatientChildInfo {
     private Integer useFlossTimes;
 
     /**
-     * 父母是否有龋齿：0-父有，1-父无，2-母有，3-母无；逗号分隔
+     * 父亲是否有龋齿
      */
-    @Column(name = "parent_has_caries")
-    private String parentHasCaries;
+    @Column(name = "father_has_caries")
+    private Boolean fatherHasCaries;
+
+    /**
+     * 母亲是否有龋齿
+     */
+    @Column(name = "mother_has_caries")
+    private Boolean motherHasCaries;
 
     /**
      * 母亲孕期情况
@@ -341,24 +347,6 @@ public class PatientChildInfo {
     }
 
     /**
-     * 获取父母是否有龋齿：0-父有，1-父无，2-母有，3-母无；逗号分隔
-     *
-     * @return parent_has_caries - 父母是否有龋齿：0-父有，1-父无，2-母有，3-母无；逗号分隔
-     */
-    public String getParentHasCaries() {
-        return parentHasCaries;
-    }
-
-    /**
-     * 设置父母是否有龋齿：0-父有，1-父无，2-母有，3-母无；逗号分隔
-     *
-     * @param parentHasCaries 父母是否有龋齿：0-父有，1-父无，2-母有，3-母无；逗号分隔
-     */
-    public void setParentHasCaries(String parentHasCaries) {
-        this.parentHasCaries = parentHasCaries;
-    }
-
-    /**
      * 获取母亲孕期情况
      *
      * @return mother_pregnancy - 母亲孕期情况
@@ -392,6 +380,22 @@ public class PatientChildInfo {
      */
     public void setHabitIds(String habitIds) {
         this.habitIds = habitIds;
+    }
+
+    public Boolean getFatherHasCaries() {
+        return fatherHasCaries;
+    }
+
+    public void setFatherHasCaries(Boolean fatherHasCaries) {
+        this.fatherHasCaries = fatherHasCaries;
+    }
+
+    public Boolean getMotherHasCaries() {
+        return motherHasCaries;
+    }
+
+    public void setMotherHasCaries(Boolean motherHasCaries) {
+        this.motherHasCaries = motherHasCaries;
     }
 
     /**

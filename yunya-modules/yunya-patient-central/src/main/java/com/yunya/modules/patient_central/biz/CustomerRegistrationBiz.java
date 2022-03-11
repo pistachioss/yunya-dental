@@ -15,6 +15,7 @@ import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.enums.FileSourceTypeEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.Base64Utils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
@@ -27,8 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
@@ -400,21 +401,25 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      * @param userId
      * @param patientId
      */
-    private void savePatientSignature(PatientRegistrationModel patientModel, Integer userId, Integer patientId) {
+    private void savePatientSignature(PatientRegistrationModel patientModel, Integer userId, Integer patientId, HttpServletRequest request) {
         String signatureImg = patientModel.getSignatureImgUrl();
-        String fileStr = new String(Base64.getDecoder().decode(signatureImg.trim()));
-        Date now = new Date(System.currentTimeMillis());
-        XUploadFileVO file = new XUploadFileVO();
-        file.setFileLocation(fileStr);
-        file.setUploadTime(now);
-        file.setFileName(patientModel.getName()+"的签名");
-        MedicalRayFilmModel model = new MedicalRayFilmModel();
-        model.setSourceType(FileSourceTypeEnum.PATIENT_SIGNATURE.getCode());
-        model.setMedicalId(patientId);
-        model.setRayFiles(Arrays.asList(file));
-        model.setCrtId(userId);
-        model.setCrtTime(now);
-        remoteTreatmentOtherFeign.saveXRayFile2XUploadFile(model);
+        if (StringHelper.isNotEmpty(signatureImg)) {
+//            String tempFilePath = request.getSession().getServletContext().getRealPath("/")+"../../temp/"+patientModel.getName() + "的电子签名"+ extName;
+            byte[] b = Base64Utils.decoderImage(signatureImg);
+//            MultipartFile multFile = new MockMultipartFile(extName, b);
+            Date now = new Date(System.currentTimeMillis());
+            XUploadFileVO file = new XUploadFileVO();
+//            file.setFileLocation(fileStr);
+            file.setUploadTime(now);
+//            file.setFileName();
+            MedicalRayFilmModel model = new MedicalRayFilmModel();
+            model.setSourceType(FileSourceTypeEnum.PATIENT_SIGNATURE.getCode());
+            model.setMedicalId(patientId);
+            model.setRayFiles(Arrays.asList(file));
+            model.setCrtId(userId);
+            model.setCrtTime(now);
+            remoteTreatmentOtherFeign.saveXRayFile2XUploadFile(model);
+        }
     }
 
     /**
@@ -498,8 +503,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         childInfo.setGrade(model.getGrade());
         childInfo.setMedicationHistory(model.getMedicationHistory());
         childInfo.setMotherPregnancy(model.getMotherPregnancy());
-        List<Integer> parentHasCaries = model.getParentHasCaries();
-        childInfo.setParentHasCaries(StringHelper.join(parentHasCaries, ","));
+        childInfo.setFatherHasCaries(model.getFatherHasCaries());
+        childInfo.setMotherHasCaries(model.getMotherHasCaries());
         childInfo.setToothClearliness(model.getToothClearliness());
         childInfo.setToothLastCheck(model.getToothLastCheck());
         childInfo.setToothSprouting(model.getToothSprouting());

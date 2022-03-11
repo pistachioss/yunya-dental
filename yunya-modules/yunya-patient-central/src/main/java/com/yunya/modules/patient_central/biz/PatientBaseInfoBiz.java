@@ -359,8 +359,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       childInfo.setGrade(model.getGrade());
       childInfo.setMedicationHistory(model.getMedicationHistory());
       childInfo.setMotherPregnancy(model.getMotherPregnancy());
-      List<Integer> parentHasCaries = model.getParentHasCaries();
-      childInfo.setParentHasCaries(StringHelper.join(parentHasCaries, ","));
+      childInfo.setFatherHasCaries(model.getFatherHasCaries());
+      childInfo.setMotherHasCaries(model.getMotherHasCaries());
       childInfo.setToothClearliness(model.getToothClearliness());
       String toothLastCheck = model.getToothLastCheck();
       if (StringHelper.isNotEmpty(toothLastCheck)) {
@@ -385,8 +385,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       childInfo.setGrade(model.getGrade());
       childInfo.setMedicationHistory(model.getMedicationHistory());
       childInfo.setMotherPregnancy(model.getMotherPregnancy());
-      List<Integer> parentHasCaries = model.getParentHasCaries();
-      childInfo.setParentHasCaries(StringHelper.join(parentHasCaries, ","));
+      childInfo.setFatherHasCaries(model.getFatherHasCaries());
+      childInfo.setMotherHasCaries(model.getMotherHasCaries());
       childInfo.setToothClearliness(model.getToothClearliness());
       String toothLastCheck = model.getToothLastCheck();
       if (StringHelper.isNotEmpty(toothLastCheck)) {
@@ -672,10 +672,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   private void fillPatientChildInfo(PatientExtendInfoVo patientExtendInfoVo, Integer patientId) {
     PatientChildInfoVO childInfo = patientChildInfoMapper.selectPatientChildInfoByPatientId(patientId);
     if (!ObjectUtils.isEmpty(childInfo)) {
-      String parentHasCarieStr = childInfo.getParentHasCarieStr();
-      if (StringHelper.isNotEmpty(parentHasCarieStr)) {
-        childInfo.setParentHasCaries(StringHelper.split2IntList(parentHasCarieStr,","));
-      }
       String habitIdStr = childInfo.getHabitIdStr();
       if (StringHelper.isNotEmpty(habitIdStr)) {
         childInfo.setHabitIds(StringHelper.split2IntList(habitIdStr, ","));
