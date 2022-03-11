@@ -109,6 +109,7 @@
             IFNULL(pbi.pinyin_name,''),
             IFNULL(pbi.mobile,''))
             like concat(concat('%', rtrim(#{form.condition})), '%')
+            AND pbi.has_died = false
         ORDER BY
         ABS(
         LENGTH( pbi.`name` ) - LENGTH( #{form.condition} ))
