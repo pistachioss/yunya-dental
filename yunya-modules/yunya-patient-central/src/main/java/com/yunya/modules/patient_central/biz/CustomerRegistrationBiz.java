@@ -22,7 +22,6 @@ import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.patient_central.*;
 import com.yunya.modules.patient_central.mapper.*;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,7 +45,6 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMET
  * @description:
  * @since: 1.0.0
  */
-@Slf4j
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, PatientBaseInfo> {
@@ -412,30 +410,26 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         String signatureImg = patientModel.getSignatureImgUrl();
         if (StringHelper.isNotEmpty(signatureImg)) {
             executorService.submit(()->{
-                try {
-                    String fileName = patientModel.getName() + "的电子签名";
-                    Date now = new Date(System.currentTimeMillis());
-                    Base64UploadForm form = new Base64UploadForm();
-                    form.setFileName(fileName);
-                    form.setData(signatureImg);
-                    form.setCompanyId(0);
-                    form.setObjectId(patientId);
-                    form.setOssCategory(3);
-                    String fileUrl = (String) remoteOssServiceFeign.uploadBase64Image(form).getData();
-                    XUploadFileVO file = new XUploadFileVO();
-                    file.setFileLocation(fileUrl);
-                    file.setUploadTime(now);
-                    file.setFileName(fileName);
-                    MedicalRayFilmModel model = new MedicalRayFilmModel();
-                    model.setSourceType(FileSourceTypeEnum.PATIENT_SIGNATURE.getCode());
-                    model.setMedicalId(patientId);
-                    model.setRayFiles(Arrays.asList(file));
-                    model.setCrtId(userId);
-                    model.setCrtTime(now);
-                    remoteTreatmentOtherFeign.saveXRayFile2XUploadFile(model);
-                } catch (Exception e) {
-                    log.error("Registration Patient SignatureImage error", e);
-                }
+                String fileName = patientModel.getName() + "的电子签名";
+                Date now = new Date(System.currentTimeMillis());
+                Base64UploadForm form = new Base64UploadForm();
+                form.setFileName(fileName);
+                form.setData(signatureImg);
+                form.setCompanyId(0);
+                form.setObjectId(patientId);
+                form.setOssCategory(3);
+                String fileUrl = (String) remoteOssServiceFeign.uploadBase64Image(form).getData();
+                XUploadFileVO file = new XUploadFileVO();
+                file.setFileLocation(fileUrl);
+                file.setUploadTime(now);
+                file.setFileName(fileName);
+                MedicalRayFilmModel model = new MedicalRayFilmModel();
+                model.setSourceType(FileSourceTypeEnum.PATIENT_SIGNATURE.getCode());
+                model.setMedicalId(patientId);
+                model.setRayFiles(Arrays.asList(file));
+                model.setCrtId(userId);
+                model.setCrtTime(now);
+                remoteTreatmentOtherFeign.saveXRayFile2XUploadFile(model);
             });
         }
     }
