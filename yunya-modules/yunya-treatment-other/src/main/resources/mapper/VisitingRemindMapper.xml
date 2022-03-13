@@ -41,6 +41,23 @@
                 #{id}
             </foreach>
     </update>
+    <insert id="batchIntert" keyProperty="id" useGeneratedKeys="true">
+
+         insert into visiting_remind (
+        org_id ,
+        patient_id,
+        dentist_id ,
+        treatment_id ,
+        remind_date,
+        remind_time,
+        remind_content ,
+        remarks)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.orgId},#{item.patientId},#{item.dentistId},#{item.treatmentId},#{item.remindDate}
+            ,#{item.remindTime},#{item.remindContent},#{item.remarks})
+        </foreach>
+    </insert>
 
     <!-- 根据患者id、提醒日期，提醒时间查询随访提醒 -->
     <select id="findVisitingRemindByPatientIdAndDateTime" parameterType="java.util.Map" resultMap="BaseResultMap">
@@ -79,19 +96,31 @@
             <if test="query.orgId != null">
                 and vrd.org_id = #{query.orgId}
             </if>
-            <if test="query.remindDate != null and query.searchId == 1">
-                and date_format(vrd.crt_time,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
-                <if test="query.crtId != null">
-                    and vrd.crt_id = #{query.crtId}
-                </if>
-            </if>
-            <if test="query.remindDate != null and query.searchId == 2">
-                and date_format(vrd.remind_date,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
-            </if>
-            <if test="query.searchBeginTime != null and query.searchEndTime != null">
-                and date_format(vrd.remind_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d') and
-                date_format(#{query.searchEndTime},'%Y-%m-%d')
-            </if>
+            <choose>
+                <!--按照创建时间检索-->
+                <when test="query.searchId == 1">
+                    <if test="query.remindDate != null">
+                        and date_format(vrd.crt_time,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
+                        <if test="query.crtId != null">
+                            and vrd.crt_id = #{query.crtId}
+                        </if>
+                    </if>
+                    <if test="query.searchBeginTime != null and query.searchEndTime != null">
+                        and date_format(vrd.crt_time,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d') and
+                        date_format(#{query.searchEndTime},'%Y-%m-%d')
+                    </if>
+                </when>
+                <!--按照提醒时间检索-->
+                <when test="query.searchId == 2">
+                    <if test="query.remindDate != null">
+                        and date_format(vrd.remind_date,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
+                    </if>
+                    <if test="query.searchBeginTime != null and query.searchEndTime != null">
+                        and date_format(vrd.remind_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d') and
+                        date_format(#{query.searchEndTime},'%Y-%m-%d')
+                    </if>
+                </when>
+            </choose>
             <if test="query.inservice != null">
                 and vrd.inservice = #{query.inservice}
             </if>

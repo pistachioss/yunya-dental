@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
+import cn.hutool.core.date.DateUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
@@ -11,6 +12,7 @@ import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.emr.domain.model.PatientInformedConsentVO;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.query.SelfRegistrationPatientQuery;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
@@ -20,6 +22,7 @@ import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.model.TreatmentModel;
 import com.yunya.feign.treatment.domain.query.*;
@@ -49,6 +52,8 @@ import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -838,27 +843,31 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     VisitingRecord visitRecord = new VisitingRecord();
                     TreatmentRecord treatmentRecord = mapper.selectByPrimaryKey(treatmentRecordId);
                     if (null != treatmentRecord) {
-                      visitRecord.setPatientId(treatmentRecord.getPatientId());
-                      visitRecord.setOrgId(treatmentRecord.getOrgId());
-                      visitRecord.setTreatmentDate(treatmentRecord.getTreatStartTime());
-                      Registered registered =
-                          registeredMapper.selectByPrimaryKey(treatmentRecord.getRegisteredId());
-                      if (null != registered) {
-                        visitRecord.setDentistId(registered.getDentistId());
-                        visitRecord.setDeptRoomId(registered.getDeptRoomId());
+                      Integer patientId = treatmentRecord.getPatientId();
+                      PatientBaseInfo patient = patientServiceFeign.findPatientInfoById(patientId);
+                      if (!ObjectUtils.isEmpty(patient) && !patient.getHasDied()) {
+                        visitRecord.setPatientId(patientId);
+                        visitRecord.setOrgId(treatmentRecord.getOrgId());
+                        visitRecord.setTreatmentDate(treatmentRecord.getTreatStartTime());
+                        Registered registered =
+                                registeredMapper.selectByPrimaryKey(treatmentRecord.getRegisteredId());
+                        if (null != registered) {
+                          visitRecord.setDentistId(registered.getDentistId());
+                          visitRecord.setDeptRoomId(registered.getDeptRoomId());
+                        }
+                        visitRecord.setCrtId(detail.getCrtId());
+                        visitRecord.setCrtName(detail.getCrtName());
+                        visitRecord.setCrtTime(new Date(System.currentTimeMillis()));
+                        visitRecord.setTreatmentId(treatmentRecordId);
+                        visitRecord.setVisitingTime("09:00");
+                        visitRecord.setReason(baseTariff.getName());
+                        visitRecord.setStatus(false);
+                        visitRecord.setInservice(true);
+                        visitRecord.setVisitingDate(
+                                DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
+                        visitRecordPlanList.add(visitRecord);
                       }
                     }
-                    visitRecord.setCrtId(detail.getCrtId());
-                    visitRecord.setCrtName(detail.getCrtName());
-                    visitRecord.setCrtTime(new Date(System.currentTimeMillis()));
-                    visitRecord.setTreatmentId(treatmentRecordId);
-                    visitRecord.setVisitingTime("09:00");
-                    visitRecord.setReason(baseTariff.getName());
-                    visitRecord.setStatus(false);
-                    visitRecord.setInservice(true);
-                    visitRecord.setVisitingDate(
-                        DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
-                    visitRecordPlanList.add(visitRecord);
                   });
         }
       }
@@ -1255,6 +1264,50 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     }
   }
 
+
+  /**
+   * 末次就诊信息 批量
+   *
+   * @param patientIds 患者ID
+   * @return 返回末次就诊实体对象
+   */
+  public List<LastTreatmentInfoVO> lastTreatmentInfoByBatch(List<Integer> patientIds) {
+    List<LastTreatmentInfoVO> list = new ArrayList<>();
+    if (StringHelper.isEmpty(patientIds)) {
+      return list;
+    }
+    Example example = new Example(TreatmentRecord.class);
+    example.createCriteria().andIn("patientId",patientIds);
+    List<TreatmentRecord> records = mapper.selectByExample(example);
+    if (!records.isEmpty()) {
+      Map<Integer, List<TreatmentRecord>> collect = records.stream().collect(Collectors.groupingBy(TreatmentRecord::getPatientId));
+      for (Integer key : collect.keySet()) {
+        List<TreatmentRecord> collect1 = collect.get(key).stream().sorted((o1, o2) -> o2.getId() - o1.getId()).collect(Collectors.toList());
+        log.info("过滤后的排序：{}",collect1);
+
+        TreatmentRecord treatmentRecord = collect1.get(0);
+        LastTreatmentInfoVO lastTreatmentInfoVO = new LastTreatmentInfoVO();
+        lastTreatmentInfoVO.setOrgId(treatmentRecord.getOrgId());
+        lastTreatmentInfoVO.setDentistId(treatmentRecord.getDentistId());
+        lastTreatmentInfoVO.setPatientId(treatmentRecord.getPatientId());
+        lastTreatmentInfoVO.setTreatmentDate(DateUtil.formatDate(treatmentRecord.getTreatStartTime()));
+        list.add(lastTreatmentInfoVO);
+      }
+    }
+
+    if (!list.isEmpty()) {
+      List<Integer> orgIds = list.stream().map(LastTreatmentInfoVO::getOrgId).collect(Collectors.toList());
+      List<Integer> dentistIds = list.stream().map(LastTreatmentInfoVO::getDentistId).collect(Collectors.toList());
+      List<OrganizationInfoDetail> orgInfoInIds = systemServiceFeign.findOrgInfoInIds(orgIds);
+      List<SysUserInfoDetail> dentistInfors = systemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
+      for (LastTreatmentInfoVO vo : list) {
+        orgInfoInIds.stream().filter(oid->oid.getId().equals(vo.getOrgId())).findFirst().ifPresent(oid-> vo.setOrgName(oid.getAbbreviation()));
+        dentistInfors.stream().filter(sid->sid.getEmployeeId().equals(vo.getDentistId())).findFirst().ifPresent(sid->vo.setDentistName(sid.getName()));
+      }
+    }
+    return list;
+  }
+
   /**
    * 查询指定时间段内每个医生每天患者就诊人数
    *
@@ -1290,6 +1343,12 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     Integer orgId = query.getOrgId();
     Integer dentistId = query.getDentistId();
     String queryDate = query.getQueryDate();
+    // 自助登记患者人数
+    SelfRegistrationPatientQuery patientQuery = new SelfRegistrationPatientQuery();
+    patientQuery.setWhetherPage(false);
+    patientQuery.setCurrentDate(queryDate);
+    patientQuery.setOrgId(orgId);
+    Integer patientNum = patientServiceFeign.countSelfRegistrationPatient(patientQuery);
 
     // 预约未到数量
     AppointmentCurrentListQuery form = new AppointmentCurrentListQuery();
@@ -1301,6 +1360,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
     CountTreatmentRecordVO resultData = mapper.selectTreatCountByExample(query);
     resultData.setAppointNotArrived(appointNotArrived);
+    resultData.setSelfRegPatient(patientNum);
     return resultData;
   }
 

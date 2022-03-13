@@ -1,6 +1,5 @@
 package com.yunya.modules.treatment.other.biz;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
@@ -26,11 +25,9 @@ import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.*;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -40,20 +37,15 @@ import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.modules.treatment.other.mapper.VisitingRemindMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
+import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.ContentHandler;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -87,9 +79,40 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
     /** 消息服务 */
     @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
 
-    public ResponseResult addImplement(List<VisitingRemindModel> model){
-        for(VisitingRemindModel vm:model){
-            this.insertVisitingRemind(vm);
+    public ResponseResult addImplement(List<VisitingRemindModel> models){
+//        for(VisitingRemindModel vm:model){
+//            this.insertVisitingRemind(vm);
+//        }
+//        return ResponseUtil.success();
+        List<VisitingRemind>biulist = new ArrayList();
+
+        for(VisitingRemindModel model:models) {
+            Integer patientId = model.getPatientId();
+            Date remindDate = model.getRemindDate();
+            String remindTime = model.getRemindTime();
+            List<VisitingRemind> hasSameDatas = mapper.findVisitingRemindByPatientIdAndDateTime(patientId, remindDate, remindTime);
+            if (!StringHelper.isEmpty(hasSameDatas)) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                String format = dateFormat.format(remindDate);
+                return ResponseUtil.success(format + " " + remindTime + "时间段内已经存在一条提醒记录！");
+            }
+            VisitingRemind build = EntityUtils.build(model, VisitingRemind.class);
+
+            build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            build.setCrtName(BaseContextHandler.getName());
+            build.setCrtTime(new Date(System.currentTimeMillis()));
+            build.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+            build.setUpdName(BaseContextHandler.getName());
+            build.setUpdTime(new Date(System.currentTimeMillis()));
+            biulist.add(build);
+        }
+        int result = mapper.batchIntert(biulist);
+        if (result <= 0) {
+            return ResponseUtil.success("数据插入失败！");
+        }
+        for(VisitingRemind b:biulist){
+            // 发送消息-新建提醒
+            remoteRabbitMqServiceFeign.sendMessage(b.getId(),1,0, MsgCategoryEnum.BaseVisitRemind);
         }
         return ResponseUtil.success();
     }
@@ -100,6 +123,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      */
     public ResponseResult insertVisitingRemind(VisitingRemindModel model){
         Integer patientId = model.getPatientId();
+        checkPatiendHasDied(patientId);
         Date remindDate = model.getRemindDate();
         String remindTime = model.getRemindTime();
         List<VisitingRemind> hasSameDatas = mapper.findVisitingRemindByPatientIdAndDateTime(patientId, remindDate, remindTime);
@@ -123,6 +147,18 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         // 发送消息-新建提醒
         remoteRabbitMqServiceFeign.sendMessage(build.getId(),1,0, MsgCategoryEnum.BaseVisitRemind);
         return ResponseUtil.success();
+    }
+
+    /**
+     * 检查患者是否已去世
+     *
+     * @param patientId
+     */
+    private void checkPatiendHasDied(Integer patientId) {
+        List<PatientBaseInfoVo> diedPatients = remotePatientCentralServiceFeign.findPatientInfoByIds(Arrays.asList(patientId), true);
+        if (StringHelper.isNotEmpty(diedPatients)) {
+            throw new ClientServiceException("该患者已去世！",OperationCodeConstants.OPERATION_NOT_ALLOW);
+        }
     }
 
     /**
@@ -227,22 +263,22 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         query.setInservice(true);
         String medicalNumber = query.getMedicalNumber();
         String distentName = query.getDistentName();
-        // 分页
-        if (query.getWhetherPage()){
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
-        }
         // 组合随访提醒信息列表
         List<VisitingRemindVo> visitingRemindVos = new ArrayList<>();
         // 检索随访提醒内容列表
         List<VisitingRemindVo> searchVisitingRemindVo = null;
         String search = query.getSearch();
         if (StringHelper.isNotBlank(search)) {
-            if (!search.matches(BusinessConstants.NAME_REGEXP) && !search.matches(BusinessConstants.MOBILE_REGEXP)) {
-                return  ResponseUtil.success(new PageInfo(new ArrayList<>()));
+            if (!search.matches(BusinessConstants.NAME_REGEXP) && !search.matches(BusinessConstants.PINYIN_REGEXP) && !search.matches(BusinessConstants.MOBILE_REGEXP)) {
+                if (!search.matches(BusinessConstants.CN_EN_NAME_REGEXP)) {
+                    return ResponseUtil.success(new PageInfo(new ArrayList<>()));
+                } else {
+
+                }
             }
             PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
             patientLikeQuery.setCondition(search);
-            patientLikeQuery.setWhetherPage(false);
+            patientLikeQuery.setWhetherPage(true);
             // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容
             List<PatientBaseInfoVo> patientByNameAndMobile = remotePatientCentralServiceFeign.findPatientByNameAndMobile(patientLikeQuery);
             if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
@@ -266,9 +302,10 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         }
         List<VisitingRemind> visitingReminds = mapper.findVisitingRemindByCondition(query);
 
-        PageInfo visitingRemindVoPageInfo = new PageInfo(visitingReminds);
         // 获取医生ID集合
         if (!StringHelper.isEmpty(visitingReminds)) {
+            visitingReminds = filterDiedPatient(visitingReminds, query.getPatientId());
+
             // 获取医生信息列表
             List<Integer> dentistIds = visitingReminds.stream().map(VisitingRemind::getDentistId).collect(Collectors.toList());
             List<SysUserInfoDetail> dentistInfoList = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
@@ -297,16 +334,41 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 visitingRemindVos.add(build);
             });
             // 排序
-            searchVisitingRemindVo = this.customSort(visitingRemindVos,query,visitingRemindVoPageInfo);
+            searchVisitingRemindVo = this.customSort(visitingRemindVos,query);
 
         }
         // 如果 searchVisitingRemindVo 为空
         if (StringHelper.isEmpty(searchVisitingRemindVo)) {
             searchVisitingRemindVo = new ArrayList<>();
         }
-        // 设置分页数据
-        visitingRemindVoPageInfo.setList(searchVisitingRemindVo);
-        return ResponseUtil.success(visitingRemindVoPageInfo);
+        return ResponseUtil.success(PageUtl.doPage(query, searchVisitingRemindVo));
+    }
+
+    /**
+     * 过滤掉已经去世的患者
+     *
+     * @param datas
+     * @param patientId
+     * @return
+     */
+    private List<VisitingRemind> filterDiedPatient(List<VisitingRemind> datas, Integer patientId) {
+        // 查询患者本人提醒无需过滤
+        if (!ObjectUtils.isEmpty(patientId)) {
+            return datas;
+        }
+        List<Integer> patientIds = datas.stream().map(VisitingRemind::getPatientId).collect(Collectors.toList());
+        List<PatientBaseInfoVo> diedPatients = remotePatientCentralServiceFeign.findPatientInfoByIds(patientIds, true);
+        datas = datas.stream().filter(vo->{
+            boolean notDied = true;
+            for (PatientBaseInfoVo patient : diedPatients) {
+                if (patient.getId().equals(vo.getPatientId())) {
+                    notDied = false;
+                    break;
+                }
+            }
+            return notDied;
+        }).collect(Collectors.toList());;
+        return datas;
     }
 
     /**
@@ -315,7 +377,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @param query
      * @return
      */
-    private List<VisitingRemindVo> customSort(List<VisitingRemindVo> list, VisitingRemindQuery query, PageInfo visitingRemindVoPageInfo) {
+    private List<VisitingRemindVo> customSort(List<VisitingRemindVo> list, VisitingRemindQuery query) {
         String orderBy = query.getOrderBy();
         String sort = query.getSort();
         if (StringHelper.isNotEmpty(list) && StringHelper.isNotBlank(orderBy) && StringHelper.isNotBlank(sort)) {
@@ -339,8 +401,6 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             } else if (null != query.getPatientId() && query.getSearchId().equals(SEARCH_ID)){
                 return list;
             } else {
-                // 设置分页插件总数量=条件检索出来的结果数量
-                visitingRemindVoPageInfo.setTotal(list.size());
                 // 按照时间正序排序
                 return this.sort(list);
             }
@@ -606,13 +666,15 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
     public void executeRemindExport(HttpServletResponse response, VisitingRemindQuery query) throws IOException {
         List<VisitingRemindExecuteVo> data = executeRemindList(query).getList();
         ExcelUtil<VisitingRemindExecuteVo> excelUtil = new ExcelUtil<>(VisitingRemindExecuteVo.class);
-        String date = DateUtil.format(query.getRemindDate(), "yyyy-MM-dd");
+        String dateStr = String.format("%s~%s",
+                DateUtil.format(query.getSearchBeginTime(), "yyyy-MM-dd"),
+                DateUtil.format(query.getSearchEndTime(), "yyyy-MM-dd"));
         OrganizationInfo orgInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
         String abbreviation = "";
         if (orgInfo != null) {
              abbreviation = orgInfo.getAbbreviation();
         }
-        String fileName = excelUtil.getFileName(date,"",abbreviation,"患者提醒事项报表");
+        String fileName = excelUtil.getFileName(dateStr,"",abbreviation,"患者提醒事项报表");
         excelUtil.exportExcel(response,data,"患者提醒事项报表",fileName);
     }
 
@@ -623,9 +685,6 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @return
      */
     private PageInfo<VisitingRemindExecuteVo> executeRemindList(VisitingRemindQuery query) {
-        if (query.getWhetherPage()) {
-            PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        }
         String search = query.getSearch();
         if (StringHelper.isNotEmpty(search)) {
             PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
@@ -640,8 +699,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         query.setInservice(true);
         List<VisitingRemindExecuteVo> result = new ArrayList<>();
         List<VisitingRemind> reminds = mapper.findVisitingRemindByCondition(query);
-        PageInfo pageInfo = new PageInfo<>(reminds);
         if (StringHelper.isNotEmpty(reminds)) {
+            reminds = filterDiedPatient(reminds,null);
             reminds = reminds.stream().sorted((remind1, remind2)
                     ->compareHourMinute(remind1.getRemindTime(), remind2.getRemindTime())).collect(Collectors.toList());
             reminds.forEach(vo->{
@@ -665,8 +724,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 result.add(executeVo);
             });
         }
-        pageInfo.setList(result);
-        return pageInfo;
+        return PageUtl.doPage(query, result);
     }
 
     /**

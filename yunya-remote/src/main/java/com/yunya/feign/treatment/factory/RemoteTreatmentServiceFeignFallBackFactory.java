@@ -217,6 +217,11 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
+  public List<LastTreatmentInfoVO> lastTreatmentInfoByBatch(List<Integer> patientIds) {
+    return null;
+  }
+
+  @Override
   public List<TreatmentRecord> findTreatmentRecordListByAppointIds(List<Integer> appointIds) {
     return null;
   }

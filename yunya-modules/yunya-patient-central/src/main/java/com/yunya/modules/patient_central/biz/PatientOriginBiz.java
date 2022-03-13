@@ -219,6 +219,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       }
       patientOrigin.setTimeLimit(patientOriginForm.getTimeLimit());
       patientOrigin.setName(patientOriginForm.getName());
+      patientOrigin.setEnglishName(patientOriginForm.getEnglishName());
       patientOrigin.setLimitStartDate(patientOriginForm.getLimitStartDate());
       if (patientOriginForm.getTimeLimit() != null && patientOriginForm.getTimeLimit() == 1) {
         patientOrigin.setLimitEndDate(getEndTimeOfDate(patientOriginForm.getLimitEndDate()));
@@ -377,4 +378,26 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       long end = System.currentTimeMillis();
       log.info("患者信息患者来源信息迁移入库成功，时长：[{}]秒", (end - start) / 1000);
     }
+
+  /**
+   * 查询患者来源类型及其子类型
+   *
+   * @return
+   */
+  public List<PatientOriginVo> findOriginalTypeAndChildren() {
+    List<PatientOriginVo> result = originalType();
+    if (StringHelper.isNotEmpty(result)) {
+      result.forEach(vo-> {
+        PatientOrigin query = new PatientOrigin();
+        // 根据来源类型
+        query.setOriginType(vo.getOriginType());
+        try {
+          vo.setChildren(getPatientOriginList(query));
+        } catch (ParseException e) {
+          log.error("findOriginalTypeAndChildren error",e);
+        }
+      });
+    }
+    return result;
+  }
 }

@@ -78,7 +78,7 @@ public class BaseTreatmentProcessControllerTest {
 
     @Test
     public void testPullPrivilegeDateStatistics() throws InterruptedException {
-        String param = "{\"startDate\":\"2000-01-01\",\"endDate\":\"2022-12-31\"}";
+        String param = "{\"startDate\":\"2022-01-01\",\"endDate\":\"2022-02-29\"}";
         PullForm form = JSONObject.parseObject(param, PullForm.class);
         ResponseResult result = baseBillController.pullPrivilegeDateStatistics(form);
         System.out.println(result);

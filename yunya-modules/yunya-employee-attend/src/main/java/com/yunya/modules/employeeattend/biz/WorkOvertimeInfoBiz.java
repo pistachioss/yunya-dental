@@ -15,11 +15,10 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.*;
-import com.yunya.modules.employeeattend.form.NoWorkByDateForm;
-import com.yunya.modules.employeeattend.form.NoWorkForm;
-import com.yunya.modules.employeeattend.form.WorkForm;
-import com.yunya.modules.employeeattend.form.WorkOvertimeInfoForm;
+import com.yunya.models.system.SysEmployee;
+import com.yunya.modules.employeeattend.form.*;
 import com.yunya.modules.employeeattend.mapper.*;
+import com.yunya.modules.employeeattend.util.JpushManager;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,6 +57,10 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
     private FieldInfoMapper fieldInfoMapper;
     @Autowired
     private LeaveInfoMapper leaveInfoMapper;
+    @Autowired
+    private EmployeePushBiz employeePushBiz;
+    @Autowired
+    private ApprovalPeopleBiz approvalPeopleBiz;
 
     /**
      * 根据日期和用户id列表查询加班列表
@@ -147,6 +150,38 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                             workOvertimeInfo.setCrtTime(new Date());
                             workOvertimeInfo.setApprovalStatus(0);
                             int num = mapper.insertSelective(workOvertimeInfo);
+
+                            // TODO :一级审批人
+                            // start 添加推送 需求1450 by zd.xie
+                            SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(workOvertimeInfoForm.getUserId());
+                            String showName = "xxx";
+                            if(ui != null){
+                                showName = ui.getName();
+                            }
+                            if(num > 0){
+                                EmployeePushForm employeePushForm = new EmployeePushForm();
+                                // 组装
+                                Set<Integer> emp_ids = new HashSet<>();
+                                employeePushForm.setEmpId(emp_ids);
+                                employeePushForm.setShowName(showName);
+                                // 根据leaveInfoForm.getApprovalPeopleId();查推送号与平台
+//                                Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
+                                // fix: bug3476
+//                                Integer userid = workOvertimeInfoForm.getApprovalPeopleId();
+                                // fix: bug3520
+                                Integer empid = workOvertimeInfoForm.getApprovalPeopleId();
+                                SysEmployee sysEmployee = remoteSystemServiceFeign.findSysUserByEmpId(empid);
+                                if(sysEmployee !=null){
+                                    emp_ids.add(sysEmployee.getUserId());
+                                }
+                                employeePushForm.setId(workOvertimeInfo.getId());
+                                List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                                employeePushFormList.forEach(el -> {
+                                    JpushManager.getInstance().pushLeaveApproval(el, 2);
+                                });
+                            }
+                            // end 添加推送 需求1450 by zd.xie
+
                             //生成抄送信息
                             if (workOvertimeInfoForm.getCopyList()!=null) {
                                 List<CopyInfo> copyInfoList = new ArrayList<>();
@@ -159,7 +194,26 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                     copyInfo.setCrtTime(new Date());
                                     copyInfoList.add(copyInfo);
                                 }
-                                copyInfoMapper.batchInsert(copyInfoList);
+                                int n = copyInfoMapper.batchInsert(copyInfoList);
+//bug: 3520
+//                                // TODO :所有抄送人
+//                                // start 添加推送 需求1450 by zd.xie
+//                                if(n > 0){
+//                                    EmployeePushForm employeePushForm = new EmployeePushForm();
+//                                    // 组装
+//                                    Set<Integer> emp_ids = new HashSet<>();
+//                                    workOvertimeInfoForm.getCopyList().forEach(nn -> {
+//                                        emp_ids.add(nn);
+//                                    });
+//                                    employeePushForm.setEmpId(emp_ids);
+//                                    employeePushForm.setShowName(showName);
+//                                    employeePushForm.setId(workOvertimeInfo.getId());
+//                                    List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+//                                    employeePushFormList.forEach(el -> {
+//                                        JpushManager.getInstance().pushLeaveCope(el, 2);
+//                                    });
+//                                }
+//                                // end 添加推送 需求1450 by zd.xie
                             }
                             return num;
                         }
@@ -233,7 +287,43 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                     workOvertimeInfo.setApprovalStatus(workOvertimeInfoForm.getApprovalStatus());
                     workOvertimeInfo.setUpdTime(new Date());
                     workOvertimeInfo.setRefuseReason(workOvertimeInfoForm.getRefuseReason());
-                    return mapper.updateByPrimaryKey(workOvertimeInfo);
+                    int num = mapper.updateByPrimaryKey(workOvertimeInfo);
+
+                    // TODO :执行审批时
+                    // start 添加推送 需求1450 by zd.xie
+                    if(num > 0){
+                        SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(workOvertimeInfo.getUserId());
+                        String showName = "xxx";
+                        if(ui != null){
+                            showName = ui.getName();
+                        }
+                        EmployeePushForm employeePushForm = new EmployeePushForm();
+                        // 组装
+                        Set<Integer> emp_ids = new HashSet<>();
+                        employeePushForm.setEmpId(emp_ids);
+                        employeePushForm.setShowName(showName);
+                        employeePushForm.setId(workOvertimeInfoForm.getId());
+                        switch (workOvertimeInfoForm.getApprovalStatus()){
+                            case 1:
+                                // 通过
+                                emp_ids.add(workOvertimeInfo.getUserId());
+                                List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                                employeePushFormList.forEach(el -> {
+                                    JpushManager.getInstance().pushLeaveYes(el, 2);
+                                });
+                                break;
+                            case 2:
+                                // 拒绝
+                                emp_ids.add(workOvertimeInfo.getUserId());
+                                List<EmployeePushForm> employeePushFormList1 = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                                employeePushFormList1.forEach(el -> {
+                                    JpushManager.getInstance().pushLeaveNo(el, 2);
+                                });
+                                break;
+                        }
+                    }
+                    // end 添加推送 需求1450 by zd.xie
+                    return num;
                 }
                 throw new ClientServiceException("当前用户无审批该申请的权限", OBJECT_EDIT_FAIL);
             }
@@ -255,7 +345,40 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
         if (workOvertimeInfo.getApprovalStatus() == 0) {
             if (workOvertimeInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
                 workOvertimeInfo.setApprovalStatus(3);
-                return mapper.updateByPrimaryKey(workOvertimeInfo);
+                int num = mapper.updateByPrimaryKey(workOvertimeInfo);
+
+                // TODO :撤销审批时
+                // start 添加推送 需求1450 by zd.xie
+                if(num > 0){
+                    SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(workOvertimeInfo.getUserId());
+                    String showName = "xxx";
+                    if(ui != null){
+                        showName = ui.getName();
+                    }
+                    EmployeePushForm employeePushForm = new EmployeePushForm();
+                    // 组装
+                    Set<Integer> emp_ids = new HashSet<>();
+                    employeePushForm.setEmpId(emp_ids);
+                    employeePushForm.setShowName(showName);
+                    // 撤销
+                    emp_ids.add(workOvertimeInfo.getUserId());
+//                    Integer userid = approvalPeopleBiz.selectById(workOvertimeInfo.getApprovalPeopleId()).getUserId();
+                    // fix: bug3476
+//                    Integer userid = workOvertimeInfo.getApprovalPeopleId();
+                    // fix: bug3520
+                    Integer empid = workOvertimeInfo.getApprovalPeopleId();
+                    SysEmployee sysEmployee = remoteSystemServiceFeign.findSysUserByEmpId(empid);
+                    if(sysEmployee !=null){
+                        emp_ids.add(sysEmployee.getUserId());
+                    }
+                    employeePushForm.setId(workOvertimeInfo.getId());
+                    List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+                    employeePushFormList.forEach(el -> {
+                        JpushManager.getInstance().pushLeaveCancel(el, 2);
+                    });
+                }
+                // end 添加推送 需求1450 by zd.xie
+                return num;
             }
             throw new ClientServiceException("当前用户无撤销该申请的权限", OBJECT_EDIT_FAIL);
         }

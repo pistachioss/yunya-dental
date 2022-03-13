@@ -148,6 +148,12 @@ public class PatientBaseInfo {
     private String personId;
 
     /**
+     * 是否去世
+     */
+    @Column(name = "has_died")
+    private Boolean hasDied;
+
+    /**
      * 获取主键
      *
      * @return id - 主键
@@ -558,6 +564,14 @@ public class PatientBaseInfo {
         this.personId = personId;
     }
 
+    public Boolean getHasDied() {
+        return hasDied;
+    }
+
+    public void setHasDied(Boolean hasDied) {
+        this.hasDied = hasDied;
+    }
+
     @Override
     public String toString() {
         return "PatientBaseInfo{" +
@@ -584,6 +598,7 @@ public class PatientBaseInfo {
                 ", updName='" + updName + '\'' +
                 ", updTime=" + updTime +
                 ", personId='" + personId + '\'' +
+                ", hasDied='" + hasDied + '\'' +
                 '}';
     }
 }

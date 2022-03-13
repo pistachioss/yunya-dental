@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientChildInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientChildInfo" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="school" property="school" jdbcType="VARCHAR" />
+    <result column="grade" property="grade" jdbcType="VARCHAR" />
+    <result column="medication_history" property="medicationHistory" jdbcType="VARCHAR" />
+    <result column="diet" property="diet" jdbcType="VARCHAR" />
+    <result column="tooth_sprouting" property="toothSprouting" jdbcType="VARCHAR" />
+    <result column="tooth_clearliness" property="toothClearliness" jdbcType="VARCHAR" />
+    <result column="brushing_times" property="brushingTimes" jdbcType="SMALLINT" />
+    <result column="used_fluoride_toothpaste" property="usedFluorideToothpaste" jdbcType="BIT" />
+    <result column="used_dental_floss" property="usedDentalFloss" jdbcType="TINYINT" />
+    <result column="use_floss_times" property="useFlossTimes" jdbcType="INTEGER" />
+    <result column="father_has_caries" property="fatherHasCaries" jdbcType="BIT" />
+    <result column="mother_has_caries" property="motherHasCaries" jdbcType="BIT" />
+    <result column="mother_pregnancy" property="motherPregnancy" jdbcType="BIT" />
+    <result column="habit_ids" property="habitIds" jdbcType="VARCHAR" />
+    <result column="tooth_last_check" property="toothLastCheck" jdbcType="DATE" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <select id="selectPatientChildInfoByPatientId"
+          resultType="com.yunya.feign.patient_central.domain.vo.web.PatientChildInfoVO">
+    SELECT
+        pci.id,
+        pci.patient_id AS patientId,
+        pci.school,
+        pci.grade,
+        pei.guardian,
+        pei.useful_phone guardianMobile,
+        pci.medication_history,
+        pci.diet,
+        pci.tooth_sprouting AS toothSprouting,
+        pci.tooth_clearliness AS toothClearliness,
+        pci.brushing_times AS brushingTimes,
+        pci.used_fluoride_toothpaste AS usedFluorideToothpaste,
+        pci.used_dental_floss AS usedDentalFloss,
+        pci.use_floss_times AS useFlossTimes,
+        pci.father_has_caries AS fatherHasCarieStr,
+        pci.mother_has_caries AS motherHasCarieStr,
+        pci.mother_pregnancy AS motherPregnancy,
+        pci.habit_ids AS habitIdStr,
+        pci.tooth_last_check AS toothLastCheck
+    FROM patient_child_info pci
+    LEFT JOIN (
+        SELECT * FROM patient_exp_info WHERE inservice = true
+    ) pei ON pci.patient_id = pei.patient_id
+    <where>
+      AND pci.inservice = true
+      AND pci.patient_id = #{patientId}
+    </where>
+  </select>
+</mapper>

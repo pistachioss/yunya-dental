@@ -19,3 +19,8 @@ spring:
     host: 172.16.17.177
     port: 6379
     password: foobared
+
+# 推送
+jpush:
+  appKey: b863cff5a22b7edf2d06c404
+  appMasterSecret: e0f0146be64e59643766d99b

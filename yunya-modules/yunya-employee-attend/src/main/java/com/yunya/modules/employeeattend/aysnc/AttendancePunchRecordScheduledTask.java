@@ -14,11 +14,14 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.employee_attend.AttendancePunchRecord;
 import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.modules.employeeattend.biz.*;
+import com.yunya.modules.employeeattend.config.JPushConfig;
 import com.yunya.modules.employeeattend.enums.AttendanceIsInScopeEnum;
 import com.yunya.modules.employeeattend.enums.AttendanceIsPunchEnum;
 import com.yunya.modules.employeeattend.enums.AttendanceStatusEnum;
 import com.yunya.modules.employeeattend.enums.AttendanceTypeEnum;
+import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
+import com.yunya.modules.employeeattend.util.JpushManager;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +33,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -84,6 +88,10 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
     /** 注入对象 */
     @Autowired
     private BaseScheduleBiz baseScheduleBiz;
+    @Autowired
+    private EmployeePushBiz employeePushBiz;
+    @Autowired
+    private JPushConfig jPushConfig;
 
     /**
      * 生成今天待打卡记录模板数据.定时任务每天01：00：00执行 00 00 01 * * ?
@@ -465,25 +473,87 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             }
         }
 
+        List<AttendancePunchRecord> pushList = new ArrayList<>();
         byte unvalid = AttendanceStatusEnum.INVALID_PUNCH.getCode();
         punchItemMap.forEach((userId, employeeScheduleVOS)->{
+            int n = 0;
             employeeScheduleVOS = employeeScheduleVOS.stream().sorted(Comparator.comparing(EmployeeScheduleVO::getFirstStartTime)).collect(Collectors.toList());
             int index = employeeScheduleVOS.size()-1;
             if (index == 0) {
                 EmployeeScheduleVO employeeScheduleVO = employeeScheduleVOS.get(0);
                 AttendancePunchRecord firstItem = createRecord(employeeScheduleVO, now, userId, unvalid, AttendanceTypeEnum.ONDUTY.getCode());
-                attendancePunchRecordBiz.insertSelective(firstItem);
+                n = attendancePunchRecordBiz.insertSelective(firstItem);
+                if (n == 1) {
+                    pushList.add(firstItem);
+                }
                 AttendancePunchRecord lastItem = createRecord(employeeScheduleVO, now, userId, unvalid, AttendanceTypeEnum.OFFDUTY.getCode());
-                attendancePunchRecordBiz.insertSelective(lastItem);
+                n = attendancePunchRecordBiz.insertSelective(lastItem);
+                if (n == 1) {
+                  pushList.add(lastItem);
+                }
             } else if (index > 0) {
                 EmployeeScheduleVO employeeScheduleVO = employeeScheduleVOS.get(0);
                 AttendancePunchRecord firstItem = createRecord(employeeScheduleVO, now, userId, unvalid, AttendanceTypeEnum.ONDUTY.getCode());
-                attendancePunchRecordBiz.insertSelective(firstItem);
+                n = attendancePunchRecordBiz.insertSelective(firstItem);
+                if (n == 1) {
+                  pushList.add(firstItem);
+                }
                 EmployeeScheduleVO lastEmployeeScheduleVO = employeeScheduleVOS.get(index);
                 AttendancePunchRecord lastItem = createRecord(lastEmployeeScheduleVO, now, userId, unvalid, AttendanceTypeEnum.OFFDUTY.getCode());
-                attendancePunchRecordBiz.insertSelective(lastItem);
+                n = attendancePunchRecordBiz.insertSelective(lastItem);
+                if (n == 1) {
+                  pushList.add(lastItem);
+                }
             }
         });
+        logger.info("开始推送考勤打卡");
+        if(pushList !=null && !pushList.isEmpty()){
+            // TODO :今日考勤人员打卡推送
+            // start 添加推送 需求1450 by zd.xie
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            List<EmployeePushForm> employeePushFormList = new ArrayList<>();
+            pushList.forEach(push -> {
+                if(push.getPunchType()==0){
+                    // 上班推送
+                    EmployeePushForm employeePushForm = new EmployeePushForm();
+                    // 组装
+                    Set<Integer> emp_ids = new HashSet<>();
+                    emp_ids.add(push.getUserId());
+                    employeePushForm.setEmpId(emp_ids);
+                    employeePushForm.setIsSchedule(true);
+                    Date dt = push.getPunchDate();
+                    dt.setHours(push.getStartTime().getHours());
+                    dt.setMinutes(push.getStartTime().getMinutes());
+                    dt.setSeconds(push.getStartTime().getSeconds());
+                    employeePushForm.setScheTime(simpleDateFormat.format(new Date(dt.getTime() - 10*60*1000)));
+                    logger.info("employeePushForm: " + employeePushForm);
+                    employeePushFormList.addAll(employeePushBiz.makeEmployeePushForm(employeePushForm));
+                }
+            });
+            // 添加推送计划
+            Map<Integer, Map<String, List<EmployeePushForm>>> map = employeePushFormList.stream()
+                    .collect(Collectors.groupingBy(t -> t.getPlatform(), Collectors.groupingBy(t -> t.getScheTime())));
+            for(Map.Entry<Integer, Map<String, List<EmployeePushForm>>> platforms : map.entrySet()){
+                // 同平台
+                System.out.println("key:"+platforms.getKey());
+//                System.out.println("value:"+entry.getValue());
+                for(Map.Entry<String, List<EmployeePushForm>> schetimes : platforms.getValue().entrySet()){
+                    // 同时间
+                    System.out.println("key:"+schetimes.getKey());
+//                    System.out.println("value:"+entry.getValue());
+                    List<String> reg_ids = new ArrayList<>();
+                    schetimes.getValue().forEach(push -> {
+                        System.out.println("key:"+push.getUserList());
+                        reg_ids.addAll(push.getUserList());
+                    });
+                    EmployeePushForm employeePushForm = schetimes.getValue().get(0);
+                    employeePushForm.setUserList(reg_ids);
+                    JpushManager.getInstance().pushAttend(employeePushForm);
+                }
+            }
+            // end 添加推送 需求1450 by zd.xie
+        }
+        logger.info("结束推送考勤打卡");
     }
 
     /**

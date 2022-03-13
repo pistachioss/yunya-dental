@@ -3,6 +3,7 @@ package com.yunya.framework.common.utils;
 import cn.hutool.core.date.DateTime;
 import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.text.ParseException;
@@ -572,6 +573,19 @@ public class DateUtil {
   public static String DATE_REGEX = "^\\d{4}([-/.])\\d{1,2}\\1\\d{1,2}$";
 
   /**
+   * 按yyyy-MM-dd格式转换
+   *
+   * @param date
+   * @return
+   */
+  public static String format(Date date) {
+    if (ObjectUtils.isEmpty(date)) {
+      return null;
+    }
+    return SDF.format(date);
+  }
+
+  /**
    * 格式化日期 - yyyy-MM-dd HH:mm:ss
    *
    * @param date 日期
@@ -591,6 +605,53 @@ public class DateUtil {
    */
   public static String format(Date date, SimpleDateFormat sdf) {
     return sdf.format(date);
+  }
+
+  /**
+   * 解析成日期
+   *  支持格式：yyyy-MM-dd, yyyy-M-d, yyyyMMdd, yyyy/MM/dd, yyyy/M/d
+   *
+   * @param dateStr 日期字符串
+   * @return 日期
+   * @throws ParseException 解析异常
+   */
+  public static Date parse2Date(String dateStr) {
+    if (StringHelper.isEmpty(dateStr)) {
+      return null;
+    }
+    Date date = null;
+    try {
+      date = SDF.parse(dateStr);
+    } catch (Exception e) {
+    }
+    if (ObjectUtils.isEmpty(date)) {
+      try {
+        date = new SimpleDateFormat("yyyy-M-d").parse(dateStr);
+      } catch (ParseException e) {
+      }
+    }
+    if (ObjectUtils.isEmpty(date)) {
+      try {
+        date = new SimpleDateFormat("yyyyMMdd").parse(dateStr);
+      } catch (ParseException e) {
+      }
+    }
+    if (ObjectUtils.isEmpty(date)) {
+      try {
+        date = new SimpleDateFormat("yyyy/MM/dd").parse(dateStr);
+      } catch (ParseException e) {
+      }
+    }
+    if (ObjectUtils.isEmpty(date)) {
+      try {
+        date = new SimpleDateFormat("yyyy/M/d").parse(dateStr);
+      } catch (ParseException e) {
+      }
+    }
+    if (ObjectUtils.isEmpty(date)) {
+      throw new ClientServiceException("date parse error param：" + dateStr + " format not supported！", 1);
+    }
+    return date;
   }
 
   /**
@@ -926,5 +987,27 @@ public class DateUtil {
       date = getEndDate(date);
     }
     return Integer.parseInt(date2Number(date, null));
+  }
+
+  /**
+   * 怀孕月份转成孕周数
+   * @param pregnancyMonth
+   * @return
+   */
+  public static Integer pregancyMonth2Week(Integer pregnancyMonth) {
+    return pregnancyMonth * 4;
+  }
+
+  /**
+   * 怀孕孕周数转成孕月份
+   * @param pregnancyWeek
+   * @return
+   */
+  public static Integer pregancyWeek2Month(Integer pregnancyWeek) {
+    return pregnancyWeek / 4;
+  }
+
+  public static void main(String[] args) {
+    System.out.println(parse2Date("1941-09-04"));
   }
 }

@@ -133,6 +133,7 @@ public class BusinessConstants {
       "^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\\d{8}$";
   /** 名字正则表达式 */
   public static final String NAME_REGEXP = "^[\\u4e00-\\u9fa5]{0,}$";
+  public static final String CN_EN_NAME_REGEXP = "^[\\u4E00-\\u9FA5A-Za-z0-9_]+$";
   /** 拼音名字正则表达式 */
   public static final String PINYIN_REGEXP = "^[A-Za-z]+$";
 }

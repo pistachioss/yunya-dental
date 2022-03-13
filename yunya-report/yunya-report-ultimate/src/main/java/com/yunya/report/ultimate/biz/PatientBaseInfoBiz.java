@@ -14,6 +14,7 @@ import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BasePatient;
 import com.yunya.models.report.BasePatientOrigin;
 import com.yunya.report.ultimate.mapper.*;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -124,11 +125,33 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
    * 根据条件统计患者来源
    *
    * @param query
-   * @param orgId
+   * @param patientIds
    * @return
    */
-  public List<PatientFirstVisitSourceVO> clinicFirstVisitSourceList(ClinicPerformanceBusinessQuery query, Integer orgId, Collection<Integer> patientIds) {
-    return mapper.selectClinicFirstVisitSourceList(query, orgId, patientIds);
+  public List<PatientFirstVisitSourceVO> clinicFirstVisitSourceList(ClinicPerformanceBusinessQuery query, Integer orgId, Collection<Integer> patientIds){
+    List<PatientFirstVisitSourceVO> data = mapper.selectClinicFirstVisitSourceList(query, orgId, patientIds);
+    if (StringHelper.isNotEmpty(data)) {
+      Map<String, PatientFirstVisitSourceVO> countMap = new LinkedHashMap<>(16);
+      data.forEach(vo->{
+        Integer originType = vo.getOriginType();
+        Integer firstVisitCount = vo.getFirstVisitCount();
+        if (ObjectUtils.isEmpty(originType)) {
+          originType = 12;
+          vo.setOriginType(originType);
+          vo.setOriginTypeName("未知来源");
+        }
+        String key = vo.getOrgId() + "," + originType;
+        PatientFirstVisitSourceVO obj = countMap.get(key);
+
+        if (!ObjectUtils.isEmpty(obj)) {
+          firstVisitCount += obj.getFirstVisitCount();
+        }
+        vo.setFirstVisitCount(firstVisitCount);
+        countMap.put(key, vo);
+      });
+      countMap.forEach((key, vo)-> data.add(vo));
+    }
+    return data;
   }
 
   /**

@@ -880,9 +880,13 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     BigDecimal numberOfItemsBD = null;
     BigDecimal countBD = new BigDecimal(count.get());
     BigDecimal percen100 = new BigDecimal(100);
-    if (countBD.intValue() > 0) {
+    if (countBD.intValue() > 0 && CollectionUtils.isNotEmpty(specialistProjectReportVOList)) {
       for (SpecialistProjectReportVO specialistProjectReportVO : specialistProjectReportVOList) {
-        numberOfItemsBD = new BigDecimal(specialistProjectReportVO.getPercentage());
+        numberOfItemsBD =
+            new BigDecimal(
+                ObjectUtils.isEmpty(specialistProjectReportVO.getPercentage())
+                    ? "0"
+                    : specialistProjectReportVO.getPercentage());
         BigDecimal percentBD =
             numberOfItemsBD.multiply(percen100).divide(countBD, 2, RoundingMode.HALF_UP);
         String percentage = percentBD.toString();
@@ -1047,7 +1051,12 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     // 组装数据并排序
     List<CategoryInfoIncomeVO> list =
         mergeCategoryIncomeList(
-            tariffFuture, originalFuture, discountFuture, freePaymentFuture, orgList, query.getOrgId());
+            tariffFuture,
+            originalFuture,
+            discountFuture,
+            freePaymentFuture,
+            orgList,
+            query.getOrgId());
 
     // 分页
     return PageUtl.doPage(query.getPageNum(), query.getPageSize(), list, query.getWhetherPage());
@@ -1092,7 +1101,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       Future<List<ClinicTariffOrderVO>> originalFuture,
       List<ClinicTariffDiscountCouponVO> discountCoupons,
       Future<Map<String, BigDecimal>> freePaymentFuture,
-      List<OrganizationInfoDetail> orgList, Integer orgId)
+      List<OrganizationInfoDetail> orgList,
+      Integer orgId)
       throws Exception {
     Map<String, String> categoryMap = new HashMap<>(16);
     List<BaseTariffVO> baseTariffVOS = tariffFuture.get();

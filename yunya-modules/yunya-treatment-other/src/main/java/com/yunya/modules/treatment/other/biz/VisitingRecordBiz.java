@@ -46,12 +46,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -109,6 +108,8 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @return  返回插入成功的条数
      */
     public ResponseResult insertVisitingRecord(VisitingRecordModel model){
+        Integer patientId = model.getPatientId();
+        checkPatiendHasDied(patientId);
         List<VisitingContentModel> visitingContents = model.getVisitingContents();
         if (!StringHelper.isEmpty(visitingContents)){
             // 判断同一天，同一个医生是否新建多条随访，如果是则返回异常信息
@@ -117,14 +118,15 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 return ResponseUtil.fail(TreatmentOtherError.VISITING_CONFIICT_EXP.getCode(),
                         TreatmentOtherError.VISITING_CONFIICT_EXP.getMessage(),null);
             }
-            Integer patientId = model.getPatientId();
             String userID = BaseContextHandler.getUserID();
             for(VisitingContentModel visitingContentModel : visitingContents){
                 Date visitingDate = visitingContentModel.getVisitingDate();
                 VisitingRecordQuery query = new VisitingRecordQuery();
                 query.setDentistId(Integer.valueOf(userID));
                 query.setPatientId(patientId);
-                query.setVisitingDate(visitingDate);
+                query.setSearchBeginTime(visitingDate);
+                query.setSearchEndTime(visitingDate);
+                query.setSearchId(2);
                 List<VisitingRecordVo> visitingRecordByCondition = mapper.findVisitingRecordByCondition(query);
                 if (visitingRecordByCondition != null && !visitingRecordByCondition.isEmpty()){
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -137,6 +139,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                     build.setOrgId(Integer.parseInt(orgId));
                 }
                 Integer currentUserId = Integer.valueOf(BaseContextHandler.getUserID());
+                build.setTreatmentDate(model.getTreatmentDate());
                 build.setVisitingDate(visitingContentModel.getVisitingDate());
                 build.setVisitingTime(visitingContentModel.getVisitingTime());
                 build.setReason(visitingContentModel.getReason());
@@ -157,6 +160,18 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             return ResponseUtil.success();
         }
         throw new ClientServiceException("随访内容列表为空！",OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+    }
+
+    /**
+     * 检查患者是否已去世
+     *
+     * @param patientId
+     */
+    private void checkPatiendHasDied(Integer patientId) {
+        List<PatientBaseInfoVo> diedPatients = remotePatientCentralServiceFeign.findPatientInfoByIds(Arrays.asList(patientId), true);
+        if (StringHelper.isNotEmpty(diedPatients)) {
+            throw new ClientServiceException("该患者已去世！",OperationCodeConstants.OPERATION_NOT_ALLOW);
+        }
     }
 
     /**
@@ -307,8 +322,13 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         String distentName = query.getDistentName();
         if (StringHelper.isNotBlank(search)) {
             if (!search.matches(BusinessConstants.NAME_REGEXP) && !search.matches(BusinessConstants.MOBILE_REGEXP)) {
-                return  ResponseUtil.success(new PageInfo(new ArrayList<>()));
+                if (!search.matches(BusinessConstants.CN_EN_NAME_REGEXP)) {
+                    return ResponseUtil.success(new PageInfo(new ArrayList<>()));
+                } else {
+
+                }
             }
+
             PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
             patientLikeQuery.setCondition(search);
             patientLikeQuery.setWhetherPage(false);
@@ -334,8 +354,10 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         }
 
         List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
+        log.info("ssssss随访查询结果：{}",visitingRecordVos);
         PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
         if (StringHelper.isNotEmpty(visitingRecordVos)){
+            visitingRecordVos = filterDiedPatient(visitingRecordVos, query.getPatientId());
 
             // 过滤出患者基本信息列表
             List<PatientTotalInfoVo> patientTotalInfoList = this.patientTotalInfoVoListFilte(visitingRecordVos);
@@ -396,6 +418,33 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
 
         }
         return ResponseUtil.success(visitingRecordVoPageInfo);
+    }
+
+    /**
+     * 过滤掉已经去世的患者
+     *
+     * @param datas
+     * @param patientId
+     * @return
+     */
+    private List<VisitingRecordVo> filterDiedPatient(List<VisitingRecordVo> datas, Integer patientId) {
+        // 查询患者本人不需要对此过滤
+        if (!ObjectUtils.isEmpty(patientId)) {
+            return datas;
+        }
+        List<Integer> patientIds = datas.stream().map(VisitingRecordVo::getPatientId).collect(Collectors.toList());
+        List<PatientBaseInfoVo> diedPatients = remotePatientCentralServiceFeign.findPatientInfoByIds(patientIds, true);
+        datas = datas.stream().filter(vo->{
+            boolean notDied = true;
+            for (PatientBaseInfoVo patient : diedPatients) {
+                if (patient.getId().equals(vo.getPatientId())) {
+                    notDied = false;
+                    break;
+                }
+            }
+            return notDied;
+        }).collect(Collectors.toList());;
+        return datas;
     }
 
     /**
@@ -565,7 +614,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             boolean b = treatmentRecordInfoList.stream().anyMatch(entity -> entity.getId().equals(treatmentId));
             if (b){
                 TreatmentRecordExtendVO treatmentRecord = treatmentRecordInfoList.stream().filter(entity -> entity.getId().equals(treatmentId)).findAny().get();
-                visitingRecordVo.setTreatmentDate(treatmentRecord.getTreatEndTime());
+                visitingRecordVo.setTreatmentDate(treatmentRecord.getTreatStartTime());
                 // 设置初复诊
                 visitingRecordVo.setFirstVisit(treatmentRecord.getType());
             }
@@ -783,6 +832,8 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                     result = patientName.contains(searchStr);
                 } else if (searchStr.matches(BusinessConstants.MOBILE_REGEXP) && !StringHelper.isEmpty(mobile)) {
                     result = mobile.contains(searchStr);
+                } else if (searchStr.matches(BusinessConstants.CN_EN_NAME_REGEXP) && !StringHelper.isEmpty(patientName)) {
+                    result = patientName.contains(searchStr);
                 }
             }
 
@@ -841,30 +892,82 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
 
     /**
      * 查询已随访列表
-     * @param orgId 门诊ID
+     * @param query 门诊ID
      * @return 返回已随访列表
      */
-    public List<VisitFinishedListVO> visitFinishedList(String orgId) {
-        List<VisitFinishedListVO> finishedListVOS = mapper.visitFinishedList(Integer.valueOf(orgId));
-        if (!finishedListVOS.isEmpty()) {
-            // 注入医生名字
-            List<Integer> dentistIds = finishedListVOS.stream().map(VisitFinishedListVO::getDentistId).collect(Collectors.toList());
-            List<SysUserInfoDetail> sysUserInfos = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
-            if (sysUserInfos != null && !sysUserInfos.isEmpty()) {
-                finishedListVOS.forEach(vo-> sysUserInfos.stream().filter(user->user.getEmployeeId().equals(vo.getDentistId())).findFirst().ifPresent(sysUser->{
-                    vo.setDentistName(sysUser.getName());
-                }));
+    public PageInfo<VisitFinishedListVO> visitFinishedList(VisitingRecordQuery query) {
+        // 设置分页
+        if (query.getWhetherPage()){
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
+        // 按患者姓名、手机号、病历号、医生名字检索，并将检索之后的结果排序
+        String search = query.getSearch();
+        String medicalNumber = query.getMedicalNumber();
+        String distentName = query.getDistentName();
+        if (StringHelper.isNotBlank(search)) {
+            if (!search.matches(BusinessConstants.NAME_REGEXP) && !search.matches(BusinessConstants.MOBILE_REGEXP)) {
+                return  new PageInfo<>(new ArrayList<>());
             }
-            // 注入患者名字，患者手机号
-            List<Integer> patientIds = finishedListVOS.stream().map(VisitFinishedListVO::getPatientId).collect(Collectors.toList());
-            List<PatientBaseInfoVo> patientInfos = remotePatientCentralServiceFeign.findPatientInfoByIds(patientIds);
-            if (patientInfos != null && !patientInfos.isEmpty()) {
-                finishedListVOS.forEach(vo-> patientInfos.stream().filter(patient->patient.getId().equals(vo.getPatientId())).findFirst().ifPresent(patientInfo->{
-                    vo.setPatientName(patientInfo.getName());
-                    vo.setMobile(patientInfo.getMobile());
-                }));
+            PatientLikeFinleQueryForm patientLikeQuery = new PatientLikeFinleQueryForm();
+            patientLikeQuery.setCondition(search);
+            patientLikeQuery.setWhetherPage(false);
+            List<PatientBaseInfoVo> patientByNameAndMobile = remotePatientCentralServiceFeign.findPatientByNameAndMobile(patientLikeQuery);
+            if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
+                List<Integer> collect = patientByNameAndMobile.stream().map(PatientBaseInfoVo::getId).collect(Collectors.toList());
+                query.setPatientIds(collect);
             }
         }
-        return finishedListVOS;
+
+        // 按医生名字查询记录
+        if (StringHelper.isNotBlank(distentName)) {
+            SysUserEmployeeModel userQuery = new SysUserEmployeeModel();
+            userQuery.setWhetherPage(false);
+            userQuery.setName(distentName);
+            List<SysUserInfoDetail> sysUserEmployeeInfoList = remoteSystemServiceFeign.findSysUserEmployeeInfoList(userQuery);
+            if (StringHelper.isNotEmpty(sysUserEmployeeInfoList)) {
+                List<Integer> collect = sysUserEmployeeInfoList.stream().map(SysUserInfoDetail::getUserId).collect(Collectors.toList());
+                query.setDentistIds(collect);
+            } else {
+                return new PageInfo<>(new ArrayList<>());
+            }
+        }
+
+        List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
+        if (StringHelper.isNotEmpty(visitingRecordVos)) {
+            List<VisitFinishedListVO> finishedListVOS = new ArrayList<>();
+            visitingRecordVos.forEach(vo->{
+                VisitFinishedListVO visitFinishedListVO = new VisitFinishedListVO();
+                visitFinishedListVO.setId(vo.getId());
+                visitFinishedListVO.setOrgId(vo.getOrgId());
+                visitFinishedListVO.setPatientId(vo.getPatientId());
+                visitFinishedListVO.setDentistId(vo.getDentistId());
+                visitFinishedListVO.setVisitingContent(vo.getVisitingContent());
+                visitFinishedListVO.setExecutorName(vo.getExecutorName());
+                visitFinishedListVO.setExecuteDateTime(vo.getExecuteDate());
+                finishedListVOS.add(visitFinishedListVO);
+            });
+            // 过滤出患者基本信息列表
+            List<PatientTotalInfoVo> patientTotalInfoList = this.patientTotalInfoVoListFilte(visitingRecordVos);
+            // 过滤出医生信息列表
+            List<SysUserInfoDetail> dentistInfoList = this.dentistInfoListFilter(visitingRecordVos);
+            // 组合随访记录信息
+            for (VisitFinishedListVO finishedVo : finishedListVOS) {
+                // 组合随访记录信息中的患者信息、会员图标信息、医生姓名、就诊信息
+                if(patientTotalInfoList != null) {
+                    patientTotalInfoList.stream().filter(vo -> vo.getId().equals(finishedVo.getPatientId())).findFirst().ifPresent(patientInfo -> {
+                        finishedVo.setMobile(patientInfo.getMobile());
+                        finishedVo.setPatientName(patientInfo.getName());
+                    });
+                }
+                if (dentistInfoList != null) {
+                    dentistInfoList.stream().filter(vo -> vo.getEmployeeId().equals(finishedVo.getDentistId())).findFirst().ifPresent(dentistInfo -> {
+                        finishedVo.setDentistName(dentistInfo.getName());
+                    });
+                }
+            }
+            PageInfo visitingRecordVoPageInfo = new PageInfo<>(finishedListVOS);
+            return visitingRecordVoPageInfo;
+        }
+        return new PageInfo<>(new ArrayList<>());
     }
 }

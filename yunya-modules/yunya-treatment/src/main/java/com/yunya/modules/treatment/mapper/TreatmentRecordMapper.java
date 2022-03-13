@@ -178,4 +178,5 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
   List<Integer> selectAllTreatCompletedList(
       @Param("treatDate") String treatDate,
       @Param("treatmentProcessedStatus") Byte treatmentProcessedStatus);
+
 }

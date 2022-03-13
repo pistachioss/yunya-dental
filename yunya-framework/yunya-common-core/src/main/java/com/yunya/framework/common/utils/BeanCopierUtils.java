@@ -7,6 +7,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.cglib.beans.BeanCopier;
 import org.springframework.cglib.core.Converter;
 
+import java.io.*;
 import java.util.List;
 
 import static java.util.stream.Collectors.*;
@@ -52,6 +53,19 @@ public class BeanCopierUtils {
         } catch (Exception e) {
             throw new ClientServiceException("对象属性转换异常", OperationCodeConstants.BEAN_CONVERT_ERROR);
         }
+    }
+
+    public static<T> T deepClone(T src) throws IOException, ClassNotFoundException {
+        Object obj = null;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+        objectOutputStream.writeObject(src);
+        objectOutputStream.close();
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+        obj = objectInputStream.readObject();
+        objectInputStream.close();
+        return (T) obj;
     }
 
 }

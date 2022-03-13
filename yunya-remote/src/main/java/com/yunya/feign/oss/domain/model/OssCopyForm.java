@@ -1,14 +1,16 @@
-package com.yunya365.aliyunoss.form;
+package com.yunya.feign.oss.domain.model;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import java.io.Serializable;
+
 @Data
 @ToString
 @ApiModel("资源文件复制 参数模型")
-public class OssCopyForm {
+public class OssCopyForm implements Serializable {
 
     @ApiModelProperty(value = "复制的源：通常为临时文件夹", dataType = "OssUrlForm")
     private OssUrlForm srcForm;

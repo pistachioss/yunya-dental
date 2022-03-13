@@ -52,6 +52,16 @@ import java.util.*;
   List<PatientBaseInfoVo> findPatientInfoByIds(@RequestBody List<Integer> ids);
 
   /**
+   * 根据患者id集合查询患者list
+   *
+   * @param ids 条件
+   * @param hasDied  是否去世
+   * @return List<PatientBaseInfoVo>
+   */
+  @RequestMapping(value = "/api/findPatientInfoByIds/{hasDied}", method = RequestMethod.POST)
+  List<PatientBaseInfoVo> findPatientInfoByIds(@RequestBody List<Integer> ids, @PathVariable(value = "hasDied") boolean hasDied);
+
+  /**
    * 根据患者id查询患者资料
    *
    * @param id 条件
@@ -314,4 +324,8 @@ import java.util.*;
   @ApiOperation("批量查询推送消息的绑定人")
   @RequestMapping (value = "/api/wx/pusher/batch", method = RequestMethod.POST)
   List<WxFans> listWxPushUser(@RequestBody List<Integer> patientIds);
+
+  @ApiOperation("条件查询自助登记患者的人数")
+  @PostMapping(value = "/api/count/selfRegistrationPatient")
+  Integer countSelfRegistrationPatient(@RequestBody SelfRegistrationPatientQuery patientQuery);
 }
