@@ -30,6 +30,17 @@ public class PageUtl<T> {
     /**
      * 手动分页（默认分页）
      *
+     * @param pageQuery 分页查询对象
+     * @param resultList 数据集
+     * @return
+     */
+    public static <T> PageInfo<T> doPage(PageQuery pageQuery, List<T> resultList) {
+        return doPage(pageQuery.getPageNum(), pageQuery.getPageSize(), resultList, pageQuery.getWhetherPage());
+    }
+
+    /**
+     * 手动分页（默认分页）
+     *
      * @param pageNum 第几页
      * @param pageSize 条数
      * @param resultList 数据集

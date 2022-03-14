@@ -11,6 +11,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * 简介：开单项目统计查询参数
@@ -27,7 +28,7 @@ import java.util.Collection;
 public class BillItemInfoQuery extends PageQuery implements Serializable {
     /** 门诊ID列表 */
     @ApiModelProperty(value = "门诊ID列表")
-    private Collection<Integer> orgIds;
+    private List<Integer> orgIds;
     /** 门诊ID */
     @ApiModelProperty(value = "门诊ID")
     private Integer orgId;

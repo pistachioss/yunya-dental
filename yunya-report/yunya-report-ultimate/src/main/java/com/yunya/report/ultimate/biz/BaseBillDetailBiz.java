@@ -2688,4 +2688,39 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     public List<StatEmpBill> findBillingOralItemList(MultiClinicDateRangeQueryForm query) {
         return mapper.selectBillingOralItemList(query);
     }
+
+    /**
+     * 根据条件查询开单数量及金额全部明细列表导出
+     *
+     * @param query
+     * @param response
+     * @throws Exception
+     */
+    public void billItemStatisticsDetailAllExport(BillItemInfoQuery query, HttpServletResponse response) throws Exception {
+        Collection<Integer[]> items = query.getCategoryItems();
+        if (!CollectionUtils.isEmpty(items)) {
+            Set<Integer> categoryIds = new HashSet<>();
+            Set<Integer> itemIds = new HashSet<>();
+            items.forEach(
+                    vo -> {
+                        categoryIds.add(vo[0]);
+                        itemIds.add(vo[1]);
+                    });
+            query.setCategoryIds(categoryIds);
+            query.setItemIds(itemIds);
+        } else {
+            throw new ClientServiceException("请至少选择一个项目", PARAMETERS_IS_ILLEGAL);
+        }
+        List<BillItemStatisticsDetailVO> result = mapper.billItemAmountDetailList(query);
+        ExcelUtil<BillItemStatisticsDetailVO> excelUtil = new ExcelUtil<>(BillItemStatisticsDetailVO.class);
+        String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单数量及金额全部明细";
+        List<Integer> orgIds = query.getOrgIds();
+        if (orgIds.size() == 1) {
+            BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+            if (null != organization) {
+                fileName = organization.getAbbreviation() + fileName;
+            }
+        }
+        excelUtil.exportExcel(response, result, "开单数量及金额全部明细", fileName);
+    }
 }

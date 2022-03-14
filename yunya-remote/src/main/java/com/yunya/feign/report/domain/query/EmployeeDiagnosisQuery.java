@@ -11,6 +11,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * 简介: 员工看诊情况查询参数
@@ -25,9 +26,11 @@ import java.util.Collection;
 @ToString
 @EqualsAndHashCode(callSuper = true)
 public class EmployeeDiagnosisQuery extends PageQuery implements Serializable {
+  /** 组织ID列表 */
+  @ApiModelProperty(value = "组织ID列表", required = true)
+  @NotNull(message = "组织ID列表不能为空！")
+  private List<Integer> orgIds;
   /** 组织ID */
-  @ApiModelProperty(value = "组织ID", required = true)
-  @NotNull(message = "组织ID不能为空！")
   private Integer orgId;
   /** 查询开始日期 */
   @ApiModelProperty(value = "查询开始日期", example = "yyyy-MM-dd", required = true)
