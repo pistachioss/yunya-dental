@@ -79,7 +79,13 @@ public class PatientServiceRest {
   @ApiOperation("根据患者id集合查询患者list")
   @RequestMapping(value = "/findPatientInfoByIds", method = RequestMethod.POST)
   public List<PatientBaseInfoVo> findPatientInfoByIds(@RequestBody List<Integer> ids) {
-    return patientBaseInfoBiz.findPatientInfoByIds(ids);
+    return patientBaseInfoBiz.findPatientInfoByIds(ids, null);
+  }
+
+  @ApiOperation("根据患者id集合查询患者list")
+  @RequestMapping(value = "/findPatientInfoByIds/{hasDied}", method = RequestMethod.POST)
+  public List<PatientBaseInfoVo> findPatientInfoByIds(@RequestBody List<Integer> ids, @PathVariable(value = "hasDied") Boolean hasDied) {
+    return patientBaseInfoBiz.findPatientInfoByIds(ids, hasDied);
   }
 
   @ApiOperation("根据患者id查询患者资料")
@@ -346,5 +352,12 @@ public class PatientServiceRest {
   @RequestMapping(value = "/wx/pusher/batch", method = RequestMethod.POST)
   List<WxFans> listWxPushUser(@RequestBody List<Integer> patientIds) {
     return wxFansBiz.getPushWxUser(patientIds);
+  }
+
+
+  @ApiOperation("条件查询自助登记患者的人数")
+  @PostMapping(value = "/count/selfRegistrationPatient")
+  public Integer countSelfRegistrationPatient(@RequestBody SelfRegistrationPatientQuery patientQuery) {
+    return patientBaseInfoBiz.countSelfRegistrationPatient(patientQuery);
   }
 }

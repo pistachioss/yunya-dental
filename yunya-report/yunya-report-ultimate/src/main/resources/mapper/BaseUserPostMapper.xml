@@ -386,7 +386,8 @@
         edi.appointmentsNum,
         edi.visitArrivedTimes,
         edi.appointmentModifyTimes,
-        edi.appointmentCancelTimes
+        edi.appointmentCancelTimes,
+        ${query.orgId} AS orgId
         FROM
         (
         SELECT

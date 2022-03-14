@@ -13,6 +13,8 @@ import com.yunya.feign.patient_central.domain.model.PicturesCallbackInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLabelRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.query.SelfRegistrationPatientQuery;
+import com.yunya.feign.patient_central.domain.vo.SelfRegistrationPatientVO;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.IgnoreUserToken;
@@ -136,7 +138,6 @@ public class PatientBaseInfoController {
    * @param patientBaseInfoQueryForm 患者模糊查询模板
    * @return ResponseResult
    */
-  @CurrentUser
   @ApiOperation("根据姓名/病例编号/手机号/姓名拼音模糊查询患者")
   @PostMapping("/likePatient")
   public ResponseResult findPatientByNameAndMobile(
@@ -253,4 +254,16 @@ public class PatientBaseInfoController {
     return ResponseUtil.success();
   }
 
+
+  /**
+   * 条件查找自助登记患者列表
+   *
+   * @return
+   */
+  @ApiOperation("条件查找自助登记患者列表")
+  @PostMapping("/selfRegistrationPatient/list")
+  public ResponseResult<PageInfo<SelfRegistrationPatientVO>> findSelfRegistrationPatientList(@RequestBody SelfRegistrationPatientQuery query) {
+    PageInfo<SelfRegistrationPatientVO> result = patientBaseInfoBiz.findSelfRegistrationPatientList(query);
+    return ResponseUtil.success(result);
+  }
 }

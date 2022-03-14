@@ -10,6 +10,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 根据排班开始结束日期/门诊id/医生id查询预约可视图（患者维度）
@@ -55,6 +56,10 @@ public class PatientDimensionByDayQuery implements Serializable {
     /** 医生id */
     @ApiModelProperty(value = "医生id", required = true)
     private Integer dentistId;
+
+    /** 医生id集合 */
+    @ApiModelProperty(value = "医生id集合", required = true)
+    private List<Integer> dentistIds;
 
     /** 门诊id */
     @ApiModelProperty(value = "门诊id", required = true)

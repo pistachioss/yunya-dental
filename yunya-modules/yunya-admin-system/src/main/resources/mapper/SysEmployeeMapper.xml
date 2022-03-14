@@ -36,6 +36,13 @@
         <result column="photo" property="photo" jdbcType="VARCHAR"/>
         <result column="diploma_photo" property="diplomaPhoto" jdbcType="VARCHAR"/>
         <result column="work_number" property="workNumber" jdbcType="VARCHAR"/>
+        <result column="category" jdbcType="VARCHAR" property="category"/>
+        <result column="registration" jdbcType="VARCHAR" property="registration"/>
+        <result column="permanent_address" jdbcType="VARCHAR" property="permanentAddress"/>
+        <result column="graduation_time" jdbcType="VARCHAR" property="graduationTime"/>
+        <result column="study_major" jdbcType="VARCHAR" property="studyMajor"/>
+        <result column="last_job" jdbcType="VARCHAR" property="lastJob"/>
+        <result column="probation_period_time" jdbcType="VARCHAR" property="probationPeriodTime"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
         <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
@@ -45,41 +52,54 @@
     </resultMap>
     <sql id="selectSysEmployee">
         select
-          se.id,
-          se.user_id,
-          se.`name`,
-          se.pinyin,
-          se.mobile_phone,
-          se.telephone,
-          se.gender,
-          se.birthday,
-          se.address,
-          se.province,
-          se.city,
-          se.country,
-          se.origin,
-          se.identity,
-          se.work_status,
-          se.work_type,
-          se.bonus_coefficient,
-          se.work_amount,
-          se.contract_signing_date,
-          se.emergency_contact_phone,
-          se.discount,
-          se.photo,
-          se.diploma_photo,
-          se.work_number,
-          se.crt_id,
-          se.crt_name,
-          se.crt_time,
-          se.upd_id,
-          se.upd_name,
-          se.upd_time
+        se.id,
+        se.user_id,
+        se.`name`,
+        se.pinyin,
+        se.mobile_phone,
+        se.telephone,
+        se.gender,
+        se.birthday,
+        se.address,
+        se.province,
+        se.city,
+        se.country,
+        se.origin,
+        se.identity,
+        se.work_status,
+        se.work_type,
+        se.bonus_coefficient,
+        se.work_amount,
+        se.contract_signing_date,
+        se.emergency_contact_phone,
+        se.discount,
+        se.photo,
+        se.diploma_photo,
+        se.work_number,
+        se.category,
+        se.registration,
+        se.permanent_address,
+        se.graduation_time,
+        se.study_major,
+        se.last_job,
+        se.probation_period_time,
+        se.crt_id,
+        se.crt_name,
+        se.crt_time,
+        se.upd_id,
+        se.upd_name,
+        se.upd_time
         from sys_employee se
     </sql>
     <!-- 根据用户ID查询 -->
     <select id="selectByUserId" resultMap="BaseResultMap">
         <include refid="selectSysEmployee"/>
         where user_id = #{userId}
+    </select>
+    <select id="selectMaxWorkNumber" resultType="String">
+        select max(work_number) from sys_employee
+    </select>
+    <select id="selectWorkNumberByUserId" resultType="Integer">
+        select count(*) from sys_employee where user_id != #{userId} and work_number = #{workNumber}
     </select>
 </mapper>

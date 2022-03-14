@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.biz.web;
 
+import ch.qos.logback.core.joran.util.beans.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -47,6 +48,7 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -71,6 +73,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,6 +82,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -722,7 +726,63 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return collect;
     }
 
+    /**
+     * 根据条件查询预约可视图（患者维度）按预约患者数量降序排列(多个医生)
+     * 可用范围 根据医生id、排班时间查询医生预约信息
+     * @param query 查询条件
+     * @return List<AppointmentDimensionVo>
+     */
+    public List<AppointmentDimensionsVO> findAppointmentPatientDimensionByExampleMore(PatientDimensionByDayQuery query) {
+        List<AppointmentDimensionsVO> appointmentDimensionsVos = new ArrayList<>();
 
+        // 根据门诊ID获取该门诊所有可预约医生的ID
+        List<Integer> enableDentistIds = this.enableAppointDentistIds(query.getOrgId());
+        for(Integer did:query.getDentistIds()){
+            List<AppointmentDimensionVo> appointmentDimensionVos;
+            query.setDentistId(did);
+            // 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
+            appointmentDimensionVos = this.dimensionAppointInfo(query,enableDentistIds);
+            dentistSchedule(appointmentDimensionVos);
+            // 最后进行排序
+            this.sort(appointmentDimensionVos, query.getOrder(), query.getOrderBy());
+
+
+            List<Date> dalist = getBetweenDates(query.getStartDate(),query.getEndDate());
+            AppointmentDimensionsVO a = new AppointmentDimensionsVO();
+            a.setDentistId(did);
+            a.setName(appointmentDimensionVos.get(0).getName());
+            for(Date date:dalist){
+                AppointmentDimensionVo appvo  = new AppointmentDimensionVo();
+                if(appointmentDimensionVos.stream().anyMatch(m ->date.equals(m.getCurrentDate()))){
+
+                }else{
+                    appvo.setType(0);
+                    if(appointmentDimensionVos.get(0).getPatientNum()==null){
+                        appvo.setPatientNum(0);
+                    }else{
+                        appvo.setPatientNum(appointmentDimensionVos.get(0).getPatientNum());
+                    }
+
+                    appvo.setCurrentDate(date);
+                    appointmentDimensionVos.add(appvo);
+                }
+            }
+            List<EmpScheduleVo> dVos = appointmentDimensionVos.get(0).getDentistScheduleVos();
+            appointmentDimensionVos = appointmentDimensionVos.stream().filter(p -> p.getCurrentDate() != null).collect(Collectors.toList());
+            if(dVos.size()>0){
+                for(AppointmentDimensionVo forvo:appointmentDimensionVos){
+                    List<EmpScheduleVo> dentistScheduleVos = dVos.stream().filter(p -> p.getStartDate().substring(0,10).equals(DateUtil.format(forvo.getCurrentDate(), "yyyy-MM-dd"))).collect(Collectors.toList());
+                    forvo.setDentistScheduleVos(dentistScheduleVos);
+                }
+            }
+
+
+            a.setAppointmentDimensionVoList(appointmentDimensionVos);
+            appointmentDimensionsVos.add(a);
+        }
+
+        return appointmentDimensionsVos;
+    }
     /**
      * 根据条件查询预约可视图（患者维度）按预约患者数量降序排列
      * 可用范围 根据医生id、排班时间查询医生预约信息
@@ -733,13 +793,43 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         List<AppointmentDimensionVo> appointmentDimensionVos;
         // 根据门诊ID获取该门诊所有可预约医生的ID
         List<Integer> enableDentistIds = this.enableAppointDentistIds(query.getOrgId());
-        // 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
-        appointmentDimensionVos = this.dimensionAppointInfo(query,enableDentistIds);
-        dentistSchedule(appointmentDimensionVos);
-        // 最后进行排序
-        return this.sort(appointmentDimensionVos, query.getOrder(), query.getOrderBy());
-    }
 
+            // 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
+            appointmentDimensionVos = this.dimensionAppointInfo(query,enableDentistIds);
+            dentistSchedule(appointmentDimensionVos);
+            // 最后进行排序
+        return  this.sort(appointmentDimensionVos, query.getOrder(), query.getOrderBy());
+
+    }
+    private List<Date> getBetweenDates(Date start, Date end) {
+//        List<Date> result = new ArrayList<Date>();
+//        Calendar tempStart = Calendar.getInstance();
+//        tempStart.setTime(start);
+//        tempStart.add(Calendar.DAY_OF_YEAR, 1);
+//
+//        Calendar tempEnd = Calendar.getInstance();
+//        tempEnd.setTime(end);
+//        while (tempStart.before(tempEnd)) {
+//            result.add(tempStart.getTime());
+//            tempStart.add(Calendar.DAY_OF_YEAR, 1);
+//        }
+//        return result;
+// 返回的日期集合
+        List<Date> days = new ArrayList<Date>();
+
+            Calendar tempStart = Calendar.getInstance();
+            tempStart.setTime(start);
+
+            Calendar tempEnd = Calendar.getInstance();
+            tempEnd.setTime(end);
+            tempEnd.add(Calendar.DATE, +1);// 日期加1(包含结束)
+            while (tempStart.before(tempEnd)) {
+                days.add(tempStart.getTime());
+                tempStart.add(Calendar.DAY_OF_YEAR, 1);
+            }
+
+        return days;
+    }
     /**
      * 设置预约列表中医生是否排班
      *

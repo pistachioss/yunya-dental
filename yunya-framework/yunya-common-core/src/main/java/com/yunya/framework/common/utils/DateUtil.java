@@ -927,4 +927,22 @@ public class DateUtil {
     }
     return Integer.parseInt(date2Number(date, null));
   }
+
+  /**
+   * 怀孕月份转成孕周数
+   * @param pregnancyMonth
+   * @return
+   */
+  public static Integer pregancyMonth2Week(Integer pregnancyMonth) {
+    return pregnancyMonth * 4;
+  }
+
+  /**
+   * 怀孕孕周数转成孕月份
+   * @param pregnancyWeek
+   * @return
+   */
+  public static Integer pregancyWeek2Month(Integer pregnancyWeek) {
+    return pregnancyWeek / 4;
+  }
 }

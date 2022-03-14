@@ -30,6 +30,7 @@ public class JpushManager {
 
   private static String appKey;
   private static String appMasterSecret;
+  private static Boolean production;
 
   private JPushClient jpushClient = null;
 
@@ -38,6 +39,7 @@ public class JpushManager {
   /** @return */
   public static JpushManager getInstance() {
     if (instance == null) {
+      production = jPushConfig.getProduction();
       instance = new JpushManager(jPushConfig.getAppKey(), jPushConfig.getAppMasterSecret());
     }
     return instance;
@@ -92,10 +94,10 @@ public class JpushManager {
               PushPayload.newBuilder()
                   .setPlatform(Platform.ios())
                   .setAudience(
-                      Audience.newBuilder().addAudienceTarget(AudienceTarget.alias(alias)).build())
+                      Audience.newBuilder().addAudienceTarget(AudienceTarget.registrationId(alias)).build())
                   .setOptions(
                       Options.newBuilder()
-                          .setApnsProduction(true)
+                          .setApnsProduction(production)
                           .build()) // true-推送生产环境 false-推送开发环境（测试使用参数）
                   .setNotification(
                       Notification.newBuilder().addPlatformNotification(iosNotification).build())
@@ -248,7 +250,7 @@ public class JpushManager {
 
   public void pushAttend(EmployeePushForm employeePushForm) {
     employeePushForm.setTitle("考勤打卡提示");
-    employeePushForm.setContent("【考勤打卡】还有10分钟就要上班啦，快来一键打卡");
+    employeePushForm.setContent("【考勤打卡】还有10分钟就要上班啦，快来一键打卡，已打卡请忽略");
     employeePushForm.setIsSchedule(true);
     EmployeePushData pushData = new EmployeePushData();
     pushData.setType(1);

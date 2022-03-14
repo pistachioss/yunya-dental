@@ -5,7 +5,6 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.bo.ClinicDataStatisticsInfoVO;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
-import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
@@ -87,7 +86,7 @@ public class CompanyReportOfOperationController {
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-员工看诊情况")
   @PostMapping(value = "/employee/diagnosis/list", name = "根据条件查询员工看诊情况列表")
   public ResponseResult<PageInfo<EmployeeDiagnosisInfoVO>> employeeDiagnosisInfoList(
-      @RequestBody @Validated EmployeeDiagnosisQuery query) {
+      @RequestBody @Validated EmployeeDiagnosisQuery query) throws Exception {
     PageInfo<EmployeeDiagnosisInfoVO> pageInfo = userPostBiz.findEmployeeDiagnosisInfoList(query);
     return ResponseUtil.success(pageInfo);
   }
@@ -101,10 +100,9 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-员工看诊情况-导出")
   @PostMapping(value = "/employee/diagnosis/list/export", name = "根据条件导出员工看诊情况列表")
-  @CurrentUser
   public ResponseResult<T> exportEmployeeDiagnosisInfoList(
       HttpServletResponse response, @RequestBody @Validated EmployeeDiagnosisQuery query)
-      throws IOException {
+      throws Exception {
     userPostBiz.exportEmployeeDiagnosisInfoList(response, query);
     return ResponseUtil.success(null);
   }
@@ -413,6 +411,21 @@ public class CompanyReportOfOperationController {
       HttpServletResponse response, @RequestBody @Validated BillItemDetailQuery query)
       throws IOException {
     billDetailBiz.billItemStatisticsDetailExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询开单数量及金额全部明细列表导出
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillingItemDetailVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-开单项目数量-开单数量及金额导出统计明细")
+  @PostMapping(value = "/billItem/statistics/detail/allExport", name = "根据条件查询开单数量及金额全部明细列表导出")
+  public ResponseResult<T> billItemStatisticsDetailAllExport(
+      HttpServletResponse response, @RequestBody @Validated BillItemInfoQuery query)
+      throws Exception {
+    billDetailBiz.billItemStatisticsDetailAllExport(query, response);
     return ResponseUtil.success(null);
   }
 

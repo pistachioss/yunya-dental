@@ -45,7 +45,7 @@ public class SysUserInfoDetail extends BaseEntity implements Serializable {
   @ApiModelProperty("生日")
   private String birthday;
   /** 地址 */
-  @ApiModelProperty("地址")
+  @ApiModelProperty("地址-家庭地址")
   private String address;
   /** 手机号码 */
   @Excel(name = "手机号码")
@@ -151,4 +151,25 @@ public class SysUserInfoDetail extends BaseEntity implements Serializable {
   /** 工号 */
   @ApiModelProperty("工号")
   private String workNumber;
+  /** 人员类别 */
+  @ApiModelProperty("人员类别")
+  private String category;
+  /** 户口性质 */
+  @ApiModelProperty("户口性质")
+  private String registration;
+  /** 户籍地址 */
+  @ApiModelProperty("户籍地址")
+  private String permanentAddress;
+  /** 毕业时间 */
+  @ApiModelProperty("毕业时间")
+  private String graduationTime;
+  /** 学习专业 */
+  @ApiModelProperty("学习专业")
+  private String studyMajor;
+  /** 上一份工作 */
+  @ApiModelProperty("上一份工作")
+  private String lastJob;
+  /** 试用期结束时间 */
+  @ApiModelProperty("试用期结束时间")
+  private String probationPeriodTime;
 }

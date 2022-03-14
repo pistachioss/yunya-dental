@@ -1099,7 +1099,7 @@ public class ExcelUtil<T> {
    * @param index 序号
    */
   public void createSheet(double sheetNo, int index) {
-    String sname = sheetNo == 0 ? sheetName : sheetName + new DateTime().toString() + "_" + index;
+    String sname = sheetNo == 0 ? sheetName : sheetName + "_" + new DateTime().toString("yyyyMMdd") + "_" + index;
     this.sheet = wb.createSheet();
     this.styles = createStyles(wb);
     // 设置工作表的名称.

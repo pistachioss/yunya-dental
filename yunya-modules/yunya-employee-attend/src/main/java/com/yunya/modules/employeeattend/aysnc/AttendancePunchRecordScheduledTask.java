@@ -511,6 +511,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             // TODO :今日考勤人员打卡推送
             // start 添加推送 需求1450 by zd.xie
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            List<EmployeePushForm> employeePushFormList = new ArrayList<>();
             pushList.forEach(push -> {
                 if(push.getPunchType()==0){
                     // 上班推送
@@ -526,12 +527,30 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                     dt.setSeconds(push.getStartTime().getSeconds());
                     employeePushForm.setScheTime(simpleDateFormat.format(new Date(dt.getTime() - 10*60*1000)));
                     logger.info("employeePushForm: " + employeePushForm);
-                    List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
-                    employeePushFormList.forEach(el -> {
-                        JpushManager.getInstance().pushAttend(el);
-                    });
+                    employeePushFormList.addAll(employeePushBiz.makeEmployeePushForm(employeePushForm));
                 }
             });
+            // 添加推送计划
+            Map<Integer, Map<String, List<EmployeePushForm>>> map = employeePushFormList.stream()
+                    .collect(Collectors.groupingBy(t -> t.getPlatform(), Collectors.groupingBy(t -> t.getScheTime())));
+            for(Map.Entry<Integer, Map<String, List<EmployeePushForm>>> platforms : map.entrySet()){
+                // 同平台
+                System.out.println("key:"+platforms.getKey());
+//                System.out.println("value:"+entry.getValue());
+                for(Map.Entry<String, List<EmployeePushForm>> schetimes : platforms.getValue().entrySet()){
+                    // 同时间
+                    System.out.println("key:"+schetimes.getKey());
+//                    System.out.println("value:"+entry.getValue());
+                    List<String> reg_ids = new ArrayList<>();
+                    schetimes.getValue().forEach(push -> {
+                        System.out.println("key:"+push.getUserList());
+                        reg_ids.addAll(push.getUserList());
+                    });
+                    EmployeePushForm employeePushForm = schetimes.getValue().get(0);
+                    employeePushForm.setUserList(reg_ids);
+                    JpushManager.getInstance().pushAttend(employeePushForm);
+                }
+            }
             // end 添加推送 需求1450 by zd.xie
         }
         logger.info("结束推送考勤打卡");
