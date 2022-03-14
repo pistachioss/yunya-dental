@@ -27,3 +27,8 @@ logging:
     tk.mybatis: INFO
     com.yunya: INFO
     com.yunya365: INFO
+
+# 推送
+jpush:
+  appKey: 0017b6b368a65e51ad7cdced
+  appMasterSecret: 76243630bf9a6e621864c2e1
