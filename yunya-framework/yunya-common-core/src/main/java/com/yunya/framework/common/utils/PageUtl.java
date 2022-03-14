@@ -19,7 +19,7 @@ public class PageUtl<T> {
     /**
      * 手动分页（默认分页）
      *
-     * @param pageQuery
+     * @param pageQuery 分页查询对象
      * @param resultList 数据集
      * @return
      */

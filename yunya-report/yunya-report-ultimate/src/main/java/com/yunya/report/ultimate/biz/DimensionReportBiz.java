@@ -2933,7 +2933,7 @@ public class DimensionReportBiz {
                 SortUtil.comparing(CardCouponUsedDetailVO::getPatientId)
                         .thenComparing(CardCouponUsedDetailVO::getBindTime)
                         .reversed());
-        return PageUtl.doPage(query.getPageNum(), query.getPageSize(), list);
+        return PageUtl.doPage(query, list);
     }
 
     /**
