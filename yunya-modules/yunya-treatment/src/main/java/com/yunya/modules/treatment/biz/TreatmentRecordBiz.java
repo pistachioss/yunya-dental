@@ -1298,7 +1298,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       List<SysUserInfoDetail> dentistInfors = systemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
       for (LastTreatmentInfoVO vo : list) {
         orgInfoInIds.stream().filter(oid->oid.getId().equals(vo.getOrgId())).findFirst().ifPresent(oid-> vo.setOrgName(oid.getAbbreviation()));
-        dentistInfors.stream().filter(sid->sid.getEmployeeId().equals(vo.getDentistId())).findFirst().ifPresent(sid->vo.setDentistName(sid.getName()));
+        dentistInfors.stream().filter(sid->sid.getUserId().equals(vo.getDentistId())).findFirst().ifPresent(sid->vo.setDentistName(sid.getName()));
       }
     }
     return list;
