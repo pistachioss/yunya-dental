@@ -132,8 +132,11 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      * @param employeeId
      */
     private void checkOriginSource(Integer originId, Integer originType, Integer patientId, Integer employeeId) {
-        if (ObjectUtils.isEmpty(originId) && ObjectUtils.isEmpty(patientId) && ObjectUtils.isEmpty(employeeId)) {
-            throw new ClientServiceException("渠道来源不能为空", PARAMETERS_IS_ILLEGAL);
+        if (originType == 1 && ObjectUtils.isEmpty(employeeId)) {
+            throw new ClientServiceException("推荐员工不能为空", PARAMETERS_IS_ILLEGAL);
+        }
+        if (originType == 2 && ObjectUtils.isEmpty(patientId)) {
+            throw new ClientServiceException("介绍人不能为空", PARAMETERS_IS_ILLEGAL);
         }
         if (originId != null) {
             if (originType > 2){
