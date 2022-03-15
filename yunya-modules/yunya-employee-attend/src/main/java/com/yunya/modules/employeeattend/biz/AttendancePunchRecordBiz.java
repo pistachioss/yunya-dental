@@ -37,7 +37,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介：考勤打卡业务层
@@ -1512,7 +1511,12 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     private Map<Integer, String> getEmployeeOnWorkMap(List<SysUserInfoDetail> userList) {
         Map<Integer, String> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(userList)) {
-            return userList.stream().collect(toMap(SysUserInfoDetail::getUserId, SysUserInfoDetail::getLeaveTime));
+            userList.forEach(employee->{
+                String leaveTime = employee.getLeaveTime();
+                if (StringHelper.isNotEmpty(leaveTime)) {
+                    result.put(employee.getUserId(), leaveTime);
+                }
+            });
         }
         return result;
     }
