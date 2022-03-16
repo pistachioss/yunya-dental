@@ -123,10 +123,6 @@ public class PatientRegistrationControllerTest {
         model.setGrade("五年级");
         model.setGuardian("楚霸王");
         model.setGuardianPhone("13612514529");
-        model.setOriginType(3);
-        model.setOriginId(79);
-        model.setPatientId(25);
-        model.setEmployeeId(635);
         model.setState(50);
         model.setProvince("浙江省");
         model.setCity("杭州市");

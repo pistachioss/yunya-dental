@@ -87,23 +87,6 @@ public class PatientRegistrationModel implements Serializable {
     @Size(max = 50, message = "紧急联系人长度不能超过50个字符！")
     private String emergencyPhone;
 
-    /** 患者来源类型 患者来源分类ID */
-    @ApiModelProperty(value = "患者来源分类ID", required = true)
-    @NotNull(message = "渠道来源不能为空")
-    private Integer originType;
-
-    /** 患者来源关联ID （二级患者来源ID）*/
-    @ApiModelProperty(value = "渠道来源关联ID（二级患者来源ID）")
-    private Integer originId;
-
-    /** 渠道来源-推荐员工id*/
-    @ApiModelProperty(value = "渠道来源-推荐员工id")
-    private Integer employeeId;
-
-    /** 渠道来源-介绍患者id*/
-    @ApiModelProperty(value = "渠道来源-介绍患者id")
-    private Integer patientId;
-
     /** 疾病史 */
     @ApiModelProperty("疾病史 (疾病名称列表)")
     private List<String> medicalHistorys;
