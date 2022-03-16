@@ -766,7 +766,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     detail.setInservice(true);
     List<OrderDetail> orderDetails = orderDetailMapper.select(detail);
     List<VisitingRecord> visitingRecordList = new ArrayList<>();
-    if (StringHelper.isNotEmpty(orderDetails)) {
+    if (StringHelper.isNotEmpty(orderDetails)
+      && !patientHasDied(treatmentRecord.getPatientId())) {
       orderDetails.forEach(
           orderDetail -> {
             List<VisitingRecord> orderDetailVisitRecord =
@@ -843,30 +844,26 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     VisitingRecord visitRecord = new VisitingRecord();
                     TreatmentRecord treatmentRecord = mapper.selectByPrimaryKey(treatmentRecordId);
                     if (null != treatmentRecord) {
-                      Integer patientId = treatmentRecord.getPatientId();
-                      PatientBaseInfo patient = patientServiceFeign.findPatientInfoById(patientId);
-                      if (!ObjectUtils.isEmpty(patient) && !patient.getHasDied()) {
-                        visitRecord.setPatientId(patientId);
-                        visitRecord.setOrgId(treatmentRecord.getOrgId());
-                        visitRecord.setTreatmentDate(treatmentRecord.getTreatStartTime());
-                        Registered registered =
-                                registeredMapper.selectByPrimaryKey(treatmentRecord.getRegisteredId());
-                        if (null != registered) {
-                          visitRecord.setDentistId(registered.getDentistId());
-                          visitRecord.setDeptRoomId(registered.getDeptRoomId());
-                        }
-                        visitRecord.setCrtId(detail.getCrtId());
-                        visitRecord.setCrtName(detail.getCrtName());
-                        visitRecord.setCrtTime(new Date(System.currentTimeMillis()));
-                        visitRecord.setTreatmentId(treatmentRecordId);
-                        visitRecord.setVisitingTime("09:00");
-                        visitRecord.setReason(baseTariff.getName());
-                        visitRecord.setStatus(false);
-                        visitRecord.setInservice(true);
-                        visitRecord.setVisitingDate(
-                                DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
-                        visitRecordPlanList.add(visitRecord);
+                      visitRecord.setPatientId(treatmentRecord.getPatientId());
+                      visitRecord.setOrgId(treatmentRecord.getOrgId());
+                      visitRecord.setTreatmentDate(treatmentRecord.getTreatStartTime());
+                      Registered registered =
+                              registeredMapper.selectByPrimaryKey(treatmentRecord.getRegisteredId());
+                      if (null != registered) {
+                        visitRecord.setDentistId(registered.getDentistId());
+                        visitRecord.setDeptRoomId(registered.getDeptRoomId());
                       }
+                      visitRecord.setCrtId(detail.getCrtId());
+                      visitRecord.setCrtName(detail.getCrtName());
+                      visitRecord.setCrtTime(new Date(System.currentTimeMillis()));
+                      visitRecord.setTreatmentId(treatmentRecordId);
+                      visitRecord.setVisitingTime("09:00");
+                      visitRecord.setReason(baseTariff.getName());
+                      visitRecord.setStatus(false);
+                      visitRecord.setInservice(true);
+                      visitRecord.setVisitingDate(
+                              DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
+                      visitRecordPlanList.add(visitRecord);
                     }
                   });
         }
@@ -1273,11 +1270,11 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    */
   public List<LastTreatmentInfoVO> lastTreatmentInfoByBatch(List<Integer> patientIds) {
     List<LastTreatmentInfoVO> list = new ArrayList<>();
-    if (patientIds == null || !patientIds.isEmpty()) {
+    if (StringHelper.isEmpty(patientIds)) {
       return list;
     }
     Example example = new Example(TreatmentRecord.class);
-    example.createCriteria().andIn("patient_id",patientIds);
+    example.createCriteria().andIn("patientId",patientIds);
     List<TreatmentRecord> records = mapper.selectByExample(example);
     if (!records.isEmpty()) {
       Map<Integer, List<TreatmentRecord>> collect = records.stream().collect(Collectors.groupingBy(TreatmentRecord::getPatientId));
@@ -1302,7 +1299,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       List<SysUserInfoDetail> dentistInfors = systemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
       for (LastTreatmentInfoVO vo : list) {
         orgInfoInIds.stream().filter(oid->oid.getId().equals(vo.getOrgId())).findFirst().ifPresent(oid-> vo.setOrgName(oid.getAbbreviation()));
-        dentistInfors.stream().filter(sid->sid.getEmployeeId().equals(vo.getDentistId())).findFirst().ifPresent(sid->vo.setDentistName(sid.getName()));
+        dentistInfors.stream().filter(sid->sid.getUserId().equals(vo.getDentistId())).findFirst().ifPresent(sid->vo.setDentistName(sid.getName()));
       }
     }
     return list;
@@ -1734,5 +1731,18 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     }
     result.setDate(new Date(System.currentTimeMillis()));
     return result;
+  }
+
+  /**
+   * 患者是否过世
+   *
+   * @param patientId 患者id
+   * @return
+   */
+  public boolean patientHasDied(Integer patientId) {
+    List<Integer> patientIds = new ArrayList<>();
+    patientIds.add(patientId);
+    List<PatientBaseInfoVo> patients = patientServiceFeign.findPatientInfoByIds(patientIds, true);
+    return StringHelper.isNotEmpty(patients);
   }
 }

@@ -1,6 +1,7 @@
 package com.yunya.feign.treatment_other.domain.query;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yunya.framework.common.model.PageQuery;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -21,18 +22,7 @@ import java.util.List;
 @ApiModel(value = "查询随访提醒")
 @Data
 @ToString
-public class VisitingRemindQuery implements Serializable {
-    @ApiModelProperty(value = "是否分页", required = true)
-    private Boolean whetherPage = true;
-
-    @ApiModelProperty("页码")
-    @Min(message = "最小值", value = 1)
-    private Integer pageNum = 1;
-
-    @ApiModelProperty("每页显示数量")
-    @Min(message = "最小值", value = 1)
-    private Integer pageSize = 10;
-
+public class VisitingRemindQuery extends PageQuery implements Serializable {
     @ApiModelProperty("排序字段")
     private String orderBy;
 

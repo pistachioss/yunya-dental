@@ -1613,7 +1613,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public DynamicHeaderPageInfo<JSONObject> clinicFirstVisitSourceList(
       ClinicPerformanceBusinessQuery query) {
-    query.setWhetherPage(false);
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }

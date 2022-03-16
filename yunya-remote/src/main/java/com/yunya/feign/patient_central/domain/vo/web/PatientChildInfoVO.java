@@ -66,8 +66,8 @@ public class PatientChildInfoVO implements Serializable {
     @ApiModelProperty("每天刷牙次数")
     private Short brushingTimes;
 
-    /** 使用的牙膏含氟吗：0-否，1-是 */
-    @ApiModelProperty("使用的牙膏含氟吗：0-否，1-是")
+    /** 使用的牙膏含氟吗 */
+    @ApiModelProperty("使用的牙膏含氟吗")
     private Boolean usedFluorideToothpaste;
 
     /** 使用牙线吗：0-有，1-无，2-偶尔 */
@@ -78,11 +78,12 @@ public class PatientChildInfoVO implements Serializable {
     @ApiModelProperty("每周使用牙线次数")
     private Integer useFlossTimes;
 
-    private String parentHasCarieStr;
-
-    /** 父母是否有龋齿：0-父有，1-父无，2-母有，3-母无 */
-    @ApiModelProperty("父母是否有龋齿：0-父有，1-父无，2-母有，3-母无")
-    private List<Integer> parentHasCaries;
+    /** 父亲是否有龋齿 */
+    @ApiModelProperty("父亲是否有龋齿")
+    private Boolean fatherHasCaries;
+    /** 母亲是否有龋齿 */
+    @ApiModelProperty("母亲是否有龋齿")
+    private Boolean motherHasCarieStr;
 
     /** 母亲孕期情况 */
     @ApiModelProperty("母亲孕期情况")

@@ -1,18 +1,21 @@
 package com.yunya365.aliyunoss.controller;
 
+import com.yunya.feign.oss.domain.model.*;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.Base64Utils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.aliyunoss.enums.BucketFolderEnum;
-import com.yunya365.aliyunoss.form.OssCopyForm;
-import com.yunya365.aliyunoss.form.OssFolderForm;
-import com.yunya365.aliyunoss.form.OssUploadForm;
-import com.yunya365.aliyunoss.form.OssUrlForm;
 import com.yunya365.aliyunoss.util.OssUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -80,6 +83,20 @@ public class BaseController {
         ossUploadForm.setFile(file);
         final String objectName = this.makeObjectFullName(ossUploadForm);
         OssUtil.putObject(objectName, ossUploadForm.getFile().getInputStream());
+        return ResponseUtil.success(this.getFileName(objectName));
+    }
+
+    @RequestMapping(value = "uploadBase64Image", method = RequestMethod.POST)
+    @ApiOperation("1.单资源：上传")
+    public ResponseResult uploadBase64Image(@Validated @RequestBody Base64UploadForm form) throws Exception {
+        String data = form.getData();
+        byte[] buf = Base64Utils.decoderImage(data);
+        InputStream imgIn = new ByteArrayInputStream(buf);
+        String contentType = URLConnection.guessContentTypeFromStream(imgIn);
+        String fileName = form.getFileName() + "." + contentType.substring(contentType.lastIndexOf("/")+1);
+        form.setFile(new MockMultipartFile(fileName, fileName, contentType, buf));
+        final String objectName = this.makeObjectFullName(form);
+        OssUtil.putObject(objectName, form.getFile().getInputStream());
         return ResponseUtil.success(this.getFileName(objectName));
     }
 

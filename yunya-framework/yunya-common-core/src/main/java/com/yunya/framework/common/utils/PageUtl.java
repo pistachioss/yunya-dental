@@ -3,6 +3,7 @@ package com.yunya.framework.common.utils;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.model.PageQuery;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,7 +15,6 @@ import java.util.List;
  * @since: 1.0.0
  */
 public class PageUtl<T> {
-
 
     /**
      * 手动分页（默认分页）
@@ -53,12 +53,16 @@ public class PageUtl<T> {
             return new PageInfo<>(resultList);
         }
         int total = resultList.size();
+        int fromInd = pageSize * (pageNum - 1);
+        int toInd = Math.min((pageSize * pageNum), total);
         PageInfo<T> pageInfo = new PageInfo<>();
         pageInfo.setPageNum(pageNum);
         pageInfo.setPageSize(pageSize);
         pageInfo.setTotal(total);
-        List<T> list =
-                resultList.subList(pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+        List<T> list = new ArrayList<>();
+        if (fromInd < toInd) {
+            list = resultList.subList(fromInd, toInd);
+        }
         pageInfo.setList(list);
         return pageInfo;
     }
