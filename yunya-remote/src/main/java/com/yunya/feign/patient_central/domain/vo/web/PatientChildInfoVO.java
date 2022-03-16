@@ -66,8 +66,8 @@ public class PatientChildInfoVO implements Serializable {
     @ApiModelProperty("每天刷牙次数")
     private Short brushingTimes;
 
-    /** 使用的牙膏含氟吗：0-否，1-是 */
-    @ApiModelProperty("使用的牙膏含氟吗：0-否，1-是")
+    /** 使用的牙膏含氟吗 */
+    @ApiModelProperty("使用的牙膏含氟吗")
     private Boolean usedFluorideToothpaste;
 
     /** 使用牙线吗：0-有，1-无，2-偶尔 */
