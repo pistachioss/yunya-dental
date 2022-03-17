@@ -216,7 +216,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         } else if (originType == 2) {// 患者转介绍
             originId = introducerId;
         }
-        PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, model.getMobile(), model.getMobileOwner(), originType, originId);
+        PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, model.getMobileOwner(), originType, originId);
         int patientId = patientBaseInfo.getId();
         addPatientExpInfoByAdult(model, userId, userName, patientId);
         addPatientExtInfo(model, userId, userName, patientId);
@@ -353,14 +353,14 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      * @param mobileOwner
      * @return
      */
-    private PatientBaseInfo addPatientBaseInfo(PatientRegistrationModel model, int userId, String userName, String mobile,
+    private PatientBaseInfo addPatientBaseInfo(PatientRegistrationModel model, int userId, String userName,
                                                Integer mobileOwner, Integer originType, Integer originId) {
         Date now = new Date(System.currentTimeMillis());
         PatientBaseInfo baseInfo = new PatientBaseInfo();
         baseInfo.setAge(model.getAge());
         baseInfo.setBirthday(model.getBirthdate());
         baseInfo.setGender(model.getGender());
-        baseInfo.setMobile(mobile);
+        baseInfo.setMobile(model.getMobile());
         baseInfo.setMobileOwner(mobileOwner);
         String name = model.getName();
         baseInfo.setName(name);
@@ -387,7 +387,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 儿童患者登记
         final int userId = -777;
         final String userName = "患者自主登记";
-        PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, null, null, null, null);
+        PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, null, null, null);
         int patientId = patientBaseInfo.getId();
         addPatientExpInfoByChild(model, userId, userName, patientId);
         addPatientExtInfo(model, userId, userName, patientId);
