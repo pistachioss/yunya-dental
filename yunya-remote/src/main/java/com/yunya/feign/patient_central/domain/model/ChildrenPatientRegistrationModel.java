@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -90,6 +91,7 @@ public class ChildrenPatientRegistrationModel extends PatientRegistrationModel i
     private List<Integer> habitIds;
 
     /** 最近一次检查牙齿日期 */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @ApiModelProperty("最近一次检查牙齿日期")
     private Date toothLastCheck;
 }

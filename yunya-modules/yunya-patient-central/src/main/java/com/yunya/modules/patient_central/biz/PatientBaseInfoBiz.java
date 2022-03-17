@@ -304,6 +304,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientExpInfo.setUsefulPhone(guardianPhone);
       }
     }
+    patientBaseInfo.setInservice(true);
     // 如果用户没有扩展信息就添加扩展信息 如果有就修改
     PatientExpInfoVo patientExpInfoVo =
         patientExpInfoMapper.selectByPatientId(patientId);

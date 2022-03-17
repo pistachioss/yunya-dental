@@ -174,7 +174,7 @@ public class PatientRegistrationControllerTest {
 
     @Test
     public void testFindPatientData() {
-        ResponseResult<PatientExtendInfoVo> patientData = patientBaseInfoController.findPatientData(108462);
+        ResponseResult<PatientExtendInfoVo> patientData = patientBaseInfoController.findPatientData(78307);
         System.out.println(JSONObject.toJSON(patientData));
     }
 
