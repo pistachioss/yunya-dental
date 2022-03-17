@@ -25,12 +25,6 @@ import java.util.List;
 @ApiModel("成人患者登记添加模型")
 public class AdultPatientRegistrationModel extends PatientRegistrationModel implements Serializable {
 
-    /** 手机号码 长度14 */
-    @ApiModelProperty(value = "手机号",required = true)
-    @Pattern(regexp = "^[1][3,4,5,6,7,8,9][0-9]{9}$", message = "手机号格式有误")
-    @NotBlank(message = "手机号不能为空")
-    private String mobile;
-
     /** 手机号所属人 手机号所属人字典ID */
     @ApiModelProperty(value = "手机号所属人字典ID",required = true)
     @NotNull(message = "手机号所属人不能为空")

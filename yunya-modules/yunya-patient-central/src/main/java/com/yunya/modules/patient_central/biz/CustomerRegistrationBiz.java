@@ -492,7 +492,6 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         expInfo.setCountry(model.getCountry());
         expInfo.setProfession(model.getProfession());
         expInfo.setGuardian(model.getGuardian());
-        expInfo.setUsefulPhone(model.getGuardianPhone());
         expInfo.setEmergencyPhone(model.getEmergencyPhone());
         expInfo.setState(model.getState());
         Date now = new Date(System.currentTimeMillis());

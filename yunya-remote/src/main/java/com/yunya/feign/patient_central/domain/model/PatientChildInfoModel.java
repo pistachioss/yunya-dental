@@ -40,10 +40,6 @@ public class PatientChildInfoModel implements Serializable {
     @ApiModelProperty(value = "父母or监护人姓名")
     private String guardian;
 
-    /** 父母or监护人联系电话 */
-    @ApiModelProperty(value = "父母or监护人联系电话")
-    private String guardianPhone;
-
     /** 服药史 */
     @ApiModelProperty("服药史")
     private String medicationHistory;
