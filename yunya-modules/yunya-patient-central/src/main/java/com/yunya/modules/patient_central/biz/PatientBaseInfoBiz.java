@@ -281,7 +281,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     this.mapper.updateByPrimaryKeySelective(patientBaseInfo);
     Integer patientId = patientBaseInfo.getId();
     redisUtils.delete(PATIENT_BASE_INFO + patientId);
-    sendMessages(patientId, 1);
+//    sendMessages(patientId, 1);
 
     PatientExpInfo patientExpInfo = new PatientExpInfo();
     PatientExpInfoModel patientExpInfoModel = patientExtendInfoModel.getPatientExpInfoModel();

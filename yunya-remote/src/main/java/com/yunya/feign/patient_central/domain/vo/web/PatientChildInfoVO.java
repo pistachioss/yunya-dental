@@ -81,9 +81,10 @@ public class PatientChildInfoVO implements Serializable {
     /** 父亲是否有龋齿 */
     @ApiModelProperty("父亲是否有龋齿")
     private Boolean fatherHasCaries;
+
     /** 母亲是否有龋齿 */
     @ApiModelProperty("母亲是否有龋齿")
-    private Boolean motherHasCarieStr;
+    private Boolean motherHasCaries;
 
     /** 母亲孕期情况 */
     @ApiModelProperty("母亲孕期情况")
