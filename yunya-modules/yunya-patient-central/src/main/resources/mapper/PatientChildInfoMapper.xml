@@ -37,7 +37,6 @@
         pci.school,
         pci.grade,
         pei.guardian,
-        pei.useful_phone guardianPhone,
         pci.medication_history,
         pci.diet,
         pci.tooth_sprouting AS toothSprouting,

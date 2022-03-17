@@ -37,11 +37,6 @@ public class ChildrenPatientRegistrationModel extends PatientRegistrationModel i
     @NotEmpty(message = "父母or监护人姓名不能为空")
     private String guardian;
 
-    /** 父母or监护人联系电话 */
-    @ApiModelProperty(value = "联系电话", required = true)
-    @NotEmpty(message = "联系电话不能为空")
-    private String guardianPhone;
-
     /** 服药史 */
     @ApiModelProperty("服药史")
     private String medicationHistory;
