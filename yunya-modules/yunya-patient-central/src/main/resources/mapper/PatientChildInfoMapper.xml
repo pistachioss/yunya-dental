@@ -37,7 +37,7 @@
         pci.school,
         pci.grade,
         pei.guardian,
-        pci.medication_history,
+        pci.medication_history AS medicationHistory,
         pci.diet,
         pci.tooth_sprouting AS toothSprouting,
         pci.tooth_clearliness AS toothClearliness,
