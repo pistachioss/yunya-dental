@@ -52,9 +52,7 @@
         pci.habit_ids AS habitIdStr,
         pci.tooth_last_check AS toothLastCheck
     FROM patient_child_info pci
-    LEFT JOIN (
-        SELECT * FROM patient_exp_info WHERE inservice = true
-    ) pei ON pci.patient_id = pei.patient_id
+    LEFT JOIN patient_exp_info pei ON pci.patient_id = pei.patient_id
     <where>
       AND pci.inservice = true
       AND pci.patient_id = #{patientId}
