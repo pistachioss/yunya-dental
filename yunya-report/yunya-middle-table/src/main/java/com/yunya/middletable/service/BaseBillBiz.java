@@ -69,6 +69,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Autowired private StatEmpBillBiz statEmpBillBiz;
   /** 员工使用优惠时统计*/
   @Autowired private StatEmpPrivilegeBiz statEmpPrivilegeBiz;
+
+  @Autowired private BaseBillPayBiz baseBillPayBiz;
+
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -115,7 +118,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           // 推荐积分
           addPatientIntegral(bill.getPatientId());
           // 回调收费增加积分
-          baseBillPayCallback.baseBillBizHandlerFinish(bill.getBillId());
+          log.info("回调积分baseBillPayCallback");
+          baseBillPayBiz.addCallBack(bill.getBillId(),baseBillPayCallback);
         } else {
           baseBillDetailMapper.deleteByBillId(dataId);
         }

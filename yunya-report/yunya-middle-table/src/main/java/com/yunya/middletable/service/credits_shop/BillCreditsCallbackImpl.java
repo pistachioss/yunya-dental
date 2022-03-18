@@ -45,21 +45,23 @@ public class BillCreditsCallbackImpl implements BillCreditsCallback {
      * @return
      */
     @Override
-    public void baseBillBizHandlerFinish(Integer billId) {
+    public BillCreditsCallback baseBillBizHandlerFinish(Integer billId) {
         BaseBill baseBill = baseBillMapper.selectByPrimaryKey(billId);
         if (baseBill == null || baseBill.getBillStatus() == 0) {
-            return;
+            return this;
         }
         Example example = new Example(BaseBillPay.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("billId",billId);
         example.orderBy("billPayId").desc();
         List<BaseBillPay> baseBillPays = baseBillPayMapper.selectByExample(example);
+        log.info("收费完成: baseBillPays = {}",baseBillPays);
         if (StringHelper.isNotEmpty(baseBillPays)) {
             BaseBillPay baseBillPay = baseBillPays.get(0);
             // 增加会员积分
             addCredits(baseBillPay.getReceivedAmount(),baseBillPay.getBillPayId(),baseBillPay.getBillId());
         }
+        return this;
     }
 
     /**
@@ -67,7 +69,7 @@ public class BillCreditsCallbackImpl implements BillCreditsCallback {
      * @param baseBillPayId 支付记录ID
      */
     @Override
-    public void scrapCredits(Integer baseBillPayId) {
+    public BillCreditsCallback scrapCredits(Integer baseBillPayId) {
         BaseBillPayDetail baseBillPayQuery = new BaseBillPayDetail();
         baseBillPayQuery.setBillPayId(baseBillPayId);
         List<BaseBillPayDetail> baseBillPays = baseBillPayDetailMapper.select(baseBillPayQuery);
@@ -97,10 +99,11 @@ public class BillCreditsCallbackImpl implements BillCreditsCallback {
             creditsShop.setUpdTime(new Date(System.currentTimeMillis()));
             creditsShopBiz.updateSelectiveById(creditsShop);
         }
+        return this;
     }
 
     @Override
-    public void refundCredits(Integer refundId, Integer billId) {
+    public BillCreditsCallback refundCredits(Integer refundId, Integer billId) {
         if (refundId != null && billId != null) {
             BaseRefundDetail query = new BaseRefundDetail();
             query.setRefundId(refundId);
@@ -132,6 +135,7 @@ public class BillCreditsCallbackImpl implements BillCreditsCallback {
                 }
             }
         }
+        return this;
     }
 
     /**
@@ -140,11 +144,14 @@ public class BillCreditsCallbackImpl implements BillCreditsCallback {
      * @param baseBillPayId 支付记录ID
      */
     private void addCredits(BigDecimal receivedAmount, Integer baseBillPayId, Integer billId) {
+        log.info("(BillCreditsCallbackImpl.java) billId = {}",billId);
         if (billId != null) {
             BaseBill baseBill = baseBillMapper.selectByPrimaryKey(billId);
+            log.info("(BillCreditsCallbackImpl.java) baseBill = {}",baseBill);
             if (baseBill == null || baseBill.getBillStatus() == 0 || hasScrapedCredits(baseBill.getPatientId(),billId)) {
                 return ;
             }
+            log.info("(BillCreditsCallbackImpl.java) receivedAmount = {}",receivedAmount);
             if (receivedAmount != null && baseBillPayId != null) {
                 receivedAmount = baseBill.getReceivedAmount();
                 // 从总的收费中过滤出医疗费用（不包含医疗护理用品和其他商品）

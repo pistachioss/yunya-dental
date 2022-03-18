@@ -17,20 +17,19 @@ public interface BillCreditsCallback {
      * @param billId 账单ID
      * @return
      */
-    public void baseBillBizHandlerFinish(Integer billId);
+    public BillCreditsCallback baseBillBizHandlerFinish(Integer billId);
 
     /**
      * 撤销收费积分处理逻辑
      * @param baseBillPayId 支付记录ID
      */
-    public void scrapCredits(Integer baseBillPayId);
+    public BillCreditsCallback scrapCredits(Integer baseBillPayId);
 
     /**
      * 退费积分处理逻辑
      * @param refundId 退费记录ID
      * @param billId  账单ID
      */
-    public void refundCredits(Integer refundId,Integer billId);
-
+    public BillCreditsCallback refundCredits(Integer refundId,Integer billId);
 
 }
