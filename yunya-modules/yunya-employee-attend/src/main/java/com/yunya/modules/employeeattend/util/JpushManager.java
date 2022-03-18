@@ -87,8 +87,8 @@ public class JpushManager {
               IosNotification.newBuilder()
                   .setAlert(content)
                   .addExtra("type", type)
-                  .setBadge(5)
-                  .setSound("Alarm.aif")
+//                  .setBadge(5)
+//                  .setSound("Alarm.aif")
                   .build();
           PushPayload payloadIos =
               PushPayload.newBuilder()

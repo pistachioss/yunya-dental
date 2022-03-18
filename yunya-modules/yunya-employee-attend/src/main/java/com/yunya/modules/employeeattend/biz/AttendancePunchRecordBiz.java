@@ -121,7 +121,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         String longitude = queryForm.getLongitude();
         String latitude = queryForm.getLatitude();
         if (StringHelper.isEmpty(macAddress) && (StringHelper.isEmpty(longitude) || StringHelper.isEmpty(latitude))) {
-            log.error("考勤地址或Wifi不能都为空", JSONObject.toJSONString(queryForm));
+            log.info("考勤地址或Wifi不能都为空", JSONObject.toJSONString(queryForm));
             throw new ClientServiceException("考勤地址或Wifi不能都为空！", PARAMETERS_IS_ILLEGAL);
         }
         Map<Integer, JSONObject> orgMap = getOrgMapByPosition(longitude, latitude, macAddress);
