@@ -1,5 +1,7 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.yunya.feign.oss.RemoteOssServiceFeign;
+import com.yunya.feign.oss.domain.model.Base64UploadForm;
 import com.yunya.feign.patient_central.domain.model.AdultPatientRegistrationModel;
 import com.yunya.feign.patient_central.domain.model.ChildrenPatientRegistrationModel;
 import com.yunya.feign.patient_central.domain.model.CustomerRegistrationModel;
@@ -30,6 +32,7 @@ import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
@@ -52,8 +55,6 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     /** 注入患者来源Mapper */
     @Autowired private PatientOriginMapper patientOriginMapper;
 
-    @Autowired private PatientMemberInfoBiz patientMemberInfoBiz;
-
     @Autowired private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
 
     @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
@@ -74,6 +75,12 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
 
     @Autowired private RemoteTreatmentOtherFeign  remoteTreatmentOtherFeign;
 
+    @Autowired private RemoteOssServiceFeign remoteOssServiceFeign;
+
+    /** 多线程 */
+    @Resource(name = "customizeThreadPool")
+    private ExecutorService executorService;
+
     /**
      * 添加客户登记
      * @param customerRegistrationModel  客户登记
@@ -82,7 +89,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     public PatientBaseInfoVo addPatient(CustomerRegistrationModel customerRegistrationModel) {
         PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
         BeanUtils.copyProperties(customerRegistrationModel, patientBaseInfo);
-        checkOriginSource(patientBaseInfo.getOriginId(), patientBaseInfo.getOriginType());
+        Integer originId = patientBaseInfo.getOriginId();
+        checkOriginSource(originId, patientBaseInfo.getOriginType(), originId, originId);
         // 设置患者登记默认的门诊为总院
         patientBaseInfo.setOrgId(39);
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
@@ -120,8 +128,16 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      *
      * @param originId
      * @param originType
+     * @param patientId
+     * @param employeeId
      */
-    private void checkOriginSource(Integer originId, Integer originType) {
+    private void checkOriginSource(Integer originId, Integer originType, Integer patientId, Integer employeeId) {
+        if (originType == 1 && ObjectUtils.isEmpty(employeeId)) {
+            throw new ClientServiceException("推荐员工不能为空", PARAMETERS_IS_ILLEGAL);
+        }
+        if (originType == 2 && ObjectUtils.isEmpty(patientId)) {
+            throw new ClientServiceException("介绍人不能为空", PARAMETERS_IS_ILLEGAL);
+        }
         if (originId != null) {
             if (originType > 2){
                 PatientOrigin patientOrigin =
@@ -190,7 +206,17 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 成人患者自主登记
         final int userId = -666;
         final String userName = "患者自主登记";
-        PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, model.getMobile(), model.getMobileOwner());
+        Integer originType = model.getOriginType();
+        Integer originId = model.getOriginId();
+        Integer introducerId = model.getPatientId();
+        Integer employeeId = model.getEmployeeId();
+        checkOriginSource(originId, originType, introducerId, employeeId);
+        if (originType == 1) {// 员工推荐
+            originId = employeeId;
+        } else if (originType == 2) {// 患者转介绍
+            originId = introducerId;
+        }
+        PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, model.getMobile(), model.getMobileOwner(), originType, originId);
         int patientId = patientBaseInfo.getId();
         addPatientExpInfoByAdult(model, userId, userName, patientId);
         addPatientExtInfo(model, userId, userName, patientId);
@@ -215,32 +241,53 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
     private void addPatientToothInfo(AdultPatientRegistrationModel model, int userId, int patientId) {
         PatientToothInfo toothInfo = new PatientToothInfo();
         toothInfo.setPatientId(patientId);
-        toothInfo.setHadMissTooth(model.getHadMissTooth());
+        Boolean hadMissTooth = false;
         List<Integer> missToothPos = model.getMissToothHistory();
         if (StringHelper.isNotEmpty(missToothPos)) {
             toothInfo.setMissToothHistory(StringHelper.join(missToothPos, ","));
+            hadMissTooth = true;
         }
-        toothInfo.setHadFillTreat(model.getHadFillTreat());
+        toothInfo.setHadMissTooth(hadMissTooth);
+        Boolean hadFillTreat = false;
         List<Integer> fillMetiralIds = model.getFillTreatHistory();
         if (StringHelper.isNotEmpty(fillMetiralIds)) {
             toothInfo.setFillTreatHistory(StringHelper.join(fillMetiralIds, ","));
+            hadFillTreat = true;
         }
-        toothInfo.setFillTreatLastDate(model.getFillTreatLastDate());
+        toothInfo.setHadFillTreat(hadFillTreat);
+        toothInfo.setFillTreatLastDate(DateUtil.parse2Date(model.getFillTreatLastDate()));
         toothInfo.setHadPeriodontalSurgery(model.getHadPeriodontalSurgery());
         toothInfo.setHadOcclusalAdjust(model.getHadOcclusalAdjust());
-        toothInfo.setHadRestorativeDentures(model.getHadRestorativeDentures());
-        toothInfo.setRpdPart(model.getRpdPart());
-        toothInfo.setRpdDate(model.getRpdDate());
-        toothInfo.setLpdPart(model.getLpdPart());
-        toothInfo.setLpdDate(model.getLpdDate());
-        toothInfo.setHadPreventiveTreat(model.getHadPreventiveTreat());
-        toothInfo.setPreventiveTreatCycle(model.getPreventiveTreatCycle());
+        Boolean hadRestorativeDentures = false;
+        String rpdPart = model.getRpdPart();
+        String lpdPart = model.getLpdPart();
+        if (StringHelper.isNotEmpty(rpdPart) || StringHelper.isNotEmpty(lpdPart)) {
+            hadRestorativeDentures = true;
+        }
+        toothInfo.setHadRestorativeDentures(hadRestorativeDentures);
+        toothInfo.setRpdPart(rpdPart);
+        toothInfo.setRpdDate(DateUtil.parse2Date(model.getRpdDate()));
+        toothInfo.setLpdPart(lpdPart);
+        toothInfo.setLpdDate(DateUtil.parse2Date(model.getLpdDate()));
+        Boolean hadPreventiveTreat = false;
+        Short preventiveTreatCycle = model.getPreventiveTreatCycle();
+        if (!ObjectUtils.isEmpty(preventiveTreatCycle)) {
+            toothInfo.setPreventiveTreatCycle(preventiveTreatCycle);
+            hadPreventiveTreat = true;
+        }
+        toothInfo.setHadPreventiveTreat(hadPreventiveTreat);
         toothInfo.setPreventiveTreatLastMonth(model.getPreventiveTreatLastMonth());
         toothInfo.setHadDiffcultTreat(model.getHadDiffcultTreat());
         toothInfo.setMissTeethUnrepeatCause(model.getMissTeethUnrepeatCause());
-        toothInfo.setHadOrthodontic(model.getHadOrthodontic());
-        toothInfo.setOrthodonticStartDate(model.getOrthodonticStartDate());
-        toothInfo.setOrthodonticEndDate(model.getOrthodonticEndDate());
+        Boolean hadOrthodontic = false;
+        String orthodonticStartDate = model.getOrthodonticStartDate();
+        String orthodonticEndDate = model.getOrthodonticEndDate();
+        if (StringHelper.isNotEmpty(orthodonticStartDate) || StringHelper.isNotEmpty(orthodonticEndDate)) {
+            hadOrthodontic = true;
+        }
+        toothInfo.setHadOrthodontic(hadOrthodontic);
+        toothInfo.setOrthodonticStartDate(DateUtil.parse2Date(orthodonticStartDate));
+        toothInfo.setOrthodonticEndDate(DateUtil.parse2Date(orthodonticEndDate));
         toothInfo.setHadHygieneEducation(model.getHadHygieneEducation());
         toothInfo.setUsedPlaqueDna(model.getUsedPlaqueDna());
         Date now = new Date(System.currentTimeMillis());
@@ -306,9 +353,9 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      * @param mobileOwner
      * @return
      */
-    private PatientBaseInfo addPatientBaseInfo(PatientRegistrationModel model, int userId, String userName, String mobile, Integer mobileOwner) {
+    private PatientBaseInfo addPatientBaseInfo(PatientRegistrationModel model, int userId, String userName, String mobile,
+                                               Integer mobileOwner, Integer originType, Integer originId) {
         Date now = new Date(System.currentTimeMillis());
-        checkOriginSource(model.getOriginId(), model.getOriginType());
         PatientBaseInfo baseInfo = new PatientBaseInfo();
         baseInfo.setAge(model.getAge());
         baseInfo.setBirthday(model.getBirthdate());
@@ -319,8 +366,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         baseInfo.setName(name);
         baseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(name));
         baseInfo.setOrgId(model.getOrgId());
-        baseInfo.setOriginId(model.getOriginId());
-        baseInfo.setOriginType(model.getOriginType());
+        baseInfo.setOriginType(originType);
+        baseInfo.setOriginId(originId);
         baseInfo.setCrtId(userId);
         baseInfo.setCrtName(userName);
         baseInfo.setCrtTime(now);
@@ -340,7 +387,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 儿童患者登记
         final int userId = -777;
         final String userName = "患者自主登记";
-        PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, null, null);
+        PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, null, null, null, null);
         int patientId = patientBaseInfo.getId();
         addPatientExpInfoByChild(model, userId, userName, patientId);
         addPatientExtInfo(model, userId, userName, patientId);
@@ -363,19 +410,32 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      * @param userId
      * @param patientId
      */
-    private void savePatientSignature(PatientRegistrationModel patientModel, Integer userId, Integer patientId) {
-        Date now = new Date(System.currentTimeMillis());
-        XUploadFileVO file = new XUploadFileVO();
-        file.setFileLocation(patientModel.getSignatureImgUrl());
-        file.setUploadTime(now);
-        file.setFileName(patientModel.getName()+"的签名");
-        MedicalRayFilmModel model = new MedicalRayFilmModel();
-        model.setSourceType(FileSourceTypeEnum.PATIENT_SIGNATURE.getCode());
-        model.setMedicalId(patientId);
-        model.setRayFiles(Arrays.asList(file));
-        model.setCrtId(userId);
-        model.setCrtTime(now);
-        remoteTreatmentOtherFeign.saveXRayFile2XUploadFile(model);
+    public void savePatientSignature(PatientRegistrationModel patientModel, Integer userId, Integer patientId) {
+        String signatureImg = patientModel.getSignatureImgUrl();
+        if (StringHelper.isNotEmpty(signatureImg)) {
+            executorService.submit(()->{
+                String fileName = patientModel.getName() + "的电子签名";
+                Date now = new Date(System.currentTimeMillis());
+                Base64UploadForm form = new Base64UploadForm();
+                form.setFileName(fileName);
+                form.setData(signatureImg);
+                form.setCompanyId(0);
+                form.setObjectId(patientId);
+                form.setOssCategory(3);
+                String fileUrl = (String) remoteOssServiceFeign.uploadBase64Image(form).getData();
+                XUploadFileVO file = new XUploadFileVO();
+                file.setFileLocation(fileUrl);
+                file.setUploadTime(now);
+                file.setFileName(fileName);
+                MedicalRayFilmModel model = new MedicalRayFilmModel();
+                model.setSourceType(FileSourceTypeEnum.PATIENT_SIGNATURE.getCode());
+                model.setMedicalId(patientId);
+                model.setRayFiles(Arrays.asList(file));
+                model.setCrtId(userId);
+                model.setCrtTime(now);
+                remoteTreatmentOtherFeign.saveXRayFile2XUploadFile(model);
+            });
+        }
     }
 
     /**
@@ -432,7 +492,6 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         expInfo.setCountry(model.getCountry());
         expInfo.setProfession(model.getProfession());
         expInfo.setGuardian(model.getGuardian());
-        expInfo.setUsefulPhone(model.getGuardianPhone());
         expInfo.setEmergencyPhone(model.getEmergencyPhone());
         expInfo.setState(model.getState());
         Date now = new Date(System.currentTimeMillis());
@@ -459,8 +518,8 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         childInfo.setGrade(model.getGrade());
         childInfo.setMedicationHistory(model.getMedicationHistory());
         childInfo.setMotherPregnancy(model.getMotherPregnancy());
-        List<Integer> parentHasCaries = model.getParentHasCaries();
-        childInfo.setParentHasCaries(StringHelper.join(parentHasCaries, ","));
+        childInfo.setFatherHasCaries(model.getFatherHasCaries());
+        childInfo.setMotherHasCaries(model.getMotherHasCaries());
         childInfo.setToothClearliness(model.getToothClearliness());
         childInfo.setToothLastCheck(model.getToothLastCheck());
         childInfo.setToothSprouting(model.getToothSprouting());

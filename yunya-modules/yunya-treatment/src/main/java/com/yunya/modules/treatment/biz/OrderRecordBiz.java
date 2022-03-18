@@ -546,8 +546,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
     List<OrderDetail> orderDetails =
         orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, models);
+    TreatmentRecord treatmentRecord = treatmentRecordBiz.selectById(treatmentRecordId);
     List<VisitingRecord> visitingRecordList = new ArrayList<>();
-    if (StringHelper.isNotEmpty(orderDetails)) {
+    if (StringHelper.isNotEmpty(orderDetails)
+            && !treatmentRecordBiz.patientHasDied(treatmentRecord.getPatientId())) {
       orderDetails.forEach(
           detail -> {
             detail.setOrderRecordId(orderRecordId);
@@ -588,7 +590,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
       redisUtils.delete(LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
 
-      TreatmentRecord treatmentRecord = treatmentRecordBiz.selectById(treatmentRecordId);
       // 发送消息更新中间表就诊流程
       Integer appointmentId = treatmentRecord.getAppointmentId();
       if (null != appointmentId) {

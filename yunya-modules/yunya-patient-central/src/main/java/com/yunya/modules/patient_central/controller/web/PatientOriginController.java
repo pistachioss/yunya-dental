@@ -130,6 +130,18 @@ public class PatientOriginController {
     return ResponseUtil.success(this.patientOriginBiz.originalType());
   }
 
+  /**
+   * 查询患者来源类型及其子类型
+   *
+   * @return ResponseResult<List<PatientOriginVo>>
+   */
+  @ApiOperation("查询患者来源类型及其子类型")
+  @GetMapping("/originalTypeAndChildren")
+  public ResponseResult<List<PatientOriginVo>> findOriginalTypeAndChildren() {
+    List<PatientOriginVo> result = patientOriginBiz.findOriginalTypeAndChildren();
+    return ResponseUtil.success(result);
+  }
+
 
   /**
    * 迁移患者信息来源到患者来源变更日志表

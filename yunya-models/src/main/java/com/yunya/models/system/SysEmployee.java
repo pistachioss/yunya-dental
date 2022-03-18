@@ -1,5 +1,7 @@
 package com.yunya.models.system;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 import javax.persistence.*;
 
@@ -228,6 +230,7 @@ public class SysEmployee {
   /**
    * 创建时间
    */
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   @Column(name = "crt_time")
   private Date crtTime;
 
@@ -246,6 +249,7 @@ public class SysEmployee {
   /**
    * 修改时间
    */
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   @Column(name = "upd_time")
   private Date updTime;
 

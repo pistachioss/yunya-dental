@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_EMPLOYEE_INFO;
+import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_USER_INFO;
 
 /**
  * 简介: 员工信息业务层
@@ -36,6 +37,24 @@ public class SysEmployeeBiz extends BaseBiz<SysEmployeeMapper, SysEmployee> {
     SysEmployee sysEmployee = redisUtils.get(empKey, SysEmployee.class);
     if (null == sysEmployee) {
       sysEmployee = mapper.selectByUserId(userId);
+      if (null != sysEmployee) {
+        redisUtils.set(empKey, sysEmployee);
+      }
+    }
+    return sysEmployee;
+  }
+
+  /**
+   * 根据员工ID查询员工信息
+   *
+   * @param empId 员工ID
+   * @return SysEmployee
+   */
+  public SysEmployee findSysUserByEmpId(Integer empId) {
+    String empKey = REDIS_KEY_USER_INFO + empId;
+    SysEmployee sysEmployee = redisUtils.get(empKey, SysEmployee.class);
+    if (null == sysEmployee) {
+      sysEmployee = mapper.selectByPrimaryKey(empId);
       if (null != sysEmployee) {
         redisUtils.set(empKey, sysEmployee);
       }

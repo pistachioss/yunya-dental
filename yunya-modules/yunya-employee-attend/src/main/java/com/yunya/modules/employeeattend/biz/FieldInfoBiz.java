@@ -16,6 +16,7 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.*;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.modules.employeeattend.form.ApprovalAllListForm;
 import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.form.FieldInfoForm;
@@ -189,8 +190,13 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                             // 根据fieldInfoForm.getApprovalPeopleId();查推送号与平台
 //                            Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
                             // fix: bug3476
-                            Integer userid = fieldInfoForm.getApprovalPeopleId();
-                            emp_ids.add(userid);
+//                            Integer userid = fieldInfoForm.getApprovalPeopleId();
+                            // fix: bug3520
+                            Integer empid = fieldInfoForm.getApprovalPeopleId();
+                            SysEmployee sysEmployee = remoteSystemServiceFeign.findSysUserByEmpId(empid);
+                            if(sysEmployee !=null){
+                                emp_ids.add(sysEmployee.getUserId());
+                            }
                             employeePushForm.setId(fieldInfo.getId());
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
@@ -212,25 +218,25 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                                 copyInfoList.add(copyInfo);
                             }
                             int n = copyInfoMapper.batchInsert(copyInfoList);
-
-                            // TODO :所有抄送人
-                            // start 添加推送 需求1450 by zd.xie
-                            if(n > 0){
-                                EmployeePushForm employeePushForm = new EmployeePushForm();
-                                // 组装
-                                Set<Integer> emp_ids = new HashSet<>();
-                                fieldInfoForm.getCopyList().forEach(nn -> {
-                                    emp_ids.add(nn);
-                                });
-                                employeePushForm.setEmpId(emp_ids);
-                                employeePushForm.setShowName(showName);
-                                employeePushForm.setId(fieldInfo.getId());
-                                List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
-                                employeePushFormList.forEach(el -> {
-                                    JpushManager.getInstance().pushLeaveCope(el, 3);
-                                });
-                            }
-                            // end 添加推送 需求1450 by zd.xie
+//bug: 3520
+//                            // TODO :所有抄送人
+//                            // start 添加推送 需求1450 by zd.xie
+//                            if(n > 0){
+//                                EmployeePushForm employeePushForm = new EmployeePushForm();
+//                                // 组装
+//                                Set<Integer> emp_ids = new HashSet<>();
+//                                fieldInfoForm.getCopyList().forEach(nn -> {
+//                                    emp_ids.add(nn);
+//                                });
+//                                employeePushForm.setEmpId(emp_ids);
+//                                employeePushForm.setShowName(showName);
+//                                employeePushForm.setId(fieldInfo.getId());
+//                                List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+//                                employeePushFormList.forEach(el -> {
+//                                    JpushManager.getInstance().pushLeaveCope(el, 3);
+//                                });
+//                            }
+//                            // end 添加推送 需求1450 by zd.xie
                         }
                         return num;
                     }
@@ -408,11 +414,16 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     employeePushForm.setShowName(showName);
                     // 撤销
                     emp_ids.add(fieldInfo.getUserId());
-//                    Integer userid = approvalPeopleBiz.selectById(fieldInfoForm.getApprovalPeopleId()).getUserId();
+//                    Integer userid = approvalPeopleBiz.selectById(fieldInfo.getApprovalPeopleId()).getUserId();
                     // fix: bug3476
-                    Integer userid = fieldInfoForm.getApprovalPeopleId();
-                    emp_ids.add(userid);
-                    employeePushForm.setId(fieldInfoForm.getId());
+//                    Integer userid = fieldInfo.getApprovalPeopleId();
+                    // fix: bug3520
+                    Integer empid = fieldInfo.getApprovalPeopleId();
+                    SysEmployee sysEmployee = remoteSystemServiceFeign.findSysUserByEmpId(empid);
+                    if(sysEmployee !=null){
+                        emp_ids.add(sysEmployee.getUserId());
+                    }
+                    employeePushForm.setId(fieldInfo.getId());
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         JpushManager.getInstance().pushLeaveCancel(el, 3);

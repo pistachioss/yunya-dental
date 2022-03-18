@@ -73,7 +73,6 @@ public class EmployeeWorkloadBiz {
      * @return
      */
     private List<ClinicEmployeeWorkloadOfOperationVO> findEmployeeWorkloadList(ClinicEmployeeWorkloadQuery query) throws Exception {
-        query.setWhetherPage(false);
         // 主数据：门诊 + 员工
         Future<List<ClinicEmployeBonusCoefficientVO>> employee = multiFindClinicEmployeeCartesianProduct(query);
 
@@ -320,7 +319,7 @@ public class EmployeeWorkloadBiz {
      * @return
      */
     private Future<List<ClinicEmployeBonusCoefficientVO>> multiFindClinicEmployeeCartesianProduct(ClinicEmployeeWorkloadQuery query) {
-        return threadPool.submit(()-> findClinicEmployeeCartesianProduct(query, true));
+        return threadPool.submit(()-> baseEmployeeMapper.selectClinicEmployeeCartesianProduct(query, true));
     }
 
     public List<ClinicEmployeBonusCoefficientVO> findClinicEmployeeCartesianProduct(ClinicEmployeeWorkloadQuery query, boolean groupByOrgId) {

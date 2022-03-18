@@ -1,6 +1,5 @@
 package com.yunya.modules.treatment.other.biz;
 
-import cn.hutool.core.date.DateUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
@@ -435,9 +434,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         }
         List<Integer> patientIds = datas.stream().map(VisitingRecordVo::getPatientId).collect(Collectors.toList());
         List<PatientBaseInfoVo> diedPatients = remotePatientCentralServiceFeign.findPatientInfoByIds(patientIds, true);
-        if (StringHelper.isEmpty(diedPatients)) {
-            return new ArrayList<>();
-        }
         datas = datas.stream().filter(vo->{
             boolean notDied = true;
             for (PatientBaseInfoVo patient : diedPatients) {

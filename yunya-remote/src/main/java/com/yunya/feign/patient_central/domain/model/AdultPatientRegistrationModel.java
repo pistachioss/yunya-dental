@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,12 +25,6 @@ import java.util.List;
 @ApiModel("成人患者登记添加模型")
 public class AdultPatientRegistrationModel extends PatientRegistrationModel implements Serializable {
 
-    /** 手机号码 长度14 */
-    @ApiModelProperty(value = "手机号",required = true)
-    @Pattern(regexp = "^[1][3,4,5,6,7,8,9][0-9]{9}$", message = "手机号格式有误")
-    @NotBlank(message = "手机号不能为空")
-    private String mobile;
-
     /** 手机号所属人 手机号所属人字典ID */
     @ApiModelProperty(value = "手机号所属人字典ID",required = true)
     @NotNull(message = "手机号所属人不能为空")
@@ -41,6 +34,23 @@ public class AdultPatientRegistrationModel extends PatientRegistrationModel impl
     @ApiModelProperty("单位")
     @Size(max = 50, message = "单位长度不能超过50个字符！")
     private String employer;
+
+    /** 患者来源类型 患者来源分类ID */
+    @ApiModelProperty(value = "患者来源分类ID", required = true)
+    @NotNull(message = "渠道来源不能为空")
+    private Integer originType;
+
+    /** 患者来源关联ID （二级患者来源ID）*/
+    @ApiModelProperty(value = "渠道来源关联ID（二级患者来源ID）")
+    private Integer originId;
+
+    /** 渠道来源-推荐员工id*/
+    @ApiModelProperty(value = "渠道来源-推荐员工id")
+    private Integer employeeId;
+
+    /** 渠道来源-介绍患者id*/
+    @ApiModelProperty(value = "渠道来源-介绍患者id")
+    private Integer patientId;
 
     /** 家族遗传史 */
     @ApiModelProperty("家族遗传史")
@@ -78,14 +88,14 @@ public class AdultPatientRegistrationModel extends PatientRegistrationModel impl
 
     /** 最近一次填充治疗日期 */
     @ApiModelProperty("最近一次填充治疗日期")
-    private Date fillTreatLastDate;
+    private String fillTreatLastDate;
 
     /** 是否牙周手术 */
     @ApiModelProperty("是否牙周手术")
     private Boolean hadPeriodontalSurgery;
 
-    /** 是否牙周调整 */
-    @ApiModelProperty("是否牙周调整")
+    /** 是否咬合调整 */
+    @ApiModelProperty("是否咬合调整")
     private Boolean hadOcclusalAdjust;
 
     /** 是否修复义齿：0-否，1-是 */
@@ -99,7 +109,7 @@ public class AdultPatientRegistrationModel extends PatientRegistrationModel impl
 
     /** RPD戴用时间 */
     @ApiModelProperty("RPD戴用时间")
-    private Date rpdDate;
+    private String rpdDate;
 
     /** LPD部位 */
     @ApiModelProperty("LPD部位")
@@ -108,7 +118,7 @@ public class AdultPatientRegistrationModel extends PatientRegistrationModel impl
 
     /** LPD戴用时间 */
     @ApiModelProperty("LPD戴用时间")
-    private Date lpdDate;
+    private String lpdDate;
 
     /** 是否预防治疗 */
     @ApiModelProperty("是否预防治疗")
@@ -137,11 +147,11 @@ public class AdultPatientRegistrationModel extends PatientRegistrationModel impl
 
     /** 正畸治疗开始日期*/
     @ApiModelProperty("正畸治疗开始日期")
-    private Date orthodonticStartDate;
+    private String orthodonticStartDate;
 
     /** 正畸治疗结束日期*/
     @ApiModelProperty("正畸治疗结束日期")
-    private Date orthodonticEndDate;
+    private String orthodonticEndDate;
 
     /** 是否接受过口腔卫生宣教*/
     @ApiModelProperty("是否接受过口腔卫生宣教")

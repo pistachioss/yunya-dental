@@ -82,8 +82,14 @@
     </select>
 
     <!-- 根据类型和父级id查询患者来源信息 -->
-    <select id="selectOriginType" resultType="com.yunya.models.patient_central.PatientOrigin">
-        select * from patient_origin where parent_id = #{parentId} and origin_type = #{originType}
+    <select id="selectOriginType" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientOriginVo">
+        select
+            po.id,
+            po.name,
+            po.english_name AS englishName,
+            po.origin_type as 'originType'
+        from patient_origin po
+        where po.parent_id = #{parentId} and po.origin_type = #{originType}
     </select>
 
 </mapper>

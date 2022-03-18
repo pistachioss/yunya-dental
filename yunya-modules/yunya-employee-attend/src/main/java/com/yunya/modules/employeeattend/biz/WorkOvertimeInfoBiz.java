@@ -15,6 +15,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.*;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.modules.employeeattend.form.*;
 import com.yunya.modules.employeeattend.mapper.*;
 import com.yunya.modules.employeeattend.util.JpushManager;
@@ -166,8 +167,13 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 // 根据leaveInfoForm.getApprovalPeopleId();查推送号与平台
 //                                Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
                                 // fix: bug3476
-                                Integer userid = workOvertimeInfoForm.getApprovalPeopleId();
-                                emp_ids.add(userid);
+//                                Integer userid = workOvertimeInfoForm.getApprovalPeopleId();
+                                // fix: bug3520
+                                Integer empid = workOvertimeInfoForm.getApprovalPeopleId();
+                                SysEmployee sysEmployee = remoteSystemServiceFeign.findSysUserByEmpId(empid);
+                                if(sysEmployee !=null){
+                                    emp_ids.add(sysEmployee.getUserId());
+                                }
                                 employeePushForm.setId(workOvertimeInfo.getId());
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
@@ -189,25 +195,25 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                     copyInfoList.add(copyInfo);
                                 }
                                 int n = copyInfoMapper.batchInsert(copyInfoList);
-
-                                // TODO :所有抄送人
-                                // start 添加推送 需求1450 by zd.xie
-                                if(n > 0){
-                                    EmployeePushForm employeePushForm = new EmployeePushForm();
-                                    // 组装
-                                    Set<Integer> emp_ids = new HashSet<>();
-                                    workOvertimeInfoForm.getCopyList().forEach(nn -> {
-                                        emp_ids.add(nn);
-                                    });
-                                    employeePushForm.setEmpId(emp_ids);
-                                    employeePushForm.setShowName(showName);
-                                    employeePushForm.setId(workOvertimeInfo.getId());
-                                    List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
-                                    employeePushFormList.forEach(el -> {
-                                        JpushManager.getInstance().pushLeaveCope(el, 2);
-                                    });
-                                }
-                                // end 添加推送 需求1450 by zd.xie
+//bug: 3520
+//                                // TODO :所有抄送人
+//                                // start 添加推送 需求1450 by zd.xie
+//                                if(n > 0){
+//                                    EmployeePushForm employeePushForm = new EmployeePushForm();
+//                                    // 组装
+//                                    Set<Integer> emp_ids = new HashSet<>();
+//                                    workOvertimeInfoForm.getCopyList().forEach(nn -> {
+//                                        emp_ids.add(nn);
+//                                    });
+//                                    employeePushForm.setEmpId(emp_ids);
+//                                    employeePushForm.setShowName(showName);
+//                                    employeePushForm.setId(workOvertimeInfo.getId());
+//                                    List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+//                                    employeePushFormList.forEach(el -> {
+//                                        JpushManager.getInstance().pushLeaveCope(el, 2);
+//                                    });
+//                                }
+//                                // end 添加推送 需求1450 by zd.xie
                             }
                             return num;
                         }
@@ -356,11 +362,16 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                     employeePushForm.setShowName(showName);
                     // 撤销
                     emp_ids.add(workOvertimeInfo.getUserId());
-//                    Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
+//                    Integer userid = approvalPeopleBiz.selectById(workOvertimeInfo.getApprovalPeopleId()).getUserId();
                     // fix: bug3476
-                    Integer userid = workOvertimeInfoForm.getApprovalPeopleId();
-                    emp_ids.add(userid);
-                    employeePushForm.setId(workOvertimeInfoForm.getId());
+//                    Integer userid = workOvertimeInfo.getApprovalPeopleId();
+                    // fix: bug3520
+                    Integer empid = workOvertimeInfo.getApprovalPeopleId();
+                    SysEmployee sysEmployee = remoteSystemServiceFeign.findSysUserByEmpId(empid);
+                    if(sysEmployee !=null){
+                        emp_ids.add(sysEmployee.getUserId());
+                    }
+                    employeePushForm.setId(workOvertimeInfo.getId());
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         JpushManager.getInstance().pushLeaveCancel(el, 2);

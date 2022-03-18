@@ -103,7 +103,6 @@ public class VisitingRemindController {
      */
     @ApiOperation("根据条件查询随访提醒")
     @PostMapping("/find")
-    @CurrentUser
     public ResponseResult findVisitingRemindByCondition(@RequestBody @Validated VisitingRemindQuery query) {
         return visitingRemindBiz.findVisitingRemindByCondition(query);
     }
@@ -116,10 +115,9 @@ public class VisitingRemindController {
      */
     @ApiOperation("根据条件导出执行提醒列表")
     @PostMapping("/execute/export")
-    public ResponseResult<T> executeRemindExport(HttpServletResponse response,
+    public void executeRemindExport(HttpServletResponse response,
                                                  @RequestBody @Validated VisitingRemindQuery query) throws IOException {
         visitingRemindBiz.executeRemindExport(response, query);
-        return ResponseUtil.success(null);
     }
 
     /**
