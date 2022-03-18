@@ -30,10 +30,8 @@ import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -72,7 +70,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   private ExecutorService importExcelThreadPool;
   @Resource(name = "billCreditsCallbackImpl")
   private BillCreditsCallback billCreditsCallback;
-  private Map<Integer,BillCreditsCallback> chain = new HashMap<>();
+  //
+  private Map<Integer,BillCreditsCallback> chain = new ConcurrentHashMap<>();
 
   public void addCallBack(Integer bId,BillCreditsCallback callback) {
     this.chain.put(bId,callback);
@@ -103,11 +102,14 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           log.info("保存收费记录明细baseBillPay: {}",baseBillPay);
           saveBillPayDetailRecord(dataId);
           if(!chain.isEmpty()){
-            for (Map.Entry<Integer, BillCreditsCallback> entry : chain.entrySet()) {
+            Iterator<Integer> iterator = chain.keySet().iterator();
+            while (iterator.hasNext()) {
               // 回调积分增加方法，
               // 这里存在消息消费顺序性问题，为了防止正常业务读不到账单支付记录的情况而导致新增积分失败，所以这里使用回调的方式将积分做新增操作
               // 回调的逻辑查看BaseBillBiz.java 中baseBillPayBiz.addCallBack(...)方法
-              entry.getValue().baseBillBizHandlerFinish(entry.getKey());
+              Integer bid = iterator.next();
+              chain.get(bid).baseBillBizHandlerFinish(bid);
+              iterator.remove();
             }
           }
         } else {
