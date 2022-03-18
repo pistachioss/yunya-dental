@@ -733,9 +733,17 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @return 返回结果
      */
     public Integer resetVisitingRemindBatch(ResetVisitingRemindForm form) {
-        return mapper.resetVisitingRemindBatch(
+        Integer result = mapper.resetVisitingRemindBatch(
                 Integer.valueOf(BaseContextHandler.getUserID()),
                 BaseContextHandler.getUsername(),
                 form);
+        if (result > 0) {
+            for (Integer id : form.getIds()) {
+                // 发送消息-修改提醒
+                remoteRabbitMqServiceFeign.sendMessage(id,1,1, MsgCategoryEnum.BaseVisitRemind);
+            }
+            return result;
+        }
+        return 0;
     }
 }
