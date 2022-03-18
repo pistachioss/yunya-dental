@@ -47,8 +47,10 @@ public class VisitingRemindController {
     public ResponseResult insertVisitingRemind(@RequestBody @Validated VisitingRemindModel model) {
         return visitingRemindBiz.insertVisitingRemind(model);
     }
+
     /**
      * 批量到执行提醒
+     *
      * @param model 表单
      * @return ResponseResult
      */
@@ -58,6 +60,7 @@ public class VisitingRemindController {
     public ResponseResult addImplement(@RequestBody @Validated List<VisitingRemindModel> model) {
         return visitingRemindBiz.addImplement(model);
     }
+
     /**
      * 根据id删除随访提醒
      *
@@ -116,7 +119,7 @@ public class VisitingRemindController {
     @ApiOperation("根据条件导出执行提醒列表")
     @PostMapping("/execute/export")
     public void executeRemindExport(HttpServletResponse response,
-                                                 @RequestBody @Validated VisitingRemindQuery query) throws IOException {
+                                    @RequestBody @Validated VisitingRemindQuery query) throws IOException {
         visitingRemindBiz.executeRemindExport(response, query);
     }
 
@@ -147,7 +150,22 @@ public class VisitingRemindController {
         if (result > 0) {
             return ResponseUtil.success();
         }
-        return ResponseUtil.success("批量修改失败",null);
+        return ResponseUtil.success("批量修改失败", null);
+    }
+
+
+    /**
+     * rabbitmq数据补偿接口
+     * @return
+     */
+    @ApiOperation("rabbitmq数据补偿接口")
+    @PutMapping("/compensate/data")
+    public ResponseResult<?> reportmodify() {
+        Integer result = visitingRemindBiz.compensateModify();
+        if (result > 0) {
+            return ResponseUtil.success(result);
+        }
+        return ResponseUtil.success("失败",null);
     }
 
 
