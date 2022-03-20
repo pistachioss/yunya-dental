@@ -755,7 +755,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
     public Integer compensateModify() {
         Example example = new Example(VisitingRemind.class);
         example.createCriteria()
-                .andBetween("upd_time","2022-03-14 00:00:00","2022-03-20 23:59:59")
+                .andBetween("updTime","2022-03-14 00:00:00","2022-03-20 23:59:59")
                 .andEqualTo("status",0);
         List<VisitingRemind> visitingReminds = mapper.selectByExample(example);
         if (!visitingReminds.isEmpty()) {
