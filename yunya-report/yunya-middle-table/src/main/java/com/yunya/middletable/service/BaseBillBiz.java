@@ -69,6 +69,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Autowired private StatEmpBillBiz statEmpBillBiz;
   /** 员工使用优惠时统计*/
   @Autowired private StatEmpPrivilegeBiz statEmpPrivilegeBiz;
+
+  @Autowired private BaseBillPayBiz baseBillPayBiz;
+
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -115,7 +118,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           // 推荐积分
           addPatientIntegral(bill.getPatientId());
           // 回调收费增加积分
-          baseBillPayCallback.baseBillBizHandlerFinish(bill.getBillId());
+          log.info("回调积分baseBillPayCallback");
+          baseBillPayBiz.addCallBack(bill.getBillId(),baseBillPayCallback);
         } else {
           baseBillDetailMapper.deleteByBillId(dataId);
         }
@@ -158,13 +162,15 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   public void addPatientIntegral(Integer patientId) {
     Integer count = mapper.selectCountByPatientId(patientId);
     CreditsShop addPatientIntegral = new CreditsShop();
-    if (count <= 0) {
+    log.info("推荐患者新加积分: count = {}",count);
+    if (count > 0) {
       BasePatientOriginLog basePatientOrigin = new BasePatientOriginLog();
       basePatientOrigin.setPatientId(patientId);
       basePatientOrigin.setOriginType(2);
       basePatientOrigin.setInservice(true);
       BasePatientOriginLog basePatientOriginLog =
           basePatientOriginLogMapper.selectOne(basePatientOrigin);
+      log.info("患者基本信息：basePatientOriginLog = {}",basePatientOriginLog);
       if (basePatientOriginLog != null) {
         CreditsShop patientCreditsShop =
             creditsShopMapper.selectLastCredits(basePatientOriginLog.getOriginId());
@@ -185,6 +191,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         addPatientIntegral.setDescription("患者推荐");
         addPatientIntegral.setCrtId(patientId);
         addPatientIntegral.setCrtTime(new Date(System.currentTimeMillis()));
+        log.info("新加积分操作: addPatientIntegral = {}",addPatientIntegral);
         // 增加500积分
         creditsShopMapper.insertSelective(addPatientIntegral);
       }

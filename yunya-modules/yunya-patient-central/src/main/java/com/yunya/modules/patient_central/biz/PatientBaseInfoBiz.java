@@ -299,10 +299,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       if (StringHelper.isNotEmpty(guardian)) {
         patientExpInfo.setGuardian(guardian);
       }
-      String guardianPhone = patientChildInfoModel.getGuardianPhone();
-      if (StringHelper.isNotEmpty(guardianPhone)) {
-        patientExpInfo.setUsefulPhone(guardianPhone);
-      }
     }
     // 如果用户没有扩展信息就添加扩展信息 如果有就修改
     PatientExpInfoVo patientExpInfoVo =

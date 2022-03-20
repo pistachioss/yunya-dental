@@ -30,11 +30,12 @@ import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 /**
  * 简介: 中间表收费记录处理业务层
@@ -69,6 +70,12 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   private ExecutorService importExcelThreadPool;
   @Resource(name = "billCreditsCallbackImpl")
   private BillCreditsCallback billCreditsCallback;
+  //
+  private Map<Integer,BillCreditsCallback> chain = new ConcurrentHashMap<>();
+
+  public void addCallBack(Integer bId,BillCreditsCallback callback) {
+    this.chain.put(bId,callback);
+  }
 
   /** 本次免单支付 */
   private final Integer PAYMENT_BY_CUSTOMER_FREE = 23;
@@ -92,7 +99,19 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         if (null != baseBillPay) {
           mapper.insertSelective(baseBillPay);
           // 保存收费记录明细
+          log.info("保存收费记录明细baseBillPay: {}",baseBillPay);
           saveBillPayDetailRecord(dataId);
+          if(!chain.isEmpty()){
+            Iterator<Integer> iterator = chain.keySet().iterator();
+            while (iterator.hasNext()) {
+              // 回调积分增加方法，
+              // 这里存在消息消费顺序性问题，为了防止正常业务读不到账单支付记录的情况而导致新增积分失败，所以这里使用回调的方式将积分做新增操作
+              // 回调的逻辑查看BaseBillBiz.java 中baseBillPayBiz.addCallBack(...)方法
+              Integer bid = iterator.next();
+              chain.get(bid).baseBillBizHandlerFinish(bid);
+              iterator.remove();
+            }
+          }
         } else {
           // 撤销积分
           billCreditsCallback.scrapCredits(dataId);

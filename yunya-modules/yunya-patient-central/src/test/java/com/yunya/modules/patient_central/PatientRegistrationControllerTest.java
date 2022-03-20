@@ -114,7 +114,7 @@ public class PatientRegistrationControllerTest {
     @Test
     public void testChildrenAddPatient() {
         ChildrenPatientRegistrationModel model = new ChildrenPatientRegistrationModel();
-        model.setName("楚风荨");
+        model.setName("楚风俊");
         model.setOrgId(26);
         model.setAge(10);
         model.setGender((byte) 0);
@@ -122,11 +122,7 @@ public class PatientRegistrationControllerTest {
         model.setSchool("学军小学");
         model.setGrade("五年级");
         model.setGuardian("楚霸王");
-        model.setGuardianPhone("13612514529");
-        model.setOriginType(3);
-        model.setOriginId(79);
-        model.setPatientId(25);
-        model.setEmployeeId(635);
+        model.setMobile("13612514529");
         model.setState(50);
         model.setProvince("浙江省");
         model.setCity("杭州市");
@@ -154,6 +150,55 @@ public class PatientRegistrationControllerTest {
     }
 
     @Test
+    public void testChildrenAddPatient2() {
+        String param = "{\n" +
+                "    \"orgId\": \"43\",\n" +
+                "    \"name\": \"简\",\n" +
+                "    \"mobile\": \"13131313131\",\n" +
+                "    \"gender\": 0,\n" +
+                "    \"birthdate\": \"2008-1-1\",\n" +
+                "    \"age\": \"14\",\n" +
+                "    \"state\": 707,\n" +
+                "    \"province\": \"370000\",\n" +
+                "    \"city\": \"370100\",\n" +
+                "    \"country\": \"370102\",\n" +
+                "    \"detailedAddress\": \"水水水水水水\",\n" +
+                "    \"profession\": 107,\n" +
+                "    \"useFlossTimes\": \"22\",\n" +
+                "    \"email\": \"撒撒萨\",\n" +
+                "    \"emergencyPhone\": \"56515111112\",\n" +
+                "    \"medicalHistorys\": [\n" +
+                "        \"风湿性瓣膜病\",\n" +
+                "        \"再障9\"\n" +
+                "    ],\n" +
+                "    \"allergns\": [\n" +
+                "        \"卡那霉素\",\n" +
+                "        \"长效磺胺\"\n" +
+                "    ],\n" +
+                "    \"medicationHistory\": \"b2\",\n" +
+                "    \"diet\": \"ssss\",\n" +
+                "    \"toothSprouting\": \"ssss\",\n" +
+                "    \"toothClearliness\": \"ssss\",\n" +
+                "    \"brushingTimes\": \"2\",\n" +
+                "    \"grade\": \"2\",\n" +
+                "    \"motherPregnancy\": 3,\n" +
+                "    \"usedFluorideToothpaste\": \"false\",\n" +
+                "    \"guardian\": \"李冯\",\n" +
+                "    \"habitIds\": [\n" +
+                "        165,\n" +
+                "        166\n" +
+                "    ],\n" +
+                "    \"usedDentalFloss\": \"1\",\n" +
+                "    \"school\": \"学军中学\",\n" +
+                "    \"toothLastCheck\": \"2003-1-1\",\n" +
+                "    \"fatherHasCaries\": \"false\",\n" +
+                "    \"motherHasCaries\": \"false\"\n" +
+                "}";
+        ChildrenPatientRegistrationModel model = JSONObject.parseObject(param, ChildrenPatientRegistrationModel.class);
+        customerRegistrationController.addPatient(model);
+    }
+
+    @Test
     public void testAddPatient() {
         BaseContextHandler.setOrgId("26");
         BaseContextHandler.setUserID("635");
@@ -161,11 +206,11 @@ public class PatientRegistrationControllerTest {
 
         String baseParam = "{\"birthday\":\"2012-12-15\",\"sourceId\":79,\"gender\":0,\"crtId\":-777,\"originType\":1,\"originId\":79,\"name\":\"楚风荨\",\"originTypeName\":\"员工转介绍\",\"attribute\":1,\"id\":108462,\"sourceName\":\"员工转介绍\",\"hasDied\":false,\"age\":9,\"originName\":\"马奕艳\"}";
         PatientBaseInfoModel base = JSONObject.parseObject(baseParam, PatientBaseInfoModel.class);
-        String expParam = "{\"country\":\"上城区\",\"patientId\":108462,\"crtName\":\"患者自主登记\",\"eMail\":\"296xxx.163.com\",\"uptId\":-777,\"province\":\"浙江省\",\"updTime\":1646271955000,\"id\":107526,\"state\":\"CN\",\"profession\":93,\"updName\":\"患者自主登记\",\"usefulPhone\":\"13852514520\",\"city\":\"杭州市\",\"crtId\":-777,\"crtTime\":1646271955000,\"address\":\"文新街道2061号\",\"inservice\":true,\"emergencyPhone\":\"13329351629\"}";
+        String expParam = "{\"country\":\"上城区\",\"patientId\":108462,\"crtName\":\"患者自主登记\",\"eMail\":\"296xxx.163.com\",\"uptId\":-777,\"province\":\"浙江省\",\"updTime\":1646271955000,\"id\":107526,\"state\":211,\"profession\":93,\"updName\":\"患者自主登记\",\"usefulPhone\":\"13852514520\",\"city\":\"杭州市\",\"crtId\":-777,\"crtTime\":1646271955000,\"address\":\"文新街道2061号\",\"inservice\":true,\"emergencyPhone\":\"13329351629\"}";
         PatientExpInfoModel expModel = JSONObject.parseObject(expParam, PatientExpInfoModel.class);
         String listParam = "[{\"patientId\":108462,\"inservice\":true,\"crtId\":-777,\"crtName\":\"患者自主登记\",\"crtTime\":1646271955000,\"description\":\"哮喘,低血糖\",\"updName\":\"患者自主登记\",\"type\":1,\"orgId\":26,\"uptId\":-777,\"updTime\":1646271955000,\"id\":11763},{\"patientId\":108462,\"inservice\":true,\"crtId\":-777,\"crtName\":\"患者自主登记\",\"crtTime\":1646271955000,\"description\":\"青霉素,海鲜\",\"updName\":\"患者自主登记\",\"type\":2,\"orgId\":26,\"uptId\":-777,\"updTime\":1646271955000,\"id\":11764}]";
         List<PatientExtInfoModel> list = JSONArray.parseArray(listParam, PatientExtInfoModel.class);
-        String childParam = "{\"usedFluorideToothpaste\":false,\"patientId\":108462,\"toothLastCheck\":1632004800000,\"motherPregnancy\":\"正常1\",\"usedDentalFloss\":1,\"habitIdStr\":\"11,26,15\",\"habitIds\":[1,6,15],\"brushingTimes\":20,\"parentHasCaries\":[1,3],\"school\":\"学军小学1\",\"toothSprouting\":\"上下大白牙刚长出来1\",\"grade\":\"五年级1\",\"parentHasCarieStr\":\"1,3\",\"diet\":\"一日三餐，荤素搭配1\",\"id\":4,\"guardian\":\"楚霸王1\",\"toothClearliness\":\"每天刷牙1\",\"useFlossTimes\":1}";
+        String childParam = "{\"motherHasCaries\":false,\"fatherHasCaries\":true,\"usedFluorideToothpaste\":false,\"patientId\":108462,\"toothLastCheck\":\"2022-01-05\",\"motherPregnancy\":\"正常1\",\"usedDentalFloss\":1,\"habitIdStr\":\"11,26,15\",\"habitIds\":[1,6,15],\"brushingTimes\":20,\"school\":\"学军小学1\",\"toothSprouting\":\"上下大白牙刚长出来1\",\"grade\":\"五年级1\",\"diet\":\"一日三餐，荤素搭配1\",\"id\":4,\"guardian\":\"楚霸王2\",\"toothClearliness\":\"每天刷牙1\",\"useFlossTimes\":1}";
         PatientChildInfoModel childModel = JSONObject.parseObject(childParam, PatientChildInfoModel.class);
 
         PatientExtendInfoModel model = new PatientExtendInfoModel();
@@ -178,7 +223,7 @@ public class PatientRegistrationControllerTest {
 
     @Test
     public void testFindPatientData() {
-        ResponseResult<PatientExtendInfoVo> patientData = patientBaseInfoController.findPatientData(108462);
+        ResponseResult<PatientExtendInfoVo> patientData = patientBaseInfoController.findPatientData(78307);
         System.out.println(JSONObject.toJSON(patientData));
     }
 

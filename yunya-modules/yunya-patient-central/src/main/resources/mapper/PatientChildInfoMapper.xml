@@ -37,8 +37,7 @@
         pci.school,
         pci.grade,
         pei.guardian,
-        pei.useful_phone guardianMobile,
-        pci.medication_history,
+        pci.medication_history AS medicationHistory,
         pci.diet,
         pci.tooth_sprouting AS toothSprouting,
         pci.tooth_clearliness AS toothClearliness,
@@ -46,15 +45,13 @@
         pci.used_fluoride_toothpaste AS usedFluorideToothpaste,
         pci.used_dental_floss AS usedDentalFloss,
         pci.use_floss_times AS useFlossTimes,
-        pci.father_has_caries AS fatherHasCarieStr,
-        pci.mother_has_caries AS motherHasCarieStr,
+        pci.father_has_caries AS fatherHasCaries,
+        pci.mother_has_caries AS motherHasCaries,
         pci.mother_pregnancy AS motherPregnancy,
         pci.habit_ids AS habitIdStr,
         pci.tooth_last_check AS toothLastCheck
     FROM patient_child_info pci
-    LEFT JOIN (
-        SELECT * FROM patient_exp_info WHERE inservice = true
-    ) pei ON pci.patient_id = pei.patient_id
+    LEFT JOIN patient_exp_info pei ON pci.patient_id = pei.patient_id
     <where>
       AND pci.inservice = true
       AND pci.patient_id = #{patientId}

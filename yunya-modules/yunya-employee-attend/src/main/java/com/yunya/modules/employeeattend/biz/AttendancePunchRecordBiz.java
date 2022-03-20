@@ -37,7 +37,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介：考勤打卡业务层
@@ -122,7 +121,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         String longitude = queryForm.getLongitude();
         String latitude = queryForm.getLatitude();
         if (StringHelper.isEmpty(macAddress) && (StringHelper.isEmpty(longitude) || StringHelper.isEmpty(latitude))) {
-            log.error("考勤地址或Wifi不能都为空", JSONObject.toJSONString(queryForm));
+            log.info("考勤地址或Wifi不能都为空", JSONObject.toJSONString(queryForm));
             throw new ClientServiceException("考勤地址或Wifi不能都为空！", PARAMETERS_IS_ILLEGAL);
         }
         Map<Integer, JSONObject> orgMap = getOrgMapByPosition(longitude, latitude, macAddress);
@@ -1512,7 +1511,12 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     private Map<Integer, String> getEmployeeOnWorkMap(List<SysUserInfoDetail> userList) {
         Map<Integer, String> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(userList)) {
-            return userList.stream().collect(toMap(SysUserInfoDetail::getUserId, SysUserInfoDetail::getLeaveTime));
+            userList.forEach(employee->{
+                String leaveTime = employee.getLeaveTime();
+                if (StringHelper.isNotEmpty(leaveTime)) {
+                    result.put(employee.getUserId(), leaveTime);
+                }
+            });
         }
         return result;
     }

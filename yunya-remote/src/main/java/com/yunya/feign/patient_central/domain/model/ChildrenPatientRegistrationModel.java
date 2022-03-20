@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -36,11 +37,6 @@ public class ChildrenPatientRegistrationModel extends PatientRegistrationModel i
     @NotEmpty(message = "父母or监护人姓名不能为空")
     private String guardian;
 
-    /** 父母or监护人联系电话 */
-    @ApiModelProperty(value = "联系电话", required = true)
-    @NotEmpty(message = "联系电话不能为空")
-    private String guardianPhone;
-
     /** 服药史 */
     @ApiModelProperty("服药史")
     private String medicationHistory;
@@ -61,8 +57,8 @@ public class ChildrenPatientRegistrationModel extends PatientRegistrationModel i
     @ApiModelProperty("每天刷牙次数")
     private Short brushingTimes;
 
-    /** 使用的牙膏含氟吗：0-否，1-是 */
-    @ApiModelProperty("使用的牙膏含氟吗：0-否，1-是")
+    /** 使用的牙膏含氟吗 */
+    @ApiModelProperty("使用的牙膏含氟吗")
     private Boolean usedFluorideToothpaste;
 
     /** 使用牙线吗：0-有，1-无，2-偶尔 */
@@ -90,6 +86,7 @@ public class ChildrenPatientRegistrationModel extends PatientRegistrationModel i
     private List<Integer> habitIds;
 
     /** 最近一次检查牙齿日期 */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @ApiModelProperty("最近一次检查牙齿日期")
     private Date toothLastCheck;
 }

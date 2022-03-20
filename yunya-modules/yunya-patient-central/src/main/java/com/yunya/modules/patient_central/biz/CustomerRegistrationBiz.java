@@ -132,8 +132,11 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      * @param employeeId
      */
     private void checkOriginSource(Integer originId, Integer originType, Integer patientId, Integer employeeId) {
-        if (ObjectUtils.isEmpty(originId) && ObjectUtils.isEmpty(patientId) && ObjectUtils.isEmpty(employeeId)) {
-            throw new ClientServiceException("渠道来源不能为空", PARAMETERS_IS_ILLEGAL);
+        if (originType == 1 && ObjectUtils.isEmpty(employeeId)) {
+            throw new ClientServiceException("推荐员工不能为空", PARAMETERS_IS_ILLEGAL);
+        }
+        if (originType == 2 && ObjectUtils.isEmpty(patientId)) {
+            throw new ClientServiceException("介绍人不能为空", PARAMETERS_IS_ILLEGAL);
         }
         if (originId != null) {
             if (originType > 2){
@@ -203,7 +206,17 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 成人患者自主登记
         final int userId = -666;
         final String userName = "患者自主登记";
-        PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, model.getMobile(), model.getMobileOwner());
+        Integer originType = model.getOriginType();
+        Integer originId = model.getOriginId();
+        Integer introducerId = model.getPatientId();
+        Integer employeeId = model.getEmployeeId();
+        checkOriginSource(originId, originType, introducerId, employeeId);
+        if (originType == 1) {// 员工推荐
+            originId = employeeId;
+        } else if (originType == 2) {// 患者转介绍
+            originId = introducerId;
+        }
+        PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, model.getMobileOwner(), originType, originId);
         int patientId = patientBaseInfo.getId();
         addPatientExpInfoByAdult(model, userId, userName, patientId);
         addPatientExtInfo(model, userId, userName, patientId);
@@ -340,30 +353,21 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      * @param mobileOwner
      * @return
      */
-    private PatientBaseInfo addPatientBaseInfo(PatientRegistrationModel model, int userId, String userName, String mobile, Integer mobileOwner) {
+    private PatientBaseInfo addPatientBaseInfo(PatientRegistrationModel model, int userId, String userName,
+                                               Integer mobileOwner, Integer originType, Integer originId) {
         Date now = new Date(System.currentTimeMillis());
-        Integer originType = model.getOriginType();
-        Integer originId = model.getOriginId();
-        Integer patientId = model.getPatientId();
-        Integer employeeId = model.getEmployeeId();
-        checkOriginSource(originId, originType, patientId, employeeId);
         PatientBaseInfo baseInfo = new PatientBaseInfo();
-        if (originType == 1) {// 员工推荐
-            originId = employeeId;
-        } else if (originType == 2) {// 患者转介绍
-            originId = patientId;
-        }
         baseInfo.setAge(model.getAge());
         baseInfo.setBirthday(model.getBirthdate());
         baseInfo.setGender(model.getGender());
-        baseInfo.setMobile(mobile);
+        baseInfo.setMobile(model.getMobile());
         baseInfo.setMobileOwner(mobileOwner);
         String name = model.getName();
         baseInfo.setName(name);
         baseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(name));
         baseInfo.setOrgId(model.getOrgId());
+        baseInfo.setOriginType(originType);
         baseInfo.setOriginId(originId);
-        baseInfo.setOriginType(model.getOriginType());
         baseInfo.setCrtId(userId);
         baseInfo.setCrtName(userName);
         baseInfo.setCrtTime(now);
@@ -383,7 +387,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         // 儿童患者登记
         final int userId = -777;
         final String userName = "患者自主登记";
-        PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, null, null);
+        PatientBaseInfo patientBaseInfo = addPatientBaseInfo(model, userId, userName, null, null, null);
         int patientId = patientBaseInfo.getId();
         addPatientExpInfoByChild(model, userId, userName, patientId);
         addPatientExtInfo(model, userId, userName, patientId);
@@ -488,7 +492,6 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         expInfo.setCountry(model.getCountry());
         expInfo.setProfession(model.getProfession());
         expInfo.setGuardian(model.getGuardian());
-        expInfo.setUsefulPhone(model.getGuardianPhone());
         expInfo.setEmergencyPhone(model.getEmergencyPhone());
         expInfo.setState(model.getState());
         Date now = new Date(System.currentTimeMillis());

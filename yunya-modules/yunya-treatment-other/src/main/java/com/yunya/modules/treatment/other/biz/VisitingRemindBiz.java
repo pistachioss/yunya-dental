@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -733,9 +734,37 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @return 返回结果
      */
     public Integer resetVisitingRemindBatch(ResetVisitingRemindForm form) {
-        return mapper.resetVisitingRemindBatch(
+        Integer result = mapper.resetVisitingRemindBatch(
                 Integer.valueOf(BaseContextHandler.getUserID()),
                 BaseContextHandler.getUsername(),
                 form);
+        if (result > 0) {
+            for (Integer id : form.getIds()) {
+                // 发送消息-修改提醒
+                remoteRabbitMqServiceFeign.sendMessage(id,1,1, MsgCategoryEnum.BaseVisitRemind);
+            }
+            return result;
+        }
+        return 0;
+    }
+
+    /**
+     * 临时方法，向rabbitmq中填补缺失的数据
+     * @return
+     */
+    public Integer compensateModify() {
+        Example example = new Example(VisitingRemind.class);
+        example.createCriteria()
+                .andBetween("upd_time","2022-03-14 00:00:00","2022-03-20 23:59:59")
+                .andEqualTo("status",0);
+        List<VisitingRemind> visitingReminds = mapper.selectByExample(example);
+        if (!visitingReminds.isEmpty()) {
+            for (VisitingRemind visitingRemind : visitingReminds) {
+                // 发送消息-修改提醒
+                remoteRabbitMqServiceFeign.sendMessage(visitingRemind.getId(),1,1, MsgCategoryEnum.BaseVisitRemind);
+            }
+            return visitingReminds.size();
+        }
+        return 0;
     }
 }
