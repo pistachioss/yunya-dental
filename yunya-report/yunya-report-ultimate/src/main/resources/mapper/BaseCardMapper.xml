@@ -510,6 +510,7 @@
 
     <select id="listRechargeDetailByParam" resultType="com.yunya.feign.report.domain.vo.RechargeDetailVo">
         select
+        `b`.`coupon_name` AS couponName,
         `bc`.`card_number`,
         `bo`.`abbreviation` as `rechargeOrgName`,
         date_format(`bc`.`active_date`, '%Y-%m-%d') as `rechargeDate`,
