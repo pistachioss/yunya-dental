@@ -125,7 +125,8 @@ public class BaseTreatmentProcessBiz
               treatmentProcess.getPatientId(), treatmentProcess.getRegisteredDentistId(), treatmentProcess.getTreatmentId(), sDate, eDate);
       if (!ObjectUtils.isEmpty(preTreat)) {
         Integer treatmentId = treatmentProcess.getTreatmentId();
-        if (treatmentProcess.getInMonthNextId() == -1) {// 删除
+        Integer inMonthNextId = treatmentProcess.getInMonthNextId();
+        if (!ObjectUtils.isEmpty(inMonthNextId) && inMonthNextId==-1) {// 删除就诊
           treatmentId = 0;
         }
         preTreat.setInMonthNextId(treatmentId);
@@ -254,7 +255,8 @@ public class BaseTreatmentProcessBiz
   public BaseTreatmentProcess updateTreatProcessByRegisteredId(Integer registeredId) {
     Registered registered = registeredMapper.selectByPrimaryKey(registeredId);
     if (null != registered) {
-      BaseTreatmentProcess treatmentProcess = mapper.selectOneByRegisteredId(registeredId);
+//      BaseTreatmentProcess treatmentProcess = mapper.selectOneByRegisteredId(registeredId);
+      BaseTreatmentProcess treatmentProcess = null;
       if (registered.getInservice()) {
         if (treatmentProcess != null) {
           setTreatmentProcessRegisteredValue(treatmentProcess, registered);
