@@ -116,6 +116,11 @@ public class BaseTreatmentProcessBiz
     }
   }
 
+  /**
+   * 更新距本次就诊记录在一个月内并且最近一次就诊记录的inMontheNextId值
+   *
+   * @param treatmentProcess
+   */
   private void updateInMonthNextTreat(BaseTreatmentProcess treatmentProcess) {
     Byte treatType = treatmentProcess.getTreatType();
     if (treatType.intValue() == 1) {
