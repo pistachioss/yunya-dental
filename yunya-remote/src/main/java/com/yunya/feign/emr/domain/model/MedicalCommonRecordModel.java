@@ -125,6 +125,9 @@ public class MedicalCommonRecordModel {
   @ApiModelProperty("创建者ID")
   private Integer crtId;
 
+  @ApiModelProperty("创建病历员工姓名")
+  private String crtName;
+
   @ApiModelProperty("创建时间")
   private Date crtTime;
 
