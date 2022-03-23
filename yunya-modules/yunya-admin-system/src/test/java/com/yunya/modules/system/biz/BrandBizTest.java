@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.model.PageQueryParams;
+import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.models.system.Brand;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.system.domain.query.OrganizationQueryForm;
@@ -14,10 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.Collator;
+import java.util.*;
 
 /**
  * 简介: 品牌业务层测试
@@ -261,6 +260,13 @@ public class BrandBizTest {
     String userName = "系统管理员";
     Date now = new Date(System.currentTimeMillis());
     List<JSONObject> arr = JSON.parseArray(param, JSONObject.class);
+    Comparator<Object> comparator = Collator.getInstance(Locale.ENGLISH);
+    arr.sort((v1,v2)->{
+      String c1 = HanyuPinyinHelper.toHanyuPinyin(v1.getString("cn"));
+      String c2 = HanyuPinyinHelper.toHanyuPinyin(v2.getString("cn"));
+      return comparator.compare(c1, c2);
+    });
+    System.out.println(arr);
     for (JSONObject obj : arr) {
       DictionaryItem entity = new DictionaryItem();
       entity.setEnglishName(obj.getString("en"));
