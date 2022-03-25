@@ -204,7 +204,7 @@ public class TreatmentOtherServiceRest {
    * @param model
    */
   @ApiOperation(value = "根据条件逻辑删除上传文件")
-  @PutMapping(value = "api/treatment/other/xUploadFile/tombstone")
+  @PutMapping(value = "/xUploadFile/tombstone")
   public void tombstoneUploadFile(@RequestBody @Validated MedicalRayFilmModel model) {
     xUploadFileBiz.tombstone(model);
   }

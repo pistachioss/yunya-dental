@@ -2,6 +2,7 @@ package com.yunya.modules.emr.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.emr.domain.model.MedicalPictureRecordModel;
+import com.yunya.feign.emr.domain.query.MedicalPictureRecordExistsQuery;
 import com.yunya.feign.emr.domain.query.MedicalPictureRecordQuery;
 import com.yunya.feign.emr.domain.vo.MedicalPictureRecordVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -40,7 +41,7 @@ public class MedicalPictureRecordController {
 
     @ApiOperation(value = "查询病历照片记录是否存在")
     @GetMapping("/isExists")
-    public ResponseResult<Boolean> isExistsMedicalPictureRecord(@Valid @RequestBody MedicalPictureRecordModel query) {
+    public ResponseResult<Boolean> isExistsMedicalPictureRecord(@Valid @RequestBody MedicalPictureRecordExistsQuery query) {
         Boolean isExists = medicalPictureRecordBiz.isExistsMedicalPictureRecord(query);
         return ResponseUtil.success(isExists);
     }
@@ -49,8 +50,7 @@ public class MedicalPictureRecordController {
     @PostMapping("/save")
     @CurrentUser
     public ResponseResult<Integer> save(@Valid @RequestBody MedicalPictureRecordModel model) {
-        Integer id = medicalPictureRecordBiz.save(model);
-        return ResponseUtil.success(id);
+        return ResponseUtil.success(medicalPictureRecordBiz.save(model));
     }
 
     @ApiOperation(value = "根据id删除病历照片记录")

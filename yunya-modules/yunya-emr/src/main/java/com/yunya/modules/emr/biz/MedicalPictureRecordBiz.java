@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Joiner;
 import com.yunya.feign.emr.domain.model.MedicalPictureRecordModel;
+import com.yunya.feign.emr.domain.query.MedicalPictureRecordExistsQuery;
 import com.yunya.feign.emr.domain.query.MedicalPictureRecordQuery;
 import com.yunya.feign.emr.domain.vo.MedicalPictureRecordVO;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
@@ -66,9 +67,9 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
             MedicalPictureRecordVO record = findOneByName(patientId, name);
             List<XUploadFileVO> files = model.getFiles();
             if (!ObjectUtils.isEmpty(record)) {//合并
-                if (!ObjectUtils.isEmpty(id) && !id.equals(record.getId())) {
+                if (!record.getId().equals(id)) {
                     // 删除旧
-                    tombstoneById(id, userId, now);
+                    tombstoneById(id);
                     fillUploadFile(Arrays.asList(record));
                     // 上传文件合并
                     files = prePoseMerge(files, record.getFiles());
@@ -76,12 +77,26 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
                 id = record.getId();
             } else if (ObjectUtils.isEmpty(id)){// 新增
                 id = insertModel(model, userId, now);
-            } else {
-                throw new ClientServiceException("无效数据", OperationCodeConstants.OPERATION_NOT_ALLOW);
+            } else {// 修改
+                id = updateModel(model, userId, now);
             }
             saveUploadFile(files, id, userId, now);
             redisUtils.unlock(lockKey, name);
         }
+        return id;
+    }
+
+    private Integer updateModel(MedicalPictureRecordModel model, Integer userId, Date now) {
+        Integer id = model.getId();
+        MedicalPictureRecord entity = mapper.selectByPrimaryKey(id);
+        if (ObjectUtils.isEmpty(entity)) {
+            throw new ClientServiceException("保存失败", OperationCodeConstants.DATA_NOT_EXIST);
+        }
+        entity.setId(id);
+        entity.setName(model.getName());
+        entity.setUptId(userId);
+        entity.setUptTime(now);
+        mapper.updateByPrimaryKeySelective(entity);
         return id;
     }
 
@@ -137,12 +152,14 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
     /**
      * 检查是否重复
      *
-     * @param model
+     * @param id
+     * @param patientId
+     * @param name
+     *
      */
-    private Boolean checkRepeatName(MedicalPictureRecordModel model) {
-        MedicalPictureRecordVO record = findOneByName(model.getPatientId(), model.getName());
+    private Boolean checkRepeatName(Integer id, Integer patientId, String name) {
+        MedicalPictureRecordVO record = findOneByName(patientId, name);
         if (!ObjectUtils.isEmpty(record)) {
-            Integer id = model.getId();
             if (ObjectUtils.isEmpty(id)) {// 新增
                 return true;
             } else {// 修改
@@ -191,12 +208,14 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
     }
 
     private void tombstoneById(Integer id, Integer userId, Date now) {
-        MedicalPictureRecord entity = new MedicalPictureRecord();
-        entity.setId(id);
-        entity.setInservice(false);
-        entity.setUptId(userId);
-        entity.setUptTime(now);
-        mapper.updateByPrimaryKeySelective(entity);
+        if (!ObjectUtils.isEmpty(id)) {
+            MedicalPictureRecord entity = new MedicalPictureRecord();
+            entity.setId(id);
+            entity.setInservice(false);
+            entity.setUptId(userId);
+            entity.setUptTime(now);
+            mapper.updateByPrimaryKeySelective(entity);
+        }
     }
 
     /**
@@ -249,7 +268,7 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
      * @param query
      * @return
      */
-    public Boolean isExistsMedicalPictureRecord(MedicalPictureRecordModel query) {
-        return checkRepeatName(query);
+    public Boolean isExistsMedicalPictureRecord(MedicalPictureRecordExistsQuery query) {
+        return checkRepeatName(query.getId(), query.getPatientId(), query.getName());
     }
 }
