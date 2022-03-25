@@ -23,9 +23,9 @@ import java.util.List;
 @ToString
 @ApiModel("普通电子病历-照片影像新增模型")
 public class MedicalRayFilmModel implements Serializable {
-    @ApiModelProperty("普通电子病历Id")
-    @NotNull(message = "普通电子病历id不能为空")
-    private Integer medicalId;
+    @ApiModelProperty("来源Id")
+    @NotNull(message = "来源id不能为空")
+    private Integer sourceId;
 
     @ApiModelProperty("文件类型")
     @NotNull(message = "文件类型不能为空")

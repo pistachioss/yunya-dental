@@ -1,0 +1,230 @@
+package com.yunya.modules.emr.biz;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.emr.domain.model.MedicalPictureRecordModel;
+import com.yunya.feign.emr.domain.query.MedicalPictureRecordQuery;
+import com.yunya.feign.emr.domain.vo.MedicalPictureRecordVO;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
+import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
+import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
+import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
+import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.models.emr.MedicalPictureRecord;
+import com.yunya.modules.emr.mapper.MedicalPictureRecordMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.yunya.framework.common.enums.FileSourceTypeEnum.PATIENT_EMR_PIC;
+
+/**
+ * 简介：
+ *
+ * @author: chenlin
+ * @Description:
+ * @Date: 2022/3/24 10:03
+ * @since: 1.0.0
+ */
+@Service
+public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper, MedicalPictureRecord> {
+
+    @Autowired
+    private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
+
+    /**
+     * 保存病历照片记录
+     *
+     * @param model
+     * @return
+     */
+    public Integer save(MedicalPictureRecordModel model) {
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        Date now = new Date(System.currentTimeMillis());
+        Integer id = model.getId();
+        MedicalPictureRecord entity = new MedicalPictureRecord();
+        MedicalPictureRecordVO record = findOneByName(model.getPatientId(), model.getName());
+        BeanUtils.copyProperties(model, entity);
+        entity.setInservice(true);
+        entity.setUptId(userId);
+        entity.setUptTime(now);
+        List<XUploadFileVO> files = model.getFiles();
+        if (!ObjectUtils.isEmpty(record)) {//合并
+            if (!ObjectUtils.isEmpty(id) && !id.equals(record.getId())) {
+                // 删除旧
+                tombstoneById(id, userId, now);
+                fillUploadFile(Arrays.asList(record));
+                // 上传文件合并
+                files = prePoseMerge(files, record.getFiles());
+            }
+        } else {// 新增
+            entity.setCrtId(userId);
+            entity.setCrtTime(now);
+            mapper.insertSelective(entity);
+        }
+        id = entity.getId();
+        saveUploadFile(files, id, userId, now);
+        return id;
+    }
+
+    /**
+     * 前置合并
+     *
+     * @param target
+     * @param source
+     */
+    private List<XUploadFileVO> prePoseMerge(List<XUploadFileVO> target, List<XUploadFileVO> source) {
+        if (StringHelper.isEmpty(target)) {
+            target = new ArrayList<>();
+        }
+        if (StringHelper.isNotEmpty(source)) {
+            for (int i = source.size()-1; i >=0; i--) {
+                target.add(0, source.get(i));
+            }
+        }
+        return target;
+    }
+
+    /**
+     * 保存上传文件
+     *
+     * @param files
+     * @param sourceId
+     * @param userId
+     * @param now
+     */
+    private void saveUploadFile(List<XUploadFileVO> files, Integer sourceId, Integer userId, Date now) {
+        MedicalRayFilmModel model = new MedicalRayFilmModel();
+        model.setSourceId(sourceId);
+        model.setSourceType(PATIENT_EMR_PIC.getCode());
+        model.setRayFiles(files);
+        model.setCrtId(userId);
+        model.setCrtTime(now);
+        remoteTreatmentOtherFeign.saveXRayFile2XUploadFile(model);
+    }
+
+    /**
+     * 检查是否重复
+     *
+     * @param model
+     */
+    private Boolean checkRepeatName(MedicalPictureRecordModel model) {
+        MedicalPictureRecordVO record = findOneByName(model.getPatientId(), model.getName());
+        if (!ObjectUtils.isEmpty(record)) {
+            Integer id = model.getId();
+            if (ObjectUtils.isEmpty(id)) {// 新增
+                return true;
+            } else {// 修改
+                if (!record.getId().equals(id)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 根据name查询
+     *
+     * @param patientId
+     * @param name
+     * @return
+     */
+    private MedicalPictureRecordVO findOneByName(Integer patientId, String name) {
+        MedicalPictureRecordQuery query = new MedicalPictureRecordQuery();
+        query.setName(name);
+        query.setPatientId(patientId);
+        List<MedicalPictureRecordVO> list = mapper.findMedicalPictureRecordList(query);
+        if (StringHelper.isNotEmpty(list)) {
+            return list.get(0);
+        }
+        return null;
+    }
+
+    /**
+     * 根据条件逻辑删除上传文件
+     *
+     * @param id
+     */
+    public void tombstoneById(Integer id) {
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        Date now = new Date(System.currentTimeMillis());
+        tombstoneById(id, userId, now);
+        // 删除照片
+        MedicalRayFilmModel query = new MedicalRayFilmModel();
+        query.setSourceId(id);
+        query.setSourceType(PATIENT_EMR_PIC.getCode());
+        query.setCrtId(userId);
+        query.setCrtTime(now);
+        remoteTreatmentOtherFeign.tombstoneUploadFile(query);
+    }
+
+    private void tombstoneById(Integer id, Integer userId, Date now) {
+        MedicalPictureRecord entity = new MedicalPictureRecord();
+        entity.setId(id);
+        entity.setInservice(false);
+        entity.setUptId(userId);
+        entity.setUptTime(now);
+        mapper.updateByPrimaryKeySelective(entity);
+    }
+
+    /**
+     * 条件查询病历照片记录
+     *
+     * @param query
+     * @return
+     */
+    public PageInfo<MedicalPictureRecordVO> findList(MedicalPictureRecordQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<MedicalPictureRecordVO> result = mapper.findMedicalPictureRecordList(query);
+        fillUploadFile(result);
+        return new PageInfo<>(result);
+    }
+
+    /**
+     * 填充上传的照片
+     *
+     * @param result
+     */
+    private void fillUploadFile(List<MedicalPictureRecordVO> result) {
+        if (StringHelper.isNotEmpty(result)) {
+            Map<Integer, List<XUploadFileVO>> map = new HashMap<>(16);
+            List<Integer> sourceIds = result.stream().map(MedicalPictureRecordVO::getId).collect(Collectors.toList());
+            XUploadFileQuery query = new XUploadFileQuery();
+            query.setWhetherPage(false);
+            query.setSourceIds(sourceIds);
+            query.setSourceType(PATIENT_EMR_PIC.getCode());
+            List<XUploadFileVO> files = remoteTreatmentOtherFeign.findXUploadFileList(query);
+            if (StringHelper.isNotEmpty(files)) {
+                files.forEach(file->{
+                    Integer sourceId = file.getSourceId();
+                    List<XUploadFileVO> list = map.get(sourceId);
+                    if (list == null) {
+                        list = new ArrayList<>();
+                    }
+                    list.add(file);
+                    map.put(sourceId, list);
+                });
+            }
+            result.forEach(vo-> vo.setFiles(map.get(vo.getId())));
+        }
+    }
+
+    /**
+     * 查询病历照片记录是否存在
+     *
+     * @param query
+     * @return
+     */
+    public Boolean isExistsMedicalPictureRecord(MedicalPictureRecordModel query) {
+        return checkRepeatName(query);
+    }
+}

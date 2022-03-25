@@ -146,7 +146,7 @@ public class XUploadFileBiz extends BaseBiz<XUploadFileMapper, XUploadFile> {
     public void saveXRayFile2XUploadFile(MedicalRayFilmModel model) {
         tombstone(model);
         Byte sourceType = model.getSourceType();
-        Integer sourceId = model.getMedicalId();
+        Integer sourceId = model.getSourceId();
         // 逻辑删除该病历下的所有照片
         List<XUploadFileVO> list = model.getRayFiles();
         if (StringHelper.isNotEmpty(list)) {
@@ -179,10 +179,10 @@ public class XUploadFileBiz extends BaseBiz<XUploadFileMapper, XUploadFile> {
      *
      * @param model
      */
-    private void tombstone(MedicalRayFilmModel model) {
+    public void tombstone(MedicalRayFilmModel model) {
         XUploadFile fileQuery = new XUploadFile();
         fileQuery.setInservice(true);
-        fileQuery.setSourceId(model.getMedicalId());
+        fileQuery.setSourceId(model.getSourceId());
         fileQuery.setSourceType(model.getSourceType());
         mapper.updateUnvaildByEntity(fileQuery, model.getCrtId(), model.getCrtTime());
     }

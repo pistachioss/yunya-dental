@@ -2,6 +2,7 @@ package com.yunya.modules.employeeattend.controller;
 
 import com.yunya.feign.employee_attend.vo.ApprovalInfoVO;
 import com.yunya.feign.employee_attend.vo.EmLeaveVO;
+import com.yunya.feign.employee_attend.vo.LeaveAppVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
@@ -127,7 +128,7 @@ public class LeaveInfoController {
      */
     @PostMapping("/findList")
     @ApiOperation("获取请假申请列表")
-    @RepeatSubmit
+    @CurrentUser
     public ResponseResult<List<LeaveInfoListVO>> findList(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.findList(leaveInfoForm));
     }
@@ -170,7 +171,7 @@ public class LeaveInfoController {
     @PostMapping("/findApprovalByMe")
     @ApiOperation("待我审批 传用户id")
     @RepeatSubmit
-    public ResponseResult findApprovalByMe(@RequestBody @Validated FindApprovalByMeForm findApprovalByMeForm) {
+    public ResponseResult<List<LeaveAppVO>> findApprovalByMe(@RequestBody @Validated FindApprovalByMeForm findApprovalByMeForm) {
         return ResponseUtil.success(leaveInfoBiz.findApprovalByMe(findApprovalByMeForm));
     }
 

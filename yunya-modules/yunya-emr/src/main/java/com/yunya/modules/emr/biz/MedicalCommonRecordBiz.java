@@ -161,7 +161,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     private void saveXRayFile2XUploadFile(Integer medicalId, List<XUploadFileVO> files, Date crtTime) {
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         MedicalRayFilmModel model = new MedicalRayFilmModel();
-        model.setMedicalId(medicalId);
+        model.setSourceId(medicalId);
         model.setSourceType(MEDICAL_COMMON.getCode());
         model.setRayFiles(files);
         model.setCrtId(userId);

@@ -9,6 +9,7 @@
     <result column="apply_id" property="applyId" jdbcType="INTEGER" />
     <result column="apply_type" property="applyType" jdbcType="INTEGER" />
     <result column="user_id" property="userId" jdbcType="INTEGER" />
+    <result column="hadRead" property="hadRead" jdbcType="BIT" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
@@ -19,6 +20,7 @@
     apply_id,
     apply_type,
     user_id,
+    had_read,
     crt_id,
     crt_time
     )
@@ -27,8 +29,68 @@
       (#{item.applyId},
       #{item.applyType},
       #{item.userId},
+      #{item.had_read},
       #{item.crtId},
       #{item.crtTime})
     </foreach>
   </insert>
+
+  <select id="selectAssociatedItemCount" resultType="com.yunya.feign.employee_attend.vo.AttendanceItemCountVO">
+    SELECT
+      sum(case when apply_type = 0 then 1 else 0 end) as leaveCount,
+      sum(case when apply_type = 1 then 1 else 0 end) as workOverCount,
+      sum(case when apply_type = 2 then 1 else 0 end) as fieldCount
+    FROM copy_info ci
+    <where>
+      <if test="query.copyId != null">
+        AND ci.user_id = #{query.copyId}
+      </if>
+    </where>
+  </select>
+
+  <select id="selectAttendanceItemCount" resultType="com.yunya.feign.employee_attend.vo.AttendanceItemCountVO">
+    SELECT
+        sum(leaveCount) AS leaveCount,
+        sum(workOverCount) AS workOverCount,
+        sum(fieldCount) AS fieldCount
+    FROM (
+      SELECT
+        COUNT(li.id) AS leaveCount,
+        0 AS workOverCount,
+        0 AS fieldCount
+      FROM leave_info li
+      LEFT JOIN approval_people ap ON li.approval_now_people_id = ap.id
+      <where>AND li.approval_status = 0
+        <if
+                test="query.copyId != null">
+            AND ap.user_id = #{query.copyId}
+          </if>
+      </where>
+      GROUP BY li.id
+      UNION
+      SELECT
+          0 AS leaveCount,
+          COUNT(fi.id) AS workOverCount,
+          0 AS fieldCount
+      FROM field_info fi
+      <where>
+          AND fi.approval_status = 0
+          <if test="query.copyId != null">
+            AND fi.approval_people_id = #{query.copyId}
+          </if>
+      </where>
+      UNION
+      SELECT
+          0 AS leaveCount,
+          0 AS workOverCount,
+          COUNT(t.id) AS fieldCount
+      FROM work_overtime_info t
+      <where>
+          AND t.approval_status = 0
+          <if test="query.copyId != null">
+            AND t.approval_people_id = #{query.copyId}
+          </if>
+      </where>
+    ) tmp
+  </select>
 </mapper>

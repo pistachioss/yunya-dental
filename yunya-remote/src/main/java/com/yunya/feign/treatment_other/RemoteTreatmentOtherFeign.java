@@ -127,4 +127,13 @@ public interface RemoteTreatmentOtherFeign {
   @ApiOperation(value = "条件查询上传文件")
   @PostMapping(value = "api/treatment/other/xUploadFile/findList")
   List<XUploadFileVO> findXUploadFileList(@RequestBody @Validated XUploadFileQuery query);
+
+  /**
+   * 根据条件逻辑删除上传文件
+   *
+   * @param model
+   */
+  @ApiOperation(value = "根据条件逻辑删除上传文件")
+  @PutMapping(value = "api/treatment/other/xUploadFile/tombstone")
+  void tombstoneUploadFile(@RequestBody @Validated MedicalRayFilmModel model);
 }

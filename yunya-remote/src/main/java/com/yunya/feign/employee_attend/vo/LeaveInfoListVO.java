@@ -1,13 +1,12 @@
 package com.yunya.feign.employee_attend.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.yunya.models.employee_attend.ApprovalInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
  * 简介:
@@ -22,7 +21,7 @@ import java.util.List;
  */
 @Data
 @ApiModel(value = "请假信息")
-public class LeaveInfoListVO {
+public class LeaveInfoListVO extends HadReadVO implements Serializable {
     /**
      * 主键id
      */
