@@ -2,6 +2,7 @@ package com.yunya.modules.emr.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.base.Joiner;
 import com.yunya.feign.emr.domain.model.MedicalPictureRecordModel;
 import com.yunya.feign.emr.domain.query.MedicalPictureRecordQuery;
 import com.yunya.feign.emr.domain.vo.MedicalPictureRecordVO;
@@ -10,16 +11,19 @@ import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
 import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.emr.MedicalPictureRecord;
 import com.yunya.modules.emr.mapper.MedicalPictureRecordMapper;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.enums.FileSourceTypeEnum.PATIENT_EMR_PIC;
@@ -38,6 +42,11 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
     @Autowired
     private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
 
+    @Autowired
+    private RedisUtils redisUtils;
+
+    private static final String MEDICAL_PIC_KEY = "lock:medical:picture";
+
     /**
      * 保存病历照片记录
      *
@@ -48,29 +57,45 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         Date now = new Date(System.currentTimeMillis());
         Integer id = model.getId();
+        Integer patientId = model.getPatientId();
+        String name = model.getName();
+
+        String lockKey = Joiner.on(":").join(MEDICAL_PIC_KEY, patientId);
+        boolean lock = redisUtils.setLock(lockKey, name, 30L, TimeUnit.SECONDS);
+        if (lock) {
+            MedicalPictureRecordVO record = findOneByName(patientId, name);
+            List<XUploadFileVO> files = model.getFiles();
+            if (!ObjectUtils.isEmpty(record)) {//合并
+                if (!ObjectUtils.isEmpty(id) && !id.equals(record.getId())) {
+                    // 删除旧
+                    tombstoneById(id, userId, now);
+                    fillUploadFile(Arrays.asList(record));
+                    // 上传文件合并
+                    files = prePoseMerge(files, record.getFiles());
+                }
+                id = record.getId();
+            } else if (ObjectUtils.isEmpty(id)){// 新增
+                id = insertModel(model, userId, now);
+            } else {
+                throw new ClientServiceException("无效数据", OperationCodeConstants.OPERATION_NOT_ALLOW);
+            }
+            saveUploadFile(files, id, userId, now);
+            redisUtils.unlock(lockKey, name);
+        }
+        return id;
+    }
+
+    private Integer insertModel(MedicalPictureRecordModel model, Integer userId, Date now) {
         MedicalPictureRecord entity = new MedicalPictureRecord();
-        MedicalPictureRecordVO record = findOneByName(model.getPatientId(), model.getName());
-        BeanUtils.copyProperties(model, entity);
+        entity.setName(model.getName());
+        entity.setPatientId(model.getPatientId());
         entity.setInservice(true);
+        entity.setCrtId(userId);
+        entity.setCrtTime(now);
         entity.setUptId(userId);
         entity.setUptTime(now);
-        List<XUploadFileVO> files = model.getFiles();
-        if (!ObjectUtils.isEmpty(record)) {//合并
-            if (!ObjectUtils.isEmpty(id) && !id.equals(record.getId())) {
-                // 删除旧
-                tombstoneById(id, userId, now);
-                fillUploadFile(Arrays.asList(record));
-                // 上传文件合并
-                files = prePoseMerge(files, record.getFiles());
-            }
-        } else {// 新增
-            entity.setCrtId(userId);
-            entity.setCrtTime(now);
-            mapper.insertSelective(entity);
-        }
-        id = entity.getId();
-        saveUploadFile(files, id, userId, now);
-        return id;
+        mapper.insertSelective(entity);
+        return entity.getId();
     }
 
     /**
