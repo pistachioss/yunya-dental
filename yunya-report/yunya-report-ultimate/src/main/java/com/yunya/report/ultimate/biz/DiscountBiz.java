@@ -9,24 +9,29 @@ import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.feign.wechat.enums.TemplateDataEnum;
+import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseCoupon;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
 import static com.yunya.feign.wechat.enums.TemplateEnum.*;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author xiangyang
@@ -508,5 +513,31 @@ public class DiscountBiz {
         }
         List<CouponUseVo> resultList = cardMapper.getCouponUse(query);
         return new PageInfo<>(resultList);
+    }
+
+    public void findRechargePageAllExport(RechargeQuery query, HttpServletResponse response) throws IOException {
+        List<RechargeVo> coupons = couponMapper.listRechargeByParam(query.getCouponName(), query.getCouponCategoryIds());
+        List<RechargeDetailVo> list = new ArrayList<>();
+        List<RechargeInfoDetailVO> data = new ArrayList<>();
+        if (StringHelper.isNotEmpty(coupons)) {
+            coupons.forEach(vo->{
+                if (vo.getRechargeQuantity() > 0) {
+                    List<RechargeDetailVo> detail = getRechargeDetailList(vo.getCouponId(), new RechargeDetailQuery());
+                    if (StringHelper.isNotEmpty(detail)) {
+                        list.addAll(detail);
+                    }
+                }
+            });
+            if (StringHelper.isNotEmpty(list)) {
+                list.forEach(vo->{
+                    RechargeInfoDetailVO entity = new RechargeInfoDetailVO();
+                    BeanUtils.copyProperties(vo, entity);
+                    data.add(entity);
+                });
+            }
+        }
+        ExcelUtil<RechargeInfoDetailVO> excelUtil = new ExcelUtil(RechargeInfoDetailVO.class);
+        String fileName = "充值卡充值统计全部详情";
+        excelUtil.exportExcel(response, data, fileName, fileName);
     }
 }

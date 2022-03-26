@@ -6,9 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -36,6 +34,12 @@ public class PatientRegistrationModel implements Serializable {
     @NotEmpty(message = "姓名为空")
     @Size(max = 50, message = "姓名长度不能超过50个字符！")
     private String name;
+
+    /** 手机号码 长度14 */
+    @ApiModelProperty(value = "手机号",required = true)
+    @Pattern(regexp = "^[1][3,4,5,6,7,8,9][0-9]{9}$", message = "手机号格式有误")
+    @NotBlank(message = "手机号不能为空")
+    private String mobile;
 
     /** 性别 0-男；1-女； */
     @ApiModelProperty(value = "性别 0-男；1-女")
@@ -86,23 +90,6 @@ public class PatientRegistrationModel implements Serializable {
     @ApiModelProperty("紧急联系人")
     @Size(max = 50, message = "紧急联系人长度不能超过50个字符！")
     private String emergencyPhone;
-
-    /** 患者来源类型 患者来源分类ID */
-    @ApiModelProperty(value = "患者来源分类ID", required = true)
-    @NotNull(message = "渠道来源不能为空")
-    private Integer originType;
-
-    /** 患者来源关联ID （二级患者来源ID）*/
-    @ApiModelProperty(value = "渠道来源关联ID（二级患者来源ID）")
-    private Integer originId;
-
-    /** 渠道来源-推荐员工id*/
-    @ApiModelProperty(value = "渠道来源-推荐员工id")
-    private Integer employeeId;
-
-    /** 渠道来源-介绍患者id*/
-    @ApiModelProperty(value = "渠道来源-介绍患者id")
-    private Integer patientId;
 
     /** 疾病史 */
     @ApiModelProperty("疾病史 (疾病名称列表)")

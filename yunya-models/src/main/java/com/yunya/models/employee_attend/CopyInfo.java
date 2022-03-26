@@ -1,7 +1,9 @@
 package com.yunya.models.employee_attend;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "copy_info")
 public class CopyInfo {
@@ -25,6 +27,12 @@ public class CopyInfo {
      */
     @Column(name = "user_id")
     private Integer userId;
+
+    /**
+     * 是否已读
+     */
+    @Column(name = "had_read")
+    private Boolean hadRead;
 
     /**
      * 创建人
@@ -116,6 +124,14 @@ public class CopyInfo {
      */
     public void setUserId(Integer userId) {
         this.userId = userId;
+    }
+
+    public Boolean getHadRead() {
+        return hadRead;
+    }
+
+    public void setHadRead(Boolean hadRead) {
+        this.hadRead = hadRead;
     }
 
     /**

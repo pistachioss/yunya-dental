@@ -220,6 +220,9 @@ public class PatientExpInfoVo implements Serializable {
      */
     private Date updTime;
 
+    /** 妊娠周数*/
+    private Integer pregnancyWeek;
+
     /** 妊娠月数*/
     @ApiModelProperty("妊娠月数")
     private Integer pregnancyMonth;
@@ -250,7 +253,7 @@ public class PatientExpInfoVo implements Serializable {
 
     /** 最近一次填充治疗日期 */
     @ApiModelProperty("最近一次填充治疗日期")
-    private Date fillTreatLastDate;
+    private String fillTreatLastDate;
 
     /** 是否牙周手术 */
     @ApiModelProperty("是否牙周手术")
@@ -270,8 +273,7 @@ public class PatientExpInfoVo implements Serializable {
 
     /** RPD戴用时间 */
     @ApiModelProperty("RPD戴用时间")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date rpdDate;
+    private String rpdDate;
 
     /** LPD部位 */
     @ApiModelProperty("LPD部位")
@@ -280,7 +282,7 @@ public class PatientExpInfoVo implements Serializable {
     /** LPD戴用时间 */
     @ApiModelProperty("LPD戴用时间")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date lpdDate;
+    private String lpdDate;
 
     /** 是否预防治疗 */
     @ApiModelProperty("是否预防治疗")
@@ -308,13 +310,11 @@ public class PatientExpInfoVo implements Serializable {
 
     /** 正畸治疗开始日期*/
     @ApiModelProperty("正畸治疗开始日期")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date orthodonticStartDate;
+    private String orthodonticStartDate;
 
     /** 正畸治疗结束日期*/
     @ApiModelProperty("正畸治疗结束日期")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date orthodonticEndDate;
+    private String orthodonticEndDate;
 
     /** 是否接受过口腔卫生宣教*/
     @ApiModelProperty("是否接受过口腔卫生宣教")

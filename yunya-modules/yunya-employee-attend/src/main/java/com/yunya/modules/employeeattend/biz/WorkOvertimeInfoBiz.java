@@ -2,10 +2,7 @@ package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.yunya.feign.employee_attend.form.WorkOvertimeInfoQueryForm;
-import com.yunya.feign.employee_attend.vo.AttendanceOvertimeMinuteVO;
-import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
-import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
-import com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO;
+import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
@@ -15,6 +12,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.*;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.modules.employeeattend.form.*;
 import com.yunya.modules.employeeattend.mapper.*;
 import com.yunya.modules.employeeattend.util.JpushManager;
@@ -60,6 +58,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
     private EmployeePushBiz employeePushBiz;
     @Autowired
     private ApprovalPeopleBiz approvalPeopleBiz;
+    @Autowired
+    private CopyInfoBiz copyInfoBiz;
 
     /**
      * 根据日期和用户id列表查询加班列表
@@ -166,8 +166,13 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 // 根据leaveInfoForm.getApprovalPeopleId();查推送号与平台
 //                                Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
                                 // fix: bug3476
-                                Integer userid = workOvertimeInfoForm.getApprovalPeopleId();
-                                emp_ids.add(userid);
+//                                Integer userid = workOvertimeInfoForm.getApprovalPeopleId();
+                                // fix: bug3520
+                                Integer empid = workOvertimeInfoForm.getApprovalPeopleId();
+                                SysEmployee sysEmployee = remoteSystemServiceFeign.findSysUserByEmpId(empid);
+                                if(sysEmployee !=null){
+                                    emp_ids.add(sysEmployee.getUserId());
+                                }
                                 employeePushForm.setId(workOvertimeInfo.getId());
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
@@ -184,30 +189,31 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                     copyInfo.setApplyId(workOvertimeInfo.getId());
                                     copyInfo.setApplyType(1);
                                     copyInfo.setUserId(copyId);
+                                    copyInfo.setHadRead(false);
                                     copyInfo.setCrtId(workOvertimeInfo.getUserId());
                                     copyInfo.setCrtTime(new Date());
                                     copyInfoList.add(copyInfo);
                                 }
                                 int n = copyInfoMapper.batchInsert(copyInfoList);
-
-                                // TODO :所有抄送人
-                                // start 添加推送 需求1450 by zd.xie
-                                if(n > 0){
-                                    EmployeePushForm employeePushForm = new EmployeePushForm();
-                                    // 组装
-                                    Set<Integer> emp_ids = new HashSet<>();
-                                    workOvertimeInfoForm.getCopyList().forEach(nn -> {
-                                        emp_ids.add(nn);
-                                    });
-                                    employeePushForm.setEmpId(emp_ids);
-                                    employeePushForm.setShowName(showName);
-                                    employeePushForm.setId(workOvertimeInfo.getId());
-                                    List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
-                                    employeePushFormList.forEach(el -> {
-                                        JpushManager.getInstance().pushLeaveCope(el, 2);
-                                    });
-                                }
-                                // end 添加推送 需求1450 by zd.xie
+//bug: 3520
+//                                // TODO :所有抄送人
+//                                // start 添加推送 需求1450 by zd.xie
+//                                if(n > 0){
+//                                    EmployeePushForm employeePushForm = new EmployeePushForm();
+//                                    // 组装
+//                                    Set<Integer> emp_ids = new HashSet<>();
+//                                    workOvertimeInfoForm.getCopyList().forEach(nn -> {
+//                                        emp_ids.add(nn);
+//                                    });
+//                                    employeePushForm.setEmpId(emp_ids);
+//                                    employeePushForm.setShowName(showName);
+//                                    employeePushForm.setId(workOvertimeInfo.getId());
+//                                    List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
+//                                    employeePushFormList.forEach(el -> {
+//                                        JpushManager.getInstance().pushLeaveCope(el, 2);
+//                                    });
+//                                }
+//                                // end 添加推送 需求1450 by zd.xie
                             }
                             return num;
                         }
@@ -247,6 +253,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                 workOvertimeInfoListVO.setApprovalPeopleName(emMap.get(workOvertimeInfoListVO.getApprovalPeopleId() + "").getName());
                 workOvertimeInfoListVO.setUserName(emMap.get(workOvertimeInfoListVO.getUserId() + "").getName());
             }
+            copyInfoBiz.updCopyInfoHadRead(workOvertimeInfoForm.getId(), 2, list.get(0));
         }
         return list;
     }
@@ -356,11 +363,16 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                     employeePushForm.setShowName(showName);
                     // 撤销
                     emp_ids.add(workOvertimeInfo.getUserId());
-//                    Integer userid = approvalPeopleBiz.selectById(workOvertimeInfoForm.getApprovalPeopleId()).getUserId();
+//                    Integer userid = approvalPeopleBiz.selectById(workOvertimeInfo.getApprovalPeopleId()).getUserId();
                     // fix: bug3476
-                    Integer userid = workOvertimeInfoForm.getApprovalPeopleId();
-                    emp_ids.add(userid);
-                    employeePushForm.setId(workOvertimeInfoForm.getId());
+//                    Integer userid = workOvertimeInfo.getApprovalPeopleId();
+                    // fix: bug3520
+                    Integer empid = workOvertimeInfo.getApprovalPeopleId();
+                    SysEmployee sysEmployee = remoteSystemServiceFeign.findSysUserByEmpId(empid);
+                    if(sysEmployee !=null){
+                        emp_ids.add(sysEmployee.getUserId());
+                    }
+                    employeePushForm.setId(workOvertimeInfo.getId());
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         JpushManager.getInstance().pushLeaveCancel(el, 2);

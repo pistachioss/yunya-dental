@@ -5,8 +5,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 /**
  * @author xiangyang
@@ -14,7 +14,9 @@ import java.time.LocalDate;
  */
 @ApiModel(value = "充值卡充值统计-充值统计返回")
 @Data
-public class RechargeDetailVo {
+public class RechargeDetailVo implements Serializable {
+	@ApiModelProperty(value = "充值卡名称")
+	private String couponName;
 	@ApiModelProperty(value = "卡号")
 	@ExcelProperty(value = "卡号")
 	private String cardNumber;

@@ -36,6 +36,7 @@ import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -80,6 +81,10 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
    * @return
    */
   public Integer ivyConsumeAddCredits(Integer patientId, BigDecimal money, String remark, byte type) {
+    if(redisUtils.hasKey(remark)) {
+      return 0;
+    }
+    redisUtils.set(remark,"",500, TimeUnit.MILLISECONDS);
     Integer result = 0;
     // 如果已经加过积分则不增加
     CreditsShop t = new CreditsShop();
@@ -127,7 +132,9 @@ public class CreditsShopBiz extends BaseBiz<CreditsShopMapper, CreditsShop> {
       sb.append("错误描述: " + e.getCause() + "\n");
       sb.append("\n↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑\n");
       log.info(sb.toString());
+      redisUtils.delete(remark);
     }
+    redisUtils.delete(remark);
     return result;
   }
 

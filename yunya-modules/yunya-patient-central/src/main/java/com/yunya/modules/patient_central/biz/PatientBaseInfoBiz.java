@@ -35,6 +35,7 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
 import org.apache.commons.httpclient.NameValuePair;
@@ -283,19 +284,20 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     sendMessages(patientId, 1);
 
     PatientExpInfo patientExpInfo = new PatientExpInfo();
+    PatientExpInfoModel patientExpInfoModel = patientExtendInfoModel.getPatientExpInfoModel();
     // 完善患者扩展信息
-    BeanUtils.copyProperties(patientExtendInfoModel.getPatientExpInfoModel(), patientExpInfo);
-    savePatientToothInfo(patientExtendInfoModel.getPatientExpInfoModel(), patientId);
+    BeanUtils.copyProperties(patientExpInfoModel, patientExpInfo);
+    Integer pregnancyMonth = patientExpInfoModel.getPregnancyMonth();
+    if (!ObjectUtils.isEmpty(pregnancyMonth)) {
+      patientExpInfo.setPregnancyWeek(DateUtil.pregancyMonth2Week(pregnancyMonth));
+    }
+    savePatientToothInfo(patientExpInfoModel, patientId);
     PatientChildInfoModel patientChildInfoModel = patientExtendInfoModel.getPatientChildInfoModel();
     if (!ObjectUtils.isEmpty(patientChildInfoModel)) {
       savePatientChildInfo(patientChildInfoModel, patientId);
       String guardian = patientChildInfoModel.getGuardian();
       if (StringHelper.isNotEmpty(guardian)) {
         patientExpInfo.setGuardian(guardian);
-      }
-      String guardianPhone = patientChildInfoModel.getGuardianPhone();
-      if (StringHelper.isNotEmpty(guardianPhone)) {
-        patientExpInfo.setUsefulPhone(guardianPhone);
       }
     }
     // 如果用户没有扩展信息就添加扩展信息 如果有就修改
@@ -359,12 +361,12 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       childInfo.setGrade(model.getGrade());
       childInfo.setMedicationHistory(model.getMedicationHistory());
       childInfo.setMotherPregnancy(model.getMotherPregnancy());
-      List<Integer> parentHasCaries = model.getParentHasCaries();
-      childInfo.setParentHasCaries(StringHelper.join(parentHasCaries, ","));
+      childInfo.setFatherHasCaries(model.getFatherHasCaries());
+      childInfo.setMotherHasCaries(model.getMotherHasCaries());
       childInfo.setToothClearliness(model.getToothClearliness());
       String toothLastCheck = model.getToothLastCheck();
       if (StringHelper.isNotEmpty(toothLastCheck)) {
-        childInfo.setToothLastCheck(DateTime.parse(toothLastCheck).toDate());
+        childInfo.setToothLastCheck(DateUtil.parse2Date(toothLastCheck));
       }
       childInfo.setToothSprouting(model.getToothSprouting());
       childInfo.setUsedDentalFloss(model.getUsedDentalFloss());
@@ -380,17 +382,18 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       childInfo.setUptTime(now);
       patientChildInfoMapper.updateByPrimaryKey(childInfo);
     } else {
+      childInfo = new PatientChildInfo();
       childInfo.setPatientId(patientId);
       childInfo.setSchool(model.getSchool());
       childInfo.setGrade(model.getGrade());
       childInfo.setMedicationHistory(model.getMedicationHistory());
       childInfo.setMotherPregnancy(model.getMotherPregnancy());
-      List<Integer> parentHasCaries = model.getParentHasCaries();
-      childInfo.setParentHasCaries(StringHelper.join(parentHasCaries, ","));
+      childInfo.setFatherHasCaries(model.getFatherHasCaries());
+      childInfo.setMotherHasCaries(model.getMotherHasCaries());
       childInfo.setToothClearliness(model.getToothClearliness());
       String toothLastCheck = model.getToothLastCheck();
       if (StringHelper.isNotEmpty(toothLastCheck)) {
-        childInfo.setToothLastCheck(DateTime.parse(toothLastCheck).toDate());
+        childInfo.setToothLastCheck(DateUtil.parse2Date(toothLastCheck));
       }
       childInfo.setToothSprouting(model.getToothSprouting());
       childInfo.setUsedDentalFloss(model.getUsedDentalFloss());
@@ -437,7 +440,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         }
         String fillTreatLastDate = expInfo.getFillTreatLastDate();
         if (StringHelper.isNotEmpty(fillTreatLastDate)) {
-          toothInfo.setFillTreatLastDate(DateTime.parse(fillTreatLastDate).toDate());
+          toothInfo.setFillTreatLastDate(DateUtil.parse2Date(fillTreatLastDate));
         }
         toothInfo.setHadPeriodontalSurgery(expInfo.getHadPeriodontalSurgery());
         toothInfo.setHadOcclusalAdjust(expInfo.getHadOcclusalAdjust());
@@ -445,21 +448,21 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         toothInfo.setRpdPart(expInfo.getRpdPart());
         String rpdDate = expInfo.getRpdDate();
         if (StringHelper.isNotEmpty(rpdDate)) {
-          toothInfo.setRpdDate(DateTime.parse(rpdDate).toDate());
+          toothInfo.setRpdDate(DateUtil.parse2Date(rpdDate));
         }
         toothInfo.setLpdPart(expInfo.getLpdPart());
         String lpdDate = expInfo.getLpdDate();
         if (StringHelper.isNotEmpty(lpdDate)) {
-          toothInfo.setLpdDate(DateTime.parse(lpdDate).toDate());
+          toothInfo.setLpdDate(DateUtil.parse2Date(lpdDate));
         }
         toothInfo.setHadOrthodontic(expInfo.getHadOrthodontic());
         String ortSDate = expInfo.getOrthodonticStartDate();
         if (StringHelper.isNotEmpty(ortSDate)) {
-          toothInfo.setOrthodonticStartDate(DateTime.parse(ortSDate).toDate());
+          toothInfo.setOrthodonticStartDate(DateUtil.parse2Date(ortSDate));
         }
         String ortEDate = expInfo.getOrthodonticEndDate();
         if (StringHelper.isNotEmpty(ortEDate)) {
-          toothInfo.setOrthodonticEndDate(DateTime.parse(ortEDate).toDate());
+          toothInfo.setOrthodonticEndDate(DateUtil.parse2Date(ortEDate));
         }
         toothInfo.setHadPreventiveTreat(expInfo.getHadPreventiveTreat());
         toothInfo.setPreventiveTreatCycle(expInfo.getPreventiveTreatCycle());
@@ -486,7 +489,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         }
         String fillTreatLastDate = expInfo.getFillTreatLastDate();
         if (StringHelper.isNotEmpty(fillTreatLastDate)) {
-          toothInfo.setFillTreatLastDate(DateTime.parse(fillTreatLastDate).toDate());
+          toothInfo.setFillTreatLastDate(DateUtil.parse2Date(fillTreatLastDate));
         }
         toothInfo.setHadPeriodontalSurgery(expInfo.getHadPeriodontalSurgery());
         toothInfo.setHadOcclusalAdjust(expInfo.getHadOcclusalAdjust());
@@ -494,21 +497,21 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         toothInfo.setRpdPart(expInfo.getRpdPart());
         String rpdDate = expInfo.getRpdDate();
         if (StringHelper.isNotEmpty(rpdDate)) {
-          toothInfo.setRpdDate(DateTime.parse(rpdDate).toDate());
+          toothInfo.setRpdDate(DateUtil.parse2Date(rpdDate));
         }
         toothInfo.setLpdPart(expInfo.getLpdPart());
         String lpdDate = expInfo.getLpdDate();
         if (StringHelper.isNotEmpty(lpdDate)) {
-          toothInfo.setLpdDate(DateTime.parse(lpdDate).toDate());
+          toothInfo.setLpdDate(DateUtil.parse2Date(lpdDate));
         }
         toothInfo.setHadOrthodontic(expInfo.getHadOrthodontic());
         String ortSDate = expInfo.getOrthodonticStartDate();
         if (StringHelper.isNotEmpty(ortSDate)) {
-          toothInfo.setOrthodonticStartDate(DateTime.parse(ortSDate).toDate());
+          toothInfo.setOrthodonticStartDate(DateUtil.parse2Date(ortSDate));
         }
         String ortEDate = expInfo.getOrthodonticEndDate();
         if (StringHelper.isNotEmpty(ortEDate)) {
-          toothInfo.setOrthodonticEndDate(DateTime.parse(ortEDate).toDate());
+          toothInfo.setOrthodonticEndDate(DateUtil.parse2Date(ortEDate));
         }
         toothInfo.setHadPreventiveTreat(expInfo.getHadPreventiveTreat());
         toothInfo.setPreventiveTreatCycle(expInfo.getPreventiveTreatCycle());
@@ -672,10 +675,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   private void fillPatientChildInfo(PatientExtendInfoVo patientExtendInfoVo, Integer patientId) {
     PatientChildInfoVO childInfo = patientChildInfoMapper.selectPatientChildInfoByPatientId(patientId);
     if (!ObjectUtils.isEmpty(childInfo)) {
-      String parentHasCarieStr = childInfo.getParentHasCarieStr();
-      if (StringHelper.isNotEmpty(parentHasCarieStr)) {
-        childInfo.setParentHasCaries(StringHelper.split2IntList(parentHasCarieStr,","));
-      }
       String habitIdStr = childInfo.getHabitIdStr();
       if (StringHelper.isNotEmpty(habitIdStr)) {
         childInfo.setHabitIds(StringHelper.split2IntList(habitIdStr, ","));
@@ -690,6 +689,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param expInfo
    */
   private void fillPatientToothInfo(PatientExpInfoVo expInfo) {
+    Integer pregnancyWeek = expInfo.getPregnancyWeek();
+    if (!ObjectUtils.isEmpty(pregnancyWeek)) {
+      expInfo.setPregnancyMonth(DateUtil.pregancyWeek2Month(pregnancyWeek));
+    }
     PatientToothInfo toothInfo = patientToothInfoMapper.selectPatientToothInfoByPatientId(expInfo.getPatientId());
     if (!ObjectUtils.isEmpty(toothInfo)) {
       expInfo.setToothRecordId(toothInfo.getId());
@@ -704,21 +707,21 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       if (StringHelper.isNotEmpty(fillTreatHistory)) {
         expInfo.setFillTreatHistory(StringHelper.split2IntList(fillTreatHistory,","));
       }
-      expInfo.setFillTreatLastDate(toothInfo.getFillTreatLastDate());
+      expInfo.setFillTreatLastDate(DateUtil.format(toothInfo.getFillTreatLastDate()));
       expInfo.setHadOcclusalAdjust(toothInfo.getHadOcclusalAdjust());
       expInfo.setHadPreventiveTreat(toothInfo.getHadPreventiveTreat());
       expInfo.setRpdPart(toothInfo.getRpdPart());
-      expInfo.setRpdDate(toothInfo.getRpdDate());
+      expInfo.setRpdDate(DateUtil.format(toothInfo.getRpdDate()));
       expInfo.setLpdPart(toothInfo.getLpdPart());
-      expInfo.setLpdDate(toothInfo.getLpdDate());
+      expInfo.setLpdDate(DateUtil.format(toothInfo.getLpdDate()));
       expInfo.setPreventiveTreatCycle(toothInfo.getPreventiveTreatCycle());
       expInfo.setPreventiveTreatLastMonth(toothInfo.getPreventiveTreatLastMonth());
       expInfo.setHadRestorativeDentures(toothInfo.getHadRestorativeDentures());
       expInfo.setUsedPlaqueDna(toothInfo.getUsedPlaqueDna());
       expInfo.setHadPeriodontalSurgery(toothInfo.getHadPeriodontalSurgery());
       expInfo.setHadOrthodontic(toothInfo.getHadOrthodontic());
-      expInfo.setOrthodonticStartDate(toothInfo.getOrthodonticStartDate());
-      expInfo.setOrthodonticEndDate(toothInfo.getOrthodonticEndDate());
+      expInfo.setOrthodonticStartDate(DateUtil.format(toothInfo.getOrthodonticStartDate()));
+      expInfo.setOrthodonticEndDate(DateUtil.format(toothInfo.getOrthodonticEndDate()));
       expInfo.setHadHygieneEducation(toothInfo.getHadHygieneEducation());
       expInfo.setHadDiffcultTreat(toothInfo.getHadDiffcultTreat());
     }
@@ -1608,6 +1611,26 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    return new PageInfo<>(mapper.selectSelfRegistrationPatientList(query));
+    List<SelfRegistrationPatientVO> result = mapper.selectSelfRegistrationPatientList(query);
+    if (StringHelper.isNotEmpty(result)) {
+      result.forEach(vo->{
+        Integer originType = vo.getOriginType();
+        Integer id = vo.getOriginId();
+        if (!ObjectUtils.isEmpty(id)) {
+          if (originType == 1) {
+            SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(id);
+            if (!ObjectUtils.isEmpty(employee)) {
+              vo.setOriginChannel(employee.getName());
+            }
+          } else if (originType == 2) {
+            PatientBaseInfo patient = findPatientInfoById(id);
+            if (!ObjectUtils.isEmpty(patient)) {
+              vo.setOriginChannel(patient.getName());
+            }
+          }
+        }
+      });
+    }
+    return new PageInfo<>(result);
   }
 }

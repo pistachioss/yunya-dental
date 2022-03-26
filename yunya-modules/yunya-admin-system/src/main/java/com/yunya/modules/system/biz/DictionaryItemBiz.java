@@ -53,12 +53,12 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
     }
     DictionaryItem entity = new DictionaryItem();
     entity.setName(name);
-    entity.setEnglishName(resource.getEnglishName());
     int count = mapper.selectCount(entity);
     if (count > 0) {
       throw new ClientServiceException(
           "添加字典数据'" + name + "'失败，该字典下已存在相同名称数据", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
+    entity.setEnglishName(resource.getEnglishName());
     entity.setDictionaryTypeId(dictTypeId);
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setCrtName(BaseContextHandler.getName());
@@ -82,7 +82,6 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
       String name = form.getName();
       resultData = new DictionaryItem();
       resultData.setName(name);
-      resultData.setEnglishName(form.getEnglishName());
       int count = mapper.selectCount(resultData);
       if (count > 0) {
         throw new ClientServiceException(
@@ -92,6 +91,7 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
     if (form.getInservice() != null) {
       resultData.setInservice(form.getInservice());
     }
+    resultData.setEnglishName(form.getEnglishName());
     resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     resultData.setUpdName(BaseContextHandler.getName());
     resultData.setUpdTime(new Date(System.currentTimeMillis()));

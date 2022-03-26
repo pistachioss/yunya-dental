@@ -2,7 +2,7 @@ package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
-import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
+import com.yunya.feign.treatment.domain.vo.PatientTreatmentInfo4ListVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseTreatmentProcessBiz;
@@ -34,8 +34,8 @@ public class TreatmentInfoFeign {
      */
     @ApiOperation("手机端就诊信息")
     @RequestMapping(value = "/list", method = RequestMethod.POST)
-    public ResponseResult<PageInfo<BaseTreatmentProcessVO>> treatmentList4App(@RequestBody TreatmentList4AppQuery query) {
-        PageInfo<BaseTreatmentProcessVO> treatmentProcessVOPageInfo = baseTreatmentProcessBiz.treatmentList4App(query);
+    public ResponseResult<PageInfo<PatientTreatmentInfo4ListVO>> treatmentList4App(@RequestBody TreatmentList4AppQuery query) {
+        PageInfo<PatientTreatmentInfo4ListVO> treatmentProcessVOPageInfo = baseTreatmentProcessBiz.treatmentList4App(query);
         return ResponseUtil.success(treatmentProcessVOPageInfo);
     }
 }

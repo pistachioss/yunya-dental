@@ -198,4 +198,14 @@ public class TreatmentOtherServiceRest {
     return xUploadFileBiz.findXUploadFileList(query);
   }
 
+  /**
+   * 根据条件逻辑删除上传文件
+   *
+   * @param model
+   */
+  @ApiOperation(value = "根据条件逻辑删除上传文件")
+  @PutMapping(value = "/xUploadFile/tombstone")
+  public void tombstoneUploadFile(@RequestBody @Validated MedicalRayFilmModel model) {
+    xUploadFileBiz.tombstone(model);
+  }
 }

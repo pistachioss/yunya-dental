@@ -55,4 +55,10 @@ public class SelfRegistrationPatientVO implements Serializable {
     @ApiModelProperty("登记时间")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
     private Date registrationTime;
+
+    /** 患者来源类型 */
+    private Integer originType;
+
+    /** 患者来源id */
+    private Integer originId;
 }
