@@ -55,7 +55,7 @@ public class FieldInfoController {
      */
     @PostMapping("/findList")
     @ApiOperation("获取外勤申请列表")
-    @RepeatSubmit
+    @CurrentUser
     public ResponseResult<List<FieldInfoListVO>> findList(@RequestBody @Validated FieldInfoForm fieldInfoForm) {
         return ResponseUtil.success(fieldInfoBiz.findList(fieldInfoForm));
     }
