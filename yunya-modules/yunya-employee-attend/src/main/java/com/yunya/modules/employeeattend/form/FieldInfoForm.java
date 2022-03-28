@@ -103,4 +103,10 @@ public class FieldInfoForm {
      */
     @ApiModelProperty("upd_time")
     private Date updTime;
+
+    /**
+     * 是否查看抄送详情
+     */
+    @ApiModelProperty("是否查看抄送详情")
+    private boolean isQueryCopyInfo;
 }

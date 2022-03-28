@@ -118,6 +118,7 @@ class EmployeeAttendApplicationTests {
 //    form.setApprovalPeopleId(38);
 //    form.setApprovalStatus(0);
     form.setId(38);
+    form.setQueryCopyInfo(true);
     List<WorkOvertimeInfoListVO> list = workOvertimeInfoController.findList(form).getData();
     System.out.println(JSONObject.toJSON(list));
   }
