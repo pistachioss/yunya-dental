@@ -133,7 +133,7 @@ class EmployeeAttendApplicationTests {
   public void associatedItemCount() {
     AttendanceItemCountQuery query = new AttendanceItemCountQuery();
     query.setQueryType(0);
-    query.setCopyId(15);
+    query.setUserId(15);
     AttendanceItemCountVO data = copyInfoController.attendanceItemCount(query).getData();
     System.out.println(JSONObject.toJSON(data));
   }

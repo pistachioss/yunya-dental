@@ -42,8 +42,8 @@
       sum(case when apply_type = 2 then 1 else 0 end) as fieldCount
     FROM copy_info ci
     <where>
-      <if test="query.copyId != null">
-        AND ci.user_id = #{query.copyId}
+      <if test="query.userId != null">
+        AND ci.user_id = #{query.userId}
       </if>
     </where>
   </select>
@@ -61,9 +61,8 @@
       FROM leave_info li
       LEFT JOIN approval_people ap ON li.approval_now_people_id = ap.id
       <where>AND li.approval_status = 0
-        <if
-                test="query.copyId != null">
-            AND ap.user_id = #{query.copyId}
+        <if test="query.userId != null">
+            AND ap.user_id = #{query.userId}
           </if>
       </where>
       GROUP BY li.id
@@ -75,8 +74,8 @@
       FROM field_info fi
       <where>
           AND fi.approval_status = 0
-          <if test="query.copyId != null">
-            AND fi.approval_people_id = #{query.copyId}
+          <if test="query.userId != null">
+            AND fi.approval_people_id = #{query.userId}
           </if>
       </where>
       UNION
@@ -87,8 +86,8 @@
       FROM work_overtime_info t
       <where>
           AND t.approval_status = 0
-          <if test="query.copyId != null">
-            AND t.approval_people_id = #{query.copyId}
+          <if test="query.userId != null">
+            AND t.approval_people_id = #{query.userId}
           </if>
       </where>
     ) tmp

@@ -26,8 +26,8 @@ public class AttendanceItemCountQuery implements Serializable {
     @NotNull(message = "查询类型不能为空")
     private Integer queryType;
 
-    /** 抄送id*/
-    @ApiModelProperty(value = "抄送id", required = true)
-    @NotNull(message = "抄送id不能为空")
-    private Integer copyId;
+    /** 用户id*/
+    @ApiModelProperty(value = "用户id", required = true)
+    @NotNull(message = "用户id不能为空")
+    private Integer userId;
 }
