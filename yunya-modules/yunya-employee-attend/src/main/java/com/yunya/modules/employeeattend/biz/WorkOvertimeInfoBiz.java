@@ -253,7 +253,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                 workOvertimeInfoListVO.setApprovalPeopleName(emMap.get(workOvertimeInfoListVO.getApprovalPeopleId() + "").getName());
                 workOvertimeInfoListVO.setUserName(emMap.get(workOvertimeInfoListVO.getUserId() + "").getName());
             }
-            copyInfoBiz.updCopyInfoHadRead(workOvertimeInfoForm.getId(), 2, list.get(0));
+            copyInfoBiz.updCopyInfoHadRead(workOvertimeInfoForm.getId(), 1, list.get(0));
         }
         return list;
     }
