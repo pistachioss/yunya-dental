@@ -93,8 +93,10 @@ public class CopyInfoBiz extends BaseBiz<CopyInfoMapper, CopyInfo> {
                 entity.setHadRead(hadRead);
                 entity.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
                 entity.setUpdTime(new Date(System.currentTimeMillis()));
-                mapper.updateByExampleSelective(entity,example);
-                hadReadVO.setHadRead(hadRead);
+                int count = mapper.updateByExampleSelective(entity,example);
+                if (count > 0) {
+                    hadReadVO.setHadRead(hadRead);
+                }
             }
         }
     }
