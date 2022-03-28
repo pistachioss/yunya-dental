@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -31,4 +32,8 @@ public class AttendanceItemCountVO implements Serializable {
     /** 外勤数量*/
     @ApiModelProperty("外勤数量")
     private Integer fieldCount;
+
+    /** 查询类型：0-查询待审批, 1-查询抄送*/
+    @ApiModelProperty(value = "查询类型：0-查询待审批, 1-查询抄送")
+    private Integer queryType;
 }
