@@ -37,9 +37,10 @@
 
   <select id="selectAssociatedItemCount" resultType="com.yunya.feign.employee_attend.vo.AttendanceItemCountVO">
     SELECT
-      sum(case when apply_type = 0 then 1 else 0 end) as leaveCount,
-      sum(case when apply_type = 1 then 1 else 0 end) as workOverCount,
-      sum(case when apply_type = 2 then 1 else 0 end) as fieldCount
+      ifnull(sum(case when apply_type = 0 then 1 else 0 end),0) as leaveCount,
+      ifnull(sum(case when apply_type = 1 then 1 else 0 end),0) as workOverCount,
+      ifnull(sum(case when apply_type = 2 then 1 else 0 end),0) as fieldCount,
+      ${query.queryType} AS queryType
     FROM copy_info ci
     <where>
       <if test="query.userId != null">
@@ -52,10 +53,11 @@
     SELECT
         sum(leaveCount) AS leaveCount,
         sum(workOverCount) AS workOverCount,
-        sum(fieldCount) AS fieldCount
+        sum(fieldCount) AS fieldCount,
+        ${query.queryType} AS queryType
     FROM (
       SELECT
-        COUNT(li.id) AS leaveCount,
+        ifnull(COUNT(li.id),0) AS leaveCount,
         0 AS workOverCount,
         0 AS fieldCount
       FROM leave_info li
@@ -68,9 +70,9 @@
       GROUP BY li.id
       UNION
       SELECT
-          0 AS leaveCount,
-          COUNT(fi.id) AS workOverCount,
-          0 AS fieldCount
+        0 AS leaveCount,
+        ifnull(COUNT(fi.id),0) AS workOverCount,
+        0 AS fieldCount
       FROM field_info fi
       <where>
           AND fi.approval_status = 0
@@ -80,9 +82,9 @@
       </where>
       UNION
       SELECT
-          0 AS leaveCount,
-          0 AS workOverCount,
-          COUNT(t.id) AS fieldCount
+        0 AS leaveCount,
+        0 AS workOverCount,
+        ifnull(COUNT(t.id),0) AS fieldCount
       FROM work_overtime_info t
       <where>
           AND t.approval_status = 0

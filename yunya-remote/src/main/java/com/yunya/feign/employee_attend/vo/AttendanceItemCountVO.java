@@ -31,4 +31,8 @@ public class AttendanceItemCountVO implements Serializable {
     /** 外勤数量*/
     @ApiModelProperty("外勤数量")
     private Integer fieldCount;
+
+    /** 查询类型：0-查询待审批, 1-查询抄送*/
+    @ApiModelProperty("查询类型：0-查询待审批, 1-查询抄送")
+    private Integer queryType;
 }
