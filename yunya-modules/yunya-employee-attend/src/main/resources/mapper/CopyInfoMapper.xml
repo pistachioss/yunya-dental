@@ -72,8 +72,8 @@
       UNION
       SELECT
         0 AS leaveCount,
-        ifnull(COUNT(fi.id),0) AS workOverCount,
-        0 AS fieldCount
+        0 AS workOverCount,
+        ifnull(COUNT(fi.id),0) AS fieldCount
       FROM field_info fi
       <where>
           AND fi.approval_status = 0
@@ -84,8 +84,8 @@
       UNION
       SELECT
         0 AS leaveCount,
-        0 AS workOverCount,
-        ifnull(COUNT(t.id),0) AS fieldCount
+        ifnull(COUNT(t.id),0) AS workOverCount,
+        0 AS fieldCount
       FROM work_overtime_info t
       <where>
           AND t.approval_status = 0
