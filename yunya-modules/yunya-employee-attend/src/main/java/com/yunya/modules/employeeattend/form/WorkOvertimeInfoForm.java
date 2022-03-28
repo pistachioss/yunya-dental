@@ -117,5 +117,5 @@ public class WorkOvertimeInfoForm {
      * 是否查看抄送详情
      */
     @ApiModelProperty("是否查看抄送详情")
-    private boolean isQueryCopyInfo;
+    private boolean queryCopyInfo;
 }
