@@ -46,13 +46,13 @@ public class CopyInfoController {
     }
 
     /**
-     * 获取待审批or抄送相关项目的数量
+     * 获取待审批or抄送相关项目的未处理数量
      *
      * @param
      * @return
      */
     @PostMapping("/attendance/count")
-    @ApiOperation("获取待审批or抄送相关项目的数量")
+    @ApiOperation("获取待审批or抄送相关项目的未处理数量")
     @RepeatSubmit
     public ResponseResult<AttendanceItemCountVO> attendanceItemCount(@RequestBody @Validated AttendanceItemCountQuery query) {
         return ResponseUtil.success(copyInfoBiz.attendanceItemCount(query));
