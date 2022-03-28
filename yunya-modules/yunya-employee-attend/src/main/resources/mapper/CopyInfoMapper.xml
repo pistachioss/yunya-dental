@@ -43,6 +43,7 @@
       ${query.queryType} AS queryType
     FROM copy_info ci
     <where>
+      AND ci.hadRead = 0
       <if test="query.userId != null">
         AND ci.user_id = #{query.userId}
       </if>
