@@ -29,7 +29,7 @@
       (#{item.applyId},
       #{item.applyType},
       #{item.userId},
-      #{item.had_read},
+      #{item.hadRead},
       #{item.crtId},
       #{item.crtTime})
     </foreach>
