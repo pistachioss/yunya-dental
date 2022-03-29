@@ -2,7 +2,7 @@ package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
-import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
+import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.models.treatment.BillPayDetailRecord;
@@ -85,7 +85,7 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
    * @return
    */
   List<OrderDetailInfoVO> selectBillPayDetailByFreePayment(
-      @Param("query") BillCategoryIncomeQuery query,
+      @Param("query") CategoryIncomeQuery query,
       @Param("payIds") List<Integer> payIds,
       @Param("inservice") Boolean inservice);
 }

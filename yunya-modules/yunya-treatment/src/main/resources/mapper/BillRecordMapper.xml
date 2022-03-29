@@ -535,11 +535,16 @@
             select behdr.associate_record_id as orderRecordId
             from bill_exception_handle_record behr
             left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
-            where operate_type = 2
-                <if test="query.queryDate!=null and query.queryDate!=''">
-                and date_format(behr.crt_time, '%Y-%m') = #{query.queryDate}
+            <where>
+                operate_type = 2
+                <if test="query.startDate!=null and query.startDate!=''">
+                    and date_format(behr.crt_time, '%Y-%m') &gt;= #{query.startDate}
                 </if>
-            and br.order_record_id = behdr.associate_record_id
+                <if test="query.endDate!=null and query.endDate!=''">
+                    and date_format(behr.crt_time, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+                and br.order_record_id = behdr.associate_record_id
+            </where>
         )
         <if test="query.orgIds != null and query.orgIds.size() > 0">
             AND br.org_id IN
@@ -547,9 +552,13 @@
                 #{item}
             </foreach>
         </if>
-        <if test="query.queryDate!=null and query.queryDate!=''">
-            and date_format(crt_time, '%Y-%m') = #{query.queryDate}
-            and date_format(privilege_date, '%Y-%m') =  #{query.queryDate}
+        <if test="query.startDate!=null and query.startDate!=''">
+            and date_format(crt_time, '%Y-%m') &gt;= #{query.startDate}
+            and date_format(privilege_date, '%Y-%m') &gt;=  #{query.startDate}
+        </if>
+        <if test="query.endDate!=null and query.endDate!=''">
+            and date_format(crt_time, '%Y-%m') &lt;= #{query.endDate}
+            and date_format(privilege_date, '%Y-%m') &lt;=  #{query.endDate}
         </if>
     </select>
 </mapper>

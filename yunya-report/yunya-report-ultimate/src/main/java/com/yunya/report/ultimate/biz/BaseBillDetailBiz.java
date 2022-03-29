@@ -104,9 +104,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   public void exportBillDetailIncome(
       HttpServletResponse response, BillDetailIncomeDetailQuery query) throws IOException {
     String fileName = "门诊项目收入明细";
-    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
-    if (null != organization) {
-      fileName = organization.getAbbreviation() + fileName;
+    List<Integer> orgIds = query.getOrgIds();
+    if (orgIds.size() == 1) {
+        BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+        if (null != organization) {
+            fileName = organization.getAbbreviation() + fileName;
+        }
     }
     List<BillTariffIncomeDetailVO> list = mapper.selectBillDetailIncomeList(query);
     ExcelUtil<BillTariffIncomeDetailVO> excelUtil = new ExcelUtil<>(BillTariffIncomeDetailVO.class);

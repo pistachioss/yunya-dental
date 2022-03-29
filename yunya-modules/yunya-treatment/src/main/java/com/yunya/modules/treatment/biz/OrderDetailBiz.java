@@ -18,10 +18,7 @@ import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
-import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
-import com.yunya.feign.report.domain.query.DataStatisticsQuery;
-import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
-import com.yunya.feign.report.domain.query.StatementStatisticQuery;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
 import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -1024,14 +1021,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param query
    * @return
    */
-  public PageInfo<CategoryInfoIncomeVO> findCategoryIncomeList(BillCategoryIncomeQuery query)
+  public PageInfo<CategoryInfoIncomeVO> findCategoryIncomeList(CategoryIncomeQuery query)
       throws Exception {
-    List<Integer> orgIds = query.getOrgIds();
-    if (StringHelper.isEmpty(orgIds)) {
-      orgIds = new ArrayList<>();
-      orgIds.add(query.getOrgId());
-      query.setOrgIds(orgIds);
-    }
     // 项目表（价目表 + 价目表）
     Future<List<BaseTariffVO>> tariffFuture = multiFindAllTariffList();
 
@@ -1043,7 +1034,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         multiFindTariffCategoryFreePaymentAmount(query);
 
     // 门诊组织列表
-    List<OrganizationInfoDetail> orgList = getOrganizationList(orgIds);
+    List<OrganizationInfoDetail> orgList = getOrganizationList(query.getOrgIds());
 
     // 项目的优惠合计和补入工作量
     List<ClinicTariffDiscountCouponVO> discountFuture = findTariffCategoryDiscountAmount(query);
@@ -1051,10 +1042,10 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     // 组装数据并排序
     List<CategoryInfoIncomeVO> list =
         mergeCategoryIncomeList(
-            tariffFuture,
-            originalFuture,
+            tariffFuture.get(),
+            originalFuture.get(),
+            freePaymentFuture.get(),
             discountFuture,
-            freePaymentFuture,
             orgList,
             query.getOrgId());
 
@@ -1088,26 +1079,22 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   /**
    * 组装数据并排序
    *
-   * @param tariffFuture
-   * @param originalFuture
+   * @param baseTariffVOS
+   * @param originals
+   * @param freePaymentMap
    * @param discountCoupons
-   * @param freePaymentFuture
    * @param orgList
    * @return
    * @throws Exception
    */
   private List<CategoryInfoIncomeVO> mergeCategoryIncomeList(
-      Future<List<BaseTariffVO>> tariffFuture,
-      Future<List<ClinicTariffOrderVO>> originalFuture,
+      List<BaseTariffVO> baseTariffVOS,
+      List<ClinicTariffOrderVO> originals,
+      Map<String, BigDecimal> freePaymentMap,
       List<ClinicTariffDiscountCouponVO> discountCoupons,
-      Future<Map<String, BigDecimal>> freePaymentFuture,
       List<OrganizationInfoDetail> orgList,
-      Integer orgId)
-      throws Exception {
+      Integer orgId) {
     Map<String, String> categoryMap = new HashMap<>(16);
-    List<BaseTariffVO> baseTariffVOS = tariffFuture.get();
-    List<ClinicTariffOrderVO> originals = originalFuture.get();
-    Map<String, BigDecimal> freePaymentMap = freePaymentFuture.get();
     Map<String, CategoryInfoIncomeVO> resultMap =
         createEntityBaseMap(orgList, baseTariffVOS, categoryMap);
 
@@ -1212,28 +1199,24 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return
    */
   private Future<Map<String, BigDecimal>> multiFindTariffCategoryFreePaymentAmount(
-      BillCategoryIncomeQuery query) {
-    return executorService.submit(
-        () -> {
-          StatementStatisticQuery queryForm = new StatementStatisticQuery();
-          queryForm.setOrgId(query.getOrgIds().get(0));
-          queryForm.setQueryDate(query.getQueryDate());
-          // 撤销收费记录ID
-          List<Integer> payIds = billPayRecordMapper.selectRevokePayIds(queryForm);
-          // 调整收费方式
-          payIds.addAll(billPayRecordMapper.selectAdjustPayIds(queryForm));
-          // 有效账单的项目应收
-          List<OrderDetail> orderDetails = mapper.selectClinicOrderDetailList(query, payIds);
-          // 有效账单的免单收费总价
-          List<OrderDetailInfoVO> freePaymentTotal =
-              billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, null, true);
-          if (StringHelper.isNotEmpty(payIds)) {
-            List<OrderDetailInfoVO> freePaymentTotal1 =
-                billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, payIds, false);
-            freePaymentTotal.addAll(freePaymentTotal1);
-          }
-          return shareTariffFreePayment(orderDetails, freePaymentTotal);
-        });
+          CategoryIncomeQuery query) {
+    return executorService.submit(() -> {
+        // 撤销收费记录ID
+        List<Integer> payIds = billPayRecordMapper.selectRevokePayList(query);
+        // 调整收费方式
+        payIds.addAll(billPayRecordMapper.selectAdjustPayList(query));
+        // 有效账单的项目应收
+        List<OrderDetail> orderDetails = mapper.selectClinicOrderDetailList(query, payIds);
+        // 有效账单的免单收费总价
+        List<OrderDetailInfoVO> freePaymentTotal =
+                billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, null, true);
+        if (StringHelper.isNotEmpty(payIds)) {
+          List<OrderDetailInfoVO> freePaymentTotal1 =
+                  billPayDetailRecordBiz.findBillPayDetailByFreePayment(query, payIds, false);
+          freePaymentTotal.addAll(freePaymentTotal1);
+        }
+        return shareTariffFreePayment(orderDetails, freePaymentTotal);
+    });
   }
 
   /**
@@ -1308,7 +1291,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return
    */
   private List<ClinicTariffDiscountCouponVO> findTariffCategoryDiscountAmount(
-      BillCategoryIncomeQuery query) {
+          CategoryIncomeQuery query) {
     List<Integer> orderRecordIds = billRecordBiz.selectRemoveBillAdjustDiscountOrderIds(query);
     if (StringHelper.isNotEmpty(orderRecordIds)) {
       DiscountCouponQuery queryForm = new DiscountCouponQuery();
@@ -1325,8 +1308,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return
    */
   private Future<List<ClinicTariffOrderVO>> multiFindTariffCategoryOriginalAmount(
-      BillCategoryIncomeQuery query) {
-    return executorService.submit(() -> mapper.selectClinicTariffCategoryOriginalAmount(query));
+          CategoryIncomeQuery query) {
+    return executorService.submit(() ->mapper.selectClinicTariffCategoryOriginalAmount(query));
   }
 
   /**
@@ -1349,7 +1332,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param response http响应
    * @param query 查询条件
    */
-  public void exportCategoryIncome(HttpServletResponse response, BillCategoryIncomeQuery query)
+  public void exportCategoryIncome(HttpServletResponse response, CategoryIncomeQuery query)
       throws Exception {
     query.setWhetherPage(false);
     List<CategoryInfoIncomeVO> list = findCategoryIncomeList(query).getList();
