@@ -140,6 +140,14 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
      * @param now
      */
     private void saveUploadFile(List<XUploadFileVO> files, Integer sourceId, Integer userId, Date now) {
+        if (StringHelper.isNotEmpty(files)) {
+            files.forEach(vo -> {
+                Date uploadTime = vo.getUploadTime();
+                if (ObjectUtils.isEmpty(uploadTime)) {
+                    vo.setUploadTime(now);
+                }
+            });
+        }
         MedicalRayFilmModel model = new MedicalRayFilmModel();
         model.setSourceId(sourceId);
         model.setSourceType(PATIENT_EMR_PIC.getCode());
