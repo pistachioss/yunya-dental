@@ -14,7 +14,8 @@ public enum FileSourceTypeEnum {
     OTHER("其他", (byte)0),
     TREAT_PLAN("治疗计划", (byte)1),
     MEDICAL_COMMON("普通电子病历", (byte)2),
-    PATIENT_SIGNATURE("患者签名", (byte)3);
+    PATIENT_SIGNATURE("患者签名", (byte)3),
+    PATIENT_EMR_PIC("患者病历照片", (byte)4);
 
     private final String value;
     private final Byte code;

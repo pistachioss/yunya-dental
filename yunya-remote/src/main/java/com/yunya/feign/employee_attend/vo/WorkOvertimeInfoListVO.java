@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -20,7 +21,7 @@ import java.util.Date;
  */
 @Data
 @ApiModel(value = "加班信息")
-public class WorkOvertimeInfoListVO {
+public class WorkOvertimeInfoListVO extends HadReadVO implements Serializable {
     /** 主键id */
     @ApiModelProperty(value = "主键id")
     private Integer id;

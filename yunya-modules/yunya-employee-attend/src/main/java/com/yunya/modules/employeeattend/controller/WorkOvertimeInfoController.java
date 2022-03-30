@@ -1,6 +1,5 @@
 package com.yunya.modules.employeeattend.controller;
 
-import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
@@ -59,7 +58,7 @@ public class WorkOvertimeInfoController {
      */
     @PostMapping("/findList")
     @ApiOperation("获取加班申请列表")
-    @RepeatSubmit
+    @CurrentUser
     public ResponseResult<List<WorkOvertimeInfoListVO>> findList(@RequestBody @Validated WorkOvertimeInfoForm workOvertimeInfoForm) {
         return ResponseUtil.success(workOvertimeInfoBiz.findList(workOvertimeInfoForm));
     }

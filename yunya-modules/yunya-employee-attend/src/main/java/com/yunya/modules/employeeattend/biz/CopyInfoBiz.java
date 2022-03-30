@@ -1,10 +1,14 @@
 package com.yunya.modules.employeeattend.biz;
 
+import com.yunya.feign.employee_attend.form.AttendanceItemCountQuery;
+import com.yunya.feign.employee_attend.vo.AttendanceItemCountVO;
 import com.yunya.feign.employee_attend.vo.CopyInfoVO;
+import com.yunya.feign.employee_attend.vo.HadReadVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.models.employee_attend.CopyInfo;
 import com.yunya.modules.employeeattend.form.CopyInfoForm;
 import com.yunya.modules.employeeattend.mapper.CopyInfoMapper;
@@ -12,11 +16,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import tk.mybatis.mapper.entity.Example;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 简介:
@@ -61,4 +64,40 @@ public class CopyInfoBiz extends BaseBiz<CopyInfoMapper, CopyInfo> {
         return list;
     }
 
+    public AttendanceItemCountVO attendanceItemCount(AttendanceItemCountQuery query) {
+        Integer queryType = query.getQueryType();
+        if (queryType == 0) {
+            return mapper.selectAttendanceItemCount(query);
+        } else {
+            return mapper.selectAssociatedItemCount(query);
+        }
+    }
+
+    /**
+     * 更新抄送记录为已读
+     *
+     * @param applyId
+     * @param applyType
+     * @param hadReadVO
+     */
+    protected void updCopyInfoHadRead(Integer applyId, Integer applyType, HadReadVO hadReadVO) {
+        if (!ObjectUtils.isEmpty(applyId)) {
+            Boolean hadRead = hadReadVO.getHadRead();
+            if (!hadRead) {// 未读
+                hadRead = true;
+                Example example = new Example(CopyInfo.class);
+                Example.Criteria c = example.createCriteria();
+                c.andEqualTo("applyId",applyId);
+                c.andEqualTo("applyType",applyType);
+                CopyInfo entity = new CopyInfo();
+                entity.setHadRead(hadRead);
+                entity.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
+                entity.setUpdTime(new Date(System.currentTimeMillis()));
+                int count = mapper.updateByExampleSelective(entity,example);
+                if (count > 0) {
+                    hadReadVO.setHadRead(hadRead);
+                }
+            }
+        }
+    }
 }

@@ -1,8 +1,8 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
-import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
@@ -194,5 +194,5 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
    * @return
    * @param query
    */
-  List<Integer> selectRemoveBillAdjustDiscountOrderIds(@Param("query") BillCategoryIncomeQuery query);
+  List<Integer> selectRemoveBillAdjustDiscountOrderIds(@Param("query") CategoryIncomeQuery query);
 }

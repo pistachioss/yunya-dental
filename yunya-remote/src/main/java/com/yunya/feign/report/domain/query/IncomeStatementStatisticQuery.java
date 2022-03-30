@@ -1,0 +1,38 @@
+package com.yunya.feign.report.domain.query;
+
+import com.yunya.framework.common.model.PageQuery;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import lombok.ToString;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.List;
+
+/**
+ * 简介: 对账单统计查询参数
+ *
+ * @author: chow
+ * @date: 2020/12/18 10:41
+ * @description:
+ * @since: 1.0.0
+ */
+@ApiModel("对账单统计查询参数")
+@Data
+@ToString
+public class IncomeStatementStatisticQuery extends PageQuery implements Serializable {
+  /** 组织ID */
+  @ApiModelProperty(value = "组织ID", required = true)
+  @NotNull(message = "组织ID不能为空！")
+  private Integer orgId;
+  /** 查询月份 */
+  @ApiModelProperty(value = "查询月份", required = true, example = "yyyy-MM")
+  @NotBlank(message = "查询月份不能为空！")
+  private String startDate;
+
+  /** 组织ID */
+  @ApiModelProperty(value = "组织ID")
+  private List<Integer> orgIds;
+}

@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -56,7 +57,7 @@ public class BillRecordMapperTest {
   @Test
   public void selectDebtList() {
     BillOfReceivableQuery query = new BillOfReceivableQuery();
-    query.setOrgId(26);
+    query.setOrgIds(Arrays.asList(26));
     query.setQueryDate("2021-03-30");
     List<BillRestReceivableAmountVO> vos = billRecordMapper.selectDebtList(query);
     System.out.println(vos);

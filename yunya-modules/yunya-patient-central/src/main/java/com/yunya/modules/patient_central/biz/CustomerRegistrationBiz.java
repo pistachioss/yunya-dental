@@ -429,7 +429,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
                 file.setFileName(fileName);
                 MedicalRayFilmModel model = new MedicalRayFilmModel();
                 model.setSourceType(FileSourceTypeEnum.PATIENT_SIGNATURE.getCode());
-                model.setMedicalId(patientId);
+                model.setSourceId(patientId);
                 model.setRayFiles(Arrays.asList(file));
                 model.setCrtId(userId);
                 model.setCrtTime(now);

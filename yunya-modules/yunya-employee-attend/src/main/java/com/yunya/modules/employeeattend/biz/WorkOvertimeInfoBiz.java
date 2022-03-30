@@ -2,10 +2,7 @@ package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.yunya.feign.employee_attend.form.WorkOvertimeInfoQueryForm;
-import com.yunya.feign.employee_attend.vo.AttendanceOvertimeMinuteVO;
-import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
-import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
-import com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO;
+import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
@@ -61,6 +58,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
     private EmployeePushBiz employeePushBiz;
     @Autowired
     private ApprovalPeopleBiz approvalPeopleBiz;
+    @Autowired
+    private CopyInfoBiz copyInfoBiz;
 
     /**
      * 根据日期和用户id列表查询加班列表
@@ -190,6 +189,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                     copyInfo.setApplyId(workOvertimeInfo.getId());
                                     copyInfo.setApplyType(1);
                                     copyInfo.setUserId(copyId);
+                                    copyInfo.setHadRead(false);
                                     copyInfo.setCrtId(workOvertimeInfo.getUserId());
                                     copyInfo.setCrtTime(new Date());
                                     copyInfoList.add(copyInfo);
@@ -252,6 +252,9 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                 workOvertimeInfoListVO.setCompanyName(clinicMap.get(workOvertimeInfoListVO.getCompanyId() + "").getName());
                 workOvertimeInfoListVO.setApprovalPeopleName(emMap.get(workOvertimeInfoListVO.getApprovalPeopleId() + "").getName());
                 workOvertimeInfoListVO.setUserName(emMap.get(workOvertimeInfoListVO.getUserId() + "").getName());
+            }
+            if (workOvertimeInfoForm.isQueryCopyInfo()) {
+                copyInfoBiz.updCopyInfoHadRead(workOvertimeInfoForm.getId(), 1, list.get(0));
             }
         }
         return list;

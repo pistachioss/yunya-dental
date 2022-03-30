@@ -16,9 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 
 @RestController
@@ -144,6 +142,19 @@ public class BaseController {
         });
 
         return ResponseUtil.success(urls);
+    }
+
+
+    @RequestMapping(value = "url/map", method = RequestMethod.POST)
+    @ApiOperation("2.多资源：获取外网访问URL列表")
+    public ResponseResult<Map<String, String>> getUrlMap(@RequestBody final List<OssUrlForm> ossUrlForms) {
+        Map<String, String> result = new HashMap<>(16);
+        ossUrlForms.forEach(ossUrlForm -> {
+            final String objectName = this.makeObjectFullName(ossUrlForm);
+            final String url = OssUtil.getSignatureUrl(objectName, ossUrlForm.getIsThumb());
+            result.put(ossUrlForm.getOssFilename(), url);
+        });
+        return ResponseUtil.success(result);
     }
 
     @RequestMapping(value = "copy", method = RequestMethod.POST)

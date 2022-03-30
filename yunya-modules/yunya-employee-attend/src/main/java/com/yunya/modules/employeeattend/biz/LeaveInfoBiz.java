@@ -17,7 +17,10 @@ import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.form.FindApprovalByMeForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoByEmForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoForm;
-import com.yunya.modules.employeeattend.mapper.*;
+import com.yunya.modules.employeeattend.mapper.ApprovalInfoMapper;
+import com.yunya.modules.employeeattend.mapper.CopyInfoMapper;
+import com.yunya.modules.employeeattend.mapper.LeaveInfoMapper;
+import com.yunya.modules.employeeattend.mapper.LeaveScheduleMapper;
 import com.yunya.modules.employeeattend.util.JpushManager;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +57,9 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     private EmployeePushBiz employeePushBiz;
     @Autowired
     private ApprovalPeopleBiz approvalPeopleBiz;
+    @Autowired
+    private CopyInfoBiz copyInfoBiz;
+
     /**
      * 根据日期和用户id列表查询请假列表
      *
@@ -175,6 +181,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                             copyInfo.setApplyId(leaveId);
                             copyInfo.setApplyType(0);
                             copyInfo.setUserId(copyId);
+                            copyInfo.setHadRead(false);
                             copyInfo.setCrtId(leaveInfoForm.getUserId());
                             copyInfo.setCrtTime(new Date());
                             copyInfoList.add(copyInfo);
@@ -325,6 +332,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                             copyInfo.setApplyId(leaveId);
                             copyInfo.setApplyType(0);
                             copyInfo.setUserId(copyId);
+                            copyInfo.setHadRead(false);
                             copyInfo.setCrtId(leaveInfoByEmForm.getUserId());
                             copyInfo.setCrtTime(new Date());
                             copyInfoList.add(copyInfo);
@@ -531,6 +539,9 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
             employees.forEach(z -> emMap.put(z.getUserId() + "", z));
             for (LeaveInfoListVO li : reList) {
                 li.setUserName(emMap.get(li.getUserId() + "").getName());
+            }
+            if (leaveInfoForm.isQueryCopyInfo()) {
+                copyInfoBiz.updCopyInfoHadRead(leaveInfoForm.getId(), 0, reList.get(0));
             }
         }
         return reList;

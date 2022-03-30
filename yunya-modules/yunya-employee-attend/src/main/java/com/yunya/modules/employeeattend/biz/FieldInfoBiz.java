@@ -84,6 +84,8 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
     private EmployeePushBiz employeePushBiz;
     @Autowired
     private ApprovalPeopleBiz approvalPeopleBiz;
+    @Autowired
+    private CopyInfoBiz copyInfoBiz;
 
     public int create(FieldInfoForm fieldInfoForm) {
         //判断是否有其他类型的申请
@@ -213,6 +215,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                                 copyInfo.setApplyId(fieldInfo.getId());
                                 copyInfo.setApplyType(2);
                                 copyInfo.setUserId(copyId);
+                                copyInfo.setHadRead(false);
                                 copyInfo.setCrtId(fieldInfoForm.getUserId());
                                 copyInfo.setCrtTime(new Date());
                                 copyInfoList.add(copyInfo);
@@ -305,6 +308,9 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                 fieldInfoListVO.setCompanyName(clinicMap.get(fieldInfoListVO.getCompanyId() + "").getName());
                 fieldInfoListVO.setApprovalPeopleName(emMap.get(fieldInfoListVO.getApprovalPeopleId() + "").getName());
                 fieldInfoListVO.setUserName(emMap.get(fieldInfoListVO.getUserId() + "").getName());
+            }
+            if (fieldInfoForm.isQueryCopyInfo()) {
+                copyInfoBiz.updCopyInfoHadRead(fieldInfoForm.getId(), 2, list.get(0));
             }
         }
         return list;
