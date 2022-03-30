@@ -2430,16 +2430,16 @@
     <select id="selectEmployeeFreepaymentWorkloadDetailList"
             resultType="com.yunya.feign.report.domain.vo.EmployeeFreepaymentWorkloadDetailVO">
         SELECT
-        bbp.bill_pay_id as billPayId,
-        bo.abbreviation,
-        bb.bill_id AS billId,
-        bbp.org_id as orgId,
-        bb.bill_num AS billNum,
-        DATE_FORMAT(bbp.payee_date,'%Y-%m-%d %H:%i:%s') AS chargeDate,
-        DATE_FORMAT(bb.order_date,'%Y-%m-%d') AS orderDate,
-        DATE_FORMAT(bb.bill_date,'%Y-%m-%d %H:%i:%s') AS billDate,
-        bp.`name` AS patientName,
-        bp.mobile
+            bbp.bill_pay_id as billPayId,
+            bo.abbreviation,
+            bb.bill_id AS billId,
+            bbp.org_id as orgId,
+            bb.bill_num AS billNum,
+            DATE_FORMAT(bbp.payee_date,'%Y-%m-%d %H:%i:%s') AS chargeDate,
+            DATE_FORMAT(bb.order_date,'%Y-%m-%d') AS orderDate,
+            DATE_FORMAT(bb.bill_date,'%Y-%m-%d %H:%i:%s') AS billDate,
+            bp.`name` AS patientName,
+            bp.mobile
         FROM base_bill_pay bbp
         LEFT JOIN base_bill bb ON bbp.bill_id=bb.bill_id
         LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
@@ -2457,6 +2457,12 @@
             )
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
+            </if>
+            <if test="orgIds!=null and orgIds.size()>0">
+                and bb.org_id in
+                <foreach collection="orgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <if test="billIds!=null and billIds.size()>0">
                 and bbp.bill_id in
@@ -3798,8 +3804,11 @@
         bbd.bill_id AS billId
         from base_bill_detail bbd
         <where>
-            <if test="query.orgId != null">
-                and bbd.org_id = #{query.orgId}
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
+                and bbd.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="billIds!=null and billIds.size()>0">
                 and bbd.bill_id in
@@ -3811,13 +3820,16 @@
         group by bbd.item_id,bbd.item_type,bbd.bill_id
     </select>
 
-    <select id="findBillIdsByNonMonth" resultType="java.lang.Integer">
+    <select id="selectBillIdsByNonMonth" resultType="java.lang.Integer">
         SELECT
         DISTINCT bb.bill_id
         FROM base_bill bb
         <where>
-            <if test="query.orgId != null">
-                and bb.org_id = #{query.orgId}
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
+                and bb.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.queryDate != null and query.queryDate != ''">
                 and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;&gt; #{query.queryDate}
@@ -3872,8 +3884,11 @@
             <where>
                 and br.privilege_amount != 0
                 and date_format(br.privilege_date, '%Y-%m') != date_format(br.bill_date, '%Y-%m')
-                <if test="query.orgId != null">
-                    and br.org_id = #{query.orgId}
+                <if test="query.orgIds!=null and query.orgIds.size()>0">
+                    and br.org_id in
+                    <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
                 </if>
                 <if test="query.queryDate!=null and query.queryDate!=''">
                     and date_format(br.privilege_date, '%Y-%m') = #{query.queryDate}

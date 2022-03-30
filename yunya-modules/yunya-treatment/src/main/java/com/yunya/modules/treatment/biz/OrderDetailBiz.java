@@ -18,7 +18,9 @@ import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
-import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
+import com.yunya.feign.report.domain.query.DataStatisticsQuery;
+import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
 import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -59,12 +61,14 @@ import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import com.yunya.modules.treatment.mapper.BillRecordMapper;
 import com.yunya.modules.treatment.mapper.OrderDetailMapper;
 import com.yunya.modules.treatment.mapper.OrderRecordMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -93,6 +97,7 @@ import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_
  * @description:
  * @since: 1.0.0
  */
+@Slf4j
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
@@ -1021,8 +1026,31 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param query
    * @return
    */
-  public PageInfo<CategoryInfoIncomeVO> findCategoryIncomeList(CategoryIncomeQuery query)
-      throws Exception {
+  public PageInfo<CategoryInfoIncomeVO> findCategoryIncomeList(CategoryIncomeQuery query) throws  Exception{
+//    RequestContextHolder.setRequestAttributes(RequestContextHolder.getRequestAttributes(), true);
+//    List<List<Integer>> part = Lists.partition(query.getOrgIds(), query.getOrgIds().size());
+//    List<CategoryInfoIncomeVO> list = new ArrayList<>();
+//    CountDownLatch cdl = new CountDownLatch(part.size());
+//    part.forEach(orgIds-> executorService.submit(()->{
+//      try {
+//        list.addAll(findCategoryIncomeList(orgIds, query.getStartDate(), query.getEndDate()));
+//      } catch (Exception e) {
+//        log.error("", e);
+//      } finally {
+//        cdl.countDown();
+//      }
+//    }));
+//    cdl.await();
+    List<CategoryInfoIncomeVO> list = findCategoryIncomeList(query.getOrgIds(), query.getStartDate(), query.getEndDate());
+    // 分页
+    return PageUtl.doPage(query.getPageNum(), query.getPageSize(), list, query.getWhetherPage());
+  }
+
+  public List<CategoryInfoIncomeVO> findCategoryIncomeList(List<Integer> orgIds, String startDate, String endDate) throws ExecutionException, InterruptedException {
+    CategoryIncomeQuery query = new CategoryIncomeQuery();
+    query.setOrgIds(orgIds);
+    query.setStartDate(startDate);
+    query.setEndDate(endDate);
     // 项目表（价目表 + 价目表）
     Future<List<BaseTariffVO>> tariffFuture = multiFindAllTariffList();
 
@@ -1037,7 +1065,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     List<OrganizationInfoDetail> orgList = getOrganizationList(query.getOrgIds());
 
     // 项目的优惠合计和补入工作量
-    List<ClinicTariffDiscountCouponVO> discountFuture = findTariffCategoryDiscountAmount(query);
+    Future<List<ClinicTariffDiscountCouponVO>> discountFuture = multiFindTariffCategoryDiscountAmount(query);
 
     // 组装数据并排序
     List<CategoryInfoIncomeVO> list =
@@ -1045,12 +1073,10 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             tariffFuture.get(),
             originalFuture.get(),
             freePaymentFuture.get(),
-            discountFuture,
+            discountFuture.get(),
             orgList,
             query.getOrgId());
-
-    // 分页
-    return PageUtl.doPage(query.getPageNum(), query.getPageSize(), list, query.getWhetherPage());
+    return list;
   }
 
   /**
@@ -1290,15 +1316,18 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param query
    * @return
    */
-  private List<ClinicTariffDiscountCouponVO> findTariffCategoryDiscountAmount(
+  private Future<List<ClinicTariffDiscountCouponVO>> multiFindTariffCategoryDiscountAmount(
           CategoryIncomeQuery query) {
-    List<Integer> orderRecordIds = billRecordBiz.selectRemoveBillAdjustDiscountOrderIds(query);
-    if (StringHelper.isNotEmpty(orderRecordIds)) {
-      DiscountCouponQuery queryForm = new DiscountCouponQuery();
-      queryForm.setOrderRecordIds(orderRecordIds);
-      return discountFeign.findClinicTariffCategoryDiscountCoupon(queryForm);
-    }
-    return new ArrayList();
+    RequestContextHolder.setRequestAttributes(RequestContextHolder.getRequestAttributes(), true);
+    return executorService.submit(()->{
+      List<Integer> orderRecordIds = billRecordBiz.selectRemoveBillAdjustDiscountOrderIds(query);
+      if (StringHelper.isNotEmpty(orderRecordIds)) {
+        DiscountCouponQuery queryForm = new DiscountCouponQuery();
+        queryForm.setOrderRecordIds(orderRecordIds);
+        return discountFeign.findClinicTariffCategoryDiscountCoupon(queryForm);
+      }
+      return new ArrayList();
+    });
   }
 
   /**
