@@ -276,20 +276,24 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
                     }
                     list.add(file);
                     map.put(sourceId, list);
-
-                    OssUrlForm form = new OssUrlForm();
-                    form.setIsThumb(true);
-                    form.setCompanyId(0);
-                    form.setObjectId(patientId);
-                    form.setOssCategory(3);
-                    form.setOssFilename(file.getFileLocation());
+                    if (!ObjectUtils.isEmpty(patientId)) {
+                        OssUrlForm form = new OssUrlForm();
+                        form.setIsThumb(true);
+                        form.setCompanyId(0);
+                        form.setObjectId(patientId);
+                        form.setOssCategory(3);
+                        form.setOssFilename(file.getFileLocation());
+                        ossUrlForms.add(form);
+                    }
                 });
-                if (!ObjectUtils.isEmpty(patientId)) {
+                if (StringHelper.isNotEmpty(ossUrlForms)) {
                     Map<String, String> data = remoteOssServiceFeign.getUrlMap(ossUrlForms).getData();
                     files.forEach(file->{
                         String fileLocation = file.getFileLocation();
                         String url = data.get(fileLocation);
-                        file.setThumbUrl(domainUrl + url);
+                        if (StringHelper.isNotEmpty(url)) {
+                            file.setThumbUrl(domainUrl + url);
+                        }
                     });
                 }
             }
