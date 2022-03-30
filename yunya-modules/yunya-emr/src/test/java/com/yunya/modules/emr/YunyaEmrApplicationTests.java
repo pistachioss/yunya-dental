@@ -69,7 +69,7 @@ class YunyaEmrApplicationTests {
     @Test
     public void testFindMedicalPictures() {
         MedicalPictureRecordQuery query = new MedicalPictureRecordQuery();
-        query.setPatientId(108355);
+        query.setPatientId(1564);
         query.setWhetherPage(false);
         PageInfo<MedicalPictureRecordVO> data = medicalPictureRecordController.findList(query).getData();
         System.out.println(JSONObject.toJSON(data));
