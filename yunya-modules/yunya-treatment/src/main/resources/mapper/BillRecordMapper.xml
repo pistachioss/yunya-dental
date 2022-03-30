@@ -379,6 +379,7 @@
     <!-- 根据条件查询应收账款列表 -->
     <select id="selectDebtList" resultType="com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO">
         select
+            orgId,
             billId,
             billDate,
             billNum,
@@ -388,28 +389,33 @@
             totalActualAmount,
             totalActualAmount-received_amount AS billReceivableAmount from
         (
-            select br.id as billId,
-            date_format(br.crt_time, '%Y-%m-%d') as billDate,
-            br.bill_number as billNum,
-            br.patient_id as patientId,
-            tr.dentist_id as regDentistId,
-            br.receivable_amount as totalOriginalAmount,
-            if(date_format(br.privilege_date, '%Y-%m-%d') > date_format(#{query.queryDate}, '%Y-%m-%d'),
-            br.receivable_amount,
-            br.actual_receivable_amount) as totalActualAmount,
-            ifnull(bpr.received_amount, 0) received_amount
+            select
+                br.org_id AS orgId,
+                br.id as billId,
+                date_format(br.crt_time, '%Y-%m-%d') as billDate,
+                br.bill_number as billNum,
+                br.patient_id as patientId,
+                tr.dentist_id as regDentistId,
+                br.receivable_amount as totalOriginalAmount,
+                if(date_format(br.privilege_date, '%Y-%m-%d') > date_format(#{query.queryDate}, '%Y-%m-%d'),
+                br.receivable_amount,
+                br.actual_receivable_amount) as totalActualAmount,
+                ifnull(bpr.received_amount, 0) received_amount
             from bill_record br
             left join treatment_record tr on br.treatment_record_id = tr.id
             LEFT JOIN (
-            SELECT bpr.bill_record_id,sum(bpr.received_amount) received_amount FROM bill_pay_record bpr WHERE
-            bpr.inservice=true
-            AND date_format(bpr.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
-            GROUP BY bpr.bill_record_id
+                SELECT bpr.bill_record_id,sum(bpr.received_amount) received_amount FROM bill_pay_record bpr WHERE
+                bpr.inservice=true
+                AND date_format(bpr.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
+                GROUP BY bpr.bill_record_id
             ) bpr on br.id=bpr.bill_record_id
             <where>
                 and br.inservice = true
-                <if test="query.orgId != null">
-                    and br.org_id = #{query.orgId}
+                <if test="query.orgIds!=null and query.orgIds.size()>0">
+                    and br.org_id in
+                    <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
                 </if>
                 <if test="query.queryDate != null and query.queryDate != ''">
                     and date_format(br.crt_time, '%Y-%m-%d') &lt;= #{query.queryDate}
@@ -422,8 +428,9 @@
                 </if>
             </where>
             order by
-            br.crt_time desc,
-            br.debt_amount desc
+                br.crt_time desc,
+                br.org_id,
+                br.debt_amount desc
         ) t where totalActualAmount>received_amount
     </select>
 
@@ -528,11 +535,16 @@
             select behdr.associate_record_id as orderRecordId
             from bill_exception_handle_record behr
             left join bill_exception_handle_detail_record behdr on behr.id = behdr.bill_handle_record_id
-            where operate_type = 2
-                <if test="query.queryDate!=null and query.queryDate!=''">
-                and date_format(behr.crt_time, '%Y-%m') = #{query.queryDate}
+            <where>
+                operate_type = 2
+                <if test="query.startDate!=null and query.startDate!=''">
+                    and date_format(behr.crt_time, '%Y-%m') &gt;= #{query.startDate}
                 </if>
-            and br.order_record_id = behdr.associate_record_id
+                <if test="query.endDate!=null and query.endDate!=''">
+                    and date_format(behr.crt_time, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+                and br.order_record_id = behdr.associate_record_id
+            </where>
         )
         <if test="query.orgIds != null and query.orgIds.size() > 0">
             AND br.org_id IN
@@ -540,9 +552,13 @@
                 #{item}
             </foreach>
         </if>
-        <if test="query.queryDate!=null and query.queryDate!=''">
-            and date_format(crt_time, '%Y-%m') = #{query.queryDate}
-            and date_format(privilege_date, '%Y-%m') =  #{query.queryDate}
+        <if test="query.startDate!=null and query.startDate!=''">
+            and date_format(crt_time, '%Y-%m') &gt;= #{query.startDate}
+            and date_format(privilege_date, '%Y-%m') &gt;=  #{query.startDate}
+        </if>
+        <if test="query.endDate!=null and query.endDate!=''">
+            and date_format(crt_time, '%Y-%m') &lt;= #{query.endDate}
+            and date_format(privilege_date, '%Y-%m') &lt;=  #{query.endDate}
         </if>
     </select>
 </mapper>

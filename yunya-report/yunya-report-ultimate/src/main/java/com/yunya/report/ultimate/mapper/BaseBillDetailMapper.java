@@ -203,6 +203,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
 
   List<EmployeeFreepaymentWorkloadDetailVO> selectEmployeeFreepaymentWorkloadDetailList(
       @Param("query") EmployeePersonalWorkloadDetailQuery query,
+      @Param("orgIds") Collection<Integer> orgIds,
       @Param("billIds") Collection<Integer> billIds,
       @Param("payIds") Collection<Integer> payIds);
 
@@ -400,7 +401,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<Integer> findBillIdsByNonMonth(@Param("query") BillCategoryIncomeQuery query);
+  List<Integer> selectBillIdsByNonMonth(@Param("query") BillCategoryIncomeQuery query);
 
 
   /**

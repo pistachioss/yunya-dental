@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.CurrentMonthBillInfoQuery;
 import com.yunya.feign.report.domain.query.StatementStatisticQuery;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
@@ -65,4 +66,8 @@ public interface BillPayRecordMapper extends Mapper<BillPayRecord> {
    * @return
    */
   List<Integer> selectAdjustPayIds(@Param("query") StatementStatisticQuery query);
+
+  List<Integer> selectRevokePayList(@Param("query") CategoryIncomeQuery query);
+
+  List<Integer> selectAdjustPayList(@Param("query") CategoryIncomeQuery query);
 }

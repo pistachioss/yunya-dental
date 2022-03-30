@@ -429,8 +429,11 @@
             FROM bill_exception_handle_record behr
             LEFT JOIN bill_exception_handle_detail_record behdr ON behr.id = behdr.bill_handle_record_id
             WHERE operate_type = 2
-            <if test="query.queryDate != null and query.queryDate != ''">
-                AND DATE_FORMAT(behr.crt_time, '%Y-%m') = #{query.queryDate}
+            <if test="query.startDate != null and query.startDate != ''">
+                AND DATE_FORMAT(behr.crt_time, '%Y-%m') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                AND DATE_FORMAT(behr.crt_time, '%Y-%m') &lt;= #{query.endDate}
             </if>
             AND behdr.associate_record_id=br.order_record_id
         )
@@ -440,8 +443,11 @@
                 #{item}
             </foreach>
         </if>
-        <if test="query.queryDate != null and query.queryDate != ''">
-            AND DATE_FORMAT(br.crt_time, '%Y-%m') = #{query.queryDate}
+        <if test="query.startDate != null and query.startDate != ''">
+            AND DATE_FORMAT(br.crt_time, '%Y-%m') &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+            AND DATE_FORMAT(br.crt_time, '%Y-%m') &lt;= #{query.endDate}
         </if>
         GROUP BY od.org_id, od.type, od.billing_item_id
     </select>
@@ -471,9 +477,13 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and DATE_FORMAT(bpr.crt_time, '%Y-%m') = #{query.queryDate}
-                and DATE_FORMAT(br.crt_time, '%Y-%m') = #{query.queryDate}
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT(bpr.crt_time, '%Y-%m') &gt;= #{query.startDate}
+                and DATE_FORMAT(br.crt_time, '%Y-%m') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT(bpr.crt_time, '%Y-%m') &lt;= #{query.endDate}
+                and DATE_FORMAT(br.crt_time, '%Y-%m') &lt;= #{query.endDate}
             </if>
             <if test="query.orgIds != null and query.orgIds.size() > 0">
                 AND br.org_id IN

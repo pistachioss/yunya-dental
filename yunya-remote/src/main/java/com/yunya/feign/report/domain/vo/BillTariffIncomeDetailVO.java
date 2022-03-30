@@ -24,6 +24,10 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 @Data
 @ToString
 public class BillTariffIncomeDetailVO implements Serializable {
+  /** 门诊名称*/
+  @Excel(name = "门诊")
+  @ApiModelProperty("门诊名称")
+  private String abbreviation;
   /** 开单明细ID */
   @ApiModelProperty("账单明细ID")
   private Integer billDetailId;

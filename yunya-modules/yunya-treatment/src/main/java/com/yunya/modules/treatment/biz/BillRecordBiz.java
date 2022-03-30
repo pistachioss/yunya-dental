@@ -670,11 +670,12 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
         billExceptionHandleRecordMapper.selectBeforeRevokeBillPayIds(query);
     resultList.forEach(
         vo -> {
+          Integer orgId = vo.getOrgId();
           Integer billId = vo.getBillId();
           BigDecimal billReceivableAmount = vo.getBillReceivableAmount();
           revokes.forEach(
               revoke -> {
-                if (revoke.getBillId().equals(billId)) {
+                if (revoke.getBillId().equals(billId) && revoke.getOrgId().equals(orgId)) {
                   vo.setBillReceivableAmount(
                       billReceivableAmount.subtract(revoke.getBillReceivableAmount()));
                 }
@@ -737,6 +738,10 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
         vo -> {
           Integer regDentistId = vo.getRegDentistId();
           vo.setRegDentistName(userMap.get(regDentistId));
+          OrganizationInfo org = systemServiceFeign.findOrgInfoByOrgId(vo.getOrgId());
+          if (!ObjectUtils.isEmpty(org)) {
+            vo.setAbbreviation(org.getAbbreviation());
+          }
         });
   }
 
@@ -752,9 +757,12 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     ExcelUtil<BillRestReceivableAmountVO> excelUtil =
         new ExcelUtil<>(BillRestReceivableAmountVO.class);
     String fileName = query.getQueryDate() + "应收款余额表";
-    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
-    if (null != orgInfo) {
-      fileName = orgInfo.getAbbreviation() + fileName;
+    List<Integer> orgIds = query.getOrgIds();
+    if (orgIds.size() == 1) {
+      OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgIds.get(0));
+      if (null != orgInfo) {
+        fileName = orgInfo.getAbbreviation() + fileName;
+      }
     }
     excelUtil.exportExcel(response, resultList, "应收款余额表", fileName);
   }

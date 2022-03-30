@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
-import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
+import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
@@ -61,8 +61,8 @@ public class OrderRecordControllerTest {
 
   @Test
   public void categoryIncomeList() throws Exception {
-    String param = "{\"orgIds\":[30],\"queryDate\":\"2021-10\",\"whetherPage\":false}";
-    BillCategoryIncomeQuery query = JSONObject.parseObject(param, BillCategoryIncomeQuery.class);
+    String param = "{\"orgIds\":[26, 27, 36, 35, 37, 28, 29, 30, 31, 32, 33, 34, 39, 40, 43, 44, 42],\"startDate\":\"2021-01\",\"startDate\":\"2021-12\",\"whetherPage\":false}";
+    CategoryIncomeQuery query = JSONObject.parseObject(param, CategoryIncomeQuery.class);
     long l = System.currentTimeMillis();
     PageInfo<CategoryInfoIncomeVO> pageInfo = orderDetailController.categoryIncomeList(query).getData();
     System.out.println("耗时：" + (System.currentTimeMillis() - l));

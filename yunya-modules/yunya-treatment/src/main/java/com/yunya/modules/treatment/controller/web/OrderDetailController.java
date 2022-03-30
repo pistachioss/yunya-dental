@@ -1,7 +1,7 @@
 package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
+import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
 import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
@@ -180,7 +180,7 @@ public class OrderDetailController {
   @ApiOperation("公司端报表-财务报表-分类收入汇总")
   @PostMapping(value = "/category/income/list", name = "billDetailBiz")
   public ResponseResult<PageInfo<CategoryInfoIncomeVO>> categoryIncomeList(
-          @RequestBody @Validated BillCategoryIncomeQuery query) throws Exception {
+          @RequestBody @Validated CategoryIncomeQuery query) throws Exception {
     PageInfo<CategoryInfoIncomeVO> resultList = orderDetailBiz.findCategoryIncomeList(query);
     return ResponseUtil.success(resultList);
   }
@@ -196,7 +196,7 @@ public class OrderDetailController {
   @ApiOperation("公司端报表-财务报表-分类收入汇总-导出")
   @PostMapping(value = "/category/income/export", name = "根据条件导出项目分类收入汇总列表")
   public ResponseResult<T> exportCategoryIncome(
-          HttpServletResponse response, @RequestBody @Validated BillCategoryIncomeQuery query)
+          HttpServletResponse response, @RequestBody @Validated CategoryIncomeQuery query)
           throws Exception {
     orderDetailBiz.exportCategoryIncome(response, query);
     return ResponseUtil.success(null);

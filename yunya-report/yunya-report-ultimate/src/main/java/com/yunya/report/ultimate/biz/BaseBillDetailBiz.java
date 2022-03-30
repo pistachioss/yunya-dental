@@ -104,9 +104,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   public void exportBillDetailIncome(
       HttpServletResponse response, BillDetailIncomeDetailQuery query) throws IOException {
     String fileName = "门诊项目收入明细";
-    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
-    if (null != organization) {
-      fileName = organization.getAbbreviation() + fileName;
+    List<Integer> orgIds = query.getOrgIds();
+    if (orgIds.size() == 1) {
+        BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+        if (null != organization) {
+            fileName = organization.getAbbreviation() + fileName;
+        }
     }
     List<BillTariffIncomeDetailVO> list = mapper.selectBillDetailIncomeList(query);
     ExcelUtil<BillTariffIncomeDetailVO> excelUtil = new ExcelUtil<>(BillTariffIncomeDetailVO.class);
@@ -758,7 +761,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     Set<Integer> billIds =
         billDetails.stream().map(BaseBillDetail::getBillId).collect(Collectors.toSet());
     List<EmployeeFreepaymentWorkloadDetailVO> resultList =
-        mapper.selectEmployeeFreepaymentWorkloadDetailList(query, billIds, FREE_PAYMENT_ID);
+        mapper.selectEmployeeFreepaymentWorkloadDetailList(query, null, billIds, FREE_PAYMENT_ID);
     // 免单支付
     if (StringHelper.isNotEmpty(resultList)) {
       Integer employeeId = query.getEmployeeId();
@@ -2210,7 +2213,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public PageInfo<NonMonthCategoryVO> nonMonthCategoryList(BillCategoryIncomeQuery query) {
     List<NonMonthCategoryVO> res = new ArrayList<>();
-    List<Integer> ids = mapper.findBillIdsByNonMonth(query);
+    List<Integer> ids = mapper.selectBillIdsByNonMonth(query);
     if (StringHelper.isNotEmpty(ids)) {
       List<NonMonthCategoryVO> vos = mapper.nonMonthCategoryList(query, ids);
       if (StringHelper.isNotEmpty(vos)) {
@@ -2228,7 +2231,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         }
         Map<String, BigDecimal> couponMap = new HashMap<>(16);
         query.setPrivilegeDate(query.getQueryDate());
-        ids = mapper.findBillIdsByNonMonth(query);
+        ids = mapper.selectBillIdsByNonMonth(query);
         if (StringHelper.isNotEmpty(ids)) {
           List<NonMonthCategoryVO> coupons = mapper.nonMonthCategoryList(query, ids);
           if (StringHelper.isNotEmpty(coupons)) {
@@ -2264,7 +2267,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         queryForm.setEndDate(query.getQueryDate());
         queryForm.setDateType((byte) 1);
         List<EmployeeFreepaymentWorkloadDetailVO> resultList =
-            mapper.selectEmployeeFreepaymentWorkloadDetailList(queryForm, billIds, FREE_PAYMENT_ID);
+            mapper.selectEmployeeFreepaymentWorkloadDetailList(queryForm, query.getOrgIds(), billIds, FREE_PAYMENT_ID);
         // 免单支付
         if (StringHelper.isNotEmpty(resultList)) {
           Map<Integer, EmployeeFreepaymentWorkloadDetailVO> billPayIds =
