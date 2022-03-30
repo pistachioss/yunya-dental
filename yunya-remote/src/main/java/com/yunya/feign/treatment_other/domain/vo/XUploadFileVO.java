@@ -32,6 +32,10 @@ public class XUploadFileVO implements Serializable {
     @ApiModelProperty("文件资源定位路径")
     private String fileLocation;
 
+    /** 缩略图*/
+    @ApiModelProperty("缩略图")
+    private String thumbUrl;
+
     /** 文件名*/
     @ApiModelProperty("文件名")
     private String fileName;
