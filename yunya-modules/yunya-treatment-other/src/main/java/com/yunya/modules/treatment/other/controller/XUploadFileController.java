@@ -54,7 +54,7 @@ public class XUploadFileController {
     @CurrentUser
     @ApiImplicitParams({@ApiImplicitParam(name = "fileId",value = "文件ID")})
     public ResponseResult delById(@PathVariable("fileId") Integer fileId) {
-        xUploadFileBiz.del(fileId, true);
+        xUploadFileBiz.delById(fileId, true);
         return ResponseUtil.success();
     }
 
@@ -69,7 +69,7 @@ public class XUploadFileController {
     @CurrentUser
     @ApiImplicitParams({@ApiImplicitParam(name = "fileId",value = "文件ID")})
     public ResponseResult del(@PathVariable("fileId") Integer fileId) {
-        xUploadFileBiz.del(fileId, false);
+        xUploadFileBiz.delById(fileId, false);
         return ResponseUtil.success();
     }
 }
