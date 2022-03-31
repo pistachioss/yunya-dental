@@ -712,37 +712,39 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    */
   private void findPatientAndRegDetist(PageInfo<BillRestReceivableAmountVO> pageInfo) {
     List<BillRestReceivableAmountVO> result = pageInfo.getList();
-    List<Integer> patientIds =
-        result.stream().map(BillRestReceivableAmountVO::getPatientId).collect(Collectors.toList());
-    List<PatientBaseInfoVo> patients = patientCentralServiceFeign.findPatientInfoByIds(patientIds);
-    Map<Integer, PatientBaseInfoVo> patientMap =
-        patients.stream().collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
-    result.forEach(
-        vo -> {
-          Integer patientId = vo.getPatientId();
-          PatientBaseInfoVo patient = patientMap.get(patientId);
-          if (patient != null) {
-            vo.setPatientName(patient.getName());
-            vo.setMobile(patient.getMobile());
-          }
-        });
-    List<Integer> userIds =
-        result.stream()
-            .map(BillRestReceivableAmountVO::getRegDentistId)
-            .collect(Collectors.toList());
-    List<SysUserInfoDetail> users = systemServiceFeign.findSysUserEmployeeInfoByUserIds(userIds);
-    Map<Integer, String> userMap =
-        users.stream()
-            .collect(Collectors.toMap(SysUserInfoDetail::getUserId, SysUserInfoDetail::getName));
-    result.forEach(
-        vo -> {
-          Integer regDentistId = vo.getRegDentistId();
-          vo.setRegDentistName(userMap.get(regDentistId));
-          OrganizationInfo org = systemServiceFeign.findOrgInfoByOrgId(vo.getOrgId());
-          if (!ObjectUtils.isEmpty(org)) {
-            vo.setAbbreviation(org.getAbbreviation());
-          }
-        });
+    if (StringHelper.isNotEmpty(result)) {
+      List<Integer> patientIds =
+              result.stream().map(BillRestReceivableAmountVO::getPatientId).collect(Collectors.toList());
+      List<PatientBaseInfoVo> patients = patientCentralServiceFeign.findPatientInfoByIds(patientIds);
+      Map<Integer, PatientBaseInfoVo> patientMap =
+              patients.stream().collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
+      result.forEach(
+              vo -> {
+                Integer patientId = vo.getPatientId();
+                PatientBaseInfoVo patient = patientMap.get(patientId);
+                if (patient != null) {
+                  vo.setPatientName(patient.getName());
+                  vo.setMobile(patient.getMobile());
+                }
+              });
+      List<Integer> userIds =
+              result.stream()
+                      .map(BillRestReceivableAmountVO::getRegDentistId)
+                      .collect(Collectors.toList());
+      List<SysUserInfoDetail> users = systemServiceFeign.findSysUserEmployeeInfoByUserIds(userIds);
+      Map<Integer, String> userMap =
+              users.stream()
+                      .collect(Collectors.toMap(SysUserInfoDetail::getUserId, SysUserInfoDetail::getName));
+      result.forEach(
+              vo -> {
+                Integer regDentistId = vo.getRegDentistId();
+                vo.setRegDentistName(userMap.get(regDentistId));
+                OrganizationInfo org = systemServiceFeign.findOrgInfoByOrgId(vo.getOrgId());
+                if (!ObjectUtils.isEmpty(org)) {
+                  vo.setAbbreviation(org.getAbbreviation());
+                }
+              });
+    }
   }
 
   /**
