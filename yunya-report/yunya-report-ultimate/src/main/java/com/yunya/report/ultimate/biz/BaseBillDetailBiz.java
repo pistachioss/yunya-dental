@@ -2211,7 +2211,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query
    * @return
    */
-  public PageInfo<NonMonthCategoryVO> nonMonthCategoryList(BillCategoryIncomeQuery query) {
+  public PageInfo<NonMonthCategoryVO> nonMonthCategoryList(NonMonthCategoryIncomeQuery query) {
     List<NonMonthCategoryVO> res = new ArrayList<>();
     List<Integer> ids = mapper.selectBillIdsByNonMonth(query);
     if (StringHelper.isNotEmpty(ids)) {
@@ -2262,7 +2262,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         }
         Set<Integer> billIds = billMap.keySet();
         EmployeePersonalWorkloadDetailQuery queryForm = new EmployeePersonalWorkloadDetailQuery();
-        queryForm.setOrgId(query.getOrgId());
         queryForm.setStartDate(query.getQueryDate());
         queryForm.setEndDate(query.getQueryDate());
         queryForm.setDateType((byte) 1);
@@ -2366,7 +2365,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query
    * @return
    */
-  public PageInfo<NonDiscountVO> nonDiscountList(BillCategoryIncomeQuery query) {
+  public PageInfo<NonDiscountVO> nonDiscountList(NonMonthCategoryIncomeQuery query) {
     List<NonDiscountVO> res = mapper.nonDiscountList(query);
     if (query.getWhetherPage()) {
       return PageUtl.doPage(query.getPageNum(), query.getPageSize(), res);
@@ -2381,15 +2380,20 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query 查询条件
    * @return void
    */
-  public void nonMonthCategoryExport(HttpServletResponse response, BillCategoryIncomeQuery query)
+  public void nonMonthCategoryExport(HttpServletResponse response, NonMonthCategoryIncomeQuery query)
       throws IOException {
     query.setWhetherPage(false);
     List<NonMonthCategoryVO> list = nonMonthCategoryList(query).getList();
     ExcelUtil<NonMonthCategoryVO> excelUtil = new ExcelUtil<>(NonMonthCategoryVO.class);
-    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
-    String fileName =
-        excelUtil.getFileName(
-            query.getQueryDate(), "", organization.getAbbreviation(), "非本期免单金额明细");
+    List<Integer> orgIds = query.getOrgIds();
+    String fileName = excelUtil.getFileName(
+            query.getQueryDate(), "", "", "非本期免单金额明细");
+    if (orgIds.size() == 1) {
+        BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+        fileName =
+                excelUtil.getFileName(
+                        query.getQueryDate(), "", organization.getAbbreviation(), "非本期免单金额明细");
+    }
     excelUtil.exportExcel(response, list, "非本期免单金额明细", fileName);
   }
 
@@ -2400,15 +2404,21 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query
    * @throws IOException
    */
-  public void nonDiscountExport(HttpServletResponse response, BillCategoryIncomeQuery query)
+  public void nonDiscountExport(HttpServletResponse response, NonMonthCategoryIncomeQuery query)
       throws IOException {
     query.setWhetherPage(false);
     List<NonDiscountVO> list = nonDiscountList(query).getList();
     ExcelUtil<NonDiscountVO> excelUtil = new ExcelUtil<>(NonDiscountVO.class);
-    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
+    List<Integer> orgIds = query.getOrgIds();
     String fileName =
-        excelUtil.getFileName(
-            query.getQueryDate(), "", organization.getAbbreviation(), "非本期优惠金额明细");
+              excelUtil.getFileName(
+                      query.getQueryDate(), "", "", "非本期优惠金额明细");
+    if (orgIds.size() == 1) {
+        BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+        fileName =
+                excelUtil.getFileName(
+                        query.getQueryDate(), "", organization.getAbbreviation(), "非本期优惠金额明细");
+    }
     excelUtil.exportExcel(response, list, "非本期优惠金额明细", fileName);
   }
 

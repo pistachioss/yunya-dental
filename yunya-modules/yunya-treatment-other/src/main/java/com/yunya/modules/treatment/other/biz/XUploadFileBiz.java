@@ -113,9 +113,10 @@ public class XUploadFileBiz extends BaseBiz<XUploadFileMapper, XUploadFile> {
 
     /**
      * 根据文件ID逻辑删除文件信息
-     * @param id
+     * @param id 文件id
+     * @param checkEditDate 是否需要检查允许操作
      */
-    public void del(Integer id, Boolean checkEditDate) {
+    public void delById(Integer id, Boolean checkEditDate) {
         XUploadFile file = fileIsExists(id);
         if (checkEditDate) {
             TreatmentOtherUtils.enableEditImage(file.getCrtTime());

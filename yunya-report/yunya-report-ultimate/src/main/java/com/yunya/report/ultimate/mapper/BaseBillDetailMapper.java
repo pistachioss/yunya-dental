@@ -392,7 +392,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param billids
    * @return list
    */
-  List<NonMonthCategoryVO> nonMonthCategoryList(@Param("query") BillCategoryIncomeQuery query,
+  List<NonMonthCategoryVO> nonMonthCategoryList(@Param("query") NonMonthCategoryIncomeQuery query,
                                                 @Param("billIds") Collection<Integer> billids);
 
   /**
@@ -401,7 +401,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<Integer> selectBillIdsByNonMonth(@Param("query") BillCategoryIncomeQuery query);
+  List<Integer> selectBillIdsByNonMonth(@Param("query") NonMonthCategoryIncomeQuery query);
 
 
   /**
@@ -409,7 +409,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<NonDiscountVO> nonDiscountList(@Param("query") BillCategoryIncomeQuery query);
+  List<NonDiscountVO> nonDiscountList(@Param("query") NonMonthCategoryIncomeQuery query);
 
   /**
    * 根据条件查询原价并按项目大类分组
