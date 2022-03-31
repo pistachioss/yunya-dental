@@ -352,7 +352,7 @@ public class BizTest {
     @Test
     public void testNonMonthCategoryList() {
         String param = "{\"queryDate\":\"2021-03\",\"orgIds\":[26],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
-        BillCategoryIncomeQuery query = JSONObject.parseObject(param, BillCategoryIncomeQuery.class);
+        NonMonthCategoryIncomeQuery query = JSONObject.parseObject(param, NonMonthCategoryIncomeQuery.class);
         long t1 = System.currentTimeMillis();
         PageInfo<NonMonthCategoryVO> resultList = baseBillDetailBiz.nonMonthCategoryList(query);
         System.out.println(System.currentTimeMillis() - t1);
@@ -362,7 +362,7 @@ public class BizTest {
     @Test
     public void testNonDiscountList() {
         String param = "{\"queryDate\":\"2022-02\",\"orgIds\":[26],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
-        BillCategoryIncomeQuery query = JSONObject.parseObject(param, BillCategoryIncomeQuery.class);
+        NonMonthCategoryIncomeQuery query = JSONObject.parseObject(param, NonMonthCategoryIncomeQuery.class);
         long t1 = System.currentTimeMillis();
         PageInfo<NonDiscountVO> resultList = baseBillDetailBiz.nonDiscountList(query);
         System.out.println(System.currentTimeMillis() - t1);
