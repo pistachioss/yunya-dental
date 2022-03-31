@@ -1074,8 +1074,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             originalFuture.get(),
             freePaymentFuture.get(),
             discountFuture.get(),
-            orgList,
-            query.getOrgId());
+            orgList);
     return list;
   }
 
@@ -1118,8 +1117,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       List<ClinicTariffOrderVO> originals,
       Map<String, BigDecimal> freePaymentMap,
       List<ClinicTariffDiscountCouponVO> discountCoupons,
-      List<OrganizationInfoDetail> orgList,
-      Integer orgId) {
+      List<OrganizationInfoDetail> orgList) {
     Map<String, String> categoryMap = new HashMap<>(16);
     Map<String, CategoryInfoIncomeVO> resultMap =
         createEntityBaseMap(orgList, baseTariffVOS, categoryMap);
@@ -1139,22 +1137,21 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
     // 统计项目分类的优惠和补入、应收
     if (StringHelper.isNotEmpty(discountCoupons)) {
-      discountCoupons.forEach(
-          vo -> {
-            String categoryKey = categoryMap.get(vo.getItemType() + "," + vo.getItemId());
-            CategoryInfoIncomeVO income = resultMap.get(categoryKey + "." + orgId);
-            if (ObjectUtils.isEmpty(income)) {
-              income = new CategoryInfoIncomeVO();
-            }
-            BigDecimal totalDiscountAmount =
-                income.getTotalDiscountAmount().add(vo.getDiscountAmount());
-            income.setTotalDiscountAmount(totalDiscountAmount);
-            BigDecimal couponAmount = income.getTotalCouponAmount().add(vo.getSupplyWorkload());
-            income.setTotalCouponAmount(couponAmount);
-            BigDecimal actualAmount = income.getTotalOriginalAmount().subtract(totalDiscountAmount);
-            income.setTotalActualAmount(actualAmount);
-            income.setTotalAmount(actualAmount.add(couponAmount));
-          });
+      discountCoupons.forEach(vo -> {
+          String categoryKey = categoryMap.get(vo.getItemType() + "," + vo.getItemId());
+          CategoryInfoIncomeVO income = resultMap.get(categoryKey + "." + vo.getOrgId());
+          if (ObjectUtils.isEmpty(income)) {
+            income = new CategoryInfoIncomeVO();
+          }
+          BigDecimal totalDiscountAmount =
+              income.getTotalDiscountAmount().add(vo.getDiscountAmount());
+          income.setTotalDiscountAmount(totalDiscountAmount);
+          BigDecimal couponAmount = income.getTotalCouponAmount().add(vo.getSupplyWorkload());
+          income.setTotalCouponAmount(couponAmount);
+          BigDecimal actualAmount = income.getTotalOriginalAmount().subtract(totalDiscountAmount);
+          income.setTotalActualAmount(actualAmount);
+          income.setTotalAmount(actualAmount.add(couponAmount));
+      });
     }
 
     // 统计项目分类的当月免单
