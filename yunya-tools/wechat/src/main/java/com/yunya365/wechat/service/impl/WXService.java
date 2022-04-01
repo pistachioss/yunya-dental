@@ -21,12 +21,7 @@ import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryFo
 import com.yunya.feign.patient_central.domain.query.WxFansDetailForm;
 import com.yunya.feign.patient_central.domain.query.WxFansSaveForm;
 import com.yunya.feign.patient_central.domain.query.WxUserQuery;
-import com.yunya.feign.patient_central.domain.vo.web.MemberRelationVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientMemberRelationVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.WxCardUseVo;
-import com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO;
-import com.yunya.feign.patient_central.domain.vo.web.WxPatientVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.report.RemoteReportServiceFeign;
 import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
@@ -41,12 +36,7 @@ import com.yunya.feign.wechat.domain.model.WxAppointConfirmModel;
 import com.yunya.feign.wechat.domain.model.WxRegisterModel;
 import com.yunya.feign.wechat.domain.model.WxTemplateMsgModel;
 import com.yunya.feign.wechat.domain.model.WxTemplatePushModel;
-import com.yunya.feign.wechat.domain.vo.WxAppointDetailVo;
-import com.yunya.feign.wechat.domain.vo.WxAuthVo;
-import com.yunya.feign.wechat.domain.vo.WxMemberRelationVO;
-import com.yunya.feign.wechat.domain.vo.WxRegisterVo;
-import com.yunya.feign.wechat.domain.vo.WxTemplateDataVo;
-import com.yunya.feign.wechat.domain.vo.WxVipInfoVo;
+import com.yunya.feign.wechat.domain.vo.*;
 import com.yunya.framework.common.constant.WXConstant;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -66,7 +56,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -74,12 +63,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -87,7 +71,7 @@ import java.util.function.Function;
 
 import static com.alibaba.fastjson.serializer.SerializerFeature.*;
 import static com.yunya.feign.wechat.enums.TemplateDataEnum.*;
-import static com.yunya.framework.common.constant.WXConstant.GZH_SESSION_KEY;
+import static com.yunya.framework.common.constant.WXConstant.*;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -128,11 +112,14 @@ public class WXService extends AbstractWxBaseApi {
     public WxAuthVo getAuthInfo(String code) {
         WxAuthVo vo = new WxAuthVo();
         //根据code获取access_token和openid(非基础的那个)
-        String openId = super.getAuthOpenId(code);
+        JSONObject jsonObject = super.getAuthOpenId(code);
+        String openId = jsonObject.getString("openid");
+        //拉取用户信息(需scope为 snsapi_userinfo)并且先保存
+        authAndSave(jsonObject, openId);
         vo.setIsRegister(false);
         vo.setOpenId(openId);
         WxFans wxFans = this.getOwnInfo(openId, null);
-        if (wxFans != null) {
+        if (wxFans != null && StringUtils.isNotBlank(wxFans.getRegisterMobile())) {
             vo.setIsRegister(true);
             vo.setPatientId(wxFans.getPatientId());
             this.authSaveRedis(wxFans, openId);
@@ -150,8 +137,9 @@ public class WXService extends AbstractWxBaseApi {
      */
     public ResponseResult<WxAuthVo> getAuthInfoAndCheckUser(String code, HttpServletRequest request) {
         //根据code获取access_token和openid(非基础的那个)
-        String openId = super.getAuthOpenId(code);
-        String userInfo = super.getAndCheckUserInfo(openId);
+        JSONObject jsonObject = super.getAuthOpenId(code);
+        String openId = jsonObject.getString("openid");
+        JSONObject userInfo = super.getAndCheckUserInfo(openId);
         WxFans wxFans = this.assembleWxFans(userInfo);
         WxAuthVo vo = new WxAuthVo();
         vo.setIsRegister(true);
@@ -172,7 +160,7 @@ public class WXService extends AbstractWxBaseApi {
         log.info("公众号注册openId：{}", openId);
         WxRegisterVo vo = new WxRegisterVo();
         WxFans wxFansReg = this.getOwnInfo(openId, null);
-        if (wxFansReg != null) {
+        if (wxFansReg != null && StringUtils.isNotBlank(wxFansReg.getRegisterMobile())) {
             throw new ClientServiceException(WeChatError.USER_IS_REGISTERED);
         }
         WxFans wxFans = this.saveWxPatient(openId, model);
@@ -189,8 +177,8 @@ public class WXService extends AbstractWxBaseApi {
         WxFansSaveForm fansSaveForm = new WxFansSaveForm();
         List<WxFansBind> wxFansBinds = Lists.newArrayList();
         //获取微信用户信息
-        String userInfoStr = super.getAndCheckUserInfo(openId);
-        WxFans wxFans = this.assembleWxFans(userInfoStr);
+        JSONObject userInfoJson = super.getAndCheckUserInfo(openId);
+        WxFans wxFans = this.assembleWxFans(userInfoJson);
         wxFans.setBind(false);
         if (StringUtils.isNotBlank(model.getMobile()) && StringUtils.isNotBlank(model.getUserName())) {
             wxFansBinds = this.buildWxFansBind(wxFans, model);
@@ -672,9 +660,9 @@ public class WXService extends AbstractWxBaseApi {
         }
     }
 
-    private WxFans assembleWxFans(String userInfoStr) {
-        WxFans wxFans = JSONObject.parseObject(userInfoStr, WxFans.class);
-        this.jsonToFans(wxFans, userInfoStr);
+    private WxFans assembleWxFans(JSONObject userInfoJson) {
+        WxFans wxFans = userInfoJson.toJavaObject(WxFans.class);
+        this.jsonToFans(wxFans, userInfoJson);
         return wxFans;
     }
 
@@ -712,11 +700,19 @@ public class WXService extends AbstractWxBaseApi {
         return list;
     }
 
-    private void jsonToFans(WxFans wxFans, String userInfoStr) {
-        JSONObject userJson = JSONObject.parseObject(userInfoStr);
+    private void jsonToFans(WxFans wxFans, JSONObject userJson) {
         JSONArray tagList = userJson.getJSONArray("tagid_list");
         wxFans.setSubscribeTime(new Date(userJson.getLongValue("subscribe_time") * 1000));
         wxFans.setTagidList(Joiner.on(",").join(tagList));
         wxFans.setRegisterName(userJson.getString("nickname"));
+    }
+
+    private void authAndSave(JSONObject jsonObject, String openId) {
+        JSONObject userJson = getWxApi(WX_GET_USERINFO_ACCESS_URL, jsonObject.getString("access_token"), openId);
+        WxFansSaveForm fansSaveForm = new WxFansSaveForm();
+        WxFans wxFans = this.assembleWxFans(userJson);
+        wxFans.setBind(false);
+        fansSaveForm.setWxFans(wxFans);
+        patientFeign.saveWx(fansSaveForm);
     }
 }
