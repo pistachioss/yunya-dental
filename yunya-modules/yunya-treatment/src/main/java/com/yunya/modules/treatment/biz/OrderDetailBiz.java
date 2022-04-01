@@ -67,7 +67,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -1060,11 +1059,11 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     Future<Map<String, BigDecimal>> freePaymentFuture =
         multiFindTariffCategoryFreePaymentAmount(query);
 
-    // 项目的优惠合计和补入工作量
-    Future<List<ClinicTariffDiscountCouponVO>> discountFuture = multiFindTariffCategoryDiscountAmount(query);
-
     // 门诊组织列表
-    Future<List<OrganizationInfoDetail>> orgFuture = multiFindOrganizationList(query.getOrgIds());
+    List<OrganizationInfoDetail> orgs = multiFindOrganizationList(query.getOrgIds());
+
+    // 项目的优惠合计和补入工作量
+    List<ClinicTariffDiscountCouponVO> discounts = findTariffCategoryDiscountAmount(query);
 
     // 组装数据并排序
     List<CategoryInfoIncomeVO> list =
@@ -1072,8 +1071,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             tariffFuture.get(),
             originalFuture.get(),
             freePaymentFuture.get(),
-            discountFuture.get(),
-            orgFuture.get());
+            discounts,
+            orgs);
     return list;
   }
 
@@ -1083,8 +1082,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return
    * @param orgIds
    */
-  private Future<List<OrganizationInfoDetail>> multiFindOrganizationList(List<Integer> orgIds) {
-      return executorService.submit(()-> systemServiceFeign.findOrgInfoInIds(orgIds));
+  private List<OrganizationInfoDetail> multiFindOrganizationList(List<Integer> orgIds) {
+    return systemServiceFeign.findOrgInfoInIds(orgIds);
   }
 
   /**
@@ -1299,18 +1298,15 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param query
    * @return
    */
-  private Future<List<ClinicTariffDiscountCouponVO>> multiFindTariffCategoryDiscountAmount(
+  private List<ClinicTariffDiscountCouponVO> findTariffCategoryDiscountAmount(
           CategoryIncomeQuery query) {
-    RequestContextHolder.setRequestAttributes(RequestContextHolder.getRequestAttributes(), true);
-    return executorService.submit(()->{
-      List<Integer> orderRecordIds = billRecordBiz.selectRemoveBillAdjustDiscountOrderIds(query);
-      if (StringHelper.isNotEmpty(orderRecordIds)) {
-        DiscountCouponQuery queryForm = new DiscountCouponQuery();
-        queryForm.setOrderRecordIds(orderRecordIds);
-        return discountFeign.findClinicTariffCategoryDiscountCoupon(queryForm);
-      }
-      return new ArrayList();
-    });
+    List<Integer> orderRecordIds = billRecordBiz.selectRemoveBillAdjustDiscountOrderIds(query);
+    if (StringHelper.isNotEmpty(orderRecordIds)) {
+      DiscountCouponQuery queryForm = new DiscountCouponQuery();
+      queryForm.setOrderRecordIds(orderRecordIds);
+      return discountFeign.findClinicTariffCategoryDiscountCoupon(queryForm);
+    }
+    return new ArrayList();
   }
 
   /**
