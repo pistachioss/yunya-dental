@@ -60,7 +60,7 @@ class YunyaEmrApplicationTests {
                 "    ]";
         MedicalPictureRecordModel model = new MedicalPictureRecordModel();
         model.setId(2);
-        model.setName("2021-12-10");
+        model.setName("2021/12/10");
         model.setPatientId(108355);
         model.setFiles(JSONObject.parseArray(files, XUploadFileVO.class));
         medicalPictureRecordController.save(model);
@@ -78,9 +78,9 @@ class YunyaEmrApplicationTests {
     @Test
     public void testIsExistsMedicalPictureRecord() {
         MedicalPictureRecordExistsQuery query = new MedicalPictureRecordExistsQuery();
-        query.setId(1);
+//        query.setId(1);
         query.setPatientId(108355);
-        query.setName("2021-12-10");
+        query.setName("2021/12/10");
         Boolean data = medicalPictureRecordController.isExistsMedicalPictureRecord(query).getData();
         System.out.println(JSONObject.toJSON(data));
     }
