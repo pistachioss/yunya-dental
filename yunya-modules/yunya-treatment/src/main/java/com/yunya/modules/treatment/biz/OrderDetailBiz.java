@@ -24,7 +24,6 @@ import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
 import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.form.BillPrintInfoForm;
@@ -929,7 +928,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         remoteClinicBaseServiceFeign.specialProjectAndGoalsList(
             query.getDateType(), dateRange, query.getOrgIds());
     if (StringHelper.isNotEmpty(specialistProjects)) {
-      List<OrganizationInfoDetail> orgs = getOrganizationList(Arrays.asList(query.getOrgIds()));
+      List<OrganizationInfoDetail> orgs = systemServiceFeign.findOrgInfoInIds(Arrays.asList(query.getOrgIds()));
       Set<String> tids = new HashSet<>();
       specialistProjects.forEach(
           vo -> {
@@ -1061,11 +1060,11 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     Future<Map<String, BigDecimal>> freePaymentFuture =
         multiFindTariffCategoryFreePaymentAmount(query);
 
-    // 门诊组织列表
-    List<OrganizationInfoDetail> orgList = getOrganizationList(query.getOrgIds());
-
     // 项目的优惠合计和补入工作量
     Future<List<ClinicTariffDiscountCouponVO>> discountFuture = multiFindTariffCategoryDiscountAmount(query);
+
+    // 门诊组织列表
+    Future<List<OrganizationInfoDetail>> orgFuture = multiFindOrganizationList(query.getOrgIds());
 
     // 组装数据并排序
     List<CategoryInfoIncomeVO> list =
@@ -1074,7 +1073,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             originalFuture.get(),
             freePaymentFuture.get(),
             discountFuture.get(),
-            orgList);
+            orgFuture.get());
     return list;
   }
 
@@ -1084,21 +1083,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return
    * @param orgIds
    */
-  private List<OrganizationInfoDetail> getOrganizationList(Collection<Integer> orgIds) {
-    List<OrganizationInfoDetail> orgInfos =
-        redisUtils.getJSONArray(RedisConstants.REDIS_KEY_ORG_LIST, OrganizationInfoDetail.class);
-    if (StringHelper.isEmpty(orgInfos)) {
-      OrganizationModel model = new OrganizationModel();
-      model.setWhetherPage(false);
-      model.setTypes(new Byte[] {2});
-      orgInfos = systemServiceFeign.findOrgInfoList(model);
-      redisUtils.set(RedisConstants.REDIS_KEY_ORG_LIST, orgInfos);
-    }
-    if (StringHelper.isNotEmpty(orgInfos)) {
-      orgInfos =
-          orgInfos.stream().filter(vo -> orgIds.contains(vo.getId())).collect(Collectors.toList());
-    }
-    return orgInfos;
+  private Future<List<OrganizationInfoDetail>> multiFindOrganizationList(List<Integer> orgIds) {
+      return executorService.submit(()-> systemServiceFeign.findOrgInfoInIds(orgIds));
   }
 
   /**
