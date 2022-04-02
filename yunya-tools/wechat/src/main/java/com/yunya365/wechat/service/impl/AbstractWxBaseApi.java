@@ -2,10 +2,7 @@ package com.yunya365.wechat.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.wechat.domain.model.WxTemplatePushModel;
-import com.yunya.feign.wechat.domain.vo.WxKfAllVo;
-import com.yunya.feign.wechat.domain.vo.WxKfListVo;
-import com.yunya.feign.wechat.domain.vo.WxKfOnlineVo;
-import com.yunya.feign.wechat.domain.vo.WxSignatureVo;
+import com.yunya.feign.wechat.domain.vo.*;
 import com.yunya.framework.common.constant.WXConstant;
 import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.exception.ClientServiceException;
