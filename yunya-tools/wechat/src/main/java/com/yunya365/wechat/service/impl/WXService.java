@@ -723,7 +723,6 @@ public class WXService extends AbstractWxBaseApi {
         wxFans.setCountry(userJson.getString("country"));
         wxFans.setHeadImgurl(userJson.getString("headimgurl"));
         wxFans.setUnionId(userJson.getString("unionid"));
-        wxFans.setBind(false);
         fansSaveForm.setWxFans(wxFans);
         patientFeign.saveWx(fansSaveForm);
     }
