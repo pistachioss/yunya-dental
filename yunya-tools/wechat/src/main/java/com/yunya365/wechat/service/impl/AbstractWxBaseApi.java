@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -122,7 +123,8 @@ public abstract class AbstractWxBaseApi {
         String requestUrl = String.format(url, param);
         String resultStr = restTemplate.getForObject(requestUrl, String.class);
         log.info("微信api返回结果：{}", resultStr);
-        JSONObject jsonObject = JSONObject.parseObject(resultStr);
+        assert resultStr != null;
+        JSONObject jsonObject = JSONObject.parseObject(new String(resultStr.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8));
         Integer errCode = jsonObject.getInteger("errcode");
         if (errCode != null && errCode != 0) {
             String errMsg = jsonObject.getString("errmsg");
