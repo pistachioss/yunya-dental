@@ -2,9 +2,7 @@ package com.yunya.modules.employeeattend.util;
 
 import cn.jiguang.common.ClientConfig;
 import cn.jiguang.common.resp.BaseResult;
-import cn.jiguang.common.resp.ResponseWrapper;
 import cn.jpush.api.JPushClient;
-import cn.jpush.api.push.PushResult;
 import cn.jpush.api.push.model.Message;
 import cn.jpush.api.push.model.Options;
 import cn.jpush.api.push.model.Platform;
@@ -182,19 +180,15 @@ public class JpushManager {
       if (employeePushForm.getIsSchedule() == null) {
         employeePushForm.setIsSchedule(false);
       }
-//      BaseResult result = JpushManager.getInstance()
-//          .send(
-//              employeePushForm.getUserList(),
-//              employeePushForm.getTitle(),
-//              employeePushForm.getContent(),
-//              data,
-//              employeePushForm.getPlatform(),
-//              employeePushForm.getIsSchedule(),
-//              employeePushForm.getScheTime());
-      ResponseWrapper responseWrapper = new ResponseWrapper();
-      responseWrapper.responseCode = 200;
-      BaseResult result = new PushResult();
-      result.setResponseWrapper(responseWrapper);
+      BaseResult result = JpushManager.getInstance()
+          .send(
+              employeePushForm.getUserList(),
+              employeePushForm.getTitle(),
+              employeePushForm.getContent(),
+              data,
+              employeePushForm.getPlatform(),
+              employeePushForm.getIsSchedule(),
+              employeePushForm.getScheTime());
       if (!ObjectUtils.isEmpty(result) && result.getResponseCode()==200) {
         return true;
       }
