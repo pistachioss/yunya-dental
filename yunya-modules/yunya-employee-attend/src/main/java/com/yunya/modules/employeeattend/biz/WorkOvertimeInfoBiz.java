@@ -145,7 +145,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 && endTime.getTime() <= reendTime.getTime() && endTime.getTime() >= restartTime.getTime()) {
                             WorkOvertimeInfo workOvertimeInfo = new WorkOvertimeInfo();
                             BeanUtils.copyProperties(workOvertimeInfoForm, workOvertimeInfo);
-                            workOvertimeInfo.setCrtId(workOvertimeInfo.getUserId());
+                            Integer userId = workOvertimeInfo.getUserId();
+                            workOvertimeInfo.setCrtId(userId);
                             workOvertimeInfo.setCrtTime(new Date());
                             workOvertimeInfo.setApprovalStatus(0);
                             int num = mapper.insertSelective(workOvertimeInfo);
@@ -173,7 +174,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 if(sysEmployee !=null){
                                     emp_ids.add(sysEmployee.getUserId());
                                 }
-                                employeePushForm.setId(workOvertimeInfo.getId());
+                                employeePushForm.setIds(Arrays.asList(workOvertimeInfo.getId()));
+                                employeePushForm.setOptId(userId);
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
                                     JpushManager.getInstance().pushLeaveApproval(el, 2);
@@ -286,7 +288,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
         if (now.before(date)) {
 
             if (workOvertimeInfo.getApprovalStatus() == 0) {
-                if (workOvertimeInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
+                Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+                if (workOvertimeInfo.getApprovalPeopleId().equals(userId)) {
                     workOvertimeInfo.setApprovalStatus(workOvertimeInfoForm.getApprovalStatus());
                     workOvertimeInfo.setUpdTime(new Date());
                     workOvertimeInfo.setRefuseReason(workOvertimeInfoForm.getRefuseReason());
@@ -305,7 +308,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                         Set<Integer> emp_ids = new HashSet<>();
                         employeePushForm.setEmpId(emp_ids);
                         employeePushForm.setShowName(showName);
-                        employeePushForm.setId(workOvertimeInfoForm.getId());
+                        employeePushForm.setIds(Arrays.asList(workOvertimeInfoForm.getId()));
+                        employeePushForm.setOptId(userId);
                         switch (workOvertimeInfoForm.getApprovalStatus()){
                             case 1:
                                 // 通过
@@ -346,7 +350,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
         workOvertimeInfo.setId(workOvertimeInfoForm.getId());
         workOvertimeInfo = mapper.selectByPrimaryKey(workOvertimeInfo);
         if (workOvertimeInfo.getApprovalStatus() == 0) {
-            if (workOvertimeInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
+            Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+            if (workOvertimeInfo.getUserId().equals(userId)) {
                 workOvertimeInfo.setApprovalStatus(3);
                 int num = mapper.updateByPrimaryKey(workOvertimeInfo);
 
@@ -374,7 +379,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                     if(sysEmployee !=null){
                         emp_ids.add(sysEmployee.getUserId());
                     }
-                    employeePushForm.setId(workOvertimeInfo.getId());
+                    employeePushForm.setOptId(userId);
+                    employeePushForm.setIds(Arrays.asList(workOvertimeInfo.getId()));
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         JpushManager.getInstance().pushLeaveCancel(el, 2);

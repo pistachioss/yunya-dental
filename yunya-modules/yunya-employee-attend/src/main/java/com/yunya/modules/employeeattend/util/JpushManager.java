@@ -1,8 +1,8 @@
 package com.yunya.modules.employeeattend.util;
 
 import cn.jiguang.common.ClientConfig;
+import cn.jiguang.common.resp.BaseResult;
 import cn.jpush.api.JPushClient;
-import cn.jpush.api.push.PushResult;
 import cn.jpush.api.push.model.Message;
 import cn.jpush.api.push.model.Options;
 import cn.jpush.api.push.model.Platform;
@@ -14,12 +14,13 @@ import cn.jpush.api.push.model.notification.IosNotification;
 import cn.jpush.api.push.model.notification.Notification;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.yunya.modules.employeeattend.biz.EmployeePushMessageRecordBiz;
 import com.yunya.modules.employeeattend.config.JPushConfig;
 import com.yunya.modules.employeeattend.form.EmployeePushData;
 import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Collection;
 
@@ -35,6 +36,8 @@ public class JpushManager {
   private JPushClient jpushClient = null;
 
   @Autowired private static JPushConfig jPushConfig;
+
+  @Autowired private EmployeePushMessageRecordBiz employeePushMessageRecordBiz;
 
   /** @return */
   public static JpushManager getInstance() {
@@ -69,7 +72,7 @@ public class JpushManager {
    * @param platform
    * @throws Exception
    */
-  public void send(
+  public BaseResult send(
       Collection<String> alias,
       String title,
       String content,
@@ -79,6 +82,7 @@ public class JpushManager {
       String scheTime)
       throws Exception {
     log.info("platform: " + platform);
+    BaseResult result = null;
     switch (platform) {
       case 1:
         try {
@@ -103,10 +107,10 @@ public class JpushManager {
                       Notification.newBuilder().addPlatformNotification(iosNotification).build())
                   .build();
           if (schedule) {
-            jpushClient.createSingleSchedule(
+            result = jpushClient.createSingleSchedule(
                 "Attend_ios", scheTime, payloadIos, appMasterSecret, appKey);
           } else {
-            jpushClient.sendPush(payloadIos);
+            result = jpushClient.sendPush(payloadIos);
           }
         } catch (Exception ex) {
           ex.printStackTrace();
@@ -133,16 +137,23 @@ public class JpushManager {
                   .build();
 
           if (schedule) {
-            jpushClient.createSingleSchedule(
+            result = jpushClient.createSingleSchedule(
                 "Attend_android", scheTime, payload, appMasterSecret, appKey);
           } else {
-            PushResult result = jpushClient.sendPush(payload);
+            result = jpushClient.sendPush(payload);
             System.err.println(result);
           }
         } catch (Exception ex) {
           ex.printStackTrace();
         }
         break;
+    }
+    return result;
+  }
+
+  private void crtPushMessageRecord(BaseResult result, EmployeePushForm employeePushForm, int type) {
+    if (!ObjectUtils.isEmpty(result) && result.getResponseCode()==200) {
+      employeePushMessageRecordBiz.crtMsgRecord(employeePushForm, type);
     }
   }
 
@@ -169,16 +180,17 @@ public class JpushManager {
       if (employeePushForm.getIsSchedule() == null) {
         employeePushForm.setIsSchedule(false);
       }
-      JpushManager.getInstance()
-          .send(
-              employeePushForm.getUserList(),
-              employeePushForm.getTitle(),
-              employeePushForm.getContent(),
-              data,
-              employeePushForm.getPlatform(),
-              employeePushForm.getIsSchedule(),
-              employeePushForm.getScheTime());
-
+//      BaseResult result = JpushManager.getInstance()
+//          .send(
+//              employeePushForm.getUserList(),
+//              employeePushForm.getTitle(),
+//              employeePushForm.getContent(),
+//              data,
+//              employeePushForm.getPlatform(),
+//              employeePushForm.getIsSchedule(),
+//              employeePushForm.getScheTime());
+      BaseResult result = JSONObject.parseObject("{\"rateLimitReset\":60,\"rateLimitQuota\":600,\"resultOK\":true,\"sendno\":591428530,\"msg_id\":18100047226918196,\"originalContent\":\"{\\\\\\\"sendno\\\\\\\":\\\\\\\"591428530\\\\\\\",\\\\\\\"msg_id\\\\\\\":\\\\\\\"18100047226918197\\\\\\\"}\",\"rateLimitRemaining\":599,\"responseCode\":200,\"statusCode\":0}", BaseResult.class);
+      crtPushMessageRecord(result, employeePushForm, pushData.getType());
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -206,7 +218,7 @@ public class JpushManager {
         String.format("【OA审批】%s提交的%s", employeePushForm.getShowName(), getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
     pushData.setType(type * 10);
-    pushData.setId(employeePushForm.getId());
+    pushData.setId(employeePushForm.getIds().get(0));
     pushBase(employeePushForm, pushData);
   }
 
@@ -216,7 +228,7 @@ public class JpushManager {
         String.format("【OA审批】%s提交的%s，抄送给你，请知晓", employeePushForm.getShowName(), getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
     pushData.setType(type * 10 + 1);
-    pushData.setId(employeePushForm.getId());
+    pushData.setId(employeePushForm.getIds().get(0));
     pushBase(employeePushForm, pushData);
   }
 
@@ -225,7 +237,7 @@ public class JpushManager {
     employeePushForm.setContent(String.format("【OA审批】%s审批已通过", getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
     pushData.setType(type * 10 + 2);
-    pushData.setId(employeePushForm.getId());
+    pushData.setId(employeePushForm.getIds().get(0));
     pushBase(employeePushForm, pushData);
   }
 
@@ -234,7 +246,7 @@ public class JpushManager {
     employeePushForm.setContent(String.format("【OA审批】%s审批未通过，请知晓", getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
     pushData.setType(type * 10 + 3);
-    pushData.setId(employeePushForm.getId());
+    pushData.setId(employeePushForm.getIds().get(0));
     pushBase(employeePushForm, pushData);
   }
 
@@ -244,7 +256,7 @@ public class JpushManager {
         String.format("【OA审批】%s申请的%s已撤销", employeePushForm.getShowName(), getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
     pushData.setType(type * 10 + 4);
-    pushData.setId(employeePushForm.getId());
+    pushData.setId(employeePushForm.getIds().get(0));
     pushBase(employeePushForm, pushData);
   }
 

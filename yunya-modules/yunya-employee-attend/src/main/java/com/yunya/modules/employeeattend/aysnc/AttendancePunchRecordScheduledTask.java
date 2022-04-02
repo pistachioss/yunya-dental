@@ -475,6 +475,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
 
         List<AttendancePunchRecord> pushList = new ArrayList<>();
         byte unvalid = AttendanceStatusEnum.INVALID_PUNCH.getCode();
+        List<Integer> ids = new ArrayList<>();
         punchItemMap.forEach((userId, employeeScheduleVOS)->{
             int n = 0;
             employeeScheduleVOS = employeeScheduleVOS.stream().sorted(Comparator.comparing(EmployeeScheduleVO::getFirstStartTime)).collect(Collectors.toList());
@@ -485,11 +486,13 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                 n = attendancePunchRecordBiz.insertSelective(firstItem);
                 if (n == 1) {
                     pushList.add(firstItem);
+                    ids.add(firstItem.getId());
                 }
                 AttendancePunchRecord lastItem = createRecord(employeeScheduleVO, now, userId, unvalid, AttendanceTypeEnum.OFFDUTY.getCode());
                 n = attendancePunchRecordBiz.insertSelective(lastItem);
                 if (n == 1) {
                   pushList.add(lastItem);
+                  ids.add(firstItem.getId());
                 }
             } else if (index > 0) {
                 EmployeeScheduleVO employeeScheduleVO = employeeScheduleVOS.get(0);
@@ -497,12 +500,14 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                 n = attendancePunchRecordBiz.insertSelective(firstItem);
                 if (n == 1) {
                   pushList.add(firstItem);
+                  ids.add(firstItem.getId());
                 }
                 EmployeeScheduleVO lastEmployeeScheduleVO = employeeScheduleVOS.get(index);
                 AttendancePunchRecord lastItem = createRecord(lastEmployeeScheduleVO, now, userId, unvalid, AttendanceTypeEnum.OFFDUTY.getCode());
                 n = attendancePunchRecordBiz.insertSelective(lastItem);
                 if (n == 1) {
                   pushList.add(lastItem);
+                  ids.add(firstItem.getId());
                 }
             }
         });
@@ -526,6 +531,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                     dt.setMinutes(push.getStartTime().getMinutes());
                     dt.setSeconds(push.getStartTime().getSeconds());
                     employeePushForm.setScheTime(simpleDateFormat.format(new Date(dt.getTime() - 10*60*1000)));
+                    employeePushForm.setIds(ids);
                     logger.info("employeePushForm: " + employeePushForm);
                     employeePushFormList.addAll(employeePushBiz.makeEmployeePushForm(employeePushForm));
                 }

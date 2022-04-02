@@ -169,16 +169,17 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     }
                     //若外勤开始时间和结束时间都在班次时间段内才能进行外勤申请
                     if (start && end) {
+                        Integer userId = fieldInfoForm.getUserId();
                         FieldInfo fieldInfo = new FieldInfo();
                         BeanUtils.copyProperties(fieldInfoForm, fieldInfo);
-                        fieldInfo.setCrtId(fieldInfoForm.getUserId());
+                        fieldInfo.setCrtId(userId);
                         fieldInfo.setCrtTime(new Date());
                         fieldInfo.setApprovalStatus(0);
                         int num = mapper.insertSelective(fieldInfo);
 
                         // TODO :一级审批人
                         // start 添加推送 需求1450 by zd.xie
-                        SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(fieldInfoForm.getUserId());
+                        SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(userId);
                         String showName = "xxx";
                         if(ui != null){
                             showName = ui.getName();
@@ -199,7 +200,8 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                             if(sysEmployee !=null){
                                 emp_ids.add(sysEmployee.getUserId());
                             }
-                            employeePushForm.setId(fieldInfo.getId());
+                            employeePushForm.setIds(Arrays.asList(fieldInfo.getId()));
+                            employeePushForm.setOptId(userId);
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
                                 JpushManager.getInstance().pushLeaveApproval(el, 3);
@@ -216,7 +218,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                                 copyInfo.setApplyType(2);
                                 copyInfo.setUserId(copyId);
                                 copyInfo.setHadRead(false);
-                                copyInfo.setCrtId(fieldInfoForm.getUserId());
+                                copyInfo.setCrtId(userId);
                                 copyInfo.setCrtTime(new Date());
                                 copyInfoList.add(copyInfo);
                             }
@@ -341,7 +343,8 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         //必须提前一天申请或审批
         if (now.before(date)) {
             if (fieldInfo.getApprovalStatus() == 0) {
-                if (fieldInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
+                Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+                if (fieldInfo.getApprovalPeopleId().equals(userId)) {
                     fieldInfo.setApprovalStatus(fieldInfoForm.getApprovalStatus());
                     fieldInfo.setUpdTime(new Date());
                     fieldInfo.setRefuseReason(fieldInfoForm.getRefuseReason());
@@ -360,7 +363,8 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                         Set<Integer> emp_ids = new HashSet<>();
                         employeePushForm.setEmpId(emp_ids);
                         employeePushForm.setShowName(showName);
-                        employeePushForm.setId(fieldInfoForm.getId());
+                        employeePushForm.setIds(Arrays.asList(fieldInfoForm.getId()));
+                        employeePushForm.setOptId(userId);
                         switch (fieldInfoForm.getApprovalStatus()){
                             case 1:
                                 // 通过
@@ -401,7 +405,8 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         fieldInfo.setId(fieldInfoForm.getId());
         fieldInfo = mapper.selectByPrimaryKey(fieldInfo);
         if (fieldInfo.getApprovalStatus() == 0) {
-            if (fieldInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
+            Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+            if (fieldInfo.getUserId().equals(userId)) {
                 fieldInfo.setApprovalStatus(3);
                 int num = mapper.updateByPrimaryKey(fieldInfo);
 
@@ -429,7 +434,8 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     if(sysEmployee !=null){
                         emp_ids.add(sysEmployee.getUserId());
                     }
-                    employeePushForm.setId(fieldInfo.getId());
+                    employeePushForm.setOptId(userId);
+                    employeePushForm.setIds(Arrays.asList(fieldInfo.getId()));
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         JpushManager.getInstance().pushLeaveCancel(el, 3);
