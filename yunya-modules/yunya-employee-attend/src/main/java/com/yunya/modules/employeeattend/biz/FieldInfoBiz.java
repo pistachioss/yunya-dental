@@ -21,7 +21,6 @@ import com.yunya.modules.employeeattend.form.ApprovalAllListForm;
 import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.form.FieldInfoForm;
 import com.yunya.modules.employeeattend.mapper.*;
-import com.yunya.modules.employeeattend.util.JpushManager;
 import com.yunya.modules.employeeattend.vo.EmListVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.enums.MessagePushTypeEnum.*;
 
 /**
  * 简介:
@@ -86,6 +86,8 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
     private ApprovalPeopleBiz approvalPeopleBiz;
     @Autowired
     private CopyInfoBiz copyInfoBiz;
+    @Autowired
+    private EmployeePushMessageRecordBiz empPushMsgBiz;
 
     public int create(FieldInfoForm fieldInfoForm) {
         //判断是否有其他类型的申请
@@ -204,7 +206,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                             employeePushForm.setOptId(userId);
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
-                                JpushManager.getInstance().pushLeaveApproval(el, 3);
+                                empPushMsgBiz.pushMessage(el, FIELD_APPROVE_APPLY);
                             });
                         }
                         // end 添加推送 需求1450 by zd.xie
@@ -371,7 +373,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                                 emp_ids.add(fieldInfo.getUserId());
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
-                                    JpushManager.getInstance().pushLeaveYes(el, 3);
+                                    empPushMsgBiz.pushMessage(el, FIELD_APPROVE_PASS);
                                 });
                                 break;
                             case 2:
@@ -379,7 +381,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                                 emp_ids.add(fieldInfo.getUserId());
                                 List<EmployeePushForm> employeePushFormList1 = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList1.forEach(el -> {
-                                    JpushManager.getInstance().pushLeaveNo(el, 3);
+                                    empPushMsgBiz.pushMessage(el, FIELD_APPROVE_UNPASS);
                                 });
                                 break;
                         }
@@ -438,7 +440,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     employeePushForm.setIds(Arrays.asList(fieldInfo.getId()));
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
-                        JpushManager.getInstance().pushLeaveCancel(el, 3);
+                        empPushMsgBiz.pushMessage(el, FIELD_APPROVE_REVOKE);
                     });
                 }
                 // end 添加推送 需求1450 by zd.xie

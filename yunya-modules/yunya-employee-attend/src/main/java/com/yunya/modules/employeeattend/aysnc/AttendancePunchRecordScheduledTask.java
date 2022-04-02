@@ -554,6 +554,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                     });
                     EmployeePushForm employeePushForm = schetimes.getValue().get(0);
                     employeePushForm.setUserList(reg_ids);
+                    employeePushForm.setIds(ids);
                     empPushMsgBiz.pushMessage(employeePushForm, ATTENDANCE_PUNCH_HINT);
                 }
             }

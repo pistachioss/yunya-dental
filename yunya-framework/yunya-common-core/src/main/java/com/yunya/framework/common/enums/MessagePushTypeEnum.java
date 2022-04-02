@@ -35,7 +35,7 @@ import java.util.Objects;
  */
 public enum MessagePushTypeEnum {
     ATTENDANCE_PUNCH_HINT("考勤打卡提示", 1),
-
+    
     LEAVE_APPROVE_APPLY("请假审批申请", 10),
     WORKOVER_APPROVE_APPLY("加班审批申请", 20),
     FIELD_APPROVE_APPLY("外勤审批申请", 30),

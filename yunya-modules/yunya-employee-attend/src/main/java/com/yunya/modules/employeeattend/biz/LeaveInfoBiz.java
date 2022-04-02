@@ -21,7 +21,6 @@ import com.yunya.modules.employeeattend.mapper.ApprovalInfoMapper;
 import com.yunya.modules.employeeattend.mapper.CopyInfoMapper;
 import com.yunya.modules.employeeattend.mapper.LeaveInfoMapper;
 import com.yunya.modules.employeeattend.mapper.LeaveScheduleMapper;
-import com.yunya.modules.employeeattend.util.JpushManager;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.enums.MessagePushTypeEnum.*;
 
 /**
  * 简介：请假信息业务层
@@ -59,6 +59,8 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     private ApprovalPeopleBiz approvalPeopleBiz;
     @Autowired
     private CopyInfoBiz copyInfoBiz;
+    @Autowired
+    private EmployeePushMessageRecordBiz empPushMsgBiz;
 
     /**
      * 根据日期和用户id列表查询请假列表
@@ -163,7 +165,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                         employeePushForm.setOptId(userId);
                         List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                         employeePushFormList.forEach(el -> {
-                            JpushManager.getInstance().pushLeaveApproval(el, 1);
+                            empPushMsgBiz.pushMessage(el, LEAVE_APPROVE_APPLY);
                         });
                     }
                     // end 添加推送 需求1450 by zd.xie
@@ -204,7 +206,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                             employeePushForm.setOptId(userId);
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
-                                JpushManager.getInstance().pushLeaveCope(el, 1);
+                                empPushMsgBiz.pushMessage(el, LEAVE_APPROVE_COPY);
                             });
                         }
                         // end 添加推送 需求1450 by zd.xie
@@ -309,7 +311,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                         // 组装
                         List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                         employeePushFormList.forEach(el -> {
-                            JpushManager.getInstance().pushLeaveApproval(el, 1);
+                            empPushMsgBiz.pushMessage(el, LEAVE_APPROVE_APPLY);
                         });
                     }
                     // end 添加推送 需求1450 by zd.xie
@@ -358,7 +360,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                             employeePushForm.setOptId(userId);
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
-                                JpushManager.getInstance().pushLeaveCope(el, 1);
+                                empPushMsgBiz.pushMessage(el, LEAVE_APPROVE_COPY);
                             });
                         }
                         // end 添加推送 需求1450 by zd.xie
@@ -446,7 +448,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                                 emp_ids.add(userid);
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
-                                    JpushManager.getInstance().pushLeaveApproval(el, 1);
+                                    empPushMsgBiz.pushMessage(el, LEAVE_APPROVE_APPLY);
                                 });
                             }
                             else{
@@ -454,7 +456,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                                 emp_ids.add(leaveInfo.getUserId());
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
-                                    JpushManager.getInstance().pushLeaveYes(el, 1);
+                                    empPushMsgBiz.pushMessage(el, LEAVE_APPROVE_PASS);
                                 });
                             }
                             break;
@@ -463,7 +465,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                             emp_ids.add(leaveInfo.getUserId());
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
-                                JpushManager.getInstance().pushLeaveNo(el, 1);
+                                empPushMsgBiz.pushMessage(el, LEAVE_APPROVE_UNPASS);
                             });
                             break;
                     }
@@ -523,7 +525,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     employeePushForm.setIds(Arrays.asList(leaveInfoForm.getId()));
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
-                        JpushManager.getInstance().pushLeaveCancel(el, 1);
+                        empPushMsgBiz.pushMessage(el, LEAVE_APPROVE_REVOKE);
                     });
                 }
                 // end 添加推送 需求1450 by zd.xie

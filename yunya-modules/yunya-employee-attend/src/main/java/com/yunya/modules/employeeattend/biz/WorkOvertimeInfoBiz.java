@@ -2,7 +2,10 @@ package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.yunya.feign.employee_attend.form.WorkOvertimeInfoQueryForm;
-import com.yunya.feign.employee_attend.vo.*;
+import com.yunya.feign.employee_attend.vo.AttendanceOvertimeMinuteVO;
+import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
+import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
+import com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
@@ -15,7 +18,6 @@ import com.yunya.models.employee_attend.*;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.modules.employeeattend.form.*;
 import com.yunya.modules.employeeattend.mapper.*;
-import com.yunya.modules.employeeattend.util.JpushManager;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.enums.MessagePushTypeEnum.*;
 
 /**
  * 简介:
@@ -60,6 +63,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
     private ApprovalPeopleBiz approvalPeopleBiz;
     @Autowired
     private CopyInfoBiz copyInfoBiz;
+    @Autowired
+    private EmployeePushMessageRecordBiz empPushMsgBiz;
 
     /**
      * 根据日期和用户id列表查询加班列表
@@ -178,7 +183,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 employeePushForm.setOptId(userId);
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
-                                    JpushManager.getInstance().pushLeaveApproval(el, 2);
+                                    empPushMsgBiz.pushMessage(el, WORKOVER_APPROVE_APPLY);
                                 });
                             }
                             // end 添加推送 需求1450 by zd.xie
@@ -316,7 +321,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 emp_ids.add(workOvertimeInfo.getUserId());
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
-                                    JpushManager.getInstance().pushLeaveYes(el, 2);
+                                    empPushMsgBiz.pushMessage(el, WORKOVER_APPROVE_PASS);
                                 });
                                 break;
                             case 2:
@@ -324,7 +329,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 emp_ids.add(workOvertimeInfo.getUserId());
                                 List<EmployeePushForm> employeePushFormList1 = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList1.forEach(el -> {
-                                    JpushManager.getInstance().pushLeaveNo(el, 2);
+                                    empPushMsgBiz.pushMessage(el, WORKOVER_APPROVE_UNPASS);
                                 });
                                 break;
                         }
@@ -383,7 +388,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                     employeePushForm.setIds(Arrays.asList(workOvertimeInfo.getId()));
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
-                        JpushManager.getInstance().pushLeaveCancel(el, 2);
+                        empPushMsgBiz.pushMessage(el, WORKOVER_APPROVE_REVOKE);
                     });
                 }
                 // end 添加推送 需求1450 by zd.xie
