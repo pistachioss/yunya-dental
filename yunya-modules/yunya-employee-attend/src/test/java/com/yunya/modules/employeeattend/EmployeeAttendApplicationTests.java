@@ -177,7 +177,7 @@ class EmployeeAttendApplicationTests {
     form.setScheTime(DateUtil.format(new Date(dt.getTime() - 10*60*1000)));
     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(form);
     employeePushFormList.forEach(el -> {
-      JpushManager.getInstance().pushAttend(el);
+      JpushManager.getInstance().pushAttend(el, 1);
     });
   }
 }

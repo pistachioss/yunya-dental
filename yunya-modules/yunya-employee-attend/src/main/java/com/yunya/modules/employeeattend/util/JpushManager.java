@@ -2,7 +2,9 @@ package com.yunya.modules.employeeattend.util;
 
 import cn.jiguang.common.ClientConfig;
 import cn.jiguang.common.resp.BaseResult;
+import cn.jiguang.common.resp.ResponseWrapper;
 import cn.jpush.api.JPushClient;
+import cn.jpush.api.push.PushResult;
 import cn.jpush.api.push.model.Message;
 import cn.jpush.api.push.model.Options;
 import cn.jpush.api.push.model.Platform;
@@ -168,7 +170,7 @@ public class JpushManager {
     return res;
   }
 
-  public void pushBase(EmployeePushForm employeePushForm, EmployeePushData pushData) {
+  public Boolean pushBase(EmployeePushForm employeePushForm, EmployeePushData pushData) {
     try {
       String data = JpushManager.getInstance().makeSendData(pushData);
       if (employeePushForm.getTitle().isEmpty()) {
@@ -189,11 +191,17 @@ public class JpushManager {
 //              employeePushForm.getPlatform(),
 //              employeePushForm.getIsSchedule(),
 //              employeePushForm.getScheTime());
-      BaseResult result = JSONObject.parseObject("{\"rateLimitReset\":60,\"rateLimitQuota\":600,\"resultOK\":true,\"sendno\":591428530,\"msg_id\":18100047226918196,\"originalContent\":\"{\\\\\\\"sendno\\\\\\\":\\\\\\\"591428530\\\\\\\",\\\\\\\"msg_id\\\\\\\":\\\\\\\"18100047226918197\\\\\\\"}\",\"rateLimitRemaining\":599,\"responseCode\":200,\"statusCode\":0}", BaseResult.class);
-      crtPushMessageRecord(result, employeePushForm, pushData.getType());
+      ResponseWrapper responseWrapper = new ResponseWrapper();
+      responseWrapper.responseCode = 200;
+      BaseResult result = new PushResult();
+      result.setResponseWrapper(responseWrapper);
+      if (!ObjectUtils.isEmpty(result) && result.getResponseCode()==200) {
+        return true;
+      }
     } catch (Exception e) {
       e.printStackTrace();
     }
+    return false;
   }
 
   public void pushTest(EmployeePushForm employeePushTest) {
@@ -212,60 +220,60 @@ public class JpushManager {
     return "";
   }
 
-  public void pushLeaveApproval(EmployeePushForm employeePushForm, int type) {
+  public Boolean pushLeaveApproval(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(
         String.format("【OA审批】%s提交的%s", employeePushForm.getShowName(), getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
-    pushData.setType(type * 10);
+    pushData.setType(type);
     pushData.setId(employeePushForm.getIds().get(0));
-    pushBase(employeePushForm, pushData);
+    return pushBase(employeePushForm, pushData);
   }
 
-  public void pushLeaveCope(EmployeePushForm employeePushForm, int type) {
+  public Boolean pushLeaveCope(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(
         String.format("【OA审批】%s提交的%s，抄送给你，请知晓", employeePushForm.getShowName(), getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
-    pushData.setType(type * 10 + 1);
+    pushData.setType(type);
     pushData.setId(employeePushForm.getIds().get(0));
-    pushBase(employeePushForm, pushData);
+    return pushBase(employeePushForm, pushData);
   }
 
-  public void pushLeaveYes(EmployeePushForm employeePushForm, int type) {
+  public Boolean pushLeaveYes(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(String.format("【OA审批】%s审批已通过", getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
-    pushData.setType(type * 10 + 2);
+    pushData.setType(type);
     pushData.setId(employeePushForm.getIds().get(0));
-    pushBase(employeePushForm, pushData);
+    return pushBase(employeePushForm, pushData);
   }
 
-  public void pushLeaveNo(EmployeePushForm employeePushForm, int type) {
+  public Boolean pushLeaveNo(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(String.format("【OA审批】%s审批未通过，请知晓", getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
-    pushData.setType(type * 10 + 3);
+    pushData.setType(type);
     pushData.setId(employeePushForm.getIds().get(0));
-    pushBase(employeePushForm, pushData);
+    return pushBase(employeePushForm, pushData);
   }
 
-  public void pushLeaveCancel(EmployeePushForm employeePushForm, int type) {
+  public Boolean pushLeaveCancel(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(
         String.format("【OA审批】%s申请的%s已撤销", employeePushForm.getShowName(), getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
-    pushData.setType(type * 10 + 4);
+    pushData.setType(type);
     pushData.setId(employeePushForm.getIds().get(0));
-    pushBase(employeePushForm, pushData);
+    return pushBase(employeePushForm, pushData);
   }
 
-  public void pushAttend(EmployeePushForm employeePushForm) {
+  public Boolean pushAttend(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle("考勤打卡提示");
     employeePushForm.setContent("【考勤打卡】还有10分钟就要上班啦，快来一键打卡，已打卡请忽略");
     employeePushForm.setIsSchedule(true);
     EmployeePushData pushData = new EmployeePushData();
-    pushData.setType(1);
-    pushBase(employeePushForm, pushData);
+    pushData.setType(type);
+    return pushBase(employeePushForm, pushData);
   }
 }

@@ -1,10 +1,12 @@
 package com.yunya.modules.employeeattend.biz;
 
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.enums.MessagePushTypeEnum;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.employee_attend.EmployeePushMessageRecord;
 import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.mapper.EmployeePushMessageRecordMapper;
+import com.yunya.modules.employeeattend.util.JpushManager;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -12,6 +14,8 @@ import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+
+import static com.yunya.framework.common.enums.MessagePushTypeEnum.*;
 
 /**
  * 简介：
@@ -48,6 +52,34 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
                     });
                 }
             });
+        }
+    }
+
+    public void pushMessage(EmployeePushForm employeePushForm, MessagePushTypeEnum pushType) {
+        JpushManager jPush = JpushManager.getInstance();
+        Integer code = pushType.getCode();
+        Boolean pushSuccess = false;
+        if (pushType.equals(ATTENDANCE_PUNCH_HINT.getCode())) {
+            // 考勤打卡
+            pushSuccess = jPush.pushAttend(employeePushForm, code);
+        } else if (pushType.inEnums(LEAVE_APPROVE_APPLY, WORKOVER_APPROVE_APPLY, FIELD_APPROVE_APPLY)) {
+            // 审批申请
+            pushSuccess = jPush.pushLeaveApproval(employeePushForm, code);
+        } else if (pushType.inEnums(LEAVE_APPROVE_COPY, WORKOVER_APPROVE_COPY, FIELD_APPROVE_COPY)) {
+            // 审批抄送
+            pushSuccess = jPush.pushLeaveCope(employeePushForm, code);
+        } else if (pushType.inEnums(LEAVE_APPROVE_PASS, WORKOVER_APPROVE_PASS, FIELD_APPROVE_PASS)) {
+            // 审批通过
+            pushSuccess = jPush.pushLeaveYes(employeePushForm, code);
+        } else if (pushType.inEnums(LEAVE_APPROVE_UNPASS, WORKOVER_APPROVE_UNPASS, FIELD_APPROVE_UNPASS)) {
+            // 审核未通过
+            pushSuccess = jPush.pushLeaveNo(employeePushForm, code);
+        } else if (pushType.inEnums(LEAVE_APPROVE_REVOKE, WORKOVER_APPROVE_REVOKE, FIELD_APPROVE_REVOKE)) {
+            // 审核撤销
+            pushSuccess = jPush.pushLeaveCancel(employeePushForm, code);
+        }
+        if (pushSuccess) {
+            crtMsgRecord(employeePushForm, code);
         }
     }
 }
