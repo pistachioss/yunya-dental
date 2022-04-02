@@ -661,8 +661,18 @@ public class WXService extends AbstractWxBaseApi {
     }
 
     private WxFans assembleWxFans(JSONObject userInfoJson) {
-        WxFans wxFans = userInfoJson.toJavaObject(WxFans.class);
-        this.jsonToFans(wxFans, userInfoJson);
+        WxFans wxFans = new WxFans();
+        wxFans.setSubscribe(userInfoJson.getBoolean("subscribe"));
+        wxFans.setOpenId(userInfoJson.getString("openid"));
+        wxFans.setLanguage(userInfoJson.getString("language"));
+        wxFans.setSubscribeTime(new Date(userInfoJson.getLongValue("subscribe_time") * 1000));
+        wxFans.setUnionId(userInfoJson.getString("unionid"));
+        wxFans.setRemark(userInfoJson.getString("remark"));
+        wxFans.setGroupId(userInfoJson.getString("groupid"));
+        JSONArray tagList = userInfoJson.getJSONArray("tagid_list");
+        if (CollectionUtils.isNotEmpty(tagList)) {
+            wxFans.setTagidList(Joiner.on(",").join(tagList));
+        }
         return wxFans;
     }
 
@@ -700,19 +710,19 @@ public class WXService extends AbstractWxBaseApi {
         return list;
     }
 
-    private void jsonToFans(WxFans wxFans, JSONObject userJson) {
-        JSONArray tagList = userJson.getJSONArray("tagid_list");
-        wxFans.setSubscribeTime(new Date(userJson.getLongValue("subscribe_time") * 1000));
-        if (CollectionUtils.isNotEmpty(tagList)) {
-            wxFans.setTagidList(Joiner.on(",").join(tagList));
-        }
-        wxFans.setRegisterName(userJson.getString("nickname"));
-    }
 
     private void authAndSave(JSONObject jsonObject, String openId) {
         JSONObject userJson = getWxApi(WX_GET_USERINFO_ACCESS_URL, jsonObject.getString("access_token"), openId);
         WxFansSaveForm fansSaveForm = new WxFansSaveForm();
-        WxFans wxFans = this.assembleWxFans(userJson);
+        WxFans wxFans = new WxFans();
+        wxFans.setOpenId(userJson.getString("openid"));
+        wxFans.setNickName(userJson.getString("nickname"));
+        wxFans.setSex(userJson.getShort("sex"));
+        wxFans.setProvince(userJson.getString("province"));
+        wxFans.setCity(userJson.getString("city"));
+        wxFans.setCountry(userJson.getString("country"));
+        wxFans.setHeadImgurl(userJson.getString("headimgurl"));
+        wxFans.setUnionId(userJson.getString("unionid"));
         wxFans.setBind(false);
         fansSaveForm.setWxFans(wxFans);
         patientFeign.saveWx(fansSaveForm);
