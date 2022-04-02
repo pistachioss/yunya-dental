@@ -93,7 +93,14 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         if (CollectionUtils.isNotEmpty(wxFansSaveForm.getFansBind())) {
             wxFansBindBiz.batchInsert(wxFansSaveForm.getFansBind());
         }
-        return mapper.insertSelective(wxFansSaveForm.getWxFans());
+        WxFans wxFans = wxFansSaveForm.getWxFans();
+        WxFans register = getRegister(wxFans.getOpenId());
+        if (register != null) {
+            wxFans.setId(register.getId());
+            return mapper.updateByPrimaryKeySelective(wxFans);
+        } else {
+            return mapper.insertSelective(wxFansSaveForm.getWxFans());
+        }
     }
 
     public WxFans getRegister(String openId) {

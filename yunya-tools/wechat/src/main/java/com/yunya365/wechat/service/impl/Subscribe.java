@@ -34,6 +34,7 @@ public class Subscribe implements WeChatNotify {
             log.info("用户已关注公众号：{}", wxFansReg);
             return null;
         }
+        //因为微信官方文档调整，没有昵称、头像信息
         WxRegisterModel model = new WxRegisterModel();
         wxService.saveWxPatient(openId, model);
         return null;
