@@ -2,7 +2,6 @@ package com.yunya.modules.employeeattend.controller;
 
 import com.yunya.feign.employee_attend.form.AttendanceItemCountQuery;
 import com.yunya.feign.employee_attend.vo.AttendanceItemCountVO;
-import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.employeeattend.biz.CopyInfoBiz;
@@ -53,7 +52,6 @@ public class CopyInfoController {
      */
     @PostMapping("/attendance/count")
     @ApiOperation("获取待审批or抄送相关项目的未处理数量")
-    @RepeatSubmit
     public ResponseResult<AttendanceItemCountVO> attendanceItemCount(@RequestBody @Validated AttendanceItemCountQuery query) {
         return ResponseUtil.success(copyInfoBiz.attendanceItemCount(query));
     }
