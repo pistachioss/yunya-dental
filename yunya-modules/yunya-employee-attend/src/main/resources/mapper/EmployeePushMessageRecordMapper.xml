@@ -12,6 +12,7 @@
     <result column="content" property="content" jdbcType="VARCHAR" />
     <result column="platform" property="platform" jdbcType="TINYINT" />
     <result column="had_read" property="hadRead" jdbcType="BIT" />
+    <result column="push_time" property="pushTime" jdbcType="TIMESTAMP" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />

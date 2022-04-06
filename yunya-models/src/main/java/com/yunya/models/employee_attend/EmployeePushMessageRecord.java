@@ -44,6 +44,12 @@ public class EmployeePushMessageRecord {
     private Boolean hadRead;
 
     /**
+     * 消息推送时间
+     */
+    @Column(name = "push_time")
+    private Date pushTime;
+
+    /**
      * 创建人id
      */
     @Column(name = "crt_id")
@@ -187,6 +193,24 @@ public class EmployeePushMessageRecord {
      */
     public void setHadRead(Boolean hadRead) {
         this.hadRead = hadRead;
+    }
+
+    /**
+     * 获取消息推送时间
+     *
+     * @return
+     */
+    public Date getPushTime() {
+        return pushTime;
+    }
+
+    /**
+     * 设置消息推送时间
+     *
+     * @param pushTime
+     */
+    public void setPushTime(Date pushTime) {
+        this.pushTime = pushTime;
     }
 
     /**

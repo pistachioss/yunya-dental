@@ -1,16 +1,22 @@
 package com.yunya.modules.employeeattend.biz;
 
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.employee_attend.form.EmployeePushMessageRecordQueryForm;
+import com.yunya.feign.employee_attend.vo.EmployeePushMessageRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.enums.MessagePushTypeEnum;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.employee_attend.EmployeePushMessageRecord;
 import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.mapper.EmployeePushMessageRecordMapper;
 import com.yunya.modules.employeeattend.util.JpushManager;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -25,6 +31,7 @@ import static com.yunya.framework.common.enums.MessagePushTypeEnum.*;
  * @Date: 2022/4/2 9:41
  * @since: 1.0.0
  */
+@Slf4j
 @Service
 public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRecordMapper, EmployeePushMessageRecord> {
     @Resource(name = "poolExecutor")
@@ -42,8 +49,19 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
                         entity.setPushType(pushType);
                         entity.setContent(form.getContent());
                         entity.setTitle(form.getTitle());
-                        entity.setHadRead(false);
                         entity.setPlatform(form.getPlatform());
+                        entity.setHadRead(false);
+                        if (form.getIsSchedule()) {
+                            String scheTime = form.getScheTime();
+                            try {
+                                Date pushTime = DateUtil.parse(scheTime, "yyyy-MM-dd HH:mm:ss");
+                                entity.setPushTime(pushTime);
+                            } catch (ParseException e) {
+                                log.error("push message parse scheTime error: ", e);
+                            }
+                        } else {
+                            entity.setPushTime(now);
+                        }
                         entity.setCrtId(form.getOptId());
                         entity.setCrtTime(now);
                         entity.setUptId(form.getOptId());
@@ -81,5 +99,9 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
         if (pushSuccess) {
             crtMsgRecord(employeePushForm, code);
         }
+    }
+
+    public PageInfo<EmployeePushMessageRecordVO> findList(EmployeePushMessageRecordQueryForm query) {
+        return null;
     }
 }
