@@ -8,6 +8,7 @@
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="source_id" property="sourceId" jdbcType="INTEGER" />
     <result column="push_type" property="pushType" jdbcType="INTEGER" />
+    <result column="user_id" property="userId" jdbcType="INTEGER" />
     <result column="title" property="title" jdbcType="VARCHAR" />
     <result column="content" property="content" jdbcType="VARCHAR" />
     <result column="platform" property="platform" jdbcType="TINYINT" />
@@ -18,4 +19,23 @@
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />
     <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <select id="selectPushMessageRecordList" resultType="com.yunya.feign.employee_attend.vo.EmployeePushMessageRecordVO">
+    SELECT
+        source_id AS dataId,
+        title,
+        content,
+        had_read AS hadRead,
+        DATE_FORMAT(push_time, '%Y-%m-%d %H:%i:%S') AS pushTime
+    FROM employee_push_message_record
+    <where>
+      <if test="query.userId != null">
+        AND user_id = #{query.userId}
+      </if>
+      <if test="query.preDateTime!=null and query.preDateTime!=''">
+        AND DATE_FORMAT(push_time, '%Y-%m-%d') &lt;= #{query.preDateTime}
+      </if>
+    </where>
+    ORDER BY push_time DESC
+  </select>
 </mapper>

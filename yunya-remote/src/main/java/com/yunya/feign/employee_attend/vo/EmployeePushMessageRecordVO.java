@@ -33,7 +33,11 @@ public class EmployeePushMessageRecordVO implements Serializable {
     @ApiModelProperty("消息内容")
     private String content;
 
+    /** 是否已读*/
+    @ApiModelProperty("是否已读")
+    private Boolean hadRead;
+
     /** 消息推送时间*/
     @ApiModelProperty("消息推送时间")
-    private Date pushTime;
+    private String pushTime;
 }

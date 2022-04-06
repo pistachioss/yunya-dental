@@ -21,6 +21,10 @@ import java.io.Serializable;
 @ApiModel("消息推送记录查询模型")
 public class EmployeePushMessageRecordQueryForm extends PageQuery implements Serializable {
 
-    @ApiModelProperty("员工id")
+    @ApiModelProperty("员工id, 为空则使用当前登录用户id")
     private Integer userId;
+
+    /** 查询时间之前（包含查询时间）*/
+    @ApiModelProperty("查询时间之前（包含查询时间），格式：yyyy-MM-dd HH:mm:ss, 为空则使用当前时间")
+    private String preDateTime;
 }

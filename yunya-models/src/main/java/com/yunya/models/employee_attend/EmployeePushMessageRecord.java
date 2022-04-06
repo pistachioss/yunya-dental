@@ -23,6 +23,12 @@ public class EmployeePushMessageRecord {
     private Integer pushType;
 
     /**
+     * 被推送的用户id
+     */
+    @Column(name = "user_id")
+    private Integer userId;
+
+    /**
      * 消息标题
      */
     private String title;
@@ -121,6 +127,14 @@ public class EmployeePushMessageRecord {
      */
     public void setPushType(Integer pushType) {
         this.pushType = pushType;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
+
+    public Integer getUserId() {
+        return userId;
     }
 
     /**

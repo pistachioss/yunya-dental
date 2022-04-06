@@ -1,17 +1,22 @@
 package com.yunya.modules.employeeattend.biz;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.EmployeePushMessageRecordQueryForm;
 import com.yunya.feign.employee_attend.vo.EmployeePushMessageRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.MessagePushTypeEnum;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.models.employee_attend.EmployeePush;
 import com.yunya.models.employee_attend.EmployeePushMessageRecord;
 import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.mapper.EmployeePushMessageRecordMapper;
 import com.yunya.modules.employeeattend.util.JpushManager;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -36,16 +41,26 @@ import static com.yunya.framework.common.enums.MessagePushTypeEnum.*;
 public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRecordMapper, EmployeePushMessageRecord> {
     @Resource(name = "poolExecutor")
     private ExecutorService executorService;
+    @Autowired
+    private EmployeePushBiz employeePushBiz;
 
     public void crtMsgRecord(EmployeePushForm form, Integer pushType) {
         if (!ObjectUtils.isEmpty(form)) {
             executorService.submit(()->{
                 Date now = new Date(System.currentTimeMillis());
                 List<Integer> ids = form.getIds();
+                List<String> userDevices = form.getUserList();
                 if (StringHelper.isNotEmpty(ids)) {
-                    ids.forEach(id->{
+                    for (int i = 0; i < ids.size(); i++) {
+                        String regId = userDevices.get(i);
+                        EmployeePush push = employeePushBiz.findOneByRegId(regId);
+                        if (ObjectUtils.isEmpty(push)) {
+                            log.error("JPush device regId:{} was not binding!", regId);
+                            continue;
+                        }
                         EmployeePushMessageRecord entity = new EmployeePushMessageRecord();
-                        entity.setSourceId(id);
+                        entity.setSourceId(ids.get(i));
+                        entity.setUserId(push.getEmployeeId());
                         entity.setPushType(pushType);
                         entity.setContent(form.getContent());
                         entity.setTitle(form.getTitle());
@@ -67,7 +82,7 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
                         entity.setUptId(form.getOptId());
                         entity.setUptTime(now);
                         mapper.insertSelective(entity);
-                    });
+                    }
                 }
             });
         }
@@ -101,7 +116,25 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
         }
     }
 
+    /**
+     * 条件查询消息推送记录（查询时间之前的）
+     *
+     * @param query
+     * @return
+     */
     public PageInfo<EmployeePushMessageRecordVO> findList(EmployeePushMessageRecordQueryForm query) {
-        return null;
+        Integer userId = query.getUserId();
+        if (ObjectUtils.isEmpty(userId)) {
+            query.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
+        }
+        String date = query.getPreDateTime();
+        if (StringHelper.isEmpty(date)) {
+            query.setPreDateTime(DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+        }
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<EmployeePushMessageRecordVO> result = mapper.selectPushMessageRecordList(query);
+        return new PageInfo<>(result);
     }
 }
