@@ -56,6 +56,11 @@ public interface WXConstant {
     String WX_AUTH_REFRESH_ACCESS_TOKEN_URL = "https://api.weixin.qq.com/sns/oauth2/refresh_token?appid=%s&grant_type=refresh_token&refresh_token=%s";
 
     /**
+     * 拉取用户信息(需scope为 snsapi_userinfo)
+     */
+    String WX_GET_USERINFO_ACCESS_URL = "https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s&lang=zh_CN";
+
+    /**
      * 获取用户基本信息（包括UnionID机制）
      */
     String WX_USER_INFO_URL = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=%s&openid=%s&lang=zh_CN";
