@@ -24,6 +24,13 @@ import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 @Data
 @ToString
 public class BillRestReceivableAmountVO implements Serializable {
+  /** 门诊id */
+  @ApiModelProperty("门诊id")
+  private Integer orgId;
+  /** 门诊名称 */
+  @Excel(name = "门诊")
+  @ApiModelProperty("门诊名称")
+  private String abbreviation;
   /** 账单ID */
   @ApiModelProperty("账单ID")
   private Integer billId;

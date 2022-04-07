@@ -309,7 +309,9 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                 fieldInfoListVO.setApprovalPeopleName(emMap.get(fieldInfoListVO.getApprovalPeopleId() + "").getName());
                 fieldInfoListVO.setUserName(emMap.get(fieldInfoListVO.getUserId() + "").getName());
             }
-            copyInfoBiz.updCopyInfoHadRead(fieldInfoForm.getId(), 2, list.get(0));
+            if (fieldInfoForm.isQueryCopyInfo()) {
+                copyInfoBiz.updCopyInfoHadRead(fieldInfoForm.getId(), 2, list.get(0));
+            }
         }
         return list;
     }

@@ -175,10 +175,15 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="query.queryDate!=null and query.queryDate!=''">
-                AND date_format(bpdr.crt_time, '%Y-%m') = #{query.queryDate}
-                AND date_format(bpr.crt_time, '%Y-%m') = #{query.queryDate}
-                AND date_format(br.crt_time, '%Y-%m') = #{query.queryDate}
+            <if test="query.startDate!=null and query.startDate!=''">
+                AND date_format(bpdr.crt_time, '%Y-%m') &gt;= #{query.startDate}
+                AND date_format(bpr.crt_time, '%Y-%m') &gt;= #{query.startDate}
+                AND date_format(br.crt_time, '%Y-%m') &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate!=null and query.endDate!=''">
+                AND date_format(bpdr.crt_time, '%Y-%m') &lt;= #{query.endDate}
+                AND date_format(bpr.crt_time, '%Y-%m') &lt;= #{query.endDate}
+                AND date_format(br.crt_time, '%Y-%m') &lt;= #{query.endDate}
             </if>
         </where>
         GROUP by bpdr.order_record_id

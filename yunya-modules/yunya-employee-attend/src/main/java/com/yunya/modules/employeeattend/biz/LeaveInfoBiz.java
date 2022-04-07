@@ -540,7 +540,9 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
             for (LeaveInfoListVO li : reList) {
                 li.setUserName(emMap.get(li.getUserId() + "").getName());
             }
-            copyInfoBiz.updCopyInfoHadRead(leaveInfoForm.getId(), 0, reList.get(0));
+            if (leaveInfoForm.isQueryCopyInfo()) {
+                copyInfoBiz.updCopyInfoHadRead(leaveInfoForm.getId(), 0, reList.get(0));
+            }
         }
         return reList;
     }

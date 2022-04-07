@@ -7,6 +7,8 @@ import com.yunya.feign.emr.domain.model.MedicalPictureRecordModel;
 import com.yunya.feign.emr.domain.query.MedicalPictureRecordExistsQuery;
 import com.yunya.feign.emr.domain.query.MedicalPictureRecordQuery;
 import com.yunya.feign.emr.domain.vo.MedicalPictureRecordVO;
+import com.yunya.feign.oss.RemoteOssServiceFeign;
+import com.yunya.feign.oss.domain.model.OssUrlForm;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.model.MedicalRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
@@ -19,7 +21,9 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.emr.MedicalPictureRecord;
 import com.yunya.modules.emr.mapper.MedicalPictureRecordMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -37,6 +41,7 @@ import static com.yunya.framework.common.enums.FileSourceTypeEnum.PATIENT_EMR_PI
  * @Date: 2022/3/24 10:03
  * @since: 1.0.0
  */
+@Slf4j
 @Service
 public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper, MedicalPictureRecord> {
 
@@ -44,7 +49,13 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
     private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
 
     @Autowired
+    private RemoteOssServiceFeign remoteOssServiceFeign;
+
+    @Autowired
     private RedisUtils redisUtils;
+
+    @Value("${domainUrl}")
+    private String domainUrl;
 
     private static final String MEDICAL_PIC_KEY = "lock:medical:picture";
 
@@ -70,7 +81,7 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
                 if (!record.getId().equals(id)) {
                     // 删除旧
                     tombstoneById(id);
-                    fillUploadFile(Arrays.asList(record));
+                    fillUploadFile(Arrays.asList(record), null);
                     // 上传文件合并
                     files = prePoseMerge(files, record.getFiles());
                 }
@@ -140,6 +151,14 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
      * @param now
      */
     private void saveUploadFile(List<XUploadFileVO> files, Integer sourceId, Integer userId, Date now) {
+        if (StringHelper.isNotEmpty(files)) {
+            files.forEach(vo -> {
+                Date uploadTime = vo.getUploadTime();
+                if (ObjectUtils.isEmpty(uploadTime)) {
+                    vo.setUploadTime(now);
+                }
+            });
+        }
         MedicalRayFilmModel model = new MedicalRayFilmModel();
         model.setSourceId(sourceId);
         model.setSourceType(PATIENT_EMR_PIC.getCode());
@@ -229,7 +248,7 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }
         List<MedicalPictureRecordVO> result = mapper.findMedicalPictureRecordList(query);
-        fillUploadFile(result);
+        fillUploadFile(result, query.getPatientId());
         return new PageInfo<>(result);
     }
 
@@ -238,7 +257,7 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
      *
      * @param result
      */
-    private void fillUploadFile(List<MedicalPictureRecordVO> result) {
+    private void fillUploadFile(List<MedicalPictureRecordVO> result, Integer patientId) {
         if (StringHelper.isNotEmpty(result)) {
             Map<Integer, List<XUploadFileVO>> map = new HashMap<>(16);
             List<Integer> sourceIds = result.stream().map(MedicalPictureRecordVO::getId).collect(Collectors.toList());
@@ -248,6 +267,7 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
             query.setSourceType(PATIENT_EMR_PIC.getCode());
             List<XUploadFileVO> files = remoteTreatmentOtherFeign.findXUploadFileList(query);
             if (StringHelper.isNotEmpty(files)) {
+                List<OssUrlForm> ossUrlForms = new ArrayList<>();
                 files.forEach(file->{
                     Integer sourceId = file.getSourceId();
                     List<XUploadFileVO> list = map.get(sourceId);
@@ -256,7 +276,26 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
                     }
                     list.add(file);
                     map.put(sourceId, list);
+                    if (!ObjectUtils.isEmpty(patientId)) {
+                        OssUrlForm form = new OssUrlForm();
+                        form.setIsThumb(true);
+                        form.setCompanyId(0);
+                        form.setObjectId(patientId);
+                        form.setOssCategory(3);
+                        form.setOssFilename(file.getFileLocation());
+                        ossUrlForms.add(form);
+                    }
                 });
+                if (StringHelper.isNotEmpty(ossUrlForms)) {
+                    Map<String, String> data = remoteOssServiceFeign.getUrlMap(ossUrlForms).getData();
+                    files.forEach(file->{
+                        String fileLocation = file.getFileLocation();
+                        String url = data.get(fileLocation);
+                        if (StringHelper.isNotEmpty(url)) {
+                            file.setThumbUrl(domainUrl + url);
+                        }
+                    });
+                }
             }
             result.forEach(vo-> vo.setFiles(map.get(vo.getId())));
         }

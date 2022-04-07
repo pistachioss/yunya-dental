@@ -113,9 +113,12 @@ class EmployeeAttendApplicationTests {
 
   @Test
   public void workOverFindList() {
+    BaseContextHandler.setUserID("635");
     WorkOvertimeInfoForm form = new WorkOvertimeInfoForm();
-    form.setApprovalPeopleId(15);
-    form.setApprovalStatus(0);
+//    form.setApprovalPeopleId(38);
+//    form.setApprovalStatus(0);
+    form.setId(38);
+    form.setQueryCopyInfo(true);
     List<WorkOvertimeInfoListVO> list = workOvertimeInfoController.findList(form).getData();
     System.out.println(JSONObject.toJSON(list));
   }
@@ -133,7 +136,7 @@ class EmployeeAttendApplicationTests {
   public void associatedItemCount() {
     AttendanceItemCountQuery query = new AttendanceItemCountQuery();
     query.setQueryType(0);
-    query.setCopyId(15);
+    query.setUserId(15);
     AttendanceItemCountVO data = copyInfoController.attendanceItemCount(query).getData();
     System.out.println(JSONObject.toJSON(data));
   }

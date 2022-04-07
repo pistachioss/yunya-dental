@@ -40,7 +40,7 @@ public class MedicalPictureRecordController {
     }
 
     @ApiOperation(value = "查询病历照片记录是否存在")
-    @GetMapping("/isExists")
+    @PostMapping("/isExists")
     public ResponseResult<Boolean> isExistsMedicalPictureRecord(@Valid @RequestBody MedicalPictureRecordExistsQuery query) {
         Boolean isExists = medicalPictureRecordBiz.isExistsMedicalPictureRecord(query);
         return ResponseUtil.success(isExists);
