@@ -92,7 +92,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         Integer originId = patientBaseInfo.getOriginId();
         checkOriginSource(originId, patientBaseInfo.getOriginType(), originId, originId);
         // 设置患者登记默认的门诊为总院
-        patientBaseInfo.setOrgId(39);
+        patientBaseInfo.setOrgId(findRecentlyOrgId(39));
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
         patientBaseInfo.setCrtId(1);
         patientBaseInfo.setCrtName("客户登记");
@@ -105,6 +105,17 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         patientBaseInfoBiz.sendMessages(patientBaseInfo.getId(), 0);
         addPatientPrepaymentsInfo(patientBaseInfo);
         return patientBaseInfoVo;
+    }
+
+    /**
+     * 查询最近创建门诊或默认给定门诊id
+     *
+     * @param defaultOrgId
+     * @return
+     */
+    private Integer findRecentlyOrgId(int defaultOrgId) {
+        OrganizationInfo org = remoteSystemServiceFeign.findRecentlyOrDefaulOrg(defaultOrgId);
+        return org.getId();
     }
 
     private void addPatientOriginLog(PatientBaseInfo patientBaseInfo) {
