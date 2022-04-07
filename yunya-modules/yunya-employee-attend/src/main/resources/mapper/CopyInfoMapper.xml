@@ -68,7 +68,6 @@
             AND ap.user_id = #{query.userId}
           </if>
       </where>
-      GROUP BY li.id
       UNION
       SELECT
         0 AS leaveCount,
