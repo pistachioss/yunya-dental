@@ -44,12 +44,12 @@ public class XUploadFileController {
     }
 
     /**
-     * 根据文件ID删除文件信息
+     * 根据文件ID删除文件信息（校验超过当天后不可删）
      *
      * @param fileId
      * @return
      */
-    @ApiOperation("根据文件ID删除文件信息")
+    @ApiOperation("根据文件ID删除文件信息（校验超过当天后不可删）")
     @DeleteMapping("/del/{fileId}")
     @CurrentUser
     @ApiImplicitParams({@ApiImplicitParam(name = "fileId",value = "文件ID")})
