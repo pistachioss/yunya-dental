@@ -2,22 +2,20 @@ package com.yunya.modules.employeeattend;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.employee_attend.form.AttendancePunchRecordForm;
-import com.yunya.feign.employee_attend.form.AttendancePunchRecordQueryForm;
-import com.yunya.feign.employee_attend.form.AttendanceStatisticsQueryForm;
+import com.yunya.feign.employee_attend.form.*;
 import com.yunya.feign.employee_attend.vo.AttendanceInvalidCountVO;
 import com.yunya.feign.employee_attend.vo.AttendanceUnpunchCountVO;
+import com.yunya.feign.employee_attend.vo.EmployeePushMessageRecordVO;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.modules.employeeattend.aysnc.AttendancePunchRecordScheduledTask;
 import com.yunya.modules.employeeattend.config.JPushConfig;
 import com.yunya.modules.employeeattend.controller.AttendancePunchRecordController;
 import com.yunya.modules.employeeattend.controller.BaseScheduleController;
+import com.yunya.modules.employeeattend.controller.EmployeePushMessageRecordController;
 import com.yunya.modules.employeeattend.form.ScheduleForm;
-import com.yunya.modules.employeeattend.util.JpushManager;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,6 +46,8 @@ public class AttendancePunchRecordControllerTest {
     private BaseScheduleController baseScheduleController;
     @Autowired
     private RedisUtils redisUtils;
+    @Autowired
+    private EmployeePushMessageRecordController employeePushMessageRecordController;
 
     @Test
     public void clear() {
@@ -146,5 +146,22 @@ public class AttendancePunchRecordControllerTest {
     public void testConfig() {
       JPushConfig jPushConfig = new JPushConfig();
       log.info("jPushConfig: " + jPushConfig.getAppKey() + jPushConfig.getAppMasterSecret());
+    }
+
+    @Test
+    public void testPushMessageFind() {
+        EmployeePushMessageRecordQueryForm query = new EmployeePushMessageRecordQueryForm();
+        query.setUserId(635);
+        PageInfo<EmployeePushMessageRecordVO> data = employeePushMessageRecordController.findList(query).getData();
+        System.out.println(JSONObject.toJSON(data));
+    }
+
+    @Test
+    public void testUptPushMessageHaveRead() {
+        BaseContextHandler.setUserID("635");
+        EmployeePushMessageRecordForm form = new EmployeePushMessageRecordForm();
+        form.setDataId(37);
+        form.setMessageType(30);
+        employeePushMessageRecordController.uptPushMessageHaveRead(form);
     }
 }

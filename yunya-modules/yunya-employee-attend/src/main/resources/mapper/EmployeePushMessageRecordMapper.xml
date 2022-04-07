@@ -33,7 +33,7 @@
         AND user_id = #{query.userId}
       </if>
       <if test="query.preDateTime!=null and query.preDateTime!=''">
-        AND DATE_FORMAT(push_time, '%Y-%m-%d') &lt;= #{query.preDateTime}
+        AND DATE_FORMAT(push_time, '%Y-%m-%d %H:%i:%S') &lt;= #{query.preDateTime}
       </if>
     </where>
     ORDER BY push_time DESC

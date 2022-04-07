@@ -2,6 +2,7 @@ package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.employee_attend.form.EmployeePushMessageRecordForm;
 import com.yunya.feign.employee_attend.form.EmployeePushMessageRecordQueryForm;
 import com.yunya.feign.employee_attend.vo.EmployeePushMessageRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -19,6 +20,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.text.ParseException;
@@ -136,5 +138,30 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
         }
         List<EmployeePushMessageRecordVO> result = mapper.selectPushMessageRecordList(query);
         return new PageInfo<>(result);
+    }
+
+    /**
+     * 推送消息的状态更新为已读
+     *
+     * @param form
+     */
+    public void uptPushMessageHaveRead(EmployeePushMessageRecordForm form) {
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        Integer messageType = form.getMessageType();
+        Example example = new Example(EmployeePushMessageRecord.class);
+        Example.Criteria c = example.createCriteria();
+        c.andEqualTo("sourceId", form.getDataId());
+        c.andBetween("pushType", messageType, messageType+8);
+        c.andEqualTo("hadRead",false);
+        c.andEqualTo("userId", userId);
+        example.orderBy("crtTime").asc();
+        List<EmployeePushMessageRecord> datas = mapper.selectByExample(example);
+        if (StringHelper.isNotEmpty(datas)) {
+            EmployeePushMessageRecord entity = datas.get(0);
+            entity.setHadRead(true);
+            entity.setUptId(userId);
+            entity.setUptTime(new Date(System.currentTimeMillis()));
+            mapper.updateByPrimaryKeySelective(entity);
+        }
     }
 }
