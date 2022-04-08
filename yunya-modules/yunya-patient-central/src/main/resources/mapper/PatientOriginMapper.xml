@@ -73,7 +73,7 @@
 
     <!-- 查询患者来源type最大值（id最大的） -->
     <select id="selectTypeMaximum" resultType="java.lang.Integer">
-        select max(origin_type) maxtype from patient_origin
+        select ifnull(max(origin_type), 0) maxtype from patient_origin
     </select>
     <!-- 根据患者来源type查询患者来源名称 -->
     <select id="getTypeName" resultType="com.yunya.models.patient_central.PatientOrigin">

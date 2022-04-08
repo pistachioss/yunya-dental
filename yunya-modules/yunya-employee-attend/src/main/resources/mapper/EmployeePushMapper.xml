@@ -15,4 +15,8 @@
       #{item}
     </foreach>
   </select>
+
+  <select id="selectOneByRegId" resultType="com.yunya.models.employee_attend.EmployeePush">
+    select * from employee_push where registration_id = #{regId}
+  </select>
 </mapper>
