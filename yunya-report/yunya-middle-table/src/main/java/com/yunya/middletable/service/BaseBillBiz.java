@@ -6,6 +6,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.middletable.dao.report.BaseBillDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillMapper;
 import com.yunya.middletable.dao.report.BasePatientOriginLogMapper;
@@ -36,6 +37,7 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 
@@ -78,6 +80,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
 
   @Resource(name = "billCreditsCallbackImpl")
   private BillCreditsCallback baseBillPayCallback;
+  @Autowired
+  private RedisUtils redisUtils;
 
   /**
    * 更新开单明细
@@ -115,6 +119,13 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           baseBillDetailMapper.deleteByBillId(dataId);
           // 保存账单明细
           saveBaseBillDetail(dataId);
+          log.info("消息dataId = {}",dataId);
+          // 做接口幂等性校验
+          String key = String.format("msgId:%d", dataId);
+          if (redisUtils.hasKey(key)) {
+            return;
+          }
+          redisUtils.set(key,"",15, TimeUnit.SECONDS);
           // 推荐积分
           addPatientIntegral(bill.getPatientId());
           // 回调收费增加积分

@@ -116,6 +116,11 @@ public class BaseTreatmentProcessBiz
     }
   }
 
+  /**
+   * 更新距本次就诊记录在一个月内并且最近一次就诊记录的inMontheNextId值
+   *
+   * @param treatmentProcess
+   */
   private void updateInMonthNextTreat(BaseTreatmentProcess treatmentProcess) {
     Byte treatType = treatmentProcess.getTreatType();
     if (treatType.intValue() == 1) {
@@ -125,7 +130,8 @@ public class BaseTreatmentProcessBiz
               treatmentProcess.getPatientId(), treatmentProcess.getRegisteredDentistId(), treatmentProcess.getTreatmentId(), sDate, eDate);
       if (!ObjectUtils.isEmpty(preTreat)) {
         Integer treatmentId = treatmentProcess.getTreatmentId();
-        if (treatmentProcess.getInMonthNextId() == -1) {// 删除
+        Integer inMonthNextId = treatmentProcess.getInMonthNextId();
+        if (!ObjectUtils.isEmpty(inMonthNextId) && inMonthNextId==-1) {// 删除就诊
           treatmentId = 0;
         }
         preTreat.setInMonthNextId(treatmentId);
@@ -254,7 +260,8 @@ public class BaseTreatmentProcessBiz
   public BaseTreatmentProcess updateTreatProcessByRegisteredId(Integer registeredId) {
     Registered registered = registeredMapper.selectByPrimaryKey(registeredId);
     if (null != registered) {
-      BaseTreatmentProcess treatmentProcess = mapper.selectOneByRegisteredId(registeredId);
+//      BaseTreatmentProcess treatmentProcess = mapper.selectOneByRegisteredId(registeredId);
+      BaseTreatmentProcess treatmentProcess = null;
       if (registered.getInservice()) {
         if (treatmentProcess != null) {
           setTreatmentProcessRegisteredValue(treatmentProcess, registered);

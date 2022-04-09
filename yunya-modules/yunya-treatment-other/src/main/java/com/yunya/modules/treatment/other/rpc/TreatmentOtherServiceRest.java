@@ -182,7 +182,7 @@ public class TreatmentOtherServiceRest {
    * 将指定照片影像复制到x_upload_file中
    *
    */
-  @ApiOperation(value = "查询全部随访提醒记录")
+  @ApiOperation(value = "将指定照片影像复制到x_upload_file中")
   @PostMapping("/xUploadFile/saveMedicalRayToUploadFile")
   public void saveXRayFile2XUploadFile(@RequestBody @Validated MedicalRayFilmModel model) {
     xUploadFileBiz.saveXRayFile2XUploadFile(model);
@@ -198,4 +198,14 @@ public class TreatmentOtherServiceRest {
     return xUploadFileBiz.findXUploadFileList(query);
   }
 
+  /**
+   * 根据条件逻辑删除上传文件
+   *
+   * @param model
+   */
+  @ApiOperation(value = "根据条件逻辑删除上传文件")
+  @PutMapping(value = "/xUploadFile/tombstone")
+  public void tombstoneUploadFile(@RequestBody @Validated MedicalRayFilmModel model) {
+    xUploadFileBiz.tombstone(model);
+  }
 }

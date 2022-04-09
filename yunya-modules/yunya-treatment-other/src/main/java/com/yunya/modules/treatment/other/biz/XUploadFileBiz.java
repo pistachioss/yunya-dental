@@ -113,11 +113,14 @@ public class XUploadFileBiz extends BaseBiz<XUploadFileMapper, XUploadFile> {
 
     /**
      * 根据文件ID逻辑删除文件信息
-     * @param id
+     * @param id 文件id
+     * @param checkEditDate 是否需要检查允许操作
      */
-    public void del(Integer id) {
+    public void delById(Integer id, Boolean checkEditDate) {
         XUploadFile file = fileIsExists(id);
-        TreatmentOtherUtils.enableEditImage(file.getCrtTime());
+        if (checkEditDate) {
+            TreatmentOtherUtils.enableEditImage(file.getCrtTime());
+        }
         file.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
         file.setUpdTime(new Date(System.currentTimeMillis()));
         file.setInservice(false);
@@ -146,7 +149,7 @@ public class XUploadFileBiz extends BaseBiz<XUploadFileMapper, XUploadFile> {
     public void saveXRayFile2XUploadFile(MedicalRayFilmModel model) {
         tombstone(model);
         Byte sourceType = model.getSourceType();
-        Integer sourceId = model.getMedicalId();
+        Integer sourceId = model.getSourceId();
         // 逻辑删除该病历下的所有照片
         List<XUploadFileVO> list = model.getRayFiles();
         if (StringHelper.isNotEmpty(list)) {
@@ -179,10 +182,10 @@ public class XUploadFileBiz extends BaseBiz<XUploadFileMapper, XUploadFile> {
      *
      * @param model
      */
-    private void tombstone(MedicalRayFilmModel model) {
+    public void tombstone(MedicalRayFilmModel model) {
         XUploadFile fileQuery = new XUploadFile();
         fileQuery.setInservice(true);
-        fileQuery.setSourceId(model.getMedicalId());
+        fileQuery.setSourceId(model.getSourceId());
         fileQuery.setSourceType(model.getSourceType());
         mapper.updateUnvaildByEntity(fileQuery, model.getCrtId(), model.getCrtTime());
     }

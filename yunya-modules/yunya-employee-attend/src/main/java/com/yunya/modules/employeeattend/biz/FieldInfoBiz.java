@@ -21,7 +21,6 @@ import com.yunya.modules.employeeattend.form.ApprovalAllListForm;
 import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.form.FieldInfoForm;
 import com.yunya.modules.employeeattend.mapper.*;
-import com.yunya.modules.employeeattend.util.JpushManager;
 import com.yunya.modules.employeeattend.vo.EmListVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.enums.MessagePushTypeEnum.*;
 
 /**
  * 简介:
@@ -84,6 +84,10 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
     private EmployeePushBiz employeePushBiz;
     @Autowired
     private ApprovalPeopleBiz approvalPeopleBiz;
+    @Autowired
+    private CopyInfoBiz copyInfoBiz;
+    @Autowired
+    private EmployeePushMessageRecordBiz empPushMsgBiz;
 
     public int create(FieldInfoForm fieldInfoForm) {
         //判断是否有其他类型的申请
@@ -167,16 +171,17 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     }
                     //若外勤开始时间和结束时间都在班次时间段内才能进行外勤申请
                     if (start && end) {
+                        Integer userId = fieldInfoForm.getUserId();
                         FieldInfo fieldInfo = new FieldInfo();
                         BeanUtils.copyProperties(fieldInfoForm, fieldInfo);
-                        fieldInfo.setCrtId(fieldInfoForm.getUserId());
+                        fieldInfo.setCrtId(userId);
                         fieldInfo.setCrtTime(new Date());
                         fieldInfo.setApprovalStatus(0);
                         int num = mapper.insertSelective(fieldInfo);
 
                         // TODO :一级审批人
                         // start 添加推送 需求1450 by zd.xie
-                        SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(fieldInfoForm.getUserId());
+                        SysUserInfoDetail ui = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(userId);
                         String showName = "xxx";
                         if(ui != null){
                             showName = ui.getName();
@@ -197,10 +202,11 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                             if(sysEmployee !=null){
                                 emp_ids.add(sysEmployee.getUserId());
                             }
-                            employeePushForm.setId(fieldInfo.getId());
+                            employeePushForm.setIds(Arrays.asList(fieldInfo.getId()));
+                            employeePushForm.setOptId(userId);
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
-                                JpushManager.getInstance().pushLeaveApproval(el, 3);
+                                empPushMsgBiz.pushMessage(el, FIELD_APPROVE_APPLY);
                             });
                         }
                         // end 添加推送 需求1450 by zd.xie
@@ -213,7 +219,8 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                                 copyInfo.setApplyId(fieldInfo.getId());
                                 copyInfo.setApplyType(2);
                                 copyInfo.setUserId(copyId);
-                                copyInfo.setCrtId(fieldInfoForm.getUserId());
+                                copyInfo.setHadRead(false);
+                                copyInfo.setCrtId(userId);
                                 copyInfo.setCrtTime(new Date());
                                 copyInfoList.add(copyInfo);
                             }
@@ -306,6 +313,9 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                 fieldInfoListVO.setApprovalPeopleName(emMap.get(fieldInfoListVO.getApprovalPeopleId() + "").getName());
                 fieldInfoListVO.setUserName(emMap.get(fieldInfoListVO.getUserId() + "").getName());
             }
+            if (fieldInfoForm.isQueryCopyInfo()) {
+                copyInfoBiz.updCopyInfoHadRead(fieldInfoForm.getId(), 2, list.get(0));
+            }
         }
         return list;
     }
@@ -335,7 +345,8 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         //必须提前一天申请或审批
         if (now.before(date)) {
             if (fieldInfo.getApprovalStatus() == 0) {
-                if (fieldInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
+                Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+                if (fieldInfo.getApprovalPeopleId().equals(userId)) {
                     fieldInfo.setApprovalStatus(fieldInfoForm.getApprovalStatus());
                     fieldInfo.setUpdTime(new Date());
                     fieldInfo.setRefuseReason(fieldInfoForm.getRefuseReason());
@@ -354,14 +365,15 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                         Set<Integer> emp_ids = new HashSet<>();
                         employeePushForm.setEmpId(emp_ids);
                         employeePushForm.setShowName(showName);
-                        employeePushForm.setId(fieldInfoForm.getId());
+                        employeePushForm.setIds(Arrays.asList(fieldInfoForm.getId()));
+                        employeePushForm.setOptId(userId);
                         switch (fieldInfoForm.getApprovalStatus()){
                             case 1:
                                 // 通过
                                 emp_ids.add(fieldInfo.getUserId());
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
-                                    JpushManager.getInstance().pushLeaveYes(el, 3);
+                                    empPushMsgBiz.pushMessage(el, FIELD_APPROVE_PASS);
                                 });
                                 break;
                             case 2:
@@ -369,7 +381,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                                 emp_ids.add(fieldInfo.getUserId());
                                 List<EmployeePushForm> employeePushFormList1 = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList1.forEach(el -> {
-                                    JpushManager.getInstance().pushLeaveNo(el, 3);
+                                    empPushMsgBiz.pushMessage(el, FIELD_APPROVE_UNPASS);
                                 });
                                 break;
                         }
@@ -395,7 +407,8 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         fieldInfo.setId(fieldInfoForm.getId());
         fieldInfo = mapper.selectByPrimaryKey(fieldInfo);
         if (fieldInfo.getApprovalStatus() == 0) {
-            if (fieldInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
+            Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+            if (fieldInfo.getUserId().equals(userId)) {
                 fieldInfo.setApprovalStatus(3);
                 int num = mapper.updateByPrimaryKey(fieldInfo);
 
@@ -423,10 +436,11 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     if(sysEmployee !=null){
                         emp_ids.add(sysEmployee.getUserId());
                     }
-                    employeePushForm.setId(fieldInfo.getId());
+                    employeePushForm.setOptId(userId);
+                    employeePushForm.setIds(Arrays.asList(fieldInfo.getId()));
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
-                        JpushManager.getInstance().pushLeaveCancel(el, 3);
+                        empPushMsgBiz.pushMessage(el, FIELD_APPROVE_REVOKE);
                     });
                 }
                 // end 添加推送 需求1450 by zd.xie

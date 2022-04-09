@@ -92,7 +92,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         Integer originId = patientBaseInfo.getOriginId();
         checkOriginSource(originId, patientBaseInfo.getOriginType(), originId, originId);
         // 设置患者登记默认的门诊为总院
-        patientBaseInfo.setOrgId(39);
+        patientBaseInfo.setOrgId(findRecentlyOrgId(39));
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
         patientBaseInfo.setCrtId(1);
         patientBaseInfo.setCrtName("客户登记");
@@ -105,6 +105,17 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         patientBaseInfoBiz.sendMessages(patientBaseInfo.getId(), 0);
         addPatientPrepaymentsInfo(patientBaseInfo);
         return patientBaseInfoVo;
+    }
+
+    /**
+     * 查询最近创建门诊或默认给定门诊id
+     *
+     * @param defaultOrgId
+     * @return
+     */
+    private Integer findRecentlyOrgId(int defaultOrgId) {
+        OrganizationInfo org = remoteSystemServiceFeign.findRecentlyOrDefaulOrg(defaultOrgId);
+        return org.getId();
     }
 
     private void addPatientOriginLog(PatientBaseInfo patientBaseInfo) {
@@ -186,7 +197,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
      * @return String 卡号
      */
     public String generateCardNumber(String mark, Integer orgId) {
-        String number = this.patientMemberInfoMapper.generateCardNumber4Prepay(39);
+        String number = this.patientMemberInfoMapper.generateCardNumber4Prepay(orgId);
         String suffix = String.format("%06d", Integer.parseInt(number) + 1);
         // 获取门诊简称
         OrganizationInfo organizationInfo =
@@ -429,7 +440,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
                 file.setFileName(fileName);
                 MedicalRayFilmModel model = new MedicalRayFilmModel();
                 model.setSourceType(FileSourceTypeEnum.PATIENT_SIGNATURE.getCode());
-                model.setMedicalId(patientId);
+                model.setSourceId(patientId);
                 model.setRayFiles(Arrays.asList(file));
                 model.setCrtId(userId);
                 model.setCrtTime(now);

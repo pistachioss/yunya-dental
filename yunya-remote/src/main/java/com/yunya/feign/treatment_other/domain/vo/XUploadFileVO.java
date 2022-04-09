@@ -22,12 +22,19 @@ import java.util.Date;
 @ApiModel("文件上传VO")
 public class XUploadFileVO implements Serializable {
 
+    @ApiModelProperty("文件id")
+    private Integer fileId;
+
     @ApiModelProperty("来源ID")
     private Integer sourceId;
 
     /** 文件资源定位路径*/
     @ApiModelProperty("文件资源定位路径")
     private String fileLocation;
+
+    /** 缩略图*/
+    @ApiModelProperty("缩略图")
+    private String thumbUrl;
 
     /** 文件名*/
     @ApiModelProperty("文件名")

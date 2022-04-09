@@ -18,7 +18,6 @@ import com.yunya.models.employee_attend.*;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.modules.employeeattend.form.*;
 import com.yunya.modules.employeeattend.mapper.*;
-import com.yunya.modules.employeeattend.util.JpushManager;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.enums.MessagePushTypeEnum.*;
 
 /**
  * 简介:
@@ -61,6 +61,10 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
     private EmployeePushBiz employeePushBiz;
     @Autowired
     private ApprovalPeopleBiz approvalPeopleBiz;
+    @Autowired
+    private CopyInfoBiz copyInfoBiz;
+    @Autowired
+    private EmployeePushMessageRecordBiz empPushMsgBiz;
 
     /**
      * 根据日期和用户id列表查询加班列表
@@ -146,7 +150,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 && endTime.getTime() <= reendTime.getTime() && endTime.getTime() >= restartTime.getTime()) {
                             WorkOvertimeInfo workOvertimeInfo = new WorkOvertimeInfo();
                             BeanUtils.copyProperties(workOvertimeInfoForm, workOvertimeInfo);
-                            workOvertimeInfo.setCrtId(workOvertimeInfo.getUserId());
+                            Integer userId = workOvertimeInfo.getUserId();
+                            workOvertimeInfo.setCrtId(userId);
                             workOvertimeInfo.setCrtTime(new Date());
                             workOvertimeInfo.setApprovalStatus(0);
                             int num = mapper.insertSelective(workOvertimeInfo);
@@ -174,10 +179,11 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 if(sysEmployee !=null){
                                     emp_ids.add(sysEmployee.getUserId());
                                 }
-                                employeePushForm.setId(workOvertimeInfo.getId());
+                                employeePushForm.setIds(Arrays.asList(workOvertimeInfo.getId()));
+                                employeePushForm.setOptId(userId);
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
-                                    JpushManager.getInstance().pushLeaveApproval(el, 2);
+                                    empPushMsgBiz.pushMessage(el, WORKOVER_APPROVE_APPLY);
                                 });
                             }
                             // end 添加推送 需求1450 by zd.xie
@@ -190,6 +196,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                     copyInfo.setApplyId(workOvertimeInfo.getId());
                                     copyInfo.setApplyType(1);
                                     copyInfo.setUserId(copyId);
+                                    copyInfo.setHadRead(false);
                                     copyInfo.setCrtId(workOvertimeInfo.getUserId());
                                     copyInfo.setCrtTime(new Date());
                                     copyInfoList.add(copyInfo);
@@ -253,6 +260,9 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                 workOvertimeInfoListVO.setApprovalPeopleName(emMap.get(workOvertimeInfoListVO.getApprovalPeopleId() + "").getName());
                 workOvertimeInfoListVO.setUserName(emMap.get(workOvertimeInfoListVO.getUserId() + "").getName());
             }
+            if (workOvertimeInfoForm.isQueryCopyInfo()) {
+                copyInfoBiz.updCopyInfoHadRead(workOvertimeInfoForm.getId(), 1, list.get(0));
+            }
         }
         return list;
     }
@@ -283,7 +293,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
         if (now.before(date)) {
 
             if (workOvertimeInfo.getApprovalStatus() == 0) {
-                if (workOvertimeInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
+                Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+                if (workOvertimeInfo.getApprovalPeopleId().equals(userId)) {
                     workOvertimeInfo.setApprovalStatus(workOvertimeInfoForm.getApprovalStatus());
                     workOvertimeInfo.setUpdTime(new Date());
                     workOvertimeInfo.setRefuseReason(workOvertimeInfoForm.getRefuseReason());
@@ -302,14 +313,15 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                         Set<Integer> emp_ids = new HashSet<>();
                         employeePushForm.setEmpId(emp_ids);
                         employeePushForm.setShowName(showName);
-                        employeePushForm.setId(workOvertimeInfoForm.getId());
+                        employeePushForm.setIds(Arrays.asList(workOvertimeInfoForm.getId()));
+                        employeePushForm.setOptId(userId);
                         switch (workOvertimeInfoForm.getApprovalStatus()){
                             case 1:
                                 // 通过
                                 emp_ids.add(workOvertimeInfo.getUserId());
                                 List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList.forEach(el -> {
-                                    JpushManager.getInstance().pushLeaveYes(el, 2);
+                                    empPushMsgBiz.pushMessage(el, WORKOVER_APPROVE_PASS);
                                 });
                                 break;
                             case 2:
@@ -317,7 +329,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 emp_ids.add(workOvertimeInfo.getUserId());
                                 List<EmployeePushForm> employeePushFormList1 = employeePushBiz.makeEmployeePushForm(employeePushForm);
                                 employeePushFormList1.forEach(el -> {
-                                    JpushManager.getInstance().pushLeaveNo(el, 2);
+                                    empPushMsgBiz.pushMessage(el, WORKOVER_APPROVE_UNPASS);
                                 });
                                 break;
                         }
@@ -343,7 +355,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
         workOvertimeInfo.setId(workOvertimeInfoForm.getId());
         workOvertimeInfo = mapper.selectByPrimaryKey(workOvertimeInfo);
         if (workOvertimeInfo.getApprovalStatus() == 0) {
-            if (workOvertimeInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
+            Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+            if (workOvertimeInfo.getUserId().equals(userId)) {
                 workOvertimeInfo.setApprovalStatus(3);
                 int num = mapper.updateByPrimaryKey(workOvertimeInfo);
 
@@ -371,10 +384,11 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                     if(sysEmployee !=null){
                         emp_ids.add(sysEmployee.getUserId());
                     }
-                    employeePushForm.setId(workOvertimeInfo.getId());
+                    employeePushForm.setOptId(userId);
+                    employeePushForm.setIds(Arrays.asList(workOvertimeInfo.getId()));
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
-                        JpushManager.getInstance().pushLeaveCancel(el, 2);
+                        empPushMsgBiz.pushMessage(el, WORKOVER_APPROVE_REVOKE);
                     });
                 }
                 // end 添加推送 需求1450 by zd.xie

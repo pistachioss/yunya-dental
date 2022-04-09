@@ -296,4 +296,9 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   public DictionaryItem getDictItemByNames(@NotBlank String typeName, @NotBlank String itemName) {
     return null;
   }
+
+  @Override
+  public OrganizationInfo findRecentlyOrDefaulOrg(Integer defaultOrgId) {
+    return null;
+  }
 }

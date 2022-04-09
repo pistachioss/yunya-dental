@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -21,6 +22,11 @@ public class RemoteOssServiceFeignFallBackFactory implements RemoteOssServiceFei
 
     @Override
     public ResponseResult uploadBase64Image(Base64UploadForm ossUploadForm) {
+        return null;
+    }
+
+    @Override
+    public ResponseResult<Map<String, String>> getUrlMap(List<OssUrlForm> ossUrlForms) {
         return null;
     }
 

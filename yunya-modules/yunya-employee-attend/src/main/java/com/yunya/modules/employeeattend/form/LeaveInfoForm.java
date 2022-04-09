@@ -2,11 +2,9 @@ package com.yunya.modules.employeeattend.form;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yunya.models.employee_attend.ApprovalInfo;
-import com.yunya.models.employee_attend.ApprovalPeople;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.util.Date;
 import java.util.List;
@@ -116,4 +114,10 @@ public class LeaveInfoForm {
      */
     @ApiModelProperty("upd_time")
     private Date updTime;
+
+    /**
+     * 是否查看抄送详情
+     */
+    @ApiModelProperty("是否查看抄送详情")
+    private boolean queryCopyInfo;
 }

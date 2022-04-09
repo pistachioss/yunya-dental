@@ -93,7 +93,14 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         if (CollectionUtils.isNotEmpty(wxFansSaveForm.getFansBind())) {
             wxFansBindBiz.batchInsert(wxFansSaveForm.getFansBind());
         }
-        return mapper.insertSelective(wxFansSaveForm.getWxFans());
+        WxFans wxFans = wxFansSaveForm.getWxFans();
+        WxFans register = getRegister(wxFans.getOpenId());
+        if (register != null) {
+            wxFans.setId(register.getId());
+            return mapper.updateByPrimaryKeySelective(wxFans);
+        } else {
+            return mapper.insertSelective(wxFansSaveForm.getWxFans());
+        }
     }
 
     public WxFans getRegister(String openId) {
@@ -104,7 +111,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
 
     public WxFans getOwnWxFans(WxUserQuery query) {
         Example example = new Example(WxFans.class);
-        example.selectProperties("registerName","registerMobile","headImgurl","country","province","city","patientId","sex");
+        example.selectProperties("registerName","registerMobile","headImgurl","country","province","city","patientId","sex","subscribe");
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(query.getOpenId())) {
             criteria.andEqualTo("openId", query.getOpenId());

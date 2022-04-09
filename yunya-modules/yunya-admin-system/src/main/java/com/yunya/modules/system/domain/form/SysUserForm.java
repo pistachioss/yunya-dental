@@ -1,7 +1,6 @@
 package com.yunya.modules.system.domain.form;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.yunya.modules.system.domain.form.LoginOrganizationForm;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -11,7 +10,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -111,17 +109,13 @@ public class SysUserForm implements Serializable {
   /**
    * 人员类别
    */
-  @ApiModelProperty(value = "人员类别", required = true)
-  @NotNull(message = "人员类别不能为空！")
-  @Size(max = 50, message = "人员类别不能超过50个字符")
+  @ApiModelProperty(value = "人员类别")
   private String category;
 
   /**
    * 户口性质
    */
-  @ApiModelProperty(value = "户口性质（传文字）", required = true)
-  @NotNull(message = "户口性质不能为空！")
-  @Size(max = 50, message = "户口性质不能超过50个字符")
+  @ApiModelProperty(value = "户口性质（传文字）")
   private String registration;
 
   /**

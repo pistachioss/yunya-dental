@@ -114,7 +114,7 @@ public class MedicalCommonRecordController {
       // 照片影像
       medicalCommonRecordModel.setXrayFilms(fileMap.get(medicalId));
       medicalCommonRecordModel.setMajorDentistName(employeeMap.get(medicalCommonRecordModel.getMajorDentistId()+"").getName());
-
+      medicalCommonRecordModel.setCrtName(employeeMap.get(medicalCommonRecordModel.getCrtId()+"").getName());
       if (!StrUtil.isEmpty(medical.getExamination())) {
         jsonArray = JSONArray.parseArray(medical.getExamination());
         list1 = jsonArray.toJavaList(ExaminationsVO.class);

@@ -81,9 +81,9 @@ public class BillRecordBizTest {
     BillOfReceivableQuery query = new BillOfReceivableQuery();
     query.setPageNum(1);
     query.setPageSize(5);
-    query.setOrgId(31);
-    query.setBillRecordIds(Arrays.asList(439647));
-    query.setQueryDate("2021-02-28");
+    query.setOrgIds(Arrays.asList(43, 26, 27, 36, 35, 37, 28, 29, 30, 31, 32, 33, 34, 39, 40, 45));
+//    query.setBillRecordIds(Arrays.asList(439647));
+    query.setQueryDate("2021-03-23");
     long t1 = System.currentTimeMillis();
     PageInfo<BillRestReceivableAmountVO> debtList = billRecordBiz.findDebtList(query);
     long t2 = System.currentTimeMillis();

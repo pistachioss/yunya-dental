@@ -70,4 +70,9 @@ public class RemoteTreatmentOtherFactory implements RemoteTreatmentOtherFeign {
         return null;
     }
 
+    @Override
+    public void tombstoneUploadFile(MedicalRayFilmModel model) {
+
+    }
+
 }

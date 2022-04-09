@@ -461,6 +461,7 @@
             t2.name,
             t4.id AS companyIds,
             t4.name AS companys,
+            t2.work_status AS workStatus,
             t2.leave_time AS leaveTime
         FROM sys_user t1
         LEFT JOIN sys_employee t2 ON t1.id = t2.user_id

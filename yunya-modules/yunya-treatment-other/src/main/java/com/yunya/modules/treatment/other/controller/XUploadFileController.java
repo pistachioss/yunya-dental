@@ -44,17 +44,32 @@ public class XUploadFileController {
     }
 
     /**
+     * 根据文件ID删除文件信息（校验超过当天后不可删）
+     *
+     * @param fileId
+     * @return
+     */
+    @ApiOperation("根据文件ID删除文件信息（校验超过当天后不可删）")
+    @DeleteMapping("/del/{fileId}")
+    @CurrentUser
+    @ApiImplicitParams({@ApiImplicitParam(name = "fileId",value = "文件ID")})
+    public ResponseResult delById(@PathVariable("fileId") Integer fileId) {
+        xUploadFileBiz.delById(fileId, true);
+        return ResponseUtil.success();
+    }
+
+    /**
      * 根据文件ID删除文件信息
      *
      * @param fileId
      * @return
      */
     @ApiOperation("根据文件ID删除文件信息")
-    @DeleteMapping("/del/{fileId}")
+    @PutMapping("/del/{fileId}")
     @CurrentUser
     @ApiImplicitParams({@ApiImplicitParam(name = "fileId",value = "文件ID")})
     public ResponseResult del(@PathVariable("fileId") Integer fileId) {
-        xUploadFileBiz.del(fileId);
+        xUploadFileBiz.delById(fileId, false);
         return ResponseUtil.success();
     }
 }

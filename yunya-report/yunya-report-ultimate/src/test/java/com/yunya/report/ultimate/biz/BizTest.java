@@ -6,6 +6,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.bo.ClinicDataStatisticsInfoVO;
 import com.yunya.feign.report.domain.model.EmployeeWorkloadCostModel;
 import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.base.FuchaForm;
 import com.yunya.feign.report.domain.vo.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -351,10 +352,20 @@ public class BizTest {
 
     @Test
     public void testNonMonthCategoryList() {
-        String param = "{\"queryDate\":\"2021-03\",\"orgId\":27,\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
-        BillCategoryIncomeQuery query = JSONObject.parseObject(param, BillCategoryIncomeQuery.class);
+        String param = "{\"queryDate\":\"2021-03\",\"orgIds\":[26],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+        NonMonthCategoryIncomeQuery query = JSONObject.parseObject(param, NonMonthCategoryIncomeQuery.class);
         long t1 = System.currentTimeMillis();
         PageInfo<NonMonthCategoryVO> resultList = baseBillDetailBiz.nonMonthCategoryList(query);
+        System.out.println(System.currentTimeMillis() - t1);
+        System.out.println(JSONObject.toJSON(resultList));
+    }
+
+    @Test
+    public void testNonDiscountList() {
+        String param = "{\"queryDate\":\"2022-02\",\"orgIds\":[26],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+        NonMonthCategoryIncomeQuery query = JSONObject.parseObject(param, NonMonthCategoryIncomeQuery.class);
+        long t1 = System.currentTimeMillis();
+        PageInfo<NonDiscountVO> resultList = baseBillDetailBiz.nonDiscountList(query);
         System.out.println(System.currentTimeMillis() - t1);
         System.out.println(JSONObject.toJSON(resultList));
     }
@@ -382,6 +393,15 @@ public class BizTest {
         long t1 = System.currentTimeMillis();
         PageInfo<TreatmentRecordReportVO> result = baseTreatmentProcessBiz.findTreatmentList(query);
         System.out.println(System.currentTimeMillis() - t1);
+        System.out.println(JSONObject.toJSON(result));
+    }
+
+
+    @Test
+    public void fuchaList() {
+        String param = "{\"dayOps\":1,\"days\":30,\"orgIds\":null,\"attendingDoctors\":null,\"combination\":null,\"treatTypes\":[],\"pageNum\":1,\"pageSize\":10,\"whetherPage\":true}";
+        FuchaForm form = JSONObject.parseObject(param, FuchaForm.class);
+        PageInfo<FuchaVO> result = patientReportBiz.fuchaList(form);
         System.out.println(JSONObject.toJSON(result));
     }
 }

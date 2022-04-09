@@ -265,7 +265,9 @@
     </select>
     <select id="selectLeave" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoListVO">
         select
-        DISTINCT a.* from
+            DISTINCT a.*,
+            ci.had_read AS hadRead
+        from
         (SELECT DISTINCT
         t.id,
         t.user_id AS userId,

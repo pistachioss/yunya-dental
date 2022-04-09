@@ -29,6 +29,7 @@ public class CategoryInfoIncomeVO implements Serializable {
   @ApiModelProperty("组织ID")
   private Integer orgId;
   /** 组织简称 */
+  @Excel(name = "门诊")
   @ApiModelProperty("组织简称")
   private String abbreviation;
   /** 项目分类ID */

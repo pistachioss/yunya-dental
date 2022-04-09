@@ -5,13 +5,16 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
-import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
+import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.form.BillPayDetailForm;
 import com.yunya.feign.treatment.domain.model.PaymentModel;
 import com.yunya.feign.treatment.domain.query.PaymentRecordQuery;
-import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
+import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;
+import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
+import com.yunya.feign.treatment.domain.vo.PaymentRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -407,7 +410,7 @@ public class BillPayDetailRecordBiz
    * @return
    */
   public List<OrderDetailInfoVO> findBillPayDetailByFreePayment(
-      BillCategoryIncomeQuery query, List<Integer> payIds, Boolean inservice) {
+          CategoryIncomeQuery query, List<Integer> payIds, Boolean inservice) {
     return mapper.selectBillPayDetailByFreePayment(query, payIds, inservice);
   }
 }

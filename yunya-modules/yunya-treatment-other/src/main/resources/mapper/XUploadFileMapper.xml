@@ -48,6 +48,7 @@
   <!--根据条件查询治疗计划列表-->
   <select id="selectXUploadFileList" resultType="com.yunya.feign.treatment_other.domain.vo.XUploadFileVO">
     SELECT
+      xuf.id AS fileId,
       xuf.source_id AS sourceId,
       xuf.file_name AS fileName,
       xuf.file_location AS fileLocation,

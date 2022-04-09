@@ -35,6 +35,7 @@
         <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
         <result column="upd_id" property="updId" jdbcType="INTEGER"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="had_read" property="hadRead" jdbcType="BIT"/>
     </resultMap>
     <resultMap id="BSMap" type="com.yunya.models.employee_attend.BaseSchedule">
         <id column="id" property="id" jdbcType="INTEGER"/>
@@ -102,7 +103,8 @@
         )) workOverTime,
         b.name,
         t.crt_time,
-        t.upd_time
+        t.upd_time,
+        ci.had_read
         FROM
         work_overtime_info t
         LEFT JOIN base_schedule b ON t.schedule_id = b.id

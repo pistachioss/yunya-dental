@@ -6,7 +6,6 @@ import com.yunya.models.employee_attend.EmployeePush;
 import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.mapper.EmployeePushMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -115,5 +114,9 @@ public class EmployeePushBiz extends BaseBiz<EmployeePushMapper, EmployeePush> {
     }
     employeePushFormList.add(employeePushForm);
     return employeePushFormList;
+  }
+
+  public EmployeePush findOneByRegId(String regId) {
+    return mapper.selectOneByRegId(regId);
   }
 }

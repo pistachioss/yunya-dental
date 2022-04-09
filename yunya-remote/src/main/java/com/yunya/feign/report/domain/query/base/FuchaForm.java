@@ -41,4 +41,8 @@ public class FuchaForm implements Serializable {
     private String combination;
     @ApiModelProperty(value = "门诊id", required = false)
     private List<Integer> orgIds;
+
+    /** 距离末诊的查询方式：0-在范围之内，1-在范围之外*/
+    @ApiModelProperty(value = "距离末诊的查询方式：0-在范围之内，1-在范围之外", required = true)
+    private Integer dayOps = 0;
 }

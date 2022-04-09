@@ -257,13 +257,18 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       }
       // 工号检测
       try{
-        Integer.parseInt(sysEmployeeEntity.getWorkNumber());
+        Integer num = Integer.parseInt(sysEmployeeEntity.getWorkNumber());
+        // fix: bug1523.
+        if (num < 0 || num > 9999) {
+          throw new ClientServiceException("工号范围（0001-9999），请重新输入", PARAMETERS_IS_ILLEGAL);
+        }
       } catch (Exception ex){
         throw new ClientServiceException("员工工号" + sysEmployeeEntity.getWorkNumber() + "非法", PARAMETERS_IS_ILLEGAL);
       }
+
       Integer n =
           sysEmployeeMapper.selectWorkNumberByUserId(
-              sysEmployeeEntity.getUserId(), sysEmployeeEntity.getWorkNumber());
+                  userId, sysEmployeeEntity.getWorkNumber());
       if (n > 0) {
         throw new ClientServiceException("员工工号" + sysEmployeeEntity.getWorkNumber() + "已存在", SAME_DATA_EXIST);
       }

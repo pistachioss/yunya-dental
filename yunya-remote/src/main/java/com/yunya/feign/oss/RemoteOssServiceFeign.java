@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
+import java.util.Map;
 
 @FeignClient(
         name = YunyaServiceNameConstants.YUNYA_ALIYUN_OSS,
@@ -24,4 +25,8 @@ public interface RemoteOssServiceFeign {
     @RequestMapping(value = "uploadBase64Image", method = RequestMethod.POST)
     @ApiOperation("1.base64图片上传")
     ResponseResult uploadBase64Image(@RequestBody Base64UploadForm ossUploadForm);
+
+    @RequestMapping(value = "url/map", method = RequestMethod.POST)
+    @ApiOperation("2.多资源：获取外网访问URL列表")
+    ResponseResult<Map<String, String>> getUrlMap(@RequestBody List<OssUrlForm> ossUrlForms);
 }

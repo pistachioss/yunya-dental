@@ -3,9 +3,7 @@ package com.yunya.modules.employeeattend.form;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.Getter;
 
-import javax.persistence.Column;
 import java.util.Date;
 import java.util.List;
 
@@ -114,4 +112,10 @@ public class WorkOvertimeInfoForm {
      */
     @ApiModelProperty("upd_time")
     private Date updTime;
+
+    /**
+     * 是否查看抄送详情
+     */
+    @ApiModelProperty("是否查看抄送详情")
+    private boolean queryCopyInfo;
 }

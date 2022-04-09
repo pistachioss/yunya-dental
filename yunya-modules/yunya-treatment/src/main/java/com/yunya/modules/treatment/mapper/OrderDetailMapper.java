@@ -1,7 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
-import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
+import com.yunya.feign.report.domain.query.CategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.*;
@@ -104,7 +104,7 @@ public interface OrderDetailMapper extends Mapper<OrderDetail> {
    * @param query
    * @return
    */
-  List<ClinicTariffOrderVO> selectClinicTariffCategoryOriginalAmount(@Param("query") BillCategoryIncomeQuery query);
+  List<ClinicTariffOrderVO> selectClinicTariffCategoryOriginalAmount(@Param("query") CategoryIncomeQuery query);
 
   /**
    * 查询门诊下开单项目的应收列表
@@ -112,5 +112,5 @@ public interface OrderDetailMapper extends Mapper<OrderDetail> {
    * @param payIds 不属于的收费id
    * @return
    */
-  List<OrderDetail> selectClinicOrderDetailList(@Param("query") BillCategoryIncomeQuery query, @Param("payIds") List<Integer> payIds);
+  List<OrderDetail> selectClinicOrderDetailList(@Param("query") CategoryIncomeQuery query, @Param("payIds") List<Integer> payIds);
 }

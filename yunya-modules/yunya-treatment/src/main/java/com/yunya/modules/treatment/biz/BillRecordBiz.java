@@ -670,11 +670,12 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
         billExceptionHandleRecordMapper.selectBeforeRevokeBillPayIds(query);
     resultList.forEach(
         vo -> {
+          Integer orgId = vo.getOrgId();
           Integer billId = vo.getBillId();
           BigDecimal billReceivableAmount = vo.getBillReceivableAmount();
           revokes.forEach(
               revoke -> {
-                if (revoke.getBillId().equals(billId)) {
+                if (revoke.getBillId().equals(billId) && revoke.getOrgId().equals(orgId)) {
                   vo.setBillReceivableAmount(
                       billReceivableAmount.subtract(revoke.getBillReceivableAmount()));
                 }
@@ -711,33 +712,39 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    */
   private void findPatientAndRegDetist(PageInfo<BillRestReceivableAmountVO> pageInfo) {
     List<BillRestReceivableAmountVO> result = pageInfo.getList();
-    List<Integer> patientIds =
-        result.stream().map(BillRestReceivableAmountVO::getPatientId).collect(Collectors.toList());
-    List<PatientBaseInfoVo> patients = patientCentralServiceFeign.findPatientInfoByIds(patientIds);
-    Map<Integer, PatientBaseInfoVo> patientMap =
-        patients.stream().collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
-    result.forEach(
-        vo -> {
-          Integer patientId = vo.getPatientId();
-          PatientBaseInfoVo patient = patientMap.get(patientId);
-          if (patient != null) {
-            vo.setPatientName(patient.getName());
-            vo.setMobile(patient.getMobile());
-          }
-        });
-    List<Integer> userIds =
-        result.stream()
-            .map(BillRestReceivableAmountVO::getRegDentistId)
-            .collect(Collectors.toList());
-    List<SysUserInfoDetail> users = systemServiceFeign.findSysUserEmployeeInfoByUserIds(userIds);
-    Map<Integer, String> userMap =
-        users.stream()
-            .collect(Collectors.toMap(SysUserInfoDetail::getUserId, SysUserInfoDetail::getName));
-    result.forEach(
-        vo -> {
-          Integer regDentistId = vo.getRegDentistId();
-          vo.setRegDentistName(userMap.get(regDentistId));
-        });
+    if (StringHelper.isNotEmpty(result)) {
+      List<Integer> patientIds =
+              result.stream().map(BillRestReceivableAmountVO::getPatientId).collect(Collectors.toList());
+      List<PatientBaseInfoVo> patients = patientCentralServiceFeign.findPatientInfoByIds(patientIds);
+      Map<Integer, PatientBaseInfoVo> patientMap =
+              patients.stream().collect(Collectors.toMap(PatientBaseInfoVo::getId, Function.identity()));
+      result.forEach(
+              vo -> {
+                Integer patientId = vo.getPatientId();
+                PatientBaseInfoVo patient = patientMap.get(patientId);
+                if (patient != null) {
+                  vo.setPatientName(patient.getName());
+                  vo.setMobile(patient.getMobile());
+                }
+              });
+      List<Integer> userIds =
+              result.stream()
+                      .map(BillRestReceivableAmountVO::getRegDentistId)
+                      .collect(Collectors.toList());
+      List<SysUserInfoDetail> users = systemServiceFeign.findSysUserEmployeeInfoByUserIds(userIds);
+      Map<Integer, String> userMap =
+              users.stream()
+                      .collect(Collectors.toMap(SysUserInfoDetail::getUserId, SysUserInfoDetail::getName));
+      result.forEach(
+              vo -> {
+                Integer regDentistId = vo.getRegDentistId();
+                vo.setRegDentistName(userMap.get(regDentistId));
+                OrganizationInfo org = systemServiceFeign.findOrgInfoByOrgId(vo.getOrgId());
+                if (!ObjectUtils.isEmpty(org)) {
+                  vo.setAbbreviation(org.getAbbreviation());
+                }
+              });
+    }
   }
 
   /**
@@ -752,9 +759,12 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     ExcelUtil<BillRestReceivableAmountVO> excelUtil =
         new ExcelUtil<>(BillRestReceivableAmountVO.class);
     String fileName = query.getQueryDate() + "应收款余额表";
-    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
-    if (null != orgInfo) {
-      fileName = orgInfo.getAbbreviation() + fileName;
+    List<Integer> orgIds = query.getOrgIds();
+    if (orgIds.size() == 1) {
+      OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgIds.get(0));
+      if (null != orgInfo) {
+        fileName = orgInfo.getAbbreviation() + fileName;
+      }
     }
     excelUtil.exportExcel(response, resultList, "应收款余额表", fileName);
   }
