@@ -11,6 +11,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.employeeattend.biz.EmployeePushMessageRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -54,8 +55,8 @@ public class EmployeePushMessageRecordController {
   @PutMapping("/uptHaveRead")
   @ApiOperation("推送消息状态更新已读")
   @CurrentUser
-  public ResponseResult<PageInfo<EmployeePushMessageRecordVO>> uptPushMessageHaveRead(@RequestBody @Validated EmployeePushMessageRecordForm form) {
+  public ResponseResult<T> uptPushMessageHaveRead(@RequestBody @Validated EmployeePushMessageRecordForm form) {
     employeePushMessageRecordBiz.uptPushMessageHaveRead(form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }
