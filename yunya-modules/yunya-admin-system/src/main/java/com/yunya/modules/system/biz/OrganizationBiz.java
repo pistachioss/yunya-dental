@@ -21,6 +21,7 @@ import com.yunya.modules.system.mapper.CompanyMapper;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
 import com.yunya.modules.system.vo.tree.OrganizationTreeVO;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +77,9 @@ public class OrganizationBiz {
    * @return
    */
   public OrganizationInfo findOrgInfoById(Integer id) {
+    if (ObjectUtils.isEmpty(id)) {
+      throw new ClientServiceException("Param id is null", PARAMETERS_IS_ILLEGAL);
+    }
     String orgKey = REDIS_KEY_ORG_ID + id;
     OrganizationInfo organizationInfo = redisUtils.get(orgKey, OrganizationInfo.class);
     if (null == organizationInfo) {
@@ -468,5 +472,19 @@ public class OrganizationBiz {
    */
   public List<OrganizationInfoVO> findOrgInfoInIds(List<Integer> orgIds) {
     return companyMapper.selectOrganizationInIds(orgIds);
+  }
+
+  /**
+   * 查询给定默认门诊信息或最近创建的一个门诊信息
+   * @param defaultOrgId
+   * @return
+   */
+  public OrganizationInfo findRecentlyOrDefaulOrg(Integer defaultOrgId) {
+    OrganizationInfo defaultOrg = findOrgInfoById(defaultOrgId);
+    if (!ObjectUtils.isEmpty(defaultOrg)) {
+      return defaultOrg;
+    }
+    PageHelper.startPage(1, 1);
+    return companyMapper.selectOrgInfoById(null);
   }
 }

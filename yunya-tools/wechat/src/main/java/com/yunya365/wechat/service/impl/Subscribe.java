@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @description:
@@ -30,10 +31,11 @@ public class Subscribe implements WeChatNotify {
         log.info("用户关注公众号回调结果：{}", msgReq);
         String openId = msgReq.getFromUserName();
         WxFans wxFansReg = wxService.getOwnInfo(openId, null);
-        if (wxFansReg != null) {
+        if (wxFansReg != null && Objects.equals(true, wxFansReg.getSubscribe())) {
             log.info("用户已关注公众号：{}", wxFansReg);
             return null;
         }
+        //因为微信官方文档调整，没有昵称、头像信息
         WxRegisterModel model = new WxRegisterModel();
         wxService.saveWxPatient(openId, model);
         return null;

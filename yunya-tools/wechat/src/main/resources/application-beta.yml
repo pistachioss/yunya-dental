@@ -27,4 +27,4 @@ wechat:
   encodingAESKey: "B4Pjk52AjOXzC37mtfYAzNa2X2UFp3AxhBkBaXj6Zu1"
 
 mp:
-  domain: http://wechat.ivy2.yunya365.com
+  domain: test.ivy2.yunya365.com

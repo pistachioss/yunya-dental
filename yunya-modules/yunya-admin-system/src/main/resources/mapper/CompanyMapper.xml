@@ -57,7 +57,12 @@
         from
 	        company c
 	    left join clinic_ext_info cei ON c.id = cei.company_id
-        where c.id = #{id}
+        <where>
+            <if test="id != null">
+                AND c.id = #{id}
+            </if>
+        </where>
+        ORDER BY cei.crt_time DESC
     </select>
 
     <!-- 新增组织（返回插入数据ID） -->

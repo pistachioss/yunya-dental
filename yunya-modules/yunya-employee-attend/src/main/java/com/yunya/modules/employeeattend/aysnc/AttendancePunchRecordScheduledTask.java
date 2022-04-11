@@ -516,8 +516,9 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             List<EmployeePushForm> employeePushFormList = new ArrayList<>();
             pushList.forEach(push -> {
-                if(push.getPunchType()==0){
-                    // 上班推送
+                // fix: bug3617
+                if(push.getPunchType() == 0 && (push.getSource() == 0) || push.getSource() == 4 || push.getSource() == 5){
+                    // 上班推送（去除休息班次和按天请假）
                     EmployeePushForm employeePushForm = new EmployeePushForm();
                     // 组装
                     Set<Integer> emp_ids = new HashSet<>();

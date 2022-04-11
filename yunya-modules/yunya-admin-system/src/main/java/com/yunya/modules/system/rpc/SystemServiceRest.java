@@ -603,4 +603,9 @@ public class SystemServiceRest {
           , @NotBlank @RequestParam String itemName) {
     return dictionaryItemBiz.getDictItemByName(typeName, itemName);
   }
+
+  @GetMapping(value = "/organization/recentlyOrDefault/{defaultOrgId}")
+  public OrganizationInfo findRecentlyOrDefaulOrg(@PathVariable(value = "defaultOrgId") Integer defaultOrgId) {
+    return organizationBiz.findRecentlyOrDefaulOrg(defaultOrgId);
+  }
 }

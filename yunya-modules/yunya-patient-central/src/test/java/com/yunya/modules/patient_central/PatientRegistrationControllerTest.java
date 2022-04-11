@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.oss.RemoteOssServiceFeign;
 import com.yunya.feign.oss.domain.model.OssUrlForm;
 import com.yunya.feign.patient_central.domain.model.*;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientExpInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientExtendInfoVo;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -249,5 +250,13 @@ public class PatientRegistrationControllerTest {
     public void test() {
         PatientExpInfoVo patientExpInfoVo = patientExpInfoMapper.selectByPatientId(112634);
         System.out.println(JSONObject.toJSON(patientExpInfoVo));
+    }
+
+    @Test
+    public void addPatient() {
+        String param = "{\"name\":\"测试啦\",\"gender\":0,\"mobile\":\"13131313131\",\"birthday\":\"\",\"mobileOwner\":10,\"remarks\":\"\",\"originType\":\"3\",\"originId\":\"124\"}";
+        CustomerRegistrationModel model = JSONObject.parseObject(param, CustomerRegistrationModel.class);
+        PatientBaseInfoVo patientBaseInfoVo = customerRegistrationBiz.addPatient(model);
+        System.out.println(JSONObject.toJSON(patientBaseInfoVo));
     }
 }

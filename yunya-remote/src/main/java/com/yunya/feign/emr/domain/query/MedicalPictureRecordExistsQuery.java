@@ -1,5 +1,6 @@
 package com.yunya.feign.emr.domain.query;
 
+import com.yunya.framework.common.utils.DateUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -21,7 +22,7 @@ import java.io.Serializable;
 @ToString
 @ApiModel("病历照片记录是否存在查询模型")
 public class MedicalPictureRecordExistsQuery implements Serializable {
-    /** 记录i*/
+    /** 记录id*/
     @ApiModelProperty("记录id")
     private Integer id;
 
@@ -34,4 +35,8 @@ public class MedicalPictureRecordExistsQuery implements Serializable {
     @ApiModelProperty(value = "日期", required = true)
     @NotEmpty(message = "日期不能为空")
     private String name;
+
+    public void setName(String name) {
+        this.name = DateUtil.format(DateUtil.parse2Date(name));
+    }
 }
