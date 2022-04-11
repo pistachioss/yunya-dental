@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.EmployeePushMessageRecordForm;
 import com.yunya.feign.employee_attend.form.EmployeePushMessageRecordQueryForm;
+import com.yunya.feign.employee_attend.vo.EmpPushMsgUnReadCountVO;
 import com.yunya.feign.employee_attend.vo.EmployeePushMessageRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -125,10 +126,7 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
      * @return
      */
     public PageInfo<EmployeePushMessageRecordVO> findList(EmployeePushMessageRecordQueryForm query) {
-        Integer userId = query.getUserId();
-        if (ObjectUtils.isEmpty(userId)) {
-            query.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
-        }
+        defaultQueryUser(query);
         String date = query.getPreDateTime();
         if (StringHelper.isEmpty(date)) {
             query.setPreDateTime(DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
@@ -138,6 +136,14 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
         }
         List<EmployeePushMessageRecordVO> result = mapper.selectPushMessageRecordList(query);
         return new PageInfo<>(result);
+    }
+
+    private void defaultQueryUser(EmployeePushMessageRecordQueryForm query) {
+        Integer userId = query.getUserId();
+        if (ObjectUtils.isEmpty(userId)) {
+            userId = Integer.parseInt(BaseContextHandler.getUserID());
+            query.setUserId(userId);
+        }
     }
 
     /**
@@ -163,5 +169,16 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
             entity.setUptTime(new Date(System.currentTimeMillis()));
             mapper.updateByPrimaryKeySelective(entity);
         }
+    }
+
+    /**
+     * 未读消息数量
+     *
+     * @param query
+     * @return
+     */
+    public EmpPushMsgUnReadCountVO findCountUnRead(EmployeePushMessageRecordQueryForm query) {
+        defaultQueryUser(query);
+        return mapper.selectCountUnRead(query);
     }
 }
