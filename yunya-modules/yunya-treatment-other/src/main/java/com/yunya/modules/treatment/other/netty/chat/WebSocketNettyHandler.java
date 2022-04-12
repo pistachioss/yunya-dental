@@ -1,12 +1,15 @@
 package com.yunya.modules.treatment.other.netty.chat;
 
 import com.alibaba.fastjson.JSON;
-import com.yunya.feign.treatment_other.domain.form.ChatMessage;
+import com.yunya.feign.treatment_other.domain.form.ChatMessageBody;
+import com.yunya.framework.common.utils.UUIDUtils;
+import com.yunya.modules.treatment.other.biz.ChatMessageRecordBiz;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -21,6 +24,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @ChannelHandler.Sharable
 @Component
 public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+
+    @Autowired
+    private ChatMessageRecordBiz chatMessageRecordBiz;
+
     /** 服务端id*/
     private static final Integer NETTY_SERVER_ID = -999;
 
@@ -59,7 +66,8 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame wsMessage) throws Exception {
         System.out.println("接收到客户端发来的消息: " + wsMessage.text());
-        ChatMessage message = JSON.parseObject(wsMessage.text(), ChatMessage.class);
+        ChatMessageBody message = JSON.parseObject(wsMessage.text(), ChatMessageBody.class);
+        ackMessageRead(message);
         if (message.getType()==1) {
             setMap(ctx, message);
             // 给其他服务器发送上线消息
@@ -75,18 +83,21 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
         Integer receiveId = message.getReceiveId();
         // 没有指定接收者代表要群发
         if (ObjectUtils.isEmpty(receiveId)) {
-            for (ChannelHandlerContext handlerContext : userHandles.values()) {
+            userHandles.forEach((userId, handlerContext)->{
                 if (handlerContext==ctx) {
-                    continue;
+                    return;
                 }
                 handlerContext.writeAndFlush(new TextWebSocketFrame(JSON.toJSONString(message)));
-            }
+                chatMessageRecordBiz.asyncArchiveChatMessage(message, userId);
+            });
             return;
         }
+        chatMessageRecordBiz.asyncArchiveChatMessage(message, null);
         // 从缓存的存储用户对应的通道 map中获取
         if (!userHandles.containsKey(receiveId)) {
             // 回写消息
-            ChatMessage retMessage = new ChatMessage(NETTY_SERVER_ID, message.getSendId(), "用户离线，消息不能及时送达。",2);
+            ChatMessageBody retMessage = new ChatMessageBody(UUIDUtils.generateShortUuid(),
+                    NETTY_SERVER_ID, message.getSendId(), "用户离线，消息不能及时送达。",2);
             ctx.writeAndFlush(new TextWebSocketFrame(JSON.toJSONString(retMessage)));
             return;
         }
@@ -95,18 +106,25 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
         receiveCtx.writeAndFlush(new TextWebSocketFrame(JSON.toJSONString(message)));
     }
 
+    private void ackMessageRead(ChatMessageBody message) {
+        Boolean ack = message.getAckRead();
+        if (!ObjectUtils.isEmpty(ack) && ack) {
+            chatMessageRecordBiz.asyncUptMessageHadRead(message);
+        }
+    }
+
     /**
      * 设置连接映射
      * @param channelHandlerContext
      * @param message
      */
-    private void setMap(ChannelHandlerContext channelHandlerContext, ChatMessage message) {
+    private void setMap(ChannelHandlerContext channelHandlerContext, ChatMessageBody message) {
         userHandles.put(message.getSendId(), channelHandlerContext);
         channelUsers.put(channelHandlerContext.channel().id().toString(),message.getSendId());
     }
 
     /**
-     * 通达关闭事件
+     * 通道关闭事件
      * @param ctx
      * @throws Exception
      */
@@ -116,7 +134,8 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
         userHandles.remove(userId);
         // 给其他在线用户发送该用户离线的信息
         for (ChannelHandlerContext handlerContext : userHandles.values()) {
-            ChatMessage message = new ChatMessage(NETTY_SERVER_ID, null, "用户id: "+userId+"--已经离线了",2);
+            ChatMessageBody message = new ChatMessageBody(UUIDUtils.generateShortUuid(),
+                    NETTY_SERVER_ID, null, "用户id: "+userId+"--已经离线了",2);
             handlerContext.writeAndFlush(new TextWebSocketFrame(JSON.toJSONString(message)));
         }
         channels.remove(ctx);
@@ -128,7 +147,8 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
         userHandles.remove(userId);
         // 给其他在线用户发送该用户离线的信息
         for (ChannelHandlerContext handlerContext : userHandles.values()) {
-            ChatMessage message = new ChatMessage(NETTY_SERVER_ID, null, "用户id: "+userId+"--连接发生问题，已被迫离线了",2);
+            ChatMessageBody message = new ChatMessageBody(UUIDUtils.generateShortUuid(),
+                    NETTY_SERVER_ID, null, "用户id: "+userId+"--连接发生问题，已被迫离线了",2);
             handlerContext.writeAndFlush(new TextWebSocketFrame(JSON.toJSONString(message)));
         }
         channels.remove(ctx);

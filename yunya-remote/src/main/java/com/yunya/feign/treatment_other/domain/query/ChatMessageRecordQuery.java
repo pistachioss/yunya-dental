@@ -20,6 +20,11 @@ import java.io.Serializable;
 @ToString
 @ApiModel("聊天消息记录查询模型")
 public class ChatMessageRecordQuery extends PageQuery implements Serializable {
+    /** 发送者id */
     @ApiModelProperty("发送者id")
     private Integer sendId;
+
+    /** 接收者id*/
+    @ApiModelProperty("接收者id")
+    private Integer receiveId;
 }

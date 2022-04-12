@@ -15,13 +15,14 @@ import java.io.Serializable;
 @Data
 @ToString
 @ApiModel("聊天消息体")
-public class ChatMessage implements Serializable {
+public class ChatMessageBody implements Serializable {
 
-    public ChatMessage() {
+    public ChatMessageBody() {
 
     }
 
-    public ChatMessage(Integer sendId, Integer receiveId, String content, Integer type) {
+    public ChatMessageBody(String msgCode, Integer sendId, Integer receiveId, String content, Integer type) {
+        this.msgCode = msgCode;
         this.sendId = sendId;
         this.receiveId = receiveId;
         this.content = content;
@@ -29,9 +30,15 @@ public class ChatMessage implements Serializable {
     }
 
     /**
+     * id
+     */
+    @ApiModelProperty(value = "id")
+    private Integer id;
+
+    /**
      * 发送者id
      */
-    @ApiModelProperty("发送者id")
+    @ApiModelProperty(value = "发送者id")
     private Integer sendId;
 
     /**
@@ -41,10 +48,10 @@ public class ChatMessage implements Serializable {
     private Integer receiveId;
 
     /**
-     * 消息id
+     * 消息code
      */
-    @ApiModelProperty("消息id")
-    private Integer id;
+    @ApiModelProperty("消息code")
+    private String msgCode;
 
     /**
      * 消息文本
@@ -55,6 +62,24 @@ public class ChatMessage implements Serializable {
     /**
      * 类型 1 上线 2发消息
      */
-    @ApiModelProperty("类型 1 上线 2发消息")
+    @ApiModelProperty("类型：1-上线, 2-发消息")
     private int type;
+
+    /**
+     * 发送时间
+     */
+    @ApiModelProperty("发送时间")
+    private Integer sendTime;
+
+    /**
+     * 读取消息的时间
+     */
+    @ApiModelProperty("读取消息的时间")
+    private Integer readTime;
+
+    /**
+     * 是否确认已读
+     */
+    @ApiModelProperty("是否确认已读")
+    private Boolean ackRead;
 }

@@ -8,10 +8,13 @@ import java.util.Date;
 @Table(name = "chat_message_record")
 public class ChatMessageRecord {
     /**
-     * 消息id
+     * id
      */
     @Id
     private Integer id;
+
+    @Column(name = "msg_code")
+    private String msgCode;
 
     /**
      * 发送者id
@@ -66,21 +69,39 @@ public class ChatMessageRecord {
     private Date uptTime;
 
     /**
-     * 获取消息id
+     * 获取id
      *
-     * @return id - 消息id
+     * @return id - id
      */
     public Integer getId() {
         return id;
     }
 
     /**
-     * 设置消息id
+     * 设置id
      *
-     * @param id 消息id
+     * @param id id
      */
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    /**
+     * 获取消息code
+     *
+     * @return
+     */
+    public String getMsgCode() {
+        return msgCode;
+    }
+
+    /**
+     * 设置消息code
+     *
+     * @param msgCode
+     */
+    public void setMsgCode(String msgCode) {
+        this.msgCode = msgCode;
     }
 
     /**

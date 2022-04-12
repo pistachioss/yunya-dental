@@ -1,7 +1,7 @@
 package com.yunya.modules.treatment.other.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.treatment_other.domain.form.ChatMessage;
+import com.yunya.feign.treatment_other.domain.form.ChatMessageBody;
 import com.yunya.feign.treatment_other.domain.query.ChatMessageRecordQuery;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -41,8 +41,8 @@ public class ChatMessageRecordController {
     @ApiOperation("根据条件查询消息历史记录")
     @PostMapping("/history")
     @CurrentUser
-    public ResponseResult<PageInfo<ChatMessage>> findChatMessageHisotry(@Validated @RequestBody ChatMessageRecordQuery query) {
-        chatMessageRecordBiz.findChatMessageHisotry(query);
-        return ResponseUtil.success();
+    public ResponseResult<PageInfo<ChatMessageBody>> findChatMessageHisotry(@Validated @RequestBody ChatMessageRecordQuery query) {
+        PageInfo<ChatMessageBody> pageInfo = chatMessageRecordBiz.findChatMessageHisotry(query);
+        return ResponseUtil.success(pageInfo);
     }
 }
