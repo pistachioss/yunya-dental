@@ -8,11 +8,7 @@ import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.system.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotBlank;
 import java.util.List;
@@ -468,4 +464,7 @@ public interface RemoteSystemServiceFeign {
   @RequestMapping(value = "/api/dictItem/name", method = RequestMethod.GET)
   DictionaryItem getDictItemByNames(@NotBlank @RequestParam(value = "typeName", required = true) String typeName
           , @NotBlank @RequestParam(value = "itemName", required = true) String itemName);
+
+  @GetMapping(value = "/api/organization/recentlyOrDefault/{defaultOrgId}")
+  OrganizationInfo findRecentlyOrDefaulOrg(@PathVariable(value = "defaultOrgId") Integer defaultOrgId);
 }

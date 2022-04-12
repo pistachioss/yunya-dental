@@ -1,6 +1,7 @@
 package com.yunya.feign.emr.domain.query;
 
 import com.yunya.framework.common.model.PageQuery;
+import com.yunya.framework.common.utils.DateUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -30,4 +31,8 @@ public class MedicalPictureRecordQuery extends PageQuery implements Serializable
     /** 日期*/
     @ApiModelProperty(value = "日期")
     private String name;
+
+    public void setName(String name) {
+        this.name = DateUtil.format(DateUtil.parse2Date(name));
+    }
 }

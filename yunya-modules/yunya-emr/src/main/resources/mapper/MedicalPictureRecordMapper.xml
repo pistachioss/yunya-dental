@@ -29,5 +29,6 @@
           AND patient_id = #{query.patientId}
         </if>
     </where>
+    ORDER BY DATE_FORMAT(name,'%Y-%m-%d') DESC
   </select>
 </mapper>

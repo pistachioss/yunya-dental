@@ -29,6 +29,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -58,6 +59,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     private static final String WORK = "上班";
     /** 按天请假：时长8小时以毫秒表示 */
     private static final long DAY_LEAVE_MILLSEC = 28800000;
+    /** 时间纪元*/
+    private static final Date TIME_EPOCH = DateUtil.parse2Date("1970-01-01");
     /** 注入对象 */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
@@ -1251,13 +1254,13 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         });
         PageInfo<SysUserInfoDetail> userPage = findEmployeeInfoList(queryForm, userIds, userOrgIds);
         List<SysUserInfoDetail> userList = userPage.getList();
-        Map<Integer, String> onWorkMap = getEmployeeOnWorkMap(userList);
+        Map<Integer, String> leaveWorks = getEmployeeLeaveWorkMap(userList);
         attendancePunchRecordVOS.forEach(record->{
             String punchDateStr = DateUtil.format(record.getPunchDate(),"yyyy-MM-dd");
             Integer esId = record.getEsId();
             Byte source = record.getSource();
             Integer userId = record.getUserId();
-            String leaveDate = onWorkMap.get(userId);
+            String leaveDate = leaveWorks.get(userId);
             if (StringHelper.isNotEmpty(leaveDate) && DateUtil.dateFieldDiff(leaveDate, punchDateStr)>0) {
                 return;
             }
@@ -1508,12 +1511,19 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         return pageInfo;
     }
 
-    private Map<Integer, String> getEmployeeOnWorkMap(List<SysUserInfoDetail> userList) {
+    /**
+     * 离职员工及其离职时间
+     *
+     * @param userList
+     * @return
+     */
+    private Map<Integer, String> getEmployeeLeaveWorkMap(List<SysUserInfoDetail> userList) {
         Map<Integer, String> result = new HashMap<>(16);
         if (StringHelper.isNotEmpty(userList)) {
             userList.forEach(employee->{
+                Byte workStatus = employee.getWorkStatus();
                 String leaveTime = employee.getLeaveTime();
-                if (StringHelper.isNotEmpty(leaveTime)) {
+                if (workStatus.intValue()==2 && StringHelper.isNotEmpty(leaveTime)) {
                     result.put(employee.getUserId(), leaveTime);
                 }
             });
@@ -2660,6 +2670,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             }
             queryForm.setBetweenDate(startTime);
             queryForm.setAndDate(endTime);
+            cmpReplaceDate(queryForm);
         }
     }
 
@@ -2813,7 +2824,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     }
 
     /**
-     * 根据工作时长的分页查询考勤汇总明细
+     * 根据工作日时长的分页查询考勤汇总明细
      *
      * @param queryForm 查询参数
      * @return
@@ -2822,8 +2833,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Integer userId = queryForm.getUserId();
         Integer orgId = queryForm.getOrgId();
         setQueryFormDate(queryForm);
-        Date betweenDate = queryForm.getBetweenDate();
         Date andDate = queryForm.getAndDate();
+        Date betweenDate = queryForm.getBetweenDate();
         List<Date> dateList = DateUtil.getBetweenDate(betweenDate, andDate);
         int total = dateList.size();
         if (queryForm.getWhetherPage()) {
@@ -2831,6 +2842,9 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         }
         betweenDate = dateList.get(0);
         andDate = dateList.get(dateList.size()-1);
+        if (TIME_EPOCH.equals(betweenDate) || TIME_EPOCH.equals(andDate)) {
+            return new AttendancePunchPageInfoVO<>(new ArrayList<>());
+        }
         // 排班
         Map<Date, List<EmployeeScheduleVO>> employeeScheduleMap = getEmployeeScheduleMapGroupByDate(userId, orgId, betweenDate, andDate);
         // 打卡
@@ -3092,6 +3106,18 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         pageInfo.setPageSize(queryForm.getPageSize());
         pageInfo.setMinute(minute);
         return pageInfo;
+    }
+
+    private String findEmployeeLeaveTimeByUserId(Integer userId) {
+        SysUserInfoDetail employee = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(userId);
+        Byte workStatus = employee.getWorkStatus();
+        if (workStatus.intValue() == 2) {
+            String leaveTime = employee.getLeaveTime();
+            if (StringHelper.isNotEmpty(leaveTime)) {
+                return leaveTime;
+            }
+        }
+        return null;
     }
 
     /**
@@ -3818,8 +3844,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     public PageInfo<AttendanceUnpunchCountVO> statisticsPunchRecordByUnpunchCount(AttendanceStatisticsQueryForm queryForm) {
         Integer userId = queryForm.getUserId();
         Integer orgId = queryForm.getOrgId();
-        SysUserInfoDetail employee = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(userId);
-        String leaveTime = employee.getLeaveTime();
         setQueryFormDate(queryForm);
         Date betweenDate = queryForm.getBetweenDate();
         Date andDate = queryForm.getAndDate();
@@ -3843,10 +3867,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         List<AttendanceUnpunchCountVO> result = new ArrayList<>(masterRecordVOS.size());
         masterRecordVOS.forEach(vo->{
             Date date = vo.getPunchDate();
-            String dateStr = DateUtil.format(date,"yyyy-MM-dd");
-            if (StringHelper.isNotEmpty(leaveTime) && DateUtil.dateFieldDiff(leaveTime,dateStr)>0) {
-                return;
-            }
             AttendanceUnpunchCountVO unpunchCountVO = new AttendanceUnpunchCountVO();
             StringBuilder employeeScheduleName = new StringBuilder();
             List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleMap.get(date);
@@ -3883,6 +3903,31 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         });
         pageInfo.setList(result);
         return pageInfo;
+    }
+
+    /**
+     * 查询某个用户时，用户能否查询给定日期的，与离职日期比较并替换日期
+     *
+     * @param query
+     * @return
+     */
+    private void cmpReplaceDate(AttendanceStatisticsQueryForm query) {
+        Integer userId = query.getUserId();
+        if (!ObjectUtils.isEmpty(userId)) {
+            String leaveTime = findEmployeeLeaveTimeByUserId(userId);
+            if (StringHelper.isNotEmpty(leaveTime)) {
+                String sDate = DateUtil.format(query.getBetweenDate(), "yyyy-MM-dd");
+                String eDate = DateUtil.format(query.getAndDate(), "yyyy-MM-dd");
+                if (DateUtil.dateFieldDiff(leaveTime, sDate) > 0) {
+                    // 查询开始日期超出离职日期，则将查询范围日期替换成无用范围日期
+                    query.setBetweenDate(TIME_EPOCH);
+                    query.setAndDate(TIME_EPOCH);
+                } else if (DateUtil.dateFieldDiff(leaveTime, eDate) > 0) {
+                    // 查询结束日期超出离职日期，则替换结束日期为离职日期
+                    query.setAndDate(DateUtil.parse2Date(leaveTime));
+                }
+            }
+        }
     }
 
     /**

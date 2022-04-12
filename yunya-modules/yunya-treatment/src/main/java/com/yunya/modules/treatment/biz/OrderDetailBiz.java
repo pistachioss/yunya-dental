@@ -24,7 +24,6 @@ import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
 import com.yunya.feign.report.domain.vo.SpecialistProjectCompletedInfoVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.form.BillPrintInfoForm;
@@ -68,7 +67,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -929,7 +927,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         remoteClinicBaseServiceFeign.specialProjectAndGoalsList(
             query.getDateType(), dateRange, query.getOrgIds());
     if (StringHelper.isNotEmpty(specialistProjects)) {
-      List<OrganizationInfoDetail> orgs = getOrganizationList(Arrays.asList(query.getOrgIds()));
+      List<OrganizationInfoDetail> orgs = systemServiceFeign.findOrgInfoInIds(Arrays.asList(query.getOrgIds()));
       Set<String> tids = new HashSet<>();
       specialistProjects.forEach(
           vo -> {
@@ -1062,10 +1060,10 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         multiFindTariffCategoryFreePaymentAmount(query);
 
     // 门诊组织列表
-    List<OrganizationInfoDetail> orgList = getOrganizationList(query.getOrgIds());
+    List<OrganizationInfoDetail> orgs = multiFindOrganizationList(query.getOrgIds());
 
     // 项目的优惠合计和补入工作量
-    Future<List<ClinicTariffDiscountCouponVO>> discountFuture = multiFindTariffCategoryDiscountAmount(query);
+    List<ClinicTariffDiscountCouponVO> discounts = findTariffCategoryDiscountAmount(query);
 
     // 组装数据并排序
     List<CategoryInfoIncomeVO> list =
@@ -1073,8 +1071,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             tariffFuture.get(),
             originalFuture.get(),
             freePaymentFuture.get(),
-            discountFuture.get(),
-            orgList);
+            discounts,
+            orgs);
     return list;
   }
 
@@ -1084,21 +1082,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return
    * @param orgIds
    */
-  private List<OrganizationInfoDetail> getOrganizationList(Collection<Integer> orgIds) {
-    List<OrganizationInfoDetail> orgInfos =
-        redisUtils.getJSONArray(RedisConstants.REDIS_KEY_ORG_LIST, OrganizationInfoDetail.class);
-    if (StringHelper.isEmpty(orgInfos)) {
-      OrganizationModel model = new OrganizationModel();
-      model.setWhetherPage(false);
-      model.setTypes(new Byte[] {2});
-      orgInfos = systemServiceFeign.findOrgInfoList(model);
-      redisUtils.set(RedisConstants.REDIS_KEY_ORG_LIST, orgInfos);
-    }
-    if (StringHelper.isNotEmpty(orgInfos)) {
-      orgInfos =
-          orgInfos.stream().filter(vo -> orgIds.contains(vo.getId())).collect(Collectors.toList());
-    }
-    return orgInfos;
+  private List<OrganizationInfoDetail> multiFindOrganizationList(List<Integer> orgIds) {
+    return systemServiceFeign.findOrgInfoInIds(orgIds);
   }
 
   /**
@@ -1313,18 +1298,15 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param query
    * @return
    */
-  private Future<List<ClinicTariffDiscountCouponVO>> multiFindTariffCategoryDiscountAmount(
+  private List<ClinicTariffDiscountCouponVO> findTariffCategoryDiscountAmount(
           CategoryIncomeQuery query) {
-    RequestContextHolder.setRequestAttributes(RequestContextHolder.getRequestAttributes(), true);
-    return executorService.submit(()->{
-      List<Integer> orderRecordIds = billRecordBiz.selectRemoveBillAdjustDiscountOrderIds(query);
-      if (StringHelper.isNotEmpty(orderRecordIds)) {
-        DiscountCouponQuery queryForm = new DiscountCouponQuery();
-        queryForm.setOrderRecordIds(orderRecordIds);
-        return discountFeign.findClinicTariffCategoryDiscountCoupon(queryForm);
-      }
-      return new ArrayList();
-    });
+    List<Integer> orderRecordIds = billRecordBiz.selectRemoveBillAdjustDiscountOrderIds(query);
+    if (StringHelper.isNotEmpty(orderRecordIds)) {
+      DiscountCouponQuery queryForm = new DiscountCouponQuery();
+      queryForm.setOrderRecordIds(orderRecordIds);
+      return discountFeign.findClinicTariffCategoryDiscountCoupon(queryForm);
+    }
+    return new ArrayList();
   }
 
   /**

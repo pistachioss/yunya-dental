@@ -1,6 +1,7 @@
 package com.yunya.feign.emr.domain.model;
 
 import com.yunya.feign.treatment_other.domain.vo.XUploadFileVO;
+import com.yunya.framework.common.utils.DateUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -40,4 +41,8 @@ public class MedicalPictureRecordModel implements Serializable {
 
     @ApiModelProperty("照片列表")
     private List<XUploadFileVO> files;
+
+    public void setName(String name) {
+        this.name = DateUtil.format(DateUtil.parse2Date(name));
+    }
 }
