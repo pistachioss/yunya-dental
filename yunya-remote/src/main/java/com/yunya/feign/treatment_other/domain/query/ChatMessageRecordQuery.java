@@ -27,4 +27,8 @@ public class ChatMessageRecordQuery extends PageQuery implements Serializable {
     /** 接收者id*/
     @ApiModelProperty("接收者id")
     private Integer receiveId;
+
+    /** 是否已读*/
+    @ApiModelProperty("是否已读")
+    private Boolean hadRead;
 }

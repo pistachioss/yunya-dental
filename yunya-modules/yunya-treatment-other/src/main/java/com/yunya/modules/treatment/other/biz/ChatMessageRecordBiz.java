@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment_other.domain.form.ChatMessageBody;
 import com.yunya.feign.treatment_other.domain.query.ChatMessageRecordQuery;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment_other.ChatMessageRecord;
 import com.yunya.modules.treatment.other.mapper.ChatMessageRecordMapper;
 import org.apache.commons.lang3.ObjectUtils;
@@ -13,8 +14,7 @@ import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -78,5 +78,24 @@ public class ChatMessageRecordBiz extends BaseBiz<ChatMessageRecordMapper, ChatM
             c.andEqualTo("msgCode", message.getMsgCode());
             mapper.updateByExampleSelective(entity, example);
         });
+    }
+
+    public Map<Integer, List<ChatMessageBody>> findChatMessageUnReadHisotry(ChatMessageBody message) {
+        Map<Integer, List<ChatMessageBody>> result = new LinkedHashMap<>(16);
+        ChatMessageRecordQuery query = new ChatMessageRecordQuery();
+        query.setWhetherPage(false);
+        query.setReceiveId(message.getReceiveId());
+        List<ChatMessageBody> list = findChatMessageHisotry(query).getList();
+        if (StringHelper.isNotEmpty(list)) {
+            list.forEach(vo->{
+                Integer sendId = vo.getSendId();
+                List<ChatMessageBody> messages = result.get(sendId);
+                if (StringHelper.isEmpty(messages)) {
+                    messages = new ArrayList<>();
+                }
+                messages.add(vo);
+            });
+        }
+        return result;
     }
 }
