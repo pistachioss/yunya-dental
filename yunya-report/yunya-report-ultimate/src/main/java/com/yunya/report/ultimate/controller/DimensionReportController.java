@@ -507,4 +507,34 @@ public class DimensionReportController {
         dimesionReportBiz.cardCouponUsedStatisticsDetailExport(query, response);
         return ResponseUtil.success(null);
     }
+
+    /**
+     * 根据条件查询渠道来源患者消费数据
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-渠道来源患者消费数据")
+    @PostMapping(value = "/patient/originAndConsumption/list", name = "公司端报表-报表统计-运营报表-渠道来源患者消费数据")
+    public ResponseResult<PageInfo<CardCouponUsedDetailVO>> findPatientOriginAndConsumption(
+            @RequestBody @Validated CardCouponUsedDetailQueryForm query) throws Exception {
+        PageInfo<CardCouponUsedDetailVO> pageInfo = dimesionReportBiz.cardCouponUsedStatisticsDetail(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件导出渠道来源患者消费数据
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-渠道来源患者消费数据导出")
+    @PostMapping(value = "/patient/originAndConsumption/list/export", name = "公司端报表-报表统计-运营报表-渠道来源患者消费数据导出")
+    public ResponseResult<T> exportPatientOriginAndConsumption(
+            HttpServletResponse response, @RequestBody @Validated CardCouponUsedDetailQueryForm query)
+            throws Exception {
+        dimesionReportBiz.cardCouponUsedStatisticsDetailExport(query, response);
+        return ResponseUtil.success(null);
+    }
+
 }
