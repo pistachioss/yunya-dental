@@ -521,9 +521,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                     // 上班推送（去除休息班次和按天请假）
                     EmployeePushForm employeePushForm = new EmployeePushForm();
                     // 组装
-                    Set<Integer> emp_ids = new HashSet<>();
-                    emp_ids.add(push.getUserId());
-                    employeePushForm.setEmpId(emp_ids);
+                    employeePushForm.setEmpId(Arrays.asList(push.getUserId()));
                     employeePushForm.setIsSchedule(true);
                     Date dt = push.getPunchDate();
                     dt.setHours(push.getStartTime().getHours());
@@ -548,14 +546,17 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
 //                    System.out.println("value:"+entry.getValue());
                     List<String> reg_ids = new ArrayList<>();
                     List<Integer> ids = new ArrayList<>();
+                    List<Integer> empIds = new ArrayList<>();
                     schetimes.getValue().forEach(push -> {
                         System.out.println("key:"+push.getUserList());
                         reg_ids.addAll(push.getUserList());
                         ids.addAll(push.getIds());
+                        empIds.addAll(push.getEmpId());
                     });
                     EmployeePushForm employeePushForm = schetimes.getValue().get(0);
                     employeePushForm.setUserList(reg_ids);
                     employeePushForm.setIds(ids);
+                    employeePushForm.setEmpId(empIds);
                     empPushMsgBiz.pushMessage(employeePushForm, ATTENDANCE_PUNCH_HINT);
                 }
             }

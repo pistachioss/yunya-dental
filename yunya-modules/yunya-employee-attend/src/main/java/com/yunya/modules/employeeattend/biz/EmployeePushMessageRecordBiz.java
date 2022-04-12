@@ -11,14 +11,12 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.MessagePushTypeEnum;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.models.employee_attend.EmployeePush;
 import com.yunya.models.employee_attend.EmployeePushMessageRecord;
 import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.mapper.EmployeePushMessageRecordMapper;
 import com.yunya.modules.employeeattend.util.JpushManager;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
@@ -44,26 +42,18 @@ import static com.yunya.framework.common.enums.MessagePushTypeEnum.*;
 public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRecordMapper, EmployeePushMessageRecord> {
     @Resource(name = "poolExecutor")
     private ExecutorService executorService;
-    @Autowired
-    private EmployeePushBiz employeePushBiz;
 
     public void crtMsgRecord(EmployeePushForm form, Integer pushType) {
         if (!ObjectUtils.isEmpty(form)) {
             executorService.submit(()->{
                 Date now = new Date(System.currentTimeMillis());
                 List<Integer> ids = form.getIds();
-                List<String> userDevices = form.getUserList();
+                List<Integer> empIds = form.getEmpId();
                 if (StringHelper.isNotEmpty(ids)) {
                     for (int i = 0; i < ids.size(); i++) {
-                        String regId = userDevices.get(i);
-                        EmployeePush push = employeePushBiz.findOneByRegId(regId);
-                        if (ObjectUtils.isEmpty(push)) {
-                            log.error("JPush device regId:{} was not binding!", regId);
-                            continue;
-                        }
                         EmployeePushMessageRecord entity = new EmployeePushMessageRecord();
                         entity.setSourceId(ids.get(i));
-                        entity.setUserId(push.getEmployeeId());
+                        entity.setUserId(empIds.get(i));
                         entity.setPushType(pushType);
                         entity.setContent(form.getContent());
                         entity.setTitle(form.getTitle());

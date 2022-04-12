@@ -151,7 +151,7 @@ class EmployeeAttendApplicationTests {
   public void testPush() {
     EmployeePushForm form = new EmployeePushForm();
     // 组装
-    Set<Integer> emp_ids = new HashSet<>();
+    List<Integer> emp_ids = new ArrayList<>();
     emp_ids.add(635);
     form.setEmpId(emp_ids);
     form.setShowName("xxx");
@@ -166,7 +166,7 @@ class EmployeeAttendApplicationTests {
   public void testPushSchedule() {
     EmployeePushForm form = new EmployeePushForm();
     // 组装
-    Set<Integer> emp_ids = new HashSet<>();
+    List<Integer> emp_ids = new ArrayList<>();
     emp_ids.add(635);
     form.setEmpId(emp_ids);
     form.setIsSchedule(true);

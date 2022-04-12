@@ -35,15 +35,11 @@ public class EmployeePushBiz extends BaseBiz<EmployeePushMapper, EmployeePush> {
   }
 
   public List<EmployeePush> query(Set<Integer> employee_ids) {
-    List<Integer> ids = new ArrayList<>();
-    if (employee_ids != null) {
-      employee_ids.forEach(
-          id -> {
-            ids.add(id);
-          });
-    }
-    log.info("ids: " + ids.toString());
-    return mapper.selectByEmployeeIds(ids);
+    return query(new ArrayList<>(employee_ids));
+  }
+
+  public List<EmployeePush> query(List<Integer> employeeIds) {
+    return mapper.selectByEmployeeIds(employeeIds);
   }
 
   /**
