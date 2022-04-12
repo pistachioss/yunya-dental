@@ -68,5 +68,9 @@ ribbono:
   MaxAutoRetriesNextServer: 1
   OkToRetryOnAllOperations: false
 
+netty:
+  port: 8081
+  path: /chat
+
 
 
