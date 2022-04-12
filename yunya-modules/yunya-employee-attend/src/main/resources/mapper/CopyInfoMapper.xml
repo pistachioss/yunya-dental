@@ -37,10 +37,10 @@
 
   <select id="selectAssociatedItemCount" resultType="com.yunya.feign.employee_attend.vo.AttendanceItemCountVO">
     SELECT
-      ifnull(sum(case when apply_type = 0 then 1 else 0 end),0) as leaveCount,
-      ifnull(sum(case when apply_type = 1 then 1 else 0 end),0) as workOverCount,
-      ifnull(sum(case when apply_type = 2 then 1 else 0 end),0) as fieldCount,
-      ${query.queryType} AS queryType
+    ifnull(sum(case when apply_type = 0 then 1 else 0 end),0) as leaveCount,
+    ifnull(sum(case when apply_type = 1 then 1 else 0 end),0) as workOverCount,
+    ifnull(sum(case when apply_type = 2 then 1 else 0 end),0) as fieldCount,
+    ${query.queryType} AS queryType
     FROM copy_info ci
     <where>
       AND ci.had_read = 0
@@ -52,46 +52,49 @@
 
   <select id="selectAttendanceItemCount" resultType="com.yunya.feign.employee_attend.vo.AttendanceItemCountVO">
     SELECT
-        sum(leaveCount) AS leaveCount,
-        sum(workOverCount) AS workOverCount,
-        sum(fieldCount) AS fieldCount,
-        ${query.queryType} AS queryType
+    sum(leaveCount) AS leaveCount,
+    sum(workOverCount) AS workOverCount,
+    sum(fieldCount) AS fieldCount,
+    ${query.queryType} AS queryType
     FROM (
-      SELECT
-        ifnull(COUNT(li.id),0) AS leaveCount,
-        0 AS workOverCount,
-        0 AS fieldCount
-      FROM leave_info li
-      LEFT JOIN approval_people ap ON li.approval_now_people_id = ap.id
-      <where>AND li.approval_status = 0
-        <if test="query.userId != null">
-            AND ap.user_id = #{query.userId}
-          </if>
-      </where>
-      UNION
-      SELECT
-        0 AS leaveCount,
-        0 AS workOverCount,
-        ifnull(COUNT(fi.id),0) AS fieldCount
-      FROM field_info fi
-      <where>
-          AND fi.approval_status = 0
-          <if test="query.userId != null">
-            AND fi.approval_people_id = #{query.userId}
-          </if>
-      </where>
-      UNION
-      SELECT
-        0 AS leaveCount,
-        ifnull(COUNT(t.id),0) AS workOverCount,
-        0 AS fieldCount
-      FROM work_overtime_info t
-      <where>
-          AND t.approval_status = 0
-          <if test="query.userId != null">
-            AND t.approval_people_id = #{query.userId}
-          </if>
-      </where>
+    SELECT
+    ifnull(COUNT(li.id),0) AS leaveCount,
+    0 AS workOverCount,
+    0 AS fieldCount
+    FROM leave_info li
+    LEFT JOIN approval_people ap ON li.approval_now_people_id = ap.id
+    <where>AND li.approval_status = 0
+      <if test="query.userId != null">
+        AND ap.user_id = #{query.userId}
+      </if>
+      AND TO_DAYS(NOW()) &lt;= TO_DAYS(li.start_time)
+    </where>
+    UNION
+    SELECT
+    0 AS leaveCount,
+    0 AS workOverCount,
+    ifnull(COUNT(fi.id),0) AS fieldCount
+    FROM field_info fi
+    <where>
+      AND fi.approval_status = 0
+      <if test="query.userId != null">
+        AND fi.approval_people_id = #{query.userId}
+      </if>
+      AND TO_DAYS(NOW()) &lt; TO_DAYS(fi.start_time)
+    </where>
+    UNION
+    SELECT
+    0 AS leaveCount,
+    ifnull(COUNT(t.id),0) AS workOverCount,
+    0 AS fieldCount
+    FROM work_overtime_info t
+    <where>
+      AND t.approval_status = 0
+      <if test="query.userId != null">
+        AND t.approval_people_id = #{query.userId}
+      </if>
+      AND TO_DAYS(NOW()) &lt; TO_DAYS(t.work_date)
+    </where>
     ) tmp
   </select>
 </mapper>
