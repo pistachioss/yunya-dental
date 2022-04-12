@@ -32,6 +32,9 @@
     FROM chat_message_record
     <where>
       AND mode = 0
+      <if test="query.hadRead != null">
+        AND had_read = #{query.hadRead}
+      </if>
       <if test="query.sendId">
         AND send_id = #{query.sendId}
       </if>
