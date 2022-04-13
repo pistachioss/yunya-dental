@@ -197,12 +197,14 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                             EmployeePushForm employeePushForm = new EmployeePushForm();
                             // 组装
                             List<Integer> emp_ids = new ArrayList<>();
+                            List<Integer> ids = new ArrayList<>();
                             leaveInfoForm.getCopyList().forEach(nn -> {
                                 emp_ids.add(nn);
+                                ids.add(leaveId);
                             });
                             employeePushForm.setEmpId(emp_ids);
                             employeePushForm.setShowName(showName);
-                            employeePushForm.setIds(Arrays.asList(leaveId));
+                            employeePushForm.setIds(ids);
                             employeePushForm.setOptId(userId);
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
@@ -351,12 +353,14 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                             EmployeePushForm employeePushForm = new EmployeePushForm();
                             // 组装
                             List<Integer> emp_ids = new ArrayList<>();
+                            List<Integer> ids = new ArrayList<>();
                             leaveInfoByEmForm.getCopyList().forEach(nn -> {
                                 emp_ids.add(nn);
+                                ids.add(leaveId);
                             });
                             employeePushForm.setEmpId(emp_ids);
                             employeePushForm.setShowName(showName);
-                            employeePushForm.setIds(Arrays.asList(leaveId));
+                            employeePushForm.setIds(ids);
                             employeePushForm.setOptId(userId);
                             List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                             employeePushFormList.forEach(el -> {
@@ -505,12 +509,16 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     EmployeePushForm employeePushForm = new EmployeePushForm();
                     // 组装
                     List<Integer> emp_ids = new ArrayList<>();
+                    List<Integer> ids = new ArrayList<>();
                     employeePushForm.setEmpId(emp_ids);
                     employeePushForm.setShowName(showName);
                     // 撤销
                     emp_ids.add(leaveInfo.getUserId());
+                    Integer leaveId = leaveInfoForm.getId();
+                    ids.add(leaveId);
                     Integer userid = approvalPeopleBiz.selectById(leaveInfo.getApprovalNowPeopleId()).getUserId();
                     emp_ids.add(userid);
+                    ids.add(leaveId);
                     ApprovalInfo approvalInfo = new ApprovalInfo();
                     approvalInfo.setLeaveId(leaveInfoForm.getId());
                     approvalInfo.setApprovalStatus(1);
@@ -519,10 +527,11 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     if(approvalInfoList!=null){
                         approvalInfoList.forEach(approvalInfo1 -> {
                             emp_ids.add(approvalInfo1.getApprovalPeopleId());
+                            ids.add(leaveId);
                         });
                     }
                     employeePushForm.setOptId(userId);
-                    employeePushForm.setIds(Arrays.asList(leaveInfoForm.getId()));
+                    employeePushForm.setIds(ids);
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         empPushMsgBiz.pushMessage(el, LEAVE_APPROVE_REVOKE);
