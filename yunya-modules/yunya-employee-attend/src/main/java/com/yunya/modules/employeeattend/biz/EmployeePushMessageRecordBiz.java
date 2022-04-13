@@ -118,9 +118,9 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
     public PageInfo<EmployeePushMessageRecordVO> findList(EmployeePushMessageRecordQueryForm query) {
         defaultQueryUser(query);
         String date = query.getPreDateTime();
-        if (StringHelper.isEmpty(date)) {
-            query.setPreDateTime(DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
-        }
+//        if (StringHelper.isEmpty(date)) {
+        query.setPreDateTime(DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+//        }
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }

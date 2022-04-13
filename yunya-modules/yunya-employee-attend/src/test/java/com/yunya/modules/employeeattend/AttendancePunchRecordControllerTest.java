@@ -152,7 +152,8 @@ public class AttendancePunchRecordControllerTest {
     @Test
     public void testPushMessageFind() {
         EmployeePushMessageRecordQueryForm query = new EmployeePushMessageRecordQueryForm();
-        query.setUserId(635);
+        query.setUserId(735);
+        query.setPreDateTime("2022-04-13");
         PageInfo<EmployeePushMessageRecordVO> data = employeePushMessageRecordController.findList(query).getData();
         System.out.println(JSONObject.toJSON(data));
     }
