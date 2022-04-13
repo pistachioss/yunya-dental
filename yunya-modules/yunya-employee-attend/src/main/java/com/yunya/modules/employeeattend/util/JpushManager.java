@@ -179,8 +179,6 @@ public class JpushManager {
       if (employeePushForm.getIsSchedule() == null) {
         employeePushForm.setIsSchedule(false);
       }
-      System.out.println("===============Jpush Send Param-employeePushForm： "+JSONObject.toJSON(employeePushForm));
-      System.out.println("===============Jpush Send Param-data: "+data);
       BaseResult result = JpushManager.getInstance()
           .send(
               employeePushForm.getUserList(),
