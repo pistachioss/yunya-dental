@@ -43,7 +43,13 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
     @Resource(name = "poolExecutor")
     private ExecutorService executorService;
 
-    public void crtMsgRecord(EmployeePushForm form, Integer pushType) {
+    /**
+     * 异步生成推送消息记录
+     *
+     * @param form
+     * @param pushType
+     */
+    public void asyncGeneratMsgRecord(EmployeePushForm form, Integer pushType) {
         if (!ObjectUtils.isEmpty(form)) {
             executorService.submit(()->{
                 Date now = new Date(System.currentTimeMillis());
@@ -105,7 +111,7 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
             pushSuccess = jPush.pushLeaveCancel(employeePushForm, code);
         }
         if (pushSuccess) {
-            crtMsgRecord(employeePushForm, code);
+            asyncGeneratMsgRecord(employeePushForm, code);
         }
     }
 

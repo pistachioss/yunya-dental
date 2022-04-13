@@ -423,10 +423,12 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     EmployeePushForm employeePushForm = new EmployeePushForm();
                     // 组装
                     List<Integer> emp_ids = new ArrayList<>();
+                    List<Integer> ids = new ArrayList<>();
                     employeePushForm.setEmpId(emp_ids);
                     employeePushForm.setShowName(showName);
                     // 撤销
                     emp_ids.add(fieldInfo.getUserId());
+                    ids.add(fieldInfo.getId());
 //                    Integer userid = approvalPeopleBiz.selectById(fieldInfo.getApprovalPeopleId()).getUserId();
                     // fix: bug3476
 //                    Integer userid = fieldInfo.getApprovalPeopleId();
@@ -435,9 +437,10 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     SysEmployee sysEmployee = remoteSystemServiceFeign.findSysUserByEmpId(empid);
                     if(sysEmployee !=null){
                         emp_ids.add(sysEmployee.getUserId());
+                        ids.add(fieldInfo.getId());
                     }
                     employeePushForm.setOptId(userId);
-                    employeePushForm.setIds(Arrays.asList(fieldInfo.getId()));
+                    employeePushForm.setIds(ids);
                     List<EmployeePushForm> employeePushFormList = employeePushBiz.makeEmployeePushForm(employeePushForm);
                     employeePushFormList.forEach(el -> {
                         empPushMsgBiz.pushMessage(el, FIELD_APPROVE_REVOKE);
