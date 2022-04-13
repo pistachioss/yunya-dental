@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 聊天消息体
@@ -60,22 +61,22 @@ public class ChatMessageBody implements Serializable {
     private String content;
 
     /**
-     * 类型 1 上线 2发消息
+     * 类型 1 上线 2发消息, 3-挂号提醒
      */
-    @ApiModelProperty("类型：1-上线, 2-发消息")
+    @ApiModelProperty("类型：1-上线, 2-发消息, 3-挂号提醒")
     private int type;
 
     /**
      * 发送时间
      */
     @ApiModelProperty("发送时间")
-    private Integer sendTime;
+    private Date sendTime = new Date(System.currentTimeMillis());
 
     /**
      * 读取消息的时间
      */
     @ApiModelProperty("读取消息的时间")
-    private Integer readTime;
+    private Date readTime;
 
     /**
      * 是否确认已读
