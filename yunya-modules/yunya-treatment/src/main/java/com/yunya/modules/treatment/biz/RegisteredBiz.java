@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
+import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
@@ -17,10 +18,7 @@ import com.yunya.feign.treatment.domain.form.ReferredRrportForm;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
 import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
-import com.yunya.feign.treatment.domain.vo.ReferredInfoVO;
-import com.yunya.feign.treatment.domain.vo.ReferredRrportVO;
-import com.yunya.feign.treatment.domain.vo.RegisteredVO;
-import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -29,6 +27,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
@@ -42,6 +41,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -87,6 +87,10 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
   @Autowired private BillRecordBiz billRecordBiz;
   /** 转诊记录 */
   @Autowired private ReferralRecordsInfoMapper referralRecordsInfoMapper;
+  /** 系统*/
+  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
+  /** 预约*/
+  @Autowired private RemoteAppointmentFeign remoteAppointmentFeign;
 
   /**
    * 新增患者挂号
@@ -762,5 +766,30 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
             "-",
             "转诊统计");
     excelUtil.exportExcel(response, relist, "转诊统计", fileName);
+  }
+
+  public RegisteredAppointVO findRegisteredOrAppointInfo(Integer registeredId) {
+    RegisteredAppointVO result = new RegisteredAppointVO();
+    Registered registered = mapper.selectByPrimaryKey(registeredId);
+    if (!ObjectUtils.isEmpty(registered)) {
+      result.setRegTime(registered.getRegTime());
+      PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(registered.getPatientId());
+      if (!ObjectUtils.isEmpty(patient)) {
+        result.setPatientName(patient.getName());
+      }
+      SysEmployee regDentist = remoteSystemServiceFeign.findSysEmployeeById(registered.getDentistId());
+      if (!ObjectUtils.isEmpty(regDentist)) {
+        result.setRegDentistName(regDentist.getName());
+      }
+      Integer appointmentId = registered.getAppointmentId();
+      if (!ObjectUtils.isEmpty(appointmentId)) {
+        AppointmentVo appoint = remoteAppointmentFeign.findAppointmentDetailById(appointmentId);
+        if (!ObjectUtils.isEmpty(appoint)) {
+          result.setAppointDentistName(appoint.getDentistName());
+          result.setAppointTime(appoint.getAppointTime());
+        }
+      }
+    }
+    return result;
   }
 }
