@@ -16,10 +16,7 @@ import com.yunya.middletable.dao.treatment.OrderDetailMapper;
 import com.yunya.middletable.dao.treatment.OrderDetailPayRecordMapper;
 import com.yunya.middletable.dao.treatment.OrderRecordMapper;
 import com.yunya.middletable.service.credits_shop.BillCreditsCallback;
-import com.yunya.models.report.BaseBill;
-import com.yunya.models.report.BaseBillDetail;
-import com.yunya.models.report.BasePatientOriginLog;
-import com.yunya.models.report.CreditsShop;
+import com.yunya.models.report.*;
 import com.yunya.models.treatment.BillRecord;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderDetailPayRecord;
@@ -39,6 +36,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static com.yunya.framework.common.constant.BusinessConstants.ADMIN_ID;
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 
 /**
@@ -119,6 +117,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           baseBillDetailMapper.deleteByBillId(dataId);
           // 保存账单明细
           saveBaseBillDetail(dataId);
+          // 推荐积分
+          addPatientIntegral(bill.getPatientId());
           // 回调收费增加积分
           log.info("回调积分baseBillPayCallback");
           baseBillPayBiz.addCallBack(bill.getBillId(), baseBillPayCallback);
@@ -134,10 +134,6 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         }
       default:
         statisticsEmployeeWorkload(bill, dataId);
-        if (!ObjectUtils.isEmpty(bill) && !ObjectUtils.isEmpty(bill.getBillDate())) {
-          // 推荐积分
-          addPatientIntegral(bill.getPatientId());
-        }
         break;
     }
   }
@@ -173,10 +169,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
 
   /** 判断是否首次下单，若是则推荐者增加500积分 */
   public void addPatientIntegral(Integer patientId) {
-    Integer count = mapper.selectCountByPatientId(patientId);
     CreditsShop addPatientIntegral = new CreditsShop();
-    log.info("推荐患者新加积分: count = {}",count);
-    if (count == 1) {
+    if (isPatientFirstBillPay(patientId)) {
       BasePatientOriginLog basePatientOrigin = new BasePatientOriginLog();
       basePatientOrigin.setPatientId(patientId);
       basePatientOrigin.setOriginType(2);
@@ -209,6 +203,30 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         creditsShopMapper.insertSelective(addPatientIntegral);
       }
     }
+  }
+
+  private Boolean isPatientFirstBillPay(Integer patientId) {
+    Example example = new Example(BaseBill.class);
+    Example.Criteria c = example.createCriteria();
+    c.andEqualTo("patientId", patientId);
+    c.andIsNotNull("billDate");
+    List<BaseBill> bills = mapper.selectByExample(example);
+    if (StringHelper.isNotEmpty(bills) && bills.size()==1) {
+      BaseBill bill = bills.get(0);
+      // 自动收费账单
+      if (bill.getReceivedAmount().compareTo(BigDecimal.ZERO)==0
+              && bill.getBillerId() == ADMIN_ID) {
+        return true;
+      } else {
+        BaseBillPay query = new BaseBillPay();
+        query.setBillId(bill.getBillId());
+        List<BaseBillPay> billPays = baseBillPayBiz.selectList(query);
+        if (StringHelper.isNotEmpty(billPays) && billPays.size()==1) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
