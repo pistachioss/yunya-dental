@@ -119,6 +119,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           baseBillDetailMapper.deleteByBillId(dataId);
           // 保存账单明细
           saveBaseBillDetail(dataId);
+          // 回调收费增加积分
+          log.info("回调积分baseBillPayCallback");
+          baseBillPayBiz.addCallBack(bill.getBillId(), baseBillPayCallback);
           log.info("消息dataId = {}",dataId);
           // 做接口幂等性校验
           String key = String.format("msgId:%d", dataId);
@@ -126,16 +129,15 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
             return;
           }
           redisUtils.set(key,"",15, TimeUnit.SECONDS);
-          // 推荐积分
-          addPatientIntegral(bill.getPatientId());
-          // 回调收费增加积分
-          log.info("回调积分baseBillPayCallback");
-          baseBillPayBiz.addCallBack(bill.getBillId(),baseBillPayCallback);
         } else {
           baseBillDetailMapper.deleteByBillId(dataId);
         }
       default:
         statisticsEmployeeWorkload(bill, dataId);
+        if (!ObjectUtils.isEmpty(bill) && !ObjectUtils.isEmpty(bill.getBillDate())) {
+          // 推荐积分
+          addPatientIntegral(bill.getPatientId());
+        }
         break;
     }
   }
@@ -174,7 +176,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     Integer count = mapper.selectCountByPatientId(patientId);
     CreditsShop addPatientIntegral = new CreditsShop();
     log.info("推荐患者新加积分: count = {}",count);
-    if (count > 0) {
+    if (count == 1) {
       BasePatientOriginLog basePatientOrigin = new BasePatientOriginLog();
       basePatientOrigin.setPatientId(patientId);
       basePatientOrigin.setOriginType(2);
