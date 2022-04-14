@@ -183,4 +183,12 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
   List<VipRateVo> getVipRate();
 
   List<PatientManageVo> selectPatientInfoList(@Param("query") PatientDimensionQueryForm queryForm);
+
+  /**
+   * 渠道来源消费报表
+   *
+   * @param query
+   * @return
+   */
+  List<PatientOriginConsumptionVO> selectPatientOriginConsumption(@Param("query") PatientOriginConsumptionQuery query);
 }
