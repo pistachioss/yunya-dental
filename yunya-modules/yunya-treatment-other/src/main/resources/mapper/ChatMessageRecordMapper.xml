@@ -32,6 +32,9 @@
     FROM chat_message_record
     <where>
       AND mode = 0
+      <if test="query.queryDate!=null and query.queryDate!=''">
+        AND DATE_FORMAT(crt_time, '%Y-%m-%d') = #{query.queryDate}
+      </if>
       <if test="query.hadRead != null">
         AND had_read = #{query.hadRead}
       </if>
