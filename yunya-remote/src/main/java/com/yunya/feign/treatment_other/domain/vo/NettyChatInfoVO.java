@@ -25,9 +25,9 @@ import java.io.Serializable;
 public class NettyChatInfoVO implements Serializable {
     /** netty聊天服务器ip*/
     @ApiModelProperty("netty聊天服务器ip")
-    private String ip;
+    private String protocol;
 
-    /** netty聊天服务器端口*/
-    @ApiModelProperty("netty聊天服务器端口")
-    private Integer port;
+    /** 聊天连接路径*/
+    @ApiModelProperty("聊天连接路径")
+    private String path;
 }

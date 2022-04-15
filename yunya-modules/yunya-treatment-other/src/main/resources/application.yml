@@ -72,4 +72,4 @@ ribbono:
 netty:
   port: 8081
   path: /chat
-  ip: http://192.168.31.95/api/treatment-other
+  protocol: ws://192.168.31.95/api/treatment-other/

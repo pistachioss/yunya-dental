@@ -30,4 +30,4 @@ logging:
 
 # netty配置
 netty:
-  ip: http://test.ivy2.yunya365.com/api/treatment-other
+  protocol: ws://test.ivy2.yunya365.com/api/treatment-other/
