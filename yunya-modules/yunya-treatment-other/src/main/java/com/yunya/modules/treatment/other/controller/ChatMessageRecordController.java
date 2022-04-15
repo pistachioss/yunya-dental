@@ -13,10 +13,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 简介：聊天消息记录控制层
@@ -59,7 +56,7 @@ public class ChatMessageRecordController {
      *
      * @return
      */
-    @RequestMapping("/info")
+    @GetMapping("/nettyServer/info")
     @ApiOperation("获取Netty聊天服务器信息")
     public ResponseResult<NettyChatInfoVO> findInfo() {
         NettyChatInfoVO info = new NettyChatInfoVO(ip, port);
