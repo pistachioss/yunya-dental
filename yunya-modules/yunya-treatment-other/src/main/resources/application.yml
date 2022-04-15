@@ -68,9 +68,8 @@ ribbono:
   MaxAutoRetriesNextServer: 1
   OkToRetryOnAllOperations: false
 
+# netty配置
 netty:
   port: 8081
   path: /chat
-
-
-
+  ip: http://192.168.31.95/api/treatment-other
