@@ -28,11 +28,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/chatMessage")
 public class ChatMessageRecordController {
     /** netty服务器ip*/
-    @Value("${netty.ip}")
-    private String ip;
+    @Value("${netty.protocol}")
+    private String protocol;
     /** netty服务器端口*/
     @Value("${netty.port}")
     private Integer port;
+    /** 聊天连接路径*/
+    @Value("${netty.path}")
+    private String path;
 
     @Autowired
     private ChatMessageRecordBiz chatMessageRecordBiz;
@@ -59,7 +62,7 @@ public class ChatMessageRecordController {
     @GetMapping("/nettyServer/info")
     @ApiOperation("获取Netty聊天服务器信息")
     public ResponseResult<NettyChatInfoVO> findInfo() {
-        NettyChatInfoVO info = new NettyChatInfoVO(ip, port);
+        NettyChatInfoVO info = new NettyChatInfoVO(protocol + port, path);
         return ResponseUtil.success(info);
     }
 }
