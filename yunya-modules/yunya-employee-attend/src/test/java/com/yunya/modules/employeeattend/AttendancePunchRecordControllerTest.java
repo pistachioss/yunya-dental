@@ -161,7 +161,7 @@ public class AttendancePunchRecordControllerTest {
     @Test
     public void testFindCountUnRead() {
         EmployeePushMessageRecordQueryForm query = new EmployeePushMessageRecordQueryForm();
-        query.setUserId(635);
+        query.setUserId(742);
         EmpPushMsgUnReadCountVO data = employeePushMessageRecordController.findCountUnRead(query).getData();
         System.out.println(JSONObject.toJSON(data));
     }
