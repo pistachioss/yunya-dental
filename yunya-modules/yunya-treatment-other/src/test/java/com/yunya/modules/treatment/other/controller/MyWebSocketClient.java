@@ -1,62 +1,57 @@
-package com.yunya.modules.treatment.other.controller;
+package com.gds.restapi.sysMng.msg.websocket;
+
+/**
+ * @author zhangfq
+ * @version 1.0
+ * Description
+ * <p> 中航工业光电所
+ * @Date 2021-04-13 15:00
+ */
 
 import com.alibaba.fastjson.JSONObject;
-import org.java_websocket.WebSocket;
-import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.handshake.ServerHandshake;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import javax.websocket.*;
 import java.net.URI;
 
 /**
- *  websocket客户端监听类
- * @author 。
+ * Created by Administrator on 2016/4/17.
  */
-public class MyWebSocketClient extends WebSocketClient {
-
-    private static Logger logger = LoggerFactory.getLogger(MyWebSocketClient.class);
-
-    public MyWebSocketClient(URI serverUri) {
-        super(serverUri);
+@ClientEndpoint
+public class MyWebSocketClient {
+    @OnOpen
+    public void onOpen(Session session) {
+        System.out.println("连接成功 ... ");
     }
 
-    @Override
-    public void onOpen(ServerHandshake serverHandshake) {
-        logger.info(">>>>>>>>>>>websocket open");
+    @OnMessage
+    public void onMessage(String message) {
+        System.out.println("收到服务端的消息: " + message);
     }
 
-    @Override
-    public void onMessage(String s) {
-        logger.info(">>>>>>>>>> websocket message");
-       
+    @OnClose
+    public void onClose(Session session) {
+        System.out.println("连接关闭 ... ");
     }
 
-    @Override
-    public void onClose(int i, String s, boolean b) {
-        logger.info(">>>>>>>>>>>websocket close");
+    @OnError
+    public void onError(Throwable t) {
+        t.printStackTrace();
     }
 
-    @Override
-    public void onError(Exception e) {
-        logger.error(">>>>>>>>>websocket error {}",e);
-    }
+    public static void main(String[] args)throws Exception{
+        WebSocketContainer connection = ContainerProvider.getWebSocketContainer();
+        String uri ="ws://192.168.31.234:8765/api/treatment-netty/websocket/chat";
+        System.out.println("Connecting to "+ uri);
 
-
-    public static void main(String[] args) {
-        try {
-            MyWebSocketClient myClient = new MyWebSocketClient(new URI("ws://192.168.31.234:8765/api/treatment-netty/websocket/chat"));
-            myClient.connect();
-            while (!myClient.getReadyState().equals(WebSocket.READYSTATE.OPEN)) {
-                System.out.println("连接中。。。");
-                Thread.sleep(1000);
-            }
-            // 连接成功往websocket服务端发送数据
-            JSONObject object = new JSONObject();
-            object.put("message", "success连接");
-            myClient.send(object.toJSONString());
-        } catch (Exception e) {
-            e.printStackTrace();
+        Session session = connection.connectToServer(MyWebSocketClient.class, URI.create(uri));
+        while (!session.isOpen()) {
+            System.out.println("连接中。。。");
+            Thread.sleep(3000);
         }
+        JSONObject object = new JSONObject();
+        object.put("message", "success连接");
+        session.getBasicRemote().sendText(object.toJSONString());
+        Thread.sleep(1000);
+        session.close();
     }
 }

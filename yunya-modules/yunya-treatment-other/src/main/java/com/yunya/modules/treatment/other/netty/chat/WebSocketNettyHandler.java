@@ -84,7 +84,7 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
      */
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame wsMessage) throws Exception {
-        log.info("接收到客户端发来的消息: " , wsMessage.text());
+        log.info("接收到客户端发来的消息: {}", wsMessage.text());
         ChatMessageBody message = JSON.parseObject(wsMessage.text(), ChatMessageBody.class);
         // 应答
         ackMessageRead(message);
