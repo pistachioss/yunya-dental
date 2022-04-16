@@ -8,6 +8,7 @@ import com.yunya.feign.treatment.domain.model.RegisteredModel;
 import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
 import com.yunya.feign.treatment.domain.vo.ReferredInfoVO;
 import com.yunya.feign.treatment.domain.vo.ReferredRrportVO;
+import com.yunya.feign.treatment.domain.vo.RegisteredAppointVO;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
@@ -72,6 +73,19 @@ public class RegisteredController {
   @PostMapping("/referred")
   public ResponseResult referred(@RequestBody @Validated ReferredForm referredForm) {
     return ResponseUtil.success(registeredBiz.referred(referredForm));
+  }
+
+  /**
+   * 根据挂号id获取挂号预约详情
+   *
+   * @param
+   * @return
+   */
+  @ApiOperation("根据挂号id获取挂号预约详情")
+  @GetMapping("/info/{registeredId}")
+  public ResponseResult<RegisteredAppointVO> findRegisteredOrAppointInfo(@PathVariable(value = "registeredId") Integer registeredId) {
+    RegisteredAppointVO result = registeredBiz.findRegisteredOrAppointInfo(registeredId);
+    return ResponseUtil.success(result);
   }
 
   /**

@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.other.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment_other.domain.form.ChatMessageBody;
 import com.yunya.feign.treatment_other.domain.query.ChatMessageRecordQuery;
+import com.yunya.feign.treatment_other.domain.vo.NettyChatInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -10,11 +11,9 @@ import com.yunya.modules.treatment.other.biz.ChatMessageRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 简介：聊天消息记录控制层
@@ -28,6 +27,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/chatMessage")
 public class ChatMessageRecordController {
+    /** netty服务器ip*/
+    @Value("${netty.protocol}")
+    private String protocol;
+    /** netty服务器端口*/
+    @Value("${netty.port}")
+    private Integer port;
+    /** 聊天连接路径*/
+    @Value("${netty.path}")
+    private String path;
 
     @Autowired
     private ChatMessageRecordBiz chatMessageRecordBiz;
@@ -44,5 +52,17 @@ public class ChatMessageRecordController {
     public ResponseResult<PageInfo<ChatMessageBody>> findChatMessageHisotry(@Validated @RequestBody ChatMessageRecordQuery query) {
         PageInfo<ChatMessageBody> pageInfo = chatMessageRecordBiz.findChatMessageHisotry(query);
         return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 获取Netty聊天服务器信息
+     *
+     * @return
+     */
+    @GetMapping("/nettyServer/info")
+    @ApiOperation("获取Netty聊天服务器信息")
+    public ResponseResult<NettyChatInfoVO> findInfo() {
+        NettyChatInfoVO info = new NettyChatInfoVO(protocol + port, path);
+        return ResponseUtil.success(info);
     }
 }

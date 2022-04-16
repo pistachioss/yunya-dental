@@ -1,8 +1,10 @@
 package com.yunya.modules.treatment.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
 import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
+import com.yunya.feign.treatment.domain.vo.RegisteredAppointVO;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.treatment.controller.web.RegisteredController;
@@ -49,5 +51,11 @@ public class RegisteredControllerTest {
     form.setWhetherPage(false);
     ResponseResult<PageInfo<WaitingPatientInfoVO>> list = registeredController.findList(form);
     System.out.println(list);
+  }
+
+  @Test
+  public void testFindRegistered() {
+    RegisteredAppointVO reg = registeredController.findRegisteredOrAppointInfo(3).getData();
+    System.out.println(JSONObject.toJSON(reg));
   }
 }

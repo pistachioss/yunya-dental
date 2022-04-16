@@ -27,3 +27,7 @@ logging:
     tk.mybatis: INFO
     com.yunya: INFO
     com.yunya365: INFO
+
+# netty配置
+netty:
+  protocol: ws://test.ivy2.yunya365.com/api/treatment-other/
