@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.other.netty;
 
+import com.yunya.modules.treatment.other.config.WsProperties;
 import com.yunya.modules.treatment.other.netty.chat.WebSocketNettyHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -8,9 +9,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
 
@@ -19,11 +20,12 @@ import javax.annotation.PostConstruct;
  * 实现DisposableBean 在容器销毁前会调用destroy 方法进行线程组的关闭
  * @author Administrator
  */
+@Slf4j
 @Data
 public class WebSocketNettyServer implements DisposableBean {
-
-    @Value("${netty.port}")
-    private int port;
+    /** 自定义配置*/
+    @Autowired
+    private WsProperties wsProperties;
 
     /**
      * 自定义入站规则
@@ -47,7 +49,6 @@ public class WebSocketNettyServer implements DisposableBean {
      */
     private EventLoopGroup work;
 
-
     /**
      * 自定义启动方法
      */
@@ -67,12 +68,12 @@ public class WebSocketNettyServer implements DisposableBean {
         ChannelFuture sync = null;
         try {
             // 绑定netty的启动端口
-            sync = serverBootstrap.bind(port).sync();
+            sync = serverBootstrap.bind(wsProperties.getPort()).sync();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error("Netty Server Start failure!", e);
             close();
         }
-        System.out.println("netty服务器启动成功--端口: " + port);
+        log.info("========================= Netty服务器启动成功--端口: {} =========================", wsProperties.getPort());
         sync.channel().closeFuture();
     }
 
@@ -83,6 +84,7 @@ public class WebSocketNettyServer implements DisposableBean {
     @Override
     public void destroy() throws Exception {
         close();
+        log.info("Netty Server closed!");
     }
 
     /**

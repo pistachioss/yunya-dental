@@ -215,6 +215,17 @@ spring:
             - StripPrefix=1
           metadata:
             title: "扩展服务"
+
+        - id: yunya-treatment-netty
+          uri: lb:ws://yunya-treatment-netty
+          order: 8081
+          predicates:
+            - Path=/api/treatment-netty/websocket/**
+          filters:
+            - StripPrefix=2
+#            - RemoveRequestHeader=Sec-WebSocket-Protocol #移除请求头
+          metadata:
+            title: "就诊扩展服务"
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848

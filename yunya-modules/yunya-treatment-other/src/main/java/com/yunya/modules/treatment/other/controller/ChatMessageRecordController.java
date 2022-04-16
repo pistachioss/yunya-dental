@@ -8,10 +8,10 @@ import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.other.biz.ChatMessageRecordBiz;
+import com.yunya.modules.treatment.other.config.WsProperties;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,14 +28,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/chatMessage")
 public class ChatMessageRecordController {
     /** netty服务器ip*/
-    @Value("${netty.protocol}")
-    private String protocol;
-    /** netty服务器端口*/
-    @Value("${netty.port}")
-    private Integer port;
-    /** 聊天连接路径*/
-    @Value("${netty.path}")
-    private String path;
+    @Autowired
+    private WsProperties wsProperties;
 
     @Autowired
     private ChatMessageRecordBiz chatMessageRecordBiz;
@@ -62,7 +56,7 @@ public class ChatMessageRecordController {
     @GetMapping("/nettyServer/info")
     @ApiOperation("获取Netty聊天服务器信息")
     public ResponseResult<NettyChatInfoVO> findInfo() {
-        NettyChatInfoVO info = new NettyChatInfoVO(protocol + port, path);
+        NettyChatInfoVO info = new NettyChatInfoVO(wsProperties.getProtocol(), wsProperties.getPath());
         return ResponseUtil.success(info);
     }
 }
