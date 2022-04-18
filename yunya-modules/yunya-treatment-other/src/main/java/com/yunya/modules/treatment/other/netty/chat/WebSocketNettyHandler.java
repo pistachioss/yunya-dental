@@ -4,7 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.yunya.feign.treatment_other.domain.form.ChatMessageBody;
 import com.yunya.framework.common.utils.UUIDUtils;
 import com.yunya.modules.treatment.other.biz.ChatMessageRecordBiz;
-import io.netty.channel.*;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelId;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -62,6 +65,19 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
         log.info("与客户端: {}断开连接", ctx.channel().remoteAddress().toString());
     }
 
+    /**
+     * 处理与前端的心跳
+     *
+     * @param ctx
+     * @param message
+     */
+    public void clientPingPong(ChannelHandlerContext ctx,  ChatMessageBody message) {
+        int type = message.getType();
+        if (type == 0) {
+            log.info("收到心跳包, {}", message);
+            return;
+        }
+    }
 
     /**
      * 通道连接事件（channel连接就绪状态以后）
@@ -84,8 +100,9 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
      */
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame wsMessage) throws Exception {
-        log.info("接收到客户端发来的消息: {}", wsMessage.text());
         ChatMessageBody message = JSON.parseObject(wsMessage.text(), ChatMessageBody.class);
+        clientPingPong(ctx, message);
+        log.info("接收到客户端发来的消息: {}", wsMessage.text());
         // 应答
         ackMessageRead(message);
         // 用户上线

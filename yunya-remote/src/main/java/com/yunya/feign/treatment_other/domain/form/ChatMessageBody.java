@@ -61,9 +61,9 @@ public class ChatMessageBody implements Serializable {
     private String content;
 
     /**
-     * 类型 1 上线 2发消息, 3-挂号提醒
+     * 类型:0-心跳, 1-上线, 2-发消息, 3-挂号提醒
      */
-    @ApiModelProperty("类型：1-上线, 2-发消息, 3-挂号提醒")
+    @ApiModelProperty("类型：0-心跳, 1-上线, 2-发消息, 3-挂号提醒")
     private int type;
 
     /**
