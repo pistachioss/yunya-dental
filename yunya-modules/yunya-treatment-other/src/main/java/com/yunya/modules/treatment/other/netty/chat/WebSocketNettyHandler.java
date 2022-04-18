@@ -111,7 +111,7 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
 //                write2flush(handlerContext, message);
 //            }
             // 查询未读消息列表
-            Map<Integer, List<ChatMessageBody>> unReadHisotry = chatMessageRecordBiz.findChatMessageUnReadHisotry(message);
+            Map<String, List<ChatMessageBody>> unReadHisotry = chatMessageRecordBiz.findChatMessageUnReadHisotry(message);
             write2flush(ctx, unReadHisotry);
             log.info("用户: {}上线了", message.getSendId());
             return;

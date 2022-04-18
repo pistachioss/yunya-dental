@@ -21,7 +21,9 @@ import java.util.List;
 /**
  * 简介：症状设置
  *
- * @author: chenlin @Description: 症状设置 @Date: 2022/1/7 18:28
+ * @author: chenlin
+ * @Description: 症状设置
+ * @Date: 2022/1/7 18:28
  * @since: 1.0.0
  */
 @Service

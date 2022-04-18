@@ -80,15 +80,15 @@ public class ChatMessageRecordBiz extends BaseBiz<ChatMessageRecordMapper, ChatM
         });
     }
 
-    public Map<Integer, List<ChatMessageBody>> findChatMessageUnReadHisotry(ChatMessageBody message) {
-        Map<Integer, List<ChatMessageBody>> result = new LinkedHashMap<>(16);
+    public Map<String, List<ChatMessageBody>> findChatMessageUnReadHisotry(ChatMessageBody message) {
+        Map<String, List<ChatMessageBody>> result = new LinkedHashMap<>(16);
         ChatMessageRecordQuery query = new ChatMessageRecordQuery();
         query.setWhetherPage(false);
         query.setReceiveId(message.getSendId());
         List<ChatMessageBody> list = findChatMessageHisotry(query).getList();
         if (StringHelper.isNotEmpty(list)) {
             list.forEach(vo->{
-                Integer sendId = vo.getSendId();
+                String sendId = vo.getSendId() + "";
                 List<ChatMessageBody> messages = result.get(sendId);
                 if (StringHelper.isEmpty(messages)) {
                     messages = new ArrayList<>();
