@@ -14,6 +14,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -86,34 +87,32 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
      */
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame wsMessage) throws Exception {
+        log.info("接收到客户端发来的消息: {}", wsMessage.text());
 //        处理与前端的心跳
         ChatMessageBody message = JSON.parseObject(wsMessage.text(), ChatMessageBody.class);
-        Integer type = message.getType();
-        if (type == 0) {
-            log.info("收到客户端发来的心跳包, {}", message);
-            return;
-        }
-        log.info("接收到客户端发来的消息: {}", wsMessage.text());
         if (ObjectUtils.isEmpty(message.getSendId())) {
             // 无意义数据
             return;
         }
-        // 应答
-        ackMessageRead(message);
-        // 用户上线
+        Integer type = message.getType();
+        if (type == 0) {
+            log.info("收到客户端发来的心跳包, {}", message);
+            online(ctx, message);
+            return;
+        }
+
+        // 应答消息
+        Boolean ack = message.getAckRead();
+        if (!ObjectUtils.isEmpty(ack) && ack) {
+            chatMessageRecordBiz.asyncUptMessageHadRead(message);
+            return;
+        }
+
+        // 查询用户未读消息
         if (type == 1) {
-            setMap(ctx, message);
-            // 给其他服务器发送上线消息
-//            for (ChannelHandlerContext handlerContext : userHandles.values()) {
-//                if (handlerContext==ctx) {
-//                    continue;
-//                }
-//                write2flush(handlerContext, message);
-//            }
             // 查询未读消息列表
-            Map<String, List<ChatMessageBody>> unReadHisotry = chatMessageRecordBiz.findChatMessageUnReadHisotry(message);
+            List<ChatMessageBody> unReadHisotry = chatMessageRecordBiz.findChatMessageUnReadHisotry(message);
             write2flush(ctx, unReadHisotry);
-            log.info("用户: {}上线了", message.getSendId());
             return;
         }
         // 获取到需要转发的客户端
@@ -132,8 +131,9 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
             log.error("消息接收人不能为空");
             return;
         }
+        message.setSendTime(new Date(System.currentTimeMillis()));
         message.setMsgCode(UUIDUtils.generateShortUuid());
-        chatMessageRecordBiz.asyncArchiveChatMessage(message, null);
+        asyncArchiveMessage(message);
         // 从缓存的存储用户对应的通道 map中获取
         if (!userHandles.containsKey(receiveId)) {
             // 回写消息
@@ -146,7 +146,19 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
         // 服务端转发消息到指定的客户端
         ChannelHandlerContext receiveCtx = userHandles.get(receiveId);
         write2flush(receiveCtx, message);
-        log.info("向接收人: {}发送消息", receiveId);
+        log.info("向接收人: {}发送消息: {}", receiveId, message);
+    }
+
+    /**
+     * 记录消息
+     *
+     * @param message
+     */
+    private void asyncArchiveMessage(ChatMessageBody message) {
+        // 只有发消息需要记录，通知属于实时推送无需记录
+        if (message.getType() == 2) {
+            chatMessageRecordBiz.asyncArchiveChatMessage(message, null);
+        }
     }
 
     /**
@@ -157,7 +169,7 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
      */
     private void write2flush(ChannelHandlerContext ctx, ChatMessageBody message) {
         chatMessageRecordBiz.putChatEmployeeName(message);
-        write2flush(ctx, message);
+        ctx.writeAndFlush(new TextWebSocketFrame(JSON.toJSONString(message)));
     }
 
     private void write2flush(ChannelHandlerContext ctx, Object message) {
@@ -165,26 +177,25 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
     }
 
     /**
-     * 应答消息已读
-     *
-     * @param message
-     */
-    private void ackMessageRead(ChatMessageBody message) {
-        Boolean ack = message.getAckRead();
-        if (!ObjectUtils.isEmpty(ack) && ack) {
-            chatMessageRecordBiz.asyncUptMessageHadRead(message);
-        }
-    }
-
-    /**
      * 用户上线，建立用户-通道映射
      *
-     * @param channelHandlerContext
+     * @param ctx
      * @param message
      */
-    private void setMap(ChannelHandlerContext channelHandlerContext, ChatMessageBody message) {
-        userHandles.put(message.getSendId(), channelHandlerContext);
-        channelUsers.put(channelHandlerContext.channel().id().toString(),message.getSendId());
+    private void online(ChannelHandlerContext ctx, ChatMessageBody message) {
+        Integer sendId = message.getSendId();
+        if (!ObjectUtils.isEmpty(sendId) && !userHandles.containsKey(sendId)) {
+            userHandles.put(sendId, ctx);
+            channelUsers.put(ctx.channel().id().toString(), sendId);
+            log.info("用户: {}上线了", message.getSendId());
+            // 给其他服务器发送上线消息
+//            for (ChannelHandlerContext handlerContext : userHandles.values()) {
+//                if (handlerContext==ctx) {
+//                    continue;
+//                }
+//                write2flush(handlerContext, message);
+//            }
+        }
     }
 
     /**

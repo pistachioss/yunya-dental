@@ -57,7 +57,7 @@ public class ChatMessageRecordBiz extends BaseBiz<ChatMessageRecordMapper, ChatM
             ChatMessageRecord entity = new ChatMessageRecord();
             BeanUtils.copyProperties(message, entity);
             entity.setCrtId(message.getSendId());
-            entity.setCrtTime(new Date(System.currentTimeMillis()));
+            entity.setCrtTime(message.getSendTime());
             Byte mode = 0;
             if (!ObjectUtils.isEmpty(receiveId)) {
                 mode = 1;
@@ -88,24 +88,15 @@ public class ChatMessageRecordBiz extends BaseBiz<ChatMessageRecordMapper, ChatM
         });
     }
 
-    public Map<String, List<ChatMessageBody>> findChatMessageUnReadHisotry(ChatMessageBody message) {
-        Map<String, List<ChatMessageBody>> result = new LinkedHashMap<>(16);
+    public List<ChatMessageBody> findChatMessageUnReadHisotry(ChatMessageBody message) {
         ChatMessageRecordQuery query = new ChatMessageRecordQuery();
         query.setWhetherPage(false);
         query.setReceiveId(message.getSendId());
         List<ChatMessageBody> list = findChatMessageHisotry(query).getList();
-        if (StringHelper.isNotEmpty(list)) {
-            list.forEach(vo->{
-                String sendId = vo.getSendId() + "";
-                List<ChatMessageBody> messages = result.get(sendId);
-                if (StringHelper.isEmpty(messages)) {
-                    messages = new ArrayList<>();
-                }
-                messages.add(vo);
-                result.put(sendId, messages);
-            });
+        if (StringHelper.isEmpty(list)) {
+            list = new ArrayList<>();
         }
-        return result;
+        return list;
     }
 
     /**
