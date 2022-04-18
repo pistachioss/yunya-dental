@@ -2,14 +2,17 @@ package com.yunya.modules.treatment.other.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment_other.domain.form.ChatMessageBody;
 import com.yunya.feign.treatment_other.domain.query.ChatMessageRecordQuery;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment_other.ChatMessageRecord;
 import com.yunya.modules.treatment.other.mapper.ChatMessageRecordMapper;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
@@ -27,6 +30,8 @@ import java.util.concurrent.ExecutorService;
  */
 @Service
 public class ChatMessageRecordBiz extends BaseBiz<ChatMessageRecordMapper, ChatMessageRecord> {
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Resource(name = "customizeThreadPool")
     private ExecutorService executorService;
 
@@ -35,6 +40,9 @@ public class ChatMessageRecordBiz extends BaseBiz<ChatMessageRecordMapper, ChatM
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }
         List<ChatMessageBody> result = mapper.selectChatMessageHistory(query);
+        if (StringHelper.isNotEmpty(result)) {
+            result.forEach(vo-> putChatEmployeeName(vo));
+        }
         return new PageInfo<>(result);
     }
 
@@ -98,5 +106,27 @@ public class ChatMessageRecordBiz extends BaseBiz<ChatMessageRecordMapper, ChatM
             });
         }
         return result;
+    }
+
+    /**
+     * 查找并装配员工姓名
+     *
+     * @param message
+     */
+    public void putChatEmployeeName(ChatMessageBody message) {
+        Integer sendId = message.getSendId();
+        if (!ObjectUtils.isEmpty(sendId)) {
+            SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(sendId);
+            if (!ObjectUtils.isEmpty(employee)) {
+                message.setSendUser(employee.getName());
+            }
+        }
+        Integer receiveId = message.getReceiveId();
+        if (!ObjectUtils.isEmpty(receiveId)) {
+            SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(receiveId);
+            if (!ObjectUtils.isEmpty(employee)) {
+                message.setReceiveUser(employee.getName());
+            }
+        }
     }
 }

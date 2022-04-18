@@ -155,6 +155,11 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
      * @param ctx 连接通道
      * @param message 消息
      */
+    private void write2flush(ChannelHandlerContext ctx, ChatMessageBody message) {
+        chatMessageRecordBiz.putChatEmployeeName(message);
+        write2flush(ctx, message);
+    }
+
     private void write2flush(ChannelHandlerContext ctx, Object message) {
         ctx.writeAndFlush(new TextWebSocketFrame(JSON.toJSONString(message)));
     }

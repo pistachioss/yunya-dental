@@ -12,12 +12,8 @@ import com.yunya.modules.treatment.other.config.WsProperties;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 简介：聊天消息记录控制层
@@ -28,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @since: 1.0.0
  */
 @Api(tags = "聊天消息记录控制层")
-@Controller
+@RestController
 @RequestMapping("/chatMessage")
 public class ChatMessageRecordController {
     /** netty服务器ip*/
@@ -62,15 +58,5 @@ public class ChatMessageRecordController {
     public ResponseResult<NettyChatInfoVO> findInfo() {
         NettyChatInfoVO info = new NettyChatInfoVO(wsProperties.getProtocol(), wsProperties.getPath());
         return ResponseUtil.success(info);
-    }
-
-    /**
-     * 获取Netty聊天服务器信息
-     *
-     * @return
-     */
-    @GetMapping("/")
-    public String chatHtml() {
-        return "chat";
     }
 }
