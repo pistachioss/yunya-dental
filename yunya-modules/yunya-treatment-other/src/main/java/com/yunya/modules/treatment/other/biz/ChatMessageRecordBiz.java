@@ -84,7 +84,7 @@ public class ChatMessageRecordBiz extends BaseBiz<ChatMessageRecordMapper, ChatM
         Map<Integer, List<ChatMessageBody>> result = new LinkedHashMap<>(16);
         ChatMessageRecordQuery query = new ChatMessageRecordQuery();
         query.setWhetherPage(false);
-        query.setReceiveId(message.getReceiveId());
+        query.setReceiveId(message.getSendId());
         List<ChatMessageBody> list = findChatMessageHisotry(query).getList();
         if (StringHelper.isNotEmpty(list)) {
             list.forEach(vo->{
