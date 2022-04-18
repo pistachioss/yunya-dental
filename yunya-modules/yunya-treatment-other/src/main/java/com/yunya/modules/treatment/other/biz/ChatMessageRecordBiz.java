@@ -92,6 +92,7 @@ public class ChatMessageRecordBiz extends BaseBiz<ChatMessageRecordMapper, ChatM
         ChatMessageRecordQuery query = new ChatMessageRecordQuery();
         query.setWhetherPage(false);
         query.setReceiveId(message.getSendId());
+        query.setHadRead(false);
         List<ChatMessageBody> list = findChatMessageHisotry(query).getList();
         if (StringHelper.isEmpty(list)) {
             list = new ArrayList<>();
