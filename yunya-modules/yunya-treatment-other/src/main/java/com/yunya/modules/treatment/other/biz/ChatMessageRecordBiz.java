@@ -94,6 +94,7 @@ public class ChatMessageRecordBiz extends BaseBiz<ChatMessageRecordMapper, ChatM
                     messages = new ArrayList<>();
                 }
                 messages.add(vo);
+                result.put(sendId, messages);
             });
         }
         return result;

@@ -72,8 +72,8 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         channels.add(ctx);
-        log.info("有新的连接.>>当前连接数量: ", channels.size());
-        log.info("新建连接通道: {}",ctx.channel().id());
+        log.info("有新的连接.>>当前连接数量: {}", channels.size());
+        log.info("新建连接通道: {}", ctx.channel().id());
     }
 
     /**
@@ -120,6 +120,7 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
             log.error("消息接收人不能为空");
             return;
         }
+        message.setMsgCode(UUIDUtils.generateShortUuid());
         chatMessageRecordBiz.asyncArchiveChatMessage(message, null);
         // 从缓存的存储用户对应的通道 map中获取
         if (!userHandles.containsKey(receiveId)) {

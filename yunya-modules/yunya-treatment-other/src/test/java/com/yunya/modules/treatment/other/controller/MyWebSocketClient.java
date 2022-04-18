@@ -9,6 +9,7 @@ package com.gds.restapi.sysMng.msg.websocket;
  */
 
 import com.alibaba.fastjson.JSONObject;
+import com.yunya.feign.treatment_other.domain.form.ChatMessageBody;
 
 import javax.websocket.*;
 import java.net.URI;
@@ -40,7 +41,9 @@ public class MyWebSocketClient {
 
     public static void main(String[] args)throws Exception{
         WebSocketContainer connection = ContainerProvider.getWebSocketContainer();
-        String uri ="ws://192.168.31.234:8765/api/treatment-netty/websocket/chat";
+        String uri ="ws://192.168.31.234:8081/websocket/chat";
+//        String uri ="ws://192.168.31.234:8765/api/treatment-netty/websocket/chat";
+//        String uri ="ws://192.168.31.95/api/treatment-netty/websocket/chat";
         System.out.println("Connecting to "+ uri);
 
         Session session = connection.connectToServer(MyWebSocketClient.class, URI.create(uri));
@@ -48,10 +51,17 @@ public class MyWebSocketClient {
             System.out.println("连接中。。。");
             Thread.sleep(3000);
         }
-        JSONObject object = new JSONObject();
-        object.put("message", "success连接");
-        session.getBasicRemote().sendText(object.toJSONString());
-        Thread.sleep(1000);
-        session.close();
+        ChatMessageBody message = new ChatMessageBody();
+        message.setSendId(123);
+        message.setReceiveId(234);
+        message.setType(2);
+        message.setContent("Hello Netty");
+        RemoteEndpoint.Basic remote = session.getBasicRemote();
+        remote.sendText(JSONObject.toJSONString(message));
+        Thread.sleep(3000);
+        System.out.println(session.isOpen());
+        remote = session.getBasicRemote();
+        remote.sendText(JSONObject.toJSONString(message));
+//        session.close();
     }
 }
