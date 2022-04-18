@@ -66,20 +66,6 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
     }
 
     /**
-     * 处理与前端的心跳
-     *
-     * @param ctx
-     * @param message
-     */
-    public void clientPingPong(ChannelHandlerContext ctx,  ChatMessageBody message) {
-        int type = message.getType();
-        if (type == 0) {
-            log.info("收到心跳包, {}", message);
-            return;
-        }
-    }
-
-    /**
      * 通道连接事件（channel连接就绪状态以后）
      *
      * @param ctx
@@ -100,13 +86,22 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
      */
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame wsMessage) throws Exception {
+//        处理与前端的心跳
         ChatMessageBody message = JSON.parseObject(wsMessage.text(), ChatMessageBody.class);
-        clientPingPong(ctx, message);
+        Integer type = message.getType();
+        if (type == 0) {
+            log.info("收到客户端发来的心跳包, {}", message);
+            return;
+        }
         log.info("接收到客户端发来的消息: {}", wsMessage.text());
+        if (ObjectUtils.isEmpty(message.getSendId())) {
+            // 无意义数据
+            return;
+        }
         // 应答
         ackMessageRead(message);
         // 用户上线
-        if (message.getType()==1) {
+        if (type == 1) {
             setMap(ctx, message);
             // 给其他服务器发送上线消息
 //            for (ChannelHandlerContext handlerContext : userHandles.values()) {
@@ -177,7 +172,8 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
     }
 
     /**
-     * 设置连接映射
+     * 用户上线，建立用户-通道映射
+     *
      * @param channelHandlerContext
      * @param message
      */
