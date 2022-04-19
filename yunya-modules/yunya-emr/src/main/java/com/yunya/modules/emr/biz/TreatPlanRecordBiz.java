@@ -191,7 +191,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      * @param planId
      * @return
      */
-    public MedicalTreatPlanRecordVO findOneById(Integer planId) {
+    public TreatPlanRecordVO findOneById(Integer planId) {
         TreatPlanRecord entity = mapper.selectByPrimaryKey(planId);
         return putTreatPlanStepList(entity);
     }
@@ -201,15 +201,15 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      *
      * @param entity
      */
-    private MedicalTreatPlanRecordVO putTreatPlanStepList(TreatPlanRecord entity) {
+    private TreatPlanRecordVO putTreatPlanStepList(TreatPlanRecord entity) {
         return putTreatPlanStepList(entity, true);
     }
 
-    private MedicalTreatPlanRecordVO putTreatPlanStepList(TreatPlanRecord entity, boolean onlySelectStatus) {
+    private TreatPlanRecordVO putTreatPlanStepList(TreatPlanRecord entity, boolean onlySelectStatus) {
         if (ObjectUtils.isEmpty(entity)) {
             throw new ClientServiceException("该治疗计划不存在", OperationCodeConstants.DATA_NOT_EXIST);
         }
-        MedicalTreatPlanRecordVO result = entity2VO(entity);
+        TreatPlanRecordVO result = entity2VO(entity);
         List<TreatPlanStepVO> steps = treatPlanStepBiz.findTreatPlanStepByPlanId(entity.getId(), onlySelectStatus);
         if (StringHelper.isNotEmpty(steps)) {
             accumulation(steps, result);
@@ -217,7 +217,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         return result;
     }
 
-    private void accumulation(List<TreatPlanStepVO> steps, MedicalTreatPlanRecordVO result) {
+    private void accumulation(List<TreatPlanStepVO> steps, TreatPlanRecordVO result) {
         int totalQuantity = 0;
         int completedNum = 0;
         int confirmNum = 0;
@@ -256,8 +256,8 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      * @param entity
      * @return
      */
-    private MedicalTreatPlanRecordVO entity2VO(TreatPlanRecord entity) {
-        MedicalTreatPlanRecordVO result = new MedicalTreatPlanRecordVO();
+    private TreatPlanRecordVO entity2VO(TreatPlanRecord entity) {
+        TreatPlanRecordVO result = new TreatPlanRecordVO();
         result.setPlanId(entity.getId());
         result.setPatientId(entity.getPatientId());
         result.setOrgId(entity.getOrgId());
@@ -561,7 +561,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
 
     public void recalculatePlanStatusById(Integer userId, List<Integer> planIds) {
         planIds.forEach(planId->{
-            MedicalTreatPlanRecordVO treatPlan = findOneById(planId);
+            TreatPlanRecordVO treatPlan = findOneById(planId);
             treatPlan.setCrtId(userId);
             updateTreatPlanStatus(treatPlan, null);
         });
