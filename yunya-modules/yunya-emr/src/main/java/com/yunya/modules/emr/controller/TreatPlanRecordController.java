@@ -40,16 +40,10 @@ public class TreatPlanRecordController {
         return ResponseUtil.success();
     }
 
-    @ApiOperation(value = "根据普通电子病历id查询治疗计划详情")
-    @GetMapping("/one/{medicalId}")
-    public ResponseResult<TreatPlanRecordVO> findTreatPlanOneByMedicalId(@PathVariable(value = "medicalId") Integer medicalId) {
-        return ResponseUtil.success(treatPlanRecordBiz.findTreatPlanOneByMedicalId(medicalId));
-    }
-
-    @ApiOperation(value = "根据治疗计划id查询病历及治疗计划（打印）")
-    @GetMapping("/medicalTreatPlan/{planId}")
-    public ResponseResult<MedicalTreatPlanRecordVO> findMedicalTreatPlanById(@PathVariable(value = "planId") Integer planId) {
-        return ResponseUtil.success(treatPlanRecordBiz.findMedicalTreatPlanById(planId));
+    @ApiOperation(value = "根据治疗计划id查询治疗计划（打印）")
+    @GetMapping("/one/{planId}")
+    public ResponseResult<TreatPlanRecordVO> findOneById(@PathVariable(value = "planId") Integer planId) {
+        return ResponseUtil.success(treatPlanRecordBiz.findOneById(planId));
     }
 
     @ApiOperation("分页查询")
