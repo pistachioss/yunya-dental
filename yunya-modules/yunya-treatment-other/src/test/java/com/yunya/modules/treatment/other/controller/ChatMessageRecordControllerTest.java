@@ -26,9 +26,12 @@ public class ChatMessageRecordControllerTest {
     private ChatMessageRecordController chatMessageRecordController;
 
     @Test
-    public void testHistory() {
+    public void testHistory() throws Exception {
         ChatMessageRecordQuery query = new ChatMessageRecordQuery();
-        query.setSendId(635);
+        query.setWhetherPage(false);
+        query.setSendId(634);
+        query.setReceiveId(636);
+        query.setQueryDate("2022-04-19");
         PageInfo<ChatMessageBody> data = chatMessageRecordController.findChatMessageHisotry(query).getData();
         System.out.println(JSONObject.toJSON(data));
     }

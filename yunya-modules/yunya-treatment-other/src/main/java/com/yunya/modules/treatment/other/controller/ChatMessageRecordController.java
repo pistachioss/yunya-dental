@@ -43,7 +43,7 @@ public class ChatMessageRecordController {
     @ApiOperation("根据条件查询消息历史记录")
     @PostMapping("/history")
     @CurrentUser
-    public ResponseResult<PageInfo<ChatMessageBody>> findChatMessageHisotry(@Validated @RequestBody ChatMessageRecordQuery query) {
+    public ResponseResult<PageInfo<ChatMessageBody>> findChatMessageHisotry(@Validated @RequestBody ChatMessageRecordQuery query) throws Exception {
         PageInfo<ChatMessageBody> pageInfo = chatMessageRecordBiz.findChatMessageHisotry(query);
         return ResponseUtil.success(pageInfo);
     }

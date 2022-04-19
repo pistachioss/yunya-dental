@@ -1,11 +1,12 @@
 package com.yunya.modules.treatment.other.biz;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment_other.domain.form.ChatMessageBody;
 import com.yunya.feign.treatment_other.domain.query.ChatMessageRecordQuery;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.PageUtl;
+import com.yunya.framework.common.utils.SortUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment_other.ChatMessageRecord;
@@ -17,8 +18,11 @@ import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * 简介：
@@ -35,15 +39,36 @@ public class ChatMessageRecordBiz extends BaseBiz<ChatMessageRecordMapper, ChatM
     @Resource(name = "customizeThreadPool")
     private ExecutorService executorService;
 
-    public PageInfo<ChatMessageBody> findChatMessageHisotry(ChatMessageRecordQuery query) {
-        if (query.getWhetherPage()) {
-            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    public PageInfo<ChatMessageBody> findChatMessageHisotry(ChatMessageRecordQuery query) throws Exception {
+        ChatMessageRecordQuery queryForm = new ChatMessageRecordQuery();
+        BeanUtils.copyProperties(query, queryForm);
+        Future<List<ChatMessageBody>> thisFuture = multiFindChatMessageHistory(query);
+        queryForm.setSendId(query.getReceiveId());
+        queryForm.setReceiveId(query.getSendId());
+        Future<List<ChatMessageBody>> thatFuture = multiFindChatMessageHistory(queryForm);
+        List<ChatMessageBody> result = new ArrayList<>();
+        List<ChatMessageBody> thisChat = thisFuture.get();
+        if (StringHelper.isNotEmpty(thisChat)) {
+            result.addAll(thisChat);
         }
+        List<ChatMessageBody> thatChat = thatFuture.get();
+        if (StringHelper.isNotEmpty(thatChat)) {
+            result.addAll(thatChat);
+        }
+        result = SortUtil.sort(result, SortUtil.comparing(ChatMessageBody::getId));
+        return PageUtl.doPage(query, result);
+    }
+
+    private Future<List<ChatMessageBody>> multiFindChatMessageHistory(ChatMessageRecordQuery query) {
+        return executorService.submit(()-> findChatMessageList(query));
+    }
+
+    public List<ChatMessageBody> findChatMessageList(ChatMessageRecordQuery query) {
         List<ChatMessageBody> result = mapper.selectChatMessageHistory(query);
         if (StringHelper.isNotEmpty(result)) {
             result.forEach(vo-> putChatEmployeeName(vo));
         }
-        return new PageInfo<>(result);
+        return result;
     }
 
     /**
@@ -93,7 +118,7 @@ public class ChatMessageRecordBiz extends BaseBiz<ChatMessageRecordMapper, ChatM
         query.setWhetherPage(false);
         query.setReceiveId(message.getSendId());
         query.setHadRead(false);
-        List<ChatMessageBody> list = findChatMessageHisotry(query).getList();
+        List<ChatMessageBody> list = findChatMessageList(query);
         if (StringHelper.isEmpty(list)) {
             list = new ArrayList<>();
         }
