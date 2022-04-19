@@ -12,20 +12,19 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
 import com.yunya.feign.treatment.domain.vo.ClinicItemPriceVO;
-import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
-import com.yunya.feign.treatment_other.domain.query.XUploadFileQuery;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.enums.FileSourceTypeEnum;
 import com.yunya.framework.common.enums.OperationTypeEnum;
 import com.yunya.framework.common.enums.TreatPlanStatusEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.models.emr.*;
+import com.yunya.models.emr.TreatPlanDetail;
+import com.yunya.models.emr.TreatPlanDetailWriteoff;
+import com.yunya.models.emr.TreatPlanRecord;
+import com.yunya.models.emr.TreatPlanRecordHistory;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
-import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.emr.mapper.TreatPlanRecordHistoryMapper;
 import com.yunya.modules.emr.mapper.TreatPlanRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,15 +52,9 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     /** 治疗计划步骤*/
     @Autowired
     private TreatPlanStepBiz treatPlanStepBiz;
-    /** 普通电子病历 */
-    @Autowired
-    private MedicalCommonRecordBiz medicalCommonRecordBiz;
     /** 系统*/
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
-    /** 其他*/
-    @Autowired
-    private RemoteTreatmentOtherFeign remoteTreatmentOtherFeign;
     /** 就诊*/
     @Autowired
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
@@ -87,16 +80,20 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
             userId = Integer.parseInt(userID);
         }
         Date now = new Date(System.currentTimeMillis());
-        TreatPlanRecord query = new TreatPlanRecord();
-        query.setMedicalRecordId(model.getMedicalRecordId());
-        TreatPlanRecord entity = mapper.selectOne(query);
-        boolean hasOld = !ObjectUtils.isEmpty(entity);
+        boolean hasOld = false;
+        Integer planId = model.getPlanId();
+        TreatPlanRecord entity = null;
+        if (!ObjectUtils.isEmpty(planId)) {
+            entity = mapper.selectByPrimaryKey(planId);
+            hasOld = !ObjectUtils.isEmpty(entity);
+        }
         boolean hasNew = !ObjectUtils.isEmpty(model);
         if (hasOld || hasNew) {// 未添加治疗计划
             Byte operation = OperationTypeEnum.INSERT.getCode();
             if (hasOld) {// 修改
                 mapper.deleteByPrimaryKey(entity.getId());
                 if (hasNew) {// 修改未删除
+                    model.setOrgId(entity.getOrgId());
                     addTreatPlanRecord(entity, model, userId, now);
                     operation = OperationTypeEnum.UPDATE.getCode();
                 } else { // 删除
@@ -117,6 +114,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
 
     /**
      * 添加治疗计划操作记录
+     *
      * @param entity
      * @param operationReason
      * @param isChange
@@ -126,7 +124,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      */
     private void addTreatPlanHistory(TreatPlanRecord entity, String operationReason, Byte isChange, Byte operation, Integer userId, Date now) {
         TreatPlanRecordHistory history = new TreatPlanRecordHistory();
-        history.setMedicalRecordId(entity.getMedicalRecordId());
+        history.setPlanTypeId(entity.getPlanTypeId());
         history.setPlanId(entity.getId());
         history.setPlanName(entity.getPlanName());
         history.setSummary(entity.getSummary());
@@ -152,9 +150,9 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      * @param now
      */
     private void addTreatPlanRecord(TreatPlanRecord entity, TreatPlanRecordModel model, Integer userId, Date now) {
-        entity.setOrgId(findOrgByMedicalId(model));
+        entity.setOrgId(model.getOrgId());
         entity.setPatientId(model.getPatientId());
-        entity.setMedicalRecordId(model.getMedicalRecordId());
+        entity.setPlanTypeId(model.getPlanTypeId());
         entity.setPlanName(model.getPlanName());
         entity.setSummary(model.getSummary());
         entity.setStatus(model.getStatus().byteValue());
@@ -163,84 +161,6 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         entity.setUptId(userId);
         entity.setUptTime(now);
         mapper.insertSelective(entity);
-    }
-
-    private Integer findOrgByMedicalId(TreatPlanRecordModel model) {
-        Integer orgId = model.getOrgId();
-        if (ObjectUtils.isEmpty(orgId)) {
-            Integer medicalRecordId = model.getMedicalRecordId();
-            TreatmentRecord treatmentRecord = medicalCommonRecordBiz.findTreatmentByMedicalId(medicalRecordId);
-            orgId = treatmentRecord.getOrgId();
-        }
-        return orgId;
-    }
-
-    /**
-     * 根据病历id查询治疗计划详情
-     *
-     * @param medicalId
-     * @return
-     */
-    public TreatPlanRecordVO findTreatPlanOneByMedicalId(Integer medicalId) {
-        MedicalCommonRecord medical = medicalCommonRecordBiz.findMedicalIllegaHistoryById(medicalId);
-        if (ObjectUtils.isEmpty(medical)) {
-            throw new ClientServiceException("该病历不存在",OperationCodeConstants.DATA_NOT_EXIST);
-        }
-        // 当前治疗计划
-        TreatPlanRecord query = new TreatPlanRecord();
-        query.setMedicalRecordId(medicalId);
-        TreatPlanRecord treatPlanRecord = mapper.selectOne(query);
-        if (!ObjectUtils.isEmpty(treatPlanRecord)) { // 治疗计划
-            return putTreatPlanStepList(treatPlanRecord);
-        } else { // 兼容旧版本时的“计划”数据
-            return findCompatibleOldPlan(medical);
-        }
-    }
-
-    /**
-     * 兼容旧版本普通电子病历中的“计划”数据
-     *
-     * @param medical
-     * @return
-     */
-    private TreatPlanRecordVO findCompatibleOldPlan(MedicalCommonRecord medical) {
-        List<ExaminationsVO> plans = json2List(medical.getPlan());
-        if (StringHelper.isNotEmpty(plans)) {
-            StringBuilder builder = new StringBuilder();
-            Iterator<ExaminationsVO> it = plans.iterator();
-            while (it.hasNext()) {
-                ExaminationsVO plan = it.next();
-                String describe = plan.getDescribe();
-                String toothPosition = plan.getTooth_position();
-                if (StringHelper.isEmpty(describe) && StringHelper.isEmpty(toothPosition)) {
-                    it.remove();
-                    continue;
-                }
-                if (StringHelper.isNotEmpty(describe)) {
-                    if (builder.length()>0) {
-                        builder.append("，");
-                    }
-                    builder.append(describe);
-                }
-            }
-            if (StringHelper.isNotEmpty(plans)) {
-                TreatPlanRecordVO treatPlanVO = new TreatPlanRecordVO();
-                treatPlanVO.setMedicalRecordId(medical.getId());
-                Integer majorDentistId = medical.getMajorDentistId();
-                if (!ObjectUtils.isEmpty(majorDentistId)) {
-                    treatPlanVO.setDentistId(majorDentistId);
-                    SysEmployee dentist = systemServiceFeign.findSysEmployeeById(majorDentistId);
-                    if (!ObjectUtils.isEmpty(dentist)) {
-                        treatPlanVO.setDentistName(dentist.getName());
-                    }
-                }
-                treatPlanVO.setPlanName(builder.toString());
-                treatPlanVO.setTreatPlanSteps(oldPlanSteps(plans));
-                treatPlanVO.setSummary("");
-                return treatPlanVO;
-            }
-        }
-        return null;
     }
 
     /**
@@ -265,7 +185,13 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         return Arrays.asList(step);
     }
 
-    public MedicalTreatPlanRecordVO findOneById(Integer planId) {
+    /**
+     * 根据治疗计划id查询治疗计划详情
+     *
+     * @param planId
+     * @return
+     */
+    public TreatPlanRecordVO findOneById(Integer planId) {
         TreatPlanRecord entity = mapper.selectByPrimaryKey(planId);
         return putTreatPlanStepList(entity);
     }
@@ -275,15 +201,15 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      *
      * @param entity
      */
-    private MedicalTreatPlanRecordVO putTreatPlanStepList(TreatPlanRecord entity) {
+    private TreatPlanRecordVO putTreatPlanStepList(TreatPlanRecord entity) {
         return putTreatPlanStepList(entity, true);
     }
 
-    private MedicalTreatPlanRecordVO putTreatPlanStepList(TreatPlanRecord entity, boolean onlySelectStatus) {
+    private TreatPlanRecordVO putTreatPlanStepList(TreatPlanRecord entity, boolean onlySelectStatus) {
         if (ObjectUtils.isEmpty(entity)) {
             throw new ClientServiceException("该治疗计划不存在", OperationCodeConstants.DATA_NOT_EXIST);
         }
-        MedicalTreatPlanRecordVO result = entity2VO(entity);
+        TreatPlanRecordVO result = entity2VO(entity);
         List<TreatPlanStepVO> steps = treatPlanStepBiz.findTreatPlanStepByPlanId(entity.getId(), onlySelectStatus);
         if (StringHelper.isNotEmpty(steps)) {
             accumulation(steps, result);
@@ -291,7 +217,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         return result;
     }
 
-    private void accumulation(List<TreatPlanStepVO> steps, MedicalTreatPlanRecordVO result) {
+    private void accumulation(List<TreatPlanStepVO> steps, TreatPlanRecordVO result) {
         int totalQuantity = 0;
         int completedNum = 0;
         int confirmNum = 0;
@@ -330,15 +256,14 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      * @param entity
      * @return
      */
-    private MedicalTreatPlanRecordVO entity2VO(TreatPlanRecord entity) {
-        MedicalTreatPlanRecordVO result = new MedicalTreatPlanRecordVO();
+    private TreatPlanRecordVO entity2VO(TreatPlanRecord entity) {
+        TreatPlanRecordVO result = new TreatPlanRecordVO();
         result.setPlanId(entity.getId());
         result.setPatientId(entity.getPatientId());
         result.setOrgId(entity.getOrgId());
         result.setPlanName(entity.getPlanName());
         result.setSummary(entity.getSummary());
         result.setDentistId(entity.getDentistId());
-        result.setMedicalRecordId(entity.getMedicalRecordId());
         OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(entity.getOrgId());
         if (!ObjectUtils.isEmpty(org)) {
             result.setAbbreviation(org.getAbbreviation());
@@ -407,40 +332,6 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     }
 
     /**
-     * 根据治疗计划id查询病历及治疗计划
-     *
-     * @param planId
-     * @return
-     */
-    public MedicalTreatPlanRecordVO findMedicalTreatPlanById(Integer planId) {
-        MedicalTreatPlanRecordVO result = findMedicalTreatPlanBaseInfoById(planId);
-        // 照片影像列表
-        XUploadFileQuery query = new XUploadFileQuery();
-        query.setWhetherPage(false);
-        query.setSourceType(FileSourceTypeEnum.MEDICAL_COMMON.getCode());
-        Integer medicalRecordId = result.getMedicalRecordId();
-        query.setSourceIds(Arrays.asList(medicalRecordId));
-        result.setXRayFilms(remoteTreatmentOtherFeign.findXUploadFileList(query));
-        return result;
-    }
-
-    private MedicalTreatPlanRecordVO findMedicalTreatPlanBaseInfoById(Integer planId) {
-        MedicalTreatPlanRecordVO result = findOneById(planId);
-        Integer medicalRecordId = result.getMedicalRecordId();
-        MedicalCommonRecord medical = medicalCommonRecordBiz.findMedicalIllegaHistoryById(medicalRecordId);
-        if (!ObjectUtils.isEmpty(medical)) {
-            // 主述、现病史、既往史、检查、诊断
-            result.setMedicalRecordId(medicalRecordId);
-            result.setChiefComplaint(medical.getChiefComplaint());
-            result.setPastHistory(medical.getPastHistory());
-            result.setPresentIllness(medical.getPresentIllness());
-            result.setExamination(json2List(medical.getExamination()));
-            result.setDiagnosis(json2List(medical.getDiagnosis()));
-        }
-        return result;
-    }
-
-    /**
      * json格式数据转List
      *
      * @param jsonStr
@@ -460,9 +351,9 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      * @param form
      * @return
      */
-    public MedicalTreatPlanRecordVO treatPlanChange(TreatPlanRecordChangeForm form) {
+    public TreatPlanRecordVO treatPlanChange(TreatPlanRecordChangeForm form) {
         Integer planId = form.getPlanId();
-        MedicalTreatPlanRecordVO treatPlan = findMedicalTreatPlanById(planId);
+        TreatPlanRecordVO treatPlan = findOneById(planId);
         Integer status = treatPlan.getStatus();
         Byte changeType = form.getChangeType();
         if (changeType == 0) {// 方案确认
@@ -498,7 +389,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      * @param treatPlan
      * @param status
      */
-    private void updateTreatPlanStatus(MedicalTreatPlanRecordVO treatPlan, Integer status) {
+    private void updateTreatPlanStatus(TreatPlanRecordVO treatPlan, Integer status) {
         TreatPlanRecordModel model = vo2modelBaseInfo(treatPlan);
         if (ObjectUtils.isEmpty(status)) {
             status = treatPlan.getStatus();
@@ -508,11 +399,11 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         save(model, null, false);
     }
 
-    private TreatPlanRecordModel vo2modelBaseInfo(MedicalTreatPlanRecordVO treatPlan) {
+    private TreatPlanRecordModel vo2modelBaseInfo(TreatPlanRecordVO treatPlan) {
         TreatPlanRecordModel model = new TreatPlanRecordModel();
         model.setPlanId(treatPlan.getPlanId());
         model.setPlanName(treatPlan.getPlanName());
-        model.setMedicalRecordId(treatPlan.getMedicalRecordId());
+        model.setPlanTypeId(treatPlan.getPlanTypeId());
         model.setOrgId(treatPlan.getOrgId());
         model.setDentistId(treatPlan.getDentistId());
         model.setPatientId(treatPlan.getPatientId());
@@ -670,7 +561,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
 
     public void recalculatePlanStatusById(Integer userId, List<Integer> planIds) {
         planIds.forEach(planId->{
-            MedicalTreatPlanRecordVO treatPlan = findOneById(planId);
+            TreatPlanRecordVO treatPlan = findOneById(planId);
             treatPlan.setCrtId(userId);
             updateTreatPlanStatus(treatPlan, null);
         });
@@ -751,12 +642,5 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
             throw new ClientServiceException("治疗计划中项目不存在", OperationCodeConstants.DATA_NOT_EXIST);
         }
         return result;
-    }
-
-    public Boolean hasPlanByMedicalId(Integer medicalId) {
-        TreatPlanRecord query = new TreatPlanRecord();
-        query.setMedicalRecordId(medicalId);
-        List<TreatPlanRecord> records = mapper.select(query);
-        return StringHelper.isNotEmpty(records);
     }
 }

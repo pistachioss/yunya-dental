@@ -89,7 +89,7 @@ public class MedicalCommonRecordController {
     BeanUtils.copyProperties(model, medicalCommonRecord);
     List<MedicalCommonRecord> list = medicalCommonRecordBiz.findList(medicalCommonRecord);
 
-    Map<Integer, List<XUploadFileVO>> fileMap = findXRayFilmList(list);
+//    Map<Integer, List<XUploadFileVO>> fileMap = findXRayFilmList(list);
     //获取员工信息
     SysUserEmployeeModel sysUserEmployeeModel = new SysUserEmployeeModel();
     //查询总数不分页
@@ -110,9 +110,9 @@ public class MedicalCommonRecordController {
       MedicalCommonRecordModel medicalCommonRecordModel = new MedicalCommonRecordModel();
       BeanUtils.copyProperties(medical, medicalCommonRecordModel);
       Integer medicalId = medical.getId();
-      medicalCommonRecordModel.setHasPlan(treatPlanRecordBiz.hasPlanByMedicalId(medicalId));
+//      medicalCommonRecordModel.setHasPlan(treatPlanRecordBiz.hasPlanByMedicalId(medicalId));
       // 照片影像
-      medicalCommonRecordModel.setXrayFilms(fileMap.get(medicalId));
+//      medicalCommonRecordModel.setXrayFilms(fileMap.get(medicalId));
       medicalCommonRecordModel.setMajorDentistName(employeeMap.get(medicalCommonRecordModel.getMajorDentistId()+"").getName());
       medicalCommonRecordModel.setCrtName(employeeMap.get(medicalCommonRecordModel.getCrtId()+"").getName());
       if (!StrUtil.isEmpty(medical.getExamination())) {

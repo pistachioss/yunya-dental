@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.other.mapper.ChatMessageRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment_other.ChatMessageRecord" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="msg_code" property="msgCode" jdbcType="VARCHAR" />
+    <result column="send_id" property="sendId" jdbcType="INTEGER" />
+    <result column="receive_id" property="receiveId" jdbcType="INTEGER" />
+    <result column="content" property="content" jdbcType="VARCHAR" />
+    <result column="mode" property="mode" jdbcType="TINYINT" />
+    <result column="had_read" property="hadRead" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <select id="selectChatMessageHistory"
+          resultType="com.yunya.feign.treatment_other.domain.form.ChatMessageBody">
+    SELECT
+        id,
+        msg_code AS msgCode,
+        send_id AS sendId,
+        receive_id AS receiveId,
+        content,
+        had_read AS ackRead,
+        crt_time AS sendTime,
+        upt_time AS readTime
+    FROM chat_message_record
+    <where>
+      AND mode = 0
+      <if test="query.queryDate!=null and query.queryDate!=''">
+        AND DATE_FORMAT(crt_time, '%Y-%m-%d') = #{query.queryDate}
+      </if>
+      <if test="query.hadRead != null">
+        AND had_read = #{query.hadRead}
+      </if>
+      <if test="query.sendId">
+        AND send_id = #{query.sendId}
+      </if>
+      <if test="query.receiveId != null">
+        AND receive_id = #{query.receiveId}
+      </if>
+    </where>
+    ORDER BY send_id, crt_time ASC
+  </select>
+</mapper>
