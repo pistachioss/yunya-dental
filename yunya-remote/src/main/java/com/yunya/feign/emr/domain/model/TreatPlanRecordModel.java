@@ -31,7 +31,8 @@ public class TreatPlanRecordModel implements Serializable {
     private Integer orgId;
 
     /** 治疗计划类型，取自字典id*/
-    @ApiModelProperty("治疗计划类型，取自字典id")
+    @ApiModelProperty(value = "治疗计划类型，取自字典id", required = true)
+    @NotNull(message = "治疗计划类型不能为空")
     private Integer planTypeId;
 
     /** 治疗计划名称*/

@@ -93,6 +93,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
             if (hasOld) {// 修改
                 mapper.deleteByPrimaryKey(entity.getId());
                 if (hasNew) {// 修改未删除
+                    model.setOrgId(entity.getOrgId());
                     addTreatPlanRecord(entity, model, userId, now);
                     operation = OperationTypeEnum.UPDATE.getCode();
                 } else { // 删除
@@ -113,6 +114,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
 
     /**
      * 添加治疗计划操作记录
+     *
      * @param entity
      * @param operationReason
      * @param isChange
@@ -349,9 +351,9 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      * @param form
      * @return
      */
-    public MedicalTreatPlanRecordVO treatPlanChange(TreatPlanRecordChangeForm form) {
+    public TreatPlanRecordVO treatPlanChange(TreatPlanRecordChangeForm form) {
         Integer planId = form.getPlanId();
-        MedicalTreatPlanRecordVO treatPlan = findOneById(planId);
+        TreatPlanRecordVO treatPlan = findOneById(planId);
         Integer status = treatPlan.getStatus();
         Byte changeType = form.getChangeType();
         if (changeType == 0) {// 方案确认
@@ -387,7 +389,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
      * @param treatPlan
      * @param status
      */
-    private void updateTreatPlanStatus(MedicalTreatPlanRecordVO treatPlan, Integer status) {
+    private void updateTreatPlanStatus(TreatPlanRecordVO treatPlan, Integer status) {
         TreatPlanRecordModel model = vo2modelBaseInfo(treatPlan);
         if (ObjectUtils.isEmpty(status)) {
             status = treatPlan.getStatus();
@@ -397,7 +399,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         save(model, null, false);
     }
 
-    private TreatPlanRecordModel vo2modelBaseInfo(MedicalTreatPlanRecordVO treatPlan) {
+    private TreatPlanRecordModel vo2modelBaseInfo(TreatPlanRecordVO treatPlan) {
         TreatPlanRecordModel model = new TreatPlanRecordModel();
         model.setPlanId(treatPlan.getPlanId());
         model.setPlanName(treatPlan.getPlanName());

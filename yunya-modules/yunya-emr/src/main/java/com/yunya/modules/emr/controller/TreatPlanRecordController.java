@@ -4,7 +4,6 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.emr.domain.form.TreatPlanRecordChangeForm;
 import com.yunya.feign.emr.domain.model.TreatPlanRecordModel;
 import com.yunya.feign.emr.domain.query.TreatPlanRecordQuery;
-import com.yunya.feign.emr.domain.vo.MedicalTreatPlanRecordVO;
 import com.yunya.feign.emr.domain.vo.TreatPlanRecordInfoVO;
 import com.yunya.feign.emr.domain.vo.TreatPlanRecordVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -65,7 +64,7 @@ public class TreatPlanRecordController {
     @ApiOperation("治疗计划变更：方案确认，方案变更，提前终止，撤销终止")
     @PutMapping("/change")
     @CurrentUser
-    public ResponseResult<MedicalTreatPlanRecordVO> treatPlanChange(@RequestBody @Valid TreatPlanRecordChangeForm form) {
+    public ResponseResult<TreatPlanRecordVO> treatPlanChange(@RequestBody @Valid TreatPlanRecordChangeForm form) {
         return ResponseUtil.success(treatPlanRecordBiz.treatPlanChange(form));
     }
 }
