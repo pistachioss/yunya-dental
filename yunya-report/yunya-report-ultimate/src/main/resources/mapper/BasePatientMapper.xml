@@ -896,6 +896,7 @@
     <select id="selectPatientOriginConsumption"
             resultType="com.yunya.feign.report.domain.vo.PatientOriginConsumptionVO">
         SELECT
+            bp.patient_id AS patientId,
             bp.medical_number AS medicalNumber,
             bp.name AS patientName,
             bp.mobile,
@@ -905,8 +906,8 @@
             bp.origin_type_name AS originTypeName,
             bpo.originName,
             ifnull(bb.receivedAmount,0) AS receivedAmount,
-            ifnull(bp.cumulative_consumption,0) AS cumulativeConsumption,
-            ifnull(bp.total_arrears,0) AS totalArrears,
+            ifnull(bb1.cumulativeConsumption,0),
+            ifnull(bb1.totalArrears,0),
             bo.abbreviation,
             DATE_FORMAT(bp.first_visit_date,'%Y-%m-%d') AS firstVisitDate,
             be.employee_name AS firstVisitDoctor,
@@ -947,9 +948,17 @@
             group by bb.patient_id
         ) bb ON bb.patientId=bp.patient_id
         LEFT JOIN (
+            select
+                patient_id,
+                sum(bb.actual_amount) as cumulativeConsumption,
+                sum(bb.debt_amount) as totalArrears
+            from base_bill bb
+            group by bb.patient_id
+        ) bb1 ON bp.patient_id = bb1.patient_id
+        LEFT JOIN (
             SELECT
                 id AS origin_id,
-                parent_id AS origin_type,
+                origin_type,
                 name AS originName
             FROM base_patient_origin bpo
             WHERE bpo.parent_id>2
