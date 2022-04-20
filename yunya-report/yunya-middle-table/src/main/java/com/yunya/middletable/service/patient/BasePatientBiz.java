@@ -6,19 +6,21 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.domain.vo.PatientTreatInfoVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.middletable.dao.patient.PatientBaseInfoMapper;
-import com.yunya.middletable.dao.patient.PatientOriginMapper;
-import com.yunya.middletable.dao.patient.PatientPrepaymentsInfoMapper;
+import com.yunya.middletable.dao.patient.*;
+import com.yunya.middletable.dao.report.BasePatientGroupRelationMapper;
 import com.yunya.middletable.dao.report.BasePatientMapper;
 import com.yunya.middletable.dao.report.BasePatientMemberMapper;
 import com.yunya.middletable.service.BaseTreatmentProcessBiz;
 import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.patient_central.PatientGroupRelation;
 import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.patient_central.PatientPrepaymentsInfo;
 import com.yunya.models.report.BasePatient;
+import com.yunya.models.report.BasePatientGroupRelation;
 import com.yunya.models.report.BasePatientMember;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
@@ -61,6 +63,10 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
 
   @Resource private BasePatientMemberMapper basePatientMemberMapper;
 
+  @Resource private PatientGroupRelationMapper patientGroupRelationMapper;
+
+  @Resource private BasePatientGroupRelationMapper basePatientGroupRelationMapper;
+
   /** 多线程 */
   @Resource(name = "customizeThreadPool")
   private ExecutorService importExcelThreadPool;
@@ -83,6 +89,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
       case 1:
         assert patient != null;
         mapper.updateByPrimaryKeySelective(patient);
+        savePatientGroupRelation(patientId);
         break;
       case 2:
         PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(patientId);
@@ -94,6 +101,28 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
         break;
       default:
         break;
+    }
+  }
+
+
+  /**
+   * 保存患者分组关系
+   *
+   * @param patientId
+   */
+  private void savePatientGroupRelation(Integer patientId) {
+    Example example = new Example(PatientGroupRelation.class);
+    Example.Criteria c = example.createCriteria();
+    c.andEqualTo("patientId", patientId);
+    List<PatientGroupRelation> groups = patientGroupRelationMapper.selectByExample(example);
+    if (StringHelper.isNotEmpty(groups)) {
+      basePatientGroupRelationMapper.deleteByExample(example);
+      groups.forEach(group->{
+        BasePatientGroupRelation entity = new BasePatientGroupRelation();
+        BeanUtils.copyProperties(group, entity);
+        group.setId(null);
+        basePatientGroupRelationMapper.insertSelective(entity);
+      });
     }
   }
 
