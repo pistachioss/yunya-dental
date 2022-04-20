@@ -45,4 +45,8 @@ public class TreatPlanRecordQuery extends PageQuery implements Serializable {
     /** 治疗状态：0-未确认，1-已确认，2-进行中，3-已完成，4-提前终止*/
     @ApiModelProperty("治疗状态：0-未确认，1-已确认，2-进行中，3-已完成，4-提前终止")
     private Collection<Integer> status;
+
+    /** 治疗计划类型id*/
+    @ApiModelProperty("治疗计划类型id")
+    private Integer planTypeId;
 }

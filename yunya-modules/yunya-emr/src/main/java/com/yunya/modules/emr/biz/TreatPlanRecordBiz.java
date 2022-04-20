@@ -23,6 +23,7 @@ import com.yunya.models.emr.TreatPlanDetail;
 import com.yunya.models.emr.TreatPlanDetailWriteoff;
 import com.yunya.models.emr.TreatPlanRecord;
 import com.yunya.models.emr.TreatPlanRecordHistory;
+import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.modules.emr.mapper.TreatPlanRecordHistoryMapper;
@@ -323,6 +324,13 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(entity.getDentistId());
                 if (!ObjectUtils.isEmpty(employee)) {
                     vo.setDentistName(employee.getName());
+                }
+                Integer planTypeId = entity.getPlanTypeId();
+                if (!ObjectUtils.isEmpty(planTypeId)) {
+                    DictionaryItem dicItem = remoteSystemServiceFeign.findDictionaryItemById(planTypeId);
+                    if (!ObjectUtils.isEmpty(dicItem)) {
+                        vo.setPlanTypeName(dicItem.getName());
+                    }
                 }
                 result.add(vo);
             });
