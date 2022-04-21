@@ -30,6 +30,9 @@
         dentist_id AS dentistId
     FROM treat_plan_record
     <where>
+      <if test="query.orgId != null">
+        AND org_id = #{query.orgId}
+      </if>
       <if test="query.planName!=null and query.planName!=''">
         AND plan_name like CONCAT(CONCAT('%',#{query.planName}),'%')
       </if>

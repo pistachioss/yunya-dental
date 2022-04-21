@@ -21,6 +21,9 @@ import java.util.Collection;
 @ToString
 @ApiModel("治疗计划查询模型")
 public class TreatPlanRecordQuery extends PageQuery implements Serializable {
+    /** 门诊id*/
+    @ApiModelProperty("门诊id")
+    private Integer orgId;
 
     /** 患者id*/
     @ApiModelProperty(value = "患者id", required = true)
