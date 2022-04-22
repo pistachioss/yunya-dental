@@ -56,6 +56,10 @@ public class PatientManageVo {
     @ApiModelProperty(value = "患者来源")
     @ExcelProperty(value = "患者来源")
     private String patientOrionName;
+    /** 患者分组*/
+    @ApiModelProperty("患者分组")
+    @ExcelProperty(value = "患者分组")
+    private String patientGroupName;
     @ApiModelProperty(value = "初诊日期")
     @ExcelProperty(value = "初诊日期")
     private String firstVisitDate;

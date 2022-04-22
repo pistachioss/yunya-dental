@@ -23,6 +23,12 @@ public class BasePatientGroupRelation {
     private Integer groupId;
 
     /**
+     * 患者分组名称
+     */
+    @Column(name = "group_name")
+    private String groupName;
+
+    /**
      * 创建人id
      */
     @Column(name = "crt_id")
@@ -94,6 +100,24 @@ public class BasePatientGroupRelation {
      */
     public void setGroupId(Integer groupId) {
         this.groupId = groupId;
+    }
+
+    /**
+     * 获取患者分组名称
+     *
+     * @return
+     */
+    public String getGroupName() {
+        return groupName;
+    }
+
+    /**
+     * 设置患者分组名称
+     *
+     * @param groupName
+     */
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     /**

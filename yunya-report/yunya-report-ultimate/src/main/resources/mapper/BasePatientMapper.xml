@@ -574,6 +574,7 @@
         pm.principal_balance as principalBalance,
         bp.origin_id as patientOrionName,
         bp.origin_type_name as patientOrionTypeName,
+        bpgr.patientGroupName,
         date_format(bp.first_visit_date, '%Y/%m/%d')as firstVisitDate,
         bo.abbreviation as firstVisitOutpatient,
         be.employee_name as firstVisitDoctors,
@@ -585,6 +586,11 @@
         left join base_employee be1 on be1.user_id = bp.last_visit_doctors
         left join base_organization bo on bo.org_id = bp.first_visit_outpatient
         left join patient_manage pm on bp.patient_id = pm.patient_id
+        left join (
+            SELECT patient_id, GROUP_CONCAT(group_name) AS patientGroupName
+            FROM base_patient_group_relation
+            GROUP BY patient_id
+        ) bpgr on bpgr.patient_id = bp.patient_id
         <where>
             and bp.medical_number is not null and substr(bp.medical_number, 1, 1) != '*'
             <if test="query.patientKeyWord != null and query.patientKeyWord != ''">
@@ -649,6 +655,14 @@
                 group by `name`, `mobile` having count(*) > 1
                 )
             </if>
+            <if test="query.patientGroupId != null">
+                AND EXISTS (
+                    SELECT bpg.patient_id FROM base_patient_group_relation bpg
+                    WHERE bpg.patient_id = bp.patient_id
+                    AND bpg.group_id = #{query.patientGroupId}
+                )
+            </if>
+            GROUP BY patient_id
         </where>
         <if test="query.limitName">
             order by bp.`name`
