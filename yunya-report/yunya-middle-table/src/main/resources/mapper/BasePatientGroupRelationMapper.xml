@@ -13,4 +13,25 @@
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />
     <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <select id="selectRegisterdPatientMobile" resultType="com.yunya.models.report.BasePatient">
+    select
+        DISTINCT mobile
+    from base_patient pbi
+    inner join base_treatment_process r on r.patient_id=pbi.patient_id
+    where r.registered_id>0
+      <if test="orgId != null">
+        and r.org_id = #{orgId}
+      </if>
+      <if test="sDate!=null and eDate!=null">
+        and date_format(r.registered_date,'%Y') BETWEEN #{sDate} AND #{eDate}
+      </if>
+      and LENGTH(pbi.mobile)=11
+      <if test="mobiles!=null and mobiles.size()>0">
+        and pbi.mobile not in
+        <foreach collection="mobiles" index="index" item="id" open="(" separator="," close=")">
+          #{id}
+        </foreach>
+      </if>
+  </select>
 </mapper>
