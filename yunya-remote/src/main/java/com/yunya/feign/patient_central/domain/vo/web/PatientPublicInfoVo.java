@@ -1,10 +1,12 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
-import io.swagger.annotations.*;
-import lombok.*;
+import io.swagger.annotations.ApiModel;
+import lombok.Data;
+import lombok.ToString;
 
-import java.io.*;
-import java.math.*;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 简单介绍:</br> 返回患者公告信息模型
@@ -32,6 +34,11 @@ public class PatientPublicInfoVo implements Serializable {
      * 年龄
      */
     private Integer age;
+
+    /**
+     * 生日
+     */
+    private Date birthday;
 
     /**
      * 手机号码 长度14
