@@ -5,6 +5,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.emr.domain.form.TreatPlanRecordChangeForm;
 import com.yunya.feign.emr.domain.model.*;
+import com.yunya.feign.emr.domain.query.PlanTypeDetailQuery;
+import com.yunya.feign.emr.domain.query.PlanTypeStatisticsQuery;
 import com.yunya.feign.emr.domain.query.TreatPlanRecordQuery;
 import com.yunya.feign.emr.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -19,6 +21,7 @@ import com.yunya.framework.common.enums.OperationTypeEnum;
 import com.yunya.framework.common.enums.TreatPlanStatusEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.emr.TreatPlanDetail;
 import com.yunya.models.emr.TreatPlanDetailWriteoff;
 import com.yunya.models.emr.TreatPlanRecord;
@@ -33,6 +36,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -650,5 +655,81 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
             throw new ClientServiceException("治疗计划中项目不存在", OperationCodeConstants.DATA_NOT_EXIST);
         }
         return result;
+    }
+
+    /**
+     * 条件查询治疗类型统计列表
+     *
+     * @param query
+     * @return
+     */
+    public PageInfo<TreatPlanTypeStatisticsVO> findTreatPlanTypeStatistics(PlanTypeStatisticsQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<TreatPlanTypeStatisticsVO> result = mapper.selectTreatPlanTypeStatistics(query);
+        if (StringHelper.isNotEmpty(result)) {
+            result.forEach(vo->{
+                OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(vo.getOrgId());
+                if (!ObjectUtils.isEmpty(org)) {
+                    vo.setAbbreviation(org.getAbbreviation());
+                }
+                Integer planTypeId = vo.getPlanTypeId();
+                if (!ObjectUtils.isEmpty(planTypeId)) {
+                    DictionaryItem dicItem = remoteSystemServiceFeign.findDictionaryItemById(planTypeId);
+                    if (!ObjectUtils.isEmpty(dicItem)) {
+                        vo.setPlanTypeName(dicItem.getName());
+                    }
+                }
+            });
+        }
+        return new PageInfo<>(result);
+    }
+
+    /**
+     * 条件查询治疗计划类型明细
+     *
+     * @param query
+     * @return
+     */
+    public PageInfo<TreatPlanTypeDetailVO> findTreatPlanTypeDetail(PlanTypeDetailQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<TreatPlanTypeDetailVO> result = mapper.selectTreatPlanTypeDetail(query);
+        if (StringHelper.isNotEmpty(result)) {
+            result.forEach(vo->{
+                OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(vo.getOrgId());
+                if (!ObjectUtils.isEmpty(org)) {
+                    vo.setAbbreviation(org.getAbbreviation());
+                }
+                SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(vo.getDentistId());
+                if (!ObjectUtils.isEmpty(employee)) {
+                    vo.setDentistName(employee.getName());
+                }
+            });
+        }
+        return new PageInfo<>(result);
+    }
+
+    /**
+     * 条件导出治疗类型统计明细列表
+     *
+     * @param query
+     * @param response
+     * @throws IOException
+     */
+    public void exportTreatPlanTypeDetail(PlanTypeDetailQuery query, HttpServletResponse response) throws IOException {
+        query.setWhetherPage(false);
+        List<TreatPlanTypeDetailVO> data = findTreatPlanTypeDetail(query).getList();
+        ExcelUtil<TreatPlanTypeDetailVO> excelUtil = new ExcelUtil<>(TreatPlanTypeDetailVO.class);
+        String sheetName = "治疗计划明细";
+        String abbreviation = "";
+        OrganizationInfo org = systemServiceFeign.findOrgInfoByOrgId(query.getOrgId());
+        if (!ObjectUtils.isEmpty(org)) {
+            abbreviation = org.getAbbreviation();
+        }
+        String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), abbreviation, sheetName);
+        excelUtil.exportExcel(response, data, sheetName, fileName);
     }
 }

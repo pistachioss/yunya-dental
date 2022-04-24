@@ -3,18 +3,24 @@ package com.yunya.modules.emr.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.emr.domain.form.TreatPlanRecordChangeForm;
 import com.yunya.feign.emr.domain.model.TreatPlanRecordModel;
+import com.yunya.feign.emr.domain.query.PlanTypeDetailQuery;
+import com.yunya.feign.emr.domain.query.PlanTypeStatisticsQuery;
 import com.yunya.feign.emr.domain.query.TreatPlanRecordQuery;
 import com.yunya.feign.emr.domain.vo.TreatPlanRecordInfoVO;
 import com.yunya.feign.emr.domain.vo.TreatPlanRecordVO;
+import com.yunya.feign.emr.domain.vo.TreatPlanTypeDetailVO;
+import com.yunya.feign.emr.domain.vo.TreatPlanTypeStatisticsVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.emr.biz.TreatPlanRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -66,5 +72,26 @@ public class TreatPlanRecordController {
     @CurrentUser
     public ResponseResult<TreatPlanRecordVO> treatPlanChange(@RequestBody @Valid TreatPlanRecordChangeForm form) {
         return ResponseUtil.success(treatPlanRecordBiz.treatPlanChange(form));
+    }
+
+    @ApiOperation("条件查询治疗类型统计列表")
+    @PostMapping("/planType/statistics")
+    public ResponseResult<PageInfo<TreatPlanTypeStatisticsVO>> findTreatPlanTypeStatistics(@Valid @RequestBody PlanTypeStatisticsQuery query) {
+        PageInfo<TreatPlanTypeStatisticsVO> page = treatPlanRecordBiz.findTreatPlanTypeStatistics(query);
+        return ResponseUtil.success(page);
+    }
+
+    @ApiOperation("条件查询治疗类型统计明细列表")
+    @PostMapping("/planType/detail")
+    public ResponseResult<PageInfo<TreatPlanTypeDetailVO>> findTreatPlanTypeDetail(@Valid @RequestBody PlanTypeDetailQuery query) {
+        PageInfo<TreatPlanTypeDetailVO> page = treatPlanRecordBiz.findTreatPlanTypeDetail(query);
+        return ResponseUtil.success(page);
+    }
+
+    @ApiOperation("条件导出治疗类型统计明细列表")
+    @PostMapping("/planType/detail/export")
+    public ResponseResult<T> exportTreatPlanTypeDetail(@Valid @RequestBody PlanTypeDetailQuery query, HttpServletResponse response) throws Exception {
+        treatPlanRecordBiz.exportTreatPlanTypeDetail(query, response);
+        return ResponseUtil.success(null);
     }
 }
