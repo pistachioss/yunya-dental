@@ -164,5 +164,5 @@ public class PatientBaseInfoVo implements Serializable {
 
     /** 患者分组id列表*/
     @ApiModelProperty("患者分组id列表")
-    private List<Integer> patientGroupIds;
+    private List<Integer> groupIds;
 }

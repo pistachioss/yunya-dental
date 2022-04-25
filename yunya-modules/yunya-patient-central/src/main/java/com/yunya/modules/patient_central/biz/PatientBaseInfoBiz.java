@@ -665,7 +665,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientBaseInfoVo.setSourceName(patientOrigin.getName());
       }
     }
-    patientBaseInfoVo.setPatientGroupIds(findPatientGroupId(id));
+    patientBaseInfoVo.setGroupIds(findPatientGroupId(id));
     // 基本信息
     patientExtendInfoVo.setPatientBaseInfoVo(getTypeName(patientBaseInfoVo));
     // 扩展信息
