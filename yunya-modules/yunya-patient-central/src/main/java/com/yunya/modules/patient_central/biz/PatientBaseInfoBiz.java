@@ -701,6 +701,12 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     return ResponseUtil.success(patientExtendInfoVo);
   }
 
+  /**
+   * 根据患者id查询患者分组列表
+   *
+   * @param id
+   * @return
+   */
   private List<Integer> findPatientGroupId(Integer id) {
     Example example = new Example(PatientGroupRelation.class);
     Example.Criteria c = example.createCriteria();
