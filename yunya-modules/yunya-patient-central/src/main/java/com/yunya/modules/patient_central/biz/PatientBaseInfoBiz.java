@@ -665,6 +665,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientBaseInfoVo.setSourceName(patientOrigin.getName());
       }
     }
+    patientBaseInfoVo.setPatientGroupIds(findPatientGroupId(id));
     // 基本信息
     patientExtendInfoVo.setPatientBaseInfoVo(getTypeName(patientBaseInfoVo));
     // 扩展信息
@@ -698,6 +699,14 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
     fillPatientChildInfo(patientExtendInfoVo, patientBaseInfo.getId());
     return ResponseUtil.success(patientExtendInfoVo);
+  }
+
+  private List<Integer> findPatientGroupId(Integer id) {
+    Example example = new Example(PatientGroupRelation.class);
+    Example.Criteria c = example.createCriteria();
+    c.andEqualTo("patientId",id);
+    List<PatientGroupRelation> groups = patientGroupRelationMapper.selectByExample(example);
+    return groups.stream().map(PatientGroupRelation::getGroupId).collect(Collectors.toList());
   }
 
   /**

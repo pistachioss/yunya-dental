@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 简单介绍:</br> 返回患者信息模型
@@ -160,4 +161,8 @@ public class PatientBaseInfoVo implements Serializable {
     /** 是否去世*/
     @ApiModelProperty("是否去世")
     private Boolean hasDied;
+
+    /** 患者分组id列表*/
+    @ApiModelProperty("患者分组id列表")
+    private List<Integer> patientGroupIds;
 }
