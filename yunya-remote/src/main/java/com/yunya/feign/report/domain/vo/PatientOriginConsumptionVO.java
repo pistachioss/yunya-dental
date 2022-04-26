@@ -21,6 +21,10 @@ import java.math.BigDecimal;
 @ToString
 @ApiModel("渠道来源患者消费数据VO")
 public class PatientOriginConsumptionVO implements Serializable {
+    /** 患者id */
+    @ApiModelProperty("患者id")
+    private Integer patientId;
+
     /** 病历号 */
     @Excel(name = "病历号")
     @ApiModelProperty("病历号")
@@ -64,17 +68,17 @@ public class PatientOriginConsumptionVO implements Serializable {
     /** 所筛选时间段内消费累计 */
     @Excel(name = "所筛选时间段内消费累计")
     @ApiModelProperty("所筛选时间段内消费累计")
-    private BigDecimal receivedAmount;
+    private BigDecimal receivedAmount = new BigDecimal(0.00);
 
     /** 消费总额 */
     @Excel(name = "消费总额")
     @ApiModelProperty("消费总额")
-    private BigDecimal cumulativeConsumption;
+    private BigDecimal cumulativeConsumption = new BigDecimal(0.00);
 
     /** 欠费总额 */
     @Excel(name = "欠费总额")
     @ApiModelProperty("欠费总额")
-    private BigDecimal totalArrears;
+    private BigDecimal totalArrears = new BigDecimal(0.00);
 
     /** 初诊门诊 */
     @Excel(name = "初诊门诊")

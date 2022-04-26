@@ -1,8 +1,8 @@
 package com.yunya.modules.employeeattend.util;
 
 import cn.jiguang.common.ClientConfig;
+import cn.jiguang.common.resp.BaseResult;
 import cn.jpush.api.JPushClient;
-import cn.jpush.api.push.PushResult;
 import cn.jpush.api.push.model.Message;
 import cn.jpush.api.push.model.Options;
 import cn.jpush.api.push.model.Platform;
@@ -14,12 +14,13 @@ import cn.jpush.api.push.model.notification.IosNotification;
 import cn.jpush.api.push.model.notification.Notification;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.yunya.modules.employeeattend.biz.EmployeePushMessageRecordBiz;
 import com.yunya.modules.employeeattend.config.JPushConfig;
 import com.yunya.modules.employeeattend.form.EmployeePushData;
 import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Collection;
 
@@ -35,6 +36,8 @@ public class JpushManager {
   private JPushClient jpushClient = null;
 
   @Autowired private static JPushConfig jPushConfig;
+
+  @Autowired private EmployeePushMessageRecordBiz employeePushMessageRecordBiz;
 
   /** @return */
   public static JpushManager getInstance() {
@@ -69,7 +72,7 @@ public class JpushManager {
    * @param platform
    * @throws Exception
    */
-  public void send(
+  public BaseResult send(
       Collection<String> alias,
       String title,
       String content,
@@ -79,6 +82,7 @@ public class JpushManager {
       String scheTime)
       throws Exception {
     log.info("platform: " + platform);
+    BaseResult result = null;
     switch (platform) {
       case 1:
         try {
@@ -103,10 +107,10 @@ public class JpushManager {
                       Notification.newBuilder().addPlatformNotification(iosNotification).build())
                   .build();
           if (schedule) {
-            jpushClient.createSingleSchedule(
+            result = jpushClient.createSingleSchedule(
                 "Attend_ios", scheTime, payloadIos, appMasterSecret, appKey);
           } else {
-            jpushClient.sendPush(payloadIos);
+            result = jpushClient.sendPush(payloadIos);
           }
         } catch (Exception ex) {
           ex.printStackTrace();
@@ -131,18 +135,24 @@ public class JpushManager {
                           .build())
                   .setMessage(Message.newBuilder().setTitle(title).setMsgContent(content).build())
                   .build();
-
           if (schedule) {
-            jpushClient.createSingleSchedule(
+            result = jpushClient.createSingleSchedule(
                 "Attend_android", scheTime, payload, appMasterSecret, appKey);
           } else {
-            PushResult result = jpushClient.sendPush(payload);
+            result = jpushClient.sendPush(payload);
             System.err.println(result);
           }
         } catch (Exception ex) {
           ex.printStackTrace();
         }
         break;
+    }
+    return result;
+  }
+
+  private void crtPushMessageRecord(BaseResult result, EmployeePushForm employeePushForm, int type) {
+    if (!ObjectUtils.isEmpty(result) && result.getResponseCode()==200) {
+      employeePushMessageRecordBiz.asyncGeneratMsgRecord(employeePushForm, type);
     }
   }
 
@@ -157,7 +167,7 @@ public class JpushManager {
     return res;
   }
 
-  public void pushBase(EmployeePushForm employeePushForm, EmployeePushData pushData) {
+  public Boolean pushBase(EmployeePushForm employeePushForm, EmployeePushData pushData) {
     try {
       String data = JpushManager.getInstance().makeSendData(pushData);
       if (employeePushForm.getTitle().isEmpty()) {
@@ -169,7 +179,7 @@ public class JpushManager {
       if (employeePushForm.getIsSchedule() == null) {
         employeePushForm.setIsSchedule(false);
       }
-      JpushManager.getInstance()
+      BaseResult result = JpushManager.getInstance()
           .send(
               employeePushForm.getUserList(),
               employeePushForm.getTitle(),
@@ -178,10 +188,13 @@ public class JpushManager {
               employeePushForm.getPlatform(),
               employeePushForm.getIsSchedule(),
               employeePushForm.getScheTime());
-
+      if (!ObjectUtils.isEmpty(result) && result.getResponseCode()==200) {
+        return true;
+      }
     } catch (Exception e) {
       e.printStackTrace();
     }
+    return false;
   }
 
   public void pushTest(EmployeePushForm employeePushTest) {
@@ -190,70 +203,82 @@ public class JpushManager {
 
   private String getTypeName(int type) {
     switch (type) {
-      case 1:
+      case 10:
+      case 11:
+      case 12:
+      case 13:
+      case 14:
         return "请假";
-      case 2:
+      case 20:
+      case 21:
+      case 22:
+      case 23:
+      case 24:
         return "加班";
-      case 3:
+      case 30:
+      case 31:
+      case 32:
+      case 33:
+      case 34:
         return "外勤";
     }
     return "";
   }
 
-  public void pushLeaveApproval(EmployeePushForm employeePushForm, int type) {
+  public Boolean pushLeaveApproval(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(
         String.format("【OA审批】%s提交的%s", employeePushForm.getShowName(), getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
-    pushData.setType(type * 10);
-    pushData.setId(employeePushForm.getId());
-    pushBase(employeePushForm, pushData);
+    pushData.setType(type);
+    pushData.setId(employeePushForm.getIds().get(0));
+    return pushBase(employeePushForm, pushData);
   }
 
-  public void pushLeaveCope(EmployeePushForm employeePushForm, int type) {
+  public Boolean pushLeaveCope(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(
         String.format("【OA审批】%s提交的%s，抄送给你，请知晓", employeePushForm.getShowName(), getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
-    pushData.setType(type * 10 + 1);
-    pushData.setId(employeePushForm.getId());
-    pushBase(employeePushForm, pushData);
+    pushData.setType(type);
+    pushData.setId(employeePushForm.getIds().get(0));
+    return pushBase(employeePushForm, pushData);
   }
 
-  public void pushLeaveYes(EmployeePushForm employeePushForm, int type) {
+  public Boolean pushLeaveYes(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(String.format("【OA审批】%s审批已通过", getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
-    pushData.setType(type * 10 + 2);
-    pushData.setId(employeePushForm.getId());
-    pushBase(employeePushForm, pushData);
+    pushData.setType(type);
+    pushData.setId(employeePushForm.getIds().get(0));
+    return pushBase(employeePushForm, pushData);
   }
 
-  public void pushLeaveNo(EmployeePushForm employeePushForm, int type) {
+  public Boolean pushLeaveNo(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(String.format("【OA审批】%s审批未通过，请知晓", getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
-    pushData.setType(type * 10 + 3);
-    pushData.setId(employeePushForm.getId());
-    pushBase(employeePushForm, pushData);
+    pushData.setType(type);
+    pushData.setId(employeePushForm.getIds().get(0));
+    return pushBase(employeePushForm, pushData);
   }
 
-  public void pushLeaveCancel(EmployeePushForm employeePushForm, int type) {
+  public Boolean pushLeaveCancel(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle(String.format("%s审批提示", getTypeName(type)));
     employeePushForm.setContent(
         String.format("【OA审批】%s申请的%s已撤销", employeePushForm.getShowName(), getTypeName(type)));
     EmployeePushData pushData = new EmployeePushData();
-    pushData.setType(type * 10 + 4);
-    pushData.setId(employeePushForm.getId());
-    pushBase(employeePushForm, pushData);
+    pushData.setType(type);
+    pushData.setId(employeePushForm.getIds().get(0));
+    return pushBase(employeePushForm, pushData);
   }
 
-  public void pushAttend(EmployeePushForm employeePushForm) {
+  public Boolean pushAttend(EmployeePushForm employeePushForm, int type) {
     employeePushForm.setTitle("考勤打卡提示");
     employeePushForm.setContent("【考勤打卡】还有10分钟就要上班啦，快来一键打卡，已打卡请忽略");
     employeePushForm.setIsSchedule(true);
     EmployeePushData pushData = new EmployeePushData();
-    pushData.setType(1);
-    pushBase(employeePushForm, pushData);
+    pushData.setType(type);
+    return pushBase(employeePushForm, pushData);
   }
 }

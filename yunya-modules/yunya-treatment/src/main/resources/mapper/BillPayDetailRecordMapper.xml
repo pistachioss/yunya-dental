@@ -71,6 +71,7 @@
     <select id="sumBillPayAmount" resultType="java.math.BigDecimal">
         select sum(t.amount) from bill_pay_detail_record t
         <where>
+            AND t.inservice = true
             <if test="query.startDate != null">
                 and DATE_FORMAT(t.crt_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{query.startDate},'%Y-%m-%d')
             </if>

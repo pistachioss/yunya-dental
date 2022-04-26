@@ -72,7 +72,7 @@ ribbono:
 netty:
   port: 8081
   path: /websocket/chat
-  protocol: ws://192.168.31.95/api/treatment-netty/
+  protocol: ws://192.168.31.95/api/treatment-netty
   serviceName: yunya-treatment-netty
   discovery:
     namespace:

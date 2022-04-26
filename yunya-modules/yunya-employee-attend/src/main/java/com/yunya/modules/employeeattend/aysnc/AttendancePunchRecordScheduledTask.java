@@ -21,7 +21,6 @@ import com.yunya.modules.employeeattend.enums.AttendanceStatusEnum;
 import com.yunya.modules.employeeattend.enums.AttendanceTypeEnum;
 import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
-import com.yunya.modules.employeeattend.util.JpushManager;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.yunya.framework.common.enums.MessagePushTypeEnum.ATTENDANCE_PUNCH_HINT;
 
 /**
  * 简介：定时任务：考勤打卡生成今天待打卡记录模板数据，当该服务集群部署需要加分布式锁
@@ -92,6 +93,8 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
     private EmployeePushBiz employeePushBiz;
     @Autowired
     private JPushConfig jPushConfig;
+    @Autowired
+    private EmployeePushMessageRecordBiz empPushMsgBiz;
 
     /**
      * 生成今天待打卡记录模板数据.定时任务每天01：00：00执行 00 00 01 * * ?
@@ -514,19 +517,18 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             List<EmployeePushForm> employeePushFormList = new ArrayList<>();
             pushList.forEach(push -> {
                 // fix: bug3617
-                if(push.getPunchType() == 0 && (push.getSource() == 0) || push.getSource() == 4 || push.getSource() == 5){
+                if(push.getPunchType() == 0 && (push.getSource() == 0 || push.getSource() == 4 || push.getSource() == 5)){
                     // 上班推送（去除休息班次和按天请假）
                     EmployeePushForm employeePushForm = new EmployeePushForm();
                     // 组装
-                    Set<Integer> emp_ids = new HashSet<>();
-                    emp_ids.add(push.getUserId());
-                    employeePushForm.setEmpId(emp_ids);
+                    employeePushForm.setEmpId(Arrays.asList(push.getUserId()));
                     employeePushForm.setIsSchedule(true);
                     Date dt = push.getPunchDate();
                     dt.setHours(push.getStartTime().getHours());
                     dt.setMinutes(push.getStartTime().getMinutes());
                     dt.setSeconds(push.getStartTime().getSeconds());
                     employeePushForm.setScheTime(simpleDateFormat.format(new Date(dt.getTime() - 10*60*1000)));
+                    employeePushForm.setIds(Arrays.asList(push.getId()));
                     logger.info("employeePushForm: " + employeePushForm);
                     employeePushFormList.addAll(employeePushBiz.makeEmployeePushForm(employeePushForm));
                 }
@@ -543,13 +545,19 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                     System.out.println("key:"+schetimes.getKey());
 //                    System.out.println("value:"+entry.getValue());
                     List<String> reg_ids = new ArrayList<>();
+                    List<Integer> ids = new ArrayList<>();
+                    List<Integer> empIds = new ArrayList<>();
                     schetimes.getValue().forEach(push -> {
                         System.out.println("key:"+push.getUserList());
                         reg_ids.addAll(push.getUserList());
+                        ids.addAll(push.getIds());
+                        empIds.addAll(push.getEmpId());
                     });
                     EmployeePushForm employeePushForm = schetimes.getValue().get(0);
                     employeePushForm.setUserList(reg_ids);
-                    JpushManager.getInstance().pushAttend(employeePushForm);
+                    employeePushForm.setIds(ids);
+                    employeePushForm.setEmpId(empIds);
+                    empPushMsgBiz.pushMessage(employeePushForm, ATTENDANCE_PUNCH_HINT);
                 }
             }
             // end 添加推送 需求1450 by zd.xie

@@ -1,6 +1,7 @@
 package com.yunya.models.employee_attend;
 
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
@@ -8,6 +9,7 @@ import java.util.Date;
 @Table(name = "attendance_punch_record")
 public class AttendancePunchRecord {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     @Column(name = "user_id")

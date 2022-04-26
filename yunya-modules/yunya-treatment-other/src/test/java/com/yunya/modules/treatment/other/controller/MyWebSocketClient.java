@@ -41,7 +41,10 @@ public class MyWebSocketClient {
 
     public static void main(String[] args)throws Exception{
         WebSocketContainer connection = ContainerProvider.getWebSocketContainer();
-        String uri ="ws://192.168.31.234:8081/websocket/chat";
+//        String uri ="ws://192.168.31.234:8081/websocket/chat";
+        String uri ="ws://test.ivy2.yunya365.com/api/treatment-netty/websocket/chat";
+//        String uri ="ws://114.215.203.148:8765/api/treatment-netty/websocket/chat";
+//        String uri ="ws://ivy2.yunya365.com/api/treatment-netty/websocket/chat";
 //        String uri ="ws://192.168.31.234:8765/api/treatment-netty/websocket/chat";
 //        String uri ="ws://192.168.31.95/api/treatment-netty/websocket/chat";
         System.out.println("Connecting to "+ uri);
