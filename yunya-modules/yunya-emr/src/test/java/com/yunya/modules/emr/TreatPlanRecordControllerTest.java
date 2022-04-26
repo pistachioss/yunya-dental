@@ -4,9 +4,14 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.emr.domain.model.TreatPlanDetailWriteoffInfoModel;
 import com.yunya.feign.emr.domain.model.TreatPlanDetailWriteoffModel;
+import com.yunya.feign.emr.domain.model.TreatPlanRecordModel;
 import com.yunya.feign.emr.domain.query.PlanTypeStatisticsQuery;
+import com.yunya.feign.emr.domain.query.TreatPlanRecordQuery;
+import com.yunya.feign.emr.domain.vo.TreatPlanRecordInfoVO;
+import com.yunya.feign.emr.domain.vo.TreatPlanRecordVO;
 import com.yunya.feign.emr.domain.vo.TreatPlanTypeStatisticsVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.modules.emr.controller.TreatPlanRecordController;
 import com.yunya.modules.emr.mapper.MedicalCommonRecordMapper;
 import com.yunya.modules.emr.rpc.EmrRest;
@@ -57,6 +62,14 @@ public class TreatPlanRecordControllerTest {
     }
 
     @Test
+    public void testSave() {
+        BaseContextHandler.setUserID("636");
+        String param = "{\"patientId\":78307,\"dentistId\":636,\"planTypeId\":552,\"orgId\":42,\"planName\":\"计划1\",\"planId\":null,\"summary\":\"\",\"remark\":\"\",\"operationReason\":\"\",\"status\":1,\"showStatus\":1,\"treatPlanSteps\":[{\"stepName\":\"步骤1\",\"treatPlanDetails\":[{\"billingItemId\":201,\"billingItemName\":\"初诊挂号费【1】\",\"price\":190,\"quantity\":2,\"remark\":\"\",\"toothBit\":\"\",\"type\":0,\"unit\":\"次\",\"orignPrice\":380,\"index\":0},{\"billingItemId\":203,\"billingItemName\":\"器械消毒费\",\"price\":20,\"quantity\":1,\"remark\":\"\",\"toothBit\":\"\",\"type\":0,\"unit\":\"次\",\"orignPrice\":20,\"index\":1}]}]}";
+        TreatPlanRecordModel model = JSONObject.parseObject(param, TreatPlanRecordModel.class);
+        treatPlanRecordController.save(model);
+    }
+    
+    @Test
     public void test() {
         PlanTypeStatisticsQuery query = new PlanTypeStatisticsQuery();
         query.setDateType((byte)0);
@@ -65,6 +78,28 @@ public class TreatPlanRecordControllerTest {
         query.setOrgIds(Arrays.asList(26));
         query.setPlanTypeId(null);
         PageInfo<TreatPlanTypeStatisticsVO> data = treatPlanRecordController.findTreatPlanTypeStatistics(query).getData();
+        System.out.println(JSONObject.toJSON(data));
+    }
+    
+    @Test
+    public void testFindList() {
+        TreatPlanRecordQuery query = new TreatPlanRecordQuery();
+        query.setPatientId(78307);
+        query.setDateType((byte) 0);
+        query.setStartDate("2021-01-01");
+        query.setEndDate("2022-05-01");
+        PageInfo<TreatPlanRecordInfoVO> data = treatPlanRecordController.findList(query).getData();
+        System.out.println(JSONObject.toJSON(data));
+    }
+
+    @Test
+    public void testFindPatientTreatPlanList() {
+        TreatPlanRecordQuery query = new TreatPlanRecordQuery();
+        query.setPatientId(78307);
+        query.setDateType((byte) 0);
+        query.setStartDate("2021-01-01");
+        query.setEndDate("2022-05-01");
+        PageInfo<TreatPlanRecordVO> data = treatPlanRecordController.findPatientTreatPlanList(42, query).getData();
         System.out.println(JSONObject.toJSON(data));
     }
 }

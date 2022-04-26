@@ -24,6 +24,7 @@
         id,
         plan_name AS planName,
         patient_id AS patientId,
+        plan_type_id AS planTypeId,
         org_id AS orgId,
         status,
         crt_time AS crtTime,

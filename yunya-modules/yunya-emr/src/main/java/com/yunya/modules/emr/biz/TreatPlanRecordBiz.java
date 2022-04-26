@@ -547,21 +547,18 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                         details.forEach(detail -> {
                             Integer quantity = detail.getQuantity();
                             Map<Integer, BigDecimal> map = new LinkedHashMap<>();
+                            BigDecimal price = detail.getPrice();
+                            memberTypes.forEach(memberType -> {
+                                BigDecimal memberPrice = (price.multiply(BigDecimal.valueOf(memberType.getRate()))
+                                                .divide(BigDecimal.valueOf(100), 2))
+                                                .setScale(2, BigDecimal.ROUND_HALF_UP);
+                                map.put(memberType.getId(), memberPrice);
+                            });
                             Map<Integer, BigDecimal> memberPrices = priceMap.get(detail.getType() + "," + detail.getBillingItemId());
                             if (StringHelper.isNotEmpty(memberPrices)) {
                                 memberPrices.forEach((memberTypeId, discountPrice) -> {
                                     map.put(memberTypeId, new BigDecimal(quantity).multiply(discountPrice)
                                             .setScale(2, BigDecimal.ROUND_HALF_UP));
-                                });
-                            } else {
-                                BigDecimal price = detail.getPrice();
-                                memberTypes.forEach(memberType -> {
-                                    BigDecimal memberPrice =
-                                            (price
-                                                    .multiply(BigDecimal.valueOf(memberType.getRate()))
-                                                    .divide(BigDecimal.valueOf(100), 2))
-                                                    .setScale(2, BigDecimal.ROUND_HALF_UP);
-                                    map.put(memberType.getId(), memberPrice);
                                 });
                             }
                             detail.setMemberPrices(map);
