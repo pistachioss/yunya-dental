@@ -266,6 +266,7 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         TreatPlanRecordVO result = new TreatPlanRecordVO();
         result.setPlanId(entity.getId());
         result.setPatientId(entity.getPatientId());
+        result.setPlanTypeId(entity.getPlanTypeId());
         result.setOrgId(entity.getOrgId());
         result.setPlanName(entity.getPlanName());
         result.setSummary(entity.getSummary());
