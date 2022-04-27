@@ -556,7 +556,7 @@
 
     <select id="listPatientByKeys" resultType="com.yunya.feign.report.domain.vo.PatientManageVo">
         select
-        bp.patient_id,
+        bp.patient_id as patientId,
         bp.`name` as patientName,
         bp.medical_number as medicalNumber,
         timestampdiff(year, bp.birthday, curdate()) as age,
@@ -662,7 +662,6 @@
                     AND bpg.group_id = #{query.patientGroupId}
                 )
             </if>
-            GROUP BY patient_id
         </where>
         <if test="query.limitName">
             order by bp.`name`
