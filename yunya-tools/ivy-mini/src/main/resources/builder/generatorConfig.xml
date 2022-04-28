@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+
+    <context id="Mysql" targetRuntime="MyBatis3Simple" defaultModelType="flat">
+        <property name="beginningDelimiter" value="`"/>
+        <property name="endingDelimiter" value="`"/>
+        <property name="mergeable" value="false"/>
+        <plugin type="tk.mybatis.mapper.generator.MapperPlugin">
+            <property name="mappers" value="tk.mybatis.mapper.common.Mapper"/>
+        </plugin>
+
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://192.168.31.90:3306/dev_yunya_mall?useUnicode=true"
+                        userId="sa"
+                        password="Admin001!">
+        </jdbcConnection>
+
+        <javaModelGenerator targetPackage="${targetModelPackage}" targetProject="${targetJavaProject}"/>
+
+        <sqlMapGenerator targetPackage="${targetXMLPackage}" targetProject="${targetResourcesProject}"/>
+
+        <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
+                             type="XMLMAPPER"/>
+
+                <!--<table tableName="coupon_common_info" domainObjectName="CouponCommonInfo"/>-->
+        <!--        <table tableName="card" domainObjectName="Card"/>-->
+        <!--        <table tableName="card_clinic" domainObjectName="CardClinic"/>-->
+        <!--        <table tableName="card_statistics" domainObjectName="CardStatistics"/>-->
+                <!--<table tableName="discount_coupon" domainObjectName="DiscountCoupon"/>-->
+                <!--<table tableName="package_coupon" domainObjectName="PackageCoupon"/>-->
+                <!--<table tableName="package_coupon_item" domainObjectName="PackageCouponItem"/>-->
+                <!--<table tableName="recharge_card" domainObjectName="RechargeCard"/>-->
+                <!--<table tableName="special_package_coupon" domainObjectName="SpecialPackageCoupon"/>-->
+                <!--<table tableName="special_package_coupon_item" domainObjectName="SpecialPackageCouponItem"/>-->
+                <!--<table tableName="vouche_coupon" domainObjectName="VoucheCoupon"/>-->
+                <!--<table tableName="voucher_discount_item" domainObjectName="VoucherDiscountItem"/>-->
+        <!--<table tableName="coupon_file_info" domainObjectName="CouponFileInfo"/>-->
+        <table tableName="order" domainObjectName="Order"/>
+
+    </context>
+</generatorConfiguration>
