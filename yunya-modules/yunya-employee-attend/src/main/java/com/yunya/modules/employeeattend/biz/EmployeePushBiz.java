@@ -55,15 +55,19 @@ public class EmployeePushBiz extends BaseBiz<EmployeePushMapper, EmployeePush> {
       List<EmployeePush> employeePushList = query(employeePushForm.getEmpId());
       if (employeePushList != null && !employeePushList.isEmpty()) {
         List<String> iosUL = new ArrayList<String>();
+        List<Integer> iosEmp = new ArrayList<>();
         List<String> androidUL = new ArrayList<String>();
+        List<Integer> androidEmp = new ArrayList<>();
         employeePushList.forEach(
             employeePush -> {
               switch (employeePush.getPlatform()) {
                 case 1:
                   iosUL.add(employeePush.getRegistrationId());
+                  iosEmp.add(employeePush.getEmployeeId());
                   break;
                 case 2:
                   androidUL.add(employeePush.getRegistrationId());
+                  androidEmp.add(employeePush.getEmployeeId());
                   break;
               }
             });
@@ -76,6 +80,7 @@ public class EmployeePushBiz extends BaseBiz<EmployeePushMapper, EmployeePush> {
           }
           iosList.setPlatform(1);
           iosList.setUserList(iosUL);
+          iosList.setEmpId(iosEmp);
           employeePushFormList.add(iosList);
         }
         if (androidUL.size() > 0) {
@@ -87,6 +92,7 @@ public class EmployeePushBiz extends BaseBiz<EmployeePushMapper, EmployeePush> {
           }
           androidList.setPlatform(2);
           androidList.setUserList(androidUL);
+          androidList.setEmpId(androidEmp);
           employeePushFormList.add(androidList);
         }
         return employeePushFormList;

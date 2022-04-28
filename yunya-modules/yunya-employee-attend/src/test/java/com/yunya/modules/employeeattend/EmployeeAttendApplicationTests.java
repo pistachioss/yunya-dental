@@ -180,4 +180,12 @@ class EmployeeAttendApplicationTests {
       JpushManager.getInstance().pushAttend(el, 1);
     });
   }
+
+  @Test
+  public void testRevokeLeave() {
+    BaseContextHandler.setUserID("742");
+    LeaveInfoForm form = new LeaveInfoForm();
+    form.setId(40);
+    leaveInfoController.revoke(form);
+  }
 }
