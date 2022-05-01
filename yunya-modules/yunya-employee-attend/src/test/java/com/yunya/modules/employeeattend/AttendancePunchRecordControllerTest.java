@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.*;
 import com.yunya.feign.employee_attend.vo.AttendanceInvalidCountVO;
 import com.yunya.feign.employee_attend.vo.AttendanceUnpunchCountVO;
+import com.yunya.feign.employee_attend.vo.EmpPushMsgUnReadCountVO;
 import com.yunya.feign.employee_attend.vo.EmployeePushMessageRecordVO;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -151,8 +152,17 @@ public class AttendancePunchRecordControllerTest {
     @Test
     public void testPushMessageFind() {
         EmployeePushMessageRecordQueryForm query = new EmployeePushMessageRecordQueryForm();
-        query.setUserId(635);
+        query.setUserId(735);
+        query.setPreDateTime("2022-04-13");
         PageInfo<EmployeePushMessageRecordVO> data = employeePushMessageRecordController.findList(query).getData();
+        System.out.println(JSONObject.toJSON(data));
+    }
+
+    @Test
+    public void testFindCountUnRead() {
+        EmployeePushMessageRecordQueryForm query = new EmployeePushMessageRecordQueryForm();
+        query.setUserId(742);
+        EmpPushMsgUnReadCountVO data = employeePushMessageRecordController.findCountUnRead(query).getData();
         System.out.println(JSONObject.toJSON(data));
     }
 

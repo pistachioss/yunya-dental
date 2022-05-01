@@ -36,9 +36,9 @@ public class TreatPlanRecordVO implements Serializable {
     @ApiModelProperty("门诊id")
     private Integer orgId;
 
-    /** 普通电子病历id*/
-    @ApiModelProperty("普通电子病历id")
-    private Integer medicalRecordId;
+    /** 治疗计划类型id*/
+    @ApiModelProperty("治疗计划类型id")
+    private Integer planTypeId;
 
     /** 门诊*/
     @ApiModelProperty("门诊")

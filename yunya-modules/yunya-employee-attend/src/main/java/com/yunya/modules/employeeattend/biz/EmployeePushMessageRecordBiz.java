@@ -4,20 +4,19 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.EmployeePushMessageRecordForm;
 import com.yunya.feign.employee_attend.form.EmployeePushMessageRecordQueryForm;
+import com.yunya.feign.employee_attend.vo.EmpPushMsgUnReadCountVO;
 import com.yunya.feign.employee_attend.vo.EmployeePushMessageRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.MessagePushTypeEnum;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.models.employee_attend.EmployeePush;
 import com.yunya.models.employee_attend.EmployeePushMessageRecord;
 import com.yunya.modules.employeeattend.form.EmployeePushForm;
 import com.yunya.modules.employeeattend.mapper.EmployeePushMessageRecordMapper;
 import com.yunya.modules.employeeattend.util.JpushManager;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import tk.mybatis.mapper.entity.Example;
@@ -43,26 +42,24 @@ import static com.yunya.framework.common.enums.MessagePushTypeEnum.*;
 public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRecordMapper, EmployeePushMessageRecord> {
     @Resource(name = "poolExecutor")
     private ExecutorService executorService;
-    @Autowired
-    private EmployeePushBiz employeePushBiz;
 
-    public void crtMsgRecord(EmployeePushForm form, Integer pushType) {
+    /**
+     * 异步生成推送消息记录
+     *
+     * @param form
+     * @param pushType
+     */
+    public void asyncGeneratMsgRecord(EmployeePushForm form, Integer pushType) {
         if (!ObjectUtils.isEmpty(form)) {
             executorService.submit(()->{
                 Date now = new Date(System.currentTimeMillis());
                 List<Integer> ids = form.getIds();
-                List<String> userDevices = form.getUserList();
+                List<Integer> empIds = form.getEmpId();
                 if (StringHelper.isNotEmpty(ids)) {
                     for (int i = 0; i < ids.size(); i++) {
-                        String regId = userDevices.get(i);
-                        EmployeePush push = employeePushBiz.findOneByRegId(regId);
-                        if (ObjectUtils.isEmpty(push)) {
-                            log.error("JPush device regId:{} was not binding!", regId);
-                            continue;
-                        }
                         EmployeePushMessageRecord entity = new EmployeePushMessageRecord();
                         entity.setSourceId(ids.get(i));
-                        entity.setUserId(push.getEmployeeId());
+                        entity.setUserId(empIds.get(i));
                         entity.setPushType(pushType);
                         entity.setContent(form.getContent());
                         entity.setTitle(form.getTitle());
@@ -114,7 +111,7 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
             pushSuccess = jPush.pushLeaveCancel(employeePushForm, code);
         }
         if (pushSuccess) {
-            crtMsgRecord(employeePushForm, code);
+            asyncGeneratMsgRecord(employeePushForm, code);
         }
     }
 
@@ -125,19 +122,21 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
      * @return
      */
     public PageInfo<EmployeePushMessageRecordVO> findList(EmployeePushMessageRecordQueryForm query) {
-        Integer userId = query.getUserId();
-        if (ObjectUtils.isEmpty(userId)) {
-            query.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
-        }
-        String date = query.getPreDateTime();
-        if (StringHelper.isEmpty(date)) {
-            query.setPreDateTime(DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
-        }
+        defaultQueryUser(query);
+        defaultQueryDate(query);
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }
         List<EmployeePushMessageRecordVO> result = mapper.selectPushMessageRecordList(query);
         return new PageInfo<>(result);
+    }
+
+    private void defaultQueryUser(EmployeePushMessageRecordQueryForm query) {
+        Integer userId = query.getUserId();
+        if (ObjectUtils.isEmpty(userId)) {
+            userId = Integer.parseInt(BaseContextHandler.getUserID());
+            query.setUserId(userId);
+        }
     }
 
     /**
@@ -163,5 +162,24 @@ public class EmployeePushMessageRecordBiz extends BaseBiz<EmployeePushMessageRec
             entity.setUptTime(new Date(System.currentTimeMillis()));
             mapper.updateByPrimaryKeySelective(entity);
         }
+    }
+
+    /**
+     * 未读消息数量
+     *
+     * @param query
+     * @return
+     */
+    public EmpPushMsgUnReadCountVO findCountUnRead(EmployeePushMessageRecordQueryForm query) {
+        defaultQueryUser(query);
+        defaultQueryDate(query);
+        return mapper.selectCountUnRead(query);
+    }
+
+    private void defaultQueryDate(EmployeePushMessageRecordQueryForm query) {
+        String date = query.getPreDateTime();
+//        if (StringHelper.isEmpty(date)) {
+        query.setPreDateTime(DateTime.now().toString("yyyy-MM-dd HH:mm:ss"));
+//        }
     }
 }

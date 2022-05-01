@@ -55,6 +55,7 @@
     <select id="findPatientPublicInfoById" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo">
         select pbi.face_url faceUrl,pbi.name name,pbi.gender gender,
                TIMESTAMPDIFF(YEAR,pbi.birthday,CURDATE()) AS age,
+               pbi.birthday,
                pbi.mobile mobile,
                pbi.medical_number medicalNumber,pmi.member_type_id memberTypeId,
                pmi.card_number cardNumber,ppi.prepayment_number prepaymentNumber,

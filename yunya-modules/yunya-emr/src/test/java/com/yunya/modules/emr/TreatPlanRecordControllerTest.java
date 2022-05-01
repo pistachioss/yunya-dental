@@ -1,38 +1,29 @@
 package com.yunya.modules.emr;
 
-import com.alibaba.fastjson.JSONArray;
-import com.google.common.collect.Lists;
-import com.yunya.feign.emr.domain.model.*;
-import com.yunya.feign.emr.domain.vo.ExaminationsVO;
+import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.emr.domain.model.TreatPlanDetailWriteoffInfoModel;
+import com.yunya.feign.emr.domain.model.TreatPlanDetailWriteoffModel;
+import com.yunya.feign.emr.domain.model.TreatPlanRecordModel;
+import com.yunya.feign.emr.domain.query.PlanTypeStatisticsQuery;
+import com.yunya.feign.emr.domain.query.TreatPlanRecordQuery;
+import com.yunya.feign.emr.domain.vo.TreatPlanRecordInfoVO;
+import com.yunya.feign.emr.domain.vo.TreatPlanRecordVO;
+import com.yunya.feign.emr.domain.vo.TreatPlanTypeStatisticsVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.enums.TreatPlanStatusEnum;
-import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.models.emr.MedicalCommonRecord;
-import com.yunya.models.treatment.TreatmentRecord;
-import com.yunya.modules.emr.biz.TreatPlanRecordBiz;
+import com.yunya.modules.emr.controller.TreatPlanRecordController;
 import com.yunya.modules.emr.mapper.MedicalCommonRecordMapper;
 import com.yunya.modules.emr.rpc.EmrRest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
-import org.junit.Before;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -50,7 +41,7 @@ public class TreatPlanRecordControllerTest {
     @Autowired
     private MedicalCommonRecordMapper medicalCommonRecordMapper;
     @Autowired
-    private TreatPlanRecordBiz treatPlanRecordBiz;
+    private TreatPlanRecordController treatPlanRecordController;
     @Autowired
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
     @Resource(name = "customizeThreadPool")
@@ -58,125 +49,8 @@ public class TreatPlanRecordControllerTest {
     @Autowired
     private EmrRest emrRest;
 
-    @Before
-    public void before() {
-
-    }
-
     @Test
-    public void testAdd() throws InterruptedException {
-        List<MedicalCommonRecord> list = medicalCommonRecordMapper.selectAll();
-        if (StringHelper.isNotEmpty(list)) {
-            Integer status = TreatPlanStatusEnum.UNCONFIRM.getCode();
-            List<List<MedicalCommonRecord>> parts = Lists.partition(list, 500);
-            CountDownLatch cdl = new CountDownLatch(parts.size());
-            List<Future> resultFutures = new ArrayList<>();
-            parts.forEach(part-> resultFutures.add(
-                threadPoolExecutor.submit(()->{
-                    try {
-                        batchSave(part, status);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        cdl.countDown();
-                    }
-                })));
-            cdl.await();
-            printExceptionLog(resultFutures, log);
-        }
-    }
-
-    /**
-     * 打印错误信息
-     *
-     * @param resultFutures 异常信息
-     * @param log
-     */
-    public static void printExceptionLog(List<Future> resultFutures, Logger log) {
-        if (StringHelper.isNotEmpty(resultFutures)) {
-            resultFutures.forEach(
-                    future -> {
-                        try {
-                            Object o = future.get();
-                            if (o instanceof ClientServiceException) {
-                                ClientServiceException cexp = (ClientServiceException) o;
-                                log.info(cexp.getMessage());
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    });
-        }
-    }
-
-    private void batchSave(List<MedicalCommonRecord> list, Integer status) {
-        BaseContextHandler.setUserID("-999");
-        list.forEach(vo->{
-            String planStr = vo.getPlan();
-            if (StringHelper.isNotEmpty(planStr)) {
-                JSONArray jsonArray = JSONArray.parseArray(planStr);
-                List<ExaminationsVO> plans = jsonArray.toJavaList(ExaminationsVO.class);
-
-                StringBuilder builder = new StringBuilder();
-                Iterator<ExaminationsVO> it = plans.iterator();
-                while (it.hasNext()) {
-                    ExaminationsVO plan = it.next();
-                    String describe = plan.getDescribe();
-                    String toothPosition = plan.getTooth_position();
-                    if (StringHelper.isEmpty(describe) && StringHelper.isEmpty(toothPosition)) {
-                        it.remove();
-                        continue;
-                    }
-                    if (StringHelper.isNotEmpty(describe)) {
-                        if (builder.length()>0) {
-                            builder.append("，");
-                        }
-                        builder.append(describe);
-                    }
-                }
-                if (StringHelper.isNotEmpty(plans)) {
-                    TreatPlanRecordModel model = new TreatPlanRecordModel();
-                    model.setMedicalRecordId(vo.getId());
-                    TreatmentRecord treatment = remoteTreatmentServiceFeign.findTreatmentRecordById(vo.getTreatmentId());
-                    int orgId = 0;
-                    if (ObjectUtils.isNotEmpty(treatment)) {
-                        orgId = treatment.getOrgId();
-                    }
-                    model.setOrgId(orgId);
-                    model.setPatientId(vo.getPatientId());
-                    model.setDentistId(vo.getMajorDentistId());
-                    model.setStatus(status);
-                    String crtTime = DateUtil.format(vo.getCrtTime(), "yyyy-MM-dd");
-                    String visitType = vo.getType()==0?"初诊":"复诊";
-                    model.setPlanName(crtTime + visitType + "治疗计划");
-
-                    TreatPlanStepModel stepModel = new TreatPlanStepModel();
-                    stepModel.setStatus(status);
-                    stepModel.setStepName("步骤1");
-                    List<TreatPlanDetailModel> details = new ArrayList<>();
-                    for (ExaminationsVO plan : plans) {
-                        String describe = plan.getDescribe();
-                        String toothPosition = plan.getTooth_position();
-                        TreatPlanDetailModel detail = new TreatPlanDetailModel();
-                        detail.setRemark(describe);
-                        detail.setBillingItemId(-1);
-                        detail.setType((byte)-1);
-                        detail.setStatus(status);
-                        detail.setPrice(new BigDecimal(0.00));
-                        detail.setQuantity(0);
-                        detail.setToothBit(toothPosition);
-                        details.add(detail);
-                    }
-                    stepModel.setTreatPlanDetails(details);
-                    model.setTreatPlanSteps(Arrays.asList(stepModel));
-                    model.setSummary(builder.toString());
-                    treatPlanRecordBiz.save(model, (byte) 0, true);
-                }
-            }
-        });
-    }
-
-    public void test() {
+    public void testTreatPlanWriteOffQunatity() {
         TreatPlanDetailWriteoffModel model = new TreatPlanDetailWriteoffModel();
         TreatPlanDetailWriteoffInfoModel obj = new TreatPlanDetailWriteoffInfoModel();
         obj.setTreatmentId(441848);
@@ -187,4 +61,45 @@ public class TreatPlanRecordControllerTest {
         emrRest.treatPlanWriteOffQunatity(model);
     }
 
+    @Test
+    public void testSave() {
+        BaseContextHandler.setUserID("636");
+        String param = "{\"patientId\":78307,\"dentistId\":636,\"planTypeId\":552,\"orgId\":42,\"planName\":\"计划1\",\"planId\":null,\"summary\":\"\",\"remark\":\"\",\"operationReason\":\"\",\"status\":1,\"showStatus\":1,\"treatPlanSteps\":[{\"stepName\":\"步骤1\",\"treatPlanDetails\":[{\"billingItemId\":201,\"billingItemName\":\"初诊挂号费【1】\",\"price\":190,\"quantity\":2,\"remark\":\"\",\"toothBit\":\"\",\"type\":0,\"unit\":\"次\",\"orignPrice\":380,\"index\":0},{\"billingItemId\":203,\"billingItemName\":\"器械消毒费\",\"price\":20,\"quantity\":1,\"remark\":\"\",\"toothBit\":\"\",\"type\":0,\"unit\":\"次\",\"orignPrice\":20,\"index\":1}]}]}";
+        TreatPlanRecordModel model = JSONObject.parseObject(param, TreatPlanRecordModel.class);
+        treatPlanRecordController.save(model);
+    }
+    
+    @Test
+    public void test() {
+        PlanTypeStatisticsQuery query = new PlanTypeStatisticsQuery();
+        query.setDateType((byte)0);
+        query.setStartDate("2021-01-01");
+        query.setEndDate("2022-05-01");
+        query.setOrgIds(Arrays.asList(26));
+        query.setPlanTypeId(null);
+        PageInfo<TreatPlanTypeStatisticsVO> data = treatPlanRecordController.findTreatPlanTypeStatistics(query).getData();
+        System.out.println(JSONObject.toJSON(data));
+    }
+    
+    @Test
+    public void testFindList() {
+        TreatPlanRecordQuery query = new TreatPlanRecordQuery();
+        query.setPatientId(78307);
+        query.setDateType((byte) 0);
+        query.setStartDate("2021-01-01");
+        query.setEndDate("2022-05-01");
+        PageInfo<TreatPlanRecordInfoVO> data = treatPlanRecordController.findList(query).getData();
+        System.out.println(JSONObject.toJSON(data));
+    }
+
+    @Test
+    public void testFindPatientTreatPlanList() {
+        TreatPlanRecordQuery query = new TreatPlanRecordQuery();
+        query.setPatientId(78307);
+        query.setDateType((byte) 0);
+        query.setStartDate("2021-01-01");
+        query.setEndDate("2022-05-01");
+        PageInfo<TreatPlanRecordVO> data = treatPlanRecordController.findPatientTreatPlanList(42, query).getData();
+        System.out.println(JSONObject.toJSON(data));
+    }
 }

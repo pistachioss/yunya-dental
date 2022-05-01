@@ -19,3 +19,9 @@ spring:
     host: 172.16.17.181
     port: 6379
     password: foobared
+
+# netty配置
+netty:
+  protocol: ws://test.ivy2.yunya365.com/api/treatment-netty
+  discovery:
+    server-addr: 172.16.17.181:8848

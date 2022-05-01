@@ -461,7 +461,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             salesChannel.setName(selfChannel);
             salesChannel = salesChannelMapper.selectOne(salesChannel);
             if (salesChannel == null) {
-                throw new ClientServiceException("请先设置销售渠道", OPERATION_NOT_ALLOW);
+                throw new ClientServiceException("请先设置销售渠道：".concat(selfChannel), OPERATION_NOT_ALLOW);
             }
             //获取组织名
             String orgName = getOrgName(orgId);

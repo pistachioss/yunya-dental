@@ -556,7 +556,7 @@
 
     <select id="listPatientByKeys" resultType="com.yunya.feign.report.domain.vo.PatientManageVo">
         select
-        bp.patient_id,
+        bp.patient_id as patientId,
         bp.`name` as patientName,
         bp.medical_number as medicalNumber,
         timestampdiff(year, bp.birthday, curdate()) as age,
@@ -574,6 +574,7 @@
         pm.principal_balance as principalBalance,
         bp.origin_id as patientOrionName,
         bp.origin_type_name as patientOrionTypeName,
+        bpgr.patientGroupName,
         date_format(bp.first_visit_date, '%Y/%m/%d')as firstVisitDate,
         bo.abbreviation as firstVisitOutpatient,
         be.employee_name as firstVisitDoctors,
@@ -585,6 +586,11 @@
         left join base_employee be1 on be1.user_id = bp.last_visit_doctors
         left join base_organization bo on bo.org_id = bp.first_visit_outpatient
         left join patient_manage pm on bp.patient_id = pm.patient_id
+        left join (
+            SELECT patient_id, GROUP_CONCAT(group_name) AS patientGroupName
+            FROM base_patient_group_relation
+            GROUP BY patient_id
+        ) bpgr on bpgr.patient_id = bp.patient_id
         <where>
             and bp.medical_number is not null and substr(bp.medical_number, 1, 1) != '*'
             <if test="query.patientKeyWord != null and query.patientKeyWord != ''">
@@ -647,6 +653,13 @@
                 where mobile is not null and trim(mobile) != ""
                 and `name` is not null and trim(`name`) != ""
                 group by `name`, `mobile` having count(*) > 1
+                )
+            </if>
+            <if test="query.patientGroupId != null">
+                AND EXISTS (
+                    SELECT bpg.patient_id FROM base_patient_group_relation bpg
+                    WHERE bpg.patient_id = bp.patient_id
+                    AND bpg.group_id = #{query.patientGroupId}
                 )
             </if>
         </where>
@@ -889,5 +902,103 @@
             </if>
         </where>
         ORDER BY bp.patient_id
+    </select>
+
+
+    <!--渠道来源患者消费数据-->
+    <select id="selectPatientOriginConsumption"
+            resultType="com.yunya.feign.report.domain.vo.PatientOriginConsumptionVO">
+        SELECT
+            bp.patient_id AS patientId,
+            bp.medical_number AS medicalNumber,
+            bp.name AS patientName,
+            bp.mobile,
+            TIMESTAMPDIFF(YEAR,bp.birthday,CURDATE()) AS age,
+            bp.gender,
+            bpm.member_level_name AS memberLevelName,
+            bp.origin_type_name AS originTypeName,
+            bpo.originName,
+            ifnull(bb.receivedAmount,0) AS receivedAmount,
+            ifnull(bb1.cumulativeConsumption,0),
+            ifnull(bb1.totalArrears,0),
+            bo.abbreviation,
+            DATE_FORMAT(bp.first_visit_date,'%Y-%m-%d') AS firstVisitDate,
+            be.employee_name AS firstVisitDoctor,
+            DATE_FORMAT(bp.last_visit_date,'%Y-%m-%d') AS lastVisitDate,
+            be1.employee_name AS lastVisitDoctor
+        FROM base_patient bp
+        INNER JOIN(
+            select
+                patient_id AS patientId,
+                sum(bb.received_amount) as receivedAmount
+            from base_bill bb
+            <where>
+                <if test="query.dateType==0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType==1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType==2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT(bb.bill_date, '%Y') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT(bb.bill_date, '%Y') &lt;= #{query.endDate}
+                    </if>
+                </if>
+            </where>
+            group by bb.patient_id
+        ) bb ON bb.patientId=bp.patient_id
+        LEFT JOIN (
+            select
+                patient_id,
+                sum(bb.actual_amount) as cumulativeConsumption,
+                sum(bb.debt_amount) as totalArrears
+            from base_bill bb
+            group by bb.patient_id
+        ) bb1 ON bp.patient_id = bb1.patient_id
+        LEFT JOIN (
+            SELECT
+                id AS origin_id,
+                origin_type,
+                name AS originName
+            FROM base_patient_origin bpo
+            WHERE bpo.parent_id>2
+            UNION ALL
+            SELECT
+                user_id AS origin_id,
+                1 AS origin_type,
+                employee_name AS originName
+            FROM base_employee
+            UNION ALL
+            SELECT
+                patient_id AS origin_id,
+                2 AS origin_type,
+                name AS originName
+            FROM base_patient
+        ) bpo ON bp.origin_type = bpo.origin_type AND bp.origin_id = bpo.origin_id
+        LEFT JOIN (SELECT * FROM base_patient_member where type=0) bpm ON bpm.patient_id=bp.patient_id
+        LEFT JOIN base_employee be ON be.user_id=bp.first_visit_doctors
+        LEFT JOIN base_employee be1 ON be1.user_id=bp.last_visit_doctors
+        LEFT JOIN base_organization bo ON bo.org_id=bp.first_visit_outpatient
+        <where>
+            <if test="query.originTypes!=null and query.originTypes.size()>0">
+                AND bp.origin_type in
+                <foreach collection="query.originTypes" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>

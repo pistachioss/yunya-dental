@@ -1,5 +1,6 @@
 package com.yunya.gate.config;
 
+import com.yunya.gate.filter.WebSocketLogFilter;
 import com.yunya.gate.handler.RequestBodyRoutePredicateFactory;
 import feign.codec.Decoder;
 import org.springframework.beans.factory.ObjectFactory;
@@ -66,5 +67,11 @@ public class GatewayConfig {
   @LoadBalanced
   public WebClient.Builder loadBalancedWebClientBuilder() {
     return WebClient.builder();
+  }
+
+  /** WebSocket日志过滤器*/
+  @Bean
+  public WebSocketLogFilter getWebsocketHandler() {
+    return new WebSocketLogFilter();
   }
 }

@@ -3,6 +3,7 @@ package com.yunya.modules.employeeattend.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.EmployeePushMessageRecordForm;
 import com.yunya.feign.employee_attend.form.EmployeePushMessageRecordQueryForm;
+import com.yunya.feign.employee_attend.vo.EmpPushMsgUnReadCountVO;
 import com.yunya.feign.employee_attend.vo.EmployeePushMessageRecordVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -10,6 +11,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.employeeattend.biz.EmployeePushMessageRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +22,18 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 public class EmployeePushMessageRecordController {
   @Autowired private EmployeePushMessageRecordBiz employeePushMessageRecordBiz;
+
+  /**
+   * 未读消息数量
+   *
+   * @param query
+   */
+  @PostMapping("/count/unRead")
+  @ApiOperation("未读消息数量")
+  @CurrentUser
+  public ResponseResult<EmpPushMsgUnReadCountVO> findCountUnRead(@RequestBody @Validated EmployeePushMessageRecordQueryForm query) {
+    return ResponseUtil.success(employeePushMessageRecordBiz.findCountUnRead(query));
+  }
 
   /**
    * 根据条件查询列表
@@ -41,8 +55,8 @@ public class EmployeePushMessageRecordController {
   @PutMapping("/uptHaveRead")
   @ApiOperation("推送消息状态更新已读")
   @CurrentUser
-  public ResponseResult<PageInfo<EmployeePushMessageRecordVO>> uptPushMessageHaveRead(@RequestBody @Validated EmployeePushMessageRecordForm form) {
+  public ResponseResult<T> uptPushMessageHaveRead(@RequestBody @Validated EmployeePushMessageRecordForm form) {
     employeePushMessageRecordBiz.uptPushMessageHaveRead(form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

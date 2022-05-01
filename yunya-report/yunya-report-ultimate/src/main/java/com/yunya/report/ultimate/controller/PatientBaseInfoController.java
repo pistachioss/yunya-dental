@@ -4,15 +4,19 @@ import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientSearchQuery;
 import com.yunya.feign.report.domain.query.PatientManageQuery;
+import com.yunya.feign.report.domain.query.PatientOriginConsumptionQuery;
 import com.yunya.feign.report.domain.vo.PatientDataVo;
 import com.yunya.feign.report.domain.vo.PatientInfoVO;
 import com.yunya.feign.report.domain.vo.PatientManageVo;
+import com.yunya.feign.report.domain.vo.PatientOriginConsumptionVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.PatientBaseInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -77,4 +81,32 @@ public class PatientBaseInfoController {
 
   }
 
+  /**
+   * 根据条件查询渠道来源消费报表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-市场报表-渠道来源消费报表")
+  @PostMapping(value = "/originConsumption/list", name = "公司端报表-报表统计-市场报表-渠道来源消费报表")
+  public ResponseResult<PageInfo<PatientOriginConsumptionVO>> findPatientOriginConsumption(
+          @RequestBody @Validated PatientOriginConsumptionQuery query) {
+    PageInfo<PatientOriginConsumptionVO> pageInfo = patientBaseInfoBiz.findPatientOriginConsumption(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出渠道来源患者消费数据
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-市场报表-渠道来源消费报表导出")
+  @PostMapping(value = "/originConsumption/list/export", name = "公司端报表-报表统计-市场报表-渠道来源消费报表导出")
+  public ResponseResult<T> exportPatientOriginConsumption(
+          HttpServletResponse response, @RequestBody @Validated PatientOriginConsumptionQuery query)
+          throws Exception {
+    patientBaseInfoBiz.exportPatientOriginConsumption(query, response);
+    return ResponseUtil.success(null);
+  }
 }
