@@ -52,10 +52,7 @@ import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.tariff.*;
-import com.yunya.models.treatment.BillPayDetailRecord;
-import com.yunya.models.treatment.BillPayRecord;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
+import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import com.yunya.modules.treatment.mapper.BillRecordMapper;
 import com.yunya.modules.treatment.mapper.OrderDetailMapper;
@@ -86,6 +83,7 @@ import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_ITEM_INFO;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介: 开单明细业务层（开单明细列表查询、添加商品、删除开单明细）
@@ -1300,11 +1298,16 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    */
   private List<ClinicTariffDiscountCouponVO> findTariffCategoryDiscountAmount(
           CategoryIncomeQuery query) {
-    List<Integer> orderRecordIds = billRecordBiz.selectRemoveBillAdjustDiscountOrderIds(query);
-    if (StringHelper.isNotEmpty(orderRecordIds)) {
+    List<BillRecord> billRecords = billRecordBiz.selectRemoveBillAdjustDiscountOrderIds(query);
+    if (StringHelper.isNotEmpty(billRecords)) {
+      Map<Integer, Integer> map = billRecords.stream().collect(toMap(BillRecord::getOrderRecordId, BillRecord::getOrgId));
       DiscountCouponQuery queryForm = new DiscountCouponQuery();
-      queryForm.setOrderRecordIds(orderRecordIds);
-      return discountFeign.findClinicTariffCategoryDiscountCoupon(queryForm);
+      queryForm.setOrderRecordIds(map.keySet());
+      List<ClinicTariffDiscountCouponVO> discounts = discountFeign.findClinicTariffCategoryDiscountCoupon(queryForm);
+      if (StringHelper.isNotEmpty(discounts)) {
+        discounts.forEach(vo-> vo.setOrgId(map.get(vo.getOrderRecordId())));
+      }
+      return discounts;
     }
     return new ArrayList();
   }
