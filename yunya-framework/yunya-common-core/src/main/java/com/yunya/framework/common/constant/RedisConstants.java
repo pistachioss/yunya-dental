@@ -1,5 +1,6 @@
 package com.yunya.framework.common.constant;
 
+import com.google.common.base.Joiner;
 import com.yunya.framework.common.utils.StringHelper;
 import lombok.Data;
 import lombok.ToString;
@@ -139,6 +140,12 @@ public class RedisConstants implements Serializable {
   /** 员工账单时统计锁 */
   public static final String LOCK_STATISTICS_EMP_BILL = "lock:statistics:emp:bill:";
 
+  /** ---------------------------------艾维小程序------------------------------------------ */
+  /** mini登录token */
+  public static final String MINI_TOKEN = "mini:token";
+  /** mini登录id */
+  public static final String MINI_USER_ID =  "mini:userId";
+
   /**
    * 设置key中的占位符
    *
@@ -175,5 +182,10 @@ public class RedisConstants implements Serializable {
     }
 
     return sb.toString();
+  }
+
+  public static String buildLockCacheKey(String lockPrefix, Object suffix)
+  {
+    return Joiner.on(":").join(lockPrefix, suffix);
   }
 }

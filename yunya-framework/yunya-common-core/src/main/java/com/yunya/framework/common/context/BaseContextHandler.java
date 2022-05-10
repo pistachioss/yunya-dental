@@ -67,6 +67,16 @@ public class BaseContextHandler {
     return StringHelper.getObjectValue(value);
   }
 
+  public static String getAuthorization() {
+    Object value = get(CommonConstants.TOKEN_HEADER);
+    return StringHelper.getObjectValue(value);
+  }
+
+  public static String getOpenId() {
+    Object value = get(CommonConstants.JWT_KEY_OPEN_ID);
+    return StringHelper.getObjectValue(value);
+  }
+
   /**
    * 设置组织ID
    *
@@ -110,6 +120,24 @@ public class BaseContextHandler {
    */
   public static void setUsername(String username) {
     set(CommonConstants.CONTEXT_KEY_USERNAME, username);
+  }
+
+  /**
+   * Authorization
+   * @param authorization:
+   * @return void
+   */
+  public static void setAuthorization(String authorization) {
+    set(CommonConstants.TOKEN_HEADER, authorization);
+  }
+
+  /**
+   * 设置open_id
+   *
+   * @param openId openId
+   */
+  public static void setOpenId(String openId) {
+    set(CommonConstants.JWT_KEY_OPEN_ID, openId);
   }
 
   /**

@@ -215,6 +215,15 @@ spring:
             - StripPrefix=1
           metadata:
             title: "扩展服务"
+        - id: ivy-mini
+          uri: lb://ivy-mini
+          order: 8764
+          predicates:
+            - Path=/api/ivy/mini/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "艾维小程序服务"
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848

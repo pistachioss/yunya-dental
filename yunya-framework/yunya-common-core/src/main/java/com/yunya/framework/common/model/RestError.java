@@ -5,7 +5,7 @@ package com.yunya.framework.common.model;
  */
 public interface RestError {
 
-    Integer getCode();
+    int getCode();
 
     String getMessage();
 }

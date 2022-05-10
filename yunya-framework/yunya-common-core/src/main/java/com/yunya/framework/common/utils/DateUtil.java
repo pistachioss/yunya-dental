@@ -1007,6 +1007,20 @@ public class DateUtil {
     return pregnancyWeek / 4;
   }
 
+  /**
+   * Date转换为LocalDateTime
+   *
+   * @param date 日期
+   */
+  public static LocalDateTime date2LocalDateTime(Date date) {
+    if (date == null) {
+      return LocalDateTime.now();
+    }
+    Instant instant = date.toInstant();
+    ZoneId zoneId = ZoneId.systemDefault();
+    return instant.atZone(zoneId).toLocalDateTime();
+  }
+
   public static void main(String[] args) {
     System.out.println(parse2Date("1941-09-04"));
   }

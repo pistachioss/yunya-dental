@@ -1,6 +1,7 @@
 package com.yunya.framework.common.utils;
 
 import cn.hutool.core.text.StrFormatter;
+import com.yunya.framework.common.constant.StringPool;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
@@ -479,5 +480,46 @@ public class StringHelper extends StringUtils {
       }
     }
     return list;
+  }
+
+  /**
+   * 截取分隔字符串之后的字符串，不包括分隔字符串<br>
+   * 如果给定的字符串为空串（null或""），返回原字符串<br>
+   * 如果分隔字符串为空串（null或""），则返回空串，如果分隔字符串未找到，返回空串
+   *
+   * <p>栗子：
+   *
+   * <pre>
+   * StringHelper.subAfter(null, *)      = null
+   * StringHelper.subAfter("", *)        = ""
+   * StringHelper.subAfter(*, null)      = ""
+   * StringHelper.subAfter("abc", "a")   = "bc"
+   * StringHelper.subAfter("abcba", "b") = "cba"
+   * StringHelper.subAfter("abc", "c")   = ""
+   * StringHelper.subAfter("abc", "d")   = ""
+   * StringHelper.subAfter("abc", "")    = "abc"
+   * </pre>
+   *
+   * @param string 被查找的字符串
+   * @param separator 分隔字符串（不包括）
+   * @param isLastSeparator 是否查找最后一个分隔字符串（多次出现分隔字符串时选取最后一个），true为选取最后一个
+   * @return 切割后的字符串
+   * @since 3.1.1
+   */
+  public static String subAfter(
+          CharSequence string, CharSequence separator, boolean isLastSeparator) {
+    if (isEmpty(string)) {
+      return null == string ? null : string.toString();
+    }
+    if (separator == null) {
+      return StringPool.EMPTY;
+    }
+    final String str = string.toString();
+    final String sep = separator.toString();
+    final int pos = isLastSeparator ? str.lastIndexOf(sep) : str.indexOf(sep);
+    if (pos == INDEX_NOT_FOUND) {
+      return StringPool.EMPTY;
+    }
+    return str.substring(pos + separator.length());
   }
 }

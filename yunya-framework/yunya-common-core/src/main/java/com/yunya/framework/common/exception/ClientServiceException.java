@@ -22,7 +22,19 @@ public class ClientServiceException extends BaseException {
     super(msg, exceptionCode);
   }
 
+  public ClientServiceException(int code, String message, Throwable cause) {
+    super(code, message, cause);
+  }
+
   public ClientServiceException(RestError restError, Object...param) {
     super(String.format(restError.getMessage(), param), restError.getCode());
+  }
+
+  public static ClientServiceException wrap(RestError ex) {
+     return new ClientServiceException(ex.getMessage(), ex.getCode());
+  }
+
+  public static ClientServiceException wrap(RestError ex, Throwable cause) {
+    return new ClientServiceException(ex.getCode(), ex.getMessage(), cause);
   }
 }
