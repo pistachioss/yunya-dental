@@ -82,6 +82,7 @@
             resultType="com.yunya.feign.emr.domain.vo.TreatPlanTypeStatisticsVO">
     SELECT
         org_id AS orgId,
+        dentist_id AS dentistId,
         plan_type_id AS planTypeId,
         count(*) AS planNum
     FROM treat_plan_record
@@ -92,6 +93,12 @@
       <if test="query.orgIds!=null and query.orgIds.size()>0">
         AND org_id in
         <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
+      <if test="query.dentistIds!=null and query.dentistIds.size()>0">
+        AND dentist_id in
+        <foreach collection="query.dentistIds" item="item" index="index" open="(" close=")" separator=",">
           #{item}
         </foreach>
       </if>
@@ -120,14 +127,14 @@
         </if>
       </if>
     </where>
-    GROUP BY org_id, plan_type_id
-    ORDER BY org_id, plan_type_id
+    GROUP BY org_id, dentist_id, plan_type_id
+    ORDER BY org_id, dentist_id, plan_type_id
   </select>
 
   <!--条件查询治疗计划类型明细-->
   <select id="selectTreatPlanTypeDetail" resultType="com.yunya.feign.emr.domain.vo.TreatPlanTypeDetailVO">
     SELECT
-        org_id AS orgId,
+        patient_id AS patientId,
         plan_name AS planName,
         dentist_id AS dentistId,
         crt_time AS crtTime,
@@ -143,6 +150,9 @@
     <where>
       <if test="query.orgId != null">
         AND org_id = #{query.orgId}
+      </if>
+      <if test="query.dentistId != null">
+        AND dentist_id = #{query.dentistId}
       </if>
       <if test="query.planTypeId != null">
         AND plan_type_id = #{query.planTypeId}

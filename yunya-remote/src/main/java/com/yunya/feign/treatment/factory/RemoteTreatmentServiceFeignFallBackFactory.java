@@ -255,4 +255,9 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   public List<ClinicItemPriceVO> findClinicItemMemberPrice(ClinicMemberPriceQuery query) {
     return null;
   }
+
+  @Override
+  public List<OrderDetailVO> findOrderDetailById(List<Integer> orderDetailIds) {
+    return null;
+  }
 }

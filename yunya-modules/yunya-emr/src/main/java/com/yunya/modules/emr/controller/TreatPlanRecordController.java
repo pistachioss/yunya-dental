@@ -5,11 +5,9 @@ import com.yunya.feign.emr.domain.form.TreatPlanRecordChangeForm;
 import com.yunya.feign.emr.domain.model.TreatPlanRecordModel;
 import com.yunya.feign.emr.domain.query.PlanTypeDetailQuery;
 import com.yunya.feign.emr.domain.query.PlanTypeStatisticsQuery;
+import com.yunya.feign.emr.domain.query.TreatPlanDetailQuery;
 import com.yunya.feign.emr.domain.query.TreatPlanRecordQuery;
-import com.yunya.feign.emr.domain.vo.TreatPlanRecordInfoVO;
-import com.yunya.feign.emr.domain.vo.TreatPlanRecordVO;
-import com.yunya.feign.emr.domain.vo.TreatPlanTypeDetailVO;
-import com.yunya.feign.emr.domain.vo.TreatPlanTypeStatisticsVO;
+import com.yunya.feign.emr.domain.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -92,6 +90,20 @@ public class TreatPlanRecordController {
     @PostMapping("/planType/detail/export")
     public ResponseResult<T> exportTreatPlanTypeDetail(@Valid @RequestBody PlanTypeDetailQuery query, HttpServletResponse response) throws Exception {
         treatPlanRecordBiz.exportTreatPlanTypeDetail(query, response);
+        return ResponseUtil.success(null);
+    }
+
+    @ApiOperation("根据治疗计划id和治疗计划详情id查询执行信息列表")
+    @PostMapping("/planDetail/execute")
+    public ResponseResult<PageInfo<TreatPlanDetailAndExecuteVO>> findPlanDetailExecuteList(@Valid @RequestBody TreatPlanDetailQuery query) {
+        PageInfo<TreatPlanDetailAndExecuteVO> result = treatPlanRecordBiz.findPlanDetailExecuteList(query);
+        return ResponseUtil.success(result);
+    }
+
+    @ApiOperation("根据治疗计划id和治疗计划详情id导出执行信息列表")
+    @PostMapping("/planDetail/execute/export")
+    public ResponseResult<T> exportPlanDetailExecuteList(@Valid @RequestBody TreatPlanDetailQuery query, HttpServletResponse response) throws Exception {
+        treatPlanRecordBiz.exportPlanDetailExecuteList(query, response);
         return ResponseUtil.success(null);
     }
 }

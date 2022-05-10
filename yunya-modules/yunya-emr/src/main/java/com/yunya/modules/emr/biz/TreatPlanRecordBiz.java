@@ -7,25 +7,31 @@ import com.yunya.feign.emr.domain.form.TreatPlanRecordChangeForm;
 import com.yunya.feign.emr.domain.model.*;
 import com.yunya.feign.emr.domain.query.PlanTypeDetailQuery;
 import com.yunya.feign.emr.domain.query.PlanTypeStatisticsQuery;
+import com.yunya.feign.emr.domain.query.TreatPlanDetailQuery;
 import com.yunya.feign.emr.domain.query.TreatPlanRecordQuery;
 import com.yunya.feign.emr.domain.vo.*;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.query.ClinicMemberPriceQuery;
 import com.yunya.feign.treatment.domain.vo.ClinicItemPriceVO;
+import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.OperationTypeEnum;
 import com.yunya.framework.common.enums.TreatPlanStatusEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.PageUtl;
+import com.yunya.framework.common.utils.SortUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.emr.TreatPlanDetail;
 import com.yunya.models.emr.TreatPlanDetailWriteoff;
 import com.yunya.models.emr.TreatPlanRecord;
 import com.yunya.models.emr.TreatPlanRecordHistory;
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
@@ -40,6 +46,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * 简介：治疗计划业务层
@@ -70,6 +79,9 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
     /** 治疗计划明细*/
     @Autowired
     private TreatPlanDetailBiz treatPlanDetailBiz;
+    /** 患者服务*/
+    @Autowired
+    private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
 
     /**
      * 保存治疗计划（添加、修改、删除、方案变更（确认、终止、撤销））
@@ -672,6 +684,10 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
                 if (!ObjectUtils.isEmpty(org)) {
                     vo.setAbbreviation(org.getAbbreviation());
                 }
+                SysEmployee dentist = remoteSystemServiceFeign.findSysEmployeeById(vo.getDentistId());
+                if (!ObjectUtils.isEmpty(dentist)) {
+                    vo.setDentistName(dentist.getName());
+                }
                 Integer planTypeId = vo.getPlanTypeId();
                 if (!ObjectUtils.isEmpty(planTypeId)) {
                     DictionaryItem dicItem = remoteSystemServiceFeign.findDictionaryItemById(planTypeId);
@@ -697,9 +713,10 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         List<TreatPlanTypeDetailVO> result = mapper.selectTreatPlanTypeDetail(query);
         if (StringHelper.isNotEmpty(result)) {
             result.forEach(vo->{
-                OrganizationInfo org = remoteSystemServiceFeign.findOrgInfoByOrgId(vo.getOrgId());
-                if (!ObjectUtils.isEmpty(org)) {
-                    vo.setAbbreviation(org.getAbbreviation());
+                PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(vo.getPatientId());
+                if (!ObjectUtils.isEmpty(patient)) {
+                    vo.setPatientName(patient.getName());
+                    vo.setMobile(patient.getMobile());
                 }
                 SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(vo.getDentistId());
                 if (!ObjectUtils.isEmpty(employee)) {
@@ -729,5 +746,68 @@ public class TreatPlanRecordBiz extends BaseBiz<TreatPlanRecordMapper, TreatPlan
         }
         String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(), abbreviation, sheetName);
         excelUtil.exportExcel(response, data, sheetName, fileName);
+    }
+
+    /**
+     * 根据治疗计划详情id查询执行信息列表
+     *
+     * @param query
+     * @return
+     */
+    public PageInfo<TreatPlanDetailAndExecuteVO> findPlanDetailExecuteList(TreatPlanDetailQuery query) {
+        Integer planDetailId = query.getPlanDetailId();
+        List<Integer> detailIds = null;
+        if (ObjectUtils.isEmpty(planDetailId)) {
+            List<TreatPlanDetailVO> planDetails = treatPlanDetailBiz.findTreatPlanDetailByPlanId(query.getPlanId(), false);
+            detailIds = planDetails.stream().map(TreatPlanDetailVO::getDetailId).collect(Collectors.toList());
+        } else {
+            detailIds = Arrays.asList(planDetailId);
+        }
+        List<TreatPlanDetailAndExecuteVO> result = treatPlanDetailBiz.findOrderPlanDetailByDetailId(detailIds);
+        if (StringHelper.isNotEmpty(result)) {
+            // 执行人姓名
+            List<Integer> orderDetailIds = result.stream().filter(vo->hasOrderDetailId(vo))
+                    .map(TreatPlanDetailAndExecuteVO::getOrderDetailId).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(orderDetailIds)) {
+                List<OrderDetailVO> orderDetails = remoteTreatmentServiceFeign.findOrderDetailById(orderDetailIds);
+                Map<Integer, String> executorMap = orderDetails.stream().collect(toMap(OrderDetailVO::getOrderDetailId, OrderDetailVO::getExecutorName));
+                result.forEach(vo -> {
+                    Integer orderDetailId = vo.getOrderDetailId();
+                    if (!ObjectUtils.isEmpty(orderDetailId)) {
+                        vo.setExecuteName(executorMap.get(orderDetailId));
+                    }
+                });
+            }
+            result.forEach(vo -> {
+                String executeName = vo.getExecuteName();
+                if (StringHelper.isEmpty(executeName)) {
+                    vo.setExecuteDate(null);
+                }
+            });
+            result = SortUtil.sort(result,
+                    SortUtil.comparing(TreatPlanDetailAndExecuteVO::getBillItemName)
+                    .thenComparing(TreatPlanDetailAndExecuteVO::getQuantity)
+                    .reversed());
+        }
+        return PageUtl.doPage(query,result);
+    }
+
+    private Boolean hasOrderDetailId(TreatPlanDetailAndExecuteVO vo) {
+        return !ObjectUtils.isEmpty(vo.getOrderDetailId());
+    }
+
+    /**
+     * 根据治疗计划id和治疗计划详情id导出执行信息列表
+     *
+     * @param query
+     * @param response
+     * @throws IOException
+     */
+    public void exportPlanDetailExecuteList(TreatPlanDetailQuery query, HttpServletResponse response) throws IOException {
+        query.setWhetherPage(false);
+        List<TreatPlanDetailAndExecuteVO> data = findPlanDetailExecuteList(query).getList();
+        ExcelUtil<TreatPlanDetailAndExecuteVO> excelUtil = new ExcelUtil<>(TreatPlanDetailAndExecuteVO.class);
+        String sheetName = "治疗计划项目执行明细";
+        excelUtil.exportExcel(response, data, sheetName, sheetName);
     }
 }

@@ -42,6 +42,11 @@ public class PlanTypeDetailQuery extends PageQuery implements Serializable {
     @NotEmpty(message = "结束时间不能为空")
     private String endDate;
 
+    /** 医生id*/
+    @ApiModelProperty(value = "医生id", required = true)
+    @NotNull(message = "医生id不能为空")
+    private Integer dentistId;
+
     /** 治疗计划类型id*/
     @ApiModelProperty(value = "治疗计划类型id", required = true)
     @NotNull(message = "治疗计划类型不能为空")

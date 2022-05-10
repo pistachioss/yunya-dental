@@ -59,6 +59,7 @@ import com.yunya.modules.treatment.mapper.OrderDetailMapper;
 import com.yunya.modules.treatment.mapper.OrderRecordMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -1349,5 +1350,32 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     List<CategoryInfoIncomeVO> list = findCategoryIncomeList(query).getList();
     ExcelUtil<CategoryInfoIncomeVO> excelUtil = new ExcelUtil<>(CategoryInfoIncomeVO.class);
     excelUtil.exportExcel(response, list, "门诊分类收入汇总", "门诊分类收入汇总");
+  }
+
+  /**
+   * 根据订单详情id查询订单详情列表
+   *
+   * @param orderDetailIds
+   * @return
+   */
+  public List<OrderDetailVO> findOrderDetailById(List<Integer> orderDetailIds) {
+    List<OrderDetailVO> result = new ArrayList<>();
+    if (StringHelper.isNotEmpty(orderDetailIds)) {
+      orderDetailIds.forEach(orderDetailId->{
+        OrderDetailVO vo = new OrderDetailVO();
+        OrderDetail detail = mapper.selectByPrimaryKey(orderDetailId);
+        BeanUtils.copyProperties(detail,vo);
+        vo.setOrderDetailId(orderDetailId);
+        Integer executorId = detail.getExecutorId();
+        if (!ObjectUtils.isEmpty(executorId)) {
+          SysEmployee employee = systemServiceFeign.findSysEmployeeById(executorId);
+          if (!ObjectUtils.isEmpty(employee)) {
+            vo.setExecutorName(employee.getName());
+          }
+        }
+        result.add(vo);
+      });
+    }
+    return result;
   }
 }

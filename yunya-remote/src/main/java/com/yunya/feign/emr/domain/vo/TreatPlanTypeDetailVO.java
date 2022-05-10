@@ -22,15 +22,18 @@ import java.util.Date;
 @ToString
 @ApiModel("治疗计划类型明细VO")
 public class TreatPlanTypeDetailVO implements Serializable {
+    @ApiModelProperty("患者id")
+    private Integer patientId;
 
-    /** 门诊id*/
-    @ApiModelProperty("门诊id")
-    private Integer orgId;
+    /** 患者*/
+    @Excel(name = "患者")
+    @ApiModelProperty("患者")
+    private String patientName;
 
-    /** 门诊*/
-    @Excel(name = "门诊")
-    @ApiModelProperty("门诊")
-    private String abbreviation;
+    /** 手机号"*/
+    @Excel(name = "手机号")
+    @ApiModelProperty("手机号")
+    private String mobile;
 
     /** 治疗计划名称*/
     @Excel(name = "治疗计划")

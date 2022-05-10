@@ -446,4 +446,13 @@ public interface RemoteTreatmentServiceFeign {
    */
   @RequestMapping(value = "/rpc/clinic/itemMemberPrice", method = RequestMethod.POST)
   List<ClinicItemPriceVO> findClinicItemMemberPrice(@Validated @RequestBody ClinicMemberPriceQuery query);
+
+  /**
+   * 根据订单明细id查询订单明细列表
+   *
+   * @param orderDetailIds
+   * @return
+   */
+  @PostMapping(value = "/rpc/order/detail/ids")
+  List<OrderDetailVO> findOrderDetailById(@Validated @RequestBody List<Integer> orderDetailIds);
 }
