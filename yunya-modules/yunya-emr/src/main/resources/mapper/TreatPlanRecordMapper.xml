@@ -134,6 +134,7 @@
   <!--条件查询治疗计划类型明细-->
   <select id="selectTreatPlanTypeDetail" resultType="com.yunya.feign.emr.domain.vo.TreatPlanTypeDetailVO">
     SELECT
+        id AS planId,
         patient_id AS patientId,
         plan_name AS planName,
         dentist_id AS dentistId,

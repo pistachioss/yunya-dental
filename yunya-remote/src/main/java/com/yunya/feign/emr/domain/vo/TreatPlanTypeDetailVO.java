@@ -22,6 +22,11 @@ import java.util.Date;
 @ToString
 @ApiModel("治疗计划类型明细VO")
 public class TreatPlanTypeDetailVO implements Serializable {
+    /** 治疗计划id*/
+    @ApiModelProperty("治疗计划id")
+    private Integer planId;
+
+    /** 患者id */
     @ApiModelProperty("患者id")
     private Integer patientId;
 
