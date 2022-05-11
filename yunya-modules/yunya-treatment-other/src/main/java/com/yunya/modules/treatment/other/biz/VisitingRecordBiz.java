@@ -31,6 +31,7 @@ import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -47,8 +48,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import tk.mybatis.mapper.entity.Example;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -127,11 +128,10 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 query.setSearchBeginTime(visitingDate);
                 query.setSearchEndTime(visitingDate);
                 query.setSearchId(2);
-                List<VisitingRecordVo> visitingRecordByCondition = mapper.findVisitingRecordByCondition(query);
-                if (visitingRecordByCondition != null && !visitingRecordByCondition.isEmpty()){
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                    String format = dateFormat.format(query.getVisitingDate());
-                    throw new ClientServiceException(format + " 的随访已经存在", OperationCodeConstants.DATA_EXIST);
+                List<VisitingRecordVo> visitingRecords = mapper.findVisitingRecordByCondition(query);
+                if (StringHelper.isNotEmpty(visitingRecords)) {
+                    throw new ClientServiceException(DateUtil.format(visitingDate)
+                            + " 的随访已经存在", OperationCodeConstants.DATA_EXIST);
                 }
                 VisitingRecord build = EntityUtils.build(model, VisitingRecord.class);
                 String orgId = BaseContextHandler.getOrgId();
@@ -752,35 +752,43 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         visitingRecord.setExecutorName(BaseContextHandler.getName());
         int result = mapper.updateByPrimaryKeySelective(visitingRecord);
         if (result > 0){
-            VisitingRecordQuery query = new VisitingRecordQuery();
-            query.setPatientId(visitingRecord.getPatientId());
-            query.setVisitingDate(visitingRecord.getVisitingDate());
-            query.setWhetherPage(false);
-            List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
-            if (!StringHelper.isEmpty(visitingRecordVos)){
-                final String visitingContentStr = visitingRecord.getVisitingContent();
-                String name = BaseContextHandler.getName();
-                String userID = BaseContextHandler.getUserID();
-                Date date = new Date(System.currentTimeMillis());
-                // 合并随访内容
-                visitingRecordVos.forEach(visitingRecordVo -> {
-                    VisitingRecord build = EntityUtils.build(visitingRecordVo, VisitingRecord.class);
-                    build.setVisitingContent(visitingContentStr);
-                    build.setUpdName(name);
-                    build.setUptId(Integer.valueOf(userID));
-                    build.setUpdTime(date);
-                    build.setStatus(true);
-                    build.setExecutorId(Integer.valueOf(userID));
-                    build.setExecutorName(name);
-                    build.setExecuteDate(date);
-                    mapper.updateByPrimaryKeySelective(build);
-                    // 发送消息-完成随访
-                    remoteRabbitMqServiceFeign.sendMessage(build.getId(),0,1, MsgCategoryEnum.BaseVisitRemind);
-                });
-            }
+            patientCurDateFinish(visitingRecord);
             return ResponseUtil.success();
         }
         return ResponseUtil.success("随访状态更新失败");
+    }
+
+    /**
+     * 将患者当天（随访日期）的其他随访同步完成
+     * @param visitingRecord
+     */
+    private void patientCurDateFinish(VisitingRecord visitingRecord) {
+        Example example = new Example(VisitingRecord.class);
+        Example.Criteria c = example.createCriteria();
+        c.andNotEqualTo("id", visitingRecord.getId());
+        c.andEqualTo("patientId", visitingRecord.getPatientId());
+        c.andEqualTo("visitingDate", visitingRecord.getVisitingDate());
+        List<VisitingRecord> visitingRecords = mapper.selectByExample(example);
+        if (!StringHelper.isEmpty(visitingRecords)){
+            final String visitingContentStr = visitingRecord.getVisitingContent();
+            String name = BaseContextHandler.getName();
+            String userID = BaseContextHandler.getUserID();
+            Date date = new Date(System.currentTimeMillis());
+            // 合并随访内容
+            visitingRecords.forEach(build -> {
+                build.setVisitingContent(visitingContentStr);
+                build.setUpdName(name);
+                build.setUptId(Integer.valueOf(userID));
+                build.setUpdTime(date);
+                build.setStatus(true);
+                build.setExecutorId(Integer.valueOf(userID));
+                build.setExecutorName(name);
+                build.setExecuteDate(date);
+                mapper.updateByPrimaryKeySelective(build);
+                // 发送消息-完成随访
+                remoteRabbitMqServiceFeign.sendMessage(build.getId(),0,1, MsgCategoryEnum.BaseVisitRemind);
+            });
+        }
     }
 
     /**
