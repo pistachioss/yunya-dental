@@ -14,7 +14,7 @@
         </plugin>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://192.168.31.90:3306/dev_yunya_third_part?useUnicode=true"
+                        connectionURL="jdbc:mysql://community.yunya365.com:3306/test_yunya_third_part?useUnicode=true"
                         userId="sa"
                         password="Admin001!">
         </jdbcConnection>
@@ -25,25 +25,12 @@
 
         <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
                              type="XMLMAPPER"/>
-
-                <!--<table tableName="coupon_common_info" domainObjectName="CouponCommonInfo"/>-->
-        <!--        <table tableName="card" domainObjectName="Card"/>-->
-        <!--        <table tableName="card_clinic" domainObjectName="CardClinic"/>-->
-        <!--        <table tableName="card_statistics" domainObjectName="CardStatistics"/>-->
-                <!--<table tableName="discount_coupon" domainObjectName="DiscountCoupon"/>-->
-                <!--<table tableName="package_coupon" domainObjectName="PackageCoupon"/>-->
-                <!--<table tableName="package_coupon_item" domainObjectName="PackageCouponItem"/>-->
-                <!--<table tableName="recharge_card" domainObjectName="RechargeCard"/>-->
-                <!--<table tableName="special_package_coupon" domainObjectName="SpecialPackageCoupon"/>-->
-                <!--<table tableName="special_package_coupon_item" domainObjectName="SpecialPackageCouponItem"/>-->
-                <!--<table tableName="vouche_coupon" domainObjectName="VoucheCoupon"/>-->
-                <!--<table tableName="voucher_discount_item" domainObjectName="VoucherDiscountItem"/>-->
-        <!--<table tableName="coupon_file_info" domainObjectName="CouponFileInfo"/>-->
-        <table tableName="wx_configs" domainObjectName="WxConfigs"/>
-        <table tableName="wx_fans" domainObjectName="WxFans"/>
-        <table tableName="wx_fans_bind" domainObjectName="WxFansBind"/>
-        <table tableName="wx_msg_template_configs" domainObjectName="WxMsgTemplateConfigs"/>
-        <table tableName="wx_msg_templates" domainObjectName="WxMsgTemplates"/>
-        <table tableName="wx_template_msg_records" domainObjectName="WxTemplateMsgRecords"/>
+<!--        <table tableName="wx_configs" domainObjectName="WxConfigs"/>-->
+<!--        <table tableName="wx_fans" domainObjectName="WxFans"/>-->
+<!--        <table tableName="wx_fans_bind" domainObjectName="WxFansBind"/>-->
+<!--        <table tableName="wx_msg_template_configs" domainObjectName="WxMsgTemplateConfigs"/>-->
+<!--        <table tableName="wx_msg_templates" domainObjectName="WxMsgTemplates"/>-->
+<!--        <table tableName="wx_template_msg_records" domainObjectName="WxTemplateMsgRecords"/>-->
+        <table tableName="wx_automsg" domainObjectName="WxAutomsg"/>
     </context>
 </generatorConfiguration>
