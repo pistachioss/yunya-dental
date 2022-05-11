@@ -22,4 +22,6 @@ spring:
 
 # netty配置
 netty:
-  protocol: ws://test.ivy2.yunya365.com/api/treatment-other/
+  protocol: ws://test.ivy2.yunya365.com/api/treatment-netty
+  discovery:
+    server-addr: 172.16.17.181:8848

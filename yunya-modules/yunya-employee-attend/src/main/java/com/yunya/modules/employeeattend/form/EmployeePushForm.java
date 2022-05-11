@@ -5,7 +5,6 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 
 @Data
 public class EmployeePushForm implements Serializable {
@@ -13,7 +12,7 @@ public class EmployeePushForm implements Serializable {
      * 要推送的员工帐号
      */
     @ApiModelProperty("要推送的员工帐号")
-    private Set<Integer> empId;
+    private List<Integer> empId;
     /**
      * 推送设备列表
      */

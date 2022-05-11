@@ -13,6 +13,9 @@ public class ChatMessageRecord {
     @Id
     private Integer id;
 
+    /**
+     * 消息code
+     */
     @Column(name = "msg_code")
     private String msgCode;
 

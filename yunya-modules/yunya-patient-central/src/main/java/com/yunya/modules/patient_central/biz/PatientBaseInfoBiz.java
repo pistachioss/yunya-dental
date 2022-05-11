@@ -48,6 +48,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -125,6 +126,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
   /** 患者儿童属性信息 */
   @Autowired private PatientChildInfoMapper patientChildInfoMapper;
+
+  /** 患者分组关系*/
+  @Autowired private PatientGroupRelationMapper patientGroupRelationMapper;
 
   /** 获取患者服务端口号 */
   @Value("${codeUrl.url}")
@@ -262,7 +266,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    */
   public void addPatientInfo(PatientExtendInfoModel patientExtendInfoModel) {
     PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
-    BeanUtils.copyProperties(patientExtendInfoModel.getPatientBaseInfoModel(), patientBaseInfo);
+    PatientBaseInfoModel patientBaseInfoModel = patientExtendInfoModel.getPatientBaseInfoModel();
+    BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
     patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
     patientBaseInfo.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientBaseInfo.setUpdName(BaseContextHandler.getName());
@@ -280,6 +285,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     // 完善患者基本信息  对补全信息进行更新
     this.mapper.updateByPrimaryKeySelective(patientBaseInfo);
     Integer patientId = patientBaseInfo.getId();
+    // 患者分组
+    savePatientGroupRelation(patientId, patientBaseInfoModel.getGroupIds());
     redisUtils.delete(PATIENT_BASE_INFO + patientId);
     sendMessages(patientId, 1);
 
@@ -340,6 +347,33 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         addPatientExtInfoList.add(patientExtInfoModel);
       }
       this.patientExtInfoMapper.insertPatientExtInfoList(addPatientExtInfoList);
+    }
+  }
+
+  /**
+   * 保存患者分组关系
+   *
+   * @param patientId
+   * @param groupIds
+   */
+  private void savePatientGroupRelation(Integer patientId, List<Integer> groupIds) {
+    Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+    Date now = new Date(System.currentTimeMillis());
+    Example example = new Example(PatientGroupRelation.class);
+    Example.Criteria c = example.createCriteria();
+    c.andEqualTo("patientId", patientId);
+    patientGroupRelationMapper.deleteByExample(example);
+    if (StringHelper.isNotEmpty(groupIds)) {
+      groupIds.forEach(groupId->{
+        PatientGroupRelation entity = new PatientGroupRelation();
+        entity.setPatientId(patientId);
+        entity.setGroupId(groupId);
+        entity.setCrtId(userId);
+        entity.setCrtTime(now);
+        entity.setUptId(userId);
+        entity.setUptTime(now);
+        patientGroupRelationMapper.insertSelective(entity);
+      });
     }
   }
 
@@ -631,6 +665,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientBaseInfoVo.setSourceName(patientOrigin.getName());
       }
     }
+    patientBaseInfoVo.setGroupIds(findPatientGroupId(id));
     // 基本信息
     patientExtendInfoVo.setPatientBaseInfoVo(getTypeName(patientBaseInfoVo));
     // 扩展信息
@@ -664,6 +699,20 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
     fillPatientChildInfo(patientExtendInfoVo, patientBaseInfo.getId());
     return ResponseUtil.success(patientExtendInfoVo);
+  }
+
+  /**
+   * 根据患者id查询患者分组列表
+   *
+   * @param id
+   * @return
+   */
+  private List<Integer> findPatientGroupId(Integer id) {
+    Example example = new Example(PatientGroupRelation.class);
+    Example.Criteria c = example.createCriteria();
+    c.andEqualTo("patientId",id);
+    List<PatientGroupRelation> groups = patientGroupRelationMapper.selectByExample(example);
+    return groups.stream().map(PatientGroupRelation::getGroupId).collect(Collectors.toList());
   }
 
   /**

@@ -43,10 +43,21 @@ public class ChatMessageBody implements Serializable {
     private Integer sendId;
 
     /**
+     * 发送者
+     */
+    @ApiModelProperty("发送人")
+    private String sendUser;
+
+    /**
      * 接收者id
      */
     @ApiModelProperty("接收者id, 非空单发，为空则群发")
     private Integer receiveId;
+
+    /**
+     * 接收者
+     */
+    private String receiveUser;
 
     /**
      * 消息code
@@ -61,16 +72,16 @@ public class ChatMessageBody implements Serializable {
     private String content;
 
     /**
-     * 类型 1 上线 2发消息, 3-挂号提醒
+     * 类型:0-心跳or上线, 1-查询未读消息, 2-发消息, 3-挂号提醒
      */
-    @ApiModelProperty("类型：1-上线, 2-发消息, 3-挂号提醒")
-    private int type;
+    @ApiModelProperty("类型：0-心跳or上线, 1-查询未读消息, 2-发消息, 3-挂号提醒")
+    private Integer type;
 
     /**
      * 发送时间
      */
     @ApiModelProperty("发送时间")
-    private Date sendTime = new Date(System.currentTimeMillis());
+    private Date sendTime;
 
     /**
      * 读取消息的时间

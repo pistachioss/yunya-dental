@@ -6,12 +6,15 @@ import com.yunya.framework.common.utils.UUIDUtils;
 import com.yunya.modules.treatment.other.biz.ChatMessageRecordBiz;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelId;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,6 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * 服务端自定义处理入站消息
  * @author Administrator
  */
+@Slf4j
 @ChannelHandler.Sharable
 @Component
 public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
@@ -47,14 +51,32 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
     List<ChannelHandlerContext> channels = new CopyOnWriteArrayList<>();
 
     /**
-     * 通道连接事件
+     * 建立连接以后第一个调用的方法
+     */
+    @Override
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        log.info("与客户端: {}建立连接", ctx.channel().remoteAddress().toString());
+    }
+    /**
+     * 断开连接会触发该消息
+     * 同时当前channel 也会自动从ChannelGroup中被移除
+     */
+    @Override
+    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+        log.info("与客户端: {}断开连接", ctx.channel().remoteAddress().toString());
+    }
+
+    /**
+     * 通道连接事件（channel连接就绪状态以后）
+     *
      * @param ctx
      * @throws Exception
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         channels.add(ctx);
-        System.out.println("有新的连接.>>当前连接数量: " + channels.size());
+        log.info("有新的连接.>>当前连接数量: {}", channels.size());
+        log.info("新建连接通道: {}", ctx.channel().id());
     }
 
     /**
@@ -65,21 +87,31 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
      */
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame wsMessage) throws Exception {
-        System.out.println("接收到客户端发来的消息: " + wsMessage.text());
+        log.info("接收到客户端发来的消息: {}", wsMessage.text());
+//        处理与前端的心跳
         ChatMessageBody message = JSON.parseObject(wsMessage.text(), ChatMessageBody.class);
-        ackMessageRead(message);
-        // 用户上线
-        if (message.getType()==1) {
-            setMap(ctx, message);
-            // 给其他服务器发送上线消息
-//            for (ChannelHandlerContext handlerContext : userHandles.values()) {
-//                if (handlerContext==ctx) {
-//                    continue;
-//                }
-//                write2flush(handlerContext, message);
-//            }
+        if (ObjectUtils.isEmpty(message.getSendId())) {
+            // 无意义数据
+            return;
+        }
+        Integer type = message.getType();
+        if (type == 0) {
+            log.info("收到客户端发来的心跳包, {}", message);
+            online(ctx, message);
+            return;
+        }
+
+        // 应答消息
+        Boolean ack = message.getAckRead();
+        if (!ObjectUtils.isEmpty(ack) && ack) {
+            chatMessageRecordBiz.asyncUptMessageHadRead(message);
+            return;
+        }
+
+        // 查询用户未读消息
+        if (type == 1) {
             // 查询未读消息列表
-            Map<Integer, List<ChatMessageBody>> unReadHisotry = chatMessageRecordBiz.findChatMessageUnReadHisotry(message);
+            List<ChatMessageBody> unReadHisotry = chatMessageRecordBiz.findChatMessageUnReadHisotry(message);
             write2flush(ctx, unReadHisotry);
             return;
         }
@@ -96,20 +128,37 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
             ChatMessageBody retMessage = new ChatMessageBody(UUIDUtils.generateShortUuid(),
                     NETTY_SERVER_ID, message.getSendId(), "消息接收者不能为空。",2);
             write2flush(ctx, retMessage);
+            log.error("消息接收人不能为空");
             return;
         }
-        chatMessageRecordBiz.asyncArchiveChatMessage(message, null);
+        message.setSendTime(new Date(System.currentTimeMillis()));
+        message.setMsgCode(UUIDUtils.generateShortUuid());
+        asyncArchiveMessage(message);
         // 从缓存的存储用户对应的通道 map中获取
         if (!userHandles.containsKey(receiveId)) {
             // 回写消息
             ChatMessageBody retMessage = new ChatMessageBody(UUIDUtils.generateShortUuid(),
                     NETTY_SERVER_ID, message.getSendId(), "用户离线，消息不能及时送达。",2);
             write2flush(ctx, retMessage);
+            log.info("接收人: {}离线，消息不能及时送达", receiveId);
             return;
         }
         // 服务端转发消息到指定的客户端
         ChannelHandlerContext receiveCtx = userHandles.get(receiveId);
         write2flush(receiveCtx, message);
+        log.info("向接收人: {}发送消息: {}", receiveId, message);
+    }
+
+    /**
+     * 记录消息
+     *
+     * @param message
+     */
+    private void asyncArchiveMessage(ChatMessageBody message) {
+        // 只有发消息需要记录，通知属于实时推送无需记录
+        if (message.getType() == 2) {
+            chatMessageRecordBiz.asyncArchiveChatMessage(message, null);
+        }
     }
 
     /**
@@ -118,55 +167,82 @@ public class WebSocketNettyHandler extends SimpleChannelInboundHandler<TextWebSo
      * @param ctx 连接通道
      * @param message 消息
      */
+    private void write2flush(ChannelHandlerContext ctx, ChatMessageBody message) {
+        chatMessageRecordBiz.putChatEmployeeName(message);
+        ctx.writeAndFlush(new TextWebSocketFrame(JSON.toJSONString(message)));
+    }
+
     private void write2flush(ChannelHandlerContext ctx, Object message) {
         ctx.writeAndFlush(new TextWebSocketFrame(JSON.toJSONString(message)));
     }
 
-    private void ackMessageRead(ChatMessageBody message) {
-        Boolean ack = message.getAckRead();
-        if (!ObjectUtils.isEmpty(ack) && ack) {
-            chatMessageRecordBiz.asyncUptMessageHadRead(message);
+    /**
+     * 用户上线，建立用户-通道映射
+     *
+     * @param ctx
+     * @param message
+     */
+    private void online(ChannelHandlerContext ctx, ChatMessageBody message) {
+        Integer sendId = message.getSendId();
+        if (!ObjectUtils.isEmpty(sendId) && !userHandles.containsKey(sendId)) {
+            userHandles.put(sendId, ctx);
+            channelUsers.put(ctx.channel().id().toString(), sendId);
+            log.info("用户: {}上线了", message.getSendId());
+            // 给其他服务器发送上线消息
+//            for (ChannelHandlerContext handlerContext : userHandles.values()) {
+//                if (handlerContext==ctx) {
+//                    continue;
+//                }
+//                write2flush(handlerContext, message);
+//            }
         }
     }
 
     /**
-     * 设置连接映射
-     * @param channelHandlerContext
-     * @param message
-     */
-    private void setMap(ChannelHandlerContext channelHandlerContext, ChatMessageBody message) {
-        userHandles.put(message.getSendId(), channelHandlerContext);
-        channelUsers.put(channelHandlerContext.channel().id().toString(),message.getSendId());
-    }
-
-    /**
-     * 通道关闭事件
+     * 通道关闭事件（channel连接状态断开后触发）
      * @param ctx
      * @throws Exception
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        Integer userId = channelUsers.get(ctx.channel().id().toString());
-        userHandles.remove(userId);
-        // 给其他在线用户发送该用户离线的信息
-        for (ChannelHandlerContext handlerContext : userHandles.values()) {
-            ChatMessageBody message = new ChatMessageBody(UUIDUtils.generateShortUuid(),
-                    NETTY_SERVER_ID, null, "用户id: "+userId+"--已经离线了",2);
-            write2flush(handlerContext, message);
+        ChannelId id = ctx.channel().id();
+        Integer userId = channelUsers.get(id.toString());
+        String info = "!";
+        if (!ObjectUtils.isEmpty(userId)) {
+            userHandles.remove(userId);
+            // 给其他在线用户发送该用户离线的信息
+            for (ChannelHandlerContext handlerContext : userHandles.values()) {
+                ChatMessageBody message = new ChatMessageBody(UUIDUtils.generateShortUuid(),
+                        NETTY_SERVER_ID, null, "用户id: " + userId + "--已经离线了", 2);
+                write2flush(handlerContext, message);
+            }
+            channels.remove(ctx);
+            info += " 用户: " + userId + "下线!";
         }
-        channels.remove(ctx);
+        log.info("通道: {} 关闭" + info, id);
     }
 
+    /**
+     * 连接发生异常时触发
+     *
+     */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        Integer userId = channelUsers.get(ctx.channel().id().toString());
-        userHandles.remove(userId);
-        // 给其他在线用户发送该用户离线的信息
-        for (ChannelHandlerContext handlerContext : userHandles.values()) {
-            ChatMessageBody message = new ChatMessageBody(UUIDUtils.generateShortUuid(),
-                    NETTY_SERVER_ID, null, "用户id: "+userId+"--连接发生问题，已被迫离线了",2);
-            write2flush(handlerContext, message);
+        ChannelId id = ctx.channel().id();
+        Integer userId = channelUsers.get(id.toString());
+        String info = "!";
+        if (!ObjectUtils.isEmpty(userId)) {
+            userHandles.remove(userId);
+            // 给其他在线用户发送该用户离线的信息
+            for (ChannelHandlerContext handlerContext : userHandles.values()) {
+                ChatMessageBody message = new ChatMessageBody(UUIDUtils.generateShortUuid(),
+                        NETTY_SERVER_ID, null, "用户id: " + userId + "--连接发生问题，已被迫离线了", 2);
+                write2flush(handlerContext, message);
+            }
+            channels.remove(ctx);
+            info += " 用户: " + userId + "被迫下线!";
         }
-        channels.remove(ctx);
+        log.error("通道: {} 连接发生问题" + info, id);
+        log.error("Netty Connection error: {}", cause);
     }
 }

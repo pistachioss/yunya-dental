@@ -115,6 +115,7 @@
     <select id="selectClinicTariffCategoryDiscountCoupon"
             resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO">
         SELECT
+            cb.order_id AS orderRecordId,
             org_id AS orgId,
             item_id AS itemId,
             item_type AS itemType,
@@ -129,6 +130,7 @@
         </where>
         UNION ALL
         SELECT
+            adb.order_id AS orderRecordId,
             org_id AS orgId,
             item_id AS itemId,
             item_type AS itemType,

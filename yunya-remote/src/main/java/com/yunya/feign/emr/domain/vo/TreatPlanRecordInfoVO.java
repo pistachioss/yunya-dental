@@ -30,6 +30,10 @@ public class TreatPlanRecordInfoVO implements Serializable {
     @ApiModelProperty("治疗计划名称")
     private String planName;
 
+    /** 治疗计划类型*/
+    @ApiModelProperty("治疗计划类型")
+    private String planTypeName;
+
     /** 创建日期*/
     @ApiModelProperty("创建日期")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")

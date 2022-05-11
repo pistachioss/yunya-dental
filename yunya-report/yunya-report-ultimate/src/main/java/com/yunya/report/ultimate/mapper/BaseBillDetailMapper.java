@@ -282,9 +282,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * 根据订单ID列表查询工作量总和
    *
    * @param billIds 订单ID列表
+   * @param existsExecutor 是否按执行人过滤
    * @return BigDecimal
    */
-  List<BillRecordWorkloadVO> selectBillTotalWorkload(@Param("billIds") Collection<Integer> billIds);
+  List<BillRecordWorkloadVO> selectBillTotalWorkload(
+          @Param("billIds") Collection<Integer> billIds,
+          @Param("existsExecutor") Boolean existsExecutor);
 
   /**
    * 根据订单ID列表查询非工作量总和
