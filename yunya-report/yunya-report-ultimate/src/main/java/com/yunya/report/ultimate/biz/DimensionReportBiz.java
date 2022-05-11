@@ -102,6 +102,8 @@ public class DimensionReportBiz {
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Autowired
     private StatEmpPrivilegeBiz statEmpPrivilegeBiz;
+    @Autowired
+    private BaseBillPayBiz baseBillPayBiz;
     @Resource(name = "customizeThreadPool")
     private ThreadPoolExecutor threadPool;
 
@@ -2332,9 +2334,32 @@ public class DimensionReportBiz {
         Future<List<StatEmpBill>> itemNumFuture = multiFindClinicBillItemNum(query);
         // 专科项目
         Future<List<SpecialistProjectVO>> specialFuture = multiFindSpecialProjectList();
-        // 工作量
+        // 业绩工作量
         Map<String, BigDecimal> workloadMap = clinicEmployeeWorkload(query, null, vo->vo.getOrgId()+"");
-        return mergeCampusAchievementStatistics(orgFuture.get(), workloadMap, treatNumFuture.get(), itemNumFuture.get(), treatVisitNumFuture.get(), specialFuture.get());
+        // 非业绩工作量
+        Map<String, BigDecimal> nonWorkloadMap = clinicNonPerformanWorkload(query);
+        return mergeCampusAchievementStatistics(orgFuture.get(), workloadMap, nonWorkloadMap, treatNumFuture.get(), itemNumFuture.get(), treatVisitNumFuture.get(), specialFuture.get());
+    }
+
+    private Map<String, BigDecimal> clinicNonPerformanWorkload(MultiClinicDateRangeQueryForm query) {
+       Map<String, BigDecimal> result = new HashMap<>();
+       DataStatisticsQuery queryForm = new DataStatisticsQuery();
+       BeanUtils.copyProperties(query, queryForm);
+       queryForm.setOrgIds(query.getOrgIds().toArray(new Integer[0]));
+       Map<String, Map<Integer, BigDecimal>> nonWorkloadDateMap
+                = baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(queryForm, false);
+       if (StringHelper.isNotEmpty(nonWorkloadDateMap)) {
+         nonWorkloadDateMap.forEach((date, workloadMap)->{
+           workloadMap.forEach((orgId, workload)->{
+             BigDecimal total = result.get(orgId+"");
+             if (total == null) {
+               total = BigDecimal.ZERO;
+             }
+             result.put(orgId+"", total.add(workload));
+           });
+         });
+       }
+       return result;
     }
 
     /**
@@ -2379,7 +2404,7 @@ public class DimensionReportBiz {
      * @return
      */
     private DynamicHeaderPageInfo<JSONObject> mergeCampusAchievementStatistics(List<BaseOrganizationVO> orgs,
-               Map<String, BigDecimal> orgWorkloadMap, Map<String, StatEmpTreat> firstVisit,
+               Map<String, BigDecimal> orgWorkloadMap, Map<String, BigDecimal> orgNonWorkloadMap,  Map<String, StatEmpTreat> firstVisit,
                List<StatEmpBill> statEmpBills, Map<Integer, Set<Integer>> treatVisit, List<SpecialistProjectVO> specials) {
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>(orgs);
         Map<String, String> specialMap = new LinkedHashMap<>(16);
@@ -2401,13 +2426,16 @@ public class DimensionReportBiz {
         orgMap.forEach((campusId, orgList)->{
             String campusName = orgList.get(0).getParentName();
             BigDecimal totalWorkload = new BigDecimal("0.00");
+            BigDecimal totalNonWorkload = new BigDecimal("0.00");
             int totalFirstVisitCount = 0;
             int totalTreatVisitCount = 0;
             Map<String, Integer> totalSpecialMap = new HashMap<>(16);
             for (BaseOrganizationVO org : orgList) {
                 Integer orgId = org.getOrgId();
                 BigDecimal workload = defaultValue(orgWorkloadMap.get(orgId+""));
+                BigDecimal nonWorkload = defaultValue(orgNonWorkloadMap.get(orgId+""));
                 totalWorkload = totalWorkload.add(workload);
+                totalNonWorkload = totalNonWorkload.add(nonWorkload);
                 int treatVisitCount = 0;
                 Set<Integer> patients = treatVisit.get(orgId);
                 if (StringHelper.isNotEmpty(patients)) {
@@ -2420,7 +2448,7 @@ public class DimensionReportBiz {
                     firstVisitCount = statEmpTreat.getFirstVisitCount();
                 }
                 totalFirstVisitCount += firstVisitCount;
-                JSONObject obj = initAchievement(org.getAbbreviation(), workload, firstVisitCount, treatVisitCount);
+                JSONObject obj = initAchievement(org.getAbbreviation(), workload, nonWorkload, firstVisitCount, treatVisitCount);
                 for (Map.Entry<String, String> entry : specialMap.entrySet()) {
                     String specialId = entry.getKey();
                     int specialNum = defaultValue(itemNumMap.get(orgId + "," + specialId));
@@ -2433,12 +2461,13 @@ public class DimensionReportBiz {
                 }
                 result.add(obj);
             }
-            JSONObject campusObj = initAchievement(campusName, totalWorkload, totalFirstVisitCount, totalTreatVisitCount);
+            JSONObject campusObj = initAchievement(campusName, totalWorkload, totalNonWorkload, totalFirstVisitCount, totalTreatVisitCount);
             campusObj.putAll(totalSpecialMap);
             result.add(campusObj);
         });
         title.put("campusName", "院区");
         title.put("workload", "工作量");
+        title.put("nonWorkload", "非业绩工作量");
         title.put("firstVisitCount", "初诊人数");
         title.put("treatVisitCount", "就诊人数");
         title.putAll(specialMap);
@@ -2453,10 +2482,11 @@ public class DimensionReportBiz {
      * @param name
      * @return
      */
-    private JSONObject initAchievement(String name, BigDecimal workload, int firstVisitCount, int treatVisitCount) {
+    private JSONObject initAchievement(String name, BigDecimal workload, BigDecimal nonWorkload, int firstVisitCount, int treatVisitCount) {
         JSONObject obj = new JSONObject();
         obj.put("campusName", defaultValue(name));
         obj.put("workload", workload);
+        obj.put("nonWorkload", nonWorkload);
         obj.put("firstVisitCount", firstVisitCount);
         obj.put("treatVisitCount", treatVisitCount);
         return obj;
