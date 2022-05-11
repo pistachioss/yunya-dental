@@ -93,7 +93,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         }
       }
       List<BillRecordWorkloadVO> workloadInfos =
-          billDetailBiz.findBillWorkloadInfoByBillIds(billIds);
+          billDetailBiz.findBillWorkloadInfoByBillIds(billIds, true);
       List<BillRecordWorkloadVO> notWorkloadInfos =
           billDetailBiz.findBillNotWorkloadInfoByBillIds(billIds);
       List<BillPayFreePayAmountVO> freePayAmountList =
@@ -209,7 +209,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
         }
       }
       List<BillRecordWorkloadVO> workloadInfos =
-          findBillWorkloadInfoByBillIds(new ArrayList<>(billIds.keySet()));
+          findBillWorkloadInfoByBillIds(new ArrayList<>(billIds.keySet()), true);
       List<BillPayFreePayAmountVO> freePayAmountList =
           findBillFreePayAmountList(new ArrayList<>(billPayIds));
 
@@ -385,7 +385,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   }
 
   public Map<String, Map<Integer, BigDecimal>> computeWorkloadGroupOrgIdAndMonth(
-      DataStatisticsQuery query) {
+      DataStatisticsQuery query, Boolean existsExecutor) {
     Map<String, Map<Integer, BigDecimal>> result = new HashMap<>(16);
     // 月份分组求已收工作量合计
     List<BillWorkloadVO> workloads = mapper.selectRecievedWorkloadsGroupByMonth(query);//1.6
@@ -393,7 +393,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     Set<Integer> billIds =
         workloads.stream().map(BillWorkloadVO::getBillId).collect(Collectors.toSet());
     List<BillRecordWorkloadVO> workloadInfos =
-        findBillWorkloadInfoByBillIds(new ArrayList<>(billIds));//1.7, 2.3
+        findBillWorkloadInfoByBillIds(new ArrayList<>(billIds), existsExecutor);//1.7, 2.3
     Map<Integer, BigDecimal> totalWorkloadMaps =
         workloadInfos.stream()
             .collect(
@@ -552,7 +552,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     return result;
   }
 
-  private List<BillRecordWorkloadVO> findBillWorkloadInfoByBillIds(List<Integer> list) {
+  private List<BillRecordWorkloadVO> findBillWorkloadInfoByBillIds(List<Integer> list, Boolean existsExecutor) {
     List<List<Integer>> partition = Lists.partition(list, CUT_SLICE_500);
     CountDownLatch downLatch = new CountDownLatch(partition.size());
     List<BillRecordWorkloadVO> result = Lists.newCopyOnWriteArrayList();
@@ -561,7 +561,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       threadPool.execute(
           () -> {
             try {
-              result.addAll(billDetailBiz.findBillWorkloadInfoByBillIds(ids));
+              result.addAll(billDetailBiz.findBillWorkloadInfoByBillIds(ids, existsExecutor));
               downLatch.countDown();
             } catch (Exception e) {
               downLatch.countDown();
