@@ -36,6 +36,14 @@ public class TreatPlanTypeStatisticsVO implements Serializable {
     @ApiModelProperty("门诊id")
     private Integer orgId;
 
+    /** 医生id */
+    @ApiModelProperty("医生id")
+    private Integer dentistId;
+
+    /** 医生 */
+    @ApiModelProperty("医生")
+    private String dentistName;
+
     /** 治疗计划类型id */
     @ApiModelProperty("治疗计划类型id")
     private Integer planTypeId;

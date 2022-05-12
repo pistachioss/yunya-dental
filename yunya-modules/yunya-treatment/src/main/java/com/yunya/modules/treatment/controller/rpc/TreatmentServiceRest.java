@@ -582,4 +582,15 @@ public class TreatmentServiceRest {
   public List<ClinicItemPriceVO> findClinicItemMemberPrice(@Validated @RequestBody ClinicMemberPriceQuery query) {
     return clinicTariffMemberPriceBiz.findClinicItemMemberPrice(query);
   }
+
+  /**
+   * 根据订单明细id查询订单明细列表
+   *
+   * @param orderDetailIds
+   * @return
+   */
+  @PostMapping(value = "/order/detail/ids")
+  public List<OrderDetailVO> findOrderDetailById(@Validated @RequestBody List<Integer> orderDetailIds) {
+    return orderDetailBiz.findOrderDetailById(orderDetailIds);
+  }
 }

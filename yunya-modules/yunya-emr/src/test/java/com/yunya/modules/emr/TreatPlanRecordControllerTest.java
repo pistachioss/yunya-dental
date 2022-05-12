@@ -73,9 +73,10 @@ public class TreatPlanRecordControllerTest {
     public void test() {
         PlanTypeStatisticsQuery query = new PlanTypeStatisticsQuery();
         query.setDateType((byte)0);
-        query.setStartDate("2021-01-01");
-        query.setEndDate("2022-05-01");
-        query.setOrgIds(Arrays.asList(26));
+        query.setStartDate("2022-01-01");
+        query.setEndDate("2022-06-01");
+        query.setOrgIds(Arrays.asList(63));
+        query.setDentistIds(Arrays.asList(732));
         query.setPlanTypeId(null);
         PageInfo<TreatPlanTypeStatisticsVO> data = treatPlanRecordController.findTreatPlanTypeStatistics(query).getData();
         System.out.println(JSONObject.toJSON(data));

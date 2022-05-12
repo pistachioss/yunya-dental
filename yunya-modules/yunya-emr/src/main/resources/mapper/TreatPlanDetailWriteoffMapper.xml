@@ -73,6 +73,18 @@
                 #{item}
             </foreach>
         </where>
-        ORDER BY id ASC;
+        ORDER BY id ASC
+  </select>
+
+  <select id="selectListByPlanDetailId" resultType="com.yunya.models.emr.TreatPlanDetailWriteoff">
+        SELECT
+            order_detail_id AS orderDetailId,
+            write_off_quantity AS writeOffQuantity,
+            upt_time AS uptTime
+        FROM treat_plan_detail_writeoff
+        <where>
+            AND plan_detail_id = #{planDetailId}
+        </where>
+        ORDER BY id ASC
   </select>
 </mapper>

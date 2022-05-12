@@ -9,6 +9,7 @@ import lombok.ToString;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -42,6 +43,10 @@ public class PlanTypeStatisticsQuery extends PageQuery implements Serializable {
     @ApiModelProperty(value = "查询结束时间", required = true)
     @NotEmpty(message = "结束时间不能为空")
     private String endDate;
+
+    /** 医生id列表*/
+    @ApiModelProperty("医生id列表")
+    private Collection<Integer> dentistIds;
 
     /** 治疗计划类型id*/
     @ApiModelProperty("治疗计划类型id")
