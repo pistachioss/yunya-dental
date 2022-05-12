@@ -1,12 +1,9 @@
 package com.yunya.models.patient_central;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 
 @Table(name = "wx_fans")
@@ -152,15 +149,18 @@ public class WxFans {
     private Date lastLoginDate;
 
     /**
+     * 常驻地址
+     */
+    private String address;
+
+    /**
      * 经度
      */
-    @Column(name = "longitude")
     private Double longitude;
 
     /**
      * 纬度
      */
-    @Column(name = "latitude")
     private Double latitude;
 
     /**

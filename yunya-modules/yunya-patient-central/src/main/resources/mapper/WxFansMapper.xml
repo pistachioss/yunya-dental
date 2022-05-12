@@ -30,6 +30,7 @@
     <result column="lastchatkf_id" property="lastchatkfId" jdbcType="VARCHAR" />
     <result column="fans_status" property="fansStatus" jdbcType="INTEGER" />
     <result column="last_login_date" property="lastLoginDate" jdbcType="TIMESTAMP" />
+    <result column="address" property="address" jdbcType="VARCHAR" />
     <result column="longitude" property="longitude" jdbcType="DOUBLE" />
     <result column="latitude" property="latitude" jdbcType="DOUBLE" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
