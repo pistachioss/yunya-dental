@@ -1,5 +1,7 @@
 package com.yunya.framework.common.utils;
 
+import org.springframework.util.ObjectUtils;
+
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
@@ -44,7 +46,16 @@ public class SortUtil<T> {
         return (Comparator<T> & Serializable)
                 (c1, c2) -> {
                     for (Function<? super T, ? extends U> keyExtractor : keyExtractors) {
-                        int cmp = keyExtractor.apply(c1).compareTo(keyExtractor.apply(c2));
+                        U a1 = keyExtractor.apply(c1);
+                        U a2 = keyExtractor.apply(c2);
+                        if (!ObjectUtils.isEmpty(a1) && ObjectUtils.isEmpty(a2)) {
+                            return 1;
+                        } else if (ObjectUtils.isEmpty(a1) && !ObjectUtils.isEmpty(a2)) {
+                            return -1;
+                        } else if (ObjectUtils.isEmpty(a1) && ObjectUtils.isEmpty(a2)) {
+                            return 0;
+                        }
+                        int cmp = a1.compareTo(a2);
                         if (cmp != 0) {
                             return cmp;
                         }
