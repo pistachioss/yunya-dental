@@ -1,4 +1,4 @@
-package com.yunya.feign.ivy_mini.domain.enums;
+package com.yunya365.mini.enums;
 
 import org.apache.commons.lang3.StringUtils;
 

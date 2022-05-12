@@ -3,12 +3,16 @@ package com.yunya.modules.patient_central.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import com.yunya.feign.ivy_mini.domain.bo.WeChatSessionBO;
+import com.yunya.feign.ivy_mini.domain.form.*;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.DictionaryItemModel;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.models.patient_central.PatientExpInfo;
 import com.yunya.models.patient_central.WxFans;
 import com.yunya.models.patient_central.WxFansBind;
@@ -25,10 +29,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -279,6 +280,30 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
 
     public List<WxFans> getPushWxUser(List<Integer> patientIds) {
         return wxFansBindMapper.listWxUsers(patientIds);
+    }
+
+    public void saveMiniAuth(WxSaveFansForm form) {
+        WeChatSessionBO sessionBO = form.getSessionBO();
+        WxUserInfoForm userInfo = form.getUserInfo();
+        //授权保存用户
+        WxFans wxFans = BeanUtil.copy(sessionBO, WxFans.class);
+        wxFans.setNickName(userInfo.getNickName());
+        wxFans.setSex(userInfo.getGender().shortValue());
+        wxFans.setLanguage(userInfo.getLanguage());
+        wxFans.setHeadImgurl(userInfo.getAvatarUrl());
+        wxFans.setLastLoginDate(new Date());
+        BaseContextHandler.setUserID(wxFans.getId().toString());
+        //更新用户扩展信息
+        BeanUtil.copy(userInfo, wxFans);
+        super.insert(wxFans);
+    }
+
+    public void saveOrUpdate(WxFans wxFans) {
+        if (Objects.nonNull(wxFans)) {
+             mapper.updateByPrimaryKeySelective(wxFans);
+        } else {
+             mapper.insertSelective(wxFans);
+        }
     }
 
     private String setAmount(BigDecimal principal, BigDecimal bonus) {

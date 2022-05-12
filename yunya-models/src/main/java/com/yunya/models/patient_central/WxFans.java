@@ -1,5 +1,6 @@
 package com.yunya.models.patient_central;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -139,6 +140,30 @@ public class WxFans {
     private String lastchatkfId;
 
     /**
+     * 用户状态（0-注销 1-禁用 2-正常 3-注销中）
+     */
+    @Column(name = "fans_status")
+    private Integer fansStatus;
+
+    /**
+     * 上次登录时间
+     */
+    @Column(name = "last_login_date")
+    private Date lastLoginDate;
+
+    /**
+     * 经度
+     */
+    @Column(name = "longitude")
+    private Double longitude;
+
+    /**
+     * 纬度
+     */
+    @Column(name = "latitude")
+    private Double latitude;
+
+    /**
      * 创建时间
      */
     @Column(name = "crt_time")
@@ -149,4 +174,7 @@ public class WxFans {
      */
     @Column(name = "upd_time")
     private Date updTime;
+
+    @Column(name = "update_by")
+    private Integer updateBy;
 }

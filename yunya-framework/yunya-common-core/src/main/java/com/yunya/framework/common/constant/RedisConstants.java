@@ -145,6 +145,14 @@ public class RedisConstants implements Serializable {
   public static final String MINI_TOKEN = "mini:token";
   /** mini登录id */
   public static final String MINI_USER_ID =  "mini:userId";
+  /**
+   * 登录session_key
+   */
+  public static final String MINI_SESSION_KEY = "mini:session_key";
+  /**
+   * 微信小程序access_token_key 用于保存在redis中的key
+   */
+  public static final String MINI_ACCESS_TOKEN_KEY = "wechat:mini:accessToken";
 
   /**
    * 设置key中的占位符

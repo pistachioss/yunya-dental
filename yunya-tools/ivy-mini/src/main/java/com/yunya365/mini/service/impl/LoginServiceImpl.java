@@ -1,14 +1,21 @@
 package com.yunya365.mini.service.impl;
 
-import com.yunya.feign.ivy_mini.domain.bo.LoginUserBO;
+import cn.hutool.core.convert.Convert;
+import com.google.common.collect.Maps;
+import com.yunya.feign.ivy_mini.domain.bo.WeChatSessionBO;
 import com.yunya.feign.ivy_mini.domain.form.WeChatLoginForm;
+import com.yunya.feign.ivy_mini.domain.form.WxUserInfoForm;
 import com.yunya.feign.ivy_mini.domain.vo.AuthInfoVO;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.Token;
+import com.yunya.framework.common.utils.JwtUtil;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.patient_central.WxFans;
+import com.yunya365.mini.config.WxMiniProperties;
 import com.yunya365.mini.enums.IvyMiniError;
-import com.yunya365.mini.enums.MemberStatusEnum;
+import com.yunya365.mini.service.IWxFansService;
+import com.yunya365.mini.service.WxApi;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -16,11 +23,15 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import static com.yunya.framework.common.constant.BusinessConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.*;
+import static com.yunya.framework.common.constant.WxMiniAuthConstant.*;
+import static com.yunya.framework.common.constant.WxMiniUri.*;
+import static com.yunya365.mini.enums.LoginEnum.*;
 
 /**
  * @description:
@@ -33,10 +44,34 @@ public class LoginServiceImpl {
 
     @Resource
     private RedisUtils redisUtils;
+    @Resource
+    private WxMiniProperties wxMiniProperties;
+    @Resource
+    private WxApi wxApi;
+    @Resource
+    private IWxFansService wxFansService;
 
-    public AuthInfoVO login(HttpServletRequest request) {
+    public AuthInfoVO wechatLogin(WeChatLoginForm form, HttpServletRequest request) {
+        String url = String.format(AUTH_CODE2SESSION_URL, wxMiniProperties.getAppId(), wxMiniProperties.getAppSecret(), form.getCode());
+        WeChatSessionBO sessionBO = wxApi.getWxResult(url, WeChatSessionBO.class);
+        String openId = sessionBO.getOpenId();
+        WxFans wxFans = wxFansService.getByOpenId(openId);
+        WxUserInfoForm userInfo = form.getUserInfo();
+        log.info("授权登录：{}", userInfo);
+        if (wxFans == null) {
+            //保存微信用户信息
+            wxFansService.saveMiniAuth(userInfo, sessionBO);
+        }
+        //登录
+        AuthInfoVO authInfoVO = login(openId, request, wxFans);
+        //存储session_key
+        wxApi.storageSessionKey(openId, sessionBO.getSessionKey());
+        return authInfoVO;
+    }
+
+    private AuthInfoVO login(String openId, HttpServletRequest request, WxFans wxFans) {
         String authorization = request.getHeader("Authorization");
-        String[] tokenKeys = null; //getTokenKeys();
+        String[] tokenKeys = new String[]{MINI_TOKEN, MINI_USER_ID};
         AuthInfoVO authVO;
         //是否登出
         if (StringUtils.isNotBlank(authorization)) {
@@ -44,25 +79,21 @@ public class LoginServiceImpl {
             this.expireToRedis(authVO, () -> tokenKeys, TOKEN_EXPIRE);
             return authVO;
         }
-        LoginUserBO adminUser = null;//getLoginUser(loginForm.getUserName(), loginForm.getPassword());
-        //用户被禁用
-        if (Objects.equals(adminUser.getMemberStatus(), MemberStatusEnum.DISABLE.getCode())) {
-            return buildLoginVo(adminUser);
+        if (Objects.isNull(wxFans)) {
+            wxFans = wxFansService.getByOpenId(openId);
         }
         //是否重复登录
-        authVO = redisUtils.get(RedisConstants.buildLockCacheKey(tokenKeys[1], adminUser.getUserId()), AuthInfoVO.class);
+        authVO = redisUtils.get(RedisConstants.buildLockCacheKey(tokenKeys[1], wxFans.getId()), AuthInfoVO.class);
         if (authVO != null) {
-            //授权和普通登录 合并登录信息
-            return mergeAuthInfo(authVO, adminUser, tokenKeys);
-        }
-        //生成token等相关信息
-        authVO = this.createAuthInfo(adminUser, TOKEN_EXPIRE);
-        log.info("初次登录token：{}", authVO.getToken());
-        if (authVO.getDisabled()) {
-            return authVO;
+            //已登录，刷新时间
+            authVO.setLastEnterDate(LocalDateTime.now());
+        } else {
+            //生成token等相关信息
+            authVO = this.createAuthInfo(wxFans, TOKEN_EXPIRE);
+            log.info("初次登录token：{}", authVO.getToken());
         }
         //存redis
-        this.storageToRedis(authVO, () -> tokenKeys, TOKEN_EXPIRE);
+        storageToRedis(authVO, () -> tokenKeys, TOKEN_EXPIRE);
         return authVO;
     }
 
@@ -71,7 +102,7 @@ public class LoginServiceImpl {
         if (StringUtils.isBlank(authorization)) {
             return;
         }
-        String[] tokenKeys = null;//getTokenKeys();
+        String[] tokenKeys = new String[]{MINI_TOKEN, MINI_USER_ID};
         String tokenKey = RedisConstants.buildLockCacheKey(tokenKeys[0], authorization);
         AuthInfoVO authVo = redisUtils.get(tokenKey, AuthInfoVO.class);
         if (authVo != null) {
@@ -79,28 +110,6 @@ public class LoginServiceImpl {
             redisUtils.delete(RedisConstants.buildLockCacheKey(tokenKeys[1], authVo.getUserId()));
         }
     }
-
-
-
-    public AuthInfoVO wechatLogin(WeChatLoginForm form, HttpServletRequest request) {
-        return null;
-    }
-
-//    /**
-//     * 获取登录人信息
-//     *
-//     * @param userName userName
-//     * @param password password
-//     * @return LoginUserBo
-//     */
-//    abstract LoginUserBO getLoginUser(String userName, String password);
-//
-//    /**
-//     * 获取登录tokenKeys数组 [token, userId]
-//     *
-//     * @return String[]
-//     */
-//    abstract String[] getTokenKeys();
 
     /**
      * @param tokenSupp:
@@ -120,28 +129,25 @@ public class LoginServiceImpl {
     /**
      * 生成缓存对象
      *
-     * @param adminUser    adminUser
+     * @param wxFans       wxFans
      * @param expireMillis expireMillis
      * @return AuthInfoVO
      */
-    public AuthInfoVO createAuthInfo(LoginUserBO adminUser, long expireMillis) {
+    public AuthInfoVO createAuthInfo(WxFans wxFans, long expireMillis) {
         //创建登录vo
-        AuthInfoVO authInfoVO = buildLoginVo(adminUser);
-        authInfoVO.setLoginType(adminUser.getLoginType().getCode());
-        authInfoVO.setLastEnterDate(LocalDateTime.now());
-        if (!authInfoVO.getDisabled()) {
-            //生成token
-            Token jwt = null; //JwtUtil.createJwt(authInfoVO, expireMillis);
-            authInfoVO.setToken(adminUser.getLoginType().getValue() + jwt.getToken());
-        }
+        AuthInfoVO authInfoVO = buildLoginVo(wxFans);
+        //生成token
+        Token jwt = createJwt(authInfoVO, expireMillis);
+        authInfoVO.setToken(MINI_AUTH.getValue() + jwt.getToken());
         return authInfoVO;
     }
 
-    public AuthInfoVO buildLoginVo(LoginUserBO adminUser) {
+    public AuthInfoVO buildLoginVo(WxFans wxFans) {
         AuthInfoVO authInfoVO = new AuthInfoVO();
-        authInfoVO.setUserId(adminUser.getUserId());
-        authInfoVO.setUserName(adminUser.getUserName());
+        authInfoVO.setUserId(wxFans.getId());
+        authInfoVO.setUserName(wxFans.getNickName());
         authInfoVO.setDisabled(false);
+        authInfoVO.setLastEnterDate(LocalDateTime.now());
         return authInfoVO;
     }
 
@@ -172,15 +178,15 @@ public class LoginServiceImpl {
         redisUtils.expire(userIdKey, expire, TimeUnit.SECONDS);
     }
 
-    private AuthInfoVO mergeAuthInfo(AuthInfoVO authVO, LoginUserBO adminUser, String[] tokenKeys) {
-        if (!adminUser.getLoginType().getCode().equals(authVO.getLoginType())) {
-            log.info("登录合并，用户userId：{}，登录方式：{}，token：{}", authVO.getUserId(), authVO.getLoginType(), authVO.getToken());
-            authVO.setLoginType(adminUser.getLoginType().getCode());
-            authVO.setLastEnterDate(LocalDateTime.now());
-            //刷新用户信息
-            storageToRedis(authVO, () -> tokenKeys, TOKEN_EXPIRE);
-        }
-        log.info("普通登录token：{}", authVO.getToken());
-        return authVO;
+    public static Token createJwt(AuthInfoVO authInfoVO, long expireMillis) {
+        return getToken(authInfoVO, expireMillis);
+    }
+
+    public static Token getToken(AuthInfoVO authInfoVO, long expireMillis) {
+        Map<String, String> param = Maps.newHashMapWithExpectedSize(16);
+        param.put(JWT_KEY_TOKEN_TYPE, BEARER_HEADER_KEY);
+        param.put(JWT_KEY_USER_ID, Convert.toStr(authInfoVO.getUserId(), "0"));
+        param.put(JWT_KEY_NAME, authInfoVO.getUserName());
+        return JwtUtil.createJwt(param, expireMillis);
     }
 }

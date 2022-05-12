@@ -28,6 +28,10 @@
     <result column="access_token" property="accessToken" jdbcType="VARCHAR" />
     <result column="patient_id" property="patientId" jdbcType="INTEGER" />
     <result column="lastchatkf_id" property="lastchatkfId" jdbcType="VARCHAR" />
+    <result column="fans_status" property="fansStatus" jdbcType="INTEGER" />
+    <result column="last_login_date" property="lastLoginDate" jdbcType="TIMESTAMP" />
+    <result column="longitude" property="longitude" jdbcType="DOUBLE" />
+    <result column="latitude" property="latitude" jdbcType="DOUBLE" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>

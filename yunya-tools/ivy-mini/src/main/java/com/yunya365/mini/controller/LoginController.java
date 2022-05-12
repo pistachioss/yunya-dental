@@ -33,7 +33,7 @@ public class LoginController {
 
     @PostMapping("/mini/logout")
     @ApiOperation("登出")
-    public ResponseResult<Boolean> login(HttpServletRequest request) {
+    public ResponseResult login(HttpServletRequest request) {
         authLoginService.logout(request);
         return ResponseUtil.success();
     }

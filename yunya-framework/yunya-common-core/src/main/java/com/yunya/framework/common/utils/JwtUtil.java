@@ -1,13 +1,10 @@
 package com.yunya.framework.common.utils;
 
 
-import cn.hutool.core.convert.Convert;
-import com.google.common.collect.Maps;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.StringPool;
 import com.yunya.framework.common.enums.ExceptionCode;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.model.AuthInfoVO;
 import com.yunya.framework.common.model.Token;
 import io.jsonwebtoken.*;
 import lombok.SneakyThrows;
@@ -19,6 +16,7 @@ import java.security.Key;
 import java.util.*;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
+import static com.yunya.framework.common.constant.WxMiniAuthConstant.*;
 import static com.yunya.framework.common.enums.ExceptionCode.*;
 
 
@@ -30,7 +28,7 @@ public final class JwtUtil {
      */
     private static final String BASE64_SECURITY =
             Base64.getEncoder()
-                    .encodeToString(BusinessConstants.JWT_SIGN_KEY.getBytes(StandardCharsets.UTF_8));
+                    .encodeToString(JWT_SIGN_KEY.getBytes(StandardCharsets.UTF_8));
 
     private JwtUtil() {
     }
@@ -177,13 +175,5 @@ public final class JwtUtil {
      */
     public static Claims getClaims(String token, int subIndex, long allowedClockSkewSeconds) {
         return parseJwt(token.substring(subIndex), allowedClockSkewSeconds);
-    }
-
-    public static Token createJwt(AuthInfoVO authInfoVO, long expireMillis) {
-        Map<String, String> param = Maps.newHashMapWithExpectedSize(16);
-        param.put(JWT_KEY_TOKEN_TYPE, BEARER_HEADER_KEY);
-        param.put(JWT_KEY_USER_ID, Convert.toStr(authInfoVO.getUserId(), "0"));
-        param.put(JWT_KEY_NAME, authInfoVO.getUserName());
-        return createJwt(param, expireMillis);
     }
 }

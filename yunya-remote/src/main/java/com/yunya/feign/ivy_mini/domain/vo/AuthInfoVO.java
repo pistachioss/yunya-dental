@@ -31,9 +31,6 @@ public class AuthInfoVO implements Serializable{
   @ApiModelProperty(value = "禁用原因")
   private String disableReason;
 
-  @ApiModelProperty(value = "登录方式（0-普通登录 1-授权登录 2-web）")
-  private Integer loginType;
-
   @ApiModelProperty(value = "openId")
   private String openId;
 

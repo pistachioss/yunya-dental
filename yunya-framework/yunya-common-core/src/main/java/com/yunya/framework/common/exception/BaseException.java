@@ -46,4 +46,9 @@ public class BaseException extends RuntimeException {
     super(message, cause);
     this.status = code;
   }
+
+  public BaseException(final int code, final String format, Object... args) {
+    super(String.format(format, args));
+    this.status = code;
+  }
 }

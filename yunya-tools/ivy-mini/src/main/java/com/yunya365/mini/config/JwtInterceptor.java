@@ -9,6 +9,7 @@ import com.yunya.framework.common.model.Token;
 import com.yunya.framework.common.utils.ClassUtil;
 import com.yunya.framework.common.utils.JwtUtil;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya365.mini.service.impl.LoginServiceImpl;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +25,9 @@ import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
 import static com.yunya.framework.common.constant.RedisConstants.*;
+import static com.yunya.framework.common.constant.WxMiniAuthConstant.*;
 import static com.yunya365.mini.enums.IvyMiniError.*;
+import static com.yunya365.mini.enums.LoginEnum.*;
 
 /**
  * @description:
@@ -89,7 +92,7 @@ public class JwtInterceptor implements HandlerInterceptor {
     private boolean whetherExpire(LocalDateTime lastEnterDate) {
         LocalDateTime now = LocalDateTime.now();
         long dayGap = Duration.between(now, lastEnterDate).toDays();
-        return dayGap > BusinessConstants.TOKEN_GAP;
+        return dayGap > TOKEN_GAP;
     }
 
     private void expireToRedis(AuthInfoVO authInfo, String[] tokenArr) {
@@ -116,17 +119,19 @@ public class JwtInterceptor implements HandlerInterceptor {
                 throw ClientServiceException.wrap(JWT_NOT_LOGIN, ex);
             } else {
                 //重新生成token
-                Token jwt = null;//JwtUtil.createJwt(authInfo, BusinessConstants.TOKEN_EXPIRE);
-                authInfo.setToken(authInfo.getLoginType() + jwt.getToken());
+                Token jwt = createJwt(authInfo, TOKEN_EXPIRE);
+                authInfo.setToken(MINI_AUTH + jwt.getToken());
                 log.info("用户：[{}]，续期，token=[{}], jwt.getToken()", authInfo.getUserName(), token);
             }
         }
     }
 
     @Override
-    public void afterCompletion(
-            HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         BaseContextHandler.remove();
     }
 
+    public static Token createJwt(AuthInfoVO authInfoVO, long expireMillis) {
+        return LoginServiceImpl.getToken(authInfoVO, expireMillis);
+    }
 }

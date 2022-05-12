@@ -22,8 +22,16 @@ public class ClientServiceException extends BaseException {
     super(msg, exceptionCode);
   }
 
+  public ClientServiceException(Throwable cause) {
+    super(cause);
+  }
+
   public ClientServiceException(int code, String message, Throwable cause) {
     super(code, message, cause);
+  }
+
+  public ClientServiceException(int code, String message, Object... args) {
+    super(code, message, args);
   }
 
   public ClientServiceException(RestError restError, Object...param) {
@@ -34,7 +42,16 @@ public class ClientServiceException extends BaseException {
      return new ClientServiceException(ex.getMessage(), ex.getCode());
   }
 
+  public static ClientServiceException wrap(RestError ex, Object... args) {
+    return new ClientServiceException(ex.getCode(), ex.getMessage(), args);
+  }
+
   public static ClientServiceException wrap(RestError ex, Throwable cause) {
     return new ClientServiceException(ex.getCode(), ex.getMessage(), cause);
   }
+
+  public static ClientServiceException wrap(int code, String message, Object... args) {
+    return new ClientServiceException(code, message, args);
+  }
+
 }

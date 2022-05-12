@@ -12,8 +12,8 @@ public enum MemberStatusEnum {
     NORMAL(2, "正常）"),
     LOGGING_OUT(3, "注销中）"),
     ;
-    private Integer code;
-    private String value;
+    private final Integer code;
+    private final String value;
 
     MemberStatusEnum(Integer code, String value) {
         this.code = code;
