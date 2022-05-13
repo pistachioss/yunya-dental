@@ -2467,7 +2467,7 @@ public class DimensionReportBiz {
         });
         title.put("campusName", "院区");
         title.put("workload", "工作量");
-        title.put("nonWorkload", "非业绩工作量");
+        title.put("nonWorkload", "非业绩金额");
         title.put("firstVisitCount", "初诊人数");
         title.put("treatVisitCount", "就诊人数");
         title.putAll(specialMap);
