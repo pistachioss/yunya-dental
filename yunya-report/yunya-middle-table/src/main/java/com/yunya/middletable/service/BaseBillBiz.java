@@ -217,6 +217,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     BasePatientOriginLog basePatientOriginLog =
             basePatientOriginLogMapper.selectOne(basePatientOrigin);
     log.info("患者基本信息：basePatientOriginLog = {}",basePatientOriginLog);
+    if (ObjectUtils.isEmpty(basePatientOriginLog)) {
+      return null;
+    }
     CreditsShop query = new CreditsShop();
     Integer originId = basePatientOriginLog.getOriginId();
     query.setPatientId(originId);
