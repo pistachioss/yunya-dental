@@ -49,6 +49,9 @@
       <if test="query.userId != null">
         AND user_id = #{query.userId}
       </if>
+      <if test="query.preDateTime!=null and query.preDateTime!=''">
+        AND DATE_FORMAT(push_time, '%Y-%m-%d %H:%i:%S') &lt;= #{query.preDateTime}
+      </if>
     </where>
   </select>
 </mapper>

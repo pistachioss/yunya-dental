@@ -189,7 +189,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                         if(num > 0){
                             EmployeePushForm employeePushForm = new EmployeePushForm();
                             // 组装
-                            Set<Integer> emp_ids = new HashSet<>();
+                            List<Integer> emp_ids = new ArrayList<>();
                             employeePushForm.setEmpId(emp_ids);
                             employeePushForm.setShowName(showName);
                             // 根据fieldInfoForm.getApprovalPeopleId();查推送号与平台
@@ -362,7 +362,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                         }
                         EmployeePushForm employeePushForm = new EmployeePushForm();
                         // 组装
-                        Set<Integer> emp_ids = new HashSet<>();
+                        List<Integer> emp_ids = new ArrayList<>();
                         employeePushForm.setEmpId(emp_ids);
                         employeePushForm.setShowName(showName);
                         employeePushForm.setIds(Arrays.asList(fieldInfoForm.getId()));
@@ -422,7 +422,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     }
                     EmployeePushForm employeePushForm = new EmployeePushForm();
                     // 组装
-                    Set<Integer> emp_ids = new HashSet<>();
+                    List<Integer> emp_ids = new ArrayList<>();
                     employeePushForm.setEmpId(emp_ids);
                     employeePushForm.setShowName(showName);
                     // 撤销

@@ -20,6 +20,10 @@ import java.math.BigDecimal;
 @ToString
 @ApiModel("门诊项目金额补入VO")
 public class ClinicTariffDiscountCouponVO implements Serializable {
+    /** 开单记录id */
+    @ApiModelProperty("开单记录id")
+    private Integer orderRecordId;
+
     /** 门诊ID */
     @ApiModelProperty("门诊ID")
     private Integer orgId;

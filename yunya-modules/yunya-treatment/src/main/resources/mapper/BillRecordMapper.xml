@@ -528,8 +528,10 @@
     </select>
 
     <!--去掉撤销优惠后的orderRecordId列表-->
-    <select id="selectRemoveBillAdjustDiscountOrderIds" resultType="java.lang.Integer">
-        select distinct order_record_id
+    <select id="selectRemoveBillAdjustDiscountOrderIds" resultType="com.yunya.models.treatment.BillRecord">
+        select
+            order_record_id AS orderRecordId,
+            org_id AS orgId
         from bill_record br
         where not exists (
             select behdr.associate_record_id as orderRecordId

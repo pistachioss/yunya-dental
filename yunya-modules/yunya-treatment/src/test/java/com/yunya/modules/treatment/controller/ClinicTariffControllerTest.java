@@ -1,7 +1,10 @@
 package com.yunya.modules.treatment.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.form.ClinicItemMemberPriceForm;
 import com.yunya.feign.treatment.domain.form.ClinicTariffForm;
+import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.treatment.controller.web.ClinicTariffController;
@@ -63,5 +66,13 @@ public class ClinicTariffControllerTest {
     form.setClinicItemMemberPrices(list);
     ResponseResult<T> result = clinicTariffController.modify(form);
     System.out.println(result);
+  }
+
+  @Test
+  public void testfindClinicItemMemberPrice() {
+    String param = "{\"orgId\":42,\"keyWord\":null,\"tariffCategoryId\":1,\"oralTariffCategoryId\":null,\"inservice\":true,\"whetherPage\":false}";
+    ClinicTariffQueryForm query = JSONObject.parseObject(param, ClinicTariffQueryForm.class);
+    ResponseResult<PageInfo<ClinicTariffVO>> data = clinicTariffController.findList(query);
+    System.out.println(JSONObject.toJSON(data));
   }
 }

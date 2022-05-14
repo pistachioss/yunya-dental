@@ -247,6 +247,23 @@ public class PatientBaseInfoBiz extends BaseBiz<BasePatientMapper, BasePatient> 
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<PatientOriginConsumptionVO> data = mapper.selectPatientOriginConsumption(query);
+    if (StringHelper.isNotEmpty(data)) {
+      List<Integer> patientIds = data.stream().map(PatientOriginConsumptionVO::getPatientId).collect(Collectors.toList());
+      // 患者消费
+      List<PatientCostInfoVO> costInfos = billMapper.selectPatientCostInfoById(patientIds);
+      if (StringHelper.isNotEmpty(costInfos)) {
+        costInfos.forEach(cost->{
+          Integer patientId = cost.getPatientId();
+          data.forEach(patient->{
+            if (patient.getPatientId().equals(patientId)) {
+              patient.setCumulativeConsumption(cost.getCumulativeConsumption());
+              patient.setTotalArrears(cost.getTotalArrears());
+            }
+          });
+        });
+
+      }
+    }
     return new PageInfo<>(data);
   }
 

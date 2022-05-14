@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * 简介：
@@ -22,5 +22,5 @@ import java.util.List;
 public class DiscountCouponQuery implements Serializable {
 
     @ApiModelProperty("开单ID列表")
-    private List<Integer> orderRecordIds;
+    private Collection<Integer> orderRecordIds;
 }

@@ -3145,7 +3145,14 @@
         base_bill_detail bbd
         INNER JOIN base_bill bb ON bbd.bill_id = bb.bill_id AND bb.bill_date IS NOT NULL
         <where>
-            AND bbd.executor_id > 0
+            <if test="existsExecutor != null">
+                <if test="existsExecutor">
+                    AND bbd.executor_id > 0
+                </if>
+                <if test="!existsExecutor">
+                    AND bbd.executor_id is null
+                </if>
+            </if>
             <if test="billIds != null and billIds.size > 0">
                 AND bbd.bill_id IN
                 <foreach collection="billIds" index="index" item="item" open="(" separator="," close=")">

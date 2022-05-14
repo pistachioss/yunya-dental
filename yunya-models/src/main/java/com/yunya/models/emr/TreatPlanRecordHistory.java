@@ -37,10 +37,10 @@ public class TreatPlanRecordHistory {
     private Integer patientId;
 
     /**
-     * 普通电子病历记录id
+     * 治疗计划类型，取自字典id
      */
-    @Column(name = "medical_record_id")
-    private Integer medicalRecordId;
+    @Column(name = "plan_type_id")
+    private Integer planTypeId;
 
     /**
      * 治疗计划名称
@@ -178,21 +178,21 @@ public class TreatPlanRecordHistory {
     }
 
     /**
-     * 获取普通电子病历记录id
+     * 获取治疗计划类型
      *
-     * @return medical_record_id - 普通电子病历记录id
+     * @return 治疗计划类型
      */
-    public Integer getMedicalRecordId() {
-        return medicalRecordId;
+    public Integer getPlanTypeId() {
+        return planTypeId;
     }
 
     /**
-     * 设置普通电子病历记录id
+     * 设置治疗计划类型
      *
-     * @param medicalRecordId 普通电子病历记录id
+     * @param planTypeId 治疗计划类型
      */
-    public void setMedicalRecordId(Integer medicalRecordId) {
-        this.medicalRecordId = medicalRecordId;
+    public void setPlanTypeId(Integer planTypeId) {
+        this.planTypeId = planTypeId;
     }
 
     /**

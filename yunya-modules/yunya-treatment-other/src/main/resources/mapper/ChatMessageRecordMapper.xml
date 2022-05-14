@@ -26,7 +26,7 @@
         send_id AS sendId,
         receive_id AS receiveId,
         content,
-        had_read AS hadRead,
+        had_read AS ackRead,
         crt_time AS sendTime,
         upt_time AS readTime
     FROM chat_message_record

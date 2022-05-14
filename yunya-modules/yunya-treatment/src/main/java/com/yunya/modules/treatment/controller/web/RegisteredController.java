@@ -57,9 +57,8 @@ public class RegisteredController {
   @CurrentUser
   @ApiOperation("新增患者挂号")
   @PostMapping("/save")
-  public ResponseResult<T> add(@RequestBody @Validated RegisteredModel model) {
-    registeredBiz.save(model);
-    return ResponseUtil.success(null);
+  public ResponseResult<Integer> add(@RequestBody @Validated RegisteredModel model) {
+    return ResponseUtil.success(registeredBiz.save(model));
   }
 
   /**

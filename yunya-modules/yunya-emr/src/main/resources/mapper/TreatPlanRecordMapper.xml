@@ -9,7 +9,7 @@
     <result column="org_id" property="orgId" jdbcType="INTEGER" />
     <result column="dentist_id" property="dentistId" jdbcType="INTEGER" />
     <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="medical_record_id" property="medicalRecordId" jdbcType="INTEGER" />
+    <result column="plan_type_id" property="planTypeId" jdbcType="INTEGER" />
     <result column="plan_name" property="planName" jdbcType="VARCHAR" />
     <result column="status" property="status" jdbcType="TINYINT" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
@@ -24,12 +24,16 @@
         id,
         plan_name AS planName,
         patient_id AS patientId,
+        plan_type_id AS planTypeId,
         org_id AS orgId,
         status,
         crt_time AS crtTime,
         dentist_id AS dentistId
     FROM treat_plan_record
     <where>
+      <if test="query.orgId != null">
+        AND org_id = #{query.orgId}
+      </if>
       <if test="query.planName!=null and query.planName!=''">
         AND plan_name like CONCAT(CONCAT('%',#{query.planName}),'%')
       </if>
@@ -41,6 +45,118 @@
         <foreach collection="query.status" item="item" index="index" open="(" close=")" separator=",">
           #{item}
         </foreach>
+      </if>
+      <if test="query.planTypeId != null">
+        AND plan_type_id = #{query.planTypeId}
+      </if>
+      <if test="query.dateType == 0">
+        <if test="query.startDate != null and query.startDate != ''">
+          and DATE_FORMAT(crt_time, '%Y-%m-%d') &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          and DATE_FORMAT(crt_time, '%Y-%m-%d') &lt;= #{query.endDate}
+        </if>
+      </if>
+      <if test="query.dateType == 1">
+        <if test="query.startDate != null and query.startDate != ''">
+          and DATE_FORMAT(crt_time, '%Y-%m') &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          and DATE_FORMAT(crt_time, '%Y-%m') &lt;= #{query.endDate}
+        </if>
+      </if>
+      <if test="query.dateType == 2">
+        <if test="query.startDate != null and query.startDate != ''">
+          and DATE_FORMAT(crt_time, '%Y') &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          and DATE_FORMAT(crt_time, '%Y') &lt;= #{query.endDate}
+        </if>
+      </if>
+    </where>
+    ORDER BY crt_time DESC
+  </select>
+
+  <!--条件查询治疗类型统计列表-->
+  <select id="selectTreatPlanTypeStatistics"
+            resultType="com.yunya.feign.emr.domain.vo.TreatPlanTypeStatisticsVO">
+    SELECT
+        org_id AS orgId,
+        dentist_id AS dentistId,
+        plan_type_id AS planTypeId,
+        count(*) AS planNum
+    FROM treat_plan_record
+    <where>
+      <if test="query.planTypeId != null">
+        AND plan_type_id = #{query.planTypeId}
+      </if>
+      <if test="query.orgIds!=null and query.orgIds.size()>0">
+        AND org_id in
+        <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
+      <if test="query.dentistIds!=null and query.dentistIds.size()>0">
+        AND dentist_id in
+        <foreach collection="query.dentistIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
+      <if test="query.dateType == 0">
+        <if test="query.startDate != null and query.startDate != ''">
+          and DATE_FORMAT(crt_time, '%Y-%m-%d') &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          and DATE_FORMAT(crt_time, '%Y-%m-%d') &lt;= #{query.endDate}
+        </if>
+      </if>
+      <if test="query.dateType == 1">
+        <if test="query.startDate != null and query.startDate != ''">
+          and DATE_FORMAT(crt_time, '%Y-%m') &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          and DATE_FORMAT(crt_time, '%Y-%m') &lt;= #{query.endDate}
+        </if>
+      </if>
+      <if test="query.dateType == 2">
+        <if test="query.startDate != null and query.startDate != ''">
+          and DATE_FORMAT(crt_time, '%Y') &gt;= #{query.startDate}
+        </if>
+        <if test="query.endDate != null and query.endDate != ''">
+          and DATE_FORMAT(crt_time, '%Y') &lt;= #{query.endDate}
+        </if>
+      </if>
+    </where>
+    GROUP BY org_id, dentist_id, plan_type_id
+    ORDER BY org_id, dentist_id, plan_type_id
+  </select>
+
+  <!--条件查询治疗计划类型明细-->
+  <select id="selectTreatPlanTypeDetail" resultType="com.yunya.feign.emr.domain.vo.TreatPlanTypeDetailVO">
+    SELECT
+        id AS planId,
+        patient_id AS patientId,
+        plan_name AS planName,
+        dentist_id AS dentistId,
+        crt_time AS crtTime,
+        CASE
+        WHEN status=0 THEN '未确认'
+        WHEN status=1 THEN '已确认'
+        WHEN status=2 THEN '进行中'
+        WHEN status=3 THEN '全部完成'
+        WHEN status=4 THEN '提前终止'
+        END
+        AS status
+    FROM treat_plan_record
+    <where>
+      <if test="query.orgId != null">
+        AND org_id = #{query.orgId}
+      </if>
+      <if test="query.dentistId != null">
+        AND dentist_id = #{query.dentistId}
+      </if>
+      <if test="query.planTypeId != null">
+        AND plan_type_id = #{query.planTypeId}
       </if>
       <if test="query.dateType == 0">
         <if test="query.startDate != null and query.startDate != ''">

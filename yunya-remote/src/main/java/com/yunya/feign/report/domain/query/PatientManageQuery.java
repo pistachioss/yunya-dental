@@ -57,4 +57,7 @@ public class PatientManageQuery extends PageQuery {
     private Boolean limitName;
     @ApiModelProperty(value = "同手机号")
     private Boolean limitMobile;
+    /** 患者分组Id*/
+    @ApiModelProperty("患者分组id")
+    private Integer patientGroupId;
 }

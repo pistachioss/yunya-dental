@@ -10,7 +10,7 @@
     <result column="org_id" property="orgId" jdbcType="INTEGER" />
     <result column="dentist_id" property="dentistId" jdbcType="INTEGER" />
     <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="medical_record_id" property="medicalRecordId" jdbcType="INTEGER" />
+    <result column="plan_type_id" property="planTypeId" jdbcType="INTEGER" />
     <result column="plan_name" property="planName" jdbcType="VARCHAR" />
     <result column="status" property="status" jdbcType="TINYINT" />
     <result column="is_change" property="isChange" jdbcType="TINYINT" />

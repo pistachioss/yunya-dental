@@ -1,6 +1,7 @@
 package com.yunya.modules.emr.biz;
 
 import com.yunya.feign.emr.domain.model.TreatPlanDetailModel;
+import com.yunya.feign.emr.domain.vo.TreatPlanDetailAndExecuteVO;
 import com.yunya.feign.emr.domain.vo.TreatPlanDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -192,7 +194,7 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
      * 根据治疗计划id查询明细列表
      *
      * @param planId
-     * @param onlySelectStatus
+     * @param onlySelectStatus 是否只查询状态
      * @return
      */
     public List<TreatPlanDetailVO> findTreatPlanDetailByPlanId(Integer planId, boolean onlySelectStatus) {
@@ -230,5 +232,47 @@ public class TreatPlanDetailBiz extends BaseBiz<TreatPlanDetailMapper, TreatPlan
             });
         }
         return result;
+    }
+
+    /**
+     * 根据治疗计划详情id查询核销记录列表
+     *
+     * @param planDetailIds
+     * @return
+     */
+    public List<TreatPlanDetailAndExecuteVO> findOrderPlanDetailByDetailId(Collection<Integer> planDetailIds) {
+        List<TreatPlanDetailAndExecuteVO> result = new ArrayList<>();
+        planDetailIds.forEach(planDetailId->{
+            TreatPlanDetail treatPlanDetail = mapper.selectByPrimaryKey(planDetailId);
+            // 未核销的数量
+            Integer quantity = treatPlanDetail.getQuantity();
+            List<TreatPlanDetailWriteoff> writeoffs = treatPlanDetailWriteoffMapper.selectListByPlanDetailId(planDetailId);
+            if (StringHelper.isNotEmpty(writeoffs)) {
+                for (TreatPlanDetailWriteoff writeoff : writeoffs) {
+                    Integer writeOffQuantity = writeoff.getWriteOffQuantity();
+                    TreatPlanDetailAndExecuteVO vo = generateVO(treatPlanDetail, writeOffQuantity);
+                    vo.setOrderDetailId(writeoff.getOrderDetailId());
+                    vo.setExecuteDate(writeoff.getUptTime());
+                    result.add(vo);
+                    quantity -= writeOffQuantity;
+                }
+            }
+            if (quantity > 0) {
+                result.add(generateVO(treatPlanDetail, quantity));
+            }
+        });
+        return result;
+    }
+
+    private TreatPlanDetailAndExecuteVO generateVO(TreatPlanDetail treatPlanDetail, Integer writeOffQuantity) {
+        TreatPlanDetailAndExecuteVO vo = new TreatPlanDetailAndExecuteVO();
+        vo.setBillItemName(treatPlanDetail.getBillingItemName());
+        BigDecimal price = treatPlanDetail.getPrice();
+        vo.setPrice(price);
+        vo.setUnit(treatPlanDetail.getUnit());
+        vo.setQuantity(writeOffQuantity);
+        vo.setOriginPrice(price.multiply(new BigDecimal(writeOffQuantity)));
+        vo.setRemark(treatPlanDetail.getRemark());
+        return vo;
     }
 }

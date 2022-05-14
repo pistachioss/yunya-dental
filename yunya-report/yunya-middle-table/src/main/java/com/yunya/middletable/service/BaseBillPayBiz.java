@@ -16,9 +16,7 @@ import com.yunya.middletable.dao.treatment.OrderDetailMapper;
 import com.yunya.middletable.service.credits_shop.BillCreditsCallback;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
-import com.yunya.models.report.BaseBill;
-import com.yunya.models.report.BaseBillPay;
-import com.yunya.models.report.BaseBillPayDetail;
+import com.yunya.models.report.*;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.OrderDetail;
@@ -35,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.function.Function;
 
 /**
  * 简介: 中间表收费记录处理业务层

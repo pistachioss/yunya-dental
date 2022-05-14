@@ -1125,8 +1125,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param billIds 订单ID列表
    * @return list
    */
-  public List<BillRecordWorkloadVO> findBillWorkloadInfoByBillIds(Collection<Integer> billIds) {
-    return mapper.selectBillTotalWorkload(billIds);
+  public List<BillRecordWorkloadVO> findBillWorkloadInfoByBillIds(Collection<Integer> billIds, Boolean existsExecutor) {
+    return mapper.selectBillTotalWorkload(billIds, existsExecutor);
   }
 
   /**
@@ -1437,7 +1437,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     query.setEndDate(yearEDate);
     List<String> yearDateList = DateUtil.sliceUpDateRange(yearSDate, yearEDate);
     Map<String, Map<Integer, BigDecimal>> workloadMap =
-        baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(query);
+        baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(query, true);
+    Map<String, Map<Integer, BigDecimal>> nonWorkloadMap =
+            baseBillPayBiz.computeWorkloadGroupOrgIdAndMonth(query, false);
     DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo<>();
     List<JSONObject> result = new ArrayList<>();
     if (StringHelper.isNotEmpty(orgs)) {
@@ -1447,12 +1449,14 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       BigDecimal chainTotal = BigDecimal.ZERO;
       BigDecimal preTotal = BigDecimal.ZERO;
       BigDecimal yearTotal = BigDecimal.ZERO;
+      BigDecimal nonPerformTotal = BigDecimal.ZERO;
       JSONObject actual = init(startDate, endDate, "实际值");
       JSONObject goals = init(startDate, endDate, "目标值");
       JSONObject completed = init(startDate, endDate, "完成度");
       JSONObject preDiff = init(preSDate, preEDate, "环比值");
       JSONObject chainDiff = init(chainSDate, chainEDate, "同比值");
       JSONObject curYear = init(year, year, "年度总工作量");
+      JSONObject nonPerformance = init(null, null, "非业绩工作量");
       Map<String, String> map = new LinkedHashMap<>();
       map.put("date", "时间");
       map.put("name", "工作量");
@@ -1476,14 +1480,17 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         BigDecimal chainWorkload = computeOrgWorkload(orgId, chainDateList, workloadMap);
         BigDecimal preWorkload = computeOrgWorkload(orgId, preDateList, workloadMap);
         BigDecimal yearWorkload = computeOrgWorkload(orgId, yearDateList, workloadMap);
+        BigDecimal nonPerformWorkload = computeOrgWorkload(orgId, curMonthList, nonWorkloadMap);
         chainDiff.put(key, chainWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
         preDiff.put(key, preWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
         curYear.put(key, yearWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
+        nonPerformance.put(key, nonPerformWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
         actualTotal = actualTotal.add(workloads.setScale(2, BigDecimal.ROUND_HALF_UP));
         goalTotal = goalTotal.add(goal);
         chainTotal = chainTotal.add(chainWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
         preTotal = preTotal.add(preWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
         yearTotal = yearTotal.add(yearWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
+        nonPerformTotal = nonPerformTotal.add(nonPerformWorkload.setScale(2, BigDecimal.ROUND_HALF_UP));
       }
       map.put("total", "合计");
       actual.put("total", actualTotal);
@@ -1498,12 +1505,14 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       chainDiff.put("total", chainTotal);
       preDiff.put("total", preTotal);
       curYear.put("total", yearTotal);
+      nonPerformance.put("total", nonPerformTotal);
       result.add(actual);
       result.add(goals);
       result.add(completed);
       result.add(chainDiff);
       result.add(preDiff);
       result.add(curYear);
+      result.add(nonPerformance);
       pageInfo.setMap(map);
     }
     pageInfo.setPageNum(queryForm.getPageNum());
@@ -1580,6 +1589,9 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   public String doDateStyle(String startDate, String endDate) {
+    if (StringHelper.isEmpty(startDate) || StringHelper.isEmpty(endDate)) {
+      return "";
+    }
     String result = startDate.replaceAll("-", "/");
     if (!startDate.equals(endDate)) {
       result = result + "-" + endDate.replaceAll("-", "/");

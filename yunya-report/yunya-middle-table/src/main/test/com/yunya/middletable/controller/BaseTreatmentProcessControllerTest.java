@@ -85,6 +85,15 @@ public class BaseTreatmentProcessControllerTest {
     }
 
     @Test
+    public void testOperateBill() throws InterruptedException {
+        String param = "{\"paramMap\":{\"id\":64},\"operateType\":1}";
+        MessageModel form = JSONObject.parseObject(param, MessageModel.class);
+        ResponseResult result = baseBillController.operateBill(form);
+        System.out.println(result);
+    }
+
+
+    @Test
     public void testPayDateStatistics() throws InterruptedException {
         String param = "{\"paramMap\":{\"id\":357843},\"operateType\":1}";
         MessageModel form = JSONObject.parseObject(param, MessageModel.class);

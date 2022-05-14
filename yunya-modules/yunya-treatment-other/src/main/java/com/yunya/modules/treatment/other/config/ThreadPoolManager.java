@@ -39,7 +39,7 @@ public class ThreadPoolManager {
     /**
      * 线程名称
      */
-    private static final String NAME_PREFIX = "yunya-report-thread-";
+    private static final String NAME_PREFIX = "yunya-treatment-other-thread-";
     /**
      * 线程尾部id
      */
