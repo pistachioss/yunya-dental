@@ -18,6 +18,7 @@ import com.yunya.feign.treatment_other.domain.form.VisitingRemindForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingRemindModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRemindContentVo;
+import com.yunya.feign.treatment_other.domain.vo.VisitingRemindDetailVO;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRemindExecuteVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRemindVo;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -37,6 +38,7 @@ import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.modules.treatment.other.mapper.VisitingRemindMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -769,4 +771,21 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         }
         return 0;
     }
+
+    public VisitingRemindDetailVO findRemindOneById(Integer id) {
+        VisitingRemind remind = mapper.selectByPrimaryKey(id);
+        if (ObjectUtils.isEmpty(remind)) {
+            return null;
+        }
+        VisitingRemindDetailVO result = new VisitingRemindDetailVO();
+        BeanUtils.copyProperties(remind, result);
+        PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(id);
+        if (!ObjectUtils.isEmpty(patient)){
+            result.setPatientName(patient.getName());
+            result.setMobile(patient.getMobile());
+            result.setFaceUrl(patient.getFaceUrl());
+        }
+        return result;
+    }
+
 }

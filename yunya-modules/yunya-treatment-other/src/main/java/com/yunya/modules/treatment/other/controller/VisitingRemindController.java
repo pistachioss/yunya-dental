@@ -6,6 +6,7 @@ import com.yunya.feign.treatment_other.domain.form.VisitingRemindForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingRemindModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRemindContentVo;
+import com.yunya.feign.treatment_other.domain.vo.VisitingRemindDetailVO;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRemindVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -98,6 +99,19 @@ public class VisitingRemindController {
     @GetMapping("/find/{id}")
     public ResponseResult<VisitingRemindContentVo> findVisitingRemindById(@PathVariable("id") Integer id) {
         return visitingRemindBiz.findVisitingRemindById(id);
+    }
+
+    /**
+     * 根据id查询随访提醒详情
+     *
+     * @param id 随访提醒id
+     * @return ResponseResult
+     */
+    @ApiOperation("根据id查询随访提醒详情")
+    @GetMapping("/one/{id}")
+    public ResponseResult<VisitingRemindDetailVO> findRemindOneById(@PathVariable("id") Integer id) {
+        VisitingRemindDetailVO result = visitingRemindBiz.findRemindOneById(id);
+        return ResponseUtil.success(result);
     }
 
     /**
