@@ -301,6 +301,9 @@ import java.util.*;
   @PostMapping("/api/wxFans/query")
   WxFans getWxFans(@RequestBody WxUserQuery query);
 
+  @PostMapping("/api/wxFans/findListByName")
+  List<WxFansVo> findListByName(@RequestBody WxFanByNameForm wxFanByNameForm);
+
   @PostMapping("/api/wxFans/detail")
   List<WxFansDetailVO> findDetail(@RequestBody @Validated WxFansDetailForm wxFansDetailForm);
 

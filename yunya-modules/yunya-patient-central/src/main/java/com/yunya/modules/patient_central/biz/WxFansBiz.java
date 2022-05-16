@@ -80,6 +80,12 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         return new PageInfo<>(list);
     }
 
+    public List<WxFansVo> findListByName(WxFanByNameForm wxFansQueryForm) {
+
+        List<WxFansVo> list = mapper.findListByName(wxFansQueryForm);
+        return  list;
+    }
+
     public List<WxFansDetailVO> findDetail(WxFansDetailForm wxFansDetailForm) {
         List<WxFansDetailVO> list = mapper.findDetail(wxFansDetailForm);
         DictionaryItemModel model = new DictionaryItemModel();

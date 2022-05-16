@@ -322,6 +322,13 @@ public class PatientServiceRest {
     return wxFansBiz.findDetail(wxFansDetailForm);
   }
 
+
+  @PostMapping("/wxFans/findListByName")
+  public List<WxFansVo> findListByName(
+          @RequestBody @Validated WxFanByNameForm wxFanByNameForm) {
+    return wxFansBiz.findListByName(wxFanByNameForm);
+  }
+
   @ApiOperation("查询微信用户信息")
   @RequestMapping(value = "/wx/patient/{patientId}", method = RequestMethod.GET)
   public WxPatientVo getWxPatientInfo(@PathVariable("patientId") Integer patientId) {

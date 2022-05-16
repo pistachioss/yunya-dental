@@ -192,6 +192,11 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     }
 
     @Override
+    public List<WxFansVo> findListByName(WxFanByNameForm wxFanByNameForm) {
+        return null;
+    }
+
+    @Override
     public List<WxFansDetailVO> findDetail(WxFansDetailForm wxFansDetailForm) {
         return null;
     }

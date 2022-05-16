@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya365.mini.mapper.FeedBackMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya365.mini.entity.FeedBack" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="fan_id" property="fanId" jdbcType="INTEGER" />
+    <result column="context" property="context" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <select id="findFeedBackList" resultType="com.yunya.feign.ivy_mini.domain.vo.FeedBackVO">
+      select  id,fan_id as fanId,context as context,crt_time as crtTime from feed_back
+      <where>
+        <if test="nameList != null and nameList.size > 0">
+          and fan_id in
+          <foreach collection="nameList" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+          </foreach>
+        </if>
+        <if test="crtTime != null and crtTime != ''">
+          and DATE_FORMAT(crt_time, "%Y-%m-%d" ) = DATE_FORMAT( #{crtTime}, "%Y-%m-%d" )
+        </if>
+      </where>
+
+  </select>
+</mapper>

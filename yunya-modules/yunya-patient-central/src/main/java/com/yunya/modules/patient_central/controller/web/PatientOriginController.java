@@ -149,7 +149,7 @@ public class PatientOriginController {
    */
   @ApiOperation("迁移患者信息来源到患者来源变更日志表")
   @PostMapping("/move/origin")
-  public ResponseResult<List<PatientOriginVo>> moveOrigin() throws InterruptedException {
+  public ResponseResult<Boolean> moveOrigin() throws InterruptedException {
     this.patientOriginBiz.moveOrigin();
     return ResponseUtil.success();
   }
