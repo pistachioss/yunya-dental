@@ -59,7 +59,6 @@
         <swagger-ui.version>1.9.6</swagger-ui.version>
         <easyexcel-version>2.2.6</easyexcel-version>
         <collections4-version>4.1</collections4-version>
-        <mybatis.plus-version>3.5.1</mybatis.plus-version>
     </properties>
 
     <dependencyManagement>
@@ -265,11 +264,6 @@
                 <version>${collections4-version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-boot-starter</artifactId>
-                <version>${mybatis.plus-version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
