@@ -37,7 +37,6 @@ import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 
@@ -124,13 +123,6 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           // 回调收费增加积分
           log.info("回调积分baseBillPayCallback");
           baseBillPayBiz.addCallBack(bill.getBillId(), baseBillPayCallback);
-          log.info("消息dataId = {}",dataId);
-          // 做接口幂等性校验
-          String key = String.format("msgId:%d", dataId);
-          if (redisUtils.hasKey(key)) {
-            return;
-          }
-          redisUtils.set(key,"",15, TimeUnit.SECONDS);
         } else {
           baseBillDetailMapper.deleteByBillId(dataId);
         }
