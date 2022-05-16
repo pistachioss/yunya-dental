@@ -238,7 +238,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @param id 提醒记录id
      * @return ResponseResult
      */
-    public ResponseResult findVisitingRemindById(Integer id){
+    public ResponseResult<VisitingRemindContentVo> findVisitingRemindById(Integer id){
         VisitingRemind visitingRemind = mapper.selectByPrimaryKey(id);
         if (visitingRemind == null) {
             return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"没有数据",null);
@@ -247,6 +247,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         if (id != null){
             PatientTotalInfoVo patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(id);
             if (patientTotalInfo != null){
+                build.setPatientName(patientTotalInfo.getName());
                 build.setMobile(patientTotalInfo.getMobile());
             } else {
                 build.setMobile("---");
@@ -260,7 +261,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @param query 查询条件
      * @return  ResponseResult
      */
-    public ResponseResult findVisitingRemindByCondition(VisitingRemindQuery query){
+    public ResponseResult<PageInfo<VisitingRemindVo>> findVisitingRemindByCondition(VisitingRemindQuery query){
         query.setInservice(true);
         String medicalNumber = query.getMedicalNumber();
         String distentName = query.getDistentName();
