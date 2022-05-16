@@ -245,10 +245,11 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         }
         VisitingRemindContentVo build = EntityUtils.build(visitingRemind, VisitingRemindContentVo.class);
         if (id != null){
-            PatientTotalInfoVo patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(id);
-            if (patientTotalInfo != null){
-                build.setPatientName(patientTotalInfo.getName());
-                build.setMobile(patientTotalInfo.getMobile());
+            PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(id);
+            if (!ObjectUtils.isEmpty(patient)){
+                build.setPatientName(patient.getName());
+                build.setMobile(patient.getMobile());
+                build.setFaceUrl(patient.getFaceUrl());
             } else {
                 build.setMobile("---");
             }
