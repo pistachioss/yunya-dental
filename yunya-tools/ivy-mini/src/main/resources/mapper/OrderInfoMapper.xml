@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya365.mini.mapper.OrderMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya365.mini.entity.Order" >
+<mapper namespace="com.yunya365.mini.mapper.OrderInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya365.mini.entity.OrderInfo" >
     <!--
       WARNING - @mbg.generated
     -->
@@ -29,19 +29,19 @@
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
   </resultMap>
   <select id="findOrderList" resultType="com.yunya.feign.ivy_mini.domain.vo.OrderVO">
-          select
+    select
     od.id,
     od.fans_id,
     od.status,
     od.order_sn,
     od.confirm_status,
-	od.crt_time,
-	od.pay_amount,
-	od.delivery_company,
+    od.crt_time,
+    od.pay_amount,
+    od.delivery_company,
     GROUP_CONCAT(oi.product_name ) as topGradeList,
     ad.address
     FROM
-	`order`  od
+    `order_info`  od
     LEFT JOIN address ad ON od.fans_id = ad.fan_id
     LEFT JOIN order_item oi ON od.id = oi.order_id
     <where>
@@ -62,6 +62,6 @@
       </if>
     </where>
     GROUP BY
-	od.id
+    od.id
   </select>
 </mapper>

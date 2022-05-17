@@ -2,17 +2,17 @@ package com.yunya365.mini.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.ivy_mini.domain.form.OrderForm;
+import com.yunya.feign.ivy_mini.domain.form.OrderUpdateForm;
 import com.yunya.feign.ivy_mini.domain.vo.OrderVO;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.OrderService;
 import com.yunya365.mini.service.impl.OrderAdminiServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -30,9 +30,16 @@ public class OrderController {
     private OrderAdminiServiceImpl orderAdminiService;
 
     @PostMapping("/findlist")
-    @ApiOperation("意见反馈-列表")
+    @ApiOperation("订单-列表")
     public ResponseResult<PageInfo<OrderVO>> findList(@RequestBody @Valid OrderForm form) {
         return ResponseUtil.success(orderAdminiService.findList(form));
+    }
+
+    @ApiOperation("订单-发货/退款")
+    @PutMapping("/update")
+//    @CurrentUser
+    public ResponseResult update(@RequestBody @Validated OrderUpdateForm form) {
+        return orderAdminiService.update(form);
     }
 
 }
