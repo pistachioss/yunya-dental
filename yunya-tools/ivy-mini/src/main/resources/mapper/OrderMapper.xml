@@ -26,5 +26,42 @@
     <result column="receive_time" property="receiveTime" jdbcType="TIMESTAMP" />
     <result column="comment_time" property="commentTime" jdbcType="TIMESTAMP" />
     <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
   </resultMap>
+  <select id="findOrderList" resultType="com.yunya.feign.ivy_mini.domain.vo.OrderVO">
+          select
+    od.id,
+    od.fans_id,
+    od.status,
+    od.order_sn,
+    od.confirm_status,
+	od.crt_time,
+	od.pay_amount,
+	od.delivery_company,
+    GROUP_CONCAT(oi.product_name ) as topGradeList,
+    ad.address
+    FROM
+	`order`  od
+    LEFT JOIN address ad ON od.fans_id = ad.fan_id
+    LEFT JOIN order_item oi ON od.id = oi.order_id
+    <where>
+      <if test="crtTime != null and crtTime != ''">
+        and DATE_FORMAT(od.crt_time, "%Y-%m-%d" ) = DATE_FORMAT( #{crtTime}, "%Y-%m-%d" )
+      </if>
+      <if test="nameList != null and nameList.size > 0">
+        and od.fans_id in
+        <foreach collection="nameList" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
+      <if test="status != null and status != ''">
+        and status =  #{status}
+      </if>
+      <if test="orderType != null and orderType != ''">
+        and order_type =  #{orderType}
+      </if>
+    </where>
+    GROUP BY
+	od.id
+  </select>
 </mapper>

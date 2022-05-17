@@ -129,4 +129,10 @@ public class Order {
      */
     @Column(name = "modify_time")
     private Date modifyTime;
+
+    /**
+     * 创建时间
+     */
+    @Column(name = "crt_time")
+    private Date crtTime;
 }
