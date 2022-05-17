@@ -10,6 +10,7 @@ import com.yunya.feign.patient_central.domain.query.WxFanByNameForm;
 import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
 import com.yunya.framework.common.biz.BaseBiz;
 
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 
@@ -89,9 +90,9 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
             return ResponseUtil.success("数据修改失败！");
         }
         OrderOperateHistory orderOperateHistory = new OrderOperateHistory();
-//          orderOperateHistory.setOperateMan(BaseContextHandler.getUsername());
+          orderOperateHistory.setOperateMan(BaseContextHandler.getUsername());
         //测试用，发布切换
-        orderOperateHistory.setOperateMan("管理员");
+//        orderOperateHistory.setOperateMan("管理员");
         orderOperateHistory.setOrderId(id);
         orderOperateHistory.setOrderStatus(Integer.valueOf(form.getStatus()));
         orderOperateHistory.setRemark(order.getRemark());

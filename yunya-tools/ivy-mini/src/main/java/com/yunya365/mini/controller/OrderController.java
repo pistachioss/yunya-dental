@@ -37,7 +37,7 @@ public class OrderController {
 
     @ApiOperation("订单-发货/退款")
     @PutMapping("/update")
-//    @CurrentUser
+    @CurrentUser
     public ResponseResult update(@RequestBody @Validated OrderUpdateForm form) {
         return orderAdminiService.update(form);
     }
