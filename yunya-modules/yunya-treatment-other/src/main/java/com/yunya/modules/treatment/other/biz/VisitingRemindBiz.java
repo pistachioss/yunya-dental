@@ -779,11 +779,18 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         }
         VisitingRemindDetailVO result = new VisitingRemindDetailVO();
         BeanUtils.copyProperties(remind, result);
-        PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(id);
-        if (!ObjectUtils.isEmpty(patient)){
+        PatientBaseInfo patient = remotePatientCentralServiceFeign.findPatientInfoById(result.getPatientId());
+        if (!ObjectUtils.isEmpty(patient)) {
             result.setPatientName(patient.getName());
             result.setMobile(patient.getMobile());
             result.setFaceUrl(patient.getFaceUrl());
+        }
+        Integer dentistId = result.getDentistId();
+        if (!ObjectUtils.isEmpty(dentistId)) {
+            SysEmployee dentist = remoteSystemServiceFeign.findSysEmployeeById(dentistId);
+            if (!ObjectUtils.isEmpty(dentist)) {
+                result.setDentistName(dentist.getName());
+            }
         }
         return result;
     }
