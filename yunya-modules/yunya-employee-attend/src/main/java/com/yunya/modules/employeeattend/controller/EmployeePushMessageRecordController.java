@@ -41,7 +41,7 @@ public class EmployeePushMessageRecordController {
   @PutMapping("/uptHaveRead")
   @ApiOperation("推送消息状态更新已读")
   @CurrentUser
-  public ResponseResult<PageInfo<EmployeePushMessageRecordVO>> uptPushMessageHaveRead(@RequestBody @Validated EmployeePushMessageRecordForm form) {
+  public ResponseResult<Boolean> uptPushMessageHaveRead(@RequestBody @Validated EmployeePushMessageRecordForm form) {
     employeePushMessageRecordBiz.uptPushMessageHaveRead(form);
     return ResponseUtil.success();
   }

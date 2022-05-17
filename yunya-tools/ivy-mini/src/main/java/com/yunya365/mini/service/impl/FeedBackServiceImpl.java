@@ -9,6 +9,8 @@ import com.yunya.feign.patient_central.domain.query.WxFanByNameForm;
 import com.yunya.feign.patient_central.domain.query.WxFansDetailForm;
 import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.entity.FeedBack;
 import com.yunya365.mini.mapper.FeedBackMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -56,5 +58,17 @@ public class FeedBackServiceImpl extends BaseBiz<FeedBackMapper, FeedBack> {
             a.setFanName(clinicMap.get(a.getFanId()+"").getNickName());
         }
         return new PageInfo<>(result);
+    }
+
+    public ResponseResult delete(Integer id) {
+        FeedBack feedBack = mapper.selectByPrimaryKey(id);
+        if (feedBack == null) {
+            return ResponseUtil.success("删除的记录不存在！");
+        }
+        int result = mapper.delete(feedBack);
+        if (result <= 0){
+            return ResponseUtil.success("数据删除失败！");
+        }
+        return ResponseUtil.success();
     }
 }

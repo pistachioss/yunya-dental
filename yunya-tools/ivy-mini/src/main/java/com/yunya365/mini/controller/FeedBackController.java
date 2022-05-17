@@ -8,10 +8,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.impl.FeedBackServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -37,4 +34,10 @@ public class FeedBackController {
     public ResponseResult<PageInfo<FeedBackVO>> findList(@RequestBody @Valid FeedBackForm form) {
         return ResponseUtil.success(feedBackService.findList(form));
     }
+    @ApiOperation("意见反馈-删除")
+    @DeleteMapping("/delete/{id}")
+    public ResponseResult delete(@PathVariable(value = "id") Integer id) {
+        return feedBackService.delete(id);
+    }
+
 }

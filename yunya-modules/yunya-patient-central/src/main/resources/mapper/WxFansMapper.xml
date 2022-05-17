@@ -69,21 +69,13 @@
   </select>
 
   <select id="findListByName" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansVo">
-    select wf.id,wf.nick_name as nickName,wf.head_imgurl as headImgurl,wf.open_id as openId,pbi.name,wf.register_mobile as mobile,
-    wf.remark,wf.crt_time as crtTime,wf.bind as isBind,
-    case when wf.sex = 1 then '男'
-    when wf.sex = 2 then '女'
-    else '未知'
-    end as sex,
-    case when wf.subscribe = 1 then '是'
-    else '否'
-    end as subscribe
+    select wf.id,wf.nick_name as nickName,wf.crt_time as crtTime
     from wx_fans wf
-    LEFT JOIN wx_fans_bind wfb ON wf.open_id = wfb.open_id
-    LEFT JOIN patient_base_info pbi on wfb.patient_id = pbi.id
     <where>
+      <if test="name !=null and name !=''">
       AND concat(IFNULL(wf.nick_name,''))
       like concat(concat('%', rtrim(#{name})), '%')
+      </if>
     </where>
     GROUP BY wf.id
     order by wf.crt_time desc

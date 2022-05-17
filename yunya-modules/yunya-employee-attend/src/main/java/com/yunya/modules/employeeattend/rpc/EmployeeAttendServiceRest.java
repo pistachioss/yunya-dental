@@ -7,6 +7,7 @@ import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.modules.employeeattend.biz.FieldInfoBiz;
 import com.yunya.modules.employeeattend.biz.LeaveInfoBiz;
@@ -40,6 +41,17 @@ public class EmployeeAttendServiceRest {
   @Autowired private LeaveInfoBiz leaveInfoBiz;
   @Autowired private WorkOvertimeInfoBiz workOvertimeInfoBiz;
   @Autowired private FieldInfoBiz fieldInfoBiz;
+
+  /**
+   * 获取门诊地址以及经纬度
+   * @param
+   * @return
+   */
+  @RequestMapping(value = "/employee/attend/address", method = RequestMethod.POST)
+  public List<AttendanceAddressSet> findAddress() {
+    List<AttendanceAddressSet> resultVO = employeeScheduleSerivce.findAddress();
+    return resultVO;
+  }
 
   /**
    * 查看员工排班列表

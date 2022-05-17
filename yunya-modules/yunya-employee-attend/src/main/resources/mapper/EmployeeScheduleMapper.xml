@@ -257,4 +257,7 @@
     LEFT JOIN base_schedule bs on es.schedule_id = bs.id
     where es.id = #{id}
     </select>-->
+    <select id="findAddress" resultType="com.yunya.models.employee_attend.AttendanceAddressSet">
+          select org_id as orgId,organization_name as organizationName,attendance_address,longitude,latitude  from attendance_address_set
+    </select>
 </mapper>

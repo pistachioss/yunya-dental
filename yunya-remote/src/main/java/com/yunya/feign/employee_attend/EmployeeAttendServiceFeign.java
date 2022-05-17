@@ -8,6 +8,7 @@ import com.yunya.feign.employee_attend.form.WorkOvertimeInfoForm;
 import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.models.employee_attend.LeaveInfo;
 import io.swagger.annotations.ApiOperation;
@@ -23,6 +24,9 @@ import java.util.List;
         name = YunyaServiceNameConstants.YUNYA_EMPLOYEE_ATTEND,
         fallbackFactory = EmployeeAttendServiceFallBackFactory.class)
 public interface EmployeeAttendServiceFeign {
+
+  @RequestMapping(value = "/api/employee/attend/address", method = RequestMethod.POST)
+  List<AttendanceAddressSet> findAddress();
   /**
    * 排班列表暴露接口
    *

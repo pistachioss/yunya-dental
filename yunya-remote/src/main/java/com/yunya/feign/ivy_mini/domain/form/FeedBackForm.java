@@ -21,7 +21,7 @@ import java.util.List;
 public class FeedBackForm extends PageQuery implements Serializable {
 
     @ApiModelProperty(value = "提交时间")
-    private Date crtTime;
+    private String crtTime;
     @ApiModelProperty(value = "提交用户")
     private String name;
     @ApiModelProperty(value = "后端使用")

@@ -18,7 +18,7 @@ public class FastAutoGenerate {
     public static void main(String[] args) throws SQLException {
         String pkPath = System.getProperty("user.dir") + "/yunya-tools/ivy-mini/src/main/java";
         String resPath = System.getProperty("user.dir") + "/yunya-tools/ivy-mini/src/main/resources/mapper";
-        FastAutoGenerator.create("jdbc:mysql://192.168.31.90:3306/dev_yunya_patient_central?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8"
+        FastAutoGenerator.create("jdbc:mysql://192.168.31.90:3306/dev_yunya_mall?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8"
                 , "sa", "Admin001!")
                 // 全局配置
                 .globalConfig((scanner, builder) -> builder.outputDir(pkPath).author(scanner.apply("请输入作者名称？"))
