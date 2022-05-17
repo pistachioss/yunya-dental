@@ -97,7 +97,7 @@ public class OnlineAppointmentController {
 
     @ApiOperation("导出预约申请")
     @PostMapping("/export")
-    public ResponseResult<T> export(HttpServletResponse response, @Validated @RequestBody OnlineAppointmentQuery query) throws IOException {
+    public ResponseResult export(HttpServletResponse response, @Validated @RequestBody OnlineAppointmentQuery query) throws IOException {
         onlineAppointmentBiz.export(response,query);
         return ResponseUtil.success();
     }

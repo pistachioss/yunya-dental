@@ -16,7 +16,6 @@ import com.yunya.models.sms.SmsAutosendEvent;
 import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
 import com.yunya.modules.sms.enums.SmsEnableEnum;
 import com.yunya.modules.sms.mapper.SmsAutosendEventMapper;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,7 +111,7 @@ public class SmsAutosendEventBiz extends BaseBiz<SmsAutosendEventMapper, SmsAuto
      * @param isClinic true-门诊端，false-公司端
      * @return
      */
-    public ResponseResult<T> initAutoSendEvent(Integer orgId, boolean isClinic) {
+    public ResponseResult initAutoSendEvent(Integer orgId, boolean isClinic) {
         List<SmsAutosendEventEnum> events = SmsAutosendEventEnum.values(isClinic);
         String userId = BaseContextHandler.getUserID();
         if (StringHelper.isNotEmpty(userId)) {// 创建门诊时

@@ -221,7 +221,7 @@ spring:
           predicates:
             - Path=/api/ivy/mini/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=3
           metadata:
             title: "艾维小程序服务"
     nacos:

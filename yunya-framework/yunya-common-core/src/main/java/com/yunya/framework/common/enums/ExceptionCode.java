@@ -85,7 +85,7 @@ public enum ExceptionCode implements RestError {
   }
 
   @Override
-  public int getCode() {
+  public Integer getCode() {
     return code;
   }
 

@@ -103,7 +103,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param model 预约申请参数
      * @return 结果
      */
-    public ResponseResult<T> addOnlineAppointment(OnlineAppointmentModel model) {
+    public ResponseResult addOnlineAppointment(OnlineAppointmentModel model) {
         OnlineAppointment build = EntityUtils.build(model, OnlineAppointment.class);
 
         // 判断预约申请是否已满
@@ -161,7 +161,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param form 预约申请参数
      * @return 结果
      */
-    public ResponseResult<T> updateOnlineAppointment(OnlineAppointmentForm form) {
+    public ResponseResult updateOnlineAppointment(OnlineAppointmentForm form) {
         Integer id = form.getId();
         Example example = new Example(OnlineAppointment.class);
         Example.Criteria criteria = example.createCriteria();
@@ -202,7 +202,7 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
      * @param id 预约申请ID
      * @return 结果
      */
-    public ResponseResult<T> deleteOnlineAppointmentById(Integer id) {
+    public ResponseResult deleteOnlineAppointmentById(Integer id) {
         Example example = new Example(OnlineAppointment.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("id",id);

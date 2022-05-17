@@ -285,7 +285,7 @@ public class CompanyReportOfPersonnelController {
    */
   @ApiOperation("手动触发配诊定时任务")
   @GetMapping(value = "/matching/statistics/list/dingshi", name = "手动触发配诊定时任务")
-  public ResponseResult<T> treatMatchingStatisticsList() throws InterruptedException, ExecutionException{
+  public ResponseResult treatMatchingStatisticsList() throws InterruptedException, ExecutionException{
             baseUserPostBiz.dingshi();
     return ResponseUtil.success();
   }

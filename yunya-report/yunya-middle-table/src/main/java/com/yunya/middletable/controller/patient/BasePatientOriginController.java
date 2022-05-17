@@ -36,7 +36,7 @@ public class BasePatientOriginController {
    * @param model 条件模型
    */
   @PostMapping("/operate")
-  public ResponseResult<T> operate(@RequestBody @Validated MessageModel model) {
+  public ResponseResult operate(@RequestBody @Validated MessageModel model) {
     basePatientOriginBiz.operate(model);
     return ResponseUtil.success();
   }
@@ -47,7 +47,7 @@ public class BasePatientOriginController {
    */
   @ApiOperation("批量同步患者来源")
   @PostMapping(value = "/batch", name = "PatientBaseInfoBiz")
-  public ResponseResult<T> pullPatientData(@RequestBody PullForm form) throws InterruptedException {
+  public ResponseResult pullPatientData(@RequestBody PullForm form) throws InterruptedException {
     basePatientOriginBiz.pullPatientData(form);
     return ResponseUtil.success();
   }

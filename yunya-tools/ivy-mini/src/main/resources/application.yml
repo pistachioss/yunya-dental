@@ -61,11 +61,11 @@ ribbon:
 swagger:
   enabled: true
   base-package: com.yunya365.mini
-  title: 微信服务
+  title: 小程序服务
   version: 1.0.0.SNAPSHOT
-  description: YUNYA微信服务 (网关地址：/api/wechat/**)
+  description: YUNYA小程序服务 (网关地址：/api/ivy/mini/**)
   contact:
-    name: wechat
+    name: ivy-mini
 
 # 熔断
 hystrix:

@@ -489,7 +489,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    * @param userId 用户ID
    * @return 返回结果信息
    */
-  public ResponseResult<T> resetPassword(HttpServletRequest request, Integer userId) {
+  public ResponseResult resetPassword(HttpServletRequest request, Integer userId) {
     String deviceName = ServletUtils.getCurrentDevice(request).getName();
     SysUser sysUser = mapper.selectByPrimaryKey(userId);
     if (null != sysUser) {

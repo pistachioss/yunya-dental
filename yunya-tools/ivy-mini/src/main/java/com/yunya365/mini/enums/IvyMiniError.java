@@ -25,7 +25,7 @@ public enum IvyMiniError implements RestError {
         this.value = value;
     }
     @Override
-    public int getCode() {
+    public Integer getCode() {
         if (code.equals(0)) {
             return code;
         }

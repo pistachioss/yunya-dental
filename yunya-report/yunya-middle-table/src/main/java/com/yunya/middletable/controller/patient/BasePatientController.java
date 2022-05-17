@@ -36,7 +36,7 @@ public class BasePatientController {
    * @return ResponseResult<T>
    */
   @PostMapping("/operate")
-  public ResponseResult<T> operate(@RequestBody @Validated MessageModel model) {
+  public ResponseResult operate(@RequestBody @Validated MessageModel model) {
     basePatientBiz.operate(model);
     return ResponseUtil.success();
   }
@@ -49,7 +49,7 @@ public class BasePatientController {
    */
   @ApiOperation("根据时间段批量操作中间表员工信息")
   @PostMapping(value = "/batch", name = "PatientBaseInfoBiz")
-  public ResponseResult<T> pullPatientData(@RequestBody PullForm form) throws InterruptedException {
+  public ResponseResult pullPatientData(@RequestBody PullForm form) throws InterruptedException {
     basePatientBiz.pullPatientData(form);
     return ResponseUtil.success();
   }
@@ -62,7 +62,7 @@ public class BasePatientController {
    */
   @ApiOperation("修改患者信息")
   @PostMapping("/upd")
-  public ResponseResult<T> upd(@RequestBody BasePatient basePatient) {
+  public ResponseResult upd(@RequestBody BasePatient basePatient) {
     basePatientBiz.upd(basePatient);
     return ResponseUtil.success();
   }
@@ -70,7 +70,7 @@ public class BasePatientController {
 
   @ApiOperation("修改患者信息")
   @PostMapping("/batchUpdPatientInfo")
-  public ResponseResult<T> batchUpdPatientInfo() throws InterruptedException {
+  public ResponseResult batchUpdPatientInfo() throws InterruptedException {
     basePatientBiz.updPatientInfo();
     return ResponseUtil.success();
   }
