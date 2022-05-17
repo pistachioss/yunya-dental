@@ -11,20 +11,20 @@ import java.util.Date;
 
 /**
  * @program: yunya-dental
- * @description: 随访提醒内容
+ * @description: 随访提醒详情VO
  * @author: LHB
- * @create: 2020-08-24 20:28
+ * @create: 2022-04-24 20:28
  **/
-@ApiModel(value = "随访提醒内容")
+@ApiModel(value = "随访提醒详情VO")
 @Data
 @ToString
-public class VisitingRemindContentVo implements Serializable {
+public class VisitingRemindDetailVO implements Serializable {
     /** 主键 */
     @ApiModelProperty(value = "主键")
     private Integer id;
     /** 患者id */
     @ApiModelProperty(value = "患者id")
-    private String patientId;
+    private Integer patientId;
 
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名")
@@ -40,7 +40,7 @@ public class VisitingRemindContentVo implements Serializable {
 
     /** 医生id */
     @ApiModelProperty(value = "医生id")
-    private String dentistId;
+    private Integer dentistId;
 
     /**
      * 提醒日期
