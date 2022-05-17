@@ -22,6 +22,7 @@ public class VisitingRemindDetailVO implements Serializable {
     /** 主键 */
     @ApiModelProperty(value = "主键")
     private Integer id;
+
     /** 患者id */
     @ApiModelProperty(value = "患者id")
     private Integer patientId;
@@ -41,6 +42,10 @@ public class VisitingRemindDetailVO implements Serializable {
     /** 医生id */
     @ApiModelProperty(value = "医生id")
     private Integer dentistId;
+
+    /** 医生姓名 */
+    @ApiModelProperty(value = "医生姓名")
+    private String dentistName;
 
     /**
      * 提醒日期
