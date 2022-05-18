@@ -28,6 +28,27 @@
     <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
   </resultMap>
+  <resultMap id="DetailResultMap" type="com.yunya.feign.ivy_mini.domain.vo.OrderWechatDetailVO" >
+
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="fansId" property="fansId" jdbcType="INTEGER" />
+    <result column="orderSn" property="orderSn" jdbcType="VARCHAR" />
+    <result column="crtTIme" property="crtTIme" jdbcType="TIMESTAMP" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="deliveryCompany" property="deliveryCompany" jdbcType="VARCHAR" />
+    <result column="receivingInformation" property="receivingInformation" jdbcType="VARCHAR" />
+    <result column="payAmount" property="payAmount" jdbcType="DECIMAL" />
+    <result column="deliverySn" property="deliverySn" jdbcType="VARCHAR" />
+    <result column="address" property="address" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <collection property="topGradeList" resultMap="ItemResultMap"/>
+  </resultMap>
+
+  <resultMap id="ItemResultMap" type="com.yunya.feign.ivy_mini.domain.vo.OrderItemVO" >
+    <result column="productPrice" property="productPrice" jdbcType="DECIMAL" />
+    <result column="productName" property="productName" jdbcType="VARCHAR" />
+    <result column="productQuantity" property="productQuantity" jdbcType="INTEGER" />
+  </resultMap>
   <select id="findOrderList" resultType="com.yunya.feign.ivy_mini.domain.vo.OrderVO">
     select
     od.id,
@@ -63,5 +84,28 @@
     </where>
     GROUP BY
     od.id
+  </select>
+  <select id="findDetail" resultMap="DetailResultMap">
+    select
+    od.id as id,
+    od.fans_id as fansId,
+    od.status as status,
+    od.order_sn as orderSn,
+    od.confirm_status as confirmStatus,
+    od.crt_time as crtTIme,
+    od.pay_amount as payAmount ,
+    od.delivery_company as deliveryCompany,
+    od.delivery_sn AS deliverySn,
+    od.remark as remark,
+    oi.product_name as productName,
+    oi.product_price as productPrice,
+    oi.product_quantity as productQuantity,
+    ad.address as address
+    FROM
+    `order_info`  od
+    LEFT JOIN address ad ON od.fans_id = ad.fan_id
+    LEFT JOIN order_item oi ON od.id = oi.order_id
+    where od.id = #{id}
+
   </select>
 </mapper>

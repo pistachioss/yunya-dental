@@ -1,9 +1,12 @@
 package com.yunya365.mini.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.ivy_mini.domain.form.OrderDetailForm;
 import com.yunya.feign.ivy_mini.domain.form.OrderForm;
 import com.yunya.feign.ivy_mini.domain.form.OrderUpdateForm;
 import com.yunya.feign.ivy_mini.domain.vo.OrderVO;
+import com.yunya.feign.ivy_mini.domain.vo.OrderWechatDetailVO;
+import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -40,6 +43,12 @@ public class OrderController {
     @CurrentUser
     public ResponseResult update(@RequestBody @Validated OrderUpdateForm form) {
         return orderAdminiService.update(form);
+    }
+
+    @PostMapping("/findDetail")
+    @ApiOperation("订单-详情")
+    public ResponseResult<OrderWechatDetailVO> findDetail(@RequestBody @Valid OrderDetailForm form) {
+        return ResponseUtil.success(orderAdminiService.findDetail(form));
     }
 
 }

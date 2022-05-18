@@ -2,18 +2,23 @@ package com.yunya365.mini.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.ivy_mini.domain.form.OrderDetailForm;
 import com.yunya.feign.ivy_mini.domain.form.OrderForm;
 import com.yunya.feign.ivy_mini.domain.form.OrderUpdateForm;
 import com.yunya.feign.ivy_mini.domain.vo.OrderVO;
+import com.yunya.feign.ivy_mini.domain.vo.OrderWechatDetailVO;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.WxFanByNameForm;
+import com.yunya.feign.patient_central.domain.query.WxUserQuery;
 import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
+import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 
+import com.yunya.models.patient_central.WxFans;
 import com.yunya365.mini.entity.OrderInfo;
 
 import com.yunya365.mini.entity.OrderOperateHistory;
@@ -69,7 +74,8 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
 
         for (OrderVO a : result) {
             WxFansVo copy = clinicMap.get(a.getFansId() + "");
-            a.setReceivingInformation(copy.getNickName() + " " + copy.getMobile() + " " + a.getAddress());
+            a.setReceivingInformation(copy.getName() + " " + copy.getMobile() + " " + a.getAddress());
+            a.setOpenId(copy.getOpenId());
         }
         return new PageInfo<>(result);
     }
@@ -101,4 +107,12 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
         return ResponseUtil.success();
     }
 
+    public OrderWechatDetailVO findDetail(OrderDetailForm form) {
+        WxUserQuery query = new WxUserQuery();
+        query.setOpenId(form.getOpenId());
+        WxFans wxFans = remotePatientCentralServiceFeign.getWxFans(query);
+        OrderWechatDetailVO result =  mapper.findDetail(form.getId());
+        result.setReceivingInformation(wxFans.getRegisterName() + " " + wxFans.getRegisterMobile() + " " + result.getAddress());
+        return result;
+    }
 }
