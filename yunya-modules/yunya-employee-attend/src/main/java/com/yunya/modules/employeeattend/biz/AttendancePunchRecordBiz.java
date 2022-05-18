@@ -17,6 +17,7 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.LocationUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.employee_attend.AttendancePunchRecord;
 import com.yunya.modules.employeeattend.enums.*;
@@ -31,7 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -163,31 +163,27 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
 
     /**
      * 根据位置获取对应门诊的考勤地址设置
-     * @param longitude
-     * @param latitude
+     * @param lon1
+     * @param lat1
      * @param macAddress
      * @return
      */
-    private Map<Integer, JSONObject> getOrgMapByPosition(String longitude, String latitude, String macAddress) {
+    private Map<Integer, JSONObject> getOrgMapByPosition(String lon1, String lat1, String macAddress) {
         Map<Integer, JSONObject> orgMap = new HashMap<>(16);
-        if (StringHelper.isNotEmpty(latitude) && StringHelper.isNotEmpty(longitude)) {
+        if (StringHelper.isNotEmpty(lat1) && StringHelper.isNotEmpty(lon1)) {
             AttendanceAddressSetQueryForm addressQueryForm = new AttendanceAddressSetQueryForm();
             addressQueryForm.setWhetherPage(true);
             addressQueryForm.setPageNum(1);
             addressQueryForm.setPageSize(1000);
             List<AttendanceAddressSetVO> attendanceAddressSetVOS = attendanceAddressSetBiz.findAttendanceAddressSets(addressQueryForm);
-            double lon1 = Double.parseDouble(longitude);
-            double lat1 = Double.parseDouble(latitude);
             attendanceAddressSetVOS = attendanceAddressSetVOS.stream().filter(attendanceAddressSetVO -> {
-                String lonStr2 = attendanceAddressSetVO.getLongitude();
-                String latStr2 = attendanceAddressSetVO.getLatitude();
-                if (StringHelper.isEmpty(lonStr2) || StringHelper.isEmpty(latStr2)) {
+                String lon2 = attendanceAddressSetVO.getLongitude();
+                String lat2 = attendanceAddressSetVO.getLatitude();
+                if (StringHelper.isEmpty(lon2) || StringHelper.isEmpty(lat2)) {
                     return false;
                 }
-                double lon2 = Double.parseDouble(lonStr2);
-                double lat2 = Double.parseDouble(latStr2);
                 double attendanceRange = attendanceAddressSetVO.getAttendanceRange();
-                double distance = distanceByLongNLat(lon1,lat1,lon2,lat2);
+                double distance = LocationUtil.distanceByLongNLat(lon1,lat1,lon2,lat2);
                 if (distance-attendanceRange <= 0) {
                     return true;
                 }
@@ -372,36 +368,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         calendar.setTime(date);
         calendar.add(Calendar.SECOND, second);
         return calendar.getTime();
-    }
-
-    /**
-     * 计算地球上任意两点(经纬度)距离
-     *
-     * @param longitude1 第一点经度
-     * @param latitude1  第一点纬度
-     * @param longitude2 第二点经度
-     * @param latitude2  第二点纬度
-     * @return 返回距离 单位：米
-     */
-    public static double distanceByLongNLat(double longitude1, double latitude1, double longitude2, double latitude2) {
-        Double EARTH_RADIUS = 6370.996; // 地球半径系数
-        Double PI = 3.1415926;
-
-        Double radLat1 = latitude1 * PI / 180.0;
-        Double radLat2 = latitude2 * PI / 180.0;
-
-        Double radLng1 = longitude1 * PI / 180.0;
-        Double radLng2 = longitude2 * PI /180.0;
-
-        Double a =  radLat1 -  radLat2;
-        Double b =  radLng1 -  radLng2;
-
-        Double distance = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a/2),2) + Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b/2),2)));
-        distance = distance * EARTH_RADIUS * 1000;
-        BigDecimal bg = new BigDecimal(distance);
-        double d3 = bg.setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
-        return d3;
-
     }
 
     /**

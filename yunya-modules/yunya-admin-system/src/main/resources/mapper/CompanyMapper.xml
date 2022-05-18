@@ -115,6 +115,7 @@
         ccb.brandName,
         ccb.tel,
         ccb.address,
+        ccb.clinicPath,
         ccb.businessStartTime,
         ccb.businessEndTime
         FROM
@@ -131,6 +132,7 @@
         cb.brandName,
         cb.tel,
         cb.address,
+        cb.path AS clinicPath,
         cb.business_start_time AS businessStartTime,
         cb.business_end_time AS businessEndTime
         FROM
@@ -144,6 +146,7 @@
         cei.address,
         cei.business_start_time,
         cei.business_end_time,
+        cei.path,
         (
         SELECT
         GROUP_CONCAT( b.`name` )

@@ -52,4 +52,24 @@
         from attendance_address_set t
         where t.id = #{id}
   </select>
+
+    <!--根据orgId查询考勤地址列表-->
+    <select id="selectAttendanceAddressByOrgId"
+            resultType="com.yunya.feign.employee_attend.vo.AttendanceAddressSetVO">
+           select
+            t.id,
+            t.org_id as orgId,
+            t.organization_name as organizationName,
+            t.attendance_address as attendanceAddress,
+            t.longitude,
+            t.latitude,
+            t.attendance_range as attendanceRange
+        from attendance_address_set t
+        <where>
+            AND t.org_id IN
+            <foreach collection="orgIds" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </where>
+    </select>
 </mapper>
