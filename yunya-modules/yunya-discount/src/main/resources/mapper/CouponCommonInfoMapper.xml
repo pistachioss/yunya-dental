@@ -15,6 +15,7 @@
         <result column="available_sale_start_date" property="availableSaleStartDate" jdbcType="DATE" />
         <result column="available_sale_end_date" property="availableSaleEndDate" jdbcType="DATE" />
         <result column="is_inservice" property="isInservice" jdbcType="BIT" />
+        <result column="is_online_sale" property="isOnlineSale" jdbcType="BIT" />
         <result column="crt_id" property="crtId" jdbcType="INTEGER" />
         <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
         <result column="upd_id" property="updId" jdbcType="INTEGER" />

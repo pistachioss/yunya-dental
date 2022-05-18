@@ -4,6 +4,8 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessGoalCompletedInfoQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
+import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
+import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.query.SpecialistProjectCompletedCountQuery;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
@@ -581,5 +583,15 @@ public class TreatmentServiceRest {
   @RequestMapping(value = "/clinic/itemMemberPrice", method = RequestMethod.POST)
   public List<ClinicItemPriceVO> findClinicItemMemberPrice(@Validated @RequestBody ClinicMemberPriceQuery query) {
     return clinicTariffMemberPriceBiz.findClinicItemMemberPrice(query);
+  }
+
+  /**
+   * 小程序查询商品列表
+   * @param query:
+   * @return PageInfo<GoodsVO>
+   */
+  @RequestMapping(value = "/mini/goods/page", method = RequestMethod.POST)
+  public PageInfo<GoodsVO> pageGoods(@Validated @RequestBody GoodsQuery query) {
+    return baseOralTariffBiz.pageGoods(query);
   }
 }

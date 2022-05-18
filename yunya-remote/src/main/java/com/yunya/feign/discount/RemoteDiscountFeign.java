@@ -1,14 +1,15 @@
 package com.yunya.feign.discount;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
-import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
-import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
-import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.discount.factory.RemoteDiscountFallBackFactory;
+import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
+import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
@@ -16,6 +17,7 @@ import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -77,4 +79,7 @@ public interface RemoteDiscountFeign {
      */
     @PostMapping("/benefit/tariffCategory/discountCoupon")
     List<ClinicTariffDiscountCouponVO> findClinicTariffCategoryDiscountCoupon(@RequestBody DiscountCouponQuery query);
+
+    @RequestMapping(value = "/mini/virtual/page", method = RequestMethod.POST)
+    public PageInfo<VirtualProductVO> pageVirtual(@Validated @RequestBody VirtualProductQuery query);
 }

@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * @description:
  * @author: xy
@@ -16,7 +18,8 @@ import lombok.EqualsAndHashCode;
 @ApiModel(description = "商品查询参数")
 public class GoodsQuery extends PageQuery {
 
-    @ApiModelProperty(value = "产品id")
+    @ApiModelProperty(value = "商品分类id")
+    @NotNull(message = "商品分类不能为空")
     private Integer productCategoryId;
 
     @ApiModelProperty(value = "产品类型（0-商品 1-虚拟服务）")

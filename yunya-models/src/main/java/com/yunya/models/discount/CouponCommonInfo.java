@@ -72,6 +72,12 @@ public class CouponCommonInfo {
     private Boolean isInservice;
 
     /**
+     * 是否线上售卖(0:否 1:是)
+     */
+    @Column(name = "is_online_sale")
+    private Boolean isOnlineSale;
+
+    /**
      * 创建人ID
      */
     @Column(name = "crt_id")

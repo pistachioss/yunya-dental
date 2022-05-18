@@ -10,10 +10,9 @@ import com.yunya.modules.discount.mapper.CouponFileInfoMapper;
 import com.yunya.modules.discount.form.FileForm;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author 杨柳絮
@@ -88,6 +87,14 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
         CouponFileInfo couponFileInfo = new CouponFileInfo();
         couponFileInfo.setCouponId(fileForm.getId());
         return mapper.select(couponFileInfo);
+    }
+
+    public List<CouponFileInfo> listByCouponIds(Collection<Integer> ids) {
+        Example example = new Example(CouponFileInfo.class);
+        example.createCriteria().andIn("couponId", ids)
+                .andEqualTo("inservice", true)
+                .andEqualTo("fileType", 2);
+        return mapper.selectByExample(example);
     }
 
 }

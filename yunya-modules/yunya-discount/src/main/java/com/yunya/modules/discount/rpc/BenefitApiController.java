@@ -1,5 +1,6 @@
 package com.yunya.modules.discount.rpc;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
@@ -8,14 +9,15 @@ import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
+import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
+import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffDiscountCouponVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.discount.biz.BenefitBiz;
-import com.yunya.modules.discount.biz.CardBiz;
+import com.yunya.modules.discount.biz.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -39,6 +41,8 @@ public class BenefitApiController {
 
     @Resource
     private BenefitBiz benefitBiz;
+    @Resource
+    private CouponCommonInfoBiz couponBiz;
 
     @ApiOperation(value = "收费-选择优惠")
     @PostMapping("/order/choice/benefit")
@@ -111,5 +115,10 @@ public class BenefitApiController {
     @PostMapping("/benefit/tariffCategory/discountCoupon")
     public List<ClinicTariffDiscountCouponVO> findClinicTariffCategoryDiscountCoupon(@RequestBody DiscountCouponQuery queryForm) {
         return benefitBiz.findClinicTariffCategoryDiscountCoupon(queryForm);
+    }
+
+    @RequestMapping(value = "/mini/virtual/page", method = RequestMethod.POST)
+    public PageInfo<VirtualProductVO> pageVirtual(@Validated @RequestBody VirtualProductQuery query){
+        return couponBiz.pageVirtual(query);
     }
 }

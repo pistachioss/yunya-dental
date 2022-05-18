@@ -334,10 +334,10 @@ import java.util.*;
   Integer countSelfRegistrationPatient(@RequestBody SelfRegistrationPatientQuery patientQuery);
 
   @ApiOperation("保存小程序登录信息")
-  @PostMapping(value = "/mini/fans/save")
+  @PostMapping(value = "/api/mini/fans/save")
   void saveMiniAuth(@RequestBody WxSaveFansForm form);
 
   @ApiOperation("保存更新微信用户信息")
-  @PostMapping(value = "/mini/fans/modify")
+  @PostMapping(value = "/api/mini/fans/modify")
   void saveOrUpdate(@RequestBody WxFans wxFans);
 }

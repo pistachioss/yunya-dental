@@ -153,6 +153,10 @@ public class RedisConstants implements Serializable {
    * 微信小程序access_token_key 用于保存在redis中的key
    */
   public static final String MINI_ACCESS_TOKEN_KEY = "wechat:mini:accessToken";
+  /**
+   * 小程序热销产品
+   */
+  public static final String HOT_SALE_PRODUCT = "hot:sale:product";
 
   /**
    * 设置key中的占位符

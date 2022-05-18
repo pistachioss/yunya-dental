@@ -1,9 +1,11 @@
 package com.yunya365.mini.service.impl;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
+import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya365.mini.service.IProductService;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,10 @@ public class ProductServiceImpl implements IProductService {
 
     @Resource
     private RedisUtils redisUtils;
+    @Resource
+    private RemoteTreatmentServiceFeign treatmentServiceFeign;
+    @Resource
+    private RemoteDiscountFeign discountFeign;
 
     @Override
     public List<HotSaleVO> hotSale() {
@@ -28,12 +34,12 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public PageInfo<GoodsVO> pageGoods(GoodsQuery query) {
-        return null;
+        return treatmentServiceFeign.pageGoods(query);
     }
 
     @Override
     public PageInfo<VirtualProductVO> pageVirtual(VirtualProductQuery query) {
-        return null;
+        return discountFeign.pageVirtual(query);
     }
 
     @Override

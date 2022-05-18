@@ -1,7 +1,7 @@
 package com.yunya365.mini.service;
 
-import com.yunya365.mini.domain.entity.Order;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yunya365.mini.entity.OrderInfo;
 
 /**
  * <p>
@@ -9,8 +9,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * </p>
  *
  * @author xiangyang
- * @since 2022-05-17
+ * @since 2022-05-18
  */
-public interface IOrderService extends IService<Order> {
+public interface IOrderInfoService extends IService<OrderInfo> {
 
 }

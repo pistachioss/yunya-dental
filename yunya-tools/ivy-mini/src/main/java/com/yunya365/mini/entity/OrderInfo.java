@@ -1,10 +1,13 @@
 package com.yunya365.mini.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
+
 import java.math.BigDecimal;
 import java.util.Date;
 import javax.persistence.*;
 
 @Table(name = "order_info")
+@TableName("order_info")
 public class OrderInfo {
     @Id
     private Integer id;

@@ -20,6 +20,11 @@
         <result column="upd_id" property="updId" jdbcType="INTEGER"/>
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="is_online_sale" property="isOnlineSale" jdbcType="BIT"/>
+        <result column="sale" property="sale" jdbcType="INTEGER"/>
+        <result column="stock" property="stock" jdbcType="INTEGER"/>
+        <result column="item_pic" property="itemPic" jdbcType="VARCHAR"/>
+        <result column="detail_html" property="detailHtml" jdbcType="TEXT"/>
     </resultMap>
 
     <!-- 商品项目信息结果集（封装门诊商品项目信息） -->
