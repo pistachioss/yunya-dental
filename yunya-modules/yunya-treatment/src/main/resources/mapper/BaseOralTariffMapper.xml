@@ -24,7 +24,7 @@
         <result column="sale" property="sale" jdbcType="INTEGER"/>
         <result column="stock" property="stock" jdbcType="INTEGER"/>
         <result column="item_pic" property="itemPic" jdbcType="VARCHAR"/>
-        <result column="detail_html" property="detailHtml" jdbcType="TEXT"/>
+        <result column="detail_html" property="detailHtml" jdbcType="CLOB"/>
     </resultMap>
 
     <!-- 商品项目信息结果集（封装门诊商品项目信息） -->
