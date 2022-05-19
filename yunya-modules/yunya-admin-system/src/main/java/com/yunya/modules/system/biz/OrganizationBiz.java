@@ -189,7 +189,8 @@ public class OrganizationBiz {
           });
         });
         resultList = SortUtil.sort(resultList,
-                SortUtil.comparing(OrganizationInfoVO::getDistance));
+                SortUtil.comparing(Comparator.nullsLast(Double::compare), //空值往后排
+                        OrganizationInfoVO::getDistance));
       }
     }
     return resultList;
