@@ -3,8 +3,7 @@ package com.yunya365.mini.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
-import com.yunya.feign.ivy_mini.domain.vo.GoodsVO;
-import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
+import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.IProductService;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @description:
@@ -38,5 +38,11 @@ public class ProductController {
     @ApiOperation("虚拟服务搜索")
     public ResponseResult<PageInfo<VirtualProductVO>> pageVirtual(@RequestBody @Valid VirtualProductQuery query) {
         return ResponseUtil.success(productService.pageVirtual(query));
+    }
+
+    @GetMapping("/hot/product")
+    @ApiOperation("热销产品")
+    public ResponseResult<List<HotSaleVO>> hotSale() {
+        return ResponseUtil.success(productService.hotSale());
     }
 }

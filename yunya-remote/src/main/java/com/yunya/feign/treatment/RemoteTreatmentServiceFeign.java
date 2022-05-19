@@ -27,8 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 简介: 云牙价目表、就诊服务接口调用
@@ -451,4 +450,13 @@ public interface RemoteTreatmentServiceFeign {
 
   @RequestMapping(value = "/rpc/mini/goods/page", method = RequestMethod.POST)
   public PageInfo<GoodsVO> pageGoods(@Validated @RequestBody GoodsQuery query);
+
+  /**
+   * 根据商品ID集合查询商品集合
+   *
+   * @param ids 商品ids
+   * @return List<BaseOralTariff>
+   */
+  @RequestMapping(value = "/rpc/list/oral", method = RequestMethod.POST)
+  List<BaseOralTariff> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids);
 }

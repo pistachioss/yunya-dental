@@ -29,9 +29,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 简介: 价目表、诊疗服务接口暴露
@@ -593,5 +591,16 @@ public class TreatmentServiceRest {
   @RequestMapping(value = "/mini/goods/page", method = RequestMethod.POST)
   public PageInfo<GoodsVO> pageGoods(@Validated @RequestBody GoodsQuery query) {
     return baseOralTariffBiz.pageGoods(query);
+  }
+
+  /**
+   * 查询线上商品集合
+   *
+   * @param ids 商品ids
+   * @return List<BaseOralTariff>
+   */
+  @RequestMapping(value = "/list/oral", method = RequestMethod.POST)
+  List<BaseOralTariff> listOnSaleOral(@NotEmpty @RequestBody Collection<Integer> ids){
+    return baseOralTariffBiz.listOnSaleOral(ids);
   }
 }

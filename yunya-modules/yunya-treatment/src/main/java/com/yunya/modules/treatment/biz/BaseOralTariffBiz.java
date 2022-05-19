@@ -1272,4 +1272,12 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     return pageInfo;
   }
 
+    public List<BaseOralTariff> listOnSaleOral(Collection<Integer> ids) {
+      Example example = new Example(BaseOralTariff.class);
+      example.selectProperties("id","itemNumber","name","unit","price","stock","itemPic","sale");
+      Example.Criteria criteria = example.createCriteria().andIn("id", ids)
+              .andEqualTo("isOnlineSale", true)
+              .andEqualTo("inservice", true);
+      return mapper.selectByExample(example);
+    }
 }

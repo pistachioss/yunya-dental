@@ -1,17 +1,26 @@
 package com.yunya365.mini.service.impl;
 
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya365.mini.service.IProductService;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+
+import static java.util.stream.Collectors.*;
 
 /**
  * @description: 产品服务
@@ -29,7 +38,35 @@ public class ProductServiceImpl implements IProductService {
 
     @Override
     public List<HotSaleVO> hotSale() {
-        return null;
+        Set<ZSetOperations.TypedTuple<String>> typedTuples = redisUtils.zRevrangeWithScores(RedisConstants.HOT_SALE_PRODUCT, 0, 10);
+        List<HotSaleVO> collect = Lists.newArrayListWithCapacity(10);
+        if (CollectionUtils.isNotEmpty(typedTuples)) {
+            Set<Integer> productIds = typedTuples.stream()
+                    .map(t -> Integer.valueOf(Objects.requireNonNull(t.getValue()))).collect(toSet());
+            //查询线上商品集合
+            List<BaseOralTariff> baseOralTariffs = treatmentServiceFeign.listOnSaleOral(productIds);
+            Map<Integer, BaseOralTariff> goodsMap = baseOralTariffs.stream()
+                    .collect(toMap(BaseOralTariff::getId, Function.identity()));
+            collect = typedTuples.stream().map(t -> {
+                Integer id = Integer.valueOf(Objects.requireNonNull(t.getValue()));
+                Double score = t.getScore();
+                BaseOralTariff oralTariff = goodsMap.get(id);
+                HotSaleVO vo  = new HotSaleVO();
+                if (Objects.nonNull(oralTariff)) {
+                    String itemPic = oralTariff.getItemPic();
+                    vo.setProductId(id);
+                    vo.setProductName(oralTariff.getName());
+                    vo.setProductPic(StringUtils.isNotBlank(itemPic) ? itemPic.substring(0, itemPic.indexOf(",")) : null);
+                    vo.setProductPrice(oralTariff.getPrice());
+                    vo.setStock(oralTariff.getStock());
+                    vo.setSoldQuantity(oralTariff.getSale());
+                }
+                vo.setSoldQuantity(Objects.requireNonNull(score).intValue());
+                vo.setProductType(0);
+                return vo;
+            }).collect(toList());
+        }
+        return collect;
     }
 
     @Override

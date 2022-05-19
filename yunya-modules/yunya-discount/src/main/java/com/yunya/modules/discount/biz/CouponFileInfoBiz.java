@@ -93,7 +93,7 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
         Example example = new Example(CouponFileInfo.class);
         example.createCriteria().andIn("couponId", ids)
                 .andEqualTo("inservice", true)
-                .andEqualTo("fileType", 2);
+                .andEqualTo("fileType", 0);
         return mapper.selectByExample(example);
     }
 

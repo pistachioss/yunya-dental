@@ -35,10 +35,10 @@ public class RedisUtils {
 
   @Resource(name = "stringRedisTemplate")
   private ValueOperations<String, String> valueOperations;
-  private final ZSetOperations<String, Object> zSetOps;
-  private final GeoOperations<String, Object> opsForGeo;
+  private final ZSetOperations<String, String> zSetOps;
+  private final GeoOperations<String, String> opsForGeo;
 
-  public RedisUtils(RedisTemplate<String, Object> redisTemplate) {
+  public RedisUtils(RedisTemplate<String, String> redisTemplate) {
     zSetOps = redisTemplate.opsForZSet();
     opsForGeo = redisTemplate.opsForGeo();
   }
@@ -307,7 +307,7 @@ public class RedisUtils {
    * @return 是否成功
    * @see <a href="https://redis.io/commands/zadd">Redis Documentation: ZADD</a>
    */
-  public Boolean zAdd(@NonNull String key, Object member, double score) {
+  public Boolean zAdd(@NonNull String key, String member, double score) {
     return zSetOps.add(key, member, score);
   }
 
@@ -322,7 +322,7 @@ public class RedisUtils {
    * @return member 成员的新 score 值
    * @see <a href="https://redis.io/commands/zincrby">Redis Documentation: ZINCRBY</a>
    */
-  public Double zIncrBy(@NonNull String key, Object member, double score) {
+  public Double zIncrBy(@NonNull String key, String member, double score) {
     return zSetOps.incrementScore(key, member, score);
   }
 
@@ -338,7 +338,24 @@ public class RedisUtils {
    * @see <a href="https://redis.io/commands/zrevrange">Redis Documentation: ZREVRANGE</a>
    */
   @Nullable
-  public Set<Object> zRevrange(@NonNull String key, long start, long end) {
+  public Set<String> zRevrange(@NonNull String key, long start, long end) {
     return zSetOps.reverseRange(key, start, end);
+  }
+
+  /**
+   * 返回有序集 key 中，指定区间内的成员。 其中成员的位置按 score 值递减(从大到小)来排列。 具有相同 score 值的成员按字典序的逆序(reverse
+   * lexicographical order)排列。 除了成员按 score 值递减的次序排列这一点外， ZREVRANGE 命令的其他方面和 ZRANGE key start stop
+   * [WITHSCORES] 命令一样。
+   *
+   * @param key 一定不能为 {@literal null}.
+   * @param start 索引
+   * @param end 索引
+   * @return 指定区间内，不带有 score 值(可选)的有序集成员的列表。
+   * @see <a href="https://redis.io/commands/zrevrange">Redis Documentation: ZREVRANGE</a>
+   */
+  @Nullable
+  public Set<ZSetOperations.TypedTuple<String>> zRevrangeWithScores(
+          @NonNull String key, long start, long end) {
+    return zSetOps.reverseRangeWithScores(key, start, end);
   }
 }

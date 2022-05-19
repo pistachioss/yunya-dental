@@ -25,8 +25,7 @@ import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotEmpty;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 简介: 就诊、价目表服务调用降级处理 111
@@ -260,6 +259,11 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
 
   @Override
   public PageInfo<GoodsVO> pageGoods(GoodsQuery query) {
+    return null;
+  }
+
+  @Override
+  public List<BaseOralTariff> listOnSaleOral(Collection<Integer> ids) {
     return null;
   }
 }
