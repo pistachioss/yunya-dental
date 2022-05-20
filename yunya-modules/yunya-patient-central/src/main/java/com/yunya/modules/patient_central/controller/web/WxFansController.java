@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO;
 import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
+import com.yunya.feign.patient_central.domain.vo.web.WxWechatFansVo;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -107,5 +108,19 @@ public class WxFansController {
             throw new ClientServiceException("非关注公众号用户请先关注艾维口腔公众号！",OPERATION_NOT_ALLOW);
         }
         return ResponseUtil.success(ownWxFans);
+    }
+
+    /**
+     * 微信用户-用户管理列表
+     *
+     * @param
+     * @return ResponseResult<PageInfo<WxFansVo>>
+     */
+    @ApiOperation("客服中心-用户管理列表")
+    @PostMapping("/wechat/list")
+    public ResponseResult<PageInfo<WxWechatFansVo>> findWechatList(
+            @RequestBody @Validated WxFansWechatQueryForm wxFansWechatQueryForm) {
+        return ResponseUtil.success(
+                wxFansBiz.findWechatList(wxFansWechatQueryForm));
     }
 }

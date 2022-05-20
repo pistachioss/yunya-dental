@@ -71,6 +71,31 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
     @Resource
     private WxFansBindMapper wxFansBindMapper;
 
+    public PageInfo<WxWechatFansVo> findWechatList(WxFansWechatQueryForm wxFansQueryForm) {
+        if (wxFansQueryForm.getWhetherPage()) {
+            PageHelper.startPage(wxFansQueryForm.getPageNum(), wxFansQueryForm.getPageSize());
+        }
+        DictionaryItemModel model = new DictionaryItemModel();
+        model.setDictionaryTypeId(19);
+        List<DictionaryItem> dLsit = remoteSystemServiceFeign.findDictionaryItemList(model);
+        Map<String, DictionaryItem> dicMap = new HashMap(16);
+        dLsit.forEach(z -> dicMap.put(z.getId() + "", z));
+        List<WxWechatFansVo> list = mapper.findWechatList(wxFansQueryForm);
+        list.forEach(item ->
+                item.getBindPantlist().forEach(items -> {
+                            if (!StringUtils.isEmpty(item.getBindPant())) {
+                                item.setBindPant(item.getBindPant() + "," + items.getName() + "(" + dicMap.get(items.getDictionaryId() + "").getName() + ")");
+                            } else {
+                                item.setBindPant(items.getName() + "(" + dicMap.get(items.getDictionaryId() + "").getName() + ")");
+                            }
+                            items.setDictionaryName(dicMap.get(items.getDictionaryId() + "").getName());
+                        }
+
+                )
+        );
+
+        return new PageInfo<>(list);
+    }
 
     public PageInfo<WxFansVo> findList(WxFansQueryForm wxFansQueryForm) {
         if (wxFansQueryForm.getWhetherPage()) {
@@ -83,7 +108,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
     public List<WxFansVo> findListByName(WxFanByNameForm wxFansQueryForm) {
 
         List<WxFansVo> list = mapper.findListByName(wxFansQueryForm);
-        return  list;
+        return list;
     }
 
     public List<WxFansDetailVO> findDetail(WxFansDetailForm wxFansDetailForm) {
@@ -118,7 +143,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
 
     public WxFans getOwnWxFans(WxUserQuery query) {
         Example example = new Example(WxFans.class);
-        example.selectProperties("registerName","registerMobile","headImgurl","country","province","city","patientId","sex","subscribe");
+        example.selectProperties("registerName", "registerMobile", "headImgurl", "country", "province", "city", "patientId", "sex", "subscribe");
         Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isNotBlank(query.getOpenId())) {
             criteria.andEqualTo("openId", query.getOpenId());
@@ -190,7 +215,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             if (CollectionUtils.isNotEmpty(rechargeRecordVoList)) {
                 list.addAll(rechargeRecordVoList.stream().map(obj -> {
                     WxCardUseVo cardUseVo = new WxCardUseVo();
-                    cardUseVo.setAmount("+" + this.setAmount(obj.getRechargePrincipal(),obj.getRechargeBonus()));
+                    cardUseVo.setAmount("+" + this.setAmount(obj.getRechargePrincipal(), obj.getRechargeBonus()));
                     cardUseVo.setOperateTypeName("充值");
                     cardUseVo.setOperatingTime(obj.getOperatingTime());
                     cardUseVo.setOperatorName(obj.getOperatorName());
@@ -203,7 +228,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             if (CollectionUtils.isNotEmpty(expendList)) {
                 list.addAll(expendList.stream().map(obj -> {
                     WxCardUseVo cardUseVo = new WxCardUseVo();
-                    cardUseVo.setAmount("-" + this.setAmount(obj.getExpendPrincipal(),obj.getExpendGift()));
+                    cardUseVo.setAmount("-" + this.setAmount(obj.getExpendPrincipal(), obj.getExpendGift()));
                     cardUseVo.setOperateTypeName("消费");
                     cardUseVo.setOperatingTime(obj.getOperatingTime());
                     cardUseVo.setOperatorName(obj.getOperatorName());
@@ -216,7 +241,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             if (CollectionUtils.isNotEmpty(refundList)) {
                 list.addAll(refundList.stream().map(obj -> {
                     WxCardUseVo cardUseVo = new WxCardUseVo();
-                    cardUseVo.setAmount("-" + this.setAmount(obj.getReturnPrincipalAmount(),obj.getReturnGiftAmount()));
+                    cardUseVo.setAmount("-" + this.setAmount(obj.getReturnPrincipalAmount(), obj.getReturnGiftAmount()));
                     cardUseVo.setOperateTypeName("退费");
                     cardUseVo.setOperatingTime(obj.getOperatingTime());
                     cardUseVo.setOperatorName(obj.getOperatorName());
@@ -231,7 +256,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             if (CollectionUtils.isNotEmpty(rechargeList)) {
                 list.addAll(rechargeList.stream().map(obj -> {
                     WxCardUseVo cardUseVo = new WxCardUseVo();
-                    cardUseVo.setAmount("+" + this.setAmount(obj.getRechargePrincipal(),obj.getRechargeBonus()));
+                    cardUseVo.setAmount("+" + this.setAmount(obj.getRechargePrincipal(), obj.getRechargeBonus()));
                     cardUseVo.setOperateTypeName("充值");
                     cardUseVo.setOperatingTime(obj.getOperatingTime());
                     cardUseVo.setOperatorName(obj.getOperatorName());
@@ -244,7 +269,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             if (CollectionUtils.isNotEmpty(expendList)) {
                 list.addAll(expendList.stream().map(obj -> {
                     WxCardUseVo cardUseVo = new WxCardUseVo();
-                    cardUseVo.setAmount("-" + this.setAmount(obj.getExpendPrincipal(),obj.getExpendGift()));
+                    cardUseVo.setAmount("-" + this.setAmount(obj.getExpendPrincipal(), obj.getExpendGift()));
                     cardUseVo.setOperateTypeName("消费");
                     cardUseVo.setOperatingTime(obj.getOperatingTime());
                     cardUseVo.setOperatorName(obj.getOperatorName());
@@ -257,7 +282,7 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
             if (CollectionUtils.isNotEmpty(refundList)) {
                 list.addAll(refundList.stream().map(obj -> {
                     WxCardUseVo cardUseVo = new WxCardUseVo();
-                    cardUseVo.setAmount("-" + this.setAmount(obj.getReturnRrincipalAmount(),obj.getReturnGiftAmount()));
+                    cardUseVo.setAmount("-" + this.setAmount(obj.getReturnRrincipalAmount(), obj.getReturnGiftAmount()));
                     cardUseVo.setOperateTypeName("退费");
                     cardUseVo.setOperatingTime(obj.getOperatingTime());
                     cardUseVo.setOperatorName(obj.getOperatorName());
@@ -306,9 +331,9 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
 
     public void saveOrUpdate(WxFans wxFans) {
         if (Objects.nonNull(wxFans)) {
-             mapper.updateByPrimaryKeySelective(wxFans);
+            mapper.updateByPrimaryKeySelective(wxFans);
         } else {
-             mapper.insertSelective(wxFans);
+            mapper.insertSelective(wxFans);
         }
     }
 
@@ -328,23 +353,24 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
                         if (item != null) {
                             obj.setDescription(item.getName());
                         }
-                    }})
+                    }
+                })
                 .collect(Collectors.groupingBy(PatientExtInfoVo::getType
                         , Collectors.mapping(PatientExtInfoVo::getDescription
                                 , Collectors.joining(","))));
-       dictMap.forEach((k,v) -> {
-           if (k == 1) {
-               wxPatientVo.setMedicalHistory(v);
-           }
-           if (k == 2) {
-               wxPatientVo.setAllergen(v);
-           }
-       });
+        dictMap.forEach((k, v) -> {
+            if (k == 1) {
+                wxPatientVo.setMedicalHistory(v);
+            }
+            if (k == 2) {
+                wxPatientVo.setAllergen(v);
+            }
+        });
     }
 
     private PatientExpInfo getPatientExpInfo(Integer patientId) {
         Example example = new Example(PatientExpInfo.class);
-        example.selectProperties("address","province","city","country");
+        example.selectProperties("address", "province", "city", "country");
         Example.Criteria criteria = example.createCriteria()
                 .andEqualTo("patientId", patientId);
         return expInfoMapper.selectOneByExample(example);
