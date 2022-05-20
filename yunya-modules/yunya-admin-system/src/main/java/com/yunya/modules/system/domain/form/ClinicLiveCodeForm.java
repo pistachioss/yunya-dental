@@ -1,4 +1,4 @@
-package com.yunya.modules.system.domain.model;
+package com.yunya.modules.system.domain.form;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * 简介：门店店长活码添加模型
+ * 简介：门店店长活码编辑模型
  *
  * @author: chenlin
  * @Description:
@@ -18,13 +18,20 @@ import java.io.Serializable;
  */
 @Data
 @ToString
-@ApiModel("门店店长活码添加模型")
-public class ClinicLiveCodeModel implements Serializable {
+@ApiModel("门店店长活码编辑模型")
+public class ClinicLiveCodeForm implements Serializable {
+
+    /**
+     * 主键id
+     */
+    @ApiModelProperty(value = "主键id", required = true)
+    @NotNull(message = "主键id不能为空")
+    private Integer id;
 
     /**
      * 门诊id
      */
-    @ApiModelProperty("门诊id")
+    @ApiModelProperty(value = "门诊id", required = true)
     @NotNull(message = "门诊id不能为空")
     private Integer orgId;
 }

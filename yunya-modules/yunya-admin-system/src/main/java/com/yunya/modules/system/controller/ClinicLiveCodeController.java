@@ -1,9 +1,11 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.ClinicLiveCodeBiz;
+import com.yunya.modules.system.domain.form.ClinicLiveCodeForm;
 import com.yunya.modules.system.domain.model.ClinicLiveCodeModel;
 import com.yunya.modules.system.domain.query.ClinicLiveCodeQueryForm;
 import com.yunya.modules.system.vo.ClinicLiveCodeVO;
@@ -50,4 +52,25 @@ public class ClinicLiveCodeController {
         return ResponseUtil.success();
     }
 
+    @ApiOperation("编辑门店店长活码")
+    @PostMapping("/edit")
+    public ResponseResult edit(@RequestParam("file") final MultipartFile file, ClinicLiveCodeForm form) {
+        clinicLiveCodeBiz.edit(file, form);
+        return ResponseUtil.success();
+    }
+
+    @ApiOperation("根据id查询门店店长活码详情")
+    @GetMapping("/one/{id}")
+    public ResponseResult<ClinicLiveCodeVO> findOneById(@PathVariable(value = "id") Integer id) {
+        ClinicLiveCodeVO result = clinicLiveCodeBiz.findOneById(id);
+        return ResponseUtil.success(result);
+    }
+
+    @ApiOperation("根据id删除门店店长活码")
+    @DeleteMapping("/delete/{id}")
+    @CurrentUser
+    public ResponseResult delete(@PathVariable(value = "id") Integer id) {
+        clinicLiveCodeBiz.deleteById(id);
+        return ResponseUtil.success();
+    }
 }
