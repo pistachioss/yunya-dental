@@ -20,11 +20,10 @@ spring:
     port: 6379
     password: foobared
 
-wechat:
-  token: "yunya365"
-  appId: "xx"
-  appSecret: "xx"
-  encodingAESKey: "xx"
+wx:
+  mini:
+    appId: wx9d9209edf9634d94
+    appSecret: 0d147e4268dbf35fdbe4bf0a8e01c3c2
 
 cloopen:
   sms:

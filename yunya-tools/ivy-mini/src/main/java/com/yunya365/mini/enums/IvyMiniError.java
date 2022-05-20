@@ -15,6 +15,7 @@ public enum IvyMiniError implements RestError {
     ACCOUNT_IS_LOGOUT(4, "用户已登出"),
     WX_SERVER_ERROR(5, "微信服务器异常"),
     MEMBER_NOT_EXIST(6, "用户不存在，请先注册"),
+    RECEIVE_NOT_EXIST(7, "收货地址不存在"),
 
     ;
     private final Integer code;
