@@ -34,13 +34,13 @@ public class RecommedController {
     private RecommedServiceImpl recommedService;
 
     @PostMapping("/findlist")
-    @ApiOperation("推荐专区-查询")
+    @ApiOperation("后台-推荐专区-查询")
     public ResponseResult<recommed> findList() {
         return ResponseUtil.success(recommedService.findList());
     }
 
     @PostMapping("/add")
-    @ApiOperation("推荐专区-新增/修改 因为只有一条 新增也是修改 每次都会重新插入")
+    @ApiOperation("后台-推荐专区-新增/修改 因为只有一条 新增也是修改 每次都会重新插入")
     @RepeatSubmit
     public ResponseResult add(@RequestBody @Valid recommedForm form) {
         recommedService.add(form);

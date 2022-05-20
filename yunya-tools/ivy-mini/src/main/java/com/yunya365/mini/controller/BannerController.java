@@ -31,13 +31,13 @@ public class BannerController {
     private BannerServiceImpl bannerService;
 
     @PostMapping("/findlist")
-    @ApiOperation("banner-列表")
+    @ApiOperation("后台-banner-列表")
     public ResponseResult<List<BannerVO>> findList() {
         return ResponseUtil.success(bannerService.findList());
     }
 
     @PostMapping("/add")
-    @ApiOperation("banner-新增")
+    @ApiOperation("后台-banner-新增")
     @RepeatSubmit
     public ResponseResult add(@RequestBody @Valid BannerAddForm form) {
         bannerService.add(form);
@@ -45,13 +45,13 @@ public class BannerController {
     }
 
     @PutMapping("/update")
-    @ApiOperation("banner-修改")
+    @ApiOperation("后台-banner-修改")
     @RepeatSubmit
     public ResponseResult update(@RequestBody @Valid BannerAddForm form) {
         return ResponseUtil.success( bannerService.update(form));
     }
 
-    @ApiOperation("banner-删除")
+    @ApiOperation("后台-banner-删除")
     @DeleteMapping("/delete/{id}")
     public ResponseResult delete(@PathVariable(value = "id") Integer id) {
         return ResponseUtil.success(bannerService.deleteById(id));

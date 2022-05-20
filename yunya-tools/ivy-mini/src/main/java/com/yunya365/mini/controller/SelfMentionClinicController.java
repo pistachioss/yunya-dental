@@ -30,13 +30,13 @@ public class SelfMentionClinicController {
     private SelfMentionClinicServiceImpl selfMentionClinicService;
 
     @PostMapping("/findlist")
-    @ApiOperation("可自提门诊管理-列表")
+    @ApiOperation("后台-可自提门诊管理-列表")
     public ResponseResult<List<SelfMentionClinicVO>> findList() {
         return ResponseUtil.success(selfMentionClinicService.findList());
     }
 
     @PostMapping("/add")
-    @ApiOperation("可自提门诊管理-新增")
+    @ApiOperation("后台-可自提门诊管理-新增")
     @RepeatSubmit
     public ResponseResult add(@RequestBody @Valid SelfMentionClinicForm form) {
         selfMentionClinicService.add(form);
@@ -44,14 +44,14 @@ public class SelfMentionClinicController {
     }
 
     @PutMapping("/update")
-    @ApiOperation("可自提门诊管理-修改")
+    @ApiOperation("后台-可自提门诊管理-修改")
     @RepeatSubmit
     public ResponseResult update(@RequestBody @Valid SelfMentionClinicForm form) {
         selfMentionClinicService.update(form);
         return ResponseUtil.success(null);
     }
 
-    @ApiOperation("banner-删除")
+    @ApiOperation("后台-可自提门诊管理-删除")
     @DeleteMapping("/delete/{id}")
     public ResponseResult delete(@PathVariable(value = "id") Integer id) {
         return ResponseUtil.success(selfMentionClinicService.deleteById(id));

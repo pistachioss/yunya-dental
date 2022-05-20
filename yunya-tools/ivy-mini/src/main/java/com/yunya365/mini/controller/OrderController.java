@@ -33,12 +33,12 @@ public class OrderController {
     private OrderAdminiServiceImpl orderAdminiService;
 
     @PostMapping("/findlist")
-    @ApiOperation("订单-列表")
+    @ApiOperation("后台-订单-列表")
     public ResponseResult<PageInfo<OrderVO>> findList(@RequestBody @Valid OrderForm form) {
         return ResponseUtil.success(orderAdminiService.findList(form));
     }
 
-    @ApiOperation("订单-发货/退款")
+    @ApiOperation("后台-订单-发货/退款")
     @PutMapping("/update")
     @CurrentUser
     public ResponseResult update(@RequestBody @Validated OrderUpdateForm form) {
@@ -46,7 +46,7 @@ public class OrderController {
     }
 
     @PostMapping("/findDetail")
-    @ApiOperation("订单-详情")
+    @ApiOperation("后台-订单-详情")
     public ResponseResult<OrderWechatDetailVO> findDetail(@RequestBody @Valid OrderDetailForm form) {
         return ResponseUtil.success(orderAdminiService.findDetail(form));
     }

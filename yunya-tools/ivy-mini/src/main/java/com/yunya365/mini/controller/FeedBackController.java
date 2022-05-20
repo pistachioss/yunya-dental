@@ -30,11 +30,11 @@ public class FeedBackController {
     private FeedBackServiceImpl feedBackService;
 
     @PostMapping("/findlist")
-    @ApiOperation("意见反馈-列表")
+    @ApiOperation("后台-意见反馈-列表")
     public ResponseResult<PageInfo<FeedBackVO>> findList(@RequestBody @Valid FeedBackForm form) {
         return ResponseUtil.success(feedBackService.findList(form));
     }
-    @ApiOperation("意见反馈-删除")
+    @ApiOperation("后台-意见反馈-删除")
     @DeleteMapping("/delete/{id}")
     public ResponseResult delete(@PathVariable(value = "id") Integer id) {
         return feedBackService.delete(id);

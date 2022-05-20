@@ -37,13 +37,13 @@ public class ArticleController {
     private ArticleServiceImpl articleService;
 
     @PostMapping("/findlist")
-    @ApiOperation("艾维动态/口腔科普-列表")
+    @ApiOperation("后台-艾维动态/口腔科普-列表")
     public ResponseResult<PageInfo<ArticleVO>> findList(@RequestBody @Valid ArticleForm form) {
         return ResponseUtil.success(articleService.findList(form));
     }
 
     @PostMapping("/add")
-    @ApiOperation("艾维动态/口腔科普-新增")
+    @ApiOperation("后台-艾维动态/口腔科普-新增")
     @RepeatSubmit
     @CurrentUser
     public ResponseResult add(@RequestBody @Valid ArticleAddForm form) {
@@ -56,27 +56,27 @@ public class ArticleController {
      *
      * @return ResponseResult
      */
-    @ApiOperation("艾维动态/口腔科普-修改/上下架")
+    @ApiOperation("后台-艾维动态/口腔科普-修改/上下架")
     @PutMapping("/update")
     @CurrentUser
     public ResponseResult update(@RequestBody @Validated ArticleUpdateForm form) {
         return articleService.update(form);
     }
 
-    @ApiOperation("艾维动态/口腔科普-阅读数+1")
+    @ApiOperation("后台-艾维动态/口腔科普-阅读数+1")
     @PutMapping("/addReading/{id}")
     public ResponseResult addReading(@PathVariable(value = "id") Integer id) {
         return articleService.addReading(id);
     }
 
-    @ApiOperation("艾维动态/口腔科普-删除")
+    @ApiOperation("后台-艾维动态/口腔科普-删除")
     @DeleteMapping("/delete/{id}")
     public ResponseResult delete(@PathVariable(value = "id") Integer id) {
         return articleService.delete(id);
     }
 
     @PostMapping("/adjustorder")
-    @ApiOperation("上移下移")
+    @ApiOperation("后台-艾维动态/口腔科普-上移下移")
     public ResponseResult adjustOrder(@RequestBody @Validated AdjustOrderReq orderReq){
         return articleService.adjustOrder(orderReq);
     }

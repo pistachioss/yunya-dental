@@ -33,13 +33,13 @@ public class ExpertIntroductionController {
     private ExpertIntroductionServiceImpl expertIntroductionService;
 
     @PostMapping("/findlist")
-    @ApiOperation("专家介绍-列表")
+    @ApiOperation("后台-专家介绍-列表")
     public ResponseResult<PageInfo<ExpertIntroductionVO>> findList(@RequestBody @Valid ExpertIntroductionForm form) {
         return ResponseUtil.success(expertIntroductionService.findList(form));
     }
 
     @PostMapping("/add")
-    @ApiOperation("专家介绍-新增")
+    @ApiOperation("后台-专家介绍-新增")
     @RepeatSubmit
     @CurrentUser
     public ResponseResult add(@RequestBody @Valid ExpertIntroductionAddAndUpdateForm form) {
@@ -47,14 +47,14 @@ public class ExpertIntroductionController {
         return ResponseUtil.success(null);
     }
 
-    @ApiOperation("专家介绍-修改/上下架/发布")
+    @ApiOperation("后台-专家介绍-修改/上下架/发布")
     @PutMapping("/update")
     @CurrentUser
     public ResponseResult update(@RequestBody @Validated ExpertIntroductionAddAndUpdateForm form) {
         return expertIntroductionService.update(form);
     }
 
-    @ApiOperation("艾维动态/口腔科普-删除")
+    @ApiOperation("后台-专家介绍-删除")
     @DeleteMapping("/delete/{id}")
     public ResponseResult delete(@PathVariable(value = "id") Integer id) {
         return expertIntroductionService.delete(id);
