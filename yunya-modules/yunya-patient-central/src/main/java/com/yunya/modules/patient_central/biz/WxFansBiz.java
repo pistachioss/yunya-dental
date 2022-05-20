@@ -110,7 +110,14 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         List<WxFansVo> list = mapper.findListByName(wxFansQueryForm);
         return list;
     }
-
+    public WxWechatMapAndBindFansVo findMapList(WxFansMapQueryForm wxFansMapQueryForm) {
+        List<WxWechatMapFansVo> list = mapper.findMapList(wxFansMapQueryForm);
+        WxWechatMapBindNumFansVo wxWechatMapBindNumFansVo = mapper.findNumBind(wxFansMapQueryForm);
+        WxWechatMapAndBindFansVo wxWechatMapAndBindFansVo = new WxWechatMapAndBindFansVo();
+        wxWechatMapAndBindFansVo.setMapFansVoList(list);
+        wxWechatMapAndBindFansVo.setWxWechatMapBindNumFansVo(wxWechatMapBindNumFansVo);
+        return wxWechatMapAndBindFansVo;
+    }
     public List<WxFansDetailVO> findDetail(WxFansDetailForm wxFansDetailForm) {
         List<WxFansDetailVO> list = mapper.findDetail(wxFansDetailForm);
         DictionaryItemModel model = new DictionaryItemModel();

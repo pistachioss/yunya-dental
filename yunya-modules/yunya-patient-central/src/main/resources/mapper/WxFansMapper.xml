@@ -144,6 +144,89 @@
         GROUP BY wf.id
         order by wf.crt_time desc
     </select>
+    <select id="findMapList" resultType="com.yunya.feign.patient_central.domain.vo.web.WxWechatMapFansVo">
+        SELECT
+        ROUND(
+        6378.138 * 2 * ASIN(
+        SQRT(
+        POW(
+        SIN(
+        (
+        #{latitude}*PI()/180-wf.latitude*PI()/180)/2),2)+
+        COS(
+        #{latitude}*PI()/180)*COS(wf.latitude*PI()/180)*POW(SIN((#{longitude}*PI()/180-
+        wf.longitude * PI() / 180
+        ) / 2
+        ),
+        2
+        )
+        )
+        ) * 1000
+        ) AS distance,
+        wf.id as id,
+        wf.longitude,
+        wf.latitude,
+        wf.bind as isBind,
+        wf.nick_name as nickName,
+        pbi.name as name
+        FROM
+        wx_fans AS wf
+        left join patient_base_info pbi on wf.patient_id = pbi.id
+        <where>
+            and wf.fans_status = 2
+            <if test="isBind !=null">
+                and wf.bind = #{isBind}
+            </if>
+        </where>
+        HAVING
+        distance &lt;= #{distance}
+
+    </select>
+    <select id="findNumBind" resultType="com.yunya.feign.patient_central.domain.vo.web.WxWechatMapBindNumFansVo">
+        SELECT
+        ROUND(
+        6378.138 * 2 * ASIN(
+        SQRT(
+        POW(
+        SIN(
+        (
+        #{latitude}*PI()/180-wf.latitude*PI()/180)/2),2)+
+        COS(
+        #{latitude}*PI()/180)*COS(wf.latitude*PI()/180)*POW(SIN((#{longitude}*PI()/180-
+        wf.longitude * PI() / 180
+        ) / 2
+        ),
+        2
+        )
+        )
+        ) * 1000
+        ) AS distance,
+        COUNT(
+        CASE
+        WHEN bind = 1
+        THEN
+        1
+        ELSE
+        NULL
+        END
+        ) AS numBind,
+        COUNT(
+        CASE
+        WHEN bind = 0
+        THEN
+        1
+        ELSE
+        NULL
+        END
+        ) AS numNoBind
+        FROM
+        wx_fans AS wf
+        <where>
+            and wf.fans_status = 2
+        </where>
+        HAVING
+        distance &lt;= #{distance}
+    </select>
 
     <select id="findDetail" resultType="com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO">
       SELECT

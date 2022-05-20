@@ -2,9 +2,7 @@ package com.yunya.modules.patient_central.controller.web;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.*;
-import com.yunya.feign.patient_central.domain.vo.web.WxFansDetailVO;
-import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
-import com.yunya.feign.patient_central.domain.vo.web.WxWechatFansVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanUtil;
@@ -135,5 +133,19 @@ public class WxFansController {
         BeanUtil.copy(wxFansWechatUpdateForm,wxFans);
         return ResponseUtil.success(
                 wxFansBiz.updateSelectiveById(wxFans));
+    }
+
+    /**
+     * 微信用户-查询地图标记范围内用户
+     *
+     * @param
+     * @return
+     */
+    @ApiOperation("微信用户-查询地图标记范围内用户")
+    @PostMapping("/wechat/mapList")
+    public ResponseResult<WxWechatMapAndBindFansVo> findMapList(
+            @RequestBody @Validated WxFansMapQueryForm wxFansMapQueryForm) {
+        return ResponseUtil.success(
+                wxFansBiz.findMapList(wxFansMapQueryForm));
     }
 }
