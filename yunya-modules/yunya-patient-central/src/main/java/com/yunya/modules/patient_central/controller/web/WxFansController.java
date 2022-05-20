@@ -7,6 +7,7 @@ import com.yunya.feign.patient_central.domain.vo.web.WxFansVo;
 import com.yunya.feign.patient_central.domain.vo.web.WxWechatFansVo;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.BeanUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.WxFans;
 import com.yunya.modules.patient_central.biz.WxFansBiz;
@@ -14,10 +15,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -116,11 +114,26 @@ public class WxFansController {
      * @param
      * @return ResponseResult<PageInfo<WxFansVo>>
      */
-    @ApiOperation("客服中心-用户管理列表")
+    @ApiOperation("微信用户-用户管理列表")
     @PostMapping("/wechat/list")
     public ResponseResult<PageInfo<WxWechatFansVo>> findWechatList(
             @RequestBody @Validated WxFansWechatQueryForm wxFansWechatQueryForm) {
         return ResponseUtil.success(
                 wxFansBiz.findWechatList(wxFansWechatQueryForm));
+    }
+    /**
+     * 微信用户-用户管理列表
+     *
+     * @param
+     * @return ResponseResult<PageInfo<WxFansVo>>
+     */
+    @ApiOperation("微信用户-启用禁用")
+    @PutMapping("/wechat/update")
+    public ResponseResult findWechatList(
+            @RequestBody @Validated WxFansWechatUpdateForm wxFansWechatUpdateForm) {
+        WxFans wxFans = new WxFans();
+        BeanUtil.copy(wxFansWechatUpdateForm,wxFans);
+        return ResponseUtil.success(
+                wxFansBiz.updateSelectiveById(wxFans));
     }
 }
