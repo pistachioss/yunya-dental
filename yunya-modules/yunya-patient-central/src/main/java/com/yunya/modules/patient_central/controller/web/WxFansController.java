@@ -125,7 +125,7 @@ public class WxFansController {
      * 微信用户-用户管理列表
      *
      * @param
-     * @return ResponseResult<PageInfo<WxFansVo>>
+     * @return
      */
     @ApiOperation("微信用户-启用禁用")
     @PutMapping("/wechat/update")
