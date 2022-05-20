@@ -25,7 +25,10 @@ public class OrderVO {
 
     @ApiModelProperty(value = "id")
     private Integer id;
-
+    @ApiModelProperty(value = "收货人姓名")
+    private String receiverName;
+    @ApiModelProperty(value = "收货人电话")
+    private String receiverPhone;
     /**
      * 微信用户id
      */

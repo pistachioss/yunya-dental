@@ -65,5 +65,9 @@ public class OrderWechatDetailVO {
     private String address;
     @ApiModelProperty(value = "订单备注")
     private String remark;
+    @ApiModelProperty(value = "收货人姓名")
+    private String receiverName;
+    @ApiModelProperty(value = "收货人电话")
+    private String receiverPhone;
 
 }

@@ -58,24 +58,24 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        WxFanByNameForm wxFanByNameForm = new WxFanByNameForm();
-        List<WxFansVo> AllfansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
-        Map<String, WxFansVo> clinicMap = new HashMap(16);
-        AllfansVoList.forEach(z -> clinicMap.put(z.getId() + "", z));
-
-        if (!StringUtils.isEmpty(form.getName())) {
-            wxFanByNameForm.setName(form.getName());
-            List<WxFansVo> fansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
-            List<Integer> collect = fansVoList.stream().map(WxFansVo::getId).collect(Collectors.toList());
-            form.setNameList(collect);
-        }
+//        WxFanByNameForm wxFanByNameForm = new WxFanByNameForm();
+//        List<WxFansVo> AllfansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
+//        Map<String, WxFansVo> clinicMap = new HashMap(16);
+//        AllfansVoList.forEach(z -> clinicMap.put(z.getId() + "", z));
+//
+//        if (!StringUtils.isEmpty(form.getName())) {
+//            wxFanByNameForm.setName(form.getName());
+//            List<WxFansVo> fansVoList = remotePatientCentralServiceFeign.findListByName(wxFanByNameForm);
+//            List<Integer> collect = fansVoList.stream().map(WxFansVo::getId).collect(Collectors.toList());
+//            form.setNameList(collect);
+//        }
 
         List<OrderVO> result = mapper.findOrderList(form);
 
         for (OrderVO a : result) {
-            WxFansVo copy = clinicMap.get(a.getFansId() + "");
-            a.setReceivingInformation(copy.getName() + " " + copy.getMobile() + " " + a.getAddress());
-            a.setOpenId(copy.getOpenId());
+//            WxFansVo copy = clinicMap.get(a.getFansId() + "");
+            a.setReceivingInformation(a.getReceiverName() + " " + a.getReceiverPhone() + " " + a.getAddress());
+//            a.setOpenId(copy.getOpenId());
         }
         return new PageInfo<>(result);
     }
@@ -108,11 +108,11 @@ public class OrderAdminiServiceImpl extends BaseBiz<OrderInfoMapper, OrderInfo> 
     }
 
     public OrderWechatDetailVO findDetail(OrderDetailForm form) {
-        WxUserQuery query = new WxUserQuery();
-        query.setOpenId(form.getOpenId());
-        WxFans wxFans = remotePatientCentralServiceFeign.getWxFans(query);
+//        WxUserQuery query = new WxUserQuery();
+//        query.setOpenId(form.getOpenId());
+//        WxFans wxFans = remotePatientCentralServiceFeign.getWxFans(query);
         OrderWechatDetailVO result =  mapper.findDetail(form.getId());
-        result.setReceivingInformation(wxFans.getRegisterName() + " " + wxFans.getRegisterMobile() + " " + result.getAddress());
+        result.setReceivingInformation(result.getReceiverName() + " " + result.getReceiverPhone() + " " + result.getAddress());
         return result;
     }
 }

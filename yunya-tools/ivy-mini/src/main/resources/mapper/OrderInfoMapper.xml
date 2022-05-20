@@ -41,6 +41,8 @@
     <result column="deliverySn" property="deliverySn" jdbcType="VARCHAR" />
     <result column="address" property="address" jdbcType="VARCHAR" />
     <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="receiverName" property="receiverName" jdbcType="VARCHAR" />
+    <result column="receiverPhone" property="receiverPhone" jdbcType="VARCHAR" />
     <collection property="topGradeList" resultMap="ItemResultMap"/>
   </resultMap>
 
@@ -60,10 +62,11 @@
     od.pay_amount,
     od.delivery_company,
     GROUP_CONCAT(oi.product_name ) as topGradeList,
-    ad.address
+    od.receiver_detail_address as address,
+    od.receiver_name as receiverName,
+    od.receiver_phone as receiverPhone
     FROM
     `order_info`  od
-    LEFT JOIN address ad ON od.fans_id = ad.fan_id
     LEFT JOIN order_item oi ON od.id = oi.order_id
     <where>
       <if test="crtTime != null and crtTime != ''">
@@ -100,10 +103,11 @@
     oi.product_name as productName,
     oi.product_price as productPrice,
     oi.product_quantity as productQuantity,
-    ad.address as address
+    od.receiver_detail_address as address,
+    od.receiver_name as receiverName,
+    od.receiver_phone as receiverPhone
     FROM
     `order_info`  od
-    LEFT JOIN address ad ON od.fans_id = ad.fan_id
     LEFT JOIN order_item oi ON od.id = oi.order_id
     where od.id = #{id}
 

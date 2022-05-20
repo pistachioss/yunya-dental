@@ -16,7 +16,7 @@ import lombok.Data;
 public class OrderDetailForm {
 
     private Integer id;
-    @ApiModelProperty("openID")
-    private String openId;
+//    @ApiModelProperty("openID")
+//    private String openId;
 
 }

@@ -77,7 +77,7 @@
                 and wf.bind = #{isBind}
             </if>
             <if test="address !=null and address !=''">
-                and wf.address = #{address}
+                and concat(wf.address) like concat(concat('%', rtrim(#{address})), '%')
             </if>
             AND concat(IFNULL(pbi.`name`,''),
             IFNULL(pbi.medical_number,''),
