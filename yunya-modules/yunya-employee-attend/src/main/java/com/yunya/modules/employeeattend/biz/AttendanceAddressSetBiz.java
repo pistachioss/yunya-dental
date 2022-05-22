@@ -218,4 +218,14 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
         }
         return new PageInfo<>(null);
     }
+
+    /**
+     * 根据orgId查询考勤地址列表
+     *
+     * @param orgIds
+     * @return
+     */
+    public List<AttendanceAddressSetVO> findAttendanceAddressByOrgId(List<Integer> orgIds) {
+        return mapper.selectAttendanceAddressByOrgId(orgIds);
+    }
 }

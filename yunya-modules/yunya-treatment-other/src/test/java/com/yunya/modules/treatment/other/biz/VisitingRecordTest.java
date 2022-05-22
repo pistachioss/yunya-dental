@@ -1,5 +1,7 @@
 package com.yunya.modules.treatment.other.biz;
 
+import com.yunya.feign.treatment_other.domain.form.FinishVisitingForm;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +27,19 @@ public class VisitingRecordTest {
     @Test
     public void findVisitingRecordByIdTest(){
         ResponseResult responseResult = visitingRecordBiz.findVisitingRecordById(3);
+        System.out.println(responseResult);
+    }
+
+    /**
+     * 完成随访
+     */
+    @Test
+    public void finishVisiting(){
+        BaseContextHandler.setUserID("732");
+        FinishVisitingForm form = new FinishVisitingForm();
+        form.setId(91);
+        form.setVisitingContent("为啥要合并随访内容");
+        ResponseResult responseResult = visitingRecordBiz.finishVisiting(form);
         System.out.println(responseResult);
     }
 

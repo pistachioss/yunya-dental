@@ -2,15 +2,17 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
+import com.yunya.feign.employee_attend.vo.AttendanceAddressSetVO;
+import com.yunya.feign.oss.RemoteOssServiceFeign;
+import com.yunya.feign.oss.domain.model.OssUrlForm;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.framework.common.utils.TreeUtil;
+import com.yunya.framework.common.utils.*;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.*;
 import com.yunya.modules.system.domain.form.OrganizationForm;
@@ -27,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +72,12 @@ public class OrganizationBiz {
   @Autowired private RemoteSmsServiceFeign remoteSmsServiceFeign;
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
+  /** 考勤服务*/
+  @Autowired private EmployeeAttendServiceFeign employeeAttendServiceFeign;
+  /** 文件服务*/
+  @Autowired private RemoteOssServiceFeign remoteOssServiceFeign;
+  @Value("${domainUrl}")
+  private String domainUrl;
 
   /**
    * 根据ID获取组织信息
@@ -133,7 +142,58 @@ public class OrganizationBiz {
     }
     List<OrganizationInfoVO> resultList = companyMapper.selectOrganizationByExample(queryForm);
     childIfAbsent(resultList);
+    resultList = latitudeLongitudeFilter(queryForm, resultList);
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 经纬度过滤处理
+   *
+   * @param queryForm
+   * @param resultList
+   */
+  private List<OrganizationInfoVO> latitudeLongitudeFilter(OrganizationQueryForm queryForm, List<OrganizationInfoVO> resultList) {
+    String longitude = queryForm.getLongitude();
+    String latitude = queryForm.getLatitude();
+    if (StringHelper.isNotEmpty(longitude) && StringHelper.isNotEmpty(latitude)) {
+      if (StringHelper.isNotEmpty(resultList)) {
+        List<OssUrlForm> ossUrlForms = new ArrayList<>();
+        List<Integer> orgIds = new ArrayList<>();
+        resultList.forEach(org->{
+          orgIds.add(org.getId());
+          String clinicPath = org.getClinicPath();
+          if (StringHelper.isNotEmpty(clinicPath)) {
+            OssUrlForm form = new OssUrlForm();
+            form.setCompanyId(0);
+            form.setIsThumb(false);
+            form.setOssCategory(1);
+            form.setObjectId(org.getId());
+            form.setOssFilename(clinicPath);
+            ossUrlForms.add(form);
+          }
+        });
+        List<AttendanceAddressSetVO> addresses = employeeAttendServiceFeign.findAttendanceAddressByOrgId(orgIds);
+        Map<String, String> urlMap = remoteOssServiceFeign.getUrlMap(ossUrlForms).getData();
+        resultList.forEach(org->{
+          Integer orgId = org.getId();
+          String clinicPath = org.getClinicPath();
+          String url = urlMap.get(clinicPath);
+          if (StringHelper.isNotEmpty(url)) {
+            org.setClinicPath(domainUrl + url);
+          }
+          addresses.forEach(address->{
+            if (orgId.equals(address.getOrgId())) {
+              org.setDistance(LocationUtil.distanceKilometer(longitude, latitude,
+                      address.getLongitude(), address.getLatitude()));
+            }
+          });
+        });
+        resultList = SortUtil.sort(resultList,
+                SortUtil.comparing(Comparator.nullsLast(Double::compare), //空值往后排
+                        OrganizationInfoVO::getDistance));
+      }
+    }
+    return resultList;
   }
 
   private void childIfAbsent(List<OrganizationInfoVO> resultList) {

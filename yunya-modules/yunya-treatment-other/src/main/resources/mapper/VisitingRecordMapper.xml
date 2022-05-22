@@ -69,6 +69,9 @@
             <if test="query.orgId != null">
                 vr.org_id = #{query.orgId}
             </if>
+            <if test="query.visitingDate != null">
+                and DATE_FORMAT(vr.visiting_date,'%Y-%m-%d') = DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d')
+            </if>
             <choose>
                 <!-- 按创建日期检索 -->
                 <when test="query.searchId == 1 and query.searchBeginTime != null and query.searchEndTime != null">

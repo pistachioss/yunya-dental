@@ -63,4 +63,9 @@ public class EmployeeAttendServiceFallBackFactory implements EmployeeAttendServi
   public List<FieldInfoListVO> fieldFindList(@RequestBody @Validated FieldInfoForm fieldInfoForm){
     return null;
   }
+
+  @Override
+  public List<AttendanceAddressSetVO> findAttendanceAddressByOrgId(List<Integer> orgIds) {
+    return null;
+  }
 }
