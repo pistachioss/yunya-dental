@@ -26,13 +26,13 @@ public class LoginController {
     private LoginServiceImpl authLoginService;
 
     @PostMapping("/mini/wechat/login")
-    @ApiOperation("微信授权登录")
+    @ApiOperation("【小程序】微信授权登录")
     public ResponseResult<AuthInfoVO> wechatLogin(@RequestBody @Valid WeChatLoginForm form, HttpServletRequest request) {
         return ResponseUtil.success(authLoginService.wechatLogin(form, request));
     }
 
     @PostMapping("/mini/logout")
-    @ApiOperation("登出")
+    @ApiOperation("【小程序】登出")
     public ResponseResult<Boolean> login(HttpServletRequest request) {
         authLoginService.logout(request);
         return ResponseUtil.success();

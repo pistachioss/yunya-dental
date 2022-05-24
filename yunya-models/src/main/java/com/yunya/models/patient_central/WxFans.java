@@ -37,6 +37,11 @@ public class WxFans {
     private String nickName;
 
     /**
+     * 生日
+     */
+    private Date birthday;
+
+    /**
      * 性别：1男性，2女性，0未知
      */
     private Short sex;

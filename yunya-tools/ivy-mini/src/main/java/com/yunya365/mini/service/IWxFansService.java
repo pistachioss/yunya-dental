@@ -1,8 +1,8 @@
 package com.yunya365.mini.service;
 
 import com.yunya.feign.ivy_mini.domain.bo.WeChatSessionBO;
-import com.yunya.feign.ivy_mini.domain.form.WxAuthUserInfoForm;
-import com.yunya.feign.ivy_mini.domain.form.WxUserInfoForm;
+import com.yunya.feign.ivy_mini.domain.form.*;
+import com.yunya.feign.ivy_mini.domain.vo.FansDetailVO;
 import com.yunya.models.patient_central.WxFans;
 
 /**
@@ -36,4 +36,17 @@ public interface IWxFansService {
      * @return String
      */
     String competeAuthPhone(WxAuthUserInfoForm form);
+
+    /**
+     * 编辑用户信息
+     * @param form:
+     */
+    void modifyFans(ModifyFansForm form);
+
+    /**
+     * 用户详情
+     * @param openId:
+     * @return FansDetailVO
+     */
+    FansDetailVO fansDetail(String openId);
 }
