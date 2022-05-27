@@ -22,9 +22,8 @@ import javax.validation.Valid;
  * @since 2022-05-20
  */
 @RestController
-@RequestMapping("/white")
 @Api(tags = "用户模块")
-public class FansController {
+public class FansController extends BaseController{
 
     @Resource
     private IWxFansService fansService;

@@ -21,8 +21,7 @@ import javax.validation.Valid;
  * @since 2022-05-11
  */
 @RestController
-@RequestMapping("/white")
-public class WxFansController {
+public class WxFansController extends BaseController{
 
     @Resource
     private IWxFansService wxFansService;

@@ -19,8 +19,18 @@ public interface IProductService {
      */
     List<HotSaleVO> hotSale();
 
+    /**
+     * 搜索商品
+     * @param query:
+     * @return PageInfo<GoodsVO>
+     */
     PageInfo<GoodsVO> pageGoods(GoodsQuery query);
 
+    /**
+     * 搜索虚拟服务
+     * @param query:
+     * @return PageInfo<VirtualProductVO>
+     */
     PageInfo<VirtualProductVO> pageVirtual(VirtualProductQuery query);
 
     void goodsDetail(Integer itemId);

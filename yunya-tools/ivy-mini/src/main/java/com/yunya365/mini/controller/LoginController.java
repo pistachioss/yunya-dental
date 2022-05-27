@@ -18,9 +18,8 @@ import javax.validation.Valid;
  * @author: xy
  **/
 @RestController
-@RequestMapping("/white")
 @Api(tags = "小程序用户登录")
-public class LoginController {
+public class LoginController extends BaseController{
 
     @Resource
     private LoginServiceImpl authLoginService;

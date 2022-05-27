@@ -24,9 +24,8 @@ import java.util.List;
  * @since 2022-05-20
  */
 @RestController
-@RequestMapping("/white")
 @Api(tags = "用户收货地址")
-public class FansReceiveAddressController {
+public class FansReceiveAddressController extends BaseController{
 
     @Resource
     private IFansReceiveAddressService receiveAddressService;
