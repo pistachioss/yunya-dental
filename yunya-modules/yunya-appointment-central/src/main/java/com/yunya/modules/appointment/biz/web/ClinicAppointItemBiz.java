@@ -28,6 +28,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -165,14 +166,23 @@ public class ClinicAppointItemBiz extends BaseBiz<ClinicAppointItemMapper, Clini
         model.setWhetherPage(false);
         List<OrganizationInfoDetail> orgInfoList = systemServiceFeign.findOrgInfoList(model);
         if (orgInfoList != null && !orgInfoList.isEmpty()){
+            Date now = new Date(System.currentTimeMillis());
             orgInfoList.forEach(organizationInfoDetail -> {
-                ClinicAppointItem clinicAppointItem = mapper.findClinicAppointItemByOrgIdAndClinicAppointItemId(appointId, organizationInfoDetail.getId());
-                if (clinicAppointItem == null){
-                    ClinicAppointItem appointItem = new ClinicAppointItem();
+                ClinicAppointItem appointItem = mapper.findClinicAppointItemByOrgIdAndClinicAppointItemId(organizationInfoDetail.getId(), appointId);
+                if (ObjectUtils.isEmpty(appointItem)){
+                    appointItem = new ClinicAppointItem();
+                    appointItem.setInservice(true);
                     appointItem.setAppointItemId(appointId);
                     appointItem.setOrgId(organizationInfoDetail.getId());
                     appointItem.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                    appointItem.setCrtTime(now);
                     mapper.insertSelective(appointItem);
+                } else {
+                    appointItem.setInservice(true);
+                    appointItem.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+                    appointItem.setUpdName(BaseContextHandler.getName());
+                    appointItem.setUpdTime(now);
+                    mapper.updateByPrimaryKeySelective(appointItem);
                 }
             });
             return 1;
