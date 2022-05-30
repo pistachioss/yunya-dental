@@ -77,7 +77,7 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
         build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         int result = mapper.insertEntity(build);
         if (result <= 0){
-            return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"添加失败i！",null);
+            return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"添加失败！",null);
         }
         return ResponseUtil.success();
     }
