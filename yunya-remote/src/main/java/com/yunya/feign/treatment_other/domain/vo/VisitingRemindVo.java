@@ -149,4 +149,5 @@ public class VisitingRemindVo implements Serializable {
     @ApiModelProperty(value = "是否為初復診 0-初診； 1-復診")
     private Byte firstVisit;
 
+    private Date remindDateTime;
 }
