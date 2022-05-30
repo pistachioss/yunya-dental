@@ -26,4 +26,8 @@ public class WxUserInfoForm {
     private String city;
     @ApiModelProperty(value = "语言")
     private String language;
+    @ApiModelProperty(value = "经度")
+    private Double longitude;
+    @ApiModelProperty(value = "纬度")
+    private Double latitude;
 }
