@@ -15,6 +15,7 @@ import javax.validation.constraints.NotBlank;
 @ApiModel(value = "微信手机授权信息参数")
 public class WxAuthUserInfoForm {
     @ApiModelProperty(value = "code", required = true)
+    @NotBlank
     private String code;
     @ApiModelProperty(value = "加密数据", required = true)
     @NotBlank

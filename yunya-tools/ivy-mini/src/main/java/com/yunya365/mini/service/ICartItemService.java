@@ -6,6 +6,8 @@ import com.yunya.feign.ivy_mini.domain.model.AddCartModel;
 import com.yunya.feign.ivy_mini.domain.vo.CartVO;
 import com.yunya365.mini.entity.CartItem;
 
+import java.util.List;
+
 /**
  * <p>
  * 购物车 服务类
@@ -29,9 +31,20 @@ public interface ICartItemService extends IService<CartItem> {
      */
     void add(AddCartModel model);
 
-    void delete(Integer cartId);
+    /**
+     * 删除购物车某个商品
+     * @param cartIds:
+     */
+    void delete(List<Integer> cartIds);
 
+    /**
+     * 修改购物车某个商品数量
+     * @param form:
+     */
     void updateQuantity(UpdateCartForm form);
 
+    /**
+     * 清空购物车
+     */
     void clear();
 }

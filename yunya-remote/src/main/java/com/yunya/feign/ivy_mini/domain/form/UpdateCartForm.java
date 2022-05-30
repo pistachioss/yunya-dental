@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * @description:
  * @author: xy
@@ -12,8 +14,10 @@ import lombok.Data;
 @Data
 @ApiModel(description = "添加购物车参数")
 public class UpdateCartForm {
-    @ApiModelProperty(value = "产品id", required = true)
-    private Integer productId;
-    @ApiModelProperty(value = "数量", required = true)
+    @ApiModelProperty(value = "id", required = true)
+    @NotNull
+    private Integer id;
+    @ApiModelProperty(value = "修改后数量", required = true)
+    @NotNull
     private Integer quantity;
 }
