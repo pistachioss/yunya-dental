@@ -1,4 +1,4 @@
-package com.yunya.feign.patient_central.domain.model;
+package com.yunya.feign.patient_central.domain.vo.web;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -6,42 +6,37 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
 /**
- * 简介：患者登记添加模型
+ * 简介：患者自助登记基础信息
  *
  * @author: chenlin
- * @Description: 患者登记添加模型
- * @Date: 2022/2/28 13:06
+ * @Description:
+ * @Date: 2022/5/27 11:22
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("患者登记添加模型")
-public class PatientRegistrationModel implements Serializable {
-    /** 患者id */
-    @ApiModelProperty(value = "患者id")
+@ApiModel("患者自助登记基础信息")
+public class PatientRegistrationBaseVO implements Serializable {
+
+    /** 患者id*/
+    @ApiModelProperty("患者id")
     private Integer id;
 
     /** 门诊id */
-    @ApiModelProperty(value = "门诊id", required = true)
-    @NotNull(message = "门诊id不能为空")
+    @ApiModelProperty(value = "门诊id")
     private Integer orgId;
 
-    /** 患者姓名 字符串，长度64 */
-    @ApiModelProperty(value = "患者姓名",required = true)
-    @NotEmpty(message = "姓名为空")
-    @Size(max = 50, message = "姓名长度不能超过50个字符！")
+    /** 患者姓名 */
+    @ApiModelProperty(value = "患者姓名")
     private String name;
 
-    /** 手机号码 长度14 */
-    @ApiModelProperty(value = "手机号",required = true)
-    @Pattern(regexp = "^[1][3,4,5,6,7,8,9][0-9]{9}$", message = "手机号格式有误")
-    @NotBlank(message = "手机号不能为空")
+    /** 手机号码 */
+    @ApiModelProperty(value = "手机号")
     private String mobile;
 
     /** 性别 0-男；1-女； */
@@ -50,13 +45,11 @@ public class PatientRegistrationModel implements Serializable {
 
     /** 出生日期 */
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    @ApiModelProperty(value = "出生日期",required = true)
-    @NotNull(message = "出生日期不能为空")
+    @ApiModelProperty(value = "出生日期")
     private Date birthdate;
 
     /** 年龄 */
-    @ApiModelProperty(value = "年龄", required = true)
-    @NotNull(message = "年龄不能为空")
+    @ApiModelProperty(value = "年龄")
     private Integer age;
 
     /** 国籍 */
@@ -81,17 +74,14 @@ public class PatientRegistrationModel implements Serializable {
 
     /** 详细地址*/
     @ApiModelProperty("详细地址")
-    @Size(max = 50, message = "详细长度不能超过50个字符！")
     private String detailedAddress;
 
     /** e-mail*/
     @ApiModelProperty("e-mail")
-    @Size(max = 50, message = "电子邮箱长度不能超过50个字符！")
     private String eMail;
 
     /** 紧急联系人*/
     @ApiModelProperty("紧急联系人")
-    @Size(max = 50, message = "紧急联系人长度不能超过50个字符！")
     private String emergencyPhone;
 
     /** 疾病史 */
@@ -105,4 +95,8 @@ public class PatientRegistrationModel implements Serializable {
     /** 患者签名图片*/
     @ApiModelProperty("患者签名图片")
     private String signatureImgUrl;
+
+    /** 患者签名图片完整路径*/
+    @ApiModelProperty("患者签名图片完整路径")
+    private String signatureImgPath;
 }

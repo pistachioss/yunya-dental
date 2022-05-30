@@ -2619,27 +2619,34 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
   }
 
-  /**
-   * 根据条件查询个人开单项目应收明细表导出
-   *
-   * @param query 查询条件
-   * @return
-   */
-  public void billItemStatisticsInfoExport(BillItemInfoQuery query, HttpServletResponse response)
-      throws IOException {
-    query.setWhetherPage(false);
-    PageInfo<BillItemStatisticsInfoVO> pageInfo = billItemStatisticsInfo(query);
-    BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgId());
-    List<BillItemStatisticsInfoVO> resultList = pageInfo.getList();
-    ExcelUtil<BillItemStatisticsInfoVO> excelUtil = new ExcelUtil<>(BillItemStatisticsInfoVO.class);
-    String fileName =
-        excelUtil.getFileName(
-            organization.getAbbreviation(),
-            query.getStartDate(),
-            query.getEndDate(),
-            "个人开单项目应收明细表");
-    excelUtil.exportExcel(response, resultList, "个人开单项目应收明细表", fileName);
-  }
+    /**
+     * 根据条件查询个人开单项目应收明细表导出
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public void billItemStatisticsInfoExport(BillItemInfoQuery query, HttpServletResponse response)
+            throws IOException {
+        query.setWhetherPage(false);
+        PageInfo<BillItemStatisticsInfoVO> pageInfo = billItemStatisticsInfo(query);
+        List<Integer> orgIds = query.getOrgIds();
+        String abbreviation = "";
+        if (StringHelper.isNotEmpty(orgIds) && orgIds.size()==1) {
+            BaseOrganization organization = organizationMapper.selectByPrimaryKey(query.getOrgIds().get(0));
+            if (!ObjectUtils.isEmpty(organization)) {
+                abbreviation = organization.getAbbreviation();
+            }
+        }
+        List<BillItemStatisticsInfoVO> resultList = pageInfo.getList();
+        ExcelUtil<BillItemStatisticsInfoVO> excelUtil = new ExcelUtil<>(BillItemStatisticsInfoVO.class);
+        String fileName =
+                excelUtil.getFileName(abbreviation,
+                        query.getStartDate(),
+                        query.getEndDate(),
+                        "",
+                        "个人开单项目应收明细表");
+        excelUtil.exportExcel(response, resultList, "个人开单项目应收明细表", fileName);
+    }
 
   /**
    * 根据条件查询个人开单项目实收金额统计明细表

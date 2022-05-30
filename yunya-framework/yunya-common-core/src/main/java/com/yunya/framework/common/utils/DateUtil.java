@@ -8,14 +8,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.YearMonth;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -1004,10 +997,9 @@ public class DateUtil {
    * @return
    */
   public static Integer pregancyWeek2Month(Integer pregnancyWeek) {
+    if (ObjectUtils.isEmpty(pregnancyWeek)) {
+      return null;
+    }
     return pregnancyWeek / 4;
-  }
-
-  public static void main(String[] args) {
-    System.out.println(parse2Date("1941-09-04"));
   }
 }
