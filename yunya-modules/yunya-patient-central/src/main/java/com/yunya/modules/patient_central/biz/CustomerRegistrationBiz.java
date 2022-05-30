@@ -725,29 +725,31 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
         }
         vo.setMobileOwner(baseInfo.getMobileOwner());
         Integer originType = baseInfo.getOriginType();
-        vo.setOriginType(originType);
-        if (originType.intValue() == 1) {
-            Integer recEmpId = baseInfo.getOriginId();
-            vo.setEmployeeId(recEmpId);
-            SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(recEmpId);
-            if (!ObjectUtils.isEmpty(employee)) {
-                vo.setRecEmpName(employee.getName());
+        if (!ObjectUtils.isEmpty(originType)) {
+            vo.setOriginType(originType);
+            if (originType.intValue() == 1) {
+                Integer recEmpId = baseInfo.getOriginId();
+                vo.setEmployeeId(recEmpId);
+                SysEmployee employee = remoteSystemServiceFeign.findSysEmployeeById(recEmpId);
+                if (!ObjectUtils.isEmpty(employee)) {
+                    vo.setRecEmpName(employee.getName());
+                }
+                vo.setPatientId(null);
+                vo.setOriginId(null);
+            } else if (originType.intValue() == 2) {
+                Integer recPatientId = vo.getOriginId();
+                vo.setPatientId(recPatientId);
+                PatientBaseInfo recPatient = mapper.selectByPrimaryKey(vo.getOriginId());
+                if (!ObjectUtils.isEmpty(recPatient)) {
+                    vo.setRecPatientName(recPatient.getName());
+                }
+                vo.setOriginId(null);
+                vo.setEmployeeId(null);
+            } else {
+                vo.setOriginId(vo.getOriginId());
+                vo.setPatientId(null);
+                vo.setEmployeeId(null);
             }
-            vo.setPatientId(null);
-            vo.setOriginId(null);
-        } else if (originType.intValue() == 2) {
-            Integer recPatientId = vo.getOriginId();
-            vo.setPatientId(recPatientId);
-            PatientBaseInfo recPatient = mapper.selectByPrimaryKey(vo.getOriginId());
-            if (!ObjectUtils.isEmpty(recPatient)) {
-                vo.setRecPatientName(recPatient.getName());
-            }
-            vo.setOriginId(null);
-            vo.setEmployeeId(null);
-        } else {
-            vo.setOriginId(vo.getOriginId());
-            vo.setPatientId(null);
-            vo.setEmployeeId(null);
         }
         vo.setId(patientId);
         patientVO.setAdultPatient(vo);
