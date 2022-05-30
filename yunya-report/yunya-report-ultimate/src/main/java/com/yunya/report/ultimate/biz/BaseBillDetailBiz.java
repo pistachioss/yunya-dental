@@ -15,6 +15,7 @@ import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.PageUtl;
 import com.yunya.framework.common.utils.StringHelper;
@@ -23,6 +24,7 @@ import com.yunya.models.report.*;
 import com.yunya.report.ultimate.mapper.*;
 import org.apache.commons.lang3.ObjectUtils;
 import org.joda.time.DateTime;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -2754,5 +2756,41 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             }
         }
         excelUtil.exportExcel(response, result, "开单数量及金额全部明细", fileName);
+    }
+
+    /**
+     * 根据条件查询开单数量及金额全部明细列表导出
+     *
+     * @param query
+     * @param response
+     * @throws Exception
+     */
+    public void billItemStatisticsDetailIntegrationExport(BillItemInfoQuery query, HttpServletResponse response) throws Exception {
+        Collection<Integer[]> items = query.getCategoryItems();
+        if (!CollectionUtils.isEmpty(items)) {
+            Set<Integer> categoryIds = new HashSet<>();
+            Set<Integer> itemIds = new HashSet<>();
+            items.forEach(
+                    vo -> {
+                        categoryIds.add(vo[0]);
+                        itemIds.add(vo[1]);
+                    });
+            query.setCategoryIds(categoryIds);
+            query.setItemIds(itemIds);
+        } else {
+            throw new ClientServiceException("请至少选择一个项目", PARAMETERS_IS_ILLEGAL);
+        }
+        List<BillItemStatisticsDetailVO> result = mapper.billItemAmountDetailList(query);
+        List<BillItemStatisticsDetailIntegrationVO> res = BeanCopierUtils.listGeneralCopyBean(result, BillItemStatisticsDetailIntegrationVO.class);
+        ExcelUtil<BillItemStatisticsDetailIntegrationVO> excelUtil = new ExcelUtil<>(BillItemStatisticsDetailIntegrationVO.class);
+        String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单数量及金额明细一体表";
+        List<Integer> orgIds = query.getOrgIds();
+        if (orgIds.size() == 1) {
+            BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
+            if (null != organization) {
+                fileName = organization.getAbbreviation() + fileName;
+            }
+        }
+        excelUtil.exportExcel(response, res, "开单数量及金额明细一体表", fileName);
     }
 }

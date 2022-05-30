@@ -13,17 +13,17 @@ import static com.yunya.framework.common.annation.Excel.ColumnType.NUMERIC;
 import static com.yunya.framework.common.annation.Excel.Type.EXPORT;
 
 /**
- * 简介: 开单数量及金额统计明细VO
+ * 简介: 开单数量及金额统计明细一体VO
  *
  * @author: chow
  * @date: 2020/12/7 14:26
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("开单数量及金额统计明细VO")
+@ApiModel("开单数量及金额统计明细一体VO")
 @Data
 @ToString
-public class BillItemStatisticsDetailVO implements Serializable {
+public class BillItemStatisticsDetailIntegrationVO implements Serializable {
   /** 门诊 */
   @Excel(name="门诊")
   @ApiModelProperty("门诊")
@@ -36,42 +36,31 @@ public class BillItemStatisticsDetailVO implements Serializable {
   @Excel(name = "账单编号")
   @ApiModelProperty("账单编号")
   private String billNum;
-  /** 患者姓名 */
-  @Excel(name = "患者姓名")
-  @ApiModelProperty("患者姓名")
-  private String patientName;
   /** 患者ID */
   @ApiModelProperty("患者ID")
   private Integer patientId;
-  /** 手机号 */
-  @Excel(name = "手机号")
-  @ApiModelProperty("手机号")
-  private String mobile;
-  /** 挂号医生 */
-  @Excel(name = "挂号医生")
-  @ApiModelProperty("挂号医生")
-  private String regDentistName;
-  /** 开单数量 */
-  @Excel(name = "开单数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty("开单数量")
-  private Integer quantity;
-  /** 应收金额 */
-  @Excel(name = "应收金额",  cellType = NUMERIC, isStatistics = true, type = EXPORT)
-  @ApiModelProperty("应收金额")
-  private BigDecimal amount;
   /** 执行人 */
   @Excel(name = "执行人")
   @ApiModelProperty("执行人")
   private String executorName;
+  /** 所属分类 */
+  @Excel(name = "所属分类")
+  @ApiModelProperty("所属分类")
+  private String categoryName;
+  /** 项目名称 */
+  @Excel(name = "项目名称")
+  @ApiModelProperty("项目名称")
+  private String itemName;
+  /** 开单数量 */
+  @Excel(name = "开单数量", cellType = NUMERIC, isStatistics = true, type = EXPORT)
+  @ApiModelProperty("开单数量")
+  private Integer quantity;
+  /** 患者姓名 */
+  @Excel(name = "患者姓名")
+  @ApiModelProperty("患者姓名")
+  private String patientName;
   /** 开单备注 */
   @Excel(name = "开单备注")
   @ApiModelProperty("开单备注")
   private String remark;
-
-  /** 项目分类名称 */
-  @ApiModelProperty("项目分类名称")
-  private String categoryName;
-  /** 项目名称 */
-  @ApiModelProperty("项目名称")
-  private String itemName;
 }

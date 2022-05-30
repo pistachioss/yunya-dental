@@ -430,6 +430,21 @@ public class CompanyReportOfOperationController {
   }
 
   /**
+   * 根据条件查询开单数量及金额导出明细一体表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillingItemDetailVO>
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-开单项目数量-开单数量及金额导出明细一体表")
+  @PostMapping(value = "/billItem/statistics/detail/integExport", name = "开单数量及金额导出明细一体表")
+  public ResponseResult<T> billItemStatisticsDetailIntegrationExport(
+          HttpServletResponse response, @RequestBody @Validated BillItemInfoQuery query)
+          throws Exception {
+    billDetailBiz.billItemStatisticsDetailIntegrationExport(query, response);
+    return ResponseUtil.success(null);
+  }
+
+  /**
    * 根据条件查询产品使用报表
    *
    * @param query
