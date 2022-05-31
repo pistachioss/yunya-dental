@@ -506,4 +506,13 @@ public class DimensionReportController {
         dimesionReportBiz.cardCouponUsedStatisticsDetailExport(query, response);
         return ResponseUtil.success(null);
     }
+
+    @ApiOperation("公司端报表-报表统计-365卡复购次数统计表")
+    @PostMapping("/cardCoupon/repurchase/statistics/list")
+    public ResponseResult<DynamicHeaderPageInfo<JSONObject>> cardCouponRepurchaseStatisticsList(
+            @RequestBody @Validated CardCouponUsedQueryForm query) {
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.cardCouponRepurchaseStatisticsList(query);
+        return ResponseUtil.success(pageInfo);
+
+    }
 }
