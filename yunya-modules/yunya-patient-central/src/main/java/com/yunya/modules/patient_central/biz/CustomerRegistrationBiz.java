@@ -666,9 +666,9 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
             if (StringHelper.isNotEmpty(habitIdStr)) {
                 vo.setHabitIds(StringHelper.split2IntList(habitIdStr, ","));
             }
-            patientVO.setChildrenPatient(vo);
         }
         vo.setId(patientId);
+        patientVO.setChildrenPatient(vo);
     }
 
     /**

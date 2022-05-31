@@ -266,7 +266,7 @@ public class PatientRegistrationControllerTest {
     @Test
     public void testFindPatientRegistration() {
         PatientRegistrationQueryForm query = new PatientRegistrationQueryForm();
-        query.setPatientId(108355);
+        query.setPatientId(186);
         PatientRegistrationVO data = customerRegistrationController.findPatientRegistrationById(query).getData();
         System.out.println(JSONObject.toJSON(data));
     }
