@@ -48,6 +48,7 @@ public class WxFansServiceImpl implements IWxFansService {
         WxSaveFansForm fansForm = new WxSaveFansForm();
         fansForm.setSessionBO(sessionBO);
         fansForm.setUserInfo(userInfo);
+        fansForm.setFansId(Objects.isNull(wxFans) ? null : wxFans.getId());
         patientFeign.saveMiniAuth(fansForm);
     }
 
