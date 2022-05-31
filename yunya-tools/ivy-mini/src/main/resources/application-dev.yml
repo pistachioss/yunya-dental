@@ -23,7 +23,7 @@ spring:
 wx:
   mini:
     appId: wx9d9209edf9634d94
-    appSecret: 0d147e4268dbf35fdbe4bf0a8e01c3c2
+    appSecret: 2cfb0904bc87f47fe73ddaaeb3d7359a
 
 cloopen:
   sms:

@@ -28,4 +28,6 @@ public class WxMiniAuthConstant {
   public static final String JWT_KEY_NAME = "name";
   /** User信息 认证请求头 */
   public static final String BEARER_HEADER_KEY = "token";
+  /** 微信小程序accessToken刷新时间间隔 */
+  public static final Integer ACCESS_TOKEN_EXPIRE_GAP = 7140;
 }

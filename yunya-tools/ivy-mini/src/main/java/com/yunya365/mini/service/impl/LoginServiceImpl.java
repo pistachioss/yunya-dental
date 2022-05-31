@@ -61,6 +61,8 @@ public class LoginServiceImpl {
         if (wxFans == null) {
             //保存微信用户信息
             wxFansService.saveMiniAuth(userInfo, sessionBO);
+        } else {
+//            wxFansService
         }
         //登录
         AuthInfoVO authInfoVO = login(openId, request, wxFans);

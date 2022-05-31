@@ -6,6 +6,7 @@ import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.IWxFansService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,7 @@ import javax.validation.Valid;
  * @since 2022-05-11
  */
 @RestController
+@Api(tags = "小程序用户api")
 public class WxFansController extends BaseController{
 
     @Resource

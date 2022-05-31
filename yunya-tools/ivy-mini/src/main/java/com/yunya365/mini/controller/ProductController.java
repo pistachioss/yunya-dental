@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.IProductService;
@@ -22,8 +23,8 @@ import java.util.List;
  **/
 @Api(tags = {"商品、虚拟服务api"})
 @RestController
-@RequestMapping("/white")
-public class ProductController {
+@IgnoreUserToken
+public class ProductController extends BaseController{
 
     @Resource
     private IProductService productService;

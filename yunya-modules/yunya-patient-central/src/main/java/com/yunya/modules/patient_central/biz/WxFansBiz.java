@@ -325,14 +325,13 @@ public class WxFansBiz extends BaseBiz<WxFansMapper, WxFans> {
         WxUserInfoForm userInfo = form.getUserInfo();
         //授权保存用户
         WxFans wxFans = BeanUtil.copy(sessionBO, WxFans.class);
-        wxFans.setNickName(userInfo.getNickName());
+        //更新用户扩展信息
+        BeanUtil.copy(userInfo, wxFans);
         wxFans.setSex(userInfo.getGender().shortValue());
         wxFans.setLanguage(userInfo.getLanguage());
         wxFans.setHeadImgurl(userInfo.getAvatarUrl());
         wxFans.setLastLoginDate(new Date());
         BaseContextHandler.setUserID(wxFans.getId().toString());
-        //更新用户扩展信息
-        BeanUtil.copy(userInfo, wxFans);
         super.insert(wxFans);
     }
 
