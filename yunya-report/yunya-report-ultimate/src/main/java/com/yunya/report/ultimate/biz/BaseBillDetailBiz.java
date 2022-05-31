@@ -2749,7 +2749,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         ExcelUtil<BillItemStatisticsDetailVO> excelUtil = new ExcelUtil<>(BillItemStatisticsDetailVO.class);
         String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单数量及金额全部明细";
         List<Integer> orgIds = query.getOrgIds();
-        if (orgIds.size() == 1) {
+        if (StringHelper.isNotEmpty(orgIds) && orgIds.size() == 1) {
             BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
             if (null != organization) {
                 fileName = organization.getAbbreviation() + fileName;
@@ -2785,7 +2785,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         ExcelUtil<BillItemStatisticsDetailIntegrationVO> excelUtil = new ExcelUtil<>(BillItemStatisticsDetailIntegrationVO.class);
         String fileName = query.getStartDate() + "-" + query.getEndDate() + "开单数量及金额明细一体表";
         List<Integer> orgIds = query.getOrgIds();
-        if (orgIds.size() == 1) {
+        if (StringHelper.isNotEmpty(orgIds) && orgIds.size() == 1) {
             BaseOrganization organization = organizationMapper.selectByPrimaryKey(orgIds.get(0));
             if (null != organization) {
                 fileName = organization.getAbbreviation() + fileName;
