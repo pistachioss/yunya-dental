@@ -3002,7 +3002,7 @@ public class DimensionReportBiz {
         return result;
     }
 
-    public DynamicHeaderPageInfo<JSONObject> cardCouponRepurchaseStatisticsList(CardCouponUsedQueryForm query) {
+    public DynamicHeaderPageInfo<JSONObject> cardCouponRepurchaseStatistics(CardCouponUsedQueryForm query) {
         // 门诊
         ClinicPerformanceBusinessQuery queryFrom = new ClinicPerformanceBusinessQuery();
         queryFrom.setOrgIds(query.getOrgIds());
@@ -3040,9 +3040,10 @@ public class DimensionReportBiz {
         527,
         528,
         596);
-        List<BaseCard> list = baseCardBiz.findProductSoldList(query);
+        query.setCouponIds(couponIds);
+        List<BaseCard> cards = baseCardBiz.findProductSoldList(query);
         Map<String, Integer> countMap = new HashMap<>(16);
-        list.forEach(vo->{
+        cards.forEach(vo->{
             Integer allocateOrgId = vo.getAllocateOrgId();
             Integer couponId = vo.getCouponId();
             Integer patientId = vo.getPatientId();
@@ -3061,30 +3062,62 @@ public class DimensionReportBiz {
         });
         Map<String, List<String>> contextMap = new HashMap<>();
         Map<String, String> param = new LinkedHashMap<>(16);
+        List<String> purchaseGroup = getPurchaseGroup();
         JSONArray ary = new JSONArray();
         for (BaseOrganization org : orgs) {
             JSONObject obj = initRepurcharseObj(org, param);
             Integer orgId = org.getOrgId();
-            for (int i = 1; i <= 5; i++) {
+            for (int i = 1; i <=purchaseGroup.size(); i++) {
+                String purchase = purchaseGroup.get(i-1);
                 String key = StringHelper.join(new int[]{orgId, i}, ",");
                 String name = "365卡购买N次";
                 if (i < 5) {
                     name = "365卡购买"+i+"次";
                 }
-                param.put("purchases"+i, name);
-                obj.put("purchases"+i, defaultValue(timesMap.get(key)));
+                param.put(purchase, name);
+                obj.put(purchase, defaultValue(timesMap.get(key)));
             }
             ary.add(obj);
         }
         String startDate = query.getStartDate();
         String endDate = query.getEndDate();
-        List<String> ss = new ArrayList<>();
-        contextMap.put("（"+startDate + "至" + endDate +"）", ss);
+        contextMap.put("（"+startDate + "至" + endDate +"）", purchaseGroup);
         DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo();
         pageInfo.setContextMap(contextMap);
         pageInfo.setList(ary);
         pageInfo.setMap(param);
         return pageInfo;
+    }
+
+
+    /**
+     * 根据条件导出产品卡券使用统计
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public void cardCouponRepurchaseStatisticsExport(CardCouponUsedQueryForm query, HttpServletResponse response) throws Exception {
+        DynamicHeaderPageInfo<JSONObject> pageInfo = cardCouponRepurchaseStatistics(query);
+        List<JSONObject> result = pageInfo.getList();
+        ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+        if (StringHelper.isNotEmpty(pageInfo.getMap())) {
+            excelUtil.setMergeRegion(cardCouponUsedMergeRegiion(pageInfo));
+        }
+        String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "365卡购买人数统计表");
+        excelUtil.exportExcel(response, result, "365卡购买人数统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
+    }
+
+    /**
+     * 购买卡次数分组
+     *
+     * @return
+     */
+    private List<String> getPurchaseGroup() {
+        List<String> list = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            list.add("purchases"+i);
+        }
+        return list;
     }
 
     private JSONObject initRepurcharseObj(BaseOrganization org, Map<String, String> param) {

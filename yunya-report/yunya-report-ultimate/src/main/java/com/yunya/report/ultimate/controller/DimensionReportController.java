@@ -508,11 +508,25 @@ public class DimensionReportController {
     }
 
     @ApiOperation("公司端报表-报表统计-365卡复购次数统计表")
-    @PostMapping("/cardCoupon/repurchase/statistics/list")
-    public ResponseResult<DynamicHeaderPageInfo<JSONObject>> cardCouponRepurchaseStatisticsList(
+    @PostMapping("/cardCoupon/repurchase/statistics")
+    public ResponseResult<DynamicHeaderPageInfo<JSONObject>> cardCouponRepurchaseStatistics(
             @RequestBody @Validated CardCouponUsedQueryForm query) {
-        DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.cardCouponRepurchaseStatisticsList(query);
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.cardCouponRepurchaseStatistics(query);
         return ResponseUtil.success(pageInfo);
+    }
 
+    /**
+     * 根据条件导出产品卡券使用统计
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-365卡复购次数统计表导出")
+    @PostMapping(value = "/cardCoupon/repurchase/statistics/export", name = "公司端报表-报表统计-运营报表-产品卡券使用统计导出")
+    public ResponseResult<T> cardCouponRepurchaseStatisticsExport(
+            HttpServletResponse response, @RequestBody @Validated CardCouponUsedQueryForm query)
+            throws Exception {
+        dimesionReportBiz.cardCouponRepurchaseStatisticsExport(query, response);
+        return ResponseUtil.success(null);
     }
 }
