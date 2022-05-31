@@ -12,6 +12,7 @@ import lombok.Data;
  **/
 @Data
 public class WxSaveFansForm {
+    private Integer fansId;
     private WxUserInfoForm userInfo;
     private WeChatSessionBO sessionBO;
 }

@@ -58,12 +58,8 @@ public class LoginServiceImpl {
         WxFans wxFans = wxFansService.getByOpenId(openId);
         WxUserInfoForm userInfo = form.getUserInfo();
         log.info("授权登录：{}", userInfo);
-        if (wxFans == null) {
-            //保存微信用户信息
-            wxFansService.saveMiniAuth(userInfo, sessionBO);
-        } else {
-//            wxFansService
-        }
+        //保存或更新微信用户信息
+        wxFansService.saveMiniAuth(wxFans, userInfo, sessionBO);
         //登录
         AuthInfoVO authInfoVO = login(openId, request, wxFans);
         //存储session_key
@@ -83,6 +79,9 @@ public class LoginServiceImpl {
         }
         if (Objects.isNull(wxFans)) {
             wxFans = wxFansService.getByOpenId(openId);
+            if (Objects.isNull(wxFans)) {
+                throw ClientServiceException.wrap(IvyMiniError.FANS_NOT_EXIST);
+            }
         }
         //是否重复登录
         authVO = redisUtils.get(RedisConstants.buildLockCacheKey(tokenKeys[1], wxFans.getId()), AuthInfoVO.class);

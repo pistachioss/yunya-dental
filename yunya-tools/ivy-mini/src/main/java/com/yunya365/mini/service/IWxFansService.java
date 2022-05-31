@@ -24,11 +24,11 @@ public interface IWxFansService {
 
     /**
      * 保存微信授权信息
+     * @param wxFans:
      * @param sessionBO:
      * @param userInfo:
-     * @return void
      */
-    void saveMiniAuth(WxUserInfoForm userInfo, WeChatSessionBO sessionBO);
+    void saveMiniAuth(WxFans wxFans,WxUserInfoForm userInfo, WeChatSessionBO sessionBO);
 
     /**
      * 保存微信授权手机号码

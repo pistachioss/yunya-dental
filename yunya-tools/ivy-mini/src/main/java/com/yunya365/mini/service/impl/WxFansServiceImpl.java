@@ -44,7 +44,7 @@ public class WxFansServiceImpl implements IWxFansService {
     }
 
     @Override
-    public void saveMiniAuth(WxUserInfoForm userInfo, WeChatSessionBO sessionBO) {
+    public void saveMiniAuth(WxFans wxFans, WxUserInfoForm userInfo, WeChatSessionBO sessionBO) {
         WxSaveFansForm fansForm = new WxSaveFansForm();
         fansForm.setSessionBO(sessionBO);
         fansForm.setUserInfo(userInfo);
