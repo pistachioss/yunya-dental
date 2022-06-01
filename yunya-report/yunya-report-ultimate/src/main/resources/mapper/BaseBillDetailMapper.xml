@@ -5317,6 +5317,8 @@
     <select id="selectBillDetailItemList" resultType="com.yunya.feign.report.domain.vo.BillDetailtemVO">
         SELECT
             bbd.org_id AS orgId,
+            bbd.item_id AS itemId,
+            bbd.item_type AS itemType,
             bb.patient_id AS patientId,
             bb.order_date AS orderDate,
             bbd.quantity AS quantity

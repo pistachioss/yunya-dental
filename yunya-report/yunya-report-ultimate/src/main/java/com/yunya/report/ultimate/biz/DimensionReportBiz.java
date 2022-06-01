@@ -2970,27 +2970,37 @@ public class DimensionReportBiz {
         query.setOrgIds(orgs.stream().map(BaseOrganization::getOrgId).collect(Collectors.toList()));
         List<BillDetailtemVO> items = find365CardBillDetailItemList(query);
         Map<String, Integer> countMap = new HashMap<>(16);
-        items.forEach(vo->{
+        int max = 0;
+        for (BillDetailtemVO vo : items) {
             Integer orgId = vo.getOrgId();
             Byte itemType = vo.getItemType();
             Integer itemId = vo.getItemId();
             Integer patientId = vo.getPatientId();
             String key = StringHelper.join(new Object[]{orgId, itemType, itemId, patientId}, ",");
-            incrementKey(key, vo.getQuantity(), countMap);
-        });
+//            if (max < vo.getQuantity()) {
+//                max = vo.getQuantity();
+//            }
+//            if (max == 305) {
+//                System.out.println("");
+//            }
+//            incrementKey(key, vo.getQuantity(), countMap);
+            incrementOne(key, countMap);
+        }
         Map<String, Integer> timesMap = new HashMap<>(16);
-        countMap.forEach((key, count)->{
-            List keys = StringHelper.split2List(key, ",");
-            Object[] keyParam = {keys.get(0), count};
-            if (count > 4) {// 超过4次的全部记为5
-                keyParam = new Object[]{keys.get(0), 5};
+        int maxCount = 0;
+        for (Map.Entry<String, Integer> entry : countMap.entrySet()) {
+            String key = entry.getKey();
+            Integer count = entry.getValue();
+            if (maxCount < count) {
+                maxCount = count;
             }
-            String newKey = StringHelper.join(keyParam, ",");
+            List keys = StringHelper.split2List(key, ",");
+            String newKey = StringHelper.join(new Object[]{keys.get(0), count}, ",");
             incrementOne(newKey, timesMap);
-        });
+        }
         Map<String, List<String>> contextMap = new HashMap<>();
         Map<String, String> param = new LinkedHashMap<>(16);
-        List<String> purchaseGroup = getPurchaseGroup();
+        List<String> purchaseGroup = getPurchaseGroup(maxCount);
         JSONArray ary = new JSONArray();
         for (BaseOrganization org : orgs) {
             JSONObject obj = initRepurcharseObj(org, param);
@@ -2998,10 +3008,7 @@ public class DimensionReportBiz {
             for (int i = 1; i <=purchaseGroup.size(); i++) {
                 String purchase = purchaseGroup.get(i-1);
                 String key = StringHelper.join(new Object[]{orgId, i}, ",");
-                String name = "365卡购买N次";
-                if (i < 5) {
-                    name = "365卡购买"+i+"次";
-                }
+                String name = "365卡购买"+i+"次";
                 param.put(purchase, name);
                 obj.put(purchase, defaultValue(timesMap.get(key)));
             }
@@ -3044,7 +3051,12 @@ public class DimensionReportBiz {
         List<JSONObject> result = pageInfo.getList();
         ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
         if (StringHelper.isNotEmpty(pageInfo.getMap())) {
-            excelUtil.setMergeRegion(firstColMergeCell(pageInfo, 5));
+            Collection<List<String>> values = pageInfo.getContextMap().values();
+            int pos = 0;
+            for (List<String> list : values) {
+                pos = list.size();
+            }
+            excelUtil.setMergeRegion(firstColMergeCell(pageInfo, pos));
         }
         String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "365卡购买人数统计表");
         excelUtil.exportExcel(response, result, "365卡购买人数统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
@@ -3098,10 +3110,11 @@ public class DimensionReportBiz {
      * 购买卡次数分组
      *
      * @return
+     * @param maxCount
      */
-    private List<String> getPurchaseGroup() {
+    private List<String> getPurchaseGroup(int maxCount) {
         List<String> list = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 1; i <= maxCount; i++) {
             list.add("purchases"+i);
         }
         return list;
