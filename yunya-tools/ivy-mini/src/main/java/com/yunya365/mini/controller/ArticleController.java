@@ -29,20 +29,19 @@ import java.util.List;
  * @description: 文章管理
  */
 @RestController
-@RequestMapping("/article")
 @Api(tags = "文章管理")
 public class ArticleController extends PcBaseController{
 
     @Resource
     private ArticleServiceImpl articleService;
 
-    @PostMapping("/findlist")
+    @PostMapping("/article/findlist")
     @ApiOperation("后台-艾维动态/口腔科普-列表")
     public ResponseResult<PageInfo<ArticleVO>> findList(@RequestBody @Valid ArticleForm form) {
         return ResponseUtil.success(articleService.findList(form));
     }
 
-    @PostMapping("/add")
+    @PostMapping("/article/add")
     @ApiOperation("后台-艾维动态/口腔科普-新增")
     @RepeatSubmit
     @CurrentUser
@@ -57,7 +56,7 @@ public class ArticleController extends PcBaseController{
      * @return ResponseResult
      */
     @ApiOperation("后台-艾维动态/口腔科普-修改/上下架")
-    @PutMapping("/update")
+    @PutMapping("/article/update")
     @CurrentUser
     public ResponseResult update(@RequestBody @Validated ArticleUpdateForm form) {
         return articleService.update(form);
@@ -70,12 +69,12 @@ public class ArticleController extends PcBaseController{
     }
 
     @ApiOperation("后台-艾维动态/口腔科普-删除")
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/article/delete/{id}")
     public ResponseResult delete(@PathVariable(value = "id") Integer id) {
         return articleService.delete(id);
     }
 
-    @PostMapping("/adjustorder")
+    @PostMapping("/article/adjustorder")
     @ApiOperation("后台-艾维动态/口腔科普-上移下移")
     public ResponseResult adjustOrder(@RequestBody @Validated AdjustOrderReq orderReq){
         return articleService.adjustOrder(orderReq);

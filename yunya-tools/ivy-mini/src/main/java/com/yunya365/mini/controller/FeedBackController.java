@@ -22,20 +22,20 @@ import java.util.List;
  * @description:
  */
 @RestController
-@RequestMapping("/feedback")
+@RequestMapping("")
 @Api(tags = "意见反馈管理")
-public class FeedBackController {
+public class FeedBackController extends PcBaseController{
 
     @Resource
     private FeedBackServiceImpl feedBackService;
 
-    @PostMapping("/findlist")
+    @PostMapping("/feedback/findlist")
     @ApiOperation("后台-意见反馈-列表")
     public ResponseResult<PageInfo<FeedBackVO>> findList(@RequestBody @Valid FeedBackForm form) {
         return ResponseUtil.success(feedBackService.findList(form));
     }
     @ApiOperation("后台-意见反馈-删除")
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/feedback/delete/{id}")
     public ResponseResult delete(@PathVariable(value = "id") Integer id) {
         return feedBackService.delete(id);
     }

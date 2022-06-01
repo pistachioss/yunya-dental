@@ -23,25 +23,24 @@ import javax.validation.Valid;
  **/
 @Api(tags = {"订单api"})
 @RestController
-@RequestMapping("/order")
 public class OrderController extends PcBaseController{
     @Resource
     private OrderAdminiServiceImpl orderAdminiService;
 
-    @PostMapping("/findlist")
+    @PostMapping("/order/findlist")
     @ApiOperation("后台-订单-列表")
     public ResponseResult<PageInfo<OrderVO>> findList(@RequestBody @Valid OrderForm form) {
         return ResponseUtil.success(orderAdminiService.findList(form));
     }
 
     @ApiOperation("后台-订单-发货/退款")
-    @PutMapping("/update")
+    @PutMapping("/order/update")
     @CurrentUser
     public ResponseResult update(@RequestBody @Validated OrderUpdateForm form) {
         return orderAdminiService.update(form);
     }
 
-    @PostMapping("/findDetail")
+    @PostMapping("/order/findDetail")
     @ApiOperation("后台-订单-详情")
     public ResponseResult<OrderWechatDetailVO> findDetail(@RequestBody @Valid OrderDetailForm form) {
         return ResponseUtil.success(orderAdminiService.findDetail(form));

@@ -25,20 +25,19 @@ import javax.validation.Valid;
  * @description: 专家介绍
  */
 @RestController
-@RequestMapping("/expertIntroduction")
 @Api(tags = "专家介绍")
 public class ExpertIntroductionController extends PcBaseController{
 
     @Resource
     private ExpertIntroductionServiceImpl expertIntroductionService;
 
-    @PostMapping("/findlist")
+    @PostMapping("/expertIntroduction/findlist")
     @ApiOperation("后台-专家介绍-列表")
     public ResponseResult<PageInfo<ExpertIntroductionVO>> findList(@RequestBody @Valid ExpertIntroductionForm form) {
         return ResponseUtil.success(expertIntroductionService.findList(form));
     }
 
-    @PostMapping("/add")
+    @PostMapping("/expertIntroduction/add")
     @ApiOperation("后台-专家介绍-新增")
     @RepeatSubmit
     @CurrentUser
@@ -48,14 +47,14 @@ public class ExpertIntroductionController extends PcBaseController{
     }
 
     @ApiOperation("后台-专家介绍-修改/上下架/发布")
-    @PutMapping("/update")
+    @PutMapping("/expertIntroduction/update")
     @CurrentUser
     public ResponseResult update(@RequestBody @Validated ExpertIntroductionAddAndUpdateForm form) {
         return expertIntroductionService.update(form);
     }
 
     @ApiOperation("后台-专家介绍-删除")
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/expertIntroduction/delete/{id}")
     public ResponseResult delete(@PathVariable(value = "id") Integer id) {
         return expertIntroductionService.delete(id);
     }

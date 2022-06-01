@@ -23,20 +23,19 @@ import java.util.List;
  * @description:
  */
 @RestController
-@RequestMapping("/wechat/banner")
 @Api(tags = "banner管理")
 public class BannerController extends PcBaseController{
 
     @Resource
     private BannerServiceImpl bannerService;
 
-    @PostMapping("/findlist")
+    @PostMapping("/wechat/banner/findlist")
     @ApiOperation("后台-banner-列表")
     public ResponseResult<List<BannerVO>> findList() {
         return ResponseUtil.success(bannerService.findList());
     }
 
-    @PostMapping("/add")
+    @PostMapping("/wechat/banner/add")
     @ApiOperation("后台-banner-新增")
     @RepeatSubmit
     public ResponseResult add(@RequestBody @Valid BannerAddForm form) {
@@ -44,7 +43,7 @@ public class BannerController extends PcBaseController{
         return ResponseUtil.success(null);
     }
 
-    @PutMapping("/update")
+    @PutMapping("/wechat/banner/update")
     @ApiOperation("后台-banner-修改")
     @RepeatSubmit
     public ResponseResult update(@RequestBody @Valid BannerAddForm form) {
@@ -52,7 +51,7 @@ public class BannerController extends PcBaseController{
     }
 
     @ApiOperation("后台-banner-删除")
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/wechat/banner/delete/{id}")
     public ResponseResult delete(@PathVariable(value = "id") Integer id) {
         return ResponseUtil.success(bannerService.deleteById(id));
     }

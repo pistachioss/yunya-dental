@@ -22,20 +22,19 @@ import java.util.List;
  * @description:
  */
 @RestController
-@RequestMapping("/selfMentionClinic")
 @Api(tags = "可自提门诊管理")
 public class SelfMentionClinicController extends PcBaseController{
 
     @Resource
     private SelfMentionClinicServiceImpl selfMentionClinicService;
 
-    @PostMapping("/findlist")
+    @PostMapping("/selfMentionClinic/findlist")
     @ApiOperation("后台-可自提门诊管理-列表")
     public ResponseResult<List<SelfMentionClinicVO>> findList() {
         return ResponseUtil.success(selfMentionClinicService.findList());
     }
 
-    @PostMapping("/add")
+    @PostMapping("/selfMentionClinic/add")
     @ApiOperation("后台-可自提门诊管理-新增")
     @RepeatSubmit
     public ResponseResult add(@RequestBody @Valid SelfMentionClinicForm form) {
@@ -43,7 +42,7 @@ public class SelfMentionClinicController extends PcBaseController{
         return ResponseUtil.success(null);
     }
 
-    @PutMapping("/update")
+    @PutMapping("/selfMentionClinic/update")
     @ApiOperation("后台-可自提门诊管理-修改")
     @RepeatSubmit
     public ResponseResult update(@RequestBody @Valid SelfMentionClinicForm form) {
@@ -52,7 +51,7 @@ public class SelfMentionClinicController extends PcBaseController{
     }
 
     @ApiOperation("后台-可自提门诊管理-删除")
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/selfMentionClinic/delete/{id}")
     public ResponseResult delete(@PathVariable(value = "id") Integer id) {
         return ResponseUtil.success(selfMentionClinicService.deleteById(id));
     }

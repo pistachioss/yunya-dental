@@ -24,19 +24,18 @@ import javax.validation.Valid;
  * @description:
  */
 @RestController
-@RequestMapping("/distribution")
 @Api(tags = "配送设置管理")
 public class DistributionController extends PcBaseController{
     @Resource
     private DistributionServiceImpl distributionService;
 
-    @PostMapping("/findlist")
+    @PostMapping("/distribution/findlist")
     @ApiOperation("后台-配送设置管理-查询")
     public ResponseResult<Distribution> findList() {
         return ResponseUtil.success(distributionService.findList());
     }
 
-    @PostMapping("/add")
+    @PostMapping("/distribution/add")
     @ApiOperation("后台-配送设置管理-新增/修改 因为只有一条 新增也是修改 每次都会重新插入")
     @RepeatSubmit
     public ResponseResult add(@RequestBody @Valid DistributionForm form) {

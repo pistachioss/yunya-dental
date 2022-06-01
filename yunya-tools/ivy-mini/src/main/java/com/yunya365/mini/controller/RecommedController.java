@@ -26,20 +26,19 @@ import javax.validation.Valid;
  * @description:
  */
 @RestController
-@RequestMapping("/recommed")
 @Api(tags = "推荐专区")
 public class RecommedController extends PcBaseController{
 
     @Resource
     private RecommedServiceImpl recommedService;
 
-    @PostMapping("/findlist")
+    @PostMapping("/recommed/findlist")
     @ApiOperation("后台-推荐专区-查询")
     public ResponseResult<recommed> findList() {
         return ResponseUtil.success(recommedService.findList());
     }
 
-    @PostMapping("/add")
+    @PostMapping("/recommed/add")
     @ApiOperation("后台-推荐专区-新增/修改 因为只有一条 新增也是修改 每次都会重新插入")
     @RepeatSubmit
     public ResponseResult add(@RequestBody @Valid recommedForm form) {
