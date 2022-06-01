@@ -27,7 +27,7 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/expertIntroduction")
 @Api(tags = "专家介绍")
-public class ExpertIntroductionController {
+public class ExpertIntroductionController extends PcBaseController{
 
     @Resource
     private ExpertIntroductionServiceImpl expertIntroductionService;

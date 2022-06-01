@@ -28,7 +28,7 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/recommed")
 @Api(tags = "推荐专区")
-public class RecommedController {
+public class RecommedController extends PcBaseController{
 
     @Resource
     private RecommedServiceImpl recommedService;

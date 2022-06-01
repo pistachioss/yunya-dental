@@ -25,7 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/wechat/banner")
 @Api(tags = "banner管理")
-public class BannerController {
+public class BannerController extends PcBaseController{
 
     @Resource
     private BannerServiceImpl bannerService;

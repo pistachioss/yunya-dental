@@ -24,7 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/selfMentionClinic")
 @Api(tags = "可自提门诊管理")
-public class SelfMentionClinicController {
+public class SelfMentionClinicController extends PcBaseController{
 
     @Resource
     private SelfMentionClinicServiceImpl selfMentionClinicService;

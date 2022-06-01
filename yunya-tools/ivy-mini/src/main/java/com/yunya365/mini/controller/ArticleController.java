@@ -31,7 +31,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/article")
 @Api(tags = "文章管理")
-public class ArticleController {
+public class ArticleController extends PcBaseController{
 
     @Resource
     private ArticleServiceImpl articleService;

@@ -24,7 +24,7 @@ import javax.validation.Valid;
 @Api(tags = {"订单api"})
 @RestController
 @RequestMapping("/order")
-public class OrderController {
+public class OrderController extends PcBaseController{
     @Resource
     private OrderAdminiServiceImpl orderAdminiService;
 
