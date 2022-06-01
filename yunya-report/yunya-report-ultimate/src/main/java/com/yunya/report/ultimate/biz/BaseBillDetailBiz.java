@@ -24,7 +24,6 @@ import com.yunya.models.report.*;
 import com.yunya.report.ultimate.mapper.*;
 import org.apache.commons.lang3.ObjectUtils;
 import org.joda.time.DateTime;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -2792,5 +2791,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
             }
         }
         excelUtil.exportExcel(response, res, "开单数量及金额明细一体表", fileName);
+    }
+
+    public List<BillDetailtemVO> findBillDetailItemList(ClinicPerformanceBusinessQuery query) {
+        setDistinctBillIds(query);
+        return mapper.selectBillDetailItemList(query);
     }
 }

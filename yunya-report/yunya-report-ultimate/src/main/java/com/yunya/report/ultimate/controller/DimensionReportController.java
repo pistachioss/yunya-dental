@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * 简介：维度报表控制层
@@ -507,26 +508,61 @@ public class DimensionReportController {
         return ResponseUtil.success(null);
     }
 
-    @ApiOperation("公司端报表-报表统计-365卡复购次数统计表")
+    /**
+     * 公司端报表-报表统计-365卡购买人数统计表
+     *
+     * @param query
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-365卡购买人数统计表")
     @PostMapping("/cardCoupon/repurchase/statistics")
     public ResponseResult<DynamicHeaderPageInfo<JSONObject>> cardCouponRepurchaseStatistics(
-            @RequestBody @Validated CardCouponUsedQueryForm query) {
+            @RequestBody @Validated ClinicPerformanceBusinessQuery query) {
         DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.cardCouponRepurchaseStatistics(query);
         return ResponseUtil.success(pageInfo);
     }
 
     /**
-     * 根据条件导出产品卡券使用统计
+     * 根据条件导出365卡购买人数统计表
      *
      * @param query 查询条件
      * @return
      */
-    @ApiOperation("公司端报表-报表统计-运营报表-365卡复购次数统计表导出")
-    @PostMapping(value = "/cardCoupon/repurchase/statistics/export", name = "公司端报表-报表统计-运营报表-产品卡券使用统计导出")
+    @ApiOperation("公司端报表-报表统计-运营报表-365卡购买人数统计表导出")
+    @PostMapping(value = "/cardCoupon/repurchase/statistics/export", name = "公司端报表-报表统计-运营报表-365卡购买人数统计导出")
     public ResponseResult<T> cardCouponRepurchaseStatisticsExport(
-            HttpServletResponse response, @RequestBody @Validated CardCouponUsedQueryForm query)
+            HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
             throws Exception {
         dimesionReportBiz.cardCouponRepurchaseStatisticsExport(query, response);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 公司端报表-报表统计-365卡and艾芽卡and就诊人数统计表
+     *
+     * @param query
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-365卡and艾芽卡and就诊人数统计表")
+    @PostMapping("/card365/aiya/treatNum")
+    public ResponseResult<DynamicHeaderPageInfo<JSONObject>> card365AndAiyaAndTreatNumStatistics(
+            @RequestBody @Validated ClinicPerformanceBusinessQuery query) throws Exception {
+        DynamicHeaderPageInfo<JSONObject> pageInfo = dimesionReportBiz.card365AndAiyaAndTreatNumStatistics(query);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件导出365卡and艾芽卡and就诊人数统计表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("公司端报表-报表统计-运营报表-365卡and艾芽卡and就诊人数统计表导出")
+    @PostMapping(value = "/card365/aiya/treatNum/export", name = "公司端报表-报表统计-运营报表-365卡and艾芽卡and就诊人数统计表导出")
+    public ResponseResult<T> card365AndAiyaAndTreatNumStatisticsExport(
+            HttpServletResponse response, @RequestBody @Validated ClinicPerformanceBusinessQuery query)
+            throws Exception {
+        dimesionReportBiz.card365AndAiyaAndTreatNumStatisticsExport(query, response);
         return ResponseUtil.success(null);
     }
 }
