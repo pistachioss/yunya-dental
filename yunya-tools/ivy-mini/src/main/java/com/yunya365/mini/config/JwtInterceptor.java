@@ -1,10 +1,12 @@
 package com.yunya365.mini.config;
 
 import com.yunya.feign.ivy_mini.domain.vo.AuthInfoVO;
+import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.constant.*;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.exception.auth.UserAuthException;
 import com.yunya.framework.common.model.Token;
 import com.yunya.framework.common.utils.ClassUtil;
 import com.yunya.framework.common.utils.JwtUtil;
@@ -54,7 +56,12 @@ public class JwtInterceptor implements HandlerInterceptor {
             return true;
         }
         String token = request.getHeader(CommonConstants.TOKEN_HEADER);
-        log.info("请求url:{}，token: {}", request.getRequestURI(), token);
+        String requestURI = request.getRequestURI();
+        log.info("请求url:{}，token: {}", requestURI, token);
+        if  (StringUtils.isNotBlank(requestURI) && requestURI.startsWith("/back/manager")) {
+            pcInterceptor(token);
+            return true;
+        }
         //获取redis token前缀 是否登录
         String[] tokenArr = getTokenKeys(token);
         AuthInfoVO authInfo = redisUtils.get(RedisConstants.buildLockCacheKey(tokenArr[0], token), AuthInfoVO.class);
@@ -133,5 +140,16 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     public static Token createJwt(AuthInfoVO authInfoVO, long expireMillis) {
         return LoginServiceImpl.getToken(authInfoVO, expireMillis);
+    }
+
+    private void pcInterceptor(String token) {
+        UserInfo userInfo = redisUtils.get(RedisConstants.REDIS_KEY_USER_TOKEN + token, UserInfo.class);
+        if (null == userInfo) {
+            throw new UserAuthException("您还没有登录，请先登录！");
+        }
+        BaseContextHandler.setUsername(userInfo.getUsername());
+        BaseContextHandler.setName(userInfo.getName());
+        BaseContextHandler.setUserID(userInfo.getId());
+        BaseContextHandler.setOrgId(userInfo.getCurrentOrgId() == null ? null : userInfo.getCurrentOrgId().toString());
     }
 }
