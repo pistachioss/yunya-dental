@@ -22,7 +22,6 @@ import java.util.List;
  * @description:
  */
 @RestController
-@RequestMapping("")
 @Api(tags = "意见反馈管理")
 public class FeedBackController extends PcBaseController{
 
