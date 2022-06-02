@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.CardCouponUsedDetailQueryForm;
 import com.yunya.feign.report.domain.query.CardCouponUsedQueryForm;
 import com.yunya.feign.report.domain.query.StatementProductSoldDetailQuery;
+import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.CardCouponUsedDetailVO;
 import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import com.yunya.feign.report.domain.vo.StatementProductSoldDetailVO;
@@ -106,7 +107,17 @@ public class BaseCardBiz extends BaseBiz<BaseCardMapper, BaseCard> {
     return mapper.selectCardCouponSoldList(query);
   }
 
+  /**
+   * 查询产品卡券使用统计
+   *
+   * @param query
+   * @return
+   */
   public List<CardCouponUsedDetailVO> findCardCouponUsedDetail(CardCouponUsedDetailQueryForm query) {
     return mapper.selectCardCouponUsedDetail(query);
+  }
+
+  public List<BaseCard> findProductSoldList(CardCouponUsedQueryForm query) {
+    return mapper.selectProductSoldList(query);
   }
 }

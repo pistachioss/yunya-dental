@@ -21,6 +21,11 @@ public class RemoteOssServiceFeignFallBackFactory implements RemoteOssServiceFei
     }
 
     @Override
+    public ResponseResult getUrl(OssUrlForm ossUrlForm) {
+        return null;
+    }
+
+    @Override
     public ResponseResult uploadBase64Image(Base64UploadForm ossUploadForm) {
         return null;
     }

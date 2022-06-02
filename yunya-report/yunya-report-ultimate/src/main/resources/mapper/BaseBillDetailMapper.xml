@@ -4282,10 +4282,11 @@
             <if test="query.itemType != null">
                 and bbd.item_type=#{query.itemType}
             </if>
-            <if test="query.orgId != null">
-                and btp.org_id = #{query.orgId}
-                and bbd.org_id = #{query.orgId}
-                and bb.org_id = #{query.orgId}
+            <if test="query.orgIds!=null and query.orgIds.size()>0">
+                and btp.org_id in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.employeeIds!=null and query.employeeIds.size()>0">
                 AND bbd.executor_id in
@@ -5233,6 +5234,8 @@
             be.employee_name as executorName,
             IFNULL(bbd.price*bbd.quantity - bbd.discount_amount, 0) as amount,
             bbd.remark,
+            bti.category_name AS categoryName,
+            bti.item_name AS itemName,
             bp.name AS patientName,
             bp.patient_id as patientId,
             bp.mobile,

@@ -47,6 +47,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -334,13 +335,17 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             List<DebtAmountModel> finalDebtAmountModelList = debtAmountModelList;
             visitingReminds.forEach(visitingRemind -> {
                 VisitingRemindVo build = EntityUtils.build(visitingRemind, VisitingRemindVo.class);
+                try {
+                    build.setRemindDateTime(DateUtil.timeToDate(visitingRemind.getRemindDate(), visitingRemind.getRemindTime()));
+                } catch (ParseException e) {
+                    log.error("FindVisitingRemindByCondition error: {}", e);
+                }
                 // 设置患者信息
                 this.setPatientInfo(dentistInfoList,patientTotalInfoVoList,finalMemberTypeList,finalDebtAmountModelList,build);
                 visitingRemindVos.add(build);
             });
             // 排序
             searchVisitingRemindVo = this.customSort(visitingRemindVos,query);
-
         }
         // 如果 searchVisitingRemindVo 为空
         if (StringHelper.isEmpty(searchVisitingRemindVo)) {
@@ -405,6 +410,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 return this.sort(list);
             } else if (null != query.getPatientId() && query.getSearchId().equals(SEARCH_ID)){
                 return list;
+            } else if (query.getSearchId().intValue()==4) {
+                return SortUtil.sort(list, SortUtil.comparing(VisitingRemindVo::getStatus).thenComparing(VisitingRemindVo::getRemindDateTime));
             } else {
                 // 按照时间正序排序
                 return this.sort(list);

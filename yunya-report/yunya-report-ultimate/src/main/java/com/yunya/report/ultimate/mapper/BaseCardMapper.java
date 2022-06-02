@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseCard;
 import org.apache.ibatis.annotations.Param;
@@ -150,5 +151,13 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
 
     List<BaseCard> selectCardCouponSoldList(@Param("query") CardCouponUsedQueryForm query);
 
+    /**
+     * 查询产品卡券使用统计
+     *
+     * @param query
+     * @return
+     */
     List<CardCouponUsedDetailVO> selectCardCouponUsedDetail(@Param("query") CardCouponUsedDetailQueryForm query);
+
+    List<BaseCard> selectProductSoldList(@Param("query") MultiClinicDateRangeQueryForm query);
 }

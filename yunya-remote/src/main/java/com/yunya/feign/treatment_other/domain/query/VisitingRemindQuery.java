@@ -29,7 +29,7 @@ public class VisitingRemindQuery extends PageQuery implements Serializable {
     @ApiModelProperty("排序规则(asc升序；desc降序)")
     private String sort;
 
-    @ApiModelProperty(value = "检索类型：1-按随访创建时间检索；2-按随访执行时间检索，默认按随访执行时间检索;3-患者档案检索", required = true)
+    @ApiModelProperty(value = "检索类型：1-按随访创建时间检索；2-按随访执行时间检索，默认按随访执行时间检索;3-患者档案检索; 4-状态正排+提醒时间倒排", required = true)
     private Integer searchId = 2;
 
     @ApiModelProperty(value = "检索开始时间(患者档案检索用)")
