@@ -155,32 +155,36 @@ public class OrganizationBiz {
   private List<OrganizationInfoVO> latitudeLongitudeFilter(OrganizationQueryForm queryForm, List<OrganizationInfoVO> resultList) {
     String longitude = queryForm.getLongitude();
     String latitude = queryForm.getLatitude();
-    if (StringHelper.isNotEmpty(longitude) && StringHelper.isNotEmpty(latitude)) {
-      if (StringHelper.isNotEmpty(resultList)) {
-        List<OssUrlForm> ossUrlForms = new ArrayList<>();
-        List<Integer> orgIds = new ArrayList<>();
-        resultList.forEach(org->{
-          orgIds.add(org.getId());
-          String clinicPath = org.getClinicPath();
-          if (StringHelper.isNotEmpty(clinicPath)) {
-            OssUrlForm form = new OssUrlForm();
-            form.setCompanyId(0);
-            form.setIsThumb(false);
-            form.setOssCategory(1);
-            form.setObjectId(org.getId());
-            form.setOssFilename(clinicPath);
-            ossUrlForms.add(form);
-          }
-        });
+    List<Integer> orgIds = new ArrayList<>();
+    if (StringHelper.isNotEmpty(resultList)) {
+      List<OssUrlForm> ossUrlForms = new ArrayList<>();
+      resultList.forEach(org->{
+        orgIds.add(org.getId());
+        String clinicPath = org.getClinicPath();
+        if (StringHelper.isNotEmpty(clinicPath)) {
+          OssUrlForm form = new OssUrlForm();
+          form.setCompanyId(0);
+          form.setIsThumb(false);
+          form.setOssCategory(1);
+          form.setObjectId(org.getId());
+          form.setOssFilename(clinicPath);
+          ossUrlForms.add(form);
+        }
+      });
+      Map<String, String> urlMap = remoteOssServiceFeign.getUrlMap(ossUrlForms).getData();
+      resultList.forEach(org->{
+        String clinicPath = org.getClinicPath();
+        String url = urlMap.get(clinicPath);
+        if (StringHelper.isNotEmpty(url)) {
+          org.setClinicPath(domainUrl+"/"+url);
+        }
+      });
+
+      // 定位排序
+      if (StringHelper.isNotEmpty(longitude) && StringHelper.isNotEmpty(latitude)) {
         List<AttendanceAddressSetVO> addresses = employeeAttendServiceFeign.findAttendanceAddressByOrgId(orgIds);
-        Map<String, String> urlMap = remoteOssServiceFeign.getUrlMap(ossUrlForms).getData();
         resultList.forEach(org->{
           Integer orgId = org.getId();
-          String clinicPath = org.getClinicPath();
-          String url = urlMap.get(clinicPath);
-          if (StringHelper.isNotEmpty(url)) {
-            org.setClinicPath(domainUrl + url);
-          }
           addresses.forEach(address->{
             if (orgId.equals(address.getOrgId())) {
               org.setDistance(LocationUtil.distanceKilometer(longitude, latitude,

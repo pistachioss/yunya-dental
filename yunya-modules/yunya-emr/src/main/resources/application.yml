@@ -59,7 +59,7 @@ hystrix:
           thread:
             timeoutInMilliseconds: 30000
 
-domainUrl: http://192.168.31.95/
+domainUrl: http://192.168.31.95
 
 
 

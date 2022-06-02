@@ -20,4 +20,4 @@ spring:
     port: 6379
     password: foobared
 
-domainUrl: http://test.ivy2.yunya365.com/
+domainUrl: http://test.ivy2.yunya365.com

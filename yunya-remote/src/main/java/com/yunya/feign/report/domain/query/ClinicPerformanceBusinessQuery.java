@@ -1,6 +1,7 @@
 
 package com.yunya.feign.report.domain.query;
 
+import com.yunya.feign.report.domain.query.base.DateRangeQueryForm;
 import com.yunya.feign.report.domain.query.base.MultiClinicDateRangeQueryForm;
 import com.yunya.framework.common.model.PageQuery;
 import io.swagger.annotations.ApiModel;
@@ -27,7 +28,10 @@ import java.util.List;
 @Data
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class ClinicPerformanceBusinessQuery extends MultiClinicDateRangeQueryForm implements Serializable {
+public class ClinicPerformanceBusinessQuery extends DateRangeQueryForm implements Serializable {
+  /** 门诊ID列表 */
+  @ApiModelProperty(value = "门诊ID列表")
+  private List<Integer> orgIds;
   /** 患者来源类型ID列表 */
   @ApiModelProperty(value = "患者来源类型ID列表")
   private Collection<Integer> originTypes;

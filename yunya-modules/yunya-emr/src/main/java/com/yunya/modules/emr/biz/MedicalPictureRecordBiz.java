@@ -292,7 +292,7 @@ public class MedicalPictureRecordBiz extends BaseBiz<MedicalPictureRecordMapper,
                         String fileLocation = file.getFileLocation();
                         String url = data.get(fileLocation);
                         if (StringHelper.isNotEmpty(url)) {
-                            file.setThumbUrl(domainUrl + url);
+                            file.setThumbUrl(domainUrl+"/"+url);
                         }
                     });
                 }

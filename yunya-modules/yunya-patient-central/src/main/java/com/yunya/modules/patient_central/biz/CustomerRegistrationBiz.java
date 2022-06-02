@@ -775,7 +775,7 @@ public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, Pati
             form.setObjectId(patientId);
             form.setOssFilename(fileUrl);
             String url = (String) remoteOssServiceFeign.getUrl(form).getData();
-            baseVO.setSignatureImgPath(domainUrl + url);
+            baseVO.setSignatureImgPath(domainUrl+"/"+url);
         }
     }
 }
