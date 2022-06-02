@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @author: xy
  * @date 2022/5/27 13:48
  **/
-@RequestMapping("/white")
+@RequestMapping("/mini")
 public class BaseController {
 }
