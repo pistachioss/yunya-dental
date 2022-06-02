@@ -783,14 +783,36 @@ public class DateUtil {
    * @return
    */
   public static int dateFieldDiff(String startDate, String endDate) {
-    String[] sDates = startDate.split("-");
-    String[] eDates = endDate.split("-");
     if (startDate.matches(MONTH_REGEX)) { // 月
-      return Integer.parseInt(sDates[1]) - Integer.parseInt(eDates[1]);
+      return dateFieldDiff(startDate, endDate, Calendar.MONTH);
     } else if (startDate.matches(YEAR_REGEX)) { // 年
-      return Integer.parseInt(sDates[1]) - Integer.parseInt(eDates[1]);
+      return dateFieldDiff(startDate, endDate, Calendar.YEAR);
     }
     return compareDate(startDate, endDate) - 1; // 日
+  }
+
+  /**
+   * 计算两个日期相差的年份
+   *
+   * @return
+   */
+  public static int dateFieldDiff(String startDate, String endDate, int field) {
+    Calendar cBegin = Calendar.getInstance();
+    Calendar cEnd = Calendar.getInstance();
+    String pattern = "yyyy";
+    int diff = 0;
+    if (field == 2) {
+      pattern = "yyyy-MM";
+      int yearDiff = dateFieldDiff(startDate, endDate, Calendar.YEAR);
+      diff = yearDiff * 12;
+    }
+    try {
+      cBegin.setTime(parse(startDate, pattern));
+      cEnd.setTime(parse(endDate, pattern));
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return diff + cBegin.get(field)-cEnd.get(field);
   }
 
   public static int compareDate(String firstDate, String secondDate) {
