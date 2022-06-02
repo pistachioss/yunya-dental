@@ -9,6 +9,7 @@ import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.discount.factory.RemoteDiscountFallBackFactory;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
+import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
@@ -82,4 +83,7 @@ public interface RemoteDiscountFeign {
 
     @RequestMapping(value = "/mini/virtual/page", method = RequestMethod.POST)
     public PageInfo<VirtualProductVO> pageVirtual(@Validated @RequestBody VirtualProductQuery query);
+
+    @RequestMapping(value = "/mini/coupon/{couponId}", method = RequestMethod.GET)
+    VirtualDetailVO couponDetail(@PathVariable(value = "couponId") Integer couponId);
 }

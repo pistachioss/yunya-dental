@@ -46,4 +46,16 @@ public class ProductController extends BaseController{
     public ResponseResult<List<HotSaleVO>> hotSale() {
         return ResponseUtil.success(productService.hotSale());
     }
+
+    @GetMapping("/goods/{id}")
+    @ApiOperation("商品详情-价目")
+    public ResponseResult<GoodsDetailVO> goodsDetail(@PathVariable Integer id) {
+        return ResponseUtil.success(productService.goodsDetail(id));
+    }
+
+    @GetMapping("/virtual/{id}")
+    @ApiOperation("虚拟服务详情-价目")
+    public ResponseResult<VirtualDetailVO> virtualDetail(@PathVariable Integer id) {
+        return ResponseUtil.success(productService.virtualDetail(id));
+    }
 }

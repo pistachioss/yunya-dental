@@ -5,11 +5,10 @@ import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
-import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
-import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
-import com.yunya.feign.discount.domain.vo.WxPatientEffectiveVo;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
+import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.feign.patient_central.domain.query.CashReceiptOrRefundQuery;
 import com.yunya.feign.report.domain.vo.WxCardUsageVo;
@@ -120,5 +119,10 @@ public class BenefitApiController {
     @RequestMapping(value = "/mini/virtual/page", method = RequestMethod.POST)
     public PageInfo<VirtualProductVO> pageVirtual(@Validated @RequestBody VirtualProductQuery query){
         return couponBiz.pageVirtual(query);
+    }
+
+    @RequestMapping(value = "/mini/coupon/{couponId}", method = RequestMethod.GET)
+    VirtualDetailVO couponDetail(@PathVariable(value = "couponId") Integer couponId){
+        return couponBiz.couponDetail(couponId);
     }
 }

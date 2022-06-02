@@ -1,8 +1,11 @@
 package com.yunya.modules.discount.biz;
 
 import com.github.pagehelper.*;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
+import com.yunya.feign.ivy_mini.domain.vo.VirtualDetailVO;
 import com.yunya.feign.ivy_mini.domain.vo.VirtualProductVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.discount.CouponCommonInfo;
@@ -47,7 +50,7 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
         Map<Integer, CouponFileInfo> fileInfoMap = Maps.newHashMap();
         if (CollectionUtils.isNotEmpty(coupons)) {
             List<Integer> ids = coupons.stream().map(CouponCommonInfo::getId).collect(Collectors.toList());
-            List<CouponFileInfo> files = fileInfoBiz.listByCouponIds(ids);
+            List<CouponFileInfo> files = fileInfoBiz.listByCouponIds(ids, 0);
             fileInfoMap = files.stream()
                     .collect(Collectors.toMap(CouponFileInfo::getCouponId, Function.identity(), (o, n) -> n));
         }
@@ -67,6 +70,30 @@ public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponC
         pageInfo.setTotal(page.getTotal());
         pageInfo.setPageNum(page.getPageNum());
         return pageInfo;
+    }
+
+    public VirtualDetailVO couponDetail(Integer couponId) {
+        VirtualDetailVO vo = new VirtualDetailVO();
+        CouponCommonInfo commonInfo = selectById(couponId);
+        if (Objects.nonNull(commonInfo)) {
+            vo.setProductId(commonInfo.getId());
+            vo.setProductName(commonInfo.getName());
+            vo.setCategoryId(commonInfo.getProductTypeId());
+            vo.setProductPrice(commonInfo.getSoldAmount());
+            List<CouponFileInfo> couponFileInfos = fileInfoBiz.listByCouponIds(Lists.newArrayList(couponId), null);
+            if (CollectionUtils.isNotEmpty(couponFileInfos)) {
+                Optional<CouponFileInfo> fileInfo = couponFileInfos.stream()
+                        .filter(t -> Objects.equals((byte) 0, t.getFileType())).findFirst();
+                Optional<CouponFileInfo> fileInfo1 = couponFileInfos.stream()
+                        .filter(t -> Objects.equals((byte) 1, t.getFileType())).findFirst();
+                vo.setDetailHtml(fileInfo.map(CouponFileInfo::getPath).orElse(null));
+                vo.setProductPics(fileInfo1.map(t -> {
+                    String path = t.getPath();
+                    return StringUtils.isNotBlank(path) ? Lists.newArrayList(Splitter.on(",").split(path)) : null;
+                }).orElse(null));
+            }
+        }
+        return vo;
     }
 
 //  public int insertBackId(CouponCommonInfo couponCommonInfo){

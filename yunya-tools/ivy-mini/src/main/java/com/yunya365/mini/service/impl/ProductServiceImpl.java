@@ -1,6 +1,7 @@
 package com.yunya365.mini.service.impl;
 
 import com.github.pagehelper.PageInfo;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
@@ -8,6 +9,7 @@ import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.constant.RedisConstants;
+import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya365.mini.service.IProductService;
@@ -80,12 +82,20 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
-    public void goodsDetail(Integer itemId) {
-
+    public GoodsDetailVO goodsDetail(Integer itemId) {
+        BaseOralTariff tariff = treatmentServiceFeign.findBaseOralTariffById(itemId);
+        GoodsDetailVO detailVO = BeanCopierUtils.generalCopyBean(tariff, GoodsDetailVO.class);
+        detailVO.setProductId(tariff.getId());
+        detailVO.setProductName(tariff.getName());
+        String itemPic = tariff.getItemPic();
+        detailVO.setProductPics(StringUtils.isNotBlank(itemPic) ? Lists.newArrayList(Splitter.on(",").split(itemPic)) : null);
+        detailVO.setCategoryId(tariff.getOralTariffCategoryId());
+        detailVO.setProductPrice(tariff.getPrice());
+        return detailVO;
     }
 
     @Override
-    public void virtualDetail(Integer couponId) {
-
+    public VirtualDetailVO virtualDetail(Integer couponId) {
+        return discountFeign.couponDetail(couponId);
     }
 }

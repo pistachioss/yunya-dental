@@ -33,8 +33,18 @@ public interface IProductService {
      */
     PageInfo<VirtualProductVO> pageVirtual(VirtualProductQuery query);
 
-    void goodsDetail(Integer itemId);
+    /**
+     * 商品详情
+     * @param itemId:
+     * @return GoodsDetailVO
+     */
+    GoodsDetailVO goodsDetail(Integer itemId);
 
-    void virtualDetail(Integer couponId);
+    /**
+     * 虚拟服务详情
+     * @param couponId:
+     * @return VirtualDetailVO
+     */
+    VirtualDetailVO virtualDetail(Integer couponId);
 
 }

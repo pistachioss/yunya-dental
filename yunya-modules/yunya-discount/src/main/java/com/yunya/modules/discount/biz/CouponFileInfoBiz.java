@@ -89,11 +89,13 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
         return mapper.select(couponFileInfo);
     }
 
-    public List<CouponFileInfo> listByCouponIds(Collection<Integer> ids) {
+    public List<CouponFileInfo> listByCouponIds(Collection<Integer> ids, Integer type) {
         Example example = new Example(CouponFileInfo.class);
-        example.createCriteria().andIn("couponId", ids)
-                .andEqualTo("inservice", true)
-                .andEqualTo("fileType", 0);
+        Example.Criteria criteria = example.createCriteria().andIn("couponId", ids)
+                .andEqualTo("inservice", true);
+        if (Objects.nonNull(type)) {
+            criteria.andEqualTo("fileType", type);
+        }
         return mapper.selectByExample(example);
     }
 
