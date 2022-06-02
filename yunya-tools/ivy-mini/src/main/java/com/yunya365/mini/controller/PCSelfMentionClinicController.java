@@ -23,7 +23,7 @@ import java.util.List;
  */
 @RestController
 @Api(tags = "后台-可自提门诊管理")
-public class SelfMentionClinicController extends PcBaseController{
+public class PCSelfMentionClinicController extends PcBaseController{
 
     @Resource
     private SelfMentionClinicServiceImpl selfMentionClinicService;

@@ -24,7 +24,7 @@ import java.util.List;
  */
 @RestController
 @Api(tags = "后台-banner管理")
-public class BannerController extends PcBaseController{
+public class PCBannerController extends PcBaseController{
 
     @Resource
     private BannerServiceImpl bannerService;
