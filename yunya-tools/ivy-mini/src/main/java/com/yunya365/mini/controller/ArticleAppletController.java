@@ -19,7 +19,7 @@ import javax.annotation.Resource;
  */
 @RestController
 @Api(tags = "小程序-文章管理")
-public class AppletArticleController {
+public class ArticleAppletController {
     @Resource
     private ArticleServiceImpl articleService;
 

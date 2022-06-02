@@ -23,7 +23,7 @@ import java.util.List;
  */
 @RestController
 @Api(tags = "后台-意见反馈管理")
-public class PCFeedBackController extends PcBaseController{
+public class FeedBackPcController extends PcBaseController{
 
     @Resource
     private FeedBackServiceImpl feedBackService;

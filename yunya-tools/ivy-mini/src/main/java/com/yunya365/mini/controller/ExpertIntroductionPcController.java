@@ -26,7 +26,7 @@ import javax.validation.Valid;
  */
 @RestController
 @Api(tags = "后台-专家介绍")
-public class PCExpertIntroductionController extends PcBaseController{
+public class ExpertIntroductionPcController extends PcBaseController{
 
     @Resource
     private ExpertIntroductionServiceImpl expertIntroductionService;

@@ -25,7 +25,7 @@ import javax.validation.Valid;
  */
 @RestController
 @Api(tags = "后台-配送设置管理")
-public class PCDistributionController extends PcBaseController{
+public class DistributionPcController extends PcBaseController{
     @Resource
     private DistributionServiceImpl distributionService;
 

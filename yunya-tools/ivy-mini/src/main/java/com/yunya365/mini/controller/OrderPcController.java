@@ -23,7 +23,7 @@ import javax.validation.Valid;
  **/
 @Api(tags = {"后台-订单api"})
 @RestController
-public class OrderController extends PcBaseController{
+public class OrderPcController extends PcBaseController{
     @Resource
     private OrderAdminiServiceImpl orderAdminiService;
 

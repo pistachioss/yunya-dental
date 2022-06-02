@@ -30,7 +30,7 @@ import java.util.List;
  */
 @RestController
 @Api(tags = "后台-文章管理")
-public class PCArticleController extends PcBaseController{
+public class ArticlePcController extends PcBaseController{
 
     @Resource
     private ArticleServiceImpl articleService;
