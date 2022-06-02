@@ -21,7 +21,7 @@ import javax.validation.Valid;
  * @author: xy
  * @date 2022/4/28 15:52
  **/
-@Api(tags = {"订单api"})
+@Api(tags = {"后台-订单api"})
 @RestController
 public class OrderController extends PcBaseController{
     @Resource

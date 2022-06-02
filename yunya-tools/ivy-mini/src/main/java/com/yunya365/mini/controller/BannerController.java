@@ -23,7 +23,7 @@ import java.util.List;
  * @description:
  */
 @RestController
-@Api(tags = "banner管理")
+@Api(tags = "后台-banner管理")
 public class BannerController extends PcBaseController{
 
     @Resource

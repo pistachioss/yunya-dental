@@ -29,7 +29,7 @@ import java.util.List;
  * @description: 文章管理
  */
 @RestController
-@Api(tags = "文章管理")
+@Api(tags = "后台-文章管理")
 public class ArticleController extends PcBaseController{
 
     @Resource
@@ -62,11 +62,6 @@ public class ArticleController extends PcBaseController{
         return articleService.update(form);
     }
 
-    @ApiOperation("后台-艾维动态/口腔科普-阅读数+1")
-    @PutMapping("/addReading/{id}")
-    public ResponseResult addReading(@PathVariable(value = "id") Integer id) {
-        return articleService.addReading(id);
-    }
 
     @ApiOperation("后台-艾维动态/口腔科普-删除")
     @DeleteMapping("/article/delete/{id}")
@@ -74,10 +69,10 @@ public class ArticleController extends PcBaseController{
         return articleService.delete(id);
     }
 
-    @PostMapping("/article/adjustorder")
-    @ApiOperation("后台-艾维动态/口腔科普-上移下移")
-    public ResponseResult adjustOrder(@RequestBody @Validated AdjustOrderReq orderReq){
-        return articleService.adjustOrder(orderReq);
-    }
+//    @PostMapping("/article/adjustorder")
+//    @ApiOperation("后台-艾维动态/口腔科普-上移下移")
+//    public ResponseResult adjustOrder(@RequestBody @Validated AdjustOrderReq orderReq){
+//        return articleService.adjustOrder(orderReq);
+//    }
 
 }

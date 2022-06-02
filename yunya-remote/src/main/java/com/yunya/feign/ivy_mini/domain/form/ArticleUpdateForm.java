@@ -28,5 +28,7 @@ public class ArticleUpdateForm {
     private String coverPicture;
     @ApiModelProperty(value = " 发布状态 0否1是")
     private Integer status;
+    @ApiModelProperty(value = " 是否置顶 0否1是")
+    private Integer sort;
 
 }

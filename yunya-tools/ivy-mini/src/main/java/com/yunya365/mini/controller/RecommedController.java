@@ -26,7 +26,7 @@ import javax.validation.Valid;
  * @description:
  */
 @RestController
-@Api(tags = "推荐专区")
+@Api(tags = "后台-推荐专区")
 public class RecommedController extends PcBaseController{
 
     @Resource

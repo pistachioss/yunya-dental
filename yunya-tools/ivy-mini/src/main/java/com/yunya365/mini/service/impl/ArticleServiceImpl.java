@@ -52,7 +52,7 @@ public class ArticleServiceImpl extends BaseBiz<ArticleMapper, Article> {
         entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         entity.setCrtTime(new Date(System.currentTimeMillis()));
         mapper.insertSelective(entity);
-        entity.setSort(entity.getId());
+        entity.setSort(0);
         mapper.updateByPrimaryKeySelective(entity);
     }
 
