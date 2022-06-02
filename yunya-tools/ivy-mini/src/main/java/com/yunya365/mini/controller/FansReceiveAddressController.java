@@ -30,21 +30,21 @@ public class FansReceiveAddressController extends BaseController{
     @Resource
     private IFansReceiveAddressService receiveAddressService;
 
-    @PostMapping("/add/address")
+    @PostMapping("/address/add")
     @ApiOperation("【小程序】添加地址")
     public ResponseResult<Boolean> addAddress(@Valid @RequestBody AddAddressModel model) {
         receiveAddressService.addAddress(model);
         return ResponseUtil.success();
     }
 
-    @PostMapping("/modify/address")
+    @PostMapping("/address/modify")
     @ApiOperation("【小程序】编辑地址")
     public ResponseResult<Boolean> modifyAddress(@Valid @RequestBody ModifyAddressForm form) {
         receiveAddressService.modifyAddress(form);
         return ResponseUtil.success();
     }
 
-    @PostMapping("/list/address")
+    @PostMapping("/address/list")
     @ApiOperation("【小程序】用户地址列表")
     public ResponseResult<List<AddressListVO>> listAddress() {
         List<AddressListVO> list = receiveAddressService.listAddress();
