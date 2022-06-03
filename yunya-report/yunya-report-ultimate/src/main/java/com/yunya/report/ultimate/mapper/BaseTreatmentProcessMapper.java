@@ -179,5 +179,8 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
   List<EmployeeFirstVisitOriginTypeVO> selectFirstVisitPatientOriginType(@Param("query") ClinicEmployeeWorkloadQuery query,
                                                                          @Param("groupByOrgId") boolean groupByOrgId);
 
-  List<StatTreatVO> selectTreatVisitPatientList(@Param("query") MultiClinicDateRangeQueryForm query, @Param("employeeIds") List<Integer> employeeIds);
+  List<StatTreatVO> selectTreatVisitPatientList(
+          @Param("query") MultiClinicDateRangeQueryForm query,
+          @Param("employeeIds") List<Integer> employeeIds,
+          @Param("datePattern") String datePattern);
 }

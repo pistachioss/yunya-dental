@@ -88,7 +88,7 @@ public class ClinicLiveCodeBiz extends BaseBiz<ClinicLiveCodeMapper, ClinicLiveC
                     result.forEach(vo -> {
                         String url = urlMap.get(vo.getQrcode());
                         if (StringHelper.isNotEmpty(url)) {
-                            vo.setQrFullPath(domainUrl + url);
+                            vo.setQrFullPath(domainUrl+"/"+url);
                         }
                     });
                 }
@@ -155,7 +155,7 @@ public class ClinicLiveCodeBiz extends BaseBiz<ClinicLiveCodeMapper, ClinicLiveC
                 if (StringHelper.isNotEmpty(urlMap)) {
                         String url = urlMap.get(result.getQrcode());
                         if (StringHelper.isNotEmpty(url)) {
-                            result.setQrFullPath(domainUrl + url);
+                            result.setQrFullPath(domainUrl+"/"+url);
                         }
                 }
             }

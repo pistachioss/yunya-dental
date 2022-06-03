@@ -2869,53 +2869,10 @@ public class DimensionReportBiz {
         List<JSONObject> result = pageInfo.getList();
         ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
         if (StringHelper.isNotEmpty(pageInfo.getMap())) {
-            excelUtil.setMergeRegion(cardCouponUsedMergeRegiion(pageInfo));
+            excelUtil.setMergeRegion(firstColMergeCell(pageInfo, 6));
         }
         String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "产品卡券使用统计");
         excelUtil.exportExcel(response, result, "产品卡券使用统计", fileName, pageInfo.getHeader(), pageInfo.getMap());
-    }
-
-    /**
-     * 产品卡券使用单元格合并
-     *
-     * @param pageInfo
-     * @return
-     */
-    private List<CellRangeAddress> cardCouponUsedMergeRegiion(DynamicHeaderPageInfo<JSONObject> pageInfo) {
-        List<CellRangeAddress> result = new ArrayList<>();
-        Map<String, String> map = pageInfo.getMap();
-        if (StringHelper.isNotEmpty(map)) {
-            JSONObject title = new JSONObject();
-            map.forEach((key, name) -> title.put(key, name));
-            List<JSONObject> list = pageInfo.getList();
-            if (StringHelper.isNotEmpty(list)) {
-                list.add(0, title);
-            }
-        }
-        // 产品行横向合并
-        Map<String, List<String>> contextMap = pageInfo.getContextMap();
-        if (StringHelper.isNotEmpty(contextMap)) {
-            String[] header = new String[contextMap.size() * 6 + 1];
-            int index = 0;
-            int colInx = 0;
-            result.add(new CellRangeAddress(0, 0, colInx, colInx += 6));
-            for (Map.Entry<String, List<String>> entry : contextMap.entrySet()) {
-                header[index++] = entry.getKey();
-                if (index == 1) {
-                    header[index++] = "";
-                } else {
-                    result.add(new CellRangeAddress(0, 0, colInx, colInx += 5));
-                }
-                colInx++;
-                for (int i = 0; i < entry.getValue().size(); i++) {
-                    if (i != 0) {
-                        header[index++] = "";
-                    }
-                }
-            }
-            pageInfo.setHeader(header);
-        }
-        return result;
     }
 
     /**
@@ -3002,7 +2959,7 @@ public class DimensionReportBiz {
         return result;
     }
 
-    public DynamicHeaderPageInfo<JSONObject> cardCouponRepurchaseStatistics(CardCouponUsedQueryForm query) {
+    public DynamicHeaderPageInfo<JSONObject> cardCouponRepurchaseStatistics(ClinicPerformanceBusinessQuery query) {
         // 门诊
         ClinicPerformanceBusinessQuery queryFrom = new ClinicPerformanceBusinessQuery();
         queryFrom.setOrgIds(query.getOrgIds());
@@ -3010,70 +2967,48 @@ public class DimensionReportBiz {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }
         List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(queryFrom);
-        // 365卡 id
-        List<Integer> couponIds = Arrays.asList(7,138,139,140,254,255,256,261,262,263,264,
-        265,
-        266,
-        267,
-        268,
-        269,
-        270,
-        271,
-        272,
-        287,
-        292,
-        295,
-        297,
-        319,
-        320,
-        321,
-        325,
-        327,
-        328,
-        329,
-        330,
-        331,
-        333,
-        369,
-        523,
-        524,
-        527,
-        528,
-        596);
-        query.setCouponIds(couponIds);
-        List<BaseCard> cards = baseCardBiz.findProductSoldList(query);
+        query.setOrgIds(orgs.stream().map(BaseOrganization::getOrgId).collect(Collectors.toList()));
+        List<BillDetailtemVO> items = find365CardBillDetailItemList(query);
         Map<String, Integer> countMap = new HashMap<>(16);
-        cards.forEach(vo->{
-            Integer allocateOrgId = vo.getAllocateOrgId();
-            Integer couponId = vo.getCouponId();
+        int max = 0;
+        for (BillDetailtemVO vo : items) {
+            Integer orgId = vo.getOrgId();
+            Byte itemType = vo.getItemType();
+            Integer itemId = vo.getItemId();
             Integer patientId = vo.getPatientId();
-            String key = StringHelper.join(new Object[]{allocateOrgId, couponId, patientId}, ",");
+            String key = StringHelper.join(new Object[]{orgId, itemType, itemId, patientId}, ",");
+//            if (max < vo.getQuantity()) {
+//                max = vo.getQuantity();
+//            }
+//            if (max == 305) {
+//                System.out.println("");
+//            }
+//            incrementKey(key, vo.getQuantity(), countMap);
             incrementOne(key, countMap);
-        });
+        }
         Map<String, Integer> timesMap = new HashMap<>(16);
-        countMap.forEach((key, count)->{
-            List keys = StringHelper.split2List(key, ",");
-            Object[] keyParam = {keys.get(0), count};
-            if (count > 4) {// 超过4次的全部记为5
-                keyParam = new Object[]{keys.get(0), 5};
+        int maxCount = 0;
+        for (Map.Entry<String, Integer> entry : countMap.entrySet()) {
+            String key = entry.getKey();
+            Integer count = entry.getValue();
+            if (maxCount < count) {
+                maxCount = count;
             }
-            String newKey = StringHelper.join(keyParam, ",");
+            List keys = StringHelper.split2List(key, ",");
+            String newKey = StringHelper.join(new Object[]{keys.get(0), count}, ",");
             incrementOne(newKey, timesMap);
-        });
+        }
         Map<String, List<String>> contextMap = new HashMap<>();
         Map<String, String> param = new LinkedHashMap<>(16);
-        List<String> purchaseGroup = getPurchaseGroup();
+        List<String> purchaseGroup = getPurchaseGroup(maxCount);
         JSONArray ary = new JSONArray();
         for (BaseOrganization org : orgs) {
             JSONObject obj = initRepurcharseObj(org, param);
             Integer orgId = org.getOrgId();
             for (int i = 1; i <=purchaseGroup.size(); i++) {
                 String purchase = purchaseGroup.get(i-1);
-                String key = StringHelper.join(new int[]{orgId, i}, ",");
-                String name = "365卡购买N次";
-                if (i < 5) {
-                    name = "365卡购买"+i+"次";
-                }
+                String key = StringHelper.join(new Object[]{orgId, i}, ",");
+                String name = "365卡购买"+i+"次";
                 param.put(purchase, name);
                 obj.put(purchase, defaultValue(timesMap.get(key)));
             }
@@ -3089,32 +3024,97 @@ public class DimensionReportBiz {
         return pageInfo;
     }
 
+    private List<BillDetailtemVO> find365CardBillDetailItemList(ClinicPerformanceBusinessQuery query) {
+        //    IVY365年卡-101
+        //    IVY 1365年卡-103
+        //    IVY 2365年卡-104
+
+        //    IVY365-731
+        //    嘉医汇IVY365-413
+        query.setItemIds(Arrays.asList(731, 413));
+        List<BillDetailtemVO> result = baseBillDetailBiz.findBillDetailItemList(query);
+        query.setItemIds(Arrays.asList(101, 103, 104));
+        query.setItemType(1);
+        List<BillDetailtemVO> items = baseBillDetailBiz.findBillDetailItemList(query);
+        result.addAll(items);
+        return result;
+    }
 
     /**
-     * 根据条件导出产品卡券使用统计
+     * 根据条件导出365卡购买人数统计
      *
      * @param query 查询条件
      * @return
      */
-    public void cardCouponRepurchaseStatisticsExport(CardCouponUsedQueryForm query, HttpServletResponse response) throws Exception {
+    public void cardCouponRepurchaseStatisticsExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) throws Exception {
         DynamicHeaderPageInfo<JSONObject> pageInfo = cardCouponRepurchaseStatistics(query);
         List<JSONObject> result = pageInfo.getList();
         ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
         if (StringHelper.isNotEmpty(pageInfo.getMap())) {
-            excelUtil.setMergeRegion(cardCouponUsedMergeRegiion(pageInfo));
+            Collection<List<String>> values = pageInfo.getContextMap().values();
+            int pos = 0;
+            for (List<String> list : values) {
+                pos = list.size();
+            }
+            excelUtil.setMergeRegion(firstColMergeCell(pageInfo, pos));
         }
         String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "365卡购买人数统计表");
         excelUtil.exportExcel(response, result, "365卡购买人数统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
 
     /**
+     * 365卡购买人数统计单元格合并
+     *
+     * @param pageInfo
+     * @return
+     */
+    private List<CellRangeAddress> firstColMergeCell(DynamicHeaderPageInfo<JSONObject> pageInfo, int pos) {
+        List<CellRangeAddress> result = new ArrayList<>();
+        Map<String, String> map = pageInfo.getMap();
+        if (StringHelper.isNotEmpty(map)) {
+            JSONObject title = new JSONObject();
+            map.forEach((key, name) -> title.put(key, name));
+            List<JSONObject> list = pageInfo.getList();
+            if (StringHelper.isNotEmpty(list)) {
+                list.add(0, title);
+            }
+        }
+        // 列纵向合并
+        result.add(new CellRangeAddress(0, 1, 0, 0));
+        // 行横向合并
+        Map<String, List<String>> contextMap = pageInfo.getContextMap();
+        if (StringHelper.isNotEmpty(contextMap)) {
+            String[] header = new String[contextMap.size() * pos + 1];
+            int index = 1;
+            int colInx = 1;
+            result.add(new CellRangeAddress(0, 0, colInx, colInx += pos-1));
+            for (Map.Entry<String, List<String>> entry : contextMap.entrySet()) {
+                header[index++] = entry.getKey();
+                if (index != 2) {
+                    result.add(new CellRangeAddress(0, 0, colInx, colInx += pos-1));
+                }
+                colInx++;
+                for (int i = 0; i < entry.getValue().size(); i++) {
+                    if (i != 0) {
+                        header[index++] = "";
+                    }
+                }
+            }
+            header[0] = "门诊";
+            pageInfo.setHeader(header);
+        }
+        return result;
+    }
+
+    /**
      * 购买卡次数分组
      *
      * @return
+     * @param maxCount
      */
-    private List<String> getPurchaseGroup() {
+    private List<String> getPurchaseGroup(int maxCount) {
         List<String> list = new ArrayList<>();
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 1; i <= maxCount; i++) {
             list.add("purchases"+i);
         }
         return list;
@@ -3125,5 +3125,99 @@ public class DimensionReportBiz {
         obj.put("abbreviation", org.getAbbreviation());
         param.put("abbreviation", "门诊");
         return obj;
+    }
+
+    public DynamicHeaderPageInfo<JSONObject> card365AndAiyaAndTreatNumStatistics(ClinicPerformanceBusinessQuery query) throws Exception {
+        // 门诊
+        ClinicPerformanceBusinessQuery queryFrom = new ClinicPerformanceBusinessQuery();
+        queryFrom.setOrgIds(query.getOrgIds());
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<BaseOrganization> orgs = baseOrganizationBiz.getOrganization(queryFrom);
+        List<Integer> orgIds = orgs.stream().map(BaseOrganization::getOrgId).collect(toList());
+        query.setOrgIds(orgIds);
+        List<BillDetailtemVO> card365 = find365CardBillDetailItemList(query);
+        Map<String, Integer> card365Map = new HashMap<>(16);
+        card365.forEach(vo->{
+            Object[] keyArr = {vo.getOrgId(), DateUtil.format(vo.getOrderDate(), "yyyy")};
+            String key = StringHelper.join(keyArr, ",");
+            incrementKey(key, vo.getQuantity(), card365Map);
+        });
+        // 艾芽卡
+        query.setItemIds(Arrays.asList(105,106,107,108));
+        List<BillDetailtemVO> aiyas = baseBillDetailBiz.findBillDetailItemList(query);
+        Map<String, Integer> aiyaMap = new HashMap<>(16);
+        aiyas.forEach(vo->{
+            Object[] keyArr = {vo.getOrgId(), DateUtil.format(vo.getOrderDate(), "yyyy")};
+            String key = StringHelper.join(keyArr, ",");
+            incrementKey(key, vo.getQuantity(), aiyaMap);
+        });
+        String startDate = query.getStartDate().substring(0,4);
+        String endDate = query.getEndDate().substring(0,4);
+        List<String> years = DateUtil.sliceUpDateRange(startDate, endDate);
+        Map<String, Set<Integer>> treatNumMap = new HashMap<>(16);
+        MultiClinicDateRangeQueryForm queryForm = new MultiClinicDateRangeQueryForm();
+        BeanUtils.copyProperties(query, queryForm);
+        queryForm.setOrgIds(orgIds);
+        List<StatTreatVO> data = baseTreatmentProcessBiz.findTreatVisitPatientList(queryForm, null, "%Y");
+        if (StringHelper.isNotEmpty(data)) {
+            data.forEach(vo -> {
+                String key = vo.getOrgId() + "," + vo.getTreatDate();
+                Set<Integer> patients = treatNumMap.get(key);
+                if (patients == null) {
+                    patients = new HashSet<>();
+                }
+                patients.add(vo.getPatientId());
+                treatNumMap.put(key, patients);
+            });
+        }
+        Map<String, String> map = new LinkedHashMap<>();
+        Map<String, List<String>> contextMap = new LinkedHashMap<>(16);
+        JSONArray ary = new JSONArray();
+        for (BaseOrganization org : orgs) {
+            Integer orgId = org.getOrgId();
+            JSONObject obj = initRepurcharseObj(org, map);
+            for (String year : years) {
+                String key = StringHelper.join(new Object[]{orgId, year}, ",");
+                String key365 = "card365_" + year;
+                String keyAiya = "aiya_" + year;
+                String keyTreatNum = "treatNum_" + year;
+                obj.put(key365,  defaultValue(card365Map.get(key)));
+                obj.put(keyAiya, defaultValue(aiyaMap.get(key)));
+                Set<Integer> patientIds = treatNumMap.get(key);
+                if (StringHelper.isNotEmpty(patientIds)) {
+                    obj.put(keyTreatNum, patientIds.size());
+                } else {
+                    obj.put(keyTreatNum, 0);
+                }
+                map.put(key365, "365卡数");
+                map.put(keyAiya, "艾芽卡数");
+                map.put(keyTreatNum, "就诊人数");
+                contextMap.put(year+"年", Arrays.asList(key365, keyAiya, keyTreatNum));
+            }
+            ary.add(obj);
+        }
+        DynamicHeaderPageInfo pageInfo = new DynamicHeaderPageInfo(ary);
+        pageInfo.setMap(map);
+        pageInfo.setContextMap(contextMap);
+        return pageInfo;
+    }
+
+    /**
+     * 根据条件导出365卡购买人数统计
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public void card365AndAiyaAndTreatNumStatisticsExport(ClinicPerformanceBusinessQuery query, HttpServletResponse response) throws Exception {
+        DynamicHeaderPageInfo<JSONObject> pageInfo = card365AndAiyaAndTreatNumStatistics(query);
+        List<JSONObject> result = pageInfo.getList();
+        ExcelUtil excelUtil = new ExcelUtil(JSONObject.class);
+        if (StringHelper.isNotEmpty(pageInfo.getMap())) {
+            excelUtil.setMergeRegion(firstColMergeCell(pageInfo, 3));
+        }
+        String fileName = excelUtil.getFileName(query.getStartDate()+"", query.getEndDate()+"", "", "365卡艾芽卡就诊人数统计表");
+        excelUtil.exportExcel(response, result, "365卡艾芽卡就诊人数统计表", fileName, pageInfo.getHeader(), pageInfo.getMap());
     }
 }
