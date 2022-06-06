@@ -17,4 +17,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo> implements IOrderInfoService {
 
+    @Override
+    public void createOrder() {
+
+    }
+
+    @Override
+    public void paySuccess() {
+
+    }
 }
