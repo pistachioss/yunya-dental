@@ -14,6 +14,8 @@ import java.math.BigDecimal;
 @Data
 @ApiModel(description = "购物车列表")
 public class CartItemVO {
+    @ApiModelProperty(value = "id")
+    private Integer id;
     @ApiModelProperty(value = "产品id")
     private Integer productId;
     @ApiModelProperty(value = "产品名称")
