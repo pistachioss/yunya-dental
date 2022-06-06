@@ -43,4 +43,6 @@ public class ModifyAddressForm {
     @ApiModelProperty(value = "标签", required = true)
     @NotBlank
     private String tag;
+    @ApiModelProperty(value = "是否为默认 0-否 1-是")
+    private Boolean defaultStatus;
 }

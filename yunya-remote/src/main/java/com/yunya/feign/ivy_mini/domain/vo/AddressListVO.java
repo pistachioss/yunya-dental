@@ -29,4 +29,6 @@ public class AddressListVO {
     private String detail_address;
     @ApiModelProperty(value = "标签")
     private String tag;
+    @ApiModelProperty(value = "是否为默认 0-否 1-是")
+    private Boolean defaultStatus;
 }

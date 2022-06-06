@@ -2,6 +2,7 @@ package com.yunya365.mini.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.toolkit.ChainWrappers;
 import com.yunya.feign.ivy_mini.domain.form.ModifyAddressForm;
 import com.yunya.feign.ivy_mini.domain.model.AddAddressModel;
 import com.yunya.feign.ivy_mini.domain.vo.AddressListVO;
@@ -31,17 +32,26 @@ public class FansReceiveAddressServiceImpl extends ServiceImpl<FansReceiveAddres
 
     @Override
     public void addAddress(AddAddressModel model) {
+        Integer fansId = Integer.valueOf(BaseContextHandler.getUserID());
         FansReceiveAddress address = BeanCopierUtils.generalCopyBean(model, FansReceiveAddress.class);
+        address.setFansId(fansId);
+        if (model.getDefaultStatus()) {
+            updateDefaultStatus(fansId);
+        }
         baseMapper.insert(address);
     }
 
     @Override
     public void modifyAddress(ModifyAddressForm form) {
+        Integer fansId = Integer.valueOf(BaseContextHandler.getUserID());
         FansReceiveAddress receiveAddress = baseMapper.selectById(form.getId());
         if (Objects.isNull(receiveAddress)) {
             throw ClientServiceException.wrap(RECEIVE_NOT_EXIST);
         }
         FansReceiveAddress address = BeanCopierUtils.generalCopyBean(form, FansReceiveAddress.class);
+        if (form.getDefaultStatus()) {
+            updateDefaultStatus(fansId);
+        }
         baseMapper.updateById(address);
     }
 
@@ -60,5 +70,12 @@ public class FansReceiveAddressServiceImpl extends ServiceImpl<FansReceiveAddres
             throw ClientServiceException.wrap(RECEIVE_NOT_EXIST);
         }
         baseMapper.deleteById(receiveId);
+    }
+
+    private void updateDefaultStatus(Integer fansId) {
+        ChainWrappers.lambdaUpdateChain(baseMapper)
+                .set(FansReceiveAddress::getDefaultStatus, 0)
+                .eq(FansReceiveAddress::getFansId, fansId)
+                .eq(FansReceiveAddress::getDefaultStatus, 1).update();
     }
 }
