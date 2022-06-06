@@ -91,6 +91,7 @@ public class LoginServiceImpl {
         } else {
             //生成token等相关信息
             authVO = this.createAuthInfo(wxFans, TOKEN_EXPIRE);
+            authVO.setOpenId(openId);
             log.info("初次登录token：{}", authVO.getToken());
         }
         //存redis

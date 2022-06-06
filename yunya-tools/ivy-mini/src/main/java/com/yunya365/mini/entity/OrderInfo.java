@@ -2,9 +2,9 @@ package com.yunya365.mini.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "order_info")
 @TableName("order_info")
@@ -61,7 +61,7 @@ public class OrderInfo {
     private Byte sourceType;
 
     /**
-     * 订单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->无效订单
+     * 订单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款
      */
     private Byte status;
 

@@ -30,31 +30,31 @@ public class ProductController extends BaseController{
     private IProductService productService;
 
     @PostMapping("/goods/search")
-    @ApiOperation("商品搜索")
+    @ApiOperation("【小程序】商品搜索")
     public ResponseResult<PageInfo<GoodsVO>> pageGoods(@RequestBody @Valid GoodsQuery query) {
         return ResponseUtil.success(productService.pageGoods(query));
     }
 
     @PostMapping("/virtual/search")
-    @ApiOperation("虚拟服务搜索")
+    @ApiOperation("【小程序】虚拟服务搜索")
     public ResponseResult<PageInfo<VirtualProductVO>> pageVirtual(@RequestBody @Valid VirtualProductQuery query) {
         return ResponseUtil.success(productService.pageVirtual(query));
     }
 
     @GetMapping("/hot/product")
-    @ApiOperation("热销产品")
+    @ApiOperation("【小程序】热销产品")
     public ResponseResult<List<HotSaleVO>> hotSale() {
         return ResponseUtil.success(productService.hotSale());
     }
 
     @GetMapping("/goods/{id}")
-    @ApiOperation("商品详情-价目")
+    @ApiOperation("【小程序】商品详情-价目")
     public ResponseResult<GoodsDetailVO> goodsDetail(@PathVariable Integer id) {
         return ResponseUtil.success(productService.goodsDetail(id));
     }
 
     @GetMapping("/virtual/{id}")
-    @ApiOperation("虚拟服务详情-价目")
+    @ApiOperation("【小程序】虚拟服务详情-价目")
     public ResponseResult<VirtualDetailVO> virtualDetail(@PathVariable Integer id) {
         return ResponseUtil.success(productService.virtualDetail(id));
     }

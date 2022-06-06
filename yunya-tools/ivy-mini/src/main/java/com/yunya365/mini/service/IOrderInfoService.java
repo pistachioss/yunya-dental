@@ -9,8 +9,11 @@ import com.yunya365.mini.entity.OrderInfo;
  * </p>
  *
  * @author xiangyang
- * @since 2022-05-18
+ * @since 2022-06-06
  */
 public interface IOrderInfoService extends IService<OrderInfo> {
 
+    void createOrder();
+
+    void paySuccess();
 }

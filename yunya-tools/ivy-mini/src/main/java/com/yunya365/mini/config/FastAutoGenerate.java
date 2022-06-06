@@ -2,6 +2,7 @@ package com.yunya365.mini.config;
 
 import com.baomidou.mybatisplus.generator.FastAutoGenerator;
 import com.baomidou.mybatisplus.generator.config.OutputFile;
+import com.baomidou.mybatisplus.generator.config.TemplateType;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -40,8 +41,8 @@ public class FastAutoGenerate {
                    .templateEngine(new BeetlTemplateEngine())
                    .templateEngine(new FreemarkerTemplateEngine())
                  */
-//                .templateConfig(builder -> builder.disable(TemplateType.CONTROLLER,
-//                        TemplateType.MAPPER, TemplateType.SERVICE,TemplateType.SERVICEIMPL).build())
+                .templateConfig(builder -> builder.disable(
+                        TemplateType.MAPPER,TemplateType.ENTITY,TemplateType.XML).build())
                 .execute();
     }
 
