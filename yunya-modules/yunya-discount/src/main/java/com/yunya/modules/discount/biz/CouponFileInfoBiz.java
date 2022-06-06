@@ -35,12 +35,16 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
         //清除之前的图片
         CouponFileInfo couponFiledelete = new CouponFileInfo();
         couponFiledelete.setCouponId(fileForm.getId());
-        couponFiledelete.setFileType(new Byte("0"));
+//        couponFiledelete.setFileType(new Byte("0"));
         mapper.delete(couponFiledelete);
-        //清除之前的文档
-        couponFiledelete.setCouponId(fileForm.getId());
-        couponFiledelete.setFileType(new Byte("1"));
-        mapper.delete(couponFiledelete);
+//        //清除之前的文档
+//        couponFiledelete.setCouponId(fileForm.getId());
+//        couponFiledelete.setFileType(new Byte("1"));
+//        mapper.delete(couponFiledelete);
+//        //清除之前的产品介绍图
+//        couponFiledelete.setCouponId(fileForm.getId());
+//        couponFiledelete.setFileType(new Byte("2"));
+//        mapper.delete(couponFiledelete);
         //图片信息
         if (fileForm.getPaths() != null && fileForm.getPaths().size() > 0) {
             for (FileInfo fileInfo : fileForm.getPaths()) {
@@ -64,6 +68,21 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
                 couponFileInfo.setCouponId(fileForm.getId());
                 couponFileInfo.setInservice(true);
                 couponFileInfo.setFileType(new Byte("1"));
+                couponFileInfo.setPath(fileInfo.getPath());
+                couponFileInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                couponFileInfo.setCrtTime(new Date());
+                list.add(couponFileInfo);
+            }
+        }
+        //产品图片信息
+        if (fileForm.getProPaths() != null && fileForm.getProPaths().size() > 0) {
+            for (FileInfo fileInfo : fileForm.getPaths()) {
+                CouponFileInfo couponFileInfo = new CouponFileInfo();
+                couponFileInfo.setFileName(fileInfo.getFileName());
+                couponFileInfo.setCouponId(fileForm.getId());
+                couponFileInfo.setInservice(true);
+                couponFileInfo.setRemark(fileInfo.getMark());
+                couponFileInfo.setFileType(new Byte("2"));
                 couponFileInfo.setPath(fileInfo.getPath());
                 couponFileInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
                 couponFileInfo.setCrtTime(new Date());

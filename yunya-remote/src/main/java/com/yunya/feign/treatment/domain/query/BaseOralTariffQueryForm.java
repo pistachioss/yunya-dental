@@ -42,4 +42,7 @@ public class BaseOralTariffQueryForm implements Serializable {
 
     @ApiModelProperty("是否启用")
     private Boolean inservice;
+
+    @ApiModelProperty("是否线上售卖")
+    private Boolean isOnlineSale;
 }

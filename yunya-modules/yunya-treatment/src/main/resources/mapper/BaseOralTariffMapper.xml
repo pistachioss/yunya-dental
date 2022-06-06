@@ -199,7 +199,8 @@
         bot.english_name as englishName,
         bot.unit,
         bot.price,
-        bot.inservice
+        bot.inservice,
+        bot.is_online_sale as isOnlineSale
         from
         base_oral_tariff bot
         left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
@@ -217,6 +218,9 @@
             </if>
             <if test="queryForm.inservice != null">
                 and bot.inservice = #{queryForm.inservice}
+            </if>
+            <if test="queryForm.isOnlineSale != null">
+                and bot.is_online_sale = #{queryForm.isOnlineSale}
             </if>
         </where>
     </select>

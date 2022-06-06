@@ -59,6 +59,9 @@ public class BaseOralTariffForm implements Serializable {
     @ApiModelProperty("是否启用")
     private Boolean inservice;
 
+    @ApiModelProperty("是否线上售卖")
+    private Boolean isOnlineSale;
+
     /** 门诊商品项目单价列表 */
     @ApiModelProperty(value = "门诊商品项目单价列表", required = true)
     private List<ClinicItemPriceForm> clinicItemPriceForms;

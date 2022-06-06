@@ -71,4 +71,7 @@ public class BaseOralTariffModel implements Serializable {
   /** 是否计算绩效:0否,1是 */
   @ApiModelProperty("是否计算绩效")
   private Boolean achie;
+
+  @ApiModelProperty("是否线上售卖")
+  private Boolean isOnlineSale;
 }

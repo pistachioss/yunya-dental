@@ -1,6 +1,7 @@
 package com.yunya.feign.treatment.domain.vo;
 
 import com.yunya.framework.common.annation.Excel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -55,4 +56,7 @@ public class BaseOralTariffVO implements Serializable {
 
   /** 是否启用 */
   private Boolean inservice;
+
+  @ApiModelProperty("是否线上售卖")
+  private Boolean isOnlineSale;
 }
