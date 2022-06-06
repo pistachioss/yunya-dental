@@ -3,6 +3,9 @@ package com.yunya365.mini.service.impl;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.feign.ivy_mini.domain.form.SelfMentionClinicForm;
 import com.yunya.feign.ivy_mini.domain.vo.SelfMentionClinicVO;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanUtil;
@@ -12,6 +15,7 @@ import com.yunya365.mini.entity.SelfMentionClinic;
 import com.yunya365.mini.mapper.SelfMentionClinicMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,18 +35,27 @@ import java.util.*;
 public class SelfMentionClinicServiceImpl extends BaseBiz<SelfMentionClinicMapper, SelfMentionClinic> {
     @Resource
     private EmployeeAttendServiceFeign employeeAttendServiceFeign;
-
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
     public List<SelfMentionClinicVO> findList(){
         List<SelfMentionClinicVO>reList = new ArrayList<>();
         List<AttendanceAddressSet>list = employeeAttendServiceFeign.findAddress();
         List<SelfMentionClinic>sslit = mapper.selectAll();
+
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setWhetherPage(false);
+        //全部门诊信息
+        List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        Map<String, OrganizationInfoDetail> cMap = new HashMap(16);
+        clinics.forEach(z -> cMap.put(z.getId() + "", z));
+
         Map<String, AttendanceAddressSet> clinicMap = new HashMap(16);
         list.forEach(z -> clinicMap.put(z.getOrgId() + "", z));
         for (SelfMentionClinic s:sslit){
             SelfMentionClinicVO sc = new SelfMentionClinicVO();
             BeanUtil.copy(s,sc);
             sc.setClinicAddress(clinicMap.get(s.getClinicId()+"").getAttendanceAddress());
-            sc.setClinicName(clinicMap.get(s.getClinicId()+"").getOrganizationName());
+            sc.setClinicName(cMap.get(s.getClinicId()+"").getAbbreviation());
             sc.setLatitude(clinicMap.get(s.getClinicId()+"").getLatitude());
             sc.setLongitude(clinicMap.get(s.getClinicId()+"").getLongitude());
             reList.add(sc);
