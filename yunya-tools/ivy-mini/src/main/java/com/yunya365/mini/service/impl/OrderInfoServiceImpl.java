@@ -19,7 +19,9 @@ import org.springframework.stereotype.Service;
 public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo> implements IOrderInfoService {
 
     @Override
-    public void createOrder(CreateGoodsOrderModel model) {
+    public void createGoodsOrder(CreateGoodsOrderModel model) {
+        //加锁
+        //库存数量
 
     }
 

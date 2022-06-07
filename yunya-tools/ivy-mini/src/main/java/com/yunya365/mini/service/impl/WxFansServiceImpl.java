@@ -92,6 +92,8 @@ public class WxFansServiceImpl implements IWxFansService {
     @Override
     public FansDetailVO fansDetail(String openId) {
         WxFans fans = patientFeign.countRegister(openId);
-        return BeanUtil.copy(fans, FansDetailVO.class);
+        FansDetailVO copy = BeanUtil.copy(fans, FansDetailVO.class);
+        copy.setPhoneNumber(fans.getRegisterMobile());
+        return copy;
     }
 }

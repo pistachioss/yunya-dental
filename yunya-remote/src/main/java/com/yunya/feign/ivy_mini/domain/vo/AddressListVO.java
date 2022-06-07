@@ -26,7 +26,7 @@ public class AddressListVO {
     @ApiModelProperty(value = "区")
     private String region;
     @ApiModelProperty(value = "详细地址(街道)")
-    private String detail_address;
+    private String detailAddress;
     @ApiModelProperty(value = "标签")
     private String tag;
     @ApiModelProperty(value = "是否为默认 0-否 1-是")

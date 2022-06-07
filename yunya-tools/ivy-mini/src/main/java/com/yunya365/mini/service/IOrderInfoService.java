@@ -14,7 +14,7 @@ import com.yunya365.mini.entity.OrderInfo;
  */
 public interface IOrderInfoService extends IService<OrderInfo> {
 
-    void createOrder(CreateGoodsOrderModel model);
+    void createGoodsOrder(CreateGoodsOrderModel model);
 
     void paySuccess();
 }
