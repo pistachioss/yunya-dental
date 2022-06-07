@@ -26,7 +26,6 @@ public class ArticleForm extends PageQuery implements Serializable {
      * 分类 1：艾维动态 2口腔科普
      */
     @ApiModelProperty(value = "分类 1：艾维动态 2口腔科普")
-    @NotNull(message = "分类不能为空！")
     private Integer type;
 
     /**

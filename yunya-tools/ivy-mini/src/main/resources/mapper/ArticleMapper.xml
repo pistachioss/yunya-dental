@@ -37,6 +37,9 @@
       <if test="status != null">
         AND status = #{status}
       </if>
+      <if test="type!=null and type!=''">
+        AND type = #{type}
+      </if>
     </where>
     order by
      <if test="orderByColumn != null and orderByColumn!=''">
