@@ -39,7 +39,7 @@ public class ModifyAddressForm {
     private String region;
     @ApiModelProperty(value = "详细地址(街道)", required = true)
     @NotBlank
-    private String detail_address;
+    private String detailAddress;
     @ApiModelProperty(value = "标签", required = true)
     @NotBlank
     private String tag;

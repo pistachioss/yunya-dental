@@ -1,6 +1,7 @@
 package com.yunya365.mini.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yunya.feign.ivy_mini.domain.model.CreateGoodsOrderModel;
 import com.yunya365.mini.entity.OrderInfo;
 import com.yunya365.mini.mapper.OrderInfoMapper;
 import com.yunya365.mini.service.IOrderInfoService;
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class OrderInfoServiceImpl extends ServiceImpl<OrderInfoMapper, OrderInfo> implements IOrderInfoService {
 
     @Override
-    public void createOrder() {
+    public void createOrder(CreateGoodsOrderModel model) {
 
     }
 

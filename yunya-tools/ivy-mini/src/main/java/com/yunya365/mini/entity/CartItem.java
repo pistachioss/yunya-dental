@@ -3,7 +3,6 @@ package com.yunya365.mini.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -19,7 +18,6 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
-@Accessors(chain = true)
 @TableName("cart_item")
 public class CartItem implements Serializable {
 

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.ConnectException;
+import java.util.Objects;
 import java.util.concurrent.CompletionException;
 
 /**
@@ -89,7 +91,8 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseResult methodArgumentNotValidHandler(
       MethodArgumentNotValidException e, HttpServletRequest request) {
-    String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+    FieldError fieldError = e.getBindingResult().getFieldError();
+    String message = Objects.requireNonNull(fieldError).getField() + fieldError.getDefaultMessage();
     logger.error("error in \nurl :{} \nmsg:{}", request.getRequestURI(), message);
     return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, message, null);
   }

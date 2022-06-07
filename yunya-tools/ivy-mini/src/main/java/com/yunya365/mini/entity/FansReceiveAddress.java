@@ -3,7 +3,6 @@ package com.yunya365.mini.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -18,13 +17,12 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
-@Accessors(chain = true)
 @TableName("fans_receive_address")
 public class FansReceiveAddress implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId("id")
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     /**
