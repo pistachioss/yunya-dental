@@ -16,7 +16,7 @@ public class OrderUpdateForm {
     /**
      * 订单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->无效订单
      */
-    @ApiModelProperty(value = "单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->无效订单")
+    @ApiModelProperty(value = "单状态：0->待付款；1->待发货；2->已发货；3->已完成；4->已关闭；5->申请退款")
     private Byte status;
 
     /**

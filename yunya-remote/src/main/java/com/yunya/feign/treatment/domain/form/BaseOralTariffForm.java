@@ -65,4 +65,21 @@ public class BaseOralTariffForm implements Serializable {
     /** 门诊商品项目单价列表 */
     @ApiModelProperty(value = "门诊商品项目单价列表", required = true)
     private List<ClinicItemPriceForm> clinicItemPriceForms;
+
+    /**
+     * 库存
+     */
+    @ApiModelProperty("库存")
+    private Integer stock;
+    /**
+     * 商品图片(限制为3张，以逗号分割)
+     */
+    @ApiModelProperty ("商品图片(限制为3张，以逗号分割)")
+    private String itemPic;
+
+    /**
+     * 商品详情网页内容
+     */
+    @ApiModelProperty ("商品详情网页内容")
+    private String detailHtml;
 }
