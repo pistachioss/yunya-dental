@@ -46,10 +46,10 @@ public class ArticleVO implements Serializable {
 
 
     /**
-     * 排序
+     * 是否置顶 0否 1是'
      */
-    @ApiModelProperty(value = "排序")
-    private Integer sort;
+    @ApiModelProperty(value = "是否置顶 0否 1是'")
+    private Integer isSort;
 
     /**
      * 阅读数

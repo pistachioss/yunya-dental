@@ -24,7 +24,7 @@
     article_url as articleUrl,
     cover_picture as coverPicture,
     type as type,
-    sort as sort,
+    sort as isSort,
     reading_number as readingNumber,
     status as status,
     crt_time as crtTime,
