@@ -64,6 +64,7 @@ public class ArticleServiceImpl extends BaseBiz<ArticleMapper, Article> {
         }
 
         BeanUtils.copyProperties(form, article);
+        article.setSort(form.getIsSort());
         article.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
         //测试用，发布切换
 //        article.setUptId(1);
