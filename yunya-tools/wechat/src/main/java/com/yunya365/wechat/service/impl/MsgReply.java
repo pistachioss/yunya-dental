@@ -5,11 +5,15 @@ import com.yunya.feign.wechat.domain.model.WxAutoReplyText;
 import com.yunya.feign.wechat.domain.model.WxUserMsgModel;
 import com.yunya.models.wechat.WxAutomsg;
 import com.yunya365.wechat.mapper.WxAutomsgMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.List;
 
+@Slf4j
+@Service
 public class MsgReply {
 
     @Resource private WXService wxService;
