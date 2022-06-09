@@ -31,7 +31,7 @@ public class MsgReply {
             WxAutoReplyModel msgModel = new WxAutoReplyModel();
             WxAutoReplyText msgText = new WxAutoReplyText();
             msgText.setContent(reply);
-            msgModel.setMsgtype(msg.getMsgType());
+            msgModel.setMsgtype("text");//"text"  //msg.getMsgType()
             msgModel.setText(msgText);
             msgModel.setTouser(msg.getFromUserName());
             wxService.pushAutoReplyMsg(msgModel);
