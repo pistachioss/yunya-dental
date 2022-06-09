@@ -191,7 +191,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param query
    * @return
    */
-  List<BaseBillDetail> selectBillDetailByQuery(@Param("query") EmployeeWorkloadQuery query);
+  List<BillItemAmountSharedVO> selectBillDetailByQuery(@Param("query") EmployeeWorkloadQuery query);
 
   /**
    * 根据账单id查询账单详情列表
@@ -199,7 +199,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @param billIds
    * @return
    */
-  List<BaseBillDetail> selectBillDetailByBillIds(@Param("billIds") Collection<Integer> billIds);
+  List<BillItemAmountSharedVO> selectBillDetailByBillIds(@Param("billIds") Collection<Integer> billIds);
 
   List<EmployeeFreepaymentWorkloadDetailVO> selectEmployeeFreepaymentWorkloadDetailList(
       @Param("query") EmployeePersonalWorkloadDetailQuery query,
