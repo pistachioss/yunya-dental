@@ -157,6 +157,10 @@ public class RedisConstants implements Serializable {
    * 小程序热销产品
    */
   public static final String HOT_SALE_PRODUCT = "hot:sale:product";
+  /**
+   * 下单key
+   */
+  public static final String CREATE_ORDER_LOCK = "create:order:lock:";
 
   /**
    * 设置key中的占位符

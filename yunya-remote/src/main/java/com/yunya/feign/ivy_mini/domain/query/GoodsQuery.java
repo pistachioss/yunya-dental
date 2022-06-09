@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
 @ApiModel(description = "商品查询参数")
 public class GoodsQuery extends PageQuery {
 
-    @ApiModelProperty(value = "商品分类id")
+    @ApiModelProperty(value = "商品分类id", required = true)
     @NotNull(message = "商品分类不能为空")
     private Integer productCategoryId;
 

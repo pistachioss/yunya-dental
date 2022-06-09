@@ -1,6 +1,7 @@
 package com.yunya365.mini.service;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
@@ -47,4 +48,10 @@ public interface IProductService {
      */
     VirtualDetailVO virtualDetail(Integer couponId);
 
+    /**
+     * 查询商品或虚拟服务分类
+     * @param type:
+     * @return List<ProductTypeVO>
+     */
+    List<ProductTypeVO> cateGoryList(Integer type);
 }

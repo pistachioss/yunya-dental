@@ -6,6 +6,7 @@ import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.query.DiscountCouponQuery;
+import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.feign.discount.factory.RemoteDiscountFallBackFactory;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
@@ -86,4 +87,7 @@ public interface RemoteDiscountFeign {
 
     @RequestMapping(value = "/mini/coupon/{couponId}", method = RequestMethod.GET)
     VirtualDetailVO couponDetail(@PathVariable(value = "couponId") Integer couponId);
+
+    @PostMapping("/productType/list")
+    ResponseResult<PageInfo<ProductTypeVO>> findList(@RequestBody ProductTypeQueryForm queryForm);
 }

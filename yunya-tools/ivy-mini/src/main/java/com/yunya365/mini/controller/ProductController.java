@@ -1,6 +1,7 @@
 package com.yunya365.mini.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.discount.domain.vo.ProductTypeVO;
 import com.yunya.feign.ivy_mini.domain.query.GoodsQuery;
 import com.yunya.feign.ivy_mini.domain.query.VirtualProductQuery;
 import com.yunya.feign.ivy_mini.domain.vo.*;
@@ -8,8 +9,7 @@ import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.mini.service.IProductService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -57,5 +57,12 @@ public class ProductController extends BaseController{
     @ApiOperation("【小程序】虚拟服务详情-价目")
     public ResponseResult<VirtualDetailVO> virtualDetail(@PathVariable Integer id) {
         return ResponseUtil.success(productService.virtualDetail(id));
+    }
+
+    @GetMapping("/category/{type}")
+    @ApiImplicitParam(name = "type", value = "商品或虚拟服务分类（0-商品 1-虚拟服务）", required = true, dataType = "int")
+    @ApiOperation("【小程序】查询商品分类或虚拟服务分类")
+    public ResponseResult<List<ProductTypeVO>> cateGoryList(@PathVariable Integer type) {
+        return ResponseUtil.success(productService.cateGoryList(type));
     }
 }
