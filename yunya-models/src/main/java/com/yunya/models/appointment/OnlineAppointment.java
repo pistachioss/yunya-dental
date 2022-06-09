@@ -1,9 +1,12 @@
 package com.yunya.models.appointment;
 
+import lombok.Data;
+
 import java.util.Date;
 import javax.persistence.*;
 
 @Table(name = "online_appointment")
+@Data
 public class OnlineAppointment {
     /**
      * 主键
@@ -85,7 +88,21 @@ public class OnlineAppointment {
      * 是否有效，是否删除(默认有效) 1-有效；0删除
      */
     private Boolean inservice;
-
+    /**
+     * 微信unionId，微信用户唯一标识
+     */
+    @Column(name = "union_id")
+    private String unionId;
+    /**
+     * 预约来源  0公众号 1小程序
+     */
+    @Column(name = "wx_type")
+    private Integer wxType;
+    /**
+     * 预约时间 0上午 1下午
+     */
+    @Column(name = "appoint_ma")
+    private Integer appointMa;
     /**
      * 创建人名称
      */

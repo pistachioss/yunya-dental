@@ -107,11 +107,11 @@ public class OnlineAppointmentBiz extends BaseBiz<OnlineAppointmentMapper, Onlin
         OnlineAppointment build = EntityUtils.build(model, OnlineAppointment.class);
 
         // 判断预约申请是否已满
-        boolean allowApply = checkApplyRules(model.getOrgId(), model.getAppointItemId(), model.getAppointDate(), model.getAppointTime());
-        if (!allowApply) {
-            return ResponseUtil.fail(AppointmentError.ONLINE_APPOINT_OUT_OF_CAPACITY.getCode(),
-                    AppointmentError.ONLINE_APPOINT_OUT_OF_CAPACITY.getMessage(),null);
-        }
+//        boolean allowApply = checkApplyRules(model.getOrgId(), model.getAppointItemId(), model.getAppointDate(), model.getAppointTime());
+//        if (!allowApply) {
+//            return ResponseUtil.fail(AppointmentError.ONLINE_APPOINT_OUT_OF_CAPACITY.getCode(),
+//                    AppointmentError.ONLINE_APPOINT_OUT_OF_CAPACITY.getMessage(),null);
+//        }
         build.setCrtName(build.getPatientName());
         OnlineAppointItem item = new OnlineAppointItem();
         item.setItemId(model.getAppointItemId());
