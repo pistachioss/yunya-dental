@@ -17,27 +17,28 @@ import java.util.Objects;
  * @description:
  * @author: xy
  * @date 2021/3/25 10:27
- **/
+ */
 @Service
 @NotifyType(NotifyEnum.SUBSCRIBE)
 @Slf4j
 public class Subscribe implements WeChatNotify {
 
-    @Resource
-    private WXService wxService;
+  @Resource private WXService wxService;
+  @Resource private MsgReply msgReply;
 
-    @Override
-    public WxSendMsgVo weChatNotify(WxUserMsgModel msgReq) throws Exception {
-        log.info("用户关注公众号回调结果：{}", msgReq);
-        String openId = msgReq.getFromUserName();
-        WxFans wxFansReg = wxService.getOwnInfo(openId, null);
-        if (wxFansReg != null && Objects.equals(true, wxFansReg.getSubscribe())) {
-            log.info("用户已关注公众号：{}", wxFansReg);
-            return null;
-        }
-        //因为微信官方文档调整，没有昵称、头像信息
-        WxRegisterModel model = new WxRegisterModel();
-        wxService.saveWxPatient(openId, model);
-        return null;
+  @Override
+  public WxSendMsgVo weChatNotify(WxUserMsgModel msgReq) throws Exception {
+    log.info("用户关注公众号回调结果：{}", msgReq);
+    msgReply.setTextReply(msgReq, "公众号关注自动回复");
+    String openId = msgReq.getFromUserName();
+    WxFans wxFansReg = wxService.getOwnInfo(openId, null);
+    if (wxFansReg != null && Objects.equals(true, wxFansReg.getSubscribe())) {
+      log.info("用户已关注公众号：{}", wxFansReg);
+      return null;
     }
+    // 因为微信官方文档调整，没有昵称、头像信息
+    WxRegisterModel model = new WxRegisterModel();
+    wxService.saveWxPatient(openId, model);
+    return null;
+  }
 }

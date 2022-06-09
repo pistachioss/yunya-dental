@@ -39,6 +39,7 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
 
   @Resource private WXService wxService;
   @Resource private WxAutomsgMapper wxAutomsgMapper;
+  @Resource private MsgReply msgReply;
 
   @Override
   public WxSendMsgVo weChatNotify(WxUserMsgModel msg) throws Exception {
@@ -57,11 +58,7 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
     out.setMsgType("transfer_customer_service");
     //        out.setContent("您好");
     if (msgType.equals("text") && !"公众号关注自动回复".equals(msg.getContent())) {
-      // TODO
-      setTextReply(msg, msg.getContent());
-    } else if ("event".equals(msgType) && "subscribe".equals(msg.getEvent())) {
-      // TODO:
-      setTextReply(msg, "公众号关注自动回复");
+      msgReply.setTextReply(msg, msg.getContent());
     }
     WxKfOnlineVo kfOnlineRes = super.listOnlineKf();
     if (kfOnlineRes != null) {
@@ -69,25 +66,6 @@ public class KfReply extends AbstractWxBaseApi implements WeChatNotify {
     }
     log.info("回复消息：{}，时间：{}", out, LocalDateTime.now());
     return out;
-  }
-
-  private void setTextReply(WxUserMsgModel msg, String keyString) {
-    String reply = "";
-    Example example = new Example(WxAutomsg.class);
-    example.createCriteria().andEqualTo("eventname", keyString);
-    List<WxAutomsg> res = wxAutomsgMapper.selectByExample(example);
-    if (res != null && res.size() > 0) {
-      reply = res.get(0).getMsgtext();
-    }
-    if (!"".equals(reply)) {
-      WxAutoReplyModel msgModel = new WxAutoReplyModel();
-      WxAutoReplyText msgText = new WxAutoReplyText();
-      msgText.setContent(reply);
-      msgModel.setMsgtype(msg.getMsgType());
-      msgModel.setText(msgText);
-      msgModel.setTouser(msg.getFromUserName());
-      wxService.pushAutoReplyMsg(msgModel);
-    }
   }
 
   public List<WxAutomsg> list() {
