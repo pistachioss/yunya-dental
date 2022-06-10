@@ -2,6 +2,8 @@ package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.appointment.domain.query.ClinicListQuery;
+import com.yunya.feign.appointment.vo.ClinicListVO;
 import com.yunya.feign.employee_attend.form.AttendanceAddressSetForm;
 import com.yunya.feign.employee_attend.form.AttendanceAddressSetQueryForm;
 import com.yunya.feign.employee_attend.model.AttendanceAddressSetModel;
@@ -13,6 +15,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.LocationUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.modules.employeeattend.mapper.AttendanceAddressSetMapper;
@@ -37,7 +40,23 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
     /** 注入对象 */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
-
+    /**
+     * 查询门诊列表
+     */
+    public List<ClinicListVO> findClinicList(ClinicListQuery query) {
+       List<AttendanceAddressSet>list = mapper.selectAll();
+        List<ClinicListVO>reList = new ArrayList<>();
+       for(AttendanceAddressSet addressSet:list){
+           ClinicListVO clinicListVO = new ClinicListVO();
+           clinicListVO.setId(addressSet.getId());
+           clinicListVO.setAddress(addressSet.getAttendanceAddress());
+           clinicListVO.setAbbreviation(addressSet.getOrganizationName());
+           double distance = LocationUtil.getDistance(query.getLongitude(),query.getLatitude(),Double.parseDouble(addressSet.getLongitude()) ,Double.parseDouble(addressSet.getLatitude()));
+           clinicListVO.setDistance(distance/1000);
+           reList.add(clinicListVO);
+       }
+        return reList;
+    }
     /**
      * 分页查询考勤地址设置列表
      *

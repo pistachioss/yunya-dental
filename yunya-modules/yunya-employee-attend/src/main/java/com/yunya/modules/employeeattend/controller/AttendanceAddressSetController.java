@@ -1,6 +1,8 @@
 package com.yunya.modules.employeeattend.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.appointment.domain.query.ClinicListQuery;
+import com.yunya.feign.appointment.vo.ClinicListVO;
 import com.yunya.feign.employee_attend.form.AttendanceAddressSetForm;
 import com.yunya.feign.employee_attend.form.AttendanceAddressSetQueryForm;
 import com.yunya.feign.employee_attend.model.AttendanceAddressSetModel;
@@ -17,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 简介：考勤地址设置管理
  *
@@ -32,6 +36,8 @@ public class AttendanceAddressSetController {
     /** 注入对象 */
     @Autowired
     private AttendanceAddressSetBiz attendanceAddressSetBiz;
+
+
 
     /**
      * 分页查询所有机构以及关联的考勤地址列表
@@ -114,5 +120,14 @@ public class AttendanceAddressSetController {
     public ResponseResult delete(@PathVariable(value = "id") Integer id) {
         attendanceAddressSetBiz.delete(id);
         return ResponseUtil.success(null);
+    }
+
+    @ApiOperation("查询门诊列表")
+    @PostMapping("/clinicList")
+    public ResponseResult<List<ClinicListVO>> findClinicList(@RequestBody
+                                                             @Validated ClinicListQuery query) {
+
+        List<ClinicListVO> results = attendanceAddressSetBiz.findClinicList(query);
+        return ResponseUtil.success(results);
     }
 }
