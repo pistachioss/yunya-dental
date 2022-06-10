@@ -76,7 +76,7 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
         }
         //产品图片信息
         if (fileForm.getProPaths() != null && fileForm.getProPaths().size() > 0) {
-            for (FileInfo fileInfo : fileForm.getPaths()) {
+            for (FileInfo fileInfo : fileForm.getProPaths()) {
                 CouponFileInfo couponFileInfo = new CouponFileInfo();
                 couponFileInfo.setFileName(fileInfo.getFileName());
                 couponFileInfo.setCouponId(fileForm.getId());
