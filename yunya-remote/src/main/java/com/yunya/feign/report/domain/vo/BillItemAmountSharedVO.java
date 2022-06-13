@@ -27,8 +27,10 @@ public class BillItemAmountSharedVO implements Serializable {
     /** 执行人id*/
     private Integer executorId;
     /** 项目应收 */
-    private BigDecimal itemReceivedAmount;
+    private BigDecimal itemActualAmount;
     /** 账单应收 */
+    private BigDecimal billActualAmount;
+    /** 账单实收 */
     private BigDecimal billReceivedAmount;
     /** 项目类型：0-价目，1-商品*/
     private Byte itemType;

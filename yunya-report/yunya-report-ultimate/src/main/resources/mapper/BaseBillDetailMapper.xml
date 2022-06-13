@@ -2411,8 +2411,9 @@
         select
         t.bill_id as billId,
         t.executor_id as executorId,
-        IFNULL(t.price * t.quantity - t.discount_amount, 0) as itemReceivedAmount,
-        bb.actual_amount AS billReceivedAmount,
+        IFNULL(t.price * t.quantity - t.discount_amount, 0) as itemActualAmount,
+        bb.actual_amount AS billActualAmount,
+        bb.received_amount AS billReceivedAmount,
         t.item_type AS itemType,
         t.item_id AS itemId
         from base_bill_detail t
@@ -2423,6 +2424,7 @@
                 #{item}
             </foreach>
         </where>
+        ORDER BY t.item_type
     </select>
 
     <!-- 根据条件查询员工个人免单支付工作量明细列表 -->
