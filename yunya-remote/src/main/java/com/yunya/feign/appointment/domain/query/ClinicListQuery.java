@@ -16,11 +16,11 @@ import lombok.Data;
 public class ClinicListQuery {
 
     /** 经度 */
-    @ApiModelProperty(value = "经度", required = true)
+    @ApiModelProperty(value = "经度")
     private Double longitude;
 
     /** 纬度 */
-    @ApiModelProperty(value = "纬度", required = true)
+    @ApiModelProperty(value = "纬度")
     private Double latitude;
 
 }
