@@ -59,4 +59,20 @@ public class BaseOralTariffVO implements Serializable {
 
   @ApiModelProperty("是否线上售卖")
   private Boolean isOnlineSale;
+
+  /**
+   * 库存
+   */
+  @ApiModelProperty("库存")
+  private Integer stock;
+  /**
+   * 商品图片(限制为3张，以逗号分割)
+   */
+  @ApiModelProperty("商品图片(限制为3张，以逗号分割)")
+  private String itemPic;
+  /**
+   * 商品详情网页内容
+   */
+  @ApiModelProperty("商品详情网页内容")
+  private String detailHtml;
 }

@@ -40,6 +40,10 @@
         <result column="unit" property="unit" jdbcType="VARCHAR"/>
         <result column="price" property="price" jdbcType="DECIMAL"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="isOnlineSale" property="isOnlineSale" jdbcType="BIT"/>
+        <result column="stock" property="stock" jdbcType="INTEGER"/>
+        <result column="itemPic" property="itemPic" jdbcType="VARCHAR"/>
+        <result column="detailHtml" property="detailHtml" jdbcType="CLOB"/>
     </resultMap>
 
     <!-- 查询该分类下商品表最大编号后三位 -->
@@ -180,7 +184,11 @@
             bot.english_name as englishName,
             bot.unit,
             bot.price,
-            bot.inservice
+            bot.inservice,
+            bot.is_online_sale as isOnlineSale,
+            bot.stock,
+            bot.item_pic as itemPic,
+            bot.detail_html as detailHtml
         from base_oral_tariff bot
         left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
         where bot.id = #{id}
@@ -200,7 +208,10 @@
         bot.unit,
         bot.price,
         bot.inservice,
-        bot.is_online_sale as isOnlineSale
+        bot.is_online_sale as isOnlineSale,
+        bot.stock,
+        bot.item_pic as itemPic,
+        bot.detail_html as detailHtml
         from
         base_oral_tariff bot
         left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
